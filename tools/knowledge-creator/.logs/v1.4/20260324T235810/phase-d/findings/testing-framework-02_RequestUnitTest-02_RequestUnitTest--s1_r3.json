@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — expectedStatusCode column and note",
+      "description": "The 302/303 HTTP status code equivalence rule is presented as a general rule, but the source footnote explicitly qualifies it as applying only to \"画面オンライン処理のリクエスト単体テスト\". The knowledge file drops this qualifier in both the table row (\"302と303は同一視してアサートされる\") and the note below, potentially misleading readers who implement non-screen request unit tests.",
+      "source_evidence": "「画面オンライン処理のリクエスト単体テストでは、HTTPステータスコードのアサート時に、通常のブラウザで同じリダイレクトの動きとなるステータスコード 302 および 303 を同一視してアサートする。」(footnote [#] under テストケース一覧)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — description column",
+      "description": "The `description` column entry says \"HTMLダンプファイル名に使用\" but the source specifies it is used as the file name of the HTML dump output by \"画面オンライン処理のリクエスト単体テスト\" specifically. This qualifier is omitted from both the table row and the note.",
+      "source_evidence": "「そのテストケースの説明を記載する。画面オンライン処理のリクエスト単体テストで出力されるHTMLダンプファイルのファイル名に利用される。」(testShots table, description row)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 — hints",
+      "description": "The `Advice` class (PascalCase) appears in the section content as a parameter type of `execute(String sheetName, Advice advice)` but is not listed in the s7 hints array.",
+      "source_evidence": "「void execute(String sheetName, Advice advice)」(スーパクラスのメソッド呼び出し section)"
+    }
+  ]
+}

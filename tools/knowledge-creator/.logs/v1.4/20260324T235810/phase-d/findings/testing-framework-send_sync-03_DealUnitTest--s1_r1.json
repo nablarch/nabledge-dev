@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — Excelファイルの配置場所のプロパティファイルパス設定 XMLコード末尾",
+      "description": "Knowledge file closes the `<component name=\"filePathSetting\">` element with `</component>`, but the source code has `</property>` at that position. The knowledge file silently corrects an apparent typo in the source rather than faithfully reproducing it.",
+      "source_evidence": "Source末尾: `</property>` (component要素の閉じタグとして使われているが、ソース上は `</property>` と記載されている)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2のコンテンツにはログ設定のPascalCaseクラス名 `FileLogWriter`・`BasicLogFormatter`（完全修飾名: `nablarch.core.log.basic.FileLogWriter`、`nablarch.core.log.basic.BasicLogFormatter`）が含まれているが、hintsに記載されていない。s3のhintsが同様のクラスを完全修飾名で含んでいるのと統一されていない。",
+      "source_evidence": "ソース「要求電文のログ出力」セクションのlog.properties設定例: `writer.MESSAGING_CSV.className=nablarch.core.log.basic.FileLogWriter` / `writer.MESSAGING_CSV.formatter.className=nablarch.core.log.basic.BasicLogFormatter`"
+    }
+  ]
+}

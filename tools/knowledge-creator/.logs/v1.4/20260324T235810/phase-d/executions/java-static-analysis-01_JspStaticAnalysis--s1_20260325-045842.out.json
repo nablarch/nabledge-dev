@@ -1,0 +1,27 @@
+{
+  "file_id": "java-static-analysis-01_JspStaticAnalysis--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 出力結果確認方法 > JSP解析（XMLレポート出力）",
+      "description": "XML出力の具体的なコード例が省略されている。ソースにはXMLの全体構造（result > item > path/errors > error のネスト）と実際のエラーメッセージ形式（例: `&lt;!-- (at line=17 column=6) is forbidden.`）を示すコードブロックが含まれているが、知識ファイルには要素名テーブルのみで実際のXMLサンプルがない。",
+      "source_evidence": "ソースの `.. code-block:: xml` セクション: `<?xml version=\"1.0\" ...?><result><item><path>...</path><errors><error>&lt;!-- (at line=17 column=6) is forbidden.</error>...`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — 仕様",
+      "description": "ソースの「仕様」セクション（h2）は2000文字を超える内容を持ち、3つのh3サブセクション（許可するタグの指定方法 / チェック対象ファイルの指定方法 / 対象ファイル内の一部を強制的にチェック対象外にする方法）が存在するが、知識ファイルではすべてs2に統合されており分割されていない。",
+      "source_evidence": "ソースの「仕様」h2配下に「許可するタグの指定方法」「チェック対象ファイルの指定方法」「対象ファイル内の一部を強制的にチェック対象外にする方法」の3つのh3（`===`）セクションが存在する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 — 使用方法",
+      "description": "ソースの「使用方法」セクション（h2）は2000文字を大きく超える内容を持ち、5つのh3サブセクション（設定ファイルの準備 / JSP静的解析ツール設定ファイルの記述方法 / Antビルドファイル用設定ファイルの修正 / 実行方法 / 出力結果確認方法）が存在するが、知識ファイルではすべてs4に統合されており分割されていない。",
+      "source_evidence": "ソースの「使用方法」h2配下に「設定ファイルの準備」「JSP静的解析ツール設定ファイルの記述方法」「Antビルドファイル用設定ファイルの修正」「実行方法」「出力結果確認方法」の5つのh3（`===`）セクションが存在する。"
+    }
+  ]
+}

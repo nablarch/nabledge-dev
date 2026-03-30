@@ -1,0 +1,492 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提事項 section (source)",
+      "description": "The entire 前提事項 section is missing from the knowledge file. This section contains critical decision-necessary information: (1) this testing approach targets thin-client web apps with 1-request-1-screen-transition model only, (2) Ajax and rich client applications CANNOT use HTML dump layout verification, (3) view technologies other than JSP can also produce HTML dump output as long as the servlet container renders the full screen.",
+      "source_evidence": "内蔵サーバを利用してHTMLダンプを出力するというリクエスト単体テストは、１リクエスト１画面遷移のシンクライアント型Webアプリケーションを対象としている。Ajaxやリッチクライアントを利用したアプリケーションの場合、HTMLダンプによるレイアウト確認は使用できない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "主なクラス, リソース table (source)",
+      "description": "The class/resource overview table is entirely missing. It describes all key classes, their roles, and creation units. Notably absent: HttpServer (embedded server that outputs HTTP responses to files), the rule that test classes are created one per Action class, and AbstractHttpReqestTestSupport/BasicHttpReqestTestSupport being the classes that standardize test source and data.",
+      "source_evidence": "HttpServer: 内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ。 / テストクラス: テスト対象クラス(Action)につき１つ作成"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "構造 > BasicHttpRequestTestTemplate section (source)",
+      "description": "The BasicHttpRequestTestTemplate class description is missing. This is the superclass all test classes extend. The source states it standardizes test source and test data, and significantly reduces the amount of test source code to write.",
+      "source_evidence": "各テストクラスのスーパクラス。本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、テストソース記述量を大きく削減できる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "構造 > AbstractHttpRequestTestTemplate section (source)",
+      "description": "The AbstractHttpRequestTestTemplate class description is missing. The source specifies this class is NOT for direct use by application programmers and is only used when extending the automated test framework (e.g., to change how test data is written).",
+      "source_evidence": "アプリケーションプログラマが直接使用することはない。テストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "構造 > TestCaseInfo section (source)",
+      "description": "The TestCaseInfo class description in the 構造 section is missing. The source states that to change how test data is written, this class AND AbstractHttpRequestTestTemplate should both be inherited.",
+      "source_evidence": "テストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "主なクラス, リソース (after table, source)",
+      "description": "The important note that all classes (including the embedded server) run in the same JVM is missing. This is decision-necessary: it explains why server-side objects like request and session can be manipulated during tests.",
+      "source_evidence": "上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3, リポジトリの初期化 process step 2",
+      "description": "The knowledge file states \"リポジトリをUI初期化\" but the source says \"リポジトリを再初期化\" (re-initialize the repository). The phrase \"UI初期化\" does not exist in the source and appears to be a corruption of the original text.",
+      "source_evidence": "テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 section title",
+      "description": "Section s3 is titled \"リポジトリの初期化\" but it covers two distinct source sections: the 実行 (====) section describing the execute() method signature and its arguments, AND the リポジトリの初期化 (----) sub-section. The title should reflect the primary content (実行) or both topics.",
+      "source_evidence": "実行\n====\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、内蔵サーバが起動されリクエストが送信される。 ... リポジトリの初期化\n----"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index/sections overall",
+      "description": "Knowledge file has 5 sections but source has 6 countable content headings. The 前提事項 section (which is omitted entirely) would be the missing sixth section.",
+      "source_evidence": "S9 automated warning: Section count 5 < source headings 6"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _request-util-test-online:
+
+============================================================
+リクエスト単体テスト（画面オンライン処理）
+============================================================
+
+----
+概要
+----
+
+リクエスト単体テスト(画面オンライン処理)では、内蔵サーバを使用してテストを行う。\
+ここでは、リクエスト単体テストのテスト補助クラスと内蔵サーバの使用方法を記載する。
+
+
+.. note:: 
+
+ リクエスト単体テストそのものの概要については、
+ :ref:`request_unit_test`
+ を参照。
+
+
+全体像
+======
+
+.. image:: _images/request_unit_test_structure.png
+   :scale: 100
+
+
+ 
+主なクラス, リソース
+====================
+
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|名称                            |役割                                                  | 作成単位                             |
++================================+======================================================+======================================+
+|テストクラス                    |テストロジックを実装する。                            |テスト対象クラス(Action)につき１つ作成|
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テストデータ（Excelファイル）   |テーブルに格納する準備データや期待する結果、\         |テストクラスにつき１つ作成            |
+|                                |HTTPパラメータなど、テストデータを記載する。          |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テスト対象クラス(Action)        |テスト対象のクラス                                    | 取引につき1クラス作成                |
+|                                |(Action以降の業務ロジックを実装する各クラスを含む)    |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|DbAccessTestSupport             |準備データ投入などデータベースを使用するテストに\     | \－                                  |
+|                                |必要な機能を提供する。                                |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpServer                      |内蔵サーバ。サーブレットコンテナとして動作し、\       | \－                                  |
+|                                |HTTPレスポンスをファイル出力する機能を持つ。          |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpRequestTestSupport          |内蔵サーバの起動やリクエスト単体テストで必要とな\     | \－                                  |
+|                                |る各種アサートを提供する。                            |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|| AbstractHttpReqestTestSupport |リクエスト単体テストをテンプレート化するクラス。リ    | \－                                  |
+|| BasicHttpReqestTestSupport    |クエスト単体テストのテストソース、テストデータを定    |                                      |
+|                                |型化する                                              |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|TestCaseInfo                    |データシートに定義されたテストケース情報を格納するクラ|                                      |
+|                                |ス。                                                  |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+
+
+上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\
+このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。\
+
+
+
+前提事項
+========
+
+内蔵サーバを利用してHTMLダンプを出力するというリクエスト単体テストは、\
+１リクエスト１画面遷移のシンクライアント型Webアプリケーションを対象としている。\
+Ajaxやリッチクライアントを利用したアプリケーションの場合、\
+HTMLダンプによるレイアウト確認は使用できない。
+
+.. note::
+
+ 本書ではViewテクノロジにJSPを用いているが、\
+ サーブレットコンテナ上で画面全体をレンダリングする方式であれば、\
+ JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。
+
+
+----
+構造
+----
+
+BasicHttpRequestTestTemplate
+=========================================
+
+各テストクラスのスーパクラス。\
+本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\
+テストソース記述量を大きく削減できる。
+
+具体的な使用方法は、\ :doc:`../05_UnitTestGuide/02_RequestUnitTest/index`\ を参照。
+
+AbstractHttpRequestTestTemplate
+======================================
+
+アプリケーションプログラマが直接使用することはない。\
+テストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。\
+
+TestCaseInfo
+============
+
+データシートに定義されたテストケース情報を格納するクラス。\
+テストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。
+
+
+HttpRequestTestSupport
+======================
+
+リクエスト単体テスト用に用意されたスーパクラス。リクエスト単体テスト用のメソッドを用意している。
+
+
+データベース関連機能
+--------------------
+
+データベースに関する機能は、DbAccessTestSupportクラスに委譲することで実現している。
+詳細は、\ :doc:`02_DbAccessTest`\ を参照。
+
+ただし、DbAccessTestSupportのうち以下のメソッドは、\
+リクエスト単体テストでは不要であり、アプリケーションプログラマに誤解を与えないよう、\
+意図的に委譲を行っていない。
+
+* public void beginTransactions()
+* public void commitTransactions()
+* public void endTransactions()
+* public void setThreadContextValues(String sheetName, String id)
+
+
+事前準備補助機能
+----------------
+
+内蔵サーバへのリクエスト送信には、HttpRequestとExecutionContextのインスタンスが必要となる。\
+HttpRequestTestSupportクラスでは、これらのオブジェクトを簡単に作成できるようメソッドを用意している。\
+
+
+HttpRequest
+~~~~~~~~~~~
+
+.. code-block:: java
+
+  HttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)
+
+
+引数には、以下の値を引き渡す。
+
+* テスト対象となるリクエストURI
+* 上記で取得したリクエストパラメータ
+
+本メソッドでは、受け取ったたリクエストURIとリクエストパラメータを元に\
+HttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定した上で返却する。\
+HttpRequestにリクエストパラメータやURI以外のデータを設定したい場合は、\
+本メソッド呼び出しにより取得したインスタンスに対してデータの設定を行うとよい。
+
+
+ExecutionContext
+~~~~~~~~~~~~~~~~
+
+ExecutionContextインスタンスを生成する。
+
+
+.. code-block:: java
+
+  ExecutionContext createExecutionContext(String userId)
+
+
+引数にはユーザIDを指定する。指定したユーザIDはセッションに格納される。\
+これにより、そのユーザIDでログインしている状態となる。\
+
+
+
+
+.. _how_to_set_token_in_request_unit_test:
+
+
+トークン発行
+~~~~~~~~~~~~
+
+2重サブミット防止を施しているURIに対するテストを行うには、\
+テスト実行前にトークンを発行しセッションに設定しておく必要がある。\
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+トークンの発行およびセッションへの格納が行われる。
+
+.. code-block:: java
+
+ void setValidToken(HttpRequest request, ExecutionContext context)
+
+
+リクエスト単体実行時に、テストデータ上でトークンを設定するか否かを制御したい場合は、
+以下のメソッドを使用する。
+
+.. code-block:: java
+
+ void setToken(HttpRequest request, ExecutionContext context, boolean valid)
+
+
+第3引数がbooleanになっており、真の場合は前述のsetValidTokenと同じ動作となる。
+偽の場合は、セッションからトークン情報が除去される。以下のように使用することで、
+テストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。
+
+ 
+.. code-block:: java
+
+     // 【説明】テストデータから取得したものとする。
+     String isTokenValid; 
+
+     // 【説明】"true"の場合はトークンが設定される。
+     setToken(req, ctx, Boolean.parseBoolean(isTokenValid)));
+
+
+
+実行
+====
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+内蔵サーバが起動されリクエストが送信される。
+
+.. code-block:: java
+
+ HttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx) 
+
+
+引数には以下の値を引き渡す。
+
+* テストケース説明
+* HttpRequest
+* ExectionContext
+
+テストケース説明は、HTMLダンプ出力時のファイル名に使用される。
+詳細は
+:ref:`dump-dir-label`
+を参照。
+
+
+
+リポジトリの初期化
+------------------
+
+executeメソッド内部では、リポジトリの再初期化を行っている。\
+これにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。
+
+* 現在のリポジトリの状態をバックアップ
+* テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化
+* executeメソッド終了時に、バックアップしたリポジトリを復元する。
+
+
+テスト対象のWebアプリケーションに関する設定については、\
+:ref:`howToConfigureRequestUnitTestEnv`\
+を参照。
+
+
+結果確認
+========
+
+
+メッセージ
+----------
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+アプリケーション例外に格納されたメッセージが想定通りであることを確認する。
+
+.. code-block:: java
+
+   
+  void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual);
+
+
+引数には、以下の値を引き渡す。
+
+* 期待するメッセージ（複数ある場合はカンマ区切りで指定する。）
+* 先に作成したExectionContext
+
+
+例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合は、\
+アサート失敗となる。
+
+
+.. note::
+ メッセージIDの比較はIDをソートした状態で行うので、テストデータを記載する際に
+ 順序を気にする必要はない。
+
+
+
+HTMLダンプ出力
+==============
+
+.. _dump-dir-label:
+
+HTMLダンプ出力ディレクトリ
+--------------------------
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成される。
+その配下にテストクラス毎に同名のディレクトリが作成され、
+そのテストクラスで実行されたテストケース説明と同名のHTMLダンプファイルが出力される。
+
+また、HTMLダンプファイルが参照するHTMLリソース（スタイルシートや画像などのリソース）についても
+このディレクトリに出力されるので、このディレクトリを保存することで、どの環境でもHTMLを同じように参照できる。
+
+* html_dumpディレクトリが既に存在する場合は、html_dump_bkという名前でバックアップされる。
+
+
+.. image:: ./_images/htmlDumpDir.png
+
+
+.. _howToConfigureRequestUnitTestEnv:
+
+----------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "title": "リクエスト単体テスト（画面オンライン処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベース関連機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "データベース関連機能",
+        "beginTransactions",
+        "commitTransactions",
+        "endTransactions",
+        "setThreadContextValues",
+        "委譲"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "事前準備補助機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "createHttpRequest",
+        "createExecutionContext",
+        "setValidToken",
+        "setToken",
+        "トークン発行",
+        "2重サブミット防止",
+        "HTTPリクエスト作成",
+        "ExecutionContext生成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リポジトリの初期化",
+      "hints": [
+        "HttpRequestTestSupport",
+        "execute",
+        "リポジトリ初期化",
+        "クラス単体テスト",
+        "リクエスト単体テスト",
+        "連続実行",
+        "HttpResponse"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージ",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertApplicationMessageId",
+        "アプリケーション例外",
+        "メッセージIDアサート",
+        "結果確認"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "HTMLダンプ出力ディレクトリ",
+      "hints": [
+        "HTMLダンプ",
+        "html_dump",
+        "html_dump_bk",
+        "HTMLダンプ出力ディレクトリ",
+        "テスト結果出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`HttpRequestTestSupport`のデータベース関連機能は`DbAccessTestSupport`クラスへの委譲で実現。ただし、リクエスト単体テストでは不要なため、以下のメソッドは意図的に委譲されていない。\n\n- `public void beginTransactions()`\n- `public void commitTransactions()`\n- `public void endTransactions()`\n- `public void setThreadContextValues(String sheetName, String id)`\n\n詳細は :doc:`02_DbAccessTest` を参照。",
+    "s2": "`HttpRequestTestSupport`が提供する事前準備補助メソッド。\n\n**HttpRequest生成**:\n\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\nHTTPメソッドはPOSTに設定される。URIとパラメータ以外のデータが必要な場合は、返却されたインスタンスに追加設定する。\n\n**ExecutionContext生成**:\n\n```java\nExecutionContext createExecutionContext(String userId)\n```\n指定したユーザIDはセッションに格納され、そのユーザIDでログインしている状態になる。\n\n**トークン発行（2重サブミット防止テスト用）**:\n\n> **注意**: 2重サブミット防止を施しているURIのテストには、テスト実行前にトークンを発行しセッションに設定する必要がある。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nトークンを発行しセッションに格納する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n第3引数が`true`の場合は`setValidToken`と同じ動作。`false`の場合はセッションからトークン情報を除去する。テストデータからboolean値を渡すことで、テストクラスにトークン設定の分岐処理を書かずに済む。",
+    "s3": "`execute`メソッドで内蔵サーバを起動しリクエストを送信する。\n\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)\n```\n- `caseName`: テストケース説明（HTMLダンプ出力ファイル名に使用）\n- `req`: HttpRequest\n- `ctx`: ExecutionContext\n\n**リポジトリの初期化**:\n\n`execute`メソッド内部でリポジトリの再初期化を行う。これによりクラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\nプロセス:\n1. 現在のリポジトリの状態をバックアップ\n2. テスト対象WebアプリケーションのコンポーネントにてリポジトリをUI初期化（Webアプリケーションのコンポーネント設定ファイルを使用）\n3. `execute`メソッド終了時に、バックアップしたリポジトリを復元\n\nテスト対象Webアプリケーションの設定については :ref:`howToConfigureRequestUnitTestEnv` を参照。",
+    "s4": "アプリケーション例外に格納されたメッセージが想定通りであることを確認するメソッド:\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual)\n```\n- 第1引数: 期待するメッセージID（複数の場合はカンマ区切り）\n- 第2引数: ExecutionContext\n\n> **注意**: 例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合はアサート失敗となる。メッセージIDの比較はIDをソートした状態で行うため、テストデータの順序を気にする必要はない。",
+    "s5": "テスト実行後、プロジェクトルートに`tmp/html_dump`ディレクトリが作成される。テストクラス毎に同名のサブディレクトリが作成され、テストケース説明と同名のHTMLダンプファイルが出力される。\n\nHTMLが参照するリソース（スタイルシート、画像等）も同ディレクトリに出力されるため、このディレクトリを保存することでどの環境でもHTMLを同じように参照できる。\n\n> **注意**: `html_dump`ディレクトリが既に存在する場合は、`html_dump_bk`という名前でバックアップされる。\n\n![HTMLダンプディレクトリ構造](assets/testing-framework-02_RequestUnitTest-06_TestFWGuide--s1/htmlDumpDir.png)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

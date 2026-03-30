@@ -1,0 +1,114 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "about-nablarch-restriction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "Source has 2 h2 headings (「Nablarchの知的財産権」and「Nablarchの利用制限」) but the knowledge file maps both into a single section (s1). Per validation rules, h2 heading count should be compared with knowledge section count.",
+      "source_evidence": "Source h2s: 「Nablarchの知的財産権 / ====」and「Nablarchの利用制限 / ====」. Knowledge file: only s1 covering both."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+.. _`nablarch_restriction`:
+
+====================================
+Nablarchの知的財産権と利用制限
+====================================
+
+Nablarchの知的財産権と利用制限について説明します。
+
+Nablarchの知的財産権
+============================
+
+Nablarchの知的財産権は、TISに帰属します。ただし、お客様が改変・翻案した部分の知的財産権は、お客様に帰属します。
+
+Nablarchの利用制限
+============================
+
+お客様はNablarchのコンテンツを使用、複製、改変・翻案することができます。ただしコンテンツ種類により、以下の制限があります。
+
+Nablarchコンテンツ種類（Nablarchフレームワーク、 Nablarch標準/ガイド、 Nablarchライブラリ、Nablarchツール）については、 :ref:`contents_type` を参照。
+
++---------------------------+-----------------------------------------------------------------+--------------------------------------------------+
+|コンテンツ種類             |利用上の制限                                                     |備考                                              |
++===========================+=================================================================+==================================================+
+|Nablarchフレームワーク     |* 改変・翻案部はサポートサービスの対象外となります。             |Nablarchフレームワークの改変・翻案は、            |
+|                           |* Nablarchフレームワークに依存せず単独で動作するように           |推奨いたしません。 [1]_                           |
+|                           |  改変・翻案することはできません。                               |                                                  |
+|                           |                                                                 |                                                  |
++---------------------------+-----------------------------------------------------------------+--------------------------------------------------+
+|Nablarch標準/ガイド        |* 改変・翻案部はサポートサービスの対象外となります。             |                                                  |
++---------------------------+* Nablarchフレームワークと組み合わせて                           |                                                  |
+|Nablarchライブラリ         |  利用していただく必要があります。                               |                                                  |
++---------------------------+                                                                 |                                                  |
+|Nablarchツール             |                                                                 |                                                  |
++---------------------------+-----------------------------------------------------------------+--------------------------------------------------+
+
+.. [1] Nablarchフレームワーク（アプリケーションフレームワークおよびテスティングフレームワーク）の更新バージョンは、後方互換性が維持されます。
+       お客様がNablarchフレームワークを改変・翻案した場合、バージョンアップ時に後方互換が維持されず、思わぬ不具合が発生する可能性があります。
+       Nablarchの後方互換性については、 :ref:`backward_compatibility_policy` を参照。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "about-nablarch-restriction",
+  "title": "Nablarchの知的財産権と利用制限",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchの知的財産権と利用制限",
+      "hints": [
+        "知的財産権",
+        "利用制限",
+        "TIS",
+        "Nablarchフレームワーク",
+        "後方互換性",
+        "サポートサービス対象外",
+        "改変・翻案",
+        "コンテンツ種類"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Nablarchの知的財産権\n\nNablarchの知的財産権はTISに帰属します。お客様が改変・翻案した部分の知的財産権はお客様に帰属します。\n\n## Nablarchの利用制限\n\nお客様はNablarchのコンテンツを使用、複製、改変・翻案できますが、コンテンツ種類により以下の制限があります（コンテンツ種類の詳細は :ref:`contents_type` 参照）。\n\n| コンテンツ種類 | 利用上の制限 |\n|---|---|\n| Nablarchフレームワーク | 改変・翻案部はサポートサービスの対象外。Nablarchフレームワークに依存せず単独で動作するよう改変・翻案することは不可。改変・翻案は推奨しない [1]。 |\n| Nablarch標準/ガイド、Nablarchライブラリ、Nablarchツール | 改変・翻案部はサポートサービスの対象外。Nablarchフレームワークと組み合わせて利用する必要あり。 |\n\n> **注意**: [1] Nablarchフレームワークの更新バージョンは後方互換性が維持されます。お客様がNablarchフレームワークを改変・翻案した場合、バージョンアップ時に後方互換が維持されず、思わぬ不具合が発生する可能性があります。Nablarchの後方互換性については :ref:`backward_compatibility_policy` 参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

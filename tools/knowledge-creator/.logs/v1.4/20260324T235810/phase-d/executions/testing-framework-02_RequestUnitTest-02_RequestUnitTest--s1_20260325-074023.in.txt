@@ -1,0 +1,619 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/05_UnitTestGuide/02_RequestUnitTest/index.rst`
+- Format: `rst`
+
+```
+.. _requestUnitTest:
+
+==============================
+リクエスト単体テストの実施方法
+==============================
+
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象のActionクラスと同じとする。
+* <Actionクラス名>RequestTestというクラス名でテストクラスを作成する。
+* nablarch.test.core.http.BasicHttpRequestTestTemplateを継承する。
+
+例えば、テスト対象のActionクラスが、nablarch.sample.management.user.UserSearchActionだとすると、
+テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.management.user;
+  
+  // ～中略～
+
+  public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
+
+
+
+.. note::
+ スーパクラスBasicHttpRequestTestTemplateは、リクエスト単体テストに必要な各種メソッドを用意している。\
+ DbAccessTestSupportの機能も兼ね備えているので、データベースの設定などもクラス単体テストと\
+ 同じように実行できる。\
+
+
+------------------
+テストメソッド分割
+------------------
+
+以下の手順により、作成するテストメソッドを決定する。
+
+* リクエストID毎（Actionのメソッド毎）に、テストケースを正常系と異常系に分類し、それぞれテストメソッドを作成する。
+
+  * メニューからの単純な画面遷移のように異常系のケースが無い場合は、正常系のテストメソッドのみ作成する。
+
+* 画面表示検証項目については、正常系、異常系のいずれかのメソッドに含められるか検討する。
+
+  * 同一シートにでの条件分岐が煩雑になる場合は画面表示検証用のテストメソッドを別途作成する。
+  * そうでない場合は、画面検証用のメソッドは作成せず、正常系または異常系のテストメソッドに含める。
+
+
+
+**メソッド分割例 （正常系、異常系、画面表示検証用で分割した場合）**
+
++------------+---------------------+-----------------------------------------------------------------+
+|リクエストID|Actionメソッド名     |テストデータシート名                                             |
+|            |                     +---------------------+-----------------------+-------------------+
+|            |                     |正常系               |異常系                 |画面表示検証用     |
++============+=====================+=====================+=======================+===================+
+|USERS00101  |doUsers00101         |testUsers00101Normal |testUsers00101Abnormal |testUsers00101View |
++------------+---------------------+---------------------+-----------------------+-------------------+
+
+.. note::
+ 上記のようにメソッドを分割するのは、テストデータシートが煩雑になり可読性が下がることを避ける為である。\
+ 上記以外でも、１つのテストデータシートにさまざまなテストケースを詰め込むと可読性が下がる場合は、テストデータシートを分割する。
+
+
+
+--------------------
+テストデータの書き方
+--------------------
+
+テストデータを記載したExcelファイルは、クラス単体テストと同様に\
+テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
+
+テストデータの記述方法詳細については、\ :ref:`how_to_write_excel`\ を参照。
+
+
+.. _`request_test_setup_db`:
+
+テストクラスで共通のデータベース初期値
+======================================
+
+テストデータを記載したExcelファイルに、\ **setUpDb**\ という名前でシートを用意し、
+そこに共通のデータベース初期値を投入する。ここに記載されたデータは、
+自動テストフレームワークによりテストメソッド実行時に投入される。
+
+.. image:: ./_image/setupdb.png
+
+
+
+.. _`request_test_testcases`:
+
+
+テストケース一覧
+================
+
+LIST_MAPのデータタイプで１テストメソッド分のケース表を記載する。IDは、\ **testShots**\ とする。
+
+.. image:: ./_image/testShots.png
+   :scale: 45
+
+
+１ケース毎に以下の要素を持たせる。
+
++------------------------+----------------------------------------------------------------------------------------+-----+
+|カラム名                | 説明                                                                                   |必須 |
++========================+========================================================================================+=====+
+|no                      |テストケース番号を1からの連番で記載する。                                               |     |
+|                        |                                                                                        |必須 |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|description             |そのテストケースの説明を記載する。                                                      |     |
+|                        |画面オンライン処理のリクエスト単体テストで出力されるHTMLダンプファイルのファイル名に    |     |
+|                        |利用される。 \ [#]_\                                                                    |必須 |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|context                 |そのテストケースで、どのリクエストIDにどのようなユーザでリクエストを送るかを記載する。  |必須 |
+|                        |詳細は、\ :ref:`request_test_user_info`\ を参照。                                       |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|cookie                  |そのテストケースで必要となるCookie情報を記載する。                                      |     |
+|                        |詳細は、\ :ref:`request_test_cookie_info`\ を参照。                                     |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|isValidToken            |トークンを設定する場合にはtrueを設定する。トークンの詳細については、\                   |     |
+|                        |:ref:`double_submit_use_Token`\を参照。                                                 |     |
+|                        |                                                                                        |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|setUpTable              |各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの\     |     |
+|                        |:ref:`グループID<tips_groupId>`\ を記載する。データの投入は自動テストフレームワークに   |     |
+|                        |より行われる。                                                                          |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedStatusCode      |期待するHTTPステータスコードを記載する。 \ [#]_\                                        |必須 |
+|                        |                                                                                        |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedMessageId       |メッセージが出力されること期待する場合は、その\ **メッセージID**\ を記載する。          |     |
+|                        |複数のメッセージが出力される場合はカンマ区切りで列挙する。メッセージを                  |     |
+|                        |期待しない場合は空欄とする。空欄にしたが、実際にはメッセージが出力され                  |     |
+|                        |た場合は、テスト失敗となる。                                                            |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedSearch          |データベース検索結果がリクエストスコープに設定されることを期待する場合                  |     |
+|                        |、\ **期待する検索結果**\ を記載する。検索結果は、同じシート内のLIST_MAPデータ          |     |
+|                        |タイプのIDで指定する。リクエストスコープから取得する際のキーは\                         |     |
+|                        |**searchResult**\ である。                                                              |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedTable           |データベースの内容を比較する場合、期待するテーブルの\ :ref:`グループID<tips_groupId>`\  |     |
+|                        |を記載する。                                                                            |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|forwardUri              |期待するフォワード先URIを記載する。Actionクラスで指定したフォワード先JSPへの\           |     |
+|                        |URIを記載する。空欄の場合はJSPへのフォワードが行われないものとしてアサートされる。\     |     |
+|                        |システムエラー画面や認証エラー画面へ遷移することを想定するテストケースでは、\           |     |
+|                        |その画面を描画するJSPへのURIを記載する。例えば、システムエラー画面に遷移する場合は、\   |     |
+|                        |\ `/jsp/systemError.jsp`\ が期待するフォワード先URIとなる（デフォルト値の場合）。       |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedContentLength   |コンテンツレングス・ヘッダの期待値を記載する。                                          |     |
+|                        |ファイルダウンロードをテストする場合にこのカラムに指定する。                            |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedContentType     |コンテンツタイプ・ヘッダの期待値を記載する。                                            |     |
+|                        |ファイルダウンロードをテストする場合にこのカラムに指定する。                            |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedContentFileName |コンテンツディスポジション・ヘッダに指定したファイル名の期待値を記載する。              |     |
+|                        |ファイルダウンロードをテストする場合にこのカラムを指定する。                            |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedMessage         |メッセージ同期送信を行う場合、期待する要求電文の :ref:`グループID<tips_groupId>`\       |     |
+|                        |を記載する。メッセージの作成は自動テストフレームワークにより行われる。                  |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|responseMessage         |メッセージ同期送信を行う場合、返却する応答電文の :ref:`グループID<tips_groupId>`\       |     |
+|                        |を記載する。メッセージの作成は自動テストフレームワークにより行われる。                  |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|expectedMessageByClient |HTTPメッセージ同期送信を行う場合、期待する要求電文の :ref:`グループID<tips_groupId>`\   |     |
+|                        |を記載する。メッセージの作成は自動テストフレームワークにより行われる。                  |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+|responseMessageByClient |HTTPメッセージ同期送信を行う場合、返却する応答電文の :ref:`グループID<tips_groupId>`\   |     |
+|                        |を記載する。メッセージの作成は自動テストフレームワークにより行われる。                  |     |
++------------------------+----------------------------------------------------------------------------------------+-----+
+
+
+そのテストケースにて送信するHTTP\ `リクエストパラメータ`_\ ついては、この表ではなく別の表に記載する（\ :ref:`後述<request_test_req_params>`\ ）。
+
+
+
+.. [#] 
+  descriptionの内容はファイル名に利用するため、OSで規定されたファイル名に利用可能な文字以外の文字の利用や、ファイル名の長さ上限を超過した場合に、
+  IOExceptionが発生するため、ファイル名として許可された内容を入力すること。
+  例えば、descriptionに改行コードが含まれていた場合、ファイル名として不正であるためテスト実行時にエラーが発生する。
+
+.. [#] 
+  画面オンライン処理のリクエスト単体テストでは、HTTPステータスコードのアサート時に、通常のブラウザで同じリダイレクトの動きとなるス
+  テータスコード 302 および 303 を同一視してアサートする。 つまり予想結果と実行結果が全く同一のHTTPステータスコードであった場合だけで
+  なく、予想結果が 303 で実行結果が 302 であった場合と、予想結果が 302 で実行結果が 303 の場合いずれも アサート結果は正常終了となる。
+  
+  ＜理由＞ RFC の規定では、 HTTP 1.1 を理解するブラウザに対してはリダイレクトに 303 を返すほうがよい作法といえるが、現在主要なWebコ
+  ンテナはレガシーなブラウザを考慮して302のレスポンスコードを使用しているため。
+
+.. _`request_test_user_info`:
+
+
+ユーザ情報
+==========
+
+そのテストケースで、どのリクエストIDにどのようなユーザでリクエストを送るかを、\
+LIST_MAPのデータタイプで記載する。
+複数のユーザ情報を使い分けることで、ユーザの権限によって処理が異なる機能をテストすることができる。
+
+例えば、権限によって参照可能なデータが異なる場合は、以下のようにユーザ情報を使い分ける。
+
+.. image:: ./_image/testcase-user.png
+
+
+.. _`request_test_cookie_info`:
+
+Cookie情報
+==============================
+
+そのテストケースで必要となるCookie情報をLIST_MAPのデータタイプで記載する。
+これにより、ケースごとに異なるCookie情報を送信してテストを行うことが可能となる。
+
+Cookie情報は、任意項目のためCookieを必要としないケースの場合には、記載不要である。
+
+例えば、ケースよってCookieの値を変更する必要がある場合には、以下のようにCookie情報を設定する。
+Cookieを必要としないケースの場合には、以下例の8ケース目のように値を記載せずに空白としておくこと。
+
+.. image:: ./_image/requestCookie.png
+
+
+.. _`request_test_req_params`:
+
+リクエストパラメータ
+====================
+
+各テストケースで送信するHTTPパラメータを、LIST_MAPのデータタイプで記載する。\
+
+
+:ref:`http_dump_tool` を使用して、リクエストパラメータのデータ作成を行う。\
+初期画面表示のリクエスト（例えばメニュー画面からの遷移）以外は、このツールを用いてリクエストパラメータのデータを作成する。
+
+LIST_MAPのデータタイプでHTTPリクエストパラメータを記載する。IDは、\ **requestParams**\ とする。
+このデータと、\ :ref:`request_test_testcases` とは、行単位で関連付けられる。\
+例えば、テストケース一覧の先頭のテストケースでは、リクエストパラメータ表の先頭のデータが使用される（以下同様）。
+
+テストケースとのひもづけを分かりやすくするため :ref:`marker_column` としてテストケース番号を記載すること。
+
+.. image:: ./_image/testcase_and_request.png
+    :scale: 80
+
+.. note::
+
+  リクエストパラメータは必ず記載する必要がある。
+
+  例えば初期画面表示のリクエストなど、リクエストパラメータが存在しない場合でも LIST_MAP=requestParams には必ず列を定義する必要がある。
+
+  リクエストパラメータが不要な場合は、下記のようにテストケース番号の列のみを記載する。
+  データはテストケース数分定義する。（3ケースであれば3行、10ケースであれば10行用意する）
+
+  ※[no]列は、テストケース番号を視覚的に表すもの( :ref:`marker_column` )なので、リクエストパラメータには含まれない。
+
+    .. image:: ./_image/dummy_request_param.png
+        :scale: 100
+
+
+ひとつのキーに対して複数の値を設定する場合
+------------------------------------------
+
+HTTPリクエストパラメータは、ひとつのキーに対して複数の値を設定することができる。
+リクエスト単体テストでは、\ **値をカンマ区切りで記述することにより、複数の値を表現**\ できる。
+
+以下の例では、fooというキーに対して、oneとtwoという複数の値を設定している。
+
+  ======== ===========  
+  foo      bar  
+  ======== ===========
+  one,two  three      
+  ======== ===========  
+
+値にカンマそのものを含める場合には、\ `\\`\ マークでエスケープを行う。\
+値に\\マークそのものを含める場合には、\\マーク自身をエスケープし、\ `\\\\`\ と記述する。
+
+
+例えば、\ `\\1,000`\ という値を表すには以下のように記述する。
+
+
+  =========== ===========  
+  foo         bar   
+  =========== ===========   
+  \\\\1\\,000 three     
+  =========== ===========  
+
+
+各種期待値
+==========
+
+検索結果、データベースを期待値と比較する場合は、
+それぞれのデータとテストケース一覧とをIDで紐付けする。
+
+
+期待する検索結果
+----------------
+
+期待する検索結果を、テストケース一覧とリンクさせる。
+
+.. image:: ./_image/expected_search_result.png
+
+
+.. _`request_test_expected_tables`:
+
+期待するデータベースの状態
+--------------------------
+
+更新系のテストケースでは、期待するデータベースの状態を確認する為、
+期待するデータベースの状態をテストケース一覧とリンクさせる。
+
+
+.. image:: ./_image/expected_table.png
+   :scale: 80
+
+.. _`05_02_howToCodingTestMethod`:
+
+----------------------
+テストメソッドの書き方
+----------------------
+
+スーパクラスについて
+====================
+
+BasicHttpRequestTestTemplateクラスを継承する。
+このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する。
+
+* データシートからテストケースリスト(testShots LIST_MAP）を取得
+* 取得したテストケース分、以下を繰り返し実行
+
+  *  データベース初期化
+  *  ExecutionContext、HTTPリクエストを生成
+  *  業務テストコード用拡張ポイント呼出(beforeExecuteRequestメソッド）
+  *  トークンが必要な場合、トークンを設定
+  *  テスト対象のリクエスト実行
+  *  実行結果の検証
+
+    * HTTPステータスコード および メッセージID
+    * HTTPレスポンス値(リクエストスコープ値)
+    * 検索結果
+    * テーブル更新結果
+
+  *  業務テストコード用拡張ポイント呼出(afterExecuteRequestメソッド）
+
+
+
+
+以下のメソッドが、スーパクラスで抽象メソッドとして定義されているのでオーバーライドする。
+
+
+.. code-block:: java
+
+ public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
+    
+    /**
+     * {@inheritDoc}
+     * 【説明】 URIの共通部分を返却する。
+     */
+    @Override
+    protected String getBaseUri() {
+        return "/action/management/user/UserSearchAction/";
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+テストメソッド作成
+==================
+
+準備したテストシートに対応するメソッドを作成する。
+
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00101() {
+    }
+
+
+
+スーパクラスのメソッド呼び出し
+==============================
+
+
+テストメソッド内で、スーパクラスの以下のいずれかのメソッドを呼び出す。
+
+* void execute(String sheetName)
+* void execute(String sheetName, Advice advice)
+
+通常の場合、execute(String sheetName)を使用する。
+
+.. code-block:: java
+    
+    @Test
+    public void testUsers00101Normal() {
+        execute("testUsers00101Normal");
+    }
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-02_RequestUnitTest-02_RequestUnitTest--s1`
+
+```json
+{
+  "id": "testing-framework-02_RequestUnitTest-02_RequestUnitTest--s1",
+  "title": "リクエスト単体テストの実施方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "DbAccessTestSupport",
+        "リクエスト単体テスト",
+        "テストクラス命名規則",
+        "テストクラス作成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド分割",
+      "hints": [
+        "テストメソッド分割",
+        "正常系",
+        "異常系",
+        "画面表示検証",
+        "リクエストID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "testShots",
+        "setUpDb",
+        "LIST_MAP",
+        "requestParams",
+        "expectedStatusCode",
+        "expectedMessageId",
+        "expectedSearch",
+        "expectedTable",
+        "forwardUri",
+        "テストケース一覧",
+        "Cookie情報",
+        "ユーザ情報",
+        "context",
+        "cookie",
+        "isValidToken",
+        "setUpTable",
+        "expectedContentLength",
+        "expectedContentType",
+        "expectedContentFileName",
+        "expectedMessage",
+        "responseMessage",
+        "expectedMessageByClient",
+        "responseMessageByClient"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ひとつのキーに対して複数の値を設定する場合",
+      "hints": [
+        "リクエストパラメータ複数値",
+        "カンマ区切り",
+        "エスケープ",
+        "リクエストパラメータ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "期待する検索結果",
+      "hints": [
+        "expectedSearch",
+        "searchResult",
+        "検索結果検証",
+        "LIST_MAP"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "期待するデータベースの状態",
+      "hints": [
+        "expectedTable",
+        "データベース検証",
+        "更新系テスト",
+        "グループID"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "テストメソッドの書き方",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "getBaseUri",
+        "execute",
+        "beforeExecuteRequest",
+        "afterExecuteRequest",
+        "テストメソッド作成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は`{Action名}RequestTest` (3) `nablarch.test.core.http.BasicHttpRequestTestTemplate`を継承\n\n> **注意**: `BasicHttpRequestTestTemplate`は`DbAccessTestSupport`の機能も兼ね備えており、データベース設定などもクラス単体テストと同様に実行できる。\n\n```java\npackage nablarch.sample.management.user;\npublic class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {\n```",
+    "s2": "テストメソッド分割ルール:\n1. リクエストID毎（Actionのメソッド毎）に正常系・異常系でテストメソッドを作成\n2. 異常系がない場合（例: メニューからの単純な画面遷移）は正常系のみ作成\n3. 画面表示検証で同一シート内の条件分岐が煩雑になる場合は画面表示検証用メソッドを別途作成、そうでない場合は正常系または異常系のメソッドに含める\n\nテストデータシートが煩雑になり可読性が下がる場合はシートを分割する。\n\nメソッド分割例:\n\n| リクエストID | Actionメソッド名 | 正常系 | 異常系 | 画面表示検証用 |\n|---|---|---|---|---|\n| USERS00101 | doUsers00101 | testUsers00101Normal | testUsers00101Abnormal | testUsers00101View |",
+    "s3": "テストデータ記述ルール:\n- Excelファイルはテストソースコードと同じディレクトリに同じファイル名（拡張子のみ異なる）で格納\n\n**setUpDb シート**: 共通のデータベース初期値を記載。テストメソッド実行時に自動投入される。\n\n**テストケース一覧 (LIST_MAP=testShots)**:\n\n| カラム名 | 説明 | 必須 |\n|---|---|---|\n| no | テストケース番号（1からの連番） | ○ |\n| description | テストケース説明。HTMLダンプファイル名に使用。OSで規定されたファイル名に利用可能な文字のみ使用可。OSで無効な文字の使用やファイル名長さ上限超過はIOExceptionの原因になる。 | ○ |\n| context | リクエストIDとユーザ情報を指定。詳細は :ref:`request_test_user_info` 参照。 | ○ |\n| cookie | Cookie情報。詳細は :ref:`request_test_cookie_info` 参照。 | |\n| isValidToken | トークンを設定する場合はtrueを指定。 | |\n| setUpTable | テストケース実行前にDBに登録するデータの :ref:`グループID<tips_groupId>` 。 | |\n| expectedStatusCode | 期待するHTTPステータスコード。302と303は同一視してアサートされる。 | ○ |\n| expectedMessageId | 期待するメッセージID（複数はカンマ区切り）。空欄の場合メッセージが出力されるとテスト失敗。 | |\n| expectedSearch | 期待する検索結果のLIST_MAP ID。リクエストスコープからの取得キーは`searchResult`。 | |\n| expectedTable | 期待するDBの状態の :ref:`グループID<tips_groupId>` 。 | |\n| forwardUri | 期待するフォワード先URI。空欄の場合はJSPフォワードが行われないとアサートされる。 | |\n| expectedContentLength | コンテンツレングスヘッダの期待値（ファイルダウンロード用）。 | |\n| expectedContentType | コンテンツタイプヘッダの期待値（ファイルダウンロード用）。 | |\n| expectedContentFileName | コンテンツディスポジションヘッダのファイル名期待値（ファイルダウンロード用）。 | |\n| expectedMessage | メッセージ同期送信の要求電文の :ref:`グループID<tips_groupId>` 。 | |\n| responseMessage | メッセージ同期送信の応答電文の :ref:`グループID<tips_groupId>` 。 | |\n| expectedMessageByClient | HTTPメッセージ同期送信の要求電文の :ref:`グループID<tips_groupId>` 。 | |\n| responseMessageByClient | HTTPメッセージ同期送信の応答電文の :ref:`グループID<tips_groupId>` 。 | |\n\n> **注意**: `description`はHTMLダンプファイル名に使用されるため、OSで規定されたファイル名に利用可能な文字のみ使用すること。OSで無効な文字（例: 改行コード）の使用やファイル名の長さ上限超過はIOExceptionが発生する。\n\n> **注意**: HTTPステータスコード302と303は同一視してアサートされる（RFC規定のHTTP 1.1では303が推奨だが、主要WebコンテナはレガシーブラウザのためにHTTP 302を使用しているため）。\n\n**ユーザ情報 (LIST_MAP)**: 複数のユーザ情報を使い分けることで、権限によって処理が異なる機能をテスト可能。\n\n**Cookie情報 (LIST_MAP)**: 任意項目。Cookieが不要なケースは空白とする。\n\n**リクエストパラメータ (LIST_MAP=requestParams)**:\n- 各テストケースで送信するHTTPパラメータをLIST_MAPで記載（ID=`requestParams`）\n- テストケース一覧と行単位で関連付けられる\n- :ref:`http_dump_tool` を使用してデータ作成（初期画面表示以外）\n- マーカー列としてテストケース番号を記載すること\n- リクエストパラメータが不要な場合でもLIST_MAP=requestParamsには必ず列を定義し、テストケース数分の行を定義する（パラメータなし時はテストケース番号列のみ）",
+    "s4": "HTTPリクエストパラメータで1つのキーに複数の値を設定する場合、**カンマ区切り**で記述する。\n\n- `foo`に`one`と`two`を設定: `one,two`\n- 値にカンマを含む場合は`\\`でエスケープ（例: `\\,`）\n- 値にバックスラッシュを含む場合は`\\\\`でエスケープ\n- 例: `\\1,000`という値を表すには`\\\\1\\,000`と記述する",
+    "s5": "期待する検索結果をテストケース一覧とリンクさせる。テストケース一覧の`expectedSearch`カラムに、同シート内のLIST_MAP IDを指定する。リクエストスコープから取得する際のキーは`searchResult`。",
+    "s6": "更新系テストケースで期待するデータベースの状態を確認する場合、テストケース一覧の`expectedTable`カラムに期待するテーブルの :ref:`グループID<tips_groupId>` を指定する。",
+    "s7": "**クラス**: `nablarch.test.core.http.BasicHttpRequestTestTemplate`を継承する。\n\nテスト実行フロー:\n1. データシートからtestShots LIST_MAPを取得\n2. 各テストケースについて以下を繰り返し実行:\n   1. データベース初期化\n   2. ExecutionContext、HTTPリクエストを生成\n   3. `beforeExecuteRequest`メソッド呼出\n   4. トークンが必要な場合、トークンを設定\n   5. テスト対象のリクエスト実行\n   6. 実行結果の検証（HTTPステータスコード・メッセージID・HTTPレスポンス値・検索結果・テーブル更新結果）\n   7. `afterExecuteRequest`メソッド呼出\n\nオーバーライド必須の抽象メソッド:\n\n```java\n@Override\nprotected String getBaseUri() {\n    return \"/action/management/user/UserSearchAction/\";\n}\n```\n\nテストメソッド作成: テストシートに対応するメソッドを作成し、スーパクラスの`execute(String sheetName)`（通常）または`execute(String sheetName, Advice advice)`を呼び出す。\n\n```java\n@Test\npublic void testUsers00101Normal() {\n    execute(\"testUsers00101Normal\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 11
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,364 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/02_Fw/01_Web/07_UserAgent.rst`
+- Format: `rst`
+
+```
+=========================
+ UserAgent情報取得
+=========================
+
+----
+概要
+----
+
+UserAgent情報取得機能はHTTPヘッダ(User-Agent)より取得した値を、
+設定ファイルに記述された内容に従って解析を行う仕組みを提供する。
+
+
+
+----
+要求
+----
+
+実装済み
+========
+
+* HTTPヘッダ(User-Agent)を取得することができる。
+* 必要に応じてUserAgentを解析するクラスを切り替えることが出来る。
+
+.. note::
+ 実際に、User-Agentを解析し、OSおよびブラウザの各種情報を取得する実装は、
+ サンプルとして提供される。
+
+
+未検討
+======
+
+* 1プロセス内で目的別に複数のパーサーを切り替える。
+
+
+----
+構成
+----
+
+クラス図
+========
+
+.. image:: ./_images/07/UserAgent_ClassDiagram.png
+
+
+各クラスの責務
+==============
+
+インタフェース定義
+------------------
+
+================================================================== ==================================================================================================================================================
+インタフェース名                                                   概要
+================================================================== ==================================================================================================================================================
+nablarch.fw.web.useragent.UserAgentParser                          | UserAgentの解析を行うインタフェース。
+                                                                   | 本インタフェースの実装クラスを用いて、UserAgentの解析を行うことで、UserAgent内の情報を分解し、アプリケーションで利用しやすくする。
+================================================================== ==================================================================================================================================================
+
+クラス定義
+~~~~~~~~~~
+
+
+================================================================== ======================================================================================================================
+クラス名                                                           概要
+================================================================== ======================================================================================================================
+nablarch.fw.web.HttpRequest                                        | HTTPプロトコルにおけるリクエストメッセージを格納するデータオブジェクト。
+                                                                   | アプリケーションでは本クラスの ``getUserAgent`` メソッドよりUserAgentクラスを取得する。
+nablarch.fw.web.useragent.UserAgent                                | UserAgent解析クラスにより解析された結果を保持するクラス。
+                                                                   | UserAgent解析クラスをカスタマイズし、任意の項目を取得したい場合、本クラスを拡張する。
+================================================================== ======================================================================================================================
+
+
+クラス詳細
+==========
+
+nablarch.fw.web.HttpRequestクラスのメソッド
+-------------------------------------------
+
+============================================================= =========================================================================================================================================================================================
+メソッド名                                                    概要
+============================================================= =========================================================================================================================================================================================
+getUserAgent()                                                | HTTPヘッダより取得したUserAgent文字列を解析し、呼び出し元に返却する。
+                                                              | HTTPヘッダよりUserAgent文字列が取得できない場合は空のUserAgentオブジェクトが返却される。
+                                                              | 本メソッドではシステムリポジトリより\ "userAgentParser"\ という名前でUserAgent解析クラスを取得し、解析を行う。
+                                                              | UserAgent解析クラスが取得できない場合は、全ての項目にデフォルト値が設定された空のUserAgentオブジェクトが返却される。
+============================================================= =========================================================================================================================================================================================
+
+nablarch.fw.web.useragent.UserAgentParserインタフェースのメソッド
+-----------------------------------------------------------------
+
+============================================================= =========================================================================================================================================================================================
+メソッド名                                                    概要
+============================================================= =========================================================================================================================================================================================
+parse(String userAgentText)                                   | 引数でUserAgent文字列を受け取り、UserAgentの解析を行う。
+                                                              | 解析した結果はUserAgentクラスまたはそのサブクラスに格納して返却する。
+============================================================= =========================================================================================================================================================================================
+
+nablarch.fw.web.useragent.UserAgentクラスのメソッド
+---------------------------------------------------
+
+============================================================= =========================================================================================================================================================================================
+メソッド名                                                    概要
+============================================================= =========================================================================================================================================================================================
+getText()                                                     | 解析前のUserAgent文字列を取得する。
+getOsType()                                                   | OSタイプを取得する。
+getOsName()                                                   | OS名を取得する。
+getOsVersion()                                                | OSバージョンを取得する。
+getBrowserType()                                              | ブラウザタイプを取得する。
+getBrowserName()                                              | ブラウザ名を取得する。
+getBrowserVersion()                                           | ブラウザバージョンを取得する。
+============================================================= =========================================================================================================================================================================================
+
+.. note::
+
+ UserAgent解析クラスがリポジトリに登録されていない場合、またはUserAgent解析クラスで解析できなかった場合、
+ UserAgentクラスには以下のデフォルト値が設定される。
+
+ ==================== =================
+  項目名              デフォルト値   
+ ==================== =================
+  OSタイプ            UnknownType    
+  OS名                UnknownName    
+  OSバージョン        UnknownVersion 
+  ブラウザタイプ      UnknownType    
+  ブラウザ名          UnknownName    
+  ブラウザバージョン  UnknownVersion 
+ ==================== ================= 
+
+
+シーケンス図
+============
+
+本機能のシーケンス図を下記に示す。
+
+.. image:: ./_images/07/UserAgent_SequenceDiagram.png
+   :scale: 100
+
+----------
+設定の記述
+----------
+
+| UserAgent情報取得機能は、リポジトリ機能を利用して設定を行うことができる。
+
+.. code-block:: xml
+
+   <component name="userAgentParser" class="please.change.me.fw.web.useragent.RegexUserAgentParser">
+     <!-- 設定内容は省略 -->
+   </component>
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_UserAgent--s1`
+
+```json
+{
+  "id": "libraries-07_UserAgent--s1",
+  "title": "UserAgent情報取得",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "インタフェース定義",
+      "hints": [
+        "nablarch.fw.web.useragent.UserAgentParser",
+        "nablarch.fw.web.HttpRequest",
+        "nablarch.fw.web.useragent.UserAgent",
+        "getUserAgent",
+        "UserAgentParser",
+        "UserAgent解析インタフェース",
+        "クラス定義",
+        "サンプル実装",
+        "OS情報",
+        "ブラウザ情報",
+        "制限事項"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "nablarch.fw.web.HttpRequestクラスのメソッド",
+      "hints": [
+        "nablarch.fw.web.HttpRequest",
+        "getUserAgent()",
+        "userAgentParser",
+        "UserAgent取得",
+        "HTTPリクエスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "nablarch.fw.web.useragent.UserAgentParserインタフェースのメソッド",
+      "hints": [
+        "nablarch.fw.web.useragent.UserAgentParser",
+        "parse(String userAgentText)",
+        "UserAgentParser",
+        "UserAgent解析"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "nablarch.fw.web.useragent.UserAgentクラスのメソッド",
+      "hints": [
+        "nablarch.fw.web.useragent.UserAgent",
+        "getText()",
+        "getOsType()",
+        "getOsName()",
+        "getOsVersion()",
+        "getBrowserType()",
+        "getBrowserName()",
+        "getBrowserVersion()",
+        "UserAgentデフォルト値",
+        "OS情報取得",
+        "ブラウザ情報取得"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "シーケンス図",
+      "hints": [
+        "UserAgentシーケンス図",
+        "処理フロー",
+        "UserAgent情報取得フロー"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "設定の記述",
+      "hints": [
+        "userAgentParser",
+        "RegexUserAgentParser",
+        "コンポーネント設定",
+        "リポジトリ設定",
+        "UserAgent解析クラス設定"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "クラス図",
+      "hints": [
+        "UserAgentクラス図",
+        "クラス構造",
+        "継承関係",
+        "依存関係",
+        "UserAgent構成図"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**インタフェース**: `nablarch.fw.web.useragent.UserAgentParser`\nUserAgentの解析を行うインタフェース。実装クラスを用いてUserAgent内の情報を分解し、アプリケーションで利用しやすくする。\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.fw.web.HttpRequest` | HTTPリクエストメッセージを格納するデータオブジェクト。`getUserAgent()`メソッドよりUserAgentクラスを取得する。 |\n| `nablarch.fw.web.useragent.UserAgent` | UserAgent解析クラスにより解析された結果を保持するクラス。カスタマイズして任意の項目を取得したい場合は本クラスを拡張する。 |\n\n> **注意**: User-Agentを解析してOSおよびブラウザの各種情報を取得する実装は、**サンプルとして提供される**。本番環境向けの組み込み実装ではないため、利用する際はサンプルを参考に実装すること。\n\n> **制限事項**: 1プロセス内で目的別に複数のパーサーを切り替える機能は未検討であり、現時点ではサポートされていない。",
+    "s2": "**クラス**: `nablarch.fw.web.HttpRequest`\n\n| メソッド名 | 概要 |\n|---|---|\n| `getUserAgent()` | HTTPヘッダのUserAgent文字列を解析して返却する。UserAgent文字列が取得できない場合は空のUserAgentオブジェクトを返却する。システムリポジトリより`\"userAgentParser\"`という名前でUserAgent解析クラスを取得する。解析クラスが取得できない場合はデフォルト値が設定された空のUserAgentオブジェクトを返却する。 |",
+    "s3": "**インタフェース**: `nablarch.fw.web.useragent.UserAgentParser`\n\n| メソッド名 | 概要 |\n|---|---|\n| `parse(String userAgentText)` | UserAgent文字列を受け取り解析する。解析結果はUserAgentクラスまたはそのサブクラスに格納して返却する。 |",
+    "s4": "**クラス**: `nablarch.fw.web.useragent.UserAgent`\n\n| メソッド名 | 概要 |\n|---|---|\n| `getText()` | 解析前のUserAgent文字列を取得する。 |\n| `getOsType()` | OSタイプを取得する。 |\n| `getOsName()` | OS名を取得する。 |\n| `getOsVersion()` | OSバージョンを取得する。 |\n| `getBrowserType()` | ブラウザタイプを取得する。 |\n| `getBrowserName()` | ブラウザ名を取得する。 |\n| `getBrowserVersion()` | ブラウザバージョンを取得する。 |\n\n> **注意**: UserAgent解析クラスがリポジトリに未登録または解析できなかった場合のデフォルト値: OSタイプ=`UnknownType`、OS名=`UnknownName`、OSバージョン=`UnknownVersion`、ブラウザタイプ=`UnknownType`、ブラウザ名=`UnknownName`、ブラウザバージョン=`UnknownVersion`",
+    "s5": "![UserAgentシーケンス図](assets/libraries-07_UserAgent--s1/UserAgent_SequenceDiagram.png)",
+    "s6": "`userAgentParser`という名前でUserAgent解析クラスのコンポーネントを登録することで設定できる。\n\n```xml\n<component name=\"userAgentParser\" class=\"please.change.me.fw.web.useragent.RegexUserAgentParser\">\n  <!-- 設定内容は省略 -->\n</component>\n```",
+    "s7": "![UserAgentクラス図](assets/libraries-07_UserAgent--s1/UserAgent_ClassDiagram.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

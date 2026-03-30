@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-validation_basic_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — IntegerConvertor and LongConvertor rows",
+      "description": "The '変換可能なオブジェクト' column information is omitted for IntegerConvertor and LongConvertor. The source table specifies both accept `java.lang.Numberのサブクラス`, `java.lang.String`, and `java.lang.String[]（要素数1のみ）`. This information is included for BigDecimalConvertor but not for the other two numeric converters.",
+      "source_evidence": "コンバータ表: IntegerConvertor/LongConvertor の '変換可能なオブジェクト' 列: '* java.lang.Numberのサブクラス / * java.lang.String / * java.lang.String[] (ただし、要素数1の配列に限る。)'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — CachingCharsetDef description",
+      "description": "The description of when CachingCharsetDef is particularly effective is incomplete. The source explains that performance degrades specifically when 'many character types are permitted and each has similar occurrence frequency (偏りが少ない)'. The knowledge file only states the generic condition of using many CharsetDefs combined.",
+      "source_evidence": "「多種の文字を許容し、かつ各文字の出現頻度に偏りが少ないほど、性能が劣化する可能性が高くなる。このような場合は、判定結果をキャッシュすることで性能を改善できる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "The hint 'CachingCharsetDef' appears twice in the s3 hints array (duplicate entry).",
+      "source_evidence": "s3 hints: [..., \"許容文字キャッシュ\", \"CachingCharsetDef\"] — CachingCharsetDef also appears earlier in the list"
+    }
+  ]
+}

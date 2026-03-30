@@ -1,0 +1,357 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/03_Common/07_WebView.rst`
+- Format: `rst`
+
+```
+
+.. _`custom_tag_index`:
+
+====================================
+JSPカスタムタグライブラリ
+====================================
+
+------------
+概要
+------------
+Webアプリケーションの画面作成を助けるカスタムタグを提供する。
+
+本機能を使用するには、下記の制約がある。
+
+* JSP2.1以降をサポートしているWebコンテナで動作する。
+* カスタムタグはXHTML 1.0 Transitionalに対応した属性をサポートする。
+* クライアントのJavaScriptが必須である。
+
+本機能のカスタムタグは、以下のような画面処理方式において最も効果的に機能するように設計されている。
+
+* 画面遷移は全てPOST(リンク含む)を使用する。
+* アクションはPOSTを受けてJSPにフォワードする。JSPへはアクション経由でのみアクセス可とする。
+* アクションから別アクションを直接呼び出す場合は、リダイレクトではなく、フォワードを使用する。
+* JSPはカスタムタグを使用して作成する。
+* 入力データは、バリデーション機能を使用してエンティティ(又は独自クラス)に設定して使用する。
+* 入力データのリクエストパラメータ名には、オブジェクトとMap型はドット区切り、List型は角括弧と括弧内にインデックスを使用する。
+* 画面を跨いで使用するデータは、クライアントで保持する。(セッションを使用するのではなく、hiddenを使用する)
+* データベースにコミットを伴う処理を要求する画面(確認画面など)は、二重サブミットを防止する。
+
+本機能は、入力画面→確認画面→完了画面といった画面遷移により機能を提供するWebアプリケーションを対象にしており、\
+画面遷移せずに機能を提供するリッチクライアント(Ajax、Flashなど)には対応していない。
+
+アプリケーションプログラマは、JSP、JSTL及び本機能を使用してWebアプリケーションの画面を作成する。
+
+.. note::
+
+ HTML5で追加されたタグと属性については、次の属性のみ対応する。\
+ 属性が追加されたHTMLのタグ名を ( ) に記載する。
+ 
+ * autocomplete(input、password、form)
+ * autofocus(input、textarea、select、button)
+ * placeholder(text、password、textarea)
+ * maxlength(textarea)
+ * multiple(input)
+ 
+ HTML5の属性のうち、頻繁に使用されるものを先行して取り込んでいる。
+
+------------
+特徴
+------------
+
+生産性の向上
+====================================
+本機能のカスタムタグでは、入力画面と確認画面が1対1に対応するような画面を作成する場合に、JSPを共通化する機能を提供する。\
+JSPを共通化することで、入力画面と確認画面で重複する記述を最小化できるので、画面作成の生産性が向上する。\
+
+画面設計の柔軟性
+================================================
+本機能では、入力データを画面間で持ち回る際はクライアント側(ブラウザ)に保持する機構を採用しているため、\
+ブラウザに予め備わっている「戻るボタン」や「複数ウィンドウ」といった機能をアプリケーションで使用できる。\
+また、ユーザの誤操作による「二重サブミット」については、JavaScriptを使用したクライアント側と、\
+一意なトークンを使用したサーバ側のそれぞれで二重サブミットを防止する機能を提供する。\
+このため、個別アプリケーションでは、ブラウザの操作性やユーザの誤操作について予め考慮している本機能を前提にすることで、\
+画面設計を柔軟に行うことができる。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* フォームに含まれる複数のボタン又はリンクから、それぞれ異なるURIにサブミットできる。
+* フォームに含まれる複数のボタン又はリンク毎にパラメータを変更できる。
+* ボタンの二度押しによるエラー発生やデータ不整合を防止できる。
+* 入力画面の再表示時(精査エラーや確認画面から戻る場合など)に、入力データを復元した状態で表示できる。
+* ブラウザの戻るボタンが使用された場合に、キャッシュの使用を抑制できる。
+* HTMLエスケープ処理ができる。
+* エラーが発生した際に、全てのエラー内容を伝えるメッセージを画面に表示できる。
+* 入力値のチェックでエラーが発生した際に、エラーの原因となった入力項目をハイライト表示できる。
+* エラーが発生した際に、エラーメッセージをレベル毎に色分け(Error:赤、Warning:青、Info:緑など)して表示できる。
+* リストボックス表示を作りこみせずに実現できる。
+* コード値をリストボックス表示できる。(コード値については、 :doc:`../03_Common/02_CodeManager` を参照)
+* 入力画面と確認画面のJSPを共通化することで、重複する記述を抑制できる。
+* クライアント側(hidden)で保持するデータの改ざんを防止できる。
+* 認可判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。
+* 開閉局判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。
+
+未実装
+==================
+* 確認画面で、変更箇所を色付け表示できる。
+* JavaScriptに埋め込む動的な値に対してエスケープ処理ができる。
+
+未検討
+==================
+* システム利用ユーザ間で共有したい情報を表示できる。例えば、「今日は早帰り日です」のようなもの。
+* 実行環境がわかる状態で表示できる。例えば、単体テスト環境なのかST環境なのかが画面表示できる。
+* 表示項目の内容に応じて表示形式の制御ができる。例えば、金額項目であれば、右寄せ折り返し表示など。
+* ヘッダーやフッターなどの全画面で共通的に表示する部分のレイアウトを定義できる。
+* 精査エラーが発生した際に先頭のエラー項目にフォーカスできる。
+* エンターキーで入力項目間を移動できる。
+* エンターキーによるサブミットの許可・不許可を制御できる。
+* キーバインドをカスタマイズできる。例えば、F1(ファンクションキー)でサブミットするなど。
+* クライアントサイドのバリデーションができる。
+* ラジオボタンをクリア(未選択な状態)できる。
+* 画面全体の背景色の指定ができる。
+* 入力画面の場合、各業務で指定がない場合は初期フォーカスをデフォルト(例えば、一番上の入力ボックス)で指定する。
+* 項目名や見出し、入力ボックスなどの背景色、文字(サイズ、色、パディング)の指定ができる。
+* ボタンのサイズ、色などの指定ができる(標準ボタンの提供)。
+
+取り下げ
+========================
+* 複数のエラーが発生した場合、レイアウトを崩さずに全てのエラー内容を伝えるメッセージを画面に表示できる。
+
+  全てのエラー内容をリスト表示する機能は提供している。ただし、「レイアウトを崩さずに」という部分については、\
+  アプリケーション開発時にレイアウトが決定するため、フレームワークとしてレイアウト崩れを防ぐ方法が提供できない。
+
+
+------------------------------------
+カスタムタグライブラリの使用方法
+------------------------------------
+
+機能の詳細や使用方法については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_CustomTag/
+
+- :doc:`./07/07_CustomTag`
+
+------------------------------------
+タグリファレンス
+------------------------------------
+
+本機能で提供するカスタムタグの一覧については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_TagReference/
+
+- :doc:`./07/07_TagReference`
+
+------------------------------------
+カスタムタグライブラリに関する設定
+------------------------------------
+
+本機能を使用するために必要な設定については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_HowToSettingCustomTag/
+
+- :doc:`./07/07_HowToSettingCustomTag`
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_WebView--s1`
+
+```json
+{
+  "id": "libraries-07_WebView--s1",
+  "title": "JSPカスタムタグライブラリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JSPカスタムタグライブラリ",
+        "制約条件",
+        "JSP2.1",
+        "XHTML 1.0 Transitional",
+        "JavaScript必須",
+        "リッチクライアント非対応",
+        "画面遷移",
+        "hidden",
+        "二重サブミット防止",
+        "POST"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "生産性向上",
+        "JSP共通化",
+        "画面設計柔軟性",
+        "戻るボタン",
+        "複数ウィンドウ",
+        "二重サブミット防止",
+        "トークン",
+        "クライアント側データ保持"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "実装済み機能",
+        "未実装機能",
+        "HTMLエスケープ",
+        "ハイライト表示",
+        "リストボックス",
+        "コード値",
+        "改ざん防止",
+        "認可判定",
+        "開閉局判定",
+        "入力データ復元"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "カスタムタグライブラリの使用方法",
+      "hints": [
+        "カスタムタグ使用方法",
+        "07_CustomTag",
+        "カスタムタグ詳細"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "タグリファレンス",
+      "hints": [
+        "タグリファレンス",
+        "カスタムタグ一覧",
+        "07_TagReference"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "カスタムタグライブラリに関する設定",
+      "hints": [
+        "カスタムタグライブラリ設定",
+        "07_HowToSettingCustomTag",
+        "設定方法"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Webアプリケーションの画面作成を助けるカスタムタグを提供する。\n\n**制約**:\n- JSP2.1以降をサポートしているWebコンテナで動作する\n- カスタムタグはXHTML 1.0 Transitionalに対応した属性をサポートする\n- クライアントのJavaScriptが必須である\n\n本機能は入力画面→確認画面→完了画面といった画面遷移によるWebアプリケーションを対象としており、リッチクライアント(Ajax、Flashなど)には対応していない。\n\n**想定する画面処理方式**:\n- 画面遷移は全てPOST(リンク含む)を使用する\n- アクションはPOSTを受けてJSPにフォワードする。JSPへはアクション経由でのみアクセス可とする\n- アクションから別アクションへはリダイレクトではなくフォワードを使用する\n- JSPはカスタムタグを使用して作成する\n- 入力データはバリデーション機能を使用してエンティティ(又は独自クラス)に設定する\n- 入力データのリクエストパラメータ名: オブジェクトとMap型はドット区切り、List型は角括弧(インデックス付き)\n- 画面を跨いで使用するデータはhiddenで保持する(セッション不使用)\n- DBコミットを伴う処理画面(確認画面など)は二重サブミットを防止する\n\n> **注意**: HTML5で追加された属性のうち、対応するのは以下のみ。\n> - autocomplete (input、password、form)\n> - autofocus (input、textarea、select、button)\n> - placeholder (text、password、textarea)\n> - maxlength (textarea)\n> - multiple (input)",
+    "s2": "**生産性の向上**: 入力画面と確認画面が1対1に対応する場合、JSPを共通化する機能を提供する。共通化により重複記述を最小化できる。\n\n**画面設計の柔軟性**:\n- 入力データの画面間持ち回りはクライアント側(ブラウザ)で保持するため、ブラウザの「戻るボタン」や「複数ウィンドウ」をアプリケーションで使用できる\n- 二重サブミット防止: JavaScriptによるクライアント側と、一意なトークンによるサーバ側の両方で防止する機能を提供する",
+    "s3": "**実装済み**:\n- フォームの複数ボタン/リンクから、それぞれ異なるURIにサブミットできる\n- フォームの複数ボタン/リンク毎にパラメータを変更できる\n- ボタンの二度押しによるエラー発生やデータ不整合を防止できる\n- 入力画面の再表示時(精査エラーや確認画面から戻る場合など)に、入力データを復元した状態で表示できる\n- ブラウザの戻るボタン使用時にキャッシュの使用を抑制できる\n- HTMLエスケープ処理ができる\n- エラー発生時に全エラー内容のメッセージを画面に表示できる\n- 入力値チェックエラー時にエラー原因となった入力項目をハイライト表示できる\n- エラーメッセージをレベル毎に色分け(Error:赤、Warning:青、Info:緑など)して表示できる\n- リストボックス表示を作りこみせずに実現できる\n- コード値をリストボックス表示できる( :doc:`../03_Common/02_CodeManager` 参照)\n- 入力画面と確認画面のJSPを共通化できる\n- クライアント側(hidden)で保持するデータの改ざんを防止できる\n- 認可判定の結果に応じて画面項目(メニューやボタンなど)の表示・非表示を切り替えられる\n- 開閉局判定の結果に応じて画面項目(メニューやボタンなど)の表示・非表示を切り替えられる\n\n**未実装**:\n- 確認画面での変更箇所の色付け表示\n- JavaScriptに埋め込む動的な値へのエスケープ処理",
+    "s4": "カスタムタグの機能詳細および使用方法: :doc:`./07/07_CustomTag`",
+    "s5": "本機能で提供するカスタムタグ一覧: :doc:`./07/07_TagReference`",
+    "s6": "本機能使用のために必要な設定: :doc:`./07/07_HowToSettingCustomTag`"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 12
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

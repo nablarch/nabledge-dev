@@ -1,0 +1,185 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/guide/widget_usage/generating_form_class.rst`
+- Format: `rst`
+
+```
+==============================================
+業務画面JSPからフォームクラスを生成する
+==============================================
+
+概要
+-------------------------
+本項では、設計工程で作成した業務画面JSPから、フォームクラスのJavaソースコードを生成する方法について説明する。
+
+.. warning::
+
+  本機能を使用する前に、全ての入力フィールドについてname属性を設定すること。
+
+
+使用方法
+---------------------
+本機能は、業務画面JSPをローカル表示して、右クリックで開かれるコンテキストメニューから実行することができる。(下図)
+
+.. image:: _image/generating_form_class.png
+   :align: center
+   :scale: 90
+
+このメニューの「フォームクラスを生成する」を選択すると、ブラウザのダウンロードダイアログが開かれ、
+生成されたソースコードをローカルディスク上の任意の場所に保存することができる。
+
+生成されたソースコードには、業務画面の入力項目に対応したフィールド定義、アクセサ、単項目精査を定義する
+アノテーションが含まれている。
+
+それ以外の下記に挙げる内容については、このクラスを継承したサブクラス側に実装する。
+
+* ウィンドウスコープ上の画面間引き回し用変数や、hidden項目などの単項目精査処理
+* 項目間精査処理
+* **<jsp:include>** などを用いて共通化された項目に対する精査処理
+
+  .. note::
+
+    共通項目に対する精査処理は各フォームに個別に実装するのではなく、
+    共通コンポーネントとして提供し、各フォームから利用する形とすること。
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-generating_form_class-widget_usage--s1`
+
+```json
+{
+  "id": "ui-framework-generating_form_class-widget_usage--s1",
+  "title": "業務画面JSPからフォームクラスを生成する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "フォームクラス生成",
+        "name属性設定",
+        "業務画面JSP",
+        "入力フィールド"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "フォームクラス生成",
+        "コンテキストメニュー",
+        "業務画面JSP",
+        "単項目精査アノテーション",
+        "項目間精査処理",
+        "サブクラス実装",
+        "共通コンポーネント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **警告**: 本機能を使用する前に、全ての入力フィールドについてname属性を設定すること。",
+    "s2": "業務画面JSPをローカル表示して右クリックのコンテキストメニューから「フォームクラスを生成する」を選択すると、ブラウザのダウンロードダイアログが開かれ、生成されたソースコードをローカルディスクに保存できる。\n\n生成されたソースコードに含まれる内容：\n- 業務画面の入力項目に対応したフィールド定義、アクセサ、単項目精査を定義するアノテーション\n\n以下の内容は生成されず、生成クラスを継承したサブクラス側に実装する必要がある：\n- ウィンドウスコープ上の画面間引き回し用変数や、hidden項目などの単項目精査処理\n- 項目間精査処理\n- `<jsp:include>` などを用いて共通化された項目に対する精査処理\n\n> **注意**: 共通項目に対する精査処理は各フォームに個別に実装するのではなく、共通コンポーネントとして提供し、各フォームから利用する形とすること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

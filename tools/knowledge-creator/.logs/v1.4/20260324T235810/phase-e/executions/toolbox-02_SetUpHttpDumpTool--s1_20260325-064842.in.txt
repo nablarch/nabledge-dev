@@ -1,0 +1,205 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "toolbox-02_SetUpHttpDumpTool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提事項 section (source h2)",
+      "description": "The entire 前提事項 section is absent from the knowledge file. It lists three prerequisites: (1) java command must be in PATH, (2) HTML files must be associated with a browser, (3) localhost must be excluded from the browser's proxy settings. These are installation constraints that an AI agent needs to answer setup questions correctly.",
+      "source_evidence": "* javaコマンドがパスに含まれていること\n* htmlファイルがブラウザに関連付けされていること\n* ブラウザのプロキシ設定で、localhostが除外されていること"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "提供方法 section (source h2)",
+      "description": "The entire 提供方法 section is absent. It describes how the tool is distributed (bundled with Nablarch sample application), lists the 6 constituent files with descriptions (httpDump.bat, nablarch-tfw-X.X.jar, poi-X.X.jar, jetty.jar, jetty-util.jar, servlet-api.jar), and provides the installation path /test/tool/httpDump.bat. This information is necessary to understand what the tool consists of and where to find it.",
+      "source_evidence": "本ツールは、Nablarchのサンプルアプリケーションに同梱して提供する。 / file table with 6 entries / /test/tool/httpDump.bat"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s2",
+      "description": "The knowledge file's s2 (外部プログラム選択) adds '参照(Browse)ボタンを押下してバッチファイル／シェルスクリプトを指定する'. The source for this section only says to click the Browse button — it says nothing about selecting a batch file or shell script at this step. That detail belongs to the next section (起動用バッチファイル（シェルスクリプト）選択) and was incorrectly merged into s2.",
+      "source_evidence": "Source for 外部プログラム選択: 'ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。' — no mention of specifying a batch file or shell script here."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=================================================
+リクエスト単体データ作成ツール インストールガイド
+=================================================
+
+:doc:`index`\ のインストール方法について説明する。
+
+.. _http_dump_tool_prerequisite:
+
+前提事項
+========
+
+本ツールを使用する際、以下の前提事項を満たす必要がある。
+
+* javaコマンドがパスに含まれていること
+* htmlファイルがブラウザに関連付けされていること
+* ブラウザのプロキシ設定で、localhostが除外されていること
+
+
+提供方法
+==================
+
+本ツールは、Nablarchのサンプルアプリケーションに同梱して提供する。
+本ツールのツール構成を下記に示す。
+
+ ========================================== ====================================================================================
+ ファイル名                                 説明
+ ========================================== ====================================================================================
+ httpDump.bat                               | 起動バッチファイル（Windows用）
+ nablarch-tfw-X.X.jar                       | Nablarch Testing Framework のJARファイル（X.Xの部分はバージョン番号）
+ poi-X.X.jar                                | Apache POI のJARファイル（X.Xの部分はバージョン番号など）
+ jetty.jar                                  | Jetty Server のJARファイル
+ jetty-util.jar                             | Jetty Utilities のJARファイル
+ servlet-api.jar                            | Servlet Specification 2.5 API のJARファイル
+ ========================================== ====================================================================================
+
+各JARファイルへのクラスパスが設定されたhttpDump.batがサンプルアプリケーションの下記パスに配置されている。
+
+ .. code-block:: bash
+
+  /test/tool/httpDump.bat
+
+Eclipseとの連携
+===============
+
+以下の設定をすることでEclipseから本ツールを起動することができる。
+
+
+設定画面起動
+------------
+
+ツールバーから、ウィンドウ(Window)→設定(Prefernce)を選択する。
+左側のペインから一般(General)→エディタ(Editors)→ファイルの関連付け(File Associations)
+を選択、右側のペインから*.htmlを選択し、追加(Add)ボタンを押下する。
+
+.. image:: ./_image/01_Eclipse_Preference.png
+   :scale: 100
+
+ 
+外部プログラム選択
+------------------
+
+ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
+
+.. image:: ./_image/02_Eclipse_EditorSelection.png
+   :scale: 100
+
+
+起動用バッチファイル（シェルスクリプト）選択
+--------------------------------------------
+
+Windowsの場合はバッチファイル(httpDump.bat)を、
+Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
+
+.. image:: ./_image/03_Eclipse_OpenFile.png
+   :scale: 100
+
+
+.. _howToExecuteFromEclipse:
+
+HTMLファイルからの起動方法
+--------------------------
+
+Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、
+httpDumpで開くことでツールを起動できる。
+
+.. image:: ./_image/04_Eclipse_OpenWith.png
+   :scale: 100
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "toolbox-02_SetUpHttpDumpTool--s1",
+  "title": "リクエスト単体データ作成ツール インストールガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定画面起動",
+      "hints": [
+        "Eclipse設定画面",
+        "ファイル関連付け",
+        "httpDumpツール",
+        "*.html",
+        "Eclipse連携設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "外部プログラム選択",
+      "hints": [
+        "外部プログラム設定",
+        "エディタ選択",
+        "Eclipse外部プログラム",
+        "httpDump起動設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "起動用バッチファイル（シェルスクリプト）選択",
+      "hints": [
+        "httpDump.bat",
+        "httpDump.sh",
+        "Windows設定",
+        "Linux設定",
+        "バッチファイル選択"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "HTMLファイルからの起動方法",
+      "hints": [
+        "HTMLファイル起動",
+        "httpDumpで開く",
+        "パッケージエクスプローラ",
+        "ツール起動方法"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "1. ツールバーから ウィンドウ(Window) → 設定(Preference) を選択\n2. 左ペインから 一般(General) → エディタ(Editors) → ファイルの関連付け(File Associations) を選択\n3. 右ペインから `*.html` を選択し、追加(Add)ボタンを押下",
+    "s2": "1. ラジオボタンから外部プログラム(External program)を選択\n2. 参照(Browse)ボタンを押下してバッチファイル／シェルスクリプトを指定する",
+    "s3": "- Windows: バッチファイル `httpDump.bat` を選択\n- Linux: シェルスクリプト `httpDump.sh` を選択",
+    "s4": "Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、httpDumpで開くとツールが起動する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

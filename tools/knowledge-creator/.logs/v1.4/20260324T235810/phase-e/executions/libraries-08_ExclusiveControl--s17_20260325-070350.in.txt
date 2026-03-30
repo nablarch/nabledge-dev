@@ -1,0 +1,443 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーではない場合）",
+      "description": "Source contains a subsection explaining bulk update exclusive control for non-composite primary keys using overloaded methods that accept a request parameter name. This entire subsection is absent from s1.",
+      "source_evidence": "Source lines: 'HttpExclusiveControlUtil.checkVersions(request, context, \"user.deactivate\")' and 'HttpExclusiveControlUtil.updateVersionsWithCheck(request, \"user.deactivate\")' — overloads that accept a request parameter name string to restrict version-check targets to only the selected records. Also includes a note that the checkbox value must be set to the primary key of the update target record."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーの場合）",
+      "description": "Source contains a subsection explaining bulk update exclusive control for composite primary keys using singular-form methods checkVersion() and updateVersionWithCheck() (without 's'), called per record in a loop. This entire subsection is absent from s1.",
+      "source_evidence": "Source specifies: use 'HttpExclusiveControlUtil.checkVersion(request, context, new UsersExclusiveControl(...))' and 'HttpExclusiveControlUtil.updateVersionWithCheck(request, new UsersExclusiveControl(...))' (both singular, taking an ExclusiveControlContext argument) per record in a for-loop. Also provides: (1) a SQL CREATE TABLE example with a 3-column composite PK (USER_ID, PK2, PK3) and a VERSION column; (2) a full UsersExclusiveControl class implementation extending ExclusiveControlContext using an enum PK and appendCondition(); (3) an HTML checkbox example using name='user.userCompositeKeys' with composite key values; (4) a note referencing WebView_CompositeKeyCheckboxTag, WebView_CompositeKeyRadioButtonTag, and nablarch.common.web.compositekey.CompositeKey; (5) a note that checkbox values must be composite key fields joined by a delimiter that cannot appear in key values, and that the form class must implement logic to extract keys from request parameters."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Hints for s1 are missing key identifiers from the bulk update sections: singular-form method names checkVersion and updateVersionWithCheck, the UsersExclusiveControl example class, and CompositeKey-related class names referenced in the source.",
+      "source_evidence": "Source references: 'HttpExclusiveControlUtil.checkVersion()', 'HttpExclusiveControlUtil.updateVersionWithCheck()', 'UsersExclusiveControl', 'CompositeKeyCheckboxTag', 'CompositeKeyRadioButtonTag', 'CompositeKey'."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+アクションの実装例
+------------------------------------------------------
+実装例では、排他制御のための実装と、業務処理に必要な実装を区別するため、コメントに"(排他制御)"、"(業務処理)"を付加する。
+
+**バージョン番号の準備(HttpExclusiveControlUtilのprepareVersionメソッド)**
+
+.. code-block:: java
+
+ /** 入力画面の初期表示 */
+ public HttpResponse doUU00201(HttpRequest request, ExecutionContext context) {
+
+     // (業務処理)
+     // 更新対象データを取得するための主キー条件の入力精査を行う。
+     User user = validate("user", User.class, request, "search");
+
+     // (排他制御)
+     // 主キークラスを生成し、バージョン番号を準備する。
+     // 取得したバージョン番号は、フレームワークにより、指定されたExecutionContextに設定される。
+     HttpExclusiveControlUtil.prepareVersion(context, new UsersExclusiveControl(user.getUserId());
+
+     // (業務処理)
+     // 更新対象データを取得し、入力画面表示のために、リクエストスコープに設定する。
+     ParameterizedSqlPStatement stmt = support.getParameterizedSqlStatement("SELECT_USER_BY_PK", user);
+     context.setRequestScopedVar("user", new User(stmt.retrieve(user).get(0)));
+
+     return new HttpResponse("/input.jsp");
+ }
+
+.. note ::
+
+ バージョン番号の準備を行う下記メソッドは、\
+ バージョン番号を準備できたか否かを伝えるためにbooleanを返す。\
+ 排他制御用テーブルに、排他制御用主キークラスに設定した主キーに合致するデータが存在しない場合にfalseが返る。\
+ (排他制御対象のデータが物理削除されていた場合など)
+
+  .. function:: boolean prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext)
+  .. function:: boolean prepareVersions(ExecutionContext context, List<? extends ExclusiveControlContext> exclusiveControlContexts)
+
+ プロジェクトでバージョン番号が存在しない場合の処理を共通化したい場合は、\
+ HttpExclusiveControlUtilのラッパクラスを作成し対応する。\
+ バージョン番号が存在しない場合に共通メッセージを表示させる場合の実装例を示す。
+
+ .. code-block:: java
+
+   public final class CommonExclusiveControlUtil {
+
+       public static void prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext) {
+
+           if (HttpExclusiveControlUtil.prepareVersion(context, exclusiveControlContext)) {
+               // バージョン番号を準備できた場合は何もしない。
+               return;
+           }
+
+           // バージョン番号を準備できなかった場合は共通メッセージを指定したApplicationExceptionを送出する。
+           Message message = MessageUtil.createMessage(MessageLevel.ERROR, "M001101");
+           throw new ApplicationException(message);
+       }
+
+       // 他のメソッドは省略。
+   }
+
+**バージョン番号の更新チェック(HttpExclusiveControlUtilのcheckVersionsメソッド)**
+
+.. code-block:: java
+
+ /** 入力画面の確認ボタン */
+ @OnErrors({
+     @OnError(type = ApplicationException.class, path = "/input.jsp"),
+     @OnError(type = OptimisticLockException.class, path = "/search.jsp")
+ })
+ public HttpResponse doUU00202(HttpRequest request, ExecutionContext context) {
+
+     // (排他制御)
+     // バージョン番号の更新チェックを行う。
+     // バージョン番号は、フレームワークにより、指定されたHttpRequestから取得する。
+     // バージョン番号が更新されている場合は、OptimisticLockExceptionが送出されるので、
+     // @OnErrorを指定して遷移先を指定する。
+     HttpExclusiveControlUtil.checkVersions(request, context);
+
+     // (業務処理)
+     // 入力データの入力精査を行い、確認画面表示のために、リクエストスコープに設定する。
+     User user = validate("user", User.class, request, "update");
+     context.setRequestScopedVar("user", user);
+
+     return new HttpResponse("/confirm.jsp");
+ }
+
+**バージョン番号の更新チェックと更新(HttpExclusiveControlUtilのupdateVersionsメソッド)**
+
+.. code-block:: java
+
+ /** 確認画面(排他制御)の更新ボタン */
+ @OnErrors({
+     @OnError(type = ApplicationException.class, path = "/input.jsp"),
+     @OnError(type = OptimisticLockException.class, path = "/search.jsp")
+ })
+ public HttpResponse doEXCLUS00203(HttpRequest request, ExecutionContext context) {
+
+     // (排他制御)
+     // バージョン番号の更新チェックと更新を行う。
+     // バージョン番号は、フレームワークにより、指定されたHttpRequestから取得する。
+     // バージョン番号が更新されている場合は、OptimisticLockExceptionが送出されるので、
+     // @OnErrorを指定して遷移先を指定する。
+     HttpExclusiveControlUtil.updateVersionsWithCheck(request);
+
+     // (業務処理)
+     // 入力データの入力精査を行い、更新処理を行う。
+     // 完了画面表示のために、更新データをリクエストスコープに設定する。
+     User user = validate("user", User.class, request, "update");
+     ParameterizedSqlPStatement stmt = support.getParameterizedSqlStatement("UPDATE_USER", user);
+     stmt.executeUpdateByObject(user);
+     context.setRequestScopedVar("user", user);
+
+     return new HttpResponse("/complete.jsp");
+ }
+
+.. /*
+
+**一括更新処理における更新チェック(主キーが組み合わせキーではない場合)**
+
+複数のレコードに対し、特定のプロパティ(論理削除フラグなど)を一括更新するような処理では、
+実際の更新対象となるレコードに対してのみ更新チェックを行う必要がある。
+
+この場合、 **HttpExclusiveControlUtil.checkVersions()** および、 **HttpExclusiveControlUtil.updateVersionsWithCheck()**
+の引数に、更新対象レコードの主キーのリストを格納したリクエストパラメータ名指定することにより、
+画面上で実際に更新対象として選択されたレコードに対してのみ更新チェックを行うことができる。
+
+例えば、ユーザエンティティに対する論理削除を行う以下の様な画面の例を考える。
+
+  .. code-block:: html
+
+     <tr>
+       <th> 削除対象 </th>
+       <th> ユーザ名 </th>
+     </tr>
+     <tr>
+       <td> <checkbox name="user.deactivate" value="user001" /> </td>
+       <td> ユーザ001 </td>
+     </tr>
+     <tr>
+       <td> <checkbox name="user.deactivate" value="user002" /> </td>
+       <td> ユーザ002 </td>
+     </tr>
+     <!-- 後略 -->
+
+この場合、以下のように更新チェックを行うメソッドの引数に、チェックボックスのリクエストパラメータ名を指定する。
+
+  .. code-block:: java
+
+     // (排他制御:更新チェック)
+     // リクエストパラメータ "user.deactivate" に設定されたエンティティの主キーのみを
+     // 更新チェックの対象とする。
+     HttpExclusiveControlUtil.checkVersions(request, context, "user.deactivate");
+
+  .. code-block:: java
+
+     // (排他制御:更新チェックと更新処理)
+     // リクエストパラメータ "user.deactivate" に設定されたエンティティの主キーのみを
+     // 更新チェックおよび、更新処理の対象とする。
+     HttpExclusiveControlUtil.updateVersionsWithCheck(request, "user.deactivate");
+
+.. note::
+
+  チェックボックスのvalue値には更新対象レコードの主キーを指定する必要がある。
+
+**一括更新処理における更新チェック(主キーが組み合わせキーの場合)**
+
+一括更新処理であるが主キーが組み合わせキーの場合、 **HttpExclusiveControlUtil.checkVersion()** および、 **HttpExclusiveControlUtil.updateVersionWithCheck()**
+(共にVersionにsが付かず、主キークラスを引数に取る)を使用する。
+
+例えば、ユーザエンティティが以下に示すようなUSER_IDとPK2、PK3からなる組み合わせキーを持つエンティティとする。
+
+  .. code-block:: sql
+
+   CREATE TABLE USERS (
+
+       USER_ID CHAR(6) NOT NULL,
+       PK2     CHAR(6) NOT NULL,
+       PK3     CHAR(6) NOT NULL,
+
+       -- 主キー以外の業務データは省略。
+
+       -- バージョン番号カラムを定義する。
+       VERSION NUMBER(10) NOT NULL,
+
+       PRIMARY KEY (USER_ID,PK2,PK3)
+   )
+
+この時、主キークラスは以下のようになる。
+
+  .. code-block:: java
+
+   // ExclusiveControlContextを継承する。
+   public class UsersExclusiveControl extends ExclusiveControlContext {
+
+       // 排他制御用テーブルの主キーは列挙型で定義する。
+       private enum PK { USER_ID, PK2, PK3 }
+
+       // 主キーの値をとるコンストラクタを定義する。
+       public UsersExclusiveControl(String userId, String pk2, String pk3) {
+
+           setTableName("USERS");
+
+           setVersionColumnName("VERSION");
+
+           setPrimaryKeyColumnNames(PK.values());
+
+           // 親クラスのappendConditionメソッドで主キーの値を追加する。
+           appendCondition(PK.USER_ID, userId);
+           appendCondition(PK.PK2, pk2);
+           appendCondition(PK.PK3, pk3);
+       }
+   }
+
+このエンティティに対して一括論理削除を行う以下のような画面を考える。
+
+  .. code-block:: html
+
+     <tr>
+       <th> 削除対象 </th>
+       <th> ユーザ名 </th>
+     </tr>
+     <tr>
+       <td>
+         <input id="checkbox" type="checkbox" name="user.userCompositeKeys" 
+                                               value="user001, pk2001, pk3001" />
+       </td>
+       <td>
+         ユーザ001
+       </td>
+     </tr>
+     <tr>
+       <td>
+         <input id="checkbox" type="checkbox" name="user.userCompositeKeys"
+                                               value="user002, pk2002, pk3002" />
+       </td>
+       <td>
+         ユーザ002
+       </td>
+     </tr>
+     <!-- 後略 -->
+
+.. note::
+
+  主キーが組み合わせキーとなるエンティティに対する一括更新処理を作成するために、本フレームワークでは、
+  :ref:`WebView_CompositeKeyCheckboxTag` と :ref:`WebView_CompositeKeyRadioButtonTag` 、nablarch.common.web.compositekey.CompositeKeyクラスを提供している。
+
+
+この場合Actionでは、以下のように **HttpExclusiveControlUtil.checkVersion()** 、
+\ **HttpExclusiveControlUtil.updateVersionWithCheck()**\ を選択されたレコード毎に繰り返し呼び出す。
+
+  .. code-block:: java
+
+    // (排他制御:更新チェック)
+    // formには、リクエストパラメータ "user.userCompositeKeys" から、主キーが設定されたエンティティクラス
+    // の配列を作成して返す処理を実装している。
+    User[] deletedUsers = form.getDeletedUsers();
+    
+    // formから取得したエンティティの主キーを使用して主キークラスを作成し、更新チェックをレコードごとに
+    // 呼び出す。
+    for( int i=0; i < deletedUsers.length; i++) {
+        User deletedUser = deletedUsers[i];
+        HttpExclusiveControlUtil.checkVersion(request, 
+                                              context,
+                                              new UsersExclusiveControl(deletedUser.getUserId(),
+                                                                         deletedUser.getPk2(),
+                                                                         deletedUser.getPk3()));
+    }
+
+  .. code-block:: java
+
+    // (排他制御:更新チェックと更新処理)
+    // 更新チェックと同じ
+    User[] deletedUsers = form.getDeletedUsers();
+    
+    // formから取得したエンティティの主キーを使用して主キークラスを作成し、更新チェックおよび、更新処理を
+    // レコードごとに呼び出す。
+    for( int i=0; i < deletedUsers.length; i++) {
+        User deletedUser = deletedUsers[i];
+        HttpExclusiveControlUtil.updateVersionWithCheck(request, 
+                                                       new ExclusiveUserCondition(deletedUser.getUserId(),
+                                                                                   deletedUser.getPk2(),
+                                                                                   deletedUser.getPk3()));
+    }
+
+.. note::
+
+  チェックボックスのvalue値には更新対象レコードの主キーを区切り文字(任意、ただし主キーの値にはなり得ないこと)で結合した文字列
+  を指定する必要がある。またformクラスには、リクエストパラメータから主キーを取り出す処理(上記コード例ではエンティティの配列に
+  して返している)を実装する必要がある。
+
+設定ファイルの定義
+------------------------------------------------------
+排他制御機能を使用する際は、リポジトリに”exclusiveControlManager”というコンポーネント名で\
+ExclusiveControlManagerインタフェースを実装したクラスを登録する必要がある。
+
+以下にExclusiveControlManagerインタフェースのデフォルト実装であるBasicExclusiveControlManagerクラスを使用した設定例を示す。
+
+楽観的ロックでは、バージョン番号が更新されている場合に、OptimisticLockExceptionが送出される。\
+OptimisticLockExceptionは、ApplicationExceptionを継承しており、n:errorsタグを使用して、\
+画面上にエラーメッセージを表示することができる。\
+OptimisticLockExceptionのメッセージIDは、BasicExclusiveControlManagerのoptimisticLockErrorMessageIdプロパティに指定する。
+
+.. code-block:: xml
+
+ <!-- メッセージIDの設定例 -->
+ <component name="exclusiveControlManager"
+            class="nablarch.common.exclusivecontrol.BasicExclusiveControlManager">
+     <property name="optimisticLockErrorMessageId" value="CUST0001" />
+ </component>
+
+.. note ::
+
+ 楽観ロックエラーに対するメッセージは、アプリケーションで1つだけ指定できる。\
+ 楽観ロックエラーに対するメッセージを機能毎に変更したい場合は、\
+ アクションでOptimisticLockExceptionをキャッチして例外処理を実装する必要がある。
+
+設定内容詳細
+^^^^^^^^^^^^
+
+\a) ExclusiveControlManagerインタフェースを実装したクラスの設定
+
+ ============================ ==================================================================
+ 属性値                       設定内容
+ ============================ ==================================================================
+ name(必須)                   | "exclusiveControlManager"(変更不可)
+ class(必須)                  | nablarch.common.exclusivecontrol.BasicExclusiveControlManager。
+                              | プロジェクトで独自の実装を使用する場合(SQL文を変更するなど)は、ExclusiveControlManagerを実装したクラスを指定する。
+ ============================ ==================================================================
+
+\b) nablarch.common.exclusivecontrol.BasicExclusiveControlManagerの設定
+
+ ======================================= ========================================================================================================================
+ property名                              設定内容
+ ======================================= ========================================================================================================================
+ optimisticLockErrorMessageId(必須)      | 楽観ロックエラーメッセージID
+ ======================================= ========================================================================================================================
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_ExclusiveControl--s17",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アクションの実装例",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "OptimisticLockException",
+        "ApplicationException",
+        "@OnError",
+        "@OnErrors",
+        "prepareVersion",
+        "prepareVersions",
+        "checkVersions",
+        "updateVersionsWithCheck",
+        "バージョン番号準備",
+        "楽観的ロック アクション実装",
+        "排他制御 実装例"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定ファイルの定義",
+      "hints": [
+        "BasicExclusiveControlManager",
+        "ExclusiveControlManager",
+        "OptimisticLockException",
+        "optimisticLockErrorMessageId",
+        "exclusiveControlManager",
+        "楽観ロック設定",
+        "排他制御 設定ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `HttpExclusiveControlUtil`\n\n### バージョン番号の準備（prepareVersion / prepareVersions）\n\n主キークラスを生成し、`prepareVersion(context, exclusiveControlContext)` を呼び出す。取得したバージョン番号はフレームワークによりExecutionContextに設定される。\n\n```java\nHttpExclusiveControlUtil.prepareVersion(context, new UsersExclusiveControl(user.getUserId()));\n```\n\n> **注意**: `prepareVersion` / `prepareVersions` はbooleanを返す。排他制御用テーブルに該当主キーのデータが存在しない場合（物理削除済み等）はfalseが返る。\n\nバージョン番号が存在しない場合の処理を共通化する場合はラッパークラスを作成する。falseの場合に共通メッセージ（ApplicationException）をスローする例：\n\n```java\npublic final class CommonExclusiveControlUtil {\n    public static void prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext) {\n        if (HttpExclusiveControlUtil.prepareVersion(context, exclusiveControlContext)) {\n            return;\n        }\n        Message message = MessageUtil.createMessage(MessageLevel.ERROR, \"M001101\");\n        throw new ApplicationException(message);\n    }\n}\n```\n\n### バージョン番号の更新チェック（checkVersions）\n\n`checkVersions(request, context)` を呼び出す。バージョン番号はフレームワークによりHttpRequestから取得される。バージョン番号が更新されている場合は `OptimisticLockException` が送出されるため、`@OnError` で遷移先を指定する。\n\n```java\n@OnErrors({\n    @OnError(type = ApplicationException.class, path = \"/input.jsp\"),\n    @OnError(type = OptimisticLockException.class, path = \"/search.jsp\")\n})\npublic HttpResponse doUU00202(HttpRequest request, ExecutionContext context) {\n    HttpExclusiveControlUtil.checkVersions(request, context);\n    // ...\n}\n```\n\n### バージョン番号の更新チェックと更新（updateVersionsWithCheck）\n\n`updateVersionsWithCheck(request)` を呼び出す。バージョン番号の更新チェックと更新を同時に行う。バージョン番号が更新されている場合は `OptimisticLockException` が送出される。\n\n```java\n@OnErrors({\n    @OnError(type = ApplicationException.class, path = \"/input.jsp\"),\n    @OnError(type = OptimisticLockException.class, path = \"/search.jsp\")\n})\npublic HttpResponse doEXCLUS00203(HttpRequest request, ExecutionContext context) {\n    HttpExclusiveControlUtil.updateVersionsWithCheck(request);\n    // ...\n}\n```",
+    "s2": "リポジトリに `exclusiveControlManager` というコンポーネント名で `ExclusiveControlManager` インタフェース実装クラスを登録する。\n\n| 設定項目 | 値 | 必須 | 説明 |\n|---|---|---|---|\n| name (コンポーネント名) | `exclusiveControlManager` | ○ | 変更不可 |\n| class | `nablarch.common.exclusivecontrol.BasicExclusiveControlManager` | ○ | カスタム実装時はExclusiveControlManagerの実装クラスを指定 |\n| optimisticLockErrorMessageId | メッセージID文字列 | ○ | 楽観ロックエラーメッセージID |\n\n```xml\n<component name=\"exclusiveControlManager\"\n           class=\"nablarch.common.exclusivecontrol.BasicExclusiveControlManager\">\n    <property name=\"optimisticLockErrorMessageId\" value=\"CUST0001\" />\n</component>\n```\n\n楽観ロック時にバージョン番号が更新されている場合、`OptimisticLockException`（`ApplicationException` を継承）が送出される。`n:errors` タグで画面にエラーメッセージを表示できる。\n\n> **注意**: 楽観ロックエラーメッセージはアプリケーションで1つのみ指定可能。機能ごとにメッセージを変えたい場合は、ActionでOptimisticLockExceptionをキャッチして例外処理を実装する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

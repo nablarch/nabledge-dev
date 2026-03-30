@@ -1,0 +1,392 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/doc/internals/multicol_css_framework.rst`
+- Format: `rst`
+
+```
+使用例
+--------------------------
+幾つかのレイアウトパターンを使用してJSPの作成方法について解説する。
+
+マルチレイアウトモードを使用する際には、以下の点が重要なポイントとなる。
+
+* UI部品ウィジェットは、必ず行内(\ *layout:row*\ )に配置する [#row]_
+* 各UI部品ウィジェット使用時には、そのウィジェットの幅(グリッド数)を指定する
+* 行内に配置するUI部品ウィジェットの幅(グリッド数)の合計は、業務コンテンツ部の幅(グリッド数)以内とする [#grid-count]_
+
+  業務コンテンツ部のグリッド数は、\ `レイアウトの調整方法`_\ の\ *@contentGridSpan*\ で定義された値
+
+.. [#row] 
+
+  `一部UI部品ウィジェットは出力幅の指定機能を提供しない`_ で説明したUI部品ウィジェットは、
+  これ自体が行を表しているため行内に配置する必要はない。
+
+.. [#grid-count]
+
+  幅(グリッド数)の合計が業務コンテンツ部の幅を超えた場合には、自動的に折り返され次の行に出力される。
+
+  折り返し位置は、指定することが出来ずブラウザ依存となるため、業務コンテンツ部の幅に収まるようにUI部品ウィジェットを配置すること。
+
+
+1行に複数のUI部品を並べる場合
+===============================
+1行に複数のUI部品ウィジェットを並べる方法を解説する。
+
+**実装ポイント**
+
+* UI部品ウィジェットを並べる場合には、行(\ *layout:row*\ )を定義する
+
+  この例では、入力欄と画面遷移用ボタンで3行を定義している。
+
+* タイトル部、入力部の幅を統一する場合には変数に切り出す
+
+  この例のように、入力系UI部品ウィジェットのタイトル部、入力部の幅を固定化する場合、そのサイズを変数に切り出すと良い。
+  これにより、タイトル部や入力部のサイズ変更時には、変数の値を変更するのみでよくなる。
+
+* 並べるUI部品にマージンを設ける場合は、空の列(\ *layout:cell*\ )を配置する
+
+  空の列(\ *layout:cell*\ )に対して幅(gridSize)を指定することで、マージン幅を指定できる。
+
+
+**画面表示例**
+
+.. image:: /_image/multicol/multicol_sample_1.png
+  :scale: 75
+
+**JSP実装例**
+
+.. code-block:: jsp
+
+  <n:form windowScopePrefixes="user">
+    <%-- タイトル部、入力部の幅定義 --%>
+    <n:set var="titleSize" value="10" />
+    <n:set var="inputSize" value="10" />
+
+    <tab:group name="userTab">
+      <tab:content title="ユーザ情報" value="userInfo" selected="true">
+
+        <%-- 行を配置する(1行目) --%>
+        <layout:row>
+
+          <%-- 入力部品は、タイトル部と入力部の幅を指定して配置する --%>
+          <field:text
+              title="郵便番号"
+              required="true"
+              name="user.postNo"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:text>
+
+          <%--
+          入力部品とボタンの間のマージン
+
+          マージンは、要素のない列(layout:cell)を使用することで、
+          好きな位置に挿入することができる。
+          --%>
+          <layout:cell gridSize="10"></layout:cell>
+
+          <%-- ボタンは幅指定をして配置する --%>
+          <n:forInputPage>
+            <button:submit label="住所検索" uri="dummy" size="10"></button:submit>
+          </n:forInputPage>
+        </layout:row>
+
+        <%-- 行を配置する(2行目) --%>
+        <layout:row>
+          <field:pulldown
+              title="都道府県"
+              name="user.address1"
+              required="true"
+              listName="都道府県リスト"
+              elementLabelProperty="name"
+              elementValueProperty="cd"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:pulldown>
+          <field:text
+              title="市区郡町村名"
+              name="user.address2"
+              required="true"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:text>
+        </layout:row>
+
+      </tab:content>
+      <tab:content title="勤務先情報" value="officeInfo">
+      </tab:content>
+    </tab:group>
+
+    <%-- 行を配置する(3行目) --%>
+    <layout:row>
+      <n:forInputPage>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="17"></layout:cell>
+        <button:check
+            size="10"
+            uri="./確認画面_ページ.jsp">
+        </button:check>
+      </n:forInputPage>
+      <n:forConfirmationPage>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="10"></layout:cell>
+        <button:back uri="./登録画面.jsp" size="10"></button:back>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="5"></layout:cell>
+        <button:confirm uri="dummy" size="10"></button:confirm>
+      </n:forConfirmationPage>
+    </layout:row>
+  </n:form>
+
+列によって異なる行数を定義する場合
+======================================
+行内に配置する列によって、異なる行数(htmlのtableのrowspanのイメージ)を定義する方法を解説する。
+
+**実装ポイント**
+
+* 列ごと異なる行数を定義する場合には、行内にネストした行を定義する
+
+  画面表示例のように行内に列(\ *layout:cell*\ )を定義し、列内にネストした行を配置することで特定の列に複数の行を定義できるようになる。
+
+* ネストした行内に配置するUI部品の幅の合計は、列(\ *layout:cell*\ )の幅(gridSize)を超えてはならない
+
+
+**画面表示例**
+
+.. image:: /_image/multicol/multicol_sample_2.png
+  :scale: 70
+
+**JSP実装例**
+
+.. code-block:: jsp
+
+  <%-- 行定義 --%>
+  <layout:row>
+
+    <%--
+    ネストした行を配置するための列を定義する
+    列には明示的に幅(gridSize)を指定する。
+    --%>
+    <layout:cell gridSize="20">
+
+      <%-- ネストした行の定義(1行目) --%>
+      <layout:row>
+        <%--
+        入力欄の配置
+        
+        入力欄の幅の合計は、列(layout:cell)に定義した幅(gridSize)を超えてはならない
+        --%>
+        <field:text
+            title="漢字氏名"
+            name="user.kanjiName"
+            required="true"
+            titleSize="10"
+            inputSize="10">
+        </field:text>
+      </layout:row>
+
+      <%-- ネストした行の定義(2行目) --%>
+      <layout:row>
+        <%--
+        入力欄の配置
+        
+        入力欄の幅の合計は、列(layout:cell)に定義した幅(gridSize)を超えてはならない
+        --%>
+        <field:text
+            title="カナ氏名"
+            name="user.kanaName"
+            required="true"
+            titleSize="10"
+            inputSize="10">
+        </field:text>
+      </layout:row>
+
+    </layout:cell>
+
+    <%--
+    2列目の性別選択欄は、外側の列内に配置することで、1列目(layout:cell)の隣に表示される
+    --%>
+    <field:radio
+        title="性別"
+        name="user.sex"
+        required="true"
+        listName="sexList"
+        listFormat="br"
+        elementLabelProperty="name"
+        elementValueProperty="cd"
+        titleSize="${titleSize}"
+        inputSize="${inputSize}">
+    </field:radio>
+  </layout:row>
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-multicol_css_framework--s10`
+
+```json
+{
+  "id": "ui-framework-multicol_css_framework--s10",
+  "title": "使用例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用例 - マルチレイアウトモードの重要ポイント",
+      "hints": [
+        "マルチレイアウトモード",
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "@contentGridSpan",
+        "UI部品ウィジェット",
+        "業務コンテンツ部",
+        "グリッド数",
+        "幅指定",
+        "折り返し"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1行に複数のUI部品を並べる場合",
+      "hints": [
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "複数UI部品の横並び配置",
+        "マージン設定",
+        "n:set",
+        "titleSize",
+        "inputSize",
+        "field:text",
+        "field:pulldown",
+        "button:submit",
+        "n:forInputPage",
+        "n:forConfirmationPage",
+        "変数切り出し"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "列によって異なる行数を定義する場合",
+      "hints": [
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "ネストした行",
+        "rowspan相当",
+        "field:text",
+        "field:radio",
+        "列ごとに異なる行数",
+        "ネスト",
+        "幅の合計制限"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## マルチレイアウトモード使用上の重要ポイント\n\n- UI部品ウィジェットは必ず行内(`layout:row`)に配置する（ただし行を表すUI部品ウィジェット自体は除く）\n- 各UI部品ウィジェット使用時には幅（グリッド数）を指定する\n- 行内に配置するUI部品ウィジェットの幅の合計は業務コンテンツ部の幅（`@contentGridSpan`で定義）以内とする\n- 幅の合計が業務コンテンツ部の幅を超えた場合、自動的に折り返されて次の行に出力される。折り返し位置はブラウザ依存のため、業務コンテンツ部の幅に収まるよう配置すること",
+    "s2": "## 1行に複数のUI部品を並べる場合\n\n**実装ポイント**:\n- UI部品を並べる場合は行(`layout:row`)を定義する\n- タイトル部・入力部の幅を統一する場合は変数(`<n:set>`)に切り出す（変数を変更するだけでサイズ変更が可能になる）\n- UI部品間にマージンを設ける場合は空の列(`layout:cell` + `gridSize`指定)を配置する\n\n```jsp\n<n:form windowScopePrefixes=\"user\">\n  <n:set var=\"titleSize\" value=\"10\" />\n  <n:set var=\"inputSize\" value=\"10\" />\n  <layout:row>\n    <field:text title=\"郵便番号\" required=\"true\" name=\"user.postNo\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n    <layout:cell gridSize=\"10\"></layout:cell>\n    <n:forInputPage>\n      <button:submit label=\"住所検索\" uri=\"dummy\" size=\"10\"></button:submit>\n    </n:forInputPage>\n  </layout:row>\n  <layout:row>\n    <field:pulldown title=\"都道府県\" name=\"user.address1\" required=\"true\"\n        listName=\"都道府県リスト\" elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:pulldown>\n    <field:text title=\"市区郡町村名\" name=\"user.address2\" required=\"true\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n  </layout:row>\n  <layout:row>\n    <n:forInputPage>\n      <layout:cell gridSize=\"17\"></layout:cell>\n      <button:check size=\"10\" uri=\"./確認画面_ページ.jsp\"></button:check>\n    </n:forInputPage>\n    <n:forConfirmationPage>\n      <layout:cell gridSize=\"10\"></layout:cell>\n      <button:back uri=\"./登録画面.jsp\" size=\"10\"></button:back>\n      <layout:cell gridSize=\"5\"></layout:cell>\n      <button:confirm uri=\"dummy\" size=\"10\"></button:confirm>\n    </n:forConfirmationPage>\n  </layout:row>\n</n:form>\n```",
+    "s3": "## 列によって異なる行数を定義する場合（rowspan相当）\n\n**実装ポイント**:\n- 列ごとに異なる行数を定義する場合は、外側の行(`layout:row`)内に列(`layout:cell`)を定義し、列内にネストした行(`layout:row`)を配置する\n- ネストした行内に配置するUI部品の幅の合計は、列(`layout:cell`)の幅(`gridSize`)を超えてはならない\n\n```jsp\n<layout:row>\n  <layout:cell gridSize=\"20\">\n    <layout:row>\n      <field:text title=\"漢字氏名\" name=\"user.kanjiName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n    <layout:row>\n      <field:text title=\"カナ氏名\" name=\"user.kanaName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n  </layout:cell>\n  <field:radio title=\"性別\" name=\"user.sex\" required=\"true\"\n      listName=\"sexList\" listFormat=\"br\"\n      elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n      titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n  </field:radio>\n</layout:row>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

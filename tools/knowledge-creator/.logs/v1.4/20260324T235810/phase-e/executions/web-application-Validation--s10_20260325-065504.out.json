@@ -1,0 +1,30 @@
+{
+  "id": "web-application-Validation--s10",
+  "title": "入力値に連動して、動的に単項目精査対象を変化させる方法(プロパティの値による切り替え)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力値に連動して、動的に単項目精査対象を変化させる方法(プロパティの値による切り替え)",
+      "hints": [
+        "WebUtil",
+        "WebUtil#containsPropertyKeyValue",
+        "ValidationUtil",
+        "ValidationContext",
+        "Example3Form",
+        "@ValidateFor",
+        "@PropertyName",
+        "@Required",
+        "@SystemChar",
+        "MessageUtil",
+        "単項目精査の動的切り替え",
+        "ラジオボタン選択による精査条件変更",
+        "プロパティの値による切り替え"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ラジオボタンやセレクトボックスの選択内容に応じて単項目精査対象を変更する場合は、FormクラスのValidateForアノテーションを付与したメソッドで`WebUtil#containsPropertyKeyValue`を使用する。セレクトボックスの場合もJSPの内容が変わるだけで実装は同様。\n\n**JSP実装例**（ラジオボタンで精査条件を指定）:\n```jsp\n<n:form windowScopePrefixes=\"form\">\n    <n:radioButton name=\"form.validationPtn\" value=\"ptn1\" label=\"入力欄1と2を精査\"/>\n    <n:radioButton name=\"form.validationPtn\" value=\"ptn2\" label=\"入力欄1と3を精査\" />\n    <n:error name=\"form.validationPtn\" />\n    <n:text name=\"form.value1\" cssClass=\"input\" />\n    <n:text name=\"form.value2\" cssClass=\"input\" />\n    <n:text name=\"form.value3\" cssClass=\"input\" />\n</n:form>\n```\n\n**Formクラス実装例**（setterメソッドへのアノテーション付与）:\n```java\n@PropertyName(\"入力欄1\")\n@Required\n@SystemChar(charsetDef = \"AlnumChar\")\npublic void setValue1(String value1) {\n    this.value1 = value1;\n}\n\n@PropertyName(\"入力欄2\")\n@Required\n@SystemChar(charsetDef = \"AlnumChar\")\npublic void setValue2(String value2) {\n    this.value2 = value2;\n}\n\n@PropertyName(\"入力欄3\")\n@Required\n@SystemChar(charsetDef = \"AlnumChar\")\npublic void setValue3(String value3) {\n    this.value3 = value3;\n}\n```\n\n**Formクラス実装例**（`@ValidateFor`メソッド）:\n```java\n@ValidateFor(\"validateKeyValue\")\npublic static void validateForKeyValue(ValidationContext<Example3Form> context) {\n    String paramKey = \"form.validationPtn\";\n    if (WebUtil.containsPropertyKeyValue(context, paramKey, \"ptn1\")) {\n        ValidationUtil.validate(context, new String[] { \"value1\", \"value2\" });\n    } else if (WebUtil.containsPropertyKeyValue(context, paramKey, \"ptn2\")) {\n        ValidationUtil.validate(context, new String[] { \"value1\", \"value3\" });\n    } else {\n        // ラジオボタン未選択時はエラーメッセージを追加\n        context.addResultMessage(\"validationPtn\", \"MSG00010\", MessageUtil.getStringResource(\"V0020001\"));\n    }\n}\n```\n\n精査内容を指定するパラメータをActionクラス等で使用する場合は、通常のプロパティと同様に対応するプロパティを用意し精査対象に含める。"
+  }
+}

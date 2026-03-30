@@ -1,0 +1,447 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/06_TestFWGuide/02_RequestUnitTest.rst`
+- Format: `rst`
+
+```
+各種設定値
+----------
+
+環境設定に依存する設定値については、コンポーネント設定ファイルで変更できる。\
+設定可能な項目を以下に示す。
+
+コンポーネント設定ファイル設定項目一覧
+===============================================
+
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| 設定項目名                 | 説明                                                                    | デフォルト値                                          |
++============================+=========================================================================+=======================================================+
+| htmlDumpDir                | HTMLダンプファイルを出力するディレクトリを指定する。                    | ./tmp/http_dump                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| webBaseDir                 | Webアプリケーションのルートディレクトリ                                 | ../main/web                                           |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| xmlComponentFile           | リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\ [#]_\   | （なし）                                              |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| userIdSessionKey           | ログイン中ユーザIDを格納するセッションキー                              | user.id                                               |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| exceptionRequestVarKey     | ApplicationExceptionが格納されるリクエストスコープのキー                | nablarch_application_error                            |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| dumpFileExtension          | ダンプファイルの拡張子                                                  | html                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| httpHeader                 | HttpRequestにHTTPリクエストヘッダとして格納される値                     |Content-Type : application/x-www-form-urlencoded       |
+|                            |                                                                         |                                                       |
+|                            |                                                                         |Accept-Language : ja JP                                |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| sessionInfo                | セッションに格納される値                                                |（なし）                                               |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlResourcesExtensionList | ダンプディレクトリへコピーされるHTMLリソースの拡張子                    | css、jpg、js                                          |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| jsTestResourceDir          | javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名  | ../test/web                                           |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| backup                     | ダンプディレクトリのバックアップOn/Off                                  | true                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlResourcesCharset       | CSSファイル(スタイルシート)の文字コード                                 | UTF-8                                                 |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| checkHtml                  | HTMLチェックの実施On/Off                                                | true                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlChecker                | | HTMLチェックを行うオブジェクトを指定する。                            | | nablarch.test.tool.htmlcheck.Html4HtmlChecker       |
+|                            | | オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker               |   クラスのインスタンス。                              |
+|                            |   インタフェースを実装している必要がある。                              | | クラスには htmlCheckerConfig で設定した設定         |
+|                            | | 詳細は :ref:`customize_html_check` を参照。                           |   ファイルが適用される。                              |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlCheckerConfig          | | HTMLチェックツールの設定ファイルパス。                                | test/resources/httprequesttest/html-check-config.csv  |
+|                            | | htmlChecker を設定しなかった場合のみ有効。                            |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| ignoreHtmlResourceDirectory| HTMLリソースの中でコピー対象外とするディレクトリ名のLIST                | （なし）                                              |
+|                            |                                                                         |                                                       |
+|                            | .. note::                                                               |                                                       |
+|                            |  バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると         |                                                       |
+|                            |  HTMLリソースコピー時のパフォーマンスが向上する。                       |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| tempDirectory              | JSPのコンパイル先ディレクトリ                                           | jettyのデフォルト動作に依存                           |
+|                            |                                                                         |                                                       |
+|                            |                                                                         | .. note ::                                            |
+|                            |                                                                         |  jettyのデフォルト動作では、.「/work」                |
+|                            |                                                                         |  がコンパイル先ディレクトリとなる。                   |
+|                            |                                                                         |  「./work」が存在しない場合は、                       |
+|                            |                                                                         |  Tempフォルダ(Windownの場合は、ユーザのホーム         |
+|                            |                                                                         |  ディレクトリ/Local Settings/Temp)が                  |
+|                            |                                                                         |  出力先となる。                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| uploadTmpDirectory         | アップロードファイルを一時的に格納するディレクトリ。                    | ./tmp                                                 |
+|                            |                                                                         |                                                       |
+|                            | テスト時に準備した、アップロード対象のファイルは本ディレクトリに        |                                                       |
+|                            | コピー後に処理される。                                                  |                                                       |
+|                            | これにより、アクションでファイルの移動を行った場合でも、                |                                                       |
+|                            | 本ディレクトリ配下のファイルが移動されるだけであり、                    |                                                       |
+|                            | 実態が移動されることを防ぐことができる。                                |                                                       |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+|dumpVariableItem            | HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。          |false                                                  |
+|                            | ここでの可変項目とは以下の2種類を指す。                                 |                                                       |
+|                            |                                                                         |                                                       |
+|                            | * JSESSIONID                                                            |                                                       |
+|                            | * 2重サブミット防止用のトークン                                         |                                                       |
+|                            |                                                                         |                                                       |
+|                            | これらの項目は、テスト実行毎に異なる値が設定される。                    |                                                       |
+|                            |                                                                         |                                                       |
+|                            | HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF                 |                                                       |
+|                            | (false)に設定する。（前回実行結果と差異がないことを確認したい場合等）   |                                                       |
+|                            |                                                                         |                                                       |
+|                            |                                                                         |                                                       |
+|                            | 可変項目をそのままHTMLに出力する場合は、本項目をON                      |                                                       |
+|                            | (true)に設定する。                                                      |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+ 
+
+.. [#] この項目を設定した場合は、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。\
+       通常は設定する必要はない。\
+       クラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ、この項目を設定する。\
+
+       
+
+コンポーネント設定ファイルの記述例
+===============================================
+
+コンポーネント設定ファイル記述例を記載する。
+設定値には、上記のデフォルト値に加え、セッション(sessionInfo)に以下の値を設定している。
+
+
++----------------------------+------------------------------+--------------------------------------------------------------------+
+| キー                       | 値                           | 説明                                                               |
++============================+==============================+====================================================================+
+| commonHeaderLoginUserName  | "リクエスト単体テストユーザ" | 共通ヘッダ領域に表示するログインユーザ名                           |
++----------------------------+------------------------------+--------------------------------------------------------------------+
+| commonHeaderLoginDate      | "20100914"                   | 共通ヘッダ領域に表示するログイン日時                               |
++----------------------------+------------------------------+--------------------------------------------------------------------+
+
+.. code-block:: xml
+
+    <component name="httpTestConfiguration" class="nablarch.test.core.http.HttpTestConfiguration">
+        <property name="htmlDumpDir" value="./tmp/http_dump"/>
+        <property name="webBaseDir" value="../main/web"/>
+        <property name="xmlComponentFile" value="http-request-test.xml"/>
+        <property name="userIdSessionKey" value="user.id"/>
+        <property name="httpHeader">
+            <map>
+                <entry key="Content-Type" value="application/x-www-form-urlencoded"/>
+                <entry key="Accept-Language" value="ja JP"/>
+            </map>
+        </property>
+        <property name="sessionInfo">
+            <map>
+                <entry key="commonHeaderLoginUserName" value="リクエスト単体テストユーザ"/>
+                <entry key="commonHeaderLoginDate" value="20100914" />
+            </map>
+        </property>
+        <property name="htmlResourcesExtensionList">
+            <list>
+                <value>css</value>
+                <value>jpg</value>
+                <value>js</value>
+            </list>
+        </property>
+        <property name="backup" value="true" />
+        <property name="htmlResourcesCharset" value="UTF-8" />    
+        <property name="ignoreHtmlResourceDirectory">
+            <list>
+                <value>.svn</value>
+            </list>
+        </property>
+        <property name="tempDirectory" value="webTemp" />
+        <property name="htmlCheckerConfig"
+          value="test/resources/httprequesttest/html-check-config.csv" />
+    </component>
+
+
+.. _`optional_settings`:  
+
+その他の設定
+============
+
+性能が高くないPCで開発をしており、リクエスト単体テスト実行速度を向上させたい場合は、\
+以下の設定をすることで実行速度の改善が見込まれる。
+
+.. note::
+  Pentium4、Pentinum Dual-Core等の処理性能が低いCPUを搭載したPCに効果がある。\
+  逆に、これら以降のCPUを搭載したマシンでは、それほど効果的ではないので無理に設定する必要はない。
+
+
+JVMオプションの指定
+-------------------
+
+最大ヒープサイズと最小ヒープサイズを同一の値にすることで、\
+ヒープサイズ拡張のオーバヘッドを回避できる。
+
+ :strong:`-Xms256m -Xmx256m`
+
+
+また、クラスファイルの検証を省略することで実行速度が向上する。
+
+ :strong:`-Xverfiy:none`
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/vmoptions.png
+
+また、実行構成を変更しなくても、以下の方法でデフォルトのVM引数を設定できる。
+
+* メニューバーより「ウィンドウ」→「設定」を選択する。 「設定」ウィンドウが表示されるので、「インストール済みのJRE」をする。
+
+* インストール済みのJREの一覧が表示されるので、使用するJREを選択し「編集」ボタンを押下する。
+
+.. image:: ./_images/installed_jre.png
+
+* 「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/edit_jre.png
+
+
+代替JREの指定
+-------------
+
+JavaSE5のJDKで開発を行っている場合、テスト実行時のみJavaSE6のJREを使用することにより、
+実行速度、特に起動速度が向上する。
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「JRE」タブをクリックし「代替JRE」にJavaSE6のJREを選択する。
+
+.. image:: ./_images/alternate_jre.png
+
+
+.. note::
+  この設定を行う場合は、事前にJavaSE6のJDKまたはJREをインストールし、Eclipseに「インストール済みのJRE」として登録しておく必要がある。
+
+HTMLリソースコピーの抑止
+------------------------
+
+リクエスト単体実行時に、以下のシステムプロパティを指定すると、 :ref:`HTMLダンプ出力<dump-dir-label>` 時に、HTMLリソースコピーを抑止することができる。
+
+ :strong:`-Dnablarch.test.skip-resource-copy=true`
+
+
+
+
+CSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合は、
+テスト実行の度にHTMLリソースをコピーする必要はないので、
+このシステムプロパティを設定してもよい。
+
+
+.. warning::
+   本システムプロパティを指定した場合、HTMLリソースのコピーが行われなくなるので、
+   CSSなどのHTMLリソースを編集しても\ :ref:`HTMLダンプ出力<dump-dir-label>`\ に反映されない。
+
+
+.. note::
+   HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらず、\
+   HTMLリソースのコピーが実行される。
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/skip_resource_copy.png
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-02_RequestUnitTest--s7`
+
+```json
+{
+  "id": "testing-framework-02_RequestUnitTest--s7",
+  "title": "各種設定値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "各種設定値",
+      "hints": [
+        "HttpTestConfiguration",
+        "HtmlChecker",
+        "Html4HtmlChecker",
+        "htmlDumpDir",
+        "webBaseDir",
+        "xmlComponentFile",
+        "userIdSessionKey",
+        "exceptionRequestVarKey",
+        "dumpFileExtension",
+        "httpHeader",
+        "sessionInfo",
+        "htmlResourcesExtensionList",
+        "jsTestResourceDir",
+        "backup",
+        "htmlResourcesCharset",
+        "checkHtml",
+        "htmlChecker",
+        "htmlCheckerConfig",
+        "ignoreHtmlResourceDirectory",
+        "tempDirectory",
+        "uploadTmpDirectory",
+        "dumpVariableItem",
+        "コンポーネント設定ファイル",
+        "リクエスト単体テスト設定",
+        "HTMLダンプ設定",
+        "セッション設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JVMオプションの指定",
+      "hints": [
+        "JVMオプション",
+        "リクエスト単体テスト実行速度",
+        "ヒープサイズ設定",
+        "-Xms256m",
+        "-Xmx256m",
+        "-Xverify:none",
+        "クラスファイル検証省略",
+        "テスト実行速度向上"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "代替JREの指定",
+      "hints": [
+        "代替JRE",
+        "JavaSE5",
+        "JavaSE6",
+        "テスト実行速度向上",
+        "起動速度"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "HTMLリソースコピーの抑止",
+      "hints": [
+        "HTMLリソースコピー抑止",
+        "nablarch.test.skip-resource-copy",
+        "-Dnablarch.test.skip-resource-copy=true",
+        "HTMLリソース",
+        "HTMLダンプ出力",
+        "システムプロパティ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.test.core.http.HttpTestConfiguration`\n\nコンポーネント設定ファイルで設定可能な項目:\n\n| 設定項目名 | 説明 | デフォルト値 |\n|---|---|---|\n| htmlDumpDir | HTMLダンプファイルの出力ディレクトリ | ./tmp/http_dump |\n| webBaseDir | Webアプリケーションのルートディレクトリ | ../main/web |\n| xmlComponentFile | リクエスト単体テスト実行時に使用するコンポーネント設定ファイル | （なし） |\n| userIdSessionKey | ログイン中ユーザIDを格納するセッションキー | user.id |\n| exceptionRequestVarKey | ApplicationExceptionが格納されるリクエストスコープのキー | nablarch_application_error |\n| dumpFileExtension | ダンプファイルの拡張子 | html |\n| httpHeader | HttpRequestにHTTPリクエストヘッダとして格納される値 | Content-Type: application/x-www-form-urlencoded, Accept-Language: ja JP |\n| sessionInfo | セッションに格納される値 | （なし） |\n| htmlResourcesExtensionList | ダンプディレクトリへコピーされるHTMLリソースの拡張子 | css、jpg、js |\n| jsTestResourceDir | javascript自動テスト実行時のリソースコピー先ディレクトリ名 | ../test/web |\n| backup | ダンプディレクトリのバックアップOn/Off | true |\n| htmlResourcesCharset | CSSファイルの文字コード | UTF-8 |\n| checkHtml | HTMLチェックの実施On/Off | true |\n| htmlChecker | HTMLチェックを行うオブジェクト（`nablarch.test.tool.htmlcheck.HtmlChecker`インタフェース実装が必要。詳細は :ref:`customize_html_check` を参照） | `nablarch.test.tool.htmlcheck.Html4HtmlChecker`のインスタンス（htmlCheckerConfigの設定ファイルが適用される） |\n| htmlCheckerConfig | HTMLチェックツールの設定ファイルパス（htmlCheckerを設定しなかった場合のみ有効） | test/resources/httprequesttest/html-check-config.csv |\n| ignoreHtmlResourceDirectory | HTMLリソースのコピー対象外とするディレクトリ名のリスト | （なし） |\n| tempDirectory | JSPのコンパイル先ディレクトリ | jettyのデフォルト動作（./work、存在しない場合はTempフォルダ） |\n| uploadTmpDirectory | アップロードファイルの一時格納ディレクトリ。テスト時のアップロード対象ファイルはこのディレクトリにコピー後に処理されるため、アクションでファイルを移動した場合でも実態ファイルの移動を防ぐことができる。 | ./tmp |\n| dumpVariableItem | HTMLダンプファイル出力時に可変項目（JSESSIONID、二重サブミット防止トークン）を出力するか否か。これらはテスト実行毎に異なる値が設定される。ダンプ結果を毎回同一にしたい場合はfalse（デフォルト）。 | false |\n\n> **注意**: `xmlComponentFile`を設定した場合、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。クラス単体テストとリクエスト単体テストで設定を変える必要がある場合のみ設定する。通常は設定不要。\n\n> **補足**: `ignoreHtmlResourceDirectory`にバージョン管理用ディレクトリ（.svn、.git）を設定するとHTMLリソースコピー時のパフォーマンスが向上する。\n\nコンポーネント設定ファイル記述例（sessionInfoに`commonHeaderLoginUserName`、`commonHeaderLoginDate`を設定した例）:\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n    <property name=\"htmlDumpDir\" value=\"./tmp/http_dump\"/>\n    <property name=\"webBaseDir\" value=\"../main/web\"/>\n    <property name=\"xmlComponentFile\" value=\"http-request-test.xml\"/>\n    <property name=\"userIdSessionKey\" value=\"user.id\"/>\n    <property name=\"httpHeader\">\n        <map>\n            <entry key=\"Content-Type\" value=\"application/x-www-form-urlencoded\"/>\n            <entry key=\"Accept-Language\" value=\"ja JP\"/>\n        </map>\n    </property>\n    <property name=\"sessionInfo\">\n        <map>\n            <entry key=\"commonHeaderLoginUserName\" value=\"リクエスト単体テストユーザ\"/>\n            <entry key=\"commonHeaderLoginDate\" value=\"20100914\" />\n        </map>\n    </property>\n    <property name=\"htmlResourcesExtensionList\">\n        <list>\n            <value>css</value>\n            <value>jpg</value>\n            <value>js</value>\n        </list>\n    </property>\n    <property name=\"backup\" value=\"true\" />\n    <property name=\"htmlResourcesCharset\" value=\"UTF-8\" />\n    <property name=\"ignoreHtmlResourceDirectory\">\n        <list>\n            <value>.svn</value>\n        </list>\n    </property>\n    <property name=\"tempDirectory\" value=\"webTemp\" />\n    <property name=\"htmlCheckerConfig\"\n      value=\"test/resources/httprequesttest/html-check-config.csv\" />\n</component>\n```",
+    "s2": "> **注意**: Pentium4、Pentium Dual-Core等の低性能CPUを搭載したPCに有効。それ以降のCPUでは効果は限定的。\n\nリクエスト単体テストの実行速度を向上させるJVMオプション:\n\n- **ヒープサイズ拡張のオーバヘッドを回避**（最大・最小ヒープサイズを同一値に設定）: `-Xms256m -Xmx256m`\n- **クラスファイルの検証省略**（実行速度向上）: `-Xverify:none`",
+    "s3": "JavaSE5のJDKで開発している場合、テスト実行時のみJavaSE6のJREを使用することにより実行速度（特に起動速度）が向上する。\n\n> **注意**: 事前にJavaSE6のJDKまたはJREをインストールし、Eclipseに「インストール済みのJRE」として登録しておく必要がある。",
+    "s4": "リクエスト単体テスト実行時に以下のシステムプロパティを指定すると、:ref:`HTMLダンプ出力<dump-dir-label>` 時にHTMLリソースのコピーを抑止できる。\n\n`-Dnablarch.test.skip-resource-copy=true`\n\nCSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合に設定することで、テスト実行の度にHTMLリソースをコピーする処理をスキップできる。\n\n> **警告**: このシステムプロパティを指定した場合、HTMLリソースのコピーが行われないため、CSSなどのHTMLリソースを編集しても :ref:`HTMLダンプ出力<dump-dir-label>` に反映されない。\n\n> **注意**: HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらずHTMLリソースのコピーが実行される。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

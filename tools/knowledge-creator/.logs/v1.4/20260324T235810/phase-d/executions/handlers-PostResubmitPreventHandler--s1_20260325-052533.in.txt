@@ -1,0 +1,306 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/PostResubmitPreventHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _`post_resubmit_prevent_handler`:
+
+================================================
+POST再送信防止ハンドラ
+================================================
+**クラス名:** ``nablarch.fw.web.post.PostResubmitPreventHandler``
+
+.. warning::
+
+ 新規プロジェクトにおける本ハンドラの使用は推奨されていません。
+
+.. warning::
+
+ POST再送信防止が指示されたリクエストが送信されると、POST情報をセッションに格納し次のリダイレクト処理でPOST情報をセッションから破棄しています。
+ しかし、Dos攻撃等により大量のリクエストが送信された場合、リダイレクト処理が実行されずPOST情報がセッションに蓄積されてしまい、メモリを圧迫する可能性があります。
+
+ 本ハンドラを使用せずにブラウザからのPOST情報の再送信を防止するには、業務アクションにてリダイレクトのレスポンスを返すことで実現してください。
+
+---------------------------
+概要
+---------------------------
+このハンドラは、POSTで受け付けたリクエストに対して、リダイレクトを使用し再度リクエストを受け付けなおす処理を行う。
+結果、ブラウザからのPOSTデータ再送信を防止するように動作するため、POST再送信防止ハンドラと呼ぶ。
+
+JSPに\ :ref:`WebView_NoCacheTag` \を指定していても、ブラウザの戻るボタンを押下し前画面に戻った場合、いわゆるF12開発者ツールなどで、
+前画面で入力した内容を盗み見ることが可能である。これは、真正なユーザが操作している端末を、操作直後に悪意ある者に操作された場合に、
+セキュリティ上の脅威となりうる。
+
+通常は、端末を入室に認証が必要な区画に設置する、ログイン時にパスワードを入力させる、他人に端末を操作させないなど、物理的な
+セキュリティを高めることでこの脅威は回避できるが、システム的にこれを回避したい場合に本ハンドラを使用する。POSTで受け付けたリクエストに対して、
+リダイレクトを使用し再度リクエストを受け付けなおし、あわせてブラウザから送信される情報を管理することで、ブラウザの戻るボタン押下時でも、
+入力内容を盗み見ることができないように制御する。なお、multipartリクエストには対応していない。
+
+また、本ハンドラを有効にする場合、保護する情報を入力する\ :ref:`WebView_FormTag` \のpreventPostResubmit属性をtrueに設定すること
+(preventPostResubmit属性をtrueにしたリクエストを「POST再送信防止が指示されたリクエスト」と呼ぶ)。
+
+POST再送信防止が指示されたリクエストで、リダイレクト後のGETリクエストが複数送信された場合、2回目以降のリクエストは設定されたパスに遷移する。
+遷移先パスの設定方法は、 `設定項目・拡張ポイント`_ を参照。
+
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue = [
+        "PostResubmitPreventHandler"
+      , "NablarchTagHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | ハンドラ                           | 内容                                                                              |
+  +====================================+===================================================================================+
+  | - :doc:`NablarchTagHandler`        | 本ハンドラは、\ :doc:`NablarchTagHandler` \の上位に配置する必要がある。           |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+
+
+++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. （POST再送信防止の判定）**
+    POST再送信防止が指示されたリクエストであるか否かを判定する。
+    
+  **1a. （リダイレクト処理）**
+    POST再送信防止が指示されたリクエストである場合、リクエスト情報をセッションスコープに格納し、同じURIに対して
+    リダイレクトする。
+
+  **2. （リダイレクトされたリクエストか判定）**
+    POST後にリダイレクトされたリクエストであるか否かを判定する。
+
+  **2a. （リクエスト情報の復元）**
+    POST後にリダイレクトされたリクエストである場合、1aにてセッションスコープに格納したリクエスト情報を復元し、
+    セッションから削除する。
+
+    復元対象のリクエスト情報が、セッションスコープに存在しない場合はGET処理が複数回送信されたと判断し、指定されたパスへ遷移する。
+    遷移先パスが設定されていない場合は、システムエラーとして処理を終了する。
+    遷移先パスの指定方法は、 `設定項目・拡張ポイント`_ を参照。
+
+  **3. （後続処理の実行）**
+    後続のハンドラを呼び出す。
+
+.. _outbound:
+    
+**[復路での処理]**
+
+  **4. （正常処理）**
+    3.の結果をリターンして終了する。
+
+.. _error:
+
+**[例外処理]**
+  **3a. （後続ハンドラ実行中のエラー）**
+    後続ハンドラ実行中に例外が送出された場合は、そのまま再送出して終了する。
+
++++++++++++
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+.. code-block:: xml
+
+  <!-- POST再送信防止ハンドラ -->
+  <component name="postResubmitPreventHandler"
+      class="nablarch.fw.web.post.PostResubmitPreventHandler">
+
+    <!--
+    リダイレクト後のGETリクエストが複数回送信された場合の遷移先パスのマッピングを設定する。
+
+    リクエストIDがkeyで指定した場合、valueで設定したパスに遷移する。
+    複数のkeyがマッチした場合、最も文字数が長いkeyに対応するvalueのパスに遷移する。
+    -->
+    <property name="forwardPathMapping">
+      <map>
+        <entry key="R"  value="redirect:///action/ErrorAction/index" />
+        <entry key="R2" value="redirect:///action/ErrorAction/index2" />
+        <entry key="R3" value="/error.jsp" />
+      </map>
+    </property>
+  </component>
+```
+
+## Knowledge File
+
+- ID: `handlers-PostResubmitPreventHandler--s1`
+
+```json
+{
+  "id": "handlers-PostResubmitPreventHandler--s1",
+  "title": "POST再送信防止ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "PostResubmitPreventHandler",
+        "nablarch.fw.web.post.PostResubmitPreventHandler",
+        "NablarchTagHandler",
+        "POST再送信防止",
+        "preventPostResubmit",
+        "multipart非対応",
+        "セッション",
+        "非推奨"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "POST再送信防止ハンドラ処理フロー",
+        "リダイレクト",
+        "セッションスコープ復元",
+        "GETリクエスト複数回",
+        "システムエラー",
+        "往路処理",
+        "復路処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "forwardPathMapping",
+        "POST再送信防止設定",
+        "リクエストIDマッピング",
+        "遷移先パス",
+        "GETリクエスト複数回遷移先"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **警告**: 新規プロジェクトにおける本ハンドラの使用は推奨されていません。\n\n> **警告**: DoS攻撃等により大量のリクエストが送信された場合、リダイレクト処理が実行されずPOST情報がセッションに蓄積され、メモリを圧迫する可能性がある。本ハンドラを使用せず、業務アクションにてリダイレクトのレスポンスを返すことでPOST再送信を防止すること。\n\n**クラス名**: `nablarch.fw.web.post.PostResubmitPreventHandler`\n\nPOSTリクエストに対してリダイレクトを使用して再リクエストを受け付けることで、ブラウザからのPOSTデータ再送信を防止する。\n\n- multipartリクエストには対応していない\n- 保護する情報を入力する :ref:`WebView_FormTag` のpreventPostResubmit属性をtrueに設定すること（「POST再送信防止が指示されたリクエスト」の条件）\n- POST再送信防止が指示されたリクエストでリダイレクト後のGETリクエストが複数送信された場合、2回目以降は設定パスに遷移する\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`NablarchTagHandler` | 本ハンドラは :doc:`NablarchTagHandler` の上位に配置する必要がある |",
+    "s2": "**往路処理**\n\n1. POST再送信防止が指示されたリクエストか判定\n   - 該当する場合（1a）: リクエスト情報をセッションスコープに格納し、同一URIにリダイレクト\n2. POST後にリダイレクトされたリクエストか判定\n   - 該当する場合（2a）: セッションスコープのリクエスト情報を復元し削除\n   - セッションに復元対象が存在しない場合: GETが複数回送信されたと判断し設定パスへ遷移。遷移先パス未設定の場合はシステムエラー\n3. 後続ハンドラを呼び出す\n\n**復路処理**\n\n4. 後続ハンドラの結果をリターンして終了\n\n**例外処理**\n\n3a. 後続ハンドラ実行中の例外はそのまま再送出して終了",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| forwardPathMapping | Map | | | リダイレクト後のGETが複数回送信された場合の遷移先パスマッピング。キーはリクエストID、値は遷移先パス。複数マッチする場合は最も文字数が長いキーのパスに遷移 |\n\n```xml\n<component name=\"postResubmitPreventHandler\"\n    class=\"nablarch.fw.web.post.PostResubmitPreventHandler\">\n  <property name=\"forwardPathMapping\">\n    <map>\n      <entry key=\"R\"  value=\"redirect:///action/ErrorAction/index\" />\n      <entry key=\"R2\" value=\"redirect:///action/ErrorAction/index2\" />\n      <entry key=\"R3\" value=\"/error.jsp\" />\n    </map>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

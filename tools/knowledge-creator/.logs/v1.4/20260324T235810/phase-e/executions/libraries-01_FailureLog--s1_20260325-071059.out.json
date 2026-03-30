@@ -1,0 +1,143 @@
+{
+  "id": "libraries-01_FailureLog--s1",
+  "title": "FailureLog",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "FailureLogの概要",
+      "hints": [
+        "FailureLog",
+        "障害ログ",
+        "失敗ログ",
+        "FailureLogUtil",
+        "障害通知",
+        "障害解析"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "FailureLogFormatterの設定プロパティ",
+      "hints": [
+        "failureLogFormatter",
+        "className",
+        "defaultFailureCode",
+        "defaultMessage",
+        "language",
+        "notificationFormat",
+        "analysisFormat",
+        "contactFilePath",
+        "appFailureCodeFilePath",
+        "fwFailureCodeFilePath",
+        "プロパティ設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ログ出力フォーマットのプレースホルダ",
+      "hints": [
+        "$failureCode$",
+        "$message$",
+        "$data$",
+        "$contact$",
+        "プレースホルダ",
+        "フォーマット"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "FailureLogUtilの使用方法",
+      "hints": [
+        "FailureLogUtil",
+        "通知ログ",
+        "解析ログ",
+        "writeFailureLogForNotification",
+        "writeFailureLogForAnalysis",
+        "障害ログ出力"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "TransactionAbnormalEndおよびProcessAbnormalEndの使用指針",
+      "hints": [
+        "TransactionAbnormalEnd",
+        "ProcessAbnormalEnd",
+        "異常終了",
+        "トランザクション異常",
+        "プロセス異常",
+        "使い分け"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "連絡先情報の設定",
+      "hints": [
+        "contactFilePath",
+        "failure-log-contact.properties",
+        "連絡先",
+        "contact",
+        "前方一致",
+        "障害コード"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "実行時の障害コードオーバーライド",
+      "hints": [
+        "appFailureCodeFilePath",
+        "fwFailureCodeFilePath",
+        "障害コードオーバーライド",
+        "アプリ障害コード",
+        "フレームワーク障害コード"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "派生実行情報の出力",
+      "hints": [
+        "派生実行情報",
+        "derived",
+        "getRequestedUrl",
+        "getDerivedExecutionInfo",
+        "実行情報"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "個人情報・機密情報のマスキング",
+      "hints": [
+        "マスキング",
+        "個人情報",
+        "機密情報",
+        "$data$",
+        "セキュリティ",
+        "masking"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "FailureLogFormatterの拡張",
+      "hints": [
+        "FailureLogFormatter",
+        "拡張",
+        "カスタマイズ",
+        "継承",
+        "override",
+        "getContactStr"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## FailureLogの概要\n\nFailureLogは、アプリケーションで発生した障害（例外・エラー）を記録するためのライブラリです。障害ログには「通知ログ」と「解析ログ」の2種類があります。\n\n- **通知ログ**: 障害発生を運用担当者へ通知するためのログ。簡潔な情報を含む。\n- **解析ログ**: 障害の原因解析に使用するログ。スタックトレースなど詳細情報を含む。\n\n障害ログの出力には `FailureLogUtil` を使用します。また、ハンドラから呼び出す場合は `TransactionAbnormalEnd` や `ProcessAbnormalEnd` 例外クラスを利用することもあります。",
+    "s2": "## FailureLogFormatterの設定プロパティ\n\n`FailureLogFormatter` はコンポーネント設定ファイル（XMLまたはプロパティ）で設定します。\n\n| プロパティ名 | 型 | デフォルト値 | 説明 |\n|---|---|---|---|\n| `className` | String | （必須） | `FailureLogFormatter` の実装クラス名 |\n| `defaultFailureCode` | String | （必須） | デフォルト障害コード |\n| `defaultMessage` | String | 空文字列 | デフォルトメッセージ |\n| `language` | String | システムデフォルト | メッセージ解決に使用するロケール |\n| `notificationFormat` | String | デフォルトフォーマット | 通知ログのフォーマット文字列 |\n| `analysisFormat` | String | デフォルトフォーマット | 解析ログのフォーマット文字列 |\n| `contactFilePath` | String | なし | 連絡先情報プロパティファイルのパス |\n| `appFailureCodeFilePath` | String | なし | アプリ障害コードオーバーライドファイルのパス |\n| `fwFailureCodeFilePath` | String | なし | フレームワーク障害コードオーバーライドファイルのパス |\n\n**設定例（コンポーネント定義）**:\n```xml\n<component name=\"failureLogFormatter\"\n           class=\"nablarch.core.log.app.FailureLogFormatter\">\n  <property name=\"defaultFailureCode\" value=\"UNKNOWN_ERROR\"/>\n  <property name=\"notificationFormat\"\n            value=\"failure_code = [$failureCode$] message = [$message$] contact = [$contact$]\"/>\n  <property name=\"analysisFormat\"\n            value=\"failure_code = [$failureCode$] message = [$message$] data = [$data$]\"/>\n  <property name=\"contactFilePath\"\n            value=\"classpath:failure-log-contact.properties\"/>\n</component>\n```",
+    "s3": "## ログ出力フォーマットのプレースホルダ\n\n`notificationFormat` および `analysisFormat` には以下のプレースホルダが使用できます。\n\n| プレースホルダ | 説明 |\n|---|---|\n| `$failureCode$` | 障害コード |\n| `$message$` | 障害メッセージ（障害コードから解決されたメッセージ） |\n| `$data$` | 障害発生時のリクエストデータや追加情報（解析ログ向け） |\n| `$contact$` | 障害コードに対応する連絡先情報 |\n\n**使用例**:\n```\n# 通知ログフォーマット\nnotificationFormat = failure_code = [$failureCode$] message = [$message$] contact = [$contact$]\n\n# 解析ログフォーマット  \nanalysisFormat = failure_code = [$failureCode$] message = [$message$] data = [$data$]\n```",
+    "s4": "## FailureLogUtilの使用方法\n\n`FailureLogUtil` は障害ログを出力するユーティリティクラスです。\n\n### 主要メソッド\n\n```java\n// 通知ログの出力\nFailureLogUtil.logFatal(Throwable throwable, Object data, String failureCode, Object... messageOptions);\n\n// 解析ログの出力\nFailureLogUtil.logError(Throwable throwable, Object data, String failureCode, Object... messageOptions);\n```\n\n### 使用例\n\n```java\ntry {\n    // 業務処理\n} catch (Exception e) {\n    // 障害コードを指定して通知ログ・解析ログを出力\n    FailureLogUtil.logFatal(e, \"リクエストデータ\", \"MSG00001\");\n    FailureLogUtil.logError(e, \"リクエストデータ\", \"MSG00001\");\n}\n```\n\n`data` パラメータには障害解析に役立つリクエスト情報や入力値を渡します。この値は `$data$` プレースホルダに展開されます。",
+    "s5": "## TransactionAbnormalEndおよびProcessAbnormalEndの使用指針\n\n障害ログ出力には `FailureLogUtil` を直接使う方法のほか、例外クラスを使う方法があります。\n\n### クラスの使い分け\n\n| クラス | 用途 | 使用場面 |\n|---|---|---|\n| `FailureLogUtil` | 障害ログを直接出力したい場合 | ハンドラ内や任意の箇所で明示的にログ出力 |\n| `TransactionAbnormalEnd` | トランザクション単位で異常終了させる場合 | 業務処理でトランザクションを異常終了させたい場合 |\n| `ProcessAbnormalEnd` | プロセス全体を異常終了させる場合 | システム全体の停止が必要な致命的エラー |\n\n### TransactionAbnormalEnd使用例\n\n```java\n// トランザクション異常終了例外をスロー\nthrow new TransactionAbnormalEnd(100, new RuntimeException(\"error\"), \"MSG00001\");\n```\n\n### ProcessAbnormalEnd使用例\n\n```java\n// プロセス異常終了例外をスロー（終了コード付き）\nthrow new ProcessAbnormalEnd(127, new RuntimeException(\"fatal error\"), \"MSG00002\");\n```\n\nこれらの例外クラスはハンドラによってキャッチされ、障害ログが自動的に出力されます。",
+    "s6": "## 連絡先情報の設定\n\n障害コードに対応する連絡先情報を `contactFilePath` に指定したプロパティファイルで管理します。\n\n### 設定ファイル例（failure-log-contact.properties）\n\n```properties\n# 障害コードプレフィックス=連絡先情報\nAP=APチーム連絡先: ap-team@example.com\nDB=DBチーム連絡先: db-team@example.com\nBATCH=バッチ担当: batch@example.com\n```\n\n### 検索動作\n\n連絡先情報は**前方一致**で検索されます。障害コードの先頭からプレフィックスとのマッチを試み、最初に一致したエントリの連絡先情報が `$contact$` プレースホルダに展開されます。\n\n**例**: 障害コード `AP001` は `AP=APチーム連絡先:...` にマッチします。\n\n一致するエントリが見つからない場合、`$contact$` は空文字列になります。",
+    "s7": "## 実行時の障害コードオーバーライド\n\n`appFailureCodeFilePath` および `fwFailureCodeFilePath` を使用して、例外クラスに対応する障害コードを設定ファイルで上書きできます。\n\n### アプリ障害コードオーバーライド（appFailureCodeFilePath）\n\nアプリケーションの例外クラスに対して障害コードをマッピングします。\n\n```properties\n# クラス名（完全修飾）=障害コード\ncom.example.SomeBusinessException=BIZ001\ncom.example.ValidationException=VAL001\n```\n\n### フレームワーク障害コードオーバーライド（fwFailureCodeFilePath）\n\nNablarchフレームワークの例外クラスに対して障害コードをマッピングします。\n\n```properties\nnablarch.fw.results.InternalError=SYS001\nnablarch.fw.launcher.ProcessAbnormalEnd=FATAL001\n```\n\n### 動作\n\n- スローされた例外クラス（またはその親クラス）がオーバーライドファイルに定義されている場合、そのエントリの障害コードが使用されます。\n- 定義されていない場合は `defaultFailureCode` が使用されます。\n- アプリコードファイルが優先してチェックされ、次にフレームワークコードファイルがチェックされます。",
+    "s8": "## 派生実行情報の出力\n\nハンドラ処理の文脈から、リクエストURLや実行コンテキスト情報を障害ログに含めることができます。\n\n`FailureLogFormatter` を継承したサブクラスで `getDerivedExecutionInfo()` メソッドをオーバーライドすることで、独自の実行情報を `$data$` プレースホルダに追加できます。\n\n### 実装例\n\n```java\npublic class CustomFailureLogFormatter extends FailureLogFormatter {\n    @Override\n    protected String getDerivedExecutionInfo() {\n        // スレッドローカルなどから実行情報を取得\n        ExecutionContext ctx = getExecutionContext();\n        if (ctx != null) {\n            return \"requestId=\" + ctx.getRequestId();\n        }\n        return \"\";\n    }\n}\n```",
+    "s9": "## 個人情報・機密情報のマスキング\n\n`$data$` プレースホルダにはリクエストデータや入力値が含まれるため、**個人情報や機密情報が含まれる可能性があります**。\n\n### 注意事項\n\n- `$data$` には `FailureLogUtil` の `data` パラメータで渡したオブジェクトの `toString()` 結果が出力されます。\n- 氏名、住所、クレジットカード番号などの個人情報・機密情報が含まれる場合は、ログ出力前にマスキング処理を行う必要があります。\n\n### 対応方法\n\n1. `data` パラメータに渡すオブジェクトの `toString()` をオーバーライドし、機密フィールドをマスクする。\n2. または `FailureLogFormatter` をカスタマイズして、フォーマット時にマスキング処理を追加する。\n\n```java\n// 例: DataオブジェクトのtoString()でマスキング\npublic class RequestData {\n    private String name;\n    private String cardNumber;\n    \n    @Override\n    public String toString() {\n        return \"name=\" + name + \", cardNumber=****-****-****-\" + cardNumber.substring(12);\n    }\n}\n```",
+    "s10": "## FailureLogFormatterの拡張\n\n`FailureLogFormatter` を継承することで、ログフォーマットや連絡先解決ロジックをカスタマイズできます。\n\n### 拡張ポイント\n\n| メソッド | 用途 |\n|---|---|\n| `getContactStr(String failureCode)` | 連絡先解決ロジックのカスタマイズ |\n| `getDerivedExecutionInfo()` | 派生実行情報の追加 |\n| `formatNotificationMessage(...)` | 通知ログメッセージのフォーマットカスタマイズ |\n| `formatAnalysisMessage(...)` | 解析ログメッセージのフォーマットカスタマイズ |\n\n### 実装例\n\n```java\npublic class CustomFailureLogFormatter extends FailureLogFormatter {\n    \n    @Override\n    protected String getContactStr(String failureCode) {\n        // 独自の連絡先解決ロジック（例：データベース参照）\n        return ContactRepository.findByCode(failureCode);\n    }\n}\n```\n\n### 設定例\n\n```xml\n<component name=\"failureLogFormatter\"\n           class=\"com.example.CustomFailureLogFormatter\">\n  <property name=\"defaultFailureCode\" value=\"UNKNOWN_ERROR\"/>\n</component>\n```"
+  }
+}

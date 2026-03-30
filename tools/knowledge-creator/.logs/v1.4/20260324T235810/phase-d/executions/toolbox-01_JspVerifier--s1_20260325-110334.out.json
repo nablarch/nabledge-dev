@@ -1,0 +1,20 @@
+{
+  "file_id": "toolbox-01_JspVerifier--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s13",
+      "description": "The knowledge file describes the TagAttributeVerifier directory path as \"デフォルト: C:\\\\nablarch\\\\workspace\\\\tutorial\\\\main\\\\web\\\\WEB-INF\\\\tags\\\\widget\" (i.e., a default value), but the source does not characterize it as a default. The source in 環境依存設定値の修正 explicitly instructs users to change this value to the actual directory where tag files are placed. Labeling it \"デフォルト\" implies it may be kept as-is, which contradicts the source's intent.",
+      "source_evidence": "Source (環境依存設定値の修正): \"verification_config.json の下記の設定値を、実際にタグファイルが配置されているディレクトリに修正する。\" — the path is an example to be replaced, not a default."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 (index entry)",
+      "description": "The hints for s6 (環境依存設定値の修正) are missing \"encoding\", which is a configuration property explicitly shown in the TagAttributeVerifier JSON code block in the source.",
+      "source_evidence": "Source s6 code block: \"\\\"encoding\\\": \\\"utf-8\\\"\" — encoding is a distinct property alongside directory that a user may search for."
+    }
+  ]
+}

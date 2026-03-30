@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (簡易検索機能) — 大量データ footnote code examples",
+      "description": "The footnote code examples clarifying what constitutes 大量データ are omitted. The source provides three concrete examples: `statement.retrieve()` (large if result set is big), `statement.retrieve(1, 10000000)` (large — 10 million record limit), and `statement.retrieve(10000000, 20)` (NOT large — start position is 10M but count is only 20). These examples demonstrate the boundary case that start position alone does not make it 大量データ, only the count does. The knowledge file states the rule in prose but omits the illustrative code that helps AI distinguish edge cases.",
+      "source_evidence": "Source footnote [#]: `statement.retrieve(10000000, 20);    // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 (範囲指定での検索処理) — method signature parameter name",
+      "description": "The knowledge file documents the method signature as `SqlPStatement#retrieve(int startPos, int count)`, using `count` as the second parameter name. The source only specifies `SqlPStatement#retrieve(int, int)` without naming the second parameter. While `startPos` appears in the Java sample code, `count` as a parameter name does not appear anywhere in the source.",
+      "source_evidence": "Source: `SqlPStatement#retrieve(int, int)` and Java code `return statement.retrieve(startPos, 20);` — no parameter name `count` is used"
+    }
+  ]
+}

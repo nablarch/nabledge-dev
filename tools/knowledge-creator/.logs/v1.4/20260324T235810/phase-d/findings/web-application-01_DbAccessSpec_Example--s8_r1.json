@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — 1件のデータを更新する場合",
+      "description": "Knowledge file states \"0件の場合は対象なしエラーを表示すること\" but the source code checks `if (updCnt != 1)`, which triggers for any count that is not exactly 1 (including both 0 and 2+). Narrowing this to \"0件\" misrepresents the actual guard condition.",
+      "source_evidence": "int updCnt = updateStatement.executeUpdate(); if (updCnt != 1) { // 更新対象が存在しない場合は、対象なしエラーを表示する }"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — 更新(insert、update、delete)",
+      "description": "The source h2 section \"更新\" contains >= 2000 characters of plain text and includes two h3 subsections (\"1件のデータを更新する場合\" and \"複数件を一括で更新する場合\"). Per the split rule these should be represented as separate knowledge sections, but both are merged into s2.",
+      "source_evidence": "RST h3 headings: \"1件のデータを更新する場合\" (===) and \"複数件を一括で更新する場合\" (===) inside the 更新 h2 block, with substantial content in each."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1, s2 — hints arrays",
+      "description": "`DbAccessSupport` is the base class used in the Java implementation examples in both sections (class CM311AC1Component extends DbAccessSupport) but is absent from both s1 and s2 hints.",
+      "source_evidence": "public class CM311AC1Component extends DbAccessSupport { ... } (appears in both the large-data search and the update sections)"
+    }
+  ]
+}

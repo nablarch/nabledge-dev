@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-box_img",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Introduction (source preamble)",
+      "description": "Source states the widget is for business screens and explicitly excludes common header logos: \"共通ヘッダ内のロゴは対象外\". This is a usage constraint that helps developers decide when to use this widget.",
+      "source_evidence": "業務画面内画面内に画像を表示する場合に使用する。(共通ヘッダ内のロゴは対象外)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 内部構造・改修時の留意点 (templateコード例)",
+      "description": "The template CSS code example is omitted. The source provides the full CSS Media Query template with specific breakpoint values (640px / 639px) and vendor-specific DPI conditions (-webkit-min-device-pixel-ratio, -moz-min-device-pixel-ratio, min-resolution:120dpi). These concrete values are needed when extending or customizing breakpoints, which the source identifies as a key modification scenario.",
+      "source_evidence": "@media screen and (min-width: 640px) and (-webkit-min-device-pixel-ratio:1.25) ... background-image : url(\"{contextPath}/img/wide/high/{filepath}\"); ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "PascalCase component names ResponsibleImageUnsupportRatio and ResponsibleImageUnsupportMatchMedia are listed in the 部品一覧 table in s3 but are absent from s3 hints. Developers searching for pixel-ratio-unsupported or match-media-unsupported browser handling would use these names.",
+      "source_evidence": "/js/ui/nablarch/ResponsibleImageUnsupportRatio.template — ピクセル比が判定できないブラウザ向けのテンプレート / /js/ui/nablarch/ResponsibleImageUnsupportMatchMedia.template — メディアクエリが効かない場合ブラウザ用テンプレート"
+    }
+  ]
+}

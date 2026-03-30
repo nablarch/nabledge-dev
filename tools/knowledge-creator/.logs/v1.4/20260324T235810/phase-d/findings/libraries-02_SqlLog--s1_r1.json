@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SQLログの出力方法",
+      "description": "The actual log output example (concrete log lines) is omitted. The source includes a `ログの出力例` block showing real output such as `2011-02-08 23:07:25.182 -DEBUG- ... BasicSqlPStatement#retrieve` with SQL, start_position, size, query_timeout, fetch_size, and a corresponding TRACE line for bind parameters and DEBUG line for execute_time/retrieve_time/count. This concrete example demonstrates what actual SQL log output looks like and is useful for verifying correct configuration.",
+      "source_evidence": "Source section 'SQLログの出力方法' contains a `ログの出力例` code block with three log lines demonstrating DEBUG-level retrieve start, TRACE-level parameter output, and DEBUG-level retrieve end output."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s14 — SqlPStatement#retrieveメソッドの検索終了時 (placeholder section)",
+      "description": "`$methodName$` is missing from the hints array. The source's placeholder table for retrieve end includes メソッド名 → `$methodName$`, and the knowledge file's s14 content table also lists it, but the hints array omits it.",
+      "source_evidence": "Source placeholder table for SqlPStatement#retrieve検索終了時 lists: メソッド名 → $methodName$, 実行時間 → $executeTime$, データ取得時間 → $retrieveTime$, 検索件数 → $count$. The hints array only includes $executeTime$, $retrieveTime$, $count$ but not $methodName$."
+    }
+  ]
+}

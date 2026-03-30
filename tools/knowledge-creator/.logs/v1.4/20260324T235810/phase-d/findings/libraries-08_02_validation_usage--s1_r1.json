@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — Action からのバリデーションメソッドの呼び出し (note block)",
+      "description": "Missing warning that the HTML form examples in this section are for understanding validation only and must NOT be used as-is in real applications. Real Nablarch web applications use custom tags (`:ref:`custom_tag``).",
+      "source_evidence": "通常、Nablarchを使用したWebアプリケーションの開発では、:ref:`custom_tag` に記載したカスタムタグを使用する。上記実装はあくまでバリデーションの理解に集中するための実装例とし、実際のアプリケーション実装をそのまま行わないよう注意すること。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — markdown heading inside section content",
+      "description": "The heading '## ActionからのバリデーションメソッドList' adds the word 'List' which has no basis in the source. The source section is titled 'Action からのバリデーションメソッドの呼び出し' (calling validation methods from Action).",
+      "source_evidence": "Source heading: 'Action からのバリデーションメソッドの呼び出し' — no 'List' suffix present"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The first h2 section 'バリデーションの実行と入力値の変換' contains 3 h3 subsections (Formの実装, Action からのバリデーションメソッドの呼び出し, バリデーション結果のエラーメッセージ生成) and well exceeds 2000 chars of plain text, but all content is merged into s1 without splitting.",
+      "source_evidence": "RST h3 headings present under first h2: 'Formの実装' (====), 'Action からのバリデーションメソッドの呼び出し' (====), 'バリデーション結果のエラーメッセージ生成' (====)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "s1 hints are missing 'ApplicationException' (thrown by abortIfInvalid, explicitly named in content) and 'Validatable' (the interface type for validateAndConvertRequest argument 3, explicitly named in content).",
+      "source_evidence": "反対に異常終了の場合は、ValidationContext#abortIfInvalid メソッドを使用して、ApplicationExceptionを送出することが出来る。 / 入力値を保持した Validatable インタフェースを実装したクラス、または Map"
+    }
+  ]
+}

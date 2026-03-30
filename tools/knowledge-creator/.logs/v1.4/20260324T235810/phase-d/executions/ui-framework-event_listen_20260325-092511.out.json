@@ -1,0 +1,34 @@
+{
+  "file_id": "ui-framework-event_listen",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — イベントの監視と捕捉",
+      "description": "JavaScriptの等価実装コード例が省略されている。ソースは書式1・書式2それぞれについて「相当するJavaScriptの実装はおおまかには以下のようになる」として jQuery の `.on()` 呼び出し例を示しており、ウィジェットがどのようなイベントバインディングに変換されるかを理解するための情報である。",
+      "source_evidence": "「上記のイベント定義に相当するJavaScriptの実装はおおまかには以下のようになる。」→ `$('#usrForm').on('change', function() {...})` および `$('#usrForm').on('click', \"input[type='submit']\", function() {...})`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — コンテキストの指定（警告内）",
+      "description": "context属性とevent属性セレクタ式が「ほぼ同じ挙動」となる比較用JSPコード2例が省略されている。ソースはこの等価性を示す具体的なコードと、context属性を使った場合に対応するJavaScript（すべてのサブミットボタンに直接イベント登録する形）を提示しており、パフォーマンス上の問題を具体的に説明するために使われている。",
+      "source_evidence": "ソースの「例えば、以下の2つのコードは、ほぼ同じ挙動となる。」以降の2つのJSPコードブロックと、それに対応するJavaScript: `$(\"#usrForm input[type='submit']\").on('click', function() {...})`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — イベントの監視と捕捉 (書式1の説明)",
+      "description": "書式1の説明に「親要素内のすべての要素のイベントを監視」と記載されているが、ソースに「すべての要素」という表現はない。ソースは「親要素内で発生するイベントを監視する」と述べているのみで、「すべての」という限定表現は知識ファイルによる追加。",
+      "source_evidence": "ソース: 「本ウィジェットは、親要素内で発生するイベントを監視する。監視するイベントは event属性 に以下のいずれかの書式で指定する。1. [イベント名]」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`event:confirm` がs2のhintsに含まれていない。s2のセクション本文中に「一部のアクション（:doc:`event_confirm` など）では後続イベントアクションの実行中止や、イベントバブリングやデフォルトアクションの停止を行わせることが可能」と明示されており、重要なウィジェット名として検索対象になり得る。",
+      "source_evidence": "ソースおよびknowledge file s2本文: 「一部のイベントアクション ( :doc:`event_confirm` など) では後続イベントアクションの実行中止や、イベントバブリングやデフォルトアクションの停止を行わせることが可能である。」"
+    }
+  ]
+}

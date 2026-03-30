@@ -1,0 +1,163 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "workflow-WorkflowInstanceElement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "Section s2 content references `workflow_complete_task` (タスクが :ref:`workflow_complete_task` によって終了したとしても削除されることはなく) but this term is absent from the hints array.",
+      "source_evidence": "タスクが :ref:`workflow_complete_task` によって終了したとしても削除されることはなく"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+============================================
+ワークフローインスタンス
+============================================
+
+:doc:`../index` がワークフローインスタンス情報として管理する情報について記載する。
+
+:doc:`../index` は、ワークフローインスタンスの情報として、大きく分けて
+「ワークフローに含まれているタスクに割り当てられている担当ユーザ/担当グループ」と
+「現在処理可能なタスク」の2つを管理する。
+
+
+.. _workflow_task_assignee:
+
+--------------------------------------------
+タスク担当ユーザ/タスク担当グループ
+--------------------------------------------
+
+ワークフローに含まれる各タスクに割り当てられているユーザ/グループをあらわす。
+
+:ref:`workflow_element_task` の場合には、単一の担当ユーザ/グループのみ割り当てることができ、
+:ref:`workflow_element_multi_instance_task` の場合には、複数の担当ユーザ/グループを
+割り当てることができる。
+
+ただし、一つのタスクには、ユーザもしくはグループのどちらか片方しか割り当てることはできない。
+たとえば、 :ref:`workflow_element_multi_instance_task` で複数の担当を割り当て、その一部を
+担当ユーザとし、残りを担当グループに割り当てる、といったことはできない。
+
+タスクが :ref:`workflow_complete_task` によって終了したとしても削除されることはなく、
+再度そのタスクが :ref:`workflow_active_flow_node` となった際には、以前から割り当てられているユーザ/グループの
+:ref:`workflow_active_task` が作成される。
+
+
+.. _workflow_active_flow_node:
+
+--------------------------------------------
+アクティブフローノード
+--------------------------------------------
+
+ワークフローインスタンスで、現在処理可能となっているフローノード。
+
+基本的には、 :ref:`workflow_element_task` 、 :ref:`workflow_element_multi_instance_task` が
+アクティブフローノードとなるが、ワークフローが完了した場合には :ref:`workflow_element_event_terminate` が
+アクティブフローノードとなる。
+
+ワークフローの進行状況は、このアクティブフローノードが変化していくことで管理される。
+
+
+.. _workflow_active_task:
+
+--------------------------------------------------
+アクティブユーザタスク/アクティブグループタスク
+--------------------------------------------------
+
+ワークフローインスタンスで、現在ユーザ/グループが処理可能であるタスク。
+
+現在のアクティブフローノードに割り当てられている担当ユーザ/グループのタスクが登録されている。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "workflow-WorkflowInstanceElement--s1",
+  "title": "ワークフローインスタンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ワークフローインスタンス概要",
+      "hints": [
+        "ワークフローインスタンス管理",
+        "担当ユーザ管理",
+        "担当グループ管理",
+        "タスク割り当て",
+        "アクティブフローノード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "タスク担当ユーザ/タスク担当グループ",
+      "hints": [
+        "タスク担当ユーザ",
+        "タスク担当グループ",
+        "マルチインスタンスタスク",
+        "タスク割り当て制約",
+        "ユーザグループ排他割り当て不可",
+        "workflow_task_assignee"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アクティブフローノード",
+      "hints": [
+        "アクティブフローノード",
+        "ワークフロー進行状況",
+        "終了イベント",
+        "workflow_active_flow_node",
+        "処理可能フローノード"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アクティブユーザタスク/アクティブグループタスク",
+      "hints": [
+        "アクティブユーザタスク",
+        "アクティブグループタスク",
+        "処理可能タスク",
+        "workflow_active_task"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ワークフローインスタンスの情報として、「ワークフローに含まれているタスクに割り当てられている担当ユーザ/担当グループ」と「現在処理可能なタスク」の2つを管理する。",
+    "s2": "ワークフローに含まれる各タスクに割り当てられているユーザ/グループ。\n\n- :ref:`workflow_element_task` には単一の担当ユーザ/グループのみ割り当て可能\n- :ref:`workflow_element_multi_instance_task` には複数の担当ユーザ/グループを割り当て可能\n\n> **重要**: 一つのタスクには、ユーザもしくはグループのどちらか片方しか割り当てることはできない。:ref:`workflow_element_multi_instance_task` であっても、一部を担当ユーザ・残りを担当グループに割り当てることは不可。\n\nタスクが :ref:`workflow_complete_task` によって終了しても担当情報は削除されない。再度そのタスクが :ref:`workflow_active_flow_node` となった際には、以前の担当ユーザ/グループの :ref:`workflow_active_task` が作成される。",
+    "s3": "ワークフローインスタンスで現在処理可能となっているフローノード。\n\n- 通常は :ref:`workflow_element_task` または :ref:`workflow_element_multi_instance_task` がアクティブフローノードとなる\n- ワークフローが完了した場合は :ref:`workflow_element_event_terminate` がアクティブフローノードとなる\n\nワークフローの進行状況は、このアクティブフローノードの変化によって管理される。",
+    "s4": "ワークフローインスタンスで現在ユーザ/グループが処理可能なタスク。現在のアクティブフローノードに割り当てられている担当ユーザ/グループのタスクが登録されている。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

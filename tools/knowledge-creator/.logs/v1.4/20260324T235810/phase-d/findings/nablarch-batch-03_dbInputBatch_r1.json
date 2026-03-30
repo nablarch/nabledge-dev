@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-03_dbInputBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1.hints",
+      "description": "`CommandLine` is a PascalCase class name appearing in the `initialize` method signature (`initialize(CommandLine command, ExecutionContext context)`) but is absent from s1 hints.",
+      "source_evidence": "protected void initialize(CommandLine command, ExecutionContext context)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2.hints",
+      "description": "`SystemAccountEntity` is a PascalCase class instantiated in `createReader` (used as the condition object for `GET_DELETE_USER_LIST`) but is absent from s2 hints.",
+      "source_evidence": "SystemAccountEntity condition = new SystemAccountEntity();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3.hints",
+      "description": "Three PascalCase class names used in the `handle` method code are absent from s3 hints: `ExclusiveCtrlSystemAccountContext` (passed to `ExclusiveControlUtil.updateVersion`), `CM311AC1Component` (performs the actual delete), and `DeleteUserSendMessage` (inserted into message send table).",
+      "source_evidence": "new ExclusiveCtrlSystemAccountContext(inputData.getString(\"userId\")); CM311AC1Component component = new CM311AC1Component(); insertSendMessage(new DeleteUserSendMessage(userInfo));"
+    }
+  ]
+}

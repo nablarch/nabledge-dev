@@ -1,0 +1,295 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "biz-samples-01_Utility--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — code example (生成するクラス側)",
+      "description": "The class implementation example omits the surrounding Objective-C class structure: `@implementation NMAesEncryption`, `@synthesize nmMode;`, `@synthesize nmPaddingType;`, and `@end`. The source shows a complete class skeleton demonstrating that the target class must declare and synthesize properties (`nmMode`, `nmPaddingType`) alongside the `initWithDictionary:` method. Developers implementing a compatible class need to know that property declarations are required.",
+      "source_evidence": "Source shows: `@implementation NMAesEncryption\\n \\n@synthesize nmMode;\\n@synthesize nmPaddingType;\\n \\n- (id)initWithDictionary:(NSDictionary *)dict { ... }\\n  \\n@end`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`message_management`:
+
+==========================================
+ユーティリティ
+==========================================
+
+Nablarch Mobileが提供するユーティリティの仕様を解説する。\
+以下に本章で解説するユーティリティクラスおよびその概要の一覧を記載する。
+
+========================= =============================================================================
+クラス名                  概要
+========================= =============================================================================
+:ref:`NMCommonUtil`       一般ユーティリティの集合クラス
+:ref:`NMConnectionUtil`   通信ユーティリティの集合クラス
+:ref:`NMMockUtil`         通信モックユーティリティの集合クラス
+========================= =============================================================================
+
+.. _NMCommonUtil:
+
+--------------------
+NMCommonUtil
+--------------------
+
+
+機能一覧
+==========
+
+  =============================== =============================================================================================
+  機能名                          概要
+  =============================== =============================================================================================
+  クラス生成                      フォーマット通り作成されたディクショナリで指定されたクラスを生成する。
+                                  詳細は :ref:`newClassFromPropertyList` を参照すること。
+
+                                   .. function:: + (id)newClassFromProperty:(NSDictionary *)propertyList
+
+                                    :param: propertyList:フォーマット通り作成されたディクショナリ 
+
+                                    :return: propertyListで指定されたクラス
+
+                                    例
+
+                                    .. code-block:: objective-c
+
+                                      NSDictionary *propertyList = @{@"class" : @"ClassName", 
+                                                                     @"initializeList" : @{@"proerty1" : @"value1"}};
+                                      ClassName *clazz = ((ClassName *)[NMCommonUtil newClassFromPropertyList:propertyList]);
+
+  プロパティリストの取得          引数で指定されたファイル名のプロパティリストからNSDictionaryを生成する。
+                                  生成に使用するプロパティリストには NSBundle クラスの pathForResource:ofType: 
+                                  を使用してアクセスする。
+                                  このため、プロパティリストファイルは、 pathForResource:ofType: でアクセス可能な箇所に配置する
+                                  必要がある。
+
+                                   .. function:: + (NSDictionary *)getPropertyList:(NSString *)fileName
+
+                                    :param: fileName:プロパティリストファイル名(拡張子を除く)
+
+                                    :return: 指定されたプロパティリストと同じ構造をもつNSDictionary
+
+                                    例
+
+                                    .. code-block:: objective-c
+
+                                      NSDictionary *propertyList = [NMCommonUtil getPropertyList:@"fileName"];
+
+  プロトコル実装確認              指定したクラスが指定したプロトコルを実装しているか確認する。プロトコルを実装していない場合は\
+                                  例外を発生する。例外を発生させずに、単純にプロトコルが実装されているか調べたい場合は\
+                                  iOS APIで提供されるNSObjectクラスのconformsToProtocolメソッドを使用すること。
+
+                                   .. function:: + (void)protocol:(Protocol *)prtcl isImplementedIn:(id)clazz
+
+                                    :param: | prtcl:プロトコル
+                                            | clazz:クラス
+
+                                    例
+
+                                    .. code-block:: objective-c
+
+                                      [NMCommonUtil protocol:@protocol(NMMessageRequester) isImplementedIn:sender];
+  =============================== =============================================================================================
+
+
+.. _newClassFromPropertyList:
+
+newClassFromPropertyList詳解
+=============================
+
+.. function:: + (id)newClassFromProperty:(NSDictionary *)propertyList
+
+  :param: propertyList:フォーマット通り作成されたディクショナリ 
+
+  :return: propertyListで指定されたクラス
+
+
+本メソッドではフォーマット通り作成されたディクショナリで指定されたクラスを生成する。
+ディクショナリのフォーマットは以下の通り。
+
+==================== =============== =================================================================
+キー                 型              概要
+==================== =============== =================================================================
+class                NSString        生成したいクラス名
+initializeList       NSDictionary    生成したいクラスの初期化時に使用するパラメータ郡
+==================== =============== =================================================================
+
+initializeListに設定したディクショナリは生成するクラスのinitWithDictionaryメソッドの引数として渡される。 \
+
+例
+
+.. code-block:: objective-c
+
+ // メソッドの呼び出し側の実装
+ NSDictionary *propertyList = @{@"class" : @"NMAesEncryption", 
+                                @"initializeList" : @{@"mode" : @"CBC",
+                                                      @"padding" : @"NOTHING"}};
+ NMAesEncryption *clazz = ((NMAesEncryption *)[NMCommonUtil newClassFromPropertyList:propertyList]);
+
+
+ // 生成したいクラス側の実装
+ @implementation NMAesEncryption
+ 
+ @synthesize nmMode;
+ @synthesize nmPaddingType;
+ 
+ - (id)initWithDictionary:(NSDictionary *)dict {
+     self = [super init];
+     if (self != nil) {
+         self.nmMode = dict[@"mode"];
+         self.nmPaddingType = dict[@"padding"];
+     }
+     return self;
+ }
+  
+ @end
+
+
+.. _NMConnectionUtil:
+
+--------------------
+NMConnectionUtil
+--------------------
+
+
+機能一覧
+==========
+
+  =============================== =======================================================================================================
+  機能名                          概要
+  =============================== =======================================================================================================
+  JSONフォーマット                NMMessageオブジェクトをJSON形式の文字列にフォーマットする。
+
+                                   .. function:: - (NSString *)convertMessageIntoJsonString:(NMMessage *)message error:(NSError **)error
+
+                                    :param: | message:変換したいNMMessageオブジェクト
+                                            | error:エラー情報
+
+                                    :return: フォーマットした文字列。エラーが発生した場合はnil。
+
+  JSONパース                      JSON形式の文字列をNMMessageオブジェクトにパースする。
+
+                                   .. function:: - (NMMessage *)convertJsonStringIntoMessage:(NSString *)str error:(NSError **)error
+                                   
+                                    :param: | str:変換したいJSON形式文字列
+                                            | error:エラー情報
+
+                                    :return: パースしたNMMessageオブジェクト。エラーが発生した場合はnil。
+
+  =============================== =======================================================================================================
+
+
+
+
+.. _NMMockUtil:
+
+--------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "biz-samples-01_Utility--s1",
+  "title": "ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ユーティリティ概要",
+      "hints": [
+        "NMCommonUtil",
+        "NMConnectionUtil",
+        "NMMockUtil",
+        "ユーティリティクラス一覧",
+        "Nablarch Mobile"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "NMCommonUtil",
+      "hints": [
+        "NMCommonUtil",
+        "newClassFromProperty",
+        "getPropertyList",
+        "protocol:isImplementedIn:",
+        "クラス生成",
+        "プロパティリスト取得",
+        "プロトコル実装確認",
+        "NMMessageRequester"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "newClassFromPropertyList詳解",
+      "hints": [
+        "newClassFromPropertyList",
+        "initWithDictionary",
+        "クラス動的生成",
+        "ディクショナリフォーマット",
+        "NMCommonUtil",
+        "NMAesEncryption"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "NMConnectionUtil",
+      "hints": [
+        "NMConnectionUtil",
+        "convertMessageIntoJsonString:error:",
+        "convertJsonStringIntoMessage:error:",
+        "JSONフォーマット",
+        "JSONパース",
+        "NMMessage"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "NMMockUtil",
+      "hints": [
+        "NMMockUtil",
+        "通信モックユーティリティ",
+        "モック通信"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch Mobileが提供するユーティリティクラス。\n\n| クラス名 | 概要 |\n|---|---|\n| `NMCommonUtil` | 一般ユーティリティの集合クラス |\n| `NMConnectionUtil` | 通信ユーティリティの集合クラス |\n| `NMMockUtil` | 通信モックユーティリティの集合クラス |",
+    "s2": "**クラス**: `NMCommonUtil`\n\n### クラス生成\n\n`+ (id)newClassFromProperty:(NSDictionary *)propertyList`\n\n- param: propertyList — フォーマット通り作成されたディクショナリ\n- return: propertyListで指定されたクラス\n\n詳細はnewClassFromPropertyList詳解を参照すること。\n\n```objective-c\nNSDictionary *propertyList = @{@\"class\" : @\"ClassName\", \n                               @\"initializeList\" : @{@\"proerty1\" : @\"value1\"}};\nClassName *clazz = ((ClassName *)[NMCommonUtil newClassFromPropertyList:propertyList]);\n```\n\n### プロパティリストの取得\n\n`+ (NSDictionary *)getPropertyList:(NSString *)fileName`\n\n- param: fileName — プロパティリストファイル名(拡張子を除く)\n- return: 指定されたプロパティリストと同じ構造をもつNSDictionary\n\n> **注意**: プロパティリストファイルはNSBundleクラスの`pathForResource:ofType:`でアクセス可能な箇所に配置する必要がある。\n\n```objective-c\nNSDictionary *propertyList = [NMCommonUtil getPropertyList:@\"fileName\"];\n```\n\n### プロトコル実装確認\n\n`+ (void)protocol:(Protocol *)prtcl isImplementedIn:(id)clazz`\n\n- param: prtcl — プロトコル\n- param: clazz — クラス\n\nプロトコルを実装していない場合は例外を発生する。単純にプロトコル実装を確認したい場合はNSObjectクラスの`conformsToProtocol`メソッドを使用すること。\n\n```objective-c\n[NMCommonUtil protocol:@protocol(NMMessageRequester) isImplementedIn:sender];\n```",
+    "s3": "`+ (id)newClassFromProperty:(NSDictionary *)propertyList`\n\nディクショナリのフォーマット:\n\n| キー | 型 | 概要 |\n|---|---|---|\n| class | NSString | 生成したいクラス名 |\n| initializeList | NSDictionary | 生成したいクラスの初期化時に使用するパラメータ群 |\n\n`initializeList`に設定したディクショナリは、生成するクラスの`initWithDictionary:`メソッドの引数として渡される。\n\n```objective-c\n// 呼び出し側\nNSDictionary *propertyList = @{@\"class\" : @\"NMAesEncryption\", \n                               @\"initializeList\" : @{@\"mode\" : @\"CBC\",\n                                                     @\"padding\" : @\"NOTHING\"}};\nNMAesEncryption *clazz = ((NMAesEncryption *)[NMCommonUtil newClassFromPropertyList:propertyList]);\n\n// 生成するクラス側\n- (id)initWithDictionary:(NSDictionary *)dict {\n    self = [super init];\n    if (self != nil) {\n        self.nmMode = dict[@\"mode\"];\n        self.nmPaddingType = dict[@\"padding\"];\n    }\n    return self;\n}\n```",
+    "s4": "**クラス**: `NMConnectionUtil`\n\n### JSONフォーマット\n\n`- (NSString *)convertMessageIntoJsonString:(NMMessage *)message error:(NSError **)error`\n\n- param: message — 変換したいNMMessageオブジェクト\n- param: error — エラー情報\n- return: フォーマットした文字列。エラーが発生した場合はnil。\n\n### JSONパース\n\n`- (NMMessage *)convertJsonStringIntoMessage:(NSString *)str error:(NSError **)error`\n\n- param: str — 変換したいJSON形式文字列\n- param: error — エラー情報\n- return: パースしたNMMessageオブジェクト。エラーが発生した場合はnil。",
+    "s5": "**クラス**: `NMMockUtil`\n\n通信モックユーティリティの集合クラス。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,19 @@
+{
+  "file_id": "handlers-DuplicateProcessCheckHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — permitRequestIds row",
+      "description": "The knowledge file adds \"（カンマ区切り）\" to the permitRequestIds description, but the source table never explicitly states comma-separated format. The XML example shows value=\"BC0010,BC0011\" but this is an implicit convention, not a documented specification.",
+      "source_evidence": "Source table row: 「チェック対象外リクエストID | permitRequestIds | List<String> | 任意指定」 — no mention of comma separator. XML example: value=\"BC0010,BC0011\" shows usage but does not define the format."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "S9 warning — Section count vs source headings",
+      "description": "The automated S9 warning (section count 3 < source headings 6) is a false positive. The source has exactly 3 h2 headings (概要, ハンドラ処理フロー, 設定項目・拡張ポイント). The extra count comes from three standalone '++++++' decorative separator lines that have no heading text and are not valid RST headings. The knowledge file's 3 sections correctly match the 3 h2 headings."
+    }
+  ]
+}

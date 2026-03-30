@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s7",
+      "description": "The section content references `CodeUtil.getName(\"C0100001\", \"01\")` and `CodeUtil.getValues(\"C0100001\")` as specific method signatures, but the source file is truncated at the `other_example_code_get` heading — the body of this section is not present in the provided source. These method names and signatures cannot be confirmed.",
+      "source_evidence": "Source file ends at the heading `------------------------------------------------------------------------` following `.. _`other_example_code_get`:`. No content under that section is visible."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s8",
+      "description": "Section s8 describes `MessageLevel.WARN` usage with `ApplicationException` for sending warning messages, but the corresponding source section (`other_example_warn_message`) is not present in the provided source file — only its reference in the table of contents is visible. The code pattern and description cannot be confirmed.",
+      "source_evidence": "The ToC lists `other_example_warn_message` as a reference target, but the source file is truncated before reaching that section. No content for this section exists in the provided source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "`MessageLevel` is used directly in the s5 code example (`MessageLevel.ERROR`) but is absent from s5's hints array. It should be listed as a hint since developers searching for MessageLevel usage in error notification context would benefit.",
+      "source_evidence": "Source s5 code: `Message message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\");`"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-03_Tips--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source contains a Java code block that explicitly shows the equivalent ArrayList/HashMap construction for the data returned by getListMap. This illustrates how the rows in the Excel table map to the key-value pairs of each Map entry. The knowledge file states the return type as List<Map<String, String>> but omits this concrete equivalence example.",
+      "source_evidence": "List<Map<String, String>> list = new ArrayList<Map<String, String>>();\nMap<String, String> first = new HashMap<String, String>();\nfirst.put(\"empNo\",\"00001\");\nfirst.put(\"expected\", \"山田太郎\");\nlist.add(first);\n..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The class SqlResultSet is used in the code example for the loop-test section (as the return type of selectByPk and the argument to assertSqlResultSetEquals) but is not listed in the hints array for s2.",
+      "source_evidence": "SqlResultSet actual = target.selectByPk(empNo);\nassertSqlResultSetEquals(\"testSelectByPk\", expectedDataId, actual);"
+    }
+  ]
+}

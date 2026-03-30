@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "障害ログの出力方法 section (after FailureLogUtil usage example)",
+      "description": "The source states \"障害コードのコード体系は、プロジェクト毎に規定すること。\" (failure code naming conventions must be defined per project). This is an actionable implementation guideline not present in the knowledge file.",
+      "source_evidence": "上記使用例のように、障害ログの出力では、ログから障害内容を特定するために障害コードを指定する。障害コードのコード体系は、プロジェクト毎に規定すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "PascalCase class names `FileLogWriter` and `BasicLogFormatter` appear in log.properties configuration code examples throughout the source but are absent from hints. `SynchronousFileLogWriter` is included but its sibling `FileLogWriter` (used for the application log writer) is not. `BasicLogFormatter` is used for both writers' formatter configuration.",
+      "source_evidence": "writer.appFile.className=nablarch.core.log.basic.FileLogWriter / writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The hint `SqlStatementExceptionFactory` does not correspond to any class or interface name in the source. The source only names `StatementExceptionFactory` (interface) and `BasicSqlStatementExceptionFactory` (implementation class). Including a non-existent class name as a hint could lead an AI to incorrectly attribute information to that class.",
+      "source_evidence": "Source defines only: interface `StatementExceptionFactory` and class `BasicSqlStatementExceptionFactory`. The phrase 'そのFactoryクラスを追加する' refers to a user-defined factory but gives no class name."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (BasicSqlLoader SQL code example)",
+      "description": "The SQL file example omits the comment lines present in the source (`-- ＸＸＸＸＸ取得SQL` and `-- SQL_ID:GET_XXXX_INFO`). The source includes these to concretely demonstrate rule c) about `--` comment syntax and also to show the convention of documenting SQL_ID in a comment alongside the definition. Without them the example no longer illustrates comment usage in practice.",
+      "source_evidence": "Source example:\n```sql\n-- ＸＸＸＸＸ取得SQL\n-- SQL_ID:GET_XXXX_INFO\nGET_XXXX_INFO =\nSELECT ...\n```\nKnowledge file example starts directly with `GET_XXXX_INFO =` with no comments."
+    }
+  ]
+}

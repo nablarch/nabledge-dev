@@ -1,0 +1,41 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — リクエストパスとリクエストIDのマッピング table footnote",
+      "description": "The source footnote '※ messaging では、通常、リクエストIDとリクエストパスは同じ文字列となる。' is absent from the knowledge file. This is a behavioral clarification relevant to anyone implementing or configuring messaging.",
+      "source_evidence": "※  :doc:`messaging` では、通常、リクエストIDとリクエストパスは同じ文字列となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — handle() 戻り値",
+      "description": "The source states that the result type also varies by processing method and must be declared as a type variable per handler ('処理結果オブジェクトの型もリクエストと同様、処理方式ごとに異なるため、ハンドラごとに型変数として宣言する必要がある'). This constraint is not captured in the knowledge file.",
+      "source_evidence": "``handle()`` メソッドはその戻り値として、ハンドラの処理結果を表すオブジェクトを返す。処理結果オブジェクトの型もリクエストと同様、処理方式ごとに異なるため、ハンドラごとに型変数として宣言する必要がある。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 content is 'なし' (4 characters), well below the 50-character minimum. The corresponding source location is only an RST anchor (`.. _method_binding:`) and a horizontal rule separator with no prose content, so 'なし' may be intentional, but the section is effectively empty.",
+      "source_evidence": ".. _method_binding:\n\n+++++++++++++++++++++++++++\n"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "Six handler class names explicitly listed in the type-variable classification table are absent from s1's hints: TransactionManagementHandler, ServiceAvailabilityCheckHandler, RequestPathJavaPackageMapping, RequestHandlerEntry, HttpResponseHandler, HttpAccessLogHandler.",
+      "source_evidence": "型変数テーブル内: TransactionManagementHandler, ServiceAvailabilityCheckHandler, RequestPathJavaPackageMapping, RequestHandlerEntry, HttpResponseHandler, HttpAccessLogHandler"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints array",
+      "description": "'FileBatchAction' is referenced in the MethodBinder table as the documentation target for RecordTypeBinding but is not listed in s4's hints.",
+      "source_evidence": "nablarch.fw.handler.RecordTypeBinding … 参照: :doc:`../handler/FileBatchAction`"
+    }
+  ]
+}

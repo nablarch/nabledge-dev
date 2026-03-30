@@ -1,0 +1,163 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-02_WindowScope",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (動作イメージ)",
+      "description": "The source explains that hidden-carried data is stored in the HTML of a specific window, thereby achieving cross-request data sharing without affecting other windows or tabs. This mechanism explanation is absent from the knowledge file.",
+      "source_evidence": "「hiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されている。このようにして、他のウィンドウやタブに影響を与えずに、複数のリクエストをまたがったデータ共有を実現している。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (セッションスコープとの使い分け)",
+      "description": "The footnote providing a concrete example of when session scope is required (shopping cart items must be unified across windows for a single user) is omitted. This example clarifies the meaning of 'ウィンドウ間でデータを共有する' in practical terms.",
+      "source_evidence": "「例えば、ショッピングサイトにおけるショッピングカート内の商品情報は、ユーザが複数のウィンドウを使用していても、ユーザに対して１つにしなければならない。このような用途にはセッションスコープを使用する。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _guide_appendix_windowScope:
+
+=======================================
+Appendix A: ウィンドウスコープ概要
+=======================================
+
+ウィンドウスコープとは、リクエストを跨るデータを格納する領域である。\
+セッションスコープがアプリケーションサーバ上でデータを格納するのに対して、\
+ウィンドウスコープは、複数画面間をhiddenタグで持ちまわることにより実現される。
+ウィンドウスコープを使用することで、ブラウザで複数のウィンドウを立ち上げても\
+並列に動作させることができる。また、ブラウザのヒストリバックによる遷移が可能となる。
+
+動作イメージ
+============
+
+以下に、複数の入力画面で構成されるアンケートアプリケーションの例を記載する。\
+ユーザからの入力項目をhiddenタグで持ちまわることで、\
+セッションスコープを使用せずに複数画面をまたがって情報を保持している。
+
+
+
+.. image:: ./_image/sequence.png
+
+
+上記のように、hiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されている。\
+このようにして、他のウィンドウやタブに影響を与えずに、複数のリクエストをまたがったデータ共有を実現している。
+
+.. note::
+ ウィンドウスコープに格納された変数は、カスタムタグを使用することで自動的にhiddenタグに変換されるので、
+ **アプリケーションプログラマがJSPにhiddenタグを書く必要はない。**\
+ （具体的な実装方法は、\ :ref:`window_scope_guide_links`\ のリンク先を参照。）
+
+
+セッションスコープとの使い分け
+==============================
+
+基本的に、セッションスコープではなく、\ **ウィンドウスコープを使用**\ する。
+
+ただし、ウィンドウスコープは、その名の通りウィンドウ内のデータ領域である為、
+ウィンドウ間でのデータを共有する用途\ [#]_\ には使用できない。\
+よって、ウィンドウ間でデータを共有する必要がある場合はセッションスコープにデータを格納する。\
+逆に、ウィンドウ間で共有する必要の無いデータについては、ウィンドウスコープを使用する。
+つまり、ほとんどの場合ではウィンドウスコープを使用することになる。
+
+
+ .. [#] 例えば、ショッピングサイトにおけるショッピングカート内の商品情報は、ユーザが複数のウィンドウを使用していても、ユーザに対して１つにしなければならない。このような用途にはセッションスコープを使用する。
+
+.. _`window_scope_guide_links`:
+
+詳細情報
+========
+
+詳細については、以下の文書を参照すること。
+
+* ウィンドウスコープ、セッションスコープ等の変数スコープについて
+
+  画面オンライン処理用業務アクションハンドラ - `変数スコープの利用  <../../../fw/reference/handler/HttpMethodBinding.html#web-scope>`_
+
+* カスタムタグを使用したウィンドウスコープの使用方法について
+
+  カスタムタグ実装例集 - :ref:`howto_window_scope` 
+
+ 
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-02_WindowScope",
+  "title": "Appendix A: ウィンドウスコープ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "動作イメージ",
+      "hints": [
+        "ウィンドウスコープ",
+        "hiddenタグ",
+        "複数ウィンドウ並列動作",
+        "ヒストリバック",
+        "カスタムタグ自動変換"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "セッションスコープとの使い分け",
+      "hints": [
+        "ウィンドウスコープ",
+        "セッションスコープ",
+        "スコープ使い分け",
+        "ウィンドウ間データ共有"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "詳細情報",
+      "hints": [
+        "ウィンドウスコープ実装",
+        "変数スコープ",
+        "howto_window_scope",
+        "カスタムタグ実装"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープはリクエストを跨るデータを格納する領域。セッションスコープ（アプリサーバ上のデータ格納）と異なり、hiddenタグで複数画面間を持ちまわることで実現される。複数ウィンドウの並列動作が可能で、ブラウザのヒストリバックによる遷移もできる。\n\n![複数画面をhiddenタグで引き継ぐシーケンス図](assets/web-application-02_WindowScope/sequence.png)\n\n> **注意**: ウィンドウスコープに格納された変数はカスタムタグにより自動的にhiddenタグに変換される。アプリケーションプログラマがJSPにhiddenタグを書く必要はない。（実装方法は :ref:`window_scope_guide_links` 参照）",
+    "s2": "基本的にセッションスコープではなく**ウィンドウスコープを使用**する。\n\n| ケース | 使用するスコープ |\n|---|---|\n| ウィンドウ間でデータを共有しない（ほとんどの場合） | ウィンドウスコープ |\n| ウィンドウ間でデータを共有する必要がある場合 | セッションスコープ |",
+    "s3": "- 変数スコープ（ウィンドウスコープ・セッションスコープ等）の利用方法: [変数スコープの利用](../../../fw/reference/handler/HttpMethodBinding.html#web-scope)\n- カスタムタグを使用したウィンドウスコープの使用方法: :ref:`howto_window_scope`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

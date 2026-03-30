@@ -1,0 +1,444 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/Validation/index.rst`
+- Format: `rst`
+
+```
+.. _Validation_Example:
+
+==========================================
+精査処理の実装例集
+==========================================
+
+--------------
+本ページの構成
+--------------
+
+本ページでは以下の実装例を説明する。
+
+* :ref:`validation_database_access_error`
+* :ref:`validation_example_code_validate`
+* :ref:`validation_example_contains_key`
+* :ref:`validation_example_contains_key_param`
+
+.. _`validation_database_access_error`:
+
+------------------------------------------------------------------------------------
+データベースアクセスを伴う精査を行う方法
+------------------------------------------------------------------------------------
+アプリケーションにおいて、データベースアクセスを伴う精査は
+単体項目、複合項目を問わず Entity ではなく Action に実装する。
+
+精査エラーは、 :ref:`other_example_message_notify` に示した ApplicationException
+クラスを使用する方法で使用者にメッセージを通知する。
+
+以下にユーザ登録時に行うログインIDの重複チェックを行う実装例を示す。
+
+* 実装例
+
+  .. code-block:: java
+
+
+
+        /* 【説明】
+            データベースアクセスを伴う精査の実装例。
+            Entityではなく Action (業務共通コンポーネントを含む) に精査の実装を行う。 */
+        // form 生成
+        W11AC02Form form = context.createObject();
+
+        // form から entity 取得
+        SystemAccountEntity systemAccount = form.getSystemAccount();
+
+        // entityからログインIDの取得
+        String loginId = systemAccount.getLoginId();
+
+        // ログインIDが登録済みか、DBを検索する
+        SqlPStatement statement = getSqlPStatement("SELECT_SYSTEM_ACCOUNT");
+        statement.setString(1, loginId);
+        if (!statement.retrieve().isEmpty()) {
+            // ログインIDが登録済みの場合、 ApplicationException を送出
+            throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, "MSG00001"));
+        }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`validation_example_code_validate`:
+
+------------------------------------------------------------------------------------
+コード値の精査を行う方法
+------------------------------------------------------------------------------------
+コード値の精査を行う方法を示す。\
+ここでは、 :ref:`other_example_code_get` に示したコード管理用のデータがデータベースに設定されているものとする。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】BaseCustomerEntityクラスのJavaDocは省略。 */
+    public class BaseCustomerEntity {
+
+        /* 【説明】その他のプロパティおよびメソッドは省略。 */
+
+        /** 性別 */
+        private String gender;
+
+        /* 【説明】
+            コード値のバリデーションはCodeValueバリデータを使用する。
+            genderプロパティに対する値が"1"、"2"、"9"以外の場合は、バリデーション結果がエラーとなる。
+            BaseEntityでは、pattern属性を指定せずに精査を行う。
+        */
+        @PropertyName("性別")
+        @CodeValue(codeId="0001")
+        public String setGender(String gender) {
+            this.gender = gender;
+        }
+    }
+
+    /* 【説明】BaseEntityを継承したEntity */
+
+    /* 【説明】
+        業務共通機能サンプルで提供されるCodeValidationUtilをインポートする。
+
+        CodeValidationUtilはサンプル実装として提供されます。
+        Nablarch導入プロジェクトでは、アーキテクトがCodeValidationUtilのサンプル実装をプロジェクト内に取り込む必要があります
+    */
+    import please.change.me.core.validation.validator.CodeValidationUtil;
+
+    public class CustomerEntity extends BaseCustomerEntity {
+
+        @ValidateFor("validate")
+        public static void validate(ValidationContext<CustomerEntity context) throws Exception {
+            ValidationUtil.validate(context, new String[] {"gender"});
+
+            // 【説明】CodeValidationUtil#validateメソッドを使用してコード値精査を行う。
+            CodeValidationUtil.validate(context, "0001", "PATTERN1", "gender");
+
+            // 【説明】メッセージIDを上書きする場合には、第5引数にメッセージIDを指定する。
+            CodeValidationUtil.validate(context, "0001", "PATTERN1", "gender", "message_id");
+        }}
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`validation_example_contains_key`:
+
+------------------------------------------------------------------------------------------
+入力値に連動して、動的に単項目精査対象を変化させる方法(プロパティの存在有無による切り替え)
+------------------------------------------------------------------------------------------
+例えば、ラジオボタンを選択したか否かに応じて、単項目精査対象を変更したい場合は、FormクラスのValidateForアノテーションを
+付与したメソッドでWebUtil#containsPropertyKeyを使用する。
+
+以下に実装例を示す。
+
+* 入力画面イメージ
+
+  .. image:: ../_image/examples/containsKeyView.png
+   :scale: 55
+
+* JSP
+
+  .. code-block:: jsp
+
+    <%--
+     【説明】
+     入力イメージ対応部分のみ抜粋
+    --%>
+
+    <n:form windowScopePrefixes="form">
+    <table>
+        <tr>
+            <th>
+                精査条件
+            </th>
+            <td>
+                <n:radioButton name="form.validationPtn"  value="ptn1" label="入力欄1のみ精査"/>
+                <n:error name="form.validationPtn" />
+            </td>
+        </tr>
+        <tr>
+            <th>入力欄1(半角英数字)</th>
+            <td>
+                <n:error name="form.value1" />
+                <n:text name="form.value1" cssClass="input" />
+            </td>
+        </tr>
+        <tr>
+            <th>入力欄2(半角英数字)</th>
+            <td>
+                <n:error name="form.value2" />
+                <n:text name="form.value2" cssClass="input" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <n:submit type="button" 
+                 uri="/action/validation/ValidationDemoAction/VALID003002" 
+                 name="VALID003002_submit" value="確認画面"/>
+            </td>
+        </tr>
+    </table>
+    </n:form>
+
+* formクラス
+
+  .. code-block:: java
+
+     // 【説明】JavaDocは省略。
+     /* 【説明】
+         この実装例では、単項目精査内容を指定するパラメータ(入力画面イメージのラジオボタンの選択内容)には、
+         WebUtil#containsPropertyKeyでアクセスするのみの想定なので、対応するプロパティは用意していない。
+         単項目精査内容を指定するパラメータ(入力画面イメージのラジオボタンの選択内容)をActionクラス等で使用
+         する場合は、通常のプロパティと同様、対応するプロパティを用意し、キーが存在する場合の精査対象に
+         含めればよい。
+     */
+     public class Example4Form {
+
+         private String value1;
+         private String value2;
+
+         public Example4Form() {
+
+         }
+
+         public Example4Form(Map<String, Object> params) {
+             value1 = (String) params.get("value1");
+             value2 = (String) params.get("value2");
+         }
+
+         public String getValue1() {
+             return value1;
+         }
+
+         @PropertyName("入力欄1")
+         @Required
+         @SystemChar(charsetDef = "AlnumChar")
+         public void setValue1(String value1) {
+             this.value1 = value1;
+         }
+
+         public String getValue2() {
+             return value2;
+         }
+
+         @PropertyName("入力欄2")
+         @Required
+         @SystemChar(charsetDef = "AlnumChar")
+             public void setValue2(String value2) {
+             this.value2 = value2;
+         }
+
+         public static Example4Form validate(HttpRequest req, String validationName) {
+             ValidationContext<Example4Form> context 
+               = ValidationUtil.validateAndConvertRequest("form", Example4Form.class, req, validationName);
+             context.abortIfInvalid();
+             return context.createObject();
+         }
+
+         @ValidateFor("validateKey")
+         public static void validateForKey(ValidationContext<Example4Form> context) {
+             String paramKey = "form.validationPtn";
+
+             if (WebUtil.containsPropertyKey(context, paramKey)) {
+                 ValidationUtil.validate( context, new String[] { "value1" });
+             } else {
+                 ValidationUtil.validate(context, new String[] { "value1", "value2" });
+             }
+         }
+     }
+
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`validation_example_contains_key_param`:
+
+------------------------------------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-Validation--s1`
+
+```json
+{
+  "id": "web-application-Validation--s1",
+  "title": "精査処理の実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "精査処理の実装例",
+        "バリデーション実装例一覧",
+        "データベースアクセス精査",
+        "コード値精査",
+        "動的精査切り替え"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "データベースアクセスを伴う精査を行う方法",
+      "hints": [
+        "ApplicationException",
+        "SqlPStatement",
+        "MessageUtil",
+        "データベースアクセス精査",
+        "ログインID重複チェック",
+        "Action精査実装",
+        "Entity精査禁止"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コード値の精査を行う方法",
+      "hints": [
+        "@CodeValue",
+        "CodeValidationUtil",
+        "@PropertyName",
+        "コード値精査",
+        "codeId",
+        "ValidationUtil"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "入力値に連動して、動的に単項目精査対象を変化させる方法(プロパティの存在有無による切り替え)",
+      "hints": [
+        "WebUtil",
+        "containsPropertyKey",
+        "ValidationContext",
+        "@ValidateFor",
+        "ValidationUtil",
+        "動的精査切り替え",
+        "プロパティ存在確認",
+        "Example4Form",
+        "validateAndConvertRequest",
+        "abortIfInvalid",
+        "n:radioButton",
+        "@Required",
+        "@SystemChar"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力値に連動して、動的に単項目精査対象を変化させる方法（パラメータによる切り替え）",
+      "hints": [
+        "動的精査切り替え",
+        "パラメータによる切り替え",
+        "ValidationUtil",
+        "@ValidateFor"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "* :ref:`validation_database_access_error`\n* :ref:`validation_example_code_validate`\n* :ref:`validation_example_contains_key`\n* :ref:`validation_example_contains_key_param`",
+    "s2": "データベースアクセスを伴う精査（ログインID重複チェック等）は、単体項目・複合項目を問わず Entity ではなく Action（業務共通コンポーネントを含む）に実装する。\n\n精査エラーは :ref:`other_example_message_notify` に示した `ApplicationException` クラスを使用してメッセージ通知する。\n\n```java\n// form 生成\nW11AC02Form form = context.createObject();\n\n// form から entity 取得\nSystemAccountEntity systemAccount = form.getSystemAccount();\n\n// entityからログインIDの取得\nString loginId = systemAccount.getLoginId();\n\n// ログインIDが登録済みか、DBを検索する\nSqlPStatement statement = getSqlPStatement(\"SELECT_SYSTEM_ACCOUNT\");\nstatement.setString(1, loginId);\nif (!statement.retrieve().isEmpty()) {\n    // ログインIDが登録済みの場合、 ApplicationException を送出\n    throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"));\n}\n```",
+    "s3": "コード値のバリデーションは `@CodeValue` バリデータを使用する。コード値の精査には :ref:`other_example_code_get` に示したコード管理用データがDBに設定されているものとする。\n\n> **注意**: `CodeValidationUtil` はサンプル実装として提供される。Nablarch導入プロジェクトでは、アーキテクトが `CodeValidationUtil` のサンプル実装をプロジェクト内に取り込む必要がある。\n\n**アノテーション**: `@CodeValue`, `@PropertyName`\n\n```java\n@PropertyName(\"性別\")\n@CodeValue(codeId=\"0001\")\npublic String setGender(String gender) {\n    this.gender = gender;\n}\n```\n\n`CustomerEntity.validate()` では、まず `ValidationUtil.validate()` で標準プロパティ精査を行い、その後 `CodeValidationUtil.validate()` でコード値精査を行う（順序に注意）:\n\n```java\n@ValidateFor(\"validate\")\npublic static void validate(ValidationContext<CustomerEntity> context) throws Exception {\n    // 標準プロパティ精査を先に実行する\n    ValidationUtil.validate(context, new String[] {\"gender\"});\n\n    // CodeValidationUtil#validateメソッドを使用してコード値精査を行う\n    CodeValidationUtil.validate(context, \"0001\", \"PATTERN1\", \"gender\");\n\n    // メッセージIDを上書きする場合は第5引数にメッセージIDを指定する\n    CodeValidationUtil.validate(context, \"0001\", \"PATTERN1\", \"gender\", \"message_id\");\n}\n```\n\n`BaseCustomerEntity` では `@CodeValue` の `pattern` 属性を指定せずに精査を行い、サブクラスの `CustomerEntity` で `CodeValidationUtil.validate()` を呼び出してパターンを指定する。",
+    "s4": "ラジオボタン選択など、入力値に応じて動的に単項目精査対象を変化させるには、Form クラスの `@ValidateFor` アノテーションを付与したメソッドで `WebUtil#containsPropertyKey` を使用する。\n\nパラメータキーが存在する場合と存在しない場合で精査対象プロパティを切り替える。\n\n**JSP 例**:\n\n```jsp\n<n:form windowScopePrefixes=\"form\">\n<table>\n    <tr>\n        <th>精査条件</th>\n        <td>\n            <n:radioButton name=\"form.validationPtn\" value=\"ptn1\" label=\"入力欄1のみ精査\"/>\n            <n:error name=\"form.validationPtn\" />\n        </td>\n    </tr>\n    <tr>\n        <th>入力欄1(半角英数字)</th>\n        <td>\n            <n:error name=\"form.value1\" />\n            <n:text name=\"form.value1\" cssClass=\"input\" />\n        </td>\n    </tr>\n    <tr>\n        <th>入力欄2(半角英数字)</th>\n        <td>\n            <n:error name=\"form.value2\" />\n            <n:text name=\"form.value2\" cssClass=\"input\" />\n        </td>\n    </tr>\n</table>\n</n:form>\n```\n\n**Form クラス** (`Example4Form`):\n\nプロパティには `@PropertyName`, `@Required`, `@SystemChar` アノテーションを付与する:\n\n```java\npublic class Example4Form {\n\n    private String value1;\n    private String value2;\n\n    @PropertyName(\"入力欄1\")\n    @Required\n    @SystemChar(charsetDef = \"AlnumChar\")\n    public void setValue1(String value1) {\n        this.value1 = value1;\n    }\n\n    @PropertyName(\"入力欄2\")\n    @Required\n    @SystemChar(charsetDef = \"AlnumChar\")\n    public void setValue2(String value2) {\n        this.value2 = value2;\n    }\n\n    // リクエストをバリデーション・変換して Form オブジェクトを返す静的メソッド\n    public static Example4Form validate(HttpRequest req, String validationName) {\n        ValidationContext<Example4Form> context\n            = ValidationUtil.validateAndConvertRequest(\"form\", Example4Form.class, req, validationName);\n        context.abortIfInvalid();\n        return context.createObject();\n    }\n\n    @ValidateFor(\"validateKey\")\n    public static void validateForKey(ValidationContext<Example4Form> context) {\n        String paramKey = \"form.validationPtn\";\n\n        if (WebUtil.containsPropertyKey(context, paramKey)) {\n            // paramKey が存在する場合は value1 のみ精査\n            ValidationUtil.validate(context, new String[] { \"value1\" });\n        } else {\n            // paramKey が存在しない場合は value1、value2 を精査\n            ValidationUtil.validate(context, new String[] { \"value1\", \"value2\" });\n        }\n    }\n}\n```\n\n> **補足**: `form.validationPtn` パラメータを Action クラス等で使用する場合は、通常のプロパティと同様に対応するプロパティを用意し、キーが存在する場合の精査対象に含める。\n\n入力画面イメージ:\n![ラジオボタンで精査条件を切り替える入力画面](assets/web-application-Validation--s1/containsKeyView.png)",
+    "s5": "入力値に連動して動的に単項目精査対象を変化させる方法のうち、パラメータの値による切り替えを使用する方法。プロパティの存在有無による切り替え（ :ref:`validation_example_contains_key` 参照）とは異なり、パラメータの値に応じて精査対象を変化させる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

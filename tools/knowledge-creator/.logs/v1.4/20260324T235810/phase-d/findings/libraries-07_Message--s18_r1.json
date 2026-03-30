@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_Message--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4 (nablarch.core.message.BasicStringResourceLoader クラスの設定)",
+      "description": "The property table adds a '型' column with values 'SimpleDbTransactionManager' and 'String'. The source table has only two columns: 'property 名' and '設定内容' — no type column exists. The 'String' type for tableName, idColumnName, langColumnName, and valueColumnName has no basis in the source. A 'デフォルト値' (default value) column is also added, which the source does not contain.",
+      "source_evidence": "Source table columns are '============================ ========================================================================================================================\\n property 名                  設定内容' — no type or default value columns are present."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 (nablarch.core.message.StringResourceHolder の設定)",
+      "description": "The property table adds '型', '必須', and 'デフォルト値' columns not present in the source table. The source only has 'property名' and '設定内容' columns. Presenting 'StaticDataCache' as a formal type column entry fabricates a structural element not found in the source, even though the word appears in the description text.",
+      "source_evidence": "Source table columns are '============================ ========================================================================================================================\\n property名                   設定内容' — no type, required, or default value columns are present."
+    }
+  ]
+}

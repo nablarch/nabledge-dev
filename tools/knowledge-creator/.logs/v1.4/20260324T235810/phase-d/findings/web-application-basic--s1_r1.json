@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "source end / knowledge file index",
+      "description": "The source file contains 4 h2-level sections (overline+underline style with dashes), but the knowledge file covers only 3. The fourth section, anchored as `howto_window_scope`, begins at the very end of the provided source (overline visible: `--------------------------`) with no corresponding section (s4) in the knowledge file.",
+      "source_evidence": "Source ends with:\n```\n.. _`howto_window_scope`:\n\n--------------------------\n```\nKnowledge file index has only s1, s2, s3."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s3 hints",
+      "description": "`ValidationContext` is a PascalCase class name explicitly used in all Action class code examples in section s3 (e.g., `ValidationContext<W11AC03Form> formCtx = ...`) but is absent from s3's hints array.",
+      "source_evidence": "Source s3 Action class examples:\n```java\nValidationContext<W11AC03Form> formCtx =\n    ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n```\nAppears in both Map型 and List型 sub-sections."
+    }
+  ]
+}

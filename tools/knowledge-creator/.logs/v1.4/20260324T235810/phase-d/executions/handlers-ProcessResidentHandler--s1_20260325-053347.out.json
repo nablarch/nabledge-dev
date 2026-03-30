@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-ProcessResidentHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 - 関連するハンドラ (ProcessStopHandler row)",
+      "description": "ProcessStopHandlerの説明から、ハンドラキューが「シグナル送信以外の手段で外部から停止させることができなくなる」という重要な制約が省略されている。この情報はユーザーが本ハンドラを採用する際の判断に必要な挙動上の制約である。",
+      "source_evidence": "本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で外部から停止させることができなくなる。外部コマンドなどによって正常終了させるには、:doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 - hints",
+      "description": "例外処理ステップ3eで登場する `java.lang.Error` がhintsに含まれていない。",
+      "source_evidence": "後続ハンドラ実行中にエラー(java.lang.Error)が送出された場合は、捕捉したエラーをそのまま再送出して終了する。"
+    }
+  ]
+}

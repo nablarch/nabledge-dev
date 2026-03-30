@@ -1,0 +1,194 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/02/02_03_Repository_factory.rst`
+- Format: `rst`
+
+```
+ファクトリーインジェクションの使用手順
+========================================================
+
+ファクトリーインジェクションを使用する際の手順は下記の通り。
+
+1. ComponentFactory インタフェースを実装したクラス(ファクトリークラス)を作成する。
+2. 作成したファクトリークラスを通常のコンポーネントと同様にDIコンテナに登録する。
+
+ComponentFactory インタフェースを実装したクラスをコンポーネントとしてコンポーネント設定ファイルに記述した場合、DIコンテナは
+この設定を特別に扱い、 ComponentFactory インタフェースに定義された createObject メソッドで返されたオブジェクト
+をコンポーネントとする。
+
+
+実装例を下記に示す。
+
+
+ファクトリークラスの実装例
+============================
+
+.. code-block:: java
+
+  // ******** 注意 ********
+  // 下記のコードはプロジェクトのアーキテクトが作成するものである。
+  // 通常、各アプリケーション・プログラマはこのような実装を行わない。
+  
+  public class SampleComponentFactory implements ComponentFactory<SampleComponent> {
+      public SampleComponent createObject() {
+          // コンポーネントを生成する。
+          // この例では単にクラスをnewして返しているが、フレームワーク外のソフトウェアに
+          // 含まれるクラスの場合は、クラスに必要な初期化処理をハードコーディングする。
+          return new SampleComponent();
+      }
+  }
+
+コンポーネント設定ファイル
+====================================
+
+.. code-block:: xml
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <component-configuration xmlns="http://tis.co.jp/nablarch/component-configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd">
+
+      <component name="sampleComponent" class="example.SampleComponentFactory"/>
+  </component-configuration>
+
+
+使用例
+============
+
+.. code-block:: java
+
+  // "sampleComponent" を指定した場合、 SampleComponentFactory ではなく、
+  // SampleComponent が取得できる。
+  SampleComponent comp = (SampleComponent) SystemRepository.getObject("sampleComponent");
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-02_03_Repository_factory`
+
+```json
+{
+  "id": "libraries-02_03_Repository_factory",
+  "title": "ファクトリーインジェクションの使用手順",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファクトリーインジェクションの使用手順",
+      "hints": [
+        "ComponentFactory",
+        "SampleComponentFactory",
+        "createObject",
+        "SystemRepository",
+        "ファクトリーインジェクション",
+        "DIコンテナ登録",
+        "コンポーネント設定ファイル",
+        "ファクトリークラス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファクトリーインジェクションの使用手順:\n\n1. `ComponentFactory` インタフェースを実装したファクトリークラスを作成する\n2. 作成したファクトリークラスをDIコンテナに登録する\n\n`ComponentFactory` を実装したクラスをコンポーネント設定ファイルに登録すると、DIコンテナはその設定を特別に扱い、`ComponentFactory` に定義された `createObject` メソッドが返すオブジェクトをコンポーネントとして扱う。\n\n**インタフェース**: `ComponentFactory`\n\n**ファクトリークラス実装例**:\n```java\npublic class SampleComponentFactory implements ComponentFactory<SampleComponent> {\n    public SampleComponent createObject() {\n        return new SampleComponent();\n    }\n}\n```\n\n**コンポーネント設定ファイル**:\n```xml\n<component name=\"sampleComponent\" class=\"example.SampleComponentFactory\"/>\n```\n\n**使用例** (`sampleComponent` を指定すると `SampleComponentFactory` ではなく `SampleComponent` が取得できる):\n```java\nSampleComponent comp = (SampleComponent) SystemRepository.getObject(\"sampleComponent\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

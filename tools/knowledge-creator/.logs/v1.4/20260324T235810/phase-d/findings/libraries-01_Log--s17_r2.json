@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-01_Log--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 障害が発生した場合のログ出力",
+      "description": "The footnote clarifying the meaning of '処理を終了' is omitted. The source explicitly states that termination means the log output processing ends and control returns normally to the caller — the application does NOT crash. Without this, developers may misread the failure behavior as fatal to the whole process.",
+      "source_evidence": "[#c1] 処理を終了とは、ログ出力処理を終了し呼び出し元に処理を正常に処理を戻すことを意味する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8 — $information$ placeholder description",
+      "description": "The special behavior of $information$ for wrapper class, CharSequence, and Date types is omitted. For these types, only the toString() result is displayed; for other objects, all fields are shown individually. This distinction affects how developers interpret log output when passing common types.",
+      "source_evidence": "オプション情報に指定されたオブジェクトが基本データ型のラッパクラス、CharSequenceインタフェース、Dateクラスの場合は、オブジェクトに対してObject#toString()メソッドを実行した結果のみを表示する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SynchronousFileLogWriter 初期化ログ出力例",
+      "description": "The initialization log output example (shown when level=INFO is active) is omitted. This example contains the note that when level=ERROR, initialization logs are suppressed, and shows default values for LOCK RETRY INTERVAL and LOCK WAIT TIME as reported by the framework.",
+      "source_evidence": "上記設定例の場合。出力対象のログレベルが ERROR 以上なので初期処理後のログは出力されない。出力対象のログレベルに INFO レベルが含まれている場合は、以下のログが初期処理後に出力される。（続くJavaログ出力例）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s9 — BasicLogFormatterの出力例",
+      "description": "The Java code example showing how to invoke LOGGER.logInfo() with mixed argument types (User object, null String, String, long) to produce the demonstrated output is omitted. This code is necessary context for understanding how Object Information entries in the output are generated.",
+      "source_evidence": "User user = new User(null, \"山田太郎\", 28); … LOGGER.logInfo(\"テストメッセージ\", e, user, userId, name, price);"
+    }
+  ]
+}

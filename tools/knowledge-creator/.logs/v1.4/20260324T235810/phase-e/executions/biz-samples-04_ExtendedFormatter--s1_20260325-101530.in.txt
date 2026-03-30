@@ -1,0 +1,295 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "biz-samples-04_ExtendedFormatter--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5",
+      "description": "s5のセクション本文「KeyValueデータフォーマッタの使用方法について解説する。フォーマッタファクトリの設定方法、フィールドタイプおよびフィールドコンバータの定義一覧、同一キーで複数の値を取り扱う方法を説明する。」はソースに存在しない。ソースの「使用方法」見出し直下にはイントロテキストなく、直接サブ見出しに続く。",
+      "source_evidence": "ソースファイルの「使用方法」セクション: 見出しの直後は「KeyValueデータフォーマッタの使用方法」サブ見出しであり、間に説明文は存在しない。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6",
+      "description": "s6はサブ見出しをそのままリスト化したナビゲーション専用コンテンツ（「- KeyValueデータフォーマッタの使用方法\\n- フィールドタイプ・フィールドコンバータ定義一覧\\n- 同一キーで複数の値を取り扱う場合」）。実質的な説明を含まない。s7〜s9が各トピックを既にカバーしており冗長。",
+      "source_evidence": "ソースの「使用方法」下にはサブ見出しが3つあるが、それらをまとめたリストセクションはソース上に存在しない。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=====================================
+フォーマッタ機能の拡張
+=====================================
+
+本サンプルで提供するフォーマッタ機能の仕様を解説する。
+
+フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、Nablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。
+
+----------------------------
+提供パッケージ
+----------------------------
+
+本機能は、下記のパッケージで提供される。
+
+  *please.change.me.* **core.dataformat**
+
+  *please.change.me.* **core.dataformat.converter**
+
+
+.. _ExtendedFormatter_keyValueFormatter:
+
+----------------------------
+KeyValueデータフォーマッタ
+----------------------------
+KeyValue形式のデータを取り扱うKeyValueデータフォーマッタについて解説する。
+
+KeyValueデータフォーマッタはapplication/x-www-form-urlencodedで使用されるデータを取り扱う。
+このデータはname1=value1&name2=value2のように、名前と値の組を等号でつなげたものをアンド記号で結んで表現される。
+同一のキーで複数の値を扱うこともできる。
+
+値についてURLエンコードを行う。キーについては汎用データフォーマットのフォーマット定義書式に従いURLエンコードは行わず、使用不可とする。
+
+以下に本機能で使用するクラス一覧を記す。
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - パッケージ名
+     - クラス名
+     - 概要
+   * - *please.change.me.* **core.dataformat**
+     - KeyValueDataFormatterFactory
+     - フォーマッタファクトリクラス。
+       サンプル実装ではcreateFormatter(String fileType, String formatFilePath)メソッドをオーバーライドし、KeyValueDataRecordFormatterのインスタンス生成を可能としている。
+   * - *please.change.me.* **core.dataformat**
+     - KeyValueDataRecordFormatter
+     - フォーマッタクラス。
+       KeyValue形式のデータを解析、構築する。
+       サンプル実装では読み込み時はパラメータの出現順を意識せず、書き込み時はフォーマット定義順でパラメータを出力する。
+   * - *please.change.me.* **core.dataformat.converter**
+     - KeyValueDataConvertorFactory
+     - データコンバータのファクトリクラス。
+       デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。
+   * - *please.change.me.* **core.dataformat.converter**
+     - KeyValueDataConvertorSetting
+     - コンバータの設定情報を保持するクラス。
+       コンバータ名とコンバータ実装クラスの対応表を、DIコンテナから設定する。
+
+----------------------------
+使用方法
+----------------------------
+
+KeyValueデータフォーマッタの使用方法
+--------------------------------------------------------------------
+  業務アプリケーションで作成したフォーマッタファクトリクラスを使用する場合、以下の設定を行う必要がある。
+
+  .. code-block:: xml
+
+    <component name="formatterFactory" class="please.change.me.core.dataformat.KeyValueDataFormatterFactory"/>
+
+
+
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+  KeyValueデータフォーマッタで使用されるフィールドタイプ・フィールドコンバータについて解説する。
+
+  **フィールドタイプ**
+
+    ====================  ===========  =====================================================================================================================
+    タイプ識別子          Java型       内容
+    ====================  ===========  =====================================================================================================================
+    X、N、XN、X9、SX9     String       | KeyValueデータ形式では、すべてのフィールドを文字列（String）として読み書きする。
+                                       | よって、どのタイプ識別子を指定しても動作は変わらない。
+                                       | また、フィールド長の概念が無いので、引数は不要である。
+                                       | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+    ====================  ===========  =====================================================================================================================
+
+    いずれのタイプ識別子もフィールド長の概念が無いので、引数は不要である。
+
+  **フィールドコンバータ**
+ 
+    ==================  =====================  ================================================================================================================================
+    コンバータ名        Java型(変換前後)       内容
+    ==================  =====================  ================================================================================================================================
+    リテラル値          Object <-> Object      | **入力時:** (なにもしない)
+                                               | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+                                               | **引数:** なし
+
+    number              String <-> BigDecimal  | **入力時:** 入力された値が符号なし数値であることを形式チェックした上でBigDecimal型に変換して、返却する。
+                                               |         もし入力された値がnullまたは空文字の場合、nullを返却する。
+                                               | **出力時:** 出力する値を文字列に変換し、符号なし数値であることを形式チェックした上で出力する。
+                                               |         もし出力する値がnullの場合、空文字を出力する。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.NumberString
+                                               | **引数:** なし
+
+    signed_number       String <-> BigDecimal  | 符号が許可される点以外は **number** コンバータと同じ仕様。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.SignedNumberString
+                                               | **引数:** なし
+    ==================  =====================  ================================================================================================================================
+
+
+同一キーで複数の値を取り扱う場合
+--------------------------------------------------------------------
+  同一キーで複数の値を取り扱う場合、データはString配列形式で保持される。
+  また、フォーマット定義ファイルにて多重度を設定する必要がある。
+  定義方法についてはNablarch Application Framework解説書の汎用データフォーマット機能を参照すること。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "biz-samples-04_ExtendedFormatter--s1",
+  "title": "フォーマッタ機能の拡張",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "フォーマッタ機能の拡張",
+        "汎用データフォーマット機能",
+        "フォーマッタ拡張サンプル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.core.dataformat",
+        "please.change.me.core.dataformat.converter",
+        "提供パッケージ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "KeyValueデータフォーマッタ",
+        "application/x-www-form-urlencoded",
+        "URLエンコード",
+        "KeyValue形式",
+        "同一キー複数値"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "KeyValueデータフォーマッタ",
+      "hints": [
+        "KeyValueDataFormatterFactory",
+        "KeyValueDataRecordFormatter",
+        "KeyValueDataConvertorFactory",
+        "KeyValueDataConvertorSetting",
+        "フォーマッタクラス一覧",
+        "コンバータファクトリ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "使用方法",
+        "KeyValueデータフォーマッタ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "使用方法",
+      "hints": [
+        "使用方法",
+        "KeyValueデータフォーマッタ使用方法",
+        "フィールドタイプ",
+        "コンバータ定義",
+        "複数値"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "KeyValueデータフォーマッタの使用方法",
+      "hints": [
+        "KeyValueDataFormatterFactory",
+        "formatterFactory",
+        "XMLコンポーネント設定",
+        "フォーマッタファクトリ設定"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "フィールドタイプ",
+        "フィールドコンバータ",
+        "リテラル値",
+        "number",
+        "signed_number",
+        "NumberString",
+        "SignedNumberString",
+        "DefaultValue",
+        "BigDecimal",
+        "X",
+        "N",
+        "XN",
+        "X9",
+        "SX9"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "同一キーで複数の値を取り扱う場合",
+      "hints": [
+        "同一キー",
+        "複数値",
+        "String配列",
+        "多重度",
+        "フォーマット定義ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本サンプルで提供するフォーマッタ機能の仕様を解説する。汎用データフォーマット機能の概要および詳細はNablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。",
+    "s2": "提供パッケージ:\n- `please.change.me.core.dataformat`\n- `please.change.me.core.dataformat.converter`",
+    "s3": "KeyValueデータフォーマッタは `application/x-www-form-urlencoded` 形式のデータを処理する。データ形式: `name1=value1&name2=value2`（名前と値を `=` で結び `&` で区切る）。\n\n**制約:**\n- 値: URLエンコードを行う\n- キー: URLエンコード不可（汎用データフォーマットのフォーマット定義書式に従い使用不可）\n- 同一キーで複数の値を扱うことが可能",
+    "s4": "| パッケージ | クラス名 | 概要 |\n|---|---|---|\n| `please.change.me.core.dataformat` | `KeyValueDataFormatterFactory` | フォーマッタファクトリクラス。`createFormatter(String fileType, String formatFilePath)` をオーバーライドし、`KeyValueDataRecordFormatter` のインスタンス生成を可能とする。 |\n| `please.change.me.core.dataformat` | `KeyValueDataRecordFormatter` | フォーマッタクラス。KeyValue形式データの解析・構築。読み込み時はパラメータ出現順に依存しない。書き込み時はフォーマット定義順で出力する。 |\n| `please.change.me.core.dataformat.converter` | `KeyValueDataConvertorFactory` | データコンバータのファクトリクラス。デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。 |\n| `please.change.me.core.dataformat.converter` | `KeyValueDataConvertorSetting` | コンバータ設定情報クラス。コンバータ名と実装クラスの対応表をDIコンテナから設定する。 |",
+    "s5": "KeyValueデータフォーマッタの使用方法について解説する。フォーマッタファクトリの設定方法、フィールドタイプおよびフィールドコンバータの定義一覧、同一キーで複数の値を取り扱う方法を説明する。",
+    "s6": "- KeyValueデータフォーマッタの使用方法\n- フィールドタイプ・フィールドコンバータ定義一覧\n- 同一キーで複数の値を取り扱う場合",
+    "s7": "業務アプリケーションでフォーマッタファクトリクラスを使用する場合、以下のコンポーネント設定が必要:\n\n```xml\n<component name=\"formatterFactory\" class=\"please.change.me.core.dataformat.KeyValueDataFormatterFactory\"/>\n```",
+    "s8": "**フィールドタイプ**\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN、X9、SX9 | String | KeyValueデータ形式ではすべてのフィールドをStringとして読み書きする。どのタイプ識別子を指定しても動作は変わらない。フィールド長の概念がないため引数は不要。Number型（BigDecimalなど）を読み書きしたい場合は `number`/`signed_number` コンバータを使用する。 |\n\n**フィールドコンバータ**\n\n| コンバータ名 | Java型(変換前後) | 内容 |\n|---|---|---|\n| リテラル値 | Object <-> Object | **入力時:** 何もしない。**出力時:** 値が未設定の場合に指定されたリテラル値を出力する。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.DefaultValue`。引数: なし。 |\n| number | String <-> BigDecimal | **入力時:** 符号なし数値であることを形式チェックしBigDecimalに変換。null/空文字の場合はnullを返す。**出力時:** 文字列に変換し符号なし数値であることをチェック。nullの場合は空文字を出力。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.NumberString`。引数: なし。 |\n| signed_number | String <-> BigDecimal | 符号が許可される点以外は `number` コンバータと同じ仕様。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.SignedNumberString`。引数: なし。 |",
+    "s9": "同一キーで複数の値を取り扱う場合、データはString配列形式で保持される。フォーマット定義ファイルにて多重度を設定する必要がある。定義方法はNablarch Application Framework解説書の汎用データフォーマット機能を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

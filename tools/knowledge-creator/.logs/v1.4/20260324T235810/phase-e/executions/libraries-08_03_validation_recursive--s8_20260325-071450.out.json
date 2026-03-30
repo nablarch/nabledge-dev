@@ -1,0 +1,31 @@
+{
+  "id": "libraries-08_03_validation_recursive--s8",
+  "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+      "hints": [
+        "UserForm",
+        "UserEntity",
+        "ValidationContext",
+        "ValidationUtil",
+        "@ValidationTarget",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "画面入力プロパティ",
+        "複数入力バリデーション",
+        "電話番号分割入力",
+        "文字列連結",
+        "バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DBでは1カラムだが画面では複数入力となる項目（例：電話番号）は、Formにデータベース用プロパティとは別に画面用プロパティを持つことで、既存のバリデーション機構をそのまま使用できる。文字列連結はActionで実施する。\n\n**アノテーション**: `@ValidationTarget`, `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`\n**クラス**: `ValidationUtil`, `ValidationContext`\n\nForm実装例（電話番号3分割）:\n```java\npublic class UserForm {\n    private UserEntity user;\n    private String phoneNo1;\n    private String phoneNo2;\n    private String phoneNo3;\n\n    public UserForm(Map<String, Object> params) {\n        this.user = (UserEntity) params.get(\"user\");\n        this.phoneNo1 = (String) params.get(\"phoneNo1\");\n        this.phoneNo2 = (String) params.get(\"phoneNo2\");\n        this.phoneNo3 = (String) params.get(\"phoneNo3\");\n    }\n\n    @ValidationTarget\n    public void setUser(UserEntity user) { this.user = user; }\n\n    @PropertyName(\"電話番号1\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo1(String phoneNo1) { this.phoneNo1 = phoneNo1; }\n\n    @PropertyName(\"電話番号2\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo2(String phoneNo2) { this.phoneNo2 = phoneNo2; }\n\n    @PropertyName(\"電話番号3\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo3(String phoneNo3) { this.phoneNo3 = phoneNo3; }\n\n    private static final String[] VALIDATE_PROPS = new String[] {\"user\", \"phoneNo1\", \"phoneNo2\", \"phoneNo3\"};\n\n    @ValidateFor(\"updateUser\")\n    public static void validateForUpdateUser(ValidationContext<UserForm> context) {\n        ValidationUtil.validate(context, VALIDATE_PROPS);\n        if (!context.isValid()) return;\n\n        String phoneNo1 = (String) context.getConvertedValue(\"phoneNo1\");\n        String phoneNo2 = (String) context.getConvertedValue(\"phoneNo2\");\n        String phoneNo3 = (String) context.getConvertedValue(\"phoneNo3\");\n        // 合計11文字超過でエラー\n        if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {\n            context.addResultMessage(\"phoneNo1\", \"MSG00001\");\n        }\n    }\n}\n```\n\nAction側での文字列連結:\n```java\nValidationContext<UserForm> result = ValidationUtil.validateAndConvertRequest(\n    \"userForm\", UserForm.class, req, \"updateUser\");\nresult.abortIfInvalid();\nUserForm userForm = result.createObject();\nUserEntity userEntity = userForm.getUser();\nuserEntity.setPhoneNo(userForm.getPhoneNo1() + \"-\" + userForm.getPhoneNo2() + \"-\" + userForm.getPhoneNo3());\n```"
+  }
+}

@@ -1,0 +1,381 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/08/08_01_validation_architecture.rst`
+- Format: `rst`
+
+```
+.. _`validation_architecture`:
+
+====================================
+バリデーション機能の構造
+====================================
+
+.. _`validation_class_diagram`:
+
+クラス図
+========
+ここまでに示したバリデーションの機能を実現するために必要クラスの構造を以下に示す。
+
+.. image:: ../_images/08/Validation_ClassDiagram.jpg 
+   :scale: 75
+
+以下に各インタフェース、クラスの概要を記述する。
+なお、 Convertor インタフェースおよび Validator インタフェースを実装したクラスは数が多いため、上記クラス図では一部省略している。
+これらのクラスについては、 :ref:`validator_and_convertor` を参照。
+
+インタフェース定義
+--------------------------------
+
+===================================================================== ===========================================================================================
+インタフェース名                                                      概要
+===================================================================== ===========================================================================================
+nablarch.core.validation.Convertor                                    入力値から対応するプロパティの型に変換するインタフェース。
+                                                                      このインタフェースを実装したクラスを以降コンバータと呼ぶ。 [#def]_ 
+nablarch.core.validation.Validator                                    プロパティの値のバリデーションを行うインタフェース。
+                                                                      このインタフェースを実装したクラスを以降バリデータと呼ぶ。 [#def]_ 
+nablarch.core.validation.Validatable                                  ValidationUtil でバリデーション可能なオブジェクトが実装するインタフェース。
+===================================================================== ===========================================================================================
+
+
+クラス定義
+--------------------------------
+
+===================================================================== ===========================================================================================
+クラス名                                                              概要
+===================================================================== ===========================================================================================
+nablarch.core.validation.ValidationManager                            バリデーションおよび変換の処理を実行するクラス。
+nablarch.core.validation.ValidationContext                            バリデーションの処理に必要な情報を保持するクラス。
+nablarch.core.validation.ValidationResultMessage                      バリデーション結果のメッセージ表示に必要な情報を保持するクラス。
+nablarch.core.validation.ValidationUtil                               システムリポジトリから ValidatorManager を取得し、呼び出しを行うユーティリティクラス。
+===================================================================== ===========================================================================================
+
+  .. [#def] バリデータ、コンバータを使用したバリデーション処理の流れは、 :ref:`validation_sequence` で説明する。
+
+.. _validation_sequence:
+
+バリデーションの処理の流れ
+================================
+バリデーションの処理の概要を表すシーケンス図を以下に簡単に示す。
+
+.. image:: ../_images/08/ConceptualValidationSequeceDiagram.jpg
+   :scale: 75
+
+このシーケンス図からわかるとおり、バリデーションの処理は、 ValidationManager が中心となってコンバータ、バリデータの呼び出しを
+行うことで実現している。
+
+ValidationUtil はバリデーションの機構を容易に使用するためのユーティリティクラスであり、リポジトリから取得した ValidationManager
+に処理を委譲する責務のみを持つ。
+
+コンバータおよびバリデータはそれぞれ Convertor 、 Validator インタフェースを実装したクラスのインスタンスであり、
+ValidationManager の convertorsプロパティおよび validators プロパティに設定することで、 ValidationManager から
+Form に対応付けて自動的に呼び出される。
+
+
+.. _validation_config:
+
+設定例
+================================
+
+このようなバリデーションの処理を行う ValidationManager クラスのインスタンスは、リポジトリ上に validationManager
+というコンポーネント名で保持されている必要がある。
+
+通常、 ValidationManager の設定は下記のように記述する。
+
+.. code-block:: xml
+
+    <!-- 
+        ValidationManager は、リポジトリ上で必ず validationManager という名称で登録しておく必要がある。 
+    -->
+    <component name="validationManager" class="nablarch.core.validation.ValidationManager">
+        <!-- 使用するコンバータはconvertorsプロパティに全て設定する。 -->
+        <property name="convertors" >
+            <list>
+                <component class="nablarch.core.validation.convertor.StringConvertor">
+                    <property name="conversionFailedMessageId" value="MSG00001"/>
+                </component>
+                <component class="nablarch.core.validation.convertor.StringArrayConvertor">
+                </component>
+                <component class="nablarch.core.validation.convertor.LongConvertor">
+                    <property name="invalidDigitsIntegerMessageId" value="MSG00031"/>
+                    <property name="multiInputMessageId" value="MSG00001"/>
+                </component>
+                <component class="nablarch.core.validation.convertor.BigDecimalConvertor">
+                    <property name="invalidDigitsIntegerMessageId" value="MSG00031"/>
+                    <property name="invalidDigitsFractionMessageId" value="MSG00032"/>
+                    <property name="multiInputMessageId" value="MSG00001"/>
+                </component>
+            </list>
+        </property>
+        <!-- 使用するバリデータはプロパティ validators に全て設定する。 -->
+        <property name="validators" >
+            <list>
+                <component class="nablarch.core.validation.validator.RequiredValidator">
+                    <property name="messageId" value="MSG00011"/>
+                </component>
+                <component class="nablarch.core.validation.validator.NumberRangeValidator">
+                    <property name="maxMessageId" value="MSG00051"/>
+                    <property name="maxAndMinMessageId" value="MSG00052"/>
+                    <property name="minMessageId" value="MSG00053"/>
+                </component>
+                <component class="nablarch.core.validation.validator.LengthValidator">
+                    <property name="maxMessageId" value="MSG00021"/>
+                    <property name="maxAndMinMessageId" value="MSG00022"/>
+                    <property name="fixLengthMessageId" value="MSG00023" />
+                </component>
+            </list>
+        </property>
+        <!--  Form 定義をキャッシュするディクショナリの参照設定。(通常下記設定のままでよい) -->
+        <property name="formDefinitionCache" ref="formDefinitionCache">
+        </property>
+
+    </component>
+
+    <!-- バリデーション情報のキャッシュ(通常下記設定のままでよい) -->
+    <component name="formDefinitionCache" class="nablarch.core.cache.BasicStaticDataCache">
+        <property name="loader">
+            <component class="nablarch.core.validation.FormValidationDefinitionLoader" />
+        </property>
+    </component>
+
+また ValidationManager クラスは初期化が必要なため、  :ref:`repository_initialize`  に記述した Initializable インタフェースを実装している。
+:ref:`repository_initialize` を参考にして、下記のように validationManager が初期化されるよう設定すること。
+
+
+.. code-block:: xml
+
+	<component name="initializer" class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+	    <property name="initializeList">
+	        <list>
+	            <!-- 他のコンポーネントは省略 -->
+	            <component-ref name="formDefinitionCache"/>
+	            <component-ref name="validationManager"/>
+	        </list>
+	    </property>
+	</component>
+
+
+設定内容詳細
+=================
+
+nablarch.core.validation.ValidationManager の設定
+--------------------------------------------------------
+
+
+ValidationManager の各設定項目の詳細を以下に示す。
+
+======================================   ====================================================================================================================
+property名                               設定内容
+======================================   ====================================================================================================================
+convertors          (必須)               | 使用するコンバータを List で設定する。
+                                         | コンバータは、nablarch.core.validation.Convertor を実装したクラスであり、
+                                           本プロパティのリストに追加することで、使用できるようになる。
+validators (必須)                        | 使用するバリデータを List で設定する。
+                                         | バリデータは、 nablarch.core.validation.Validator を実装したクラスであり、
+                                           本プロパティのリストに追加することで、使用できるようになる。
+formDefinitionCache (必須)               | FormValidationDefinitionのStaticDataCache を設定する。
+                                           通常上記設定例のように、BasicStaticDataCacheクラスとFormValidationDefinitionLoaderクラスを設定すればよい。
+invalidSizeKeyMessageId (必須)           | ValidationTargetアノテーションのsizeKeyに不正な長さを指定した際のエラーメッセージID。
+                                         | 詳細は :ref:`form_array_validation` を参照。
+stringResourceHolder   (必須)            | nablarch.core.message.StringResourceHolder のインスタンス。
+                                         | バリデーションのエラーメッセージは、ここで指定した StringResourceHolder から取得される。
+
+                                           .. note::
+                                           
+                                              通常のシステムでは、 StringResourceHolder のインスタンスはシステムで1つのみ
+                                              しか使用しないため、 :ref:`__autowire` の機能を使用することで設定ファイルにこの
+                                              プロパティを記載する必要はない。
+
+useFormPropertyNameAsMessageId           | 後述する :ref:`validation_use_form_name_as_message_id` を使用するか否かを設定する。
+                                         | 設定しなかった場合、false。
+formArraySizeValueMaxLength              | Form の配列サイズ文字列の最大長。
+                                         | 配列の添え字にこの長さを超える長さの文字列を指定したリクエストが送られた場合、
+                                           ValidationManager は無条件にその項目をエラー(リクエストの改竄)と判断する。
+                                         | 設定しなかった場合、3(999個までの配列を許容する)。
+                                           .. note::
+                                         
+                                             この設定値は、配列の最大値ではなく、添え字の文字列長であることに注意すること。
+
+                                             例えば 999 個までの配列を使用するシステムでは、この設定値に 3 を設定する。
+invalidSizeKeyMessageId  (必須)          | formArraySizeValueMaxLength で設定した値を超えた配列の添え字がリクエスト
+                                           として送られた際に表示するメッセージのメッセージID。
+======================================   ====================================================================================================================
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-08_01_validation_architecture--s1`
+
+```json
+{
+  "id": "libraries-08_01_validation_architecture--s1",
+  "title": "バリデーション機能の構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "インタフェース定義",
+      "hints": [
+        "nablarch.core.validation.Convertor",
+        "nablarch.core.validation.Validator",
+        "nablarch.core.validation.Validatable",
+        "コンバータ",
+        "バリデータ",
+        "バリデーション インタフェース",
+        "Convertor",
+        "Validator",
+        "Validatable"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "クラス定義",
+      "hints": [
+        "nablarch.core.validation.ValidationManager",
+        "nablarch.core.validation.ValidationContext",
+        "nablarch.core.validation.ValidationResultMessage",
+        "nablarch.core.validation.ValidationUtil",
+        "ValidationManager",
+        "ValidationContext",
+        "ValidationResultMessage",
+        "ValidationUtil",
+        "バリデーション クラス構成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "nablarch.core.validation.ValidationManager の設定",
+      "hints": [
+        "ValidationManager",
+        "nablarch.core.validation.ValidationManager",
+        "nablarch.core.cache.BasicStaticDataCache",
+        "nablarch.core.validation.FormValidationDefinitionLoader",
+        "convertors",
+        "validators",
+        "formDefinitionCache",
+        "invalidSizeKeyMessageId",
+        "stringResourceHolder",
+        "useFormPropertyNameAsMessageId",
+        "formArraySizeValueMaxLength",
+        "validationManager",
+        "バリデーション設定",
+        "ValidationManager 設定",
+        "StringConvertor",
+        "LongConvertor",
+        "BigDecimalConvertor",
+        "RequiredValidator",
+        "NumberRangeValidator",
+        "LengthValidator"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "![バリデーション機能クラス図](assets/libraries-08_01_validation_architecture--s1/Validation_ClassDiagram.jpg)\n\n| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.validation.Convertor` | 入力値から対応するプロパティの型に変換するインタフェース。実装クラスをコンバータと呼ぶ。 |\n| `nablarch.core.validation.Validator` | プロパティの値のバリデーションを行うインタフェース。実装クラスをバリデータと呼ぶ。 |\n| `nablarch.core.validation.Validatable` | ValidationUtil でバリデーション可能なオブジェクトが実装するインタフェース。 |",
+    "s2": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.validation.ValidationManager` | バリデーションおよび変換の処理を実行するクラス。 |\n| `nablarch.core.validation.ValidationContext` | バリデーションの処理に必要な情報を保持するクラス。 |\n| `nablarch.core.validation.ValidationResultMessage` | バリデーション結果のメッセージ表示に必要な情報を保持するクラス。 |\n| `nablarch.core.validation.ValidationUtil` | システムリポジトリから ValidationManager を取得し呼び出しを行うユーティリティクラス。ValidationManager に処理を委譲する責務のみを持つ。 |",
+    "s3": "ValidationManager がコンバータ・バリデータの呼び出しを中心的に実行する。コンバータは `convertors` プロパティ、バリデータは `validators` プロパティに設定することで Form に対応付けて自動的に呼び出される。\n\n**設定要件**: リポジトリ上で必ず `validationManager` という名称で登録する必要がある。ValidationManager は Initializable インタフェースを実装しているため、:ref:`repository_initialize` を参考に初期化設定が必要。\n\n```xml\n<component name=\"validationManager\" class=\"nablarch.core.validation.ValidationManager\">\n    <property name=\"convertors\">\n        <list>\n            <component class=\"nablarch.core.validation.convertor.StringConvertor\">\n                <property name=\"conversionFailedMessageId\" value=\"MSG00001\"/>\n            </component>\n            <component class=\"nablarch.core.validation.convertor.StringArrayConvertor\"/>\n            <component class=\"nablarch.core.validation.convertor.LongConvertor\">\n                <property name=\"invalidDigitsIntegerMessageId\" value=\"MSG00031\"/>\n                <property name=\"multiInputMessageId\" value=\"MSG00001\"/>\n            </component>\n            <component class=\"nablarch.core.validation.convertor.BigDecimalConvertor\">\n                <property name=\"invalidDigitsIntegerMessageId\" value=\"MSG00031\"/>\n                <property name=\"invalidDigitsFractionMessageId\" value=\"MSG00032\"/>\n                <property name=\"multiInputMessageId\" value=\"MSG00001\"/>\n            </component>\n        </list>\n    </property>\n    <property name=\"validators\">\n        <list>\n            <component class=\"nablarch.core.validation.validator.RequiredValidator\">\n                <property name=\"messageId\" value=\"MSG00011\"/>\n            </component>\n            <component class=\"nablarch.core.validation.validator.NumberRangeValidator\">\n                <property name=\"maxMessageId\" value=\"MSG00051\"/>\n                <property name=\"maxAndMinMessageId\" value=\"MSG00052\"/>\n                <property name=\"minMessageId\" value=\"MSG00053\"/>\n            </component>\n            <component class=\"nablarch.core.validation.validator.LengthValidator\">\n                <property name=\"maxMessageId\" value=\"MSG00021\"/>\n                <property name=\"maxAndMinMessageId\" value=\"MSG00022\"/>\n                <property name=\"fixLengthMessageId\" value=\"MSG00023\"/>\n            </component>\n        </list>\n    </property>\n    <property name=\"formDefinitionCache\" ref=\"formDefinitionCache\"/>\n</component>\n\n<component name=\"formDefinitionCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\">\n        <component class=\"nablarch.core.validation.FormValidationDefinitionLoader\"/>\n    </property>\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"formDefinitionCache\"/>\n            <component-ref name=\"validationManager\"/>\n        </list>\n    </property>\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| convertors | ○ | | 使用するコンバータを List で設定。`nablarch.core.validation.Convertor` を実装したクラス。 |\n| validators | ○ | | 使用するバリデータを List で設定。`nablarch.core.validation.Validator` を実装したクラス。 |\n| formDefinitionCache | ○ | | FormValidationDefinition の StaticDataCache を設定。通常 `nablarch.core.cache.BasicStaticDataCache` と `nablarch.core.validation.FormValidationDefinitionLoader` を使用。 |\n| invalidSizeKeyMessageId | ○ | | ValidationTarget アノテーションの sizeKey に不正な長さを指定した際のエラーメッセージID。詳細は :ref:`form_array_validation` 参照。 |\n| stringResourceHolder | ○ | | `nablarch.core.message.StringResourceHolder` のインスタンス。バリデーションエラーメッセージをここから取得。 |\n| useFormPropertyNameAsMessageId | | false | :ref:`validation_use_form_name_as_message_id` を使用するか否か。 |\n| formArraySizeValueMaxLength | | 3 | Form の配列サイズ文字列の最大長。配列の最大値ではなく添え字の文字列長であることに注意。例: 999個まで許容する場合は3を設定。 |\n\n> **注意**: `stringResourceHolder` は通常のシステムではシステムで1つのみ使用するため、:ref:`__autowire` の機能により設定ファイルへの記載を省略できる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

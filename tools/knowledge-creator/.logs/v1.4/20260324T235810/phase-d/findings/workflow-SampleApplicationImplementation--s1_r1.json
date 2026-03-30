@@ -1,0 +1,27 @@
+{
+  "file_id": "workflow-SampleApplicationImplementation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 SQL example",
+      "description": "The FROM subquery is abbreviated as `(...)` in the knowledge file, omitting the critical INNER JOIN pattern that links business tables to ACTIVE_TASK via `WF_INSTANCE_ID = ACTIVE_TASK.INSTANCE_ID`. This join pattern is the key implementation technique for workflow search queries (how business data is filtered to only active workflow tasks), and is present in both the TRANS_EXPE_APPLICATION and LOAN_APPLICATION sub-selects in the source.",
+      "source_evidence": "INNER JOIN ACTIVE_TASK ON TRANS_EXPE_APPLICATION.WF_INSTANCE_ID = ACTIVE_TASK.INSTANCE_ID (and same for LOAN_APPLICATION)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 section body",
+      "description": "The section text contains raw RST cross-reference markup `:ref:\\`complete_task\\`` which is not meaningful in a JSON knowledge file context. An AI agent reading this would see the literal RST syntax rather than a meaningful reference. The text should refer to the ワークフローの進行 section by name instead.",
+      "source_evidence": "Source RST contains the label `.. _complete_task:` and the reference `前述のワークフローの進行と同様である`, but knowledge file preserves the raw RST syntax `:ref:\\`complete_task\\``"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`findInstance` is missing from s3 hints even though the section's code example calls `WorkflowManager.findInstance(...)`. This method is present in s2 hints but not s3, despite being used identically in the triggerEvent pattern.",
+      "source_evidence": "WorkflowManager.findInstance(application.getString(\"WF_INSTANCE_ID\")).triggerEvent(CANCEL_TRIGGER);"
+    }
+  ]
+}

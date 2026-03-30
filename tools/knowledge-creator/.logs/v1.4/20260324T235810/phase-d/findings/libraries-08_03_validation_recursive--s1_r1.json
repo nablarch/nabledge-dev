@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "HTML form code example is omitted. The source contains a complete HTML form demonstrating the multi-form naming convention (form.user.name, form.user.remarks, form.address.zipCode, etc.), which illustrates the correct usage pattern for implementing HTML forms with multi-form validation.",
+      "source_evidence": "Source section 複数の Form に対するバリデーション contains: `<form method=\"POST\"><!-- ユーザの情報 -->ユーザ名: <input type=\"text\" name=\"form.user.name\"/>...郵便番号: <input type=\"text\" name=\"form.address.zipCode\"/>...`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "UserForm constructor `UserForm(Map<String, Object> params)` is omitted from the Form implementation code example. This constructor shows how to populate entity fields from request parameters, which is part of the correct implementation pattern.",
+      "source_evidence": "Source: `public UserForm(Map<String, Object> params) { user = (UserEntity) params.get(\"user\"); address = (AddressEntity) params.get(\"address\"); }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`ValidationContext` is missing from s2 hints despite appearing in the Form implementation code (`ValidationContext<Entity1>`) and Action code (`ValidationContext<Example2Form>`).",
+      "source_evidence": "Source s2 code: `@ValidateFor(\"validateForSample\") public static void validateForSample(ValidationContext<Entity1> context)` and `ValidationContext<Example2Form> validationResult = ...`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`validateAndConvertRequest` is missing from s2 hints despite being the primary API method used in the Action implementation example for this section.",
+      "source_evidence": "Source s2 Action section: `ValidationContext<Example2Form> validationResult = ValidationUtil.validateAndConvertRequest(\"form\", Example2Form.class, request, \"validateForSample\");`"
+    }
+  ]
+}

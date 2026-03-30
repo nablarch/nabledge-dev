@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s5 — 付加情報 row in placeholder table",
+      "description": "s5 maps 付加情報 → $sessionScope$. In the source's output items table, セッションスコープ情報 and 付加情報 are listed as distinct items: セッションスコープ情報 is \"セッションスコープ情報のダンプ\" (corresponding to $sessionScope$), while 付加情報 is \"アプリケーションで追加する付加情報\" (a separate item with its own placeholder). Assigning $sessionScope$ to 付加情報 contradicts the source.",
+      "source_evidence": "出力項目テーブル: 「セッションスコープ情報 | セッションスコープ情報のダンプ」および「付加情報 | アプリケーションで追加する付加情報」が別行として記載されている"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s5 — placeholder table entries",
+      "description": "s5 lists placeholders $responseStatusCode$, $startTime$, $endTime$, $executionTime$, $maxMemory$, $freeMemory$ that do not appear anywhere in the provided source file. The source is truncated before the 'リクエスト処理終了時のログ出力に使用するフォーマット' section, so there is no basis in the provided source for these placeholder names.",
+      "source_evidence": "None of these placeholder identifiers appear in the provided source. The source ends after the dispatching class section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "Fully qualified class names for NablarchTagHandler, HttpRequestJavaPackageMapping, and HttpAccessLogUtil are missing from hints. The source explicitly states these as nablarch.common.web.handler.NablarchTagHandler, nablarch.fw.web.handler.HttpRequestJavaPackageMapping, and nablarch.fw.web.handler.HttpAccessLogUtil.",
+      "source_evidence": "クラス一覧テーブル: nablarch.common.web.handler.NablarchTagHandler, nablarch.fw.web.handler.HttpRequestJavaPackageMapping, nablarch.fw.web.handler.HttpAccessLogUtil が記載されている"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "$responseStatusCode$ appears in the s5 section content (placeholder for ステータスコード(クライアント)) but is not included in s5's hints.",
+      "source_evidence": "s5 content table row: | ステータスコード(クライアント) | $responseStatusCode$ |"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s6 — 開閉局エラー応答フロー、ステップ5 MessageReplyHandler (error)",
+      "description": "知識ファイルは「FW制御ヘッダ部のみを出力して送信し、閉局エラーを再送出する」と記載しているが、ソースの notonservice フロー定義では「業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。」となっている。「閉局エラー」への書き換えはソースに根拠がない。",
+      "source_evidence": "notonservice: [..., [\"MessageReplyHandler\", \"error\", \"業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。\"], ...]"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3, s5",
+      "description": "s3 と s5 の2つのセクションは内容が「なし」の空セクションで、ソースの実際のh2見出しに対応しない。ソース中の `++++++++++++++++` は RST の水平線（区切り線）であり、セクション見出しではない。ソースの h2 見出しは「基本構造」「業務アクションハンドラの実装」「標準ハンドラ構成と主要処理フロー」の3つのみ（イントロ含め計4コンテンツ領域）に対して、知識ファイルは6セクションを持つ。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints",
+      "description": "s6 の本文に登場する以下の PascalCase ハンドラクラス名が hints に含まれていない: ThreadContextHandler_main、ThreadContextHandler_request、ProcessStopHandler、MessagingContextHandler、DbConnectionManagementHandler、StatusCodeConvertHandler、GlobalErrorHandler、MultiThreadExecutionHandler。これらは標準ハンドラキューと各処理フロー詳細に明示されている。"
+    }
+  ]
+}

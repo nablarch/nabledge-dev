@@ -1,0 +1,812 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `ui-framework-jsp_page_templates--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `ui-framework`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+==========================================
+業務画面テンプレート
+==========================================
+
+-----------
+概要
+-----------
+:doc:`jsp_page_templates` は、業務画面の内容のうち、業務機能領域を除く部分を
+**UI標準** に準拠した形で実装する共通機能である。
+
+本機能を使用することで、以下のコード例のように、最小限の
+コード記述により画面を作成することが可能となる。
+
+  .. code-block:: jsp
+
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <%@taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+    <%@taglib prefix="t" tagdir="/WEB-INF/tags/template" %>
+    <%@page language="java"
+            contentType="text/html; charset=UTF-8"
+            pageEncoding="UTF-8" %>
+
+    <t:page_template title="新規会員登録">
+
+      <jsp:attribute name="contentHtml">
+        <n:form>
+        (略)
+        </n:form>
+      </jsp:attribute>
+
+    </t:page_template>
+
+-----------------
+ファイル構成
+-----------------
+
+概要
+-----------
+:doc:`jsp_page_templates` はJSPタグファイルとそれに付随するインクルードJSPファイルの形式で提供される。
+業務画面JSPから参照するのはタグファイルの方で、インクルードJSPはタグファイルから読み込まれる。
+JSPタグファイルには基本的にページの構造のみを定義し、各共通領域の内容については
+それぞれ個別のインクルードJSPを用意してそこに記述する。
+
+JSPタグファイルは **(サーブレットコンテキストルート)/WEB-INF/tags/template/** 配下となり、
+インクルードJSPファイルは **(サーブレットコンテキストルート)/include** 配下に配置する。
+
+インクルードJSPのうち、 **HTMLヘッド部定義JSP** と、 **外部スクリプト定義JSP** については、
+外部参照するCSS/JavaScriptの読み込みを制御しており、開発/本番切り替え時に書き換えの対象となるため、
+留意が必要である。
+
+以下の表は、 :doc:`jsp_page_templates` に含まれるファイルの一覧である。
+
+
+構成ファイル一覧
+-----------------------
+
+============================ ======== ======= =============================== ===================================================
+名称                         動作環境 [#1]_   パス                            内容
+---------------------------- ---------------- ------------------------------- ---------------------------------------------------
+_                            ローカル サーバ  _                               _
+============================ ======== ======= =============================== ===================================================
+ベースレイアウトファイル     △        ○       /WEB-INF/tags/template/\        UI標準に沿った業務画面の
+                                              base_layout.tag                 基本構造を実装するタグファイル。
+
+業務画面共通テンプレート     △        ○       | /WEB-INF/tags/template/       | 大半の業務画面で使用するテンプレート。
+                                                                              | 業務画面のレイアウトのうち、業務機能領域以外の
+                                              * page_template.tag             | 大半の部分を実装する。
+                                              * subwindow_page_template.tag   |
+                                                                              | **subwindow_page_template.tag**\ は、サブウィンドウ用
+
+
+エラー画面共通テンプレート   △        ○       /WEB-INF/tags/template/\        共通エラー画面を実装するテンプレート。
+                                              errorpage_template.tag
+
+トップナビゲーション領域JSP  △        ○       | /include/                     | 業務画面のトップナビゲーション領域を実装するJSP。
+                                                                              |
+                                              * app_top_nav.jsp               | **subwindow_app_top_nav.jsp**\ は、サブウィンドウ用
+                                              * subwindow_app_top_nav.jsp
+
+ヘッダー領域JSP              △        ○       | /include/                     | 業務画面のヘッダー領域を実装するJSP。
+                                                                              |
+                                              * app_header.jsp                | **subwindow_app_header.jsp**\ は、サブウィンドウ用
+                                              * subwindow_app_header.jsp
+
+サイドメニュー領域JSP        △        ○       /include/app_aside.jsp          業務画面のサイドメニュー領域を実装するJSP。
+
+フッター領域JSP              △        ○       | /include/                     | 業務画面のフッター領域を実装するJSP。
+                                                                              |
+                                              * app_footer.jsp                | **subwindow_app_footer.jsp**\ は、サブウィンドウ用
+                                              * subwindow_app_footer.jsp
+
+HTMLヘッド部定義JSP          △        ○       /include/html_head.jsp          | HTMLの<head>タグの内容を定義するJSP。
+                                                                              | キャッシュ制御用の<meta>タグや、
+                                                                                cssの読み込みなどを制御している。
+
+外部スクリプト定義JSP        △        ○       /include/js_include.jsp         HTMLの<script>タグによる外部スクリプト参照を
+                                                                              定義するJSP。
+
+ローカル動作用スタブ         ○        ×       /js/jsp/taglib/template.js      ローカル動作時に当該のタグファイルを読み込んで
+                                                                              レンダリングするJavaScript。
+
+============================ ======== ======= =============================== ===================================================
+
+.. [#1]
+  **「サーバ」:**
+    実働環境にデプロイして使用するかどうか
+  **「ローカル」:**
+    ローカル動作時に使用するかどうか
+  **○ :**
+    使用する
+  **△ :**
+    直接は使用しないがミニファイしたファイルの一部として使用する。
+  **× :**
+    使用しない
+
+
+
+------------------------------------
+業務画面テンプレートの詳細仕様
+------------------------------------
+
+.. _base_layout_tag:
+
+業務画面ベースレイアウト
+-------------------------------------------------------------------
+UI標準に沿った業務画面の基本構造を実装するタグファイル。
+
+**タグファイルパス**
+  /WEB-INF/tags/template/base_layout.tag
+
+**属性値一覧**
+
+  ========================  =============== ======================================================  ============  =============
+  名称                      プロパティ      内容                                                    型            必須指定
+  ========================  =============== ======================================================  ============  =============
+  画面タイトル              title           | 画面のタイトル文字列を設定する。                      文字列        必須
+                                            | 設定された文字列はウィンドウのタイトル及び
+                                              ヘッダ領域に表示される。
+
+  トップナビゲーション      topNavHtml      | トップナビゲーション領域に表示するJSPを記述する。     JSP (HTML)    必須
+
+  ヘッダコンテンツ          headerHtml      | ヘッダコンテンツ領域に表示するJSPを記述する。         JSP (HTML)    必須
+
+  ボディレイアウト          bodyLayoutHtml  | ボディ領域に表示するJSPを記述する。                   JSP (HTML)    必須
+
+  フッターコンテンツ        footerHtml      | フッターコンテンツ領域に表示するJSPを記述する。       JSP (HTML)    必須
+
+  画面毎CSS                 localCss        | 当該画面でのみ使用するCSS定義を記述する。             JSP (CSS)     任意
+                                            | ここに記述したCSSは **<head>** タグ内の
+                                              **<style>** タグに出力される。
+
+  画面毎JS                  localJs         | 当該画面でのみ使用するJavaScriptを記述する。          JSP           任意
+                                            | ここに記述したJavaScriptはページの末端                (JavaScript)
+                                              (<body>の終了タグの直前)に置かれた
+                                              **<n:script>** タグに出力される。
+  ページ毎外部スクリプト    localInclude    | ページごとにロードする外部スクリプト定義を記述する。  JSP (HTML)    任意
+                                            | ここに記述した外部スクリプトは\ **localJs**\
+                                              の直前でロードされる
+
+  独立サブウィンドウ名      remainSubWindow | このウィンドウから開いたサブウィンドウのうち、        文字列        任意
+                                              このウィンドウを画面遷移もしくは閉じた後も
+                                              閉じずにそのまま残すサブウィンドウ名のリスト
+                                              (カンマ区切り)。
+                                            | デフォルトでは全てのサブウィンドウを閉じる。
+
+  タブインデックス順        tabindexOrder   | 出現順序と異なるタブ遷移をする場合に                  文字列        任意
+                                              順序を領域のID属性で指定する。
+                                            | (ID属性はカンマ区切りで指定する。)
+
+  クローズイベント定義      whenToClose     | イベント式を定義し、画面を閉じる機能を拡張する。      文字列        任意
+
+  ========================  =============== ======================================================  ============  =============
+
+
+**インクルードファイル一覧**
+
+  =========================== =============================  =============================================================
+  名称                        パス                           内容
+  =========================== =============================  =============================================================
+  HTMLヘッド部                /include/html_head.jsp         | **<head>**\ タグに以下の内容を出力する。
+                                                             |
+                                                             |   - **<meta>**\ タグ (キャッシュ関連のHTTPヘッダなど)
+                                                             |   - **<title>**\ タグ
+                                                             |   - **<link>**\ タグ (共通CSSファイルのインクルードなど)
+
+  JavaScriptファイルロード部  /include/js_include.jsp        **<body>**\ の閉じタグの直前に、JavaScriptファイルの
+                                                             読み込み処理(\ **<script src>**\ )を出力する。
+  =========================== =============================  =============================================================
+
+.. _page_template_tag:
+
+業務画面標準テンプレート
+-----------------------------------------------------------------
+大半の業務画面で使用するテンプレート。
+UI標準で定められた業務画面のレイアウトの中で、業務機能領域以外の部分を実装している。
+
+上の **ベースレイアウト** をもとにしており、ボディ部分を
+サイドコンテンツとメインコンテンツの2ペインに分割している。
+
+また、共通部分のJSPをインクルードすることで最小限の記述で画面を構築できるように配慮されている。
+(必須属性は、画面タイトルとメインコンテンツのみである。)
+
+**タグファイルパス**
+  /WEB-INF/tags/template/page_template.tag
+
+**属性値一覧**
+
+  ========================= ======================= ======================================================  ============  =============
+  名称                      プロパティ              内容                                                    型            必須指定
+  ========================= ======================= ======================================================  ============  =============
+  画面タイトル              title                   | 画面のタイトル文字列を設定する。                      文字列        必須
+                                                    | 設定された文字列はウィンドウのタイトル及び
+                                                      ヘッダ領域に表示される。
+
+  確認画面タイトル          confirmationPageTitle   | 確認画面のタイトル文字列を設定する。                  文字列        任意
+                                                    | 設定された文字列はウィンドウのタイトル及び
+                                                    | ヘッダ領域に表示される。
+
+  メインコンテンツ          contentHtml             | メインコンテンツ領域に表示するJSPを記述する。         JSP (HTML)    必須
+
+
+  トップナビゲーション      topNavHtml              | トップナビゲーション領域に表示するJSPを記述する。     JSP (HTML)    任意
+                                                    | 省略した場合はインクルードJSP
+                                                      (/WEB-INF/app_top_nav.jsp)の内容を出力する。
+
+  ヘッダコンテンツ          headerHtml              | ヘッダコンテンツ領域に表示するJSPを記述する。         JSP (HTML)    任意
+                                                    | 省略した場合はインクルードJSP
+                                                      (/WEB-INF/app_header.jsp)の内容を出力する。
+
+  サイドコンテンツ          asideHtml               | サイドコンテンツ領域に表示するJSPを記述する。         JSP (HTML)    任意
+                                                    | 省略した場合はインクルードJSP
+                                                      (/WEB-INF/app_aside.jsp)の内容を出力する。
+
+  フッターコンテンツ        footerHtml              | フッターコンテンツ領域に表示するJSPを記述する。       JSP (HTML)    任意
+                                                    | 省略した場合はインクルードJSP
+                                                      (/WEB-INF/app_footer.jsp)の内容を出力する。
+
+  サイドコンテンツを省略    noMenu                  | サイドコンテンツ領域を使用しない場合は"true"を        真偽値        任意
+                                                      設定することで、ページ構成がいわゆる
+                                                      1カラムレイアウトになる。
+
+  画面毎CSS                 localCss                | 当該画面でのみ使用するCSS定義を記述する。             JSP (CSS)     任意
+                                                    | ここに記述したCSSは **<head>** タグ内の
+                                                      **<style>** タグに出力される。
+
+  画面毎JS                  localJs                 | 当該画面でのみ使用するJavaScriptを記述する。          JSP           任意
+                                                    | ここに記述したJavaScriptはページの末端                (JavaScript)
+                                                      (<body>の終了タグの直前)に置かれた
+                                                      **<n:script>** タグに出力される。
+
+  タブインデックス順        tabindexOrder           | 出現順序と異なるタブ遷移をする場合に                  文字列        任意
+                                                      順序を領域のID属性で指定する。
+                                                    | (ID属性はカンマ区切りで指定する。)
+
+
+  独立サブウィンドウ名      remainSubWindow         | このウィンドウから開いたサブウィンドウの内、          文字列        任意
+                                                      このウィンドウを画面遷移もしくは閉じた後も
+                                                      閉じずにそのまま残すサブウィンドウ名のリスト
+                                                      (カンマ区切り)。
+                                                    | デフォルトでは全てのサブウィンドウを閉じる。
+
+  クローズイベント定義      whenToClose             | イベント式を定義し、画面を閉じる機能を拡張する。      文字列        任意
+
+  ========================= ======================= ======================================================  ============  =============
+
+
+**インクルードファイル一覧**
+
+  =======================  =============================  =============================================================
+  名称                     パス                           内容
+  =======================  =============================  =============================================================
+  メインナビゲーション     /include/app_top_nav.jsp       メインナビゲーション領域に、ログインステータスや、
+                                                          トップレベルリンクなどを表示する。
+
+  業務共通ヘッダ           /include/app_header.jsp        ヘッダコンテンツ領域にブランドロゴや画面タイトルなどを
+                                                          表示する。
+
+  業務共通メニュー         /include/app_aside.jsp         サイドコンテンツ領域に業務メニューなどを表示する。
+
+  業務共通フッター         /include/app_footer.jsp        フッターコンテンツ領域に著作権表示や
+                                                          プライバシーポリシーへのリンクなどを表示する。
+
+  グローバルエラー領域     /include/app_error.jsp         グローバルエラーのメッセージを表示する。
+  =======================  =============================  =============================================================
+
+.. _errorpage_template_tag:
+
+エラー画面テンプレート
+------------------------------------------------------------------------
+共通エラー画面で使用するテンプレート。
+業務画面JSPとは異なりサイドメニュー等は表示されない。
+エラーメッセージのみを表示する簡素な画面構成となる。
+
+**タグファイルパス**
+  /WEB-INF/tags/template/errorpage_template.tag
+
+**属性値一覧**
+
+  ========================  ==================  ================================================== ============  =============
+  名称                      プロパティ          内容                                               型            必須指定
+  ========================  ==================  ================================================== ============  =============
+  画面タイトル              title               画面のタイトル文字列を設定する。                    文字列        必須
+                                                設定された文字列はウィンドウのタイトル及び
+                                                ヘッダ領域に表示される。
+
+  エラーメッセージ          errorMessageHtml    エラーメッセージのJSP。                             JSP (HTML)    必須
+
+  ========================  ==================  ================================================== ============  =============
+
+
+------------------------------
+ローカル動作時の挙動
+------------------------------
+ローカル動作時でのJSPページテンプレートタグの評価は、 **js/jsp/taglib/template.js** によって行われる。
+このスクリプトは、サーバ動作時と同じタグファイルを読み込んでレンダリングを行う。
+JSPページテンプレートタグがインクルードしているJSP類も、同様にサーバ動作時と同じものを読み込んでレンダリングする。
+
+ただし、Firefoxブラウザを除き、ローカル環境でのタグファイルの動的読み込み(XHR)が許容されていないため、
+タグファイルおよびインクルードJSPファイルは **js/devtool.js** 内にミニファイした状態で提供する。
+このため、タグファイルの修正内容をローカル動作で確認するには、ミニファイ操作が必要である。
+詳細は :ref:`generate_javascript` を参照すること。
+
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 
+- 概要
+- 
+- ファイル構成
+- 概要
+- 構成ファイル一覧
+- 
+- 業務画面テンプレートの詳細仕様
+- 業務画面ベースレイアウト
+- 業務画面標準テンプレート
+- エラー画面テンプレート
+- 
+- ローカル動作時の挙動
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/ui-framework-jsp_page_templates--s1/filename.png)` |
+
+Office attachments → reference in `assets/ui-framework-jsp_page_templates--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `ui-framework-jsp_page_templates--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

@@ -1,0 +1,33 @@
+{
+  "file_id": "web-application-inputAndOutput--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 (description text)",
+      "description": "The knowledge file states \"コード値が3件以上存在する場合、codeIdから検索してもoffCodeValueが一意に特定できないため\" but the source says \"コード値が2件以上存在するため、codeId属性から検索してもoffCodeValue属性が見つからない。\" The condition threshold is \"2件以上\" (matching the section title), not \"3件以上\" as stated in the knowledge file.",
+      "source_evidence": "JSPコメント: \"コード値が2件以上存在するため、codeId属性から検索してもoffCodeValue属性が見つからない。\"; セクション見出し: \"コードIDに対応するコード値が2件以上の場合\""
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "codeタグ section introduction (between section heading and subsection s3)",
+      "description": "The introductory paragraph of the \"codeタグ\" section contains technology selection guidance that is absent from all knowledge file sections: for registration/update screens, normally codeSelectタグ, codeRadioButtonsタグ, codeCheckboxesタグ, or codeCheckboxタグ should be used; codeタグ is only for the special case where selectable code values are displayed as a list for text box input. This is decision-necessary \"when to use X vs Y\" guidance.",
+      "source_evidence": "\"登録画面や更新画面で選択可能なコード値を表示する場合、通常codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeCheckboxタグのいずれかを使用する。しかし、選択可能なコード値を一覧表示し、テキストボックスに入力する仕様もありうる。\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file sections vs source headings",
+      "description": "Source has 5 headings (\"コードIDに対応するコード値が2件の場合\", \"コードIDに対応するコード値が2件以上の場合\", \"codeタグ\", \"詳細画面や一覧画面でコードの選択項目を表示する場合\", \"登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合\") but the knowledge file has only 4 sections. The \"codeタグ\" heading is used as the file title rather than a section, and its introductory content (including the technology selection guidance) is not captured anywhere in the sections."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "Section s4 is missing the `optionColumnName` hint, even though the JSP example in s4 uses `optionColumnName=\"OPTION01\"` and the section body explicitly references this attribute (\"optionColumnName属性の使用方法はs3と同様\").",
+      "source_evidence": "s4 JSP実装例: `<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\" ...`"
+    }
+  ]
+}

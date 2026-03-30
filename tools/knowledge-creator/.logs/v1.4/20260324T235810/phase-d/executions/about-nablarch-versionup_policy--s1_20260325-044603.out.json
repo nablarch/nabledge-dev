@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-versionup_policy--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (バージョンアップ種類テーブル)",
+      "description": "ソーステーブルの「更新対象コンテンツ」列が完全に省略されている。この列はバージョンアップ種類ごとに対象コンテンツを指定しており、特にバグフィックスは「Nablarchフレームワーク」のみが対象であり、メジャー/マイナー/リビジョンアップは全4種類（フレームワーク、標準/ガイド、ライブラリ、ツール）が対象となる。この違いは「バグフィックスはNablarchライブラリに適用されるか？」などの質問に正確に回答するために必要な情報であり、意思決定に関わる重要な情報。",
+      "source_evidence": "ソーステーブルの「更新対象コンテンツ」列: メジャー/マイナー/リビジョンアップ = Nablarchフレームワーク・Nablarch標準/ガイド・Nablarchライブラリ・Nablarchツール。バグフィックス = Nablarchフレームワークのみ。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (EOSLポリシー)",
+      "description": "ソース脚注 [#a] に含まれるEOSLの定義（「End Of Service Lifeの略で、製品に対するサポートやサービスの提供を終了することです」）がセクション本文に含まれていない。",
+      "source_evidence": "ソース脚注: 「EOSL：End Of Service Lifeの略で、製品に対するサポートやサービスの提供を終了することです。」"
+    }
+  ]
+}

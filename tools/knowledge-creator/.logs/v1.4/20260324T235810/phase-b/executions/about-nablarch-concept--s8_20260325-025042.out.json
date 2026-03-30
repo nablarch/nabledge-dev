@@ -1,0 +1,85 @@
+{
+  "id": "about-nablarch-concept--s8",
+  "title": "ハンドラの構造と実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ハンドラの構造と実装",
+      "hints": [
+        "Handler",
+        "nablarch.fw.Handler",
+        "ExecutionContext",
+        "handle()メソッド",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "ハンドラ実装",
+        "ハンドラインターフェース",
+        "TransactionHandler",
+        "ハンドラキュー",
+        "ハンドラ処理フロー",
+        "handleNext"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "method_binding",
+        "ハンドラセクション区切り"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リクエストの識別と業務処理の実行",
+      "hints": [
+        "リクエストID",
+        "実行時ID",
+        "リクエストパス",
+        "業務処理ディスパッチ",
+        "ThreadContextHandler",
+        "RequestPathJavaPackageMapping",
+        "内部フォーワード",
+        "内部リクエストID",
+        "ForwardingHandler",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "メソッドレベルバインディング",
+        "MethodBinding",
+        "MethodBinder",
+        "HttpMethodBinding",
+        "RecordTypeBinding",
+        "nablarch.fw.web.HttpMethodBinding",
+        "nablarch.fw.handler.RecordTypeBinding"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "リクエストインターフェース",
+        "nablarch.fw.Request",
+        "getRequestPath",
+        "setRequestPath",
+        "getParam",
+        "getParamMap",
+        "リクエストパス定義"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**インターフェース**: `nablarch.fw.Handler<TData, TResult>`\n\nハンドラクラスはこのインターフェースを実装する。唯一のメソッド `handle(TData data, ExecutionContext context)` にすべての責務を実装する。\n\n> **注意**: 業務アクションハンドラを実装する場合は、Handlerインターフェースを直接実装せず、テンプレートクラスを利用すること。参照: :ref:`action_handler_template`\n\n**型変数による分類（:doc:`web_gui` 向け）:**\n\n| 型変数 | ハンドラの処理内容 | ハンドラ例 |\n|---|---|---|\n| `Object` | DBトランザクション制御などリクエスト内容に直接依存しない処理 | :doc:`../handler/TransactionManagementHandler`、:doc:`../handler/ServiceAvailabilityCheckHandler` |\n| `Request` | 業務アクションハンドラのディスパッチなどリクエスト内容に沿った共通処理 | :doc:`../handler/RequestPathJavaPackageMapping`、:doc:`../handler/RequestHandlerEntry` |\n| `HttpRequest` | HTTPアクセスログ記録などHTTPリクエストに直接依存した処理 | :doc:`../handler/HttpResponseHandler`、:doc:`../handler/HttpAccessLogHandler` |\n\n- `Object`型・`Request`型のハンドラは :doc:`web_gui`、:doc:`batch`、:doc:`messaging` で共用可能\n- `HttpRequest`型のハンドラは :doc:`web_gui` 以外では使用不可\n\n第二引数の**実行コンテキスト**には以下が含まれる:\n- :ref:`ハンドラキュー<handlerQueue>`\n- :ref:`リクエストスコープ<scope>`\n- :ref:`セッションスコープ<scope>`\n- :ref:`データリーダ/データリーダファクトリ<data_reader>`\n\n**ハンドラ処理フロー（3ブロック）:**\n\n1. **往路処理**: `handle()` 開始から後続ハンドラへの委譲まで（例: 権限チェック、トランザクション開始、アクセスログ出力）\n2. **復路処理**: 後続ハンドラの正常終了後から `handle()` 終了まで（例: 応答送信、トランザクションコミット、リソース解放）\n3. **例外処理**: 当該または後続ハンドラで例外発生時（例: エラー応答送信、障害ログ出力、トランザクションロールバック、リソース解放）\n\n後続ハンドラへの委譲は `ExecutionContext#handleNext()` で行う。`handle()` はチェック例外を送出しないため、`RuntimeException` または `Error` をキャッチする。\n\n```java\npublic class TransactionHandler implements Handler<Request, Result> {\n    public Result handle(Request request, ExecutionContext context) {\n        try {\n            beginTransaction(request, context);           // 1. 往路処理\n            Result result = context.handleNext(request); // 後続ハンドラへ委譲\n            commitTransaction(result, request, context);  // 2. 復路処理\n            return result;\n        } catch (RuntimeException e) {\n            rollbackTransaction(e, request, context);     // 3. 例外処理\n            throw e;\n        } catch (Error e) {\n            rollbackTransaction(e, request, context);     // 3. 例外処理\n            throw e;\n        } finally {\n            endTransaction(request, context);             // 終端処理\n        }\n    }\n}\n```",
+    "s2": "なし",
+    "s3": "**リクエストID**: リクエストが依頼する「処理」を一意識別する情報。実装レベルではリクエストパスの一部に含まれる。\n\n**実行時ID**: 各リクエスト実行ごとに割り振られる一意文字列。ログやDB上で個別業務処理を識別・トレースする目的で使用する。\n\n**リクエストパス**: NAFが各リクエストを実行する業務アクションハンドラを特定するための文字列。リクエストIDを部分文字列として含み、1対1の関係を持つ。全リクエストに同一ハンドラを使う場合（例: 一般バッチ）は、起動引数にリクエストパスを指定すればよい（リクエスト内にリクエストパス/リクエストIDを含める必要はない）。\n\n**実行制御基盤別のリクエストパス:**\n\n| 実行制御基盤 | リクエストの種類 | リクエストパス |\n|---|---|---|\n| :doc:`web_gui` | HTTPリクエスト | リクエストURI（URIパス階層→パッケージ+クラスにマッピング） |\n| :doc:`messaging` | 処理要求電文(MOM) | FWヘッダ領域の特定フィールド（外部設定でパッケージ指定、階層構造なし） |\n| :doc:`messaging` | コマンドライン | 起動コマンドの特定パラメータ値（全電文を単一ハンドラで処理） |\n| :doc:`messaging` | 処理要求電文(HTTP) | FWヘッダの特定フィールド、またはリクエストURIから取得したリクエストID（FWヘッダ値で上書き可） |\n| :doc:`batch` | データレコード | ファイル/DBテーブルの特定カラム値（レコード毎に個別ハンドラ実行可能） |\n| :doc:`batch` | コマンドライン | 起動コマンドの特定パラメータ値（全レコードを単一ハンドラで処理） |\n\n**リクエストパスとリクエストIDのマッピング例:**\n\n| 形態 | リクエストパス | リクエストID |\n|---|---|---|\n| リクエストURI | http://www.example.com/app/admin/UserAction/WAA0010.do | WAA0010 |\n| プロセス起動引数 | -requestPath admin.DataUnloadBatchAction/BC0012 | BC0012 |\n| 処理要求電文 | RW0023 | RW0023 |\n\n- :doc:`../handler/ThreadContextHandler` がリクエストパスとリクエストIDの紐付けを行い、以降はスレッドコンテキスト上の変数として参照可能\n- :doc:`../handler/RequestPathJavaPackageMapping` がリクエストパス/リクエストIDと業務アクションハンドラのマッピングを行い、ハンドラキューに追加\n\n**内部フォーワード処理と内部リクエストID:**\n- 処理実行中に異なるリクエストパスでハンドラキューを再実行する処理（参照: :doc:`../handler/ForwardingHandler`）\n- リクエストパスは変更されるが、**リクエストIDと実行時IDは同一リクエスト処理中は不変**\n- 変更後のリクエストパスのリクエストIDは「内部リクエストID」としてスレッドコンテキスト上の別変数に格納\n- 内部リクエストIDを使用することで、フォワード先のリクエストIDで開閉局制御・認可制御が実施できる\n\n![リクエストIDと内部リクエストIDを使用した場合の開閉局制御・認可制御の動作の違い](assets/about-nablarch-concept--s8/internal_req_usecase.png)\n\n- 内部リクエストIDを開閉局制御・認可制御に使用する場合の設定方法: :doc:`../handler/ServiceAvailabilityCheckHandler`、:doc:`../handler/PermissionCheckHandler` 参照",
+    "s4": "**メソッドレベルバインディング**: ハンドラインターフェースを実装**していない**オブジェクトをハンドラキューに追加（またはディスパッチ）することで有効化される仕組み。フレームワークは実行コンテキスト上の `MethodBinding` モジュールを使って `handle()` に代わるメソッドを決定・実行する。\n\n> **警告**: `MethodBinding` が実行コンテキストに未設定の状態でハンドラインターフェース非実装オブジェクトをハンドラキューに追加すると実行時エラーが送出される。\n\nフレームワーク標準の `MethodBinder`:\n\n| クラス名 | 概要 | 参照 |\n|---|---|---|\n| `nablarch.fw.web.HttpMethodBinding` | HTTPリクエストメソッド名(GET/POST/DELETE/PUT等)およびリソース名に応じてメソッドを呼び分ける | :doc:`../handler/HttpMethodBinding` |\n| `nablarch.fw.handler.RecordTypeBinding` | 入力ファイルや電文データのレコード種別（ヘッダ/データ/トレーラ等）に応じてメソッドを呼び分ける | :doc:`../handler/FileBatchAction` |",
+    "s5": "**インターフェース**: `nablarch.fw.Request<TParam>`\n\nリクエストパスを定義する際に実装するインターフェース。このインターフェースを実装することでリクエスト毎に実行する業務処理を切り替えることが可能になる。\n\n| メソッド名 | 説明 |\n|---|---|\n| `String getRequestPath()` | リクエストの種別を識別する文字列（リクエストパス）を返す |\n| `Request<TParam> setRequestPath(String requestPath)` | リクエストパスを設定する |\n| `TParam getParam(String name)` | 指定名のリクエストパラメータを取得する |\n| `Map<String, TParam> getParamMap()` | リクエストパラメータのMapを返す |"
+  }
+}

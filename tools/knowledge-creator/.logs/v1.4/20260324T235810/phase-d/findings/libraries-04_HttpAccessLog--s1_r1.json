@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 出力項目テーブル",
+      "description": "出力項目テーブルから「出力日時」「起動プロセスID」「処理方式区分」の3項目が欠落している。ソースの出力項目テーブルにはこれら3項目が含まれており（出力日時=ログ出力時のシステム日時、起動プロセスID=アプリケーションを起動したプロセス名・実行環境の特定に使用、処理方式区分=処理方式の特定に使用）、HTTPアクセスログの出力フィールドを問い合わせた際に不完全な回答になる。",
+      "source_evidence": "ソース出力項目テーブル: 出力日時 | ログ出力時のシステム日時 / 起動プロセスID | アプリケーションを起動したプロセス名。実行環境の特定に使用する。 / 処理方式区分 | 処理方式の特定に使用する。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 個別項目の説明文",
+      "description": "「個別項目はリクエストIDからフリーメモリ量(開始時)まで」と記載されているが、ソースでは「空きメモリ量(開始時)」が正式な項目名として使われており、「フリーメモリ量(開始時)」という表記はソースに存在しない。",
+      "source_evidence": "ソース: 「HTTPアクセスログの個別項目は、リクエストID、ユーザID、URLから空きメモリ量(開始時)までとなる」および出力項目テーブルの列見出し「空きメモリ量(開始時)」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections全体",
+      "description": "自動チェックによりソースの見出し数5に対してセクション数4と報告されている。ソースにはフォーマット種別としてbegin/parameters/dispatchingClass/endの4種が設定プロパティ（httpAccessLogFormatter.endFormat）で言及されているが、知識ファイルにはs2(begin)・s3(parameters)・s4(dispatchingClass)の3セクションしかなく、「リクエスト処理終了時のログ出力に使用するフォーマット」に対応するセクション（endFormat のプレースホルダ一覧・デフォルトフォーマット）が欠落している可能性がある。",
+      "source_evidence": "自動チェック警告: Section count 4 < source headings 5。ソースの設定プロパティ表に httpAccessLogFormatter.endFormat が定義されており、他3種のフォーマットは各々h3セクションとして記載されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints配列",
+      "description": "設定プロパティ表に存在するプロパティ名のうち、以下がs1のhintsに含まれていない: httpAccessLogFormatter.className、httpAccessLogFormatter.parametersFormat、httpAccessLogFormatter.dispatchingClassFormat、httpAccessLogFormatter.parametersSeparator、httpAccessLogFormatter.sessionScopeSeparator。",
+      "source_evidence": "ソースのapp-log.propertiesの設定例および設定プロパティ表にこれらのプロパティ名が明示されている。"
+    }
+  ]
+}

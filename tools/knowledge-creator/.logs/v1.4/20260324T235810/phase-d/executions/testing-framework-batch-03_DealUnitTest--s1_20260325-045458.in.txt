@@ -1,0 +1,333 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/05_UnitTestGuide/03_DealUnitTest/batch.rst`
+- Format: `rst`
+
+```
+==================================
+取引単体テストの実施方法（バッチ）
+==================================
+
+バッチ処理の取引単体テストは、自動テストフレームワークを使用してテストを行う。
+リクエスト単体テストを連続実行することにより、取引単位でのテストを行う。
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージはテスト対象取引のパッケージとする。
+* <取引ID>Testというクラス名でテストクラスを作成する。
+
+例えば、テスト対象取引の取引IDがB21AC01だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+ package nablarch.sample.ss21AC01
+
+ import nablarch.test.core.batch.BatchRequestTestSupport;
+
+ // 中略
+ 
+ public class B21AC01Test extends BatchRequestTestSupport {
+ 
+
+テストケース分割方針
+====================
+
+基本的には、\ **1シートにつき1テストケース**\ とする。
+以下、例外事項を示す。
+
+
+複雑なテストケースの場合
+------------------------
+
+テストデータが大量であったり、1取引に含まれる処理が多い場合に、\
+１つのシートに全てのテストデータを詰め込むと、シート内にデータが多くなり過ぎて、\
+テストデータの可読性が落ちる場合がある。\
+このような場合は、1ケースを複数シートに分割して記述しても良い。
+
+
+非常に簡単なテストケースの場合
+------------------------------
+
+非常に簡単なテストケースで、テストデータ量が少ない場合、
+1シートに全テストケースを含めてもよい。
+
+
+基本的な記述方法
+================
+
+基本的には、1テストケースを1シートにまとめて記述する。\
+1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。
+
+以下の例では、３つのバッチ(ファイル入力バッチ、ユーザ削除バッチ、ファイル出力バッチ)\
+で構成される取引を実行している。
+
+.. code-block:: java
+
+ /** 正常終了するケース */
+ @Test
+ public void testSuccess() {
+     execute();
+ }
+
+
+**【testSuccessシート】**
+
+LIST_MAP=testShots
+
+=== ============= ==================  ========== ========= ============== ============ ===============
+no  description   expectedStatusCode  setUpTable setUpFile expectedTable  expectedFile   requestPath    
+=== ============= ==================  ========== ========= ============== ============ ===============
+ 1  ファイル入力                 100  default    default   default                     fileInputBatch 
+ 2  ユーザ削除                   100  default              default                     userDeleteBatch
+ 3  ファイル出力                 100  default              fileInputBatch default      fileOutputBatch          
+=== ============= ==================  ========== ========= ============== ============ ===============
+
+
+1テストケースを複数シートを分割する場合
+=======================================
+
+                                           
+例えば、前項(\ `基本的な記述方法`_\ )で例示したテストケースは、以下のように分割して記述可能である。
+
+
+.. code-block:: java
+
+ package nablarch.sample.ss21AA01
+
+ import org.junit.Test;
+ import nablarch.test.core.messaging.BatchRequestTestSupport;
+
+ // 中略
+
+ public class B21AA01Test extends BatchRequestTestSupport {
+
+     @Test
+     public void testSuccess() {
+      
+         // 入力ファイルをテンポラリテーブルに登録
+         execute("testSuccess_fileInput");
+      
+         // テンポラリテーブルの情報をユーザ関連テーブルを削除
+         execute("testSuccess_userDelete");
+      
+         // 結果をファイル出力
+         execute("testSuccess_fileOutput");
+     }
+
+\
+
+**【testSuccess_fileInputシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ========= ===============
+ no  case          expectedStatusCode  setUpTable setUpFile    requestPath    
+==== ============= ==================  ========== ========= ===============
+  1  ファイル入力                 100  default    default   fileInputBatch 
+==== ============= ==================  ========== ========= ===============
+
+\
+
+**【testSuccess_userDeleteシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ============= ===============
+ no  case          expectedStatusCode  setUpTable expectedTable requestPath    
+==== ============= ==================  ========== ============= ===============
+  1  ユーザ削除                   100  default    default       userDeleteBatch
+==== ============= ==================  ========== ============= ===============
+
+
+**【testSuccess_fileOutputシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ========= ===============
+ no  case          expectedStatusCode  setUpTable outFile    requestPath    
+==== ============= ==================  ========== ========= ===============
+  1  ファイル出力                 100  default    default   fileOutputBatch 
+==== ============= ==================  ========== ========= ===============
+
+
+1シートに複数ケースを含める場合
+===============================
+
+非常に簡単なテストケースの場合は、複数にまとめてもよい。
+
+以下の例では、２つのテストケース（通常のケースと入力データが0件のケース）を\
+１つのシートで記述している
+
+.. code-block:: java
+
+ /** 正常終了するケース */
+ @Test
+ public void testSuccess() {
+     execute();
+ }
+
+
+**【testSuccessシート】**
+
+LIST_MAP=testShots
+
+=== ==================== ==================  ========== ========= ============== ============ ===============
+ no  description         expectedStatusCode  setUpTable setUpFile expectedTable  expectedFile   requestPath    
+=== ==================== ==================  ========== ========= ============== ============ ===============
+1-1  ファイル入力                    100      shot1      shot1                                fileInputBatch 
+1-2  ユーザ削除                      100                           shot1                      userDeleteBatch
+2-1  ファイル入力（0件）             100      shot2      shot2                                fileInputBatch 
+2-2  ユーザ削除（0件）               100                           shot2                      userDeleteBatch
+=== ==================== ==================  ========== ========= ============== ============ ===============
+
+\
+
+.. note::
+ グループIDを利用することで1シートに複数ケースのテストデータを記述できる。
+ 詳細は、『\ :ref:`tips_groupId`\ 』の項を参照。
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-batch-03_DealUnitTest--s1`
+
+```json
+{
+  "id": "testing-framework-batch-03_DealUnitTest--s1",
+  "title": "取引単体テストの実施方法（バッチ）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複雑なテストケースの場合",
+      "hints": [
+        "BatchRequestTestSupport",
+        "execute",
+        "取引単体テスト",
+        "テストケース分割",
+        "複数シート分割",
+        "LIST_MAP",
+        "requestPath",
+        "バッチリクエストテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "非常に簡単なテストケースの場合",
+      "hints": [
+        "グループID",
+        "複数テストケース",
+        "1シート複数ケース",
+        "テストケース集約",
+        "tips_groupId",
+        "no列プレフィックス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象取引と同一パッケージ (2) クラス名は`{取引ID}Test` (3) `BatchRequestTestSupport`を継承。\n\nテストケース分割方針: 基本は1シート=1テストケース。1シートに複数バッチ実行を記述することで取引単位テストとなる。\n\nテストデータが大量または1取引に含まれる処理が多い場合は、1ケースを複数シートに分割して記述可能。`execute(\"シート名\")`で特定シートを指定して実行する:\n\n```java\n@Test\npublic void testSuccess() {\n    execute(\"testSuccess_fileInput\");\n    execute(\"testSuccess_userDelete\");\n    execute(\"testSuccess_fileOutput\");\n}\n```\n\n各シートに LIST_MAP=testShots を定義。使用可能な列: `no`, `description`/`case`, `expectedStatusCode`, `setUpTable`, `setUpFile`, `expectedTable`, `expectedFile`/`outFile`, `requestPath`",
+    "s2": "テストデータ量が少なく非常に簡単なテストケースの場合は、1シートに全テストケースをまとめて記述可能。\n\n`no`列のプレフィックスでケースをグループ化（例: `1-1`, `1-2`が1つ目のケース、`2-1`, `2-2`が2つ目のケース）:\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | requestPath |\n|---|---|---|---|---|---|---|\n| 1-1 | ファイル入力 | 100 | shot1 | shot1 | | fileInputBatch |\n| 1-2 | ユーザ削除 | 100 | | | shot1 | userDeleteBatch |\n| 2-1 | ファイル入力（0件） | 100 | shot2 | shot2 | | fileInputBatch |\n| 2-2 | ユーザ削除（0件） | 100 | | | shot2 | userDeleteBatch |\n\n> **注意**: グループIDを利用することで1シートに複数ケースのテストデータを記述できる。詳細は:ref:`tips_groupId`を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

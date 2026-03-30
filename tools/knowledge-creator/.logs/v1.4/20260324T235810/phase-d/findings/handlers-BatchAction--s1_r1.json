@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-BatchAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5 (pseudocode section)",
+      "description": "The important note following the pseudocode is omitted. Source states: 「このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。」This warns developers that the pseudocode is simplified for explanation only and the actual processing flow is completely different, controlled by handler configuration. Without this warning, an AI agent might incorrectly advise implementing logic based on the pseudocode.",
+      "source_evidence": "「.. note:: このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "`Result.Success` is referenced in s6 content (「正常終了マーカーオブジェクト `Result.Success` をリターンする。」) but is absent from s6 hints. It is present in s5 hints but not in s6, reducing discoverability when searching by this class name in the context of the processing flow.",
+      "source_evidence": "s6 content includes: 「正常終了マーカオブジェクト( `Result.Success`_ ) をリターンする。」"
+    }
+  ]
+}

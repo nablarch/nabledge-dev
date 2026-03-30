@@ -1,0 +1,162 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-field_base",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction (before コードサンプル heading)",
+      "description": "The source document's introductory section lists two concrete responsibilities of the field_base template that are not captured anywhere in the knowledge file: (1) 各入力項目のレイアウト(ラベル、入力項目、項目別エラー、補助テキストなどの表示制御), and (2) 必須項目の表現. An AI answering questions like 'What does field_base implement?' or 'What layout features does field_base provide?' would lack this information.",
+      "source_evidence": "このテンプレートでは以下の内容を実装している。\n  - 各入力項目のレイアウト(ラベル、入力項目、項目別エラー、補助テキストなどの表示制御)\n  - 必須項目の表現"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=================================================
+入力項目ウィジェット共通テンプレート
+=================================================
+:doc:`field_base` は :doc:`field_text` や :doc:`field_checkbox`
+などの入力項目UI部品に実装の実装で使用するテンプレートである。
+このテンプレートでは以下の内容を実装している。
+
+  - 各入力項目のレイアウト(ラベル、入力項目、項目別エラー、補助テキストなどの表示制御)
+  - 必須項目の表現
+
+
+コードサンプル
+==================================
+:doc:`field_base` は :doc:`../internals/jsp_widgets` の実装に用いるテンプレートなので、
+業務画面JSPから直接使用することはない。
+
+仕様
+=============================================
+ 
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== =============== ========== ========= ================================
+名称                 内容                           タイプ          サーバ     ローカル  備考
+==================== ============================== =============== ========== ========= ================================
+fieldContent         フィールド入力部タグ           JSPフラグメント ◎          ◎
+title                項目名                         文字列          ◎          ◎
+name                 HTMLのname属性値               文字列          ◎          ○ 
+required             必須項目かどうか               真偽値          ○          ○         デフォルト値は 'false'
+hint                 | 入力内容や留意点などの       文字列          ○          ○
+                       補助テキスト  
+
+fieldClass           入力フィールドのDIVに付与する\ 文字列          ○          ○
+                     cssClass
+
+titleSize            タイトル部の幅(グリッド数)     数値            ○          ○         :ref:`multicol_mode`\ で使用する
+inputSize            入力部の幅(グリッド数)         数値            ○          ○         :ref:`multicol_mode`\ で使用する
+==================== ============================== =============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/base.tag            :doc:`field_base`
+
+/css/style/nablarch.less                       エラー表示領域のスタイル定義がここに含まれる。
+  
+============================================== ==================================================
+  
+  
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-field_base",
+  "title": "入力項目ウィジェット共通テンプレート",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "field_base",
+        "jsp_widgets",
+        "JSPウィジェットテンプレート",
+        "業務画面JSPから直接使用不可",
+        "テンプレート用途"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "fieldContent",
+        "title",
+        "name",
+        "required",
+        "hint",
+        "fieldClass",
+        "titleSize",
+        "inputSize",
+        "属性値一覧",
+        "必須属性",
+        "任意属性",
+        "multicol_mode",
+        "入力項目ウィジェット属性"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "base.tag",
+        "nablarch.less",
+        "エラー表示領域",
+        "CSSスタイル定義",
+        "内部構造",
+        "部品一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`field_base` は :doc:`../internals/jsp_widgets` の実装に用いるテンプレートであり、業務画面JSPから直接使用することはない。",
+    "s2": "**属性値一覧** [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| fieldContent | フィールド入力部タグ | JSPフラグメント | ◎ | ◎ | |\n| title | 項目名 | 文字列 | ◎ | ◎ | |\n| name | HTMLのname属性値 | 文字列 | ◎ | ○ | |\n| required | 必須項目かどうか | 真偽値 | ○ | ○ | デフォルト値は `false` |\n| hint | 入力内容や留意点などの補助テキスト | 文字列 | ○ | ○ | |\n| fieldClass | 入力フィールドのDIVに付与するcssClass | 文字列 | ○ | ○ | |\n| titleSize | タイトル部の幅(グリッド数) | 数値 | ○ | ○ | :ref:`multicol_mode` で使用する |\n| inputSize | 入力部の幅(グリッド数) | 数値 | ○ | ○ | :ref:`multicol_mode` で使用する |",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/base.tag | :doc:`field_base` |\n| /css/style/nablarch.less | エラー表示領域のスタイル定義 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

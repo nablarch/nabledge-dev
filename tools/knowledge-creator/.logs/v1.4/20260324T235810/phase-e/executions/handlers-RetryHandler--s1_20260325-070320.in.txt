@@ -1,0 +1,320 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-RetryHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — TimeRetryContextFactory / maxRetryTime",
+      "description": "The rationale for why `maxRetryTime` exists is omitted. The source explains: depending on handler configuration, control may never return to the retry handler while processing keeps succeeding, so `maxRetryTime` is provided for the retry handler to judge whether retry succeeded. This context is decision-necessary for understanding when to configure this property.",
+      "source_evidence": "ハンドラ構成によっては、処理が正常終了し続ける間、リトライ制御を行う側まで制御が戻ってこないケースが存在する。このような場合に、リトライが成功したか否かをリトライ制御を行う側が判断するために、最長リトライ時間を設けている。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===============================
+リトライ制御ハンドラ
+===============================
+
+
+**クラス名:** ``nablarch.fw.handler.RetryHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+:doc:`RetryHandler` はデータベースアクセス時のデッドロックのように、
+単純リトライによってリカバリ可能なエラーについて、自動的なリトライ制御を行うハンドラである。
+
+本ハンドラでは、 `Retryable`_ インターフェースを実装した実行時例外を
+リトライ可能なエラーなとみなし、後続ハンドラの再実行を行う。
+なお、リトライ上限の判定に関する処理は、 `RetryContext`_ インターフェースの実装クラスとして外部化されている。
+デフォルトでは以下の実装が提供されている。
+
+  - `CountingRetryContext`_
+  
+    リトライ回数に対する上限を設定する。
+
+  - `TimeRetryContext`_
+
+    初回実行時からの経過時間に対する上限を設定する。
+
+
+**ハンドラ処理概要** (:doc:`../architectural_pattern/batch_resident_thread_sync` での構成)
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "RetryHandler"
+      , "ProcessResidentHandler"
+      , "DbConnectionManagementHandler"
+      , "MessagingContextHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
++++++++++++++++++++++
+
+**関連するハンドラ**
+
+  +---------------------------------------------+--------------------------------------------------------------------------+
+  | ハンドラ                                    | 内容                                                                     |
+  +=============================================+==========================================================================+
+  | :doc:`ProcessResidentHandler`               | :doc:`ProcessResidentHandler` では後続ハンドラから例外が送出された場合、 |
+  |                                             | その例外をリトライ可能例外にラップして再送出し、 :doc:`RetryHandler` 側  |
+  |                                             | でプロセス継続/中止の判断を行う。                                        |
+  +---------------------------------------------+--------------------------------------------------------------------------+
+  | - :doc:`DbConnectionManagementHandler`      | 本フレームワークでは、DBやメッセージングキューへの接続エラーが発生       |
+  |                                             | した場合にリトライ可能例外を送出する。                                   |
+  | - :doc:`MessagingContextHandler`            | そのため、これらのハンドラを :doc:`RetryHandler` の                      |
+  |                                             | 後続に配置しないと再接続が行われない。                                   |
+  +---------------------------------------------+--------------------------------------------------------------------------+
+
+++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+本ハンドラの処理の流れは以下のとおりである。
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (ハンドラキューのスナップショットを保存)**
+    実行コンテキスト上のハンドラキューについて、シャローコピーを作成する。
+    また、以降の処理で使用する `RetryContext`_ のインスタンスを生成する。
+
+  **2. (後続ハンドラの実行)**
+    ハンドラキュー上の後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (正常終了)**
+    **2.** の結果をリターンして終了する。
+
+.. _error:
+
+**[例外処理]**
+  **2a. (リトライ処理)**
+    後続ハンドラの実行中に `Retryable`_ を実装する実行時例外を捕捉した場合、
+    `RetryContext`_ によるリトライ上限判定を行い、上限に達していない場合は、
+    以下の処理を実行する。
+     
+      1. ワーニングレベルのログを出力する。
+      2. (初回のみ) リトライ処理開始時刻を設定する。
+      3. リトライ回数を1増加させる。
+      4. リトライ間隔(msec)待機する。
+      5. ハンドラキューの内容を **1.** で作成したスナップショットの内容に戻す。
+      6. データリーダの破棄設定がオン(true)の場合、実行コンテキスト上に設定されたデータリーダを破棄する。
+
+         データベースを入力とするデータリーダを使用している場合、リトライ時のデータベース再接続によりデータリーダが使用しているデータベース接続が使用不可となる。
+         このため、リトライ時に使用不可となったデータリーダを破棄し、新しいデータベース接続を使用してデータリーダを再生成する。
+
+         ※データリーダの再生成は、後続のハンドラにより行われる。
+
+      7. 後続ハンドラの処理を再実行する。(**2.** に戻る。)
+
+  **2b. (リトライ上限到達)**
+    後続ハンドラ実行中に `Retryable`_ を実装する実行時例外を捕捉し、
+    かつリトライ上限に達していた場合は、ワーニングログを出力し、 `ProcessAbnormalEnd`_ を送出する。
+    これにより、実行中のプロセスは強制停止される。
+
+  **2c. (リトライ対象外例外の捕捉)**
+    `Retryable`_ を実装していない実行時例外を捕捉した場合は、それを再送出して終了する。
+
+
+++++++++++++++++++
+    
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおりである。
+
+  ====================================  =============================== ============================ ==============================
+  設定項目                              プロパティ名                    データ型　                   備考
+  ====================================  =============================== ============================ ==============================
+  リトライコンテキスト生成              retryContextFactory             RetryContextFactor           必須設定
+  リトライ上限エラー時障害コード        retryLimitExceededFailureCode   TransactionFactory           任意指定
+  リトライ上限エラー時終了コード        retryLimitExceededExitCode      int                          任意指定(デフォルト="180")
+  リトライ時のデータリーダ破棄フラグ    destroyReader                   boolean                      | 任意設定(デフォルト="false")
+                                                                                                     |
+                                                                                                     | trueが設定された場合、
+                                                                                                     | リトライ時に実行コンテキスト上に
+                                                                                                     | 設定されたデータリーダを破棄する。
+
+  ====================================  =============================== ============================ ==============================
+
+リトライ上限の判定ロジックは、 `RetryContext`_ インターフェースの実装系によって提供される。
+フレームワークに同梱されている実装クラスの設定項目は以下のとおり。
+
+
+ CountingRetryContextFactoryの設定項目
+ 
+  =============================== =============================== ============================ ==============================
+  設定項目                        プロパティ名                    データ型　                   備考
+  =============================== =============================== ============================ ==============================
+  リトライ間隔 (msec)             retryIntervals                  long                         任意設定(デフォルト="0")
+  リトライ上限回数                retryCount                      int                          任意指定(デフォルト="0")
+  =============================== =============================== ============================ ==============================
+
+
+ TimeRetryContextFactoryの設定項目
+
+  =============================== =============================== ============================ ============================================================
+  設定項目                        プロパティ名                    データ型　                   備考
+  =============================== =============================== ============================ ============================================================
+  リトライ間隔 (msec)             retryIntervals                  long                         | 任意設定(デフォルト="0")
+
+  リトライ上限時間 (msec)         retryTime                       long                         | 任意指定(デフォルト="0")
+
+  最長リトライ時間 (msec)         maxRetryTime                    long                         | 任意設定(デフォルト="900000")
+                                                                                               | ハンドラ構成によっては、処理が正常終了し続ける間、
+                                                                                                 リトライ制御を行う側まで制御が戻ってこないケースが存在する。
+                                                                                                 このような場合に、リトライが成功したか否かを
+                                                                                                 リトライ制御を行う側が判断するために、
+                                                                                                 最長リトライ時間を設けている。
+                                                                                                 リトライ経過時間が最長リトライ時間を超えている場合は
+                                                                                                 リトライが成功したと判断する。
+
+  =============================== =============================== ============================ ============================================================
+
+以下はリポジトリ設定ファイルの記述例である。
+
+  CountingRetryContextFactory を使用する例。
+
+    .. code-block:: xml
+
+      <!-- リトライハンドラ -->
+      <component name="retryHandler" class="nablarch.fw.handler.RetryHandler">
+        <property name="retryContextFactory">
+          <component class="nablarch.fw.handler.retry.CountingRetryContextFactory">
+            <property name="retryCount" value="3" />
+            <property name="retryIntervals" value="5000" />
+          </component>
+        </property>
+      </component>
+
+
+  TimeRetryContextFactory を使用する例。
+
+    .. code-block:: xml
+
+      <!-- リトライハンドラ -->
+      <component name="retryHandler" class="nablarch.fw.handler.RetryHandler">
+        <property name="retryContextFactory">
+          <component class="nablarch.fw.handler.retry.TimeRetryContextFactory">
+            <property name="maxRetryTime" value="35000" />
+            <property name="retryTime" value="30000" />
+            <property name="retryIntervals" value="5000" />
+          </component>
+        </property>
+      </component>
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-RetryHandler--s1",
+  "title": "リトライ制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "RetryHandler",
+        "nablarch.fw.handler.RetryHandler",
+        "Retryable",
+        "RetryContext",
+        "CountingRetryContext",
+        "TimeRetryContext",
+        "ProcessResidentHandler",
+        "DbConnectionManagementHandler",
+        "MessagingContextHandler",
+        "リトライ制御",
+        "デッドロック",
+        "自動リトライ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "RetryContext",
+        "Retryable",
+        "ProcessAbnormalEnd",
+        "destroyReader",
+        "リトライ処理フロー",
+        "ハンドラキュースナップショット",
+        "リトライ上限",
+        "データリーダ破棄"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "retryContextFactory",
+        "retryLimitExceededFailureCode",
+        "retryLimitExceededExitCode",
+        "destroyReader",
+        "CountingRetryContextFactory",
+        "nablarch.fw.handler.retry.CountingRetryContextFactory",
+        "TimeRetryContextFactory",
+        "nablarch.fw.handler.retry.TimeRetryContextFactory",
+        "retryIntervals",
+        "retryCount",
+        "retryTime",
+        "maxRetryTime",
+        "リトライ設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.RetryHandler`\n\nデッドロックのような単純リトライでリカバリ可能なエラーについて、自動リトライ制御を行うハンドラ。`Retryable` インターフェースを実装した実行時例外をリトライ可能なエラーとみなし、後続ハンドラの再実行を行う。リトライ上限判定は `RetryContext` インターフェースの実装クラスとして外部化されている。\n\nデフォルト実装:\n- `CountingRetryContext`: リトライ回数に対する上限を設定\n- `TimeRetryContext`: 初回実行時からの経過時間に対する上限を設定\n\n## 関連ハンドラ\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ProcessResidentHandler` | 後続ハンドラから例外が送出された場合、リトライ可能例外にラップして再送出し、:doc:`RetryHandler` 側でプロセス継続/中止の判断を行う |\n| :doc:`DbConnectionManagementHandler`, :doc:`MessagingContextHandler` | DBやメッセージングキューへの接続エラー発生時にリトライ可能例外を送出する。これらのハンドラを :doc:`RetryHandler` の後続に配置しないと再接続が行われない |",
+    "s2": "**[往路処理]**\n\n1. ハンドラキューのスナップショット（シャローコピー）を保存し、`RetryContext` のインスタンスを生成する\n2. 後続ハンドラに処理を委譲し、結果を取得する\n\n**[復路処理]**\n\n3. 正常終了: 結果をリターンして終了する\n\n**[例外処理]**\n\n**2a. リトライ処理**: `Retryable` を実装する実行時例外を捕捉し、リトライ上限未達の場合:\n1. ワーニングレベルのログを出力する\n2. （初回のみ）リトライ処理開始時刻を設定する\n3. リトライ回数を1増加させる\n4. リトライ間隔 (msec) 待機する\n5. ハンドラキューの内容をスナップショットに戻す\n6. `destroyReader` が `true` の場合、実行コンテキスト上のデータリーダを破棄する\n7. 後続ハンドラの処理を再実行する（2. に戻る）\n\n> **注意**: データベースを入力とするデータリーダを使用している場合、リトライ時のデータベース再接続によりデータリーダが使用しているデータベース接続が使用不可となる。このため、`destroyReader=true` を設定してリトライ時に使用不可となったデータリーダを破棄し、新しいデータベース接続でデータリーダを再生成させること（再生成は後続ハンドラが行う）。\n\n**2b. リトライ上限到達**: `Retryable` を実装する実行時例外を捕捉し、リトライ上限に達していた場合、ワーニングログを出力し `ProcessAbnormalEnd` を送出してプロセスを強制停止する。\n\n**2c. リトライ対象外例外の捕捉**: `Retryable` を実装していない実行時例外を捕捉した場合、そのまま再送出して終了する。",
+    "s3": "## RetryHandler 設定項目\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| retryContextFactory | RetryContextFactory | ○ | | リトライコンテキスト生成 |\n| retryLimitExceededFailureCode | TransactionFactory | | | リトライ上限エラー時障害コード |\n| retryLimitExceededExitCode | int | | 180 | リトライ上限エラー時終了コード |\n| destroyReader | boolean | | false | trueの場合、リトライ時に実行コンテキスト上のデータリーダを破棄する |\n\n## CountingRetryContextFactory 設定項目\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| retryIntervals | long | | 0 | リトライ間隔 (msec) |\n| retryCount | int | | 0 | リトライ上限回数 |\n\nCountingRetryContextFactory使用例:\n\n```xml\n<component name=\"retryHandler\" class=\"nablarch.fw.handler.RetryHandler\">\n  <property name=\"retryContextFactory\">\n    <component class=\"nablarch.fw.handler.retry.CountingRetryContextFactory\">\n      <property name=\"retryCount\" value=\"3\" />\n      <property name=\"retryIntervals\" value=\"5000\" />\n    </component>\n  </property>\n</component>\n```\n\n## TimeRetryContextFactory 設定項目\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| retryIntervals | long | | 0 | リトライ間隔 (msec) |\n| retryTime | long | | 0 | リトライ上限時間 (msec) |\n| maxRetryTime | long | | 900000 | 最長リトライ時間 (msec)。リトライ経過時間がこれを超えている場合はリトライ成功と判断する |\n\nTimeRetryContextFactory使用例:\n\n```xml\n<component name=\"retryHandler\" class=\"nablarch.fw.handler.RetryHandler\">\n  <property name=\"retryContextFactory\">\n    <component class=\"nablarch.fw.handler.retry.TimeRetryContextFactory\">\n      <property name=\"maxRetryTime\" value=\"35000\" />\n      <property name=\"retryTime\" value=\"30000\" />\n      <property name=\"retryIntervals\" value=\"5000\" />\n    </component>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

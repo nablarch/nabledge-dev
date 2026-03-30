@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_spec--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 精査仕様（単項目）",
+      "description": "The validation table in the source has three columns (論理名, 精査内容, メッセージID), but the knowledge file renders it as two columns (項目, 精査内容), dropping the メッセージID column entirely. The source shows all validations use 'デフォルト' message IDs, which is decision-relevant: it tells developers no custom message IDs are required.",
+      "source_evidence": "Source table: 漢字氏名 | 必須 | デフォルト / 文字種(全角) | デフォルト / 文字列長(50桁以下) | デフォルト; カナ氏名 same pattern"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "The hint 'RW11AC0202' (request ID for ユーザ情報登録確認画面 W11AC0202) is absent. The screen info table in s3 lists RW11AC0201, RW11AC0202, and RW11AC0204; the hints include RW11AC0201 and RW11AC0204 but omit RW11AC0202.",
+      "source_evidence": "Source screen info table row: W11AC0202 | ユーザ情報登録確認画面 | RW11AC0202 | 登録入力確認処理"
+    }
+  ]
+}

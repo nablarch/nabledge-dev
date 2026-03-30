@@ -1,0 +1,199 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-04_generate_form_base--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source introduction paragraph (before 業務画面JSPの修正 section)",
+      "description": "The source's introductory paragraph describing what FormBaseクラス is has been omitted. Specifically: 'このクラスは、画面入力項目に対応したプロパティを持ち、それらの入力項目に対する精査を行う' — the class has properties corresponding to screen input items and performs validation of those input items. This is decision-necessary information for understanding the purpose and capabilities of FormBaseクラス.",
+      "source_evidence": "FormBaseクラスは、Nablarch UI開発基盤のフォーム自動生成機能を使用して、業務画面JSPから自動生成する。このクラスは、画面入力項目に対応したプロパティを持ち、それらの入力項目に対する精査を行う。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _process_generate_form_base:
+
+FormBaseクラスの自動生成
+============================================
+
+外部設計時に作成されている業務画面JSPから、以下のステップで作業を行い、FormBaseクラスの自動生成を行う。
+
+FormBaseクラスは、Nablarch UI開発基盤のフォーム自動生成機能を使用して、業務画面JSPから自動生成する。
+このクラスは、画面入力項目に対応したプロパティを持ち、それらの入力項目に対する精査を行う。
+
+
+.. contents::
+   :depth: 2
+   :local:
+   :backlinks: none
+
+
+業務画面JSPの修正
+--------------------------------------------
+
+業務画面JSPの修正を行うために、まず、外部設計で作成されている以下のJSPファイルを ``main/web/ss11AC`` ディレクトリに移動する。
+
+* ``main/web/W11AC0201.jsp``
+* ``main/web/W11AC0202.jsp``
+* ``main/web/W11AC0203.jsp``
+
+外部設計で作成された業務画面JSPでは、外部設計時に最低限必要な項目のみ設定されているため、
+フォームの自動生成に必要な以下の修正を行う。
+
+#. ``n:form`` タグで囲み、ウィンドウスコーププレフィックスを指定する。
+#. 入力項目・表示項目の ``name`` 属性の設定
+
+本機能では、修正対象となるのは ``W11AC0201.jsp`` のみである。
+
+**1\.\ n:formタグの追加**
+
+この画面では、formは一つしかないため、業務領域(``<jsp:attribute name="contentHtml">``)の内側\
+すべてを ``n:form`` で囲み、windowScopePrefixesに値を設定する。
+
+なお、すでにformが ``n:form`` で囲まれている場合には、windowScopePrefixesに値を設定するだけで良い。
+
+ここでは登録取引を行う取引IDから"W11AC02"というプレフィックスを使用する。
+
+.. code-block:: jsp
+
+   <n:form windowScopePrefixes="W11AC02">
+
+.. note:: ウィンドウスコープについては、以下のリンク先を参照
+
+   * `ウィンドウスコープの概念 <../../../fw/reference/architectural_pattern/concept.html#windowscope>`_
+   * カスタムタグ実装例集 - :ref:`howto_window_scope`
+
+
+**2\.\ 入力項目・出力項目のname属性を指定する。**
+
+入力項目・出力項目に表示する内容を指定するための ``name`` 属性を指定する。
+
+この画面の情報はすべてウィンドウスコープで持回るため、 ``name`` 属性は以下のルールに従って指定する。
+
+::
+
+   "ウィンドウスコーププレフィックス"."フォーム内のプロパティ名"
+
+なお、フォーム内のプロパティ名と、データベースのカラム名をキャメルケースに変換した文字列とを一致させることで、
+データベースへの登録処理の実装が容易になることが多いため、本ガイドでは、フォーム内のプロパティ名を
+データベースのカラム名をキャメルケースに変換した文字列に統一する。
+
+漢字氏名の入力エリアのタグ修正例を以下に示す。
+
+＜修正前＞
+
+.. code-block:: jsp
+
+   <field:text title="漢字氏名"
+               domain="KANJI_NAME"
+               required="true"
+               maxlength="50"
+               hint="全角50文字以内"
+               dataFrom="USERS.KANJI_NAME"
+               name=""
+               sample="名部　楽太郎">
+   </field:text>
+
+＜修正後＞
+
+.. code-block:: jsp
+
+   <%-- 【説明】field:textのname属性を修正する --%>
+   <field:text title="漢字氏名"
+               domain="KANJI_NAME"
+               required="true"
+               maxlength="50"
+               hint="全角50文字以内"
+               dataFrom="USERS.KANJI_NAME"
+               name="W11AC02.kanjiName"
+               sample="名部　楽太郎">
+   </field:text>
+
+
+業務画面JSPからFormBaseクラスを自動生成
+--------------------------------------------
+
+Nablarch UI開発基盤のForm自動生成機能を使用して、業務画面JSPからFormBaseクラスを自動生成する。
+
+まず、 ``main/web/tools/ローカル画面確認.bat`` を起動し、ブラウザに表示される画面で ``ss11AC/W11AC0201.jsp``
+を選択してユーザ情報登録画面を表示する。
+
+表示されたユーザ情報登録画面を右クリックすると、以下のようなメニューが表示される。
+
+.. image:: ./_images/local_right_click.png
+   :align: left
+
+このメニューで「フォームクラスを生成する」を選択すると、 ``W11AC02FormBase.java`` が生成・ダウンロードされるので、
+同ファイルを ``main/java/nablarch/sample/ss11AC`` にコピーする。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-04_generate_form_base--s1",
+  "title": "FormBaseクラスの自動生成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSPの修正",
+      "hints": [
+        "業務画面JSP修正",
+        "n:formタグ",
+        "windowScopePrefixes",
+        "ウィンドウスコープ",
+        "name属性設定",
+        "field:text"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務画面JSPからFormBaseクラスを自動生成",
+      "hints": [
+        "FormBaseクラス自動生成",
+        "W11AC02FormBase",
+        "ローカル画面確認",
+        "フォームクラス生成",
+        "Nablarch UI開発基盤"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 業務画面JSPの修正\n\n外部設計で作成されたJSPファイルを `main/web/ss11AC` ディレクトリに移動する:\n- `main/web/W11AC0201.jsp`\n- `main/web/W11AC0202.jsp`\n- `main/web/W11AC0203.jsp`\n\n修正対象は `W11AC0201.jsp` のみ。以下の2点を修正する。\n\n**1. n:formタグの追加**\n\n業務領域（`<jsp:attribute name=\"contentHtml\">` の内側全体）を `n:form` で囲み、`windowScopePrefixes` に値を設定する。登録取引を行う取引IDから `W11AC02` というプレフィックスを使用する。\n\n```jsp\n<n:form windowScopePrefixes=\"W11AC02\">\n```\n\n> **注意**: すでに `n:form` で囲まれている場合は、`windowScopePrefixes` の設定のみ行う。\n\n**2. name属性の指定**\n\n`name` 属性の形式:\n```\n\"ウィンドウスコーププレフィックス\".\"フォーム内のプロパティ名\"\n```\n\nフォーム内のプロパティ名はDBカラム名をキャメルケース変換した文字列に統一する（DB登録処理の実装が容易になるため）。\n\n修正例（漢字氏名）:\n\n修正前:\n```jsp\n<field:text title=\"漢字氏名\"\n            domain=\"KANJI_NAME\"\n            required=\"true\"\n            maxlength=\"50\"\n            hint=\"全角50文字以内\"\n            dataFrom=\"USERS.KANJI_NAME\"\n            name=\"\"\n            sample=\"名部　楽太郎\">\n</field:text>\n```\n\n修正後:\n```jsp\n<field:text title=\"漢字氏名\"\n            domain=\"KANJI_NAME\"\n            required=\"true\"\n            maxlength=\"50\"\n            hint=\"全角50文字以内\"\n            dataFrom=\"USERS.KANJI_NAME\"\n            name=\"W11AC02.kanjiName\"\n            sample=\"名部　楽太郎\">\n</field:text>\n```",
+    "s2": "## 業務画面JSPからFormBaseクラスを自動生成\n\n1. `main/web/tools/ローカル画面確認.bat` を起動する\n2. ブラウザで `ss11AC/W11AC0201.jsp` を選択してユーザ情報登録画面を表示する\n3. 表示された画面を右クリックし、「フォームクラスを生成する」を選択する\n\n![右クリックメニュー](assets/web-application-04_generate_form_base--s1/local_right_click.png)\n\n4. `W11AC02FormBase.java` が生成・ダウンロードされるので、`main/java/nablarch/sample/ss11AC` にコピーする"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

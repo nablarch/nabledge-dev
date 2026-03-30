@@ -1,0 +1,34 @@
+{
+  "file_id": "ui-framework-js_framework--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — イベント定義 (document beforeSubmit コメント)",
+      "description": "The source contains an important note (marked with ※) that the custom event is named `beforeSubmit.nablarch` (not just `beforeSubmit`), that it is defined in `nablarch/ui/event`, and that it is fired by the global function `nablarch_submit()` immediately before form submission. This is decision-necessary information for developers implementing submit suppression logic.",
+      "source_evidence": "※ カスタムイベント \"beforeSubmit.nablarch\" は \"nablarch/ui/event\" の中で定義されており、グローバル関数 nablarch_submit() によってサブミットが行われる直前に呼ばれる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — コンストラクタ内のテンプレート使用に関するコメント",
+      "description": "The source explicitly recommends using template files so that widget content can be easily customized later. This best-practice recommendation is not captured in the knowledge file's prose, only implicitly shown in the code example.",
+      "source_evidence": "※ ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — モジュール定義を行う関数パターン",
+      "description": "The source describes a recommended code organization pattern: define the module initialization function at the top of the module body and call it at the end, explicitly noting that this makes the module content easier to understand. This readability recommendation is not mentioned in the knowledge file.",
+      "source_evidence": "モジュールの初期化を行う関数を冒頭に定義し、この関数の最後で呼び出す。(このコードが冒頭に記述することで、モジュールの内容を把握し易くなる。)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — プロトタイプ定義 constructor プロパティ",
+      "description": "The source notes that `constructor: ModalDialog` is required to make the `instanceof` operator work correctly. This rationale is not captured in the knowledge file.",
+      "source_evidence": "constructor : ModalDialog   // instanceof 演算子を正常に動作させるために必要。"
+    }
+  ]
+}

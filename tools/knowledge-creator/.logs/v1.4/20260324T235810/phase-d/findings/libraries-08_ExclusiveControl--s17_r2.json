@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーの場合）/ updateVersionWithCheck loop",
+      "description": "The knowledge file uses `UsersExclusiveControl` as the class argument in the `updateVersionWithCheck` loop, but the source code uses `ExclusiveUserCondition`. These are different class names: the source reads `new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3())`, while the knowledge file substituted `UsersExclusiveControl` instead.",
+      "source_evidence": "Source: `HttpExclusiveControlUtil.updateVersionWithCheck(request, new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`n:errors` (the JSP tag referenced in s2 for displaying optimistic lock error messages) is absent from s2 hints. The source explicitly mentions `n:errorsタグ` in the configuration section.",
+      "source_evidence": "Source: \"n:errorsタグを使用して、画面上にエラーメッセージを表示することができる。\""
+    }
+  ]
+}

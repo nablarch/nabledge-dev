@@ -1,0 +1,160 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-field_label_block",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "属性値一覧の属性名（プロパティ名）が hints に含まれていない。dataFrom、comment、initialValueDesc の3つが欠落している。",
+      "source_evidence": "属性値一覧テーブルの1列目: dataFrom, comment, initialValueDesc"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=================================================
+表示ブロックウィジェット
+=================================================
+:doc:`field_label_block` はボディ部に記述したマークアップを
+フィールドの内容としてそのまま表示するウィジェットである。
+
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+.. code-block:: jsp
+
+      <field:block title="配送予定">
+
+        <field:calendar
+            title="配送希望日"
+            required="true"
+            sample="">
+        </field:calendar>
+ 
+        <field:label_block
+            title="配送オプション">
+            <p>配送オプションの指定はプレミアム会員の方のみ可能です。</p>
+        </field:label_block>
+
+      </field:block>
+
+**実装成果物(サーバ動作)**
+
+.. code-block:: jsp
+
+      <field:block title="配送設定">
+
+        <field:calendar
+            title="配送希望日"
+            required="true"
+            name="W11AC03.deliveryDate"
+            sample="">
+        </field:calendar>
+ 
+        <field:label_block
+            title="配送オプション">
+            <p>配送オプションの指定はプレミアム会員の方のみ可能です。</p>
+        </field:label_block>
+
+      </field:block>
+
+
+仕様
+=============================================
+このウィジェットはボディ部に指定された内容をそのまま出力するだけの機能を提供する。
+ローカル動作とサーバ動作での挙動は同じである。
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+title                項目名                         文字列         ◎          ◎
+dataFrom             | 表示するデータの取得元       文字列         ×          ×         | 画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+comment              ラベル表示についての備考       文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/label_block.tag     :doc:`field_label_block` の実体となるタグファイル
+
+============================================== ==================================================
+  
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-field_label_block",
+  "title": "表示ブロックウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "表示ブロックウィジェット",
+      "hints": [
+        "field:label_block",
+        "label_block.tag",
+        "表示ブロックウィジェット",
+        "ボディ部マークアップ表示",
+        "title属性",
+        "JSPタグ",
+        "ローカル動作",
+        "サーバ動作"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`field_label_block` はボディ部に記述したマークアップをフィールドの内容としてそのまま表示するウィジェット。ボディ部に指定された内容をそのまま出力するだけの機能を提供する。ローカル動作とサーバ動作での挙動は同じ。\n\n## 使用例\n\n```jsp\n<field:label_block\n    title=\"配送オプション\">\n    <p>配送オプションの指定はプレミアム会員の方のみ可能です。</p>\n</field:label_block>\n```\n\n## 属性値一覧\n\n◎ 必須属性、○ 任意属性、× 無効（指定しても効果なし）\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| title | 項目名 | 文字列 | ◎ | ◎ | |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 「表示情報取得元」.「表示項目名」の形式で設定 |\n| comment | ラベル表示についての備考 | 文字列 | × | × | 設計書表示時に画面項目定義の項目定義一覧の「備考」に表示 |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書表示時に画面項目定義の項目定義一覧の「備考」に表示 |\n\n## 部品一覧\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/label_block.tag | :doc:`field_label_block` の実体となるタグファイル |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,293 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-04_MasterDataRestore--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — log.properties configuration example",
+      "description": "The log.properties code example is heavily truncated. The source provides a 13-line complete working configuration, but the knowledge file shows only 3 lines (loggers.sql.*). The omitted lines include: loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory, writerNames=stdout,nop, writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter, writer.nop.className=nablarch.test.core.log.NopLogWriter, availableLoggersNamesOrder=sql,root, and the root logger settings (loggers.root.nameRegex, loggers.root.level, loggers.root.writerNames). These are necessary to reconstruct the complete logging setup required by this feature.",
+      "source_evidence": "Source log.properties block contains 13 configuration lines. The feature-specific part includes writer.nop.className=nablarch.test.core.log.NopLogWriter (the NopLogWriter referenced in the knowledge file as a class but whose configuration line is absent), and availableLoggersNamesOrder=sql,root which controls logger precedence."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+======================
+ マスタデータ復旧機能
+======================
+
+概要
+====
+
+通常の場合、テスト行う際にマスタデータを書き換えることはない。
+しかし、マスタメンテナンス機能等のテストでは、マスタデータを変更しないと
+実施できないテストケースが存在する。例えば、存在するはずのデータが存在しなかった場合のような
+異常系テストケースでは、マスタデータからレコードを削除する必要がある。
+
+テスト中にマスタデータの変更を行った場合、それ以降のテストクラスのテストでは、
+マスタデータが意図しない状態になっている為にテストが失敗することがある。
+
+
+このような、マスタデータ変更による意図しないテスト失敗を防止するため、
+自動テスト中にマスタデータが更新された場合、そのテストメソッドが終了した時点で、
+マスタデータを元の状態に復旧する機能を提供する。
+
+
+特徴
+====
+
+* テストの実行順序に依存せずに、常に正しい状態のマスタデータでテストできる。
+* マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理、復旧用データを用意する必要ない。
+* バックアップスキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる。
+
+
+動作イメージ
+============
+
+自動テストフレームワークはコンポーネント設定ファイルより、監視対象テーブル名一覧を取得する。
+テスト実行中、自動テストフレームワークはSQLログを監視することにより、\
+監視対象テーブルを変更するSQL文が発行されたかどうかを検出する。
+
+
+.. image:: _images/modification_detected.png
+
+監視対象テーブルを変更するSQL文が発行された場合、テストメソッド終了後に変更があったテーブルを復旧する。
+テーブルを復旧する際、いったんテーブル内のレコードを全件削除する。
+その後、バックアップ用スキーマのテーブルからレコードを全件挿入する。
+
+.. image:: _images/copy_from_backup.png
+
+.. _`master_data_backup_settings`:
+
+環境構築
+========
+
+以下の環境構築を実施し、自動テストフレームワークのマスタデータ復旧機能を有効にする。
+
+
+
+バックアップ用スキーマの作成、データ投入
+----------------------------------------
+
+マスタデータ復旧用スキーマを作成する。
+マスタデータ復旧用スキーマに自動テスト用のスキーマと同じテーブルを作成し復旧用のデータを投入しておく。
+
+.. note::
+  マスタデータ復旧用スキーマには全てのテーブルを作成する必要はない。
+  マスタデータ復旧対象とするテーブルのみ存在すればよい（復旧対象以外のテーブルがあっても問題ない）。
+
+
+
+コンポーネント設定ファイルに監視対象テーブルを記載
+-----------------------------------------------------------
+
+自動テスト用のコンポーネント設定ファイルに、監視対象テーブルを列挙する。
+
+
+設定項目一覧
+~~~~~~~~~~~~
+
++----------------------------+-------------------------------------------------------------+----------------+
+| 設定項目名                 | 説明                                                        | デフォルト値   |
++============================+=============================================================+================+
+| backupSchema               | マスタデータ復旧用スキーマ名を記載する。                    | なし           |
++----------------------------+-------------------------------------------------------------+----------------+
+| tablesTobeWatched          | 監視対象とするテーブル名をリスト形式で列挙する。            | なし           |
++----------------------------+-------------------------------------------------------------+----------------+
+| testEventListeners         | テストイベントリスナーの一覧。ここにマスタデータ復旧クラス  | なし           |
+|                            | (nablarch.test.core.db.MasterDataRestorer)を登録することで、|                |
+|                            | テストメソッド終了時にマスタデータが行われるようになる。    |                |
++----------------------------+-------------------------------------------------------------+----------------+
+
+設定例
+~~~~~~
+
+.. code-block:: xml
+
+  <!-- マスタデータ復旧クラス -->
+  <component name="masterDataRestorer"
+             class="nablarch.test.core.db.MasterDataRestorer">
+    <!-- バックアップスキーマ -->
+    <property name="backupSchema" value="nablarch_test_master"/>
+    <!-- 監視対象テーブル一覧 -->
+    <property name="tablesTobeWatched">
+      <list>
+        <value>MESSAGE</value>
+        <value>ID_GENERATE</value>
+        <value>BUSINESS_DATE</value>
+        <value>PERMISSION_UNIT</value>
+        <value>REQUEST</value>
+        <value>PERMISSION_UNIT_REQUEST</value>
+      </list>
+    </property>
+  </component>
+
+
+ログ出力設定
+------------
+
+本機能ではSQLログを監視することにより、マスタデータへの変更を検出する。\
+よって、そのためのログ出力が必要である。
+
+
+app-log.properties
+~~~~~~~~~~~~~~~~~~
+
+`sqlLogFormatter`\ のクラス名に、本機能の提供クラスを指定する。
+
+.. code-block:: none
+
+ sqlLogFormatter.className=nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter
+
+
+log.properties
+~~~~~~~~~~~~~~
+
+log.propertiesにSQLログをデバッグレベル以上で出力する設定をする。
+以下の例では、SQLログを標準出力に表示させないよう専用のロガー（何もしないロガー）を
+設定している
+
+.. code-block:: none
+
+ # ロガーファクトリ実装クラス								 
+ loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory			 
+ 											 
+ # ログライター名									 
+ writerNames=stdout,nop									 
+ 											 
+ #デバッグ用の標準出力									 
+ writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter			 
+ writer.nop.className=nablarch.test.core.log.NopLogWriter   # 【説明】何もしないロガー	 
+ 											 
+ # 利用可能なロガー名順序								 
+ availableLoggersNamesOrder=sql,root							 
+ 											 
+ #全てのロガー取得を対象に、DEBUGレベル以上を標準出力に出力する。			 
+ loggers.root.nameRegex=.*								 
+ loggers.root.level=DEBUG								 
+ loggers.root.writerNames=stdout								 
+ 											 
+ #ロガー名に"SQL"を指定したロガー取得を対象に、DEBUGレベル以上を出力する。		 
+ loggers.sql.nameRegex=SQL								 
+ loggers.sql.level=DEBUG      # 【説明】DEBUGレベル以上に設定すること			 
+ loggers.sql.writerNames=nop                                                              
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-04_MasterDataRestore--s1",
+  "title": "マスタデータ復旧機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "マスタデータ復旧",
+        "マスタメンテナンス",
+        "テスト失敗防止",
+        "マスタデータ変更",
+        "異常系テスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "テスト実行順序",
+        "自動復旧",
+        "バックアップスキーマ",
+        "高速復旧",
+        "復旧処理不要"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "動作イメージ",
+      "hints": [
+        "SQLログ監視",
+        "監視対象テーブル",
+        "テーブル復旧",
+        "全件削除",
+        "全件挿入",
+        "テストメソッド終了"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バックアップ用スキーマの作成、データ投入",
+      "hints": [
+        "マスタデータ復旧",
+        "バックアップスキーマ",
+        "テスト環境構築",
+        "復旧用データ投入"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "コンポーネント設定ファイルに監視対象テーブルを記載",
+      "hints": [
+        "MasterDataRestorer",
+        "backupSchema",
+        "tablesTobeWatched",
+        "testEventListeners",
+        "監視対象テーブル",
+        "コンポーネント設定",
+        "nablarch.test.core.db.MasterDataRestorer"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ログ出力設定",
+      "hints": [
+        "MasterDataRestorer$SqlLogWatchingFormatter",
+        "sqlLogFormatter",
+        "SQLログ監視",
+        "DEBUGレベル",
+        "app-log.properties",
+        "log.properties",
+        "NopLogWriter"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "通常のテストではマスタデータを書き換えないが、マスタメンテナンス機能等のテストでは、マスタデータを変更しないと実施できないテストケースが存在する。例えば、存在するはずのデータが存在しなかった場合のような異常系テストケースでは、マスタデータからレコードを削除する必要がある。\n\nテスト中にマスタデータの変更を行った場合、それ以降のテストクラスのテストでは、マスタデータが意図しない状態になっている為にテストが失敗することがある。\n\nこのような、マスタデータ変更による意図しないテスト失敗を防止するため、自動テスト中にマスタデータが更新された場合、そのテストメソッドが終了した時点でマスタデータを元の状態に復旧する機能を提供する。",
+    "s2": "- テストの実行順序に依存せずに、常に正しい状態のマスタデータでテストできる。\n- マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理、復旧用データを用意する必要がない。\n- バックアップスキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる。",
+    "s3": "自動テストフレームワークはコンポーネント設定ファイルより、監視対象テーブル名一覧を取得する。テスト実行中、自動テストフレームワークはSQLログを監視することにより、監視対象テーブルを変更するSQL文が発行されたかどうかを検出する。\n\n監視対象テーブルを変更するSQL文が発行された場合、テストメソッド終了後に変更があったテーブルを復旧する。テーブルを復旧する際、いったんテーブル内のレコードを全件削除する。その後、バックアップ用スキーマのテーブルからレコードを全件挿入する。",
+    "s4": "マスタデータ復旧用スキーマを作成し、自動テスト用スキーマと同じテーブルを作成して復旧用データを投入する。\n\n> **注意**: 復旧対象とするテーブルのみ作成すればよい（全テーブルを作成する必要はない。復旧対象外のテーブルが存在しても問題ない）。",
+    "s5": "自動テスト用コンポーネント設定ファイルに監視対象テーブルを記載する。\n\n| プロパティ名 | 説明 | デフォルト値 |\n|---|---|---|\n| backupSchema | マスタデータ復旧用スキーマ名 | なし |\n| tablesTobeWatched | 監視対象テーブル名をリスト形式で列挙 | なし |\n| testEventListeners | テストイベントリスナー一覧。`nablarch.test.core.db.MasterDataRestorer` を登録することで、テストメソッド終了時にマスタデータが復旧される | なし |\n\n**クラス**: `nablarch.test.core.db.MasterDataRestorer`\n\n```xml\n<component name=\"masterDataRestorer\"\n           class=\"nablarch.test.core.db.MasterDataRestorer\">\n  <property name=\"backupSchema\" value=\"nablarch_test_master\"/>\n  <property name=\"tablesTobeWatched\">\n    <list>\n      <value>MESSAGE</value>\n      <value>ID_GENERATE</value>\n      <value>BUSINESS_DATE</value>\n      <value>PERMISSION_UNIT</value>\n      <value>REQUEST</value>\n      <value>PERMISSION_UNIT_REQUEST</value>\n    </list>\n  </property>\n</component>\n```",
+    "s6": "本機能はSQLログを監視してマスタデータへの変更を検出するため、SQLログ出力設定が必要。\n\n**app-log.properties**: `sqlLogFormatter.className` に以下を指定する。\n\n```\nsqlLogFormatter.className=nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter\n```\n\n**log.properties**: SQLログをDEBUGレベル以上で出力する設定が必要。`loggers.sql.level=DEBUG` であること。\n\n```\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=nop\n```\n\n**クラス**: `nablarch.test.core.log.NopLogWriter`（何もしないロガー。SQLログを標準出力に出力しないよう専用ロガーとして設定）"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

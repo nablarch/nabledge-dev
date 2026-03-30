@@ -1,0 +1,27 @@
+{
+  "file_id": "readers-DatabaseTableQueueReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — overview description",
+      "description": "The knowledge file omits the core operational behavior described in the source's first paragraph: the reader queries the database and returns records one by one from the result set, and when all records have been processed it waits a configurable period before re-issuing the query. This context explains why the wait-time constructor parameter exists and how the reader is intended to operate in a resident batch loop.",
+      "source_evidence": "データベースに対してクエリを発行し、その結果セットの中から1レコードずつ読み込んで返す。クエリで取得したレコードを全て処理した場合には、一定時間待機後（任意の値を指定可能）に再度クエリを発行しレコードを読み込む。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — attention block",
+      "description": "The knowledge file's warning covers only the forbidden case (batch_resident_thread_sync) and the required platform (batch_resident). It omits the intermediate caution: behavior is not guaranteed when used on any other execution-control infrastructure. This is an actionable constraint for developers considering alternative runtime environments.",
+      "source_evidence": "他の実行制御基盤上で使用した場合の動作は保証できないため注意すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`ParameterizedSqlPStatement` is a class referenced in the code example but is absent from the hints list. Users asking about this class in the context of DatabaseTableQueueReader would not be matched to this knowledge file.",
+      "source_evidence": "ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_DELETE_USER_LIST\");"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-FileBatchAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source uses step numbers 6 and 6a to indicate that transactionSuccess() and transactionFailure() are mutually exclusive alternative outcomes (commit vs. rollback). The knowledge file renumbers these as sequential steps 6 and 7, losing the \"6a\" relationship indicator. Subsequent steps 7→8 and 8→9 are also renumbered accordingly. While all information is preserved, the original numbering scheme (6 / 6a) conveys that the two callbacks are alternatives at the same point in the flow, not sequential steps.",
+      "source_evidence": "Source: **6. (業務トランザクション正常終了時の処理)** / **6a. (業務トランザクションロールバック時の処理)** / **7. (バッチエラー終了時)** / **8. (バッチ終了時)**\nKnowledge file: step 6 (transactionSuccess) / step 7 (transactionFailure) / step 8 (error) / step 9 (terminate)"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageReceiveAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`generateReceivedSequence` method name is referenced in the s1 content (「`generateReceivedSequence()`で採番」) but is absent from the s1 hints array.",
+      "source_evidence": "本カラムに設定する値は、{@link #generateReceivedSequence()}にて採番を行う。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — receivedSequenceGenerator row",
+      "description": "The source notes that `receivedSequenceGenerator` can be disabled for debugging or fault analysis (「デバッグや障害解析用に無効化する」). This operational guidance is absent from the knowledge file's table row.",
+      "source_evidence": "受信電文連番発番用オブジェクト   receivedSequenceGenerator    IdGenerator | (任意指定：デフォルト=true(自動削除を実施)) | デバッグや障害解析用に無効化する。"
+    }
+  ]
+}

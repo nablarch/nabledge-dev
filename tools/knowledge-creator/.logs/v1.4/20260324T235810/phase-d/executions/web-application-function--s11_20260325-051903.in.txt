@@ -1,0 +1,383 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/CustomTag/function.rst`
+- Format: `rst`
+
+```
+
+-------------------------------------------------------------------------------------------
+複合キーを使用したデータの一覧画面から、ラジオボタン・チェックボックスでデータを選択する
+-------------------------------------------------------------------------------------------
+
+ :ref:`custom_tag_paging` で作成する一覧画面では、一括削除処理などのように一覧の中から一部の
+ データをチェックボックスあるいはラジオボタンで選択させて処理を行うUIがしばしば作られる。
+ このようなUIを複合キーで実現する際の実装方法を以下に示す。
+
+複合キーを用いたUIの実装
+=================================
+
+複合キーを用いた場合、単純なキーを使用する場合と比較して下記の考慮が必要となる。
+
+ * 画面入力用 Form では、キー項目用に CompositeKeyクラスのプロパティを一つ用意する。
+ * JSP で複合キー項目の入力に n:checkbox、n:radioButton の代わりに n:compositeKeyCheckbox または n:compositeKeyRadioButton を使用する。
+
+以下に実装例を示す。
+
+* Form の実装例
+
+.. code-block:: java
+
+    /* 【説明】JavaDocは省略。 */
+	public class UsersBulkDeleteForm {
+	
+	    /* 
+	      【説明】
+	      複合キーはCompositeKeyの配列(checkboxで複数選択の場合)、
+	      またはCompositeKey (radioで単一選択の場合)で保持する。 
+	      */
+	    private CompositeKey[] userCompositeKeys;
+	    
+	    /* 【説明】setter,getter, コンストラクタは省略。 */
+	}
+
+* JSPの実装例
+
+  .. code-block:: jsp
+  
+
+    <nbs:listSearchResult listSearchInfoName="condition"
+                   searchUri="./EXCLUS30102"
+                   resultSetName="form.users"
+                   usePageNumberSubmit="true">
+        <jsp:attribute name="headerRowFragment">
+
+          <%-- 【説明】ヘッダ部分は省略 --%>
+
+        </jsp:attribute>
+        <jsp:attribute name="bodyRowFragment">
+        <tr class="<n:write name="oddEvenCss" />">
+            <td>
+                <%-- 
+                  【説明】
+                   keyNames 属性には、 nbs:listSearchResult の各行 (row) のプロパティにある
+                   キー属性をカンマ区切りで指定する。
+                --%>
+            	<n:compositeKeyCheckbox namePrefix="form" 
+            	   valueObject="${row}" 
+            	   keyNames="userId,pk2,pk3" 
+            	   name="form.userCompositeKeys"
+            	   />
+                <n:hidden name  = "form.users[${count -1}].userId"  />                
+                <n:hidden name  = "form.users[${count -1}].pk2"  />                
+                <n:hidden name  = "form.users[${count -1}].pk3"  />
+                <n:hidden name  = "form.users[${count -1}].name"  />
+                <n:hidden name  = "form.users[${count -1}].profile"  />                                
+                <n:hidden name  = "form.users[${count -1}].version"  />                                
+            </td>
+            <td>
+                <n:write name="row.userId" />
+                (所持カード一覧)
+            </td>
+            <td><n:write name="row.name" /></td>
+            <td><n:write name="row.profile" /></td>
+            <td><n:write name="row.version" /></td>
+        </tr>
+        </jsp:attribute>
+    </nbs:listSearchResult>
+
+
+複合キーを用いた排他制御の実装
+======================================
+
+複合キーを用いた排他制御では、主キークラスを引数に取る HttpExclusiveControlUtil の
+メソッドを、排他制御ロックを画面で選択された行毎に呼び出すよう実装する。
+
+複合キーを用いた排他制御の実装例を以下に示す。
+
+
+* Action で使用する Form の実装例
+
+.. code-block:: java
+
+	public class UsersBulkDeleteForm {
+	
+	    /** 複合主キー */
+	    private CompositeKey[] userCompositeKeys;
+	    
+	    /* 【説明】setter, getter, コンストラクタ、バリデートメソッドは省略 */
+	     
+	    /**
+	     * 一括削除対象を取得する。
+	     * @return 一括削除対象
+	     */
+	    public User[] getDeletedUsers() {
+	        /* 【説明】チェックされたオブジェクトのみを取得する処理 */
+	        List<User> deletedUsers = new ArrayList<User>();
+	        List<CompositeKey> deletedCompositeKeys = Arrays.asList(userCompositeKeys);
+	        int numOfDeletedUsers = users.length;
+	        StringBuilder sb = new StringBuilder();
+	        CompositeKey compositeKey;
+	        
+	        for (int i = 0; i < numOfDeletedUsers; i++) {
+	            User user = users[i];
+	            sb.delete(0, sb.length());
+	            compositeKey = new CompositeKey(user.getUserId(), user.getPk2(), user.getPk3());
+	            if (deletedCompositeKeys.contains(compositeKey)) {
+	                deletedUsers.add(user);
+	            }
+	        }
+	        return deletedUsers.toArray(new User[deletedUsers.size()]);
+	    }
+	}
+
+
+* 検索結果表示を行う Action の実装例
+
+.. code-block:: java
+
+        /*
+          【説明】
+          検索処理は一覧表示と同様に行う。
+          */
+
+        SqlResultSet result = searchUser(request, context);
+
+        /*
+          【説明】
+          ExclusiveControlContext のリストを生成し、HttpExclusiveControlUtil.prepareVersions の
+          第3引数に指定する。
+          */
+        List<ExclusiveControlContext> exclusiveControlContexts = new ArrayList<ExclusiveControlContext>();
+        User[] users = new User[result.size()]; 
+        for (int i = 0; i < result.size(); i++) {
+            SqlRow row = result.get(i);
+            exclusiveControlContexts.add(new ExclusiveUserCondition(row.getString("USER_ID"), row.getString("PK2"), row.getString("PK3")));
+            users[i] = new User(row); 
+        }
+        HttpExclusiveControlUtil.prepareVersions(context, exclusiveControlContexts);
+
+
+* 確認画面表示処理での排他制御チェックを行う Action の実装例
+
+.. code-block:: java
+
+        /*
+          【説明】
+          精査処理は一覧表示と同様に行う。
+          */
+        UsersBulkDeleteForm form = validate("form", UsersBulkDeleteForm.class, request, "usersBulkDelete");
+        /*
+          【説明】
+          チェックされた複合キーのオブジェクトを取得する。
+          ※form.getDeletedUsers メソッドの中では、チェックされた User エンティティのみを取り出す処理を行っている。
+          */
+        User[] deletedUsers = form.getDeletedUsers();
+        
+        /*
+          【説明】
+          チェックされたオブジェクトのキーを使用して排他制御キークラスのオブジェクトを生成し、
+          HttpExclusiveControlUtil.checkVersion メソッドを呼び出す。
+          */
+        for( int i=0; i < deletedUsers.length; i++) {
+            User deletedUser = deletedUsers[i];
+            HttpExclusiveControlUtil.checkVersion(request, context, new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));
+        }
+
+        /* 【説明】以降の処理は省略*/
+
+* 完了画面表示処理での排他制御チェックを行う Action の実装例
+
+.. code-block:: java
+
+        /*
+          【説明】
+          精査処理は一覧表示と同様に行う。
+          */
+        UsersBulkDeleteForm form = validate("form", UsersBulkDeleteForm.class, request, "usersBulkDelete");
+        User[] deletedUsers = form.getDeletedUsers();
+        
+        /*
+          【説明】
+          チェックされたオブジェクトのキーを使用して排他制御キークラスのオブジェクトを生成し、
+          HttpExclusiveControlUtil.updateVersionWithCheck メソッドを呼び出す。
+          */
+        for( int i=0; i < deletedUsers.length; i++) {
+            User deletedUser = deletedUsers[i];
+            HttpExclusiveControlUtil.updateVersionWithCheck(request, new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));
+        }
+
+        /* 【説明】以降の処理(DBの更新処理)は省略*/
+
+
+.. _`using_javascript`:
+
+-----------------------------------------------------------------------------
+Javascriptの使用
+-----------------------------------------------------------------------------
+Javascriptを使用する場合は、下記の記述例の様に必ず専用の
+`スクリプトタグ <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_TagReference.html#webview-scripttag>`_
+を使用すること。
+
+**JSPの記述例**
+
+  .. code-block:: jsp
+
+    <%-- 外部スクリプトファイルを読み込む場合 --%>
+    <n:script type="text/javascript" src="/js/common.js" />
+
+    <%-- ページ内にスクリプトを直接記述する場合 --%>
+    <n:script type="text/javascript">
+    function common_validate() {
+        <%--内容は省略--%>
+    }
+    </n:script>
+
+なお、scriptタグ内にスクリプトを記述した場合は、スクリプトの内容が自動的にHTMLコメントで囲われて出力される。
+そのため、上記例のようにタグ内にスクリプトを直接記述すること。
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-function--s11`
+
+```json
+{
+  "id": "web-application-function--s11",
+  "title": "複合キーを使用したデータの一覧画面から、ラジオボタン・チェックボックスでデータを選択する",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複合キーを使用したデータの一覧画面から、ラジオボタン・チェックボックスでデータを選択する",
+      "hints": [
+        "CompositeKey",
+        "n:compositeKeyCheckbox",
+        "n:compositeKeyRadioButton",
+        "HttpExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "UsersBulkDeleteForm",
+        "複合キー",
+        "チェックボックス選択",
+        "ラジオボタン選択",
+        "排他制御",
+        "一覧画面"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Javascriptの使用",
+      "hints": [
+        "n:script",
+        "JavaScript",
+        "スクリプトタグ",
+        "HTMLコメント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 複合キーを用いたUIの実装\n\n単純なキーと比較して以下の考慮が必要:\n- Formでは、キー項目用に`CompositeKey`の配列(checkbox複数選択)または`CompositeKey`(radio単一選択)のプロパティを一つ用意する。\n- JSPでの複合キー項目の入力に`n:checkbox`/`n:radioButton`の代わりに`n:compositeKeyCheckbox`または`n:compositeKeyRadioButton`を使用する。\n\n**Form実装例**:\n```java\npublic class UsersBulkDeleteForm {\n    // checkboxで複数選択の場合はCompositeKey[]、radioで単一選択の場合はCompositeKey\n    private CompositeKey[] userCompositeKeys;\n}\n```\n\n**JSP実装例** (`n:compositeKeyCheckbox`使用):\n```jsp\n<n:compositeKeyCheckbox namePrefix=\"form\"\n   valueObject=\"${row}\"\n   keyNames=\"userId,pk2,pk3\"\n   name=\"form.userCompositeKeys\"\n   />\n```\n`keyNames`属性には、各行(row)のキー属性名をカンマ区切りで指定する。\n\n## 複合キーを用いた排他制御の実装\n\n主キークラスを引数に取る`HttpExclusiveControlUtil`のメソッドを、排他制御ロックを画面で選択された行毎に呼び出す。\n\n**検索結果表示Action** - `ExclusiveControlContext`のリストを生成して`HttpExclusiveControlUtil.prepareVersions`の第3引数に指定する:\n```java\nList<ExclusiveControlContext> exclusiveControlContexts = new ArrayList<ExclusiveControlContext>();\nUser[] users = new User[result.size()];\nfor (int i = 0; i < result.size(); i++) {\n    SqlRow row = result.get(i);\n    exclusiveControlContexts.add(new ExclusiveUserCondition(row.getString(\"USER_ID\"), row.getString(\"PK2\"), row.getString(\"PK3\")));\n    users[i] = new User(row);\n}\nHttpExclusiveControlUtil.prepareVersions(context, exclusiveControlContexts);\n```\n\n**確認画面表示Action** - チェックされた複合キーを使用して`HttpExclusiveControlUtil.checkVersion`を呼び出す:\n```java\nUser[] deletedUsers = form.getDeletedUsers();\nfor (int i = 0; i < deletedUsers.length; i++) {\n    User deletedUser = deletedUsers[i];\n    HttpExclusiveControlUtil.checkVersion(request, context,\n        new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));\n}\n```\n\n**完了画面表示Action** - チェックされた複合キーを使用して`HttpExclusiveControlUtil.updateVersionWithCheck`を呼び出す:\n```java\nUser[] deletedUsers = form.getDeletedUsers();\nfor (int i = 0; i < deletedUsers.length; i++) {\n    User deletedUser = deletedUsers[i];\n    HttpExclusiveControlUtil.updateVersionWithCheck(request,\n        new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));\n}\n```",
+    "s2": "JavaScriptを使用する場合は、専用のスクリプトタグ`n:script`を必ず使用すること。\n\n```jsp\n<%-- 外部スクリプトファイルを読み込む場合 --%>\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n\n<%-- ページ内にスクリプトを直接記述する場合 --%>\n<n:script type=\"text/javascript\">\nfunction common_validate() {\n    <%--内容は省略--%>\n}\n</n:script>\n```\n\nscriptタグ内にスクリプトを記述した場合は、スクリプトの内容が自動的にHTMLコメントで囲われて出力される。そのため、タグ内にスクリプトを直接記述すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

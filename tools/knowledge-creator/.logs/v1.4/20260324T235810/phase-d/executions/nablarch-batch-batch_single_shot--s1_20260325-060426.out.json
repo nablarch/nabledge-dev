@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-batch_single_shot--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "Section s3 has an empty title and content 'なし' (3 characters, well below the 50-character threshold). The corresponding source element is a standalone `++++++++++++++++` line which is an RST horizontal-rule separator, not an actual section with content. This section should not exist as a distinct knowledge section.",
+      "source_evidence": "The `++++++++++++++++` line between the intro and 基本構造 in the source is a decorative separator without a title or body text — it defines no section content."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "Section s5 has an empty title and content 'なし' (3 characters, well below the 50-character threshold). The corresponding source element is a standalone `++++++++++++++++` line which is an RST horizontal-rule separator, not an actual section with content. This section should not exist as a distinct knowledge section.",
+      "source_evidence": "The `++++++++++++++++` line between 業務アクションハンドラの実装 and 標準ハンドラ構成と主要処理フロー in the source is a decorative separator without a title or body text — it defines no section content."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "The hints for s6 include 'DbConnectionManagementHandler' and 'TransactionManagementHandler' but are missing the distinct _main-suffixed variants 'DbConnectionManagementHandler_main' and 'TransactionManagementHandler_main', which appear explicitly as separate handler names in the HandlerQueue and all four processing flows in the source.",
+      "source_evidence": "HandlerQueue and flows reference both 'DbConnectionManagementHandler_main' and 'DbConnectionManagementHandler' (and 'TransactionManagementHandler_main') as distinct, separately named handlers throughout the JavaScript flow definitions."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The Java code example under '設定した値を取得する実装例' is entirely absent from the knowledge file. This example shows that `SystemRepository.getObject(\"helloComponent\")` is used to retrieve the component, and its comment explicitly explains that `\"This is Hello Message!!\"` (the environment config value) is printed rather than the literal `\"${hello.message}\"` placeholder string. This is a decision-necessary code example demonstrating correct usage of the feature.",
+      "source_evidence": "設定した値を取得する実装例 section: `HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\"); // XMLファイルに書いた\"${hello.message}\"ではなく、環境設定ファイルに設定した\"This is Hello Message!!\"が出力される。 helloComponent.printHello();`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The trailing-whitespace preservation behavior for the line-continuation character is omitted. The source specifies that when `\\` is used for line continuation, trailing whitespace in the preceding string is preserved (`'\\'を除いた文字列の後方の空白は維持する`). The knowledge file's table row for `\\`（改行継続）drops this parenthetical but behaviorally significant detail.",
+      "source_evidence": "改行文字（'\\'）section: `その場合'\\'を除いた文字列と次の行の先頭の空白（タブを含む）を除いた文字列を連結する。（'\\'を除いた文字列の後方の空白は維持する。）`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`getComponentByName` — the method used in the autowire section's code example (`container.getComponentByName(\"helloComponent\")`) — is absent from the hints. Users may search for this method name when looking up how to retrieve auto-wired components.",
+      "source_evidence": "設定したコンポーネントの取得例 in 自動インジェクション section: `HelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`SystemRepository` and `HelloMessageProvider` are both used in the nested-component retrieval code examples but are absent from s4's hints. `HelloMessageProvider` in particular is the return type retrieved by name in the second `getObject` call.",
+      "source_evidence": "設定したコンポーネントの取得例 in ネストするコンポーネントの設定: `HelloMessageProvider helloMessageProvider = (HelloMessageProvider) SystemRepository.getObject(\"helloComponent.helloMessageProvider\");`"
+    }
+  ]
+}

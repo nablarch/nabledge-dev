@@ -1,0 +1,13 @@
+{
+  "file_id": "biz-samples-useragent_sample--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — クラスリスト冒頭",
+      "description": "知識ファイルは `please.change.me.fw.web.useragent.RegexUserAgentParser` という完全修飾クラス名を記載しているが、ソースファイルでは `RegexUserAgentParser` はパッケージ指定なしで登場するのみ（`public class CustomUserAgentParser extends RegexUserAgentParser`）。カスタム拡張クラスのパッケージは `please.change.me.common.web.useragent` であり、`RegexUserAgentParser` が `please.change.me.fw.web.useragent` パッケージに属するという根拠はソースに存在しない。",
+      "source_evidence": "ソース中の記述: `public class CustomUserAgentParser extends RegexUserAgentParser` および `class=\"please.change.me.common.web.useragent.CustomUserAgentParser\"` — パッケージ `please.change.me.fw.web.useragent.RegexUserAgentParser` の記述はソースに存在しない。"
+    }
+  ]
+}

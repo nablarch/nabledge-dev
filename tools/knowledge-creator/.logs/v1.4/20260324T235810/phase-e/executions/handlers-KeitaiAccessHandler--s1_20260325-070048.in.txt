@@ -1,0 +1,223 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-KeitaiAccessHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — step 2 of inbound processing",
+      "description": "The knowledge file writes `nablarch_sumbit` (with 'b') as the parameter set during request path rewriting, but the source text in the processing flow step 2 says `nablarch_sumit` (without 'b'). The source document is internally inconsistent — the related handlers table uses `nablarch_sumbit` — but the knowledge file silently normalized the spelling rather than reproducing what the source says in that step.",
+      "source_evidence": "Source ハンドラ処理フロー step 2: 「リクエストパラメータ **nablarch_sumit** の値を設定する」; Source 関連するハンドラ (NablarchTagHandler row): 「リクエストパラメータ **nablarch_sumbit** の値をもとに」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+携帯端末アクセスハンドラ
+================================================
+
+**クラス名:** ``nablarch.fw.web.handler.KeitaiAccessHandler``
+
+---------------------------
+概要
+---------------------------
+本ハンドラは携帯端末、特にいわゆる「フィーチャーフォン」からのアクセスを想定したページを出力するハンドラである。
+具体的には以下の処理を行う。
+
+ - リクエストパラメータ中に埋め込まれた遷移先URIでリクエストパスを置換する。
+   これにより、javascriptに対応していない携帯端末でも、サブミットボタン毎の遷移先切替、
+   ウィンドウスコープの利用等が可能となる。
+   
+ - javascript等の出力を抑制するフラグ(nablarch_jsUnsupported)をリクエストスコープ変数に設定する。
+   (このフラグはJSP中の各カスタムライブラリで使用される。)
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue = [
+        "HttpResponseHandler"
+      , "KeitaiAccessHandler"
+      , "ThreadContextHandler_request"
+      , "NablarchTagHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | ハンドラ                           | 内容                                                                              |
+  +====================================+===================================================================================+
+  | :doc:`HttpResponseHandler`         | 本ハンドラでは、携帯端末向けにjavascriptを使用しないHTMLを出力させるフラグを設定  |
+  |                                    | するため、 :doc:`HttpResponseHandler` を本ハンドラの上位に配置しないと、          |
+  |                                    | その設定がレスポンスに反映されない。                                              |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | :doc:`ThreadContextHandler`        | 本ハンドラで書換えたリクエストパスの内容をもとに、                                |
+  |                                    | :doc:`スレッドコンテキスト<../core_library/thread_context>` 上のリクエストID属性  |
+  |                                    | を決定するので、 :doc:`ThreadContextHandler` は本ハンドラの後続に配置する必要が   |
+  |                                    | ある。                                                                            |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | :doc:`NablarchTagHandler`          | 本ハンドラで設定したリクエストパラメータ **nablarch_sumbit** の値をもとに         |
+  |                                    | 改竄チェックやウィンドウスコープの展開等を行うので、 :doc:`NablarchTagHandler`    |
+  |                                    | は、本ハンドラの後続に配置する必要がある。                                        |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+
+++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (携帯対応画面出力フラグを設定)**
+   遷移先のJSPページでの javascript等の出力を抑制するフラグ変数 (**nablarch_jsUnsupported**)
+   をリクエストスコープに設定する。
+
+  **2. (リクエストパスに対する書き換え処理)**
+   リクエストパラメータ中に"nablarch_uri_override"で始まる名前のパラメータが
+   存在した場合、その内容を元に、リクエストパスを置換するとともに、リクエストパラメータ **nablarch_sumit**
+   の値を設定する。
+
+  **3. (後続ハンドラへの処理移譲)**
+    **2.** で書き換え処理を行ったHTTPリクエストオブジェクトを
+    後続ハンドラに渡して処理を委譲する。
+    その結果であるHTTPレスポンスオブジェクトを取得する。
+
+.. _outbound:
+    
+**[復路での処理]**
+  **4. (正常終了)**
+    **3.** で取得したHTTPレスポンスオブジェクトをリターンして終了する。
+  
+.. _error:
+
+**[例外処理]**
+  **3a. (後続ハンドラ処理中のエラー)**
+    後続ハンドラの処理中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラ自体に設定項目は存在しないが、
+携帯対応を行うリクエストパスの範囲を限定するため、通常は :doc:`RequestHandlerEntry` と組み合わせて使用する。
+
+
+**設定例**
+  この設定例では、サーブレットコンテキストからの相対パス "/action/mobile/" 配下のアクセスに対して
+  本ハンドラを動作させている。
+  
+    .. code-block:: xml
+
+        <!-- 携帯対応ハンドラ -->
+        <component class="nablarch.fw.RequestHandlerEntry">
+          <property name="requestPattern" value="/action/mobile//"/>
+          <property name="handler">
+            <component class="nablarch.fw.web.handler.KeitaiAccessHandler" />
+          </property>
+        </component>
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-KeitaiAccessHandler--s1",
+  "title": "携帯端末アクセスハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "KeitaiAccessHandler",
+        "nablarch.fw.web.handler.KeitaiAccessHandler",
+        "nablarch_jsUnsupported",
+        "携帯端末アクセス",
+        "フィーチャーフォン対応",
+        "HttpResponseHandler",
+        "ThreadContextHandler",
+        "NablarchTagHandler",
+        "ハンドラキュー配置順"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "nablarch_jsUnsupported",
+        "nablarch_uri_override",
+        "nablarch_sumbit",
+        "リクエストパス書き換え",
+        "往路処理",
+        "復路処理",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "RequestHandlerEntry",
+        "nablarch.fw.RequestHandlerEntry",
+        "requestPattern",
+        "リクエストパス制限",
+        "携帯対応ハンドラ設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.KeitaiAccessHandler`\n\n携帯端末（フィーチャーフォン）向けアクセスを想定したページを出力するハンドラ。以下の処理を行う:\n1. リクエストパラメータ中に埋め込まれた遷移先URIでリクエストパスを置換する（javascriptに対応していない携帯端末でのサブミットボタン毎の遷移先切替・ウィンドウスコープ利用が可能となる）\n2. javascript等の出力を抑制するフラグ（`nablarch_jsUnsupported`）をリクエストスコープ変数に設定する（JSP中の各カスタムライブラリで使用される）\n\n**ハンドラキュー配置順の制約**:\n\n| ハンドラ | 配置ルール |\n|---|---|\n| :doc:`HttpResponseHandler` | 本ハンドラの**上位**に配置すること。未配置の場合、携帯対応フラグ設定がレスポンスに反映されない |\n| :doc:`ThreadContextHandler` | 本ハンドラの**後続**に配置すること。書き換えたリクエストパスをもとにリクエストID属性を決定するため |\n| :doc:`NablarchTagHandler` | 本ハンドラの**後続**に配置すること。`nablarch_sumbit`の値をもとに改竄チェック・ウィンドウスコープ展開等を行うため |",
+    "s2": "**[往路処理]**\n\n1. `nablarch_jsUnsupported`フラグをリクエストスコープに設定する\n2. リクエストパラメータ中に`nablarch_uri_override`で始まる名前のパラメータが存在した場合、その内容でリクエストパスを置換し、リクエストパラメータ`nablarch_sumbit`の値を設定する\n3. 書き換えたHTTPリクエストオブジェクトを後続ハンドラに委譲し、HTTPレスポンスオブジェクトを取得する\n\n**[復路処理]**\n\n4. 取得したHTTPレスポンスオブジェクトをリターンして終了する\n\n**[例外処理]**\n\n3a. 後続ハンドラ処理中のエラーは再送出して終了する",
+    "s3": "本ハンドラ自体に設定項目は存在しない。携帯対応を行うリクエストパスの範囲を限定するため、通常は :doc:`RequestHandlerEntry` と組み合わせて使用する。\n\n**設定例** (サーブレットコンテキストからの相対パス `/action/mobile/` 配下のアクセスに本ハンドラを適用):\n\n```xml\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"/action/mobile//\"/>\n  <property name=\"handler\">\n    <component class=\"nablarch.fw.web.handler.KeitaiAccessHandler\" />\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

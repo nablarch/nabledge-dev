@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-04_MasterDataRestore--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source lines 4–16)",
+      "description": "The entire 概要 section is absent from the knowledge file. It explains why the feature exists: master maintenance tests require modifying master data (e.g., deleting records for error-case tests), and without restoration, subsequent test classes may fail due to unintended master data state. The knowledge file contains no section covering this explanation.",
+      "source_evidence": "「テスト中にマスタデータの変更を行った場合、それ以降のテストクラスのテストでは、マスタデータが意図しない状態になっている為にテストが失敗することがある。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "特徴 section (source lines 18–23)",
+      "description": "The entire 特徴 section is absent. It lists three key capabilities: (1) tests always run with correct master data regardless of execution order, (2) restoration is automatic so each test class does not need to prepare its own restoration logic/data, (3) bulk restore from backup schema is faster than row-by-row INSERT. These help users understand what the feature provides.",
+      "source_evidence": "「テストの実行順序に依存せずに、常に正しい状態のマスタデータでテストできる。」「マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理、復旧用データを用意する必要ない。」「バックアップスキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "動作イメージ section (source lines 25–36)",
+      "description": "The entire 動作イメージ section is absent. It describes the operational mechanism: (1) the framework reads the monitored table list from the component config file, (2) it detects modifications to monitored tables by monitoring SQL logs, (3) after the test method ends it restores any changed tables by first deleting all records then inserting all records from the backup schema. This context is essential for understanding why both the component config and SQL log settings are required.",
+      "source_evidence": "「自動テストフレームワークはSQLログを監視することにより、監視対象テーブルを変更するSQL文が発行されたかどうかを検出する。」「いったんテーブル内のレコードを全件削除する。その後、バックアップ用スキーマのテーブルからレコードを全件挿入する。」"
+    }
+  ]
+}

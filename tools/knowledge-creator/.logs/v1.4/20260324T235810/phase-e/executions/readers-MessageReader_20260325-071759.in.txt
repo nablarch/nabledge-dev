@@ -1,0 +1,152 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "readers-MessageReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — configuration table, formatFileDirName row",
+      "description": "The usage condition '受信メッセージにデフォルトフォーマットを設定したい場合のみ使用' is missing for the `formatFileDirName` property. In the source RST table, the 備考 cell spans both the `formatFileName` and `formatFileDirName` rows, meaning this condition applies to both properties. The knowledge file only includes this condition for `formatFileName`.",
+      "source_evidence": "Source table: formatFileName and formatFileDirName share the same 備考 cell (spanning rows) with content '任意設定 (受信メッセージにデフォルトフォーマットを設定したい場合のみ使用)'. The `+---+` separator is absent between these two rows in the last column, indicating the cell spans both rows."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==========================================
+受信電文リーダ
+==========================================
+指定されたメッセージキューを監視し、受信した電文オブジェクトを返すデータリーダ。
+
+このデータリーダのread()メソッドが呼ばれると、各リクエストスレッドにバインドされている
+メッセージングコンテキストを使用して監視対象キュー上の受信電文を監視し、受信電文オブジェクトを返す。
+キューが空であった場合は、電文を受信するか、このリーダに設定されたタイムアウト時間が経過するまでブロックする。
+タイムアウト、もしくはこのリーダが既に閉じられていた場合はnullを返す。
+
+このデータリーダは通常のデータリーダとは異なり、明示的に ``close()`` メソッドを呼び出さない限り終端しない。
+(``hasNext()`` の結果は常に ``true`` となる。)
+
+受信電文読み込み時にエラーが発生した場合は、エラー応答電文オブジェクトを実行時例外として送出する。
+
+  **クラス名**
+    nablarch.fw.messaging.reader.MessageReader
+
+  **読み込むデータの型**
+    nablarch.fw.messaging.ReceivedMessage
+
+  **設定項目一覧**
+    
+   +-------------------------------------+-------------------+--------------+-----------------------------------------------------------+
+   | 設定項目                            | プロパティ名      | データ型　   | 備考                                                      |
+   +=====================================+===================+==============+===========================================================+
+   | 受信キュー論理名                    | receiveQueueName  | String       | 必須設定                                                  |
+   +-------------------------------------+-------------------+--------------+-----------------------------------------------------------+
+   | 受信待機タイムアウト時間(ミリ秒)    | readTimeout       | long         | 任意設定 (デフォルト値: 5000msec)                         |
+   |                                     |                   |              | 0以下の値を設定した場合は、メッセージを受信するまで       |
+   |                                     |                   |              | 待機し続ける。                                            |
+   +-------------------------------------+-------------------+--------------+-----------------------------------------------------------+
+   | 受信メッセージのフォーマット        | formatFileName    | String       | 任意設定                                                  |
+   | 定義ファイル名                      |                   |              | (受信メッセージにデフォルトフォーマット                   |
+   |                                     |                   |              | を設定したい場合のみ使用)                                 |
+   +-------------------------------------+-------------------+--------------+                                                           |
+   | 受信メッセージのフォーマット        | formatFileDirName | String       |                                                           |
+   | 定義ファイルディレクトリ論理名      |                   |              |                                                           |
+   |                                     |                   |              |                                                           |
+   +-------------------------------------+-------------------+--------------+-----------------------------------------------------------+
+
+  **使用例**
+
+  - データリーダファクトリ内でデータリーダを作成する例
+
+    .. code-block:: java
+
+      long readTimeout = 15 * 1000; // 15sec
+
+      DataReader<ReceivedMessage> reader = new MessageReader()
+                                          .setReceiveQueueName("LOCAL.RECEIVE")
+                                          .setReadTimeout(readTimeout);
+
+
+  - DIリポジトリに登録して使用する例
+
+    .. code-block:: xml
+
+      <component
+        class = "nablarch.fw.messaging.reader.MessageReader"
+        name  = "dataReader">
+        <property
+          name  = "receiveQueueName"
+          value = "LOCAL.RECEIVE"
+        />
+        <property
+          name  = "readTimeout"
+          value = "${readTimeout}"
+        />
+      </component>
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "readers-MessageReader",
+  "title": "受信電文リーダ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "受信電文リーダ",
+      "hints": [
+        "MessageReader",
+        "nablarch.fw.messaging.reader.MessageReader",
+        "ReceivedMessage",
+        "nablarch.fw.messaging.ReceivedMessage",
+        "receiveQueueName",
+        "readTimeout",
+        "formatFileName",
+        "formatFileDirName",
+        "受信電文リーダ",
+        "メッセージキュー監視",
+        "受信電文",
+        "タイムアウト制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.reader.MessageReader`\n\n**読み込むデータの型**: `nablarch.fw.messaging.ReceivedMessage`\n\n指定されたメッセージキューを監視し、受信した電文オブジェクトを返すデータリーダ。`read()`メソッド呼び出し時、各リクエストスレッドにバインドされているメッセージングコンテキストを使用して受信電文を監視する。\n\n- キューが空の場合、電文受信またはタイムアウト時間経過までブロックする\n- タイムアウト、またはリーダが既に閉じられていた場合は`null`を返す\n- `hasNext()`は常に`true`（明示的に`close()`を呼び出さない限り終端しない）\n- 受信電文読み込み時にエラーが発生した場合、エラー応答電文オブジェクトを実行時例外として送出する\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| receiveQueueName | String | ○ | | 受信キュー論理名 |\n| readTimeout | long | | 5000 | 受信待機タイムアウト時間(ミリ秒)。0以下の値を設定した場合はメッセージを受信するまで待機し続ける |\n| formatFileName | String | | | 受信メッセージのフォーマット定義ファイル名（デフォルトフォーマットを設定したい場合のみ使用） |\n| formatFileDirName | String | | | 受信メッセージのフォーマット定義ファイルディレクトリ論理名 |\n\n**使用例（Java）**:\n```java\nlong readTimeout = 15 * 1000; // 15sec\n\nDataReader<ReceivedMessage> reader = new MessageReader()\n                                    .setReceiveQueueName(\"LOCAL.RECEIVE\")\n                                    .setReadTimeout(readTimeout);\n```\n\n**使用例（XML）**:\n```xml\n<component\n  class = \"nablarch.fw.messaging.reader.MessageReader\"\n  name  = \"dataReader\">\n  <property\n    name  = \"receiveQueueName\"\n    value = \"LOCAL.RECEIVE\"\n  />\n  <property\n    name  = \"readTimeout\"\n    value = \"${readTimeout}\"\n  />\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

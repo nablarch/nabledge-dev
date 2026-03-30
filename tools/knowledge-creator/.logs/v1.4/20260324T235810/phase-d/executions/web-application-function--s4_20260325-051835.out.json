@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "Section s1 contains code examples using `ApplicationException`, `HttpRequest`, and the `@OnError` annotation, but none of these appear in the hints array. `ApplicationException` is thrown when the file list is empty, `HttpRequest` is the object from which `getPart()` is called, and `@OnError` appears on the DB-registration action method. Users searching for any of these identifiers would not be routed to s1.",
+      "source_evidence": "Source: `throw new ApplicationException(...)` in the server-side retrieval example; `public HttpResponse doMoveFile(HttpRequest req, ...)` in the same section; `@OnError(type = ApplicationException.class, path = \"forward://RW11AC0601\")` in the DB-registration example."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "Section s1 consolidates five distinct h2-level source sections (JSP implementation, server-side retrieval, file saving, input-stream reading, and DB-registration overview) into a single section. The automated pre-check also flags 'Section count 5 < source headings 6'. While no content appears to be lost, s1 is exceptionally large and covers multiple independent topics, which may reduce retrieval precision when a user asks about only one of those sub-topics (e.g., input-stream reading vs. file saving).",
+      "source_evidence": "Source h2 (===) headings: ファイルアップロード画面の作成方法（JSP）, アップロードファイルの取得方法（サーバサイド）, アップロードファイルの保存方法, アップロードファイルを読み込む方法, アップロードファイルをDBに登録する方法 — all mapped to s1."
+    }
+  ]
+}

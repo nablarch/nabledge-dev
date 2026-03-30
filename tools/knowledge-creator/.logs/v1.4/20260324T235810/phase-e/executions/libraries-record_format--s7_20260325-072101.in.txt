@@ -1,0 +1,426 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-record_format--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SZ field type, arg4",
+      "description": "The description for SZ引数4 is significantly truncated. Source specifies '引数4: 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)' but the knowledge file only says '引数4: 負数時（任意）', omitting the technical description and hex format constraint '16進表記の文字列[0-9A-F]'.",
+      "source_evidence": "引数4: 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SP field type, arg3 and arg4",
+      "description": "For SP type, arg3 and arg4 are missing the hex format constraint. Source specifies arg3 as '正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)' and arg4 as '負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)'. The knowledge file reduces arg3 to '正数時の最下位4ビットパターン（任意）' and arg4 to merely '負数時（任意）', omitting the full technical description and the hex format constraint for both.",
+      "source_evidence": "引数3: 正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)\n引数4: 負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SZ field type, arg3",
+      "description": "For SZ arg3, the hex format constraint is omitted. Source specifies '(16進表記の文字列[0-9A-F])' but the knowledge file only states '正数時の最小桁バイトの上位4ビットパターン（任意）' without the format constraint.",
+      "source_evidence": "引数3: 正数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "The hints for s2 are missing several field type identifiers that appear as first-column property names in the field type definition tables: X, N, XN, Z, SZ, P, SP, B. These are the primary identifiers users would search for when looking up field type behavior.",
+      "source_evidence": "Field type table first column entries: X, N, XN, Z, SZ, P, SP, B, X9, SX9 (X9 and SX9 are present in hints, but X, N, XN, Z, SZ, P, SP, B are absent)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+マルチフォーマット形式の利用
+------------------------------------------------------------------------------------------------
+ここで解説する **マルチフォーマット形式** では、定義ファイル上に複数のレコードフォーマットを定義し、
+特定のフィールドの値に応じてフォーマットを動的に切り替えて利用できる。
+ヘッダーレコードとデータレコードでフォーマットが異なるようなデータ形式では、
+マルチフォーマット形式でフォーマット定義を記述する必要がある。
+
+以下は、マルチフォーマット形式を利用したフォーマット定義の例である。
+
+  .. code-block:: bash
+  
+    #-------------------------------------------------------------------------------
+    # ユーザ一覧の固定長ファイルフォーマット
+    #-------------------------------------------------------------------------------
+
+    file-type:        "Fixed" # 固定長
+    text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+    record-length:    420     # 各レコードの長さ
+    record-separator: "\r\n"  # 改行コード(crlf)
+    
+    [Classifier] # レコードタイプ識別フィールド定義
+    1   dataKbn   X(1)   #       データ区分
+                         #    1: ヘッダー、2: データレコード
+                         #    8: トレーラー、9: エンドレコード
+    
+    [header]  # ヘッダーレコード
+    dataKbn = "1"  # フォーマットの適用条件
+    1   dataKbn     X(1)  "1"   # データ区分
+    2   sysDate     X(8)        # システム日付
+    10  ?filler     X(411)      # 空白領域
+    
+    
+    [data] # データレコード
+    dataKbn  =  "2"  # フォーマットの適用条件
+    1   dataKbn                     X(1)  "2"   # データ区分
+    2   userId                      X(10)       # ユーザID
+    12  loginId                     X(20)       # ログインID
+    32  kanjiName                   N(100)      # 漢字氏名
+    132 kanaName                    N(100)      # カナ氏名
+    232 ?filler1                    X(50)       # 空白領域
+    282 mailAddress                 X(100)      # メールアドレス
+    382 extensionNumberBuilding     X(2)        # 内線番号（ビル番号）
+    384 extensionNumberPersonal     X(4)        # 内線番号（個人番号）
+    388 mobilePhoneNumberAreaCode   X(3)        # 携帯番号（市外）
+    391 mobilePhoneNumberCityCode   X(4)        # 携帯電話番号(市内)
+    395 mobilePhoneNumberSbscrCode  X(4)        # 携帯電話番号(加入)
+    399 ?filler2                    X(22)       # 空白領域
+    
+    [trailer] # トレーラレコード
+    dataKbn = "8"  # フォーマットの適用条件
+    1   dataKbn                     X(1)  "8"   # データ区分
+    2   totalCount                  Z(19)       # 総件数
+    21  ?filler                     X(400)      # 空白領域
+    
+    [end] # エンドレコード
+    dataKbn = "9"  # フォーマットの適用条件
+    1   dataKbn                     X(1)  "9"    # データ区分
+    2   ?filler                     X(419)       # 空白領域
+  
+**レコードタイプ識別フィールド定義**
+  マルチフォーマット形式では、レコード中の特定のフィールドの内容をもとに使用するフォーマットを決定する。
+  このフィールドを **レコードタイプ識別フィールド** と呼ぶ。
+  レコードタイプ識別フィールドを定義するには、 **レコードタイプ識別フィールド定義** と呼ばれる
+  特別なレコードフォーマット定義を追加する必要がある。
+
+  レコードタイプ識別フィールド定義の記法は、レコードタイプ名を **Classifier** とすることを除き、
+  通常のレコードフォーマット定義の記法と同じである。
+  上述の例では、レコードタイプ識別フィールドを次のように定義していた。
+    
+    .. code-block:: bash
+    
+      [Classifier] # レコードタイプ識別フィールド定義
+      1   dataKbn   X(1)   #  データ区分
+                           #  1: ヘッダー、  2: データレコード
+                           #  8: トレーラー、9: エンドレコード
+
+  この場合、各レコードの先頭1バイトの文字列の値を使用して、レコードタイプを識別することを宣言している。
+
+  また、レコードタイプ識別フィールドを定義する場合、
+  各レコードフォーマット定義内のレコードタイプ名の直後に、レコードタイプ識別フィールドの適用条件となる値を記述する。
+  上述の例では、レコードタイプ識別フィールドの適用条件を次のように定義していた。
+
+    .. code-block:: bash
+
+      [header]  # ヘッダーレコード
+      dataKbn = "1"  # フォーマットの適用条件
+      1   dataKbn     X(1)  "1"   # データ区分
+      2   sysDate     X(8)        # システム日付
+      10  ?filler     X(411)      # 空白領域
+
+  この例では、レコードタイプ識別フィールド **"dataKbn"** の値が **"1"** であった場合、
+  ヘッダーレコードのフォーマットを使用することを意味している。
+
+  なお、この例では、レコードタイプ識別フィールドの定義が、実際のレコード定義の内容と一致していたが、
+  必ずしも一致させる必要は無い。
+
+
++++++++++++++++++++++++++++++++++++
+
+.. _types_and_converters:
+
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+
+**フィールドタイプ定義一覧**
+
+  **(固定長データ形式での設定)**
+
+    ==============  ===========  ===================================================================================================================================================
+    タイプ識別子    Java型       内容
+    ==============  ===========  ===================================================================================================================================================
+    X               String       | シングルバイト文字列 (バイト長=文字数)
+                                 | デフォルトでは、半角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString
+                                 | **引数:** バイト長(数値, 必須指定)
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    N               String       | ダブルバイト文字列 (バイト長 = 文字数 ÷ 2)
+                                 | デフォルトでは、全角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString
+                                 | **引数:** バイト長(数値、必須指定)
+                                 |           ※  バイト長が2の倍数でない場合は構文エラーとなる。
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    XN              String       | マルチバイト文字列
+                                 | UTF-8のようにバイト長の異なる文字が混在するフィールドを扱う場合に、このフィールドタイプを指定する。
+                                 | また、全角文字列（ダブルバイト文字列）のパディングに半角スペースを使用する場合にも本フィールドタイプを使用する。
+                                 | デフォルトでは、半角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.ByteStreamDataString
+                                 | **引数:** バイト長(数値、必須指定)
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    Z               BigDecimal   | ゾーン10進数値 (バイト長 = 桁数)
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.ZonedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SZ              BigDecimal   | 符号付ゾーン10進数値 (バイト長 = 桁数)
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | **引数3:** 正数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | **引数4:** 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    P               BigDecimal   | パック10進数値 (バイト長 = 桁数 ÷ 2 [端数切り上げ]) 
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.PackedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SP              BigDecimal   | 符号付パック10進数値 (バイト長 = (桁数 + 1) ÷ 2 [端数切り上げ])
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | **引数3:** 正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | **引数4:** 負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    B               byte[]       | バイナリ列
+                                 | パディングは行わない。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.Bytes
+                                 | **引数:** バイト長(数値、必須指定)
+                                 | 出力対象の値が ``null`` の場合の変換仕様はアプリケーションごとに様々である。
+                                 | そのため、本フィールドタイプではその場合でも値の変換は行わず、
+                                 | InvalidDataFormatExceptionを送出する。
+                                 | 本フィールドタイプを使用する場合、要件に合わせてアプリケーション側で明示的に値を設定すること。
+
+    X9              BigDecimal   | 符号無し数値文字列 (バイト長 = 文字数) 
+                                 | フィールド中のシングルバイト文字列(X)を数値として扱う。
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | 文字列中に小数点記号(".")を含めることできる。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.NumberStringDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** フィールド中に小数点記号が含まれなかった場合の少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SX9             BigDecimal   | 符号付き数値文字列 (バイト長 = 文字数)
+                                 | フィールド中のシングルバイト文字列(X)を符号付き数値として扱う。
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.NumberStringDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** フィールド中に小数点記号が含まれなかった場合の少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    ==============  ===========  ===================================================================================================================================================
+
+  **(可変長データ形式での設定)**
+
+    ====================  ===========  =====================================================================================================================
+    タイプ識別子          Java型       内容
+    ====================  ===========  =====================================================================================================================
+    X、N、XN、X9、SX9     String       | 可変長データ形式では、すべてのフィールドを文字列（String）として読み書きする。
+                                       | よって、どのタイプ識別子を指定しても動作は変わらない。
+                                       | また、フィールド長の概念が無いので、引数は不要である。
+                                       | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+                                       | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+    ====================  ===========  =====================================================================================================================
+
+  **(JSONおよびXMLデータ形式での設定)**
+
+    ==============  ===========  ===================================================================================================================================================
+    タイプ識別子    Java型       内容
+    ==============  ===========  ===================================================================================================================================================
+    X、N、XN        String       | 文字列
+                                 | パディングなどのデータ編集は行わない。出力時に値がダブルクウォート(")で括られる。
+                                 | 出力対象の値が ``null`` の場合、JSONでは値の変換は行わなず、XMLでは空文字に変換する。
+
+    X9、SX9         String       | 数字
+                                 | パディングなどのデータ編集は行わない。出力時は値がそのまま出力される。
+                                 | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+                                 | 出力対象の値が ``null`` の場合、JSONでは値の変換は行わなず、XMLでは空文字に変換する。
+
+    BL              String       | 文字列（true or falseを文字列で表したもの）
+                                 | パディングなどのデータ編集は行わない。出力時は値がそのまま出力される。
+                                 | 出力対象の値が ``null`` の場合、JSONでは値の変換は行わなず、XMLでは空文字に変換する。
+
+    OB              －           | ネストオブジェクト
+                                 | ネストされたレコードタイプを指定する場合に使用する。
+                                 | 出力対象の値が ``null`` の場合、JSONでは値の変換は行わなず、XMLでは空文字に変換する。
+    ==============  ===========  ===================================================================================================================================================
+
+    いずれのタイプ識別子もフィールド長の概念が無いので、引数は不要である。
+
+
+**フィールドコンバータ定義一覧**
+    
+    ==================  =====================  =============================================================================================================================
+    コンバータ名        Java型(変換前後)       内容
+    ==================  =====================  =============================================================================================================================
+    pad                 N/A                    | データコンバータが使用するパディング・トリムの対象とする値を設定する。
+                                               | パディング・トリムの向きはフィールドタイプ毎に以下のように決定される。
+                                               |
+                                               |   **X、N、XN :** 右トリム・パディング
+                                               |   **Z、SZ、P、SP、X9、SX9 :** 左トリム・パディング
+                                               |   **B :** (トリム・パディングは行わないため、無効)
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.Padding
+                                               | **引数:** パディング・トリムの対象となる値 (必須指定)
+
+    encoding            N/A                    | データコンバータが使用する文字エンコーディングを指定する。
+                                               | X、N、XN 以外のフィールドに設定した場合は単に無視される。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.UseEncoding
+                                               | **引数:** エンコーディング名(文字列、必須指定)
+
+    リテラル値          Object <-> Object      | **入力時:** (なにもしない)
+                                               | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+                                               | **引数:** なし
+
+    number              String <-> BigDecimal  | **入力時:** 入力された値が符号なし数値であることを形式チェックした上でBigDecimal型に変換して、返却する。
+                                               |         もし入力された値がnullまたは空文字の場合、nullを返却する。
+                                               | **出力時:** 出力する値を文字列に変換し、符号なし数値であることを形式チェックした上で出力する。
+                                               |         もし出力する値がnullの場合、空文字を出力する。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.NumberString
+                                               | **引数:** なし
+
+    signed_number       String <-> BigDecimal  | 符号が許可される点以外は **number** コンバータと同じ仕様。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.SignedNumberString
+                                               | **引数:** なし
+
+    replacement         String <-> String      | 入出力とも、置換え対象文字を変換先の文字に置換して返す。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.CharacterReplacer
+                                               | **引数:** 置換タイプ名(文字列、任意指定)
+                                               | 詳細は :ref:`converters_sample` を参照すること。
+    ==================  =====================  =============================================================================================================================
+
+  **データ形式ごとのデフォルト設定**
+
+    各データ形式に対するデフォルトの設定を以下に示す。
+
+    ==================================  =======  =======  =======  =======
+    コンバータ名                        固定長   可変長   JSON     XML    
+    ==================================  =======  =======  =======  =======
+    pad                                 有り     | －     | －     | －   
+
+    encoding                            有り     | 有り   | －     | －   
+
+    リテラル値                          有り     | 有り   | 有り   | 有り 
+
+    number                              有り     | 有り   | 有り   | 有り 
+
+    signed_number                       有り     | 有り   | 有り   | 有り 
+
+    replacement                         有り     | 有り   | 有り   | 有り 
+    ==================================  =======  =======  =======  =======
+
++++++++++++++++++++++++++++++++++++
+
+.. _converters_sample:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-record_format--s7",
+  "title": "マルチフォーマット形式の利用",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "マルチフォーマット形式の利用",
+      "hints": [
+        "マルチフォーマット形式",
+        "Classifier",
+        "レコードタイプ識別フィールド",
+        "フォーマット切り替え",
+        "固定長マルチフォーマット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "フィールドタイプ",
+        "フィールドコンバータ",
+        "SingleByteCharacterString",
+        "DoubleByteCharacterString",
+        "ByteStreamDataString",
+        "ZonedDecimal",
+        "SignedZonedDecimal",
+        "PackedDecimal",
+        "SignedPackedDecimal",
+        "Bytes",
+        "NumberStringDecimal",
+        "Padding",
+        "UseEncoding",
+        "DefaultValue",
+        "NumberString",
+        "SignedNumberString",
+        "CharacterReplacer",
+        "InvalidDataFormatException",
+        "X9",
+        "SX9",
+        "BL",
+        "OB",
+        "pad",
+        "encoding",
+        "number",
+        "signed_number",
+        "replacement"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## マルチフォーマット形式の利用\n\nヘッダーレコードとデータレコードでフォーマットが異なるデータ形式では、マルチフォーマット形式でフォーマット定義を記述する必要がある。定義ファイル上に複数のレコードフォーマットを定義し、特定のフィールドの値に応じてフォーマットを動的に切り替える。\n\n### レコードタイプ識別フィールド（Classifier）\n\nレコードタイプ識別フィールドは、レコード中の特定のフィールドの内容をもとに使用するフォーマットを決定する。\n\n**記法**: レコードタイプ名を `Classifier` とする点を除き、通常のレコードフォーマット定義と同じ。\n\n```bash\n[Classifier]\n1   dataKbn   X(1)   # データ区分\n                     # 1: ヘッダー、2: データレコード\n                     # 8: トレーラー、9: エンドレコード\n```\n\n各レコードフォーマット定義では、レコードタイプ名の直後にレコードタイプ識別フィールドの**適用条件**を記述する（例: `dataKbn = \"1\"`）。\n\n```bash\n[header]\ndataKbn = \"1\"  # フォーマットの適用条件（dataKbnが\"1\"の場合このフォーマットを使用）\n1   dataKbn     X(1)  \"1\"\n2   sysDate     X(8)\n10  ?filler     X(411)\n```\n\nなお、レコードタイプ識別フィールド定義の内容と実際のレコード定義の内容は、必ずしも一致させる必要はない。\n\n### フォーマット定義例（固定長マルチフォーマット）\n\n```bash\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    420\nrecord-separator: \"\\r\\n\"\n\n[Classifier]\n1   dataKbn   X(1)\n\n[header]\ndataKbn = \"1\"\n1   dataKbn     X(1)  \"1\"\n2   sysDate     X(8)\n10  ?filler     X(411)\n\n[data]\ndataKbn = \"2\"\n1   dataKbn                     X(1)  \"2\"\n2   userId                      X(10)\n12  loginId                     X(20)\n32  kanjiName                   N(100)\n132 kanaName                    N(100)\n232 ?filler1                    X(50)\n282 mailAddress                 X(100)\n382 extensionNumberBuilding     X(2)\n384 extensionNumberPersonal     X(4)\n388 mobilePhoneNumberAreaCode   X(3)\n391 mobilePhoneNumberCityCode   X(4)\n395 mobilePhoneNumberSbscrCode  X(4)\n399 ?filler2                    X(22)\n\n[trailer]\ndataKbn = \"8\"\n1   dataKbn                     X(1)  \"8\"\n2   totalCount                  Z(19)\n21  ?filler                     X(400)\n\n[end]\ndataKbn = \"9\"\n1   dataKbn                     X(1)  \"9\"\n2   ?filler                     X(419)\n```",
+    "s2": "## フィールドタイプ・フィールドコンバータ定義一覧\n\n### フィールドタイプ定義一覧\n\n#### 固定長データ形式\n\n| タイプ識別子 | Java型 | 内容 | デフォルト実装クラス |\n|---|---|---|---|\n| X | String | シングルバイト文字列（バイト長=文字数）。デフォルトで半角空白による右トリム・パディング。引数: バイト長（必須）。nullの場合は空文字に変換。 | `nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString` |\n| N | String | ダブルバイト文字列（バイト長=文字数÷2）。デフォルトで全角空白による右トリム・パディング。引数: バイト長（必須）。バイト長が2の倍数でない場合は構文エラー。nullの場合は空文字に変換。 | `nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString` |\n| XN | String | マルチバイト文字列。UTF-8のようにバイト長が異なる文字が混在する場合、または全角文字列のパディングに半角スペースを使用する場合に指定。デフォルトで半角空白による右トリム・パディング。引数: バイト長（必須）。nullの場合は空文字に変換。 | `nablarch.core.dataformat.convertor.datatype.ByteStreamDataString` |\n| Z | BigDecimal | ゾーン10進数値（バイト長=桁数）。デフォルトで'0'による左トリム・パディング。引数1: バイト長（必須）、引数2: 小数点以下桁数（任意、デフォルト=0）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.ZonedDecimal` |\n| SZ | BigDecimal | 符号付ゾーン10進数値（バイト長=桁数）。デフォルトで'0'による左トリム・パディング。引数1: バイト長（必須）、引数2: 小数点以下桁数（任意、デフォルト=0）、引数3: 正数時の最小桁バイトの上位4ビットパターン（任意）、引数4: 負数時（任意）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal` |\n| P | BigDecimal | パック10進数値（バイト長=桁数÷2 [端数切り上げ]）。デフォルトで'0'による左トリム・パディング。引数1: バイト長（必須）、引数2: 小数点以下桁数（任意、デフォルト=0）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.PackedDecimal` |\n| SP | BigDecimal | 符号付パック10進数値（バイト長=(桁数+1)÷2 [端数切り上げ]）。デフォルトで'0'による左トリム・パディング。引数1: バイト長（必須）、引数2: 小数点以下桁数（任意、デフォルト=0）、引数3: 正数時の最下位4ビットパターン（任意）、引数4: 負数時（任意）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal` |\n| B | byte[] | バイナリ列。パディングは行わない。引数: バイト長（必須）。**nullの場合は変換を行わずInvalidDataFormatExceptionを送出する。本フィールドタイプを使用する場合、要件に合わせてアプリケーション側で明示的に値を設定すること。** | `nablarch.core.dataformat.convertor.datatype.Bytes` |\n| X9 | BigDecimal | 符号無し数値文字列（バイト長=文字数）。デフォルトで'0'による左トリム・パディング。小数点記号（\".\"）を含めることができる。引数1: バイト長（必須）、引数2: フィールド中に小数点記号がない場合の小数点以下桁数（任意、デフォルト=0）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.NumberStringDecimal` |\n| SX9 | BigDecimal | 符号付き数値文字列（バイト長=文字数）。デフォルトで'0'による左トリム・パディング。引数1: バイト長（必須）、引数2: フィールド中に小数点記号がない場合の小数点以下桁数（任意、デフォルト=0）。nullの場合は0に変換。 | `nablarch.core.dataformat.convertor.datatype.NumberStringDecimal` |\n\n#### 可変長データ形式\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN、X9、SX9 | String | すべてのフィールドを文字列として読み書き。タイプ識別子による動作の違いはない。フィールド長の概念がなく引数不要。Number型（BigDecimalなど）が必要な場合はnumber/signed_numberコンバータを使用すること。nullの場合は空文字に変換。 |\n\n#### JSONおよびXMLデータ形式\n\nいずれのタイプ識別子もフィールド長の概念がなく引数不要。\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN | String | 文字列。パディングなし。出力時はダブルクォートで括られる。nullの場合: JSONは変換なし、XMLは空文字に変換。 |\n| X9、SX9 | String | 数字。パディングなし。値がそのまま出力される。Number型（BigDecimalなど）が必要な場合はnumber/signed_numberコンバータを使用すること。nullの場合: JSONは変換なし、XMLは空文字に変換。 |\n| BL | String | 文字列（true or false）。パディングなし。値がそのまま出力される。nullの場合: JSONは変換なし、XMLは空文字に変換。 |\n| OB | — | ネストオブジェクト。ネストされたレコードタイプを指定する場合に使用。nullの場合: JSONは変換なし、XMLは空文字に変換。 |\n\n### フィールドコンバータ定義一覧\n\n| コンバータ名 | Java型（変換前後） | 内容 | デフォルト実装クラス |\n|---|---|---|---|\n| pad | N/A | パディング・トリムの対象値を設定。X・N・XN: 右トリム・パディング。Z・SZ・P・SP・X9・SX9: 左トリム・パディング。B: 無効。引数: パディング・トリムの対象値（必須）。 | `nablarch.core.dataformat.convertor.value.Padding` |\n| encoding | N/A | 文字エンコーディングを指定。X・N・XN以外のフィールドに設定した場合は無視される。引数: エンコーディング名（必須）。 | `nablarch.core.dataformat.convertor.value.UseEncoding` |\n| リテラル値 | Object <-> Object | 入力時: なにもしない。出力時: 出力する値が未設定の場合に指定されたリテラル値を出力する。引数: なし。 | `nablarch.core.dataformat.convertor.value.DefaultValue` |\n| number | String <-> BigDecimal | 入力: 符号なし数値チェック後BigDecimalに変換（null/空文字の場合はnullを返却）。出力: 文字列に変換し符号なし数値チェック後出力（nullの場合は空文字）。引数: なし。 | `nablarch.core.dataformat.convertor.value.NumberString` |\n| signed_number | String <-> BigDecimal | 符号が許可される点以外はnumberコンバータと同じ仕様。引数: なし。 | `nablarch.core.dataformat.convertor.value.SignedNumberString` |\n| replacement | String <-> String | 入出力とも、置換え対象文字を変換先の文字に置換して返す。引数: 置換タイプ名（任意）。詳細は :ref:`converters_sample` を参照すること。 | `nablarch.core.dataformat.convertor.value.CharacterReplacer` |\n\n### データ形式ごとのデフォルト設定\n\n| コンバータ名 | 固定長 | 可変長 | JSON | XML |\n|---|---|---|---|---|\n| pad | 有り | — | — | — |\n| encoding | 有り | 有り | — | — |\n| リテラル値 | 有り | 有り | 有り | 有り |\n| number | 有り | 有り | 有り | 有り |\n| signed_number | 有り | 有り | 有り | 有り |\n| replacement | 有り | 有り | 有り | 有り |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

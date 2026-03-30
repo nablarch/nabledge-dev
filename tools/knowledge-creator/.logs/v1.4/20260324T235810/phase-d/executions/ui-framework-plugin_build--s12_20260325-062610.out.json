@@ -1,0 +1,20 @@
+{
+  "file_id": "ui-framework-plugin_build--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — libraryDeployMappings",
+      "description": "Three important implementation details for libraryDeployMappings are omitted: (1) source file paths are specified as relative paths within the package, (2) destination file paths are specified as relative paths from the deployment target (ui_test, etc.), and (3) if a folder is specified as the source, all files within that folder are deployed. The knowledge file only mentions the rename capability and the key/value structure.",
+      "source_evidence": "展開元のファイルはパッケージ内の相対パスで指定する。展開元のファイルとしてフォルダが指定された場合、フォルダ配下のファイルが全て展開される。展開先のファイルは展開先(ui_test等)からの相対パスで指定する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — プラグインの展開 (重複ファイル検出)",
+      "description": "The specific JSON output format of the duplicate file detection message is not shown. The knowledge file mentions that duplicates are listed at command completion, but omits the exact format showing 'duplicate file detected!!' followed by a JSON object mapping deployment file names to arrays of plugin names.",
+      "source_evidence": "duplicate file detected!!\n{\n  \"<展開先ファイル名>\": [\n    \"<プラグイン1>\",\n    \"<プラグイン2>\",\n    ...\n  ]\n}"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "file_id": "toolbox-01_EntityGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source lines 1–30)",
+      "description": "The entire 概要 section is absent from the knowledge file. The source states the tool generates Form templates from table definitions, external interface design documents, domain definitions, and code design documents; that it automates adding properties (per table/IF design) and setting validation annotations (per domain definitions); and includes a note that external interface design documents have a different format when the data structure is hierarchical (XML/JSON).",
+      "source_evidence": "本ツールは、下記のファイルからアプリケーションで使用するFormのひな形を作成する。... 外部インタフェース設計書は、データ形式が階層構造（XML形式またはJSON形式）かどうかでフォーマットが異なる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ツール配置場所 section (source lines ~32–47)",
+      "description": "The entire ツール配置場所 section is absent. It specifies the tool's location (tutorial project's tool/formgenerator directory) and lists the four key entries: doc (design document directory), resources (configuration files), formgen.xml (Ant build file used in execution), and formgen.properties (Ant property file).",
+      "source_evidence": "本ツールはチュートリアルプロジェクトの tool/formgenerator ディレクトリに配置されている。... formgen.xml | 本ツールを実行するためのAntビルドファイル ... formgen.properties | Antビルドファイルのプロパティファイル"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "自動生成ツールの実行手順 section (source lines ~250–260)",
+      "description": "The entire execution procedure section is absent. The source provides the Ant commands required to run the tool: `ant -f formgen.xml generate-entity` (for table definition input) and `ant -f formgen.xml generate-form` (for external interface design input). Without these commands a user cannot operate the tool.",
+      "source_evidence": "ant -f formgen.xml generate-entity\n# 外部IF設計書を入力とする場合\nant -f formgen.xml generate-form"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file index (s1–s11)",
+      "description": "Three substantive source sections — 概要, ツール配置場所, 自動生成ツールの実行手順 — are not represented as knowledge sections, giving 11 sections vs ~14 in the source.",
+      "source_evidence": "Source h2 headings: 概要, ツール配置場所, 利用の準備, 自動生成ツールの実行手順, 自動生成ツールの仕様詳細 (with h3/h4 sub-sections)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s10 hints",
+      "description": "`toMap_template.txt` is listed in the source template file table and is included in s10 section content, but is absent from the s10 hints array.",
+      "source_evidence": "nablarch/tool/formgenerator/toMap_template.txt | フィールドをMapに変換するメソッド部のテンプレート"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 hints",
+      "description": "The Japanese external-interface type names used as mapping keys (`半角数字`, `半角`, `符号無ゾーン10進数`, `符号無数値`) are missing from the s9 hints, making it harder for an AI to match questions about those types to this section.",
+      "source_evidence": "<entry key=\"半角数字\" value=\"java.lang.String\"/> ... <entry key=\"符号無ゾーン10進数\" value=\"java.math.BigDecimal\"/>"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/doc/internals/js_framework.rst`
+- Format: `rst`
+
+```
+ウィジェットの実装例
+---------------------------------------
+以下のソースコードは、単純なモーダルダイアログを実装するサンプルである。
+
+.. code-block:: javascript
+
+  // ==============================================
+  // モジュール定義
+  // ===============================================
+  // グローバル関数define() によりモジュールを定義する。
+  //
+  // 依存関係の定義
+  // -----------------------------------
+  // この関数の第一引数には、このモジュールが依存するモジュールのパスの配列を指定する。
+  // モジュールのパスは、(コンテキストルート)/js/ からの相対パスを指定する。
+  // また、"./"で始まるパスは、このソースファイルからの相対パスとみなされる。
+  // パスの先頭に"text!"を指定した場合、当該のファイルはJavaScriptとして評価されず、
+  // ファイルの内容を文字列として読み込む。
+  // 
+  define([
+    "jquery"                       // jQueryライブラリ
+  , "nablarch/ui/Widget"           // ウィジェットの共通基底クラス
+  , "text!./ModalDialog.template"  // モーダルダイアログのHTML
+  , "nablarch/ui/event"            // nablarchの動作に関連したイベントの定義
+  , "sugar"                        // sugar.js
+  ],
+  // ----------------------------------
+  // モジュールの初期化
+  // ----------------------------------
+  // define の第2引数には、このモジュールの初期化を行う関数を指定する。
+  // この初期化関数の引数には、defineの第1引数に指定した各モジュールの内容が渡される。
+  // 
+  function($, Widget, template) { "use strict";
+    //
+    // モジュール定義を行う関数
+    // =================================
+    // モジュールの初期化を行う関数を冒頭に定義し、この関数の最後で呼び出す。
+    // (このコードが冒頭に記述することで、モジュールの内容を把握し易くなる。)
+    function define() {
+      // jQueryプラグインメソッド $.fn.widgets() を使用して、マーカCSSが指定された
+      // 各ノードに対して画面上のウィジェットを初期化する。
+      // マーカCSSの名称は (プロジェクト名)_(ウィジェット名) とする。
+      $(function() {
+        $(".sample_ModalDialog.-content").widgets(ModalDialog);
+      });
+      // このモジュールの内容(=ウィジェットのコンストラクタ関数)をリターンする。
+      return ModalDialog;
+    }
+    
+    // ウィジェットクラスのプロトタイプ定義
+    // ========================================
+    // 本PJでのクラス定義はJavaScriptの言語仕様のみを用いたオーソドックスなスタイルで行う。
+    // 下記のように、ウィジェットのプロトタイプを定義する。
+    //
+    ModalDialog.prototype = Object.merge(new Widget(), {   // Widgetコンストラクタのプロトタイプを継承する。
+      // コンストラクタ
+      constructor : ModalDialog   // instanceof 演算子を正常に動作させるために必要。 
+      // プロパティ
+    , $dialog   : null
+    , contentId : null
+    , isActive  : null
+      // メソッド
+    , show : ModalDialog_show
+    , hide : ModalDialog_hide
+    });
+
+    // イベント定義
+    // ============================================
+    // ウィジェットおよび、ウィジェットのプロパティとして定義されたノード上のイベントと、
+    // それを処理するイベントハンドラとの対応を以下の書式に従って記述する。
+    // 
+    //   1. "(イベント名)" : (イベントハンドラ)
+    //   2. "(セレクタ式) (イベント名)" : (イベントハンドラ)
+    //   3. "(コンテキストノード) (イベント名)" : (イベントハンドラ)
+    //   4. "(コンテキストノード) (セレクタ式) (イベント名)" : (イベントハンドラ)
+    // 
+    // 1.ではマーカCSSを指定したノード(this.$node)上で発生するイベントに対するハンドラを登録する。
+    // また2.のようにセレクタ式を指定することで、イベントの発生元がセレクタに合致する場合のみ処理を
+    // 行うようにすることができる。(event deligation)
+    // 
+    // 3. 4. では、(コンテキストノード)に指定したノード内で発生したイベントが対象となる。
+    // (コンテキストノード)には $で開始されるプロパティ名もしくは "document" を指定する。
+    // 
+    // (イベントハンドラ) には文字列および関数を使用できる。
+    // 文字列の場合は、このウィジェットの同名のメソッドを呼び出す。
+    // 関数の場合は、このウィジェットをbind()したものが呼び出される。
+    //
+    ModalDialog.event = {
+      // 1. 起動要素がクリックされたらモーダルダイアログを開く
+      //   -> this.$node.on("click", function(evt) { return this.show(evt) }) と等価
+      //
+      "click" : "show" 
+
+      // 2. ダイアログの閉じるボタンが押されたらダイアログを閉じる。
+      //   -> this.$dialog.on("click", "button.close", function(evt) { return this.hide(evt) }) と等価
+      //
+    , "$dialog button.close click" : "hide" 
+
+      // 3. ダイアログが開いている間は画面上のサブミット処理を全て無効化する。
+      //   -> $(document).on("beforeSubmit", (function() {return false}).bind(this)) と等価
+      //   ※  カスタムイベント "beforeSubmit.nablarch" は "nablarch/ui/event" の中で定義されており、
+      //      グローバル関数 nablarch_submit() によってサブミットが行われる直前に呼ばれる。
+      //
+    , "document beforeSubmit" : function() { return !isActive } 
+    };
+
+    // ウィジェットの識別子
+    // ===================================
+    // 内部的に使用される。
+    // マーカCSSと同じ (PJ名)_(ウィジェット名) とする。
+    ModalDialog.widgetType = "sample_ModalDialog";  
+
+    // ウィジェットのコンストラクタ関数
+    // ===============================================
+    // 第1引数にウィジェットのマーカCSSを指定したDOMノード、
+    // 第2引数にはマーカCSSの後に指定したオプションが渡される。
+    // なお、JavaScriptでは親クラスのコンストラクタは呼ばれないので、明示的に呼び出す必要がある。
+    //
+    function ModalDialog(element, option) {
+
+      // プロパティの初期化
+      // -------------------------------------------
+      // 各プロパティの初期化を行う。
+      // 特に、ノードプロパティの初期化Widgetコンストラクタの呼び出しよりも先に行う必要がある。
+      // ※  ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること。
+      this.contentId = option.content
+      this.isActive  = false;
+      this.$dialog   = $(template).css({
+                         display   : "none"
+                       , position  : "absolute"
+                       , "z-index" : "5"
+                       }).appendTo(document); 
+      
+      // Widgetコンストラクタの呼び出し
+      // --------------------------------------------------
+      // 共通初期化処理を行う。
+      // (詳細な内容については、 nablarch/ui/Widget.js 内のドキュメントを参照)
+      Widget.call(this, element);
+
+      // -content オプションに指定されたidの内容をダイアログの内容として取り込む。
+      this.$dialog.find("div.content").append("#" + contentId);
+    }
+
+
+    // ウィジェットのメソッド、イベントハンドラの定義
+    // ===============================================
+    // イベントハンドラとして登録した場合、第一引数にはイベントオブジェクト(jQuery.Event) が渡される。
+    // イベントオブジェクトのtarget属性には、イベントの発生元のDOMノードオブジェクトが設定されている。
+    // また、明示的にfalseをリターンすることで、イベントのプロパゲーションとデフォルトアクションの実行を抑止する
+    // ことができる。
+    
+    function ModalDialog_show(event) {
+      this.isActive = true;
+      this.$dialog.slideDown("fast");
+      return false; // デフォルトアクションを抑止する。
+    }
+
+    function ModalDialog_hide(event) {
+      this.isActive = false;
+      this.$dialog.slideUp("fast");
+      return false; // デフォルトアクションを抑止する。
+    }
+
+    return define();  // モジュールの内容をリターンする。
+  });
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-js_framework--s15`
+
+```json
+{
+  "id": "ui-framework-js_framework--s15",
+  "title": "ウィジェットの実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ウィジェットの実装例",
+      "hints": [
+        "ModalDialog",
+        "Widget",
+        "widgets()",
+        "モーダルダイアログ実装",
+        "ウィジェット定義",
+        "イベントハンドラ登録",
+        "コンストラクタ初期化順序",
+        "define()",
+        "widgetType",
+        "beforeSubmit.nablarch",
+        "nablarch_submit",
+        "instanceof",
+        "テンプレートファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ウィジェットの実装例\n\nモーダルダイアログウィジェットの実装サンプルに基づく実装ルール。\n\n### モジュール依存関係の定義\n\n- モジュールパスは `(コンテキストルート)/js/` からの相対パスを指定する\n- `./` で始まるパスはソースファイルからの相対パスとみなされる\n- パスの先頭に `text!` を指定した場合、そのファイルはJavaScriptとして評価されず、ファイル内容を文字列として読み込む\n\n### モジュール定義を行う関数パターン\n\nモジュールの初期化を行う関数を冒頭に定義し、この関数の最後で呼び出す。コードを冒頭に記述することで、モジュールの内容を把握しやすくなる。\n\n### マーカーCSSとウィジェット識別子の命名規則\n\n- マーカーCSSの命名: `(プロジェクト名)_(ウィジェット名)`\n- `widgetType` はマーカーCSSと同じ `(PJ名)_(ウィジェット名)` とする\n\n### プロトタイプ定義\n\n- プロトタイプに `constructor: WidgetClass` を明示的に指定すること。`instanceof` 演算子を正常に動作させるために必要。\n\n### イベント定義の4つの書式\n\n```\n1. \"(イベント名)\" : handler          // this.$node 上のイベント\n2. \"(セレクタ式) (イベント名)\" : handler  // event delegation\n3. \"(コンテキストノード) (イベント名)\" : handler\n4. \"(コンテキストノード) (セレクタ式) (イベント名)\" : handler\n```\n\n- コンテキストノードには `$` で始まるプロパティ名または `\"document\"` を指定する\n- ハンドラに文字列を指定した場合、そのウィジェットの同名メソッドを呼び出す\n- ハンドラに関数を指定した場合、そのウィジェットを `bind()` したものが呼び出される\n\n> **重要**: `\"document beforeSubmit\"` イベントで使用されるカスタムイベントの実際の名称は `beforeSubmit.nablarch` である。このイベントは `nablarch/ui/event` の中で定義されており、グローバル関数 `nablarch_submit()` によってサブミットが行われる直前に呼ばれる。サブミット抑止ロジックを実装する際は、このイベントの発火元と定義場所を把握しておく必要がある。\n\n### コンストラクタ実装上の注意\n\n> **重要**: ノードプロパティの初期化は `Widget.call(this, element)` より前に行う必要がある。\n\n- JavaScriptでは親クラスのコンストラクタは自動では呼ばれないため、明示的に `Widget.call(this, element)` を呼び出すこと\n- ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること\n\n### イベントハンドラの戻り値\n\n- `false` を明示的にリターンすることで、イベントのプロパゲーションとデフォルトアクションを抑止できる\n\n### 実装例（ModalDialog）\n\n```javascript\ndefine([\n  \"jquery\"\n, \"nablarch/ui/Widget\"\n, \"text!./ModalDialog.template\"\n, \"nablarch/ui/event\"\n, \"sugar\"\n],\nfunction($, Widget, template) { \"use strict\";\n  // モジュールの初期化を行う関数を冒頭に定義し、最後で呼び出す\n  function define() {\n    $(function() {\n      $(\".sample_ModalDialog.-content\").widgets(ModalDialog);\n    });\n    return ModalDialog;\n  }\n\n  ModalDialog.prototype = Object.merge(new Widget(), {\n    constructor : ModalDialog   // instanceof 演算子を正常に動作させるために必要\n  , $dialog   : null\n  , contentId : null\n  , isActive  : null\n  , show : ModalDialog_show\n  , hide : ModalDialog_hide\n  });\n\n  ModalDialog.event = {\n    \"click\" : \"show\"\n  , \"$dialog button.close click\" : \"hide\"\n  // document beforeSubmit は beforeSubmit.nablarch イベント(nablarch/ui/event で定義)\n  // グローバル関数 nablarch_submit() がサブミット直前に発火する\n  , \"document beforeSubmit\" : function() { return !isActive }\n  };\n\n  ModalDialog.widgetType = \"sample_ModalDialog\";\n\n  function ModalDialog(element, option) {\n    // ノードプロパティの初期化（Widget.call より先に行うこと）\n    this.contentId = option.content;\n    this.isActive  = false;\n    // テンプレートファイルを使用してノード内容を初期化（後でカスタマイズしやすくするため）\n    this.$dialog   = $(template).css({\n                       display   : \"none\"\n                     , position  : \"absolute\"\n                     , \"z-index\" : \"5\"\n                     }).appendTo(document);\n    // 親クラスコンストラクタの明示的呼び出し\n    Widget.call(this, element);\n    this.$dialog.find(\"div.content\").append(\"#\" + contentId);\n  }\n\n  function ModalDialog_show(event) {\n    this.isActive = true;\n    this.$dialog.slideDown(\"fast\");\n    return false;\n  }\n\n  function ModalDialog_hide(event) {\n    this.isActive = false;\n    this.$dialog.slideUp(\"fast\");\n    return false;\n  }\n\n  return define();\n});\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

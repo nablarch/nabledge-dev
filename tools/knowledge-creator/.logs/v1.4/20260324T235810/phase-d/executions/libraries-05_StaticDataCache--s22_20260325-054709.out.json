@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s22",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (ExampleDataをロードするクラス)",
+      "description": "The warning comment block at the top of the ExampleDataLoader code example is entirely omitted. The source contains: '// ******** 注意 ******** // 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。// 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。' This is decision-necessary information: an AI answering questions based on this section would otherwise incorrectly instruct application programmers to implement framework-level code.",
+      "source_evidence": "ExampleDataLoaderクラス冒頭コメント: '下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。'"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 (静的データの再読み込み — 実装例)",
+      "description": "The warning comment block at the top of the StaticDataUseExample code example is entirely omitted. The source contains: '// ******** 注意 ******** // 下記のコードはプロジェクトのアーキテクトが作成するものである。// 通常、各アプリケーション・プログラマはこのような実装を行わない。' This is decision-necessary information: it clarifies that this refresh pattern is architect-level code and individual programmers do not implement it.",
+      "source_evidence": "StaticDataUseExampleクラス冒頭コメント: '下記のコードはプロジェクトのアーキテクトが作成するものである。通常、各アプリケーション・プログラマはこのような実装を行わない。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (index hints)",
+      "description": "`AppDbConnection` is used in the code example (as the connection parameter type in the execute method) but is not included in the hints array for s2.",
+      "source_evidence": "public List<ExampleData> execute(AppDbConnection connection)"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (ListSearchInfoクラス) — code example for W11AC01SearchForm",
+      "description": "The source includes a constructor `W11AC01SearchForm(Map<String, Object> params)` that calls `setPageNumber((Integer) params.get(\"pageNumber\"))`, showing the required pattern for extracting pageNumber from request params. This constructor implementation is entirely omitted from the knowledge file's code example.",
+      "source_evidence": "Source code block under ListSearchInfoクラス: `public W11AC01SearchForm(Map<String, Object> params) { setPageNumber((Integer) params.get(\"pageNumber\")); }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (ListSearchInfoクラス) — action code snippet",
+      "description": "The source's full action class example includes `ctx.setRequestScopedVar(\"searchResult\", searchResult)` with the comment '// 検索結果をリクエストスコープに設定'. This step (setting search results to request scope for JSP rendering) is missing from the knowledge file's action code snippet.",
+      "source_evidence": "Source W11AC01Action.doRW11AC0102: `ctx.setRequestScopedVar(\"searchResult\", searchResult);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 (ListSearchInfoクラス) — hints array",
+      "description": "The code example in s5 uses validation annotations @PropertyName, @Required, @NumberRange, @Digits on setPageNumber, but none of these annotation names are present in the hints array.",
+      "source_evidence": "Source code: `@PropertyName(\"ページ番号\") @Required @NumberRange(max = 10, min = 1) @Digits(integer = 2) public void setPageNumber(...)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 (構成) — hints array",
+      "description": "The tag `table` is listed in the タグファイル responsibility table in the source, but is absent from s3's hints array.",
+      "source_evidence": "Source タグファイル table row: `table | テーブルを出力するタグ。`"
+    }
+  ]
+}

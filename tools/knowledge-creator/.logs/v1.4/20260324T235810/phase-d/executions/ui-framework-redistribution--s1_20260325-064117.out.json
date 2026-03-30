@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-redistribution--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: 画面設計担当者向けワークスペースの取得 section",
+      "description": "The entire section on obtaining the screen design workspace is missing. This includes: the instruction to checkout the ui_demo/ directory, the directory structure showing where to checkout from, and the note to refer to JSP/HTML作成ガイド for usage instructions.",
+      "source_evidence": "画面設計担当者向けワークスペースは、前節で作成したリポジトリの ui_demo/ ディレクトリをローカルディスクの任意の位置にチェックアウトする。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: 開発担当者向けワークスペースの展開 section",
+      "description": "The entire section on deploying the developer workspace is missing. This includes: the instruction to checkout the tutorial_project/ directory, the full directory structure, the Eclipse wtptool note (ui_plugins/tool/wtptoolをantで実行すると、ui_plugins配下のjsp, tagファイルの入力補完や構文チェックが有効になる), and critically, the warning that main/web/include/js_include.jsp must be switched to production mode before deploying to the developer workspace (because dynamic loading/XHR is blocked in request unit tests, causing JavaScript to not work).",
+      "source_evidence": "警告: リクエスト単体テストでhtmlを確認したとき動的読み込み(XHR)が許可されず、JavaScriptが動作しないため、開発担当者向けワークスペースに展開する前には main/web/include/js_include.jsp を確認し、本番用に切り替えること。(minifyされたjsファイルを読み込むようにする。)"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: Introduction / document overview",
+      "description": "The introduction explaining the three usage types is missing: (1) 画面設計担当者向けワークスペース for external design phase, (2) 開発担当者向けワークスペース for PG/UT phase, (3) UIデモ実行用アーカイブ for UI demos including sending to clients who cannot access the development repository. This context is necessary for users to understand which workspace type to use.",
+      "source_evidence": "開発基盤の利用形態は、その目的によって以下の3つにわかれる。1.画面設計担当者向けワークスペース / 2.開発担当者向けワークスペース / 3.UIデモ実行用アーカイブ"
+    }
+  ]
+}

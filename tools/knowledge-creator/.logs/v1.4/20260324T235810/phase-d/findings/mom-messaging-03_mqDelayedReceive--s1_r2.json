@@ -1,0 +1,19 @@
+{
+  "file_id": "mom-messaging-03_mqDelayedReceive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — フォーマット定義ファイル code block",
+      "description": "Inline comments were stripped from the format definition file example. The source includes property-level comments (e.g., `# 文字列型フィールドの文字エンコーディング`, `# 各レコードの長さ`, `# 固定長`) that explain what each directive does, and field-level comments (e.g., `# ログインID`, `# 漢字氏名`) that provide Japanese labels for each field. These carry semantic information useful for understanding the configuration.",
+      "source_evidence": "text-encoding:    \"MS932\" # 文字列型フィールドの文字エンコーディング\nrecord-length:    420     # 各レコードの長さ\nfile-type:        \"Fixed\" # 固定長\n...\n1   loginId                     X(20)       # ログインID\n21  kanjiName                   N(100)      # 漢字氏名"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning S9",
+      "description": "The automated warning 'Section count 5 < source headings 10' is a false positive. The source contains 5 h2-level sections (アプリケーション開発者が実装する成果物, フォーマット定義ファイル, 一時テーブルの定義, Formクラス, SQLファイル) plus 1 h3-level sub-section (実際のテーブル定義の例) that is correctly merged into s3. The knowledge file's 5 sections (s1–s5) map accurately to the 5 h2 sections; no over-consolidation occurred."
+    }
+  ]
+}

@@ -1,0 +1,813 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `mom-messaging-messaging_request_reply--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `processing-pattern`
+- Category: `mom-messaging`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+.. include:: ../api/link.rst
+
+====================================================
+MOM同期応答メッセージング実行制御基盤
+====================================================
+本節で解説する :doc:`messaging_request_reply` では、
+外部から送信された要求電文中のリクエストIDをもとに、実行する業務アプリケーションを決定し、
+その処理結果をもとに応答電文を作成して送信する制御基盤を提供する。
+
+オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。
+
+なお、電文の送受信処理の詳細については、
+:doc:`../core_library/enterprise_messaging_mom` の項を参照すること。
+
+++++++++++++++++
+
+----------------
+基本構造
+----------------
+:doc:`messaging_request_reply` の構造は、前半の **プロセス制御部分** (メインスレッド)と
+後半の **リクエストスレッド** の2つに大きく分かれる。
+
+**プロセス制御部分** は、 Javaコマンドから :doc:`../handler/Main` を実行することによって開始され、
+`リポジトリ`_ の初期化処理の中でハンドラキューとデータリーダ(:doc:`../reader/FwHeaderReader`)を生成する。
+初期化処理完了後、ハンドラキュー上のハンドラを順次実行し、 :doc:`../handler/MultiThreadExecutionHandler`
+でリクエストスレッドを作成した後、その完了を待機する。
+
+**リクエストスレッド** では、メインスレッド側で作成したデータリーダを使用し、受信キュー上の要求電文を待機する。
+要求電文を受信したスレッドでは、まず、要求電文中の :ref:`フレームワーク制御ヘッダ<fw_header>` 中の
+**リクエストIDヘッダー** を読込み、その値に対応した業務処理を実装する
+:doc:`業務アクションハンドラ<../handler/MessagingAction>` を生成する。
+
+業務アクションハンドラでは、要求電文の内容をもとに業務処理を実行し、その処理結果から
+応答電文オブジェクトを作成してリターンする。
+リターンされた応答電文オブジェクトは、 :doc:`../handler/MessageReplyHandler` によって要求元に送信される。
+応答電文を送信した(正確にはローカル送信キューへのPUTが完了した)後、 
+:doc:`../handler/RequestThreadLoopHandler` により最初の要求電文待機処理に戻る。
+以降、同様の処理を繰り返す。
+
+  .. note::
+     :doc:`messaging` では、各リクエストスレッド上のループ処理を行うために、
+     :doc:`../handler/RequestThreadLoopHandler` を使用する。
+
+  .. note::
+    :doc:`batch` では、業務アクションハンドラがデータリーダを作成するが、
+    :doc:`messaging` では `リポジトリ`_ で初期化する。
+
++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+業務アクションハンドラはFWが提供するテンプレートクラスを継承して作成する。
+詳細は以下のドキュメントを参照すること。
+
+  - :doc:`../handler/MessagingAction` 
+
+++++++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`messaging_request_reply` の標準ハンドラ構成と、その上で発生しうる主要な処理フローを表したものである。
+
+.. _flow-table:
+  
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  | 区分                   | 種別       | 処理フロー名           | 概要                                      | 機能                    |
+  +========================+============+========================+===========================================+=========================+
+  | プロセス起動制御       | 正常フロー | 正常起動               | Javaコマンドからプロセスを起動し、        | .. _launch:             |
+  |                        |            |                        | リクエストスレッドを初期化する。          |                         |
+  |                        |            |                        | 各スレッドは受信キュー上で電文を待機する。| `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | 重複起動エラー         | プロセス起動時、既に同一プロセスが        | .. _duplaunch:          |
+  |                        |            |                        | 起動していた場合は異常終了する。          |                         |
+  |                        |            |                        |                                           | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  | リクエストスレッド内   | 正常フロー | 正常受信・正常応答     | 各リクエストスレッドは、受信電文の受付後、| .. _normalreply:        |
+  | 制御                   |            |                        | 電文中のリクエストIDヘッダをもとに実行する|                         |
+  |                        |            |                        | 業務処理を決定し処理を移譲する。          |                         |
+  |                        |            |                        | 業務処理結果の内容をもとに応答電文を      |                         |
+  |                        |            |                        | 構築し送信する。                          | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 再送応答               | 要求電文の再送要求フラグヘッダが設定されて| .. _resending:          |
+  |                        |            |                        | いた場合、送信済み電文テーブルの内容を参照|                         |
+  |                        |            |                        | し、該当する送信済み電文が存在した場合は、|                         |
+  |                        |            |                        | その内容をもとに応答を作成して送信する。  | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 受信待機タイムアウト   | 各リクエストスレッドは、受信キューでの    | .. _readtimeout:        |
+  |                        |            |                        | 待機状態が一定時間異常継続した場合は、    |                         |
+  |                        |            |                        | プロセス管理テーブルの状態を確認するために|                         |
+  |                        |            |                        | 待機を解除してスレッドループの先頭に戻る。| `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 業務処理エラー応答     | 業務処理でエラーが発生した場合、          | .. _errorreply:         |
+  |                        |            |                        | 業務トランザクションをロールバックし、    |                         |
+  |                        |            |                        | 業務側で作成した応答電文オブジェクトを    |                         |
+  |                        |            |                        | もとに電文を作成して送信する。            | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 認可エラー             | 要求電文中のリクエストID/ユーザIDヘッダの | .. _unauthorized:       |
+  |                        |            |                        | 値をもとに認可チェックを行い、            |                         |
+  |                        |            |                        | 権限が無い場合は、エラー応答を送信する。  | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 開閉局エラー           | 要求電文中のリクエストIDに対する業務機能  | .. _notonservice:       |
+  |                        |            |                        | が閉局中であった場合は、                  |                         |
+  |                        |            |                        | エラー応答を送信する。                    | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | DB/MQ接続エラー        | DB/MQに対する接続に失敗した場合は         | .. _connectionerror:    |
+  |                        |            |                        | 当該の要求電文に対するエラー応答を送信    |                         |
+  |                        |            |                        | した後、再接続処理を行う。                | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  |  プロセス停止制御      | 正常フロー | プロセス正常停止       | プロセス管理テーブルのフラグを変更する    | .. _termination:        |
+  |                        |            |                        | ことで、リクエストスレッドでの新規処理    |                         |
+  |                        |            |                        | 受付を停止する。その後、全スレッドの      | `フローを表示`_         |
+  |                        |            |                        | 終了を待ってプロセスを正常終了させる。    |                         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | プロセス異常停止       | プロセスの継続に影響する致命的なエラーが  | .. _abort:              |
+  |                        |            |                        | 発生した場合は、リクエストスレッドでの    |                         |
+  |                        |            |                        | 新規処理の受付を停止した上で、全スレッド  | `フローを表示`_         |
+  |                        |            |                        | の終了を待ってプロセスを異常終了させる。  |                         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | DB/MQ接続リトライ失敗  | DB/MQの接続リトライが上限回数に達しても   | .. _retryerror:         |
+  |                        |            |                        | 成功しなかった場合は、プロセスを異常停止  |                         |
+  |                        |            |                        | させる。                                  | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+ 
+.. raw:: html
+   :file: ../Handler.js
+
+.. _フローを表示:
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'messaging'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "MultiThreadExecutionHandler"
+      , "RetryHandler"
+      , "MessagingContextHandler"
+      , "DbConnectionManagementHandler"
+      , "RequestThreadLoopHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_request"
+      , "ProcessStopHandler"
+      , "MessageReplyHandler"
+      , "DataReadHandler_messaging"
+      , "PermissionCheckHandler"
+      , "RequestPathJavaPackageMapping"
+      , "ServiceAvailabilityCheckHandler"
+      , "TransactionManagementHandler"
+      , "MessageResendHandler"
+      , "MessagingAction"
+      ]
+
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["Main",                          "inbound"]
+        , ["ThreadContextHandler_main",     "inbound"]
+        , ["MultiThreadExecutionHandler",   "inbound"]
+        , ["DbConnectionManagementHandler", "inbound", "ここで取得したDB接続を、以降の処理で使いまわす。"]
+        , ["MessagingContextHandler",       "inbound", "ここで取得したMQ接続を、以降の処理で使いまわす。"]
+        , ["RequestThreadLoopHandler",      "inbound", "このハンドラ以降の処理をリクエスト毎にループする。"]
+        , ["DataReadHandler_messaging",     "inbound", "各リクエストスレッドはここで受信キュー上の要求電文を待機する。"
+                                                     + "以降は、要求電文の受信→業務処理の実行→応答電文の送信"
+                                                     + "を繰り返す。"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["StatusCodeConvertHandler",     "outbound"]
+        , ["Main",                         "outbound", "異常終了"]
+        ],
+
+        // 電文正常応答
+        normalreply: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessagingAction",               "inbound"]
+        , ["MessagingAction",               "outbound"]
+        , ["MessageResendHandler",          "outbound"]
+        , ["TransactionManagementHandler",  "outbound"]
+        , ["MessageReplyHandler",           "outbound"]
+        , ["RequestThreadLoopHandler",      "outbound", "→① へ"]
+        ],
+
+
+        // 再送応答
+        resending: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound", "再送応答時、ディスパッチされた業務アクションは実行されない。"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessageResendHandler",          "inbound"]
+        , ["TransactionManagementHandler",  "outbound"]
+        , ["MessageReplyHandler",           "outbound", "再送応答"]
+        , ["RequestThreadLoopHandler",      "outbound", "→① へ"]
+        ],
+
+        // 電文受信タイムアウト
+        readtimeout: [
+          ["DataReadHandler_messaging",     "inbound"]
+        , ["DataReadHandler_messaging",     "outbound","タイムアウト間隔を経過してもメッセージを受信できなかった場合、"
+                                                     + "DataReader.NoMoreRecord をリターンする。"]
+        , ["MessageReplyHandler",           "outbound","DataRecord.NoMoreRecord が返された場合は何もせずにリターンする。"]
+        , ["RequestThreadLoopHandler",      "outbound","→⑤ へ"]
+        , ["RequestThreadLoopHandler",      "inbound"]
+        , ["ProcessStopHandler",            "inbound", "プロセス停止フラグ確認後、再び① にもどる。"]
+        ],
+
+
+        // 電文エラー応答
+        errorreply: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessagingAction",               "inbound"]
+        , ["MessagingAction",               "error",  "業務処理をエラー終了させる場合は、実行時例外を送出する。"
+                                                    + "これにより、トランザクションがロールバックされ、障害ログが出力される。"]
+        , ["TransactionManagementHandler",  "error", "業務アクションをコールバックし、その処理結果(エラー応答電文オブジェクト)を送出する。"
+                                                    +"また、この際、起因例外をネストさせる。"]
+        , ["TransactionManagementHandler",  "callback"]
+        , ["MessagingAction",               "callback"]
+        , ["MessageReplyHandler",           "error", "業務アクションが作成したエラー応答電文オブジェクトを送信した後、起因例外を再送出する。"]
+        , ["RequestThreadLoopHandler",      "error", "再送出された起因例外をここで障害ログとして出力した後、→① へ"]
+        ],　
+
+
+        // 認可エラー応答
+        unauthorized: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["PermissionCheckHandler",        "inbound", "認可エラー(Result.Forbidden/ステータスコード:403)を送出する。"]
+        , ["MessageReplyHandler",           "error",   "業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。"]
+        , ["RequestThreadLoopHandler",      "error",   "再送出された起因例外をここで障害ログとして出力した後、→① へ"]
+        ],　
+
+
+        // 閉局エラー応答
+        notonservice: [
+          ["RequestThreadLoopHandler",        "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",    "inbound"]
+        , ["DataReadHandler_messaging",       "inbound"]
+        , ["ServiceAvailabilityCheckHandler", "inbound", "閉局エラー(Result.ServiceUnavailable/ステータスコード:503)を送出する。"]
+        , ["MessageReplyHandler",             "error",   "業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。"]
+        , ["RequestThreadLoopHandler",        "error",   "INFOログを出力し、一定時間waitした後、→① へ"]
+        ],　
+
+
+        // DB/MQ接続エラー
+        connectionerror: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["MessagingAction",               "inbound",  "リクエスト処理実行中にDBもしくはMQ接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error"]
+        , ["MessagingContextHandler",       "inbound", "MQ再接続"]
+        , ["DbConnectionManagementHandler", "inbound", "DB再接続"]
+        ],　
+
+
+
+        // プロセス正常停止
+        termination: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound",  "ここで、リクエストIDの値が起動引数-requestPathで指定された値に戻される。"]
+        , ["ProcessStopHandler",            "inbound" ]
+        , ["RequestThreadLoopHandler",      "error",  "ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、"
+                                                    + "処理結果オブジェクトをリターンする。(ステータスコード:200)"]
+        , ["MultiThreadExecutionHandler",   "outbound"]
+        , ["StatusCodeConvertHandler",      "outbound", "ステータスコード:200 → 終了コード:0"]
+        , ["Main",                          "outbound", "正常終了"]
+        ],
+
+
+        // プロセス異常終了
+        abort: [
+          ["MessagingAction",               "inbound",  "ここでリクエスト処理実行中に致命的なエラー(VM系のエラーや、"
+                                                      + "ProcessAbnormalEnd)が発生したとする。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "致命的エラーはここで例外を際送出し、リクエストスレッドを停止する。"]
+        , ["MultiThreadExecutionHandler",   "error"]
+        , ["GlobalErrorHandler",            "error"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        ],
+
+        // DB/MQ接続エラー
+        retryerror: [
+          ["MessagingAction",               "inbound",  "リクエスト処理実行中にDBもしくはMQ接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error", "リトライ回数が上限値を超過した場合は、例外を再送出し、リクエストスレッドを停止する。"]
+        , ["MultiThreadExecutionHandler",   "error"]
+        , ["GlobalErrorHandler",            "error"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+
+
+
+
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 
+- 基本構造
+- 
+- 業務アクションハンドラの実装
+- 
+- 標準ハンドラ構成と主要処理フロー
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/mom-messaging-messaging_request_reply--s1/filename.png)` |
+
+Office attachments → reference in `assets/mom-messaging-messaging_request_reply--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `mom-messaging-messaging_request_reply--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

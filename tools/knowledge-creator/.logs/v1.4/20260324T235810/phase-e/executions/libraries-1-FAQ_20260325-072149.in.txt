@@ -1,0 +1,105 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 / index[0].hints",
+      "description": "The class `ValidationManager` is referenced in the source stack trace (`nablarch.core.validation.ValidationManager.validateAndConvertProperty`) but is absent from both the section content and the hints array. All other PascalCase class names from the stack trace (NumberConvertorSupport, SingleValidationTester) are included in hints.",
+      "source_evidence": "at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+数値型項目の場合の桁数精査の方法を教えて下さい
+===========================================================================
+.. admonition:: question
+
+    数値型のプロパティに桁数精査を表す *Lengthアノテーション* を付加しましたが、桁数精査が行われていないようです。
+    数値型の場合、桁数精査はどのように実施するのでしょうか？
+
+.. admonition:: answer
+
+    数値型項目の桁数精査は、 *Lengthアノテーション* ではなく、 *Digitsアノテーション* を使用する必要があります。
+    *Digitsアノテーション* では、数値型特有の整数部桁数と小数部桁数それぞれの桁数精査が行える仕様となっています。
+
+    なお、数値型項目に *Digitsアノテーション* を付加しなかった場合、クラス単体テストで下記のようなエラーが発生します。
+
+    .. code-block:: java
+
+        java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]
+            at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)
+            at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)
+            ～ 省略 ～
+        Caused by: java.lang.IllegalArgumentException: Must specify @Digits annotation.property = failedCount
+            at nablarch.core.validation.convertor.NumberConvertorSupport.isConvertible(NumberConvertorSupport.java:127)
+            at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)
+            ～ 省略 ～
+
+    詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch Application Framework解説書]** -> **[NAF基盤ライブラリ]** -> **[入力値のバリデーション]** -> **[基本バリデータ・コンバータ]** -> **[コンバータ]**
+    * **[Nablarch Application Framework解説書]** -> **[NAF基盤ライブラリ]** -> **[入力値のバリデーション]** -> **[バリデーション機能の基本的な使用方法]** -> **[値の変換]**
+    * DigitsアノテーションのJavadoc
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-1-FAQ",
+  "title": "数値型項目の場合の桁数精査の方法を教えて下さい",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "数値型項目の桁数精査方法",
+      "hints": [
+        "@Digits",
+        "@Length",
+        "NumberConvertorSupport",
+        "SingleValidationTester",
+        "桁数精査",
+        "数値型バリデーション",
+        "整数部桁数",
+        "小数部桁数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "数値型項目の桁数精査には `@Length` アノテーションではなく `@Digits` アノテーションを使用すること。`@Digits` アノテーションは整数部桁数と小数部桁数それぞれの桁数精査が可能。\n\n> **重要**: 数値型項目に `@Digits` アノテーションを付加しなかった場合、クラス単体テストで以下のエラーが発生する。\n\n```\nCaused by: java.lang.IllegalArgumentException: Must specify @Digits annotation.property = failedCount\n    at nablarch.core.validation.convertor.NumberConvertorSupport.isConvertible(NumberConvertorSupport.java:127)\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

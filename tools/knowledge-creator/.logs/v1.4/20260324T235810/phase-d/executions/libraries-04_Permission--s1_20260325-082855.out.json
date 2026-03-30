@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Permission--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The 構成 section (s4) contains >= 2000 chars of plain text and has four distinct h3-level sub-sections in the source (概念モデル, クラス図, シーケンス図, テーブル定義), but the knowledge file consolidates all of them into a single section. Per V3 rules, this warrants splitting.",
+      "source_evidence": "Source h3 headings under 構成: 概念モデル, クラス図 (各クラスの責務 → インタフェース定義, クラス定義), シーケンス図, テーブル定義 (グループ, システムアカウント, グループシステムアカウント, 認可単位, 認可単位リクエスト, グループ権限, システムアカウント権限, テーブル定義の例)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "Table column names (first column of each table definition) are not represented in s4 hints. Missing: グループID, ユーザID, ユーザIDロック, 認可単位ID, リクエストID.",
+      "source_evidence": "Source table definitions list columns: グループID (グループテーブル), ユーザID / ユーザIDロック / 有効日(From) / 有効日(To) (システムアカウント), 認可単位ID (認可単位), リクエストID (認可単位リクエスト)"
+    }
+  ]
+}

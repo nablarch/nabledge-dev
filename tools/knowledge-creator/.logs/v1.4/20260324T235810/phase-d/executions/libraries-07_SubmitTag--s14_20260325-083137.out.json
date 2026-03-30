@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_SubmitTag--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — データレコード（CSV）のダウンロード方法",
+      "description": "フォーマット定義ファイルの実装例（N11AA001.fmt）が省略されている。DataRecordResponseは「フォーマット定義ファイルを使用してフォーマットされる」と説明されているが、ファイルの構造（file-type, text-encoding, record-separator, field-separator, [header]/[data] レコードタイプ定義）が示されていない。アクションコードで `write(\"header\", ...)` / `write(\"data\", ...)` と呼び出すレコードタイプ名がフォーマット定義ファイルで定義されることが分からず、実装判断に必要な情報が欠けている。",
+      "source_evidence": "フォーマット定義の実装セクションに `file-type: \"Variable\"`, `text-encoding: \"Shift_JIS\"`, `record-separator: \"\\n\"`, `field-separator: \",\"`, `[header]` / `[data]` レコードタイプ定義を含む完全なフォーマットファイル例が記載されている。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — データレコード（CSV）のダウンロード方法 — JSP実装",
+      "description": "DataRecordResponseの使用例（CSVダウンロード）におけるJSP実装例が省略されている。ソースには `<n:downloadSubmit type=\"button\" uri=\"./CsvDataRecord\" name=\"csvDataRecord\" value=\"ダウンロード\" />` が示されており、downloadSubmitタグの属性（type, uri, name, value）の使い方を示す唯一のコード例である。",
+      "source_evidence": "「JSPの実装」セクションに `<n:downloadSubmit type=\"button\" uri=\"./CsvDataRecord\" name=\"csvDataRecord\" value=\"ダウンロード\" />` が記載されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "`downloadSubmit` タグ名がhints配列に含まれていない。同セクションに `downloadButton` と `downloadLink` は含まれているが `downloadSubmit` が欠落しており、ユーザーが「downloadSubmit」で検索した際にこのセクションが選ばれにくくなる。",
+      "source_evidence": "ソースに `<n:downloadSubmit type=\"button\" ...>` のJSP実装例がある。またダウンロードタグ一覧に `WebView_DownloadSubmitTag` が最初に列挙されている。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-delayed_send--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Source h2 'データシートの書き方' contains two h3 subsections (正常系ケースの準備, 異常系ケースの準備), each with substantial content including images and XML code blocks. The combined plain text is well over 2000 characters, yet both subsections are merged into a single knowledge section s3. Per V3 rules, an h2 with >= 2000 chars of plain text that contains h3 subsections should be split.",
+      "source_evidence": "Source has distinct h3 headings '正常系ケースの準備' and '異常系ケースの準備' under 'データシートの書き方', each containing separate configuration guidance and XML examples."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "PascalCase class name 'RequestPathJavaPackageMapping' is missing from s3 hints. This class appears in both the production and test XML configuration examples and is a key component users would search for.",
+      "source_evidence": "Source XML blocks reference 'class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\"' twice (once in 本番用設定, once in テスト用設定)."
+    }
+  ]
+}

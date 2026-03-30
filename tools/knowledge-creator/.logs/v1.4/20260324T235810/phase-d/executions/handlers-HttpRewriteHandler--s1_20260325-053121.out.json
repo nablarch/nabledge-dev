@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-HttpRewriteHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6",
+      "description": "Section s6 contains only \"なし\" (2 characters), well below the 50-character threshold. This appears to be an empty placeholder with no substantive content. The hints (\"HTTPリライトハンドラ\", \"処理終端\") do not correspond to any actual source section between the handler flow and configuration sections.",
+      "source_evidence": "No source section between ハンドラ処理フロー and 設定項目・拡張ポイント that would justify a standalone section."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The composite syntax format for `exports` list entries is not explicitly stated. The conditions format is explicitly documented (`%{(変数種別名):(変数名)} (パターン)`) but the equivalent format for exports entries (left side = target scope variable, right side = value expression, e.g., `%{request:prevUrl} ${header:Referer}`) is missing. Without this, it is unclear how to combine the scope target format with the embedded parameter format into a single exports entry.",
+      "source_evidence": "Source Example 3 shows: `<value>%{request:prevUrl} ${header:Referer}</value>` with explanation \"HTTPリファラヘッダの値をリクエストスコープ変数 prevUrl に設定している\". The composite two-part format (scope target + space + value expression) is only conveyed via this example, which is absent from the knowledge file."
+    }
+  ]
+}

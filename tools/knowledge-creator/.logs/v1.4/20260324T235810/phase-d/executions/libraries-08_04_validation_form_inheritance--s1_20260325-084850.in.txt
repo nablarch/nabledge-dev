@@ -1,0 +1,530 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/08/08_04_validation_form_inheritance.rst`
+- Format: `rst`
+
+```
+
+.. _`validation_form_inheritance_model`:
+
+------------------------------------------------------------------
+Form の継承とバリデーション条件の継承
+------------------------------------------------------------------
+Form が持つプロパティの表示名称は、画面により様々に変化しうる。
+このような場合、 Form を継承してセッタメソッドに設定する @PropertyName アノテーションを設定することで、画面に合わせてプロパティの表示名称を変更できる。
+この際、バリデーションの条件は継承元の Form に指定した条件が引き継がれる。
+
+例えば下記の Form のプロパティ「ユーザ名」を「氏名」と表示したい場合を考える。
+
+.. code-block:: java
+
+    public class UserBase {
+        private String id;
+    
+        private String name;
+    
+        private String remarks;
+    
+        public UserBase(Map<String, Object> params) {
+            id = (String) params.get("id");
+            name = (String) params.get("name");
+            remarks = (String) params.get("remarks");
+        }
+    
+        @PropertyName("ID")
+        @Required
+        @Length(min=8, max=8)
+        public void setId(String id) {
+            this.id = id;
+        }
+    
+        @PropertyName("ユーザ名")
+        @Required
+        @Length(max=10)
+        public void setName(String name) {
+            this.name = name;
+        }
+    
+        @PropertyName("備考")
+        @Length(max=100)
+        public void setRemarks(String remarks) {
+            this.remarks = remarks;
+        }
+
+        // getter は省略
+    }
+
+このような場合、下記のようにUserクラスを継承した、表示用の Form を作成する。
+継承した Form は下記のようになる。
+
+.. code-block:: java
+
+    public class User extends UserBase {
+    
+        public User(Map<String, Object> params) {
+            super(params);
+        }
+    
+        @PropertyName("氏名")
+        public void setName(String name) {
+            super.setName(name);
+        }
+    
+        private static final String[] UPDATE_PARAMS = new String[] { "id", "name", "remarks" };
+        @ValidateFor("insert")
+        public static void validateForUpdate(ValidationContext<UserEntity> context) {
+            ValidationUtil.validate(context, UPDATE_PARAMS);
+        }
+    }
+
+このように、継承した Form では、変更したい表示名称のプロパティのセッタをオーバライドし、変更したい表示名称にあわせて @PropertyName を設定する。
+
+継承したクラスには、通常バリデーションの条件を表す @Required アノテーションや @Length アノテーションは指定しなくてよい。
+この場合、バリデーションにはオーバライドしたメソッドで設定されていたバリデーションの条件が使用される。
+上記例では、 User クラスの setName メソッドに設定された、 @Required アノテーションと @Length アノテーションで指定した条件がバリデーションに使用される。
+
+もしバリデーションの条件も画面に特化して変更したい場合、継承するメソッドで1つ以上バリデーションの条件を表すアノテーションを指定すればよい。
+例えば上記の Form で name 属性の必須入力チェックを外したい場合、下記のように User クラスを実装する。
+
+.. code-block:: java
+
+    public class User extends UserBase {
+    
+        public User(Map<String, Object> params) {
+            super(params);
+        }
+    
+        @PropertyName("氏名")
+        @Length(max=10)
+        public void setName(String name) {
+            super.setName(name);
+        }
+    
+        private static final String[] UPDATE_PARAMS = new String[] { "id", "name", "remarks" };
+        @ValidateFor("insert")
+        public static void validateForUpdate(ValidationContext<UserEntity> context) {
+            ValidationUtil.validate(context, UPDATE_PARAMS);
+        }
+    }
+
+
+なお、コンバータで使用するアノテーションも、バリデーションの条件を表すアノテーション同様に継承される。
+ただし、コンバータで使用するアノテーションは、バリデーションの条件を表すアノテーションとは別に取り扱われるため、
+バリデーションの条件を表すアノテーションを設定した場合でも親クラスに設定した条件がそのまま継承される。
+
+例えば下記 ParentEntity と ChildEntity の組み合わせで、ChildEntityに対するバリデーションでは、 「@Digits(integer=5, fraction=3)」 と
+「@NumberRange(min=100.0, max=20000.0)」が使用される。
+
+.. code-block:: java
+
+    public class ParentEntity {
+        
+        private BigDecimal bdValue;
+        
+        // コンストラクタ省略
+
+        public BigDecimal getBdValue() {
+            return bdValue;
+        }
+        
+        @Digits(integer=5, fraction=3)
+        public void setBdValue(BigDecimal bdValue) {
+            this.bdValue = bdValue;
+        }
+    }
+
+
+.. code-block:: java
+    
+    public class ChildEntity extends ParentEntity {
+    
+        // コンストラクタ省略
+
+        // validation の条件を追加
+        @Override
+        @NumberRange(min=100.0, max=20000.0)
+        public void setBdValue(BigDecimal bdValue) {
+            super.setBdValue(bdValue);
+        }
+    
+        @ValidateFor("validateForSample")
+        public static void validateForSample(ValidationContext<Entity1> context) {
+            ValidationUtil.validate(context, new String[] { "dateValue", "bdValue"});
+        }
+    }
+
+
+.. warning::
+    バリデーションの条件は、アプリケーションにとって重要な意味を持つ。
+    条件を変更すると、継承元のクラスの修正が継承されたクラスに反映されない状態となり、修正漏れのバグの原因になりやすい。
+    継承したクラスでのバリデーション条件の変更は、この問題を意識して慎重に実施すること。
+
+
+.. _`property_display_name_internationalization`:
+
+------------------------------------------------------------------
+国際化したプロパティの表示名称の取得方法
+------------------------------------------------------------------
+:ref:`validation_and_convert` の記述のように、プロパティの表示名称は基本的に @PropertyName アノテーションで指定する。
+しかしこの表示名称の取得方法では、国際化したメッセージが取得できない。
+
+このため、国際化したアプリケーションを構築する際は、  :ref:`message_management` が提供するメッセージとして表示名称を対応する言語ごとに登録する。
+登録した表示名称とプロパティは、下記いずれかの方法で対応付ける。
+
+1. プロパティにつけた @PropertyName アノテーションの messageId 属性に指定した文字列をメッセージIDとして対応付ける。
+2. 「クラス名 ＋ プロパティ名」をメッセージIDとして対応付ける。
+
+それぞれの方法の使用方法を以下に示す。
+
+@PropertyName の messageId 属性を使用する方法
+==================================================================
+メッセージ機能から取得プロパティの表示名称を取得する際に、 @PropertyName アノテーションの value 属性ではなく、 messageId 属性を使用する。
+この属性に指定したメッセージIDを使用して取得した文字列リソースをプロパティの表示名称として使用する。
+
+この方法を使用する際、 :ref:`validation_and_convert` の例で示した Form は下記のように変わる。
+
+.. code-block:: java
+
+  public class User {
+
+      private String id;
+
+      private String name;
+
+      private String remarks;
+
+      public User(Map<String, Object> params) {
+          id = (String) params.get("id");
+          name = (String) params.get("name");
+          remarks = (String) params.get("remarks");
+      }
+
+      @PropertyName(messageId="PROP0001")
+      @Required
+      @Length(min=8, max=8)
+      public void setId(String id) {
+          this.id = id;
+      }
+
+      @PropertyName(messageId="PROP0002")
+      @Required
+      @Length(max=10)
+      public void setName(String name) {
+          this.name = name;
+      }
+
+      @PropertyName(messageId="PROP0003")
+      @Length(max=100)
+      public void setRemarks(String remarks) {
+          this.remarks = remarks;
+      }
+
+      // getterは省略
+  }
+
+このように @PropertyName の messageId 属性を設定し、messageId 属性と対応するメッセージを  :ref:`message_management` が提供する
+メッセージとして登録することで、「氏名は必ず入力してください。」と「You must input name.」のように、メッセージの国際化が実現できる。
+
+例えば @Required 入力チェックエラーメッセージのメッセージIDが MSG00001 である場合、上記ソースコード例の Form の必須入力チェックの
+エラーメッセージを「氏名は必ず入力してください。」と「You must input name.」とする場合、メッセージテーブルに設定するデータは下記のようになる。
+
+.. list-table:: 
+   :widths: 20 20 50
+   :header-rows: 1
+   
+   * - メッセージID
+     - 言語
+     - メッセージ
+   * - MSG00001
+     - ja
+     - {0}は必ず入力してください。
+   * - MSG00001
+     - en
+     - You must input {0}.
+   * - PROP0001
+     - ja
+     - ID
+   * - PROP0001
+     - en
+     - ID
+   * - PROP0002
+     - ja
+     - 氏名
+   * - PROP0002
+     - en
+     - name
+   * - PROP0003
+     - ja
+     - 備考
+   * - PROP0003
+     - en
+     - remarks
+  
+
+
+.. _`validation_use_form_name_as_message_id`:
+
+  
+プロパティ名に対応する表示名称を使用する方法
+==================================================================
+この方法では、"<Form のクラス名>.<プロパティ名>"をメッセージIDとして使用してプロパティの表示名称を取得する。
+この方法を使用する場合、 Form には @PropertyName アノテーションを設定する必要はない。
+
+
+.. code-block:: java
+
+  public class User {
+
+      private String id;
+
+      private String name;
+
+      private String remarks;
+
+      public User(Map<String, Object> params) {
+          id = (String) params.get("id");
+          name = (String) params.get("name");
+          remarks = (String) params.get("remarks");
+      }
+
+      @Required
+      @Length(min=6, max=10)
+      public void setId(String id) {
+          this.id = id;
+      }
+
+      @Required
+      @Length(min=6, max=10)
+      public void setName(String name) {
+          this.name = name;
+      }
+
+      @Length(max=100)
+      public void setRemarks(String remarks) {
+          this.remarks = remarks;
+      }
+
+      // getterは省略
+  }
+
+
+
+例えば　@Required 入力チェックエラーメッセージのメッセージIDが MSG00001 である場合、上記ソースコード例のFormの必須入力チェックの
+エラーメッセージを「氏名は必ず入力してください。」と「You must input name.」とする場合、メッセージテーブルに設定するデータは下記のようになる。
+
+
+.. list-table:: 
+   :widths: 20 20 50
+   :header-rows: 1
+   
+   * - メッセージID
+     - 言語
+     - メッセージ
+   * - MSG00001
+     - ja
+     - {0}は必ず入力してください。
+   * - MSG00001
+     - en
+     - You must input {0}.
+   * - User.id
+     - ja
+     - ID
+   * - User.id
+     - en
+     - ID
+   * - User.name
+     - ja
+     - 氏名
+   * - User.name
+     - en
+     - name
+   * - User.remarks
+     - ja
+     - 備考
+   * - User.remarks
+     - en
+     - remarks
+  
+  
+
+また、この方法を使用する際は下記のように ValidationManager クラスの useFormPropertyNameAsMessageId プロパティに true
+を設定する。
+
+.. code-block:: xml
+
+    <component name="validationManager" class="nablarch.core.validation.ValidationManager">
+        <property name="useFormPropertyNameAsMessageId" value="true"/>
+        <!-- その他のプロパティは省略 -->
+    </component>
+
+上記のように登録、設定することで、 @PropertyName の messageId 属性を設定した場合と同様に
+「氏名は必ず入力してください。」と「You must input name.」のように言語に合わせてエラーメッセージが取得できる。
+
+
+2つの方法の選択基準
+==================================================================
+表示名称を取得する2つの方法には下記のメリット、デメリットが存在する。
+
+1つ目の方法では、 @PropertyName アノテーションで明示的にメッセージIDを指定するため、メッセージIDの管理が容易になるメリットがあるが、
+どのプロパティにどのメッセージIDを設定するかを管理する方法が必要となり、自動生成によるエンティティの生成が難しいデメリットがある。
+
+2つ目の方法は、エンティティにアノテーションを指定する必要がなくなり、自動生成ツールが生成するエンティティのカスタマイズが不要になるメリットがある反面、
+「クラス名＋プロパティ名」という通常のメッセージIDとは異なるID体系のメッセージを登録しなければならないデメリットがある。
+
+通常のアプリケーションでは、エンティティ自動生成のメリットが生産性と品質に大きく寄与することを考慮して2つ目の方法を選択する。
+1つ目の方法は顧客指定によりメッセージIDの体系に制約があり、2つ目の方法が使用できない場合のみ選択すること。
+
+```
+
+## Knowledge File
+
+- ID: `libraries-08_04_validation_form_inheritance--s1`
+
+```json
+{
+  "id": "libraries-08_04_validation_form_inheritance--s1",
+  "title": "Form の継承とバリデーション条件の継承",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Form の継承とバリデーション条件の継承",
+      "hints": [
+        "UserBase",
+        "User",
+        "ParentEntity",
+        "ChildEntity",
+        "ValidationContext",
+        "ValidationUtil",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "@Digits",
+        "@NumberRange",
+        "Formの継承",
+        "バリデーション条件の継承",
+        "表示名称の変更",
+        "コンバータアノテーションの継承"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "国際化したプロパティの表示名称の取得方法",
+      "hints": [
+        "ValidationManager",
+        "@PropertyName",
+        "useFormPropertyNameAsMessageId",
+        "messageId",
+        "国際化",
+        "プロパティ表示名称",
+        "メッセージID",
+        "言語ごとのメッセージ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Form の継承とバリデーション条件の継承\n\nFormを継承してセッタメソッドの`@PropertyName`アノテーションをオーバライドすることで、画面に合わせてプロパティの表示名称を変更できる。この際、バリデーション条件は継承元Formに指定した条件が引き継がれる。\n\n**バリデーション条件の上書きルール**: 継承クラスのオーバライドメソッドに1つ以上のバリデーション条件アノテーションを指定した場合、そのメソッドのバリデーション条件は継承元の条件から新たに指定した条件に置き換わる（必須チェックを外したい場合などに使用）。\n\n**コンバータアノテーションの扱い**: コンバータアノテーション（例: `@Digits`）はバリデーション条件アノテーションとは別に取り扱われる。バリデーション条件アノテーションをオーバライドメソッドに指定した場合でも、親クラスのコンバータアノテーションはそのまま継承される。\n\n```java\n// 継承元Form\npublic class UserBase {\n    @PropertyName(\"ユーザ名\")\n    @Required\n    @Length(max=10)\n    public void setName(String name) { this.name = name; }\n}\n\n// 表示名のみ変更（@Required, @Lengthは継承元から引き継がれる）\npublic class User extends UserBase {\n    @PropertyName(\"氏名\")\n    public void setName(String name) { super.setName(name); }\n}\n\n// バリデーション条件も変更（@Requiredを外す）\npublic class User extends UserBase {\n    @PropertyName(\"氏名\")\n    @Length(max=10)  // 1つ以上のバリデーションアノテーションを指定→継承元条件を置換\n    public void setName(String name) { super.setName(name); }\n}\n```\n\nコンバータアノテーション継承の例（`ChildEntity`に対するバリデーションでは`@Digits(integer=5, fraction=3)`と`@NumberRange(min=100.0, max=20000.0)`の両方が使用される）:\n\n```java\n// 親クラス\npublic class ParentEntity {\n    @Digits(integer=5, fraction=3)  // コンバータアノテーション\n    public void setBdValue(BigDecimal bdValue) { this.bdValue = bdValue; }\n}\n\n// 子クラス\npublic class ChildEntity extends ParentEntity {\n    @Override\n    @NumberRange(min=100.0, max=20000.0)  // バリデーション条件を追加\n    public void setBdValue(BigDecimal bdValue) { super.setBdValue(bdValue); }\n    // → @Digits（コンバータ）は親から継承、@NumberRange（バリデーション）が追加される\n}\n```\n\n> **警告**: バリデーション条件の変更は継承元クラスの修正が継承クラスに反映されない状態となり、修正漏れバグの原因になりやすい。継承クラスでのバリデーション条件変更はこの問題を意識して慎重に実施すること。",
+    "s2": "## 国際化したプロパティの表示名称の取得方法\n\n`@PropertyName`アノテーションのvalue属性では国際化メッセージを取得できない。国際化が必要な場合は、:ref:`message_management` が提供するメッセージとして表示名称を言語ごとに登録し、以下のいずれかの方法でプロパティと対応付ける。\n\n### 方法1: @PropertyName の messageId 属性を使用する\n\n`@PropertyName`の`messageId`属性にメッセージIDを指定し、そのIDに対応するメッセージを言語ごとに:ref:`message_management`に登録する。\n\n```java\n@PropertyName(messageId=\"PROP0002\")\n@Required\n@Length(max=10)\npublic void setName(String name) { this.name = name; }\n```\n\nメッセージテーブル例：\n\n| メッセージID | 言語 | メッセージ |\n|---|---|---|\n| MSG00001 | ja | {0}は必ず入力してください。 |\n| MSG00001 | en | You must input {0}. |\n| PROP0002 | ja | 氏名 |\n| PROP0002 | en | name |\n\n### 方法2: クラス名+プロパティ名をメッセージIDとして使用する\n\n`\"<Formのクラス名>.<プロパティ名>\"`（例: `User.name`）をメッセージIDとして使用する。Formに`@PropertyName`アノテーションは不要。\n\n```java\n@Required\n@Length(min=6, max=10)\npublic void setName(String name) { this.name = name; }\n```\n\nメッセージテーブル例：\n\n| メッセージID | 言語 | メッセージ |\n|---|---|---|\n| User.name | ja | 氏名 |\n| User.name | en | name |\n\n`ValidationManager`の`useFormPropertyNameAsMessageId`プロパティに`true`を設定する：\n\n```xml\n<component name=\"validationManager\" class=\"nablarch.core.validation.ValidationManager\">\n    <property name=\"useFormPropertyNameAsMessageId\" value=\"true\"/>\n</component>\n```\n\n### 2つの方法の選択基準\n\n**通常は方法2を選択すること**。エンティティ自動生成のメリットが生産性と品質に大きく寄与するため。\n\n方法1は、顧客指定によりメッセージIDの体系に制約があり方法2が使用できない場合のみ選択する。\n\n| | 方法1（messageId属性） | 方法2（クラス名+プロパティ名） |\n|---|---|---|\n| メリット | メッセージIDの管理が容易 | エンティティ自動生成が不要なカスタマイズなし |\n| デメリット | プロパティとメッセージIDの管理方法が必要、自動生成が難しい | 通常と異なるID体系のメッセージ登録が必要 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

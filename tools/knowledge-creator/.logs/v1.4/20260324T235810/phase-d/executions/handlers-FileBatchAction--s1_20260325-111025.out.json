@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-FileBatchAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`getRecordType` はハンドラ処理フロー（ステップ3）で「入力レコードの getRecordType() メソッドを実行し、レコード種別名を取得する」として登場するが、s4 のヒントに含まれていない。",
+      "source_evidence": "ステップ3: 「入力レコードの getRecordType() メソッドを実行し、レコード種別名を取得する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`error` と `terminate` はハンドラ処理フロー（ステップ7・8）で呼び出しタイミングが説明されており s4 のコンテンツに含まれるが、s4 のヒントに含まれていない。s3 のヒントには存在するが、呼び出し順序を問うクエリで s4 が選択されない可能性がある。",
+      "source_evidence": "ステップ7: 「本ハンドラの error() を実行する。」 ステップ8: 「本ハンドラの terminate() を実行する。（このコールバックは、バッチがエラー終了した場合でも、7. の処理の後で呼ばれる。）」"
+    }
+  ]
+}

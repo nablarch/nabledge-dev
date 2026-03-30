@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (ページング) — 検索結果減少時の動作",
+      "description": "Source describes one more step after the 2-page/10-result scenario: clicking '前へ' restores the normal state ('現在のページ番号と総ページ数の対応が正常な状態に戻る'). This confirmation that the system self-corrects is absent from the knowledge file.",
+      "source_evidence": "次に「前へ」を選択した後のページングの表示を示す。現在のページ番号と総ページ数の対応が正常な状態に戻る。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 (検索結果テーブル) — hints",
+      "description": "The section contains an important warning about using `n:write` vs `n:set` for status access. Neither `n:write` nor `n:set` appear in s3's hints, making the section undiscoverable when a user asks about these tags in the context of bodyRowFragment.",
+      "source_evidence": "n:writeタグを使用してステータスにアクセスすると…エラーが発生し値を取得できない。n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。"
+    }
+  ]
+}

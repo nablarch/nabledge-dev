@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-record_format--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 (繰り返しデータについて)",
+      "description": "XMLデータ例が完全に省略されている。繰り返しデータのXML表現（<data>要素の繰り返し、<mail>要素の複数出現によるString配列）は、JSONの[]構文とは異なるXML固有の表現であり、実装判断に必要な情報である。",
+      "source_evidence": "ソースの「繰り返しデータについて」節には、フォーマット定義ファイル・JSONデータ・XMLデータ・Mapオブジェクトの4つの例が示されているが、知識ファイルにはXMLデータ例（<data>/<mail>の繰り返し要素）が含まれていない。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 (取り扱い対象のデータについて)",
+      "description": "知識ファイルは「MapオブジェクトとFormクラスを相互に変換して」と記述しているが、ソースでは「MapオブジェクトとForm形式を相互に変換して」となっており、「Form形式」が「Formクラス」に変更されている。",
+      "source_evidence": "ソース: 「本機能で取り扱うMapオブジェクトとForm形式を相互に変換して、階層構造および繰り返しデータを容易に扱うことが可能である。」"
+    }
+  ]
+}

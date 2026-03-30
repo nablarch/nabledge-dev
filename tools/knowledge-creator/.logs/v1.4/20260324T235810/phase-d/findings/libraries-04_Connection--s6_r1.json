@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_Connection--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — **クラス**: `nablarch.core.db.connection.SimpleDbTransactionManager`",
+      "description": "The fully qualified class name `nablarch.core.db.connection.SimpleDbTransactionManager` is not present in the source. The source heading only says `SimpleDbTransactionManagerの設定` without any package information. The package `nablarch.core.db.connection` is an inference not stated in this source file.",
+      "source_evidence": "Source heading: `\\a) SimpleDbTransactionManagerの設定` — no package name is given."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`BasicDbConnection` is a PascalCase class name that appears in the knowledge file's own content (in the statementReuse note: '`BasicDbConnection`インスタンス単位でStatementオブジェクトがキャッシュされる') but is absent from s1's hints.",
+      "source_evidence": "Source b) statementReuse note: 'BasicDbConnectionのインスタンス単位でStatementオブジェクトがキャッシュされる'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — title: \"設定内容詳細\"",
+      "description": "Section s2 merges two distinct source structures: (1) the major `==`-underlined heading '設定ファイル例(JNDIを使用してデータベース接続を行う場合)' and (2) its nested `--`-underlined '設定内容詳細' subsection. The s2 title '設定内容詳細' is taken from the subsection, omitting the JNDI-identifying context. A title such as '設定ファイル例（JNDIを使用してデータベース接続を行う場合）' would better represent the section's primary topic for AI retrieval.",
+      "source_evidence": "Source has a `==`-underlined major heading '設定ファイル例(JNDIを使用してデータベース接続を行う場合)' that is higher-level than the `--`-underlined '設定内容詳細' heading nested within it."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-02_CodeManager--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: 要求 > 未検討 section",
+      "description": "The '要求 > 未検討' section is entirely absent from the knowledge file. It lists two features that are explicitly NOT supported: (1) 外部システム用にコード変換できる (code conversion for external systems: own system code value ↔ external system code value), and (2) コード値の有効期限を管理できる (managing code value expiry dates). An AI answering questions like 'Can I convert codes for external systems?' or 'Can I set expiry dates on codes?' would have no basis to answer 'not supported'.",
+      "source_evidence": "未検討\\n========\\n* 外部システム用にコード変換できる。(自システムのコード値⇔外部システムのコード値ができる機能)\\n* コード値の有効期限を管理できる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8: コード値とコード名称のデータ — CODE_NAMEテーブルのデータ例",
+      "description": "The CODE_NAME table data in s8 is truncated. The source has 16 rows (3 ja + 5 ja + 3 en + 5 en), but the knowledge file only includes 11 rows, omitting the 5 English-locale rows for code ID 0002 (Initial State, Waiting For Batch Start, Batch Running, Batch Execute Completed Checked, Batch Result Checked). The example is described as complete reference data for subsequent implementation examples.",
+      "source_evidence": "0002 | 01 | 1 | en | Initial State | Initial |\\n0002 | 02 | 2 | en | Waiting For Batch Start | Waiting |\\n0002 | 03 | 3 | en | Batch Running | Running |\\n0002 | 04 | 4 | en | Batch Execute Completed Checked | Completed |\\n0002 | 05 | 5 | en | Batch Result Checked | Checked |"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Knowledge file index — 要求 section absent",
+      "description": "The source '要求' section (with 実装済み and 未検討 subsections) has no corresponding section in the knowledge file. While the 実装済み items are covered across other sections, the 未検討 items representing unsupported features are lost entirely. The automated pre-check flagged section count 12 vs source headings 20; the primary gap is this missing 要求 section."
+    }
+  ]
+}

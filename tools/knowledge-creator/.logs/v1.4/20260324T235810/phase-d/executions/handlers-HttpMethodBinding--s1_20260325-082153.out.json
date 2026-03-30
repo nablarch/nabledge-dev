@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — ③ 例外制御",
+      "description": "The source explicitly states two approaches for returning non-500 responses when an exception occurs: (1) catching the exception and returning an HttpResponse object normally (正常終了), and (2) wrapping with HttpErrorResponse and re-throwing. The knowledge file only mentions option 2 and @OnError annotation, omitting option 1.",
+      "source_evidence": "それ以外の応答を行うためには、リクエストハンドラ内で明示的に例外を捕捉したうえで HttpResposeオブジェクトを生成して正常終了させるか、もしくは HttpErrorResponseでラップして再送出する必要がある。"
+    }
+  ]
+}

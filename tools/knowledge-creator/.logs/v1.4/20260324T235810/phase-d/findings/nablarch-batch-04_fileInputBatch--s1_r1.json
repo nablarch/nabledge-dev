@@ -1,0 +1,62 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "初期化処理 section",
+      "description": "初期化処理セクション全体が欠落。`initialize(CommandLine command, ExecutionContext context)` メソッドの実装方法、`allowZeroRecord` パラメータのコマンドライン引数からの取得、initializeメソッドをオーバーライドすべき条件（コマンドライン引数取得、インスタンス変数初期化）が含まれていない。",
+      "source_evidence": "初期化処理セクション: `this.allowZeroRecord = Boolean.valueOf(command.getParam(\"allowZeroRecord\"));` および「コマンドライン引数の取得が必要な場合 / インスタンス変数の初期化が必要な場合」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "初期化処理 section — warning block",
+      "description": "マルチスレッド実行に関する重要な警告が欠落: (1)インスタンス変数を使用するバッチアクションはマルチスレッド実行できない、(2)インスタンス変数は initializeメソッドで明示的に初期化しなければならない、(3)初期化後に値が更新されない（読取専用）場合はマルチスレッド実行可能。これはAIが誤った実装を提案しないために必須の制約情報。",
+      "source_evidence": "「バッチアクションでインスタンス変数を使用する場合、以下の制約が生じる。インスタンス変数を使用するバッチアクションはマルチスレッド実行できない。インスタンス変数は、初期化処理(initializeメソッド)で明示的に初期化しなければならない。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "リーダ生成 section",
+      "description": "リーダ生成セクション全体が欠落。`getDataFileName()` と `getFormatFileName()` メソッドのオーバーライドによりスーパークラスがリーダを生成するという仕組み、およびファイルIDを返す実装パターンが含まれていない。",
+      "source_evidence": "「下記メソッドを実装しておくと、スーパークラスにてリーダを生成してくれる。」 `public String getDataFileName()` / `public String getFormatFileName()` の実装コード"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファイルバリデータ生成 section",
+      "description": "ファイルバリデータ生成セクション全体が欠落。`getValidatorAction()` メソッドのオーバーライド、`ValidatableFileDataReader.FileValidatorAction` インタフェース、`FileLayoutValidatorAction` 内部クラスの実装パターンが含まれていない。",
+      "source_evidence": "`public ValidatableFileDataReader.FileValidatorAction getValidatorAction() { return new FileLayoutValidatorAction(); }` および内部クラス `FileLayoutValidatorAction` / `FileValidator` の定義"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファイルバリデータ実装 — レイアウト精査ルール",
+      "description": "レイアウト精査の順序ルール4件およびトレーラレコード精査ルール1件が欠落: (1)1レコード目はヘッダーレコード、(2)2レコード目以降にデータレコードが複数または0件の場合はトレーラ、(3)データレコードの次はトレーラレコード、(4)最終レコードはエンドレコード、(5)トレーラの総レコード数=データレコード数。これらはファイルバリデーション実装の要件仕様として必須。",
+      "source_evidence": "「【レイアウト精査】 #1〜#4」「【トレーラレコードの精査】 #1」 およびイメージ図のレコード構造"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "フォーマット定義ファイル section",
+      "description": "フォーマット定義ファイルセクション全体が欠落。固定長ファイルのフォーマット定義（text-encoding MS932、record-length 420、Classifier/header/data/trailer/end の各レコード定義とフィールド仕様）が含まれていない。ファイル入力バッチの実装に必要な具体的なフォーマット定義の記述方法。",
+      "source_evidence": "「フォーマット定義ファイルは、外部インタフェース設計書を入力元として、フォーマット定義ファイル自動生成ツールにより作成する。」 および bashコードブロック全体（text-encoding, record-length, [Classifier], [header], [data], [trailer], [end] 定義）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s1, s2, s3 — hints",
+      "description": "`Success` クラス名が全セクション(s1, s2, s3)のヒントに含まれていない。また `ExecutionContext` が s1 にのみ含まれ s2/s3 に含まれていない。",
+      "source_evidence": "全3メソッドで `return new Success();` が使用されており、メソッドシグネチャに `ExecutionContext ctx` が含まれる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s3 — hints",
+      "description": "`getBigDecimal` メソッド名がヒントに含まれていない。",
+      "source_evidence": "`int totalCount = inputData.getBigDecimal(\"totalCount\").intValue();`"
+    }
+  ]
+}

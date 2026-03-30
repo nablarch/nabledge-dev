@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-initial_setup--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 0. 事前準備 (entire section)",
+      "description": "The entire '0. 事前準備' section is absent from the knowledge file. This section contains critical prerequisites: (1) Node.js installation is required, (2) recommended version is 0.10.26 with the note that other versions may not work, (3) download URL http://nodejs.org/dist/v0.10.26/, (4) only the architect performing initial setup needs Node.js — regular developers do not. Without this, an AI cannot answer prerequisite questions for the setup process.",
+      "source_evidence": "本項の作業を行うには Node.js のインストールが必要である。...バージョンによってはUI開発基盤が動作しないため、動作検証済みのバージョンである 0.10.26 の使用を推奨する。...Node.js を必要とするのは初期環境構築作業を行うアーキテクトのみである。通常の設計・開発を行う担当者はインストール不要である。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 1. UI開発基盤の取得と展開 (entire section)",
+      "description": "The entire '1. UI開発基盤の取得と展開' section is absent from the knowledge file. This section describes the first physical setup step: obtaining two specific archives from the Nablarch distribution (Nablarch標準プラグインバンドルアーカイブ and チュートリアルプロジェクトアーカイブ), creating the project root directory, placing and extracting them there, and the resulting directory structure (nablarch_plugins_bundle/ and tutorial_project/ layout). Without this, an AI cannot guide users through the beginning of the setup process.",
+      "source_evidence": "Nablarch配布アーカイブから、以下の2つのアーカイブを取得する。- (Nablarch標準プラグインバンドルアーカイブ) - (チュートリアルプロジェクトアーカイブ) ローカルマシン上の任意の場所にプロジェクトルートとなるディレクトリを新規作成する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "source: 2. プロジェクトで使用するプラグインの選定 → note at end of section",
+      "description": "The best-practice note about timing of plugin selection is missing from s2: unused plugins should be removed as early as possible during development to prevent misuse by the development team, even though selection can be done at any time during development.",
+      "source_evidence": "使用するプラグインの選別は、開発中であっても随時実施することが可能である。ただ、その場合でも、開発チーム側での誤用を避けるため、使用しないプラグインはなるべく早い段階で除いておくことが望ましい。"
+    }
+  ]
+}

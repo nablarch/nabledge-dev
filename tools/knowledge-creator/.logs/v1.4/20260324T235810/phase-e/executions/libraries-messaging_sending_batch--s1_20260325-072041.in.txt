@@ -1,0 +1,350 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-messaging_sending_batch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 contains only 'なし' (2 characters, well below 50-char threshold) and has no corresponding content in the source file. The source has 3 natural content blocks (intro, 基本構造, 標準ハンドラ構成と主要処理フロー) but the knowledge file defines 4 sections, with s3 being a content-less placeholder. The two RST transition markers ('+++++++') between source sections are not content sections and do not justify a separate knowledge section.",
+      "source_evidence": "Source structure: intro paragraph → ++++ horizontal rule → 基本構造 (h2) → ++++ horizontal rule → 標準ハンドラ構成と主要処理フロー (h2). No source content exists that maps to s3."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+====================================================
+応答不要メッセージ送信常駐バッチ
+====================================================
+特定のテーブル上の内容を定期的に監視し、各レコードの内容をもとにメッセージを作成して送信する常駐バッチ。
+応答を伴わないメッセージ送信処理で用いる。
+
+利用側からは対象テーブルへのINSERT文を発行するだけでメッセージを送信することができる。
+
+
+++++++++++++++++
+
+-------------------------------------------
+基本構造
+-------------------------------------------
+
+:doc:`messaging_sending_batch` の構成は通常の :doc:`../architectural_pattern/batch_resident_thread_sync` に対し、
+メッセージ送信処理を行う以下のハンドラを追加したものである。
+
+  1. :doc:`../handler/MessagingContextHandler`
+  2. :doc:`../handler/AsyncMessageSendAction`
+
+本バッチでは業務アクションハンドラを新たに作成する必要は無く、
+:doc:`../handler/AsyncMessageSendAction` に対する各種設定および、このハンドラ内で使用するSQL文及び、
+送信電文のフォーマット定義を作成すればよい。
+
+作成が必要なSQL文とフォーマット定義の一覧は以下のとおり。
+  
+  +-------------------------------------------+-----------------------------------------------------------+
+  | 内容                                      | リソース名                                                |
+  +===========================================+===========================================================+
+  | 送信要求テーブルから送信対象の            | (SQL定義配置パッケージ設定値).                            |
+  | レコードを取得するクエリのSQL             |  (メッセージリクエストID)#                                |
+  |                                           |  SELECT_SEND_DATA                                         |
+  +-------------------------------------------+-----------------------------------------------------------+
+  | 送信完了後、対象レコードの処理ステータス  | (SQL定義配置パッケージ設定値).                            |
+  | を"送信済み"に変更するSQL文               |  (メッセージリクエストID)#                                |
+  |                                           |  UPDATE_NORMAL_END                                        |
+  +-------------------------------------------+-----------------------------------------------------------+
+  | 処理中にエラーが発生した場合に、          | (SQL定義配置パッケージ設定値).                            |
+  | 対象レコードの処理ステータス              |  (メッセージリクエストID)#                                |
+  | を"エラー"に変更するSQL文                 |  UPDATE_ABNORMAL_END"                                     |
+  +-------------------------------------------+-----------------------------------------------------------+
+  | フレームワーク制御ヘッダ部のフォーマット  | (フォーマット定義ファイル配置先論理パス名)/               |
+  | 定義ファイル                              | (フレームワーク制御ヘッダフォーマットファイル名)          |
+  +-------------------------------------------+-----------------------------------------------------------+
+  | メッセージボディ部のフォーマット定義      | (フォーマット定義ファイル配置先論理パス名)/               |
+  | ファイル                                  | (メッセージリクエストID)_SEND                             |
+  +-------------------------------------------+-----------------------------------------------------------+
+
+各種設定値については、 :doc:`../handler/AsyncMessageSendAction` を参照すること。
+
+++++++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`../core_library/messaging_sending_batch` の標準ハンドラ構成とを表したものである。
+(処理フロー一覧については、 :doc:`../architectural_pattern/batch_resident_thread_sync` を参照。)
+
+.. raw:: html
+   :file: ../Handler.js
+
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'batch resident'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "ProcessResidentHandler"
+      , "RetryHandler"
+      , "ProcessStopHandler"
+      , "ServiceAvailabilityCheckHandler"
+      , "DbConnectionManagementHandler_main"
+      , "TransactionManagementHandler_main"
+      , "RequestPathJavaPackageMapping"
+      , "MultiThreadExecutionHandler"
+      , "MessagingContextHandler"
+      , "DbConnectionManagementHandler"
+      , "LoopHandler"
+      , "DataReadHandler"
+      , "AsyncMessageSendAction"
+      ]
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["Main",                          "inbound"]
+        , ["ThreadContextHandler_main",     "inbound"]
+        , ["ProcessResidentHandler",        "inbound", "以降、常駐処理を開始する。監視間隔ごとに後続の"
+                                                     + "ハンドラキューの処理が繰り返し実行される。"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["Main",                         "outbound"]
+        ],
+
+        // 常駐処理正常実行
+        normalend: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成、3. 業務コミット後 、4. 全件終了後"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "outbound"]
+        , ["LoopHandler",                        "outbound", "コミット時に業務アクションへのコールバックを行う。"
+                                                           + "また⑨ で取得した結果セットが空になるまでここでループする。"]
+        , ["BatchAction",                        "callback"]
+        , ["DbConnectionManagementHandler",      "outbound"]
+        , ["MultiThreadExecutionHandler",        "outbound", "正常終了後に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback"]
+        , ["TransactionManagementHandler_main",  "outbound"]
+        , ["DbConnectionManagementHandler_main", "outbound"]
+        , ["ProcessResidentHandler",             "outbound"]
+        ],
+
+        // 処理対象データ待機
+        waitdata: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound", "要求管理テーブル上の処理対象データが0件であった場合は、後続処理は行わず、"
+                                                          + "DataReader.NoMoreRecord をリターンする。"]
+        , ["DbConnectionManagementHandler",      "outbound"]
+        , ["MultiThreadExecutionHandler",        "outbound"]
+        , ["TransactionManagementHandler_main",  "outbound"]
+        , ["DbConnectionManagementHandler_main", "outbound"]
+        , ["ProcessResidentHandler",             "outbound", "→① へ"]
+        ],
+
+        // 閉局中処理待機
+        notonservice: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["ServiceAvailabilityCheckHandler",    "inbound", "サービス閉局例外を送出する。"]
+        , ["ProcessResidentHandler",             "error",   "サービス閉局例外を捕捉した場合、INFOログを出力しループを継続する。→ ① へ"]
+        ],
+
+        // 常駐処理異常終了
+        errorend: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "error",    "業務処理をエラー終了させる場合は、実行時例外を送出する。"
+                                                           + "これにより、トランザクションがロールバックされ、障害ログが出力される。"]
+        , ["LoopHandler",                        "error",    "複数件コミットを使用している場合は、未コミットの処理についてもロールバックされる。"
+                                                           + "また業務アクションをコールバックする。"]
+        , ["BatchAction",                        "callback"]
+        , ["DbConnectionManagementHandler",      "error"]
+        , ["MultiThreadExecutionHandler",        "error", "異常終了後に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback"]
+        , ["TransactionManagementHandler_main",  "error"]
+        , ["DbConnectionManagementHandler_main", "error"]
+        , ["ProcessResidentHandler",             "error"]
+        ],
+
+        // プロセス正常停止
+        termination: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["ProcessStopHandler",                 "inbound", "リクエストIDはバッチの起動引数'-requestPath'の値から決定される値"]
+        , ["ProcessResidentHandler",             "error",   "ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、"
+                                                          + "処理結果オブジェクトをリターンする。(ステータスコード:200)"]
+        , ["StatusCodeConvertHandler",      "outbound", "ステータスコード:200 → 終了コード:0"]
+        , ["Main",                          "outbound", "正常終了"]
+        ],
+
+        // 常駐処理正常実行
+        forcestop: [
+          ["ProcessResidentHandler",             "inbound", "常駐処理の起点"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "error",    "常駐プロセス自体を終了させる場合は、ProcessAbnormalEnd 例外を送出する。"
+                                                           + "これにより、実行中の処理だけで無く、プロセス全体がエラー終了させる。"]
+        , ["LoopHandler",                        "error",    "複数件コミットを使用している場合は、未コミットの処理についてもロールバックされる。"
+                                                           + "また業務アクションをコールバックする。"]
+        , ["BatchAction",                        "callback"]
+        , ["DbConnectionManagementHandler",      "error"]
+        , ["MultiThreadExecutionHandler",        "error", "異常終了後に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback"]
+        , ["TransactionManagementHandler_main",  "error"]
+        , ["DbConnectionManagementHandler_main", "error"]
+        , ["ProcessResidentHandler",             "error", "ProcessAbnormalEndはそのまま再送出する。(ループは中断)"]
+        , ["GlobalErrorHandler",                 "error", "ProcessAbnormalEndを捕捉した場合、障害ログを出力し、例外を処理結果オブジェクト"
+                                                         +"としてリターンする。"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-messaging_sending_batch--s1",
+  "title": "応答不要メッセージ送信常駐バッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "応答不要メッセージ送信",
+        "常駐バッチ",
+        "送信要求テーブル監視",
+        "メッセージ送信",
+        "INSERT"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本構造",
+      "hints": [
+        "MessagingContextHandler",
+        "AsyncMessageSendAction",
+        "SELECT_SEND_DATA",
+        "UPDATE_NORMAL_END",
+        "UPDATE_ABNORMAL_END",
+        "基本構造",
+        "SQL定義",
+        "フォーマット定義",
+        "メッセージリクエストID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "応答不要メッセージ送信常駐バッチ",
+        "常駐バッチ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "ProcessResidentHandler",
+        "MultiThreadExecutionHandler",
+        "DuplicateProcessCheckHandler",
+        "ProcessStopHandler",
+        "ServiceAvailabilityCheckHandler",
+        "DbConnectionManagementHandler",
+        "TransactionManagementHandler",
+        "LoopHandler",
+        "DataReadHandler",
+        "AsyncMessageSendAction",
+        "MessagingContextHandler",
+        "標準ハンドラ構成",
+        "処理フロー",
+        "常駐バッチ",
+        "ProcessAbnormalEnd"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "送信要求テーブルを定期監視し、各レコードからメッセージを作成・送信する常駐バッチ。応答を伴わないメッセージ送信処理で使用する。利用側は対象テーブルへINSERTするだけでメッセージ送信が可能。",
+    "s2": ":doc:`messaging_sending_batch` の構成は :doc:`../architectural_pattern/batch_resident_thread_sync` に以下のハンドラを追加したもの:\n\n1. :doc:`../handler/MessagingContextHandler`\n2. :doc:`../handler/AsyncMessageSendAction`\n\n業務アクションハンドラの新規作成不要。:doc:`../handler/AsyncMessageSendAction` の設定と、以下のSQL文・フォーマット定義を作成する。\n\n| 内容 | リソース名 |\n|---|---|\n| 送信要求テーブルから送信対象レコードを取得するSQL | (SQL定義配置パッケージ設定値).(メッセージリクエストID)#SELECT_SEND_DATA |\n| 送信完了後、対象レコードの処理ステータスを\"送信済み\"に変更するSQL | (SQL定義配置パッケージ設定値).(メッセージリクエストID)#UPDATE_NORMAL_END |\n| エラー発生時、対象レコードの処理ステータスを\"エラー\"に変更するSQL | (SQL定義配置パッケージ設定値).(メッセージリクエストID)#UPDATE_ABNORMAL_END |\n| フレームワーク制御ヘッダ部のフォーマット定義ファイル | (フォーマット定義ファイル配置先論理パス名)/(フレームワーク制御ヘッダフォーマットファイル名) |\n| メッセージボディ部のフォーマット定義ファイル | (フォーマット定義ファイル配置先論理パス名)/(メッセージリクエストID)_SEND |\n\n各種設定値は :doc:`../handler/AsyncMessageSendAction` を参照。",
+    "s3": "なし",
+    "s4": "処理フロー一覧は :doc:`../architectural_pattern/batch_resident_thread_sync` 参照。\n\n**標準ハンドラ構成**:\n\n| No. | ハンドラ |\n|---|---|\n| 1 | Main |\n| 2 | StatusCodeConvertHandler |\n| 3 | GlobalErrorHandler |\n| 4 | ThreadContextHandler_main |\n| 5 | DuplicateProcessCheckHandler |\n| 6 | ProcessResidentHandler |\n| 7 | RetryHandler |\n| 8 | ProcessStopHandler |\n| 9 | ServiceAvailabilityCheckHandler |\n| 10 | DbConnectionManagementHandler_main |\n| 11 | TransactionManagementHandler_main |\n| 12 | RequestPathJavaPackageMapping |\n| 13 | MultiThreadExecutionHandler |\n| 14 | MessagingContextHandler |\n| 15 | DbConnectionManagementHandler |\n| 16 | LoopHandler |\n| 17 | DataReadHandler |\n| 18 | AsyncMessageSendAction |\n\n**主要処理フロー（各フローの決定ポイント）**:\n\n- **重複起動エラー**: ThreadContextHandler_mainが起動引数`-requestPath`からリクエストIDを決定。DuplicateProcessCheckHandlerに起動停止時の終了コードを設定。GlobalErrorHandlerで障害ログ出力。\n- **常駐処理正常実行**: ProcessResidentHandlerが常駐処理の起点。MultiThreadExecutionHandlerは処理開始前・データリーダ作成時にBatchActionへコールバック（イベント: 1.処理開始前、2.データリーダ作成、3.業務コミット後、4.全件終了後）。LoopHandlerはコミット時にBatchActionへコールバックし、結果セットが空になるまでループ。正常終了後にMultiThreadExecutionHandlerがBatchActionへコールバック。\n- **処理対象データ待機**: LoopHandlerは要求管理テーブルの処理対象データが0件の場合、後続処理を行わずDataReader.NoMoreRecordをリターン。\n- **閉局中処理待機**: ServiceAvailabilityCheckHandlerがサービス閉局例外を送出。ProcessResidentHandlerはサービス閉局例外捕捉時にINFOログ出力しループ継続。\n- **常駐処理異常終了**: BatchActionで業務処理をエラー終了させる場合は実行時例外を送出（トランザクションロールバック・障害ログ出力）。LoopHandlerは複数件コミット使用時、未コミット処理もロールバック。MultiThreadExecutionHandlerは異常終了後にBatchActionへコールバック。\n- **プロセス正常停止**: ProcessStopHandlerのリクエストIDはバッチ起動引数`-requestPath`の値から決定。ProcessResidentHandlerはProcessStop捕捉時にINFOログ出力後、処理結果オブジェクト（ステータスコード:200）をリターン。StatusCodeConvertHandlerがステータスコード200→終了コード0に変換。\n- **強制停止（ProcessAbnormalEnd）**: BatchActionでProcessAbnormalEnd例外を送出すると、実行中の処理だけでなくプロセス全体がエラー終了。ProcessResidentHandlerはProcessAbnormalEndをそのまま再送出（ループ中断）。GlobalErrorHandlerがProcessAbnormalEnd捕捉時に障害ログ出力。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,184 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-event_write_to",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "属性テーブルの第1カラムにある `title` 属性名がs2のhintsに含まれていない。",
+      "source_evidence": "仕様セクションの属性値一覧テーブルに `title` が記載されている（内容: 実行する処理の簡単な説明、サーバ×、ローカル×）。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+項目内容変更イベントアクション
+===================================================
+:doc:`event_write_to` は :doc:`event_listen` 及び :doc:`event_listen_subwindow`
+が監視するイベントが発生した際に、特定の要素の内容(表示文字列もしくは入力値)を
+動的に書き換えるイベントアクションである。
+
+コードサンプル
+==================================
+以下のソースコードは、画面内のAjaxリクエストの完了時に、
+そのレスポンスの内容を使って画面内の特定項目を書き換える例である。
+
+
+  .. code-block:: jsp
+
+    <event:listen
+      title = "Ajaxリクエスト成功時の処理"
+      event = "ajaxSuccess">
+      <event:write_to
+        title     = "レスポンスボディのテーブル中のユーザIDの値を入力欄に設定する。"
+        target    = "input.user_id"
+        condition = ":has(tr td)"
+        format    = "{td.user_id:first}">
+      </event:write_to>
+    </event:listen>
+
+
+仕様
+=============================================
+このアクションを実行するイベントは :doc:`event_listen`
+(もしくは :doc:`event_listen_subwindow` ) を用いて定義する必要がある。
+
+このアクションが実行されると、まず、イベントの発生元要素が `condition` 属性の
+セレクタにマッチするかをチェックし、マッチしなかった場合はなにもしない。
+
+マッチした場合、このタグと同じ `<event:listen>` タグ内に存在し、
+`target` 属性のセレクタにマッチする全ての要素の内容を `format` 属性の内容に書き換える。
+
+具体的には、対象要素が入力項目(input/select/textarea)であった場合は、そのvalue属性に設定し、
+それ以外の要素の場合は、テキストノードの内容を書き換える。
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ===========================================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ===========================================================
+title                     実行する処理の簡単な説明         文字列         ×          ×         設計書表示用　
+
+target                    値を書き換える要素を指定する     文字列         ◎          ◎
+                          セレクタ式
+
+format                    | targetで指定した要素に設定する 文字列         ○          ○         | 埋め込み文字{}内にセレクタを指定することで、
+                            値を定めるフォーマット式                                             その要素の内容を埋め込むことができる。
+                          | 省略時した場合は値の設定                                           |  **記述例**
+                            自体が行われない。
+                                                                                                    ユーザID: {span.prefix}-{span.code}
+
+condition                 本アクションを実行する事前条件。 文字列         ○          ○
+                          イベント発生元要素が満たすべき
+                          セレクタ式の形式で指定する。　
+
+addClass                  targetで指定した要素に追加する   文字列         ○          ○         | 空白区切りで複数のclass名を指定することができる。
+                          class属性値。
+
+removeClass               targetで指定した要素から除去する 文字列         ○          ○         | 空白区切りで複数のclass名を指定することができる。
+                          class属性値。
+
+========================= ================================ ============== ========== ========= ===========================================================
+
+
+
+内部構造・改修時の留意点
+============================================
+本ウィジェットは以下のファイルによって実装されている。
+
+**部品一覧**
+
+================================================= =====================================================
+パス                                              内容
+================================================= =====================================================
+/WEB-INF/tags/widget/event/write_to.tag           このウィジェットの実体となるタグファイル　
+
+/js/nablarch/ui/event/WriteAction.js              本機能を実装するイベントアクション
+
+================================================= =====================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-event_write_to",
+  "title": "項目内容変更イベントアクション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "event:write_to",
+        "event:listen",
+        "AjaxレスポンスのDOM書き換え",
+        "項目内容変更",
+        "イベントアクション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "target",
+        "format",
+        "condition",
+        "addClass",
+        "removeClass",
+        "セレクタ式",
+        "イベントアクション属性",
+        "value属性設定",
+        "テキストノード書き換え"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "WriteAction.js",
+        "write_to.tag",
+        "実装ファイル一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`event_write_to` は :doc:`event_listen` 及び :doc:`event_listen_subwindow` が監視するイベントが発生した際に、特定の要素の内容（表示文字列もしくは入力値）を動的に書き換えるイベントアクション。\n\n```jsp\n<event:listen\n  title = \"Ajaxリクエスト成功時の処理\"\n  event = \"ajaxSuccess\">\n  <event:write_to\n    title     = \"レスポンスボディのテーブル中のユーザIDの値を入力欄に設定する。\"\n    target    = \"input.user_id\"\n    condition = \":has(tr td)\"\n    format    = \"{td.user_id:first}\">\n  </event:write_to>\n</event:listen>\n```",
+    "s2": "このアクションを実行するイベントは :doc:`event_listen`（もしくは :doc:`event_listen_subwindow`）を用いて定義する必要がある。\n\n動作仕様:\n1. イベント発生元要素が `condition` 属性のセレクタにマッチするかチェックし、マッチしなかった場合は何もしない。\n2. マッチした場合、同じ `<event:listen>` タグ内の `target` 属性セレクタにマッチする全要素の内容を `format` 属性の値に書き換える。\n3. 対象要素が入力項目（input/select/textarea）の場合はvalue属性に設定し、それ以外はテキストノードを書き換える。\n\n**属性値一覧** [◎ 必須 ○ 任意 × 無効]\n\n| 属性名 | 内容 | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| title | 処理の簡単な説明 | × | × | 設計書表示用 |\n| target | 値を書き換える要素のセレクタ式 | ◎ | ◎ | |\n| format | target要素に設定する値のフォーマット式 | ○ | ○ | `{}` 内にセレクタを指定することで要素内容を埋め込み可（例: `ユーザID: {span.prefix}-{span.code}`）。省略時は値の設定自体が行われない。 |\n| condition | アクション実行の事前条件。イベント発生元要素が満たすべきセレクタ式 | ○ | ○ | |\n| addClass | target要素に追加するclass属性値 | ○ | ○ | 空白区切りで複数指定可 |\n| removeClass | target要素から除去するclass属性値 | ○ | ○ | 空白区切りで複数指定可 |",
+    "s3": "| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/event/write_to.tag | このウィジェットの実体となるタグファイル |\n| /js/nablarch/ui/event/WriteAction.js | 本機能を実装するイベントアクション |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

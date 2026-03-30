@@ -1,0 +1,508 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/01_Authentication.rst`
+- Format: `rst`
+
+```
+.. _authentication:
+
+====================================================
+データベースを用いたパスワード認証機能サンプル
+====================================================
+
+本サンプルは、データベースに保存されたアカウント情報(ユーザID、パスワード)を使用して認証処理を行う実装サンプルである。
+
+--------------
+提供パッケージ
+--------------
+
+本サンプルは、以下のパッケージで提供される。
+
+  *please.change.me.*\ **common.authentication**
+
+
+------------
+概要
+------------
+Webアプリケーションにおけるユーザの認証(ユーザIDとパスワードによる認証)を行う機能の実装サンプルを提供する。
+
+本サンプルは、ログイン処理を実行する業務処理 [#auth_action]_ の中で使用することを想定している。
+
+.. note::
+
+  Nablarch導入プロジェクトでは、要件を満たすよう本サンプル実装を修正し使用すること。
+
+.. [#auth_action]
+
+  本機能では、ログイン処理を実行する業務処理は提供しない。
+  Nablarch導入プロジェクトにて、要件に応じてログイン処理を作成すること。
+
+本機能では、デフォルトでは `PBKDF2 <http://www.ietf.org/rfc/rfc2898.txt>`_ を使用してパスワードを暗号化するため、
+各プロジェクトで、パスワード暗号化のストレッチング回数やソルトなどを設定する必要がある。
+
+設定内容の詳細については :doc:`01/0101_PBKDF2PasswordEncryptor` を参照。
+
+
+------------
+構成
+------------
+本サンプルの構成を示す。
+
+
+クラス図
+========================
+.. image:: ./_images/01/Authentication_ClassDiagram.jpg
+   :scale: 75
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=================== ===============================================================
+インタフェース名     概要
+=================== ===============================================================
+Authenticator       ユーザの認証を行うインタフェース。
+
+PasswordEncryptor   パスワードの暗号化を行うインタフェース。
+
+=================== ===============================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\a) Authenticatorの実装クラス
+
+  =============================== ==========================================================================
+  クラス名                        概要
+  =============================== ==========================================================================
+  PasswordAuthenticator           データベースに保存されたアカウント情報に対してパスワード認証を行うクラス。
+  =============================== ==========================================================================
+
+\b) PasswordEncryptorの実装クラス
+
+  =============================== ==========================================================================
+  クラス名                        概要
+  =============================== ==========================================================================
+  PBKDF2PasswordEncryptor         PBKDF2を使用してパスワードの暗号化を行うクラス。
+  =============================== ==========================================================================
+
+\c) ユーティリティクラス
+
+  =============================== ==========================================================================
+  クラス名                        概要
+  =============================== ==========================================================================
+  AuthenticationUtil              リポジトリから Authenticator および PasswordEncryptor を
+                                  取得して、ユーザ認証およびパスワード暗号化を行うユーティリティ。
+  =============================== ==========================================================================
+
+\d) その他のクラス
+
+  =============================== ==========================================================================
+  クラス名                        概要
+  =============================== ==========================================================================
+  SystemAccount                   ユーザのアカウント情報を保持するクラス。
+  =============================== ==========================================================================
+
+\e) 例外クラス
+
+  =============================== ==========================================================================
+  クラス名                        概要
+  =============================== ==========================================================================
+  AuthenticationException         ユーザの認証に失敗した場合に発生する例外。
+
+                                  認証処理に関する例外の基底クラス。
+                                  認証方式に応じて、本クラスを継承した例外クラスを作成する。
+                                  本クラス及びサブクラスでは、ユーザへ提示するメッセージの作成に
+                                  必要な情報を保持し、メッセージの作成は行わない。
+
+  AuthenticationFailedException   アカウント情報の不一致により認証に失敗した場合に発生する例外。
+
+                                  対象ユーザのユーザIDを保持する。
+
+  PasswordExpiredException        ユーザの認証時にパスワードの有効期限が切れている場合に発生する例外。
+
+                                  対象ユーザのユーザID、パスワード有効期限とチェックに使用した業務日付を保持する。
+
+  UserIdLockedException           ユーザの認証時にユーザIDがロックされている場合に発生する例外。
+
+                                  対象ユーザのユーザIDとユーザIDをロックする認証失敗回数を保持する。
+  =============================== ==========================================================================
+
+テーブル定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+本サンプルで使用しているアカウントテーブルの定義を以下に示す。
+本サンプルを導入プロジェクトに取り込む際には、導入プロジェクトのテーブル定義に従いSQLファイル及びソースコードの修正を行うこと。
+
+**システムアカウント(SYSTEM_ACCOUNT)**
+
+システムアカウントテーブルには、アカウント情報を格納する。
+
+  ========================= ========================= ==================== =====================================
+  論理名                    物理名                    Javaの型             制約
+  ========================= ========================= ==================== =====================================
+  ユーザID                  USER_ID                   java.lang.String     主キー
+
+  パスワード                PASSWORD                  java.lang.String
+
+  ユーザIDロック            USER_ID_LOCKED            java.lang.String     ロックしていない場合は"0"、ロックしている場合は"1"
+
+  パスワード有効期限        PASSWORD_EXPIRATION_DATE  java.lang.String     書式 yyyyMMdd
+
+                                                                           指定しない場合は"99991231"
+  認証失敗回数              FAILED_COUNT              int
+
+  有効日(From)              EFFECTIVE_DATE_FROM       java.lang.String     書式 yyyyMMdd
+
+                                                                           指定しない場合は"19000101"
+
+  有効日(To)                EFFECTIVE_DATE_TO         java.lang.String     書式 yyyyMMdd
+
+                                                                           指定しない場合は"99991231"
+
+  最終ログイン日時          LAST_LOGIN_DATE_TIME      java.sql.Timestamp
+  ========================= ========================= ==================== =====================================
+
+.. note::
+
+  上記テーブル定義には、本サンプルで必要となる属性のみを列挙している。
+  Nablarch導入プロジェクトでは、必要なユーザ属性を本テーブルに追加したり、本テーブルと1対1で紐づくユーザ情報テーブルなどを作成し要件を満たすようテーブル設計を行うこと。
+
+
+
+------------------------------------------------------------------------
+使用方法
+------------------------------------------------------------------------
+データベースに保存したアカウント情報を使用したパスワード認証の使用方法について解説する。
+
+パスワード認証の特徴を下記に示す。
+
+* 認証時にアカウント情報の有効日（From/To）をチェックする。
+* 認証時にパスワードの有効期限をチェックする。
+* 連続で指定回数認証に失敗するとユーザIDにロックをかける。指定回数に達するまでに認証に成功すると失敗回数をリセットする。
+* 暗号化されたパスワードを使用して認証を行う。本機能は、デフォルトでPBKDF2を使用したパスワードの暗号化を提供する。
+* 最終ログイン日時を記録する。認証に成功した場合のみシステム日時を使用して最終ログイン日時を更新する。
+
+また、 Authenticator および PasswordEncryptor は、Nablarchのリポジトリから取得して使用する想定となっている。
+業務機能で使用する各箇所でリポジトリからコンポーネントを取得して利用するべきではないため、
+本機能では、リポジトリからのコンポーネントの取得と、パスワード認証およびパスワード暗号化処理をラップした
+AuthenticationUtil を提供している。
+
+プロジェクトで実装するログイン機能やユーザ登録機能などからは、 AuthenticationUtil を使用すること。
+
+
+.. _passwordAuth-settings-label:
+
+PasswordAuthenticatorの使用方法
+=============================================================================================
+PasswordAuthenticatorの使用方法について解説する。
+
+
+.. code-block:: xml
+
+    <component name="authenticator" class="please.change.me.common.authentication.PasswordAuthenticator">
+
+      <!-- ユーザIDをロックする認証失敗回数 -->
+      <property name="failedCountToLock" value="3"/>
+
+      <!-- パスワードを暗号化するPasswordEncryptor -->
+      <property name="passwordEncryptor" ref="passwordEncryptor" />
+
+      <!-- データベースへのトランザクション制御を行うクラス -->
+      <property name="dbManager">
+        <component class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+          <property name="dbTransactionName" value="authenticator"/>
+          <property name="connectionFactory" ref="connectionFactory"/>
+          <property name="transactionFactory" ref="transactionFactory"/>
+        </component>
+      </property>
+
+      <!-- システム日付 -->
+      <property name="systemTimeProvider" ref="systemTimeProvider" />
+      <!-- 業務日付 -->
+      <property name="businessDateProvider" ref="businessDateProvider" />
+    </component>
+
+    <component name="systemTimeProvider" class="nablarch.core.date.BasicSystemTimeProvider" />
+    <component name="businessDateProvider" class="nablarch.core.date.BasicBusinessDateProvider" />
+
+
+プロパティの説明を下記に示す。
+
+===================================================================== ==================================================================================================================================================================================
+property名                                                            設定内容
+===================================================================== ==================================================================================================================================================================================
+failedCountToLock                                                     ユーザIDをロックする認証失敗回数。
+
+                                                                      指定しない場合は0となり、ユーザIDのロック機能を使用しないことになる。
+
+passwordEncryptor(必須)                                               パスワードの暗号化に使用するPasswordEncryptor。
+
+                                                                      :doc:`01/0101_PBKDF2PasswordEncryptor` を参考に設定を行ったコンポーネント名を、refに指定すること。
+
+dbManager(必須)                                                       データベースへのトランザクション制御を行うSimpleDbTransactionManager。
+
+                                                                      nablarch.core.db.transaction.SimpleDbTransactionManagerクラスのインスタンスを指定する。
+
+                                                                      .. warning::
+                                                                         PasswordAuthenticatorのトランザクション制御が個別アプリケーションの処理に影響を与えないように、個別アプリケーションとは別のトランザクションを使用するように設定すること。
+                                                                         設定例では、dbTransactionNameに"authenticator"という名前を指定しているので、個別アプリケーションでは同じ名前を使用しないようにトランザクションの設定を行う。
+
+systemTimeProvider(必須)                                              システム日時の取得に使用するSystemTimeProvider。
+
+                                                                      nablarch.core.date.SystemTimeProviderインタフェースを実装したクラスのインスタンスを指定する。
+                                                                      システム日時は最終ログイン日時の更新に使用する。
+
+businessDateProvider(必須)                                            業務日付の取得に使用するBusinessDateProvider。
+
+                                                                      nablarch.core.date.BusinessDateProviderインタフェースを実装したクラスのインスタンスを指定する。
+                                                                      業務日付は、有効日（From/To）とパスワード有効期限のチェックに使用する。
+===================================================================== ==================================================================================================================================================================================
+
+
+AuthenticaionUtilの使用方法
+=============================================================================================
+
+AuthenticaionUtilの使用方法について解説する。
+
+AuthenticationUtilでは、以下のユーティリティメソッドを実装している。なお、リポジトリからコンポーネントを取得する際の
+コンポーネント名は、上記の :ref:`passwordAuth-settings-label` で登録しているそれぞれのコンポーネント名と
+あわせる必要があるため、上記の設定例と異なるコンポーネント名で登録している場合にはソースコードを修正すること。
+
+================== ==============================================================================================
+メソッド
+================== ==============================================================================================
+encryptPassword    リポジトリから、 passwordEncryptor というコンポーネント名で PasswordEncryptor を取得し、
+                   PasswordEncryptor#encrypt(String, String) を呼び出す。
+
+authenticate       リポジトリから、 authenticator というコンポーネント名で Authenticator を取得し、
+                   Authenticator#authenticate(String, String) を呼び出す。
+================== ==============================================================================================
+
+
+AuthenticationUtilの使用例
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+本サンプルを使用した場合の認証処理の実装例を示す。
+
+導入プロジェクトでは、本実装例を参考にし要件を満たす認証処理を実装すること。
+
+.. code-block:: java
+
+  // 事前に認証を行うためのユーザID及びパスワードを取得する。
+  String userId = ・・・;
+  Strign password = ・・・;
+
+  try {
+
+      AuthenticationUtil.authenticate(userId, password);
+
+  } catch (AuthenticationFailedException e) {
+
+      // 認証に失敗した場合の処理
+
+  } catch (UserIdLockedException e) {
+
+      // ユーザIDがロックされていた場合の処理
+
+  } catch (PasswordExpiredException e) {
+
+      // パスワードの有効期限が切れていた場合の処理
+
+  }
+
+.. note::
+
+   上記の例では、認証エラーの状態により細かく処理を分けているが、
+   細かく処理を分ける必要がない場合には、以下のように上位の例外クラスを補足して処理を行えば良い。
+
+  .. code-block:: java
+
+    try {
+
+        AuthenticationUtil.authenticate(userId, password);
+
+    } catch (AuthenticationException e) {
+        // 例外の処理
+    }
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-01_Authentication--s1`
+
+```json
+{
+  "id": "biz-samples-01_Authentication--s1",
+  "title": "データベースを用いたパスワード認証機能サンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.common.authentication",
+        "パスワード認証",
+        "パッケージ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "PBKDF2",
+        "パスワード暗号化",
+        "パスワード認証",
+        "ストレッチング",
+        "ソルト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "構成",
+      "hints": [
+        "PasswordAuthenticator",
+        "PBKDF2PasswordEncryptor",
+        "AuthenticationUtil",
+        "AuthenticationException",
+        "AuthenticationFailedException",
+        "PasswordExpiredException",
+        "UserIdLockedException",
+        "Authenticator",
+        "PasswordEncryptor",
+        "SystemAccount",
+        "SYSTEM_ACCOUNT",
+        "クラス構成",
+        "テーブル定義",
+        "アカウント情報"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用方法",
+      "hints": [
+        "PasswordAuthenticator",
+        "AuthenticationUtil",
+        "encryptPassword",
+        "authenticate",
+        "failedCountToLock",
+        "passwordEncryptor",
+        "dbManager",
+        "systemTimeProvider",
+        "businessDateProvider",
+        "パスワード認証",
+        "ユーザIDロック",
+        "パスワード有効期限",
+        "認証失敗回数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**パッケージ**: `please.change.me.common.authentication`",
+    "s2": "WebアプリケーションのユーザID/パスワード認証機能のサンプル実装。ログイン処理を実行する業務処理の中で使用することを想定。\n\n> **注意**: Nablarch導入プロジェクトでは、要件を満たすよう本サンプル実装を修正して使用すること。\n\nデフォルトでは[PBKDF2](http://www.ietf.org/rfc/rfc2898.txt)を使用してパスワードを暗号化する。各プロジェクトでパスワード暗号化のストレッチング回数やソルトなどを設定する必要がある。詳細は :doc:`01/0101_PBKDF2PasswordEncryptor` を参照。",
+    "s3": "## インタフェース\n\n| インタフェース名 | 概要 |\n|---|---|\n| `Authenticator` | ユーザの認証を行うインタフェース |\n| `PasswordEncryptor` | パスワードの暗号化を行うインタフェース |\n\n## クラス\n\n| クラス名 | 概要 |\n|---|---|\n| `PasswordAuthenticator` | データベースに保存されたアカウント情報に対してパスワード認証を行うクラス |\n| `PBKDF2PasswordEncryptor` | PBKDF2を使用してパスワードの暗号化を行うクラス |\n| `AuthenticationUtil` | リポジトリからAuthenticatorおよびPasswordEncryptorを取得して、ユーザ認証およびパスワード暗号化を行うユーティリティ |\n| `SystemAccount` | ユーザのアカウント情報を保持するクラス |\n\n## 例外クラス\n\n| クラス名 | 概要 |\n|---|---|\n| `AuthenticationException` | 認証処理に関する例外の基底クラス。認証方式に応じて本クラスを継承した例外クラスを作成する |\n| `AuthenticationFailedException` | アカウント情報の不一致により認証に失敗した場合に発生する例外。対象ユーザのユーザIDを保持する |\n| `PasswordExpiredException` | パスワードの有効期限が切れている場合に発生する例外。ユーザID・パスワード有効期限・チェックに使用した業務日付を保持する |\n| `UserIdLockedException` | ユーザIDがロックされている場合に発生する例外。ユーザIDとロックする認証失敗回数を保持する |\n\n## テーブル定義: SYSTEM_ACCOUNT\n\n本サンプルを導入プロジェクトに取り込む際には、導入プロジェクトのテーブル定義に従いSQLファイルおよびソースコードを修正すること。\n\n| 論理名 | 物理名 | Javaの型 | 制約 |\n|---|---|---|---|\n| ユーザID | USER_ID | java.lang.String | 主キー |\n| パスワード | PASSWORD | java.lang.String | |\n| ユーザIDロック | USER_ID_LOCKED | java.lang.String | ロックなし=\"0\"、ロックあり=\"1\" |\n| パスワード有効期限 | PASSWORD_EXPIRATION_DATE | java.lang.String | 書式yyyyMMdd、未指定時\"99991231\" |\n| 認証失敗回数 | FAILED_COUNT | int | |\n| 有効日(From) | EFFECTIVE_DATE_FROM | java.lang.String | 書式yyyyMMdd、未指定時\"19000101\" |\n| 有効日(To) | EFFECTIVE_DATE_TO | java.lang.String | 書式yyyyMMdd、未指定時\"99991231\" |\n| 最終ログイン日時 | LAST_LOGIN_DATE_TIME | java.sql.Timestamp | |\n\n> **注意**: 導入プロジェクトでは、必要なユーザ属性をこのテーブルに追加したり、1対1で紐づくユーザ情報テーブルなどを作成して要件を満たすテーブル設計を行うこと。",
+    "s4": "パスワード認証の特徴:\n- 認証時にアカウント情報の有効日（From/To）をチェックする\n- 認証時にパスワードの有効期限をチェックする\n- 連続で指定回数認証に失敗するとユーザIDにロックをかける。指定回数に達するまでに認証に成功すると失敗回数をリセットする\n- 暗号化されたパスワードを使用して認証。デフォルトでPBKDF2を使用\n- 認証成功時のみシステム日時で最終ログイン日時を更新する\n\n業務機能（ログイン機能、ユーザ登録機能など）からは `AuthenticationUtil` を使用すること。\n\n## PasswordAuthenticatorの設定\n\n```xml\n<component name=\"authenticator\" class=\"please.change.me.common.authentication.PasswordAuthenticator\">\n  <property name=\"failedCountToLock\" value=\"3\"/>\n  <property name=\"passwordEncryptor\" ref=\"passwordEncryptor\" />\n  <property name=\"dbManager\">\n    <component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n      <property name=\"dbTransactionName\" value=\"authenticator\"/>\n      <property name=\"connectionFactory\" ref=\"connectionFactory\"/>\n      <property name=\"transactionFactory\" ref=\"transactionFactory\"/>\n    </component>\n  </property>\n  <property name=\"systemTimeProvider\" ref=\"systemTimeProvider\" />\n  <property name=\"businessDateProvider\" ref=\"businessDateProvider\" />\n</component>\n<component name=\"systemTimeProvider\" class=\"nablarch.core.date.BasicSystemTimeProvider\" />\n<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\" />\n```\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| failedCountToLock | | | 0 | ユーザIDをロックする認証失敗回数。0の場合はロック機能を使用しない |\n| passwordEncryptor | PasswordEncryptor | ○ | | パスワード暗号化に使用するPasswordEncryptor。:doc:`01/0101_PBKDF2PasswordEncryptor` を参考に設定したコンポーネント名をrefに指定 |\n| dbManager | SimpleDbTransactionManager | ○ | | データベースへのトランザクション制御を行うSimpleDbTransactionManager |\n| systemTimeProvider | SystemTimeProvider | ○ | | システム日時の取得に使用するSystemTimeProvider。最終ログイン日時の更新に使用 |\n| businessDateProvider | BusinessDateProvider | ○ | | 業務日付の取得に使用するBusinessDateProvider。有効日（From/To）とパスワード有効期限チェックに使用 |\n\n> **警告**: PasswordAuthenticatorのトランザクション制御が個別アプリケーションの処理に影響を与えないように、個別アプリケーションとは別のトランザクションを使用するように設定すること。設定例では`dbTransactionName`に\"authenticator\"を指定しているので、個別アプリケーションでは同じ名前を使用しないこと。\n\n## AuthenticationUtilの使用方法\n\nリポジトリからコンポーネントを取得する際のコンポーネント名は、上記の設定で登録しているコンポーネント名と合わせる必要がある。設定例と異なるコンポーネント名で登録している場合はソースコードを修正すること。\n\n| メソッド | 説明 |\n|---|---|\n| encryptPassword | コンポーネント名`passwordEncryptor`でPasswordEncryptorを取得し、`PasswordEncryptor#encrypt(String, String)`を呼び出す |\n| authenticate | コンポーネント名`authenticator`でAuthenticatorを取得し、`Authenticator#authenticate(String, String)`を呼び出す |\n\n```java\nString userId = ...;\nString password = ...;\n\ntry {\n    AuthenticationUtil.authenticate(userId, password);\n} catch (AuthenticationFailedException e) {\n    // 認証に失敗した場合の処理\n} catch (UserIdLockedException e) {\n    // ユーザIDがロックされていた場合の処理\n} catch (PasswordExpiredException e) {\n    // パスワードの有効期限が切れていた場合の処理\n}\n```\n\n認証エラーを細かく分ける必要がない場合は上位例外クラスでキャッチ可能:\n\n```java\ntry {\n    AuthenticationUtil.authenticate(userId, password);\n} catch (AuthenticationException e) {\n    // 例外の処理\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

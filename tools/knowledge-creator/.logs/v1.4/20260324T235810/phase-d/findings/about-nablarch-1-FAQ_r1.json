@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example comment",
+      "description": "The comment in the code example was modified from the source. Source has `// SqlRowからEntityの生成` but the knowledge file has `// SqlRowからEntityの生成（コンストラクタ使用）`. The text `（コンストラクタ使用）` was added and has no basis in the source.",
+      "source_evidence": "// SqlRowからEntityの生成\nSampleEntity entity = new SampleEntity(inputData);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names appearing in the code example are missing from hints: `ExecutionContext`, `DateUtil`, `Success`.",
+      "source_evidence": "public Result handle(SqlRow inputData, ExecutionContext ctx) { ... entity.setDate(DateUtil.addDay(...)); return new Success(); }"
+    }
+  ]
+}

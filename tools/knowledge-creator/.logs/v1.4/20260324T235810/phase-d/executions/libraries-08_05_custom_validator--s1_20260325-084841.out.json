@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_05_custom_validator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "プロパティ名 `allow0001MessageId` および `deny0001MessageId` がhintsに含まれていない。これらはバリデータに設定するメッセージID用プロパティ名であり、設定ファイル登録時に参照される重要なプロパティ名。",
+      "source_evidence": "バリデータ実装コード: `private String allow0001MessageId;` / `private String deny0001MessageId;` および設定XMLの `<property name=\"allow0001MessageId\" value=\"MSG00051\"/>` / `<property name=\"deny0001MessageId\" value=\"MSG00052\"/>`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`DirectCallableValidator` の `validate` メソッドで使用される `Map<String, Object>` 型（パラメータ `params`）がhintsに含まれていない。業務ロジックからの直接呼び出し時に属性値をMapとして渡す点は、このセクションの核心的な仕様。",
+      "source_evidence": "DirectCallableValidatorのvalidateメソッドシグネチャ: `public <T> boolean validate(ValidationContext<T> context, String propertyName, Object propertyDisplayName, final Map<String, Object> params, Object value)`"
+    }
+  ]
+}

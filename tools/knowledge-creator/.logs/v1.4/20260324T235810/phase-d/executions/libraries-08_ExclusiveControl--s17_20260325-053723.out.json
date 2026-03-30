@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーではない場合）",
+      "description": "Source contains a subsection explaining bulk update exclusive control for non-composite primary keys using overloaded methods that accept a request parameter name. This entire subsection is absent from s1.",
+      "source_evidence": "Source lines: 'HttpExclusiveControlUtil.checkVersions(request, context, \"user.deactivate\")' and 'HttpExclusiveControlUtil.updateVersionsWithCheck(request, \"user.deactivate\")' — overloads that accept a request parameter name string to restrict version-check targets to only the selected records. Also includes a note that the checkbox value must be set to the primary key of the update target record."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーの場合）",
+      "description": "Source contains a subsection explaining bulk update exclusive control for composite primary keys using singular-form methods checkVersion() and updateVersionWithCheck() (without 's'), called per record in a loop. This entire subsection is absent from s1.",
+      "source_evidence": "Source specifies: use 'HttpExclusiveControlUtil.checkVersion(request, context, new UsersExclusiveControl(...))' and 'HttpExclusiveControlUtil.updateVersionWithCheck(request, new UsersExclusiveControl(...))' (both singular, taking an ExclusiveControlContext argument) per record in a for-loop. Also provides: (1) a SQL CREATE TABLE example with a 3-column composite PK (USER_ID, PK2, PK3) and a VERSION column; (2) a full UsersExclusiveControl class implementation extending ExclusiveControlContext using an enum PK and appendCondition(); (3) an HTML checkbox example using name='user.userCompositeKeys' with composite key values; (4) a note referencing WebView_CompositeKeyCheckboxTag, WebView_CompositeKeyRadioButtonTag, and nablarch.common.web.compositekey.CompositeKey; (5) a note that checkbox values must be composite key fields joined by a delimiter that cannot appear in key values, and that the form class must implement logic to extract keys from request parameters."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Hints for s1 are missing key identifiers from the bulk update sections: singular-form method names checkVersion and updateVersionWithCheck, the UsersExclusiveControl example class, and CompositeKey-related class names referenced in the source.",
+      "source_evidence": "Source references: 'HttpExclusiveControlUtil.checkVersion()', 'HttpExclusiveControlUtil.updateVersionWithCheck()', 'UsersExclusiveControl', 'CompositeKeyCheckboxTag', 'CompositeKeyRadioButtonTag', 'CompositeKey'."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "ui-framework-js_framework--s15",
+  "title": "ウィジェットの実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ウィジェットの実装例",
+      "hints": [
+        "ModalDialog",
+        "Widget",
+        "widgets()",
+        "モーダルダイアログ実装",
+        "ウィジェット定義",
+        "イベントハンドラ登録",
+        "コンストラクタ初期化順序",
+        "define()",
+        "widgetType",
+        "beforeSubmit.nablarch",
+        "nablarch_submit",
+        "instanceof",
+        "テンプレートファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ウィジェットの実装例\n\nモーダルダイアログウィジェットの実装サンプルに基づく実装ルール。\n\n### モジュール依存関係の定義\n\n- モジュールパスは `(コンテキストルート)/js/` からの相対パスを指定する\n- `./` で始まるパスはソースファイルからの相対パスとみなされる\n- パスの先頭に `text!` を指定した場合、そのファイルはJavaScriptとして評価されず、ファイル内容を文字列として読み込む\n\n### モジュール定義を行う関数パターン\n\nモジュールの初期化を行う関数を冒頭に定義し、この関数の最後で呼び出す。コードを冒頭に記述することで、モジュールの内容を把握しやすくなる。\n\n### マーカーCSSとウィジェット識別子の命名規則\n\n- マーカーCSSの命名: `(プロジェクト名)_(ウィジェット名)`\n- `widgetType` はマーカーCSSと同じ `(PJ名)_(ウィジェット名)` とする\n\n### プロトタイプ定義\n\n- プロトタイプに `constructor: WidgetClass` を明示的に指定すること。`instanceof` 演算子を正常に動作させるために必要。\n\n### イベント定義の4つの書式\n\n```\n1. \"(イベント名)\" : handler          // this.$node 上のイベント\n2. \"(セレクタ式) (イベント名)\" : handler  // event delegation\n3. \"(コンテキストノード) (イベント名)\" : handler\n4. \"(コンテキストノード) (セレクタ式) (イベント名)\" : handler\n```\n\n- コンテキストノードには `$` で始まるプロパティ名または `\"document\"` を指定する\n- ハンドラに文字列を指定した場合、そのウィジェットの同名メソッドを呼び出す\n- ハンドラに関数を指定した場合、そのウィジェットを `bind()` したものが呼び出される\n\n> **重要**: `\"document beforeSubmit\"` イベントで使用されるカスタムイベントの実際の名称は `beforeSubmit.nablarch` である。このイベントは `nablarch/ui/event` の中で定義されており、グローバル関数 `nablarch_submit()` によってサブミットが行われる直前に呼ばれる。サブミット抑止ロジックを実装する際は、このイベントの発火元と定義場所を把握しておく必要がある。\n\n### コンストラクタ実装上の注意\n\n> **重要**: ノードプロパティの初期化は `Widget.call(this, element)` より前に行う必要がある。\n\n- JavaScriptでは親クラスのコンストラクタは自動では呼ばれないため、明示的に `Widget.call(this, element)` を呼び出すこと\n- ノードの内容は後でカスタマイズしやすいように、テンプレートファイルを使用すること\n\n### イベントハンドラの戻り値\n\n- `false` を明示的にリターンすることで、イベントのプロパゲーションとデフォルトアクションを抑止できる\n\n### 実装例（ModalDialog）\n\n```javascript\ndefine([\n  \"jquery\"\n, \"nablarch/ui/Widget\"\n, \"text!./ModalDialog.template\"\n, \"nablarch/ui/event\"\n, \"sugar\"\n],\nfunction($, Widget, template) { \"use strict\";\n  // モジュールの初期化を行う関数を冒頭に定義し、最後で呼び出す\n  function define() {\n    $(function() {\n      $(\".sample_ModalDialog.-content\").widgets(ModalDialog);\n    });\n    return ModalDialog;\n  }\n\n  ModalDialog.prototype = Object.merge(new Widget(), {\n    constructor : ModalDialog   // instanceof 演算子を正常に動作させるために必要\n  , $dialog   : null\n  , contentId : null\n  , isActive  : null\n  , show : ModalDialog_show\n  , hide : ModalDialog_hide\n  });\n\n  ModalDialog.event = {\n    \"click\" : \"show\"\n  , \"$dialog button.close click\" : \"hide\"\n  // document beforeSubmit は beforeSubmit.nablarch イベント(nablarch/ui/event で定義)\n  // グローバル関数 nablarch_submit() がサブミット直前に発火する\n  , \"document beforeSubmit\" : function() { return !isActive }\n  };\n\n  ModalDialog.widgetType = \"sample_ModalDialog\";\n\n  function ModalDialog(element, option) {\n    // ノードプロパティの初期化（Widget.call より先に行うこと）\n    this.contentId = option.content;\n    this.isActive  = false;\n    // テンプレートファイルを使用してノード内容を初期化（後でカスタマイズしやすくするため）\n    this.$dialog   = $(template).css({\n                       display   : \"none\"\n                     , position  : \"absolute\"\n                     , \"z-index\" : \"5\"\n                     }).appendTo(document);\n    // 親クラスコンストラクタの明示的呼び出し\n    Widget.call(this, element);\n    this.$dialog.find(\"div.content\").append(\"#\" + contentId);\n  }\n\n  function ModalDialog_show(event) {\n    this.isActive = true;\n    this.$dialog.slideDown(\"fast\");\n    return false;\n  }\n\n  function ModalDialog_hide(event) {\n    this.isActive = false;\n    this.$dialog.slideUp(\"fast\");\n    return false;\n  }\n\n  return define();\n});\n```"
+  }
+}

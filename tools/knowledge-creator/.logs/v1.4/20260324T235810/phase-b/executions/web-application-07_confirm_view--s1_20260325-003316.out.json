@@ -1,0 +1,40 @@
+{
+  "id": "web-application-07_confirm_view--s1",
+  "title": "確認画面の実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "登録確認画面の実装",
+      "hints": [
+        "W11AC02Action",
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "登録確認画面",
+        "Actionクラス実装",
+        "確認画面表示",
+        "リクエスト単体テスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "精査処理呼び出し実装",
+      "hints": [
+        "@OnError",
+        "W11AC02Form",
+        "ApplicationException",
+        "精査処理呼び出し",
+        "バリデーション",
+        "確認画面",
+        "エラー遷移",
+        "精査エラー遷移先指定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 登録確認画面の実装\n\nActionクラスのメソッドはRequestIDに`\"do\"`プレフィックスを付けて命名する（例: `doRW11AC0202`）。確認画面表示メソッドは`HttpResponse`を返し、確認画面JSPパスを指定する。\n\n**クラス**: `W11AC02Action`  \n**メソッド名**: `\"do\"` + RW11AC0202（確認画面表示のリクエストID）\n\n```java\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    return new HttpResponse(\"/ss11AC/W11AC0202.jsp\");\n}\n```\n\nリクエスト単体テストデータシート（確認画面表示リクエスト用）:\n![テストデータシート（確認画面表示）](assets/web-application-07_confirm_view--s1/action_test_confirm.png)",
+    "s2": "## 精査処理呼び出し実装\n\n`@OnError`アノテーションで精査エラー（`ApplicationException`）発生時の遷移先JSPを指定する。`Form.validate(req, \"register\")`で精査処理を呼び出す。精査OK時は確認画面JSPを返却し、精査NG時は`@OnError`の指定により登録画面JSPに遷移する。\n\n**アノテーション**: `@OnError`\n\n```java\n// 精査エラー時の遷移先の指定\n@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0201.jsp\")\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    // 精査処理の呼び出し実装\n    W11AC02Form.validate(req, \"register\");\n    return new HttpResponse(\"/ss11AC/W11AC0202.jsp\");\n}\n```\n\nリクエスト単体テストデータシート（精査確認用データ）:\n![テストデータシート（精査確認）](assets/web-application-07_confirm_view--s1/action_test_confirm_validate.png)"
+  }
+}

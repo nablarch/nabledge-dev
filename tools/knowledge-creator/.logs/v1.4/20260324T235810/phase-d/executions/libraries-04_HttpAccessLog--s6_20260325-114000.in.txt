@@ -1,0 +1,267 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/01/04_HttpAccessLog.rst`
+- Format: `rst`
+
+```
+リクエスト処理終了時のログ出力に使用するフォーマット
+------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+:ref:`リクエスト処理開始時のプレースホルダ一覧<HttpAccessLog_BeginFormat>` に加えて、下記のプレースホルダを指定できる。\
+リクエストパラメータは、 :ref:`WebView_HiddenEncryption` 機能の復号後の状態となる。
+
+======================================= ===============================
+項目名                                   プレースホルダ
+======================================= ===============================
+ディスパッチ先クラス                     $dispatchingClass$
+ステータスコード(内部)                   $statusCode$
+ステータスコード(クライアント)           $responseStatusCode$
+コンテンツパス                           $contentPath$
+開始日時                                 $startTime$
+終了日時                                 $endTime$
+実行時間                                 $executionTime$
+最大メモリ量                             $maxMemory$
+空きメモリ量(開始時)                     $freeMemory$
+======================================= ===============================
+
+   
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ @@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$] status_code = [$statusCode$] content_path = [$contentPath$]
+     \n\tstart_time     = [$startTime$]
+     \n\tend_time       = [$endTime$]
+     \n\texecution_time = [$executionTime$]
+     \n\tmax_memory     = [$maxMemory$]
+     \n\tfree_memory    = [$freeMemory$]
+
+HTTPアクセスログの出力例
+==================================================================
+HTTPアクセスログの出力例を下記に示す。\
+ユーザ登録を依頼するリクエストの例である。\
+パラメータ名にpasswordが含まれるリクエストパラメータは、マスク対象とする。\
+HTTPアクセスログの個別項目のフォーマットは、デフォルトのフォーマットを使用する。
+
+app-log.propertiesの設定例
+
+.. code-block:: xml
+
+ # HttpAccessLogFormatterの設定
+ httpAccessLogFormatter.maskingChar=#
+ httpAccessLogFormatter.maskingPatterns=\\.*password\\.*
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=appFile
+
+ # appFile
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=./app.log
+ writer.appFile.encoding=UTF-8
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] $message$$information$$stackTrace$
+
+ availableLoggersNamesOrder=ACC
+
+ # ACC
+ loggers.ACC.nameRegex=HTTP_ACCESS
+ loggers.ACC.level=INFO
+ loggers.ACC.writerNames=appFile
+
+パラメータ名にpasswordを含むパラメータは、HttpAccessLogFormatterの設定で指定した文字にマスクして出力される。\
+
+.. code-block:: bash
+
+ 2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ BEGIN @@@@ rid = [USERS00302] uid = [0000000001] sid = [60174985E7D35DB7B80681107098C426]
+     url         = [http://localhost:8090/action/management/user/UserRegisterAction/USERS00302]
+     method      = [POST]
+     port        = [8090]
+     client_ip   = [127.0.0.1]
+     client_host = [127.0.0.1]
+ 2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ PARAMETERS @@@@
+     parameters  = [{
+         users.extensionNumberBuilding = [12],
+         ugroupSystemAccount.ugroupId = [0000000000],
+         users.mailAddress = [yamada@sample.co.jp],
+         systemAccount.loginId = [U03021934],
+         users.mobilePhoneNumberAreaCode = [090],
+         users.extensionNumberPersonal = [3456],
+         users.kanjiName = [山田太郎],
+         systemAccount.confirmPassword = [########],
+         systemAccount.useCase = [UC00000000, UC00000001, UC00000002],
+         users.mobilePhoneNumberCityCode = [1234],
+         nablarch_token = [UmNDw+Z2nuTQPwsZ],
+         users.kanaName = [ヤマダタロウ],
+         systemAccount.newPassword = [########],
+         users.mobilePhoneNumberSbscrCode = [5678]}]
+ 2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ DISPATCHING CLASS @@@@ class = [nablarch.sample.management.user.UserRegisterAction]
+ 2011-03-03 19:35:48.362 -INFO- ACC [201103031935478480009] @@@@ END @@@@ rid = [USERS00302] uid = [0000000001] sid = [60174985E7D35DB7B80681107098C426] url = [http://localhost:8090/action/management/user/UserRegisterAction/USERS00302] status_code = [200] content_path = [/management/user/USER-004.jsp]
+     start_time     = [2011-03-03 19:35:47.848]
+     end_time       = [2011-03-03 19:35:48.362]
+     execution_time = [514]
+     max_memory     = [66650112]
+     free_memory    = [53128512]
+
+```
+
+## Knowledge File
+
+- ID: `libraries-04_HttpAccessLog--s6`
+
+```json
+{
+  "id": "libraries-04_HttpAccessLog--s6",
+  "title": "リクエスト処理終了時のログ出力フォーマットとHTTPアクセスログの出力例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエスト処理終了時のログ出力に使用するフォーマット",
+      "hints": [
+        "リクエスト処理終了時",
+        "HTTPアクセスログ",
+        "$dispatchingClass$",
+        "$statusCode$",
+        "$responseStatusCode$",
+        "$contentPath$",
+        "$startTime$",
+        "$endTime$",
+        "$executionTime$",
+        "$maxMemory$",
+        "$freeMemory$",
+        "デフォルトフォーマット",
+        "プレースホルダ",
+        "HttpAccessLog_BeginFormat"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "HTTPアクセスログの出力例",
+      "hints": [
+        "HTTPアクセスログ出力例",
+        "デフォルトフォーマット使用",
+        "maskingChar",
+        "maskingPatterns",
+        "マスク",
+        "password",
+        "FileLogWriter",
+        "BasicLogFormatter",
+        "HttpAccessLogFormatter",
+        "app-log.properties",
+        "log.properties",
+        "アクセスログ出力例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## リクエスト処理終了時のログ出力に使用するフォーマット\n\n:ref:`HttpAccessLog_BeginFormat` のプレースホルダに加え、以下を指定可能。リクエストパラメータは :ref:`WebView_HiddenEncryption` 機能の復号後の状態となる。\n\n| 項目名 | プレースホルダ |\n|---|---|\n| ディスパッチ先クラス | $dispatchingClass$ |\n| ステータスコード(内部) | $statusCode$ |\n| ステータスコード(クライアント) | $responseStatusCode$ |\n| コンテンツパス | $contentPath$ |\n| 開始日時 | $startTime$ |\n| 終了日時 | $endTime$ |\n| 実行時間 | $executionTime$ |\n| 最大メモリ量 | $maxMemory$ |\n| 空きメモリ量(開始時) | $freeMemory$ |\n\nデフォルトフォーマット:\n\n```bash\n@@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$] status_code = [$statusCode$] content_path = [$contentPath$]\n    \\n\\tstart_time     = [$startTime$]\n    \\n\\tend_time       = [$endTime$]\n    \\n\\texecution_time = [$executionTime$]\n    \\n\\tmax_memory     = [$maxMemory$]\n    \\n\\tfree_memory    = [$freeMemory$]\n```",
+    "s2": "## HTTPアクセスログの出力例\n\nユーザ登録を依頼するリクエストの例である。パラメータ名にpasswordが含まれるリクエストパラメータは、マスク対象とする。HTTPアクセスログの個別項目のフォーマットは、デフォルトのフォーマットを使用する。\n\napp-log.propertiesの設定例（passwordを含むパラメータをマスク）:\n\n```xml\n# HttpAccessLogFormatterの設定\nhttpAccessLogFormatter.maskingChar=#\nhttpAccessLogFormatter.maskingPatterns=\\\\.*password\\\\.*\n```\n\nlog.propertiesの設定例:\n\n```bash\nwriterNames=appFile\n\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=./app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=ACC\n\nloggers.ACC.nameRegex=HTTP_ACCESS\nloggers.ACC.level=INFO\nloggers.ACC.writerNames=appFile\n```\n\npasswordを含むパラメータはmaskingCharで指定した文字でマスクして出力される。\n\n```bash\n2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ BEGIN @@@@ rid = [USERS00302] uid = [0000000001] sid = [60174985E7D35DB7B80681107098C426]\n    url         = [http://localhost:8090/action/management/user/UserRegisterAction/USERS00302]\n    method      = [POST]\n    port        = [8090]\n    client_ip   = [127.0.0.1]\n    client_host = [127.0.0.1]\n2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ PARAMETERS @@@@\n    parameters  = [{\n        users.extensionNumberBuilding = [12],\n        ugroupSystemAccount.ugroupId = [0000000000],\n        users.mailAddress = [yamada@sample.co.jp],\n        systemAccount.loginId = [U03021934],\n        users.mobilePhoneNumberAreaCode = [090],\n        users.extensionNumberPersonal = [3456],\n        users.kanjiName = [山田太郎],\n        systemAccount.confirmPassword = [########],\n        systemAccount.useCase = [UC00000000, UC00000001, UC00000002],\n        users.mobilePhoneNumberCityCode = [1234],\n        nablarch_token = [UmNDw+Z2nuTQPwsZ],\n        users.kanaName = [ヤマダタロウ],\n        systemAccount.newPassword = [########],\n        users.mobilePhoneNumberSbscrCode = [5678]}]\n2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ DISPATCHING CLASS @@@@ class = [nablarch.sample.management.user.UserRegisterAction]\n2011-03-03 19:35:48.362 -INFO- ACC [201103031935478480009] @@@@ END @@@@ rid = [USERS00302] uid = [0000000001] sid = [60174985E7D35DB7B80681107098C426] url = [http://localhost:8090/action/management/user/UserRegisterAction/USERS00302] status_code = [200] content_path = [/management/user/USER-004.jsp]\n    start_time     = [2011-03-03 19:35:47.848]\n    end_time       = [2011-03-03 19:35:48.362]\n    execution_time = [514]\n    max_memory     = [66650112]\n    free_memory    = [53128512]\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

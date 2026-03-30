@@ -1,0 +1,334 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/workflow/sample_application/doc/00/SampleApplicationDesign.rst`
+- Format: `rst`
+
+```
+==================================================
+サンプルアプリケーション概要
+==================================================
+
+サンプルアプリケーションでは、
+申請情報を登録し、登録された申請情報をもとにワークフローを進行する機能を実装している。
+
+申請の種類は、以下の二種類である。
+
+* 交通費申請
+* ローン申請
+
+-----------------------
+ワークフロー定義
+-----------------------
+
+サンプルアプリケーションで実装しているワークフロー定義をそれぞれ以下に示す。
+
+.. _trans_expence_appliance_definition:
+
+* 交通費申請
+
+ .. image:: _images/WF1101.png
+
+.. _loan_appliance_definition:
+
+* ローン申請
+
+ .. image:: _images/WF1102.png
+    :width: 800px
+   
+上記の①～④の説明箇所は以下のとおり
+
+======== ============================================= ==========================================
+番号     処理内容                                      実装方法
+======== ============================================= ==========================================
+①        ワークフローを開始する。                      :ref:`start_workflow`
+②        確認タスクを承認タスクへ進行させる。          :ref:`complete_task`
+③        確認タスクを再申請タスクへ進行させる。        :ref:`trigger_event`
+④        内部自動審査タスクの進行先ノードを判定する。  :ref:`customize_flow_proceed_condition`
+======== ============================================= ==========================================
+
+-----------------------
+画面遷移
+-----------------------
+サンプルとして提供する画面遷移は下記のとおり。
+これらの画面のいくつかの機能でワークフローAPIを呼び出すことで、前述のワークフローを実現している。
+また、ローン申請承認機能のうち内部自動審査はバッチ処理で実現しているため、本遷移には含まれていない。
+
+ .. image:: _images/screenTransition.png
+    :width: 800px
+
+------------------------------------
+ワークフローライブラリに関連する機能
+------------------------------------
+ワークフローライブラリに関連する以下の機能は、アプリケーション側で実装する必要がある。
+
+* ワークフローに付随する情報の保持
+* ワークフローにおける処理履歴の保持
+* タスクにアサインするユーザ/グループや権限の管理
+
+サンプルアプリケーションでどのように実現しているかについて、以下のテーブル定義を元に説明する。
+
+* 申請情報および履歴テーブルの定義
+
+ .. image:: _images/workItemsAndHistories.png
+    :width: 500px
+   
+* ワークフローにおけるタスクの担当ユーザに関連するテーブルの定義
+
+ .. image:: _images/assigned.png
+    :width: 800px
+
+ワークフローに付随する情報の保持
+--------------------------------
+ワークフローに付随する情報として、申請状況のステータスを申請情報のテーブルで保持している。
+
+ワークフロー進行中の申請状況のステータス名は案件ごとに異なる。
+そのため、申請状況のステータスは業務データとして管理する必要がある。
+
+例えば、交通費申請の「再申請」タスクが処理可能となっている場合のステータス名は、
+確認タスクから差戻された場合には「確認差戻」となり、申請者が自ら引戻した場合は「確認引戻」となる。
+
+
+ワークフローにおける処理履歴の保持
+----------------------------------
+申請に対する処理の内容および処理の結果を
+対応する履歴テーブルに登録することで、処理履歴を保持している。
+処理内容および処理結果は申請情報の種類によって異なるため、
+申請情報の種類ごとに履歴テーブルを定義している。
+
+
+タスクにアサインするユーザ/グループや権限の管理
+-----------------------------------------------
+Nablarchの認可モデルを利用して、タスクの担当ユーザおよび担当グループを管理している。
+また、ワークフローの各フローに対応するリクエストに認可を設定することで、タスクの権限設定を行っている。
+
+たとえば、ローン申請判定処理を行うリクエストは判定者グループのみに認可されており、
+それ以外のグループに属するユーザでは判定処理が実行できない。
+```
+
+## Knowledge File
+
+- ID: `workflow-SampleApplicationDesign--s1`
+
+```json
+{
+  "id": "workflow-SampleApplicationDesign--s1",
+  "title": "サンプルアプリケーション概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "サンプルアプリケーション",
+        "交通費申請",
+        "ローン申請",
+        "申請情報登録",
+        "ワークフロー進行"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ワークフロー定義",
+      "hints": [
+        "ワークフロー定義",
+        "交通費申請",
+        "ローン申請",
+        "ワークフロー図",
+        "WF1101",
+        "WF1102"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "ワークフロー開始",
+        "start_workflow",
+        "complete_task",
+        "trigger_event",
+        "customize_flow_proceed_condition",
+        "タスク進行",
+        "実装方法"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "画面遷移",
+      "hints": [
+        "画面遷移",
+        "ワークフローAPI",
+        "内部自動審査",
+        "バッチ処理",
+        "screenTransition"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "アプリケーション実装必須機能",
+        "ワークフロー付随情報",
+        "処理履歴保持",
+        "タスクアサイン",
+        "ユーザー権限管理"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ワークフローライブラリに関連する機能",
+      "hints": [
+        "テーブル定義",
+        "申請情報テーブル",
+        "履歴テーブル",
+        "担当ユーザテーブル",
+        "workItemsAndHistories",
+        "assigned"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ワークフローに付随する情報の保持",
+      "hints": [
+        "ステータス管理",
+        "申請状況",
+        "確認差戻",
+        "確認引戻",
+        "業務データ",
+        "ワークフロー付随情報"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ワークフローにおける処理履歴の保持",
+      "hints": [
+        "処理履歴",
+        "履歴テーブル",
+        "処理内容記録",
+        "処理結果記録"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "タスクにアサインするユーザ/グループや権限の管理",
+      "hints": [
+        "認可モデル",
+        "担当ユーザ",
+        "担当グループ",
+        "タスク権限",
+        "判定者グループ",
+        "ローン申請判定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "サンプルアプリケーションは申請情報の登録とワークフロー進行機能を実装している。\n\n申請の種類:\n- 交通費申請\n- ローン申請",
+    "s2": "交通費申請のワークフロー定義:\n![交通費申請ワークフロー定義](assets/workflow-SampleApplicationDesign--s1/WF1101.png)\n\nローン申請のワークフロー定義:\n![ローン申請ワークフロー定義](assets/workflow-SampleApplicationDesign--s1/WF1102.png)",
+    "s3": "| 番号 | 処理内容 | 実装方法 |\n|---|---|---|\n| ① | ワークフローを開始する | :ref:`start_workflow` |\n| ② | 確認タスクを承認タスクへ進行させる | :ref:`complete_task` |\n| ③ | 確認タスクを再申請タスクへ進行させる | :ref:`trigger_event` |\n| ④ | 内部自動審査タスクの進行先ノードを判定する | :ref:`customize_flow_proceed_condition` |",
+    "s4": "これらの画面のいくつかの機能でワークフローAPIを呼び出すことで、前述のワークフローを実現している。\n\n![画面遷移](assets/workflow-SampleApplicationDesign--s1/screenTransition.png)\n\n> **注意**: ローン申請承認機能のうち内部自動審査はバッチ処理で実現しているため、本画面遷移には含まれていない。",
+    "s5": "ワークフローライブラリに関連する以下の機能はアプリケーション側で実装する必要がある:\n\n- ワークフローに付随する情報の保持\n- ワークフローにおける処理履歴の保持\n- タスクにアサインするユーザ/グループや権限の管理",
+    "s6": "申請情報および履歴テーブルの定義:\n![申請情報および履歴テーブル](assets/workflow-SampleApplicationDesign--s1/workItemsAndHistories.png)\n\nタスクの担当ユーザに関連するテーブルの定義:\n![担当ユーザ関連テーブル](assets/workflow-SampleApplicationDesign--s1/assigned.png)",
+    "s7": "申請状況のステータスを申請情報テーブルで保持する。ステータス名は案件ごとに異なるため業務データとして管理する必要がある。\n\n例: 交通費申請の「再申請」タスクが処理可能な場合のステータス名:\n- 確認タスクから差戻された場合: 「確認差戻」\n- 申請者が自ら引戻した場合: 「確認引戻」",
+    "s8": "申請に対する処理内容および結果を対応する履歴テーブルに登録して処理履歴を保持する。申請情報の種類ごとに履歴テーブルを定義している。",
+    "s9": "Nablarchの認可モデルを利用してタスクの担当ユーザおよび担当グループを管理する。ワークフローの各フローに対応するリクエストに認可を設定することでタスクの権限設定を行う。\n\n例: ローン申請判定処理リクエストは判定者グループのみに認可されており、それ以外のグループのユーザは判定処理を実行できない。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

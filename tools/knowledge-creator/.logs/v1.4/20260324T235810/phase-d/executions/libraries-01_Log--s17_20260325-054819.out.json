@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_Log--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 障害ログ詳細テーブル",
+      "description": "The failure log detail table in the knowledge file omits two columns present in the source: (1) 障害コードに対応するメッセージの設定例 ({0} = lock file path) — the example message text developers should configure in their message properties file; and (2) 本フレームワークがデフォルトで出力するログ — the English default log messages output when no failure code is configured. These are implementation-relevant details needed to configure failure notifications correctly.",
+      "source_evidence": "Source table row 1, column 4: 'ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。'; column 5: 'failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].' (and equivalent entries for the other three failure types)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — クラス宣言およびhints",
+      "description": "The knowledge file states '**クラス**: `nablarch.core.log.basic.LogWriterSupport`' and includes 'nablarch.core.log.basic.LogWriterSupport' in hints. The source only refers to 'LogWriterSupportクラス' without providing the fully-qualified class name. The package prefix nablarch.core.log.basic was inferred, not stated in the source.",
+      "source_evidence": "Source: 'LogWriterSupportクラスを継承しているクラスでは、ログライタにおいてレベルに応じた出力制御を行うことができる。' — no package name provided."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 — BasicLogFormatterのフォーマット指定 hints",
+      "description": "The hints for s8 are missing three placeholder names that appear in the format placeholder table: `$loggerName$`, `$bootProcess$`, and `$processingSystem$`. Users may query about these specific placeholders and an AI should match s8 for them.",
+      "source_evidence": "Source placeholder table lists: $date$, $logLevel$, $loggerName$, $bootProcess$, $processingSystem$, $requestId$, $executionId$, $userId$, $message$, $information$, $stackTrace$. Knowledge file hints include only a subset."
+    }
+  ]
+}

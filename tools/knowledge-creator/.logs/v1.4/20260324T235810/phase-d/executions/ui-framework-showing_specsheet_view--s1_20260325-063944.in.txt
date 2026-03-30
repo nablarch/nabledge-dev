@@ -1,0 +1,244 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/doc/internals/showing_specsheet_view.rst`
+- Format: `rst`
+
+```
+==============================
+設計書ビュー表示機能
+==============================
+
+概要
+-------------------------
+本項では、設計工程で作成した業務画面JSPから、画面設計書を表示する方法について説明する。
+
+使用方法
+---------------------
+本機能は、業務画面JSPをローカル表示して、右クリックで開かれるコンテキストメニューから実行することができる。
+
+このメニューの「設計書ビューを開く」を選択すると、ブラウザ上で設計書フォーマットに沿って設計情報が表示できる。
+
+.. note::
+
+  画面項目一覧に表示する項目は、業務画面JSPに直接記述した項目のみである。
+
+  **<jsp:include>** などを経由して描画する項目はJSPのプレビューには表示されるが、
+  画面項目一覧には表示されない。
+
+  これは、通常、共通化された表示項目は共通部品として個別に設計され、
+  各画面の設計書から参照される形となるためである。 
+
+.. warning::
+
+  Excelに貼り付ける場合は、Firefoxブラウザを利用すること。
+
+  ドキュメントモードが互換表示なる問題のため、InternetExplorerでは表示できない。
+
+関連ファイル
+-----------------------
+
+=========================================================== ==================================================
+パス                                                        内容
+=========================================================== ==================================================
+/specsheet_template/SpecSheetTmeplate.htm                   表示される設計書のテンプレートファイルをhtm形式で保存したもの。
+
+/specsheet_template/SpecSheetTmeplate.files/*               表示される設計書のテンプレートファイルをhtm形式で表示するためのリソース。
+
+/specsheet_template/SpecSheetTmeplate.xlsx                  表示される設計書のテンプレートファイル。
+                                                            フォーマットを変更する場合はこのファイルを修正し、htm形式で保存する。
+
+/js/devtool/resource/コード値定義.js                        コード設計書の内容を保持するデータファイル。
+                                                            Nablarch Toolboxに含まれる、画面項目定義データ自動
+                                                            生成ツールを使用して当該設計書から自動生成する。
+
+/js/devtool/resource/DB項目定義.js                          テーブル設計書の内容を保持するデータファイル。
+                                                            Nablarch Toolboxに含まれる、画面項目定義データ自動
+                                                            生成ツールを使用して当該設計書から自動生成する。
+
+/js/devtool/resource/外部インターフェース設計.js            外部インターフェース設計書の内容を保持するデータファイル。
+                                                            Nablarch Toolboxに含まれる、画面項目定義データ自動
+                                                            生成ツールを使用して当該設計書から自動生成する。
+
+/js/devtool/resource/ドメイン定義.js                        ドメイン定義書の同名のシートの内容を保持する
+                                                            データファイル。
+                                                            Nablarch Toolboxに含まれる、画面項目定義データ自動
+                                                            生成ツールを使用して当該設計書から自動生成する。
+
+/js/devtool/resource/メッセージ定義.js                      メッセージ設計書の内容を保持するデータファイル。
+                                                            Nablarch Toolboxに含まれる、画面項目定義データ自動
+                                                            生成ツールを使用して当該設計書から自動生成する。
+
+/js/devtool/resource/タグ定義.js                            各タグのメタ情報を記述するファイル。
+                                                            本機能では、各タグが入力項目か否かを判定する場合
+                                                            などに参照する。
+
+                                                            プロジェクトでプラグインを追加した場合などには、
+                                                            本ファイルにメタ情報を記述する必要がある。
+
+                                                            ファイルへの記載内容については、
+                                                            :doc:`../internals/configuration_files`
+                                                            を参照。
+
+/js/devtool/SpecSheetItems.js                               各定義情報の出力、属性値の変換用のメソッドを定義する。
+ 
+=========================================================== ==================================================
+
+.. note::
+
+  上記関連ファイルのうち、ツールを使用して設計書から自動生成するものについては、
+  対応する設計書が修正された場合には、設計情報の変更を反映するために再生成して最新化する必要がある。
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-showing_specsheet_view--s1`
+
+```json
+{
+  "id": "ui-framework-showing_specsheet_view--s1",
+  "title": "設計書ビュー表示機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "設計書ビュー表示機能",
+        "業務画面JSP",
+        "画面設計書表示"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "設計書ビューを開く",
+        "コンテキストメニュー",
+        "Firefoxブラウザ",
+        "InternetExplorer非対応",
+        "画面項目一覧",
+        "jsp:include"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "関連ファイル",
+      "hints": [
+        "SpecSheetTmeplate.htm",
+        "SpecSheetTmeplate.xlsx",
+        "コード値定義.js",
+        "DB項目定義.js",
+        "タグ定義.js",
+        "SpecSheetItems.js",
+        "Nablarch Toolbox",
+        "設計書自動生成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面JSPをローカル表示することで、ブラウザ上で設計書フォーマットに沿った画面設計書を表示する機能。",
+    "s2": "業務画面JSPをローカル表示し、右クリックのコンテキストメニューから「設計書ビューを開く」を選択すると、ブラウザ上で設計書フォーマットに沿って設計情報が表示される。\n\n> **注意**: 画面項目一覧に表示される項目は、業務画面JSPに直接記述した項目のみ。`<jsp:include>` などを経由して描画する項目はJSPのプレビューには表示されるが、画面項目一覧には表示されない。\n\n> **警告**: Excelに貼り付ける場合はFirefoxブラウザを使用すること。InternetExplorerはドキュメントモードが互換表示となる問題のため表示できない。",
+    "s3": "| パス | 内容 |\n|---|---|\n| `/specsheet_template/SpecSheetTmeplate.htm` | 設計書テンプレートファイル(htm形式) |\n| `/specsheet_template/SpecSheetTmeplate.files/*` | htm形式表示用リソース |\n| `/specsheet_template/SpecSheetTmeplate.xlsx` | 設計書テンプレートファイル。フォーマット変更時はこのファイルを修正しhtm形式で保存する |\n| `/js/devtool/resource/コード値定義.js` | コード設計書の内容を保持するデータファイル。Nablarch Toolboxの画面項目定義データ自動生成ツールで生成 |\n| `/js/devtool/resource/DB項目定義.js` | テーブル設計書の内容を保持するデータファイル。自動生成ツールで生成 |\n| `/js/devtool/resource/外部インターフェース設計.js` | 外部インターフェース設計書の内容を保持するデータファイル。自動生成ツールで生成 |\n| `/js/devtool/resource/ドメイン定義.js` | ドメイン定義書の内容を保持するデータファイル。自動生成ツールで生成 |\n| `/js/devtool/resource/メッセージ定義.js` | メッセージ設計書の内容を保持するデータファイル。自動生成ツールで生成 |\n| `/js/devtool/resource/タグ定義.js` | 各タグのメタ情報ファイル。入力項目か否かの判定に使用。プラグイン追加時には本ファイルへのメタ情報記述が必要。詳細は :doc:`../internals/configuration_files` 参照 |\n| `/js/devtool/SpecSheetItems.js` | 定義情報の出力、属性値変換用メソッドを定義 |\n\n> **注意**: 設計書から自動生成するファイルは、対応する設計書が修正された場合に再生成して最新化が必要。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

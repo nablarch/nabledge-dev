@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (構成 section)",
+      "description": "Source's クラス図 section contains an important architectural statement that is not in the knowledge file: 'ページングを実現したい場合、フレームワークが提供するクラスとサンプル提供のタグファイルがページングに必要な処理を行うため、アプリケーションプログラマはページングを作り込みせずに実現できる。' This states that application programmers do not need to implement custom paging logic — a decision-relevant design principle.",
+      "source_evidence": "構成 > クラス図: 'ページングを実現したい場合、フレームワークが提供するクラスとサンプル提供のタグファイルがページングに必要な処理を行うため、アプリケーションプログラマはページングを作り込みせずに実現できる。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "Code examples in s4 use `ApplicationException`, `SqlResultSet`, and `MessageUtil` but none of these PascalCase class names appear in the s4 hints array.",
+      "source_evidence": "s4 code: 'SqlResultSet searchResult = null;', 'throw new ApplicationException(', 'MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount())'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Code examples in s5 use `SqlResultSet`, `ValidationContext`, and `UserSearchCondition` but none of these PascalCase class names appear in the s5 hints array.",
+      "source_evidence": "s5 action code: 'ValidationContext<W11AC01SearchForm> searchConditionCtx = ...;', 'SqlResultSet searchResult = null;', 'UserSearchCondition condition = searchConditionCtx.createObject();'"
+    }
+  ]
+}

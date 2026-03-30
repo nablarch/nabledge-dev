@@ -1,0 +1,47 @@
+{
+  "id": "biz-samples-useragent_sample--s1",
+  "title": "UserAgent情報取得機能設定サンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "UserAgent情報取得機能設定サンプル",
+      "hints": [
+        "UserAgent情報取得機能",
+        "UserAgentParser",
+        "設定サンプル",
+        "利用ケース"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "UserAgentParserの設定サンプル",
+      "hints": [
+        "UserAgentParser",
+        "UserAgentPatternSetting",
+        "TypePattern",
+        "ItemPattern",
+        "please.change.me.fw.web.useragent.UserAgentParser",
+        "please.change.me.fw.web.useragent.UserAgentPatternSetting",
+        "please.change.me.fw.web.useragent.TypePattern",
+        "please.change.me.fw.web.useragent.ItemPattern",
+        "UserAgent判定",
+        "ブラウザ種別判定",
+        "typePatternList",
+        "itemPatternList",
+        "osSetting",
+        "browserSetting",
+        "versionIndex",
+        "nameIndex",
+        "MSIE",
+        "WebKit",
+        "Gecko"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## UserAgent情報取得機能設定サンプル\n\n本節では利用ケースごとに、設定例と各種UserAgent値から取得できる値の具体例を示す。\n\n> **注意**: 以下に示すパターンは各利用ケースにおける全てのパターンを網羅しているわけではない。利用プロジェクトにて実際に利用するパターンを十分に検討すること。",
+    "s2": "## UserAgentParserの設定サンプル\n\n**クラス**: `please.change.me.fw.web.useragent.UserAgentParser`\n\nブラウザの種類をMSIE・WebKit・Geckoの3種類に分別する設定例:\n\n```xml\n<component name=\"userAgentParser\" class=\"please.change.me.fw.web.useragent.UserAgentParser\">\n  <!-- OSのパターンマッピング設定（この例ではOS判定なし） -->\n  <property name=\"osSetting\">\n    <component class=\"please.change.me.fw.web.useragent.UserAgentPatternSetting\"/>\n  </property>\n  <!-- ブラウザのパターンマッピング設定 -->\n  <property name=\"browserSetting\">\n    <component class=\"please.change.me.fw.web.useragent.UserAgentPatternSetting\">\n      <property name=\"typePatternList\">\n        <list>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"MSIE\" />\n            <property name=\"pattern\" value=\".*MSIE.*\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"MSIE\" />\n            <property name=\"pattern\" value=\".*Trident.+rv:[\\d\\.]+.*\"/>\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"WebKit\" />\n            <property name=\"pattern\" value=\".*WebKit.*\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"Gecko\" />\n            <property name=\"pattern\" value=\".*Gecko.*\" />\n          </component>\n        </list>\n      </property>\n      <property name=\"itemPatternList\">\n        <list>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"ie\" />\n            <property name=\"pattern\"      value=\"(?i).*(msie\\s|trident.+rv:)([\\d\\.]*).*\" />\n            <property name=\"versionIndex\" value=\"2\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"android_browser\" />\n            <property name=\"pattern\"      value=\"(?i).*android.*version/([\\d\\.]*).+(mobile *?safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"mobile_safari\" />\n            <property name=\"pattern\"      value=\"(?i).*version/([\\d\\.]*).+(mobile.*safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"firefox_chrome\" />\n            <property name=\"pattern\"      value=\"(?i).*(firefox|chrome)[\\s/]*([\\d\\.]*).*\" />\n            <property name=\"nameIndex\"    value=\"1\" />\n            <property name=\"versionIndex\" value=\"2\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"safari\" />\n            <property name=\"pattern\"      value=\"(?i).*version/([\\d\\.]*).+(safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n        </list>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n> **注意**: typePatternList・itemPatternListは記述順に評価される。`.*Gecko.*` を先頭に置くと、ChromeやIE11もGeckoと判定される（これらのUAに `Gecko` 文字列が含まれるため）。"
+  }
+}

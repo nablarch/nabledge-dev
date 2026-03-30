@@ -1,0 +1,34 @@
+{
+  "file_id": "biz-samples-05_DbFileManagement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The note that OracleSequenceIdGenerator comes from「ベンダー依存のデータベース関連拡張サンプル実装」is omitted. Developers need this context to know where to find/obtain OracleSequenceIdGenerator for their project.",
+      "source_evidence": "なお、下記の例では採番機能として「ベンダー依存のデータベース関連拡張サンプル実装」に含まれるOracleSequenceIdGeneratorを使用している。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — ファイルアップロード時の使用例コード",
+      "description": "The upload code example omits the comment '//必要であれば、このタイミングで業務個別のファイル精査を実施。', which is a best-practice guidance telling developers where to insert their own custom file validation logic (between getPart() and save()).",
+      "source_evidence": "//必要であれば、このタイミングで業務個別のファイル精査を実施。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Hints are missing several PascalCase class names and property names that appear in the section content: PartInfo (used in upload code example), Blob (used in download code example), idGenerator (XML property name), idFormatter (XML property name).",
+      "source_evidence": "PartInfo part = req.getPart(...); Blob blob = FileManagementUtil.find(fileId); <property name=\"idGenerator\" .../> <property name=\"idFormatter\" .../>"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The source 使用方法 (h2) section exceeds 2000 characters of plain text and contains three distinct h4 subsections (コンポーネント定義ファイル設定, ファイルアップロード時, ダウンロード時), but the knowledge file does not split them into separate sections.",
+      "source_evidence": "FileManagementUtilの使用例(コンポーネント定義ファイル設定) / FileManagementUtilの使用例(ファイルアップロード時) / FileManagementUtilの使用例(ダウンロード時) — all merged into s5"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "readers-ValidatableFileDataReader--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doHeader implementation example",
+      "description": "The knowledge file's doHeader code omits the business date validation logic present in the source. The source checks inputData.getString(\"date\") against BusinessDateUtil.getDate() and throws TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate) on mismatch. This demonstrates a key pattern of field-level validation using an external service within a record handler.",
+      "source_evidence": "String date = inputData.getString(\"date\");\nString businessDate = BusinessDateUtil.getDate();\nif (!businessDate.equals(date)) {\n    throw new TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate);\n}"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — onFileEnd implementation example",
+      "description": "The knowledge file's onFileEnd code omits the writeLog calls that record total record count and data record count, which are part of the demonstrated implementation pattern in the source.",
+      "source_evidence": "writeLog(\"M000000002\", ctx.getLastRecordNumber());\nwriteLog(\"M000000003\", dataRecordCount);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The hints for s1 are missing 'FileBatchAction' and 'getValidatorAction', both of which are explicitly mentioned in the s1 section content (FileBatchActionを継承する場合はgetValidatorAction()をオーバーライドする).",
+      "source_evidence": "なお、FileBatchActionを継承したバッチ業務アクションを作成する場合は、getValidatorAction()メソッドをオーバーライドし、ファイルバリデータアクションを返却するだけで事前精査を実現できる。"
+    }
+  ]
+}

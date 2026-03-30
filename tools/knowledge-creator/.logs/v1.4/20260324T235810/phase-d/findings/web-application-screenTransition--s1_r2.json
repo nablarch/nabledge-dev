@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-screenTransition--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 (一覧照会画面から詳細画面へ遷移する場合) — Action class code example",
+      "description": "The Action class code example omits two lines present in the source: `W11AC01SearchForm searchCondition = formCtx.createObject();` and `CM311AC1Component component = new CM311AC1Component();`. As a result, the variable `searchCondition` is used in `component.selectByCondition(searchCondition)` without being declared, making the code example incomplete and uncompilable.",
+      "source_evidence": "Source contains: `W11AC01SearchForm searchCondition = formCtx.createObject();` and `CM311AC1Component component = new CM311AC1Component();` before `SqlResultSet searchResult = component.selectByCondition(searchCondition);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 (一覧照会画面から詳細画面へ遷移する場合)",
+      "description": "Hints are missing PascalCase class names `ValidationContext` and `ValidationUtil` that appear in the Action class code example for this section.",
+      "source_evidence": "Source code: `ValidationContext<W11AC01SearchForm> formCtx = ValidationUtil.validateAndConvertRequest(...);`"
+    }
+  ]
+}

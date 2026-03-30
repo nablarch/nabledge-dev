@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source end — `.. _`howto_window_scope``",
+      "description": "The source file contains the start of an additional h2 section (reference target `howto_window_scope`, section heading dashes visible) that is entirely absent from the knowledge file. The knowledge file has only sections s1–s3 covering the three visible h2 sections; the fourth section (ウィンドウスコープ related) is completely missing.",
+      "source_evidence": "Source ends with: `.. _`howto_window_scope`:\n\n--------------------------` — this is a new h2-level section heading whose title and content are truncated in the provided excerpt but clearly exist in the full source file."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — URIの指定方法",
+      "description": "Source h2 'URIの指定方法' has >= 2000 chars of plain text and contains 3 h3 subsections (絶対URLによる指定、コンテキストルートからの相対パスによる指定、HTTPとHTTPSの切り替え), but the knowledge file merges all of them into a single section s2 without splitting.",
+      "source_evidence": "Source headings under URIの指定方法: '絶対URLによる指定' (===), 'コンテキストルートからの相対パスによる指定' (===), 'HTTPとHTTPSの切り替え' (===). Combined source content spans multiple code blocks and notes, clearly exceeding 2000 chars."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — JSPとActionクラスの間でデータを受け渡す方法",
+      "description": "Source h2 'JSPとActionクラスの間でデータを受け渡す方法' has >= 2000 chars of plain text and contains 2 h3 subsections (Map型/フォームのプロパティを受け渡す場合、List型/配列の要素のプロパティを受け渡す場合), but the knowledge file merges all of them into a single section s3 without splitting.",
+      "source_evidence": "Source headings: 'Map型/フォームのプロパティを受け渡す場合' (===) and 'List型/配列の要素のプロパティを受け渡す場合' (===). Combined content includes 2 Java code blocks and 1 JSP block for Map型, plus 3 Java code blocks and 2 JSP blocks for List型, clearly exceeding 2000 chars."
+    }
+  ]
+}

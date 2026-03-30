@@ -1,0 +1,362 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_messaging/04_Explanation_http_real/01_userResisterMessageSpec.rst`
+- Format: `rst`
+
+```
+==============================
+ ユーザ情報登録サービスの仕様
+==============================
+
+
+機能概要
+========
+
+外部システムからの送信電文を入力として、ユーザ情報テンポラリテーブルにレコードを登録する。
+
+.. image:: ./_image/userRegisterMessage.png
+
+ユーザ情報テンポラリテーブルは、後続処理(常駐バッチ)によって一定時間間隔で監視され、
+未処理のデータが存在する場合にユーザ情報を登録する。
+
+常駐バッチの実装方法は、\ :doc:`../../04_Explanation_batch/index`\ を参照すること。
+
+
+主な仕様は、以下の通り。
+
+1) ユーザ情報登録処理
+
+  ユーザ情報登録電文を受信すると、データレコードの情報をユーザ情報テンポラリに登録し、処理結果を応答する。
+
+
+  【INPUTデータ】
+    * ユーザ情報登録電文
+
+  【OUTPUTデータ】
+    * ユーザ情報テンポラリ
+    * 応答電文
+
+  【精査仕様】
+    * 要求電文のレイアウトは、フレームワーク制御ヘッダ(以降ヘッダレコード)、データレコードが存在すること。
+    * ヘッダレコード、データレコードのレイアウト仕様については \ `要求電文仕様`_\ を参照。
+    * データレコードの各項目に対するドメイン精査については\ `要求電文仕様`_\ を参照。
+
+
+要求電文仕様
+============
+
+【データレコード】
+
+ ======================== ============== ========== ========================================================================
+ 項目名                   データタイプ   多重度     説明
+ ======================== ============== ========== ========================================================================
+ データ区分               X              1          半角:1桁
+ ログインID               X              1          半角:20桁以下:必須
+ 漢字氏名                 XN             1          全角:50桁以下:必須
+ カナ氏名                 N              1          全角カナ:50桁以下:必須
+ メールアドレス           X              1          半角:100桁以下:必須
+ 内線番号(ビル番号)       X              1          半角数字:2桁以下:必須
+ 内線番号(個人番号)       X              1          半角数字:4桁以下:必須
+ 携帯電話番号(市外)       X              0..1       半角数字:3桁以下
+ 携帯電話番号(市内)       X              0..1       | 半角数字:4桁以下
+                                                    | ※携帯電話番号(市外)が入力された場合は必須
+                                                    |   携帯電話番号(市外)が未入力の場合は、未入力であること
+ 携帯電話番号(加入)       X              0..1       | 半角数字:4桁以下:必須
+                                                    | ※携帯電話番号(市外)が入力された場合は必須
+                                                    |   携帯電話番号(市外)が未入力の場合は、未入力であること
+ ======================== ============== ========== ========================================================================
+ 
+XMLの場合の記述例を以下に示す。
+
+.. code-block:: xml
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <request dataKbn="0">
+  
+    <loginId>nablarch</loginId>
+    <kanjiName>名部　楽太郎</kanjiName>
+    <kanaName>ナブ　ラクタロウ</kanaName>
+    <mailAddress>nablarch@mail.co.jp</mailAddress>
+    <extensionNumberBuilding>11</extensionNumberBuilding>
+    <extensionNumberPersonal>1001</extensionNumberPersonal>
+    <mobilePhoneNumberAreaCode>201</mobilePhoneNumberAreaCode>
+    <mobilePhoneNumberCityCode>3001</mobilePhoneNumberCityCode>
+    <mobilePhoneNumberSbscrCode>4001</mobilePhoneNumberSbscrCode>
+ 
+    <_nbctlhdr>
+      <userId>0000000101</userId>
+      <resendFlag>0</resendFlag>
+    </_nbctlhdr>
+  
+  </request>
+
+.. note::
+ XML属性のサンプルを記載するため、データ区分を属性としている。
+
+JSONの場合の記述例を以下に示す。
+
+.. code-block:: bash
+
+     { 
+          "dataKbn": "0" 
+        , "loginId": "nablarch" 
+        , "kanjiName": "名部　楽太郎" 
+        , "kanaName": "ナブ　ラクタロウ" 
+        , "mailAddress": "nablarch@mail.co.jp"
+        , "extensionNumberBuilding": "11"
+        , "extensionNumberPersonal": "1001"
+        , "mobilePhoneNumberAreaCode": "201"
+        , "mobilePhoneNumberCityCode": "3001"
+        , "mobilePhoneNumberSbscrCode": "4001"
+        , "_nbctlhdr": {
+                            "userId": "user01"
+                          , "resendFlag": "0"
+                       }
+    }
+ 
+
+応答電文仕様
+============
+
+【データレコード】
+
+ ======================== ============== ========== ============================================================================
+ 項目名                   データタイプ   多重度     説明
+ ======================== ============== ========== ============================================================================
+ 障害事由コード           X              0..1       | 障害事由を表すコード値
+                                                    | 詳細は、\ `ステータスコード/障害コード/HTTPレスポンスコード仕様`_\ を参照
+ 問い合わせID             X              0..1       ユーザ情報テンポラリ.ユーザ情報IDに登録した値
+ データ区分               X              1          データ区分
+ フレームワーク制御ヘッダ X              1          フレームワーク制御項目(自動追加)
+ ======================== ============== ========== ============================================================================
+ 
+【ヘッダレコード】
+
+ ======================== ============== ========== ============================================================================
+ 項目名                   データタイプ   多重度     説明
+ ======================== ============== ========== ============================================================================
+ ステータスコード         X              1          | 本サービス側の処理結果を表すコード
+                                                    | 詳細は、\ `ステータスコード/障害コード/HTTPレスポンスコード仕様`_\ を参照
+ ======================== ============== ========== ============================================================================
+
+
+ステータスコード/障害コード/HTTPレスポンスコード仕様
+=====================================================
+
+===== ================== ================= ====================== =========================================== ==========================================
+No    ステータスコード   障害コード        HTTPレスポンスコード   原因                                        備考
+===== ================== ================= ====================== =========================================== ==========================================
+1     200                (空白)            200                    正常終了
+2     400                NR11AC4001        400                    要求電文データレコード部項目精査エラー
+3     --                 --                400                    要求電文のデータレコード部レイアウト不正    FWでエラーが検出されエラー応答が返却される
+4     500                NR11AC5000        500                    | その他の意図しないエラーにより
+                                                                  | 業務処理が失敗した場合
+===== ================== ================= ====================== =========================================== ==========================================
+
+
+エンティティ情報
+================
+
+エンティティ論理名：ユーザ情報テンポラリ
+
+======================= ==============================================
+カラム論理名            入力データ
+======================= ==============================================
+ユーザ情報ID            ユーザ情報IDで採番した値
+ログインID              要求電文.データレコード.ログインID
+漢字氏名                要求電文.データレコード.漢字氏名
+カナ氏名                要求電文.データレコード.カナ氏名
+メールアドレス          要求電文.データレコード.メールアドレス
+内線番号(ビル番号)      要求電文.データレコード.内線番号(ビル番号)
+内線番号(個人番号)      要求電文.データレコード.内線番号(個人番号)
+携帯電話番号(市外)      要求電文.データレコード.携帯電話番号(市外)
+携帯電話番号(市内)      要求電文.データレコード.携帯電話番号(市内)
+携帯電話番号(加入)      要求電文.データレコード.携帯電話番号(加入)
+ステータス              未処理('0')
+======================= ==============================================
+
+```
+
+## Knowledge File
+
+- ID: `http-messaging-01_userResisterMessageSpec`
+
+```json
+{
+  "id": "http-messaging-01_userResisterMessageSpec",
+  "title": "ユーザ情報登録サービスの仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "HTTPメッセージング",
+        "ユーザ情報登録",
+        "ユーザ情報テンポラリ",
+        "常駐バッチ連携",
+        "電文処理フロー",
+        "精査仕様"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求電文仕様",
+      "hints": [
+        "ログインID",
+        "漢字氏名",
+        "カナ氏名",
+        "メールアドレス",
+        "内線番号",
+        "携帯電話番号",
+        "データ区分",
+        "_nbctlhdr",
+        "XML電文フォーマット",
+        "JSON電文フォーマット",
+        "要求電文データレコード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "応答電文仕様",
+      "hints": [
+        "障害事由コード",
+        "問い合わせID",
+        "ステータスコード",
+        "フレームワーク制御ヘッダ",
+        "応答電文データレコード",
+        "応答電文ヘッダレコード"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ステータスコード/障害コード/HTTPレスポンスコード仕様",
+      "hints": [
+        "NR11AC4001",
+        "NR11AC5000",
+        "ステータスコード",
+        "HTTPレスポンスコード",
+        "障害コード",
+        "エラーコード一覧"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "エンティティ情報",
+      "hints": [
+        "ユーザ情報テンポラリ",
+        "ユーザ情報ID",
+        "エンティティマッピング",
+        "テーブル登録",
+        "カラム論理名"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "外部システムからの送信電文を入力として、ユーザ情報テンポラリテーブルにレコードを登録する。\n\n![ユーザ情報登録サービスフロー](assets/http-messaging-01_userResisterMessageSpec/userRegisterMessage.png)\n\nユーザ情報テンポラリテーブルは、後続処理（常駐バッチ）によって一定時間間隔で監視され、未処理データが存在する場合にユーザ情報を登録する。\n\n**処理概要**:\n- 入力: ユーザ情報登録電文\n- 出力: ユーザ情報テンポラリ、応答電文\n\n**精査仕様**:\n- 要求電文にはフレームワーク制御ヘッダ（ヘッダレコード）とデータレコードが必要\n- 各レコードのレイアウト仕様・ドメイン精査は要求電文仕様を参照",
+    "s2": "**データレコード**:\n\n| 項目名 | データタイプ | 多重度 | 説明 |\n|---|---|---|---|\n| データ区分 | X | 1 | 半角:1桁 |\n| ログインID | X | 1 | 半角:20桁以下:必須 |\n| 漢字氏名 | XN | 1 | 全角:50桁以下:必須 |\n| カナ氏名 | N | 1 | 全角カナ:50桁以下:必須 |\n| メールアドレス | X | 1 | 半角:100桁以下:必須 |\n| 内線番号(ビル番号) | X | 1 | 半角数字:2桁以下:必須 |\n| 内線番号(個人番号) | X | 1 | 半角数字:4桁以下:必須 |\n| 携帯電話番号(市外) | X | 0..1 | 半角数字:3桁以下 |\n| 携帯電話番号(市内) | X | 0..1 | 半角数字:4桁以下。携帯電話番号(市外)が入力された場合は必須、未入力の場合は未入力であること |\n| 携帯電話番号(加入) | X | 0..1 | 半角数字:4桁以下。携帯電話番号(市外)が入力された場合は必須、未入力の場合は未入力であること |\n\n> **注意**: XMLサンプルではデータ区分を属性として記述している。\n\n**XMLの記述例**:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<request dataKbn=\"0\">\n  <loginId>nablarch</loginId>\n  <kanjiName>名部　楽太郎</kanjiName>\n  <kanaName>ナブ　ラクタロウ</kanaName>\n  <mailAddress>nablarch@mail.co.jp</mailAddress>\n  <extensionNumberBuilding>11</extensionNumberBuilding>\n  <extensionNumberPersonal>1001</extensionNumberPersonal>\n  <mobilePhoneNumberAreaCode>201</mobilePhoneNumberAreaCode>\n  <mobilePhoneNumberCityCode>3001</mobilePhoneNumberCityCode>\n  <mobilePhoneNumberSbscrCode>4001</mobilePhoneNumberSbscrCode>\n  <_nbctlhdr>\n    <userId>0000000101</userId>\n    <resendFlag>0</resendFlag>\n  </_nbctlhdr>\n</request>\n```\n\n**JSONの記述例**:\n\n```json\n{\n  \"dataKbn\": \"0\",\n  \"loginId\": \"nablarch\",\n  \"kanjiName\": \"名部　楽太郎\",\n  \"kanaName\": \"ナブ　ラクタロウ\",\n  \"mailAddress\": \"nablarch@mail.co.jp\",\n  \"extensionNumberBuilding\": \"11\",\n  \"extensionNumberPersonal\": \"1001\",\n  \"mobilePhoneNumberAreaCode\": \"201\",\n  \"mobilePhoneNumberCityCode\": \"3001\",\n  \"mobilePhoneNumberSbscrCode\": \"4001\",\n  \"_nbctlhdr\": {\n    \"userId\": \"user01\",\n    \"resendFlag\": \"0\"\n  }\n}\n```",
+    "s3": "**データレコード**:\n\n| 項目名 | データタイプ | 多重度 | 説明 |\n|---|---|---|---|\n| 障害事由コード | X | 0..1 | 障害事由を表すコード値。詳細はステータスコード/障害コード/HTTPレスポンスコード仕様を参照 |\n| 問い合わせID | X | 0..1 | ユーザ情報テンポラリ.ユーザ情報IDに登録した値 |\n| データ区分 | X | 1 | データ区分 |\n| フレームワーク制御ヘッダ | X | 1 | フレームワーク制御項目（自動追加） |\n\n**ヘッダレコード**:\n\n| 項目名 | データタイプ | 多重度 | 説明 |\n|---|---|---|---|\n| ステータスコード | X | 1 | 本サービス側の処理結果を表すコード。詳細はステータスコード/障害コード/HTTPレスポンスコード仕様を参照 |",
+    "s4": "| No | ステータスコード | 障害コード | HTTPレスポンスコード | 原因 | 備考 |\n|---|---|---|---|---|---|\n| 1 | 200 | (空白) | 200 | 正常終了 | |\n| 2 | 400 | NR11AC4001 | 400 | 要求電文データレコード部項目精査エラー | |\n| 3 | — | — | 400 | 要求電文のデータレコード部レイアウト不正 | FWでエラーが検出されエラー応答が返却される |\n| 4 | 500 | NR11AC5000 | 500 | その他の意図しないエラーにより業務処理が失敗した場合 | |",
+    "s5": "エンティティ論理名：ユーザ情報テンポラリ\n\n| カラム論理名 | 入力データ |\n|---|---|\n| ユーザ情報ID | ユーザ情報IDで採番した値 |\n| ログインID | 要求電文.データレコード.ログインID |\n| 漢字氏名 | 要求電文.データレコード.漢字氏名 |\n| カナ氏名 | 要求電文.データレコード.カナ氏名 |\n| メールアドレス | 要求電文.データレコード.メールアドレス |\n| 内線番号(ビル番号) | 要求電文.データレコード.内線番号(ビル番号) |\n| 内線番号(個人番号) | 要求電文.データレコード.内線番号(個人番号) |\n| 携帯電話番号(市外) | 要求電文.データレコード.携帯電話番号(市外) |\n| 携帯電話番号(市内) | 要求電文.データレコード.携帯電話番号(市内) |\n| 携帯電話番号(加入) | 要求電文.データレコード.携帯電話番号(加入) |\n| ステータス | 未処理('0') |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

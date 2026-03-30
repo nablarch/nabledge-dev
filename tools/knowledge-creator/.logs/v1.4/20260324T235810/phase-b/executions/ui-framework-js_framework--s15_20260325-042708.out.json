@@ -1,0 +1,26 @@
+{
+  "id": "ui-framework-js_framework--s15",
+  "title": "ウィジェットの実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ウィジェットの実装例",
+      "hints": [
+        "ModalDialog",
+        "Widget",
+        "widgets()",
+        "モーダルダイアログ実装",
+        "ウィジェット定義",
+        "イベントハンドラ登録",
+        "コンストラクタ初期化順序",
+        "define()",
+        "widgetType"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ウィジェットの実装例\n\nモーダルダイアログウィジェットの実装サンプルに基づく実装ルール。\n\n### モジュール依存関係の定義\n\n- モジュールパスは `(コンテキストルート)/js/` からの相対パスを指定する\n- `./` で始まるパスはソースファイルからの相対パスとみなされる\n- パスの先頭に `text!` を指定した場合、そのファイルはJavaScriptとして評価されず、ファイル内容を文字列として読み込む\n\n### マーカーCSSとウィジェット識別子の命名規則\n\n- マーカーCSSの命名: `(プロジェクト名)_(ウィジェット名)`\n- `widgetType` はマーカーCSSと同じ `(PJ名)_(ウィジェット名)` とする\n\n### イベント定義の4つの書式\n\n```\n1. \"(イベント名)\" : handler          // this.$node 上のイベント\n2. \"(セレクタ式) (イベント名)\" : handler  // event delegation\n3. \"(コンテキストノード) (イベント名)\" : handler\n4. \"(コンテキストノード) (セレクタ式) (イベント名)\" : handler\n```\n\n- コンテキストノードには `$` で始まるプロパティ名または `\"document\"` を指定する\n- ハンドラに文字列を指定した場合、そのウィジェットの同名メソッドを呼び出す\n- ハンドラに関数を指定した場合、そのウィジェットを `bind()` したものが呼び出される\n\n### コンストラクタ実装上の注意\n\n> **重要**: ノードプロパティの初期化は `Widget.call(this, element)` より前に行う必要がある。\n\n- JavaScriptでは親クラスのコンストラクタは自動では呼ばれないため、明示的に `Widget.call(this, element)` を呼び出すこと\n\n### イベントハンドラの戻り値\n\n- `false` を明示的にリターンすることで、イベントのプロパゲーションとデフォルトアクションを抑止できる\n\n### 実装例（ModalDialog）\n\n```javascript\ndefine([\n  \"jquery\"\n, \"nablarch/ui/Widget\"\n, \"text!./ModalDialog.template\"\n, \"nablarch/ui/event\"\n, \"sugar\"\n],\nfunction($, Widget, template) { \"use strict\";\n  function define() {\n    $(function() {\n      $(\".sample_ModalDialog.-content\").widgets(ModalDialog);\n    });\n    return ModalDialog;\n  }\n\n  ModalDialog.prototype = Object.merge(new Widget(), {\n    constructor : ModalDialog\n  , $dialog   : null\n  , contentId : null\n  , isActive  : null\n  , show : ModalDialog_show\n  , hide : ModalDialog_hide\n  });\n\n  ModalDialog.event = {\n    \"click\" : \"show\"\n  , \"$dialog button.close click\" : \"hide\"\n  , \"document beforeSubmit\" : function() { return !isActive }\n  };\n\n  ModalDialog.widgetType = \"sample_ModalDialog\";\n\n  function ModalDialog(element, option) {\n    // ノードプロパティの初期化（Widget.call より先に行うこと）\n    this.contentId = option.content;\n    this.isActive  = false;\n    this.$dialog   = $(template).css({\n                       display   : \"none\"\n                     , position  : \"absolute\"\n                     , \"z-index\" : \"5\"\n                     }).appendTo(document);\n    // 親クラスコンストラクタの明示的呼び出し\n    Widget.call(this, element);\n    this.$dialog.find(\"div.content\").append(\"#\" + contentId);\n  }\n\n  function ModalDialog_show(event) {\n    this.isActive = true;\n    this.$dialog.slideDown(\"fast\");\n    return false;\n  }\n\n  function ModalDialog_hide(event) {\n    this.isActive = false;\n    this.$dialog.slideUp(\"fast\");\n    return false;\n  }\n\n  return define();\n});\n```"
+  }
+}

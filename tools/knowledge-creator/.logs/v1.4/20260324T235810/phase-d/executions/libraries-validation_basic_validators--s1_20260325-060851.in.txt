@@ -1,0 +1,522 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/core_library/validation_basic_validators.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _validator_and_convertor:
+
+==============================
+基本バリデータ・コンバータ
+==============================
+
+
+---------------------------------
+基本バリデータ・コンバータ一覧
+---------------------------------
+
+**バリデータ**
+
+================================================================================  ==============================  ==================================================================
+バリデータクラス名                                                                  対応するアノテーション          説明  
+================================================================================  ==============================  ==================================================================
+nablarch.core.validation.validator.RequiredValidator                                @Required                     | 必須入力チェックを行うバリデータ。
+nablarch.core.validation.validator.LengthValidator                                  @Length                       | 文字列長チェックを行うバリデータ。
+                                                                                                                  | String#length()メソッドによる文字列長チェックを行う。
+                                                                                                                  
+                                                                                                                    .. note:: 
+                                                                                                                      文字列長のチェックのうち、長さ0の文字列に対するバリデーションは @Required で実施する想定であるため、
+                                                                                                                      長さ0の入力は常に受付ける。
+nablarch.core.validation.validator.NumberRangeValidator                             @NumberRange                  数値型のプロパティが指定する数値の間にあるかをチェックするバリデータ。
+nablarch.core.validation.validator.unicode.SystemCharValidator                      @SystemChar                   システム許容文字からなる文字列であるかをチェックするバリデータ。
+================================================================================  ==============================  ==================================================================
+
+
+
+
+
+
+
+
+
+**コンバータ(nablarch.core.validation.convertorパッケージ)**
+
+=========================  ===================== ====================================== ======================================================================================================
+コンバータクラス名          変換後のオブジェクト   変換可能なオブジェクト                   説明
+=========================  ===================== ====================================== ======================================================================================================
+StringConvertor            java.lang.String      * java.lang.String                     | 文字列型のプロパティへ設定するデータの変換を行うコンバータ。
+                                                                                        | 設定値によって入力文字の前後に入ったスペースを trim できる。
+                                                 * java.lang.String[]
+                                                   **(ただし、要素数1の配列に限る。)**
+
+StringArrayConvertor       java.lang.String[]    * java.lang.String[]                   String配列のプロパティへ設定するデータに使用するコンバータ。
+
+BigDecimalConvertor        java.math.BigDecimal  * java.lang.Numberのサブクラス         | BigDecimal型のプロパティへ設定するデータの変換を行うコンバータ。
+                                                 * java.lang.String                     | なお、本コンバータの入力値精査の詳細については、 `BigDecimalConvertor`_ を参照のこと。
+                                                 * java.lang.String[]
+                                                   **(ただし、要素数1の配列に限る。)**
+                                                                                          .. _bigdecimal-digits:
+
+                                                                                          .. note::
+                                                                                            BigDecimalConvertorには、@Digitsアノテーションの設定が必須である。
+                                                                                            下記例のように、セッタに@Digitsアノテーションを設定すること。
+
+                                                                                            @Digitsアノテーションの詳細は、\ :ref:`convert_property`\
+                                                                                            を参照。
+
+                                                                                              .. code-block:: java
+
+                                                                                                /**
+                                                                                                 * 認証失敗回数を設定する。
+                                                                                                 *
+                                                                                                 * @param failedCount 設定する認証失敗回数。
+                                                                                                 */
+                                                                                                @PropertyName("認証失敗回数")
+                                                                                                @Required
+                                                                                                @NumberRange(min = 0, max = 9)
+                                                                                                @Digits(integer = 1, fraction = 0)
+                                                                                                public void setFailedCount(Integer failedCount) {
+                                                                                                    this.failedCount = failedCount;
+                                                                                                }
+
+
+IntegerConvertor           java.lang.Integer     * java.lang.Numberのサブクラス         | Integer型のプロパティへ設定するデータの変換を行うコンバータ。
+                                                 * java.lang.String
+                                                 * java.lang.String[]                   | 本コンバータでは、9桁までの値が変換できる。
+                                                   **(ただし、要素数1の配列に限る。)**    9桁を超えるプロパティへの変換には、LongConvertorまたは、
+                                                                                          BigDecimalConvertorを使用すること。
+                                                                                        | なお、本コンバータの入力値精査の詳細については、 `IntegerConvertor`_ を参照のこと。
+
+                                                                                          .. note::
+                                                                                           IntegerConvertorには、@Digitsアノテーションの設定が必須である。
+                                                                                           詳細は、\ :ref:`BigDecimalConvertorのDigits設定<bigdecimal-digits>`\ を参照すること
+
+LongConvertor              java.lang.Long        * java.lang.Numberのサブクラス         | Long型のプロパティへ設定するデータの変換を行うコンバータ。
+                                                 * java.lang.String
+                                                 * java.lang.String[]                   | 本コンバータでは、18桁までの値が変換できる。
+                                                   **(ただし、要素数1の配列に限る。)**    18桁を超えるプロパティへの変換には、BigDecimalConvertorを使用すること。
+                                                                                        |
+                                                                                        | なお、本コンバータの入力値精査の詳細については、 `LongConvertor`_ を参照のこと。
+
+                                                                                          .. note::
+                                                                                           LongConvertorには、@Digitsアノテーションの設定が必須である。
+                                                                                           詳細は、\ :ref:`BigDecimalConvertorのDigits設定<bigdecimal-digits>`\ を参照すること
+=========================  ===================== ====================================== ======================================================================================================
+
+
+
+
+------------------------------------------
+システム許容文字のバリデーション
+------------------------------------------
+
+システムが許容する文字は、そのシステムの要件によって異なる。
+それぞれのシステムに相応しい許容文字を定義できるバリデーションを提供する。
+
+.. note:: 
+ 本バリデーションでは、JVMが扱える範囲の文字(U+0000～U+10FFFF)は全て扱えるが、
+ サロゲートペアを許容する場合は、文字列中のchar値の数と実際の文字数が合わなくなる問題が
+ 発生する点に注意すること。
+ 
+
+基本的な考え方
+==============================
+
+以下のようにして、文字集合を定義する。
+
+* Unicodeのコードポイントを用いて、システムで使用可能な文字集合を定義する。\ [#]_\
+* 定義した文字集合の和集合をシステム許容文字として定義する。
+
+.. image:: ../02_FunctionDemandSpecifications/01_Core/_images/08/CombinationOfCharset.png
+
+\
+
+.. [#] 例えば「制御コードを除くASCIIコード」という文字集合を定義するには、U+0020～U+00FEというコードポイントを使用する。
+
+
+
+システム許容文字のバリデーションの機能は、下記クラス図に示すクラスで実現する。
+
+.. image:: ../02_FunctionDemandSpecifications/01_Core/_images/08/UnicodeValidationClassDiagram.png
+  :scale: 70
+
+インタフェース定義
+==============================
+
+=====================================================  ================================================
+インタフェース名                                       概要
+=====================================================  ================================================
+nablarch.core.validation.validator.unicode.CharsetDef  許容する文字の集合の定義する為のインタフェース。
+                                                       
+=====================================================  ================================================
+
+クラス定義
+==============================
+
+============================================================== ===================================================================
+クラス名                                                       概要
+============================================================== ===================================================================
+nablarch.core.validation.validator.unicode.CharsetDefSupport   CharsetDef実装クラスのサポートクラス。
+                                                               本クラスでは、CharsetDef毎のメッセージIDの保持のみを行う。
+nablarch.core.validation.validator.unicode.RangedCharsetDef    `コードポイント範囲指定による許容文字集合定義`_\ クラス。
+nablarch.core.validation.validator.unicode.LiteralCharsetDef   `リテラル文字列指定による許容文字集合定義`_ クラス。
+nablarch.core.validation.validator.unicode.CompositeCharsetDef `許容文字集合の組み合わせによる許容文字集合定義`_\ クラス
+nablarch.core.validation.validator.unicode.CachingCharsetDef   `許容文字判定結果のキャッシュ`_\ を行うクラス。
+nablarch.core.validation.validator.unicode.SystemChar          システム許容文字で構成された文字列であることを表わすアノテーション。
+nablarch.core.validation.validator.unicode.SystemCharValidator システム許容文字のみからなる文字列であるかをチェックするクラス。
+============================================================== ===================================================================
+
+コードポイント範囲指定による許容文字集合定義
+============================================================
+
+最も基本的な許容文字集合の定義方法である。
+Unicodeのコードポイントで、開始位置と終了位置を定義する。
+この範囲に含まれる文字が許容文字となる。
+
+.. code-block:: xml
+
+  <!-- 制御コードを除いたASCII文字 -->
+  <component name="asciiWithoutControlCode" class="nablarch.core.validation.validator.unicode.RangedCharsetDef">
+    <property name="startCodePoint" value="U+0020" />
+    <property name="endCodePoint" value="U+007F" />
+    <property name="messageId" value="MSG00092" />
+  </component>
+
+.. note::
+ コードポイント記載には、Unicode標準の\ `U+n`\ 表記を使用する。
+
+
+リテラル文字列指定による許容文字集合定義
+============================================================
+
+定義したい文字集合の要素が、Unicodeコードポイント上に散在する場合、
+`コードポイント範囲指定による許容文字集合定義`_\ による集合定義は煩雑になるおそれがある。
+そのような場合には、本クラスを利用することで簡便に文字集合を定義できる。
+
+.. code-block:: xml
+
+  <!-- "A"と"1"と"あ"を許容 -->
+  <component name="literal" class="nablarch.core.validation.validator.unicode.LiteralCharsetDef">
+    <property name="allowedCharacters" value="A1あ" />
+    <property name="messageId" value="MSG00092" />
+  </component>
+
+
+.. note::
+
+ 上記の例では説明を簡略化するため、許容文字リテラルをvalue属性に直接記入しているが、
+ config-file要素を利用して外部化することを推奨する。（\ :ref:`repository_import_override_priority`\ を参照）
+
+
+許容文字集合の組み合わせによる許容文字集合定義
+===============================================
+
+
+複数の許容文字集合を組み合わせて許容文字集合を定義する。
+
+.. code-block:: xml
+
+  <!-- 組み合わせ -->
+  <component name="composite" class="nablarch.core.validation.validator.unicode.CompositeCharsetDef">
+    <property name="charsetDefList">
+      <list>
+        <component-ref name="asciiWithoutControlCode"/>
+        <component-ref name="kana"/>
+      </list>
+    </property>
+  </component>
+  <!-- ASCII -->
+  <component name="asciiWithoutControlCode" class="nablarch.core.validation.validator.unicode.RangedCharsetDef">
+    <property name="startCodePoint" value="U+0020" />
+    <property name="endCodePoint" value="U+007E" />
+  </component>
+
+.. note::
+
+ 引数で与えられたコードポイントが許容文字か否かの判定処理は、
+ リストの設定順に行われる。上記の例で言うと、ASCII、カナの順で判定が行われる。
+ よって、そのシステムで出現頻度が高い許容文字集合定義を先頭に配置することで
+ 処理性能が向上する。
+
+  
+許容文字判定結果のキャッシュ
+===============================================
+
+多数のCharsetDefを組み合わせて許容文字を定義する場合、
+判定処理は定義した順番に実施される。
+つまり、ヒットする許容文字集合定義が後方であるほど処理時間を要する。
+
+出現頻度が多い許容文字集合定義を先頭に配置することで、性能劣化を最小限に防ぐことができるが、
+これでも十分な性能が確保できない場合も想定される。
+多種の文字を許容し、かつ各文字の出現頻度に偏りが少ないほど、
+性能が劣化する可能性が高くなる。
+
+このような場合は、判定結果をキャッシュすることで性能を改善できる。
+特に、処理時間のバラつきを抑えたい場合に有効である。
+
+以下に設定例を示す。
+ここでは、\ `許容文字集合の組み合わせによる許容文字集合定義`_\ で例示したCompositeCharsetDefに
+キャッシュ機能を追加する例を挙げる。
+
+.. code-block:: xml
+
+  <!-- 許容文字集合定義のキャッシュ -->
+  <component name="charsetDefCache" class="nablarch.core.validation.validator.unicode.CachingCharsetDef" >
+    <!-- キャッシュする対象となる許容文字集合定義 -->
+    <property name="charsetDef" ref="composite"/>
+  </component>
+
+  
+許容文字集合の登録方法
+===============================================
+
+定義した許容文字集合をバリデータ(\ `SystemCharValidator`\ )に設定することで、
+\ `@SystemChar`\ アノテーションによるシステム許容文字チェックが実施できる。
+
+
+以下に設定例を示す。
+
+.. code-block:: xml
+
+  <component class="nablarch.core.validation.validator.unicode.SystemCharValidator">
+    <!-- 定義した許容文字集合を設定 -->
+    <property name="defaultCharsetDef" ref="systemPermittedCharset"/>
+    <property name="messageId" value="MSG90001"/>
+  </component>
+
+
+精査エラー時に使用するメッセージIDの指定方法
+============================================================
+精査エラー時にエラーメッセージを取得するために使用するメッセージIDは、以下の3種類の指定方法から用途に応じて選択すること。
+
+* SystemCharアノテーションに指定
+
+  個別の機能で表示するメッセージを切り替えたい場合に、SystemCharアノテーションにメッセージIDを指定する。
+
+  以下に実装例を示す
+
+  .. code-block:: java
+
+    @PropertyName("パスワード")
+    @Required
+    @SystemChar(charsetDef = "alphaCharacter", messageId = "PASSWORD")
+    @Length(max = 20)
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+* CharsetDefに指定
+
+  CharsetDefに指定した文字集合に該当しない場合に使用するメッセージIDを指定する。
+  例えば、半角英字のみを許容する文字集合の場合には、「半角英字で入力してください。」を示すメッセージIDを指定することになる。
+
+  精査の種別毎に表示するメッセージを切り替えるシステム(多くのシステムが該当するはずである)では、CharasetDefへメッセージIDを指定する方法を使用することになる。
+
+  以下に設定例を示す。
+
+  .. code-block:: xml
+
+    <component name="alphaCharacter" class="nablarch.core.validation.validator.unicode.RangedCharsetDef">
+      <property name="startCodePoint" value="U+0061" />
+      <property name="endCodePoint" value="U+007A" />
+      <property name="messageId" value="MSG00002" />
+    </component>
+
+* SystemCharValidatorに指定
+
+  システムで精査エラー時のメッセージを統一したい場合には、SystemCharValidatorにメッセージIDを指定する。
+  例えば、精査の種類に関わらずエラーメッセージを「正しい値を入力してください。」と表示する場合には、
+  SystemCharValidatorに上記メッセージを示すメッセージIDを指定することになる。
+
+  以下に設定例を示す。
+
+  .. code-block:: xml
+
+    <component class="nablarch.core.validation.validator.unicode.SystemCharValidator">
+      <property name="defaultCharsetDef" ref="systemPermittedCharset"/>
+      <property name="messageId" value="MSG99999"/>
+    </component>
+
+.. note::
+
+  どのメッセージIDを使用するかの優先順位は、上記に記述した順となる。
+  例えば、全てにメッセージIDを指定した場合は最も優先されるSystemCharアノテーションに付与されたメッセージIDが使用される。
+
+  なお、SystemCharValidatorのメッセージIDは、SystemChar及びCharsetDefにメッセージID指定がない場合に、
+  デフォルトで使用されるメッセージIDがとなるため必ず指定する必要がある。
+
+--------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-validation_basic_validators--s1`
+
+```json
+{
+  "id": "libraries-validation_basic_validators--s1",
+  "title": "基本バリデータ・コンバータ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "基本バリデータ・コンバータ一覧",
+      "hints": [
+        "RequiredValidator",
+        "LengthValidator",
+        "NumberRangeValidator",
+        "SystemCharValidator",
+        "@Required",
+        "@Length",
+        "@NumberRange",
+        "@SystemChar",
+        "@Digits",
+        "StringConvertor",
+        "StringArrayConvertor",
+        "BigDecimalConvertor",
+        "IntegerConvertor",
+        "LongConvertor",
+        "nablarch.core.validation.validator",
+        "nablarch.core.validation.convertor",
+        "バリデータ一覧",
+        "コンバータ一覧",
+        "必須入力チェック",
+        "文字列長チェック",
+        "数値範囲チェック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システム許容文字のバリデーション",
+      "hints": [
+        "CharsetDef",
+        "CharsetDefSupport",
+        "RangedCharsetDef",
+        "LiteralCharsetDef",
+        "CompositeCharsetDef",
+        "CachingCharsetDef",
+        "SystemChar",
+        "SystemCharValidator",
+        "@SystemChar",
+        "startCodePoint",
+        "endCodePoint",
+        "messageId",
+        "defaultCharsetDef",
+        "allowedCharacters",
+        "charsetDef",
+        "nablarch.core.validation.validator.unicode",
+        "システム許容文字",
+        "Unicodeコードポイント",
+        "文字集合定義",
+        "許容文字キャッシュ",
+        "精査エラーメッセージID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**バリデータ**\n\n| バリデータクラス名 | アノテーション | 説明 |\n|---|---|---|\n| `nablarch.core.validation.validator.RequiredValidator` | `@Required` | 必須入力チェック |\n| `nablarch.core.validation.validator.LengthValidator` | `@Length` | String#length()による文字列長チェック |\n| `nablarch.core.validation.validator.NumberRangeValidator` | `@NumberRange` | 数値型プロパティが指定数値範囲内かチェック |\n| `nablarch.core.validation.validator.unicode.SystemCharValidator` | `@SystemChar` | システム許容文字からなる文字列かチェック |\n\n> **注意**: `@Length`は長さ0の文字列を常に受け付ける。長さ0の入力チェックは`@Required`で行うこと。\n\n**コンバータ** (パッケージ: `nablarch.core.validation.convertor`)\n\n| コンバータクラス名 | 変換後の型 | 説明 |\n|---|---|---|\n| `StringConvertor` | `java.lang.String` | 前後スペースをtrimできる。String[]（要素数1のみ）も変換可 |\n| `StringArrayConvertor` | `java.lang.String[]` | String[]プロパティへの変換 |\n| `BigDecimalConvertor` | `java.math.BigDecimal` | Number/String/String[]（要素数1のみ）から変換。**@Digits必須** |\n| `IntegerConvertor` | `java.lang.Integer` | 9桁まで変換可。9桁超はLongConvertorまたはBigDecimalConvertor使用。**@Digits必須** |\n| `LongConvertor` | `java.lang.Long` | 18桁まで変換可。18桁超はBigDecimalConvertor使用。**@Digits必須** |\n\n> **注意**: `BigDecimalConvertor`、`IntegerConvertor`、`LongConvertor`には`@Digits`アノテーション設定が必須。セッタに設定すること（:ref:`convert_property` 参照）。\n\n```java\n@PropertyName(\"認証失敗回数\")\n@Required\n@NumberRange(min = 0, max = 9)\n@Digits(integer = 1, fraction = 0)\npublic void setFailedCount(Integer failedCount) {\n    this.failedCount = failedCount;\n}\n```",
+    "s2": "システムが許容する文字集合をUnicodeコードポイントで定義し、その和集合をシステム許容文字として`@SystemChar`アノテーションでバリデーションする。\n\n> **注意**: サロゲートペアを許容する場合、文字列中のchar値の数と実際の文字数が合わなくなる問題が発生する。\n\n![文字集合の組み合わせ概念図](assets/libraries-validation_basic_validators--s1/CombinationOfCharset.png)\n\n![UnicodeValidationクラス図](assets/libraries-validation_basic_validators--s1/UnicodeValidationClassDiagram.png)\n\n**インタフェース**: `nablarch.core.validation.validator.unicode.CharsetDef` — 許容文字集合を定義するインタフェース\n\n**クラス**:\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.validation.validator.unicode.CharsetDefSupport` | CharsetDef実装クラスのサポートクラス（messageID保持のみ） |\n| `nablarch.core.validation.validator.unicode.RangedCharsetDef` | コードポイント範囲指定による許容文字集合定義 |\n| `nablarch.core.validation.validator.unicode.LiteralCharsetDef` | リテラル文字列指定による許容文字集合定義 |\n| `nablarch.core.validation.validator.unicode.CompositeCharsetDef` | 許容文字集合の組み合わせによる許容文字集合定義 |\n| `nablarch.core.validation.validator.unicode.CachingCharsetDef` | 許容文字判定結果のキャッシュ |\n| `nablarch.core.validation.validator.unicode.SystemChar` | システム許容文字であることを表すアノテーション |\n| `nablarch.core.validation.validator.unicode.SystemCharValidator` | システム許容文字チェッカー |\n\n**コードポイント範囲指定 (RangedCharsetDef)**:\n```xml\n<component name=\"asciiWithoutControlCode\" class=\"nablarch.core.validation.validator.unicode.RangedCharsetDef\">\n  <property name=\"startCodePoint\" value=\"U+0020\" />\n  <property name=\"endCodePoint\" value=\"U+007F\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n> **注意**: コードポイントはUnicode標準の`U+n`表記を使用する。\n\n**リテラル文字列指定 (LiteralCharsetDef)**:\n```xml\n<component name=\"literal\" class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n  <property name=\"allowedCharacters\" value=\"A1あ\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n> **注意**: 許容文字リテラルはconfig-file要素で外部化を推奨（:ref:`repository_import_override_priority` 参照）。\n\n**組み合わせ (CompositeCharsetDef)**:\n```xml\n<component name=\"composite\" class=\"nablarch.core.validation.validator.unicode.CompositeCharsetDef\">\n  <property name=\"charsetDefList\">\n    <list>\n      <component-ref name=\"asciiWithoutControlCode\"/>\n      <component-ref name=\"kana\"/>\n    </list>\n  </property>\n</component>\n```\n> **注意**: 判定はリストの設定順に実施される。出現頻度が高い文字集合を先頭に配置すると性能が向上する。\n\n**判定結果のキャッシュ (CachingCharsetDef)**: 多数のCharsetDefを組み合わせる場合や処理時間のバラつきを抑えたい場合に有効。\n```xml\n<component name=\"charsetDefCache\" class=\"nablarch.core.validation.validator.unicode.CachingCharsetDef\">\n  <property name=\"charsetDef\" ref=\"composite\"/>\n</component>\n```\n\n**SystemCharValidatorへの登録**:\n```xml\n<component class=\"nablarch.core.validation.validator.unicode.SystemCharValidator\">\n  <property name=\"defaultCharsetDef\" ref=\"systemPermittedCharset\"/>\n  <property name=\"messageId\" value=\"MSG90001\"/>\n</component>\n```\n\n**精査エラー時のメッセージID指定（優先順位順）**:\n1. `@SystemChar`アノテーションに指定（個別機能でメッセージを切り替えたい場合）\n2. `CharsetDef`に指定（精査の種別毎にメッセージを切り替えるシステム）\n3. `SystemCharValidator`に指定（システムでメッセージを統一したい場合）\n\n> **注意**: `SystemCharValidator`のmessageIdは`@SystemChar`および`CharsetDef`にmessageIdの指定がない場合のデフォルト値であり、**必ず指定すること**。\n\n`@SystemChar`実装例:\n```java\n@PropertyName(\"パスワード\")\n@Required\n@SystemChar(charsetDef = \"alphaCharacter\", messageId = \"PASSWORD\")\n@Length(max = 20)\npublic void setConfirmPassword(String confirmPassword) {\n    this.confirmPassword = confirmPassword;\n}\n```\n\n`CharsetDef`へのmessageId設定例:\n```xml\n<component name=\"alphaCharacter\" class=\"nablarch.core.validation.validator.unicode.RangedCharsetDef\">\n  <property name=\"startCodePoint\" value=\"U+0061\" />\n  <property name=\"endCodePoint\" value=\"U+007A\" />\n  <property name=\"messageId\" value=\"MSG00002\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 5
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

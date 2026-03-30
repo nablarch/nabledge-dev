@@ -1,0 +1,99 @@
+{
+  "id": "web-application-inputAndOutput--s3",
+  "title": "codeタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードIDに対応するコード値が2件の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "codeCheckbox",
+        "コード値2件",
+        "チェックボックス",
+        "codeId",
+        "value属性デフォルト",
+        "labelPattern",
+        "nablarch_checkbox連番"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コードIDに対応するコード値が2件以上の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "codeCheckbox",
+        "コード値2件以上",
+        "offCodeValue",
+        "offCodeValue明示指定",
+        "チェックボックス",
+        "codeId",
+        "labelPattern",
+        "optionColumnName"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "codeタグの概要とタグ選択の指針",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "コード値出力",
+        "codeSelectタグ",
+        "codeRadioButtonsタグ",
+        "codeCheckboxesタグ",
+        "テキストボックス入力",
+        "list-of-codes-searched-by-codeId-and-pattern",
+        "タグ選択"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "詳細画面や一覧画面でコードの選択項目を表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "詳細画面",
+        "一覧画面",
+        "コード選択項目表示",
+        "pattern",
+        "labelPattern",
+        "optionColumnName",
+        "listFormat",
+        "Actionクラス",
+        "リクエストスコープ",
+        "$VALUE$",
+        "$NAME$",
+        "$SHORTNAME$",
+        "$OPTIONALNAME$"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "登録画面",
+        "更新画面",
+        "コード値一覧表示",
+        "codeId",
+        "pattern",
+        "Actionクラス不要",
+        "name属性なし",
+        "list-of-codes-searched-by-codeId-and-pattern",
+        "labelPattern",
+        "listFormat",
+        "optionColumnName"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コード値が2件の場合の `n:codeCheckbox` タグの実装。value属性（デフォルト: `1`）・labelPattern属性（デフォルト: `$NAME$`）のデフォルト値がそのまま使用できる。\n\nid属性は `nablarch_checkbox<連番>` 形式で自動付与される。\n\n**JSP実装例**:\n```jsp\n<n:codeCheckbox name=\"W11AF01.canUpdate\" codeId=\"0001\" />\n```\n\n**出力HTML**:\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"W11AF01.canUpdate\" value=\"1\" />\n<label for=\"nablarch_checkbox1\">許可</label>\n```",
+    "s2": "コード値が2件以上の場合の `n:codeCheckbox` タグの実装。\n\nコード値が2件以上存在するため、codeId属性から検索してもoffCodeValue属性が見つからない。そのため、**offCodeValue属性を明示的に指定する必要がある**。デフォルト値（`1`）と異なる場合はvalue属性も明示的に指定する。\n\n**JSP実装例**:\n```jsp\n<n:codeCheckbox name=\"W11AF01.join\" codeId=\"0002\"\n                value=\"Y\" offCodeValue=\"N\"\n                labelPattern=\"$SHORTNAME$($OPTIONALNAME$)\"\n                optionColumnName=\"OPTION01\" />\n```\n\n**出力HTML**:\n```html\n<input id=\"nablarch_checkbox1\" type=\"checkbox\" name=\"W11AF01.join\" value=\"Y\" />\n<label for=\"nablarch_checkbox1\">YES(イエス)</label>\n```",
+    "s3": "`n:code` タグ（codeタグ）は、指定したフォーマットにあわせてコード値を出力する。\n\n詳細画面・一覧画面でコードの選択項目を表示する場合（→ s4）と、登録・更新画面で選択可能なコード値を一覧形式で表示する場合（→ s5）の2つのユースケースがある。\n\n> **タグ選択の指針**: 登録画面や更新画面で選択可能なコード値を表示する場合、通常は `codeSelectタグ`・`codeRadioButtonsタグ`・`codeCheckboxesタグ`・`codeCheckboxタグ` のいずれかを使用する。ただし、選択可能なコード値を一覧表示してテキストボックスに入力する仕様の場合は `n:code` タグを使用する（→ `list-of-codes-searched-by-codeId-and-pattern`）。",
+    "s4": "詳細・一覧画面でコード選択項目を表示する場合、Actionクラスでリクエストスコープにデータを設定する必要がある。\n\n- `pattern` 属性: CODE_PATTERNテーブルのカラム名を指定。そのカラムの値が `1` の行のみ表示対象（name属性の参照値とVALUEカラムが一致する行）\n- `labelPattern` 属性: ラベル表示形式。`$VALUE$`（コード値）、`$NAME$`（コード名称）、`$SHORTNAME$`（コード略称）、`$OPTIONALNAME$`（オプション名称）を組み合わせ可能\n- `$OPTIONALNAME$` を使用する場合は `optionColumnName` 属性でカラム名を指定する必要がある\n\n**Actionクラス実装例**:\n```java\nW11AC02Form form = new W11AC02Form();\nform.setBatchStatus(Batch.WAITING); // 定数が\"02\"を表す\ncontext.setRequestScopedVar(\"W11AC02\", form);\n```\n\n**JSP実装例**:\n```jsp\n<n:code name=\"W11AC02.batchStatus\"\n        codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```\n\n**出力HTML**:\n```html\n<div>02:処理開始待ち-待ち-0002-02-ja</div>\n```",
+    "s5": "`n:code` タグで登録・更新画面にコード値一覧を表示する場合（:ref:`list-of-codes-searched-by-codeId-and-pattern`）。\n\nJSPに指定した `codeId` 属性・`pattern` 属性のみでコード値を取得するため、**Actionクラスでリクエストスコープにデータを設定する必要はない**。また `name` 属性は記述しない。\n\n- `pattern` 属性: CODE_PATTERNテーブルのカラム名の値が `1` の行のみ表示対象\n- `labelPattern`、`optionColumnName` 属性の使用方法はs4と同様\n\n**JSP実装例**:\n```jsp\n<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```\n\n**出力HTML**:\n```html\n<div>01:初期状態-初期-0002-01-ja</div>\n<div>02:処理開始待ち-待ち-0002-02-ja</div>\n```"
+  }
+}

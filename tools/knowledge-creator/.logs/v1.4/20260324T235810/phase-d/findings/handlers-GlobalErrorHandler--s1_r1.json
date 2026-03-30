@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-GlobalErrorHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The knowledge file presents the configuration note as '> **注意**: プロジェクト固有の要件で例外処理を変更したい場合は...' with a '注意' (caution/warning) label. The source does not designate this sentence as a warning or note — it is plain body text. Adding the '注意' label implies an elevated warning status not present in the source.",
+      "source_evidence": "プロジェクト固有の要件により、例外処理を変更したい場合は、本ハンドラ自体を別実装したものに差し替えること。(plain text, no warning label in source)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The exception table in s2 references three class/type names that are absent from the s2 hints array: 'InternalError' (java.lang.InternalError), 'UnknownError' (java.lang.UnknownError), and 'Result.InternalError' (the processing result type returned for StackOverflowError, OutOfMemoryError, and other runtime exceptions). All three appear as key identifiers in the exception control table.",
+      "source_evidence": "Table rows: java.lang.InternalError, java.lang.UnknownError, Result.InternalError (処理結果 column for StackOverflowError / OutOfMemoryError / その他 rows)"
+    }
+  ]
+}

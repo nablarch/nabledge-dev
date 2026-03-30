@@ -1,0 +1,20 @@
+{
+  "file_id": "http-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8 (Formの実装方法) — RM11AC0202ResponseForm code example",
+      "description": "The `TARGET_FIELDS` static field is omitted from the RM11AC0202ResponseForm code example. The source defines: `private static final String[] TARGET_FIELDS = new String[] { \"dataKbn\", \"userInfoId\", \"failureCode\", \"option\", \"optionSize\" };` — this shows which fields are targeted for validation and is part of the class definition shown in the source.",
+      "source_evidence": "Source RM11AC0202ResponseForm: `private static final String[] TARGET_FIELDS = new String[] { \"dataKbn\", \"userInfoId\", \"failureCode\", \"option\", \"optionSize\" };`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 (HTTP同期応答メッセージ送信処理を行うActionクラス) — hints array",
+      "description": "PascalCase class names `HttpRequest`, `HttpResponse`, and `ExecutionContext` appear in the method signature of `doRW11AC0206` but are absent from the hints array for s9.",
+      "source_evidence": "Source method signature: `public HttpResponse doRW11AC0206(HttpRequest req, ExecutionContext ctx)`"
+    }
+  ]
+}

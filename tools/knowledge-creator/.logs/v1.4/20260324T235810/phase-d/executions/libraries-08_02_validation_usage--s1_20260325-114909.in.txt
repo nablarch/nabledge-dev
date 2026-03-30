@@ -1,0 +1,595 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/08/08_02_validation_usage.rst`
+- Format: `rst`
+
+```
+.. _`validation_usage`:
+
+====================================
+バリデーション機能の基本的な使用方法
+====================================
+
+.. _validation_and_convert:
+
+----------------------------------
+バリデーションの実行と入力値の変換
+----------------------------------
+本機能は、 Form にアノテーションを設定するだけの簡易な実装で使用できる。
+
+本機能を使用して入力値のバリデーションと Form の生成に必要な実装は下記の2つである。
+
+ 1. Form の実装
+ 2. Action からのバリデーションメソッドの呼び出し。
+ 
+以下に最もシンプルな「単項目のバリデーション」のみを行う例で、それぞれについて説明する。
+
+
+.. _validation_form_example:
+
+Formの実装
+================
+
+Form は、外部からの入力値の保持とバリデーションの責務を持つクラスである。
+この目的を果たすためには、 Form に下記手順の実装が必要となる。
+
+ 1. 入力値を受け付けるプロパティを追加する。
+ 2. | Form に Map<String, Object> を引数に取るコンストラクタを追加する。
+    | コンストラクタ内では、単に引数の Map から各プロパティに値を設定する実装を行う。
+ 3. | プロパティのセッタに、プロパティに対する単項目精査の条件を表すアノテーションを設定する。
+    | ここで使用できるアノテーションの種類は、フレームワークで :ref:`validator_and_convertor` 
+      に示すアノテーションが Nablarch で提供されているほか、 :ref:`add-validation-method` に示す方法で任意に追加可能である。
+ 4. | Form にバリデーション処理の内容を表す static メソッド(以降 validateFor メソッドと呼ぶ)を実装する。
+    | validateFor メソッドには、基本的に ValidationUtil.validate メソッドを呼び出し、
+      「どの項目に対してバリデーションを行うか」を指定する。
+    
+上記の1～4を行った Form の一例を以下に示す。
+この例は、入力値として id、 name、 remarks を取ることを前提としている。
+
+.. code-block:: java
+
+  public class User {
+
+      // 手順1に対応するプロパティ
+      // (プロパティの getter はここでの説明は不要であると考え、省略している。)
+      private String id;
+
+      private String name;
+
+      private String remarks;
+
+      // 手順2に対応するコンストラクタ。
+      public User(Map<String, Object> params) {
+          id = (String) params.get("id");
+          name = (String) params.get("name");
+          remarks = (String) params.get("remarks");
+      }
+
+      // 手順3に対応するアノテーションの設定
+      // この例では、 IDに、「必須」「文字列長8固定」のバリデーション条件を指定。
+      @PropertyName("ID")
+      @Required
+      @Length(min=8, max=8)
+      public void setId(String id) {
+          this.id = id;
+      }
+
+      @PropertyName("ユーザ名")
+      @Required
+      @Length(max=10)
+      public void setName(String name) {
+          this.name = name;
+      }
+
+      @PropertyName("備考")
+      @Length(max=100)
+      public void setRemarks(String remarks) {
+          this.remarks = remarks;
+      }
+
+      // getterは省略
+
+      // 手順4に対応するvalidateFor メソッドの実装
+      private static final String[] UPDATE_PARAMS = new String[] { "id", "name", "remarks" };
+      @ValidateFor("update")
+      public static void validateForUpdate(ValidationContext<User> context) {
+          ValidationUtil.validate(context, UPDATE_PARAMS);
+      }
+  }
+
+
+
+Action からのバリデーションメソッドの呼び出し
+================================================
+上記の Form に対して Action からバリデーションと Form の生成を行うには、下記の実装が必要となる。
+
+ 1. ValidationUtil.validateAndConvertRequest メソッドを呼び出し、バリデーションを実行する。
+ 2. バリデーション結果がエラーの場合、エラー処理を行う。
+ 3. バリデーション結果が正常終了の場合、Formの生成を行う。
+
+まず、HTML フォームから上記 Form の項目を入力として、更新を行う場合、HTMLのフォームは下記のようになる。
+
+.. code-block:: html
+
+  <form method="post" >
+  <input type="hidden" name="user.id" value="00000001"/>
+  ユーザ名: <input type="text" name="user.name"/> <br/>
+  備考: <input type="text" name="user.remarks"/> <br/>
+  <input type="submit" value="更新" />
+  </form>
+
+
+.. note::
+   通常、Nablarchを使用したWebアプリケーションの開発では、 :ref:`custom_tag` に記載したカスタムタグを使用する。
+   
+   上記実装はあくまでバリデーションの理解に集中するための実装例とし、実際のアプリケーション実装を\
+   そのまま行わないよう注意すること。
+
+
+このように、HTMLフォームの入力項目名には、 "user.id"、 "user.name"、 "user.remarks" のように
+Form のプロパティの前に "." (ピリオド) で区切って同じ名称を設定する。
+この名称を "プレフィクス" と呼ぶ。
+
+
+HTMLフォームから送信されたリクエストから Form を生成する Action 内の処理は、下記のように実装する。
+
+.. code-block:: java
+  
+        // 手順1 バリデーションの実行。
+        // 入力値のMapであるparamsに対してバリデーションと Form のプロパティの型に合わせた変換を実行
+        ValidationContext<User> result = ValidationUtil.validateAndConvertRequest("user", User.class, req, "update");
+
+        // 手順2 バリデーション結果のエラー処理を行う。
+        result.abortIfInvalid();
+
+        // 手順3 Form (ここではUserクラス)の生成を行う。
+        User user = result.createObject();
+
+
+
+上記の実装で使用している ValidationUtil.validateAndConvertRequest メソッドを呼び出すことで、
+Form に追加した validateFor メソッド(この例では User#validateForUpdate メソッド)が呼び出され、
+精査処理が本機能により自動的に行われる。
+
+ValidationUtil.validateAndConvertRequest メソッドの引数を以下に示す。
+
+  1. 入力値の Form に対応するプレフィクス(上記例では"user")
+  2. Form のクラス (上記例では User)
+  3. 入力値を保持した Validatable インタフェースを実装したクラス、または Map 。
+  4. | validateFor メソッドの指定。
+     |  @ValidateFor アノテーションが指定された validateFor のうち、ここで指定した文字列と
+        @ValidateFor アノテーションの値(上記例では "update")が一致したメソッドがバリデーション時に実行される。
+  
+
+ValidationUtil.validateAndConvertRequest メソッドは、バリデーション実行結果を持つ
+ValidationContext クラスを戻り値に返す。
+ValidationContext クラスは、精査結果がエラーであった場合にはエラーメッセージ、正常終了であった場合は Form 
+の生成に必要なパラメータを内部に持つ。
+
+正常終了であった場合は、ValidationContext#createObject メソッドで Form のオブジェクトが生成できる。
+
+反対に異常終了の場合は、\ **ValidationContext#abortIfInvalid**\ メソッドを使用して、ApplicationExceptionを送出することが出来る。
+また、異常終了時に任意の処理を行いたい場合は、\ **ValidationContext#isValid**\ メソッドを使用して正常/異常終了判定を行ない、
+異常終了の場合には任意の処理を実装すると良い。
+
+これらの詳細については、 :ref:`message_management` を参照のこと。
+
+
+バリデーション結果のエラーメッセージ生成
+================================================
+上記実装例の手順2では、abortIfInvalidメソッドを使用してApplicationExceptionを送出している。
+ここで生成しているアノテーションで指定した精査に対するエラーメッセージは、 :ref:`message_management` に記載した機能を使用して、\
+本機能の内部でメッセージのテンプレートと、プロパティの表示名称から自動的に作成する。
+
+例えば、必須入力のエラーメッセージは、「{0}は必ず入力してください。」というメッセージと、「ユーザ名」という表示名称から「ユーザ名は必ず入力してください。」というエラーメッセージを作成する。
+プロパティの表示名称は、通常 @PropertyName アノテーションで Form に直接指定する。
+
+.. note::
+
+    @PropertyName でプロパティの表示名称を指定する方法は最も簡単なプロパティ名の指定方法である。
+    
+    ただしこの方法は、言語ごとに別々の表示名称を指定できないため、国際化が必要なアプリケーションでは使用できない。
+    国際化が必要な場合は、 :ref:`property_display_name_internationalization` に記述する方法を使用すること。
+    
+    また、プロパティの表示名称を画面に合わせて変更したい場合は、 :ref:`validation_form_inheritance_model` に記述した方法でバリデーション条件を変えずにプロパティの表示名称を変更できる
+
+
+
+.. _entity-usage:
+
+---------------------------------------------
+Entity の使用
+---------------------------------------------
+:ref:`validation-abstract` で述べたとおり、 Form をRDBMS上のテーブルと1対1に対応づけることにより、
+下記2つのメリットが得られる。
+
+  1.  バリデーションとデータベースへの反映を容易に実装できる。
+  2.  RDBMS の定義から、実装の大部分が自動生成できる。
+
+以下の説明のため、ここでこの Entity を使用した際に得られる上記メリットのうち、1について詳細に説明する。
+なお、上記メリット2については自明であるため、ここでは説明を割愛する。
+
+
+テーブル構造とEntity
+==================================
+ここでは下記カラムを持つ USER テーブルを例に説明する。
+
+.. note::
+    ここではテーブルを Oracle のデータ型で説明する。
+
+
++--------------------------+--------------------+--------------------------------+
+| カラム名                 | データ型           | 説明                           |
++==========================+====================+================================+
+| ID                       | CHAR(8)            | | ユーザを一意に特定するID     |
+|                          |                    | | プライマリキー               |
++--------------------------+--------------------+--------------------------------+
+| NAME                     | NVARCHAR(10)       | ユーザの氏名                   |
++--------------------------+--------------------+--------------------------------+
+| REMARKS                  | NVARCHAR(100)      | ユーザの補足情報               |
++--------------------------+--------------------+--------------------------------+
+
+上記テーブルに対応する Entity は以下のように実装する。
+
+.. code-block:: java
+
+	public class UserEntity {
+	
+	    private String id;
+	
+	    private String name;
+	
+	    private String remarks;
+	
+	    public UserEntity(Map<String, Object> params) {
+	        id = (String) params.get("id");
+	        name = (String) params.get("name");
+	        remarks = (String) params.get("remarks");
+	    }
+	
+	    @PropertyName("ID")
+	    @Required
+	    @Length(min=8, max=8)
+	    public void setId(String id) {
+	        this.id = id;
+	    }
+	
+	    @PropertyName("ユーザ名")
+	    @Required
+	    @Length(max=10)
+	    public void setName(String name) {
+	        this.name = name;
+	    }
+	
+	    @PropertyName("備考")
+	    @Length(max=100)
+	    public void setRemarks(String remarks) {
+	        this.remarks = remarks;
+	    }
+	
+	    // getterは省略
+	
+	    private static final String[] UPDATE_PARAMS = new String[] { "id", "name", "remarks" };
+	    @ValidateFor("insert")
+	    public static void validateForUpdate(ValidationContext<UserEntity> context) {
+	        ValidationUtil.validate(context, UPDATE_PARAMS);
+	    }
+
+	}
+
+上記のように Entity を実装しておくことで、データベースに Entity を登録する処理を下記のように非常に単純に記述できる。
+
+.. code-block:: java
+
+        // USER テーブルにデータを登録する実装例。
+        ValidationContext<UserEntity> result = ValidationUtil.validateAndConvertRequest("user", UserEntity.class, req, "insert");
+
+        result.abortIfInvalid();
+
+        UserEntity user = result.createObject();
+
+        ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_USER");
+        statement.executeUpdateByObject(user);
+
+
+.. note::
+   上記例のデータベースアクセス実装部分の詳細は、 :ref:`DbAccessSupportクラス<db-support-label>` を参照のこと。
+
+このような利点があるため、RDBMSを使用したアプリケーションの実装時はできる限り 
+Form の特殊形態である Entity を使用して実装するよう考慮すべきである。
+
+
+
+.. _validation-prop:
+
+-------------------------------------------------
+バリデーション対象のプロパティ指定
+-------------------------------------------------
+上記までの説明では、全てデータ更新を行う画面を例にしていたため、バリデーションは生成対象の Form の全プロパティに対して実行していた。
+しかし、データベースへデータを Insert する画面では、プライマリキーとなるプロパティは自動採番であることが多い。
+この場合、プライマリキーとなるプロパティは画面入力されないため、バリデーションの対象外となる。
+
+このように、データの更新以外の目的でバリデーションを行う場合、実際のアプリケーションでは多くの場合 Form の全プロパティに対して
+バリデーションを行なわない。
+
+このような場合、 @ValidateFor アノテーションを使用した任意のバリデーションメソッドを Form に用意することで、
+バリデーション対象のプロパティを限定できる。
+
+下記のように、ユーザ登録画面(一般的に、登録画面ではシステムで採番するIDは指定しない)の場合を例に取って使用方法を説明する。
+
+.. code-block:: html
+
+  <form method="POST">
+  ユーザ名: <input type="text" name="user.name"/> <br/>
+  備考: <input type="text" name="user.remarks"/> <br/>
+  <input type="submit" value="登録" />
+  </form>
+
+
+このような画面のバリデーションを行う場合、バリデーションを行うメソッドを Form に作成する。
+バリデーションを行うメソッドには、@ValidateForアノテーションを設定する。
+@ValidateFor アノテーションの値には、バリデーションのパターンを表す名称を設定する。
+この名称をバリデーション名と呼ぶ。
+
+@ValidateFor アノテーションを設定したメソッドは、バリデーション結果を保持する ValidationContext を引数に持つ必要がある。
+メソッド内では、引数の ValidationContext に対してバリデーション結果を追加する。
+また、このメソッド内で ValidationUtil クラスの validateWithout メソッドを使用することで特定のプロパティを除いてバリデーションを行なえる。
+
+以下に上記の画面に対応するバリデーション処理を追加した User Form の例を示す。
+この例では、 ValidationUtil クラスの validateWithout メソッドの引数に "id" を指定することで、 id プロパティを除いたバリデーションが行なわれる。
+
+.. code-block:: java
+
+  public class User {
+      private String id;
+      private String name;
+      private String remarks;
+
+
+      @PropertyName("ID")
+      @Required
+      @Length(min=8, max=8)
+      public void setId(String id) {
+          this.id = id;
+      }
+
+      @PropertyName("ユーザ名")
+      @Required
+      @Length(max=10)
+      public void setName(String name) {
+          this.name = name;
+      }
+
+      @PropertyName("備考")
+      @Length(max=100)
+      public void setRemarks(String remarks) {
+          this.remarks = remarks;
+      }
+
+      /* getter,コンストラクタは省略 */
+
+      /** insert時にバリデーションを省略するプロパティ */
+      private static final String[] INSERT_SKIP_PROPS = new String[] {"id"}; 
+      
+      @ValidateFor("insert")
+      public static void validateForInsert(ValidationContext<User> context) {
+          // idを無視してバリデーションを実行
+          ValidationUtil.validateWithout(
+              context,
+              INSERT_SKIP_PROPS);
+      }
+  }
+
+
+上記のように Form を作成した上で、下記のように ValidationUtil クラスの validateAndConvertRequest メソッドの最後に
+バリデーション名(この例の場合、 "insert" )を指定することで、 User  にある @ValidateFor で付けられた
+validateForInsertメソッドが実行され、 id を除いたプロパティのみを対象としてバリデーションが
+実行される。
+
+.. code-block:: java
+  
+	ValidationContext<User> result = ValidationUtil.validateAndConvertRequest("user", User.class, req, "insert");
+
+  
+
+------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-08_02_validation_usage--s1`
+
+```json
+{
+  "id": "libraries-08_02_validation_usage--s1",
+  "title": "バリデーション機能の基本的な使用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Formの実装",
+      "hints": [
+        "ValidationUtil",
+        "ValidationContext",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "Formの実装",
+        "validateFor メソッド",
+        "バリデーション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Actionからのバリデーションメソッドの呼び出し",
+      "hints": [
+        "ValidationUtil",
+        "ValidationContext",
+        "validateAndConvertRequest",
+        "abortIfInvalid",
+        "createObject",
+        "isValid",
+        "ApplicationException",
+        "Validatable",
+        "バリデーション実行",
+        "入力値変換",
+        "プレフィクス",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "バリデーション結果のエラーメッセージ生成",
+      "hints": [
+        "@PropertyName",
+        "エラーメッセージ生成",
+        "message_management",
+        "property_display_name_internationalization",
+        "validation_form_inheritance_model",
+        "バリデーション結果"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Entity の使用",
+      "hints": [
+        "UserEntity",
+        "Entity",
+        "ParameterizedSqlPStatement",
+        "executeUpdateByObject",
+        "@ValidateFor",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "ValidationUtil",
+        "ValidationContext",
+        "データベース登録",
+        "RDBMSテーブルとForm対応",
+        "Entityによるバリデーション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "バリデーション対象のプロパティ指定",
+      "hints": [
+        "ValidationUtil",
+        "validateWithout",
+        "@ValidateFor",
+        "ValidationContext",
+        "バリデーション対象プロパティ指定",
+        "プロパティ除外バリデーション",
+        "部分バリデーション",
+        "INSERT_SKIP_PROPS",
+        "validateForInsert"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Formは入力値の保持とバリデーションの責務を持つクラス。実装手順:\n1. 入力値を受け付けるプロパティを追加\n2. `Map<String, Object>` を引数に取るコンストラクタを追加し、Map から各プロパティに値を設定\n3. プロパティのセッタに単項目精査アノテーションを設定（:ref:`validator_and_convertor` に示すアノテーション、または :ref:`add-validation-method` で追加したアノテーションを使用）\n4. `@ValidateFor` アノテーション付き static メソッド（validateFor メソッド）を実装し、`ValidationUtil.validate` で対象プロパティを指定\n\n**アノテーション**: `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`  \n**クラス**: `ValidationUtil`, `ValidationContext`\n\n```java\npublic class User {\n    private String id;\n    private String name;\n    private String remarks;\n\n    public User(Map<String, Object> params) {\n        id = (String) params.get(\"id\");\n        name = (String) params.get(\"name\");\n        remarks = (String) params.get(\"remarks\");\n    }\n\n    @PropertyName(\"ID\")\n    @Required\n    @Length(min=8, max=8)\n    public void setId(String id) { this.id = id; }\n\n    @PropertyName(\"ユーザ名\")\n    @Required\n    @Length(max=10)\n    public void setName(String name) { this.name = name; }\n\n    @PropertyName(\"備考\")\n    @Length(max=100)\n    public void setRemarks(String remarks) { this.remarks = remarks; }\n\n    private static final String[] UPDATE_PARAMS = new String[] { \"id\", \"name\", \"remarks\" };\n    @ValidateFor(\"update\")\n    public static void validateForUpdate(ValidationContext<User> context) {\n        ValidationUtil.validate(context, UPDATE_PARAMS);\n    }\n}\n```",
+    "s2": "HTMLフォームの入力項目名は `{プレフィクス}.{プロパティ名}` 形式（例: `user.id`, `user.name`）。この先頭の名称を「プレフィクス」と呼ぶ。\n\n```html\n<form method=\"post\">\n<input type=\"hidden\" name=\"user.id\" value=\"00000001\"/>\nユーザ名: <input type=\"text\" name=\"user.name\"/> <br/>\n備考: <input type=\"text\" name=\"user.remarks\"/> <br/>\n<input type=\"submit\" value=\"更新\" />\n</form>\n```\n\n> **注意**: 通常、Nablarchを使用したWebアプリケーションの開発では、`:ref:`custom_tag`` に記載したカスタムタグを使用する。以下のHTMLフォーム実装例はバリデーションの理解に集中するための例であり、実際のアプリケーション実装にそのまま使用しないこと。\n\n`ValidationUtil.validateAndConvertRequest` の引数:\n1. FormのプレフィクスString（例: `\"user\"`）\n2. Formのクラス（例: `User.class`）\n3. 入力値を保持した `Validatable` インタフェースを実装したクラス、またはMap\n4. バリデーション名（`@ValidateFor` アノテーションの値と一致したメソッドが実行される。例: `\"update\"`）\n\n```java\n// バリデーション実行（validateForUpdateメソッドが自動的に呼び出される）\nValidationContext<User> result = ValidationUtil.validateAndConvertRequest(\"user\", User.class, req, \"update\");\n\n// エラー処理: ApplicationExceptionを送出\nresult.abortIfInvalid();\n\n// 正常終了: Formオブジェクト生成\nUser user = result.createObject();\n```\n\n- `ValidationContext#abortIfInvalid()`: バリデーション失敗時に `ApplicationException` を送出\n- `ValidationContext#isValid()`: 正常/異常終了判定。任意の異常処理を行う場合に使用\n- `ValidationContext#createObject()`: 正常終了時にFormオブジェクトを生成\n\nこれらの詳細については :ref:`message_management` を参照。",
+    "s3": ":ref:`message_management` の機能を使用して、メッセージテンプレートとプロパティ表示名称から自動生成。例: 「{0}は必ず入力してください。」+「ユーザ名」→「ユーザ名は必ず入力してください。」\n\nプロパティ表示名称は通常 `@PropertyName` アノテーションでFormに直接指定する。\n\n> **注意**: `@PropertyName` は言語ごとに別々の表示名称を指定できないため、国際化が必要なアプリケーションでは使用不可。国際化が必要な場合は :ref:`property_display_name_internationalization` の方法を使用すること。\n\nバリデーション条件を変えずにプロパティ表示名称だけ変更したい場合は :ref:`validation_form_inheritance_model` の方法を使用できる。",
+    "s4": "FormをRDBMSのテーブルと1対1に対応づけたEntity（Formの特殊形態）を使用することで下記メリットが得られる:\n1. バリデーションとデータベースへの反映を容易に実装できる\n2. RDBMSの定義から実装の大部分が自動生成できる\n\nRDBMSを使用したアプリケーション実装時はできる限りEntityを使用すること。\n\n**テーブル構造とEntityのマッピング例（Oracleデータ型）**:\n\n| カラム名 | データ型 | 説明 |\n|----------|----------|------|\n| ID | CHAR(8) | ユーザを一意に特定するID（プライマリキー）|\n| NAME | NVARCHAR(10) | ユーザの氏名 |\n| REMARKS | NVARCHAR(100) | ユーザの補足情報 |\n\nRDBMSのカラム型定義がEntityのバリデーションアノテーションに対応する（例: `CHAR(8)` → `@Length(min=8, max=8)`、`NVARCHAR(10)` → `@Length(max=10)`）。\n\n**アノテーション**: `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`  \n**クラス**: `ValidationUtil`, `ValidationContext`\n\n```java\npublic class UserEntity {\n    private String id;\n    private String name;\n    private String remarks;\n\n    public UserEntity(Map<String, Object> params) {\n        id = (String) params.get(\"id\");\n        name = (String) params.get(\"name\");\n        remarks = (String) params.get(\"remarks\");\n    }\n\n    @PropertyName(\"ID\")\n    @Required\n    @Length(min=8, max=8)\n    public void setId(String id) { this.id = id; }\n\n    @PropertyName(\"ユーザ名\")\n    @Required\n    @Length(max=10)\n    public void setName(String name) { this.name = name; }\n\n    @PropertyName(\"備考\")\n    @Length(max=100)\n    public void setRemarks(String remarks) { this.remarks = remarks; }\n\n    private static final String[] UPDATE_PARAMS = new String[] { \"id\", \"name\", \"remarks\" };\n    @ValidateFor(\"insert\")\n    public static void validateForUpdate(ValidationContext<UserEntity> context) {\n        ValidationUtil.validate(context, UPDATE_PARAMS);\n    }\n}\n```\n\nEntityを使用したデータベース登録実装例（:ref:`DbAccessSupportクラス<db-support-label>` も参照）:\n\n```java\nValidationContext<UserEntity> result = ValidationUtil.validateAndConvertRequest(\"user\", UserEntity.class, req, \"insert\");\nresult.abortIfInvalid();\nUserEntity user = result.createObject();\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_USER\");\nstatement.executeUpdateByObject(user);\n```",
+    "s5": "全プロパティではなく特定プロパティのみをバリデーション対象にしたい場合（例: Insert時にシステム採番のプライマリキーはバリデーション不要）、`@ValidateFor` アノテーション付きのバリデーションメソッドをFormに追加することでバリデーション対象を限定できる。\n\nユーザ登録画面（システムでIDを採番するためIDフィールドなし）のHTMLフォーム例:\n\n```html\n<form method=\"POST\">\nユーザ名: <input type=\"text\" name=\"user.name\"/> <br/>\n備考: <input type=\"text\" name=\"user.remarks\"/> <br/>\n<input type=\"submit\" value=\"登録\" />\n</form>\n```\n\nこのように `user.id` フィールドが存在しないため、`id` プロパティをバリデーション対象から除外する必要がある。\n\n`ValidationUtil.validateWithout(context, excludedProps)`: 指定したプロパティを除いてバリデーションを実行。\n\n**アノテーション**: `@ValidateFor`  \n**クラス**: `ValidationUtil`, `ValidationContext`\n\n```java\n/** insert時にバリデーションを省略するプロパティ */\nprivate static final String[] INSERT_SKIP_PROPS = new String[] {\"id\"};\n\n@ValidateFor(\"insert\")\npublic static void validateForInsert(ValidationContext<User> context) {\n    // idを無視してバリデーションを実行\n    ValidationUtil.validateWithout(\n        context,\n        INSERT_SKIP_PROPS);\n}\n```\n\nActionから `validateAndConvertRequest` の最後にバリデーション名（この例では `\"insert\"`）を指定することで、対応する `@ValidateFor` メソッドが実行される:\n\n```java\nValidationContext<User> result = ValidationUtil.validateAndConvertRequest(\"user\", User.class, req, \"insert\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 7
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

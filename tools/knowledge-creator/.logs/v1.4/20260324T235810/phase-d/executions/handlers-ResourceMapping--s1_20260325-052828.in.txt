@@ -1,0 +1,376 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/ResourceMapping.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==============================================
+リソースマッピングハンドラ
+==============================================
+
+**クラス名:** ``nablarch.fw.web.handler.ResourceMapping``
+
+----------------------------------------------
+概要
+----------------------------------------------
+業務アクションの処理を経由せずに、直接レスポンスとして返却するリソースを決定するハンドラ。
+
+このハンドラは、主にログイン画面のようにビジネスロジックを介さずに表示するJSPや、
+javascriptや画像のような静的リソースのレスポンスを行なう場合に使用する。
+
+レスポンスされるリソースは、事前に定義されたリクエストパスと
+:ref:`コンテンツパス<content-path>` とのマッピング定義を元に決定される。
+
+マッピング先のリソースは、以下のいずれかを指定することができる。
+
+  1. サーブレット/JSPフォーワード (**servlet://** スキーム) **[デフォルト]**
+  2. 内部フォーワードの実行結果 (**forward://** スキーム)
+  3. コンテキストクラスローダ上のリソース (**classpath://** スキーム)
+
+なお、セキュリティ上の配慮から、ファイルシステム上のローカルファイル(**file://** スキーム)を
+マッピング先に指定することはできない。また、スキームの指定を省略した場合は **servlet://** スキームが指定されたものと
+みなされる。
+
+  .. note::
+
+    通常のサーブレットアプリケーションでは、直接アクセス不可能なリソースは **/WEB-INF/** 配下に配置するのが
+    一般的であるが、本フレームワークでは、JSP、画像などのリソースは全てサーブレットコンテキスト配下に
+    直接配置することを推奨している。
+  
+    この場合、デフォルトでは全てのリソースに対する直接アクセスは拒否され、
+    業務アクションのレスポンスもしくは、本ハンドラのマッピング定義の対象となるリソースのみアクセス可能となる。
+  
+
++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "HttpResponseHandler"
+      , "ForwardingHandler"
+      , "ResourceMapping"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  ====================================  ======================================================================
+  ハンドラ                              内容
+  ====================================  ======================================================================
+  :doc:`HttpResponseHandler`            本ハンドラが返却したHTTPレスポンスオブジェクト中の :ref:`コンテンツパス<content-path>` の内容に
+                                        基づいてレスポンス処理を行う。
+
+  :doc:`ForwardingHandler`              :ref:`コンテンツパス<content-path>` が **forward://** で開始されている場合に内部フォーワード
+                                        処理を行う。
+
+  :doc:`RequestHandlerEntry`            本ハンドラによるマッピング対象となるリクエストを限定するために、
+                                        必ず、 :doc:`RequestHandlerEntry` と組み合わせて使用する。
+
+  ====================================  ======================================================================
+ 
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (マッピング対象リクエスト判定)**
+    本ハンドラに設定された **マッピング元ベースURI** が、リクエストパス(サーブレットコンテキストからの相対パス)に対して
+    前方一致するかどうかを判定する。
+
+  **1a. (マッピング対象外のリクエスト)**
+    **1.** でパスが一致しなかった場合、当該リクエストは本ハンドラによるマッピングの対象外と判断し、
+    ステータスコード **404** のレスポンスをリターンし、終了する。
+
+  **2.(マッピング先コンテンツパスの算出)**
+    リクエストパス中の **1.** で前方一致した部分文字列を、本ハンドラに設定された **マッピング先ベースコンテンツパス** に置換し、
+    **マッピング先コンテンツパス** とする。
+    なお、 **マッピング先ベースコンテンツパス** にスキームが明示されていない場合は、 **servlet://** を補完する。
+
+  **3. (マッピング先コンテンツパス実在チェック)**
+    **マッピング先コンテンツパス** のスキームが **classpath://** であった場合は当該のパス上にリソースが実在するかどうかを
+    チェックし、もし存在しなければ、ステータスコード **404** のレスポンスをリターンし、終了する。
+
+  **4. (HTTPレスポンスの返却)**
+    ステータスコード **200** のHTTPレスポンスを作成し、 **2.** で算出した :ref:`コンテンツパス<content-path>` を設定した上でリターンする。 
+
+.. _outbound:
+
+**[復路処理]**
+    (本ハンドラは後続のハンドラに対する処理委譲を行なわない。)
+
+.. _error:
+
+**[例外処理]**
+    (本ハンドラは後続のハンドラに対する処理委譲を行なわない。)
+
+
+++++++++++++++++++++
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  =================================  ==============  ===========  ====================================================================================== 
+  設定項目                           プロパティ名    データ型     備考
+  =================================  ==============  ===========  ====================================================================================== 
+  マッピング元ベースURI              baseUri         String       **必須指定**
+
+                                                                  | リクエストURIの置換対象となる部分文字列(前方一致)を指定する。
+
+  マッピング先ベースコンテンツパス   basePath        String       **必須指定**
+
+                                                                  | リクエストURI中のマッピング元ベースURIを置換する文字列
+                                                                    (:ref:`コンテンツパス<content-path>`)を指定する。
+                                                                  | スキームの指定を省略した場合は、 **servlet://** が指定されたものとみなされる。
+
+  =================================  ==============  ===========  ====================================================================================== 
+
+**画像ファイルに対するマッピングの設定例**
+
+  次の例では、リクエストパス **/img/** 配下の画像ファイルに対するリクエストを、
+  サーブレットコンテキスト配下のパス **/resources/img/** を参照するようにマッピングしている。
+  
+    .. code-block:: xml
+  
+      <!-- 静的リソースに対するマッピング -->
+      <!-- スタイルシート -->
+      <component class="nablarch.fw.RequestHandlerEntry">
+        <property name="requestPattern" value="/img//*.png"/>
+        <property name="handler">
+          <component class="nablarch.fw.web.handler.ResourceMapping">
+            <!-- マッピング元ベースURI -->
+            <property name="baseUri" value="/img/"/>
+            <!-- マッピング先ベースコンテンツパス -->
+            <property name="basePath" value="servlet:///resources/img/"/>
+          </component>
+        </property>
+      </component>
+  
+  .. **
+  
+  このマッピングにより、HTTPリクエストと、それに対するレスポンスの :ref:`コンテンツパス<content-path>` との対応は以下のようになる。
+  (サーブレットコンテキストパスが **/webapp/** であった場合。)
+
+  =================================== ===========================================
+  HTTPリクエストライン                コンテンツパス 
+  =================================== ===========================================
+  GET /webapp/img/logo.png            servlet:///resource/img/logo.png
+  GET /webapp/img/page1/figure01.png  servlet:///resource/img/page1/figure01.png
+  =================================== ===========================================
+
+**直接表示可能なJSP画面**
+
+  次の例では、リソース名の末尾が **-public.jsp** となっている場合に、当該ページに対する直接アクセスを可能としている。
+
+  .. code-block:: xml
+
+      <!-- 静的リソースに対するマッピング -->
+      <!-- スタイルシート -->
+      <component class="nablarch.fw.RequestHandlerEntry">
+        <property name="requestPattern" value="/jsp//*-public.jsp"/>
+        <property name="handler">
+          <component class="nablarch.fw.web.handler.ResourceMapping">
+            <!-- マッピング元ベースURI -->
+            <property name="baseUri" value="/"/>
+            <!-- マッピング先ベースコンテンツパス -->
+            <property name="basePath" value="servlet:///"/>
+          </component>
+        </property>
+      </component>
+  
+  .. **
+  
+  このマッピングにより、HTTPリクエストと、それに対するレスポンスの :ref:`コンテンツパス<content-path>` との対応は以下のようになる。
+  (サーブレットコンテキストパスが **/webapp/** であった場合。)
+  
+  =================================== ===========================================
+  HTTPリクエストライン                コンテンツパス 
+  =================================== ===========================================
+  GET /webapp/jsp/login-public.jsp    servlet:///jsp/login-public.jsp
+  GET /webapp/jsp/welcome.jsp         (404エラー) 
+  =================================== ===========================================
+  
+
+```
+
+## Knowledge File
+
+- ID: `handlers-ResourceMapping--s1`
+
+```json
+{
+  "id": "handlers-ResourceMapping--s1",
+  "title": "リソースマッピングハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ResourceMapping",
+        "nablarch.fw.web.handler.ResourceMapping",
+        "HttpResponseHandler",
+        "ForwardingHandler",
+        "RequestHandlerEntry",
+        "リソースマッピング",
+        "静的リソース配信",
+        "直接アクセス制御",
+        "サーブレットフォーワード",
+        "servlet://",
+        "classpath://",
+        "forward://"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ResourceMapping",
+        "往路処理",
+        "コンテンツパス算出",
+        "404レスポンス",
+        "classpath実在チェック",
+        "前方一致",
+        "スキーム補完"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "baseUri",
+        "basePath",
+        "ResourceMapping設定",
+        "静的リソースマッピング",
+        "JSP直接アクセス",
+        "画像ファイルマッピング",
+        "RequestHandlerEntry",
+        "requestPattern"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.ResourceMapping`\n\n業務アクションを経由せずに直接レスポンスするリソースを決定するハンドラ。ログイン画面のような静的JSPや画像・JavaScriptなどの静的リソースのレスポンスに使用する。\n\nマッピング先スキーム（以下のいずれかを指定可）:\n1. `servlet://` — サーブレット/JSPフォーワード **[デフォルト]**\n2. `forward://` — 内部フォーワードの実行結果\n3. `classpath://` — コンテキストクラスローダ上のリソース\n\n> **注意**: セキュリティ上の理由から `file://` スキームは指定不可。スキーム省略時は `servlet://` とみなされる。\n\n> **注意**: デフォルトでは全リソースへの直接アクセスは拒否される。業務アクションのレスポンスか、本ハンドラのマッピング定義対象リソースのみアクセス可能。\n\n**関連するハンドラ**:\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`HttpResponseHandler` | 本ハンドラが返却したHTTPレスポンスの :ref:`コンテンツパス<content-path>` に基づいてレスポンス処理を行う |\n| :doc:`ForwardingHandler` | コンテンツパスが `forward://` で始まる場合に内部フォーワード処理を行う |\n| :doc:`RequestHandlerEntry` | マッピング対象リクエストを限定するために **必ず** 組み合わせて使用する |",
+    "s2": "**[往路処理]**\n1. 本ハンドラに設定された **マッピング元ベースURI** がリクエストパス（サーブレットコンテキストからの相対パス）に前方一致するか判定\n2. 不一致の場合、ステータスコード **404** をリターンして終了\n3. 一致した場合、リクエストパスの前方一致部分を **マッピング先ベースコンテンツパス** に置換してマッピング先コンテンツパスを算出。マッピング先ベースコンテンツパスにスキーム未指定時は `servlet://` を補完\n4. マッピング先が `classpath://` の場合、リソースの実在チェックを実施。存在しなければステータスコード **404** をリターンして終了\n5. ステータスコード **200** のHTTPレスポンスを作成し、算出した :ref:`コンテンツパス<content-path>` を設定してリターン\n\n**[復路処理]**: 後続ハンドラへの処理委譲なし。\n\n**[例外処理]**: 後続ハンドラへの処理委譲なし。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| baseUri | String | ○ | | リクエストURIの置換対象となる部分文字列（前方一致）|\n| basePath | String | ○ | | リクエストURI中のbaseUriを置換する文字列（:ref:`コンテンツパス<content-path>`）。スキーム省略時は `servlet://` とみなされる |\n\n**画像ファイルに対するマッピングの設定例** (`/img/` 配下を `/resources/img/` にマッピング):\n\n```xml\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"/img//*.png\"/>\n  <property name=\"handler\">\n    <component class=\"nablarch.fw.web.handler.ResourceMapping\">\n      <property name=\"baseUri\" value=\"/img/\"/>\n      <property name=\"basePath\" value=\"servlet:///resources/img/\"/>\n    </component>\n  </property>\n</component>\n```\n\nマッピング結果例（コンテキストパス `/webapp/`）:\n\n| HTTPリクエストライン | コンテンツパス |\n|---|---|\n| GET /webapp/img/logo.png | servlet:///resource/img/logo.png |\n| GET /webapp/img/page1/figure01.png | servlet:///resource/img/page1/figure01.png |\n\n**直接表示可能なJSP画面の設定例** (末尾が `-public.jsp` のリソースへの直接アクセスを許可):\n\n```xml\n<component class=\"nablarch.fw.RequestHandlerEntry\">\n  <property name=\"requestPattern\" value=\"/jsp//*-public.jsp\"/>\n  <property name=\"handler\">\n    <component class=\"nablarch.fw.web.handler.ResourceMapping\">\n      <property name=\"baseUri\" value=\"/\"/>\n      <property name=\"basePath\" value=\"servlet:///\"/>\n    </component>\n  </property>\n</component>\n```\n\nマッピング結果例（コンテキストパス `/webapp/`）:\n\n| HTTPリクエストライン | コンテンツパス |\n|---|---|\n| GET /webapp/jsp/login-public.jsp | servlet:///jsp/login-public.jsp |\n| GET /webapp/jsp/welcome.jsp | (404エラー) |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

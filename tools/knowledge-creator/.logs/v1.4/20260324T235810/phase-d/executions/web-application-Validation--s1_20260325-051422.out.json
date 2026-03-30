@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "index (s1 TOC) / missing section for validation_example_contains_key_param",
+      "description": "The section `validation_example_contains_key_param`（入力値に連動して、動的に単項目精査対象を変化させる方法 — パラメータによる切り替え）is listed in the s1 TOC but has no corresponding section in the knowledge file. The automated check reports 9 source headings vs 4 knowledge sections, confirming that multiple sections beyond `validation_example_contains_key_param` are also entirely absent.",
+      "source_evidence": "TOC in source: `* :ref:`validation_example_contains_key_param`` and source file ends mid-document at the heading for that section; automated warning: Section count 4 < source headings 9"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — コード値の精査を行う方法",
+      "description": "`CustomerEntity.validate()` calls `ValidationUtil.validate(context, new String[] {\"gender\"})` before calling `CodeValidationUtil.validate()`. This sequencing is omitted from the knowledge file's code example, losing the information that standard property validation precedes code-value validation.",
+      "source_evidence": "Source code: `ValidationUtil.validate(context, new String[] {\"gender\"});` immediately before the two `CodeValidationUtil.validate(...)` calls inside `CustomerEntity.validate()`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 入力値に連動して動的に精査対象を変化させる方法",
+      "description": "The knowledge file omits: (1) the JSP example showing `n:radioButton`, `n:error`, `n:text` tags; (2) `Example4Form`'s property-level annotations (`@PropertyName`, `@Required`, `@SystemChar(charsetDef=\"AlnumChar\")`) on `setValue1`/`setValue2`; (3) the static `validate()` method pattern using `ValidationUtil.validateAndConvertRequest(\"form\", Example4Form.class, req, validationName)` followed by `context.abortIfInvalid()`. These are relevant API usage patterns.",
+      "source_evidence": "Source form class: `@Required`, `@SystemChar(charsetDef = \"AlnumChar\")` on setter methods; `ValidationUtil.validateAndConvertRequest(...)` and `context.abortIfInvalid()` in the static `validate()` method; JSP block with `<n:radioButton>`, `<n:error>`, `<n:text>` tags"
+    }
+  ]
+}

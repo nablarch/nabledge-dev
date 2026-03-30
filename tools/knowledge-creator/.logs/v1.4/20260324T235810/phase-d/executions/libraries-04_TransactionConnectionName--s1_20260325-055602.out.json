@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_TransactionConnectionName--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index: s3, s4",
+      "description": "Sections s3 (JdbcTransaction 1対1関係) and s4 (トランザクション名) are in reversed order compared to the source. The source presents: (1) データベースコネクション名, (2) トランザクション名, (3) JdbcTransaction関係, (4) 実装コード。The knowledge file index places s3=JdbcTransaction before s4=トランザクション名, reversing the original document structure.",
+      "source_evidence": "Source order: `------------------\\nトランザクション名\\n------------------` appears before `JdbcTransactionを使用した場合のトランザクション名とデータベースコネクション名の関係`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index.s3.title",
+      "description": "Section s3 has an empty title string, but the corresponding source section has the explicit heading \"JdbcTransactionを使用した場合のトランザクション名とデータベースコネクション名の関係\".",
+      "source_evidence": "Source heading: `JdbcTransactionを使用した場合のトランザクション名とデータベースコネクション名の関係\\n===================================================================================`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4 (code example)",
+      "description": "The second transaction variable in the retrieval example is named `tran2`, but the source uses `tran` for both declarations (resulting in a duplicate variable declaration). The knowledge file silently modified the variable name without basis in the source.",
+      "source_evidence": "Source: `Transaction tran = TransactionContext.getTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);` followed by `Transaction tran = TransactionContext.getTransaction(\"user-schema\");` — both use `tran`."
+    }
+  ]
+}

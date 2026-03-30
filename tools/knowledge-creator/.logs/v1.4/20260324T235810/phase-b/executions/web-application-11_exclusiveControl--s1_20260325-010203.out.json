@@ -1,0 +1,48 @@
+{
+  "id": "web-application-11_exclusiveControl--s1",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "ExclusiveCtrlSystemAccountContext",
+        "W11AC03Action",
+        "排他制御",
+        "楽観ロック",
+        "更新処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "ExclusiveControlContext",
+        "ExclusiveCtrlSystemAccountContext",
+        "HttpExclusiveControlUtil",
+        "OptimisticLockException",
+        "排他制御",
+        "楽観ロック",
+        "バージョン番号",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersionsWithCheck"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "排他制御機能",
+        "ExclusiveControl"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "作成するソースコード:\n\n| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`ExclusiveCtrlSystemAccountContext.java<./_source/download/ExclusiveCtrlSystemAccountContext.java>` | — | 排他制御用の補助クラス。排他制御の実行に必要な情報を保持する。 |\n| :download:`W11AC03Action.java<./_source/download/W11AC03Action.java>` | Action | 排他制御補助クラスを使用し、更新処理時に排他制御を行う。 |",
+    "s2": "## 概要\n\n- 楽観ロックを使用する。\n- バージョン番号として、SYSTEM_ACCOUNTテーブルの **VERSION** 項目の値を使用する。\n\n## 主キークラス(ExclusiveCtrlSystemAccountContext)の作成\n\n**クラス**: `ExclusiveControlContext`（継承元）\n\nSYSTEM_ACCOUNTテーブル定義:\n\n```sql\nCREATE TABLE SYSTEM_ACCOUNT\n(\n    USER_ID  CHAR(10) NOT NULL,\n    VERSION  NUMBER(10,0) DEFAULT 1 NOT NULL\n);\nALTER TABLE SYSTEM_ACCOUNT\n    ADD(PRIMARY KEY (USER_ID) USING INDEX);\n```\n\n実装手順:\n1. `ExclusiveControlContext` を継承する。\n2. 排他制御用テーブルの主キーを列挙型（`PK`）で定義する。\n3. 主キーの値を引数にとるコンストラクタを定義する。\n4. コンストラクタ内で `setTableName()`、`setVersionColumnName()`、`setPrimaryKeyColumnNames()`、`appendCondition()` を呼び出す。\n\n```java\npublic class ExclusiveCtrlSystemAccountContext extends ExclusiveControlContext {\n    private enum PK { USER_ID }\n\n    public ExclusiveCtrlSystemAccountContext(String userId) {\n        setTableName(\"SYSTEM_ACCOUNT\");\n        setVersionColumnName(\"VERSION\");\n        setPrimaryKeyColumnNames(PK.values());\n        appendCondition(PK.USER_ID, userId);\n    }\n}\n```\n\n## Actionの作成（W11AC03Action.java）\n\n更新処理の排他制御は `HttpExclusiveControlUtil` クラスを使用する。\n\n**バージョン番号の取得（更新画面初期表示時）**:\n\n主キークラスのインスタンスを生成し、バージョン番号を取得する。取得したバージョン番号は主キークラスに設定される。\n\n```java\nHttpExclusiveControlUtil.prepareVersion(ctx, new ExclusiveCtrlSystemAccountContext(userId));\n```\n\n**バージョン番号のチェック（更新確認処理時）**:\n\nバージョン番号は `HttpRequest` から取得する。バージョンが異なる場合、`OptimisticLockException` がスローされる。`@OnError(type = OptimisticLockException.class, ...)` で排他制御エラー時の遷移先を指定する。\n\n```java\nHttpExclusiveControlUtil.checkVersions(req, ctx);\n```\n\n**バージョン番号のチェックおよび更新（DB更新処理時）**:\n\nバージョンが同じ場合にバージョン番号を更新する。バージョンが異なる場合、`OptimisticLockException` がスローされる。\n\n```java\nHttpExclusiveControlUtil.updateVersionsWithCheck(req);\n```",
+    "s3": "- [排他制御機能について詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/08_ExclusiveControl.html)"
+  }
+}

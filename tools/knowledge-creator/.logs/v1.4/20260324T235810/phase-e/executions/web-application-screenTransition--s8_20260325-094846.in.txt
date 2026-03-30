@@ -1,0 +1,334 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-screenTransition--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "The `n:script` Nablarch custom tag is used in both JSP implementation examples in s3 (to load external JavaScript via `<n:script type=\"text/javascript\" src=\"/js/common.js\" />`), but it is absent from the s3 hints array. Other tags used in the same examples (`n:a`, `n:button`) are correctly included.",
+      "source_evidence": "Both JSP examples in the source include: `<n:script type=\"text/javascript\" src=\"/js/common.js\" />`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "Automated pre-check reports 7 source headings but the knowledge file contains only 6 sections (s1–s6). The provided source excerpt contains exactly 6 headings, so if the automated check is correct, a 7th heading from the full RST file may be unrepresented in this knowledge file.",
+      "source_evidence": "Automated warning S9: Section count 6 < source headings 7. Headings visible in the excerpt: (1) 複数ウィンドウを立ち上げたい場合, (2) 別ウィンドウにサブミットする場合のJSPの実装例, (3) 別ウィンドウから元画面に値を設定する場合のJSPの実装例, (4) 二重サブミットの防止, (5) 入力画面と確認画面の共通化をサポートするカスタムタグ, (6) ブラウザのキャッシュ防止."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+複数ウィンドウを立ち上げたい場合
+------------------------------------------------------------------------------------------------
+ユーザの操作性を向上させるために、複数ウィンドウを立ち上げたい場合がある。\
+例えば、検索画面を別ウィンドウで立ち上げ入力補助を行う場合などが挙げられる。\
+複数ウィンドウを立ち上げたい場合は、下記のタグを使用すればよい。\
+これらのタグを使用すると、新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。
+
+* popupSubmit
+* popupButton
+* popupLink
+
+新しいウィンドウのスタイルは、下記のpopupOption属性に指定する。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+popupOption                            | ポップアップのオプション情報。
+                                       | 新しいウィンドウを開く際にwindow.open関数の第3引数(JavaScript)に指定する。
+====================================== ==========================================================================================
+
+オープンしたウィンドウに表示される画面の処理を行うアクションと、元画面のアクションでパラメータ名が異なる場合は、\
+changeParamNameタグを使用してパラメータ名を変更する。
+
+別ウィンドウにサブミットする場合のJSPの実装例
+==========================================================================================
+ここでは、郵便番号から住所を検索する別ウィンドウにサブミットする場合の実装例を示す。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】郵便番号の入力項目以外は省略 --%>
+     <tr>
+         <th>
+             <span class="essential">*</span>郵便番号<span class="instruct">(半角数字)</span>
+         </th>
+         <td>
+             <n:text name="W11AC01.postalCode" size="7" maxlength="9"/>
+             <%-- 【説明】
+                   popupButtonタグを指定する。
+                   name属性やuri属性の指定は、画面内のフォームをサブミットするbuttonタグと同じ。 --%>
+             <n:popupButton name="searchAddress" uri="/action/ss11AB/W11AB01Action/RW11AB0101">
+                 検索
+                 <%-- 【説明】
+                       郵便番号のパラメータ名"W11AC01.postalCode"を"W11AB01.postalCode"に変更する。
+                       別画面を表示するアクションで入力項目を使用する場合は、
+                       別画面を表示するアクションに合わせてパラメータ名を変更する。 --%>
+                 <n:changeParamName inputName="W11AC01.postalCode" paramName="W11AB01.postalCode" />
+                 <%-- 【説明】
+                       変更パラメータを追加する。
+                       別画面を表示するアクションに合わせてパラメータを追加する。 --%>
+                 <n:param paramName="W11AB01.max" value="10" />
+             </n:popupButton>
+         </td>
+     </tr>
+
+別ウィンドウから元画面に値を設定する場合のJSPの実装例
+==========================================================================================
+別ウィンドウから元画面に値を設定したい場合はJavaScriptにより実現する。\
+郵便番号の検索結果をリンクで選択させる場合とボタンで選択させる場合の実装例を下記に示す。
+
+* JavaScriptの実装例
+
+ | JavaScriptは動的な値(入力データなど)の埋め込みを防ぐために外部ファイルに記述する。\
+   下記の実装例では"/js/common.js"に配置したファイルに記述するものとする。
+
+ | JavaScriptのコメントは保守性を向上させるために記述することを推奨する。\
+   JavaScriptの記述ルールはプロジェクトの規約に従うこと。
+
+  .. code-block:: javascript
+
+     /**
+      * 親ウィンドウのinput要素のvalue属性に値を設定しウィンドウをクローズする。
+      *
+      * 親ウィンドウのinput要素は指定されたname属性から取得する。
+      * 本関数は単一入力項目への値設定のみサポートしており、
+      * 指定されたname属性が親ウィンドウ内で重複していないことを前提に処理する。
+      *
+      * 親ウィンドウに設定する値は、指定された要素の属性から取得する。
+      * デフォルトではname属性から値を取得する。
+      * 通常の属性値と区別するため、値にはプレフィックスを付けることとし、
+      * 指定されたプレフィックスを取り除いた結果を値とする。
+      *
+      * @param openerInputName 値を設定する親ウィンドウのinput要素のname属性
+      * @param element 値の取得先の要素
+      * @param prefix  値に付けたプレフィックス
+      * @param attributeName 値の取得先となる要素の属性名。指定がない場合はname属性を使用する。
+      */
+     function setInputValueToOpener(openerInputName, element, prefix, attributeName) {
+         if (attributeName == null) {
+             attributeName = "name";
+         }
+         var value = element[attributeName];
+         value = value.substring(prefix.length, value.length);
+         /* 【説明】
+             window.openerを使用して元画面を参照する。*/
+         var input = window.opener.document.getElementsByName(openerInputName)[0];
+         input.value = value;
+         window.close();
+     }
+
+ .. warning::
+
+  JavaScriptに対するエスケープ処理は、フレームワークで未実装のため、 scriptタグのボディやonclick属性など、\
+  JavaScriptを記述する部分には、動的な値(入力データなど)を埋め込まないこと。
+
+* JSPの実装例(郵便番号の検索結果をリンクで選択させる場合)
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           外部ファイルに記述したJavaScriptを読み込む。
+           n:scriptタグはhtmlのheadタグ内に記述する。 --%>
+     <n:script type="text/javascript" src="/js/common.js"  />
+
+     <%-- 【説明】
+           リクエストスコープに"resultSet"という名前で郵便番号の検索結果が設定されているものとする。
+           name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。--%>
+     <n:form>
+     <c:forEach var="row" items="${resultSet}">
+         <div>
+             <n:a href="#" name="val_${row.postalCode}"
+                  onclick="setInputValueToOpener('W11AC01.postalCode', this, 'val_')">
+                 <n:write name="row.postalCode" />
+             </n:a>
+         </div>
+     </c:forEach>
+     </n:form>
+
+* JSPの実装例(郵便番号の検索結果をボタンで選択させる場合)
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           外部ファイルに記述したJavaScriptを読み込む。
+           n:scriptタグはhtmlのheadタグ内に記述する。 --%>
+     <n:script type="text/javascript" src="/js/common.js"  />
+
+     <%-- 【説明】
+           リクエストスコープに"resultSet"という名前で郵便番号の検索結果が設定されているものとする。
+           name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。--%>
+     <n:form>
+     <c:forEach var="row" items="${resultSet}">
+         <div>
+             <n:button uri="#" name="val_${row.postalCode}"
+                 onclick="setInputValueToOpener('W11AC01.postalCode', this, 'val_')">
+                 <n:write name="row.postalCode" />
+             </n:button>
+         </div>
+     </c:forEach>
+     </n:form>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`howto_prevent_double_submission`:
+
+--------------------
+二重サブミットの防止
+--------------------
+
+データベースへのコミットを伴う画面では、二重サブミットを防止する必要がある。
+
+防止法は、クライアント側での対策（以下、「リクエストの二重送信防止」）と
+サーバ側での対策（以下、「処理済リクエストの受信防止」）をそれぞれ行う必要がある。
+
+詳細については、 Application Framework解説書の `二重サブミットの防止 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.html#prevent-double-submission>`_ を参照。
+
+
+.. _`common_page_support`:
+
+----------------------------------------------------
+入力画面と確認画面の共通化をサポートするカスタムタグ
+----------------------------------------------------
+
+入力画面と確認画面が1対1に対応する場合、表示のためのJSPファイルを共通化できる。
+
+詳細については、 Application Framework解説書の `入力画面と確認画面の共通化をサポートするカスタムタグ <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-inputconfirmationcommon>`_ を参照。
+
+
+.. _`howto_prevent_history_back`:
+
+------------------------
+ブラウザのキャッシュ防止
+------------------------
+
+ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、noCacheタグを使用する。
+
+詳細については、 Application Framework解説書の `ブラウザのキャッシュ防止 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.html#prevent-history-back>`_ を参照。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-screenTransition--s8",
+  "title": "複数ウィンドウを立ち上げたい場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げたい場合",
+      "hints": [
+        "popupSubmit",
+        "popupButton",
+        "popupLink",
+        "popupOption",
+        "changeParamName",
+        "複数ウィンドウ",
+        "ポップアップ",
+        "パラメータ名変更"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "別ウィンドウにサブミットする場合のJSPの実装例",
+      "hints": [
+        "popupButton",
+        "changeParamName",
+        "別ウィンドウサブミット",
+        "郵便番号検索",
+        "パラメータ名変更",
+        "n:param"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "別ウィンドウから元画面に値を設定する場合のJSPの実装例",
+      "hints": [
+        "setInputValueToOpener",
+        "window.opener",
+        "別ウィンドウ 元画面 値設定",
+        "JavaScript 外部ファイル",
+        "n:a",
+        "n:button",
+        "window.close"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "リクエストの二重送信防止",
+        "処理済リクエストの受信防止",
+        "DBコミット",
+        "クライアント側対策",
+        "サーバ側対策"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力画面と確認画面の共通化をサポートするカスタムタグ",
+      "hints": [
+        "入力画面と確認画面の共通化",
+        "JSPファイル共通化",
+        "カスタムタグ",
+        "確認画面"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "noCacheタグ",
+        "ブラウザキャッシュ防止",
+        "戻るボタン",
+        "ブラウザの戻るボタン",
+        "履歴バック防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数ウィンドウを立ち上げたい場合は以下のタグを使用する。新しいウィンドウを開き、そのウィンドウに対してサブミットを行う。\n\n- `popupSubmit`\n- `popupButton`\n- `popupLink`\n\n新しいウィンドウのスタイルは `popupOption` 属性で指定する。\n\n| 属性 | 説明 |\n|---|---|\n| popupOption | ポップアップのオプション情報。`window.open` 関数の第3引数（JavaScript）に指定する。 |\n\nオープンしたウィンドウのアクションと元画面のアクションでパラメータ名が異なる場合は、`changeParamName` タグでパラメータ名を変更する。",
+    "s2": "郵便番号から住所を検索する別ウィンドウにサブミットする場合の実装例を示す。\n\n**JSP実装例:**\n\n```jsp\n<%-- 郵便番号の入力項目以外は省略 --%>\n<tr>\n    <th>\n        <span class=\"essential\">*</span>郵便番号<span class=\"instruct\">(半角数字)</span>\n    </th>\n    <td>\n        <n:text name=\"W11AC01.postalCode\" size=\"7\" maxlength=\"9\"/>\n        <%-- popupButtonタグを指定する。name属性やuri属性の指定は通常のbuttonタグと同じ。 --%>\n        <n:popupButton name=\"searchAddress\" uri=\"/action/ss11AB/W11AB01Action/RW11AB0101\">\n            検索\n            <%-- 郵便番号のパラメータ名を別画面のアクションに合わせて変更する。 --%>\n            <n:changeParamName inputName=\"W11AC01.postalCode\" paramName=\"W11AB01.postalCode\" />\n            <%-- 別画面のアクションに合わせてパラメータを追加する。 --%>\n            <n:param paramName=\"W11AB01.max\" value=\"10\" />\n        </n:popupButton>\n    </td>\n</tr>\n```",
+    "s3": "別ウィンドウから元画面に値を設定したい場合はJavaScriptで実現する。JavaScriptは動的な値の埋め込みを防ぐために外部ファイルに記述する。`window.opener` を使用して元画面を参照する。\n\n> **警告**: JavaScriptに対するエスケープ処理はフレームワーク未実装のため、scriptタグのボディやonclick属性など、JavaScriptを記述する部分には動的な値（入力データなど）を埋め込まないこと。\n\n**JavaScript実装例（/js/common.js）:**\n\n```javascript\nfunction setInputValueToOpener(openerInputName, element, prefix, attributeName) {\n    if (attributeName == null) {\n        attributeName = \"name\";\n    }\n    var value = element[attributeName];\n    value = value.substring(prefix.length, value.length);\n    /* window.openerを使用して元画面を参照する。*/\n    var input = window.opener.document.getElementsByName(openerInputName)[0];\n    input.value = value;\n    window.close();\n}\n```\n\n**JSP実装例（リンクで選択させる場合）:**\n\n```jsp\n<%-- 外部ファイルに記述したJavaScriptを読み込む。n:scriptタグはheadタグ内に記述する。 --%>\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n\n<%-- name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。 --%>\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:a href=\"#\" name=\"val_${row.postalCode}\"\n             onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:a>\n    </div>\n</c:forEach>\n</n:form>\n```\n\n**JSP実装例（ボタンで選択させる場合）:**\n\n```jsp\n<%-- 外部ファイルに記述したJavaScriptを読み込む。n:scriptタグはheadタグ内に記述する。 --%>\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n\n<%-- name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。 --%>\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:button uri=\"#\" name=\"val_${row.postalCode}\"\n            onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:button>\n    </div>\n</c:forEach>\n</n:form>\n```",
+    "s4": "DBコミットを伴う画面では二重サブミットを防止する必要がある。クライアント側の対策（リクエストの二重送信防止）とサーバ側の対策（処理済リクエストの受信防止）の両方を実施する必要がある。",
+    "s5": "入力画面と確認画面が1対1に対応する場合、表示用のJSPファイルを共通化できる。",
+    "s6": "ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、`noCacheタグ` を使用する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

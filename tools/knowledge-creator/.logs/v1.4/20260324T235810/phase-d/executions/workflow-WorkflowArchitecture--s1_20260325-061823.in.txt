@@ -1,0 +1,366 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/workflow/doc/09/WorkflowArchitecture.rst`
+- Format: `rst`
+
+```
+============================================
+ワークフローライブラリの全体構造
+============================================
+
+----
+構造
+----
+
+クラス図
+========
+
+.. image:: _images/class-diagram.png
+   :align: center
+   :scale: 80
+
+
+
+インタフェース定義
+==================
+
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| インタフェース名                                          | 概要                                                                                                       |
++===========================================================+============================================================================================================+
+| .. _workflowInstance:                                     | :doc:`WorkflowInstanceElement` をあらわすインタフェース。                                                  |
+|                                                           |                                                                                                            |
+| package:: ``please.change.me.workflow``                   | 業務アプリケーションは、本インタフェースを通じてワークフローの進行や担当者（グループ）の割り当て等を行う。 |
+|                                                           |                                                                                                            |
+| interface:: ``WorkflowInstance``                          |                                                                                                            |
+|                                                           |                                                                                                            |
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| .. _workflowInstanceFactory:                              | :ref:`WorkflowInstance <workflowInstance>` を生成するインタフェース。                                      |
+|                                                           |                                                                                                            |
+| package:: ``please.change.me.workflow``                   |                                                                                                            |
+|                                                           |                                                                                                            |
+| interface:: ``WorkflowInstanceFactory``                   |                                                                                                            |
+|                                                           |                                                                                                            |
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| .. _definitionLoader:                                     | :ref:`ワークフロー定義 <workflowDefinitionClass>` を読み込むインタフェース。                               |
+|                                                           |                                                                                                            |
+| package:: ``please.change.me.workflow.definition.loader`` |                                                                                                            |
+|                                                           |                                                                                                            |
+| interface:: ``WorkflowDefinitionLoader``                  |                                                                                                            |
+|                                                           |                                                                                                            |
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.condition``         | :ref:`workflow_element_task` の終了条件を定義するインタフェース。                                          |
+|                                                           |                                                                                                            |
+| interface:: ``CompletionCondition``                       | 本インタフェースの詳細及び本サンプルで提供する実装クラスの一覧は、                                         |
+|                                                           | :ref:`completionCondition` を参照。                                                                        |
+|                                                           |                                                                                                            |
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.condition``         | :ref:`workflow_element_sequence_flows` のフロー進行条件を定義する                                          |
+|                                                           | インタフェース。                                                                                           |
+|                                                           |                                                                                                            |
+| interface:: ``FlowProceedCondition``                      | 本インタフェースの詳細及び本サンプルで提供する実装クラスの一覧は、                                         |
+|                                                           | :ref:`flowProceedCondition` を参照。                                                                       |
++-----------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+
+クラス定義
+==========
+
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| クラス名                                                  | 概要                                                                                                                        |
++===========================================================+=============================================================================================================================+
+|  package:: ``please.change.me.workflow``                  | ワークフローインスタンスの開始や検索を行うクラス。                                                                          |
+|                                                           |                                                                                                                             |
+|  class:: ``WorkflowManager``                              | :ref:`WorkflowInstanceFactory <workflowInstanceFactory>` を使用して :ref:`WorkflowInstance <workflowInstance>` を生成する。 |
+|                                                           | :ref:`WorkflowInstanceFactory <workflowInstanceFactory>` の実装クラスは、                                                   |
+|                                                           | :ref:`workflowComponentDefinition` に定義されているクラスを使用する。                                                       |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _basicWorkflowInstance:                                | :ref:`WorkflowInstance <workflowInstance>` の基本実装クラス。                                                               |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow``                   |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``BasicWorkflowInstance``                         |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow``                   | 完了状態のワークフローインスタンスをあらわす、 :ref:`WorkflowInstance <workflowInstance>` の実装クラス。                    |
+|                                                           |                                                                                                                             |
+| class:: ``CompletedWorkflowInstance``                     | :ref:`workflow_api_find` で、対象インスタンスが見つからず、完了状態のワークフローインスタンスが必要な場合に利用される。     |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow``                   | :ref:`WorkflowInstanceFactory <workflowInstanceFactory>` の実装クラスで、                                                   |
+|                                                           | :ref:`BasicWorkflowInstance <basicWorkflowInstance>` を生成する。                                                           |
+| class:: ``BasicWorkflowInstanceFactory``                  |                                                                                                                             |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow``                   | ワークフローのコンポーネント設定情報を保持するクラス。                                                                      |
+|                                                           |                                                                                                                             |
+| class:: ``WorkflowConfig``                                | コンポーネント定義の詳細は、 :ref:`workflowComponentDefinition` を参照。                                                    |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.util``              | ワークフロー機能で使用するユーティリティメソッドを提供するクラス。                                                          |
+|                                                           |                                                                                                                             |
+| class:: ``WorkflowUtil``                                  |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.definition.loader`` | :ref:`WorkflowDefinitionLoader <definitionLoader>` の実装クラスで、                                                         |
+|                                                           | :ref:`データベース <definitionTable>` から :ref:`ワークフロー定義 <workflowDefinitionClass>` を読み込むクラス。             |
+| class:: ``DatabaseWorkflowDefinitionLoader``              |                                                                                                                             |
+|                                                           | テーブル定義(テーブル名やカラム名)は、 :ref:`WorkflowDefinitionSchema <definitionSchema>`                                   |
+|                                                           | から取得する。                                                                                                              |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _definitionSchema:                                     |  :ref:`ワークフローの定義情報を保持するテーブル <definitionTable>` の                                                       |
+|                                                           |  テーブル名やカラム名情報を保持するクラス。                                                                                 |
+| package:: ``please.change.me.workflow.definition.loader`` |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``WorkflowDefinitionSchema``                      |                                                                                                                             |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.definition``        | :ref:`ワークフロー定義ローダー <definitionLoader>` から読み込んだ                                                           |
+|                                                           | :ref:`ワークフロー定義 <workflowDefinitionClass>` を保持するクラス。                                                        |
+| class:: ``WorkflowDefinitionHolder``                      |                                                                                                                             |
+|                                                           | 本クラスで保持しているワークフロー定義は、以下の方法で取得できる。                                                          |
+|                                                           |                                                                                                                             |
+|                                                           | * ワークフローIDに対応する適用期間内の最新（バージョン番号が最も大きい）のワークフロー定義                                  |
+|                                                           | * ワークフローIDとバージョン番号に対応するワークフロー定義                                                                  |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _workflowDefinitionClass:                              | ワークフロー定義を保持するクラス。                                                                                          |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        | 以下の定義情報を保持する。                                                                                                  |
+|                                                           |                                                                                                                             |
+| class:: ``WorkflowDefinition``                            | * :ref:`レーン定義情報 <laneDefinitionClass>`                                                                               |
+|                                                           | * :ref:`タスク定義情報 <taskDefinitionClass>`                                                                               |
+|                                                           | * :ref:`イベント定義情報 <eventDefinitionClass>`                                                                            |
+|                                                           | * :ref:`ゲートウェイ定義情報 <gatewayDefinitionClass>`                                                                      |
+|                                                           | * :ref:`境界イベント定義情報 <boundaryEventDefinitionClass>`                                                                |
+|                                                           | * :ref:`シーケンスフロー定義情報 <sequenceFlowDefinitionClass>`                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _laneDefinitionClass:                                  | レーン定義情報を保持する。                                                                                                  |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``Lane``                                          |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _flowNodeDefinitionClass:                              | フローノード定義を保持する抽象クラス。                                                                                      |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``FlowNode``                                      |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _taskDefinitionClass:                                  | :ref:`フローノード定義 <flowNodeDefinitionClass>` のサブクラスでタスク定義情報を保持する。                                  |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``Task``                                          |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _eventDefinitionClass:                                 | :ref:`フローノード定義 <flowNodeDefinitionClass>` のサブクラスでイベント定義情報を保持する。                                |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``Event``                                         |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _gatewayDefinitionClass:                               | :ref:`フローノード定義 <flowNodeDefinitionClass>` のサブクラスでゲートウェイ定義情報を保持する。                            |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``Gateway``                                       |                                                                                                                             |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _boundaryEventDefinitionClass:                         | :ref:`フローノード定義 <flowNodeDefinitionClass>` のサブクラスで境界イベント定義情報を保持する。                            |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``BoundaryEvent``                                 |                                                                                                                             |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| .. _sequenceFlowDefinitionClass:                          | シーケンスフロー定義を保持するクラス。                                                                                      |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.definition``        |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``SequenceFlow``                                  |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+| package:: ``please.change.me.workflow.dao``               | :ref:`instanceTable` にアクセスするデータベースアクセスクラス。                                                             |
+|                                                           |                                                                                                                             |
+| class::``WorkflowInstanceDao``                            | テーブル定義(テーブル名やカラム名)は、 :ref:`workflowInstanceSchema <WorkflowInstanceSchema>` から取得する。                |
+|                                                           |                                                                                                                             |
+|                                                           | 本クラスは、各テーブルのデータベースアクセスクラス（以下のクラス）に対して処理を移譲する。                                  |
+|                                                           |                                                                                                                             |
+|                                                           | * InstanceDao(ワークフローインスタンステーブル)                                                                             |
+|                                                           | * InstanceFlowNodeDao(インスタンスフローノードテーブル)                                                                     |
+|                                                           | * TaskAssignedUserDao(タスク担当ユーザテーブル)                                                                             |
+|                                                           | * TaskAssignedGroupDao(タスク担当グループテーブル)                                                                          |
+|                                                           | * ActiveFlowNodeDao(アクティブフローノードテーブル)                                                                         |
+|                                                           | * ActiveUserTaskDao(アクティブユーザタスクテーブル)                                                                         |
+|                                                           | * ActiveGroupTaskDao(アクティブグループタスクテーブル)                                                                      |
+|                                                           |                                                                                                                             |
+|                                                           | データの取得処理を提供するデータベースアクセスクラスでは、取得結果をテーブルに対応するエンティティクラスで返却する。        |
+|                                                           | エンティティクラスは以下のとおり。                                                                                          |
+|                                                           |                                                                                                                             |
+|                                                           | * WorkflowInstanceEntity(ワークフローインスタンスエンティティ)                                                              |
+|                                                           | * TaskAssignedUserEntity(タスク担当ユーザエンティティ)                                                                      |
+|                                                           | * TaskAssignedGroupEntity(タスク担当グループエンティティ)                                                                   |
+|                                                           | * ActiveFlowNodeEntity(アクティブフローノードエンティティ)                                                                  |
+|                                                           | * ActiveUserTaskEntity(アクティブユーザタスクエンティティ)                                                                  |
+|                                                           | * ActiveGroupTaskEntity(アクティブグループタスクエンティティ)                                                               |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+|  .. _workflowInstanceSchema:                              | :ref:`instanceTable` のテーブル名やカラム名を保持するクラス。                                                               |
+|                                                           |                                                                                                                             |
+| package:: ``please.change.me.workflow.dao``               |                                                                                                                             |
+|                                                           |                                                                                                                             |
+| class:: ``WorkflowInstanceSchema``                        |                                                                                                                             |
+|                                                           |                                                                                                                             |
++-----------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+
+
+-----------------------------
+```
+
+## Knowledge File
+
+- ID: `workflow-WorkflowArchitecture--s1`
+
+```json
+{
+  "id": "workflow-WorkflowArchitecture--s1",
+  "title": "ワークフローライブラリの全体構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "構造",
+      "hints": [
+        "WorkflowInstance",
+        "WorkflowInstanceFactory",
+        "WorkflowDefinitionLoader",
+        "CompletionCondition",
+        "FlowProceedCondition",
+        "WorkflowManager",
+        "BasicWorkflowInstance",
+        "CompletedWorkflowInstance",
+        "BasicWorkflowInstanceFactory",
+        "WorkflowConfig",
+        "WorkflowUtil",
+        "DatabaseWorkflowDefinitionLoader",
+        "WorkflowDefinitionSchema",
+        "WorkflowDefinitionHolder",
+        "WorkflowDefinition",
+        "Lane",
+        "FlowNode",
+        "Task",
+        "Event",
+        "Gateway",
+        "BoundaryEvent",
+        "SequenceFlow",
+        "WorkflowInstanceDao",
+        "WorkflowInstanceSchema",
+        "ワークフローライブラリ",
+        "クラス構造",
+        "インタフェース定義",
+        "ワークフロー定義",
+        "フローノード"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "![クラス図](assets/workflow-WorkflowArchitecture--s1/class-diagram.png)\n\n## インタフェース定義\n\n| インタフェース名 | パッケージ | 概要 |\n|---|---|---|\n| `WorkflowInstance` | `please.change.me.workflow` | :doc:`WorkflowInstanceElement` をあらわすインタフェース。業務アプリケーションは本インタフェースを通じてワークフローの進行や担当者（グループ）の割り当て等を行う |\n| `WorkflowInstanceFactory` | `please.change.me.workflow` | :ref:`WorkflowInstance <workflowInstance>` を生成するインタフェース |\n| `WorkflowDefinitionLoader` | `please.change.me.workflow.definition.loader` | :ref:`ワークフロー定義 <workflowDefinitionClass>` を読み込むインタフェース |\n| `CompletionCondition` | `please.change.me.workflow.condition` | :ref:`workflow_element_task` の終了条件を定義するインタフェース。詳細は :ref:`completionCondition` を参照 |\n| `FlowProceedCondition` | `please.change.me.workflow.condition` | :ref:`workflow_element_sequence_flows` のフロー進行条件を定義するインタフェース。詳細は :ref:`flowProceedCondition` を参照 |\n\n## クラス定義\n\n| クラス名 | パッケージ | 概要 |\n|---|---|---|\n| `WorkflowManager` | `please.change.me.workflow` | ワークフローインスタンスの開始や検索を行うクラス。:ref:`WorkflowInstanceFactory <workflowInstanceFactory>` を使用して :ref:`WorkflowInstance <workflowInstance>` を生成する。WorkflowInstanceFactoryの実装クラスは :ref:`workflowComponentDefinition` で定義されたクラスを使用する |\n| `BasicWorkflowInstance` | `please.change.me.workflow` | :ref:`WorkflowInstance <workflowInstance>` の基本実装クラス |\n| `CompletedWorkflowInstance` | `please.change.me.workflow` | 完了状態のワークフローインスタンスをあらわす :ref:`WorkflowInstance <workflowInstance>` の実装クラス。:ref:`workflow_api_find` で対象インスタンスが見つからず完了状態が必要な場合に使用 |\n| `BasicWorkflowInstanceFactory` | `please.change.me.workflow` | :ref:`WorkflowInstanceFactory <workflowInstanceFactory>` の実装クラス。:ref:`BasicWorkflowInstance <basicWorkflowInstance>` を生成する |\n| `WorkflowConfig` | `please.change.me.workflow` | ワークフローのコンポーネント設定情報を保持するクラス。詳細は :ref:`workflowComponentDefinition` を参照 |\n| `WorkflowUtil` | `please.change.me.workflow.util` | ワークフロー機能で使用するユーティリティメソッドを提供するクラス |\n| `DatabaseWorkflowDefinitionLoader` | `please.change.me.workflow.definition.loader` | :ref:`WorkflowDefinitionLoader <definitionLoader>` の実装クラス。:ref:`データベース <definitionTable>` から :ref:`ワークフロー定義 <workflowDefinitionClass>` を読み込む。テーブル定義は :ref:`WorkflowDefinitionSchema <definitionSchema>` から取得 |\n| `WorkflowDefinitionSchema` | `please.change.me.workflow.definition.loader` | :ref:`ワークフローの定義情報を保持するテーブル <definitionTable>` のテーブル名・カラム名情報を保持するクラス |\n| `WorkflowDefinitionHolder` | `please.change.me.workflow.definition` | ワークフロー定義ローダーから読み込んだワークフロー定義を保持するクラス。ワークフローIDに対応する適用期間内の最新バージョン、またはIDとバージョン番号で取得可能 |\n| `WorkflowDefinition` | `please.change.me.workflow.definition` | ワークフロー定義を保持するクラス。レーン定義・タスク定義・イベント定義・ゲートウェイ定義・境界イベント定義・シーケンスフロー定義情報を保持 |\n| `Lane` | `please.change.me.workflow.definition` | レーン定義情報を保持するクラス |\n| `FlowNode` | `please.change.me.workflow.definition` | フローノード定義を保持する抽象クラス |\n| `Task` | `please.change.me.workflow.definition` | `FlowNode` のサブクラス。タスク定義情報を保持 |\n| `Event` | `please.change.me.workflow.definition` | `FlowNode` のサブクラス。イベント定義情報を保持 |\n| `Gateway` | `please.change.me.workflow.definition` | `FlowNode` のサブクラス。ゲートウェイ定義情報を保持 |\n| `BoundaryEvent` | `please.change.me.workflow.definition` | `FlowNode` のサブクラス。境界イベント定義情報を保持 |\n| `SequenceFlow` | `please.change.me.workflow.definition` | シーケンスフロー定義を保持するクラス |\n| `WorkflowInstanceDao` | `please.change.me.workflow.dao` | :ref:`instanceTable` にアクセスするDBアクセスクラス。テーブル定義は :ref:`workflowInstanceSchema <WorkflowInstanceSchema>` から取得。処理委譲先: InstanceDao, InstanceFlowNodeDao, TaskAssignedUserDao, TaskAssignedGroupDao, ActiveFlowNodeDao, ActiveUserTaskDao, ActiveGroupTaskDao。取得結果エンティティ: WorkflowInstanceEntity, TaskAssignedUserEntity, TaskAssignedGroupEntity, ActiveFlowNodeEntity, ActiveUserTaskEntity, ActiveGroupTaskEntity |\n| `WorkflowInstanceSchema` | `please.change.me.workflow.dao` | :ref:`instanceTable` のテーブル名・カラム名を保持するクラス |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

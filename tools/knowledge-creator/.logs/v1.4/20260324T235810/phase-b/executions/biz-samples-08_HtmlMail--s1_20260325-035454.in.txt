@@ -1,0 +1,830 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `biz-samples-08_HtmlMail--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `guide`
+- Category: `biz-samples`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+===========================
+HTMLメール送信機能サンプル
+===========================
+
+概要
+====
+
+HTMLメールを送信する機能の実装サンプルを提供する。
+
+本機能は、Nablarchアプリケーションフレームワークで提供されるメール送信機能(nablarch.common.mail.MailSender)の定型メールを利用してHTMLメールを送信するサンプルである。
+なお、本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取り込み、使用すること。
+
+
+.. warning::
+  
+  本サンプルはキャンペーンの通知のようなHTMLメールの一括送信には対応していない。
+  下記に当てはまる場合は、プロダクトの利用を推奨する。
+  
+    * キャンペーン通知やメールマガジンなど、一括で大量のメールを送信する。
+    * 配信したメールの開封率、クリックカウントの効果を測定する。
+    * メールアドレスからクライアント（例えば、フィーチャーフォンか否か）を判別し、送信するメールを切り替える。
+    * 絵文字を利用する。
+    * デコメールを送信する。
+    * HTMLメールのコンテンツ作成を支援し、顧客がコンテンツを作成する。
+      (本サンプルではドローツールやコンテンツ作成機能は存在しないため、開発者がコンテンツを作成する必要がある。)
+
+.. warning::
+
+   一部のクライアントでは期待したとおりにHTMLメールが表示されないことにより、ユーザーがメールを参照しない可能性がある。このため、業務要件としてユーザー通知が重要なメールにはHTMLメールを利用しないこと。
+
+
+.. attention::
+
+   **HTMLメールのレイアウト**
+
+    メールクライアントによりHTMLメールの表示に差異があるため、HTMLメール標準を策定し、顧客と合意すること。
+    HTMLメール標準では下記のような点を含め、PJにて検討すること。
+
+    * テスト対象とするメールクライアントとデバイス、OS。
+    * HTMLタグ、スタイル(CSSのプロパティ)などの使用範囲。
+    * フォント、配色などの使用範囲。
+    * コンテンツの横幅。(PCのみをサポートする場合でも、メールクライアントのプレビュー機能で確認できる程度のサイズ。)
+
+   **コンテンツ作成時の留意点**
+
+    * <head>タグの内容を無視するメールクライアントがあるため、HTMLメールは、一般的にスタイルをCSSファイルや<style>タグに切り出すことが **推奨されていない** 。
+
+    * 極力シンプルなデザインにすること。
+
+    * メールクライアントによってはメディアクエリをサポートしていないため、極力レスポンシブデザインは採用しないこと。
+
+要求
+====
+
+実装済み
+--------
+* HTMLメール(代替テキストを含む)を送信できる。
+* 本文のプレースホルダー部分の文字列に対して、HTMLエスケープを行う。
+  これにより、通常のオンライン画面と同様のセキュリティ対策を行うことができる。
+
+取り下げ
+--------
+* メールクライアント毎の差異を吸収できる。
+  (具体的にはCSSなどで定義されたスタイルの差異、JavaScriptの使用可否を含めた実装差異を吸収できる。)
+
+ HTMLメールを送信したいPJにてHTMLのデザインおよび対象クライアントの選定をするため、
+ 本要求はコンテンツ作成時に対応するものとし、本サンプルでは提供しない。
+  
+
+* HTMLメールに画像を埋めこむことができる。
+  
+  メールに画像を埋めこむとメール容量が増大し、メールクライアントでHTMLを拒否したユーザーでも受信に時間がかかる。また、メールサーバーへの負荷が増大する。
+  コンシューマ向けのWebサービスではURL形式の使用が多いため、本サンプルでは画像の埋めこみ機能を提供しない。
+
+構成
+============
+
+HTMLメールはコンテンツの内容に応じて、RFC 2557に準拠した下記のパターンのContent-Typeで送信する。
+
+送信するメールのパターンとデータモデルを示す。
+
+メールの形式
+------------
+
+本サンプルでは、以下のメールを送信することができる。
+
++-------------+----------------------------------------+--------------+----------------------+
+| メール形式  | 業務Actionが使用するコンテキストクラス | 添付ファイル | メール構造のパターン |
++=============+========================================+==============+======================+
+| TEXT        | TemplateMailContext                    | 無し         | 1                    |
+|             |                                        +--------------+----------------------+
+|             |                                        | 有り         | 2                    |
++-------------+----------------------------------------+--------------+----------------------+
+| HTML        | TemplateHtmlMailContext                | 無し         | 3                    |
+|             |                                        +--------------+----------------------+
+|             |                                        | 有り         | 4                    |
++-------------+----------------------------------------+--------------+----------------------+
+
+**メール構造のパターン１**
+ 
+ .. image:: _images/08/Mail_Pattern01.jpg
+    :scale: 70
+ 
+ 
+**メール構造のパターン２**
+
+ .. image:: _images/08/Mail_Pattern02.jpg
+    :scale: 70
+
+
+**メール構造のパターン３**
+
+ .. image:: _images/08/Mail_Pattern03.jpg
+    :scale: 70
+
+
+**メール構造のパターン４**
+
+ .. image:: _images/08/Mail_Pattern04.jpg
+    :scale: 70
+
+クラス図
+--------
+
+ .. image:: _images/08/classdiagram.png
+    :height: 30em
+    :width:  60em
+ 
+
+各クラスの責務
+^^^^^^^^^^^^^^^^
+
+  ==============================================================  ==============================================================================================
+  クラス名                                                        概要
+  ==============================================================  ==============================================================================================
+  please.change.me.common.mail.html.HtmlMailRequester             MailRequesterを拡張したHTMLメール送信要求を受け付けるクラス。
+  please.change.me.common.mail.html.TemplateHtmlMailContext       TemplateMailContextを拡張し、HTMLメールに必要な情報を保持するクラス。
+                                                                  代替テキストを本文に変換することで、HTMLメール用のテンプレートを利用して
+                                                                  プレーンテキスト形式のメールを送信する機能を実現する。
+  please.change.me.common.mail.html.HtmlMailTable                 HTMLメール用のテーブルにアクセスするクラス。
+  please.change.me.common.mail.html.HtmlMailSender                MailSenderを拡張したHTMLメールの送信をサポートするクラス。HTMLメール用の要求でない場合は、
+                                                                  親クラスに処理を委譲し、プレーンテキスト形式のメールを送信する。
+  please.change.me.common.mail.html.HtmlMailContentCreator        HTMLメール用のコンテンツを生成するクラス。
+  ==============================================================  ==============================================================================================
+
+設定の記述
+^^^^^^^^^^^
+
+ .. code-block:: xml
+
+    <!-- メール送信要求API -->
+    <component name="mailRequester" class="please.change.me.common.mail.html.HtmlMailRequester">
+        <property name="mailRequestConfig" ref="mailRequestConfig" />
+        <property name="mailRequestIdGenerator" ref="mailRequestIdGenerator" />
+        <property name="mailRequestTable" ref="mailRequestTable" />
+        <property name="mailRecipientTable" ref="mailRecipientTable" />
+        <property name="mailAttachedFileTable" ref="mailAttachedFileTable" />
+        <property name="mailTemplateTable" ref="mailTemplateTable" />
+        <!-- 拡張したテーブルへのアクセス機能を設定する -->
+        <property name="htmlMailTable" ref="htmlMailTable" />
+    </component>
+
+    <!-- 
+    Nablarchアプリケーションフレームワークのメール送信機能ではスキーマ定義を行うが、
+    本ライブラリではソースコードを直接修正すれば良いため、設定ファイルでの定義は行わない。
+    ただし、テーブルアクセスの機能はRequester,Senderで共通のため、コンポーネントの定義を行うこと。
+    -->
+    <component name="htmlMailTable" class="please.change.me.common.mail.html.HtmlMailTable" />
+
+
+
+データモデル
+------------
+
+メール機能からの拡張部分を示す。
+
+本サンプルではメール関連テーブルにHTML用の拡張テーブルを関連付けることで
+TEXT+HTMLメールとして動作させる方式を採用している。
+
+.. note::
+
+  下記に示すデータモデルのDDLはテスト資源に含まれている。
+
+HTMLメール用代替テキストテンプレートテーブル
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+HTML用定型メールの代替テキストを管理するメールテンプレートの関連テーブル。
+
+  ======================== ================ ==============================================================================================================
+  定義                     Javaの型         備考
+  ======================== ================ ==============================================================================================================
+  メールテンプレートID     java.lang.String | PK
+  言語                     java.lang.String | PK
+  代替テキスト             java.lang.String | HTMLメールを表示できないメーラーのためのテキスト。
+  ======================== ================ ==============================================================================================================
+
+
+HTMLメール用代替テキストテーブル
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+HTMLメール用の代替テキストを管理するメール送信要求の関連テーブル。
+
+  ======================== ================== ======================================================================================================================
+  定義                     Javaの型           備考
+  ======================== ================== ======================================================================================================================
+  メール送信要求ID         java.lang.String   | PK
+  代替テキスト             java.lang.String   | HTMLメールを表示できないメーラーのためのテキスト。
+  ======================== ================== ======================================================================================================================
+
+実装例
+======
+
+HTMLメールの送信
+----------------
+
+本サンプルを利用した実装は、Nablarchアプリケーションフレームワークのメール送信機能の定型メール送信と同様である。
+
+業務アクションで利用するコンテキストクラスが異なるだけなので、実装例は省略する。
+
+
+
+コンテンツの動的な切替
+-----------------------
+HTML用のテンプレートを利用して、業務アクションなどから動的にHTML形式とTEXT形式を切り替える実装のサンプルを提示する。
+
+切替方法
+^^^^^^^^^
+
+ メール送信要求時、TemplateHtmlMailContextのcontentTypeに **プレーンテキスト** を指定した場合、
+ 代替テキストを本文に差し替える。
+
+ +--------------------------+----------------+-------------------------------------------+----------------+
+ | コンテキストクラス       | 指定されたType | 本文への移送元                            | Content-Type   |
+ +==========================+================+===========================================+================+
+ | TemplateMailContext      | \-             | メールテンプレート.本文                   | text/plain     |
+ +--------------------------+----------------+-------------------------------------------+----------------+
+ | TemplateHtmlMailContext  | *text/plain*   | *代替テキストテンプレート.代替テキスト*   | *text/plain*   |
+ +                          +----------------+-------------------------------------------+----------------+
+ |                          | text/html      | メールテンプレート.本文                   | text/html      |
+ +--------------------------+----------------+-------------------------------------------+----------------+
+
+ .. code-block:: java
+ 
+    public HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {
+        MailSampleForm form = MailSampleForm.validate(req, "mail");
+        TemplateHtmlMailContext mail = new TemplateHtmlMailContext();
+        // このとき、ユーザーがContentType.PLAINを選択していれば、代替テキストが本文に切り替わる。
+        mail.setContentType(form.getType()); 
+        // その他のプロパティを設定し、MailRequesterを呼び出す。
+    }
+
+
+電子署名の併用
+---------------
+
+電子署名を利用する場合は、電子署名の拡張サンプルとHTMLメールサンプルを併用する。
+
+  * メール送信要求の登録処理は本サンプルを利用する。
+  * メール送信バッチについては、本サンプルが提供するHtmlMailContentCreatorクラスを利用して、HTMLメールのコンテンツを作成できるように電子署名の拡張サンプル(SMIMESignedMailSender)を拡張し、利用する。
+
+実装イメージを下記に示す。
+
+.. code-block:: java
+
+    @Override
+    protected void addBodyContent(MimeMessage mimeMessage, MailRequestTable.MailRequest mailRequest,
+            List<? extends MailAttachedFileTable.MailAttachedFile> attachedFiles, ExecutionContext context) throws MessagingException {
+
+        String mailSendPatternId = context.getSessionScopedVar("mailSendPatternId");
+        Map<String, CertificateWrapper> certificateChain = SystemRepository.get(CERTIFICATE_REPOSITORY_KEY);
+        CertificateWrapper certificateWrapper = certificateChain.get(mailSendPatternId);
+
+        try {
+            // 電子署名を生成するジェネレータの設定を行う。
+            SMIMESignedGenerator smimeSignedGenerator = new SMIMESignedGenerator();
+            // ---中略---
+
+            // HTMLメールとの分岐
+            MimeBodyPart bodyPart;
+            HtmlMailTable htmlTable = SystemRepository.get("htmlMailTable");
+            SqlRow alternativeText = htmlTable.findAlternativeText(mailRequest.getMailRequestId());
+            if (alternativeText != null) {
+                bodyPart = new MimeBodyPart();
+                bodyPart.setContent(HtmlMailContentCreator.create(mailRequest.getMailBody(), mailRequest.getCharset(),
+                                                                  alternativeText.getString("alternativeText"), attachedFiles));
+                mimeMessage.setContent(smimeSignedGenerator.generate(bodyPart));
+            } else {
+              // SMIMESignedMailSenderの実装
+              bodyPart = new MimeBodyPart();
+              bodyPart.setText(mailRequest.getMailBody(), mailRequest.getCharset());
+              // ---後略---
+        } catch (Exception e) {
+            MailConfig mailConfig = SystemRepository.get("mailConfig");
+            String mailRequestId = mailRequest.getMailRequestId();
+
+            throw new TransactionAbnormalEnd(
+                    mailConfig.getAbnormalEndExitCode(), e,
+                    mailConfig.getSendFailureCode(), mailRequestId);
+        }
+    }
+
+
+
+タグを埋めこむ
+--------------
+
+.. warning::
+
+  タグの埋めこみは、下記の点から提供時には実装しておらず、推奨もしていない。
+ 
+    * HTMLメールのレイアウト確認が困難になる
+    * セキュリティ対策もPJにて実施する必要がある
+
+  そのため、安易に利用せず、テンプレートを複数用意することで対応できないか検討すること。
+  ※テンプレートの作成コストでセキュリティ上のリスクを補填できる点も考慮すること。
+
+Nablarchが提供するサンプルでは、HTMLエスケープを強制するため、動的にHTMLタグをテンプレートに埋めこむことはできない。
+
+動的に埋めこむ必要がある場合は、PJにてTemplateHtmlMailContextを修正し、TemplateMailContext#setReplaceKeyValueを呼び出すAPIを追加すること。
+
+.. code-block:: java
+
+  // HTMLエスケープをせずにタグを埋めこむ。
+  public void setReplaceKeyRawValue(String key, String tag) {
+      super.setReplaceKeyValue(key, tag);
+  }
+
+.. note::
+
+ HTMLメールのテストは通常のメールと同様のテストを行う。
+  
+  * HTMLテキストはメール送信要求のテーブルを検証する。
+  * 実際のメールクライアントでのレイアウト確認は送信バッチを利用して、メールを送信して確認する。
+
+```
+
+
+## 画像・添付ファイル一覧
+
+| ソース内パス | assetsパス |
+|---|---|
+| _images/08/Mail_Pattern01.jpg | assets/biz-samples-08_HtmlMail--s1/Mail_Pattern01.jpg |
+| _images/08/Mail_Pattern02.jpg | assets/biz-samples-08_HtmlMail--s1/Mail_Pattern02.jpg |
+| _images/08/Mail_Pattern03.jpg | assets/biz-samples-08_HtmlMail--s1/Mail_Pattern03.jpg |
+| _images/08/Mail_Pattern04.jpg | assets/biz-samples-08_HtmlMail--s1/Mail_Pattern04.jpg |
+| _images/08/classdiagram.png | assets/biz-samples-08_HtmlMail--s1/classdiagram.png |
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 実装済み
+- 取り下げ
+- メールの形式
+- クラス図
+- データモデル
+- HTMLメールの送信
+- コンテンツの動的な切替
+- 電子署名の併用
+- タグを埋めこむ
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/biz-samples-08_HtmlMail--s1/filename.png)` |
+
+Office attachments → reference in `assets/biz-samples-08_HtmlMail--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `biz-samples-08_HtmlMail--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

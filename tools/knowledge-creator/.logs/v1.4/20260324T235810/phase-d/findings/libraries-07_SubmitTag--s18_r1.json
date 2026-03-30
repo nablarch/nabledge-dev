@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_SubmitTag--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections order",
+      "description": "s2 and s3 are in reversed order relative to the source. Source order is: (1) リクエストの二重送信防止 → (2) 処理済みリクエストの受信防止 → (3) ブラウザのキャッシュ防止. Knowledge file order is: s1=リクエストの二重送信防止, s2=ブラウザのキャッシュ防止, s3=処理済みリクエストの受信防止.",
+      "source_evidence": "Source RST: '処理済みリクエストの受信防止' section (delimited by '---...---') appears immediately after リクエストの二重送信防止, before the '======' ブラウザのキャッシュ防止 heading."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1 hints are missing three of the six supported custom tags listed in the source: WebView_DownloadSubmitTag, WebView_DownloadButtonTag, WebView_DownloadLinkTag.",
+      "source_evidence": "Source lists all six tags: WebView_SubmitTag, WebView_DownloadSubmitTag, WebView_ButtonTag, WebView_DownloadButtonTag, WebView_SubmitLinkTag, WebView_DownloadLinkTag. Only the three non-Download variants appear in s1 hints."
+    }
+  ]
+}

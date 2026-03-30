@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-concept-architectural_pattern--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — NAFのアプリケーション動作モデル",
+      "description": "Source explicitly states what is returned for each processing mode: 画面オンライン処理ではHTTPレスポンスの内容が返され、バッチ処理では入力レコードに対する処理結果ステータスが返される。 The knowledge file only says 業務アクションハンドラが業務処理を実行し処理結果をリターン without specifying the return type per processing mode.",
+      "source_evidence": "次にアプリケーションは与えられたリクエストに対して処理を行い、その処理結果を返す。画面オンライン処理であれば、HTTPレスポンスの内容が返され、バッチ処理では入力レコードに対する処理結果ステータスが返される。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — web.xml設定例",
+      "description": "The web.xml code example in the knowledge file silently corrects a duplicate </filter-mapping> closing tag that exists in the source. The source has two </filter-mapping> tags (one inside and one outside the element), but the knowledge file shows only one. The code example does not faithfully reproduce the source.",
+      "source_evidence": "<filter-mapping>\n  <filter-name>controller</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</filter-mapping>"
+    }
+  ]
+}

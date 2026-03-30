@@ -1,0 +1,696 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_FormTag.rst`
+- Format: `rst`
+
+```
+============================
+入力フォームのname属性
+============================
+カスタムタグでは、入力データを取り扱うために、リクエストパラメータやリクエストスコープに設定された値にアクセスする必要がある。\
+このため、カスタムタグでは、リクエストパラメータやリクエストスコープに設定されたオブジェクト構造に透過的にアクセスできるように、\
+入力フォームのname属性の指定方法を規定する。\
+入力フォームの作成時は、下記の指定方法で入力フォームのname属性を指定する。
+
+* Map型又はオブジェクトのプロパティにアクセスする場合は、ドット区切りを指定する。
+* List型又は配列の要素にアクセスする場合は、角括弧(括弧内にはインデックス)を指定する。
+
+以降では、下記のUserクラスを使用してname属性の指定例を示す。\
+
+.. code-block:: java
+
+  public class UserEntity {
+      private String name;
+      private String remarks;
+      // アクセッサは省略。
+  }
+
+
+.. _`custom_tag_entity_property_access_example`:
+
+----------------------------------------------------------
+エンティティのプロパティにアクセスする場合の実装例
+----------------------------------------------------------
+エンティティのプロパティにアクセスする場合の例を下記に示す。\
+例ではレイアウトを行うタグは省略する。
+
+.. code-block:: jsp
+
+  <n:text name="user.name" />
+  <n:text name="user.remarks" />
+
+上記のname属性の指定に対応するアクションの実装例を下記に示す。
+
+.. code-block:: java
+
+  // "user"をプレフィックスに指定してバリデーションを行う。
+  ValidationContext<UserEntity> userCtx =
+      ValidationUtil.validateAndConvertRequest("user", UserEntity.class, req, "insert");
+
+  // 入力エラーの場合はApplicationExceptionを送出する。
+  if (!userCtx.isValid()) {
+      throw new ApplicationException(userCtx.getMessages());
+  }
+
+  // エンティティを取得して使用する。
+  UserEntity user = userCtx.createObject();
+
+
+-------------------------------------------------------------------
+Listのプロパティにアクセスする場合の実装例
+-------------------------------------------------------------------
+Listのプロパティにアクセスする場合の例を下記に示す。
+
+.. code-block:: jsp
+
+  <%-- JSTLのforEachタグを使用する。 --%>
+  <%-- アクション側でリクエストスコープにuserSizeという変数名でサイズを指定しているものとする。 --%>
+  <c:forEach begin="0" end="${userSize}" var="userIndex">
+    <n:text name="user[${userIndex}].name" />
+    <n:text name="user[${userIndex}].remarks" />
+  </c:forEach>
+
+上記のname属性の指定に対応するアクションの実装例を下記に示す。
+
+.. code-block:: java
+
+  int userSize = 3;
+  List<UserEntity> users = new ArrayList<UserEntity>(userSize);
+  List<Message> errors = new ArrayList<Message>();
+  boolean isValid = true;
+  for (int i = 0; i < userSize; i++) {
+
+      // "user[n]"をプレフィックスに指定してバリデーションを行う。
+      ValidationContext<UserEntity> userCtx =
+          ValidationUtil.validateAndConvertRequest("user[" + i + "]", UserEntity.class, req, "insert");
+
+      // 入力エラーの判定。
+      if (userCtx.isValid()) {
+          users.add(userCtx.createObject());
+      } else {
+          errors.addAll(userCtx.getMessages());
+          isValid = false;
+      }
+  }
+
+  // 入力エラーの場合はApplicationExceptionを送出する。
+  if (!isValid) {
+      throw new ApplicationException(errors);
+  }
+
+  // 以降でエンティティ(users)を使用する。
+
+
+
+.. note::
+
+  **n:text**\ 等、\ **name**\ 属性を使用したカスタムタグは、画面出力する値(\ **n:text**\ の場合\ **input**\ タグの\ **value**\ 属性の値)は、下記順序で取得する。
+  
+   1. **Page**\ スコープから\ **name**\ 属性に指定した値を保持するオブジェクトが取得できた場合、この値を使用する。( [#pageScopeSet]_ 、 [#objectGet]_ )
+   2. リクエストスコープから\ **name**\ 属性に指定した値を保持するオブジェクトが取得できた場合、この値を使用する。([#objectGet]_)
+   3. リクエストパラメータから\ **name**\ 属性に指定した値が取得できた場合、この値を使用する。
+      リクエストパラメータからの値の取得は、入力エラー発生時に同一画面表示した場合と、 :ref:`windowscope` の値の表示に使用する。
+   4. セッションスコープから\ **name**\ 属性に指定した値が取得できた場合、この値を使用する。
+  
+  上記順序で値が取得できなかった場合は、空文字列を画面出力する。
+  
+.. [#pageScopeSet]
+   Nablarch では Page スコープのオブジェクトは :ref:`WebView_SetTag` を使用して設定できる。
+
+.. [#objectGet]
+    Page スコープ、リクエストスコープでは、値の取得条件が
+    「name 属性に指定した値を保持するオブジェクトが取得できた場合」
+    という条件となっている。
+    
+    これは、例えば :ref:`custom_tag_entity_property_access_example` の例で UserEntity クラスのプロパティ remarks が
+    null であれば、リクエストパラメータ "user.remarks" に "備考" が入っていても "" (空文字列)が出力されるという意味である。
+    
+    この仕様は前画面で入力した値を null の値に上書きするための仕様である。
+    
+    この仕様は、 :ref:`WebView_CustomTagConfig` に記載した設定値 useValueAsNullIfObjectExists により変更可能である。
+    詳細は useValueAsNullIfObjectExists の説明を参照のこと。
+      
+  
+
+========================
+入力データの保持
+========================
+画面から入力されるデータは、クライアント側にhiddenタグとして保持される。\
+クライアント側に保持することで、サーバ側(セッション)に保持する場合に比べて、複数ウィンドウの使用やブラウザの戻るボタンの使用など、
+ブラウザの使用制限を減らし、柔軟な画面設計が可能となる。\
+また、クライアント側に保持するデータは、単純に入力データだけではなく、サーバ側でDBに登録されているデータをhiddenタグで出力し保持する場合もある。\
+例えば、更新対象データのプライマリキーや楽観ロックのための更新対象データのバージョン番号(又は更新日時)をクライアント側に保持することが考えられる。\
+本フレームワークでは、これらクライアント側に保持するデータをウィンドウスコープと呼ぶ変数スコープに保持する。\
+変数スコープについては、 :ref:`scope` および :ref:`web_scope` を参照。\
+尚、ログイン情報など、全ての業務に渡って必要になる情報は、サーバ側(セッション)に保持するので、クライアント側に保持するデータと混同しないこと。
+
+.. note::
+
+  データベースのデータについては、上記記載のある対象データを特定する主キーや楽観ロック用のデータなど必要最低限に留めること。
+  特に入力画面と確認画面で表示するデータ(入力項目ではなく、表示するだけの項目)等は、hiddenで引き回すのではなくデータが必要となる度にデータベースから値を取得するようにすること。
+
+---------------------------------------------------------------------------------------------------
+windowScopePrefixes属性の使用方法
+---------------------------------------------------------------------------------------------------
+ウィンドウスコープにデータを設定するには、 :ref:`WebView_FormTag` のwindowScopePrefixes属性を指定することで行う。\
+ユーザ登録確認画面の使用例と属性の説明を下記に示す。
+
+.. code-block:: jsp
+
+  <n:form windowScopePrefixes="systemAccount,users,ugroupSystemAccount">
+
+      <%-- ボタン以外は省略 --%>
+
+      <n:submit cssClass="buttons" type="button" name="back" value="戻る"
+                uri="./USERS00301" />
+      <n:submit cssClass="buttons" type="button" name="register" value="登録"
+                uri="./USERS00302" allowDoubleSubmission="false" />
+  </n:form>
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+windowScopePrefixes                    | ウィンドウスコープ変数のプレフィックス。
+                                       | 複数指定する場合はカンマ区切り。
+                                       | 指定されたプレフィックスがマッチするリクエストパラメータをhiddenタグとして出力する。
+====================================== ==========================================================================================
+
+windowScopePrefixes属性には、ウィンドウスコープのデータとしてサーバ側に送信する必要があるリクエストパラメータの名前をプレフィックスで指定する。\
+上記例の場合は、3つのプレフィックス(systemAccount,users,ugroupSystemAccount)を指定している。\
+windowScopePrefixes属性の指定がない場合は、ウィンドウスコープのデータがサーバ側に送信されない。
+
+---------------------------------------------------------------------------------------------------
+複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法
+---------------------------------------------------------------------------------------------------
+windowScopePrefixes属性の指定により、更新機能において更新対象を検索した際の検索条件だけを持ち回ることができる。\
+windowScopePrefixes属性の設定例を下記に示す。\
+検索条件のリクエストパラメータは"searchCondition.*"、更新対象のリクエストパラメータは"user.*"とする。
+
+.. code-block:: jsp
+
+  <%--
+    検索画面
+    ウィンドウスコープのデータを送信しない。
+  --%>
+  <n:form>
+
+  <%--
+    更新画面
+    検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="searchCondition">
+
+  <%--
+    更新確認画面
+    更新対象と検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="user,searchCondition">
+
+  <%--
+    更新完了画面
+    検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="searchCondition">
+
+formタグでは、一律リクエストパラメータを全てhiddenタグに出力するのではなく、
+既に入力項目として出力したリクエストパラメータはhiddenタグの出力から除外する。
+この動作により、formタグは、ウィザード形式の画面のように、
+画面の入力項目と他画面で入力された入力データをhiddenタグとして同時に出力することに対応する。
+
+.. warning::
+
+ パスワード入力についてもhiddenタグに出力されるため、パスワードがブラウザのキャッシュに残ることになる。\
+ インターネット越しに利用するアプリケーション等でキャッシュに残ると困る場合は、設計時に確認画面を出さなくする、\
+ またはパスワード変更画面のみサーバ側(セッション)を利用する等の方法で hidden にパスワードが出力されないよう考慮する必要がある。
+
+------------------------------------------------------------
+アクションの実装方法
+------------------------------------------------------------
+一般的な開発では、入力データをサーバ側(セッション)に保持することが多いため、ここでアクションの実装方法について補足する。\
+入力データをサーバ側(セッション)に保持する場合とクライアント側(hiddenタグ)に保持する場合で、アクションの実装方法が異なる。\
+
+以降では、サーバ側(セッション)に保持する方式をサーバ方式、クライアント側(hiddenタグ)に保持する方式をクライアント方式と呼ぶ。
+
+実装が異なる点を下記に示す。
+
+| a) クライアント方式ではアクションで入力データの設定を実装しない。
+|
+|   サーバ方式では、アクションでセッションに対して入力データの設定を明示的に実装する必要がある。クライアント方式では、formタグの指定に従いフレームワークが入力データを維持する。
+|
+| b) クライアント方式ではアクションで入力データを取得する場合に毎回バリデーションを行う必要がある。
+|
+|   クライアント方式では、入力データを書き換えられる可能性があるため、入力データを使用する場合は毎回バリデーションを行う必要がある。
+
+クライアント方式の実装例としてユーザ登録のシーケンス図を下記に示す。
+
+.. image:: ./_images/WebView_SampleUserRegistration.jpg
+   :scale: 60
+
+.. _WebView_HiddenEncryption:
+
+======================
+hiddenタグの暗号化
+======================
+ウィンドウスコープやhiddenタグの値は、クライアント側で改竄されてリクエストされたり、\
+HTMLソースを参照することで容易に値を参照することが可能である。\
+本機能では、hiddenタグの改竄を防ぐこと、及びHTMLソース上でhiddenタグを参照させないことを目的に、hiddenタグの暗号化機能を提供する。
+
+本フレームワークでは、アプリケーション内の全ての画面遷移でウィンドウスコープを使用することを想定しているため、\
+デフォルトでは全てのformタグで暗号化を行い、全てのリクエストで復号(及び改竄チェック)を行う。\
+このため、アプリケーションプログラマは、hiddenタグの暗号化機能に関して実装する必要がない。
+
+------------------------------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の処理イメージ
+------------------------------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の処理イメージを下記に示す。
+
+.. image:: ./_images/WebView_HiddenEncryptionImage.jpg
+   :scale: 60
+
+暗号化はformタグ、復号(改竄チェック)はハンドラが行う。\
+ここでは、上図のJSP→HTML→ハンドラの順に例を示し、formタグとハンドラの処理イメージを説明する。
+
+まず、説明に使用するJSPを下記に示す。ユーザ情報の編集確認画面を想定している。
+
+.. code-block:: jsp
+
+ <%-- JSPの実装例 --%>
+ <n:form windowScopePrefixes="user">
+     <%-- hiddenタグでユーザIDの出力 --%>
+     <n:hidden name="user.id" />
+     <%-- ユーザ名の入力 --%>
+     <n:text name="user.name" />
+     <%-- パスワードの入力 --%>
+     <n:password name="user.password" />
+     <%-- ボタンは省略 --%>
+ </n:form>
+
+先に、暗号化しない場合のHTML出力例を示す。
+formタグは、確認画面のため、ウィンドウスコープの値として入力値もhiddenタグで出力する。
+
+.. code-block:: html
+
+ <%-- 暗号化しない場合のHTMLの出力例 --%>
+ <form>
+     <%-- 表示内容は省略 --%>
+     <input type="hidden" name="user.id" value="U0001" />
+     <input type="hidden" name="user.name" value="山田太郎" />
+     <input type="hidden" name="user.password" value="pass1234" />
+     <%-- ボタンは省略 --%>
+ </form>
+
+次に、暗号化した場合のHTML出力例を示す。\
+出力例の"XXX･･･"は、暗号化した値を示している。\
+formタグでは、暗号化対象の値を全てまとめて暗号化を行い、BASE64でエンコードした結果を1つのhiddenタグで出力する。
+暗号化した値は、"nablarch_hidden"という名前で常に出力する。
+暗号化処理の詳細については、 :ref:`WebView_HiddenEncryption_Encrypt` を参照。
+
+.. code-block:: html
+
+ <%-- 暗号化する場合のHTMLの出力例 --%>
+ <form>
+     <%-- 表示内容は省略 --%>
+     <input type="hidden" name="nablarch_hidden" value="XXXXXXXXXXXXXXXXXXXXXXXXXXXX" />
+     <%-- ボタンは省略 --%>
+ </form>
+
+リクエストを受けたハンドラは、"nablarch_hidden"パラメータの値をBASE64でデコードした結果に対して復号し、リクエストパラメータに設定する。\
+ハンドラの処理前後でのリクエストパラメータの状態を下記に示す。\
+ハンドラの復号処理では、改竄チェックも行っており、改竄を検知した場合は設定で指定された画面に遷移させる。\
+復号処理の詳細については、 :ref:`WebView_HiddenEncryption_Handler` を参照。
+
+.. code-block:: bash
+
+ # ハンドラの復号例
+
+ # 復号前
+ nablarch_hidden=XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+ # 復号後
+ user.id=U0001
+ user.name=山田太郎
+ user.password=pass1234
+
+.. _WebView_HiddenEncryption_Settings:
+
+------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の設定
+------------------------------------------------------------------------------------
+hiddenタグの暗号化機能は、 :ref:`WebView_CustomTagConfig` により、下記の設定が可能である。\
+設定方法については、 :ref:`WebView_CustomTagConfig` を参照。
+
+* アプリケーション全体でhiddenタグの暗号化機能を使用するか否か(useHiddenEncryptionプロパティ)
+* 暗号化を行わないリクエストID(noHiddenEncryptionRequestIdsプロパティ)
+
+useHiddenEncryptionプロパティは、開発時にHTMLソース上でhiddenタグの内容を確認する場合に指定する。
+
+以降では、noHiddenEncryptionRequestIdsプロパティを指定した場合の動作について解説する。
+
+**noHiddenEncryptionRequestIdsプロパティを指定した場合の動作イメージ**
+
+noHiddenEncryptionRequestIdsプロパティを指定した場合の動作イメージを下記に示す。
+
+.. image:: ./_images/WebView_HiddenEncryptionNoRequestIdsImage.jpg
+   :scale: 60
+
+noHiddenEncryptionRequestIdsプロパティは、暗号化を行うformタグと復号を行うハンドラの両者から参照し、\
+それぞれ暗号化と復号を行うリクエストIDの同期を取る。\
+noHiddenEncryptionRequestIdsプロパティを指定した場合の動作結果を下記に示す。
+
+noHiddenEncryptionRequestIdsプロパティに下記のリクエストIDが指定されているものとする。
+
+.. code-block:: bash
+
+ ROO1, ROO2, ROO3
+
+下記に状況別の動作結果を示す。\
+n:formタグが出力したHTMLからリクエストしている状況を想定している。\
+n:formタグに含まれるリクエストID列の()内に、n:formタグに含まれるリクエストIDと指定されたnoHiddenEncryptionRequestIdsプロパティの関係を示す。
+
+===== ====================================== =================== ========================== ==================
+No    n:formタグに含まれるリクエストID       n:formタグの処理    リクエスト                 ハンドラの処理
+===== ====================================== =================== ========================== ==================
+1     R111, R222(全て一致しない)             暗号化される。      R111                       復号される。
+2     R001, R002(全て一致する)               暗号化されない。    R001                       復号されない。
+3     R003, R004(一部だけ一致する)           暗号化される。      R003                       復号される。
+4     R003, R004(一部だけ一致する)           暗号化される。      R004                       復号される。
+===== ====================================== =================== ========================== ==================
+
+上記の通り、n:formに含まれるリクエストIDが一部だけ一致する場合は暗号化する。\
+これは、誤設定による暗号化漏れを防ぐためである。\
+そのため、 **No.3** の状況では、本来は暗号化の対象外とすべきリクエストに対しても暗号化が行われる。
+
+.. _WebView_HiddenEncryption_Encrypt:
+
+------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-07_FormTag--s1`
+
+```json
+{
+  "id": "libraries-07_FormTag--s1",
+  "title": "入力フォームのname属性",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力フォームのname属性",
+      "hints": [
+        "name属性",
+        "ドット区切り",
+        "角括弧",
+        "インデックス",
+        "エンティティアクセス",
+        "配列アクセス",
+        "UserEntity"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エンティティのプロパティにアクセスする場合の実装例",
+      "hints": [
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "ValidationContext",
+        "エンティティバリデーション",
+        "n:text",
+        "UserEntity",
+        "ApplicationException"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "name属性の値取得優先順位",
+      "hints": [
+        "Pageスコープ",
+        "リクエストスコープ",
+        "セッションスコープ",
+        "値取得優先順位",
+        "useValueAsNullIfObjectExists",
+        "WebView_SetTag",
+        "windowscope"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Listのプロパティにアクセスする場合の実装例",
+      "hints": [
+        "forEach",
+        "List型アクセス",
+        "配列バリデーション",
+        "ValidationUtil",
+        "n:text",
+        "ループバリデーション",
+        "角括弧インデックス"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力データの保持",
+      "hints": [
+        "hiddenタグ",
+        "ウィンドウスコープ",
+        "windowscope",
+        "クライアント保持",
+        "楽観ロック",
+        "主キー",
+        "scope",
+        "web_scope"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "windowScopePrefixes属性の使用方法",
+      "hints": [
+        "windowScopePrefixes",
+        "n:form",
+        "WebView_FormTag",
+        "ウィンドウスコープ設定",
+        "allowDoubleSubmission"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "formタグの除外動作",
+      "hints": [
+        "formタグ除外動作",
+        "hiddenタグ除外",
+        "ウィザード形式",
+        "リクエストパラメータ除外"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法",
+      "hints": [
+        "windowScopePrefixes",
+        "複数画面遷移",
+        "検索条件引き回し",
+        "更新確認画面",
+        "searchCondition"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "パスワードのhiddenタグ出力に関する注意",
+      "hints": [
+        "パスワード",
+        "hiddenタグ",
+        "ブラウザキャッシュ",
+        "セキュリティ",
+        "セッション"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "アクションの実装方法",
+      "hints": [
+        "サーバ方式",
+        "クライアント方式",
+        "バリデーション",
+        "セッション",
+        "アクション実装",
+        "毎回バリデーション"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "hiddenタグの暗号化",
+      "hints": [
+        "hiddenタグ暗号化",
+        "改竄防止",
+        "nablarch_hidden",
+        "ウィンドウスコープ暗号化"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "hiddenタグの暗号化機能の処理イメージ",
+      "hints": [
+        "nablarch_hidden",
+        "BASE64",
+        "formタグ暗号化",
+        "ハンドラ復号",
+        "改竄チェック",
+        "WebView_HiddenEncryption_Encrypt",
+        "WebView_HiddenEncryption_Handler"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "hiddenタグ暗号化のJSP/HTML実装例",
+      "hints": [
+        "n:hidden",
+        "n:text",
+        "n:password",
+        "n:form",
+        "暗号化HTML出力例",
+        "nablarch_hidden",
+        "user.id",
+        "user.password"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "hiddenタグの暗号化機能の設定",
+      "hints": [
+        "useHiddenEncryption",
+        "noHiddenEncryptionRequestIds",
+        "WebView_CustomTagConfig",
+        "暗号化設定"
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "noHiddenEncryptionRequestIdsプロパティの動作",
+      "hints": [
+        "noHiddenEncryptionRequestIds",
+        "リクエストID",
+        "暗号化スキップ",
+        "WebView_CustomTagConfig",
+        "部分一致",
+        "誤設定防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "name属性の指定規則:\n- Map型またはオブジェクトのプロパティにアクセスする場合: ドット区切り（例: `user.name`）\n- List型または配列の要素にアクセスする場合: 角括弧+インデックス（例: `user[0].name`）\n\n```java\npublic class UserEntity {\n    private String name;\n    private String remarks;\n    // アクセッサは省略。\n}\n```",
+    "s2": "JSP実装例:\n```jsp\n<n:text name=\"user.name\" />\n<n:text name=\"user.remarks\" />\n```\n\nアクション実装例（`\"user\"`プレフィックスでバリデーション）:\n```java\nValidationContext<UserEntity> userCtx =\n    ValidationUtil.validateAndConvertRequest(\"user\", UserEntity.class, req, \"insert\");\nif (!userCtx.isValid()) {\n    throw new ApplicationException(userCtx.getMessages());\n}\nUserEntity user = userCtx.createObject();\n```",
+    "s3": "`n:text`等のname属性を使うカスタムタグが画面出力値を取得する優先順位:\n\n1. Pageスコープから`name`属性に対応するオブジェクトが取得できた場合\n2. リクエストスコープから取得できた場合\n3. リクエストパラメータから取得できた場合（入力エラー時の同一画面再表示や :ref:`windowscope` の値表示に使用）\n4. セッションスコープから取得できた場合\n\n上記で値が取得できない場合は空文字を出力する。\n\n> **注意**: Page/リクエストスコープでオブジェクトが取得できてもプロパティが`null`の場合、リクエストパラメータに値があっても空文字を出力する。これは前画面入力値を`null`で上書きするための仕様。 :ref:`WebView_CustomTagConfig` の`useValueAsNullIfObjectExists`設定で変更可能。\n\nPageスコープのオブジェクト設定には :ref:`WebView_SetTag` を使用する。",
+    "s4": "JSP実装例（JSTLのforEachタグを使用、アクション側でリクエストスコープに`userSize`を設定）:\n```jsp\n<c:forEach begin=\"0\" end=\"${userSize}\" var=\"userIndex\">\n  <n:text name=\"user[${userIndex}].name\" />\n  <n:text name=\"user[${userIndex}].remarks\" />\n</c:forEach>\n```\n\nアクション実装例（`\"user[n]\"`プレフィックスでバリデーション）:\n```java\nint userSize = 3;\nList<UserEntity> users = new ArrayList<UserEntity>(userSize);\nList<Message> errors = new ArrayList<Message>();\nboolean isValid = true;\nfor (int i = 0; i < userSize; i++) {\n    ValidationContext<UserEntity> userCtx =\n        ValidationUtil.validateAndConvertRequest(\"user[\" + i + \"]\", UserEntity.class, req, \"insert\");\n    if (userCtx.isValid()) {\n        users.add(userCtx.createObject());\n    } else {\n        errors.addAll(userCtx.getMessages());\n        isValid = false;\n    }\n}\nif (!isValid) {\n    throw new ApplicationException(errors);\n}\n```",
+    "s5": "入力データはクライアント側のhiddenタグとして保持する（ウィンドウスコープ）。サーバ側（セッション）保持と比較して複数ウィンドウやブラウザ戻るボタン使用時の制限が少ない。\n\n保持するデータ例: 更新対象の主キー、楽観ロック用バージョン番号（または更新日時）。\n\n> **注意**: DBデータのhidden保持は主キー・楽観ロック用データなど必要最低限に留めること。確認画面等で表示するだけのデータはhiddenで引き回さず、必要なたびにDBから取得すること。\n\nログイン情報など全業務で必要な情報はサーバ側（セッション）に保持する（クライアント側保持と混同しないこと）。\n\n変数スコープ詳細: :ref:`scope` および :ref:`web_scope`。",
+    "s6": ":ref:`WebView_FormTag` の`windowScopePrefixes`属性でウィンドウスコープにデータを設定する。\n\nJSP実装例（ユーザ登録確認画面）:\n```jsp\n<n:form windowScopePrefixes=\"systemAccount,users,ugroupSystemAccount\">\n    <n:submit type=\"button\" name=\"back\" value=\"戻る\" uri=\"./USERS00301\" />\n    <n:submit type=\"button\" name=\"register\" value=\"登録\" uri=\"./USERS00302\" allowDoubleSubmission=\"false\" />\n</n:form>\n```\n\n| 属性 | 説明 |\n|---|---|\n| `windowScopePrefixes` | ウィンドウスコープ変数のプレフィックス（複数指定はカンマ区切り）。指定したプレフィックスにマッチするリクエストパラメータをhiddenタグとして出力する。 |\n\n`windowScopePrefixes`未指定の場合、ウィンドウスコープのデータはサーバへ送信されない。",
+    "s7": "formタグは全リクエストパラメータを一律hiddenタグに出力するのではなく、既に入力項目として出力済みのリクエストパラメータはhiddenタグの出力から除外する。\n\nこの動作により、ウィザード形式の画面のように、現在画面の入力項目と他画面で入力されたデータ（hiddenタグ）を同時に出力することに対応している。",
+    "s8": "更新機能における複数画面遷移での指定例（検索条件プレフィックス: `searchCondition.*`、更新対象: `user.*`）:\n\n```jsp\n<%-- 検索画面: ウィンドウスコープのデータを送信しない --%>\n<n:form>\n\n<%-- 更新画面: 検索条件を送信 --%>\n<n:form windowScopePrefixes=\"searchCondition\">\n\n<%-- 更新確認画面: 更新対象と検索条件を送信 --%>\n<n:form windowScopePrefixes=\"user,searchCondition\">\n\n<%-- 更新完了画面: 検索条件を送信 --%>\n<n:form windowScopePrefixes=\"searchCondition\">\n```",
+    "s9": "> **警告**: パスワード入力もhiddenタグに出力されるため、パスワードがブラウザのキャッシュに残る。インターネット越しに利用するアプリケーション等でキャッシュに問題がある場合は、確認画面を出さない設計にするか、パスワード変更画面のみサーバ側（セッション）を利用するなど、hiddenにパスワードが出力されないよう考慮すること。",
+    "s10": "サーバ方式（セッション保持）とクライアント方式（hiddenタグ保持）のアクション実装の違い:\n\n**a) 入力データの設定**\n- サーバ方式: アクションでセッションに対して入力データを明示的に設定する必要がある\n- クライアント方式: formタグの指定に従いフレームワークが入力データを維持するため、実装不要\n\n**b) バリデーション**\n- サーバ方式: 不要\n- クライアント方式: 入力データを書き換えられる可能性があるため、入力データ使用時は毎回バリデーションが必要",
+    "s11": "ウィンドウスコープやhiddenタグの値はクライアント側での改竄・HTMLソース参照が容易なため、hiddenタグの暗号化機能を提供する。\n\n- 目的: hiddenタグの改竄防止とHTMLソース上でのhiddenタグ内容参照防止\n- デフォルト: 全formタグで暗号化、全リクエストで復号（改竄チェック）を行う\n- アプリケーションプログラマによる実装は不要",
+    "s12": "暗号化はformタグが実行し、復号（改竄チェック）はハンドラが行う。\n\n処理フロー:\n1. formタグ: 暗号化対象の全値をまとめて暗号化 → BASE64エンコード → `nablarch_hidden`という名前のhiddenタグ1つで出力\n2. ハンドラ: `nablarch_hidden`パラメータをBASE64デコード → 復号 → リクエストパラメータに設定\n3. ハンドラの復号処理では改竄チェックも実施。改竄を検知した場合は設定で指定された画面に遷移\n\n暗号化処理詳細: :ref:`WebView_HiddenEncryption_Encrypt`  \n復号処理詳細: :ref:`WebView_HiddenEncryption_Handler`",
+    "s13": "JSP実装例（ユーザ情報編集確認画面）:\n```jsp\n<n:form windowScopePrefixes=\"user\">\n    <n:hidden name=\"user.id\" />\n    <n:text name=\"user.name\" />\n    <n:password name=\"user.password\" />\n</n:form>\n```\n\n暗号化しない場合のHTML出力（各フィールドが個別のhiddenタグとして出力）:\n```html\n<form>\n    <input type=\"hidden\" name=\"user.id\" value=\"U0001\" />\n    <input type=\"hidden\" name=\"user.name\" value=\"山田太郎\" />\n    <input type=\"hidden\" name=\"user.password\" value=\"pass1234\" />\n</form>\n```\n\n暗号化する場合のHTML出力（全値を1つの`nablarch_hidden`に集約）:\n```html\n<form>\n    <input type=\"hidden\" name=\"nablarch_hidden\" value=\"XXXXXXXXXXXXXXXXXXXXXXXXXXXX\" />\n</form>\n```\n\nハンドラ復号後（`nablarch_hidden`が個別パラメータに展開）:\n```\nnablarch_hidden=XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n→ user.id=U0001\n→ user.name=山田太郎\n→ user.password=pass1234\n```",
+    "s14": ":ref:`WebView_CustomTagConfig` で以下の設定が可能（設定方法は :ref:`WebView_CustomTagConfig` 参照）:\n\n| プロパティ名 | 説明 |\n|---|---|\n| `useHiddenEncryption` | アプリケーション全体でhiddenタグの暗号化機能を使用するか否か。開発時にHTMLソース上でhiddenタグ内容を確認する場合に指定する。 |\n| `noHiddenEncryptionRequestIds` | 暗号化を行わないリクエストIDの一覧。 |",
+    "s15": "`noHiddenEncryptionRequestIds`プロパティはformタグとハンドラの両方が参照し、暗号化・復号するリクエストIDを同期する。\n\nn:formタグに含まれるリクエストIDと`noHiddenEncryptionRequestIds`の関係による動作:\n\n| 状況 | formタグの処理 | ハンドラの処理 |\n|---|---|---|\n| 全リクエストIDが指定値と一致しない | 暗号化される | 復号される |\n| 全リクエストIDが指定値と一致する | 暗号化されない | 復号されない |\n| 一部のみ一致する | **暗号化される** | 復号される |\n\n> **重要**: n:formに含まれるリクエストIDが一部だけ一致する場合でも暗号化が行われる。これは誤設定による暗号化漏れを防ぐため。そのため、本来暗号化対象外とすべきリクエストに対しても暗号化が行われる場合がある。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

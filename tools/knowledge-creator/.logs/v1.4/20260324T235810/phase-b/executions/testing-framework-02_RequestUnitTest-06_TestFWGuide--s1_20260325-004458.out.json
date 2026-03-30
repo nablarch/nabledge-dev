@@ -1,0 +1,79 @@
+{
+  "id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "title": "リクエスト単体テスト（画面オンライン処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベース関連機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "データベース関連機能",
+        "beginTransactions",
+        "commitTransactions",
+        "endTransactions",
+        "setThreadContextValues",
+        "委譲"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "事前準備補助機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "createHttpRequest",
+        "createExecutionContext",
+        "setValidToken",
+        "setToken",
+        "トークン発行",
+        "2重サブミット防止",
+        "HTTPリクエスト作成",
+        "ExecutionContext生成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リポジトリの初期化",
+      "hints": [
+        "HttpRequestTestSupport",
+        "execute",
+        "リポジトリ初期化",
+        "クラス単体テスト",
+        "リクエスト単体テスト",
+        "連続実行",
+        "HttpResponse"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージ",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertApplicationMessageId",
+        "アプリケーション例外",
+        "メッセージIDアサート",
+        "結果確認"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "HTMLダンプ出力ディレクトリ",
+      "hints": [
+        "HTMLダンプ",
+        "html_dump",
+        "html_dump_bk",
+        "HTMLダンプ出力ディレクトリ",
+        "テスト結果出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`HttpRequestTestSupport`のデータベース関連機能は`DbAccessTestSupport`クラスへの委譲で実現。ただし、リクエスト単体テストでは不要なため、以下のメソッドは意図的に委譲されていない。\n\n- `public void beginTransactions()`\n- `public void commitTransactions()`\n- `public void endTransactions()`\n- `public void setThreadContextValues(String sheetName, String id)`\n\n詳細は :doc:`02_DbAccessTest` を参照。",
+    "s2": "`HttpRequestTestSupport`が提供する事前準備補助メソッド。\n\n**HttpRequest生成**:\n\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\nHTTPメソッドはPOSTに設定される。URIとパラメータ以外のデータが必要な場合は、返却されたインスタンスに追加設定する。\n\n**ExecutionContext生成**:\n\n```java\nExecutionContext createExecutionContext(String userId)\n```\n指定したユーザIDはセッションに格納され、そのユーザIDでログインしている状態になる。\n\n**トークン発行（2重サブミット防止テスト用）**:\n\n> **注意**: 2重サブミット防止を施しているURIのテストには、テスト実行前にトークンを発行しセッションに設定する必要がある。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nトークンを発行しセッションに格納する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n第3引数が`true`の場合は`setValidToken`と同じ動作。`false`の場合はセッションからトークン情報を除去する。テストデータからboolean値を渡すことで、テストクラスにトークン設定の分岐処理を書かずに済む。",
+    "s3": "`execute`メソッドで内蔵サーバを起動しリクエストを送信する。\n\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)\n```\n- `caseName`: テストケース説明（HTMLダンプ出力ファイル名に使用）\n- `req`: HttpRequest\n- `ctx`: ExecutionContext\n\n**リポジトリの初期化**:\n\n`execute`メソッド内部でリポジトリの再初期化を行う。これによりクラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\nプロセス:\n1. 現在のリポジトリの状態をバックアップ\n2. テスト対象WebアプリケーションのコンポーネントにてリポジトリをUI初期化（Webアプリケーションのコンポーネント設定ファイルを使用）\n3. `execute`メソッド終了時に、バックアップしたリポジトリを復元\n\nテスト対象Webアプリケーションの設定については :ref:`howToConfigureRequestUnitTestEnv` を参照。",
+    "s4": "アプリケーション例外に格納されたメッセージが想定通りであることを確認するメソッド:\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual)\n```\n- 第1引数: 期待するメッセージID（複数の場合はカンマ区切り）\n- 第2引数: ExecutionContext\n\n> **注意**: 例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合はアサート失敗となる。メッセージIDの比較はIDをソートした状態で行うため、テストデータの順序を気にする必要はない。",
+    "s5": "テスト実行後、プロジェクトルートに`tmp/html_dump`ディレクトリが作成される。テストクラス毎に同名のサブディレクトリが作成され、テストケース説明と同名のHTMLダンプファイルが出力される。\n\nHTMLが参照するリソース（スタイルシート、画像等）も同ディレクトリに出力されるため、このディレクトリを保存することでどの環境でもHTMLを同じように参照できる。\n\n> **注意**: `html_dump`ディレクトリが既に存在する場合は、`html_dump_bk`という名前でバックアップされる。\n\n![HTMLダンプディレクトリ構造](assets/testing-framework-02_RequestUnitTest-06_TestFWGuide--s1/htmlDumpDir.png)"
+  }
+}

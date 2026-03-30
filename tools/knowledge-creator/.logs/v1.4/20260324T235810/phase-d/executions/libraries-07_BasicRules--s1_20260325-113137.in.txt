@@ -1,0 +1,473 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_BasicRules.rst`
+- Format: `rst`
+
+```
+==============================
+命名ルール
+==============================
+フレームワークでは、CSSのクラス名やJavaScriptの関数名など、フレームワークが規定する名前については、\
+個別アプリケーションと重複しないようにプレフィックス「nablarch_」を使用する。\
+このため、個別アプリケーションでは、「nablarch_」から始まる名前を使用しないこと。\
+この命名ルールの対象を下記に示す。
+
+* HTMLの属性値
+* CSSのクラス名
+* JavaScriptの関数名とグローバル変数名
+* ページスコープ、リクエストスコープ、セッションスコープの属性名
+
+==================================
+taglibディレクティブの指定方法
+==================================
+カスタムタグを使用するJSPでは、taglibディレクティブの指定が必須となる。\
+本機能のカスタムタグを使用する場合のtaglibディレクティブの指定例を下記に示す。
+
+.. code-block:: jsp
+
+  <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+
+以降の実装例では、上記のtaglibディレクティブが指定されているものとする。
+
+.. _WebView_SpecifyUri:
+
+====================
+URIの指定方法
+====================
+カスタムタグにおいてURIを指定する属性は、下記のいずれかの方法で指定する。
+
+=================================== =================================== =========================================================================================================
+指定方法                            指定するパス                        説明
+=================================== =================================== =========================================================================================================
+絶対URL                             http又はhttpsから始まるパス         他システム連携などでアプリケーションとホストが異なるURIを指定する場合に使用する。
+                                                                        カスタムタグは、指定されたパスをそのまま使用する。
+コンテキストからの相対パス          /(スラッシュ)から始まるパス         アプリケーション内のパスを指定する場合に使用する。
+                                                                        カスタムタグは、指定されたパスの先頭にコンテキストパスを付加して使用する。
+現在のパスからの相対パス            /(スラッシュ)から始まらないパス     アプリケーション内のパスを指定する場合に使用する。
+                                    (絶対URLを除く)                     カスタムタグは、指定されたパスをそのまま使用する。
+=================================== =================================== =========================================================================================================
+
+コンテキストからの相対パスを指定している場合は、カスタムタグのsecure属性を指定することでURIのhttpsとhttpを切り替えることができる。
+secure属性が指定された場合は、カスタムタグの設定値(http用のポート番号、https用のポート番号、ホスト)とコンテキストパスを使用してURIを組み立てる。\
+このためsecure属性を使用するアプリケーションでは、カスタムタグの設定を行う必要がある。\
+カスタムタグの設定については、 :ref:`WebView_CustomTagConfig` を参照。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+====================================== ==========================================================================================
+
+.. note::
+
+ secure属性は、遷移先のプロトコルを切り替えるボタンやリンクのみで使用する。
+ 遷移先のプロトコルが同じ場合(httpからhttp、httpsからhttps)は、secure属性を指定せずに相対パスを指定する。
+
+secure属性の使用例を下記に示す。下記のポート番号とホストが設定されているものとする。
+
+* http用のポート番号: 8080
+* https用のポート番号: 443
+* ホスト: sample.co.jp
+
+httpからhttpsに切り替える場合
+
+.. code-block:: jsp
+
+  <%-- secure属性にtrueを指定する。 --%>
+  <n:submit type="button" name="login" value="ログイン" uri="/LoginAction/LOGIN001" secure="true" />
+
+.. code-block:: bash
+
+  # 組み立てられるURI
+  https://sample.co.jp:443/<コンテキストパス>/LoginAction/LOGIN001
+
+httpsからhttpに切り替える場合
+
+.. code-block:: jsp
+
+  <%-- secure属性にfalseを指定する。 --%>
+  <n:submitLink name="logout" uri="/LogoutAction/LOGOUT01" secure="false">ログアウト</n:submitLink>
+
+.. code-block:: bash
+
+  # 組み立てられるURI
+  http://sample.co.jp:8080/<コンテキストパス>/LogoutAction/LOGOUT01
+
+  # 組み立てられるURI(カスタムタグの設定でhttp用のポート番号を指定しなかった場合)
+  # ポート番号が出力されない。
+  http://sample.co.jp/<コンテキストパス>/LogoutAction/LOGOUT01
+
+なお、本機能では、URIを指定するHTMLタグについて、コンテキストパスの付加とURLリライトに対応する下記のカスタムタグを提供する。
+
+*  :ref:`WebView_ATag` (リンク)
+*  :ref:`WebView_ImgTag` (画像ファイル)
+*  :ref:`WebView_ScriptTag` (JavaScriptファイル)
+*  :ref:`WebView_LinkTag` (CSSファイル)
+
+
+==========================================
+HTMLエスケープと改行、半角スペース変換
+==========================================
+
+------------------
+HTMLエスケープ
+------------------
+本フレームワークが提供する全てのカスタムタグでは、原則として出力する際に全てのHTMLの属性についてHTMLエスケープを行う。\
+HTMLエスケープ処理では、下記の文字変換を行う。
+
+======= =======
+変換前  変換後
+======= =======
+&       &amp;
+<       &lt;
+>       &gt;
+"       &#034;
+'       &#039;
+======= =======
+
+.. warning::
+
+ EL式はHTMLエスケープ処理を実施しないため、EL式を使用して値を出力しないこと。\
+ 値を出力する場合は、writeタグなど本機能が提供するカスタムタグを使用する。\
+ ただし、JSTLのforEachタグやカスタムタグの属性にオブジェクトを設定する場合など、直接出力しない箇所ではEL式を使用しても問題ない。
+
+.. warning::
+
+ JavaScriptに対するエスケープ処理は、まだ未実装のため、 scriptタグのボディやonclick属性など、JavaScriptを記述する部分には、動的な値(入力データなど)を埋め込まないこと。\
+ JavaScriptを記述する部分に動的な値(入力データなど)を埋め込む場合は、プロジェクトの責任でエスケープ処理を実施すること。
+
+-------------------------
+改行、半角スペース変換
+-------------------------
+確認画面などに入力データを出力する際には、HTMLエスケープに加えて、改行と半角スペースの変換を行う。
+下記に変換内容を示す。
+
+============================ ============================
+変換前                       変換後
+============================ ============================
+改行コード(\\n、\\r、\\r\\n) <br />
+半角スペース                 &nbsp;
+============================ ============================
+
+.. _`output_without_html_escape`:
+
+------------------------------------------
+HTMLエスケープせずに値を出力する方法
+------------------------------------------
+業務アクションなどで設定された値をページ上に出力する場合は、 :ref:`Webview_WriteTag` を使用するが、
+HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい場合は、以下のタグを使用する。
+
+  - :ref:`WebView_PrettyPrintTag`
+    
+    変数中の **<b>** や **<del>** のような装飾系のHTMLタグをエスケープせずに出力するカスタムタグ。
+    使用可能なHTMLタグ及び属性は、 :ref:`WebView_CustomTagConfig` で任意に設定することができる。
+    デフォルトで使用可能なタグ、属性は以下の通り。
+
+    **使用可能タグ**
+       b big blockquote br caption center dd del dl dt em font h1 h2 h3 hr i ins li ol p small strong sub sup table td th tr u ul
+
+    **使用可能属性**
+       color size border colspan rowspan bgcolor
+
+    .. warning::
+
+      :ref:`WebView_PrettyPrintTag` で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
+      脆弱性の要因となる可能性があるため、使用可能なHTMLタグ及び属性を設定する場合は、その選択に十分に留意すること。
+      例えば、 **<script>** タグや **onclick** 属性を使用可能とした場合、クロスサイトスクリプティング(XSS)脆弱性の
+      直接要因となる。
+
+  - :ref:`WebView_RawWriteTag`
+
+    変数中の文字列の内容をエスケープせずにそのまま出力するカスタムタグ。
+
+    .. warning:: 
+    
+      :ref:`WebView_RawWriteTag` で出力する変数の内容が、不特定のユーザによって任意に設定できるものであった場合、
+      クロスサイトスクリプティング(XSS)脆弱性の直接の要因となる。
+      
+      この為、本タグの使用には十分な考慮が必要である。
+      なお、別添のJSPチェックツールでは、本タグを使用禁止タグとして分類しており、使用している箇所はエラーとして検出される。 
+
+.. _WebView_LangResourcePath:
+
+==========================================================================================
+言語毎のリソースパスの切り替え
+==========================================================================================
+リソースパスを扱うタグは、言語設定をもとにリソースパスを動的に切り替える機能をもつ。\
+下記のタグが言語毎のリソースパスの切り替えに対応している。
+
+*  :ref:`WebView_ATag` 
+*  :ref:`WebView_ImgTag` 
+*  :ref:`WebView_ScriptTag` 
+*  :ref:`WebView_LinkTag` 
+*  :ref:`WebView_ConfirmationPageTag` 
+*  :ref:`WebView_IncludeTag` 
+
+includeタグは動的なJSPインクルードを言語毎のリソースパスの切り替えに対応させるために提供している。\
+:ref:`WebView_IncludeParamTag` を使用してインクルード時に追加するパラメータを指定する。\
+
+.. code-block:: jsp
+
+ <%-- path属性にインクルード先のパスを指定する。 --%>
+ <n:include path="/app_header.jsp">
+     <%-- paramName属性にパラメータ名、value属性に値を指定する。
+          スコープ上に設定された値を使用する場合はname属性を指定する。
+          name属性とvalue属性のどちらか一方を指定する。 --%>
+     <n:includeParam paramName="title" value="ユーザ情報詳細" />
+ </n:include>
+
+ResourcePathRule抽象クラスのサブクラスを使用して言語毎のリソースパスを取得することで、\
+カスタムタグは言語毎のリソースパスの切り替えを行う。\
+ResourcePathRuleおよび本フレームワークがデフォルトで提供するサブクラスについては、
+:ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。
+
+カスタムタグは :ref:`WebView_CustomTagConfig` に指定されたResourcePathRule抽象クラスのサブクラスを使用する。\
+ResourcePathRule抽象クラスのサブクラスの設定については、 :ref:`WebView_CustomTagConfig` を参照。
+
+.. _StaticResourceReload:
+
+==========================================================================================
+静的コンテンツのクライアント側でのキャッシュについて
+==========================================================================================
+クライアントサイド(ブランザ)でキャッシュを有効化している場合、サーバ上に配置した静的コンテンツを置き換えても、
+クライアント側では最新のコンテンツではなくキャッシュされた古いコンテンツが表示される可能性がある。
+この問題を回避するため、本機能では静的コンテンツのURIにGETパラメータで静的コンテンツのバージョンを付加し、
+静的コンテンツ置き換え時にクライアント側のキャッシュを強制的に破棄する機能を提供する。
+
+
+GETパラメータに付加する静的コンテンツのバージョンは、設定ファイル（configファイル）に設定する。
+設定ファイルに静的コンテンツのバージョンが設定されていない場合には、本機能は無効化される。
+
+設定値は、以下のルールで記載する。
+
+============================ ============================
+キー                         値
+============================ ============================
+static_content_version       静的コンテンツのバージョン
+============================ ============================
+
+以下に設定例を示す。
+
+.. code-block:: bash
+
+  # 静的コンテンツのバージョン
+  static_content_version=1.0
+
+
+
+対応する属性は以下の通り。
+
+*  :ref:`WebView_ImgTag` のsrc属性
+*  :ref:`WebView_ScriptTag` のsrc属性
+*  :ref:`WebView_LinkTag` のhref属性
+*  :ref:`WebView_SubmitTag` のsrc属性
+*  :ref:`WebView_PopupSubmitTag` のsrc属性
+*  :ref:`WebView_DownloadSubmitTag` のsrc属性
+```
+
+## Knowledge File
+
+- ID: `libraries-07_BasicRules--s1`
+
+```json
+{
+  "id": "libraries-07_BasicRules--s1",
+  "title": "命名ルール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "命名ルール・taglibディレクティブの指定方法",
+      "hints": [
+        "nablarch_プレフィックス",
+        "命名ルール",
+        "taglibディレクティブ",
+        "JSPカスタムタグ",
+        "スコープ属性名",
+        "ネームスペース宣言"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "URIの指定方法",
+      "hints": [
+        "URI指定方法",
+        "コンテキストパス",
+        "secure属性",
+        "https切り替え",
+        "絶対URL",
+        "相対パス",
+        "WebView_ATag",
+        "WebView_ImgTag",
+        "WebView_ScriptTag",
+        "WebView_LinkTag"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "HTMLエスケープ",
+      "hints": [
+        "HTMLエスケープ",
+        "エスケープ変換",
+        "EL式",
+        "カスタムタグ出力",
+        "JavaScriptエスケープ未実装",
+        "XSS対策"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "改行、半角スペース変換",
+      "hints": [
+        "改行変換",
+        "半角スペース変換",
+        "確認画面",
+        "入力データ出力",
+        "br変換",
+        "nbsp"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "HTMLエスケープせずに値を出力する方法",
+      "hints": [
+        "HTMLエスケープなし出力",
+        "WebView_PrettyPrintTag",
+        "WebView_RawWriteTag",
+        "XSS脆弱性",
+        "装飾タグ出力",
+        "JSPチェックツール"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "言語毎のリソースパスの切り替え・静的コンテンツのキャッシュ",
+      "hints": [
+        "リソースパス切り替え",
+        "多言語対応",
+        "ResourcePathRule",
+        "静的コンテンツキャッシュ",
+        "static_content_version",
+        "WebView_IncludeTag",
+        "WebView_ConfirmationPageTag",
+        "WebView_IncludeParamTag",
+        "WebView_ATag",
+        "WebView_ImgTag",
+        "WebView_ScriptTag",
+        "WebView_LinkTag",
+        "WebView_SubmitTag",
+        "WebView_PopupSubmitTag",
+        "WebView_DownloadSubmitTag"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 命名ルール\n\nフレームワークが予約するプレフィックス「nablarch_」から始まる名前を個別アプリケーションで使用しないこと。\n\n対象:\n- HTMLの属性値\n- CSSのクラス名\n- JavaScriptの関数名とグローバル変数名\n- ページスコープ、リクエストスコープ、セッションスコープの属性名\n\n## taglibディレクティブの指定方法\n\nカスタムタグを使用するJSPには以下のtaglibディレクティブが必須。\n\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n```",
+    "s2": "カスタムタグのURI指定属性は以下の方法で指定する。\n\n| 指定方法 | 指定するパス | 説明 |\n|---|---|---|\n| 絶対URL | http/httpsから始まるパス | 他システム連携などホストが異なるURIに使用。指定パスをそのまま使用。 |\n| コンテキストからの相対パス | /（スラッシュ）から始まるパス | アプリケーション内のパスに使用。先頭にコンテキストパスを付加。 |\n| 現在のパスからの相対パス | /から始まらないパス（絶対URL除く） | アプリケーション内のパスに使用。指定パスをそのまま使用。 |\n\nコンテキストからの相対パス指定時、`secure`属性でhttps/httpを切り替え可能。`secure`指定時は、カスタムタグの設定値（httpポート番号、httpsポート番号、ホスト）とコンテキストパスを使用してURIを組み立てる。\n\n| 属性 | 説明 |\n|---|---|\n| secure | URIをhttpsにするか否か。trueでhttps、falseでhttp。 |\n\n> **注意**: secure属性は遷移先のプロトコルを切り替えるボタンやリンクのみで使用すること。遷移先のプロトコルが同じ場合（httpからhttp、httpsからhttps）は、secure属性を指定せず相対パスを使用する。\n\nsecure属性を使用するアプリケーションでは :ref:`WebView_CustomTagConfig` のカスタムタグ設定が必要。\n\nhttpからhttpsへ切り替える例（httpポート:8080、httpsポート:443、ホスト:sample.co.jp）:\n```jsp\n<%-- secure属性にtrueを指定する。 --%>\n<n:submit type=\"button\" name=\"login\" value=\"ログイン\" uri=\"/LoginAction/LOGIN001\" secure=\"true\" />\n```\n組み立てられるURI: `https://sample.co.jp:443/<コンテキストパス>/LoginAction/LOGIN001`\n\nhttpsからhttpへ切り替える例:\n```jsp\n<%-- secure属性にfalseを指定する。 --%>\n<n:submitLink name=\"logout\" uri=\"/LogoutAction/LOGOUT01\" secure=\"false\">ログアウト</n:submitLink>\n```\n組み立てられるURI: `http://sample.co.jp:8080/<コンテキストパス>/LogoutAction/LOGOUT01`\n（httpポート番号を設定しなかった場合: `http://sample.co.jp/<コンテキストパス>/LogoutAction/LOGOUT01`）\n\n本機能はURIを指定するHTMLタグについてコンテキストパスの付加とURLリライトに対応する以下のカスタムタグを提供する:\n- :ref:`WebView_ATag` (リンク)\n- :ref:`WebView_ImgTag` (画像ファイル)\n- :ref:`WebView_ScriptTag` (JavaScriptファイル)\n- :ref:`WebView_LinkTag` (CSSファイル)",
+    "s3": "本フレームワークが提供する全カスタムタグは、出力時にすべてのHTML属性をHTMLエスケープする。\n\n| 変換前 | 変換後 |\n|---|---|\n| & | &amp; |\n| < | &lt; |\n| > | &gt; |\n| \" | &#034; |\n| ' | &#039; |\n\n> **警告**: EL式はHTMLエスケープを実施しないため、EL式を使用して値を出力しないこと。値を出力する場合は :ref:`Webview_WriteTag` など本機能が提供するカスタムタグを使用する。JSTLのforEachタグやカスタムタグの属性にオブジェクトを設定する場合など直接出力しない箇所ではEL式を使用しても問題ない。\n\n> **警告**: JavaScriptに対するエスケープ処理は未実装のため、scriptタグのボディやonclick属性などJavaScriptを記述する部分に動的な値（入力データなど）を埋め込まないこと。埋め込む場合はプロジェクトの責任でエスケープ処理を実施すること。",
+    "s4": "確認画面などに入力データを出力する際は、HTMLエスケープに加えて改行と半角スペースの変換を行う。\n\n| 変換前 | 変換後 |\n|---|---|\n| 改行コード（\\n、\\r、\\r\\n） | `<br />` |\n| 半角スペース | `&nbsp;` |",
+    "s5": ":ref:`Webview_WriteTag` で通常は値を出力するが、HTMLエスケープを行わずHTMLタグを直接出力したい場合は以下のタグを使用する。\n\n**:ref:`WebView_PrettyPrintTag`**\n\n変数中の装飾系HTMLタグ（`<b>`、`<del>` など）をエスケープせずに出力するカスタムタグ。使用可能タグと属性は :ref:`WebView_CustomTagConfig` で任意に設定可能。\n\nデフォルトで使用可能なタグ: `b big blockquote br caption center dd del dl dt em font h1 h2 h3 hr i ins li ol p small strong sub sup table td th tr u ul`\n\nデフォルトで使用可能な属性: `color size border colspan rowspan bgcolor`\n\n> **警告**: 出力する変数の内容が不特定のユーザによって任意に設定できる場合、脆弱性の原因となりうる。使用可能タグ・属性の設定には十分注意すること。例えば `<script>` タグや `onclick` 属性を許可するとXSS脆弱性の直接原因となる。\n\n**:ref:`WebView_RawWriteTag`**\n\n変数中の文字列をエスケープせずそのまま出力するカスタムタグ。\n\n> **警告**: 出力する変数の内容が不特定のユーザによって任意に設定できる場合、XSS脆弱性の直接原因となる。本タグの使用には十分な考慮が必要。なお、JSPチェックツールでは本タグを使用禁止タグとして分類しており、使用箇所はエラーとして検出される。",
+    "s6": "## 言語毎のリソースパスの切り替え\n\nリソースパスを扱うカスタムタグは、言語設定をもとにリソースパスを動的に切り替える機能を持つ。対応タグ:\n- :ref:`WebView_ATag`\n- :ref:`WebView_ImgTag`\n- :ref:`WebView_ScriptTag`\n- :ref:`WebView_LinkTag`\n- :ref:`WebView_ConfirmationPageTag`\n- :ref:`WebView_IncludeTag`\n\nincludeタグの動的JSPインクルード例（:ref:`WebView_IncludeParamTag` でパラメータ指定）:\n```jsp\n<n:include path=\"/app_header.jsp\">\n    <n:includeParam paramName=\"title\" value=\"ユーザ情報詳細\" />\n</n:include>\n```\n\nカスタムタグは :ref:`WebView_CustomTagConfig` に設定されたResourcePathRuleサブクラスを使用して言語切り替えを行う。ResourcePathRuleおよびデフォルト提供サブクラスの詳細は :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。\n\n## 静的コンテンツのクライアント側キャッシュ\n\n静的コンテンツのURIにGETパラメータでバージョンを付加し、コンテンツ置き換え時にクライアント側キャッシュを強制破棄する機能。設定ファイル（configファイル）にバージョンが設定されていない場合は本機能は無効化される。\n\n設定キー:\n\n| キー | 値 |\n|---|---|\n| static_content_version | 静的コンテンツのバージョン |\n\n設定例:\n```\nstatic_content_version=1.0\n```\n\nバージョン付加の対応属性:\n- :ref:`WebView_ImgTag` のsrc属性\n- :ref:`WebView_ScriptTag` のsrc属性\n- :ref:`WebView_LinkTag` のhref属性\n- :ref:`WebView_SubmitTag` のsrc属性\n- :ref:`WebView_PopupSubmitTag` のsrc属性\n- :ref:`WebView_DownloadSubmitTag` のsrc属性"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

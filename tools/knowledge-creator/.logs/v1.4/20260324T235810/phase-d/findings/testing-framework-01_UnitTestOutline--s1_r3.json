@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-01_UnitTestOutline--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 画面オンライン処理 feature 2 (JSP syntax check)",
+      "description": "The source specifically warns that screens using `<jsp:include>` or `Tiles` (which combine HTML from multiple modules) carry a high risk of generating invalid HTML, and that such defects are often undetectable even through thorough manual testing. This technology-specific warning is omitted from the knowledge file.",
+      "source_evidence": "特に、**<jsp:include>** や、**Tiles** といった仕組みを使用している画面では、各モジュールが生成したHTMLを組み合わせて表示することになるので、結果として不正なHTMLを生成してしまう危険性が高い。このような不具合は十分な打鍵テストを行っても検出できないことが多く、それを自動テストで確認できることは大きな利点となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 画面オンライン処理 feature 3 (visual layout verification)",
+      "description": "The source describes a concrete use case: layout verification for maximum-digit data input/display normally requires manual key entry, but this framework allows assembly-line visual verification of test-output HTML, reducing workload. The knowledge file captures only that HTML output can be opened in a browser, omitting this specific use case and the workload-reduction context.",
+      "source_evidence": "最大桁のデータ入力/表示の際のレイアウト確認などのテストは、通常、打鍵作業が必要となるが、本テストフレームワークを使用することで、自動テストが出力したHTMLを流れ作業で目視確認することができ、作業工数を低減させることができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — バッチ処理 feature 2 (test data)",
+      "description": "The source states that a batch-processing-specific test data format is provided, and that conforming to it makes test data easy to create. The knowledge file only mentions that Excel files can be used in line with external interface design specifications, omitting the availability of the dedicated batch test data format.",
+      "source_evidence": "また、バッチ処理用のテストデータ書式が提供されており、これに準拠することでテストデータを容易に作成することができる。これらの特徴により、テストデータが作りやすくかつ保守しやすいものとなっている。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — リクエストID description",
+      "description": "The knowledge states 'リクエストIDはジョブ/ジョブステップ単位で付与される' as a general rule. However, the source gives 'ジョブまたはジョブステップの単位' only as an example for 都度起動バッチ; the actual general rule stated is '実行される処理の種類ごとにリクエストIDが振られる'. The knowledge presents the example as the universal definition.",
+      "source_evidence": "バッチ処理におけるリクエストは、実行される処理の種類ごとにリクエストIDが振られる。例えば、都度起動バッチの場合、ジョブスケジューラから起動されるジョブまたはジョブステップの単位でリクエストIDが付与される。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — 同期応答・応答不要メッセージ送信処理 feature 2",
+      "description": "The source states that a superclass implementing typical boilerplate (test preparation, execution, result verification) is provided for send processing, enabling nearly code-free testing. The knowledge omits the mention of this superclass for the send processing subsection (it is mentioned only for the receive processing subsection).",
+      "source_evidence": "このような典型的な定型処理を実装したスーパークラスが提供されており、これを利用することで、テスト準備、テスト対象の実行、テスト結果確認が可能である。これにより、テストデータのみで、ほぼコーディングなしでテストが実行可能である。"
+    }
+  ]
+}

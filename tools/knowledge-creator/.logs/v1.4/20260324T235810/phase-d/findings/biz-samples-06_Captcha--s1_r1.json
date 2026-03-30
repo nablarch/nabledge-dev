@@ -1,0 +1,33 @@
+{
+  "file_id": "biz-samples-06_Captcha--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2",
+      "description": "Knowledge file contains 'ログインI後' (with an extra 'I' character) which does not exist in the source. Source text reads 'ログイン後に生成されるため'.",
+      "source_evidence": "Source: 'Nablarchではセッション情報は原則ログイン後に生成されるため、使用することが出来ない。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — CaptchaUtilメソッド / generateKey",
+      "description": "The source includes guidance that UUID-based key generation has low collision risk but can be replaced if a more unique key is needed by modifying the source code. This customization guidance is omitted from the knowledge file.",
+      "source_evidence": "Source: '重複する可能性は低く実用的に問題ないと考えているが、よりユニークなキーを利用したいなどで、別の生成方法を利用する場合はソースコードを修正すること。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Source h2 section '使用方法' contains well over 2000 chars of plain text and has 5 distinct h3 subsections (CaptchaUtilの使用方法, CaptchaGenerateActionの設定方法, ハンドラの挿入位置や注意事項, CAPTCHA識別キー取得方法, CAPTCHA画像の取得方法, 入力文字列判定方法), but the knowledge file merges all into a single section s4 without splitting."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "PascalCase class names appearing in s4 content are missing from s4 hints: 'UUID' (java.util.UUID used in generateKey description), 'ValidationContext' (used in the validateForCaptcha code example), 'ValidationUtil' (used in the validateForCaptcha code example).",
+      "source_evidence": "Source (generateKey): 'java.util.UUIDのrandomUUIDを利用'. Source (validateForCaptcha code): 'ValidationUtil.validate(context, ...' and 'ValidationContext<W11ZZ01Form> context'."
+    }
+  ]
+}

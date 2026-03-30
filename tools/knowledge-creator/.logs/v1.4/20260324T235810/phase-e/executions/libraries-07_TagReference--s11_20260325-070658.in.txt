@@ -1,0 +1,672 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_TagReference--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s9 (submitタグ)",
+      "description": "画像ボタン関連の属性 src, alt, usemap, align がhintsに含まれていない。submitタグはtype=imageでの画像ボタン用途もあり、これらの属性が検索対象になりうる。",
+      "source_evidence": "submitタグの属性表に src / alt / usemap / align がリストされている"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s12 (popupSubmitタグ)",
+      "description": "画像ボタン関連の属性 src, alt, usemap, align がhintsに含まれていない。popupSubmitタグも同様にこれらの属性を持つ。",
+      "source_evidence": "popupSubmitタグの属性表に src / alt / usemap / align がリストされている"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+compositeKeyCheckboxタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+valueObject(必須)                      | XHTMLのvalue属性の代わりに使用するオブジェクト。
+                                       | keyNames で指定したプロパティを持つ必要がある。
+keyNames(必須)                         | 複合キーのキー名。
+                                       | キー名をカンマ区切りで指定する。
+namePrefix(必須)                       | リクエストパラメータに展開する際に使用するプレフィクス。
+autofocus                              | HTML5のautofocus属性。
+label                                  | チェックありの場合に使用するラベル。
+                                       | 入力画面では、このラベルが表示される。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CompositeKeyRadioButtonTag:
+
+compositeKeyRadioButtonタグ
+---------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+valueObject(必須)                      | XHTMLのvalue属性の代わりに使用するオブジェクト。
+                                       | keyNames で指定したプロパティを持つ必要がある。
+keyNames(必須)                         | 複合キーのキー名。
+                                       | キー名をカンマ区切りで指定する。
+namePrefix(必須)                       | リクエストパラメータに展開する際に使用するプレフィクス。
+autofocus                              | HTML5のautofocus属性。
+label                                  | チェックありの場合に使用するラベル。
+                                       | 入力画面では、このラベルが表示される。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_FileTag:
+
+fileタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+disabled                               | XHTMLのdisabled属性。
+readonly                               | XHTMLのreadonly属性。
+size                                   | XHTMLのsize属性。
+maxlength                              | XHTMLのmaxlength属性。
+onselect                               | XHTMLのonselect属性。
+onchange                               | XHTMLのonchange属性。
+accept                                 | XHTMLのaccept属性。
+autofocus                              | HTML5のautofocus属性。
+multiple                               | HTML5のmultiple属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_HiddenTag:
+
+hiddenタグ
+-------------------------
+HTMLタグの出力を行わず、ウィンドウスコープに値を出力する。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+disabled                               | XHTMLのdisabled属性。
+====================================== ==========================================================================================
+
+.. _WebView_PlainHiddenTag:
+
+plainHiddenタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+disabled                               | XHTMLのdisabled属性。
+====================================== ==========================================================================================
+
+.. _WebView_SelectTag:
+
+selectタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+name(必須)                             | XHTMLのname属性。
+listName(必須)                         | 選択項目のリストの属性名。
+elementLabelProperty(必須)             | リスト要素からラベルを取得するためのプロパティ名。
+elementValueProperty(必須)             | リスト要素から値を取得するためのプロパティ名。
+size                                   | XHTMLのsize属性。
+multiple                               | XHTMLのmultiple属性。
+disabled                               | XHTMLのdisabled属性。
+tabindex                               | XHTMLのtabindex属性。
+onfocus                                | XHTMLのonfocus属性。
+onblur                                 | XHTMLのonblur属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+elementLabelPattern                    | ラベルを整形するためのパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       |   $LABEL$: ラベル
+                                       |   $VALUE$: 値
+                                       | 
+                                       | "$VALUE$ - $LABEL$"と指定した場合、ラベル＝グループ1、値＝G001とすると、整形後のラベルは"G001 - グループ1"となる。
+                                       | デフォルトは"$LABEL$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+withNoneOption                         | リスト先頭に選択なしのオプションを追加するか否か。
+                                       | 追加する場合はtrue、追加しない場合はfalse。
+                                       | デフォルトはfalse。
+noneOptionLabel                        | リスト先頭に選択なしのオプションを追加する場合に使用するラベル。
+                                       | この属性は、withNoneOptionにtrueを指定した場合のみ有効となる。
+                                       | デフォルトは""。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_RadioButtonsTag:
+
+radioButtonsタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | id属性は指定不可。
+:ref:`WebView_FocusAttributesTag`      | accesskey属性は指定不可。
+name(必須)                             | XHTMLのname属性。
+listName(必須)                         | 選択項目のリストの属性名。
+elementLabelProperty(必須)             | リスト要素からラベルを取得するためのプロパティ名。
+elementValueProperty(必須)             | リスト要素から値を取得するためのプロパティ名。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+                                       | 選択肢のうち、先頭要素のみautofocus属性を出力する。
+elementLabelPattern                    | ラベルを整形するためのパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       |   $LABEL$: ラベル
+                                       |   $VALUE$: 値
+                                       | 
+                                       | "$VALUE$ - $LABEL$"と指定した場合、ラベル＝グループ1、値＝G001とすると、整形後のラベルは"G001 - グループ1"となる。
+                                       | デフォルトは"$LABEL$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CheckboxesTag:
+
+checkboxesタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | id属性は指定不可。
+:ref:`WebView_FocusAttributesTag`      | accesskey属性は指定不可。
+name(必須)                             | XHTMLのname属性。
+listName(必須)                         | 選択項目のリストの属性名。
+elementLabelProperty(必須)             | リスト要素からラベルを取得するためのプロパティ名。
+elementValueProperty(必須)             | リスト要素から値を取得するためのプロパティ名。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+                                       | 選択肢のうち、先頭要素のみautofocus属性を出力する。
+elementLabelPattern                    | ラベルを整形するためのパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       |   $LABEL$: ラベル
+                                       |   $VALUE$: 値
+                                       | 
+                                       | "$VALUE$ - $LABEL$"と指定した場合、ラベル＝グループ1、値＝G001とすると、整形後のラベルは"G001 - グループ1"となる。
+                                       | デフォルトは"$LABEL$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_SubmitTag:
+
+submitタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name                                   | XHTMLのname属性。
+type(必須)                             | XHTMLのtype属性。
+uri(必須)                              | URI。
+                                       | :ref:`WebView_SpecifyUri` を参照。
+disabled                               | XHTMLのdisabled属性。
+value                                  | XHTMLのvalue属性。
+src                                    | XHTMLのsrc属性。
+alt                                    | XHTMLのalt属性。
+usemap                                 | XHTMLのusemap属性。
+align                                  | XHTMLのalign属性。
+autofocus                              | HTML5のautofocus属性。
+allowDoubleSubmission                  | 二重サブミットを許可するか否か。
+                                       | 許可する場合はtrue、許可しない場合はfalse。
+                                       | デフォルトはtrue。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                       | 下記のいずれかを指定する。
+                                       | NODISPLAY (非表示)
+                                       | DISABLED (非活性)
+                                       | NORMAL (通常表示)
+====================================== ==========================================================================================
+
+.. _WebView_ButtonTag:
+
+buttonタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name                                   | XHTMLのname属性。
+uri(必須)                              | URI。
+                                       | :ref:`WebView_SpecifyUri` を参照。
+value                                  | XHTMLのvalue属性。
+type                                   | XHTMLのtype属性。
+disabled                               | XHTMLのdisabled属性。
+autofocus                              | HTML5のautofocus属性。
+allowDoubleSubmission                  | 二重サブミットを許可するか否か。
+                                       | 許可する場合はtrue、許可しない場合はfalse。
+                                       | デフォルトはtrue。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                       | 下記のいずれかを指定する。
+                                       | NODISPLAY (非表示)
+                                       | DISABLED (非活性)
+                                       | NORMAL (通常表示)
+====================================== ==========================================================================================
+
+.. _WebView_SubmitLinkTag:
+
+submitLinkタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name                                   | XHTMLのname属性。
+uri(必須)                              | URI。
+                                       | :ref:`WebView_SpecifyUri` を参照。
+shape                                  | XHTMLのshape属性。
+coords                                 | XHTMLのcoords属性。
+allowDoubleSubmission                  | 二重サブミットを許可するか否か。
+                                       | 許可する場合はtrue、許可しない場合はfalse。
+                                       | デフォルトはtrue。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                       | 下記のいずれかを指定する。
+                                       | NODISPLAY (非表示)
+                                       | DISABLED (非活性)
+                                       | NORMAL (通常表示)
+====================================== ==========================================================================================
+
+.. _WebView_PopupSubmitTag:
+
+popupSubmitタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name                                   | XHTMLのname属性。
+type(必須)                             | XHTMLのtype属性。
+uri(必須)                              | URI。
+                                       | :ref:`WebView_SpecifyUri` を参照。
+disabled                               | XHTMLのdisabled属性。
+value                                  | XHTMLのvalue属性。
+src                                    | XHTMLのsrc属性。
+alt                                    | XHTMLのalt属性。
+usemap                                 | XHTMLのusemap属性。
+align                                  | XHTMLのalign属性。
+autofocus                              | HTML5のautofocus属性。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+popupWindowName                        | ポップアップのウィンドウ名。
+                                       | 新しいウィンドウを開く際にwindwo.open関数の第2引数(JavaScript)に指定する。
+popupOption                            | ポップアップのオプション情報。
+                                       | 新しいウィンドウを開く際にwindwo.open関数の第3引数(JavaScript)に指定する。
+displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                       | 下記のいずれかを指定する。
+                                       | NODISPLAY (非表示)
+                                       | DISABLED (非活性)
+                                       | NORMAL (通常表示)
+====================================== ==========================================================================================
+
+.. _WebView_PopupButtonTag:
+
+popupButtonタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name                                   | XHTMLのname属性。
+uri(必須)                              | URI。
+                                       | :ref:`WebView_SpecifyUri` を参照。
+value                                  | XHTMLのvalue属性。
+type                                   | XHTMLのtype属性。
+disabled                               | XHTMLのdisabled属性。
+autofocus                              | HTML5のautofocus属性。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+popupWindowName                        | ポップアップのウィンドウ名。
+                                       | 新しいウィンドウを開く際にwindwo.open関数の第2引数(JavaScript)に指定する。
+popupOption                            | ポップアップのオプション情報。
+                                       | 新しいウィンドウを開く際にwindwo.open関数の第3引数(JavaScript)に指定する。
+displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                       | 下記のいずれかを指定する。
+                                       | NODISPLAY (非表示)
+                                       | DISABLED (非活性)
+                                       | NORMAL (通常表示)
+====================================== ==========================================================================================
+
+.. _WebView_PopupLinkTag:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_TagReference--s11",
+  "title": "タグリファレンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "compositeKeyCheckboxタグ",
+      "hints": [
+        "compositeKeyCheckbox",
+        "name",
+        "valueObject",
+        "keyNames",
+        "namePrefix",
+        "errorCss",
+        "nameAlias",
+        "複合キーチェックボックス",
+        "カスタムタグ",
+        "複合キー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "compositeKeyRadioButtonタグ",
+      "hints": [
+        "compositeKeyRadioButton",
+        "name",
+        "valueObject",
+        "keyNames",
+        "namePrefix",
+        "errorCss",
+        "nameAlias",
+        "複合キーラジオボタン",
+        "カスタムタグ",
+        "複合キー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "fileタグ",
+      "hints": [
+        "file",
+        "name",
+        "disabled",
+        "readonly",
+        "accept",
+        "multiple",
+        "errorCss",
+        "nameAlias",
+        "ファイルアップロード",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "hiddenタグ",
+      "hints": [
+        "hidden",
+        "name",
+        "disabled",
+        "ウィンドウスコープ",
+        "隠しフィールド",
+        "HTMLタグ非出力",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "plainHiddenタグ",
+      "hints": [
+        "plainHidden",
+        "name",
+        "disabled",
+        "隠しフィールド",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "selectタグ",
+      "hints": [
+        "select",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "elementLabelPattern",
+        "listFormat",
+        "withNoneOption",
+        "noneOptionLabel",
+        "errorCss",
+        "セレクトボックス",
+        "プルダウン",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "radioButtonsタグ",
+      "hints": [
+        "radioButtons",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "elementLabelPattern",
+        "listFormat",
+        "errorCss",
+        "ラジオボタン",
+        "カスタムタグ",
+        "id属性指定不可"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "checkboxesタグ",
+      "hints": [
+        "checkboxes",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "elementLabelPattern",
+        "listFormat",
+        "errorCss",
+        "チェックボックス",
+        "カスタムタグ",
+        "id属性指定不可"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "submitタグ",
+      "hints": [
+        "submit",
+        "type",
+        "uri",
+        "allowDoubleSubmission",
+        "secure",
+        "displayMethod",
+        "二重サブミット",
+        "認可判定",
+        "開閉局判定",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "buttonタグ",
+      "hints": [
+        "button",
+        "uri",
+        "allowDoubleSubmission",
+        "secure",
+        "displayMethod",
+        "ボタン",
+        "二重サブミット",
+        "認可判定",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "submitLinkタグ",
+      "hints": [
+        "submitLink",
+        "uri",
+        "allowDoubleSubmission",
+        "secure",
+        "displayMethod",
+        "shape",
+        "coords",
+        "リンクサブミット",
+        "二重サブミット",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "popupSubmitタグ",
+      "hints": [
+        "popupSubmit",
+        "type",
+        "uri",
+        "popupWindowName",
+        "popupOption",
+        "secure",
+        "displayMethod",
+        "ポップアップ",
+        "サブミット",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "popupButtonタグ",
+      "hints": [
+        "popupButton",
+        "uri",
+        "popupWindowName",
+        "popupOption",
+        "secure",
+        "displayMethod",
+        "ポップアップ",
+        "ボタン",
+        "カスタムタグ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| valueObject | ○ | | XHTMLのvalue属性の代わりに使用するオブジェクト。keyNamesで指定したプロパティを持つ必要がある |\n| keyNames | ○ | | 複合キーのキー名。カンマ区切りで指定 |\n| namePrefix | ○ | | リクエストパラメータに展開する際に使用するプレフィクス |\n| autofocus | | | HTML5のautofocus属性 |\n| label | | | チェックありの場合に使用するラベル。入力画面で表示される |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s2": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| valueObject | ○ | | XHTMLのvalue属性の代わりに使用するオブジェクト。keyNamesで指定したプロパティを持つ必要がある |\n| keyNames | ○ | | 複合キーのキー名。カンマ区切りで指定 |\n| namePrefix | ○ | | リクエストパラメータに展開する際に使用するプレフィクス |\n| autofocus | | | HTML5のautofocus属性 |\n| label | | | チェックありの場合に使用するラベル。入力画面で表示される |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s3": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| readonly | | | XHTMLのreadonly属性 |\n| size | | | XHTMLのsize属性 |\n| maxlength | | | XHTMLのmaxlength属性 |\n| onselect | | | XHTMLのonselect属性 |\n| onchange | | | XHTMLのonchange属性 |\n| accept | | | XHTMLのaccept属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| multiple | | | HTML5のmultiple属性 |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s4": "HTMLタグの出力を行わず、ウィンドウスコープに値を出力する。\n\n共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| disabled | | | XHTMLのdisabled属性 |",
+    "s5": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| disabled | | | XHTMLのdisabled属性 |",
+    "s6": "共通属性: :ref:`WebView_GenericAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| listName | ○ | | 選択項目のリストの属性名 |\n| elementLabelProperty | ○ | | リスト要素からラベルを取得するためのプロパティ名 |\n| elementValueProperty | ○ | | リスト要素から値を取得するためのプロパティ名 |\n| size | | | XHTMLのsize属性 |\n| multiple | | | XHTMLのmultiple属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| tabindex | | | XHTMLのtabindex属性 |\n| onfocus | | | XHTMLのonfocus属性 |\n| onblur | | | XHTMLのonblur属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| elementLabelPattern | | `$LABEL$` | ラベルを整形するためのパターン。プレースホルダ: `$LABEL$`（ラベル）、`$VALUE$`（値）。例: `$VALUE$ - $LABEL$` → `G001 - グループ1` |\n| listFormat | | `br` | リスト表示フォーマット: br / div / span / ul / ol / sp（スペース区切り） |\n| withNoneOption | | `false` | trueの場合、リスト先頭に選択なしオプションを追加 |\n| noneOptionLabel | | `\"\"` | withNoneOptionがtrueの場合のみ有効。選択なしオプションのラベル |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s7": "> **注意**: :ref:`WebView_GenericAttributesTag` のid属性は指定不可。:ref:`WebView_FocusAttributesTag` のaccesskey属性は指定不可。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| listName | ○ | | 選択項目のリストの属性名 |\n| elementLabelProperty | ○ | | リスト要素からラベルを取得するためのプロパティ名 |\n| elementValueProperty | ○ | | リスト要素から値を取得するためのプロパティ名 |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性。先頭要素のみautofocus属性を出力する |\n| elementLabelPattern | | `$LABEL$` | ラベルを整形するためのパターン。プレースホルダ: `$LABEL$`（ラベル）、`$VALUE$`（値） |\n| listFormat | | `br` | リスト表示フォーマット: br / div / span / ul / ol / sp（スペース区切り） |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s8": "> **注意**: :ref:`WebView_GenericAttributesTag` のid属性は指定不可。:ref:`WebView_FocusAttributesTag` のaccesskey属性は指定不可。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| listName | ○ | | 選択項目のリストの属性名 |\n| elementLabelProperty | ○ | | リスト要素からラベルを取得するためのプロパティ名 |\n| elementValueProperty | ○ | | リスト要素から値を取得するためのプロパティ名 |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性。先頭要素のみautofocus属性を出力する |\n| elementLabelPattern | | `$LABEL$` | ラベルを整形するためのパターン。プレースホルダ: `$LABEL$`（ラベル）、`$VALUE$`（値） |\n| listFormat | | `br` | リスト表示フォーマット: br / div / span / ul / ol / sp（スペース区切り） |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s9": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | XHTMLのname属性 |\n| type | ○ | | XHTMLのtype属性 |\n| uri | ○ | | URI（:ref:`WebView_SpecifyUri` 参照） |\n| disabled | | | XHTMLのdisabled属性 |\n| value | | | XHTMLのvalue属性 |\n| src | | | XHTMLのsrc属性 |\n| alt | | | XHTMLのalt属性 |\n| usemap | | | XHTMLのusemap属性 |\n| align | | | XHTMLのalign属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| allowDoubleSubmission | | `true` | 二重サブミットを許可するか否か（true: 許可 / false: 不許可） |\n| secure | | | URIをhttpsにするか否か（true: https / false: http） |\n| displayMethod | | | 認可判定・開閉局判定に基づく表示制御: NODISPLAY（非表示）/ DISABLED（非活性）/ NORMAL（通常表示） |",
+    "s10": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | XHTMLのname属性 |\n| uri | ○ | | URI（:ref:`WebView_SpecifyUri` 参照） |\n| value | | | XHTMLのvalue属性 |\n| type | | | XHTMLのtype属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| allowDoubleSubmission | | `true` | 二重サブミットを許可するか否か（true: 許可 / false: 不許可） |\n| secure | | | URIをhttpsにするか否か（true: https / false: http） |\n| displayMethod | | | 認可判定・開閉局判定に基づく表示制御: NODISPLAY（非表示）/ DISABLED（非活性）/ NORMAL（通常表示） |",
+    "s11": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | XHTMLのname属性 |\n| uri | ○ | | URI（:ref:`WebView_SpecifyUri` 参照） |\n| shape | | | XHTMLのshape属性 |\n| coords | | | XHTMLのcoords属性 |\n| allowDoubleSubmission | | `true` | 二重サブミットを許可するか否か（true: 許可 / false: 不許可） |\n| secure | | | URIをhttpsにするか否か（true: https / false: http） |\n| displayMethod | | | 認可判定・開閉局判定に基づく表示制御: NODISPLAY（非表示）/ DISABLED（非活性）/ NORMAL（通常表示） |",
+    "s12": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | XHTMLのname属性 |\n| type | ○ | | XHTMLのtype属性 |\n| uri | ○ | | URI（:ref:`WebView_SpecifyUri` 参照） |\n| disabled | | | XHTMLのdisabled属性 |\n| value | | | XHTMLのvalue属性 |\n| src | | | XHTMLのsrc属性 |\n| alt | | | XHTMLのalt属性 |\n| usemap | | | XHTMLのusemap属性 |\n| align | | | XHTMLのalign属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| secure | | | URIをhttpsにするか否か（true: https / false: http） |\n| popupWindowName | | | ポップアップのウィンドウ名（window.open第2引数） |\n| popupOption | | | ポップアップのオプション情報（window.open第3引数） |\n| displayMethod | | | 認可判定・開閉局判定に基づく表示制御: NODISPLAY（非表示）/ DISABLED（非活性）/ NORMAL（通常表示） |",
+    "s13": "共通属性: :ref:`WebView_GenericAttributesTag`, :ref:`WebView_FocusAttributesTag`\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | XHTMLのname属性 |\n| uri | ○ | | URI（:ref:`WebView_SpecifyUri` 参照） |\n| value | | | XHTMLのvalue属性 |\n| type | | | XHTMLのtype属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| secure | | | URIをhttpsにするか否か（true: https / false: http） |\n| popupWindowName | | | ポップアップのウィンドウ名（window.open第2引数） |\n| popupOption | | | ポップアップのオプション情報（window.open第3引数） |\n| displayMethod | | | 認可判定・開閉局判定に基づく表示制御: NODISPLAY（非表示）/ DISABLED（非活性）/ NORMAL（通常表示） |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

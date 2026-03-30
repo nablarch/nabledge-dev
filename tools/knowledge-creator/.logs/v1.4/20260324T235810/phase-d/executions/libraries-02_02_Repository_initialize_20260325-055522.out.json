@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_02_Repository_initialize",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "初期化対象クラスの定義 (Java code example)",
+      "description": "The Java code example showing how to implement the `Initializable` interface is entirely missing. The source provides a concrete implementation with `public void initialize()` method signature inside `public class Message implements Initializable`. The note that this is architect-level code and that 'application programmers do not usually write this kind of implementation' (通常、各アプリケーション・プログラマはこのような実装を行わない) is also omitted. This is decision-necessary information for developers to understand the implementation pattern and method signature.",
+      "source_evidence": "public class Message implements Initializable {\n    public void initialize() {\n        // 初期化処理を実行する。\n    }\n}\n// 通常、各アプリケーション・プログラマはこのような実装を行わない。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — property table, 必須 column",
+      "description": "The knowledge file adds a '必須' (required) column with '○' for `initializeList`, but the source table has only two columns: 'property名' and '設定内容'. There is no indication in the source that `initializeList` is marked as required. This '必須 ○' designation is fabricated.",
+      "source_evidence": "Source table columns: 'property名' | '設定内容' — no required/必須 column exists."
+    }
+  ]
+}

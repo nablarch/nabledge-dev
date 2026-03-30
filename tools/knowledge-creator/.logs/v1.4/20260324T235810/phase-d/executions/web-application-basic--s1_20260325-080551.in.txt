@@ -1,0 +1,523 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/CustomTag/basic.rst`
+- Format: `rst`
+
+```
+.. _`import_taglib_dilective`:
+
+------------------------------
+taglibディレクティブの指定方法
+------------------------------
+
+JSPでカスタムタグを使用する場合、taglibディレクティブを指定する。
+
+taglibを使用するJSPの先頭で、prefixを指定して宣言を行う。
+指定したprefixを用いてカスタムタグを使用する。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+     
+     <?xml version="1.0" encoding="UTF-8" ?>
+     <%-- 【説明】taglibディレクティブの宣言 --%>
+     <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+     
+     <%-- 【説明】
+           taglibディレクティブの宣言とカスタムタグの使用例以外は省略
+           prefixを用いてカスタムタグを使用 --%>
+     <n:form>
+       <%-- 【説明】フォーム内の処理は省略 --%>
+     </n:form>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`uri_specifing`:
+
+-------------
+URIの指定方法
+-------------
+
+カスタムタグでURIを指定する方法を示す。
+また、相対パス指定時にURIのプロトコルを切り替える方法を示す。
+
+カスタムタグでURIを指定する方法は次の2種類がある。
+
+* 絶対URLによる指定
+* コンテキストルートからの相対パスによる指定
+
+実装例では、以下のフォルダ構成を想定する。
+
+  ::
+
+    web（コンテキストルート）
+     +-img
+     |  +-header_bar.jpg
+     |  +-sample.jpg
+     +-app_header.jsp
+     +-sample
+        +-sample001.jsp
+        +-sample002.jsp
+
+
+絶対URLによる指定
+==================
+
+http又はhttpsから始まるパスが **絶対URL** である。
+この指定方法では、パスがそのままURIとして使用される。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】URIの指定以外は省略 --%>
+     <n:a href="http://www.tis.co.jp/" >tis</n:a>
+
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     http://www.tis.co.jp
+   
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+コンテキストルートからの相対パスによる指定
+==========================================
+
+/（スラッシュ）から始まるパスが **コンテキストルートからの相対パス** である。
+この指定方法では、先頭にコンテキストルートのパスが付加されてURIとして使用される。
+
+* JSPの実装例
+
+  header_bar.jpgへのパスを指定する場合
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】URIの指定以外は省略 --%>
+     <n:img src="/img/header_bar.jpg" alt="header" />
+
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     <コンテキストルートのパス>/img/header_bar.jpg
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+HTTPとHTTPSの切り替え
+=====================
+
+コンテキストルートからの相対パスでURIを指定しながらプロトコルを **切り替える** 場合、カスタムタグのsecure属性を指定する。
+また、httpからhttpsへの切り替えで使用するURIを指定するため、ポート番号(http用とhttps用)とホストを設定する必要がある。
+（ポート番号とホストの設定は、 `カスタムタグのデフォルト値の設定 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_HowToSettingCustomTag.html#webview-customtagconfig>`_ 参照）
+
+.. note::
+   secure属性は、 http→https 又は https→http とプロトコルを切り替える場合に指定する。
+   http→http 又は https→https とプロトコルを切り替えない場合にはsecure属性を指定しない。
+   
+   
+JSPから、画像ファイルにアクセスする例を示す。
+（カスタムタグの設定値は、ホスト名：localhost、http用のポート番号：8080、https用のポート番号：443とする。）
+
+* JSPの実装例
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           URIの指定以外は省略。
+           secure="true"でhttp→https。
+           secure="false"でhttps→http。 --%>
+     <n:img src="/img/sample.jpg" alt="sample" secure="true" />
+
+* HTML出力例
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     # secure="true"の場合
+     https://localhost:443/img/sample.jpg
+     
+     # secure="false"の場合
+     http://localhost:8080/img/sample.jpg
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`for_data_passing`:
+
+-------------------------------------------
+JSPとActionクラスの間でデータを受け渡す方法
+-------------------------------------------
+
+JSPとActionクラスの間でデータを受け渡す場合、以下の方法でname属性を指定すればよい。
+この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。
+
+
+Map型/フォームのプロパティを受け渡す場合
+============================================
+
+JSPとActionクラスの間でMap型又はフォームのプロパティを受け渡す場合、
+カスタムタグのname属性に次の形式で値を指定する。
+
+  .. code-block:: none
+  
+     <リクエストスコープ上に設定したオブジェクトの変数名>.<プロパティ名>
+     
+
+* Actionクラスの実装例
+
+  Actionクラス→更新画面→Actionクラスの例を示す。
+
+  JSPにデータを受け渡すActionクラス。
+  
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+             /* 【説明】
+                 リクエストにプライマリキー（W11AC03.userId）が設定されているとする。
+                 プライマリキーの精査。 */
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             /* 【説明】
+                 エラー処理は省略。
+                 プライマリキーをプロパティとするW11AC03Formの生成。 */
+             W11AC03Form form = formCtx.createObject();
+
+             /* 【説明】
+                 プライマリキーで検索を行い、更新対象のデータを取得。
+                 取得したデータを、リクエストスコープに設定。
+                 SqlResultSetはListのサブクラスである。 */
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet userInfo = component.selectUsers(form);
+             ctx.setRequestScopedVar("W11AC03", userInfo.get(0));
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】データの受け渡し以外は省略 --%>
+     <n:form>
+       <%-- 【説明】テキストボックスから、サブミット先のActionクラスでW11AC03.kanjiNameとして扱うデータを入力する。 --%>
+       <n:text name="W11AC03.kanjiName" />
+       <n:submit cssClass="mainBtn" type="button" name="confirm" value="確認" uri="/action/ss11AC/W11AC03Action/RW11AC0302" />
+     </n:form>
+   
+   
+* Actionクラスの実装例
+
+  JSPからデータを受け取るActionクラス。
+
+  .. code-block:: java
+
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+             // 【説明】更新画面で入力したデータに対するバリデーション
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             // 【説明】エラーがあれば、ApplicationException例外を投げる。
+             formCtx.abortIfInvalid();
+
+             // 【説明】フォームを生成して使用する。
+             W11AC03Form form = formCtx.createObject();
+             
+             // 【説明】以下の処理は省略。
+         }
+     }
+
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+List型/配列の要素のプロパティを受け渡す場合
+===========================================
+
+JSPとActionクラスの間でList型又は配列の要素のプロパティを受け渡す場合、
+カスタムタグのname属性に次の形式で値を指定する。
+
+  .. code-block:: none
+
+     <リクエストスコープ上に設定したオブジェクトの変数名>[index].<プロパティ名>
+
+
+* Actionクラスの実装例
+
+  JSPにデータを受け渡すActionクラス。
+
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+             /* 【説明】
+                 リクエストにプライマリキー（W11AC03.userId）が設定されているとする。
+                 プライマリキーの精査。 */
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             /* 【説明】
+                 エラー処理は省略。
+                 プライマリキーをプロパティとするW11AC03Formの生成。 */
+             W11AC03Form condition = formCtx.createObject();
+
+             /* 【説明】
+                 プライマリキーで検索を行い、検索結果をエンティティの配列に変換してW11AC03Formに設定。
+                 その後、検索結果を設定したフォームをリクエストスコープに設定。 */
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet emailAddressList = component.selecemailAddressList(condition);
+             
+             UserEmailAddressEntity[] emailAddressArray = new UserEmailAddressEntity[emailAddressList.size()];
+             for (int i = 0; i < emailAddressList.size(); i++) {
+                 emailAddressArray[i].setEmailAddress(emailAddressList.get(i).getString("emailAddress"));
+             }
+             
+             W11AC03Form form = new W11AC03Form();
+             form.setUserEmailAddressArraySize(emailAddressArray.length);
+             form.setUserEmailAddressArray(emailAddressArray);
+             ctx.setRequestScopedVar("W11AC03", form);
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】入力フォーム以外は省略 --%>
+     <n:form>
+       <%-- 【説明】
+             リクエストスコープに、W11AC03.userEmailAddressArraySizeをキーとしてメールアドレス件数が設定されているとする。
+             また、indexにループの回数が設定される。 --%>
+       <c:forEach begin="0" end="${W11AC03.userEmailAddressArraySize}" var="index">
+         <%-- 【説明】テキストボックスから、ActionクラスでW11AC03.userEmailAddressArray[index].emailAddressとして扱うデータを入力する。 --%>
+         <n:text name="W11AC03.userEmailAddressArray[${index}].emailAddress" />
+       </c:forEach>
+       <%-- 【説明】フォームのプロパティが任意長配列の場合、入力画面で配列長をサブミットする必要がある。 --%>
+       <n:hidden name="W11AC03.userEmailAddressArraySize" />
+       <n:submit cssClass="buttons" type="button" name="update" value="確認" uri="/action/ss11AC/W11AC03Action/RW11AC0302" />
+     </n:form>
+   
+   
+* Actionクラスの実装例
+
+  JSPからデータを受け取るActionクラス。
+  
+  .. code-block:: java
+
+     public class W11AC03Action {
+         // 【説明】受け取ったデータの取り扱い以外は省略。
+         public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+
+             // 【説明】 入力データの単項目精査。
+             ValidationContext<W11AC03Form> formCtx = 
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             
+             // 【説明】 エラーがあれば、ApplicationException例外を投げる。
+             formCtx.abortIfInvalid();
+
+             // 【説明】フォームを生成して使用する。
+             W11AC03Form form = formCtx.createObject();
+             
+             // 【説明】以降の処理は省略。
+         }
+     }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`howto_window_scope`:
+
+--------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-basic--s1`
+
+```json
+{
+  "id": "web-application-basic--s1",
+  "title": "Webアプリケーション（基本）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "taglibディレクティブの指定方法",
+      "hints": [
+        "taglibディレクティブ",
+        "prefix宣言",
+        "カスタムタグ",
+        "JSP実装",
+        "uri=http://tis.co.jp/nablarch",
+        "n:form"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "URIの指定方法",
+      "hints": [
+        "URIの指定",
+        "絶対URL",
+        "コンテキストルートからの相対パス",
+        "secure属性",
+        "プロトコル切り替え",
+        "HTTPS切り替え",
+        "n:img",
+        "n:a"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "JSPとActionクラスの間でデータを受け渡す方法",
+      "hints": [
+        "name属性",
+        "データ受け渡し",
+        "リクエストスコープ",
+        "Map型",
+        "List型",
+        "配列index",
+        "JSPとActionクラス",
+        "任意長配列",
+        "setRequestScopedVar",
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "ValidationContext",
+        "n:text",
+        "n:hidden"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ウィンドウスコープの使い方",
+      "hints": [
+        "ウィンドウスコープ",
+        "windowScope",
+        "howto_window_scope"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPでカスタムタグを使用する場合、taglibディレクティブを指定する。JSPの先頭でprefixを宣言し、そのprefixを用いてカスタムタグを使用する。\n\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n\n<n:form>\n  <%-- フォーム内の処理 --%>\n</n:form>\n```",
+    "s2": "カスタムタグでURIを指定する方法は2種類ある。\n\n### 絶対URLによる指定\n\nhttpまたはhttpsから始まるパス。パスがそのままURIとして使用される。\n\n```jsp\n<n:a href=\"http://www.tis.co.jp/\">tis</n:a>\n```\n\n出力URI: `http://www.tis.co.jp`\n\n### コンテキストルートからの相対パスによる指定\n\n`/`（スラッシュ）から始まるパス。先頭にコンテキストルートのパスが付加されてURIとして使用される。\n\n```jsp\n<n:img src=\"/img/header_bar.jpg\" alt=\"header\" />\n```\n\n出力URI: `<コンテキストルートのパス>/img/header_bar.jpg`\n\n### HTTPとHTTPSの切り替え\n\nコンテキストルートからの相対パスでプロトコルを切り替える場合、カスタムタグのsecure属性を指定する。httpとhttps用のポート番号とホストを設定する必要がある。\n\n> **注意**: secure属性はhttp→httpsまたはhttps→httpのプロトコル切り替え時のみ指定する。同一プロトコル（http→http、https→https）の場合は指定しない。\n\n```jsp\n<%-- secure=\"true\"でhttp→https、secure=\"false\"でhttps→http --%>\n<n:img src=\"/img/sample.jpg\" alt=\"sample\" secure=\"true\" />\n```\n\n```\n# secure=\"true\"の場合\nhttps://localhost:443/img/sample.jpg\n\n# secure=\"false\"の場合\nhttp://localhost:8080/img/sample.jpg\n```",
+    "s3": "JSPとActionクラスの間でデータを受け渡す場合、カスタムタグのname属性に以下の形式で値を指定する。この指定方法により、データがどのスコープまたはパラメータに設定されているかを意識せずに使用できる。\n\n### Map型/フォームのプロパティを受け渡す場合\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>.<プロパティ名>\n```\n\n**Actionクラス（JSPへデータを渡す）**:\n```java\nctx.setRequestScopedVar(\"W11AC03\", userInfo.get(0));\nreturn new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n```\n\n**JSP（name属性の指定例）**:\n```jsp\n<n:text name=\"W11AC03.kanjiName\" />\n<n:submit cssClass=\"mainBtn\" type=\"button\" name=\"confirm\" value=\"確認\"\n    uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n```\n\n**Actionクラス（JSPからデータを受け取る）**:\n```java\nValidationContext<W11AC03Form> formCtx =\n    ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\nformCtx.abortIfInvalid();\nW11AC03Form form = formCtx.createObject();\n```\n\n### List型/配列の要素のプロパティを受け渡す場合\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>[index].<プロパティ名>\n```\n\n**JSP（インデックスを使用した配列要素の指定例）**:\n```jsp\n<c:forEach begin=\"0\" end=\"${W11AC03.userEmailAddressArraySize}\" var=\"index\">\n  <n:text name=\"W11AC03.userEmailAddressArray[${index}].emailAddress\" />\n</c:forEach>\n<%-- フォームのプロパティが任意長配列の場合、入力画面で配列長をサブミットする必要がある --%>\n<n:hidden name=\"W11AC03.userEmailAddressArraySize\" />\n```\n\n**Actionクラス（JSPからデータを受け取る）**:\n```java\nValidationContext<W11AC03Form> formCtx =\n    ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\nformCtx.abortIfInvalid();\nW11AC03Form form = formCtx.createObject();\n```",
+    "s4": "ウィンドウスコープは、同一ブラウザウィンドウ内の複数のHTTPリクエストをまたいでデータを保持するスコープである。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 7
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

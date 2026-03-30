@@ -1,0 +1,410 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/mobile/source/01_iOS/02_Encryption/01_Encryption.rst`
+- Format: `rst`
+
+```
+.. _`iOS_encryption`:
+
+==========================================
+データの暗号化
+==========================================
+
+-----
+概要
+-----
+データの暗号化／復号に必要な機能を提供する。
+
+
+
+
+-----
+特徴
+-----
+
+* | **暗号機能の隠蔽**
+  | 本機能を使用することで、利用者は暗号方式を意識することなくデータの暗号化/復号を行える。
+* | **暗号化機能の変更性の向上**
+  | 本機能を使用することで、「テスト時に暗号化を行わず平文で出力する」といった変更を、呼び出し元を変更することなく実現できる。
+* | **基本的な暗号機能の提供**
+  | :ref:`implementated` に記述されている暗号方式であれば、カスタマイズすることなく利用できる。
+
+
+
+
+----
+要求
+----
+
+.. _implementated:
+
+実装済み
+========
+* AES128ビット方式の暗号化/復号機能
+
+未実装
+========
+* DES方式の暗号化/復号機能
+* RSA方式の暗号化/復号機能
+* DUKPT方式の暗号化/復号および鍵管理機能
+* 基本的な鍵管理機能
+* 暗号鍵、メタ情報管理機能
+
+未検討
+========
+* iOS Keychainによる鍵管理機能
+
+
+
+
+----
+構造
+----
+
+クラス図
+========
+
+| 
+
+.. image:: _images/01/encryption_classDiagram.jpg
+
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~
+
+============================== ===========================================================================================
+インタフェース名               概要
+============================== ===========================================================================================
+NMEncryption                   | 暗号化/復号を行うためのインタフェース。
+                               | 暗号方式ごとに本インタフェースの実装クラスを作成する。本インタフェースを実装したクラス及
+                                 びインスタンスを暗号クラスと呼ぶ。
+NMKeyManager                   | 鍵管理を行うインタフェース。
+                               | 鍵管理方式ごとに本インタフェースの実装クラスを作成する。本インタフェースを実装したクラス及
+                                 びインスタンスを鍵管理クラスと呼ぶ。
+============================== ===========================================================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~
+
+============================== ===========================================================================================
+クラス名                       概要
+============================== ===========================================================================================
+NMEncryptionCreator            設定書ファイルを元に、暗号クラスのインスタンスを生成するクラス。設定書ファイルの記載方法\
+                               については :ref:`encryptionPropertyList` に、本クラスの使用方法については\
+                               :ref:`houToUseEncryption` に記載する。
+MNAesEncryption                AES128ビット暗号化/復号を実装したクラス。本実装クラスの設定方法については\
+                               :ref:`propertyAboutAesEnc` に記載する。
+NMPlainTextEncryption          暗号化を行わない、空実装クラス。
+============================== ===========================================================================================
+
+
+
+
+-------------
+使用方法
+-------------
+
+本機能の使用方法について記載する。 ユーザは暗号化/復号を行うために、以下の2つのステップを実施する必要がある。
+
+ #. プロパティリストの作成
+ #. APIの呼び出し
+
+以下に各ステップの詳細を記載する。
+
+
+.. _encryptionPropertyList:
+
+プロパティリストの作成
+============================
+
+本機能では暗号方式ごとにプロパティリスト形式で設定書(暗号化設定ファイル)を作成する必要がある。
+設定書では以下の事柄についての設定を行う。
+
+* 暗号クラスの指定(Encryption.class)
+* 暗号クラスの初期値パラメータの指定(Encryption.initializeList)
+
+設定例を以下に示す。
+
+.. image:: _images/01/encryption_example_propertyList.png
+
+プロパティの説明を下記に示す。
+
+========================= ======================== ======================================================================
+key                       type                     説明
+========================= ======================== ======================================================================
+Encryption                Dictionary               暗号クラスの設定
+Encryption.class          String                   使用する暗号クラス名
+Encryption.initializeList Dictionary               使用する暗号クラスの初期値パラメータ群
+========================= ======================== ======================================================================
+ 
+
+初期値パラメータ
+^^^^^^^^^^^^^^^^
+
+初期値パラメータはクラスによって異なる。それぞれのクラスの初期値パラメータについて記載する。
+
+
+.. _propertyAboutAesEnc:
+
+暗号クラス
+~~~~~~~~~~~~~~
+
+\a) NMAesEncryption
+
+  初期値パラメータ一覧
+  
+  ========================= ======================== ======================================================================
+  key                       type                     説明
+  ========================= ======================== ======================================================================
+  keyManager                Dictionary               鍵管理クラスの設定
+  keyManager.class          String                   使用する鍵管理クラス名
+  keyManager.initializeList Dictionary               鍵管理クラスの初期値パラメータ。
+                                                     詳細は使用する鍵管理クラスの初期値パラメータを参照すること。
+  mode                      String                   使用する動作モード。"CBC"または"ECB"のどちらかを指定可能。
+  padding                   String                   使用するパディング種類。"PKCS7"または"NOTHING"のどちらかを指定可能。
+  ========================= ======================== ======================================================================
+  
+  設定例
+  
+  .. image:: _images/01/encryption_example_aesPropertyList.png
+  
+\b) NMPlainTextEncryption
+ 
+  特に無し
+
+鍵管理クラス
+~~~~~~~~~~~~~~~
+
+フレームワークで提供する実装クラスなし
+
+
+
+.. _houToUseEncryption:
+
+API使用例
+===========
+
+\a) 暗号化実装例
+
+ .. code-block:: objective-c
+ 
+  NSData *plainData = [@"暗号化対象文字列" dataUsingEncoding:NSUTF8StringEncoding];
+  
+  // 暗号化に使用する鍵の名称および、暗号化に使用する初期化ベクトルの取得処理は別途実装が必要である。
+  // 初期化ベクトルを使用しない暗号方式の場合はnilを指定できる。
+  NSData *initializeVector = [self initializeVector];
+  NSString *keyName = [self keyName];
+  NSError *error = nil;
+  
+  id<NMEncryption> encryptor = [NMEncryptionCreator createEncryptionForName:@"設定書ファイル名"];
+  NSData *encryptData = [self.encryption encryptForKeyName:keyName
+                                                      data:plainData
+                                             initialVector:initializeVector
+                                                     error:&error];
+
+
+\b) 復号実装例
+
+  .. code-block:: objective-c
+  
+   NSData *encryptData = [@"gwycQJ0T0qTA\/W+cQBSrzNF6PxZ+vxFQIQBKAFQmzC2" dataUsingEncoding:NSUTF8StringEncoding];
+   
+   // 復号に使用する鍵の名称および、復号に使用する初期化ベクトルの取得処理は別途実装が必要である。
+   // 初期化ベクトルを使用しない暗号方式の場合はnilを指定できる。
+   NSData *initializeVector = [self initializeVector];
+   NSString *keyName = [self keyName];
+   NSError *error = nil;
+   
+   id<NMEncryption> encryptor = [NMEncryptionCreator createEncryptionForName:@"設定書ファイル名"];
+   NSData *decryptData = [self.encryption decryptForKeyName:keyName
+                                                       data:encryptData
+                                              initialVector:initializeVector
+                                                      error:&error];
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-01_Encryption--s1`
+
+```json
+{
+  "id": "biz-samples-01_Encryption--s1",
+  "title": "データの暗号化",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "データ暗号化",
+        "復号",
+        "暗号化機能提供"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "暗号機能の隠蔽",
+        "暗号化変更性",
+        "テスト時平文出力",
+        "AES暗号化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "AES128ビット",
+        "実装済み暗号方式",
+        "未実装暗号方式",
+        "DES",
+        "RSA",
+        "DUKPT",
+        "iOS Keychain",
+        "鍵管理"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構造",
+      "hints": [
+        "NMEncryption",
+        "NMKeyManager",
+        "NMEncryptionCreator",
+        "MNAesEncryption",
+        "NMPlainTextEncryption",
+        "クラス構造",
+        "インタフェース定義"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "使用方法",
+      "hints": [
+        "NMAesEncryption",
+        "プロパティリスト設定",
+        "Encryption.class",
+        "Encryption.initializeList",
+        "keyManager.class",
+        "mode",
+        "padding",
+        "encryptForKeyName",
+        "decryptForKeyName",
+        "暗号化実装",
+        "復号実装"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データの暗号化／復号に必要な機能を提供する。",
+    "s2": "- **暗号機能の隠蔽**: 利用者は暗号方式を意識することなくデータの暗号化/復号を行える。\n- **暗号化機能の変更性の向上**: テスト時に暗号化を行わず平文で出力するといった変更を、呼び出し元を変更することなく実現できる。\n- **基本的な暗号機能の提供**: :ref:`implementated` に記述されている暗号方式であれば、カスタマイズすることなく利用できる。",
+    "s3": "**実装済み**\n- AES128ビット方式の暗号化/復号機能\n\n**未実装**\n- DES方式の暗号化/復号機能\n- RSA方式の暗号化/復号機能\n- DUKPT方式の暗号化/復号および鍵管理機能\n- 基本的な鍵管理機能\n- 暗号鍵、メタ情報管理機能\n\n**未検討**\n- iOS Keychainによる鍵管理機能",
+    "s4": "**インタフェース**:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `NMEncryption` | 暗号化/復号を行うためのインタフェース。暗号方式ごとに実装クラスを作成する。 |\n| `NMKeyManager` | 鍵管理を行うインタフェース。鍵管理方式ごとに実装クラスを作成する。 |\n\n**クラス**:\n\n| クラス名 | 概要 |\n|---|---|\n| `NMEncryptionCreator` | 設定書ファイルを元に暗号クラスのインスタンスを生成するクラス。使用方法は :ref:`houToUseEncryption` 参照。 |\n| `MNAesEncryption` | AES128ビット暗号化/復号を実装したクラス。設定方法は :ref:`propertyAboutAesEnc` 参照。 |\n| `NMPlainTextEncryption` | 暗号化を行わない空実装クラス。 |",
+    "s5": "暗号化/復号のために以下の2ステップが必要:\n1. プロパティリストの作成\n2. APIの呼び出し\n\n**プロパティリスト設定** (`Encryption` キー):\n\n| key | type | 説明 |\n|---|---|---|\n| Encryption | Dictionary | 暗号クラスの設定 |\n| Encryption.class | String | 使用する暗号クラス名 |\n| Encryption.initializeList | Dictionary | 使用する暗号クラスの初期値パラメータ群 |\n\n**NMAesEncryption 初期値パラメータ**:\n\n| key | type | 説明 |\n|---|---|---|\n| keyManager | Dictionary | 鍵管理クラスの設定 |\n| keyManager.class | String | 使用する鍵管理クラス名 |\n| keyManager.initializeList | Dictionary | 鍵管理クラスの初期値パラメータ |\n| mode | String | 動作モード。\"CBC\"または\"ECB\"のどちらかを指定可能。 |\n| padding | String | パディング種類。\"PKCS7\"または\"NOTHING\"のどちらかを指定可能。 |\n\n**NMPlainTextEncryption**: 初期値パラメータなし\n\n**鍵管理クラス**: フレームワーク提供の実装クラスなし\n\n**暗号化実装例** (Objective-C):\n```objective-c\nNSData *plainData = [@\"暗号化対象文字列\" dataUsingEncoding:NSUTF8StringEncoding];\n// 鍵名称および初期化ベクトルの取得処理は別途実装が必要。\n// 初期化ベクトルを使用しない暗号方式の場合はnilを指定できる。\nNSData *initializeVector = [self initializeVector];\nNSString *keyName = [self keyName];\nNSError *error = nil;\n\nid<NMEncryption> encryptor = [NMEncryptionCreator createEncryptionForName:@\"設定書ファイル名\"];\nNSData *encryptData = [self.encryption encryptForKeyName:keyName\n                                                    data:plainData\n                                           initialVector:initializeVector\n                                                   error:&error];\n```\n\n**復号実装例** (Objective-C):\n```objective-c\nNSData *encryptData = [@\"gwycQJ0T0qTA\\/W+cQBSrzNF6PxZ+vxFQIQBKAFQmzC2\" dataUsingEncoding:NSUTF8StringEncoding];\n// 鍵名称および初期化ベクトルの取得処理は別途実装が必要。\n// 初期化ベクトルを使用しない暗号方式の場合はnilを指定できる。\nNSData *initializeVector = [self initializeVector];\nNSString *keyName = [self keyName];\nNSError *error = nil;\n\nid<NMEncryption> encryptor = [NMEncryptionCreator createEncryptionForName:@\"設定書ファイル名\"];\nNSData *decryptData = [self.encryption decryptForKeyName:keyName\n                                                    data:encryptData\n                                           initialVector:initializeVector\n                                                   error:&error];\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

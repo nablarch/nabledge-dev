@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 概要 section",
+      "description": "JavaMail API の使用が記載されていない。ソースには「逐次メール送信バッチでは、メール送信ライブラリとして、JavaMail API を使用する」と明記されており、実装上重要な技術選択・依存情報。",
+      "source_evidence": "なお、逐次メール送信バッチでは、メール送信ライブラリとして、JavaMail API を使用する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 概要 section",
+      "description": "「メール送信要求APIを呼び出す毎に一つ作成され、メール送信要求一つにつきメールが一通送信される」という制約が Knowledge File のどのセクションにも記載されていない。1呼び出し＝1要求＝1通という仕様はAPI設計上重要な制約。",
+      "source_evidence": "メール送信要求は、業務アプリケーションがメール送信要求APIを呼び出す毎に一つ作成され、メール送信要求一つにつきメールが一通送信される。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 逐次メール送信バッチ section",
+      "description": "バッチ起動時の引数名 `mailSendPatternId` が Knowledge File に記載されていない。s2 では「起動引数に処理対象のメール送信パターンIDを指定する」と説明しているが、具体的な引数名が欠落しており、実装時に必要な情報。",
+      "source_evidence": "バッチ起動時の引数として「mailSendPatternId」を指定した場合には、指定されたメール送信パターンIDと一致する送信要求データが監視対象となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "source: 概要 section",
+      "description": "非同期処理方式を採用した2つの理由（①DBトランザクションに含めることができる、②メールサーバー障害・ネットワーク障害の影響を業務アプリケーションに波及させない）が Knowledge File に記載されていない。アーキテクチャ選択の根拠として有益な情報。",
+      "source_evidence": "* 業務アプリケーションから見て、メール送信処理を業務アプリケーションのDBトランザクションに含めることができる。\n* メールサーバー障害やネットワーク障害によりメール送信が遅延もしくは失敗しても、業務アプリケーションの処理への影響を与えないようにすることができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[4] (s5)",
+      "description": "s5 の実装例コードで使用されているメソッド `setFrom`、`setSubject`、`setTemplateId`、`setLang` がヒントに含まれていない。",
+      "source_evidence": "ctx.setFrom(\"from@tis.co.jp\");\nctx.setSubject(\"件名\");\nctx.setTemplateId(\"テンプレートID\");\nctx.setLang(\"ja\");"
+    }
+  ]
+}

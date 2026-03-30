@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_FileDownload--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 (ファイル名のエンコーダの設定 / XML code block)",
+      "description": "The XML code block in s7 omits the comment that explains the top-to-bottom matching order of User-Agent patterns. The source contains an explicit comment stating \"エントリに定義した順番で（上から下に）、User-Agentヘッダのパターンマッチが行われる\" which is important for developers who customize encoder entries — they need to know that order matters.",
+      "source_evidence": "<!-- エントリに定義した順番で（上から下に）、User-Agentヘッダのパターンマッチが行われる。本設定例であれば、「.*MSIE.*」「.*WebKit.*」「.*Gecko.*」の順番でパターンマッチが行われる。 -->"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (未実装)",
+      "description": "The unimplemented download history feature description is reduced to a single line. The source provides context on the planned approach: storing temp files on the server (including for byte arrays, char sequences, and input streams), naming temp files with the download filename+extension, and retaining information to correlate with HTTP logs. While this is an unimplemented feature, the planned design details were provided in the source.",
+      "source_evidence": "ダウンロードの際に使用した一時ファイルをサーバ上に保管することで履歴管理できる（byte配列、文字シーケンスを使う場合だけでなく、入力ストリームも保管する。また保管する一時ファイル名には、ダウンロードファイル名（+拡張子）が含まれるようにする。また、HTTPログと紐付けられるような情報を残す。"
+    }
+  ]
+}

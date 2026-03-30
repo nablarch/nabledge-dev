@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-07_UserAgent--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "Section s5 documents UserAgentPatternSetting properties including defaultType, defaultName, and defaultVersion, but these property names are absent from the hints array. They are key lookup terms users would search for when configuring default fallback behavior.",
+      "source_evidence": "Source table for UserAgentPatternSetting lists properties: defaultType, defaultName, defaultVersion with detailed descriptions about their use when no patterns match or an error occurs."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5 — ItemPattern nameIndex property description",
+      "description": "The description for ItemPattern's nameIndex property omits the second-level fallback: when nameIndex is not specified AND the item type (name) is also not specified, the value falls back to defaultName from UserAgentPatternSetting. Knowledge file only states '未指定時は項目名称が項目タイプと同値', missing the downstream fallback chain.",
+      "source_evidence": "Source: 「指定がない場合、項目名称は項目タイプと同値となる。項目タイプも指定されていない場合、defaultNameで指定された値となる。」"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "toolbox-03-HtmlCheckTool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index.s1.title",
+      "description": "The index title for s1 is \"HTML4.01との相違点\" but the section content covers 目的、仕様 (check specifications), the JavaScript \"--\" warning, AND HTML4.01との相違点. The title does not reflect the full content of the section.",
+      "source_evidence": "Source has top-level h2 sections 目的 and 仕様 (including the JS warning note and all check specs) that are merged into s1, plus the h3 subsection HTML4.01との相違点. The index title only names the h3 subsection."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "The default prohibited tags/attributes CSV list is truncated. The knowledge file shows only 5 entries, omitting 7 entries from the source: `body,text`, `table,bgcolor`, `td,height`, `th,bgcolor`, `th,height`, `th,nowrap`, `tr,bgcolor`. A user asking \"what are the default prohibited tags?\" would receive an incomplete answer.",
+      "source_evidence": "Source lists all 12 default CSV entries under 使用禁止タグ・属性のカスタマイズ方法: body/bgcolor, body/link, body/text, table/align, table/bgcolor, td/bgcolor, td/height, td/nowrap, th/bgcolor, th/height, th/nowrap, tr/bgcolor."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The specific error message produced when JavaScript contains consecutive \"--\" characters is omitted. The knowledge file describes the issue and fix but omits the exact error text, which is useful for diagnosing test failures.",
+      "source_evidence": "Source note shows the exact error: `Lexical error at line 965, column 31.  Encountered: \"-\" (45), after : \"--\"`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "The Java code example adds a comment `// ファイル読み込み処理（省略）` that does not appear in the source, and the resulting code uses the variable `sb` without declaring it (the declaration `StringBuilder sb = new StringBuilder();` is in the omitted portion). The code as shown is logically incomplete and would be misleading to a developer trying to implement HtmlChecker.",
+      "source_evidence": "Source shows the full implementation including `StringBuilder sb = new StringBuilder();`, the InputStreamReader/FileInputStream setup, the char[] reading loop, and FileUtil.closeQuietly(reader). None of these appear in the knowledge file, yet `sb.toString()` is still referenced."
+    }
+  ]
+}

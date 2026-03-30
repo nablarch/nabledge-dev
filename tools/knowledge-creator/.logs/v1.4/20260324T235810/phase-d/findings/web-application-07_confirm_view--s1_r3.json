@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-07_confirm_view--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Step 1: リクエスト単体テストコードの追加",
+      "description": "Source provides the concrete test method implementation showing it calls `execute(\"testRW11AC0202\")`, which illustrates the standard Nablarch request test invocation pattern. This code example is absent from the knowledge file.",
+      "source_evidence": "@Test\npublic void testRW11AC0202() {\n    execute(\"testRW11AC0202\");\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "The s2 code example uses HttpResponse, HttpRequest, and ExecutionContext (same as in s1), but these class names are absent from s2's hints. Since hints are per-section, they should appear in s2 as well.",
+      "source_evidence": "public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) { ... }"
+    }
+  ]
+}

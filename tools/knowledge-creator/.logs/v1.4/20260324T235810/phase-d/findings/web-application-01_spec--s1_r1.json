@@ -1,0 +1,13 @@
+{
+  "file_id": "web-application-01_spec--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s3 / index[2]",
+      "description": "s3 は RST の参照ラベル `.. _user_register_specifications:` のみに対応する人工的なセクションで、本文は「なし」である。しかし index の hints に「ユーザ情報登録仕様」「機能仕様」が付与されており、これらのクエリを s3 にルーティングすると空のコンテンツが返る。実際の仕様内容は s4 にある。RST ラベルは直後の見出し（ユーザ情報登録機能の仕様）への参照用アノテーションであり、独立したセクションとして扱う必要はない。これらのヒント（特に「ユーザ情報登録仕様」「機能仕様」）は s4 に移動するか、s3 を削除して s4 に統合すべきである。",
+      "source_evidence": "RST source: `.. _user_register_specifications:` is a label directive immediately followed by the h2 heading `ユーザ情報登録機能の仕様`, not a standalone section. All specification content (画面仕様, 画面情報, テーブル仕様, 精査仕様, 登録処理仕様) appears under that heading."
+    }
+  ]
+}

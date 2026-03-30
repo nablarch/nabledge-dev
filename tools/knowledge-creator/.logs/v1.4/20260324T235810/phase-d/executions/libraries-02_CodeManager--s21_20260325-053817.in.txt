@@ -1,0 +1,450 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/03_Common/02_CodeManager.rst`
+- Format: `rst`
+
+```
+設定方法
+------------------------------------
+
+設定ファイル例
+=====================
+コード管理を使用する際は、リポジトリに "codeManager" というコンポーネント名で CodeManager インタフェースを実装したクラスを登録する必要がある。
+
+以下に CodeManager インタフェースのデフォルト実装である、BasicCodeManagerクラスを使用した設定例を示す。
+
+
+.. code-block:: xml
+
+
+    <!-- DbManagerの設定 -->
+    <component name="codeDbManager" class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+        <property name="dbTransactionName" value="code"/>
+    </component>
+
+    <component name="codeLoader"
+               class="nablarch.common.code.BasicCodeLoader">
+
+        <property name="dbManager" ref="codeDbManager"/>
+
+        <!-- コードパターンテーブルのスキーマ情報 -->
+        <property name="codePatternSchema">
+            <component class="nablarch.common.code.schema.CodePatternSchema">
+                <property name="tableName" value="CODE_PATTERN"/>
+                <property name="idColumnName" value="ID"/>
+                <property name="valueColumnName" value="VALUE"/>
+                <property name="patternColumnNames" value="PATTERN1,PATTERN2,PATTERN3"/>
+            </component>
+        </property>
+
+        <!-- コード名称テーブルのスキーマ情報 -->
+        <property name="codeNameSchema">
+            <component class="nablarch.common.code.schema.CodeNameSchema">
+                <property name="tableName" value="CODE_NAME"/>
+                <property name="idColumnName" value="ID"/>
+                <property name="valueColumnName" value="VALUE"/>
+                <property name="langColumnName" value="LANG"/>
+                <property name="sortOrderColumnName" value="SORT_ORDER"/>
+                <property name="nameColumnName" value="NAME"/>
+                <property name="shortNameColumnName" value="SHORT_NAME"/>
+                <property name="optionNameColumnNames" value="NAME_WITH_VALUE,OPTION01"/>
+            </component>
+        </property>
+    </component>
+
+    <component name="codeCache"
+               class="nablarch.core.cache.BasicStaticDataCache" >
+
+        <property name="loader" ref="codeLoader"/>
+
+        <property name="loadOnStartup" value="false"/>
+    </component>
+
+    <component name="codeManager"
+        class="nablarch.common.code.BasicCodeManager" autowireType="None">
+        <property name="codeDefinitionCache" ref="codeCache"/>
+    </component>
+
+    <component name="initializer" class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+        <property name="initializeList">
+            <list>
+                <component-ref name="codeCache"/>
+            </list>
+        </property>
+    </component>
+
+
+
+設定内容詳細
+=====================
+
+nablarch.common.code.BasicCodeManager の設定
+--------------------------------------------------
+
+ ============================ ========================================================================================================================
+ property名                   設定内容
+ ============================ ========================================================================================================================
+ codeDefinitionCache(必須)    | Code インタフェースを実装したクラスを保持する StaticDataCache を設定する。
+ ============================ ========================================================================================================================
+
+
+nablarch.core.cache.BasicStaticDataCache クラスの設定 
+---------------------------------------------------------------
+
+  :doc:`../01_Core/05_StaticDataCache` を参照。
+  
+  .. warning::
+    このプロパティに設定する StaticDataLoader は、 BasicCodeLoader クラスのように、 StaticDataLoader<Code> を実装すること。
+
+
+nablarch.common.code.BasicCodeLoader クラスの設定 
+----------------------------------------------------------------------
+
+ ============================ ========================================================================================================================
+ property名                   設定内容
+ ============================ ========================================================================================================================
+ dbManager(必須)              | コードのロード時に使用する SimpleDbTransactionManager クラスを指定する。
+ codePatternSchema(必須)      | コードパターンテーブルのスキーマ情報。 CodePatternSchema クラスのインスタンス。
+ codeNameSchema(必須)         | コード名称テーブルのスキーマ情報。 CodeNameSchema クラスのインスタンス。
+ ============================ ========================================================================================================================
+
+
+nablarch.common.code.schema.CodePatternSchema クラスの設定 
+----------------------------------------------------------------------
+
+ ============================ ========================================================================================================================
+ property名                   設定内容
+ ============================ ========================================================================================================================
+ tableName(必須)              | テーブル名。
+ idColumnName(必須)           | コードIDカラムの名前。
+ valueColumnName(必須)        | コード値カラムの名前。
+ patternColumnNames           | パターンに使用するカラム名の文字列を配列で設定する。
+                              | パターン機能を使用する場合、設定必須。
+ ============================ ========================================================================================================================
+
+nablarch.common.code.schema.CodeNameSchema クラスの設定 
+----------------------------------------------------------------------
+
+ ============================ ========================================================================================================================
+ property名                   設定内容
+ ============================ ========================================================================================================================
+ tableName(必須)              | テーブル名。
+ idColumnName(必須)           | コードIDカラムの名前。
+ valueColumnName(必須)        | コード値カラムの名前。
+ langColumnName(必須)         | 言語カラムの名前。
+ sortOrderColumnName(必須)    | ソート順カラムの名前。
+ nameColumnName(必須)         | 名称カラムの名前。
+ shortNameColumnName(必須)    | 略称カラムの名前。
+ optionNameColumnNames        | コードのオプション名称に使用するカラム名の文字列を配列で設定する。
+                              | 指定しなかった場合、オプション名称が取得ができない。
+ ============================ ========================================================================================================================
+
+
+.. _`code_manager_validation`:
+
+------------------------------------------------------------------
+コード値の有効性をチェックするバリデーション
+------------------------------------------------------------------
+
+性別区分等、データベース上に永続化するコード値は、通常の文字列による画面入力値と同様にバリデーションを行う必要がある。
+本機能では :ref:`バリデーションの機能 <validation>` を使用して、コード値が有効であるか(つまり contains メソッドの戻り値が true であるか)をチェックする機能を持つ。
+
+エンティティの実装
+============================
+バリデーションは、通常のバリデーション同様にEntityのプロパティに対してアノテーションを付けることで実現できる。
+
+例えば、コードID "0001"、パターン "PATTERN1" に含まれる文字列のみを受けつけるプロパティ gender を持つエンティティは下記のように実装する。\
+pattern属性には、使用するパターンのカラム名を指定する。
+
+.. code-block:: java
+
+    public class Customer {
+    
+        // その他のプロパティは省略
+        private String gender;
+
+        @PropertyName("性別")
+        @CodeValue(codeId="0001", pattern="PATTERN1")
+        public String setGender(String gender) {
+            this.gender = gender;
+        }
+    }
+
+上記実装を行った上で、 :ref:`validation_and_convert` で記述した方法で ValidationUtil クラスの validateAndConvertRequest メソッドを呼び出すことで、 gender に "1", 
+"2"以外の文字を設定した際のバリデーション結果はエラーになる。
+
+
+なお、上記例はパターンに含まれるかまでをチェックするバリデーションであるため、 @CodeValue アノテーションの pattern 属性を指定しているが、 pattern 属性の指定を省略することで、
+コード値として有効であるかのみチェックするバリデーションも実装できる。
+
+
+
+Validatorの設定
+============================
+
+@CodeValue アノテーションで指定されたコード値のチェックは、 CodeValueValidator クラス が行う。
+
+| CodeValueValidator クラス は、 :ref:`バリデーションの設定<validation_config>` で記述した他のバリデータと同様に ValidationManager クラスの validators プロパティに追加することで使用できる。
+| 設定例を以下に示す。
+
+
+.. code-block:: xml
+
+    <component name="validationManager" class="nablarch.core.validation.ValidationManager">
+        <property name="validators" >
+            <list>
+                <!-- その他のバリデータ設定は省略。 -->
+                <component class="nablarch.common.code.validator.CodeValueValidator">
+                    <property name="messageId" value="MSGXXXXX"/>
+
+                </component>
+            </list>
+        </property>
+        <!-- その他のプロパティは省略。 -->
+    </component>
+
+
+設定内容詳細
+=====================
+
+CodeValueValidator の設定値の意味は下記の通り。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - property名
+     - 設定内容
+   * - messageId(必須)
+     - | コード値のパターンに含まれない文字列が入力された場合のデフォルトのエラーメッセージのメッセージIDを設定する。
+       | メッセージに使用できる置き換え文字は下記の通り。
+       | * 0 : 設定するプロパティの名称
+       | * 1 : 使用できるコード値の一覧
+       | メッセージの例 : "{0}には'{'{1}'}'のいずれかの値を指定してください。"
+       | フォーマット後のメッセージの例 : "性別には{"01" , "02"}のいずれかの値を指定してください。"
+       | 
+       | ※本メッセージはコンボボックスで入力するコードをを改竄した場合と、テキストボックスでコード値を入力する場合 (コードの性質上、テキストで入力することは非常にまれである) という特殊なケースでのみ使用される。
+         メッセージはこの使用状況を考慮して設計すること。
+       
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-02_CodeManager--s21`
+
+```json
+{
+  "id": "libraries-02_CodeManager--s21",
+  "title": "設定方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定方法",
+      "hints": [
+        "BasicCodeManager",
+        "BasicCodeLoader",
+        "BasicStaticDataCache",
+        "BasicApplicationInitializer",
+        "CodeManager",
+        "コード管理設定",
+        "codeManager コンポーネント登録"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "nablarch.common.code.BasicCodeManager の設定",
+      "hints": [
+        "BasicCodeManager",
+        "codeDefinitionCache",
+        "StaticDataCache",
+        "コード管理プロパティ設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "nablarch.core.cache.BasicStaticDataCache クラスの設定",
+      "hints": [
+        "BasicStaticDataCache",
+        "StaticDataLoader",
+        "StaticDataCache",
+        "コードキャッシュ設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "nablarch.common.code.BasicCodeLoader クラスの設定",
+      "hints": [
+        "BasicCodeLoader",
+        "dbManager",
+        "codePatternSchema",
+        "codeNameSchema",
+        "SimpleDbTransactionManager",
+        "コードローダー設定"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "nablarch.common.code.schema.CodePatternSchema クラスの設定",
+      "hints": [
+        "CodePatternSchema",
+        "tableName",
+        "idColumnName",
+        "valueColumnName",
+        "patternColumnNames",
+        "コードパターンスキーマ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "nablarch.common.code.schema.CodeNameSchema クラスの設定",
+      "hints": [
+        "CodeNameSchema",
+        "tableName",
+        "idColumnName",
+        "valueColumnName",
+        "langColumnName",
+        "sortOrderColumnName",
+        "nameColumnName",
+        "shortNameColumnName",
+        "optionNameColumnNames",
+        "コード名称スキーマ設定"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "",
+      "hints": [
+        "code_manager_validation",
+        "コード値バリデーション参照アンカー"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "コード値の有効性をチェックするバリデーション",
+      "hints": [
+        "CodeValueValidator",
+        "@CodeValue",
+        "codeId",
+        "pattern",
+        "messageId",
+        "ValidationManager",
+        "コード値バリデーション",
+        "バリデーション設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リポジトリに `\"codeManager\"` というコンポーネント名で `CodeManager` インタフェースを実装したクラスを登録する必要がある。\n\n**クラス**: `nablarch.common.code.BasicCodeManager`（`CodeManager` インタフェースのデフォルト実装）\n\n```xml\n<!-- DbManagerの設定 -->\n<component name=\"codeDbManager\" class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n    <property name=\"dbTransactionName\" value=\"code\"/>\n</component>\n\n<component name=\"codeLoader\" class=\"nablarch.common.code.BasicCodeLoader\">\n    <property name=\"dbManager\" ref=\"codeDbManager\"/>\n    <property name=\"codePatternSchema\">\n        <component class=\"nablarch.common.code.schema.CodePatternSchema\">\n            <property name=\"tableName\" value=\"CODE_PATTERN\"/>\n            <property name=\"idColumnName\" value=\"ID\"/>\n            <property name=\"valueColumnName\" value=\"VALUE\"/>\n            <property name=\"patternColumnNames\" value=\"PATTERN1,PATTERN2,PATTERN3\"/>\n        </component>\n    </property>\n    <property name=\"codeNameSchema\">\n        <component class=\"nablarch.common.code.schema.CodeNameSchema\">\n            <property name=\"tableName\" value=\"CODE_NAME\"/>\n            <property name=\"idColumnName\" value=\"ID\"/>\n            <property name=\"valueColumnName\" value=\"VALUE\"/>\n            <property name=\"langColumnName\" value=\"LANG\"/>\n            <property name=\"sortOrderColumnName\" value=\"SORT_ORDER\"/>\n            <property name=\"nameColumnName\" value=\"NAME\"/>\n            <property name=\"shortNameColumnName\" value=\"SHORT_NAME\"/>\n            <property name=\"optionNameColumnNames\" value=\"NAME_WITH_VALUE,OPTION01\"/>\n        </component>\n    </property>\n</component>\n\n<component name=\"codeCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\" ref=\"codeLoader\"/>\n    <property name=\"loadOnStartup\" value=\"false\"/>\n</component>\n\n<component name=\"codeManager\" class=\"nablarch.common.code.BasicCodeManager\" autowireType=\"None\">\n    <property name=\"codeDefinitionCache\" ref=\"codeCache\"/>\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"codeCache\"/>\n        </list>\n    </property>\n</component>\n```",
+    "s2": "**クラス**: `nablarch.common.code.BasicCodeManager`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| codeDefinitionCache | StaticDataCache | ○ | | `Code` インタフェースを実装したクラスを保持する `StaticDataCache` を設定する |",
+    "s3": ":doc:`../01_Core/05_StaticDataCache` を参照。\n\n> **警告**: このプロパティに設定する `StaticDataLoader` は、`BasicCodeLoader` クラスのように、`StaticDataLoader<Code>` を実装すること。",
+    "s4": "**クラス**: `nablarch.common.code.BasicCodeLoader`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dbManager | SimpleDbTransactionManager | ○ | | コードのロード時に使用する `SimpleDbTransactionManager` クラスを指定する |\n| codePatternSchema | CodePatternSchema | ○ | | コードパターンテーブルのスキーマ情報。`CodePatternSchema` クラスのインスタンス |\n| codeNameSchema | CodeNameSchema | ○ | | コード名称テーブルのスキーマ情報。`CodeNameSchema` クラスのインスタンス |",
+    "s5": "**クラス**: `nablarch.common.code.schema.CodePatternSchema`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| tableName | String | ○ | | テーブル名 |\n| idColumnName | String | ○ | | コードIDカラムの名前 |\n| valueColumnName | String | ○ | | コード値カラムの名前 |\n| patternColumnNames | String | | | パターンに使用するカラム名（複数）。パターン機能を使用する場合は設定必須 |",
+    "s6": "**クラス**: `nablarch.common.code.schema.CodeNameSchema`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| tableName | String | ○ | | テーブル名 |\n| idColumnName | String | ○ | | コードIDカラムの名前 |\n| valueColumnName | String | ○ | | コード値カラムの名前 |\n| langColumnName | String | ○ | | 言語カラムの名前 |\n| sortOrderColumnName | String | ○ | | ソート順カラムの名前 |\n| nameColumnName | String | ○ | | 名称カラムの名前 |\n| shortNameColumnName | String | ○ | | 略称カラムの名前 |\n| optionNameColumnNames | String | | | コードのオプション名称に使用するカラム名（複数）。指定しない場合、オプション名称が取得できない |",
+    "s7": "なし",
+    "s8": "コード値（性別区分等）はバリデーションが必要。:ref:`バリデーションの機能 <validation>` を使用してコード値の有効性（`contains` メソッドの戻り値が `true` か）をチェックする。\n\n**アノテーション**: `@CodeValue`\n\nEntityのプロパティに `@CodeValue` アノテーションを付けてバリデーションを実装する。`codeId` でコードIDを、`pattern` 属性でパターンのカラム名を指定する。\n\n```java\npublic class Customer {\n    private String gender;\n\n    @PropertyName(\"性別\")\n    @CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\n    public String setGender(String gender) {\n        this.gender = gender;\n    }\n}\n```\n\n`pattern` 属性を省略した場合、コード値として有効かのみチェック（パターンに含まれるかはチェックしない）。\n\n**クラス**: `nablarch.common.code.validator.CodeValueValidator`\n\n`ValidationManager` の `validators` プロパティに `CodeValueValidator` を追加する（:ref:`バリデーションの設定<validation_config>` 参照）。\n\n```xml\n<component name=\"validationManager\" class=\"nablarch.core.validation.ValidationManager\">\n    <property name=\"validators\">\n        <list>\n            <component class=\"nablarch.common.code.validator.CodeValueValidator\">\n                <property name=\"messageId\" value=\"MSGXXXXX\"/>\n            </component>\n        </list>\n    </property>\n</component>\n```\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| messageId | String | ○ | | コード値のパターンに含まれない文字列が入力された場合のデフォルトエラーメッセージID。置き換え文字: {0}=プロパティ名称、{1}=使用できるコード値一覧。例: \"{0}には'{'{1}'}'のいずれかの値を指定してください。\" |\n\n> **注意**: このメッセージはコンボボックスで入力するコードを改竄した場合と、テキストボックスでコード値を入力するという特殊なケースでのみ使用される。メッセージはこの使用状況を考慮して設計すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

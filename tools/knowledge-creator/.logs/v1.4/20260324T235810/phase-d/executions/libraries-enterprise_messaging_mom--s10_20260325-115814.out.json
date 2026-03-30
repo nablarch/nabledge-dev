@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging_mom--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1 のコードサンプルに `MessagingProvider provider = createProvider();` として登場する `MessagingProvider` クラスが s1 の hints に含まれていない。s2 の hints には含まれているが、実際のコード例は s1 に存在する。",
+      "source_evidence": "各パターンのコードサンプルに `MessagingProvider provider = createProvider();` が繰り返し出現する"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title / index[s3].title",
+      "description": "s2 と s3 が同一タイトル「メッセージングプロバイダ」を持つ。s2 はイントロ段落＋箇条書きのみで、s3 が実体コンテンツを持つ構成だが、タイトルが重複しているためAIが検索・参照する際に混乱を招く可能性がある。",
+      "source_evidence": "ソースの `メッセージングプロバイダ` セクションは単一の h2 であり、その下に JMS と 組込み という 2 つの h3 が続く構造"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3 — JMSメッセージングプロバイダ設定例",
+      "description": "ソースの XML コメント `<!-- その他のプロパティは親クラス(JmsMessagingProvider)と同じ -->` が省略されており、`JndiLookingUpJmsMessagingProvider` が `JmsMessagingProvider` を親クラスとして持ち、追加の設定プロパティが存在する旨がナレッジファイルに記載されていない。`JmsMessagingProvider` というクラス名も hints に含まれていない。",
+      "source_evidence": "XML設定例末尾コメント: `<!-- その他のプロパティは親クラス(JmsMessagingProvider)と同じ -->`"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "id": "libraries-07_SubmitTag--s1",
+  "title": "ボタン又はリンクによるフォームのサブミット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "カスタムタグ一覧",
+      "hints": [
+        "カスタムタグ一覧",
+        "フォームサブミット",
+        "ボタン・リンクサブミット",
+        "n:submit",
+        "n:button",
+        "n:submitLink",
+        "popupタグ",
+        "downloadタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "サブミット先の指定方法",
+      "hints": [
+        "サブミット先URI指定",
+        "コンテキストからの相対パス",
+        "uri属性",
+        "サブミット先URI"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "サブミットを制御するJavaScript関数",
+      "hints": [
+        "nablarch_submit",
+        "JavaScriptサブミット制御",
+        "サブミット制御関数"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アプリケーションでonclick属性を指定する場合の制約",
+      "hints": [
+        "onclick属性",
+        "nablarch_submit呼び出し",
+        "カスタムonclick",
+        "サブミット前確認ダイアログ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "アプリケーションでformタグのname属性を指定する場合の制約",
+      "hints": [
+        "formタグname属性",
+        "nablarch_form連番",
+        "JavaScript変数名規則",
+        "フォーム名自動生成"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ボタン又はリンク毎にパラメータを変更する方法",
+      "hints": [
+        "paramタグ",
+        "変更パラメータ",
+        "nablarch_hidden",
+        "NablarchTagHandler",
+        "WebView_ParamTag",
+        "リンク毎パラメータ変更",
+        "paramName",
+        "value",
+        "name"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "認可判定と開閉局判定の結果に応じた表示切り替え",
+      "hints": [
+        "認可判定",
+        "開閉局判定",
+        "displayMethod属性",
+        "NODISPLAY",
+        "DISABLED",
+        "NORMAL",
+        "DisplayControlChecker",
+        "ServiceAvailabilityDisplayControlChecker",
+        "PermissionDisplayControlChecker",
+        "表示切り替え",
+        "submitLinkDisabledJsp"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ボタン・リンクによるフォームサブミット用カスタムタグ一覧。name属性はフォーム内で一意な名前を指定。uri属性の指定方法は :ref:`WebView_SpecifyUri` を参照。\n\nタグ名が `popup` から始まるタグは新しいウィンドウを開いてサブミット、`download` から始まるタグはダウンロード用サブミットを行う。\n\n| カスタムタグ | 出力するHTMLタグ |\n|---|---|\n| :ref:`WebView_SubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_ButtonTag` | buttonタグ |\n| :ref:`WebView_SubmitLinkTag` | aタグ |\n| :ref:`WebView_PopupSubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_PopupButtonTag` | buttonタグ |\n| :ref:`WebView_PopupLinkTag` | aタグ |\n| :ref:`WebView_DownloadSubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_DownloadButtonTag` | buttonタグ |\n| :ref:`WebView_DownloadLinkTag` | aタグ |",
+    "s2": "uri属性にはコンテキストからの相対パスを指定する。サブミット先URIはコンテキストパスが付加されたパスとなる。\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"back\" value=\"戻る\"\n          uri=\"/action/management/user/UserAction/USERS00301\" />\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"/action/management/user/UserAction/USERS00302\" />\n```\n\n> **警告**: 現在のURIからの相対パスを指定した場合、想定外の画面遷移により不正なURIを組み立ててしまうことがある。URIは必ずコンテキストからの相対パスを指定すること。",
+    "s3": "フォームのサブミットはJavaScriptでURIを組み立てることで実現する。カスタムタグは画面内で1回だけサブミット制御JavaScript関数を出力する。\n\n```javascript\n/**\n * @param event イベントオブジェクト\n * @param element イベント元の要素(ボタン又はリンク)\n * @return イベントを伝搬させないため常にfalse\n */\nfunction nablarch_submit(event, element)\n```",
+    "s4": "- onclick属性未指定の場合: カスタムタグが出力するタグのonclick属性に `nablarch_submit` を自動設定する。\n- onclick属性指定の場合: カスタムタグはJavaScript関数を自動設定しない。アプリケーション側で `nablarch_submit(event, element)` を明示的に呼び出す必要がある。\n\n```javascript\nfunction popUpConfirmation(event, element) {\n    if (window.confirm(\"登録します。よろしいですか？\")) {\n        // フレームワークが出力するJavaScript関数を明示的に呼び出す。\n        return nablarch_submit(event, element);\n    } else {\n        return false;\n    }\n}\n```\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"./USERS00302\" onclick=\"return popUpConfirmation(event, this);\" />\n```",
+    "s5": "カスタムタグのJavaScript関数はformタグのname属性を使用してサブミット対象フォームを特定する。\n\n- name属性指定の場合: 画面内で一意な名前を指定すること。\n- name属性未指定の場合: `nablarch_form<連番>` 形式で自動生成（連番はformタグの出現順に1から付与）。\n\n> **警告**: formタグのname属性にはJavaScriptの変数名の構文に則った値を指定すること。\n> - 値の先頭は英字始まり\n> - 先頭以降の値は英数字またはアンダーバー",
+    "s6": "一覧画面など1フォームに複数リンクで異なるパラメータを送信する場合は :ref:`WebView_ParamTag` を使用する。変更パラメータとはフォームのボタンやリンク毎に変更するパラメータのこと。\n\n**paramタグ属性:**\n- `paramName`: リクエストで送信するパラメータ名\n- `value`: 直接値を指定する場合\n- `name`: リクエストスコープなどスコープ上のオブジェクトを参照する場合\n\n```jsp\n<n:submitLink uri=\"./R0001\" name=\"R0001_${status.index}\">\n    <n:write name=\"user.id\"/>\n    <n:param paramName=\"sampleId\" name=\"user.id\" />\n</n:submitLink>\n```\n\n変更パラメータは `nablarch_hidden` パラメータに格納され、NablarchTagHandlerクラスがリクエストパラメータとして使用できるように設定する。変更パラメータを使用する場合はNablarchTagHandlerの設定が必須。設定方法は :ref:`WebView_NablarchTagHandler` を参照。\n\n> **警告**: 変更パラメータの数に応じてリクエストのデータ量が増大する。一覧画面でリンク毎に変更パラメータを指定する場合は、プライマリキーのみなど必要最小限のパラメータに限定すること。",
+    "s7": ":ref:`認可<permission>` と :ref:`開閉局<serviceAvailable>` の判定結果に応じてサブミットボタン・リンクの表示を切り替える機能。それぞれに対応するハンドラがハンドラ構成に含まれている場合のみ有効。\n\n**仕様:**\n- タグに指定されたリクエストIDに対して認可判定と開閉局判定を実施する\n- 認可失敗または閉局の場合に表示切り替えを行う\n\n| 表示方法 | 説明 |\n|---|---|\n| NODISPLAY（非表示） | タグを表示しない |\n| DISABLED（非活性） | ボタン: disabled属性を有効化。リンク: ラベルのみ表示（aタグ非出力）またはカスタムJSPをインクルード（:ref:`WebView_CustomTagConfig` の `submitLinkDisabledJsp` で指定した場合） |\n| NORMAL（通常表示） | 表示方法の切り替えを行わない |\n\nデフォルトは :ref:`WebView_CustomTagConfig` で指定した表示方法を使用。個別に変更する場合は各タグの `displayMethod` 属性に `NODISPLAY` / `DISABLED` / `NORMAL` のいずれかを指定。\n\n```jsp\n<%-- このタグは常に表示する。 --%>\n<n:submit displayMethod=\"NORMAL\" type=\"button\" name=\"login\"\n          value=\"ログイン\" uri=\"/LoginAction/LOGIN001\" />\n```\n\n> **注意**: アプリケーション全体を非活性・非表示に設定した場合、ログインボタンなど認可されていない状態で使用するボタンも表示制御される。常に表示したいボタン・リンクには `displayMethod=\"NORMAL\"` を個別指定すること。\n\n判定処理は `nablarch.common.web.tag.DisplayControlChecker` インタフェースの実装クラスが行う。 :ref:`WebView_CustomTagConfig` の `displayControlCheckers` プロパティに指定することで変更可能。`displayControlCheckers` プロパティが指定されていない場合は、フレームワークがデフォルトでサポートしている判定処理を使用する。\n\n```xml\n<list name=\"displayControlCheckers\">\n    <component class=\"nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker\" />\n    <component class=\"nablarch.common.web.tag.PermissionDisplayControlChecker\" />\n</list>\n\n<component name=\"customTagConfig\"\n           class=\"nablarch.common.web.tag.CustomTagConfig\">\n    <property name=\"displayControlCheckers\" ref=\"displayControlCheckers\" />\n</component>\n```"
+  }
+}

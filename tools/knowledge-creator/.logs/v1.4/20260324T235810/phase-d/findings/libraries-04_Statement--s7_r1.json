@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — fetchSize property description",
+      "description": "The source explains that adjusting fetchSize reduces round-trips to the database server and can improve performance (「データベースサーバとのラウンドトリップ数を削減でき性能改善が期待できる」). This rationale is omitted from the knowledge file's property table. An AI answering 'why would I change fetchSize?' would lack this context.",
+      "source_evidence": "本設定値を変更することにより、データベースサーバとのラウンドトリップ数を削減でき性能改善が期待できる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`SqlPStatement` is referenced in s2 section content for `SqlPStatement#setFetchSize` and `SqlPStatement#setQueryTimeout` method guidance, but is only listed in s1 hints. Users asking about Statement-level timeout or fetch-size overrides in the context of configuration would not have s2 surfaced.",
+      "source_evidence": "本設定値は、Statement単位で変更が可能となっている。個別のStatementで変更したい場合には、SqlPStatement#setFetchSizeを呼び出し変更すること。 / SqlPStatement#setQueryTimeoutを呼び出し変更すること。"
+    }
+  ]
+}

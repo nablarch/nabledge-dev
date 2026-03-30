@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_01_validation_architecture--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — プロパティ表: formArraySizeValueMaxLength",
+      "description": "formArraySizeValueMaxLength の説明から、セキュリティ上重要な動作が欠落している。ソースには「配列の添え字にこの長さを超える長さの文字列を指定したリクエストが送られた場合、ValidationManager は無条件にその項目をエラー(リクエストの改竄)と判断する」と明記されているが、知識ファイルの説明にはこの動作が記載されていない。",
+      "source_evidence": "formArraySizeValueMaxLength プロパティ行: 「配列の添え字にこの長さを超える長さの文字列を指定したリクエストが送られた場合、ValidationManager は無条件にその項目をエラー(リクエストの改竄)と判断する。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — プロパティ表: 2つ目の invalidSizeKeyMessageId エントリ",
+      "description": "ソースのプロパティ表には `invalidSizeKeyMessageId (必須)` が2行存在する。1行目は ValidationTarget アノテーションの sizeKey に関するもの（知識ファイルに記載あり）。2行目は「formArraySizeValueMaxLength で設定した値を超えた配列の添え字がリクエストとして送られた際に表示するメッセージのメッセージID」という別の用途を説明しているが、知識ファイルのプロパティ表には完全に欠落している。必須(○)プロパティの設定説明が欠落しているため、実装者が設定を見落とす可能性がある。",
+      "source_evidence": "プロパティ表末尾: 「invalidSizeKeyMessageId  (必須) | formArraySizeValueMaxLength で設定した値を超えた配列の添え字がリクエストとして送られた際に表示するメッセージのメッセージID。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "XML設定例に登場する `StringArrayConvertor` がs3のhintsに含まれていない。",
+      "source_evidence": "<component class=\"nablarch.core.validation.convertor.StringArrayConvertor\">"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "初期化設定のXML例に登場する `BasicApplicationInitializer` がs3のhintsに含まれていない。",
+      "source_evidence": "<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">"
+    }
+  ]
+}

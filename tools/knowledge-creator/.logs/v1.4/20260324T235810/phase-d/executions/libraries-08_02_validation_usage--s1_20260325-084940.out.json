@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 (Entity の使用)",
+      "description": "The USER table structure from the 'テーブル構造とEntity' subsection is entirely absent. The source includes an explicit table listing three columns with Oracle data types: ID (CHAR(8), primary key), NAME (NVARCHAR(10)), REMARKS (NVARCHAR(100)), along with a note that Oracle data types are used for this explanation. This table is the primary vehicle for illustrating how RDBMS column type definitions map to Entity validation annotation constraints (e.g., CHAR(8) → @Length(min=8, max=8)), which is decision-necessary information for developers designing Entity classes.",
+      "source_evidence": "Source table under 'テーブル構造とEntity': カラム名 ID / CHAR(8) / ユーザを一意に特定するID / プライマリキー; NAME / NVARCHAR(10) / ユーザの氏名; REMARKS / NVARCHAR(100) / ユーザの補足情報. Note: 'ここではテーブルを Oracle のデータ型で説明する。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (Actionからのバリデーションメソッドの呼び出し)",
+      "description": "The HTML form code example showing prefix-based input naming is omitted. The source includes a concrete HTML form (`<form method=\"post\">`) with fields named `user.id`, `user.name`, `user.remarks` that visually demonstrates the prefix naming convention. The knowledge file explains the convention in text but omits the code example that demonstrates the correct HTML structure.",
+      "source_evidence": "Source HTML example: `<input type=\"hidden\" name=\"user.id\" value=\"00000001\"/>`, `<input type=\"text\" name=\"user.name\"/>`, `<input type=\"text\" name=\"user.remarks\"/>`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (バリデーション対象のプロパティ指定)",
+      "description": "The HTML form code example for the insert screen is omitted. The source includes a form (`<form method=\"POST\">`) that intentionally has only `user.name` and `user.remarks` fields without `user.id`, directly illustrating the scenario where partial validation is required because the primary key is not user-input.",
+      "source_evidence": "Source HTML: `<form method=\"POST\">` with only `user.name` and `user.remarks` inputs and no `user.id` field, followed by the explanation that this is a user registration screen where the system generates the ID."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 index hints",
+      "description": "The hints for s4 are missing `@Required` and `@Length`, both of which are used prominently in the `UserEntity` code example within that section (e.g., `@Required` and `@Length(min=8, max=8)` on `setId`, `@Required` and `@Length(max=10)` on `setName`).",
+      "source_evidence": "UserEntity code in source: `@Required`, `@Length(min=8, max=8)` on setId; `@Required`, `@Length(max=10)` on setName; `@Length(max=100)` on setRemarks."
+    }
+  ]
+}

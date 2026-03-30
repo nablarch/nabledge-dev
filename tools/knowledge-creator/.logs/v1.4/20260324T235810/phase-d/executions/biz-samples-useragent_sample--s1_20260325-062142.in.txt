@@ -1,0 +1,243 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/useragent_sample.rst`
+- Format: `rst`
+
+```
+.. _ThreadContextUserAgentSample:
+
+---------------------------------
+UserAgent情報取得機能設定サンプル
+---------------------------------
+
+本節では利用ケースごとに、設定例と各種UserAgent値から取得できる値の具体例を示す。
+
+.. note::
+
+  以下に示すパターンは各利用ケースにおける全てのパターンを網羅しているわけではない。
+  利用プロジェクトにて実際に利用するパターンを十分に検討すること。
+
+
+UserAgentParserの設定サンプル
+=============================
+
+UserAgent値からブラウザの判定を行う設定例を以下に示す。
+以下の例では、ブラウザの種類を\ ``MSIE``\ 、\ ``WebKit``\ 、\ ``Gecko``\ の3種類に分別している。
+
+.. code-block:: xml
+
+   <!-- UserAgentParserの設定 -->
+   <component name="userAgentParser" class="please.change.me.fw.web.useragent.UserAgentParser">
+     <!-- OSのパターンマッピング設定
+          この例ではOSの判定を行わないので各種プロパティを設定しない。 -->
+     <property name="osSetting">
+       <component class="please.change.me.fw.web.useragent.UserAgentPatternSetting"/>
+     </property>
+   
+     <!-- ブラウザのパターンマッピング設定 -->
+     <property name="browserSetting">
+       <component class="please.change.me.fw.web.useragent.UserAgentPatternSetting">
+         <!-- ブラウザの種類をMSIE、WebKit、Geckoの3種類に分別 -->
+         <property name="typePatternList">
+           <list>
+             <component class="please.change.me.fw.web.useragent.TypePattern">
+               <property name="name"    value="MSIE" />
+               <property name="pattern" value=".*MSIE.*" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.TypePattern">
+               <property name="name"    value="MSIE" />
+               <property name="pattern" value=".*Trident.+rv:[\d\.]+.*"/>
+             </component>
+             <component class="please.change.me.fw.web.useragent.TypePattern">
+               <property name="name"    value="WebKit" />
+               <property name="pattern" value=".*WebKit.*" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.TypePattern">
+               <property name="name"    value="Gecko" />
+               <property name="pattern" value=".*Gecko.*" />
+             </component>
+           </list>
+         </property>
+         <property name="itemPatternList">
+           <!-- 識別対象としたいユーザエージェントを判定できるパターンを必要なだけ記述する -->
+           <list>
+             <component class="please.change.me.fw.web.useragent.ItemPattern">
+               <property name="name"             value="ie" />
+               <property name="pattern"          value="(?i).*(msie\s|trident.+rv:)([\d\.]*).*" />
+               <property name="versionIndex"     value="2" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.ItemPattern">
+               <property name="name"             value="android_browser" />
+               <property name="pattern"          value="(?i).*android.*version/([\d\.]*).+(mobile *?safari).*" />
+               <property name="versionIndex"     value="1" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.ItemPattern">
+               <property name="name"             value="mobile_safari" />
+               <property name="pattern"          value="(?i).*version/([\d\.]*).+(mobile.*safari).*" />
+               <property name="versionIndex"     value="1" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.ItemPattern">
+               <property name="name"             value="firefox_chrome" />
+               <property name="pattern"          value="(?i).*(firefox|chrome)[\s/]*([\d\.]*).*" />
+               <property name="nameIndex"        value="1" />
+               <property name="versionIndex"     value="2" />
+             </component>
+             <component class="please.change.me.fw.web.useragent.ItemPattern">
+               <property name="name"             value="safari" />
+               <property name="pattern"          value="(?i).*version/([\d\.]*).+(safari).*" />
+               <property name="versionIndex"     value="1" />
+             </component>
+           </list>
+         </property>
+       </component>
+     </property>
+   </component>
+
+
+.. note::
+ typePatternList、itemPatternListは、記述された順番に使用されるので、 順番に注意して記述すること。
+ 例えば、 パターン\ ``".*Gecko.*"``\を先頭に配置してしまうと、ChromeやIE11もGeckoと判定されてしまう。
+ (ユーザエージェント値に\ ``Gecko``\ という文字列が含まれているため)
+ 
+            
+            
+
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-useragent_sample--s1`
+
+```json
+{
+  "id": "biz-samples-useragent_sample--s1",
+  "title": "UserAgent情報取得機能設定サンプル",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "UserAgent情報取得機能設定サンプル",
+      "hints": [
+        "UserAgentParser",
+        "UserAgentPatternSetting",
+        "TypePattern",
+        "ItemPattern",
+        "please.change.me.fw.web.useragent.UserAgentParser",
+        "please.change.me.fw.web.useragent.UserAgentPatternSetting",
+        "please.change.me.fw.web.useragent.TypePattern",
+        "please.change.me.fw.web.useragent.ItemPattern",
+        "UserAgent判定",
+        "ブラウザ種別判定",
+        "typePatternList",
+        "itemPatternList",
+        "MSIE",
+        "WebKit",
+        "Gecko"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## UserAgent情報取得機能設定サンプル\n\n**クラス**: `please.change.me.fw.web.useragent.UserAgentParser`\n\nブラウザの種類をMSIE・WebKit・Geckoの3種類に分別する設定例:\n\n```xml\n<component name=\"userAgentParser\" class=\"please.change.me.fw.web.useragent.UserAgentParser\">\n  <!-- OSのパターンマッピング設定（この例ではOS判定なし） -->\n  <property name=\"osSetting\">\n    <component class=\"please.change.me.fw.web.useragent.UserAgentPatternSetting\"/>\n  </property>\n  <!-- ブラウザのパターンマッピング設定 -->\n  <property name=\"browserSetting\">\n    <component class=\"please.change.me.fw.web.useragent.UserAgentPatternSetting\">\n      <property name=\"typePatternList\">\n        <list>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"MSIE\" />\n            <property name=\"pattern\" value=\".*MSIE.*\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"MSIE\" />\n            <property name=\"pattern\" value=\".*Trident.+rv:[\\d\\.]+.*\"/>\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"WebKit\" />\n            <property name=\"pattern\" value=\".*WebKit.*\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.TypePattern\">\n            <property name=\"name\"    value=\"Gecko\" />\n            <property name=\"pattern\" value=\".*Gecko.*\" />\n          </component>\n        </list>\n      </property>\n      <property name=\"itemPatternList\">\n        <list>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"ie\" />\n            <property name=\"pattern\"      value=\"(?i).*(msie\\s|trident.+rv:)([\\d\\.]*).*\" />\n            <property name=\"versionIndex\" value=\"2\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"android_browser\" />\n            <property name=\"pattern\"      value=\"(?i).*android.*version/([\\d\\.]*).+(mobile *?safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"mobile_safari\" />\n            <property name=\"pattern\"      value=\"(?i).*version/([\\d\\.]*).+(mobile.*safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"firefox_chrome\" />\n            <property name=\"pattern\"      value=\"(?i).*(firefox|chrome)[\\s/]*([\\d\\.]*).*\" />\n            <property name=\"nameIndex\"    value=\"1\" />\n            <property name=\"versionIndex\" value=\"2\" />\n          </component>\n          <component class=\"please.change.me.fw.web.useragent.ItemPattern\">\n            <property name=\"name\"         value=\"safari\" />\n            <property name=\"pattern\"      value=\"(?i).*version/([\\d\\.]*).+(safari).*\" />\n            <property name=\"versionIndex\" value=\"1\" />\n          </component>\n        </list>\n      </property>\n    </component>\n  </property>\n</component>\n```\n\n> **注意**: typePatternList・itemPatternListは記述順に評価される。`.*Gecko.*` を先頭に置くと、ChromeやIE11もGeckoと判定される（これらのUAに `Gecko` 文字列が含まれるため）。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 1 < source headings 2
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

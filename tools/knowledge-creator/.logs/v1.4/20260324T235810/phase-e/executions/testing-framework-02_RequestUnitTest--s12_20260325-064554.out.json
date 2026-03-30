@@ -1,0 +1,80 @@
+{
+  "id": "testing-framework-02_RequestUnitTest--s12",
+  "title": "リクエスト単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "固有の処理を追加する場合",
+      "hints": [
+        "BasicAdvice",
+        "execute",
+        "beforeExecute",
+        "afterExecute",
+        "TestCaseInfo",
+        "ExecutionContext",
+        "assertSqlResultSetEquals",
+        "assertEntity",
+        "assertSqlRowEquals",
+        "assertListMapEquals",
+        "SqlResultSet",
+        "SqlRow",
+        "HttpRequest",
+        "固有処理挿入",
+        "リクエストスコープ検証",
+        "プライベートメソッド",
+        "ウィンドウスコープ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ダウンロードファイルのテスト",
+      "hints": [
+        "FileSupport",
+        "assertFile",
+        "ダウンロードファイルテスト",
+        "ダンプファイル命名規則",
+        "batch_request_test"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト実行",
+        "テスト起動"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テスト結果確認（目視）",
+      "hints": [
+        "HTMLダンプ",
+        "html_dump",
+        "HtmlCheckTool",
+        "ダンプファイル命名規則",
+        "テスト結果確認",
+        "dump-dir-label"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "リクエスト単体テストクラス作成時の注意点",
+      "hints": [
+        "ThreadContext",
+        "トランザクション制御",
+        "テストクラス注意点",
+        "ハンドラ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`execute(String sheetName, Advice advice)` でリクエスト送信前後に固有処理を挿入できる。`BasicAdvice`クラスの以下メソッドをオーバーライドする（両方をオーバーライドする必要はない。また、これらのメソッド内のコードが長くなったり、テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと）:\n\n- `void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` — 送信前\n- `void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` — 送信後\n\n```java\nexecute(\"testMenus00102Normal\", new BasicAdvice() {\n    @Override\n    public void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 準備処理\n    }\n    @Override\n    public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 結果確認処理\n    }\n});\n```\n\n`TestCaseInfo`の主要メソッド: `getTestCaseName()`（失敗メッセージ用）、`getSheetName()`（シート名）、`getTestCaseNo()`（ケース番号）、`getHttpRequest()`（テスト後のHttpRequest）。\n\n**SqlResultSet検証** (`assertSqlResultSetEquals`):\n```java\nSqlResultSet actualGroup = (SqlResultSet) context.getRequestScopedVar(\"allGroup\");\nassertSqlResultSetEquals(message, sheetName, \"expectedUgroup\" + no, actualGroup);\nSqlResultSet actualUseCase = (SqlResultSet) context.getRequestScopedVar(\"allUseCase\");\nassertSqlResultSetEquals(message, sheetName, \"expectedUseCase\" + no, actualUseCase);\n```\n\n**エンティティ/Form検証** (`assertEntity`):\n```java\nObject actual = context.getRequestScopedVar(\"systemAccount\");\nassertEntity(sheetName, \"systemAccount\" + testCaseInfo.getTestCaseNo(), actual);\n```\n期待値の書式は :ref:`entityUnitTest_SetterGetterCase` と同様（setterの欄は不要）。\n\n> **注意**: リクエストスコープにFormが格納されている場合、別のFormを設定したプロパティでなければEntityと同様にテストできる。別のFormを設定したプロパティの場合は、そのFormを取得してEntityと同様にテストする（例: `Object actualSystemAccount = actualForm.getSystemAccount(); assertEntity(...)`）。\n\n**SqlRow検証** (`assertSqlRowEquals`):\n```java\nSqlRow actual = (SqlRow) context.getRequestScopedVar(\"user\");\nassertSqlRowEquals(message, sheetName, \"expectedUser\" + no, actual);\n```\n\n**リクエストパラメータ検証** (`testCaseInfo.getHttpRequest()`):\nウィンドウスコープの値をリセットするために、テスト対象機能にてリクエストパラメータを書き換える場合がある。テスト対象実行後のリクエストパラメータが期待通りであることを検証する例:\n```java\nHttpRequest request = testCaseInfo.getHttpRequest();\nassertEquals(\"\", request.getParam(\"resetparameter\"));\n```\n\n**その他のオブジェクト** (`assertListMapEquals`) — Excelから期待値取得→リクエストスコープから実際値取得→比較:\n```java\nList<Map<String, String>> expected = getListMap(\"doRW25AA0303NormalEnd\", \"result_1\");\nList<Map<String, String>> actual = context.getRequestScopedVar(\"pageData\");\nassertListMapEquals(expected, actual);\n```\nテストデータの取得方法: :ref:`how_to_get_data_from_excel` 参照。",
+    "s2": ":ref:`batch_request_test` と同じ方法でExcelにファイルの期待値を記載してテストする。\n\n**期待するファイルの定義例**: ファイルパスにはダンプファイルを指定する。ダウンロード処理の場合、ダウンロードされたファイルがダンプされ、以下の命名規則でダンプファイルが出力される。ダンプ出力先ディレクトリの詳細は :ref:`html_dump_dir` 参照。\n\n```\nダンプファイルの命名規則：\n  Excelファイルのシート名＋\"_\"＋テストケース名＋\"_\"＋ダウンロードされたファイル名\n```\n\n**テストメソッドの実装例**: `FileSupport.assertFile(msgOnFail, testCaseName)` でアサートを行う:\n```java\nprivate FileSupport fileSupport = new FileSupport(getClass());\n\n@Test\npublic void testRW11AC0104Download() {\n    execute(\"testRW11AC0104Download\", new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            fileSupport.assertFile(\"ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。\", \"testRW11AC0104Download\");\n        }\n    });\n}",
+    "s3": "通常のJUnitテストと同じように実行する（クラス単体テストと同様）。",
+    "s4": "テスト実行時、1リクエスト毎にHTMLダンプファイルが出力される。ブラウザで開き目視確認を行う。\n\n> **注意**: リクエスト単体テストで生成されたHTMLファイルは自動テストフレームワーク（:doc:`../../08_TestTools/03_HtmlCheckTool/index`）にて自動チェックされる。HTMLファイル内に構文エラー等の違反があった場合は違反内容に応じた例外が発生し、そのテストケースは失敗となる。\n\n**HTMLダンプ出力結果**:\nテスト用プロジェクトのルートディレクトリ配下の `tmp/html_dump` ディレクトリにHTMLダンプファイルが出力される。詳細は :ref:`dump-dir-label` 参照。\n\nダンプファイル名にはテストケース一覧（testShots）のdescription欄の記述が使用される。",
+    "s5": "**ThreadContextへの値設定は不要**\n\nリクエスト単体テストではWeb FrameworkのハンドラがThreadContextへの値設定を行うため、テストクラスからThreadContextへの値設定は不要。ユーザID設定方法については :ref:`request_test_user_info` 参照。\n\n**テストクラスでのトランザクション制御は不要**\n\nリクエスト単体テストではトランザクション制御はハンドラで行われるため、テストクラス内で明示的にトランザクションコミットを行う必要はない（クラス単体テストとの違い）。"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "nablarch-batch-04_fileInputBatch--s1",
+  "title": "ファイルを入力とするバッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ヘッダーレコードの精査処理",
+      "hints": [
+        "RecordTypeBindingハンドラ",
+        "doHeader",
+        "TransactionAbnormalEnd",
+        "DataRecord",
+        "BusinessDateUtil",
+        "ヘッダーレコード精査",
+        "レコードタイプ別メソッド呼び分け",
+        "ファイルレイアウト検証"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "データレコードの精査処理",
+      "hints": [
+        "doData",
+        "DataRecord",
+        "TransactionAbnormalEnd",
+        "データレコード精査",
+        "レコード区分チェック",
+        "前レコード検証"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "トレーラレコードの精査処理",
+      "hints": [
+        "doTrailer",
+        "DataRecord",
+        "TransactionAbnormalEnd",
+        "totalCount",
+        "allowZeroRecord",
+        "トレーラレコード精査",
+        "総件数チェック",
+        "ゼロレコード制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "RecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。メソッド名は接頭辞 `do` にレコードタイプ名を付与する形式:\n`public Result \"do\" + [レコードタイプ名](DataRecord record, ExecutionContext ctx)`\n\n| レコードタイプ | レコードタイプ名 | 呼び出されるメソッド名 |\n|---|---|---|\n| ヘッダーレコード | header | doHeader |\n| データレコード | data | doData |\n| トレーラレコード | trailer | doTrailer |\n| エンドレコード | end | doEnd |\n\n**精査チェック項目:**\n- ヘッダーレコードは1レコード目であること（`preRecordKbn` が null 以外の場合はエラー）\n- 日付フィールド（`date`）と業務日付（`BusinessDateUtil.getDate()`）が一致すること\n\n```java\npublic Result doHeader(DataRecord inputData, ExecutionContext ctx) {\n    if (preRecordKbn != null) {\n        // 前レコードの値がnull以外の場合は、1レコード目以外のためエラー\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    String date = inputData.getString(\"date\");\n    String businessDate = BusinessDateUtil.getDate();\n    if (!businessDate.equals(date)) {\n        throw new TransactionAbnormalEnd(102,\n                HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate);\n    }\n    preRecordKbn = HEADER_RECORD;\n    return new Success();\n}\n```",
+    "s2": "前レコードのレコード区分がヘッダーレコードまたはデータレコードでない場合は、例外を送出して処理を終了する。\n\n```java\npublic Result doData(DataRecord inputData, ExecutionContext ctx) {\n    dataRecordCount++;\n    if (!HEADER_RECORD.equals(preRecordKbn)\n            && !DATA_RECORD.equals(preRecordKbn)) {\n        // 前レコードがヘッダー、データでない場合\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    preRecordKbn = DATA_RECORD;\n    return new Success();\n}\n```",
+    "s3": "**精査チェック項目:**\n- 前レコードのレコード区分はデータレコードであること（ヘッダーレコードも許容）\n- 総件数項目（`totalCount`）の値がデータレコード数（`dataRecordCount`）と一致すること\n- データレコードが0件かつ `allowZeroRecord` が false の場合はエラー\n\n```java\npublic Result doTrailer(DataRecord inputData, ExecutionContext ctx) {\n    if (!DATA_RECORD.equals(preRecordKbn)\n            && !HEADER_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    int totalCount = inputData.getBigDecimal(\"totalCount\").intValue();\n    if (dataRecordCount != totalCount) {\n        throw new TransactionAbnormalEnd(101,\n                TRAILER_RECORD_ERROR_FAILURE_CODE, totalCount, dataRecordCount);\n    }\n    if (dataRecordCount == 0 && !allowZeroRecord) {\n        throw new TransactionAbnormalEnd(104, \"NB11AA0106\");\n    }\n    preRecordKbn = TRAILER_RECORD;\n    return new Success();\n}\n```"
+  }
+}

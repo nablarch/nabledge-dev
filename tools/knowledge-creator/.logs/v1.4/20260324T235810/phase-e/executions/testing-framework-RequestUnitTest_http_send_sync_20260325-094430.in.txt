@@ -1,0 +1,96 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-RequestUnitTest_http_send_sync",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The phrase \"以下のクラスを読み替えること\" adds the word \"クラス\" (class) which does not appear in the source. The source only says \"以下のように読み替えること\" (read as follows) without characterizing the items as classes.",
+      "source_evidence": "ただし、以下のように読み替えること。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=====================================================================
+ リクエスト単体テスト（HTTP同期応答メッセージ送信処理）
+=====================================================================
+
+リクエスト単体テストのテスト方法は、\ :doc:`RequestUnitTest_send_sync`\ を参照すること。
+
+本項では、\ :doc:`RequestUnitTest_send_sync`\ と異なる箇所の解説を行う。
+
+ただし、以下のように読み替えること。
+
++----------------------------------------------+------------------------------------------------------+
+|同期応答メッセージ送信                        |HTTP同期応答メッセージ送信                            |
++==============================================+======================================================+
+|MockMessagingContext                          |MockMessagingClient                                   |
++----------------------------------------------+------------------------------------------------------+
+|RequestTestingMessagingProvider               |RequestTestingMessagingClient                         |
++----------------------------------------------+------------------------------------------------------+
+
+.. note:: 
+ リクエスト単体テストそのものの概要については、
+ :ref:`message_httpSendSyncMessage_test`
+ を参照。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-RequestUnitTest_http_send_sync",
+  "title": "リクエスト単体テスト（HTTP同期応答メッセージ送信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "HTTP同期応答メッセージ送信のリクエスト単体テスト",
+      "hints": [
+        "MockMessagingClient",
+        "MockMessagingContext",
+        "RequestTestingMessagingClient",
+        "RequestTestingMessagingProvider",
+        "HTTP同期応答メッセージ送信",
+        "リクエスト単体テスト",
+        "クラス読み替え"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "HTTP同期応答メッセージ送信のリクエスト単体テストは :doc:`RequestUnitTest_send_sync` と同じ方法。ただし、以下のクラスを読み替えること：\n\n| 同期応答メッセージ送信 | HTTP同期応答メッセージ送信 |\n|---|---|\n| MockMessagingContext | MockMessagingClient |\n| RequestTestingMessagingProvider | RequestTestingMessagingClient |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

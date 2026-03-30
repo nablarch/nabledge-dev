@@ -1,0 +1,202 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-event_confirm",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "属性値一覧の全属性名がhintsに含まれていない。`title` 属性がテーブルの第1列に存在するが、s3のhintsから欠落している。",
+      "source_evidence": "仕様セクションの属性値一覧テーブル: title | 処理内容の簡単な説明 | 文字列 | × | × | 設計書表示用"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+確認ダイアログ表示イベントアクション
+===================================================
+:doc:`event_confirm` は :doc:`event_listen` で定義したイベントが発生した際に
+確認ダイアログを表示させるイベントアクションである。
+
+このアクションが表示したダイアログで **「キャンセル」** を選択した場合は、
+イベントのプロパゲーションおよびデフォルトアクションの発生を抑止する。
+また、発生元のイベントが **change** イベントであった場合、
+その変更内容をもとの入力内容に戻す。
+
+一方、ダイアログで **「OK 」** を選択した場合は、イベントプロパゲーションを継続し、
+他のイベントハンドラでキャンセルされなければ最終的にデフォルトアクションを実行する。
+
+
+ダイアログはブラウザのネイティブ部品を使用するので、その表示はクライアント環境
+およびブラウザに依存し、CSSによる見た目の制御やタイトル文字列の変更等はできない。
+
+
+コードサンプル
+==================================
+
+**プルダウンで特定の項目を選択した場合に確認のダイアログを表示する例する例**
+
+  .. code-block:: jsp
+
+       <event:listen event="select.amount change">
+         <event:confirm
+           message="この商品の注文をキャンセルしますがよろしいですか？"
+           condition=":is-blank">
+         </event:confirm>
+       </event:listen>
+
+
+仕様
+=============================================
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+title                     処理内容の簡単な説明             文字列         ×          ×         設計書表示用
+
+message                   | ダイアログに表示する文言       文字列         ◎          ◎
+
+condition                 | ダイアログを表示させる条件     文字列         ○          ○         省略した場合は必ず表示される
+                            を表すセレクタ式
+
+target                    | condition属性で指定した\       文字列         ○          ○         | 省略した場合はイベントが\
+                            条件判定の対象となる要素を\                                          発生した要素
+                            表すセレクタ式
+
+stop                      | ダイアログキャンセル時に       真偽値         ○          ○         デフォルトは'true'
+                            イベントのプロパゲーション
+                            およびデフォルトアクションを
+                            抑制するかどうか。
+
+revert                    | ダイアログキャンセル時に       真偽値         ○          ○         | changeイベント発生時のみ
+                            各入力値の状態をイベント発生前                                       意味をもつ。
+                            の状態に戻すかどうか。                                               デフォルトは'true'
+
+========================= ================================ ============== ========== ========= ================================
+
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== =====================================================
+パス                                           内容
+============================================== =====================================================
+/WEB-INF/tags/widget/event/confirm.tag         このイベントアクションの実体となるタグファイル　
+
+/WEB-INF/tags/widget/event/dialog.tag          | :doc:`event_alert` と :doc:`event_confirm`
+                                                 とで共通の内容を実装するタグファイル。
+
+/js/nablarch/ui/event/ShowDialogAction.js      | ダイアログ表示機能を実装するJS部品。
+
+============================================== =====================================================
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-event_confirm",
+  "title": "確認ダイアログ表示イベントアクション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "確認ダイアログ",
+        "イベントアクション",
+        "イベントプロパゲーション",
+        "キャンセル時の動作",
+        "OK時の動作",
+        "event_confirm",
+        "changeイベント",
+        "ブラウザネイティブ部品"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コードサンプル",
+      "hints": [
+        "コードサンプル",
+        "event:confirm",
+        "event:listen",
+        "JSP",
+        "セレクタ式",
+        "condition",
+        "プルダウン確認ダイアログ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "仕様（属性値一覧）",
+      "hints": [
+        "属性値一覧",
+        "message",
+        "condition",
+        "target",
+        "stop",
+        "revert",
+        "必須属性",
+        "任意属性",
+        "セレクタ式"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "部品一覧",
+        "confirm.tag",
+        "dialog.tag",
+        "ShowDialogAction.js",
+        "内部構造",
+        "タグファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`event_confirm` は :doc:`event_listen` で定義したイベント発生時に確認ダイアログを表示するイベントアクション。\n\n- **「キャンセル」選択時**: イベントのプロパゲーションおよびデフォルトアクションを抑止。発生元イベントが **change** の場合、変更内容をもとの入力内容に戻す。\n- **「OK」選択時**: イベントプロパゲーションを継続し、他のイベントハンドラでキャンセルされなければデフォルトアクションを実行。\n\n> **注意**: ダイアログはブラウザのネイティブ部品を使用するため、表示はクライアント環境・ブラウザに依存し、CSSによる見た目の制御やタイトル文字列の変更はできない。",
+    "s2": "プルダウンで特定の項目を選択した場合に確認ダイアログを表示する例:\n\n```jsp\n<event:listen event=\"select.amount change\">\n  <event:confirm\n    message=\"この商品の注文をキャンセルしますがよろしいですか？\"\n    condition=\":is-blank\">\n  </event:confirm>\n</event:listen>\n```",
+    "s3": "属性値の種別: ◎ 必須属性、○ 任意属性、× 無効（指定しても効果なし）\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| title | 処理内容の簡単な説明 | 文字列 | × | × | 設計書表示用 |\n| message | ダイアログに表示する文言 | 文字列 | ◎ | ◎ | |\n| condition | ダイアログを表示させる条件を表すセレクタ式 | 文字列 | ○ | ○ | 省略した場合は必ず表示される |\n| target | condition属性で指定した条件判定の対象となる要素を表すセレクタ式 | 文字列 | ○ | ○ | 省略した場合はイベントが発生した要素 |\n| stop | ダイアログキャンセル時にイベントのプロパゲーションおよびデフォルトアクションを抑制するかどうか | 真偽値 | ○ | ○ | デフォルトは'true' |\n| revert | ダイアログキャンセル時に各入力値の状態をイベント発生前の状態に戻すかどうか | 真偽値 | ○ | ○ | changeイベント発生時のみ意味をもつ。デフォルトは'true' |",
+    "s4": "| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/event/confirm.tag | このイベントアクションの実体となるタグファイル |\n| /WEB-INF/tags/widget/event/dialog.tag | :doc:`event_alert` と :doc:`event_confirm` とで共通の内容を実装するタグファイル |\n| /js/nablarch/ui/event/ShowDialogAction.js | ダイアログ表示機能を実装するJS部品 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

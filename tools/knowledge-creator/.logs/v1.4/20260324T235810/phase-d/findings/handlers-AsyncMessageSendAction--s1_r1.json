@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageSendAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Knowledge file labels the outbound/return section as '**[復路処理]**', but the source file explicitly says '**[往路処理]**' (the RST anchor is `_outbound:`, suggesting a source documentation error, but the visible text is 往路処理). The knowledge file silently corrects it to 復路処理 without basis in the source text.",
+      "source_evidence": "Source: `.. _outbound:\\n\\n**[往路処理]**\\n  **5. (正常終了)**` — Knowledge file: `**[復路処理]**`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "PascalCase class name `CommandLine` appears in step 1 of the handler processing flow ('`CommandLine` オブジェクトより取得する') but is absent from the s2 hints array.",
+      "source_evidence": "Source step 1: '起動引数 **-messageRequestId** の値を `CommandLine`_ オブジェクトより取得する'"
+    }
+  ]
+}

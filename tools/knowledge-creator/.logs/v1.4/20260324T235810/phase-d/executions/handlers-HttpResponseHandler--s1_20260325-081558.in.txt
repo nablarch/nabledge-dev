@@ -1,0 +1,552 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/HttpResponseHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _`http_response_handler`:
+
+================================================
+HTTPレスポンスハンドラ
+================================================
+**クラス名:** ``nablarch.fw.handler.HttpResponseHandler``
+
+---------------------------
+概要
+---------------------------
+このハンドラは、後続ハンドラの処理結果となるHTTPレスポンスオブジェクトの内容に沿って、
+サーブレットフォーワード処理や、サーバソケットへの出力といったレスポンス処理を行う。
+
+HTTPレスポンスオブジェクトは、あくまで「レスポンス処理を行うために必要な情報を格納したクラス」であり、
+これを生成しただけではレスポンス処理は行われない。
+HTTPレスポンスオブジェクトの内容に沿って実際にレスポンス処理を行うのはこのハンドラである。
+
+
+HTTPレスポンスオブジェクトがクライアントに送信するレスポンスボディの内容を指定する方法は大きく2つある。
+  
+1つめは、HTTPレスポンスオブジェクトに対して直接レスポンスボディの内容を設定する方法であり、
+主に :doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/05_FileDownload` 処理などで使用する。
+  
+もう1つは、 :ref:`コンテンツパス<content-path>` と呼ばれる文字列によってレスポンス内容を指定する方法であり、
+通常の業務機能の実装ではこちらを主に使用する。
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue = [
+        "HttpResponseHandler"
+      , "ResourceMapping"
+      , "HttpMethodBinding"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | ハンドラ                           | 内容                                                                              |
+  +====================================+===================================================================================+
+  | - :doc:`ResourceMapping`           | 本ハンドラは、 `HttpResponse`_ をリターンもしくは送出するこれらのハンドラの上位に |
+  | - :doc:`HttpMethodBinding`         | 配置する必要がある。                                                              |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+
+
+++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラへの処理委譲)**
+    往路では本ハンドラは特段の処理を行なわない。
+    引数をそのまま後続ハンドラに渡して処理を委譲し、その結果としてHTTPレスポンスオブジェクトを取得する。
+
+.. _outbound:
+    
+**[復路での処理]**
+
+  **2. (コンテンツパスの取得)**
+    HTTPレスポンスオブジェクトに設定された :ref:`コンテンツパス<content-path>` 文字列を取得する。
+
+  **2a. (サーブレットフォーワード処理)**
+    :ref:`コンテンツパス<content-path>` が **"forward://"** で開始されていた場合は、
+    フォーワード名に対するサーブレットフォーワードを実行する。
+    この場合、クライアントに対するレスポンスの出力処理はフォーワード先のサーブレットで実行される。
+
+    フォーワード完了後、HTTPレスポンスオブジェクトをリターンして終了する。
+    
+
+  **3. (HTTPレスポンスヘッダー送信)**
+    HTTPレスポンスに設定されたHTTPヘッダーの内容をクライアントに送信する。
+    (ボディの内容はChunkedエンコーディングによって送信される。)
+
+  **3a. (HTTPリダイレクション)**
+   :ref:`コンテンツパス<content-path>` が **"redirect://"** 、 **"http://"** 、 **"https://"**
+   のいずれかで開始されていた場合は、パス文字列を **Location** ヘッダに設定し、リダイレクトの
+   HTTPレスポンスを送信する。
+
+   なお、 **redirect://** スキームかつ絶対パス指定であった場合は、 **Location** ヘッダに設定するパスに
+   サーブレットコンテキストルートのパスを補完する。
+
+  **4a. (HTTPレスポンスボディ送信: ファイルシステム上のファイルの内容を送信)**
+    :ref:`コンテンツパス<content-path>` が **"file://"** で開始されていた場合は、
+    パスに指定されたファイルの内容をレスポンスボディとして送信する。
+    
+  **4b. (HTTPレスポンスボディ送信: クラスパス上のリソースの内容を送信)**
+    :ref:`コンテンツパス<content-path>` が **"classpath://"** で開始されていた場合は、
+    コンテキストクラスローダからパスに指定されたリソースを取得し、その内容をレスポンスボディとして送信する。
+    
+  **4c. (HTTPレスポンスボディ送信: InputStreamの内容を送信)**
+    HTTPレスポンスオブジェクトに直接InputStreamが設定されている場合、
+    もしくは、 ``HttpResponse#write()`` メソッドによってレスポンス内容を
+    HTTPレスポンスオブジェクト内にバッファリングしている場合は
+    その内容をレスポンスボディとして送信する。
+
+  **5. (終端処理)**
+    レスポンス処理で使用した入出力ストリームを全てクローズする。
+    また、HTTPレスポンスオブジェクト上にレスポンス内容がバッファリングされている場合は削除する。
+  
+  **6. (正常終了)**
+    HTTPレスポンスオブジェクトをリターンして終了する。
+  
+.. _error:
+
+**[例外処理]**
+  **1a. (後続ハンドラ実行中のエラー)**
+    後続ハンドラ実行中に例外が送出された場合は、
+    既定のエラー画面をレスポンス後、例外を再送出する。
+    ただしサーブレットフォーワード処理中にエラーが発生した場合はログ出力のみを行なう。
+
+  **2a-b. (サーブレットフォーワード先でのエラー)**
+    フォーワード先のJSPやサーブレットでエラーが発生した場合は、
+    システムエラー画面をクライアント側に送信して終了する。
+
+  **2a-c. (サーブレットフォーワード中のIOエラー)**
+    サーブレットフォーワード処理中にIOエラーが発生した場合は、
+    ワーニングレベルのログを出力した上でHTTPレスポンスオブジェクトをリターンして終了する。
+
+  **5a. (レスポンス処理中のIOエラー)**
+    レスポンス処理および、終端処理においてIOエラーが発生した場合は、
+    ワーニングレベルのログを出力した上で処理を継続する。
+
+  **5a. (レスポンス処理中のその他のエラー)**
+    レスポンス処理および、終端処理において例外が発生した場合は、
+    システムエラー画面をクライアントに送信し、 **5.** の終端処理を行なったうえで、例外を再送出する。
+
++++++++++++
+
+
+.. _`http_response_handler_response_code_conversion`:
+
+  
+ステータスコードの変換
+================================================================================================
+  
+
+  HTTPレスポンスハンドラは、内部で 404 などのエラー用レスポンスが返された際に、正常レスポンスを表す 200 にステータスコードを変換する。
+  
+  これは、ブラウザのレスポンスコードによる挙動の差異を発生させないための施策である。
+  
+  例外的に、転送に用いられる 300 系のレスポンスコードであった場合と、
+  クライアントからのリクエストヘッダ "X-Requested-With" の値が "XMLHttpRequest" である
+  場合(つまり AJAX のリクエストの場合) 内部のエラーコードをそのままステータスコードとする。
+
+
+.. _http_response_handler_i18n:
+
+言語毎のコンテンツパスの切り替え
+================================================================================================
+
+HTTPレスポンスハンドラは、HTTPリクエストから取得した言語設定をもとに、フォーワード先を動的に切り替える機能をもつ。
+ResourcePathRule抽象クラスのサブクラスを使用して言語毎のコンテンツパスを取得することで、
+HTTPレスポンスハンドラは言語毎のコンテンツパスの切り替えを行う。
+
+ResourcePathRuleおよび本フレームワークがデフォルトで提供するサブクラスを下記に示す。
+
+ ============================================= ============================================================================================
+ クラス名                                      説明
+ ============================================= ============================================================================================
+ ResourcePathRule                              | 言語対応リソースパスのルールを表すクラス。
+                                               | 
+                                               | 言語はスレッドコンテキストから取得する。\
+                                                 スレッドコンテキストへの言語設定については、 :ref:`ThreadContextHandler` を参照。\
+                                                 スレッドコンテキストから言語を取得できない場合は指定されたリソースパスをそのまま返す。
+                                               | 
+                                               | 言語対応のリソースパスが指すファイルが存在する場合のみ言語対応のリソースパスを返す。\
+                                                 ファイルが存在しない、または指定されたリソースパスに拡張子を含まない場合は\
+                                                 指定されたリソースパスをそのまま返す。
+                                               | 
+                                               | サブクラスでは言語対応のリソースパスを作成するメソッドを実装する。
+ DirectoryBasedResourcePathRule                コンテキストルート直下のディレクトリを言語の切り替えに使用するクラス。
+                                               
+                                                .. code-block:: bash
+                                                
+                                                 # /management/user/search.jspを日本語(ja)と英語(en)に対応する場合の配置例
+                                                 # コンテキストルート直下に言語ごとにディレクトリを作成する。
+                                                 # ディレクトリ名は言語名とする。
+                                                 コンテキストルート
+                                                 ├─en
+                                                 │  └─management
+                                                 │      └─user
+                                                 │           search.jsp
+                                                 └─ja
+                                                     └─management
+                                                         └─user
+                                                              search.jsp
+                                               
+ FilenameBasedResourcePathRule                 ファイル名を言語の切り替えに使用するクラス。
+                                               
+                                                .. code-block:: bash
+                                                
+                                                 # /management/user/search.jspを日本語(ja)と英語(en)に対応する場合の配置例
+                                                 # 言語毎にファイルを作成する。
+                                                 # ファイル名にはサフィックス「"_"＋言語名」を付ける。
+                                                 コンテキストルート
+                                                 └─management
+                                                         └─user
+                                                              search_en.jsp
+                                                              search_ja.jsp
+                                               
+ ============================================= ============================================================================================
+
++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+
+===================================================== ================================= =================  ===================================================================================================== 
+設定項目                                              プロパティ名                      データ型           備考
+===================================================== ================================= =================  ===================================================================================================== 
+言語毎コンテンツパスの対応ルール                      contentPathRule                   ResourcePathRule   任意指定(デフォルト=DirectoryBasedResourcePathRule)
+
+レスポンスをChunkedエンコーディングで送信するかどうか forceFlushAfterWritingHeaders     boolean            任意指定(デフォルト=true)
+
+レスポンスの"X-Frame-Options"の設定                   xFrameOptions                     String             任意指定(デフォルト=SAMEORIGIN)
+
+                                                                                                           "X-Frame-Options"の設定と、それに対するframe要素やiframe要素上のページ表示制御は以下のようになる。
+                                                                                                           
+                                                                                                           ======================== ============================================================  
+                                                                                                           "X-Frame-Options"の設定  frame要素やiframe要素上のページ表示を制御
+                                                                                                           ======================== ============================================================  
+                                                                                                           DENY                     すべてのページにおいて表示を禁止
+                                                                                                           SAMEORIGIN               アドレスバーに表示されたドメインと同じページのみ表示を許可
+                                                                                                           NONE                     すぺてのページにおいて表示を許可
+                                                                                                           ======================== ============================================================  
+===================================================== ================================= =================  ===================================================================================================== 
+
+**標準設定**
+  以下は標準設定におけるDI設定の例である。
+
+    .. code-block:: xml
+
+      <!-- HTTPレスポンスハンドラ -->
+      <component class="nablarch.fw.web.handler.HttpResponseHandler" />
+
+
+
+**言語毎のコンテンツパス切り替えを行なう場合の設定**
+  言語毎に切り替えたいコンテンツは、コンテキストルート直下に言語毎のディレクトリを作成し、
+  言語毎のディレクトリにデフォルトのコンテンツパスと同じでパスで配置する。
+  コンテンツパスの例を示す。
+  
+    .. code-block:: bash
+ 
+      # デフォルトのコンテンツパス
+      /management/user/search.jsp
+   
+      # 日本語対応のコンテンツパス
+      /ja/management/user/search.jsp
+   
+      # 英語対応のコンテンツパス
+      /en/management/user/search.jsp
+  
+  リポジトリの設定例を示す。
+  
+    .. code-block:: xml
+  
+      <!-- リソースパスルール -->
+      <component name="resourcePathRule" class="nablarch.fw.web.i18n.DirectoryBasedResourcePathRule" />
+   
+      <!-- HTTPレスポンスハンドラ -->
+      <component class="nablarch.fw.web.handler.HttpResponseHandler">
+        <property name="contentPathRule" ref="resourcePathRule" />
+      </component>
+  
+  スレッドコンテキストに設定された言語と使用されるコンテンツパスの例を示す。\
+  ここでは上記コンテンツパスの例に記載したファイルが配置されているものとする。
+  
+    .. code-block:: bash
+  
+      # HttpResponseオブジェクトに設定されたコンテンツパス
+      servlet:///management/user/search.jsp
+   
+      # スレッドコンテキストの言語 -> 使用されるコンテンツパス
+      ja -> /ja/management/user/search.jsp
+      en -> /en/management/user/search.jsp
+      it -> /management/user/search.jsp
+
+**HTTPレスポンスをChunkedエンコーディングで送信しない場合の設定**
+
+  HTTP通信による通信先の仕様がHTTP1.1に未対応等の理由によりChunkedエンコーディングで送信することができない場合は、
+  以下のように設定することで対応する。
+  
+  リポジトリの設定例を示す。
+  
+    .. code-block:: xml
+   
+      <!-- HTTPレスポンスハンドラ -->
+      <component class="nablarch.fw.web.handler.HttpResponseHandler">
+        <property name="forceFlushAfterWritingHeaders" value="false" />
+      </component>
+
+.. warning::
+ 
+   上記の設定でChunkedエンコーディングで送信しないように設定した場合でも、APサーバの設定によってChunkedエンコーディングで送信されることがあります。その場合は、APサーバの設定を確認・変更してください。
+
+
+**クリックジャッキング攻撃への対策の設定**
+
+  クリックジャッキング攻撃への対策として、HTTPレスポンスヘッダに"X-Frame-Options"を設定する対策がある。\
+  "X-Frame-Options"はframe要素またはiframe要素でページを表示させることを許可するか否かを指定することができる仕組みである。\
+  
+  セキュリティレベルの高い設定をデフォルトに採用しており、全てのHTTPレスポンスのヘッダに、
+  "X-Frame-Options"に"SAMEORIGIN"が設定され、アドレスバーに表示されたドメインと同じページのみ
+  frame要素またはiframe要素を使用したページの表示を許可される。
+  
+  リポジトリで設定を行うことで、デフォルト値を変更することができる。リポジトリの設定例を示す。
+  
+    .. code-block:: xml
+   
+      <!-- HTTPレスポンスハンドラ -->
+      <component class="nablarch.fw.web.handler.HttpResponseHandler">
+        <property name="xFrameOptions" value="DENY" />
+      </component>
+      
+
+.. note::
+
+   リポジトリの"xFrameOptions"に"NONE"を設定した場合は、"SAMEORIGIN"や"DENY"とは異なり、HTTPレスポンスヘッダに"X-Frame-Options"の項目自体を設定しない。
+```
+
+## Knowledge File
+
+- ID: `handlers-HttpResponseHandler--s1`
+
+```json
+{
+  "id": "handlers-HttpResponseHandler--s1",
+  "title": "HTTPレスポンスハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "HttpResponseHandler",
+        "nablarch.fw.handler.HttpResponseHandler",
+        "nablarch.fw.web.handler.HttpResponseHandler",
+        "HTTPレスポンスハンドラ",
+        "HTTPレスポンスオブジェクト",
+        "レスポンス処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "ResourceMapping",
+        "HttpMethodBinding",
+        "ハンドラキュー",
+        "関連するハンドラ",
+        "コンテンツパス",
+        "レスポンスボディ指定方法"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "ステータスコード変換",
+        "404から200",
+        "X-Requested-With",
+        "XMLHttpRequest",
+        "AJAXリクエスト",
+        "300系リダイレクション",
+        "http_response_handler_response_code_conversion"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "forward://",
+        "redirect://",
+        "file://",
+        "classpath://",
+        "HTTPリダイレクション",
+        "サーブレットフォーワード",
+        "IOエラー",
+        "HttpResponse#write()"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "言語切り替え",
+        "ResourcePathRule",
+        "DirectoryBasedResourcePathRule",
+        "FilenameBasedResourcePathRule",
+        "多言語対応",
+        "コンテンツパス切り替え",
+        "i18n",
+        "http_response_handler_i18n"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "contentPathRule",
+        "forceFlushAfterWritingHeaders",
+        "xFrameOptions",
+        "Chunkedエンコーディング",
+        "X-Frame-Options",
+        "クリックジャッキング対策",
+        "DirectoryBasedResourcePathRule",
+        "nablarch.fw.web.handler.HttpResponseHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.HttpResponseHandler`（XMLコンフィグ: `nablarch.fw.web.handler.HttpResponseHandler`）\n\n後続ハンドラの処理結果であるHTTPレスポンスオブジェクトの内容に沿って、サーブレットフォーワードやサーバソケットへの出力などのレスポンス処理を行う。HTTPレスポンスオブジェクトは情報格納用クラスであり、実際のレスポンス処理はこのハンドラが実行する。",
+    "s2": "レスポンスボディの指定方法:\n1. HTTPレスポンスオブジェクトに直接設定（:doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/05_FileDownload` 等で使用）\n2. :ref:`コンテンツパス<content-path>` 文字列で指定（通常業務機能で主に使用）\n\n**ハンドラキュー**: HttpResponseHandler → ResourceMapping → HttpMethodBinding\n\n**関連するハンドラ**\n\n| ハンドラ | 説明 |\n|---|---|\n| :doc:`ResourceMapping`, :doc:`HttpMethodBinding` | 本ハンドラはこれらのハンドラの上位に配置する必要がある |",
+    "s3": "HTTPレスポンスハンドラは内部で404等のエラー用レスポンスが返された際に、200へステータスコードを変換する（ブラウザのレスポンスコードによる挙動差異を防ぐため）。\n\n以下の場合は例外的に内部のエラーコードをそのままステータスコードとする:\n- 300系リダイレクションレスポンスの場合\n- リクエストヘッダ `X-Requested-With` の値が `XMLHttpRequest` の場合（AJAXリクエスト）",
+    "s4": "**[往路処理]**\n1. 後続ハンドラへ処理委譲（往路では本ハンドラは処理を行わない）\n\n**[復路処理]**\n2. :ref:`コンテンツパス<content-path>` 文字列を取得\n3. **forward://** で開始: サーブレットフォーワードを実行。レスポンス出力はフォーワード先サーブレットが行う。完了後にHTTPレスポンスオブジェクトをリターン\n4. HTTPレスポンスヘッダーをクライアントに送信（ボディはChunkedエンコーディングで送信）\n5. **redirect://**、**http://**、**https://** で開始: Locationヘッダに設定しリダイレクト送信。**redirect://** かつ絶対パス指定の場合はサーブレットコンテキストルートのパスを補完\n6. **file://** で開始: ファイルシステム上のファイル内容をレスポンスボディとして送信\n7. **classpath://** で開始: コンテキストクラスローダからリソースを取得しレスポンスボディとして送信\n8. InputStreamが直接設定されている場合、または `HttpResponse#write()` でバッファリングされている場合: その内容をレスポンスボディとして送信\n9. 入出力ストリームをクローズ。HTTPレスポンスオブジェクト上にバッファリングされたレスポンス内容を削除\n10. HTTPレスポンスオブジェクトをリターン\n\n**[例外処理]**\n- 後続ハンドラ実行中の例外: 既定のエラー画面をレスポンスし例外を再送出（サーブレットフォーワード処理中の場合はログ出力のみ）\n- フォーワード先JSP/サーブレットでのエラー: システムエラー画面をクライアントに送信して終了\n- サーブレットフォーワード中のIOエラー: WARNレベルのログを出力しHTTPレスポンスオブジェクトをリターン\n- レスポンス処理・終端処理中のIOエラー: WARNレベルのログを出力して処理継続\n- レスポンス処理・終端処理中のその他の例外: システムエラー画面を送信し終端処理後に例外を再送出",
+    "s5": "HTTPリクエストから取得した言語設定に基づき、フォーワード先を動的に切り替える機能。`ResourcePathRule` 抽象クラスのサブクラスを使用。\n\n| クラス名 | 説明 |\n|---|---|\n| `ResourcePathRule` | 言語対応リソースパスのルール基底クラス。言語は :ref:`ThreadContextHandler` で設定されたスレッドコンテキストから取得。言語未取得時、対応ファイルが存在しない場合、または指定されたリソースパスに拡張子を含まない場合は指定パスをそのまま返す |\n| `DirectoryBasedResourcePathRule` | コンテキストルート直下のディレクトリを言語切り替えに使用（例: `/ja/management/user/search.jsp`） |\n| `FilenameBasedResourcePathRule` | ファイル名サフィックスを言語切り替えに使用（例: `search_ja.jsp`, `search_en.jsp`） |",
+    "s6": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| contentPathRule | ResourcePathRule | | DirectoryBasedResourcePathRule | 言語毎コンテンツパスの対応ルール |\n| forceFlushAfterWritingHeaders | boolean | | true | レスポンスをChunkedエンコーディングで送信するかどうか |\n| xFrameOptions | String | | SAMEORIGIN | レスポンスの\"X-Frame-Options\"の設定 |\n\nX-Frame-Optionsの設定値:\n- `DENY`: すべてのページにおいて表示を禁止\n- `SAMEORIGIN`: アドレスバーに表示されたドメインと同じページのみ表示を許可\n- `NONE`: すべてのページにおいて表示を許可（HTTPレスポンスヘッダに\"X-Frame-Options\"項目自体を設定しない）\n\n> **注意**: `xFrameOptions` に `NONE` を設定した場合は `SAMEORIGIN` や `DENY` とは異なり、HTTPレスポンスヘッダに\"X-Frame-Options\"項目自体を設定しない。\n\n**標準設定**:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\" />\n```\n\n**言語毎のコンテンツパス切り替え設定**:\n```xml\n<component name=\"resourcePathRule\" class=\"nablarch.fw.web.i18n.DirectoryBasedResourcePathRule\" />\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"contentPathRule\" ref=\"resourcePathRule\" />\n</component>\n```\n\nスレッドコンテキストの言語とコンテンツパスの例:\n```bash\n# HttpResponseオブジェクトに設定されたコンテンツパス\nservlet:///management/user/search.jsp\n\n# スレッドコンテキストの言語 -> 使用されるコンテンツパス\nja -> /ja/management/user/search.jsp\nen -> /en/management/user/search.jsp\nit -> /management/user/search.jsp\n```\n\n**ChunkedエンコーディングなしのHTTPレスポンス送信設定** (HTTP1.1未対応の通信先の場合):\n```xml\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"forceFlushAfterWritingHeaders\" value=\"false\" />\n</component>\n```\n\n> **警告**: 上記設定でChunkedエンコーディングなしに設定した場合でも、APサーバの設定によってChunkedエンコーディングで送信されることがある。その場合はAPサーバの設定を確認・変更すること。\n\n**クリックジャッキング攻撃対策設定** (デフォルト: SAMEORIGIN):\n```xml\n<component class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"xFrameOptions\" value=\"DENY\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

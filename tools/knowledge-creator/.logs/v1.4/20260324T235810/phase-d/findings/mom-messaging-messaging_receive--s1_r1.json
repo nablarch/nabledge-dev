@@ -1,0 +1,27 @@
+{
+  "file_id": "mom-messaging-messaging_receive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 has no corresponding source content. The `++++++++++++++++++++++++` line in the RST source between the intro and the '業務アクションハンドラの実装' heading is a decorative visual separator, not a real content section. s3 content is 'なし' (3 characters), well below the 50-character threshold. The source has 3 natural sections (intro + 2 h2), but the knowledge file has 4 sections.",
+      "source_evidence": "The `++++++++++++++++++++++++` line appears between the introductory content and the `------------------------------------------業務アクションハンドラの実装------------------------------------------` heading. It has no associated text and functions as a horizontal rule, not a section heading."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "s1 hints are missing `DataReadHandler`, which is explicitly referenced in s1 content (point 4: 閉局時の挙動が異なる — `:doc:`../handler/DataReadHandler` の上位に :doc:`../handler/ServiceAvailabilityCheckHandler` を配置し`).",
+      "source_evidence": "Source point 4: ':doc:`../handler/DataReadHandler` の上位に :doc:`../handler/ServiceAvailabilityCheckHandler` を配置し、閉局中はメッセージキュー上の受信電文は取得せずに滞留させ'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4 hints are missing several PascalCase handler names that appear in the standard handler queue list and processing flow details within the section content: StatusCodeConvertHandler, GlobalErrorHandler, ThreadContextClearHandler, ThreadContextHandler_main, ThreadContextHandler_request, MultiThreadExecutionHandler, RequestPathJavaPackageMapping.",
+      "source_evidence": "Source HandlerQueue array: ['Main', 'StatusCodeConvertHandler', 'GlobalErrorHandler', 'ThreadContextClearHandler', 'ThreadContextHandler_main', 'DuplicateProcessCheckHandler', 'RequestPathJavaPackageMapping', 'MultiThreadExecutionHandler', ...]. These all appear in the knowledge file's s4 content under '標準ハンドラ構成' and flow details, but are absent from the hints array."
+    }
+  ]
+}

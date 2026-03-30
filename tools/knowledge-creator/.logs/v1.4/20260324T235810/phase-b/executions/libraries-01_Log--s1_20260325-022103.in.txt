@@ -1,0 +1,894 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `libraries-01_Log--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `libraries`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+.. _logging:
+
+====================================================
+ログ出力
+====================================================
+
+------------
+概要
+------------
+フレームワーク、アプリケーションからログ出力を行う機能を提供する。
+
+本機能を使用する際は、明示的な初期処理を必要としない。ただし、ログ出力に使用するリソースを解放するため、終了処理が必要となる。\
+この終了処理は本フレームワークの他の機能で行う必要がある。\
+例えば、Webアプリケーションでの終了処理は、 :doc:`../../handler/NablarchServletContextListener` の機能で行う。
+
+アプリケーションプログラマは、個別アプリケーション毎のログ出力方針に基づいて、プログラム中でログ出力を行う。\
+アプリケーションからログを出力する方法は、 :ref:`loggerUses` に記述する。
+
+------------
+特徴
+------------
+
+ログ出力機能の高い拡張性
+============================================================================================================
+本機能は、以下３つの処理から構成されており、それぞれの実装を差し替えることができる構造となっている。::
+
+  a) ログの書き込み処理
+  b) ログのフォーマット処理
+  c) アプリケーションからのログ出力要求受付処理
+
+個別アプリケーションのログ出力要件に応じて、aやbの単位で差し替えることもできるし、\
+これらだけでは要件を満たせなければcを実装してほぼ全ての処理を差し替えることもできる。\
+例えば、過去のプロジェクトで作成したログ出力ライブラリを使用したい場合などはcを差し替えればよい。\
+尚、オープンソースで使用実績の多いLog4Jについては、専用のcを既に用意している。\
+以降では、他のログ出力実装と区別するため、本フレームワークが提供する各実装を「フレームワーク実装」と呼ぶ。
+
+各種ログの出力機能
+============================================================================================================
+本フレームワークでは、アプリケーションに共通で必要とされる各種ログの出力機能を予め提供している。\
+本フレームワークが出力機能を提供す各種ログの一例を下記に示す。
+
+* :ref:`障害通知ログ<FailureLog>`
+* :ref:`障害解析ログ<FailureLog>`
+* :ref:`SQLログ<SqlLog>`
+* :ref:`パフォーマンスログ<PerformanceLog>`
+* :ref:`HTTPアクセスログ<HttpAccessLog>`
+* :ref:`メッセージングログ<MessagingLog>`
+
+各種ログの出力機能では、ログのフォーマットを設定で変更できるので、個別アプリケーションのログ出力要件に応じてカスタマイズして使用できる。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* ログ出力機能の実装を差し替えることができる。
+* ログ毎にログの出力有無を制御するログレベルと出力先を設定できる。
+* パッケージ単位やクラス単位で設定対象のログを絞り込める。
+* 1つのログを複数の出力先に出力できる。これにより、障害解析用と監視用など、1つのログを目的に応じて別々に収集できる。
+* ログの出力先を変更できる。
+* ログをファイルに出力できる。
+* ログファイルが指定サイズに達したら、出力ファイルを自動で切り替える（出力ファイルをバックアップした後、初期化する）ことができる。
+* ログのフォーマットを変更できる。
+* ログに出力するログレベルを表す文言を変更できる。
+* オブジェクト情報(クラス名とフィールドに保持している値)をログに出力できる。
+* エラー情報(例外クラスのエラーメッセージとスタックトレース)をログに出力できる。
+* ログのフォーマットを設定のみで変更できる。
+* 性能測定を目的としたログ集計ができる。
+* アクセスログを取得できる。
+
+  * アクセスログにリクエストパラメータを出力できる。
+  * アクセスログに含まれるリクエストパラメータの特定項目をマスクできる。
+  * アクションの処理結果(正常終了、業務精査エラー、システムエラー)をログに出力できる。
+
+* ログ監視ツールから監視可能なフォーマットでログを出力できる。
+* 複数プロセスから1つのログファイルに出力できる。
+
+未実装
+==================
+* データベースにログを出力できる。
+* 日付毎に出力ファイルを自動で切り替えることができる。
+
+未検討
+==================
+* リクエストID単位でログの出力有無を制御できる。（リクエストIDについては、 :ref:`request_processing` を参照）
+* アプリケーションを停止することなく、設定の変更を反映できる。
+* ログファイルの改竄を防止できる。
+* ファイルへのログ出力で指定するファイルパスに置換文字を使用できる。
+* ログ出力用のスレッドを、業務処理を実行しているワーカスレッドから独立させることができる。
+* ログ出力機能の実装を部分的に差し替えることができる。（Log4Jのアペンダだけ使用したい場合など）
+* 外部ツールからログの出力ファイルを切り替えることができる。
+* ログに出力するスタックトレース内のメッセージをマスクできる。
+* フレームワークが行う処理の実行時間を測定できる。
+* リクエスト処理の実行時間に対して上限値を指定し、上限値を超えた場合はアラートをログ出力できる。
+* 1トランザクションにおけるSQL文の発行回数の上限値を指定し、上限値を超えた場合はアラートをログ出力できる。
+
+.. _Log_LoggerProcess:
+
+---------------------------------------------------------------------------
+ログ出力要求受付処理
+---------------------------------------------------------------------------
+はじめに、ログ出力要求受付処理について解説する。
+
+クラス図
+========================
+.. image:: ./_images/01/Log_ClassDiagram.jpg
+   :scale: 90
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=========================================================== ===========================================================================================
+インタフェース名                                             概要
+=========================================================== ===========================================================================================
+nablarch.core.log.Logger                                    ログを出力するインタフェース。
+
+                                                            ログ出力機能の実装毎に本インタフェースの実装クラスを作成する。\
+                                                            Loggerインタフェースを実装したクラス及びインスタンスをロガーと呼ぶ。
+
+nablarch.core.log.LoggerFactory                             ロガーを生成するインタフェース。
+
+                                                            フレームワーク内部でログ出力機能の実装に対応するロガーを生成するために使用する。\
+                                                            ログ出力機能の実装毎に本インタフェースの実装クラスを作成する。\
+                                                            LoggerFactoryインタフェースを実装したクラス及びインスタンスをロガーファクトリと呼ぶ。
+=========================================================== ===========================================================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\a) ロガー
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.basic.BasicLogger                         ロガーの基本実装クラス。
+  nablarch.core.log.log4j.Log4JLogger                         Log4Jを使用してログ出力を行うクラス。
+  =========================================================== ===========================================================================================
+
+\b) ロガーファクトリ
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.basic.BasicLoggerFactory                  BasicLoggerを生成するロガーファクトリの基本実装クラス。
+  nablarch.core.log.log4j.Log4JLoggerFactory                  Log4JLoggerを生成するクラス。
+  =========================================================== ===========================================================================================
+
+\c) その他のクラス
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.LoggerManager                             ログ出力機能の全体を取りまとめるクラス。
+
+                                                              設定で指定されたロガーファクトリを生成・保持する。\
+                                                              ログ出力機能の実装に依存する初期処理・終了処理・ロガーの生成はロガーファクトリに委譲する。\
+                                                              LoggerManagerクラスをロガーマネージャと呼ぶ。
+  nablarch.core.log.LogSettings                               ログ出力機能の設定をロードして保持するクラス。
+  =========================================================== ===========================================================================================
+
+.. _Log_LevelDefinition:
+
+ログレベルの定義
+=============================================
+ログレベルは、Log4JやJava Logging APIといった実装毎に定義が異なるため、ここで本フレームワークにおけるログレベルを定義しておく。
+
+本フレームワークにおけるログレベルは、FATAL>ERROR>WARN>INFO>DEBUG>TRACEの6段階とし、FATALからTRACEに向かって順にレベルが低くなる。\
+レベルに応じた出力制御では、指定されたレベル以上のログを全て出力する。\
+例えば、WARNレベルが指定された場合は、FATALレベル,ERRORレベル,WARNレベルで出力を指示しているログのみ出力する。
+
+各ログレベルの意味を下記に示す。
+
+  ================== ===========================================================================================
+  レベル             意味
+  ================== ===========================================================================================
+  FATAL              アプリケーションの継続が不可能になる深刻な問題が発生したことを示す。\
+                     監視が必須で即通報および即対応が必要となる。
+  ERROR              アプリケーションの継続に支障をきたす問題が発生したことを示す。\
+                     監視が必須であるが、通報および対応にFATALレベルほどの緊急性がない。
+  WARN               すぐには影響を与えないが、放置しておくとアプリケーションの継続に支障をきたす問題になる恐れがある事象が発生したことを示す。\
+                     できれば監視した方がよいが、ERRORレベルほどの緊急性がない。
+  INFO               本番運用時にアプリケーションの情報を出力するログレベル。\
+                     アクセスログや統計ログが該当する。
+  DEBUG              開発時にデバッグ情報を出力するログレベル。\
+                     SQLログや性能ログが該当する。
+  TRACE              開発時にデバッグ情報より、さらに細かい情報を出力したい場合に使用するログレベル。
+  ================== ===========================================================================================
+
+
+フレームワークが出力するログについては、  :ref:`fw_log_policy` を参照すること。 
+
+.. warning::
+
+ FATALレベル・ERRORレベル・WARNレベル・INFOレベル::
+
+     通常は、運用監視体制と密接に関わるため、個別アプリケーションではなくフレームワークで出力する。
+     例外として、業務的には必要であるがフレームワークでは出力できないログ（バッチ処理における処理件数など）を出力したい場合などには、
+     プロジェクトの方針に従い、個別アプリケーションからもログ出力を行う。
+
+ DEBUGレベル・TRACEレベル::
+
+     ログの出力量が増えることにより、性能劣化とログファイルのサイズが肥大化するため、通常の本番運用時には出力してはならない。
+
+.. note::
+
+ 通常は、本番運用時にINFOレベルでログを出力する。ログファイルのサイズが肥大化しないよう各プロジェクトにて出力内容を規定すること。
+
+.. _loggerUses:
+
+ログ出力
+========================
+アプリケーションからログを出力するには、ロガーを使用する。このロガーはロガーマネージャから取得する。\
+出力実装例を下記に示す。この例では、UserManagerクラスにおいて、DEBUGレベルのログを出力している。
+
+.. code-block:: java
+
+ // ロガーの取得。クラス変数に保持する。
+ private static final Logger LOGGER = LoggerManager.get(UserManager.class);
+
+.. code-block:: java
+
+ // ログの出力有無を事前にチェックし、ログ出力を行う。
+ if (LOGGER.isDebugEnabled()) {
+     String message = "userId[" + user.getId() + "],name[" + user.getName() + "]";
+     LOGGER.logDebug(message);
+ }
+
+ロガーの取得処理では、ロガー名を引数に指定する。ロガー名の指定方法は、ロガー名を直接指定する方法とクラスを指定する方法がある。\
+クラスを指定した場合は、指定されたクラスのFQCNをロガー名として使用する。
+
+このロガー名に、出力要求側（つまり出力要求を行うアプリケーション）のFQCNを指定しておくと、そのFQCN毎にログ出力設定を変更できる。\
+例えば、出力要求を行うアプリケーションのクラス毎やパッケージ毎に設定を変更できる。
+
+通常ロガー名には、SQLログや監視ログなど、特定の用途向けのログ出力を行う場合は、その用途を表す名前(SQLやMONITOR等）を指定し、\
+それ以外はクラスのFQCNを指定する。アプリケーションプログラマは、個別アプリケーションのログ出力方針に基づき、ロガー名を指定すること。
+
+メッセージの組み立て処理が必要な場合は、Logger#is<ログレベル>Enabledメソッドを使用して、事前に出力有無をチェックすること。\
+ログの出力を行わない場合には、不必要なログ組み立て処理が実行されることによる性能劣化を防ぐためである。
+
+.. note::
+
+ 個別アプリケーションにおいて、常にログを出力することになっているレベルは、ソースコードの可読性が落ちるため、事前チェックをしなくてよい。\
+ 例えば、本番運用時に出力するログレベルをINFOレベルにするのであれば、FATALレベルからINFOレベルまでは事前チェックしなくてよい。
+
+.. _`log_initialize_terminate`:
+
+初期処理と終了処理
+========================================================================
+ログの出力先によってはリソースの確保と解放が必要となるため、本機能ではロガーマネージャが初期処理と終了処理を行う。
+
+初期処理は、始めてロガーの取得が行われるタイミングでロガーマネージャが内部的に実行するが、\
+終了処理は、フレームワーク側で実行するタイミングを判断できない。\
+そのため、個別アプリケーション毎にアプリケーションの終了時にLoggerManager#terminateメソッドを呼び出すこと。
+
+.. warning::
+
+ 本機能を使用する場合は、ロガーマネージャの終了処理の呼び出しをしないと、\
+ アプリケーション終了後にメモリリークが発生する可能性があるため、必ず終了処理を呼び出すこと。
+
+Webアプリケーションでの終了処理は、 :doc:`../../handler/NablarchServletContextListener` の機能で行う。
+
+.. _loggerFactorySetting:
+
+ロガーファクトリの設定方法
+==========================================================================================
+個別アプリケーションにおいて使用する実装（フレームワーク実装やLog4Jなど）は、どのロガーファクトリを使用するかで決まる。\
+使用するロガーファクトリは、プロパティファイルに「loggerFactory.className = LoggerFactoryインタフェースを実装したクラス」で設定する。
+
+プロパティファイルの記述例を下記に示す。
+
+.. code-block:: bash
+
+ # フレームワーク実装を使用する例
+ loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory
+
+.. code-block:: bash
+
+ # Log4Jを使用する例
+ loggerFactory.className=nablarch.core.log.log4j.Log4JLoggerFactory
+
+
+プロパティファイルのパスは、システムプロパティを使用して、"nablarch.log.filePath"をキーにファイルパスを指定する。\
+このファイルパスは、クラスパスとファイルシステム上のパスのどちらを指定しても良い。\
+ファイルパスの指定方法は、nablarch.core.util.FileUtil#getResource(String)のJavadocを参照すること。\
+システムプロパティを指定しなかった場合は、クラスパス直下のlog.propertiesが使用される。
+
+クラスパス上のパスを指定する例を下記に示す。\
+javaコマンドのオプション-Dによる指定を用いて、下記のように実行時のオプションとしてシステムプロパティを設定する。
+
+.. code-block:: bash
+
+ >java -Dnablarch.log.filePath=classpath:nablarch/core/log/log.properties ... 
+
+.. note::
+
+ プロパティファイルが存在しない場合は、ロガーマネージャが例外を送出する。
+
+---------------------------------------------------------------------------------
+書き込み処理とフォーマット処理
+---------------------------------------------------------------------------------
+ここからは、ログの書き込み処理とフォーマット処理について解説する。
+
+クラス図
+========================
+.. image:: ./_images/01/Log_Basic_ClassDiagram.jpg
+   :scale: 70
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=========================================================== ===========================================================================================
+インタフェース名                                             概要
+=========================================================== ===========================================================================================
+nablarch.core.log.basic.LogWriter                           ログを出力先に書き込むインタフェース。
+
+                                                            出力先の媒体毎に本インタフェースの実装クラスを作成する。\
+                                                            LogWriterインタフェースを実装したクラス及びインスタンスをログライタと呼ぶ。
+
+nablarch.core.log.basic.LogFormatter                        ログのフォーマットを行うインタフェース。
+
+                                                            ログのフォーマットの種類毎に本インタフェースの実装クラスを作成する。\
+                                                            LogFormatterインタフェースを実装したクラス及びインスタンスをログフォーマッタと呼ぶ。
+=========================================================== ===========================================================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\a) ログライタ
+
+  =========================================================== =================================================================================================================================================================================
+  クラス名                                                    概要
+  =========================================================== =================================================================================================================================================================================
+  nablarch.core.log.basic.LogWriterSupport                    ログライタの実装をサポートするクラス。
+
+                                                              ログレベルに応じた出力制御とログフォーマッタを使用したログのフォーマットを行う。\
+                                                              サブクラスでは、フォーマット済みのログの書き込み処理を実装する。
+
+  nablarch.core.log.basic.FileLogWriter                       ファイルにログを書き込むクラス。
+
+                                                              ファイルにログを出力するのであれば、基本的にはFileLogWriterを使用すれば良いが、\
+                                                              ファイルサイズや日付以外の条件でログファイルの自動切り替えを実現する必要がある場合には、\
+                                                              これを実装したクラスを作成して入れ替える。
+
+                                                              .. note::
+
+                                                               本ログライタは、プロセス単位にログを出力する。
+                                                               複数プロセスから単一のログファイルに出力したい場合には、後述の\ *SynchronousFileLogWriter*\ を使用すること。
+
+  nablarch.core.log.basic.SynchronousFileLogWriter            複数プロセスから単一のファイルにログを書き込むクラス。
+
+                                                              本クラスを使用するとプロセスをまたがってログ出力処理を直列化できるので、
+                                                              複数プロセスから単一のファイルにログ出力を行う場合でも確実にログを出力できる。\
+
+                                                              
+                                                              用途としては、障害通知ログのように出力頻度が低く、かつサーバ単位でログファイルを一元管理するほうが効率的なログの出力にのみ使用することを想定している。\
+                                                              頻繁にログの出力が行われる場面で本クラスを使用するとロック取得待ちによって性能が著しく劣化するので、\
+                                                              アプリケーションログやアクセスログのように出力頻度の高いログ出力での使用は推奨しない。
+
+                                                              .. note::
+
+                                                               直列化の方法として、ロックファイルを使用してプロセス間の同期をとりログ出力を行う。
+
+  nablarch.core.log.basic.StandardOutputLogWriter             標準出力にログを書き込むクラス。
+  =========================================================== =================================================================================================================================================================================
+
+
+\b) ログフォーマッタ
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.basic.BasicLogFormatter                   ログフォーマッタの基本実装クラス。
+
+                                                              ログに最低限必要な情報（日時、ユーザID、リクエストIDなど）、
+                                                              オブジェクトのフィールド情報、例外オブジェクトのスタックトレースなどをログ出力用にフォーマットする。
+                                                              デバッグ情報やアクセスログ、障害解析用のログなど、多目的に使用できる。
+  =========================================================== ===========================================================================================
+
+\c) その他のクラス
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.basic.LogContext                          ログ出力に必要な情報を保持するクラス。
+
+                                                              メッセージ、エラー情報、日時、ユーザID、リクエストIDなどを保持する。\
+                                                              ユーザID、リクエストIDは、ThreadContextから取得する。
+
+  nablarch.core.log.basic.LogLevelLabelProvider               ログに出力するログレベルを表す文言を提供するクラス。
+  =========================================================== ===========================================================================================
+
+```
+
+
+## 画像・添付ファイル一覧
+
+| ソース内パス | assetsパス |
+|---|---|
+| ./_images/01/Log_ClassDiagram.jpg | assets/libraries-01_Log--s1/Log_ClassDiagram.jpg |
+| ./_images/01/Log_Basic_ClassDiagram.jpg | assets/libraries-01_Log--s1/Log_Basic_ClassDiagram.jpg |
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 
+- 概要
+- 
+- 特徴
+- 
+- 要求
+- 
+- ログ出力要求受付処理
+- 
+- 各クラスの責務
+- インタフェース定義
+- クラス定義
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/libraries-01_Log--s1/filename.png)` |
+
+Office attachments → reference in `assets/libraries-01_Log--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `libraries-01_Log--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

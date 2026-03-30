@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-12_keitai--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 2重サブミット防止",
+      "description": "The rationale for not implementing client-side double-submit prevention is missing. The source explains that most mobile devices show a loading dialog when the submit button is pressed, making accidental double-press unlikely, so client-side control is unnecessary.",
+      "source_evidence": "ほとんどの携帯端末では、サブミットボタンを押下した際に、読み込み中ダイアログボックスが表示されるUIを採用しているため、デスクトップブラウザで発生するボタン二度押しのオペレーションミスは発生しづらい。このため、クライアント側の二度押し制御は不要である。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ウィンドウスコープ note",
+      "description": "Specific page size limits for entry-model mobile devices are missing. The source note provides concrete values (20Kbyte～100Kbyte for 2004-2005 entry models) that quantify why window scope data must be minimized.",
+      "source_evidence": "ページサイズ上限が厳しい端末ではそもそもページが表示できない可能性がある。(2004～2005ごろのエントリモデル端末では20Kbyte～100Kbyte程度が上限)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`n:a` tag is not listed in hints despite being the recommended alternative tag referenced in multiple feature entries (ウィンドウスコープ, ボタン・リンクによるフォーム送信, ファイルダウンロード).",
+      "source_evidence": "通常の **<n:a>** とクエリパラメータを使用すること。/ 通常のリンクタグ(**<n:a>**) もしくは、**<object>** タグを直接使用して実装すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`n:pupupSubmit` is not listed in hints despite being one of the tags in the unusable custom tag library list in the source.",
+      "source_evidence": "<n:pupupSubmit> appears in the JSP code block listing unusable tags"
+    }
+  ]
+}

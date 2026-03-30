@@ -1,0 +1,74 @@
+{
+  "id": "libraries-record_format--s1",
+  "title": "汎用データフォーマット機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能",
+        "固定長",
+        "可変長",
+        "XML/JSON",
+        "EBCDIC",
+        "マルチレイアウト",
+        "パディング",
+        "トリミング",
+        "ファイル入出力"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本構造",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "フォーマット定義ファイル",
+        "レコードフォーマッター",
+        "レコードフォーマッターファクトリ",
+        "Mapオブジェクト",
+        "パース",
+        "シリアライズ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用例",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "フォーマット定義ファイル",
+        "readRecord",
+        "writeRecord",
+        "setInputStream",
+        "setOutputStream",
+        "データ読み込み",
+        "データ書き込み",
+        "固定長ファイル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "固定長、可変長データおよびXML/JSON形式をサポートする汎用入出力ライブラリ。システム間通信、バッチ処理のデータファイル読み書き、ファイルアップロード処理など様々な場面で使用される。\n\n**主な特徴**:\n- 固定長、可変長データおよびXML/JSON形式をサポート\n- マルチレイアウト対応\n- EBCDIC対応、パックおよびゾーン10進数形式をサポート（ホスト環境での利用を想定）\n- 形式精査、パディング/トリミングといった精査・変換処理を実行\n- カスタムのデータ形式や変換処理を追加・拡張可能",
+    "s2": "本機能は以下の3要素で構成される。プログラム側ではパース/シリアライズ等の定型処理を記述する必要はなく、データソース上のレコードをMapオブジェクトとして扱うことができる。\n\n1. **フォーマット定義ファイル**: レコード内のフィールドのレイアウト、データ型、パディング/トリミング等の事前処理定義を記述したファイル。アプリケーションプログラマが作成する。\n2. **レコードフォーマッター** (`DataRecordFormatter`): フォーマット定義ファイルに沿ってデータの読み書きを行うオブジェクト。読み込んだレコードは各フィールド名をキーとするMapオブジェクトとして取得できる。Mapインターフェースを実装した任意のオブジェクトをレコードとして出力可能。\n3. **レコードフォーマッターファクトリ** (`FormatterFactory`): フォーマット定義ファイルを解析しレコードフォーマッターを生成するクラス。機能を拡張する場合は、このファクトリに拡張機能を実装したクラスを設定する。\n\n> **注意**: 別添のツールを使用することで、データファイルや電文の形式を定義した各種仕様書からフォーマット定義ファイルを生成可能。\n\n![汎用データフォーマット機能の概念図](assets/libraries-record_format--s1/dataformat_concept.png)",
+    "s3": "なし",
+    "s4": "**フォーマット定義ファイルの例（固定長ファイル）**:\n```bash\nfile-type:     \"Fixed\"  # 固定長ファイル\ntext-encoding: \"ms932\"  # 文字列型フィールドの文字エンコーディング\nrecord-length:  120     # 各レコードbyte長\n\n[Default]\n1    dataKbn       X(1)  \"2\"\n2    FIcode        X(4)\n6    FIname        X(15)\n21   officeCode    X(3)\n24   officeName    X(15)\n39  ?tegataNum     X(4)  \"9999\"\n43   syumoku       X(1)\n44   accountNum    X(7)\n51   recipientName X(30)\n81   amount        X(10)\n91   isNew         X(1)\n92   ediInfo       X(20)\n112  transferType  X(1)\n113  withEdi       X(1)  \"Y\"\n114 ?unused        X(7)  pad(\"0\")\n```\n\n**レコードフォーマッターの作成**:\n```java\nFile formatFile = new File(\"./test.fmt\");\nDataRecordFormatter formatter = FormatterFactory\n                               .getInstance()\n                               .createFormatter(formatFile);\n```\n\n**データの読み込み**:\n```java\nInputStream in = new FileInputStream(\"./data.dat\");\nformatter.setInputStream(in).initialize();\nList<Map<String, Object>> records = new ArrayList<Map<String, Object>>();\nwhile (formatter.hasNext()) {\n    records.add(formatter.readRecord());\n}\n```\n\n**データの書き込み**:\n```java\nOutputStream out = new FileOutputStream(\"./data.dat\");\nformatter.setOutputStream(out).initialize();\nformatter.writeRecord(new HashMap() {{\n    put(\"FIcode\",     \"9999\");\n    put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n    put(\"officeCode\", \"111\");\n}});\n```",
+    "s5": "なし"
+  }
+}

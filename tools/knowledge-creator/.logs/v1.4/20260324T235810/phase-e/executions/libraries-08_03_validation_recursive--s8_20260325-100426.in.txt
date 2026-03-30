@@ -1,0 +1,199 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_03_validation_recursive--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "HTMLフォームのコード例が省略されている。ソースにはフォームフィールドの命名規則（`userForm.phoneNo1` 等）を示すHTMLコードが含まれており、フォームバインディングを正しく実装するために必要な情報（input要素のname属性の形式）を提供している。",
+      "source_evidence": "<form method=\"POST\">\n<input type=\"hidden\" name=\"userForm.user.id\" value=\"00000001\"/>\n電話番号: <input type=\"text\" name=\"userForm.phoneNo1\"/> - <input type=\"text\" name=\"userForm.phoneNo2\"/> - <input type=\"text\" name=\"userForm.phoneNo3\"/> <br/>\n<input type=\"submit\" value=\"変更\" />\n</form>"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+画面入力用プロパティとデータベースアクセス用プロパティの変換
+---------------------------------------------------------------------
+電話番号などの項目は、データベース上では1つのカラムとなるデータを、画面入力時は複数の入力
+として取り扱うことがある。
+このような場合、 Form にデータベース用のプロパティとは別に画面用のプロパティを保持する
+ことでバリデーションの機構をそのまま使用できる。
+
+
+下記に示すユーザの電話番号変更のHTMLフォームを例に取って使用方法を説明する。
+
+.. code-block:: html
+
+  <form method="POST">
+  <input type="hidden" name="userForm.user.id" value="00000001"/>
+  電話番号: <input type="text" name="userForm.phoneNo1"/> - <input type="text" name="userForm.phoneNo2"/> - <input type="text" name="userForm.phoneNo3"/> <br/>
+  <input type="submit" value="変更" />
+  </form>
+
+
+上記のphoneNo1、phoneNo2、phoneNo3の入力をバリデーションし、バリデーションした結果を
+1つのプロパティとする場合、 Form で3つの入力値のバリデーションを実施する。
+
+.. code-block:: java
+
+    public class UserForm {
+
+        private UserEntity user;
+    
+        // 画面表示用の電話番号プロパティ
+        private String phoneNo1;
+        private String phoneNo2;
+        private String phoneNo3;
+    
+        public UserForm(Map<String, Object> params) {
+            this.user = (UserEntity) params.get("user");
+    
+            this.phoneNo1 = (String) params.get("phoneNo1");
+            this.phoneNo2 = (String) params.get("phoneNo2");
+            this.phoneNo3 = (String) params.get("phoneNo3");
+    
+        }
+    
+        // 再帰的にバリデーションするプロパティ
+        
+        @ValidationTarget
+        public void setUser(UserEntity user) {
+            this.user = user;
+        }
+    
+        @PropertyName("電話番号1")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo1(String phoneNo1) {
+            this.phoneNo1 = phoneNo1;
+        }
+    
+        @PropertyName("電話番号2")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo2(String phoneNo2) {
+            this.phoneNo2 = phoneNo2;
+        }
+    
+        @PropertyName("電話番号3")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo3(String phoneNo3) {
+            this.phoneNo3 = phoneNo3;
+        }
+    
+        // 各プロパティの getter メソッドは省略
+    
+        private static final String[] VALIDATE_PROPS = new String[] {"user", "phoneNo1", "phoneNo2", "phoneNo3"};
+    
+        @ValidateFor("updateUser")
+        public static void validateForUpdateUser(ValidationContext<UserForm> context) {
+    
+            // UserEntity と phoneNo1 ～ phoneNo3 の単項目精査を実行
+            ValidationUtil.validate(context, VALIDATE_PROPS);
+    
+            // 単項目精査でエラーの場合は、共通項目チェックを行わない。
+            if (!context.isValid()) {
+                return;
+            }
+    
+            String phoneNo1 = (String) context.getConvertedValue("phoneNo1");
+            String phoneNo2 = (String) context.getConvertedValue("phoneNo2");
+            String phoneNo3 = (String) context.getConvertedValue("phoneNo3");
+            if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {
+                // 合わせて11文字以上なら精査エラー
+                context.addResultMessage("phoneNo1", "MSG00001");
+            }
+        }
+        
+    }
+    
+
+なお、文字列連結は Action で実施する。
+以下に Action の例を示す。
+
+
+.. code-block:: java
+    
+        // 入力値の精査を実施
+        ValidationContext<UserForm> result
+            = ValidationUtil.validateAndConvertRequest(
+                "userForm", UserForm.class, req, "updateUser");
+
+        result.abortIfInvalid();
+
+        // Formの生成
+        UserForm userForm = result.createObject();
+        UserEntity userEntity = userForm.getUser();
+
+        // Entity 文字列連結した値をに設定する。
+        userEntity.setPhoneNo(userForm.getPhoneNo1() + "-"
+            + userForm.getPhoneNo2() + "-" + userForm.getPhoneNo3());
+        
+        // ・・・DBへの登録、画面遷移の処理は省略・・・
+     
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_03_validation_recursive--s8",
+  "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+      "hints": [
+        "UserForm",
+        "UserEntity",
+        "ValidationContext",
+        "ValidationUtil",
+        "@ValidationTarget",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "画面入力プロパティ",
+        "複数入力バリデーション",
+        "電話番号分割入力",
+        "文字列連結",
+        "バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DBでは1カラムだが画面では複数入力となる項目（例：電話番号）は、Formにデータベース用プロパティとは別に画面用プロパティを持つことで、既存のバリデーション機構をそのまま使用できる。文字列連結はActionで実施する。\n\n**アノテーション**: `@ValidationTarget`, `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`\n**クラス**: `ValidationUtil`, `ValidationContext`\n\nForm実装例（電話番号3分割）:\n```java\npublic class UserForm {\n    private UserEntity user;\n    private String phoneNo1;\n    private String phoneNo2;\n    private String phoneNo3;\n\n    public UserForm(Map<String, Object> params) {\n        this.user = (UserEntity) params.get(\"user\");\n        this.phoneNo1 = (String) params.get(\"phoneNo1\");\n        this.phoneNo2 = (String) params.get(\"phoneNo2\");\n        this.phoneNo3 = (String) params.get(\"phoneNo3\");\n    }\n\n    @ValidationTarget\n    public void setUser(UserEntity user) { this.user = user; }\n\n    @PropertyName(\"電話番号1\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo1(String phoneNo1) { this.phoneNo1 = phoneNo1; }\n\n    @PropertyName(\"電話番号2\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo2(String phoneNo2) { this.phoneNo2 = phoneNo2; }\n\n    @PropertyName(\"電話番号3\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo3(String phoneNo3) { this.phoneNo3 = phoneNo3; }\n\n    private static final String[] VALIDATE_PROPS = new String[] {\"user\", \"phoneNo1\", \"phoneNo2\", \"phoneNo3\"};\n\n    @ValidateFor(\"updateUser\")\n    public static void validateForUpdateUser(ValidationContext<UserForm> context) {\n        ValidationUtil.validate(context, VALIDATE_PROPS);\n        if (!context.isValid()) return;\n\n        String phoneNo1 = (String) context.getConvertedValue(\"phoneNo1\");\n        String phoneNo2 = (String) context.getConvertedValue(\"phoneNo2\");\n        String phoneNo3 = (String) context.getConvertedValue(\"phoneNo3\");\n        // 合計11文字超過でエラー\n        if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {\n            context.addResultMessage(\"phoneNo1\", \"MSG00001\");\n        }\n    }\n}\n```\n\nAction側での文字列連結:\n```java\nValidationContext<UserForm> result = ValidationUtil.validateAndConvertRequest(\n    \"userForm\", UserForm.class, req, \"updateUser\");\nresult.abortIfInvalid();\nUserForm userForm = result.createObject();\nUserEntity userEntity = userForm.getUser();\nuserEntity.setPhoneNo(userForm.getPhoneNo1() + \"-\" + userForm.getPhoneNo2() + \"-\" + userForm.getPhoneNo3());\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

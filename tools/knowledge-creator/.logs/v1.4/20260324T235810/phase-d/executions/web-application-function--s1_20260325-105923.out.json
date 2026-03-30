@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-function--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "別ウィンドウを使う動機・ユースケースが省略されている。ソースでは「リクエストを受け付けてからダウンロードが開始するまでに処理時間がかかってしまう場合など、ユーザにダウンロードのサブミットを送信したことを視覚的に伝達するため」と説明しており、AIがこのパターンをいつ推薦すべきかの判断に必要。",
+      "source_evidence": "ユーザにダウンロードのサブミットを送信したことを視覚的に伝達するために、ダウンロードボタンを押すと別ウィンドウが開きダウンロードを開始したい場合がある。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 別ウィンドウJSP実装例の閉じるボタン",
+      "description": "JSPコード例の `n:button`（閉じるボタン）から `displayMethod=\"NORMAL\"` 属性が省略されている。",
+      "source_evidence": "<n:button uri=\"#\" name=\"close\" onclick=\"window.close();\" displayMethod=\"NORMAL\">閉じる</n:button>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "アクション実装例で使用されているPascalCaseクラス `SqlRow` がhintsに含まれていない。",
+      "source_evidence": "SqlRow record = getRecord(request);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "アクション実装例で使用されているPascalCaseクラス `SqlResultSet` および `SqlRow` がhintsに含まれていない。",
+      "source_evidence": "SqlResultSet records = getRecords(request); ... for (SqlRow record : records) {"
+    }
+  ]
+}

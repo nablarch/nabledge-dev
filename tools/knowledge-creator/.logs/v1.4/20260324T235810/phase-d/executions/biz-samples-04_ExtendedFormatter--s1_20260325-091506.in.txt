@@ -1,0 +1,352 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/04_ExtendedFormatter.rst`
+- Format: `rst`
+
+```
+=====================================
+フォーマッタ機能の拡張
+=====================================
+
+本サンプルで提供するフォーマッタ機能の仕様を解説する。
+
+フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、Nablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。
+
+----------------------------
+提供パッケージ
+----------------------------
+
+本機能は、下記のパッケージで提供される。
+
+  *please.change.me.* **core.dataformat**
+
+  *please.change.me.* **core.dataformat.converter**
+
+
+.. _ExtendedFormatter_keyValueFormatter:
+
+----------------------------
+KeyValueデータフォーマッタ
+----------------------------
+KeyValue形式のデータを取り扱うKeyValueデータフォーマッタについて解説する。
+
+KeyValueデータフォーマッタはapplication/x-www-form-urlencodedで使用されるデータを取り扱う。
+このデータはname1=value1&name2=value2のように、名前と値の組を等号でつなげたものをアンド記号で結んで表現される。
+同一のキーで複数の値を扱うこともできる。
+
+値についてURLエンコードを行う。キーについては汎用データフォーマットのフォーマット定義書式に従いURLエンコードは行わず、使用不可とする。
+
+以下に本機能で使用するクラス一覧を記す。
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - パッケージ名
+     - クラス名
+     - 概要
+   * - *please.change.me.* **core.dataformat**
+     - KeyValueDataFormatterFactory
+     - フォーマッタファクトリクラス。
+       サンプル実装ではcreateFormatter(String fileType, String formatFilePath)メソッドをオーバーライドし、KeyValueDataRecordFormatterのインスタンス生成を可能としている。
+   * - *please.change.me.* **core.dataformat**
+     - KeyValueDataRecordFormatter
+     - フォーマッタクラス。
+       KeyValue形式のデータを解析、構築する。
+       サンプル実装では読み込み時はパラメータの出現順を意識せず、書き込み時はフォーマット定義順でパラメータを出力する。
+   * - *please.change.me.* **core.dataformat.converter**
+     - KeyValueDataConvertorFactory
+     - データコンバータのファクトリクラス。
+       デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。
+   * - *please.change.me.* **core.dataformat.converter**
+     - KeyValueDataConvertorSetting
+     - コンバータの設定情報を保持するクラス。
+       コンバータ名とコンバータ実装クラスの対応表を、DIコンテナから設定する。
+
+----------------------------
+使用方法
+----------------------------
+
+KeyValueデータフォーマッタの使用方法
+--------------------------------------------------------------------
+  業務アプリケーションで作成したフォーマッタファクトリクラスを使用する場合、以下の設定を行う必要がある。
+
+  .. code-block:: xml
+
+    <component name="formatterFactory" class="please.change.me.core.dataformat.KeyValueDataFormatterFactory"/>
+
+
+
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+  KeyValueデータフォーマッタで使用されるフィールドタイプ・フィールドコンバータについて解説する。
+
+  **フィールドタイプ**
+
+    ====================  ===========  =====================================================================================================================
+    タイプ識別子          Java型       内容
+    ====================  ===========  =====================================================================================================================
+    X、N、XN、X9、SX9     String       | KeyValueデータ形式では、すべてのフィールドを文字列（String）として読み書きする。
+                                       | よって、どのタイプ識別子を指定しても動作は変わらない。
+                                       | また、フィールド長の概念が無いので、引数は不要である。
+                                       | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+    ====================  ===========  =====================================================================================================================
+
+    いずれのタイプ識別子もフィールド長の概念が無いので、引数は不要である。
+
+  **フィールドコンバータ**
+ 
+    ==================  =====================  ================================================================================================================================
+    コンバータ名        Java型(変換前後)       内容
+    ==================  =====================  ================================================================================================================================
+    リテラル値          Object <-> Object      | **入力時:** (なにもしない)
+                                               | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+                                               | **引数:** なし
+
+    number              String <-> BigDecimal  | **入力時:** 入力された値が符号なし数値であることを形式チェックした上でBigDecimal型に変換して、返却する。
+                                               |         もし入力された値がnullまたは空文字の場合、nullを返却する。
+                                               | **出力時:** 出力する値を文字列に変換し、符号なし数値であることを形式チェックした上で出力する。
+                                               |         もし出力する値がnullの場合、空文字を出力する。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.NumberString
+                                               | **引数:** なし
+
+    signed_number       String <-> BigDecimal  | 符号が許可される点以外は **number** コンバータと同じ仕様。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.SignedNumberString
+                                               | **引数:** なし
+    ==================  =====================  ================================================================================================================================
+
+
+同一キーで複数の値を取り扱う場合
+--------------------------------------------------------------------
+  同一キーで複数の値を取り扱う場合、データはString配列形式で保持される。
+  また、フォーマット定義ファイルにて多重度を設定する必要がある。
+  定義方法についてはNablarch Application Framework解説書の汎用データフォーマット機能を参照すること。
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-04_ExtendedFormatter--s1`
+
+```json
+{
+  "id": "biz-samples-04_ExtendedFormatter--s1",
+  "title": "フォーマッタ機能の拡張",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "フォーマッタ機能の拡張",
+        "汎用データフォーマット機能",
+        "フォーマッタ拡張サンプル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "提供パッケージ",
+      "hints": [
+        "please.change.me.core.dataformat",
+        "please.change.me.core.dataformat.converter",
+        "提供パッケージ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "KeyValueデータフォーマッタ",
+        "application/x-www-form-urlencoded",
+        "URLエンコード",
+        "KeyValue形式",
+        "同一キー複数値"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "KeyValueデータフォーマッタ",
+      "hints": [
+        "KeyValueDataFormatterFactory",
+        "KeyValueDataRecordFormatter",
+        "KeyValueDataConvertorFactory",
+        "KeyValueDataConvertorSetting",
+        "フォーマッタクラス一覧",
+        "コンバータファクトリ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "使用方法",
+        "KeyValueデータフォーマッタ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "使用方法",
+      "hints": [
+        "使用方法",
+        "KeyValueデータフォーマッタ使用方法",
+        "フィールドタイプ",
+        "コンバータ定義",
+        "複数値"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "KeyValueデータフォーマッタの使用方法",
+      "hints": [
+        "KeyValueDataFormatterFactory",
+        "formatterFactory",
+        "XMLコンポーネント設定",
+        "フォーマッタファクトリ設定"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "フィールドタイプ",
+        "フィールドコンバータ",
+        "リテラル値",
+        "number",
+        "signed_number",
+        "NumberString",
+        "SignedNumberString",
+        "DefaultValue",
+        "BigDecimal",
+        "X",
+        "N",
+        "XN",
+        "X9",
+        "SX9"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "同一キーで複数の値を取り扱う場合",
+      "hints": [
+        "同一キー",
+        "複数値",
+        "String配列",
+        "多重度",
+        "フォーマット定義ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本サンプルで提供するフォーマッタ機能の仕様を解説する。汎用データフォーマット機能の概要および詳細はNablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。",
+    "s2": "提供パッケージ:\n- `please.change.me.core.dataformat`\n- `please.change.me.core.dataformat.converter`",
+    "s3": "KeyValueデータフォーマッタは `application/x-www-form-urlencoded` 形式のデータを処理する。データ形式: `name1=value1&name2=value2`（名前と値を `=` で結び `&` で区切る）。\n\n**制約:**\n- 値: URLエンコードを行う\n- キー: URLエンコード不可（汎用データフォーマットのフォーマット定義書式に従い使用不可）\n- 同一キーで複数の値を扱うことが可能",
+    "s4": "| パッケージ | クラス名 | 概要 |\n|---|---|---|\n| `please.change.me.core.dataformat` | `KeyValueDataFormatterFactory` | フォーマッタファクトリクラス。`createFormatter(String fileType, String formatFilePath)` をオーバーライドし、`KeyValueDataRecordFormatter` のインスタンス生成を可能とする。 |\n| `please.change.me.core.dataformat` | `KeyValueDataRecordFormatter` | フォーマッタクラス。KeyValue形式データの解析・構築。読み込み時はパラメータ出現順に依存しない。書き込み時はフォーマット定義順で出力する。 |\n| `please.change.me.core.dataformat.converter` | `KeyValueDataConvertorFactory` | データコンバータのファクトリクラス。デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。 |\n| `please.change.me.core.dataformat.converter` | `KeyValueDataConvertorSetting` | コンバータ設定情報クラス。コンバータ名と実装クラスの対応表をDIコンテナから設定する。 |",
+    "s5": "KeyValueデータフォーマッタの使用方法について解説する。フォーマッタファクトリの設定方法、フィールドタイプおよびフィールドコンバータの定義一覧、同一キーで複数の値を取り扱う方法を説明する。",
+    "s6": "- KeyValueデータフォーマッタの使用方法\n- フィールドタイプ・フィールドコンバータ定義一覧\n- 同一キーで複数の値を取り扱う場合",
+    "s7": "業務アプリケーションでフォーマッタファクトリクラスを使用する場合、以下のコンポーネント設定が必要:\n\n```xml\n<component name=\"formatterFactory\" class=\"please.change.me.core.dataformat.KeyValueDataFormatterFactory\"/>\n```",
+    "s8": "**フィールドタイプ**\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN、X9、SX9 | String | KeyValueデータ形式ではすべてのフィールドをStringとして読み書きする。どのタイプ識別子を指定しても動作は変わらない。フィールド長の概念がないため引数は不要。Number型（BigDecimalなど）を読み書きしたい場合は `number`/`signed_number` コンバータを使用する。 |\n\n**フィールドコンバータ**\n\n| コンバータ名 | Java型(変換前後) | 内容 |\n|---|---|---|\n| リテラル値 | Object <-> Object | **入力時:** 何もしない。**出力時:** 値が未設定の場合に指定されたリテラル値を出力する。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.DefaultValue`。引数: なし。 |\n| number | String <-> BigDecimal | **入力時:** 符号なし数値であることを形式チェックしBigDecimalに変換。null/空文字の場合はnullを返す。**出力時:** 文字列に変換し符号なし数値であることをチェック。nullの場合は空文字を出力。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.NumberString`。引数: なし。 |\n| signed_number | String <-> BigDecimal | 符号が許可される点以外は `number` コンバータと同じ仕様。デフォルト実装クラス: `nablarch.core.dataformat.convertor.value.SignedNumberString`。引数: なし。 |",
+    "s9": "同一キーで複数の値を取り扱う場合、データはString配列形式で保持される。フォーマット定義ファイルにて多重度を設定する必要がある。定義方法はNablarch Application Framework解説書の汎用データフォーマット機能を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "PascalCase class name 'Main' is referenced in s2 content (「Javaコマンドから Main を実行することによって開始され」) but is absent from s2 hints.",
+      "source_evidence": "**プロセス制御部分** は、 Javaコマンドから :doc:`../handler/Main` を実行することによって開始され"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "Four PascalCase handler class names that appear in the s4 handler queue and/or processing flows are missing from s4 hints: 'Main' (first handler in queue, appears in multiple flows), 'ThreadContextClearHandler' (appears twice in the handler queue at positions 4 and 12), 'MessageReplyHandler' (appears in nearly every processing flow), and 'MessagingAction' (appears in multiple flows including normalreply, errorreply, abort, retryerror).",
+      "source_evidence": "HandlerQueue includes Main, ThreadContextClearHandler (×2), MessageReplyHandler, MessagingAction; all appear in multiple Flow entries in the source JavaScript."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_01_validation_architecture--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (バリデーションの処理の流れ section content)",
+      "description": "The sequence diagram image (ConceptualValidationSequeceDiagram.jpg) from the source section「バリデーションの処理の流れ」is not included in the knowledge file. The class diagram IS included in s1, but the analogous sequence diagram showing the conceptual validation processing flow is omitted entirely. An AI answering questions about the validation processing sequence cannot reference this diagram.",
+      "source_evidence": ".. image:: ../_images/08/ConceptualValidationSequeceDiagram.jpg\n   :scale: 75"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file index / section structure",
+      "description": "The source h2 section「バリデーションの処理の流れ」(_validation_sequence) has no corresponding knowledge section. Its textual content is silently merged into s3's opening paragraph without being labeled or indexed as a distinct topic. The source has 4 major h2 sections (クラス図, バリデーションの処理の流れ, 設定例, 設定内容詳細), but the knowledge file has only 3 sections (s1, s2, s3), with the processing-flow section absorbed into s3.",
+      "source_evidence": ".. _validation_sequence:\n\nバリデーションの処理の流れ\n================================\n..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "s3 contains the merged content from「バリデーションの処理の流れ」section (ValidationManager is central, delegates to convertors/validators) but lacks hints to surface it for processing-flow queries. Hints such as「バリデーション処理の流れ」「シーケンス図」「処理フロー」are absent, so an AI answering questions like「バリデーションの処理フローを教えてください」may not route to s3.",
+      "source_evidence": "このシーケンス図からわかるとおり、バリデーションの処理は、 ValidationManager が中心となってコンバータ、バリデータの呼び出しを行うことで実現している。"
+    }
+  ]
+}

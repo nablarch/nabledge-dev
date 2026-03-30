@@ -1,0 +1,122 @@
+{
+  "id": "biz-samples-03_ListSearchResult--s1",
+  "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "提供パッケージ",
+      "hints": [
+        "listSearchResult",
+        "タグファイル",
+        "提供パッケージ",
+        "resources/META-INF/tags"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "検索結果一覧表示",
+        "ページング",
+        "検索結果件数表示",
+        "並び替え",
+        "listSearchResult"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "構成",
+      "hints": [
+        "DBAccessSupport",
+        "ListSearchInfo",
+        "TooManyResultException",
+        "listSearchResult",
+        "listSearchPaging",
+        "listSearchSubmit",
+        "listSearchParams",
+        "listSearchSortSubmit",
+        "table",
+        "クラス構成"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用方法",
+      "hints": [
+        "DbAccessSupport",
+        "search",
+        "TooManyResultException",
+        "SQL_ID",
+        "ページング検索",
+        "検索処理実装"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "ListSearchInfoクラス",
+      "hints": [
+        "ListSearchInfo",
+        "pageNumber",
+        "検索条件クラス",
+        "リクエストスコープ",
+        "ページング",
+        "@PropertyName",
+        "@Required",
+        "@NumberRange",
+        "@Digits"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "listSearchResultタグ",
+      "hints": [
+        "listSearchResult",
+        "resultSetName",
+        "一覧表示タグ",
+        "検索結果"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "全体",
+      "hints": [
+        "listSearchInfoName",
+        "ListSearchInfo",
+        "検索結果件数表示",
+        "ページング表示制御"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "検索結果件数",
+        "listSearchResult属性"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "ページング表示",
+        "サブミットURI"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "提供パッケージ: `resources/META-INF/tags/listSearchResult`",
+    "s2": "listSearchResultタグファイルは以下の機能を提供する:\n\n- 検索結果件数の表示\n- 全件一覧表示（1画面）\n- ページング（指定件数毎に表示）\n- 検索結果の並び替え",
+    "s3": "フレームワーク提供クラス:\n\n| クラス名 | 概要 |\n|---|---|\n| `DBAccessSupport` | 一覧検索用のsearchメソッドを提供するサポートクラス |\n| `ListSearchInfo` | 一覧検索用の情報を保持するクラス |\n| `TooManyResultException` | 検索結果件数が最大件数（上限）を超えた場合の例外 |\n\nタグファイル:\n\n| タグ名 | 概要 |\n|---|---|\n| `listSearchResult` | 検索結果の一覧表示 |\n| `listSearchPaging` | ページングを出力 |\n| `listSearchSubmit` | ページングのサブミット要素を出力 |\n| `listSearchParams` | ページングのサブミット要素用の変更パラメータを出力 |\n| `table` | テーブルを出力 |\n| `listSearchSortSubmit` | ソート用のサブミット要素を出力 |",
+    "s4": "**クラス**: `DbAccessSupport`\n\n`search(SQL_ID, ListSearchInfo)` の動作:\n1. SQL_IDとListSearchInfoから検索結果件数を取得\n2. 件数が上限超過の場合は`TooManyResultException`を送出\n3. 上限以下の場合は検索を実行し結果を返す。件数はListSearchInfoに設定\n\n> **注意**: SQL_IDには通常の検索SELECT文を指定する。件数取得・開始位置・取得件数の指定はフレームワークが処理する。\n\n`TooManyResultException`は最大件数と実際の取得件数を保持する。上限設定は :ref:`ListSearchResult_Setting` 参照。\n\n```java\nSqlResultSet searchResult = null;\ntry {\n    searchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\n} catch (TooManyResultException e) {\n    throw new ApplicationException(\n        MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount()));\n}\n```",
+    "s5": "**クラス**: `ListSearchInfo`\n\n業務アプリケーションの検索条件クラスはListSearchInfoを継承する。\n\nListSearchInfoを継承するクラスの必須実装:\n- `pageNumber`（取得対象ページ番号）を入力精査に含める\n\nアクションの必須実装:\n- ListSearchInfoを継承したクラスのオブジェクトをリクエストスコープに設定する\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    // バリデーション機能に対応したコンストラクタ\n    public W11AC01SearchForm(Map<String, Object> params) {\n        setPageNumber((Integer) params.get(\"pageNumber\"));\n    }\n    \n    @PropertyName(\"ページ番号\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) {\n        super.setPageNumber(pageNumber);\n    }\n    \n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS; // pageNumberを含む\n    }\n}\n```\n\nアクション側:\n```java\nctx.setRequestScopedVar(\"11AC_W11AC01\", condition); // ListSearchInfoを継承したオブジェクトをリクエストスコープに設定\nsearchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\nctx.setRequestScopedVar(\"searchResult\", searchResult); // 検索結果をリクエストスコープに設定\n```",
+    "s6": "`listSearchResult`タグは検索結果のリスト表示を行うタグ（:ref:`ListSearchResult_Tag` 参照）。\n\n> **注意**: `resultSetName`属性で指定された検索結果がリクエストスコープに存在しない場合、listSearchResultタグは何も出力しない（検索画面の初期表示ケースに該当）。",
+    "s7": "| 属性 | 説明 |\n|---|---|\n| `listSearchInfoName` | ListSearchInfoをリクエストスコープから取得する名前。未指定の場合は「検索結果件数」と「ページング」を表示しない。一括削除確認画面など一覧表示のみの場合は指定しない。 |",
+    "s8": "| 属性 | デフォルト | 説明 |\n|---|---|---|\n| `useResultCount` | true | 検索結果件数を表示するか否か |",
+    "s9": "| 属性 | 必須 | デフォルト | 説明 |\n|---|---|---|---|\n| `usePaging` | | true | ページングを表示するか否か |\n| `searchUri` | ○ | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必須。 |"
+  }
+}

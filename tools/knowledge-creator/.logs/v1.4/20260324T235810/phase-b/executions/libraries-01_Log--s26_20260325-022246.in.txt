@@ -1,0 +1,887 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `libraries-01_Log--s26`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `libraries`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+ログに出力するログレベルを表す文言の変更方法
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+LogLevelLabelProviderクラスを使用することで、ログレベルを表す文言をプロパティファイルに設定できる。\
+ログレベルを表す文言のデフォルトは、LogLevel列挙型の名称となる。\
+BasicLogFormatterクラスは、LogLevelLabelProviderクラスを使用して、ログレベルを表す文言の変更をサポートしている。
+
+まず、文言を変更する前の設定例と出力例を下記に示す。\
+ロガー設定の名称（root）の後にデフォルトの文言（FATAL, ERRORなど）が表示されている。
+
+.. code-block:: bash
+  
+ writerNames=appFile
+ 
+ writer.appFile.filePath=/var/log/app/app.log
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] boot_proc = [$bootProcess$] req_id = [$requestId$] usr_id = [$userId$] $message$
+
+.. code-block:: java
+
+ 2011-02-28 12:32:26.366 -FATAL- root [null] boot_proc = [] req_id = [null] usr_id = [null] FATALメッセージ
+ 2011-02-28 12:32:26.366 -ERROR- root [null] boot_proc = [] req_id = [null] usr_id = [null] ERRORメッセージ
+ 2011-02-28 12:32:26.366 -WARN- root [null] boot_proc = [] req_id = [null] usr_id = [null] WARNメッセージ
+ 2011-02-28 12:32:26.366 -INFO- root [null] boot_proc = [] req_id = [null] usr_id = [null] INFOメッセージ
+ 2011-02-28 12:32:26.366 -DEBUG- root [null] boot_proc = [] req_id = [null] usr_id = [null] DEBUGメッセージ
+ 2011-02-28 12:32:26.366 -TRACE- root [null] boot_proc = [] req_id = [null] usr_id = [null] TRACEメッセージ
+
+次に、文言を変更した後の設定例と出力例を下記に示す。\
+ロガー設定の名称（root）の後に指定した文言（F, Eなど）が表示される。
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ writer.appFile.filePath=/var/log/app/app.log
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] boot_proc = [$bootProcess$] req_id = [$requestId$] usr_id = [$userId$] $message$
+ # <ログライタのプレフィックス>.formatter.label.<LogLevel列挙型の名称の小文字>に文言を指定する。
+ writer.appFile.formatter.label.fatal=F
+ writer.appFile.formatter.label.error=E
+ writer.appFile.formatter.label.warn=W
+ writer.appFile.formatter.label.info=I
+ writer.appFile.formatter.label.debug=D
+ writer.appFile.formatter.label.trace=T
+
+.. code-block:: java
+
+ 2011-02-28 12:33:39.569 -F- root [null] boot_proc = [] req_id = [null] usr_id = [null] FATALメッセージ
+ 2011-02-28 12:33:39.569 -E- root [null] boot_proc = [] req_id = [null] usr_id = [null] ERRORメッセージ
+ 2011-02-28 12:33:39.569 -W- root [null] boot_proc = [] req_id = [null] usr_id = [null] WARNメッセージ
+ 2011-02-28 12:33:39.569 -I- root [null] boot_proc = [] req_id = [null] usr_id = [null] INFOメッセージ
+ 2011-02-28 12:33:39.569 -D- root [null] boot_proc = [] req_id = [null] usr_id = [null] DEBUGメッセージ
+ 2011-02-28 12:33:39.569 -T- root [null] boot_proc = [] req_id = [null] usr_id = [null] TRACEメッセージ
+
+カスタマイズ方法
+===================================================
+ログライタとログフォーマッタのカスタマイズ方法について説明する。
+
+ログライタのカスタマイズ方法
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+新しいログライタを追加する場合は、LogWriterインタフェースを実装したクラスを作成する。\
+ログフォーマッタを使用するログライタを作成する場合は、共通処理を提供するLogWriterSupportクラスを継承して作成できる。\
+
+ログフォーマッタのカスタマイズ方法
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+新しいログフォーマッタを追加する場合は、LogFormatterインタフェースを実装したクラスを作成する。\
+ログレベルを表す文言を設定で変更可能にしたい場合は、LogLevelLabelProviderクラスを使用する。
+
+新しいログフォーマッタの追加に伴い、ログ出力時に指定するパラメータを増やし、ログフォーマッタで増やしたパラメータを受け取りたいことがある。\
+本機能では、ログ出力時に指定するパラメータを増やす目的で、Loggerインタフェースのログ出力メソッドにObject型の可変長引数optionsを設けている。\
+シグネチャの例としてLogger#logInfoメソッドを下記に示す。
+
+.. code-block:: java
+
+ // Logger#logInfoメソッドのシグネチャ
+ public void logInfo(String message, Object... options)
+ public void logInfo(String message, Throwable cause, Object... options)
+
+ログ出力時のパラメータを増やしたい場合は、options引数を規定して使用すること。
+
+ログ出力項目の変更方法
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BasicLogFormatterは、LogItemインタフェースを使用して各プレースホルダに対応する出力項目を取得する。\
+既存プレースホルダの出力内容の変更や新規にプレースホルダを追加したい場合は、\
+LogItemを実装したクラスとBasicLogFormatterを継承したクラスを作成することで実現できる。
+
+ログフォーマッタの設定から起動プロセスを取得するように変更する場合の例を示す。\
+ログフォーマッタの設定は、下記を想定する。
+
+.. code-block:: bash
+
+ # ログフォーマッタの設定例(ログライタの設定は省略)
+ writer.appFile.className=＜ログライタのクラス名＞
+ # カスタムのログフォーマッタを指定する。
+ writer.appFile.formatter.className=nablarch.core.log.basic.CustomLogFormatter
+ # フォーマットを指定する。
+ writer.appFile.formatter.format=$logLevel$ $loggerName$ [$bootProcess$]
+ # ログフォーマッタの設定で起動プロセスを指定する。
+ # ここで指定した起動プロセスを$bootProcess$に出力する。
+ writer.appFile.formatter.bootProcess=CUSTOM_PROCESS
+
+まず、LogItemを実装したクラス(CustomBootProcessItem)を作成し、ログフォーマッタの設定から起動プロセスを取得する。\
+CustomBootProcessItemの実装例を下記に示す。
+
+.. code-block:: java
+
+ 
+ // カスタムの起動プロセスを取得するクラス。
+ public class CustomBootProcessItem implements LogItem<LogContext> {
+     private String bootProcess;
+     public CustomBootProcessItem(ObjectSettings settings) {
+         // ログフォーマッタの設定から起動プロセスを取得する。
+         bootProcess = settings.getProp("bootProcess");
+     }
+     public String get(LogContext context) {
+         // 設定から取得した起動プロセスを返す。
+         return bootProcess;
+     }
+ }
+
+次に、BasicLogFormatterを継承し、作成したCustomBootProcessItemを追加する。実装例を下記に示す。\
+BasicLogFormatterのgetLogItemsメソッドをオーバーライドしてCustomBootProcessItemを追加する。
+
+.. code-block:: java
+
+ public class CustomLogFormatter extends BasicLogFormatter {
+     
+     // フォーマット対象のログ出力項目を取得するメソッドをオーバーライドする。
+     protected Map<String, LogItem<LogContext>> getLogItems(ObjectSettings settings) {
+         
+         // 起動プロセスのプレースホルダを上書きで設定する。
+         Map<String, LogItem<LogContext>> logItems = super.getLogItems(settings);
+         logItems.put("$bootProcess$", new CustomBootProcessItem(settings));
+         return logItems;
+     }
+ }
+
+ログフォーマッタの設定例に示した設定値によるログの出力例を下記に示す。
+ログフォーマッタの設定で指定した起動プロセスが出力される。
+
+.. code-block:: bash
+
+ # ロブレベル、ロガー名、起動プロセスが出力される。
+ INFO ROO [CUSTOM_PROCESS]
+
+.. _propsSettingRules:
+
+------------------------------------------------------------------------------------
+プロパティファイルの記述ルール
+------------------------------------------------------------------------------------
+
+ロガーファクトリの設定
+==============================================================================
+
+=========================================================== ===========================================================================================
+プロパティ名                                                設定値
+=========================================================== ===========================================================================================
+loggerFactory.className                                     | 生成するロガーファクトリのクラス名。
+                                                            | LoggerFactoryを実装したクラスのFQCNを指定する。
+=========================================================== ===========================================================================================
+
+フレームワーク実装の設定
+==========================================================================================
+
+ログライタの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+=========================================================== ===========================================================================================
+プロパティ名                                                設定値
+=========================================================== ===========================================================================================
+writerNames                                                 | 使用する全てのログライタの名称。必須。
+                                                            | 複数指定する場合はカンマ区切り。
+                                                            | 「"writer." + <ここで指定したログライタの名称>」をキーのプレフィックスにして、ログライタ毎の設定を行う。
+writer.<ログライタの名称>.className                         | ログライタのクラス名。必須。
+                                                            | LogWriterを実装したクラスのFQCNを指定する。
+writer.<ログライタの名称>.<プロパティ名>                    | ログライタ毎のプロパティに設定する値。
+                                                            | 設定内容は、使用するログライタのJavadocを参照すること。
+=========================================================== ===========================================================================================
+
+ロガーの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+=========================================================== ==========================================================================================================================================
+プロパティ名                                                設定値
+=========================================================== ==========================================================================================================================================
+availableLoggersNamesOrder                                  | 使用する全てのロガー設定の名称。必須。
+                                                            | 複数指定する場合はカンマ区切り。
+                                                            | 「"loggers." + <ここで指定されたロガー設定の名称>」をキーのプレフィックスに使用して、ロガー設定毎の設定を行う。
+loggers.<ロガー設定の名称>.nameRegex                        | ロガー名とのマッチングに使用する正規表現。必須。
+                                                            | 正規表現は、ロガー設定の対象となるロガーを絞り込むために使用する。
+                                                            | ロガーの取得時に指定されたロガー名（つまりLoggerManager#getメソッドの引数に指定されたロガー名）に対してマッチングを行う。
+loggers.<ロガー設定の名称>.level                            | ログレベルの名称。必須。
+                                                            | LogLevel列挙型の名称を指定する。
+                                                            | ここで指定したレベル以上のログを全て出力する。
+loggers.<ロガー設定の名称>.writerNames                      | 出力先とするログライタの名称。必須。
+                                                            | 複数指定する場合はカンマ区切り。
+                                                            | ここで指定した全てのログライタに対してログの書き込みを行う。
+=========================================================== ==========================================================================================================================================
+
+.. _`file_log_writer_config`:
+
+FileLogWriterの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+=========================================================== ===========================================================================================
+プロパティ名                                                設定値
+=========================================================== ===========================================================================================
+writer.<ログライタの名称>.level                             | ログレベルの名称。(必須)
+                                                            | LogLevel列挙型の名称を指定する。
+                                                            | ここで指定したレベル以上のログを全て出力する。
+                                                            | 指定がない場合はレベルに応じた出力制御を行わず、全てのレベルのログを出力する。
+writer.<ログライタの名称>.formatter.className               | ログライタで使用するログフォーマッタのクラス名。
+                                                            | LogFormatterを実装したクラスのFQCNを指定する。
+writer.<ログライタの名称>.formatter.<プロパティ名>          | ログフォーマッタ毎のプロパティに設定する値。
+                                                            | 設定内容は、使用するログフォーマッタのJavadocを参照すること。
+writer.<ログライタの名称>.filePath                          | 書き込み先のファイルパス。(必須)
+writer.<ログライタの名称>.encoding                          | 書き込み時に使用する文字エンコーディング。オプション。
+                                                            | 指定しなければシステムプロパティ(file.encoding)から取得した文字エンコーディング。
+                                                            | 指定できるエンコーディングは、「java.nio.charset.Charset#forName」に指定する形式と同じである。
+writer.<ログライタの名称>.outputBufferSize                  | 出力バッファのサイズ。オプション。
+                                                            | 単位はキロバイト。1000バイトを1キロバイトと換算する。
+                                                            | １以上を指定する。指定しなければ8KB。
+writer.<ログライタの名称>.maxFileSize                       | 書き込み先ファイルの最大サイズ。オプション。
+                                                            | 単位はキロバイト。1000バイトを1キロバイトと換算する。
+                                                            | 指定しなければ自動切替なし。
+                                                            | 指定値が解析可能な整数値(Long.parseLong)でない場合は自動切替なし。
+                                                            | 指定値が０以下の場合は自動切替なし。
+                                                            | 古いログファイル名は、<通常のファイル名>.yyyyMMddHHmmssSSS.old。
+=========================================================== ===========================================================================================
+
+SynchronousFileLogWriterの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SynchronousFileLogWriterは、  :ref:`file_log_writer_config` で記載したプロパティに加えて以下のプロパティを持つ。
+
+=========================================================== ===========================================================================================
+プロパティ名                                                設定値
+=========================================================== ===========================================================================================
+writer.<ログライタの名称>.lockFilePath                      | ロックファイルのパス。(必須)
+writer.<ログライタの名称>.lockRetryInterval                 | ロック取得失敗時の再試行間隔（ミリ秒）。
+                                                            | 指定しなければ1ミリ秒間隔で再試行が行われる。
+writer.<ログライタの名称>.lockWaitTime                      | ロック取得の待機時間（ミリ秒）。
+                                                            | ここで設定した時間を超えてもロックを取得できなかった場合、例外をスローする。
+                                                            | 指定しなければ1800ミリ秒までロック取得待ちが行われる。
+writer.<ログライタの名称>.failureCodeCreateLockFile         | ロックファイルが生成できない場合のログ出力に使用する障害通知コード。
+                                                            | 指定しなければ以下のログが出力される。（{0}にはロックファイルのパスが設定される）
+                                                            | "failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}]."
+writer.<ログライタの名称>.failureCodeReleaseLockFile        | 生成したロックファイルを解放（削除）できない場合のログ出力に使用する障害通知コード。
+                                                            | 指定しなければ以下のログが出力される。（{0}にはロックファイルのパスが設定される）
+                                                            | "failed to delete lock file. lock file path=[{0}]."
+writer.<ログライタの名称>.failureCodeForceDeleteLockFile    | 解放されないロックファイルを強制削除できない場合のログ出力に使用する障害通知コード。
+                                                            | 指定しなければ以下のログが出力される。（{0}にはロックファイルのパスが設定される）
+                                                            | "failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}]."
+writer.<ログライタの名称>.failureCodeInterruptLockWait      | ロック待ちでスレッドをスリープしている際に割り込みが発生した場合のログ出力に使用する障害通知コード。
+                                                            | 指定しなければ以下のログが出力される。
+                                                            | "interrupted while waiting for lock retry."
+=========================================================== ===========================================================================================
+
+
+
+BasicLogFormatterの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+============================================================================ ===========================================================================================
+プロパティ名                                                                 設定値
+============================================================================ ===========================================================================================
+writer.<ログライタの名称>.formatter.format                                   | フォーマット文字列(オプション)
+writer.<ログライタの名称>.formatter.datePattern                              | 日時のフォーマットに使用するパターン(オプション)
+                                                                             | 指定しなければはyyyy-MM-dd HH:mm:ss.SSS
+writer.<ログライタの名称>.formatter.label.<LogLevel列挙型の名称の小文字>     | ログレベルを表す文言(オプション)
+                                                                             | 指定しなければLogLevel列挙型の名称を使用する。
+============================================================================ ===========================================================================================
+
+.. _AppLog_Common:
+
+------------------------------------------
+各種ログの出力
+------------------------------------------
+本フレームワークでは、アプリケーションに共通で必要とされるログの種類を定義し、ログの種類毎に出力機能を提供する。
+
+ログの種類
+==================================================================
+本フレームワークで出力機能を提供しているログの種類を下記に示す。\
+
+============================================== ===================================================================================================================
+ログの種類                                     説明
+============================================== ===================================================================================================================
+:ref:`障害通知ログ<FailureLog>`                障害発生時に1次切り分け担当者を特定するのに必要な情報を出力する。
+:ref:`障害解析ログ<FailureLog>`                障害原因の特定に必要な情報を出力する。
+:ref:`SQLログ<SqlLog>`                         深刻なパフォーマンス劣化の要因となりやすいSQL文の実行について、パフォーマンスチューニングに使用するために、\
+                                               SQL文の実行時間とSQL文を出力する。
+:ref:`パフォーマンスログ<PerformanceLog>`      任意の処理について、パフォーマンスチューニングに使用するために実行時間とメモリ使用量を出力する。
+:ref:`HTTPアクセスログ<HttpAccessLog>`         画面オンライン処理において、アプリケーションの実行状況を把握するための情報を出力する。\
+                                               アプリケーションの性能測定に必要な情報、アプリケーションの負荷測定に必要な情報の出力も含む。
+                                               さらに、アプリケーションの不正使用を検知するために、全てのリクエスト及びレスポンス情報を出力する証跡ログとしても使用する。
+:ref:`メッセージングログ<MessagingLog>`        メッセージング処理において、メッセージ送受信の状況を把握するための情報を出力する。
+============================================== ===================================================================================================================
+
+本フレームワークでは、障害通知ログと障害解析ログを合わせて障害ログと呼ぶ。\
+ここでは、各種ログの共通項目のフォーマットと各種ログの設定について説明する。\
+各種ログの詳細は下記を参照。
+
+.. toctree::
+    :maxdepth: 1
+
+    01/01_FailureLog
+    01/02_SqlLog
+    01/03_PerformanceLog
+    01/04_HttpAccessLog
+    01/05_MessagingLog
+
+.. _AppLog_Format:
+
+各種ログの共通項目のフォーマット
+==============================================================================
+各種ログの出力は、 :ref:`Log_LoggerProcess` を使用してログ出力を行う。\
+このため、各種ログの共通項目は、使用するログ出力実装に依存する。\
+各種ログの出力では、 :ref:`Log_BasicLogFormatter` の出力項目を共通項目とする。\
+したがって、各種ログの出力にフレームワーク以外のログ出力実装を使用する場合は、 :ref:`Log_BasicLogFormatter` と同等の出力項目を出力できるように実装が必要となる。\
+以降では、各種ログの出力にフレームワーク実装を使用することを想定して説明する。
+
+各種ログのフォーマットは、下記2つのフォーマットから構成される。
+
+| \a) 各種ログの共通項目のフォーマット( :ref:`Log_BasicLogFormatter` のフォーマット)
+| \b) 各種ログの個別項目のフォーマット
+
+これら2つのフォーマットは、各種ログの個別項目をフォーマットした結果を、 :ref:`Log_BasicLogFormatter` のプレースホルダ$message$に指定することで組み合わせる。\
+HTTPアクセスログを例にフォーマット指定のイメージを下記に示す。
+
+.. code-block:: bash
+
+ # 共通項目のフォーマット(BasicLogFormatterのフォーマット)
+ $date$ req_id = [$requestId$] <$message$> usr_id = [$userId$]
+ 
+ # $message$以外の共通項目をフォーマットした結果
+ 2011-02-07 19:07:30.970 req_id = [USERS00302] <$message$> usr_id = [0000000001]
+
+.. code-block:: bash
+
+ # 個別項目のフォーマット(HTTPアクセスログのフォーマット)
+ # $url$: リクエストURL、$port$: ポート番号、$method$: HTTPメソッドが入るプレースホルダとする。
+ url:$url$ port:$port$ method:$method$
+ 
+ # 個別項目をフォーマットした結果
+ url:/action/management/user/UserRegisterAction/USERS00302 port:8090 method:POST
+
+上記フォーマット指定におけるHTTPアクセスログの出力例を下記に示す。\
+BasicLogFormatterの$message$部分に、HTTPアクセスログの個別項目をフォーマットした結果が入る。
+
+.. code-block:: bash
+
+ # アクセスログの出力例
+ 2011-02-07 19:07:30.970 req_id = [USERS00302] <url:/action/management/user/UserRegisterAction/USERS00302 port:8090 method:POST> usr_id = [0000000001]
+
+.. _AppLog_Config:
+
+各種ログの設定
+==================================================================
+各種ログの出力では、フォーマットなどの設定をプロパティファイルに指定する。\
+プロパティファイルは、クラスパス直下に"app-log.properties"というファイル名で配置する。\
+配置場所を変更したい場合は、"nablarch.appLog.filePath"というキー名でシステムプロパティを指定する。\
+プロパティファイル内の設定値は、プロパティ名と同じキー名でシステムプロパティを指定することで実行時に変更できる。
+
+システムプロパティの設定例を下記に示す。\
+javaコマンドのオプション-Dによる指定を用いて、下記のように実行時のオプションとしてシステムプロパティを設定する。
+
+.. code-block:: bash
+
+ >java -Dnablarch.appLog.filePath=/var/log/app/app-log.properties ...
+
+
+.. _fw_log_policy:
+
+------------------------------------------------------------------------------------
+フレームワークのログ出力方針
+------------------------------------------------------------------------------------
+本フレームワークでは、下記の出力方針に基づきログ出力を行う。
+
+=============================== ==================================================================================================================
+ログレベル                      出力方針
+=============================== ==================================================================================================================
+FATAL / ERROR                   :ref:`障害ログ<FailureLog>` は、障害監視の対象であり、障害発生時の一時切り分けの起点ともなる為、
+                                原則として1件の障害に対して、1件の障害ログを出力する方針としている。
+
+                                このため、\ :ref:`実行制御基盤<executionBase>`\ では単一のハンドラ(例外を処理するハンドラ)により障害通知ログを出力する方針としている。
+                                なお、出力するレベル及び出力方針は、各実行制御基板のハンドラ構成及び例外を処理するハンドラの仕様に依存するため、
+                                詳細は\ :ref:`実行制御基盤<executionBase>`\ のハンドラ構成及び例外を処理するハンドラの仕様を参照すること。
+
+WARN                            障害発生時に連鎖して例外が発生した場合など、障害ログとして出力できない例外をWARNレベルで出力する。\
+                                例えば、業務処理とトランザクションの終了処理の2つで例外が発生した場合は、\
+                                業務処理の例外を障害ログに出力し、トランザクションの終了処理の例外をWARNレベルで出力する。
+INFO                            アプリケーションの実行状況に関連するエラーを検知した場合にINFOレベルで出力する。\
+                                例えば、URLパラメータの改竄エラーや認可エラーが発生した場合にINFOレベルで出力する。
+DEBUG                           アプリケーション開発時に使用するデバッグ情報を出力する。\
+                                アプリケーション開発時は、DEBUGレベルを設定することで開発に必要な情報が出力されるよう考慮している。
+TRACE                           フレームワーク開発時に使用するデバッグ情報を出力する。\
+                                アプリケーション開発での使用は想定していない。
+=============================== ==================================================================================================================
+
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- ログに出力するログレベルを表す文言の変更方法
+- ログライタのカスタマイズ方法
+- ログフォーマッタのカスタマイズ方法
+- ログ出力項目の変更方法
+- 
+- プロパティファイルの記述ルール
+- 
+- 各種ログの出力
+- 
+- フレームワークのログ出力方針
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/libraries-01_Log--s26/filename.png)` |
+
+Office attachments → reference in `assets/libraries-01_Log--s26/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `libraries-01_Log--s26`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

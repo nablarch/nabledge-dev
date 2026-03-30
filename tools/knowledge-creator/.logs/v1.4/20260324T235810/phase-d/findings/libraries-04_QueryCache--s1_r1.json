@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_QueryCache--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s11 hints",
+      "description": "`CacheableStatementFactory` is explicitly referenced in s11 content as the actor generating both `CacheableSqlPStatement` and `BasicSqlPStatement`, but is absent from s11's hints array.",
+      "source_evidence": "シーケンス図「SqlPStatementの生成」: キャッシュ対象のSQL IDが指定された場合 / キャッシュ対象でないSQL IDが指定された場合 — 両ケースで CacheableStatementFactory が主体として登場"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 hints",
+      "description": "`InMemoryResultSetCache` is listed in s9's content as a class in the 有効期限付きキャッシュ class diagram, but is missing from s9's hints array.",
+      "source_evidence": "クラス定義（有効期限付きキャッシュ）: `nablarch.core.db.cache.InMemoryResultSetCache` — メモリ上にキャッシュを持つResultSetCache実装クラス。各イベント発生時にログ出力を行う。"
+    }
+  ]
+}

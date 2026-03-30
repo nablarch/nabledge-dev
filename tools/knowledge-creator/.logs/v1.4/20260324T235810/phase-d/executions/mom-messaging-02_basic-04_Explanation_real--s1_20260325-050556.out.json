@@ -1,0 +1,34 @@
+{
+  "file_id": "mom-messaging-02_basic-04_Explanation_real--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "電文フォーマット定義ファイル section (source)",
+      "description": "The entire 電文フォーマット定義ファイル section is absent from the knowledge file. This section contains critical naming conventions that developers must follow: 要求電文フォーマット定義ファイルは「(リクエストID) + _RECEIVE.fmt」、応答電文フォーマット定義ファイルは「(リクエストID) + _SEND.fmt」。また、ヘッダーフォーマット定義ファイルは要求・応答双方で同じものを使用するという点も欠落している。",
+      "source_evidence": "2. **要求電文フォーマット定義** ... (リクエストID) + \"_RECEIVE.fmt\" / 3. **応答電文フォーマット定義** ... (リクエストID) + \"_SEND.fmt\" / なお、ヘッダーフォーマット定義ファイルは要求・応答双方で同じものを使用する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "クラス構造 section (source)",
+      "description": "The knowledge file does not state that the implementation class must extend MessagingAction. This is a fundamental prerequisite. Also missing is the footnote that MessagingAction inherits DbAccessSupport, enabling database access in subclasses.",
+      "source_evidence": "MessagingAction[#]_を継承し以下のメソッドを実装する。 / [#] MessagingActionはDbAccessSupportを継承しているため、サブクラスでも DbAccessSupportの機能を用いてデータベースアクセスを行うことができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "処理の流れ section (source)",
+      "description": "The entire processing flow section is absent. It describes the three-step execution sequence: (1) framework starts the business action class based on the request ID in the framework control header, (2) the action processes and returns a response message, (3) the framework PUTs the response to the send queue. The request-ID-based dispatch mechanism is particularly important for understanding how routing works.",
+      "source_evidence": "1. Nablarch Application Frameworkはフレームワーク制御ヘッダのリクエストIDをもとに、業務アクションクラスを起動する。 2. 業務アクションは、要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する。 3. Nablarch Application Frameworkは、返却された応答電文を送信キューにPUTする。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "DbAccessSupport is missing from hints. The source states MessagingAction inherits DbAccessSupport, making it a relevant class name for users implementing the action class.",
+      "source_evidence": "MessagingActionはDbAccessSupportを継承しているため、サブクラスでも DbAccessSupportの機能を用いてデータベースアクセスを行うことができる。"
+    }
+  ]
+}

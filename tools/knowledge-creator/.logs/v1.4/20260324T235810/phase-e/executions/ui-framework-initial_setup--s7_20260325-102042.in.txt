@@ -1,0 +1,131 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-initial_setup--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Step 2 コミット",
+      "description": "The directory structure diagram (code-block:: bash) showing the expected project layout after deletion is omitted. It includes specific paths such as `ui_plugins/bin/ui_build.bat`, `ui_plugins/bin/ui_build.sh`, and named node_modules packages (jquery, less, nablarch-css-base, nablarch-css-color-default, nablarch-css-common, etc.) that describe the expected committed state.",
+      "source_evidence": ".. code-block:: bash\n  プロジェクトルート/\n        └── tutorial_project/\n              ├── tutorial/ ...\n              ├── ui_demo/ ...\n              ├── ui_plugins/\n              │     ├── package.json\n              │     ├── bin/\n              │     │     ├── ui_build.bat\n              │     │     ├── ui_build.sh\n              │     └── node_modules/\n              │           ├── jquery/\n              │           ├── less/\n              │           ├── nablarch-css-base/ ...\n              └── ui_test/ ..."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+7. 開発リポジトリへの登録
+---------------------------------------------------
+ここまでセットアップした開発基盤を、リポジトリに登録する。
+
+.. warning::
+
+  ここでリポジトリへの登録を怠ると、以降のプロジェクト側で行うカスタマイズと、
+  Nablarch開発元で行う改修とを正しくマージすることが困難、もしくは不可能となるので、
+  必ず実施すること。
+
+
+**1. UI開発基盤インストール作業ファイルの削除**
+  下記のディレクトリおよびその配下のファイルについては、
+  インストール作業完了後は不要となるので、コミット前に削除しておく。
+
+  - **nablarch_plugins_bundle/**
+  - **tutorial_project/ui_plugins/.npm/**
+
+**2. コミット**
+  上述の削除により、プロジェクトのファイル構成は以下の図のようになる。
+  これをプロジェクトのリポジトリにコミットする。
+
+.. code-block:: bash
+
+  プロジェクトルート/
+        │
+        └── tutorial_project/
+              ├── tutorial/
+              │     ├── .project
+              │     ├── .classpath
+              │     │
+              │   ##(後略)##
+              │
+              ├── ui_demo/
+              │     ├── .project
+              │     │
+              │   ##(後略)##
+              │
+              ├── ui_plugins/
+              │     ├── package.json
+              │     ├── bin/
+              │     │     ├── ui_build.bat
+              │     │     ├── ui_build.sh
+              │     │     │
+              │     │
+              │     └── node_modules/
+              │           ├── jquery/
+              │           ├── less/
+              │           ├── nablarch-css-base/
+              │           ├── nablarch-css-color-default/
+              │           ├── nablarch-css-common/
+              │           │
+              │       ##(後略)##
+              │
+              └── ui_test/
+                    ├── .project
+                    ├── .classpath
+                    │
+                  ##(後略)##
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-initial_setup--s7",
+  "title": "7. 開発リポジトリへの登録",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "7. 開発リポジトリへの登録",
+      "hints": [
+        "開発リポジトリ登録",
+        "インストール作業ファイル削除",
+        "UI開発基盤セットアップ",
+        "nablarch_plugins_bundle",
+        "ui_plugins",
+        "コミット手順"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **警告**: リポジトリへの登録を怠ると、プロジェクト側のカスタマイズとNablarch開発元の改修を正しくマージすることが困難、または不可能となる。必ず実施すること。\n\n1. **UI開発基盤インストール作業ファイルの削除**: コミット前に以下のディレクトリを削除する。\n   - `nablarch_plugins_bundle/`\n   - `tutorial_project/ui_plugins/.npm/`\n\n2. **コミット**: 上記削除後、プロジェクトのリポジトリにコミットする。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

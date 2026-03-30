@@ -1,0 +1,27 @@
+{
+  "file_id": "http-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 merges RST h2 'フォーマット定義ファイル' with its two h3 subsections ('要求電文のフォーマット定義ファイル' and '応答電文のフォーマット定義ファイル') without splitting. The combined plain-text content (FilePathSetting XML config + naming convention + RM11AC0202_SEND.fmt full field layout + RM11AC0202_RECEIVE.fmt full field layout) substantially exceeds 2000 characters. Per the RST splitting rule, when an h2 section has >= 2000 chars of plain text AND h3 subsections exist, the knowledge file should split them.",
+      "source_evidence": "RST source has h2 'フォーマット定義ファイル' (lines covering FilePathSetting XML + naming convention), followed by h3 '要求電文のフォーマット定義ファイル' (RM11AC0202_SEND.fmt with 9 fields + 2 sub-records) and h3 '応答電文のフォーマット定義ファイル' (RM11AC0202_RECEIVE.fmt with 5 fields + 2 sub-records); all merged into a single s4 section."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Section s5 merges RST h2 'Formクラスの作成' with its h3 subsection 'Formの実装方法' without splitting. The combined content (note about child hierarchy, two complete Java class implementations) likely exceeds 2000 characters plain text.",
+      "source_evidence": "RST source has h2 'Formクラスの作成' (brief intro + note block) followed by h3 'Formの実装方法' containing two full Java code examples (RM11AC0202OptionForm and RM11AC0202ResponseForm). Both are merged into s5 without splitting."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Section s5 hints are missing PascalCase class names that appear directly in the code examples: 'RM11AC0202OptionFormBase' (the base class extended by RM11AC0202OptionForm), 'RM11AC0202ResponseFormBase' (the base class extended by RM11AC0202ResponseForm), and 'ValidationContext' (parameter type in validateForSend method).",
+      "source_evidence": "Source code: 'public class RM11AC0202OptionForm extends RM11AC0202OptionFormBase', 'public class RM11AC0202ResponseForm extends RM11AC0202ResponseFormBase', 'ValidationContext<RM11AC0202OptionForm> context' in validateForSend method signature."
+    }
+  ]
+}

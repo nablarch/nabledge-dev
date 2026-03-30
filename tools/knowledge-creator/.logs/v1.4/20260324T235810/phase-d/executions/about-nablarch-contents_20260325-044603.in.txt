@@ -1,0 +1,234 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/TOP/top/about_nablarch/contents.rst`
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+.. _`nablarch_contents`:
+
+====================================
+Nablarchの製品構成
+====================================
+
+Nablarchのコンテンツについて説明します。
+
++-----------------------------------------------------+------------------------------------------------------------------------------------------------------+
+|コンテンツ名                                         |説明                                                                                                  |
++=====================+===============================+======================================================================================================+
+|アプリケーション     |アプリケーション               |Java実行環境上で実行可能なアプリケーション実行基盤です。                                              |
+|実行環境             |フレームワーク                 |オブジェクトコードおよびソースコードが含まれます。                                                    |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |アプリケーション               |アプリケーションフレームワークの解説書です。                                                          |
+|                     |フレームワーク解説書           |                                                                                                      |
++---------------------+-------------------------------+------------------------------------------------------------------------------------------------------+
+|アプリケーション     |アプリケーション               |Nablarchを使用してアプリケーション開発を行う際の開発環境およびガイドです。                            |
+|開発環境             |開発基盤                       |                                                                                                      |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |UI開発基盤                     |画面開発のQCDを要件定義からPG/UTまで一体で向上させる開発基盤です。                                    |
+|                     |                               |                                                                                                      |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |モバイルライブラリ             |iOS、androidといったモバイルのネイティブアプリケーション開発に使用するライブラリです。                |
+|                     |                               |                                                                                                      |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |アプリケーション               |実プロジェクトで頻繁に作成する機能のサンプルです。                                                    |
+|                     |ライブラリ                     |業務機能サンプル、Nablarch拡張モジュールサンプル、運用機能サンプル等が含まれます。                    |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |テスティング                   |自動テストフレームワークや静的解析ツール、テスト支援ツールを含むテスティングフレームワークです。      |
+|                     |フレームワーク                 |オブジェクトコードとソースコードが含まれます。                                                        |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |テスティング                   |テスティングフレームワークの解説書です（Javadoc）。                                                   |
+|                     |フレームワーク解説書           |                                                                                                      |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |ツールボックス                 |プログラムやテストデータの自動生成ツールなど、アプリケーション開発の品質                              |
+|                     |                               |と生産性を向上するツール群です。                                                                      |
++---------------------+-------------------------------+------------------------------------------------------------------------------------------------------+
+|アプリケーション     |アプリケーション               |開発プロセス標準、DB設計標準、UI標準、コーディング規約、単体テスト標準等                              |
+|開発標準/ガイド      |開発標準                       |のアプリケーション開発に必要な標準文書 および 設計書フォーマットです。                                |
+|                     +-------------------------------+------------------------------------------------------------------------------------------------------+
+|                     |アプリケーション               |Nablarchフレームワークを使用してアプリケーションの実装とテストを実施する方法                          |
+|                     |開発ガイド                     |を説明したドキュメントです。 初期学習用チュートリアルも含まれます。                                   |
++---------------------+-------------------------------+------------------------------------------------------------------------------------------------------+
+
+各コンテンツについて、ソースコードの開示・非開示、特定のOSSやミドルウェアへの依存の有無を説明します。
+
++-----------------------------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|コンテンツ名                                         |ソースコード開示 [1]_             |OSSの利用 [2]_                    |特定M/Wへの依存 [3]_              |
++=====================+===============================+==================================+==================================+==================================+
+|アプリケーション     |アプリケーション               |開示                              |なし                              |なし                              |
+|実行環境             |フレームワーク                 |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |アプリケーション               |－                                |－                                |－                                |
+|                     |フレームワーク解説書           |                                  |                                  |                                  |
++---------------------+-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|アプリケーション     |アプリケーション               |－                                |あり                              |あり                              |
+|開発環境             |開発基盤                       |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |UI開発基盤                     |開示                              |あり                              |なし                              |
+|                     |                               |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |モバイルライブラリ             |開示                              |あり                              |あり                              |
+|                     |                               |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |アプリケーション               |開示                              |あり                              |あり                              |
+|                     |ライブラリ                     |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |テスティング                   |開示                              |あり                              |なし                              |
+|                     |フレームワーク                 |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |テスティング                   |－                                |－                                |－                                |
+|                     |フレームワーク解説書           |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |ツールボックス                 |開示                              |あり                              |あり                              |
+|                     |                               |                                  |                                  |                                  |
++---------------------+-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|アプリケーション     |アプリケーション               |－                                |－                                |－                                |
+|開発標準/ガイド      |開発標準                       |                                  |                                  |                                  |
+|                     +-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+|                     |アプリケーション               |－                                |－                                |－                                |
+|                     |開発ガイド                     |                                  |                                  |                                  |
++---------------------+-------------------------------+----------------------------------+----------------------------------+----------------------------------+
+
+.. [1] ソフトウェアの場合に、ソースコードを開示するかどうか。ソースコード開示のコンテンツについては、ソースコードを納品します。
+
+.. [2] オープンソースソフトウェアを使用している、または今後使用する可能性があるか否か。
+       ドキュメントの場合は、オープンソースソフトウェアを使用することを前提とした記述がある、または今後記述する可能性があるか否か。
+       本番環境のサーバサイドで稼働させるソフトウェアについては、オープンソースソフトウェアを使用しない方針としています。
+
+.. [3] 特定のミドルウェアに依存している、または今後依存する可能性があるか否か。
+       ドキュメントの場合は、特定のミドルウェアを使用することを前提とした記述がある、または今後記述する可能性があるか否か。
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-contents`
+
+```json
+{
+  "id": "about-nablarch-contents",
+  "title": "Nablarchの製品構成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchの製品構成",
+      "hints": [
+        "Nablarchコンテンツ一覧",
+        "アプリケーションフレームワーク",
+        "テスティングフレームワーク",
+        "UI開発基盤",
+        "モバイルライブラリ",
+        "ツールボックス",
+        "ソースコード開示",
+        "OSS利用",
+        "特定ミドルウェア依存"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "![Nablarch](assets/about-nablarch-contents/Nablarch.jpg)\n\n## コンテンツ一覧\n\n| カテゴリ | コンテンツ名 | 説明 |\n|---|---|---|\n| アプリケーション実行環境 | アプリケーションフレームワーク | Java実行環境上で実行可能なアプリケーション実行基盤。オブジェクトコードおよびソースコードが含まれる。 |\n| アプリケーション実行環境 | アプリケーションフレームワーク解説書 | アプリケーションフレームワークの解説書。 |\n| アプリケーション開発環境 | アプリケーション開発基盤 | Nablarchを使用してアプリケーション開発を行う際の開発環境およびガイド。 |\n| アプリケーション開発環境 | UI開発基盤 | 画面開発のQCDを要件定義からPG/UTまで一体で向上させる開発基盤。 |\n| アプリケーション開発環境 | モバイルライブラリ | iOS、Androidといったモバイルのネイティブアプリケーション開発に使用するライブラリ。 |\n| アプリケーション開発環境 | アプリケーションライブラリ | 実プロジェクトで頻繁に作成する機能のサンプル。業務機能サンプル、Nablarch拡張モジュールサンプル、運用機能サンプル等が含まれる。 |\n| アプリケーション開発環境 | テスティングフレームワーク | 自動テストフレームワークや静的解析ツール、テスト支援ツールを含むテスティングフレームワーク。オブジェクトコードとソースコードが含まれる。 |\n| アプリケーション開発環境 | テスティングフレームワーク解説書 | テスティングフレームワークの解説書（Javadoc）。 |\n| アプリケーション開発環境 | ツールボックス | プログラムやテストデータの自動生成ツールなど、アプリケーション開発の品質と生産性を向上するツール群。 |\n| アプリケーション開発標準/ガイド | アプリケーション開発標準 | 開発プロセス標準、DB設計標準、UI標準、コーディング規約、単体テスト標準等のアプリケーション開発に必要な標準文書および設計書フォーマット。 |\n| アプリケーション開発標準/ガイド | アプリケーション開発ガイド | Nablarchフレームワークを使用してアプリケーションの実装とテストを実施する方法を説明したドキュメント。初期学習用チュートリアルも含まれる。 |\n\n## ソースコード開示・OSS利用・特定M/W依存\n\n| カテゴリ | コンテンツ名 | ソースコード開示 [1] | OSS利用 [2] | 特定M/W依存 [3] |\n|---|---|---|---|---|\n| アプリケーション実行環境 | アプリケーションフレームワーク | 開示 | なし | なし |\n| アプリケーション実行環境 | アプリケーションフレームワーク解説書 | — | — | — |\n| アプリケーション開発環境 | アプリケーション開発基盤 | — | あり | あり |\n| アプリケーション開発環境 | UI開発基盤 | 開示 | あり | なし |\n| アプリケーション開発環境 | モバイルライブラリ | 開示 | あり | あり |\n| アプリケーション開発環境 | アプリケーションライブラリ | 開示 | あり | あり |\n| アプリケーション開発環境 | テスティングフレームワーク | 開示 | あり | なし |\n| アプリケーション開発環境 | テスティングフレームワーク解説書 | — | — | — |\n| アプリケーション開発環境 | ツールボックス | 開示 | あり | あり |\n| アプリケーション開発標準/ガイド | アプリケーション開発標準 | — | — | — |\n| アプリケーション開発標準/ガイド | アプリケーション開発ガイド | — | — | — |\n\n[1] ソフトウェアの場合に、ソースコードを開示するかどうか。ソースコード開示のコンテンツについては、ソースコードを納品する。\n\n[2] オープンソースソフトウェアを使用している、または今後使用する可能性があるか否か。本番環境のサーバサイドで稼働させるソフトウェアについては、オープンソースソフトウェアを使用しない方針。\n\n[3] 特定のミドルウェアに依存している、または今後依存する可能性があるか否か。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

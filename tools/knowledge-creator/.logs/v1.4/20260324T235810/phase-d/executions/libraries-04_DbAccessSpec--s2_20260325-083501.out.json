@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (section ID ordering)",
+      "description": "Section IDs do not follow sequential order matching source document structure. The source has 4 h2-level sections in order: 注意点, 要求, 全体構造, 各機能単位の構造. The knowledge file assigns IDs s1, s4, s2, s3 respectively — meaning 要求 (2nd section) is labeled s4, 全体構造 (3rd) is s2, and 各機能単位の構造 (4th) is s3. Expected sequential assignment would be s1, s2, s3, s4.",
+      "source_evidence": "Source h2 headings in order: 注意点 (------), 要求 (----), 全体構造 (--------), 各機能単位の構造 (----------------)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "PascalCase class name `SQLStatement` is referenced in the source for s4 (要求) content — specifically `SQLStatement#setFetchSize` and `SQLStatement#addBatch` — but is absent from the s4 hints array.",
+      "source_evidence": "Source: 「プリフェッチ(SQLStatement#setFetchSize)ができる。」「バッチ更新(SQLStatement#addBatch)ができる。」"
+    }
+  ]
+}

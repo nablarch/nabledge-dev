@@ -1,0 +1,310 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/doc/reference_jsp_widgets/field_code_checkbox.rst`
+- Format: `rst`
+
+```
+=================================================
+コード値チェックボックス入力項目ウィジェット
+=================================================
+:doc:`field_code_checkbox` は :doc:`field_checkbox` について
+Nablarchのコード管理機能で取得したラベル、値をもとにした
+チェックボックスを出力できるように改修したものである。
+
+表示仕様など、上記以外の仕様については :doc:`field_checkbox` と同じである。
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <field:code_checkbox
+      title            = "ユーザIDロック"
+      listFormat       = "ul">
+    </field:code_checkbox>
+
+
+**実装成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <field:code_checkbox
+      title            = "ユーザIDロック"
+      name             = "11AC_W11AC01.userIdLocked"
+      codeId           = "C0000001"
+      pattern          = "PATTERN01"
+      optionColumnName = "OPTION01"
+      labelPattern     = "$OPTIONALNAME$"
+      listFormat       = "ul">
+    </field:code_checkbox>
+
+
+
+仕様
+=============================================
+本ウィジェットの仕様は :doc:`field_checkbox` とほぼ同じである。
+以下では差分となる内容について述べる。
+
+**ローカル動作時の挙動**
+  :doc:`field_checkbox` と同様、 **sample** に指定したラベル分だけチェックボックスとラベルを表示する。
+  ただし、**codeId** 属性にコードIDを指定した場合、下記のファイル内のエントリーから、
+  該当するコードの名称を取得し、表示する。 **pattern** 属性によるパターン指定や
+  **optionColumnName** 属性によるオプション名称指定も利用できる。
+  (**codeId** と **sample** を両方指定した場合は **sample** の値を優先する。)
+
+  **パス**
+    /js/devtool/resource/コード値定義.js
+
+ 
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+(:doc:`field_base` との共通属性は省略)
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+domain               項目のドメイン型               文字列         ○          ○
+readonly             編集可能かどうか               真偽値         ○          ○         デフォルトは 'false'
+disabled             | サーバに対する入力値の送信を 真偽値         ○          ○         デフォルトは 'false'
+                       抑制するかどうか
+cssClass             HTMLのclass属性値              文字列         ○          ○
+nameAlias            | 一つのエラーメッセージに     文字列         ○          ×
+                       対して複数の入力項目を
+                       ハイライト表示する場合に
+                       そのname属性をカンマ区切り
+                       で指定する。
+sample               | ローカル動作時に表示する     文字列         ×          ○         | **"|"** 区切りで複数指定する。
+                       チェックボックスのラベル                                           **"[]"** で囲われた項目は選択状態
+                                                                                          で表示される。 
+codeId               | コード定義ID                 文字列         ◎          ○
+pattern              | 使用するコードパターンの     文字列         ○          ○         デフォルトは 'PATTERN01'
+                       カラム名
+optionColumnName     | 取得するオプション名称の     文字列         ○          ○         デフォルトは 'OPTION01'
+                       カラム名
+labelPattern         | ラベル表示書式               文字列         ○          ○         | ラベルを整形するパターン。
+                                                                                          プレースホルダを下記に示す。
+                                                                                        | $NAME$:
+                                                                                          コード値に対応するコード名称
+                                                                                        | $SHORTNAME$:
+                                                                                          コード値に対応するコードの略称
+                                                                                        | $OPTIONALNAME$:
+                                                                                          コード値に対応するコードのオプション名称
+                                                                                          $OPTIONALNAME$を使用する場合は
+                                                                                          optionColumnName属性の指定が必須となる。
+                                                                                        | $VALUE$: コード値
+                                                                                        | デフォルトは”$NAME$”。
+listFormat           | リスト表示時に使用する       文字列         ○          ○         デフォルトは 'span'
+                       フォーマット
+
+dataFrom             | 表示するデータの取得元       文字列         ×          ×         | 画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+
+comment              チェックボックスについての備考 文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/code_checkbox.tag   :doc:`field_code_checkbox`
+
+/WEB-INF/tags/widget/field/base.tag            :doc:`field_base`
+
+/js/jsp/taglib/nablarch.js                     `<n:codeCheckboxes>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+/css/style/base.less                           | 基本HTMLの要素のスタイル定義。
+                                                 チェックボックスに関する定義もここに含まれる。 
+  
+============================================== ==================================================
+  
+  
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-field_code_checkbox`
+
+```json
+{
+  "id": "ui-framework-field_code_checkbox",
+  "title": "コード値チェックボックス入力項目ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "field:code_checkbox",
+        "JSPタグ",
+        "コードサンプル",
+        "ローカル動作",
+        "サーバ動作",
+        "codeId",
+        "labelPattern"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "codeId",
+        "pattern",
+        "optionColumnName",
+        "labelPattern",
+        "listFormat",
+        "sample",
+        "domain",
+        "readonly",
+        "disabled",
+        "cssClass",
+        "nameAlias",
+        "dataFrom",
+        "comment",
+        "initialValueDesc",
+        "コード値チェックボックス",
+        "属性一覧",
+        "ローカル動作",
+        "コード名称取得",
+        "コード管理機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "code_checkbox.tag",
+        "base.tag",
+        "nablarch.js",
+        "base.less",
+        "部品一覧",
+        "タグライブラリ",
+        "n:codeCheckboxes"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**設計成果物（ローカル動作）**\n\n```jsp\n<field:code_checkbox\n  title      = \"ユーザIDロック\"\n  listFormat = \"ul\">\n</field:code_checkbox>\n```\n\n**実装成果物（サーバ動作）**\n\n```jsp\n<field:code_checkbox\n  title            = \"ユーザIDロック\"\n  name             = \"11AC_W11AC01.userIdLocked\"\n  codeId           = \"C0000001\"\n  pattern          = \"PATTERN01\"\n  optionColumnName = \"OPTION01\"\n  labelPattern     = \"$OPTIONALNAME$\"\n  listFormat       = \"ul\">\n</field:code_checkbox>\n```",
+    "s2": ":doc:`field_checkbox` をNablarchのコード管理機能で取得したラベル・値でチェックボックス出力できるよう拡張したウィジェット。表示仕様などそれ以外の仕様は :doc:`field_checkbox` と同じ。\n\n**ローカル動作時の挙動（差分）**\n\n- codeId属性にコードIDを指定した場合、`/js/devtool/resource/コード値定義.js` 内のエントリーからコード名称を取得して表示する\n- pattern属性によるパターン指定、optionColumnName属性によるオプション名称指定も利用可能\n- codeIdとsampleの両方を指定した場合はsampleの値を優先する\n\n**属性値一覧** [◎ 必須属性 ○ 任意属性 × 無効]\n\n(:doc:`field_base` との共通属性は省略)\n\n| 名称 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| domain | 項目のドメイン型 | 文字列 | ○ | ○ | |\n| readonly | 編集可能かどうか | 真偽値 | ○ | ○ | デフォルト: false |\n| disabled | サーバへの入力値送信を抑制するかどうか | 真偽値 | ○ | ○ | デフォルト: false |\n| cssClass | HTMLのclass属性値 | 文字列 | ○ | ○ | |\n| nameAlias | エラーメッセージに対して複数の入力項目をハイライト表示する場合のname属性（カンマ区切り） | 文字列 | ○ | × | |\n| sample | ローカル動作時に表示するチェックボックスのラベル | 文字列 | × | ○ | `\\|`区切りで複数指定。`[]`で囲われた項目は選択状態で表示 |\n| codeId | コード定義ID | 文字列 | ◎ | ○ | |\n| pattern | 使用するコードパターンのカラム名 | 文字列 | ○ | ○ | デフォルト: PATTERN01 |\n| optionColumnName | 取得するオプション名称のカラム名 | 文字列 | ○ | ○ | デフォルト: OPTION01 |\n| labelPattern | ラベル表示書式 | 文字列 | ○ | ○ | プレースホルダ: $NAME$（コード名称）、$SHORTNAME$（略称）、$OPTIONALNAME$（オプション名称、optionColumnName必須）、$VALUE$（コード値）。デフォルト: $NAME$ |\n| listFormat | リスト表示時に使用するフォーマット | 文字列 | ○ | ○ | デフォルト: span |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 「表示情報取得元」.「表示項目名」の形式 |\n| comment | チェックボックスについての備考 | 文字列 | × | × | 設計書の画面項目定義の「備考」に表示 |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書の画面項目定義の「備考」に表示 |",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/code_checkbox.tag | :doc:`field_code_checkbox` |\n| /WEB-INF/tags/widget/field/base.tag | :doc:`field_base` |\n| /js/jsp/taglib/nablarch.js | `<n:codeCheckboxes>` のエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/base.less | 基本HTMLの要素のスタイル定義。チェックボックスに関する定義を含む |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

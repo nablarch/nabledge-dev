@@ -1,0 +1,290 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-multicol_css_framework--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections (index)",
+      "description": "The source's h2 section '使用例' contains >= 2000 characters and includes 2 h3-level subsections ('1行に複数のUI部品を並べる場合' and '列によって異なる行数を定義する場合'), but the knowledge file maps all content to a single section s1 without splitting. Per V3 rules, large h2 sections with existing h3 subsections should be split into separate knowledge sections.",
+      "source_evidence": "RST source has h2 '使用例' (dashes underline) containing two h3 sections with equals underlines: '1行に複数のUI部品を並べる場合' and '列によって異なる行数を定義する場合', each with full code examples exceeding 500 chars individually."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+使用例
+--------------------------
+幾つかのレイアウトパターンを使用してJSPの作成方法について解説する。
+
+マルチレイアウトモードを使用する際には、以下の点が重要なポイントとなる。
+
+* UI部品ウィジェットは、必ず行内(\ *layout:row*\ )に配置する [#row]_
+* 各UI部品ウィジェット使用時には、そのウィジェットの幅(グリッド数)を指定する
+* 行内に配置するUI部品ウィジェットの幅(グリッド数)の合計は、業務コンテンツ部の幅(グリッド数)以内とする [#grid-count]_
+
+  業務コンテンツ部のグリッド数は、\ `レイアウトの調整方法`_\ の\ *@contentGridSpan*\ で定義された値
+
+.. [#row] 
+
+  `一部UI部品ウィジェットは出力幅の指定機能を提供しない`_ で説明したUI部品ウィジェットは、
+  これ自体が行を表しているため行内に配置する必要はない。
+
+.. [#grid-count]
+
+  幅(グリッド数)の合計が業務コンテンツ部の幅を超えた場合には、自動的に折り返され次の行に出力される。
+
+  折り返し位置は、指定することが出来ずブラウザ依存となるため、業務コンテンツ部の幅に収まるようにUI部品ウィジェットを配置すること。
+
+
+1行に複数のUI部品を並べる場合
+===============================
+1行に複数のUI部品ウィジェットを並べる方法を解説する。
+
+**実装ポイント**
+
+* UI部品ウィジェットを並べる場合には、行(\ *layout:row*\ )を定義する
+
+  この例では、入力欄と画面遷移用ボタンで3行を定義している。
+
+* タイトル部、入力部の幅を統一する場合には変数に切り出す
+
+  この例のように、入力系UI部品ウィジェットのタイトル部、入力部の幅を固定化する場合、そのサイズを変数に切り出すと良い。
+  これにより、タイトル部や入力部のサイズ変更時には、変数の値を変更するのみでよくなる。
+
+* 並べるUI部品にマージンを設ける場合は、空の列(\ *layout:cell*\ )を配置する
+
+  空の列(\ *layout:cell*\ )に対して幅(gridSize)を指定することで、マージン幅を指定できる。
+
+
+**画面表示例**
+
+.. image:: /_image/multicol/multicol_sample_1.png
+  :scale: 75
+
+**JSP実装例**
+
+.. code-block:: jsp
+
+  <n:form windowScopePrefixes="user">
+    <%-- タイトル部、入力部の幅定義 --%>
+    <n:set var="titleSize" value="10" />
+    <n:set var="inputSize" value="10" />
+
+    <tab:group name="userTab">
+      <tab:content title="ユーザ情報" value="userInfo" selected="true">
+
+        <%-- 行を配置する(1行目) --%>
+        <layout:row>
+
+          <%-- 入力部品は、タイトル部と入力部の幅を指定して配置する --%>
+          <field:text
+              title="郵便番号"
+              required="true"
+              name="user.postNo"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:text>
+
+          <%--
+          入力部品とボタンの間のマージン
+
+          マージンは、要素のない列(layout:cell)を使用することで、
+          好きな位置に挿入することができる。
+          --%>
+          <layout:cell gridSize="10"></layout:cell>
+
+          <%-- ボタンは幅指定をして配置する --%>
+          <n:forInputPage>
+            <button:submit label="住所検索" uri="dummy" size="10"></button:submit>
+          </n:forInputPage>
+        </layout:row>
+
+        <%-- 行を配置する(2行目) --%>
+        <layout:row>
+          <field:pulldown
+              title="都道府県"
+              name="user.address1"
+              required="true"
+              listName="都道府県リスト"
+              elementLabelProperty="name"
+              elementValueProperty="cd"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:pulldown>
+          <field:text
+              title="市区郡町村名"
+              name="user.address2"
+              required="true"
+              titleSize="${titleSize}"
+              inputSize="${inputSize}">
+          </field:text>
+        </layout:row>
+
+      </tab:content>
+      <tab:content title="勤務先情報" value="officeInfo">
+      </tab:content>
+    </tab:group>
+
+    <%-- 行を配置する(3行目) --%>
+    <layout:row>
+      <n:forInputPage>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="17"></layout:cell>
+        <button:check
+            size="10"
+            uri="./確認画面_ページ.jsp">
+        </button:check>
+      </n:forInputPage>
+      <n:forConfirmationPage>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="10"></layout:cell>
+        <button:back uri="./登録画面.jsp" size="10"></button:back>
+        <%-- ボタンの表示位置調整のためのマージン --%>
+        <layout:cell gridSize="5"></layout:cell>
+        <button:confirm uri="dummy" size="10"></button:confirm>
+      </n:forConfirmationPage>
+    </layout:row>
+  </n:form>
+
+列によって異なる行数を定義する場合
+======================================
+行内に配置する列によって、異なる行数(htmlのtableのrowspanのイメージ)を定義する方法を解説する。
+
+**実装ポイント**
+
+* 列ごと異なる行数を定義する場合には、行内にネストした行を定義する
+
+  画面表示例のように行内に列(\ *layout:cell*\ )を定義し、列内にネストした行を配置することで特定の列に複数の行を定義できるようになる。
+
+* ネストした行内に配置するUI部品の幅の合計は、列(\ *layout:cell*\ )の幅(gridSize)を超えてはならない
+
+
+**画面表示例**
+
+.. image:: /_image/multicol/multicol_sample_2.png
+  :scale: 70
+
+**JSP実装例**
+
+.. code-block:: jsp
+
+  <%-- 行定義 --%>
+  <layout:row>
+
+    <%--
+    ネストした行を配置するための列を定義する
+    列には明示的に幅(gridSize)を指定する。
+    --%>
+    <layout:cell gridSize="20">
+
+      <%-- ネストした行の定義(1行目) --%>
+      <layout:row>
+        <%--
+        入力欄の配置
+        
+        入力欄の幅の合計は、列(layout:cell)に定義した幅(gridSize)を超えてはならない
+        --%>
+        <field:text
+            title="漢字氏名"
+            name="user.kanjiName"
+            required="true"
+            titleSize="10"
+            inputSize="10">
+        </field:text>
+      </layout:row>
+
+      <%-- ネストした行の定義(2行目) --%>
+      <layout:row>
+        <%--
+        入力欄の配置
+        
+        入力欄の幅の合計は、列(layout:cell)に定義した幅(gridSize)を超えてはならない
+        --%>
+        <field:text
+            title="カナ氏名"
+            name="user.kanaName"
+            required="true"
+            titleSize="10"
+            inputSize="10">
+        </field:text>
+      </layout:row>
+
+    </layout:cell>
+
+    <%--
+    2列目の性別選択欄は、外側の列内に配置することで、1列目(layout:cell)の隣に表示される
+    --%>
+    <field:radio
+        title="性別"
+        name="user.sex"
+        required="true"
+        listName="sexList"
+        listFormat="br"
+        elementLabelProperty="name"
+        elementValueProperty="cd"
+        titleSize="${titleSize}"
+        inputSize="${inputSize}">
+    </field:radio>
+  </layout:row>
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-multicol_css_framework--s10",
+  "title": "使用例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用例",
+      "hints": [
+        "マルチレイアウトモード",
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "複数UI部品の横並び配置",
+        "マージン設定",
+        "ネストした行",
+        "rowspan相当",
+        "JSPレイアウト実装",
+        "@contentGridSpan"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## マルチレイアウトモード使用上の重要ポイント\n\n- UI部品ウィジェットは必ず行内(`layout:row`)に配置する（ただし行を表すUI部品ウィジェット自体は除く）\n- 各UI部品ウィジェット使用時には幅（グリッド数）を指定する\n- 行内に配置するUI部品ウィジェットの幅の合計は業務コンテンツ部の幅（`@contentGridSpan`で定義）以内とする\n- 幅の合計が業務コンテンツ部の幅を超えた場合、自動的に折り返されて次の行に出力される。折り返し位置はブラウザ依存のため、業務コンテンツ部の幅に収まるよう配置すること\n\n## 1行に複数のUI部品を並べる場合\n\n**実装ポイント**:\n- UI部品を並べる場合は行(`layout:row`)を定義する\n- タイトル部・入力部の幅を統一する場合は変数(`<n:set>`)に切り出す（変数を変更するだけでサイズ変更が可能になる）\n- UI部品間にマージンを設ける場合は空の列(`layout:cell` + `gridSize`指定)を配置する\n\n```jsp\n<n:form windowScopePrefixes=\"user\">\n  <n:set var=\"titleSize\" value=\"10\" />\n  <n:set var=\"inputSize\" value=\"10\" />\n  <layout:row>\n    <field:text title=\"郵便番号\" required=\"true\" name=\"user.postNo\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n    <layout:cell gridSize=\"10\"></layout:cell>\n    <n:forInputPage>\n      <button:submit label=\"住所検索\" uri=\"dummy\" size=\"10\"></button:submit>\n    </n:forInputPage>\n  </layout:row>\n  <layout:row>\n    <field:pulldown title=\"都道府県\" name=\"user.address1\" required=\"true\"\n        listName=\"都道府県リスト\" elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:pulldown>\n    <field:text title=\"市区郡町村名\" name=\"user.address2\" required=\"true\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n  </layout:row>\n  <layout:row>\n    <n:forInputPage>\n      <layout:cell gridSize=\"17\"></layout:cell>\n      <button:check size=\"10\" uri=\"./確認画面_ページ.jsp\"></button:check>\n    </n:forInputPage>\n    <n:forConfirmationPage>\n      <layout:cell gridSize=\"10\"></layout:cell>\n      <button:back uri=\"./登録画面.jsp\" size=\"10\"></button:back>\n      <layout:cell gridSize=\"5\"></layout:cell>\n      <button:confirm uri=\"dummy\" size=\"10\"></button:confirm>\n    </n:forConfirmationPage>\n  </layout:row>\n</n:form>\n```\n\n## 列によって異なる行数を定義する場合（rowspan相当）\n\n**実装ポイント**:\n- 列ごとに異なる行数を定義する場合は、外側の行(`layout:row`)内に列(`layout:cell`)を定義し、列内にネストした行(`layout:row`)を配置する\n- ネストした行内に配置するUI部品の幅の合計は、列(`layout:cell`)の幅(`gridSize`)を超えてはならない\n\n```jsp\n<layout:row>\n  <layout:cell gridSize=\"20\">\n    <layout:row>\n      <field:text title=\"漢字氏名\" name=\"user.kanjiName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n    <layout:row>\n      <field:text title=\"カナ氏名\" name=\"user.kanaName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n  </layout:cell>\n  <field:radio title=\"性別\" name=\"user.sex\" required=\"true\"\n      listName=\"sexList\" listFormat=\"br\"\n      elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n      titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n  </field:radio>\n</layout:row>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

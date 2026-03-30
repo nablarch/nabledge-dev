@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source section: 逐次メール送信バッチ",
+      "description": "The source's standalone '逐次メール送信バッチ' section states that the batch can be used with only architect configuration ('アーキテクトによる設定のみで使用できる') — meaning application programmers do not need to write any batch code. This developer-responsibility boundary information is not captured anywhere in the knowledge file.",
+      "source_evidence": "「本フレームワークは batch_resident に準拠した逐次メール送信バッチ（バッチアクションクラス:nablarch.common.mail.MailSender）を提供し、アーキテクトによる設定(後述、:ref:`mailBatchConfig` 参照)のみで使用できる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "s6 hints are missing `addAttachedFile` and `getMailRequester` — both method names appear in the code example in s6 content.",
+      "source_evidence": "Code example contains: `ctx.addAttachedFile(attachedFile);` and `MailRequester requester = MailUtil.getMailRequester();`"
+    }
+  ]
+}

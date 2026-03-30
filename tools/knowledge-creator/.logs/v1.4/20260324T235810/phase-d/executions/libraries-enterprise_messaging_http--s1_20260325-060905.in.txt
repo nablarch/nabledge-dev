@@ -1,0 +1,465 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/core_library/enterprise_messaging_http.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+
+==========================================
+HTTPメッセージング
+==========================================
+
+------------
+概要
+------------
+
+本節では、本フレームワークが提供するシステム間メッセージング機能のうち、HTTPメッセージングについて解説する。
+
+フレームワーク利用者向けに提供されている各種機能については、 `レイヤ（フレームワーク機能）`_ を参照。
+
+------------------------------------
+要求
+------------------------------------
+
+実装済み
+========================
+* HTTP(S)を使用して同期通信を行うことができる。
+* 以下の内容で送受信できる。
+
+  * 任意のHTTPメソッド
+  * 任意のHTTPヘッダ
+  * メッセージボディにJSONまたはXML形式を利用
+
+* HTTP接続について、以下のタイムアウトを設定できる。
+
+  * 接続タイムアウト
+  * 読み取りタイムアウト
+
+* proxy経由で接続できる。
+* 送受信時に、データを加工する実装を差し込むことができる。（例えば、特定の項目を暗号化／復号する実装を差し込むことができる）
+
+未実装
+==================
+* BASIC認証、Digest認証を行うことができる。
+* HTTPSの場合、プライベート認証局が発行した証明書を使って通信できる。
+* 以下の内容で送受信できる。
+
+  * パラメータをURLの一部に含めた送受信
+  * パラメータをクエリストリングとした送受信
+
+* 受信時にメッセージID/関連IDをHTTPヘッダ以外（たとえばクエリパラメータや電文本文）から取得できる。
+
+未検討
+==================
+* メッセージボディをマルチパート形式にして送信する。
+* FORM認証の対応
+* HTTPリクエストの再送（NAF側で自動で再送は行わない。actionで再送処理を行うことは可能。）
+* Keep Aliveの対応（仕向けの場合にKeep Aliveを対応することで性能向上が見込まれる。）
+* 仕向け通信のレスポンスとして正常時とエラー時でフォーマットを切り替える
+
+------------------------------------
+全体構成
+------------------------------------
+
+次の図に示されるように、本機能は大きく分けると2つのレイヤによって構成されている。
+
+  .. figure::  ../_image/messaging_components_http.png
+     :align: center
+     :scale: 60
+
+
+レイヤ（フレームワーク機能）
+==================================
+
+  **メッセージング基盤API** を使用して実装されたフレームワークが提供する各種機能。
+  これらの機能は、後述する「フレームワーク制御ヘッダ」の利用を前提として設計されている。
+
+  - :doc:`../architectural_pattern/messaging`
+
+    NAFの実行制御基盤の1つであり、外部から送信される要求電文に対して適切な業務アプリケーションを実行する制御基盤である。
+    MOMを使用した場合と同一のインタフェースでメッセージ受信アプリケーションを実装することができる。
+
+    以下の処理を実行するためのAPIが定義された本機能の中心となるクラス群の１つである。
+
+    - `HTTPメッセージ受信`_
+
+  - :doc:`messaging_sender_util`
+    
+    対外システムに対してメッセージの同期送信を行うユーティリティクラス。
+    MOMを使用した場合と同一のインタフェースでメッセージの同期送信を行うことができる。
+
+  ..
+
+レイヤ（通信クライアント）
+==================================
+
+  - `HTTP通信クライアント`_
+
+    HTTP通信インターフェースの実装系を使用したHTTP通信の実装。
+    以下の処理を実行するためのAPIが定義された本機能の中心となるクラス群の１つである。
+    
+    - `HTTPメッセージ送信`_ 
+
++++++++++++++++++++++++++++++
+
+
+.. _message_model_http:
+
+------------------------------------
+データモデル
+------------------------------------
+
+**送受信電文のデータモデル**
+  本機能では、送受信電文の内容を以下のようなデータモデルで表現している。
+
+  .. figure::  ../_image/messaging_message_model_http.png
+     :align: center
+  
+  **プロトコルヘッダー**
+    主にWebコンテナによるメッセージ送受信処理において使用される情報を格納したヘッダー領域である。
+    プロトコルヘッダーはMapインターフェースでアクセスすることが可能となっている。
+
+  **共通プロトコルヘッダー**
+    下記のプロトコルヘッダーのうち、以下のヘッダーについては、
+    特定のキー名でアクセスすることができる。
+  
+    ================== ================= ============================================================ =============================================
+    ヘッダー論理名      キー名           内容                                                         HTTP通信実装の場合
+    ================== ================= ============================================================ =============================================
+    メッセージID       X-Message-Id      電文ごとに一意採番される文字列。                             HTTPヘッダーの値を設定
+
+                                         **送信時**
+                                           送信処理の際、採番した値が設定される。
+
+                                         **受信時**
+                                           送信側の発番した値が設定されている。
+    関連メッセージID   X-Correlation-Id  電文が関連する電文のメッセージID。                           HTTPヘッダーの値を設定
+                                         応答電文および再送要求電文で使用され、それぞれ、以下の値を
+                                         設定する。
+  
+                                         **応答電文**
+                                           要求電文のメッセージIDを設定する。                 
+
+                                         **再送要求**
+                                           応答再送を要求する要求電文のメッセージIDを設定する。
+    ================== ================= ============================================================ =============================================
+     
+  **メッセージボディ**
+    HTTPリクエストのデータ領域をメッセージボディと呼ぶ。
+    フレームワーク機能は、原則としてプロトコルヘッダー領域のみを使用する。
+    それ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。
+    
+    メッセージボディの解析は、 :doc:`record_format` によって行う。
+    これにより、電文の内容をフィールド名をキーとするMap形式で読み書きすることが可能である。
+
+
+  .. _fw_header:
+
+  **フレームワーク制御ヘッダー**
+    本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されている
+    ことを前提として設計されているものが多く存在する。
+    そのような制御項目のことを「フレームワーク制御ヘッダ」とよぶ。
+
+    フレームワーク制御ヘッダの一覧とそれを使用するハンドラの対応は以下のとおり。
+
+    ======================== ========================================= ===========================================
+    フレームワーク制御ヘッダ 役割                                      このヘッダを使用する主要なハンドラ
+    ======================== ========================================= ===========================================
+    リクエストID             この電文を受信したアプリケーションが      | :doc:`../handler/RequestPathJavaPackageMapping`
+                             実行すべき業務処理を識別するためのID。    | :doc:`../handler/RequestHandlerEntry`
+                                                                       | :doc:`../handler/ServiceAvailabilityCheckHandler`
+                                                                       | :doc:`../handler/PermissionCheckHandler`
+                                                                       | :doc:`../reader/FwHeaderReader`
+                                                                       |  ...他
+
+    ユーザID                 この電文の実行権限を表す文字列。          :doc:`../handler/PermissionCheckHandler`
+    再送要求フラグ           再送要求電文送信時に設定されるフラグ。    :doc:`../handler/MessageResendHandler`
+    ステータスコード         要求電文に対する処理結果を表すコード値    :doc:`../handler/MessageReplyHandler`
+                             応答電文に設定される。                     
+    ======================== ========================================= ===========================================
+
+    フレームワークヘッダーは、デフォルトの設定では、メッセージボディの最初のデータレコード中に、
+    それぞれ以下のフィールド名で定義されている必要がある。
+
+    ======================== =============
+    フレームワーク制御ヘッダ フィールド名
+    ======================== =============
+    リクエストID             requestId
+    ユーザID                 userId
+    再送要求フラグ           resendFlag
+    ステータスコード         statusCode
+    ======================== =============
+ 
+    以下は、標準的なフレームワーク制御ヘッダの定義例である。
+      
+    .. code-block:: bash
+
+      #===================================================================
+      # フレームワーク制御ヘッダ部 (50byte)
+      #===================================================================
+      [NablarchHeader]
+      1   requestId   X(10)       # リクエストID
+      11  userId      X(10)       # ユーザID
+      21  resendFlag  X(1)  "0"   # 再送要求フラグ (0: 初回送信 1: 再送要求)
+      22  statusCode  X(4)  "200" # ステータスコード
+      26 ?filler      X(25)       # 予備領域
+      #====================================================================
+
+    フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、
+    フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスすることができ、
+    PJ毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用することができる。
+
+    また、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、
+    予備領域を設けておくことを強く推奨する。
+
++++++++++++++++++++++++++++++++
+
+.. _framework:
+
+------------------------------------
+フレームワーク機能
+------------------------------------
+
+ここでは、以下の2つのクラスを使用する。
+
+  - 被仕向けメッセージング基底クラス (`MessagingAction`_) 
+
+    メッセージ受信時に実行されるアクションクラスの基底クラス。業務アプリケーションは本クラスを継承する必要がある。
+
+  - 受信電文オブジェクト (`ReceivedMessage`_)
+  
+    受信した電文に関する情報を格納するクラス。
+
+
+以下の説明では、本機能を使用することで実装可能な以下の処理パターンについて、
+処理フローの概要とサンプルコードを示す。
+
+.. _HTTPメッセージ受信:
+
+**1. HTTPメッセージ受信**
+
+  通信先システムからメッセージを受信し、その応答を送信する。
+
+  以下の図は、本処理のフローを表したものである。
+
+    .. figure::  ../_image/messaging_http_receive.png
+       :align: center
+
+  以下は、ここで述べた受信処理を実際に行うコードサンプルである。
+  受信処理はフレームワーク機能により自動的に業務アプリケーションクラスが実行される。
+  そのため明示的に受信処理を行うコードを記述する必要はない。
+
+    .. code-block:: java
+
+      public class SampleAction extends MessagingAction {
+          protected ResponseMessage onReceive(RequestMessage request,
+                                              ExecutionContext context) {
+              // 受信データ処理
+              Map<String, Object> reqData = request.getParamMap();
+              
+              // (省略)
+              
+              // 応答データ返却
+              return request.reply()
+                      .setStatusCodeHeader("200")
+                      .addRecord(new HashMap() {{     // メッセージボディの内容
+                           put("FIcode",     "9999");
+                           put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+                           put("officeCode", "111");
+                           /*
+                            * (後略)
+                            */
+                        }});
+          }
+      }
+
++++++++++++++++++++++++++++++++
+
+.. _messaging_api:
+
+------------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-enterprise_messaging_http--s1`
+
+```json
+{
+  "id": "libraries-enterprise_messaging_http--s1",
+  "title": "HTTPメッセージング",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HTTPメッセージング",
+        "システム間メッセージング",
+        "HTTP同期通信"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "HTTP同期通信",
+        "HTTPメソッド",
+        "タイムアウト設定",
+        "proxy接続",
+        "データ加工",
+        "BASIC認証未実装",
+        "クエリストリング未実装"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構成",
+      "hints": [
+        "メッセージング基盤API",
+        "HTTP通信クライアント",
+        "MessagingAction",
+        "HTTPメッセージ受信",
+        "HTTPメッセージ送信",
+        "messaging_sender_util"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データモデル",
+      "hints": [
+        "プロトコルヘッダー",
+        "X-Message-Id",
+        "X-Correlation-Id",
+        "メッセージボディ",
+        "フレームワーク制御ヘッダー",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "NablarchHeader"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "フレームワーク機能",
+      "hints": [
+        "MessagingAction",
+        "ReceivedMessage",
+        "HTTPメッセージ受信",
+        "onReceive",
+        "ResponseMessage",
+        "RequestMessage"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "HTTPメッセージングは、本フレームワークが提供するシステム間メッセージング機能のうち、HTTPを使用した同期通信を行う機能。",
+    "s2": "## 実装済み\n\n- HTTP(S)を使用して同期通信可能\n- 任意のHTTPメソッド、任意のHTTPヘッダ、メッセージボディにJSON/XML形式を使用した送受信\n- HTTP接続タイムアウト設定（接続タイムアウト、読み取りタイムアウト）\n- proxy経由接続\n- 送受信時のデータ加工実装の差し込み（例：特定項目の暗号化/復号）\n\n## 未実装\n\n- BASIC認証、Digest認証は使用不可\n- HTTPSのプライベート認証局発行証明書による通信は不可\n- パラメータをURLの一部またはクエリストリングとした送受信は不可\n- HTTPヘッダ以外（クエリパラメータや電文本文など）からのメッセージID/関連ID取得は不可\n\n## 未検討\n\n- マルチパート形式のメッセージボディ送信\n- FORM認証\n- HTTPリクエストの自動再送（NAF側での自動再送なし。actionでの再送処理実装は可能）\n- Keep Alive対応\n- 仕向け通信レスポンスの正常時/エラー時フォーマット切り替え",
+    "s3": "本機能は以下の2つのレイヤで構成される。\n\n**レイヤ（フレームワーク機能）**\n\nメッセージング基盤APIを使用した機能。フレームワーク制御ヘッダーの利用を前提として設計されている。\n\n- :doc:`../architectural_pattern/messaging`: 外部から送信される要求電文に対して適切な業務アプリケーションを実行する制御基盤。MOMを使用した場合と同一のインタフェースでメッセージ受信アプリケーションを実装可能。HTTPメッセージ受信処理を担う。\n- :doc:`messaging_sender_util`: 対外システムへのメッセージ同期送信ユーティリティ。MOMを使用した場合と同一のインタフェースでメッセージ同期送信可能。\n\n**レイヤ（通信クライアント）**\n\n- HTTP通信クライアント: HTTP通信インターフェースの実装系を使用したHTTP通信の実装。HTTPメッセージ送信処理を担う。",
+    "s4": "**プロトコルヘッダー**\n\nWebコンテナによるメッセージ送受信処理において使用される情報を格納するヘッダー領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダー**\n\nプロトコルヘッダーのうち、特定のキー名でアクセス可能なヘッダー。\n\n| ヘッダー論理名 | キー名 | 内容 | HTTP通信実装の場合 |\n|---|---|---|---|\n| メッセージID | X-Message-Id | 電文ごとに一意採番される文字列。送信時は採番した値が設定される。受信時は送信側の発番した値が設定される。 | HTTPヘッダーの値を設定 |\n| 関連メッセージID | X-Correlation-Id | 電文が関連する電文のメッセージID。応答電文では要求電文のメッセージIDを設定。再送要求では応答再送を要求する要求電文のメッセージIDを設定。 | HTTPヘッダーの値を設定 |\n\n**メッセージボディ**\n\nHTTPリクエストのデータ領域。フレームワーク機能はプロトコルヘッダー領域のみを使用し、それ以外のデータ領域は未解析のバイナリデータとして扱う。メッセージボディの解析は :doc:`record_format` で行い、フィールド名をキーとするMap形式で読み書き可能。\n\n**フレームワーク制御ヘッダー**\n\nフレームワーク機能の多くは、電文中に特定の制御項目（フレームワーク制御ヘッダ）が定義されていることを前提として設計されている。\n\nフレームワーク制御ヘッダーと使用する主要ハンドラの対応:\n\n| フレームワーク制御ヘッダ | 役割 | 使用する主要ハンドラ |\n|---|---|---|\n| リクエストID | 実行すべき業務処理を識別するID | :doc:`../handler/RequestPathJavaPackageMapping`, :doc:`../handler/RequestHandlerEntry`, :doc:`../handler/ServiceAvailabilityCheckHandler`, :doc:`../handler/PermissionCheckHandler`, :doc:`../reader/FwHeaderReader` など |\n| ユーザID | 実行権限を表す文字列 | :doc:`../handler/PermissionCheckHandler` |\n| 再送要求フラグ | 再送要求電文送信時に設定されるフラグ | :doc:`../handler/MessageResendHandler` |\n| ステータスコード | 要求電文に対する処理結果を表すコード値（応答電文に設定） | :doc:`../handler/MessageReplyHandler` |\n\nデフォルト設定でのフィールド名:\n\n| フレームワーク制御ヘッダ | フィールド名 |\n|---|---|\n| リクエストID | requestId |\n| ユーザID | userId |\n| 再送要求フラグ | resendFlag |\n| ステータスコード | statusCode |\n\nフレームワーク制御ヘッダの定義例:\n\n```\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n```\n\n> **補足**: フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、任意ヘッダ項目としてアクセスでき、PJ毎のフレームワーク制御ヘッダの簡易的な拡張に利用できる。将来的な任意項目の追加やヘッダ追加に備えて予備領域を設けることを強く推奨する。",
+    "s5": "使用するクラス:\n\n- **クラス**: `MessagingAction` — メッセージ受信時に実行されるアクションクラスの基底クラス。業務アプリケーションは本クラスを継承する必要がある。\n- **クラス**: `ReceivedMessage` — 受信した電文に関する情報を格納するクラス。\n\n**HTTPメッセージ受信**\n\n通信先システムからメッセージを受信し、その応答を送信する処理パターン。受信処理はフレームワーク機能により自動的に業務アプリケーションクラスが実行されるため、明示的に受信処理を行うコードを記述する必要はない。\n\n```java\npublic class SampleAction extends MessagingAction {\n    protected ResponseMessage onReceive(RequestMessage request,\n                                        ExecutionContext context) {\n        // 受信データ処理\n        Map<String, Object> reqData = request.getParamMap();\n        \n        // 応答データ返却\n        return request.reply()\n                .setStatusCodeHeader(\"200\")\n                .addRecord(new HashMap() {{\n                     put(\"FIcode\",     \"9999\");\n                     put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n                     put(\"officeCode\", \"111\");\n                  }});\n    }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 11
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4",
+      "description": "The source SQL code comment explicitly states that the version number column name and data type are arbitrary (\"カラム名、データ型は任意。\"), but this constraint is omitted from the knowledge file. Without this information, an AI assistant could mislead developers into believing the column must be named VERSION with NUMBER(10) type.",
+      "source_evidence": "Source SQL comment in 排他制御用テーブルの実装例: `-- バージョン番号カラムを定義する。 -- カラム名、データ型は任意。`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source includes an image showing a concrete example of the exclusive control table structure (ExclusiveControl_ExclusiveControlTableExample.jpg under \"排他制御用テーブルの例\"), but this image is not referenced in the knowledge file. Every other image from this source section is included in s4.",
+      "source_evidence": "Source: `.. image:: _images/08/ExclusiveControl_ExclusiveControlTableExample.jpg` with caption **排他制御用テーブルの例**"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source 排他制御の実現方法 section (h2) contains multiple h3 subsections (排他制御用テーブル, 悲観的ロックと楽観的ロックの動作イメージ) with total plain-text content far exceeding 2000 characters, yet the knowledge file consolidates all of this into a single section (s4) rather than splitting it. Per V3 rules, a large h2 section with h3 subsections warrants splitting.",
+      "source_evidence": "Source h3 headings under 排他制御の実現方法: 排他制御用テーブル, 悲観的ロックと楽観的ロックの動作イメージ — each with substantial content including SQL, notes, and multiple images."
+    }
+  ]
+}

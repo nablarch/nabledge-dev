@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-04_MasterDataRestore--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — log.properties configuration example",
+      "description": "The log.properties code example is heavily truncated. The source provides a 13-line complete working configuration, but the knowledge file shows only 3 lines (loggers.sql.*). The omitted lines include: loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory, writerNames=stdout,nop, writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter, writer.nop.className=nablarch.test.core.log.NopLogWriter, availableLoggersNamesOrder=sql,root, and the root logger settings (loggers.root.nameRegex, loggers.root.level, loggers.root.writerNames). These are necessary to reconstruct the complete logging setup required by this feature.",
+      "source_evidence": "Source log.properties block contains 13 configuration lines. The feature-specific part includes writer.nop.className=nablarch.test.core.log.NopLogWriter (the NopLogWriter referenced in the knowledge file as a class but whose configuration line is absent), and availableLoggersNamesOrder=sql,root which controls logger precedence."
+    }
+  ]
+}

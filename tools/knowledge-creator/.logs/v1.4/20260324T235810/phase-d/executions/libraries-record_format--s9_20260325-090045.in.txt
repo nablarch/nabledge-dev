@@ -1,0 +1,405 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/core_library/record_format.rst`
+- Format: `rst`
+
+```
+フィールドコンバータ（文字列置換）の利用方法
+--------------------------------------------------------------------
+
+replacementのフィールドコンバータを例に設定方法を以下に示す。
+
+**1.フィールドコンバータの設定方法**
+
+既存の初期化コンポーネントに対して、文字列置換用コンポーネントの初期化設定を追加する。
+
+      .. code-block:: xml
+      
+       <component name="initializer"
+             class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+         <property name="initializeList">
+           <list>
+             <!-- 既存の設定は省略 -->
+           
+             <!-- 文字列置換 -->
+             <component-ref name="characterReplacementManager" />
+           </list>
+         </property>
+       </component>
+      
+
+さらに、文字列置換変換用のコンポーネントを定義する。
+
+      .. code-block:: xml
+      
+       <!-- 文字列置換用コンポーネント -->
+       <component name="characterReplacementManager"
+           class="nablarch.core.dataformat.CharacterReplacementManager">
+         <property name="configList">
+           <list>
+             <component class="nablarch.core.dataformat.CharacterReplacementConfig">
+               <property name="typeName" value="sample"/>
+               <property name="filePath" value="classpath:messaging/characterconvertor/input.properties"/>
+               <property name="encoding" value="UTF-8"/>
+               <property name="byteLengthCheck" value="false"/>
+             </component>
+           </list>
+         </property>
+       </component>
+
+設定内容の説明は以下の通り。
+
+    ================  ===================================================================================================================================================
+    設定項目          内容
+    ================  ===================================================================================================================================================
+    typeName          | 変換タイプの名称
+                      | フォーマット定義ファイルで利用する際にこの名称を指定する。
+
+    filePath          | 変換ルールの設定ファイルのファイルパス
+                      | 
+    encoding          | 変換時のエンコーディング
+                      | 
+    byteLengthCheck   | 変換前文字列と変換後文字列のバイト長チェックの実施有無
+                      | デフォルトは実施する（"true"）
+    ================  ===================================================================================================================================================
+
+変換ルールの設定ファイルを下記の通り用意する。
+"変換前"="変換後"の形式で１文字ごとに変換ルールを設定する。
+
+      .. code-block:: properties
+      
+       \u9ad9=\u9ad8
+       \uff11=\u4e00
+       \uff12=\u4e8c
+       \uff13=\u4e09
+       \uff14=\u56db
+       \uff15=\u4e94
+       \uff16=\u516d
+       \uff17=\u4e03
+       \uff18=\u516b
+       \uff19=\u4e5d
+
+あとは、変換を実施するフォーマット定義ファイルに下記の通り記述する。
+コンバータの引数として、コンポーネント定義にて設定した"変換タイプの名称"を渡すことで、
+どの変換タイプを利用するかを指定する。
+
+
+      .. code-block:: properties
+
+       3          kanjiName         XN  replacement("sample") #漢字氏名
+
+**2.文字列置換結果の取得方法**
+
+直前のフォーマット変換処理における置換有無や置換前後の文字列をaction側で取得したい場合には、
+下記のようにして結果を取得することが可能である。
+
+      .. code-block:: java
+
+       // 文字の置換えが発生したかどうかを確認（true=変換有り、false=変換無し）
+       CharacterReplacementResult resultBean = CharacterReplacementUtil.getResult("kanjiName");
+       boolean result = resultBean.isReplacement();
+       
+       // 文字の置換え前後の文字列を取得する
+       // 変換前の文字列
+       String inputString = resultBean.getInputString();
+       // 変換後の文字列
+       String resultString = resultBean.getResultString();
+
+
+可変長ファイルにおけるタイトル行の読み書き
+--------------------------------------------------------------------
+この節では、可変長ファイルにおける最初の行をタイトル行として、通常のレコードタイプとは別に取り扱う機能について解説する。
+
+タイトル行とは例えば以下のようなファイルのことを示す。
+
+.. image:: ../_image/record_format_csv_sample.png
+
+requires-titleディレクティブにtrueを設定することで、タイトル行を読み書きする機能が有効となり、最初の行をタイトル行として通常のレコードタイプとは別に取り扱うことができるようになる。
+この場合、最初の行はタイトル固定のレコードタイプ名[Title]で読み書きできるようになる。
+
+通常、タイトル行・データ行のような2つのレコードタイプが存在するファイルを読み込むためには以下のようにマルチフォーマットの定義を行う必要がある。
+
+  .. code-block:: bash
+    
+    [Classifier]
+    1  Kubun X               # レコードタイプ識別フィールド
+    
+    [TitleRecord]            # タイトル固有のレコードタイプ
+      Kubun = "データ区分"   # タイトルのフォーマットの適用条件
+    1   Kubun      N  
+    2   Name       N  
+    3   Publisher  N  
+    4   Authors    N  
+    5   Price      N  
+            
+    [DataRecord]             # データのレコードタイプ
+      Kubun = "1"            # データのフォーマットの適用条件
+    1   Kubun      X  
+    2   Name       N  
+    3   Publisher  N  
+    4   Authors    N  
+    5   Price      N  
+
+タイトル行とデータ行に対してフォーマットの適用条件となるフィールドが存在する場合は、上記のようなマルチフォーマットの定義で読み込むことができるが、そのようなフィールドが存在しない場合は読み込むことができない。
+
+しかし、本機能を使用すれば、最初の行はタイトル固有のレコードタイプが、最初の行以降はそれ以外のレコードタイプが適用されるので、
+タイトル行とデータ行を識別するためのフィールドが存在しなくても、以下のとおりシングルフォーマットの定義で読み込むことができる。
+   
+  .. code-block:: bash
+    
+   requires-title: true  # requires-titleがtrueの場合、最初の行をタイトルとして読み書きできる。
+
+   [Title]               # タイトル固有のレコードタイプ。最初の行はこのレコードタイプで読み書きされる。
+   1   Kubun      N  
+   2   Name       N  
+   3   Publisher  N  
+   4   Authors    N  
+   5   Price      N  
+        
+   [DataRecord]          # データのレコードタイプ。最初の行以降の行はこのレコードタイプで読み書きされる。
+   1   Kubun      X  
+   2   Name       N  
+   3   Publisher  N  
+   4   Authors    N  
+   5   Price      N  
+
+また、本機能を使用する場合、最初の行がタイトル行であることが保証されるので、ファイルレイアウトの精査を省略できるといったメリットもある。
+
+以上の点より、最初の行にタイトルが存在するファイルを読み込む場合は、本機能を使用することを推奨する。
+
+
+本機能を使用する場合、以下の制約が発生する。
+
+* レコードタイプ [Title] を必ずフォーマット定義しなければならない。
+* 最初の行を書き込む際に指定するレコードタイプは [Title] でなければならない。
+* 最初の行以降を書き込む際に指定するレコードタイプは  [Title] 以外でなければならない。
+* レコードタイプ  [Title] にフォーマットの適用条件が定義されている場合、読み書きする最初の行は必ずその適用条件を満たさなければならない。また、最初の行以降の行はその適用条件を満たしてはいけない。
+
+
+以下に、最初の行をタイトルとして読み書きする場合のシングルフォーマット・マルチフォーマット定義の例を示す。
+
+
+**シングルフォーマット定義の例**
+
+  .. code-block:: bash
+  
+    #-------------------------------------------------------------------------------
+    # 書籍一覧の可変長ファイルフォーマット（シングルフォーマット）
+    #-------------------------------------------------------------------------------
+
+    file-type:    "Variable"     # 可変長
+    text-encoding:     "ms932"   # ファイルエンコーディング
+    record-separator:  "\r\n"    # CRLFで改行
+    field-separator:   ","       # フィールド区切り文字
+    quoting-delimiter: "\""      # 囲み文字
+    requires-title: true         # 最初の行をタイトルとして読み書きする
+    
+    [Title]                      # タイトル固有のレコードタイプ
+    1   Name       N  "書籍名" 
+    2   Publisher  N  "出版社"   
+    3   Authors    N  "著者"     
+    4   Price      N  "価格"     
+    
+    [Books]                      # データのレコードタイプ
+    1   Name       X             # 書籍名
+    2   Publisher  X             # 出版社
+    3   Authors    X             # 著者
+    4   Price      X  Number     # 価格
+
+
+**マルチフォーマット定義の例**
+
+  .. code-block:: bash
+  
+    #-------------------------------------------------------------------------------
+    # 書籍一覧の可変長ファイルフォーマット（マルチフォーマット）
+    #-------------------------------------------------------------------------------
+
+    file-type:    "Variable"     # 可変長
+    text-encoding:     "ms932"   # ファイルエンコーディング
+    record-separator:  "\r\n"    # CRLFで改行
+    field-separator:   ","       # フィールド区切り文字
+    quoting-delimiter: "\""      # 囲み文字
+    requires-title: true         # 最初の行をタイトルとして読み書きする
+    
+    
+    [Classifier]
+    1  Kubun X                   # レコードタイプ識別フィールド（データ区分）
+                                 # 1: データ、2: トレイラ
+    
+    [Title]                      # タイトル固有のレコードタイプ。マルチフォーマットでもフォーマットの適用条件は不要。
+    1   Kubun      N  "データ区分" 
+    2   Name       N  "書籍名"
+    3   Publisher  N  "出版社"   
+    4   Authors    N  "著者"     
+    5   Price      N  "価格"     
+            
+    [DataRecord]                 # データのレコードタイプ
+      Kubun = "1"                # データのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   Name       N             # 書籍名
+    3   Publisher  N             # 出版社   
+    4   Authors    N             # 著者     
+    5   Price      N             # 価格     
+    
+    [TrailerRecord]              # トレイラのレコードタイプ
+      Kubun = "2"                # トレイラのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   RecordNum  X             # 総件数
+
+
+
+タイトル固有のレコードタイプ名はデフォルトでは [Title] だが、title-record-type-nameディレクティブでタイトル固有のレコードタイプ名を個別に指定することも可能である。
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-record_format--s9`
+
+```json
+{
+  "id": "libraries-record_format--s9",
+  "title": "フィールドコンバータ（文字列置換）の利用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フィールドコンバータ（文字列置換）の利用方法",
+      "hints": [
+        "CharacterReplacementManager",
+        "CharacterReplacementConfig",
+        "CharacterReplacementUtil",
+        "CharacterReplacementResult",
+        "BasicApplicationInitializer",
+        "typeName",
+        "filePath",
+        "encoding",
+        "byteLengthCheck",
+        "フィールドコンバータ",
+        "文字列置換",
+        "replacementコンバータ",
+        "変換ルール設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "可変長ファイルにおけるタイトル行の読み書き",
+      "hints": [
+        "requires-title",
+        "title-record-type-name",
+        "タイトル行",
+        "可変長ファイル",
+        "シングルフォーマット",
+        "マルチフォーマット",
+        "Titleレコードタイプ",
+        "タイトル行識別"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フィールドコンバータ（文字列置換）の設定\n\n**クラス**: `nablarch.core.dataformat.CharacterReplacementManager`, `nablarch.core.dataformat.CharacterReplacementConfig`\n\n初期化コンポーネント（`BasicApplicationInitializer`）の`initializeList`に`characterReplacementManager`を追加し、文字列置換コンポーネントを定義する。\n\n```xml\n<component name=\"initializer\"\n      class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"characterReplacementManager\" />\n    </list>\n  </property>\n</component>\n\n<component name=\"characterReplacementManager\"\n    class=\"nablarch.core.dataformat.CharacterReplacementManager\">\n  <property name=\"configList\">\n    <list>\n      <component class=\"nablarch.core.dataformat.CharacterReplacementConfig\">\n        <property name=\"typeName\" value=\"sample\"/>\n        <property name=\"filePath\" value=\"classpath:messaging/characterconvertor/input.properties\"/>\n        <property name=\"encoding\" value=\"UTF-8\"/>\n        <property name=\"byteLengthCheck\" value=\"false\"/>\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n**CharacterReplacementConfigプロパティ**:\n\n| プロパティ名 | 説明 |\n|---|---|\n| typeName | 変換タイプの名称。フォーマット定義ファイルで利用する際に指定する。 |\n| filePath | 変換ルールの設定ファイルのパス |\n| encoding | 変換時のエンコーディング |\n| byteLengthCheck | 変換前後のバイト長チェック実施有無。デフォルト: `true`（実施する） |\n\n**変換ルール設定ファイル**: `変換前=変換後` の形式で1文字ごとに記述する。\n\n```properties\n\\u9ad9=\\u9ad8\n\\uff11=\\u4e00\n\\uff12=\\u4e8c\n```\n\nフォーマット定義ファイルでは、コンバータの引数に`typeName`で設定した変換タイプ名を渡すことで使用する変換タイプを指定する。\n\n```\n3  kanjiName  XN  replacement(\"sample\")  #漢字氏名\n```\n\n**置換結果の取得** (`CharacterReplacementUtil`):\n\n```java\n// 直前のフォーマット変換処理における置換結果を取得\nCharacterReplacementResult resultBean = CharacterReplacementUtil.getResult(\"kanjiName\");\nboolean result = resultBean.isReplacement();       // true=変換有り、false=変換無し\nString inputString = resultBean.getInputString();   // 変換前の文字列\nString resultString = resultBean.getResultString(); // 変換後の文字列\n```",
+    "s2": "## 可変長ファイルにおけるタイトル行の読み書き\n\n`requires-title: true` をフォーマット定義ファイルに設定すると、最初の行をタイトル行として通常のレコードタイプとは別に取り扱える。最初の行はレコードタイプ名 `[Title]` で読み書きされる。\n\nタイトル行とデータ行を識別するフィールドが存在しない場合でも、本機能を使用すればシングルフォーマット定義で読み込むことができる。最初の行がタイトル行であることが保証されるため、ファイルレイアウトの精査を省略できる。最初の行にタイトルが存在するファイルを読み込む場合は本機能を使用することを推奨する。\n\n**制約**:\n- レコードタイプ `[Title]` を必ずフォーマット定義しなければならない。\n- 最初の行を書き込む際に指定するレコードタイプは `[Title]` でなければならない。\n- 最初の行以降を書き込む際に指定するレコードタイプは `[Title]` 以外でなければならない。\n- レコードタイプ `[Title]` にフォーマットの適用条件が定義されている場合、最初の行は必ずその適用条件を満たさなければならない。また、最初の行以降の行はその適用条件を満たしてはいけない。\n\n**シングルフォーマット定義の例**:\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true         # 最初の行をタイトルとして読み書きする\n\n[Title]                      # タイトル固有のレコードタイプ\n1   Name       N  \"書籍名\"\n2   Publisher  N  \"出版社\"\n3   Authors    N  \"著者\"\n4   Price      N  \"価格\"\n\n[Books]                      # データのレコードタイプ\n1   Name       X\n2   Publisher  X\n3   Authors    X\n4   Price      X  Number\n```\n\n**マルチフォーマット定義の例**:\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true\n\n[Classifier]\n1  Kubun X\n\n[Title]                      # マルチフォーマットでもフォーマットの適用条件は不要\n1   Kubun      N  \"データ区分\"\n2   Name       N  \"書籍名\"\n3   Publisher  N  \"出版社\"\n4   Authors    N  \"著者\"\n5   Price      N  \"価格\"\n\n[DataRecord]\n  Kubun = \"1\"\n1   Kubun      X\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n\n[TrailerRecord]\n  Kubun = \"2\"\n1   Kubun      X\n2   RecordNum  X\n```\n\nタイトル固有のレコードタイプ名はデフォルトでは `[Title]` だが、`title-record-type-name` ディレクティブで個別に指定することも可能。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

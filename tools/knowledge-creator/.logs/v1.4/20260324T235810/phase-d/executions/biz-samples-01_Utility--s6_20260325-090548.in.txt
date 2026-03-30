@@ -1,0 +1,469 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/mobile/source/01_iOS/03_Utility/01_Utility.rst`
+- Format: `rst`
+
+```
+NMMockUtil
+--------------------------
+
+本クラスは通信モッククラスで使用されることを前提としており、本クラスを使用するためには通信モック設定ファイルが必要である。
+
+
+機能一覧
+==========
+
+.. |mockSampleLink| raw:: html
+
+   <a href="../../../../../../app_dev_env/mobile/ios/sample/doc/01_iOS/01_ConnectionFramework/02_MockSample/03_howToImplementationOfMock.html">モックサンプル</a>
+
+=============================== =======================================================================================================
+機能名                          概要
+=============================== =======================================================================================================
+モック機能の実行                通信モックで使用する以下の機能を実行する。
+                                
+                                * 入力値の検証(スキップ可能)
+                                * 通信フォーマット変換後の入力値のダンプ(スキップ可能)
+                                * 受信メッセージの作成
+                                * 通信エラー情報の作成
+                                * 通信待ち時間の発生
+
+                                 .. function:: - (NMMessage *)send:(NMMessage *)message error:(NSError **)error
+
+                                   :param: | message:送信メッセージ
+                                           | error:エラー情報
+                                   :return: プロパティconnectionDataIdに設定された値に対応する受信メッセージ。
+                                            エラーが発生した場合はnil。
+                                
+                                
+                                利用例は |mockSampleLink| を参照。
+=============================== =======================================================================================================
+
+
+通信モック設定ファイル
+==========================
+
+通信モック設定ファイルは以下の設定を行うCSV形式(UTF-8)のファイルである。
+
+ * 入力値の検証要否
+ * 通信エラー発生要否
+ * 入力値の期待値
+ * 受信メッセージ
+ * エラー情報
+ * 通信待ち時間
+
+
+ファイル内の構造
+^^^^^^^^^^^^^^^^^^
+
+| csvファイルの記述に関する規約について説明を行う。 以下にファイルの記述例を記載する。
+| ※以下全ての例で、分かりやすいようにCSVデータではなくエクセルデータで記載する。
+
+.. image:: _images/mockUtil_fileConstract.png
+
+通信モック設定ファイルは複数のデータで構成される。\
+データには以下の種類がある。
+
+ * :ref:`connectionInfo`
+ * :ref:`responseMessage`
+ * :ref:`validationData`
+ * :ref:`errorData`
+ * :ref:`dictionaryData`
+ * :ref:`arrayData`
+
+データの種類に依らない共通の書式は以下の通り。
+
+ * データ1行目は「listMap=<データ名>」の形式で、データ名を記載する
+ * データ名を記載した次以降の行にデータ型を記載する
+ * データ型を記載した次以降の行にKeyを記載する
+ * Keyを記載した次以降の行に値を記載する
+ * データ内に空行を含めない
+ * データとデータの間には1行以上の空行を挿入する
+ * データの値として「,（コンマ）」および「\\r（改行コード）」は使用できない
+
+ | **データ型**
+ | データ型として指定できるのはNSString, int, float, BOOL, NSNull, NSArray, NSDictionaryのいずれか。
+ | NSArrayまたはNSDictionaryがある場合はそれに対応するデータが必ず存在すること。
+ 
+ | **Key**
+ | 全てアルファベットで記入すること。空白を含まないこと。
+   
+ | **値**
+ | 空文字を指定したい場合は「be_empty」とすること。また、データ型がNSNullの場合も値は「be_empty」とすること。
+
+
+コメント
+~~~~~~~~~~
+
+セル内に”//”から開始する文字列を記載した場合、そのセルから右のセルは全て読み込み対象外となる。\
+データ自体には含めたくないが、可読性を向上させるために付加情報を記載したい場合には、コメント機能が使用できる。
+
+以下の例では、3行目で各項目の説明を、5行目末尾で各データ行の役割についてコメントしている。
+
+listMap=PLAYER
+
++----------+----------+----------+----------+----------------------------+
+|NSString  |NSString  |NSString  |NSString  |                            |
++----------+----------+----------+----------+----------------------------+
+|NO        |FIRST_NAME|LAST_NAME |ADDRESS   |                            |
++==========+==========+==========+==========+============================+
+|//番号    |名        |姓        |住所      |                            |
++----------+----------+----------+----------+----------------------------+
+|0001      |Andres    |Segovia   |Spain     | // M01ABに紐づく           |
++----------+----------+----------+----------+----------------------------+
+|0002      |Julian    |Bream     |England   | // M01AAに紐づく           | 
++----------+----------+----------+----------+----------------------------+
+
+
+.. _connectionInfo:
+
+通信の設定情報を表すデータ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+| 通信モック設定ファイルは必ず1つ以上の通信の設定情報を表すデータを持たなければならない。
+| 通信の設定情報を表すデータの書式は以下の通り。
+
+ * データ名は「connectionInfo」固定
+ * 以下の値を用意する
+ 
+   ================= ============ ================================================================
+   key名             データ型     概要
+   ================= ============ ================================================================
+   connectionDataId  NSString     | 通信データID
+   responseID        NSString     | 受信メッセージを表すデータ名
+                                  | 受信メッセージを生成しない場合は「be_empty」を記入
+   doValidate        BOOL         | 入力値検証要否
+   occurSendError    BOOL         | 通信エラー発生要否
+   responseTime      float        | 通信待ち時間
+   requestID         NSString     | 入力値の期待値を表すデータ名
+                                  | doValidateの値がFALSEの場合は「be_empty」を記入
+   ignoreListID      NSString     | 入力値検証無視項目を表すデータ名
+                                  | occurSendErrorの値がFALSEの場合は「be_empty」を記入
+   ================= ============ ================================================================
+
+本データの通信設定はsendメソッドが呼ばれるごとに読み込まれる。1つのファイルに複数の通信設定を記述可能だが、\
+sendメソッドで読み込まれる通信設定は1つである。sendメソッドが呼び出された時点で、connectonInfoIdというインスタンス変数\
+に保存されている値と同名の通信データIDの設定が読み込まれる。
+
+記述例
+
+.. image:: _images/mockUtil_connectionInfo.png
+
+
+.. _responseMessage:
+
+受信メッセージを表すデータ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+| 受信メッセージを表すデータはNMMessageオブジェクトとしてsendメソッドの戻り値となる。
+| 受信メッセージを表すデータの書式は以下の通り。
+
+ * データの1番目のkeyはconnectionDataIdであること
+
+1つのファイルに複数の受信メッセージを記述可能だが、sendメソッドで戻り値となる受信メッセージは1つである。 
+:ref:`connectionInfo` の項目responseIDに対応するデータ名を持ち、connectionDataIdが一致するものが戻り値となる。
+ただし、通信エラーが発生する等の理由で戻り値が必要ない場合は本データを作成する必要はない。
+
+記述例
+
+.. image:: _images/mockUtil_responseMessage.png
+
+プログラム例
+
+.. code-block:: objective-c
+
+ NMMockUtil *mockUtil = [[NMMockUtil alloc] initWithFileName:@"fileName" bodyConvertor:nil];
+ 
+ // 000000002を通信データIDに設定した場合
+ // @"key01" : @"dummyString11", @"key02" : @"dummyString12", @"key03" : @"dummyString13"
+ // というデータを保持したメッセージが返される。
+ mockUtil.connectionDataId = @"000000002"; // 通信データIDの設定
+ NMMessage *responseMessage = [mockUtil send:message error:error];
+ 
+ // 000000004を通信データIDに設定した場合
+ // 通信エラーが発生するという設定になっているので、nilが戻り値となる。
+ mockUtil.connectionDataId = @"000000004"; // 通信データIDの設定
+ NMMessage *responseMessage = [mockUtil send:message error:error];
+
+
+
+.. _validationData:
+
+入力値の期待値を表すデータ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+| 入力値の期待値を表すデータはsendメソッドの引数として渡された送信メッセージの比較に使用される。
+| 入力値の期待値を表すデータの書式は以下の通り。
+
+ * データの1番目のkeyはconnectionDataIdであること
+
+:ref:`responseMessage` と同様に1つのファイルに複数の受信メッセージを記述可能だが、 \
+sendメソッドで期待値として扱われるデータは1つである。
+:ref:`connectionInfo` の項目requestIDに対応するデータ名を持ち、connectionDataIdが一致するものが期待値となる。
+ただし、:ref:`connectionInfo` の項目doValidateがFalseである場合は本データを作成する必要はない。
+
+記述例
+
+.. image:: _images/mockUtil_validationData.png 
+
+プログラム例
+
+.. code-block:: objective-c
+
+ NMMockUtil *mockUtil = [[NMMockUtil alloc] initWithFileName:@"fileName" bodyConvertor:nil];
+ 
+ // 送信メッセージの作成
+ NSDictionary *dict1 = @{@"key01" : @"dummyStirng11", @"key02" : @"dummyString12", @"key03" : @"dummyString13"};
+ NMMessage *sendMessage = [[NMMessage alloc] initWithDictionary:dict];
+ 
+ // 000000002を通信データIDに設定した場合
+ // ファイルに記入した期待値とsendMessageが一致するので検証成功となる。
+ mockUtil.connectionDataId = @"000000002"; // 通信データIDの設定
+ NMMessage *responseMessage = [mockUtil send:sendMessage error:error];
+ 
+ // 000000001を通信データIDに設定した場合
+ // ファイルに記入した期待値とsendMessageが一致しないので、検証失敗となり例外が発生する。
+ mockUtil.connectionDataId = @"000000001"; // 通信データIDの設定
+ NMMessage *responseMessage = [mockUtil send:sendMessage error:error];
+ 
+**検証無視項目の設定**
+
+ 日時や登録者IDなど、実行するたびに入力値が変わってしまうような項目に対して、検証を行わないように設定できる。\
+ 入力検証無視リストの書式は以下の通り。
+ 
+  * データの1番目のkeyはforeignKeyであり、値は"const"であること。
+
+ 入力検証無視リストは :ref:`connectionInfo` の項目ignoreListIDに対応するデータ名を持つデータが読み込まれる。
+ 
+ 記述例
+ 
+ .. image:: _images/mockUtil_ignoreData.png
+ 
+ 上記の例の場合、送信メッセージのkey02およびkey03に期待値と異なる値が入っていたとしても、検証は失敗しない。 
+
+
+.. _errorData:
+
+通信エラー情報を表すデータ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| 通信エラー情報を表すデータはエラー情報としてsendメソッドのerror引数に設定される。
+| 通信エラー情報を表すデータの書式は以下の通り。
+
+ * データ名は「error」固定
+ * 以下の値を用意する
+ 
+  ======================================== =========== =====================================================================
+  key                                      データ型    概要
+  ======================================== =========== =====================================================================
+  connectionDataId                         NSString    通信データID
+  code                                     int         エラーコード
+  domain                                   NSString    エラードメイン
+  NSLocalizedDescriptionKey                NSString    userInfoのキーNSLocalizedDescriptionKeyに設定する値
+  NSFilePathErrorKey                       NSString    userInfoのキーNSFilePathErrorKeyに設定する値
+  NSStringEncodingErrorKey                 NSString    userInfoのキーNSStringEncodingErrorKeyに設定する値
+  NSUnderlyingErrorKey                     NSString    userInfoのキーNSUnderlyingErrorKeyに設定する値
+  NSURLErrorKey                            NSString    userInfoのキーNSURLErrorKeyに設定する値
+  NSLocalizedFailureReasonErrorKey         NSString    userInfoのキーNSLocalizedFailureReasonErrorKeyに設定する値
+  NSLocalizedRecoverySuggestionErrorKey    NSString    userInfoのキーNSLocalizedRecoverySuggestionErrorKeyに設定する値
+  NSLocalizedRecoveryOptionsErrorKey       NSString    userInfoのキーNSLocalizedRecoveryOptionsErrorKeyに設定する値
+  NSRecoveryAttempterErrorKey              NSString    userInfoのキーNSRecoveryAttempterErrorKeyに設定する値
+  NSHelpAnchorErrorKey                     NSString    userInfoのキーNSHelpAnchorErrorKeyに設定する値
+  NSURLErrorFailingURLErrorKey             NSString    userInfoのキーNSURLErrorFailingURLErrorKeyに設定する値
+  NSURLErrorFailingURLStringErrorKey       NSString    userInfoのキーNSURLErrorFailingURLStringErrorKeyに設定する値
+  NSURLErrorFailingURLPeerTrustErrorKey    NSString    userInfoのキーNSURLErrorFailingURLPeerTrustErrorKeyに設定する値
+  ======================================== =========== =====================================================================
+  
+  NSLocalizedDescriptionKey～NSURLErrorFailingURLPeerTrustErrorKeyが必要ない場合はデータ内に記述しなくてもよい。
+
+1つのファイルに複数のエラー情報を記述可能だが、sendメソッドで使用されるエラー情報は1つである。\
+sendメソッドが呼び出された時点で、connectonInfoIdというインスタンス変数に保存されている値と同名の通信データIDのエラー情報が読み込まれる。
+ただし、:ref:`connectionInfo` の項目occurSendErrorがFalseである場合は本データを作成する必要はない。
+
+
+.. _dictionaryData:
+
+ディクショナリを表すデータ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| ディクショナリを表すデータはデータの型がNSDictionaryであるものの内容を表すデータである。
+| ディクショナリを表すデータの書式は以下の通り。
+  
+ * データの1番目のkeyはforeignKeyであること
+
+データ内にNSDictonary型の値がある場合、key名とデータ名が一致し、値とforeignKeyの値が一致する
+ディクショナリを表すデータが読み込まれる。
+
+記述例
+
+.. image:: _images/mockUtil_dictionaryData.png
+
+
+.. _arrayData:
+
+配列を表すデータ
+~~~~~~~~~~~~~~~~~~
+| 配列を表すデータはデータの型がNSArrayであるものの内容を表すデータである。
+| 配列を表すデータの書式は以下の通り。
+  
+ * データの1番目のkeyはforeignKeyであること
+
+データ内にNSArray型の値がある場合、key名とデータ名が一致し、値とforeignKeyの値が一致する
+配列を表すデータが読み込まれる。
+
+記述例
+
+.. image:: _images/mockUtil_arrayData.png
+
+
+通信モッククラスに要求される処理
+==================================
+
+NMMockUtilを用いて通信モッククラスを作成する場合、通信モッククラスで行わなければならない処理は以下の通りである。
+
+ 1. 使用するモックファイルの指定
+ 2. 使用する通信データIDの指定
+ 3. モックユーティリティのsendメソッドの呼び出し
+```
+
+## Knowledge File
+
+- ID: `biz-samples-01_Utility--s6`
+
+```json
+{
+  "id": "biz-samples-01_Utility--s6",
+  "title": "NMMockUtil",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "NMMockUtil",
+      "hints": [
+        "NMMockUtil",
+        "NMMessage",
+        "通信モック",
+        "モック設定ファイル",
+        "入力値検証",
+        "通信エラー情報",
+        "connectionDataId",
+        "doValidate",
+        "occurSendError",
+        "responseTime",
+        "requestID",
+        "ignoreListID",
+        "responseID",
+        "connectionInfo",
+        "errorData",
+        "responseMessage",
+        "validationData",
+        "dictionaryData",
+        "arrayData",
+        "NSArray",
+        "NSDictionary",
+        "foreignKey"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `NMMockUtil`\n\n通信モック機能を実行するクラス。使用するには通信モック設定ファイル（CSV形式、UTF-8）が必要。\n\n**sendメソッド**:\n```\n- (NMMessage *)send:(NMMessage *)message error:(NSError **)error\n```\n- 引数: message（送信メッセージ）、error（エラー情報）\n- 戻り値: `connectionDataId`に対応する受信メッセージ。エラー発生時はnil\n\n**sendメソッドが実行する機能**:\n- 入力値の検証（スキップ可能）\n- 通信フォーマット変換後の入力値のダンプ（スキップ可能）\n- 受信メッセージの作成\n- 通信エラー情報の作成\n- 通信待ち時間の発生\n\n**通信モッククラスの必須処理**:\n1. 使用するモックファイルの指定\n2. 使用する通信データIDの指定（`connectionDataId`インスタンス変数に設定）\n3. `send`メソッドの呼び出し\n\n## 通信モック設定ファイル\n\nCSV形式（UTF-8）のファイル。設定項目: 入力値の検証要否、通信エラー発生要否、入力値の期待値、受信メッセージ、エラー情報、通信待ち時間。\n\n**ファイル構造の共通規約**:\n- データ1行目: `listMap=<データ名>`形式\n- データ名→データ型→Key→値の順で記載\n- データ内に空行を含めない\n- データ間には1行以上の空行を挿入\n- 値として`,`（コンマ）および`\\r`（改行コード）は使用不可\n- データ型: `NSString`, `int`, `float`, `BOOL`, `NSNull`, `NSArray`, `NSDictionary` のいずれか\n- `NSArray`または`NSDictionary`がある場合は対応するデータが必ず存在すること\n- Keyは全てアルファベット、空白なし\n- 空文字を指定する場合は「be_empty」と記入。`NSNull`型の値も「be_empty」\n\n**コメント**: セルに`//`から開始する文字列を記載すると、そのセルから右のセルは全て読み込み対象外になる。\n\n## connectionInfo（通信の設定情報）\n\n- データ名は「connectionInfo」固定\n- ファイルに必ず1つ以上存在すること\n- `send`メソッドが呼ばれるごとに`connectionDataId`インスタンス変数の値と同名の通信データIDの設定が読み込まれる\n\n| key名 | データ型 | 概要 |\n|---|---|---|\n| connectionDataId | NSString | 通信データID |\n| responseID | NSString | 受信メッセージを表すデータ名。受信メッセージを生成しない場合は「be_empty」 |\n| doValidate | BOOL | 入力値検証要否 |\n| occurSendError | BOOL | 通信エラー発生要否 |\n| responseTime | float | 通信待ち時間 |\n| requestID | NSString | 入力値の期待値を表すデータ名。doValidateがFALSEの場合は「be_empty」 |\n| ignoreListID | NSString | 入力値検証無視項目を表すデータ名。occurSendErrorがFALSEの場合は「be_empty」 |\n\n![connectionInfo例](assets/biz-samples-01_Utility--s6/mockUtil_connectionInfo.png)\n\n## responseMessage（受信メッセージ）\n\n- データの1番目のkeyは`connectionDataId`であること\n- `send`メソッドの戻り値となる`NMMessage`オブジェクト\n- `connectionInfo`の`responseID`と一致するデータ名かつ`connectionDataId`が一致するものが戻り値\n- 通信エラー発生時など戻り値不要の場合は省略可\n\n![responseMessage例](assets/biz-samples-01_Utility--s6/mockUtil_responseMessage.png)\n\n```objective-c\nNMMockUtil *mockUtil = [[NMMockUtil alloc] initWithFileName:@\"fileName\" bodyConvertor:nil];\n// 000000002を通信データIDに設定した場合\n// @\"key01\":@\"dummyString11\", @\"key02\":@\"dummyString12\", @\"key03\":@\"dummyString13\" を保持したメッセージが返される\nmockUtil.connectionDataId = @\"000000002\";\nNMMessage *responseMessage = [mockUtil send:message error:error];\n// 000000004を通信データIDに設定した場合: 通信エラー設定のためnilが返される\nmockUtil.connectionDataId = @\"000000004\";\nNMMessage *responseMessage = [mockUtil send:message error:error];\n```\n\n## validationData（入力値の期待値）\n\n- データの1番目のkeyは`connectionDataId`であること\n- `send`メソッドの引数（送信メッセージ）との比較に使用\n- `connectionInfo`の`requestID`と一致するデータ名かつ`connectionDataId`が一致するものが期待値として使用される\n- `connectionInfo`の`doValidate`がFALSEの場合は省略可\n- 期待値と不一致の場合、例外が発生する\n\n**検証無視項目（ignoreList）**:\n- データの1番目のkeyは`foreignKey`で、値は「const」であること\n- `connectionInfo`の`ignoreListID`に対応するデータが読み込まれる\n- 指定したキーの入力値が期待値と異なっても検証失敗にならない\n- 日時や登録者IDなど実行のたびに値が変わる項目に使用する\n\n![validationData例](assets/biz-samples-01_Utility--s6/mockUtil_validationData.png)\n\n## errorData（通信エラー情報）\n\n- データ名は「error」固定\n- `send`メソッドのerror引数に設定される\n- `connectionDataId`インスタンス変数の値と同名の通信データIDのエラー情報が読み込まれる\n- `connectionInfo`の`occurSendError`がFALSEの場合は省略可\n\n| key | データ型 | 概要 |\n|---|---|---|\n| connectionDataId | NSString | 通信データID |\n| code | int | エラーコード |\n| domain | NSString | エラードメイン |\n| NSLocalizedDescriptionKey | NSString | userInfoのNSLocalizedDescriptionKey値 |\n| NSFilePathErrorKey | NSString | userInfoのNSFilePathErrorKey値 |\n| NSStringEncodingErrorKey | NSString | userInfoのNSStringEncodingErrorKey値 |\n| NSUnderlyingErrorKey | NSString | userInfoのNSUnderlyingErrorKey値 |\n| NSURLErrorKey | NSString | userInfoのNSURLErrorKey値 |\n| NSLocalizedFailureReasonErrorKey | NSString | userInfoのNSLocalizedFailureReasonErrorKey値 |\n| NSLocalizedRecoverySuggestionErrorKey | NSString | userInfoのNSLocalizedRecoverySuggestionErrorKey値 |\n| NSLocalizedRecoveryOptionsErrorKey | NSString | userInfoのNSLocalizedRecoveryOptionsErrorKey値 |\n| NSRecoveryAttempterErrorKey | NSString | userInfoのNSRecoveryAttempterErrorKey値 |\n| NSHelpAnchorErrorKey | NSString | userInfoのNSHelpAnchorErrorKey値 |\n| NSURLErrorFailingURLErrorKey | NSString | userInfoのNSURLErrorFailingURLErrorKey値 |\n| NSURLErrorFailingURLStringErrorKey | NSString | userInfoのNSURLErrorFailingURLStringErrorKey値 |\n| NSURLErrorFailingURLPeerTrustErrorKey | NSString | userInfoのNSURLErrorFailingURLPeerTrustErrorKey値 |\n\nNSLocalizedDescriptionKey〜NSURLErrorFailingURLPeerTrustErrorKeyは不要な場合は省略可。\n\n## dictionaryData（ディクショナリ）\n\n- データの1番目のkeyは`foreignKey`であること\n- `NSDictionary`型の値に対応するデータ\n- key名とデータ名が一致し、値とforeignKeyの値が一致するデータが読み込まれる\n\n![dictionaryData例](assets/biz-samples-01_Utility--s6/mockUtil_dictionaryData.png)\n\n## arrayData（配列）\n\n- データの1番目のkeyは`foreignKey`であること\n- `NSArray`型の値に対応するデータ\n- key名とデータ名が一致し、値とforeignKeyの値が一致するデータが読み込まれる\n\n![arrayData例](assets/biz-samples-01_Utility--s6/mockUtil_arrayData.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

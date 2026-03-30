@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-02_ExtendedValidation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The table in s3 adds a '型' column with value 'String' for messageId, which is not stated in the source. The source table only has two columns: 'property名' and '設定内容'. The type 'String' is inferred, not sourced.",
+      "source_evidence": "Source table columns: 'property名' | '設定内容'. No type information is given for messageId."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "Same issue as s3: the table adds a '型: String' column for the messageId property of JapaneseTelNumberValidator that has no basis in the source.",
+      "source_evidence": "Source table columns: 'property名' | '設定内容'. No type information is given."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s9",
+      "description": "The code example ends with an extra closing `}` that closes the method body, but this brace is not present in the source code block. The source code block ends after the last `if` block's closing `}` without a method-level closing brace.",
+      "source_evidence": "Source code block ends at: `        }` (closing the last if block), with no subsequent `}` to close the validateForRegisterCompany method."
+    }
+  ]
+}

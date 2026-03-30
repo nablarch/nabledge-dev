@@ -1,0 +1,34 @@
+{
+  "file_id": "http-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The XML code example closes the component element with `</component>` but the source file uses `</property>` as the final closing tag. The knowledge file deviates from the source text, even if the source appears to contain a typo.",
+      "source_evidence": "Source ends the XML block with `    </property>` (closing the outer `<component>` element with wrong tag), but knowledge file uses `</component>`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s12",
+      "description": "The return value contract for `onError` is omitted. The source Javadoc documents both cases: return true = 処理継続（次のSyncMessagingEventHookを呼ぶ、次がない場合はresponseMessageを返す）; return false = 引数eをthrowする。Only the `return false` / system error pattern is described.",
+      "source_evidence": "Source Javadoc on onError: 「trueの場合は処理継続。次の{@link SyncMessagingEventHook}を呼ぶ。次がない場合は、MessageSender#sendSync(SyncMessage)の戻り値として、引数responseMessageの値を返す。falseの場合は、本メソッド終了後に引数eをthrowする」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3, s5, s7, s9, s11",
+      "description": "Five sections have content `\"なし\"` (3 characters), well below the 50-character threshold. These empty placeholder sections appear throughout the index as intros or anchor-redirect entries but carry no substantive information.",
+      "source_evidence": "s3 content: \"なし\"; s5 content: \"なし\"; s7 content: \"なし\"; s9 content: \"なし\"; s11 content: \"なし\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s10",
+      "description": "The PascalCase class `RM11AC0202RequestForm` appears in the s10 code example (`RM11AC0202RequestForm requestForm = getRequestForm(input)`) but is absent from the hints array.",
+      "source_evidence": "Source code in Action section: `RM11AC0202RequestForm requestForm = getRequestForm(input);`"
+    }
+  ]
+}

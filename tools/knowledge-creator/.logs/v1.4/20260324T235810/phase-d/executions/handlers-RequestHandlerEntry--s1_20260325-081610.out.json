@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-RequestHandlerEntry--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — リクエストパスのパターン指定（// ルール説明）",
+      "description": "The `//` pattern rule omits the key detail that the part of the path after `//` (the resource name) undergoes a separate match evaluation. The source states: 「リソース名を表す'//'以降の文字列については別途マッチ判定が行われる。」 The knowledge file only says 「前方一致すればマッチ（サブディレクトリ全体にマッチ）」, which is incomplete. An AI answering questions about how `//*.jsp` works needs this rule to explain why the `.jsp` suffix still filters results.",
+      "source_evidence": "最後尾の'/'が'//'と重ねられていた場合、それ以前の文字列について前方一致すればマッチ成功と判定する。リソース名を表す'//'以降の文字列については別途マッチ判定が行われる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 複数のパッケージを使用する設定例（パッケージツリー図）",
+      "description": "The ASCII art diagram (code-block:: text) illustrating the dispatch scope when ss11AA is the base package is omitted. The diagram explicitly shows which Action classes are reachable (委譲可) vs unreachable (委譲不可), making the limitation concrete. The knowledge file preserves the textual explanation but drops this illustrative example.",
+      "source_evidence": "nablarch\\n   +-sample\\n       +- ss11AA <-- ベースパッケージ\\n       |     +- RM11AA0101Action   <-- 委譲可\\n       |     +- RM11AA0102Action   <-- 委譲可\\n       +- ss99ZZ\\n             +- RM99ZZ0101Action   <-- 委譲不可"
+    }
+  ]
+}

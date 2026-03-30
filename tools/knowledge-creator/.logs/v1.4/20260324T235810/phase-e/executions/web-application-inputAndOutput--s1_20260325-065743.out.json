@@ -1,0 +1,56 @@
+{
+  "id": "web-application-inputAndOutput--s1",
+  "title": "フォーム内の入力要素を出力するカスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーム内の入力要素を出力するカスタムタグ",
+      "hints": [
+        "textタグ",
+        "textareaタグ",
+        "passwordタグ",
+        "hiddenタグ",
+        "radioButtonタグ",
+        "checkboxタグ",
+        "compositeKeyRadioButtonタグ",
+        "compositeKeyCheckboxタグ",
+        "selectタグ",
+        "radioButtonsタグ",
+        "checkboxesタグ",
+        "フォーム入力要素",
+        "カスタムタグ一覧",
+        "入力フォーム",
+        "複合キー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コード値の表示方法",
+      "hints": [
+        "codeSelectタグ",
+        "codeRadioButtonsタグ",
+        "codeCheckboxesタグ",
+        "codeCheckboxタグ",
+        "codeタグ",
+        "withNoneOption",
+        "noneOptionLabel",
+        "value",
+        "offCodeValue",
+        "codeId",
+        "labelPattern",
+        "optionColumnName",
+        "CODE_PATTERNテーブル",
+        "CODE_NAMEテーブル",
+        "コード値選択",
+        "コードマスタ",
+        "$OPTIONALNAME$"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchフレームワークが提供するForm内入力要素用カスタムタグ一覧。\n\n| カスタムタグ | 出力するHTMLタグ |\n|---|---|\n| textタグ | inputタグ(type=text) |\n| textareaタグ | textareaタグ |\n| passwordタグ | inputタグ(type=password) |\n| hiddenタグ | inputタグ(type=hidden) |\n| radioButtonタグ | inputタグ(type=radio) |\n| checkboxタグ | inputタグ(type=checkbox) |\n| compositeKeyRadioButtonタグ | inputタグ(type=radio)（複合キー使用時） |\n| compositeKeyCheckboxタグ | inputタグ(type=checkbox)（複合キー使用時） |\n| selectタグ | selectタグ（List型変数の各要素ごとにoptionタグを出力） |\n| radioButtonsタグ | 複数のinputタグ(type=radio)（List型変数の各要素ごと） |\n| checkboxesタグ | 複数のinputタグ(type=checkbox)（List型変数の各要素ごと） |",
+    "s2": "codeタグは表示用カスタムタグ。codeSelect・codeRadioButtons・codeCheckboxes・codeCheckboxは選択項目用カスタムタグ。いずれもCODE_PATTERNテーブルとCODE_NAMEテーブルを使用する。\n\n**labelPatternプレースホルダー**（codeSelect/codeRadioButtons/codeCheckboxes/codeCheckbox共通）:\n- `$VALUE$`: コード値（VALUE）\n- `$NAME$`: コード名称（NAME）\n- `$SHORTNAME$`: コード略称（SHORT_NAME）\n- `$OPTIONALNAME$`: コードのオプション名称。使用時はoptionColumnName属性の指定が必須。\n\n### codeSelectタグ\n\nHTMLのselectタグに対応。codeId・patternを指定して選択項目リストを取得する。\n\n| 属性 | 説明 |\n|---|---|\n| withNoneOption | リスト先頭に選択なしのオプションを追加するかどうか。trueで追加、falseで追加しない（デフォルト）。 |\n| noneOptionLabel | 選択なしのラベル。withNoneOption=\"true\"の場合のみ有効。デフォルトは\"\"。 |\n\n```jsp\n<n:codeSelect name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n### codeRadioButtonsタグ\n\nHTMLの複数inputタグ(type=radio)に対応。id属性は`nablarch_radio<連番>`の形式で自動設定される。\n\n```jsp\n<n:codeRadioButtons name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n### codeCheckboxesタグ\n\nHTMLの複数inputタグ(type=checkbox)に対応。id属性は`nablarch_checkbox<連番>`の形式で自動設定される。\n\n```jsp\n<n:codeCheckboxes name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n### codeCheckboxタグ\n\nHTMLの単一inputタグ(type=checkbox)に対応。コードIDに対応するコード値の件数に応じて属性を指定する。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| value | | 1 | チェックありの場合に使用するコード値。 |\n| codeId | ○ | | コードID。 |\n| optionColumnName | | | 取得するオプション名称のカラム名。 |\n| labelPattern | | $NAME$ | ラベル整形パターン。プレースホルダー: $NAME$, $SHORTNAME$, $OPTIONALNAME$, $VALUE$。 |\n| offCodeValue | | | チェックなしの場合に使用するコード値。未指定時はcodeId属性の値からコード値を検索し、2件かつ1件がvalue属性の値である場合に残りの1件をチェックなしのコード値として使用する。 |"
+  }
+}

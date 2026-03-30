@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "The exception class `ProcessStop` is missing from s4 hints. The source termination flow describes ProcessStopHandler throwing a ProcessStop exception which ProcessResidentHandler catches to trigger graceful shutdown. A user asking how to stop a resident batch might search for this class name.",
+      "source_evidence": "termination flow: \"ProcessResidentHandler: ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、処理結果オブジェクトをリターンする。\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated warning S9",
+      "description": "The automated warning 'Section count 4 < source headings 6' is a false positive. The source has exactly 4 headings (1 document title + 3 h2 sections), matching the 4 knowledge file sections s1–s4. No issue exists.",
+      "source_evidence": "Source headings: '常駐バッチ実行制御基盤（スレッド同期型）' (h1), '基本構造' (h2), '業務アクションハンドラの実装' (h2), '標準ハンドラ構成と主要処理フロー' (h2). The `++++` lines are decorative separators, not RST section headings."
+    }
+  ]
+}

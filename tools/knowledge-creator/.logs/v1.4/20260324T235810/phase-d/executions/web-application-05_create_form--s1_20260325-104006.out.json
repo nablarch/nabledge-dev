@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-05_create_form--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Document preamble (before first h2)",
+      "description": "The intro paragraph explaining that FormBase is auto-generated from the business screen JSP ('業務画面JSPから自動生成したFormBaseクラスを継承し'), and that Form classes hold properties for non-screen-input items such as those passed from previous screens or other transactions, is not captured anywhere in the knowledge file. This architectural context is relevant for understanding when extra properties would be added to a Form class.",
+      "source_evidence": "Formクラスは、業務画面JSPから自動生成したFormBaseクラスを継承し、前画面や別取引からの引継ぎ項目など、画面入力項目に対応しないプロパティを保持する。また、精査用メソッドとリクエストからフォームを生成するためのメソッドも実装する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (Formクラスの作成)",
+      "description": "The explanation that this feature has no inherited items from previous screens or other transactions, and therefore only validation and form-generation methods are implemented, is absent from the knowledge file's s1. This context helps readers understand why the implementation is minimal compared to the general pattern described in the preamble.",
+      "source_evidence": "本機能では、前画面や別取引からの引継ぎ項目が存在しないため、精査用メソッドとフォーム生成用メソッドのみ実装する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`ValidationUtil#validate` is used in the validateForRegister code example in s2 but is not listed in s2's hints array. Its counterpart `ValidationUtil#validateWithout` is listed.",
+      "source_evidence": "ValidationUtil.validate(context, new String[] {\"kanjiName\", \"kanaName\"});"
+    }
+  ]
+}

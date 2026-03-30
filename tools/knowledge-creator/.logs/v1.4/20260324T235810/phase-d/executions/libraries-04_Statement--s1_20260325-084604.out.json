@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — SQLファイルの記述ルール rule a)",
+      "description": "The constraint 'コメント行は、空行とはならない' (comment lines do not count as blank lines) is missing from the SQL file writing rules. This is a practical constraint: a comment line between two SQL groups does NOT act as the blank-line separator, so developers who place only a comment between SQLs will not correctly separate them.",
+      "source_evidence": "ルール a): 「コメント行は、空行とはならない。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — DbAccessSupport constructor signature",
+      "description": "The knowledge file documents the constructor as `DbAccessSupport(Class<?> clazz)`, but the source writes `DbAccessSupport(Clazz<?> clazz)` (with two z's). The knowledge file silently corrects what appears to be a typo in the source without any basis in the source text.",
+      "source_evidence": ".. function:: DbAccessSupport(Clazz<?> clazz)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — s3 title",
+      "description": "The s3 section title is 'nablarch.core.db.statementパッケージ', but the section covers two classes from two different packages: BasicSqlLoader (nablarch.core.db.statement) and DbAccessSupport (nablarch.core.db.support). The title misrepresents the scope of the section.",
+      "source_evidence": "Source sub-section f) header: 'nablarch.core.db.supportパッケージ' — DbAccessSupportクラス"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index — s3 hints",
+      "description": "The `search` method of DbAccessSupport is absent from s3 hints. All other DbAccessSupport methods (getSqlPStatement, getParameterizedSqlStatement, countByStatementSql, countByParameterizedSql) are listed, but `search` is omitted despite being an explicitly defined public method in the API table.",
+      "source_evidence": ".. function:: SqlResultSet search(String sqlId, ListSearchInfo condition) throws TooManyResultException"
+    }
+  ]
+}

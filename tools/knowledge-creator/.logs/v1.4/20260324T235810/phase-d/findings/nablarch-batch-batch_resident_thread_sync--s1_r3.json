@@ -1,0 +1,13 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — プロセス正常停止 row",
+      "description": "The knowledge file states 'ProcessStopHandlerがProcessStop例外を送出し、ProcessResidentHandlerがこれを捕捉してINFOログ出力後に処理結果をリターンする'. The source RST table describes only the high-level effect ('プロセス管理テーブルの停止フラグを設定することで正常終了させる'), and the JavaScript flow annotation for ProcessStopHandler inbound says only 'リクエストIDはバッチの起動引数\"-requestPath\"の値から決定される値' — it does not explicitly state that ProcessStopHandler throws a ProcessStop exception. The source confirms ProcessResidentHandler catches 'プロセス停止要求(ProcessStop)', but the claim that ProcessStopHandler is the sender of that exception is an inference not explicitly stated anywhere in the source.",
+      "source_evidence": "Source RST table: 'プロセス管理テーブルの停止フラグを設定することで、次回の実行タイミングにて処理を行わずにプロセスを正常終了させる。' JS flow for termination: ProcessStopHandler inbound annotation = 'リクエストIDはバッチの起動引数\"-requestPath\"の値から決定される値'; ProcessResidentHandler error annotation = 'ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、処理結果オブジェクトをリターンする。(ステータスコード:200)'"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-Validation--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — Formクラスのコメント（validationPtnプロパティ未定義の理由）",
+      "description": "ソースのFormクラスコメントに「単項目精査内容を指定するパラメータ(validationPtn)には、WebUtil#containsPropertyKeyValueでアクセスするのみの想定なので、対応するプロパティは用意していない」という重要な設計説明がある。Example3Formに`validationPtn`のプロパティ/getter/setterが存在しない理由がこれであり、このパターンを実装する開発者がプロパティ不在の意図を誤解しないための判断必須情報。ナレッジファイルにはActionクラスで使用する場合にプロパティを用意すべき旨しか記載されておらず、デフォルト設計（プロパティ不要）の根拠が欠落している。",
+      "source_evidence": "「この実装例では、単項目精査内容を指定するパラメータ(入力画面イメージのラジオボタンの選択内容)には、WebUtil#containsPropertyKeyValueでアクセスするのみの想定なので、対応するプロパティは用意していない。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Formクラスの`validate`静的メソッド",
+      "description": "ソースのFormクラスには`ValidationUtil.validateAndConvertRequest`と`context.abortIfInvalid()`を使用した`validate`静的メソッドが含まれているが、ナレッジファイルでは省略されている。このメソッドはvalidationNameパラメータで@ValidateForメソッドを呼び出す仕組みを示しており、動的バリデーション切り替えパターンの呼び出し方を理解する上で有用。",
+      "source_evidence": "public static Example3Form validate(HttpRequest req, String validationName) { ValidationContext<Example3Form> context = ValidationUtil.validateAndConvertRequest(\"form\", Example3Form.class, req, validationName); context.abortIfInvalid(); return context.createObject(); }"
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/tool/01_JspGenerator/02_SetUpJspGeneratorTool.rst`
+- Format: `rst`
+
+```
+
+.. _SetUpJspGeneratorTool:
+
+=================================================
+JSP自動生成ツール インストールガイド
+=================================================
+
+:ref:`jsp_generator` のインストール方法について説明する。
+
+前提事項
+========
+
+本ツールを使用する際、以下の前提事項を満たす必要がある。
+
+* javaコマンドがパスに含まれていること
+
+提供方法
+==================
+
+本ツールは、Nablarchのチュートリアルプロジェクトに同梱して提供する。
+本ツールのツール構成を下記に示す。
+
+ ========================================== ====================================================================================
+ ファイル名                                 説明
+ ========================================== ====================================================================================
+ jspGen.bat                                 | 起動バッチファイル（Windows用）
+ jspGen.config                              | JSP自動生成ツールの設定ファイル
+ log.properties                             | ログ出力設定ファイル
+ nablarch-X.X.jar                           | Nablarch Application Framework のJARファイル（X.Xの部分はバージョン番号）
+ nablarch-tfw-X.X.jar                       | Nablarch Testing Framework のJARファイル（X.Xの部分はバージョン番号）
+ nablarch-toolbox-X.X.jar                   | Nablarch Toolbox のJARファイル（X.Xの部分はバージョン番号）
+ ========================================== ====================================================================================
+
+各JARファイルへのクラスパスが設定されたjspGen.batがサンプルアプリケーションの下記パスに配置されている。
+
+ .. code-block:: bash
+
+  /Nablarch_sample/tool/jspgenerator/jspGen.bat
+
+
+
+Eclipseとの連携
+===============
+
+以下の設定をすることでEclipseから本ツールを起動することができる。
+
+
+設定画面起動
+------------
+
+ツールバーから、ウィンドウ(Window)→設定(Prefernce)を選択する。
+左側のペインから一般(General)→エディタ(Editors)→ファイルの関連付け(File Associations)
+を選択、右側のペインから*.htmlを選択し、追加(Add)ボタンを押下する。
+
+.. image:: ./_image/01_Eclipse_Preference.png
+   :scale: 60
+
+ 
+外部プログラム選択
+------------------
+
+ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
+
+.. image:: ./_image/02_Eclipse_EditorSelection.png
+   :scale: 60
+
+
+起動用バッチファイル選択
+---------------------------
+
+バッチファイル(jspGen.bat)を選択する。
+
+Nablarch_sample には、上記バッチファイルが /Nablarch_sample/tool/jspgenerator 配下にあらかじめ配置されている。
+
+.. image:: ./_image/03_Eclipse_OpenFile.png
+   :scale: 60
+
+
+.. _SetUpJspGeneratorTool_howToExecuteFromEclipse:
+
+HTMLファイルからの起動方法
+--------------------------
+
+Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、
+jspGenで開くことでツールを起動できる。
+
+.. image:: ./_image/04_Eclipse_OpenWith.png
+   :scale: 60
+
+   
+作成したファイルの表示
+--------------------------
+
+:ref:`SetUpJspGeneratorTool_howToExecuteFromEclipse` の実行により、HTMLファイルと同一ディレクトリにJSPファイルが生成される。
+HTMLファイルと同一ディレクトリを右クリックしフレッシュ(Refresh)を選択することでJSPファイルが生成される。
+
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-02_SetUpJspGeneratorTool--s1`
+
+```json
+{
+  "id": "toolbox-02_SetUpJspGeneratorTool--s1",
+  "title": "JSP自動生成ツール インストールガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提事項",
+      "hints": [
+        "前提事項",
+        "javaコマンド",
+        "パス設定",
+        "インストール要件",
+        "実行環境"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "提供方法・ツール構成",
+      "hints": [
+        "提供方法",
+        "ツール構成",
+        "同梱ファイル",
+        "jspGen.bat",
+        "jspGen.config",
+        "log.properties",
+        "nablarch-X.X.jar",
+        "nablarch-tfw-X.X.jar",
+        "nablarch-toolbox-X.X.jar",
+        "チュートリアルプロジェクト",
+        "JARファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定画面起動",
+      "hints": [
+        "Eclipse設定",
+        "ファイルの関連付け",
+        "File Associations",
+        "JSP自動生成ツール設定",
+        "*.html",
+        "エディタ設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "外部プログラム選択",
+      "hints": [
+        "外部プログラム設定",
+        "Eclipse連携",
+        "エディタ外部プログラム登録",
+        "jspGen.bat登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "起動用バッチファイル選択",
+      "hints": [
+        "jspGen.bat",
+        "バッチファイル選択",
+        "Nablarch_sample",
+        "起動バッチ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "HTMLファイルからの起動方法",
+      "hints": [
+        "HTMLファイル起動",
+        "jspGenで開く",
+        "Eclipse右クリック起動",
+        "JSP自動生成実行"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "作成したファイルの表示",
+      "hints": [
+        "JSPファイル生成確認",
+        "Refresh",
+        "ファイル表示更新",
+        "JSP出力先"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本ツールを使用する際、以下の前提事項を満たす必要がある。\n\n- javaコマンドがパスに含まれていること",
+    "s2": "本ツールは、Nablarchのチュートリアルプロジェクトに同梱して提供する。\n\nツール構成（6ファイル）:\n\n| ファイル名 | 説明 |\n|---|---|\n| jspGen.bat | 起動バッチファイル（Windows用） |\n| jspGen.config | JSP自動生成ツールの設定ファイル |\n| log.properties | ログ出力設定ファイル |\n| nablarch-X.X.jar | Nablarch Application Framework のJARファイル（X.Xの部分はバージョン番号） |\n| nablarch-tfw-X.X.jar | Nablarch Testing Framework のJARファイル（X.Xの部分はバージョン番号） |\n| nablarch-toolbox-X.X.jar | Nablarch Toolbox のJARファイル（X.Xの部分はバージョン番号） |\n\n各JARファイルへのクラスパスが設定された `jspGen.bat` がサンプルアプリケーションの `/Nablarch_sample/tool/jspgenerator/jspGen.bat` に配置されている。",
+    "s3": "EclipseからJSP自動生成ツールを起動するための設定手順:\n\n1. ツールバーから「ウィンドウ(Window)」→「設定(Preference)」を選択\n2. 左ペインから「一般(General)」→「エディタ(Editors)」→「ファイルの関連付け(File Associations)」を選択\n3. 右ペインから `*.html` を選択し、「追加(Add)」ボタンを押下",
+    "s4": "1. ラジオボタンから「外部プログラム(External program)」を選択\n2. 「参照(Browse)」ボタンを押下して、起動用バッチファイルを選択する画面を開く",
+    "s5": "バッチファイル `jspGen.bat` を選択する。\n\nNablarch_sampleには、バッチファイルが `/Nablarch_sample/tool/jspgenerator/jspGen.bat` にあらかじめ配置されている。",
+    "s6": "パッケージエクスプローラ等からHTMLファイルを右クリックし、「jspGenで開く」を選択することでツールを起動できる。",
+    "s7": "HTMLファイルからの起動実行により、HTMLファイルと同一ディレクトリにJSPファイルが生成される。\n\n生成されたJSPファイルを確認するには、HTMLファイルと同一ディレクトリを右クリックし「フレッシュ(Refresh)」を選択する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,320 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/AsyncMessageReceiveAction.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+応答不要電文受信処理用アクションハンドラ
+===========================================================================================
+
+**クラス名:** ``nablarch.fw.messaging.action.AsyncMessageReceiveAction``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本クラスは、 :doc:`../architectural_pattern/messaging_receive` における典型的な業務アクションハンドラの実装であり、
+受信電文内のデータレコードを指定されたテーブルに保存する。
+
+保存されたデータは後続のバッチによって処理されることを想定している。
+
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "AsyncMessageReceiveAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**受信電文保存テーブルの構造**
+  受信電文の内容を保存するテーブルは、以下の内容に従って定義されている必要がある。
+
+  ================= =====================================================
+  項目              内容
+  ================= =====================================================
+  受信電文連番      | 主キー
+                    | 受信した電文を一意に識別するためのIDを格納するカラム。
+                      本カラムに設定する値は、{@link #generateReceivedSequence()}にて採番を行う。
+                      カラムの桁数は、任意の桁数を設定可能となっている。
+  
+  業務電文部        業務電文を格納するカラムを定義する。
+                    電文の種類に応じて、業務電文の各項目に対するカラムを定義すれば良い。
+  
+  共通項目部        各プロジェクトの方式に応じて必要なカラムを定義する。
+                    たとえば、下記のカラムを定義することが想定される。
+                    ・登録情報(ユーザID、タイムスタンプ、リクエストID、実行時ID)
+                    ・更新情報(ユーザID、タイムスタンプ)
+  ================= =====================================================
+  
+  本クラスは1電文を1レコードとして受信テーブルに保存することを前提としている。
+  1電文を複数レコードとして登録する場合や、複数テーブルに保存する場合は
+  本クラスを継承した業務アクションハンドラクラスを別途作成する必要がある。
+
++++++++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (業務データ領域の解析)**
+    要求電文の業務データ領域全体をデフォルトのフォーマッタを用いて解析し、データレコードを取得する。
+
+  **2. (電文データ登録用のフォームクラスのロード)**
+    以下で定義されるクラスをロードする。
+
+      .. code-block:: bash
+
+        [フォームクラス配置パッケージ設定値] + "." + [受信電文のリクエストIDヘッダ値] + "Form"
+
+  **3. (受信電文連番の採番)**
+    本ハンドラに設定された採番モジュールを使用して、受信電文に対する登録用の通番を取得する。
+
+  **3. (フォームインスタンスの生成)**
+    **2.** で取得したクラスのインスタンスを、以下のコンストラクタを使用して生成する。
+    コンストラクタの引数として、本ハンドラの引数である受信電文オブジェクト、および、
+    **3.** で採番した受信電文通番を使用する。
+
+      .. code-block:: java
+      
+        public フォームクラス名(String 受信電文通番, RequestMessage 受信電文オブジェクト)
+   
+  **4. (電文データ登録処理)**
+    以下のリソースファイルに記載されたSQL定義からプリペアドステートメントを作成し、
+    **3.** で作成したフォームインスタンスを埋め込みパラメータとして実行する。 
+
+      .. code-block:: bash
+
+        [SQLファイル配置パッケージ設定値] + "." + [受信電文のリクエストIDヘッダ値] + "#INSERD_MESSAGE"
+
+.. _outbound:
+
+**[往路処理]**
+  **5. (正常終了)**
+    正常終了のマーカオブジェクト(`Result.Success`_)をリターンして終了する。
+    (このハンドラでは後続ハンドラに対する処理移譲は行わない。)
+
+
+.. _error:
+
+**[例外処理]**
+  **2a. (フォームクラスロードエラー)**
+    当該のフォームクラスがクラスパス上に存在しなかった場合は、実行時例外を送出する。
+
+  **3a. (フォームインスタンス生成エラー)**
+    **3.** で呼び出したコンストラクタが存在しなかった場合、もしくは、コンストラクタ実行中に何らかのエラーが発生した場合は、
+    実行時例外を送出する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定値は、 AsyncMessageReceiveActionSettingsに集約されている。
+以下はその設定項目の一覧である。
+
+  ================================ ============================ =========== ======================================================
+  設定項目                         プロパティ名                 データ型　  備考
+  ================================ ============================ =========== ======================================================
+  SQL定義配置パッケージ            sqlFilePackage               String      | (必須設定)
+                                                                            | このハンドラで使用するSQL定義ファイルを格納する
+                                                                              パッケージ名を設定する。
+
+  フォームクラス配置パッケージ     formClassPackage             String      | (必須指定)
+                                                                            | 電文データ登録の際に使用するフォームクラスの
+                                                                              パッケージ名を設定する。
+
+  フォームクラスのサフィックス     formClassSuffix              String      | (任意指定: デフォルトは"Form")
+                                                                              フォームクラスのサフィックスを指定する。
+
+  受信電文連番発番用オブジェクト   receivedSequenceGenerator    IdGenerator | (任意指定：デフォルト=true(自動削除を実施))
+                                                                            | デバッグや障害解析用に無効化する。
+                                                                            
+  受信電文連番用フォーマッタ       receivedSequenceFormatter    IdFormatter | (必須指定)
+                                                                            | 受信電文連番を採番する際に使用する
+                                                                              フォーマッタクラスの名称を指定する。
+
+  受信電文連番を採番するためのID   targetGenerateId             String      | (必須指定)
+                                                                              受信電文連番を採番する際に使用する
+                                                                              IDを指定する。
+
+  トランザクション名               dbTransactionName            String      | (任意指定: デフォルト="transaction")
+                                                                              受信テーブル登録処理で使用する
+                                                                              トランザクションの識別名
+
+  ================================ ============================ =========== ======================================================
+
+```
+
+## Knowledge File
+
+- ID: `handlers-AsyncMessageReceiveAction--s1`
+
+```json
+{
+  "id": "handlers-AsyncMessageReceiveAction--s1",
+  "title": "応答不要電文受信処理用アクションハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "AsyncMessageReceiveAction",
+        "nablarch.fw.messaging.action.AsyncMessageReceiveAction",
+        "応答不要電文受信",
+        "受信電文保存テーブル",
+        "非同期メッセージ受信",
+        "受信電文連番"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "RequestMessage",
+        "Result.Success",
+        "フォームクラスロード",
+        "受信電文連番採番",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "AsyncMessageReceiveActionSettings",
+        "sqlFilePackage",
+        "formClassPackage",
+        "formClassSuffix",
+        "receivedSequenceGenerator",
+        "receivedSequenceFormatter",
+        "targetGenerateId",
+        "dbTransactionName",
+        "IdGenerator",
+        "IdFormatter"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.action.AsyncMessageReceiveAction`\n\n:doc:`../architectural_pattern/messaging_receive` における典型的な業務アクションハンドラ。受信電文内のデータレコードを指定テーブルに保存する。保存データは後続バッチで処理されることを想定。\n\n**受信電文保存テーブルの構造**\n\n| 項目 | 内容 |\n|---|---|\n| 受信電文連番 | 主キー。受信電文を一意に識別するID。`generateReceivedSequence()`で採番。桁数任意。 |\n| 業務電文部 | 電文の種類に応じた各項目のカラムを定義。 |\n| 共通項目部 | 登録情報(ユーザID、タイムスタンプ、リクエストID、実行時ID)、更新情報(ユーザID、タイムスタンプ)など。 |\n\n> **重要**: 本クラスは1電文を1レコードとして受信テーブルに保存することを前提とする。1電文を複数レコード登録する場合や複数テーブルに保存する場合は、本クラスを継承した業務アクションハンドラクラスを別途作成する必要がある。",
+    "s2": "**[往路処理]**\n\n1. 要求電文の業務データ領域全体をデフォルトのフォーマッタで解析し、データレコードを取得。\n2. 以下のパターンでフォームクラスをロード。\n   ```\n   [フォームクラス配置パッケージ設定値] + \".\" + [受信電文のリクエストIDヘッダ値] + \"Form\"\n   ```\n3. 採番モジュールで受信電文通番を取得。\n4. 以下コンストラクタでフォームインスタンスを生成。引数は受信電文通番と受信電文オブジェクト。\n   ```java\n   public フォームクラス名(String 受信電文通番, RequestMessage 受信電文オブジェクト)\n   ```\n5. 以下のSQLファイルからプリペアドステートメントを作成し、フォームインスタンスを埋め込みパラメータとして実行。\n   ```\n   [SQLファイル配置パッケージ設定値] + \".\" + [受信電文のリクエストIDヘッダ値] + \"#INSERD_MESSAGE\"\n   ```\n\n**[正常終了]**\n\n`Result.Success` をリターンして終了。後続ハンドラへの処理移譲は行わない。\n\n**[例外処理]**\n\n- フォームクラスがクラスパス上に存在しない場合: 実行時例外を送出。\n- フォームクラスのコンストラクタが存在しない、またはコンストラクタ実行中にエラーが発生した場合: 実行時例外を送出。",
+    "s3": "設定値は `AsyncMessageReceiveActionSettings` に集約されている。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| sqlFilePackage | String | ○ | | SQL定義ファイルを格納するパッケージ名 |\n| formClassPackage | String | ○ | | フォームクラスのパッケージ名 |\n| formClassSuffix | String | | \"Form\" | フォームクラスのサフィックス |\n| receivedSequenceGenerator | IdGenerator | | | 受信電文連番発番用オブジェクト |\n| receivedSequenceFormatter | IdFormatter | ○ | | 受信電文連番採番時のフォーマッタクラス |\n| targetGenerateId | String | ○ | | 受信電文連番採番時に使用するID |\n| dbTransactionName | String | | \"transaction\" | 受信テーブル登録処理で使用するトランザクション識別名 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

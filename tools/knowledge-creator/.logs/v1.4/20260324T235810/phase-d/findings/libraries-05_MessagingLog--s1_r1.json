@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-05_MessagingLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力項目テーブル",
+      "description": "The source's 出力項目 table lists 16 items including 6 common items (出力日時、起動プロセスID、処理方式区分、リクエストID、実行時ID、ユーザID) that are part of the messaging log output. The knowledge file table omits all 6 common items, only showing individual items from スレッド名 onwards. While the knowledge file notes these are configured via BasicLogFormatter, their absence from the table means an AI cannot enumerate the full set of messaging log output fields.",
+      "source_evidence": "Source table rows: 出力日時、起動プロセスID、処理方式区分、リクエストID、実行時ID、ユーザID — present in source table but absent from knowledge file table"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力方法（処理シーケンス）",
+      "description": "The source contains two explanatory notes about MOM応答不要 processing: (1) MOM応答不要メッセージ受信処理 performs MOM receive log output and business action invocation, with sequence diagram omitted; (2) MOM応答不要メッセージ送信処理 performs MOM send log output and queue message sending, with sequence diagram omitted. Both notes are absent from the knowledge file.",
+      "source_evidence": "\"MOM応答不要メッセージ受信処理では、MOM受信ログの出力および業務アクションの呼び出しまでの処理が行われる。シーケンス図の記載は省略する。\" and \"MOM応答不要メッセージ送信処理では、MOM送信ログの出力および要求キューメッセージの送信までの処理が行われる。シーケンス図の記載は省略する。\""
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力例",
+      "description": "The source output example shows two log entries: HTTP RECEIVED MESSAGE and HTTP SENT MESSAGE. The knowledge file only includes the HTTP RECEIVED MESSAGE entry in the code block; the HTTP SENT MESSAGE log output example is completely absent.",
+      "source_evidence": "Source contains: \"2014-06-27 11:07:51.329 -INFO- MESSAGING [null] ... @@@@ HTTP SENT MESSAGE @@@@\\n    thread_name = [main]\\n    message_id = [null]\\n    destination = [/action/RM11AC0102]...\" which is not present in the knowledge file's output example."
+    }
+  ]
+}

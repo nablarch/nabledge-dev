@@ -1,0 +1,575 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/03_listSearch.rst`
+- Format: `rst`
+
+```
+.. _listSearch:
+
+=========
+一覧検索
+=========
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 条件を指定した一覧検索処理
+* 一覧検索結果を表示するJSPの作成方法
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸の部分である。
+
+.. image:: ./_image/03/screenTransition.png
+ :scale: 55
+
+編集するソースコードは以下のとおり。
+
+============================================================================= ============== ==========================================================================================
+名称(右クリック->保存でダウンロード)                                          ステレオタイプ 処理内容
+============================================================================= ============== ==========================================================================================
+:download:`W11AC01Action.java<./_source/download/W11AC01Action.java>`         Action         ユーザ一覧照会画面で指定された検索条件に一致する情報を、データベースから取得する。
+                                                                                             結果をリクエストスコープに格納し、JSPに遷移させる。
+
+                                                                                             本クラスから使用するSQLファイルは、下記リンク先のファイルを参照すること。
+                                                                                             (右クリック->保存でダウンロード)
+
+                                                                                             :download:`W11AC01Action.sql<./_source/download/W11AC01Action.sql>`
+
+
+
+:download:`W11AC0101.jsp<./_source/download/W11AC0101.jsp>`                   View           ユーザ一覧照会画面に検索結果を表示する。
+============================================================================= ============== ==========================================================================================
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+検索条件を保持するForm(SearchForm)の作成
+========================================
+
+検索条件を保持するFormクラスを新規に作成する。\
+Formクラスには、画面から入力する値や取引で必要となる精査処理(単項目精査や項目間精査)を実装する。
+
+この時、 **ListSearchInfo** クラスを継承することで、ページングや検索結果の並び替えを容易に実現できる。
+
+.. note::
+   ListSearchInfoクラスの詳細は、業務機能サンプルの解説書を参照。
+   
+    全体構造::
+    
+     業務共通機能サンプル実装＞検索結果の一覧表示＞構成
+    
+    実装例::
+    
+     業務共通機能サンプル実装＞検索結果の一覧表示＞ListSearchInfoクラス
+
+.. note::
+   本項では、検索条件用のFormを作成する際に特に気をつける点について述べる。\
+   Form作成時の詳細な手順は :ref:`how_to_validate` を参照。
+
+
+Formクラスの作成
+----------------
+
+ListSearchInfo を継承した場合、使用する機能によって実装を追加する必要がある。
+
+.. note::
+   ListSearchInfoを継承した実装の詳細は、業務機能サンプルの解説書を参照。
+   
+   ::
+   
+    業務共通機能サンプル実装＞検索結果の一覧表示＞ListSearchInfoクラス
+
+W11AC01FormBaseクラスおよびW11AC01Formクラスを作成し、プロパティの追加および精査処理の実装を行った例を示す。
+
+
+* W11AC01FormBase.javaの内容
+
+.. code-block:: java
+
+   /**
+    * ユーザ情報一覧照会フォーム。
+    *
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public abstract class W11AC01FormBase extends ListSearchInfo {
+
+       //---- プロパティ ----//
+       // 【説明】検索条件をプロパティに追加
+
+       /** ログインID */
+       private String loginId;
+
+       /** 漢字氏名 */
+       private String kanjiName;
+
+       /** カナ氏名 */
+       private String kanaName;
+
+       /** グループ */
+       private String ugroupId;
+
+       /** ユーザIDロック */
+       private String userIdLocked;
+
+       //---- コンストラクタ ----//
+
+       /** デフォルトコンストラクタ。 */
+       public W11AC01FormBase() {
+       }
+
+       /**
+        * Mapを引数にとるコンストラクタ。
+        *
+        * @param params 項目名をキーとし、項目値を値とするMap
+        */
+       public W11AC01FormBase(Map<String, Object> params) {
+
+           // 【説明】検索条件の設定
+           loginId = (String) params.get("loginId");
+           kanjiName = (String) params.get("kanjiName");
+           kanaName = (String) params.get("kanaName");
+           ugroupId = (String) params.get("ugroupId");
+           userIdLocked = (String) params.get("userIdLocked");
+
+           // 【説明】ListSearchInfoのプロパティへの設定
+           setPageNumber((Integer) params.get("pageNumber"));
+           setSortId((String) params.get("sortId"));
+
+       }
+
+       // 【説明】検索条件のセッター/ゲッターは省略
+       // ～中略～
+
+       /* 【説明】
+           ListSearchInfoのpageNumberのセッターを追加。
+           想定するページの範囲を@NumberRangeで設定。 */
+       /**
+        * ページ番号を設定する。
+        *
+        * @param pageNumber ページ番号
+        */
+       @PropertyName("開始ページ")
+       @Required
+       @NumberRange(max = 10, min = 1)
+       @Digits(integer = 2)
+       public void setPageNumber(Integer pageNumber) {
+           super.setPageNumber(pageNumber);
+       }
+
+       /* 【説明】
+           ListSearchInfoのsortIdのセッターを追加。
+           検索結果の並び替えで使用する。 */
+       /**
+        * ソートIDを設定する。
+        *
+        * @param sortId ソートID
+        */
+       @PropertyName("ソートID")
+       @Required
+       public void setSortId(String sortId) {
+           super.setSortId(sortId);
+       }
+   }
+
+* W11AC01Form.javaの内容
+
+.. code-block:: java
+
+   /**
+    * ユーザ検索フォーム。
+    *
+    * @author Tsuyoshi Kawasaki
+    * @since 1.0
+    */
+   public class W11AC01Form extends W11AC01FormBase {
+
+       /**
+        * バリデーションを実施する。
+        *
+        * @param req 入力パラメータ情報
+        * @param validationName 使用するバリデーションの名前
+        * @return 入力パラメータを精査後に生成した本フォーム
+        */
+       public static W11AC01Form validate(HttpRequest req, String validationName) {
+           ValidationContext<W11AC01Form> context = ValidationUtil.validateAndConvertRequest(
+                   "11AC_W11AC01", W11AC01Form.class, req, validationName);
+           context.abortIfInvalid();
+           return context.createObject();
+       }
+
+       // ～中略～
+
+       // 【説明】精査対象のプロパティに、ListSearchInfoのプロパティを設定
+       /** 精査対象プロパティ */
+       private static final String[] SEARCH_CONDITION_PROPS = {"loginId", "kanjiName", "kanaName", "ugroupId", "userIdLocked", "pageNumber", "sortId"};
+
+       // 【説明】精査対象プロパティのゲッターを追加
+       /**
+        * 検索条件の精査対象プロパティを返す。
+        *
+        * @return 検索条件の精査対象プロパティ
+        */
+       public String[] getSearchConditionProps() {
+           return SEARCH_CONDITION_PROPS;
+       }
+
+       /**
+        * 検索条件を精査する。
+        *
+        * @param context ValidationContext
+        */
+       @ValidateFor("search")
+       public static void validateForSearch(ValidationContext<W11AC01Form> context) {
+           // 単項目精査
+           ValidationUtil.validate(context, SEARCH_CONDITION_PROPS);
+           if (!context.isValid()) {
+               return;
+           }
+
+           W11AC01Form form = context.createObject();
+           if (!form.isValidSearchCondition()) {
+               context.addMessage("MSG00006");
+           }
+       }
+
+       /**
+        * 検索条件が妥当かどうか確認する。<br/>
+        * 検索条件のうち、少なくとも１つは指定されていることを確認する。
+        *
+        * @return 妥当な場合は真、そうでない場合は偽
+        */
+       private boolean isValidSearchCondition() {
+           return StringUtil.hasValue(
+                   getLoginId(),
+                   getKanjiName(),
+                   getKanaName(),
+                   getUgroupId(),
+                   getUserIdLocked());
+       }
+   }
+
+
+ビジネスロジック(Action)の作成
+==============================
+
+本処理では、アプリケーションフレームワークが持つデータベースアクセス機能の中から、以下のものを使用している。
+
+* :ref:`03_field`
+* :ref:`03_SQL`
+* :ref:`03_like`
+* :ref:`03_orderBy`
+
+
+.. note::
+   本処理で使用するビジネスロジックは他の処理では使用しない。
+   そのため、ComponentクラスではなくActionクラスに作成する。
+
+.. _03_field:
+
+Javaオブジェクトのフィールドの値をバインド変数に設定する機能
+------------------------------------------------------------
+
+Javaオブジェクトのフィールドの値をバインド変数に設定する機能とは、SQL文のバインド変数ごとに一つ一つ値を設定するのではなく、オブジェクトを指定して、\
+そのフィールドの値をバインド変数に設定できる機能である。本機能は以下のように使用する。
+
+  :a): プリペアドステートメントを作成する際に、SqlPStatementクラスではなく、ParameterizedSqlPStatementクラスを使用する(DbAccessSupport#getParameterizedSqlStatementを使用する)。
+  :b): バインド変数は"?"ではなく、":フィールド名"とする。
+  :c): ParameterizedSqlPStatement#retrieveの引数に、バインド変数に指定したフィールドを持つJavaオブジェクトのインスタンスを渡す。バインド変数には、対応するフィールドの値が設定される。
+
+.. note::
+   サンプルでは、本機能を含んだ `一覧検索用の検索処理 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-listsearchresultdbaccesssupport>`_ を用いて検索を行っている。
+   実例は\ :ref:`03_methodCreate`\ を参照。
+
+.. _03_SQL:
+
+条件が可変のSQL文を組み立てる機能
+---------------------------------
+
+条件が可変のSQL文を組み立てる機能とは、Webアプリケーションで多く見られる可変条件(画面で入力された場合のみ、検索条件に含める)のSQL文を、自動で生成できる機能である。\
+指定したフィールドの値がnullか空文字("")でない場合、検索条件に組み込み、nullか空文字の場合、検索条件から除外する。例えば、下記のソースコードは\ *"loginId"が\
+nullもしくは空文字でない*\ 場合に\ *LOGIN_ID = (入力された値)*\ という検索条件が組み込まれる。\
+
+loginIdがnullもしくは空文字かどうかの判断は、SQL文を組み立てる際(DbAccessSupport#getParameterizedSqlStatement実行時)の引数のオブジェクトに設定されているloginId\
+フィールドの値による。\
+
+.. code-block:: sql
+
+  -- 【説明】
+  --  SQL文を組み立てる際に渡されるオブジェクトのloginIdフィールドの値から
+  --  検索条件に組み込まれるかどうか判断される
+  --  (nullもしくは空文字でない場合に、{}内が検索条件に組み込まれる)
+  WHERE $if (loginId)   {LOGIN_ID = :loginId}
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+実際に検索条件として:loginIdに設定される値は、検索実行(ParameterizedSqlPStatement#retrieve実行)時に引き渡すオブジェクトの、フィールドの値である(この例では、loginIdフィールドの値)。\
+実例は\ :ref:`03_methodCreate`\ を参照。
+
+.. _03_like:
+
+LIKE検索を簡易的に実装できる機能
+--------------------------------
+
+LIKE検索を簡易的に実装できる機能とは、LIKE検索を実装する際に、下記のメリットを提供する機能である。
+  * アプリケーションプログラマは、LIKE条件に設定する文字列のエスケープ処理を実装する必要がない。
+  * Javaコードで条件に"%"を付加する必要がない("%"はSQL文に記述する)。
+
+下記のソースコードは、検索実行(ParameterizedSqlPStatement#retrieve実行)時に引き渡すオブジェクトの、kanjiNameフィールドの値で中間一致検索を行っている。\
+エスケープ処理や、入力された検索条件に対する"%"を付加するJavaの処理は不要である。実例は\ :ref:`03_methodCreate`\ を参照。\
+
+.. code-block:: sql
+
+  -- 【説明】SQL文を実行する際に渡されるオブジェクトの"kanjiName"フィールドの値で中間一致検索
+  WHERE USR.KANJI_NAME LIKE :%kanjiName%
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _03_orderBy:
+
+ORDER BY句を動的に変更する機能
+------------------------------
+
+ORDER BY句を動的に変更する機能とは、検索結果リストの列見出しによる並び替えを行う場合などに、SQL文を自動で生成できる機能である。
+ORDER BY句の条件を指定するフィールドを *$sort (フィールド名)* で指定し、組み込みたい条件を *(値 条件)* の組み合わせで定義する。
+
+本機能を使用したSQL文の実行時に、フィールド名に設定した値に対応する条件が自動的に組み込まれる。
+
+.. code-block:: sql
+
+  -- 【説明】
+  --  SQL文を実行する際に渡されるオブジェクトの"sortId"フィールドの値で、実行するORDER BY句を切り替える。
+  --  例えば、sortId = loginId_desc の場合、ORDER BY 句に SA.LOGIN_ID DESC が指定される。
+  $sort (sortId) {
+    (loginId_asc    SA.LOGIN_ID)
+    (loginId_desc   SA.LOGIN_ID DESC)
+    (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)
+    (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)
+    (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)
+    (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID)
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+実例は\ :ref:`03_methodCreate`\ を参照。\
+
+.. _03_methodCreate:
+
+```
+
+## Knowledge File
+
+- ID: `web-application-03_listSearch--s1`
+
+```json
+{
+  "id": "web-application-03_listSearch--s1",
+  "title": "一覧検索",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "W11AC01Action",
+        "W11AC0101",
+        "一覧検索",
+        "検索結果表示",
+        "ActionとViewの構成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "ListSearchInfo",
+        "ページング",
+        "検索結果並び替え",
+        "ActionクラスとComponentクラスの使い分け",
+        "一覧検索実装"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Formクラスの作成",
+      "hints": [
+        "ListSearchInfo",
+        "W11AC01FormBase",
+        "W11AC01Form",
+        "@PropertyName",
+        "@Required",
+        "@NumberRange",
+        "@Digits",
+        "@ValidateFor",
+        "pageNumber",
+        "sortId",
+        "検索条件バリデーション",
+        "ValidationUtil",
+        "ValidationContext"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Javaオブジェクトのフィールドの値をバインド変数に設定する機能",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "DbAccessSupport",
+        "getParameterizedSqlStatement",
+        "retrieve",
+        "バインド変数設定",
+        "フィールド値バインド"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "条件が可変のSQL文を組み立てる機能",
+      "hints": [
+        "$if",
+        "可変条件SQL",
+        "動的WHERE句",
+        "nullチェック",
+        "条件付き検索"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "LIKE検索を簡易的に実装できる機能",
+      "hints": [
+        "LIKE検索",
+        "中間一致検索",
+        "エスケープ処理",
+        "ParameterizedSqlPStatement"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ORDER BY句を動的に変更する機能",
+      "hints": [
+        "$sort",
+        "ORDER BY動的変更",
+        "並び替え",
+        "sortId"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "作成するファイル:\n\n| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`W11AC01Action.java<./_source/download/W11AC01Action.java>` | Action | 検索条件に一致する情報をDBから取得し、リクエストスコープに格納してJSPに遷移。SQLファイル: :download:`W11AC01Action.sql<./_source/download/W11AC01Action.sql>` |\n| :download:`W11AC0101.jsp<./_source/download/W11AC0101.jsp>` | View | ユーザ一覧照会画面に検索結果を表示 |",
+    "s2": "**検索条件Form作成のポイント**: `ListSearchInfo`クラスを継承することでページングや検索結果の並び替えを容易に実現できる。\n\n**ビジネスロジック作成のポイント**: 本処理で使用するビジネスロジックは他の処理では使用しないため、ComponentクラスではなくActionクラスに作成する。\n\n使用するデータベースアクセス機能:\n- :ref:`03_field`: Javaオブジェクトのフィールドの値をバインド変数に設定する機能\n- :ref:`03_SQL`: 条件が可変のSQL文を組み立てる機能\n- :ref:`03_like`: LIKE検索を簡易的に実装できる機能\n- :ref:`03_orderBy`: ORDER BY句を動的に変更する機能",
+    "s3": "`ListSearchInfo`を継承したFormクラスの実装ポイント:\n\n1. `pageNumber`と`sortId`のセッターをオーバーライドし、バリデーションアノテーションを設定する\n2. `SEARCH_CONDITION_PROPS`にListSearchInfoのプロパティ（`pageNumber`、`sortId`）も含める\n3. 検索条件が少なくとも1つ指定されていることを`isValidSearchCondition()`で確認する\n\n**W11AC01FormBase.java** (`ListSearchInfo`継承):\n\n```java\npublic abstract class W11AC01FormBase extends ListSearchInfo {\n    private String loginId;\n    private String kanjiName;\n    private String kanaName;\n    private String ugroupId;\n    private String userIdLocked;\n\n    @PropertyName(\"開始ページ\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) {\n        super.setPageNumber(pageNumber);\n    }\n\n    @PropertyName(\"ソートID\")\n    @Required\n    public void setSortId(String sortId) {\n        super.setSortId(sortId);\n    }\n}\n```\n\n**W11AC01Form.java**:\n\n```java\npublic class W11AC01Form extends W11AC01FormBase {\n\n    public static W11AC01Form validate(HttpRequest req, String validationName) {\n        ValidationContext<W11AC01Form> context = ValidationUtil.validateAndConvertRequest(\n                \"11AC_W11AC01\", W11AC01Form.class, req, validationName);\n        context.abortIfInvalid();\n        return context.createObject();\n    }\n\n    private static final String[] SEARCH_CONDITION_PROPS = {\n        \"loginId\", \"kanjiName\", \"kanaName\", \"ugroupId\", \"userIdLocked\", \"pageNumber\", \"sortId\"\n    };\n\n    @ValidateFor(\"search\")\n    public static void validateForSearch(ValidationContext<W11AC01Form> context) {\n        ValidationUtil.validate(context, SEARCH_CONDITION_PROPS);\n        if (!context.isValid()) return;\n        W11AC01Form form = context.createObject();\n        if (!form.isValidSearchCondition()) {\n            context.addMessage(\"MSG00006\");\n        }\n    }\n\n    private boolean isValidSearchCondition() {\n        return StringUtil.hasValue(\n            getLoginId(), getKanjiName(), getKanaName(), getUgroupId(), getUserIdLocked());\n    }\n}\n```\n\n`validate()`メソッドは`ValidationUtil.validateAndConvertRequest`でリクエストを精査・変換し、`context.abortIfInvalid()`で精査エラー時に処理を中断、`context.createObject()`でFormオブジェクトを生成して返す。",
+    "s4": "`DbAccessSupport#getParameterizedSqlStatement`で`ParameterizedSqlPStatement`を取得することで、Javaオブジェクトのフィールド値をバインド変数に一括設定できる。\n\n使用手順:\n1. `DbAccessSupport#getParameterizedSqlStatement`を使用して`ParameterizedSqlPStatement`を取得する（`SqlPStatement`は使用しない）\n2. SQL文のバインド変数は`?`ではなく`:フィールド名`形式で記述する\n3. `ParameterizedSqlPStatement#retrieve`の引数にJavaオブジェクトのインスタンスを渡す（`:フィールド名`に対応するフィールドの値が自動設定される）",
+    "s5": "指定したフィールドの値がnullまたは空文字の場合は検索条件から除外し、値がある場合のみ検索条件を組み込む機能。`DbAccessSupport#getParameterizedSqlStatement`実行時に引き渡すオブジェクトのフィールド値によって条件の組み込みが判断される。\n\n```sql\nWHERE $if (loginId) {LOGIN_ID = :loginId}\n```\n\n上記の例では、引き渡すオブジェクトの`loginId`フィールドがnullまたは空文字でない場合のみ`LOGIN_ID = :loginId`が検索条件に組み込まれる。実際に`:loginId`に設定される値は、`ParameterizedSqlPStatement#retrieve`実行時に引き渡すオブジェクトの`loginId`フィールドの値となる。",
+    "s6": "SQL文に`:%フィールド名%`形式で記述することでLIKE検索を実現できる。エスケープ処理の実装およびJavaコードでの`%`付加が不要。\n\n```sql\nWHERE USR.KANJI_NAME LIKE :%kanjiName%\n```\n\n上記の例では、`ParameterizedSqlPStatement#retrieve`実行時に引き渡すオブジェクトの`kanjiName`フィールドの値で中間一致検索を行う。エスケープ処理は自動で行われ、`%`をJavaコードで付加する必要はない。",
+    "s7": "`$sort`構文でORDER BY句を動的に切り替える機能。SQL実行時、指定したフィールドの値に対応するORDER BY条件が自動的に組み込まれる。\n\n```sql\n$sort (sortId) {\n  (loginId_asc    SA.LOGIN_ID)\n  (loginId_desc   SA.LOGIN_ID DESC)\n  (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)\n  (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)\n  (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)\n  (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID)\n}\n```\n\n`$sort (フィールド名) {(値 ORDER BY条件) ...}` 形式で定義する。例えば`sortId = loginId_desc`の場合、`ORDER BY SA.LOGIN_ID DESC`が適用される。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

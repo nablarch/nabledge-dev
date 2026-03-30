@@ -1,0 +1,20 @@
+{
+  "file_id": "toolbox-01_JspGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 index hints",
+      "description": "設定キーテーブルの第1列にあるプロパティ名 `directive.content.type.encoding`、`directive.page.encoding`、`jsp.max.line.columns` がhintsに含まれていない。これらはs4のコンテンツ内の設定テーブルに存在するプロパティ名であり、V4のルール（テーブル第1列のプロパティ名をhintsに含める）に従い追加が必要。",
+      "source_evidence": "設定キーテーブル（仕様セクション）の3行: directive.content.type.encoding / directive.page.encoding / jsp.max.line.columns"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (使用禁止とするHTMLタグの属性)",
+      "description": "ソースにある「CSVファイルはhtml_check_toolと併用することを想定しているため、使用禁止タグ（appletなど）を含めることが可能となっている」という説明が省略されている。この説明は、CSVファイルに属性指定のないタグ行（例: `applet,`）を記述できることを明確にしており、invalid.html.csv.pathを独自設定するユーザーにとって判断に必要な情報。",
+      "source_evidence": "「CSVファイルは、html_check_toolと併用することを想定しているため、使用禁止タグ(appletなど)を含めることが可能となっている。」（仕様 > 使用禁止とするHTMLタグの属性 セクション）"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-spec_author",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "内部構造・改修時の留意点 section",
+      "description": "The entire '内部構造・改修時の留意点' section is absent from the knowledge file. This section contains: (1) the key fact that author.tag is an empty file existing only to pass JSP compilation; (2) that the spec sheet view is composed of SpecSheetTemplate.xlsx and SpecSheetInterpreter.js; (3) the full component file path table listing author.tag, spec.js, SpecSheetView.js, SpecSheetInterpreter.js, SpecSheetTemplate.xlsx, and SpecSheetTemplate.files with their roles. An AI answering modification or troubleshooting questions about this widget needs this information.",
+      "source_evidence": "サーバ表示で動作するタグファイル(author.tag) は、JSPコンパイルを通すためだけの空ファイルである。設計書ビューはテンプレートファイルである SpecSheetTemplate.xlsx と、各項目の表示内容を制御する SpecSheetInterpreter.js によって構成される。[+ 部品一覧 table]"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "Source has 3 h2 sections (コードサンプル, 仕様, 内部構造・改修時の留意点) but the knowledge file contains only 1 section (s1). The '内部構造・改修時の留意点' h2 section has no corresponding section in the knowledge file at all.",
+      "source_evidence": "Source h2 headings: 'コードサンプル' (==), '仕様' (==), '内部構造・改修時の留意点' (==). Knowledge file sections: {\"s1\": ...} only."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "PascalCase class/file names referenced in the source are absent from hints: SpecSheetTemplate, SpecSheetInterpreter, SpecSheetView. These are directly named components of the spec sheet view system and would be useful search terms for AI retrieval.",
+      "source_evidence": "SpecSheetView.js, SpecSheetInterpreter.js, SpecSheetTemplate.xlsx are all listed in the 部品一覧 table in the source."
+    }
+  ]
+}

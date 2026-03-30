@@ -1,0 +1,62 @@
+{
+  "id": "testing-framework-03_Tips--s1",
+  "title": "目的別API使用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい",
+      "hints": [
+        "TestSupport",
+        "DbAccessTestSupport",
+        "getListMap",
+        "LIST_MAP",
+        "Excelデータ取得",
+        "List-Map形式"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "同じテストメソッドをテストデータを変えて実行したい",
+      "hints": [
+        "getListMap",
+        "setUpDb",
+        "assertSqlResultSetEquals",
+        "LIST_MAP",
+        "ループテスト",
+        "データバリエーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "一つのシートに複数テストケースのデータを記載したい",
+      "hints": [
+        "グループID",
+        "EXPECTED_TABLE",
+        "SETUP_TABLE",
+        "setUpDb",
+        "assertTableEquals",
+        "複数テストケース",
+        "シートデータ集約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "システム日時を任意の値に固定したい",
+      "hints": [
+        "FixedSystemTimeProvider",
+        "SystemTimeProvider",
+        "fixedDate",
+        "システム日時固定",
+        "テスト日付固定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Excelファイルからデータ取得（LIST_MAP形式）\n\nデータタイプ `LIST_MAP` を使用してExcelファイルからList\\<Map\\<String, String\\>>形式でデータを取得する。\n\n**書式**: `LIST_MAP=<シート内で一意になるID（任意の文字列）>`\n\n- データの2行目: MapのKey\n- データの3行目以降: MapのValue\n\n**クラス**: `TestSupport`, `DbAccessTestSupport`\n\nデータ取得メソッド（第1引数: シート名、第2引数: ID）:\n- `TestSupport#getListMap(String sheetName, String id)`\n- `DbAccessTestSupport#getListMap(String sheetName, String id)`\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nMap<String, String> param = parameters.get(0);\nString empNo = param.get(\"empNo\");\nString expected = param.get(\"expected\");\n```\n\n**Excelデータ例**:\n```\nLIST_MAP=parameters\nempNo    expected\n00001    山田太郎\n00002    鈴木一郎\n```",
+    "s2": "## 同じテストメソッドをテストデータを変えて実行したい\n\nLIST_MAP形式でデータを取得しループさせることで、Excelデータ追加だけでデータバリエーションを増やせる。\n\n```java\nsetUpDb(\"testSelectByPk\");\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nfor (Map<String, String> param : parameters) {\n    String empNo = param.get(\"empNo\");\n    String expectedDataId = param.get(\"expectedDataId\");\n    SqlResultSet actual = target.selectByPk(empNo);\n    assertSqlResultSetEquals(\"testSelectByPk\", expectedDataId, actual);\n}\n```\n\n> **警告**: 更新系のテストを行う場合は、ループ内で `setUpDb` メソッドを呼び出すこと。呼び出さないと、テストの成否がデータの順番に依存してしまう。\n\n**Excelデータ例**:\n```\n// ループさせるデータ\nLIST_MAP=parameters\nempNo    expectedDataId\n00001    expected01\n00002    expected02\n\n// 準備データ\nSETUP_TABLE=EMPLOYEE\nNO       NAME\n00001    山田太郎\n00002    鈴木一郎\n\n// 期待データ（expected01）\nLIST_MAP=expected01\nNO       NAME\n00001    山田太郎\n```",
+    "s3": "## グループIDによる複数テストケースのデータ集約\n\nグループIDを付与することで、複数テストケースのデータを1シートに混在させられる。\n\nサポートされるデータタイプ: `EXPECTED_TABLE`, `SETUP_TABLE`\n\n**書式**: `データタイプ[グループID]=テーブル名`\n\nAPIにグループIDを渡すと、そのグループIDのデータのみが処理対象になる。\n\n```java\n// グループIDが\"case_001\"のものだけDBに登録\nsetUpDb(\"testUpdate\", \"case_001\");\n\n// グループIDが\"case_001\"のものだけassert対象\nassertTableEquals(\"データベース更新結果確認\", \"testUpdate\", \"case_001\");\n```\n\n**Excelデータ例**:\n```\nSETUP_TABLE[case_001]=EMPLOYEE_TABLE\nID       EMP_NAME     DEPT_CODE\n00001    山田太郎      0001\n00002    田中一郎      0002\n\nEXPECTED_TABLE[case_001]=EMPLOYEE_TABLE\nID       EMP_NAME     DEPT_CODE\n00001    山田太郎      0001\n00002    田中一郎      0010   //更新\n\nSETUP_TABLE[case_002]=EMPLOYEE_TABLE\n...\nEXPECTED_TABLE[case_002]=EMPLOYEE_TABLE\n...\n```",
+    "s4": "## システム日時の固定（FixedSystemTimeProvider）\n\n`SystemTimeProvider`インタフェースの実装クラスを`nablarch.test.FixedSystemTimeProvider`に差し替えることで、任意のシステム日時を返却させられる。\n\n**クラス**: `nablarch.test.FixedSystemTimeProvider`\n\n```xml\n<component name=\"systemTimeProvider\"\n    class=\"nablarch.test.FixedSystemTimeProvider\">\n  <property name=\"fixedDate\" value=\"20100913123456\" />\n</component>\n```\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| fixedDate | 固定する日時。フォーマット: `yyyyMMddHHmmss`（12桁）または `yyyyMMddHHmmssSSS`（15桁） |\n\n```java\nSystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject(\"systemTimeProvider\");\nDate now = provider.getDate();\n```"
+  }
+}

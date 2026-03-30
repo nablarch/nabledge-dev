@@ -1,0 +1,191 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-FileRecordWriterDisposeHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section content is '\\u306a\\u3057' (2 characters), which is below the 50-character threshold. The source says '(\\u3068\\u304f\\u306b\\u306a\\u3057\\u3002)' — the section is genuinely empty, but the representation is shorter than the minimum.",
+      "source_evidence": "\\u672a\\u5b9f\\u88c5\\u6a5f\\u80fd\\u30fb\\u8981\\u671b section: '(\\u3068\\u304f\\u306b\\u306a\\u3057\\u3002)'"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+.. include:: ../api/link.rst
+
+===============================
+出力ファイル開放ハンドラ
+===============================
+
+**クラス名:** ``nablarch.common.handler.FileRecordWriterDisposeHandler``
+
+
+----------------------------------------------
+概要
+----------------------------------------------
+業務アクションハンドラで書き込みを行うために開いた全ての出力ファイルを開放（クローズ）するハンドラ。
+後続のハンドラの処理結果に関わらず全ての出力ファイルを解放する。
+本ハンドラを使用する場合、業務アクションハンドラ内で出力ファイルを開放する必要はない。
+
+.. warning::
+ 本ハンドラは、 `FileRecordWriterHolder`_ クラス経由で書き込みが行われた出力ファイルのみ開放する。\ 
+  `FileRecordWriterHolder`_ 以外のクラスを使用して書き込んだ出力ファイルは、開放の対象外となるので注意すること。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = ["FileRecordWriterDisposeHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラに対する処理委譲)**
+    後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+ 
+**[復路処理]**
+  **2. (出力ファイルの開放)**
+    `FileRecordWriterHolder`_ によって書き込みを行った全てのファイルの開放処理を行う。
+
+  **2a. (開放処理中のエラー)**
+    なお、開放処理中にIOエラーが発生した場合は、ワーニングログのみ出力し、再送出は行なわない。
+    それ以外のエラーが発生した場合は再送出して終了する。
+
+  **3. (正常終了)**
+    **1.** で取得した処理結果を返却して終了する。
+
+.. _error:
+
+**[例外処理]**
+  **1a. (後続ハンドラの処理でエラー)**
+    後続ハンドラの処理中にエラーが発生した場合、 **2. (出力ファイルの開放)** を行った後、
+    発生した元例外を再送出して終了する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの実装内容は基本的に変更不要なものであり、そのまま使用することができる。
+以下はDIリポジトリ設定ファイルへの記述例である。
+
+  .. code-block:: xml
+
+    <component class="nablarch.common.handler.FileRecordWriterDisposeHandler" />
+
+++++++++++
+
+-----------------------------------------------
+未実装機能・要望
+-----------------------------------------------
+(とくになし。)
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-FileRecordWriterDisposeHandler--s1",
+  "title": "出力ファイル開放ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "FileRecordWriterDisposeHandler",
+        "nablarch.common.handler.FileRecordWriterDisposeHandler",
+        "FileRecordWriterHolder",
+        "出力ファイル開放",
+        "ファイルクローズ",
+        "業務アクションハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "FileRecordWriterHolder",
+        "ハンドラ処理フロー",
+        "出力ファイル開放",
+        "IOエラー処理",
+        "例外処理",
+        "往路復路"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "FileRecordWriterDisposeHandler",
+        "DI設定",
+        "XML設定例",
+        "コンポーネント設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "未実装機能・要望",
+      "hints": [
+        "未実装機能",
+        "要望"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.FileRecordWriterDisposeHandler`\n\n業務アクションハンドラで書き込みを行うために開いた全ての出力ファイルを開放（クローズ）するハンドラ。後続のハンドラの処理結果に関わらず全ての出力ファイルを解放する。本ハンドラ使用時、業務アクションハンドラ内で出力ファイルを開放する必要はない。\n\n> **警告**: `FileRecordWriterHolder` クラス経由で書き込みが行われた出力ファイルのみ開放する。`FileRecordWriterHolder` 以外のクラスを使用して書き込んだ出力ファイルは開放の対象外。",
+    "s2": "**往路処理**\n1. 後続ハンドラに処理を委譲し、その結果を取得する。\n\n**復路処理**\n2. `FileRecordWriterHolder` によって書き込んだ全ファイルの開放処理を行う。\n   - 2a. 開放処理中にIOエラーが発生した場合はワーニングログのみ出力し、再送出しない。それ以外のエラーは再送出して終了。\n3. 往路で取得した処理結果を返却して終了。\n\n**例外処理**\n- 1a. 後続ハンドラ処理中にエラーが発生した場合、出力ファイルの開放を行った後、元例外を再送出して終了する。",
+    "s3": "実装内容の変更は基本的に不要。そのまま使用可能。\n\n```xml\n<component class=\"nablarch.common.handler.FileRecordWriterDisposeHandler\" />\n```",
+    "s4": "なし"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,34 @@
+{
+  "file_id": "handlers-MultipartHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 (content header)",
+      "description": "The content uses \"**[エラーケース]**\" as a section header, but this term does not appear in the source. The source uses \"**[例外処理]**\" for the corresponding section (containing step 4a), while steps 2a and 2b are simply part of the ハンドラ処理フロー section with no explicit header. The invented label \"エラーケース\" has no basis in the source.",
+      "source_evidence": "Source section header: \"**[例外処理]**\" (under ハンドラ処理フロー). The term \"エラーケース\" does not appear anywhere in the source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints are missing HttpAccessLogHandler and ThreadContextHandler, both of which are mentioned by name in s3 content as concrete examples of handlers that must be placed after MultipartHandler.",
+      "source_evidence": "Source: \"具体的には、 :doc:`HttpAccessLogHandler` を拡張し、特定のリクエストパラメータを出力するケースや、 :doc:`ThreadContextHandler` にリクエストパラメータの内容に依存したカスタムの属性を追加するようなケースがこれに該当する。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4 hints include \"HttpRequest.getPart\" but omit \"HttpRequest.getParam\", which is also explicitly mentioned in s4 content as the method for retrieving non-file parameters.",
+      "source_evidence": "Source: \"アップロードファイル以外のパラメータについては、通常どおり `HttpRequest.getParam()`_ 等で取得できる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "s6 hints are missing FilePathSetting (nablarch.core.util.FilePathSetting), which is a PascalCase class name used in the temporary file storage configuration XML example in s6.",
+      "source_evidence": "Source: \"<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\">\""
+    }
+  ]
+}

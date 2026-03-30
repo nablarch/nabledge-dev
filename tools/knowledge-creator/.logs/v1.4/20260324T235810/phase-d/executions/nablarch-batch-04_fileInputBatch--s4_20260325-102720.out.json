@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s1.hints",
+      "description": "`preRecordKbn` (the state variable checked and updated in `doEnd`) and `END_RECORD` (assigned in s1: `preRecordKbn = END_RECORD`) are absent from s1 hints. Both appear directly in the s1 code block and are key identifiers for retrieval.",
+      "source_evidence": "s1 code: `if (!TRAILER_RECORD.equals(preRecordKbn)) { ... } preRecordKbn = END_RECORD;`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s2.hints",
+      "description": "`writeLog` is explicitly called twice in s2's code and is called out by name in the cross-reference note (`writeLogメソッドについては…`), but is absent from s2 hints.",
+      "source_evidence": "s2 source: `writeLog(\"M000000002\", ctx.getLastRecordNumber()); writeLog(\"M000000003\", dataRecordCount);` and `writeLogメソッドについては「03_dbInputBatch」の log_output_in_batch_action の項を参照。`"
+    }
+  ]
+}

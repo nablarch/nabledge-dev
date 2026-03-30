@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_05_custom_validator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4 — DirectCallableValidator code example",
+      "description": "The knowledge file changed the variable type from `String` to `Boolean` in the `allow001()` method body. The source reads `String allow001 = (Boolean) params.get(\"allow001\");` but the knowledge file renders it as `Boolean allow001 = (Boolean) params.get(\"allow001\");`. Even though the source code appears to contain a typo, the knowledge file must faithfully reproduce the source and not silently correct it.",
+      "source_evidence": "Source: `String allow001 = (Boolean) params.get(\"allow001\");` / Knowledge file: `Boolean allow001 = (Boolean) params.get(\"allow001\");`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Introduction (before s1)",
+      "description": "The source intro states that when reusing an existing annotation and only changing validator behavior, only steps 2 and 3 (バリデータの作成 and バリデータを設定ファイルに登録) are required. This decision-guiding note is absent from the knowledge file.",
+      "source_evidence": "「また、既存のアノテーションをそのまま使用して、バリデータの処理内容を変更する場合は、上記手順の2と3を実施すればよい。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`getMessage` (the ValidationContext method used to obtain a Message for the option parameter) and `Message` (the return type) appear prominently in the source and the s2 body, but are absent from s2's hints array.",
+      "source_evidence": "Source: `context.getMessage メソッドで取得した Message をオプションパラメータとして設定しておく` / Code: `context.getMessage(propertyMessageId)`"
+    }
+  ]
+}

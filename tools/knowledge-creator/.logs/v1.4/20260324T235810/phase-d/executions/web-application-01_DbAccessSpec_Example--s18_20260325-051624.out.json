@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 可変条件のSQLの場合 / OR条件の制限事項",
+      "description": "Source provides a concrete SQL code example showing the correct alternative implementation when using OR conditions (通常のSQL文): a SELECT with OR in WHERE clause using :loginId, :userKanjiName%, :userKanaName%, :groupId. The knowledge file explains the concept ('OR条件を使う場合は通常のSQL文を使用すること') but omits this code example that demonstrates the correct usage pattern.",
+      "source_evidence": "Source contains a `.. code-block:: sql` block under the OR condition warning with: `WHERE (USER_MTR.LOGIN_ID = :loginId OR USER_MTR.USER_KANJI_NAME LIKE :userKanjiName% OR ...)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "`getParameterizedSqlStatement` is the primary API method used throughout the source (appears in every code example) but is absent from the hints list.",
+      "source_evidence": "Source code examples repeatedly call `getParameterizedSqlStatement(\"GET\")`, `getParameterizedSqlStatement(\"GET_LIST2\", user)`, etc. in every section."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-05_create_form--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Formクラスの精査処理実装 / Form単体テストデータの作成",
+      "description": "テストデータシートの格納場所・ファイル名・シート名が省略されている。ソースでは「test/java/nablarch/sample/ss11AC」「W11AC02FormTest.xlsx」「testValidateForRegister」という具体的なパスとファイル情報が表として示されている。",
+      "source_evidence": "データシート格納フォルダ: test/java/nablarch/sample/ss11AC / データシートファイル名: W11AC02FormTest.xlsx / シート名: testValidateForRegister"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Formクラスの精査処理実装 / Formクラスの単体テストを実行（初回）",
+      "description": "精査メソッドを実装する前に単体テストを実行して「失敗することを確認する」というTDDのステップが省略されている。これは実装手順上の重要な確認ポイント。",
+      "source_evidence": "単体テストを実行し、テストが失敗することを確認する。（精査メソッドを実装していない為）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "`validate` メソッドのシグネチャに含まれる `HttpRequest` クラスがs3のhintsに含まれていない。",
+      "source_evidence": "public static W11AC02Form validate(HttpRequest req, String validationName)"
+    }
+  ]
+}

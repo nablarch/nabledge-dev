@@ -1,0 +1,36 @@
+{
+  "id": "ui-framework-update_bundle_plugin--s1",
+  "title": "Nablarch 標準プラグインの更新",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "1. 現在のプラグインのバージョンの確認",
+      "hints": [
+        "update.bat",
+        "updated_plugin.json",
+        "_from",
+        "バージョン差異確認",
+        "標準プラグイン新規取込",
+        "プラグインバージョン確認"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "2. プラグインのマージ",
+      "hints": [
+        "プラグインマージ",
+        "競合解消",
+        "pjconf.json",
+        "標準プラグイン取込手順",
+        "カスタマイズプラグイン",
+        "リビジョンアップデート"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 1. 現在のプラグインのバージョンの確認\n\n`bin/update.bat` をPJのディレクトリ構造に合わせて修正・実行することで、現在のPJのプラグインとリリースされた標準プラグインのバージョン差異を確認できる。差異があるプラグインは `ui_plugins/updated_plugin.json` に出力される。\n\n> **注意**: 標準プラグインの**新規取込**の場合、`updated_plugin.json` には出力されないため、対象の標準プラグインをPJのUI開発基盤に手動でコピーすること。\n\nPJでコピー(もしくは参照)して作成したプラグインの `package.json` に `_from` を設定することで、`update.bat` 実行時に差異一覧に出力できる。\n\n> **注意**: 標準プラグインには `_from` が設定済みのため、コピー時に削除しなければよい。\n\n`updated_plugin.json` の出力例:\n\n```javascript\n{\n   \"nablarch-css-core\" : \"1.0.0\"\n , \"tutorial-dev-ui_test-support\" : \"1.0.1\"\n}\n```\n\n`_from` の指定例:\n\n```javascript\n{ \"name\" : \"tutorial-dev-ui_test-support\"\n, \"description\" : \"Nablarch tutorial applicationのUI部品単体テストサポートプラグイン\"\n, \"version\" : \"1.0.0\"\n, \"_from\" : \"nablarch-dev-ui_test-support@1.0.0\"\n}\n```",
+    "s2": "## 2. プラグインのマージ\n\n取り込むと判断したプラグインについて、以下の手順で修正内容を取り込む。\n\n1. 作業ディレクトリにUI開発基盤導入時のリビジョンをチェックアウトする。\n2. 標準プラグインとカスタマイズしたプラグイン(初期状態)を上書きする。カスタマイズしたプラグインは競合する可能性があるため、以下の手順で競合を解消する。\n   1. 新規(標準モジュールをコピーしリネームした状態で)追加したリビジョンにアップデートする。\n   2. `_from` 属性に設定されている標準モジュールの内容で上書きする。\n   3. PJ側が修正したリビジョンにアップデートする（競合しない場合はNablarch側の修正を確認、競合した場合は解決する）。\n3. trunkのリビジョンまでアップデートしたら、UI部品のビルドを行い、各部品のテストをする。\n4. リポジトリにコミットする。\n\n> **注意**: 標準プラグインを新規に取り込んだ際にカスタマイズが必要になった場合は、一旦 `ui_plugins/pjconf.json` から対象プラグインを外し、カスタマイズは行わないこと。標準プラグインの取り込みが完了してから :doc:`modifying_code_and_testing` を参照し、カスタマイズすること。"
+  }
+}

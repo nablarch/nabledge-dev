@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — W11AC01Form.java code example and implementation points",
+      "description": "The `getSearchConditionProps()` method is completely omitted from s3. In the source, this method appears between `SEARCH_CONDITION_PROPS` and `validateForSearch()` with the explicit comment `// 【説明】精査対象プロパティのゲッターを追加`, indicating it is a required implementation step. The three implementation points in s3 describe overriding setters, defining SEARCH_CONDITION_PROPS, and adding isValidSearchCondition(), but never mention adding this getter. An AI following this knowledge file would produce an incomplete Form class.",
+      "source_evidence": "Source W11AC01Form.java: `// 【説明】精査対象プロパティのゲッターを追加\npublic String[] getSearchConditionProps() {\n    return SEARCH_CONDITION_PROPS;\n}`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Missing `StringUtil` from hints. `StringUtil` is a PascalCase class name used in the source code (`StringUtil.hasValue(...)`) inside `isValidSearchCondition()`. Per V4 criteria, PascalCase class names appearing in section content must be included in hints.",
+      "source_evidence": "Source: `return StringUtil.hasValue(getLoginId(), getKanjiName(), getKanaName(), getUgroupId(), getUserIdLocked());`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints array",
+      "description": "Missing `SqlPStatement` from hints. The source explicitly names `SqlPStatement` as the class NOT to use (contrasted with `ParameterizedSqlPStatement`), making it a PascalCase class name appearing in the section's decision-relevant content.",
+      "source_evidence": "Source: `プリペアドステートメントを作成する際に、SqlPStatementクラスではなく、ParameterizedSqlPStatementクラスを使用する`"
+    }
+  ]
+}

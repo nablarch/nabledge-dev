@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-05_create_form--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — form_validation_execute_test section",
+      "description": "The final test execution step after implementing validateForRegister is omitted. The source section (ref: form_validation_execute_test) instructs to run the Form unit test and confirm that validation is applied to the targeted properties. The knowledge file covers the initial failing test run but not this final verification step.",
+      "source_evidence": "「Form単体テストを実行し、精査対象とするプロパティの精査が行われていることを確認する。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — testValidateForRegister code example",
+      "description": "@Test annotation is missing from the test method in the code example. The source shows `@Test` above `public void testValidateForRegister()`, which is required for JUnit to recognize and execute the method.",
+      "source_evidence": "Source code block: `@Test\\npublic void testValidateForRegister() {`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`validateWithout` (or `ValidationUtil#validateWithout`) is not listed in s2 hints, even though the section explicitly covers its usage as an alternative to `validate` for specifying exclusions.",
+      "source_evidence": "`ValidationUtil.validateWithout(context, new String[0]);` — appears in the validateForRegister implementation subsection of the source"
+    }
+  ]
+}

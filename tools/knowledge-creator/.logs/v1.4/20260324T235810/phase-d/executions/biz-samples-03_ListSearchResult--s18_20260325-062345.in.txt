@@ -1,0 +1,522 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/03_ListSearchResult.rst`
+- Format: `rst`
+
+```
+検索結果の並び替え
+--------------------------------
+検索結果の一覧表示では、列見出しを選択することで選択された列データによる並び替えを行いたい場合がある。\
+検索結果の並び替えは、並び替え用の列見出しを出力する :ref:`ListSearchResult_ListSearchSortSubmitTag` と、\
+データベースアクセス機能が提供する可変ORDER BY構文(ORDER BY句を動的に変更する構文)を使用した検索処理により実現する。\
+可変ORDER BY構文の詳細については、フレームワークの解説書を参照。
+
+ユーザ検索に並び替えを適用した場合の画面イメージを下記に示す。\
+ユーザ検索では、漢字氏名とカナ氏名による並び替えを提供している。
+
+.. image:: ./_images/03/ListSearchResult_SortSubmitTag.jpg
+   :scale: 60
+
+ここでは、ユーザ検索に並び替えを適用する場合の実装例を使用して解説を行う。
+
+検索処理の実装方法
+===============================
+検索結果の並び替えを行うには、可変ORDER BY構文を使用してSQL文を定義する。\
+可変ORDER BY構文を使用したSQL文の例を下記に示す。
+
+下記のSQL文では、漢字氏名とカナ氏名を並び替えるための可変ORDER BY句を使用している。
+どのORDER BYを使用するかは、$sort (sortId)の記述により、検索条件オブジェクトのsortIdフィールドから取得した値が使用される。\
+例えば、検索条件オブジェクトのsortIdフィールドが kanaName_asc の場合、ORDER BY句は"ORDER BY USR.KANA_NAME, SA.LOGIN_ID"に変換される。
+
+.. code-block:: sql
+
+ -- 可変ORDER BY構文を使用したSQL文
+ SELECT
+   -- 省略
+ FROM
+     -- 省略
+ WHERE
+     -- 省略
+ $sort (sortId) {
+    (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)
+    (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)
+    (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)
+    (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID) }
+
+ListSearchInfoクラスは、並び替えに対応するためにsortIdプロパティを定義している。\
+検索結果の並び替えを行う場合は、sortIdプロパティを入力精査に含める。\
+ListSearchInfoを継承したクラス(W11AC01SearchForm)の実装例を下記に示す。
+
+.. code-block:: java
+
+ // ListSearchInfoを継承したクラス。
+ public class W11AC01SearchForm extends ListSearchInfo {
+     
+     // 検索条件のプロパティ定義は省略。
+     
+     // バリデーション機能に対応したコンストラクタ。
+     public W11AC01SearchForm(Map<String, Object> params) {
+     
+        // 検索条件のプロパティ設定は省略。
+        
+        // ListSearchInfoのsortIdプロパティを設定する。
+        setSortId((String) params.get("sortId"));
+     }
+     
+     // オーバーライドして入力精査用のアノテーションを付加する。
+     @PropertyName("ソートID")
+     @Required
+     public void setSortId(String sortId) {
+         super.setSortId(sortId);
+     }
+     
+     /** 精査対象プロパティ(検索条件のプロパティは省略) */
+     private static final String[] SEARCH_COND_PROPS = new String[] { ..., "sortId"};
+     
+     // オーバーライドして検索条件のプロパティ名を返す。
+     // 通常は精査対象プロパティと同じとなる。
+     // ページングの各サブミット要素が検索条件をサブミットする際に使用する。
+     public String[] getSearchConditionProps() {
+         return SEARCH_COND_PROPS;
+     }
+ }
+
+listSearchSortSubmitタグ
+===============================
+listSearchSortSubmitタグは、並び替え用のサブミット要素を出力する。
+
+listSearchSortSubmitタグの必須属性及び代表的な属性を下記に示す。\
+listSearchSortSubmitタグで指定できる全ての属性については、 :ref:`ListSearchResult_ListSearchSortSubmitTag` を参照。
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+sortCss                                | 並び替えを行うサブミットのclass属性。
+                                       | 常にサブミットのclass属性に出力される。
+                                       | デフォルトは"nablarch_sort"。
+ascCss                                 | 昇順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_asc"。(出力例: class="nablarch_sort nablarch_asc")
+descCss                                | 降順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_desc"。(出力例: class="nablarch_sort nablarch_desc")
+ascSortId(必須)                        | 昇順に並び替える場合のソートID。
+descSortId(必須)                       | 降順に並び替える場合のソートID。
+defaultSort                            | デフォルトのソートID。
+                                       | 下記のいずれかを指定する。
+                                       | asc(昇順)
+                                       | desc(降順)
+                                       | デフォルトは"asc"。
+label(必須)                            | 並び替えを行うサブミットに使用するラベル。
+name(必須)                             | 並び替えを行うサブミットに使用するタグのname属性。
+                                       | name属性は、画面内で一意にすること。
+listSearchInfoName(必須)               | ListSearchInfoをリクエストスコープから取得する際に使用する名前。
+====================================== ==========================================================================================
+
+listSearchSortSubmitタグを使用したJSPの実装例を下記に示す。タグファイルのプレフィックスは nbs とする。
+
+.. code-block:: jsp
+
+ <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                     searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                     resultSetName="searchResult"
+                     usePageNumberSubmit="true"
+                     useLastSubmit="true">
+     <jsp:attribute name="headerRowFragment">
+         <tr>
+             <%-- 漢字氏名以外の列は省略。 --%>
+             <th>
+                 <%-- 漢字氏名を並び替え用のリンクにする。--%>
+                 <%-- SQL文に合わせて昇順(kanjiName_asc)と降順(kanjiName_desc)のソートIDを指定する。 --%>
+                 <nbs:listSearchSortSubmit ascSortId="kanjiName_asc" descSortId="kanjiName_desc"
+                                         label="漢字氏名" uri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                                         name="kanjiNameSort" listSearchInfoName="11AC_W11AC01" />
+             </th>
+         </tr>
+     </jsp:attribute>
+     <jsp:attribute name="bodyRowFragment">
+         <%-- 省略 --%>
+     </jsp:attribute>
+ </nbs:listSearchResult>
+
+並び替えのサブミット要素では、検索フォームから検索された時点の検索条件を使用して検索を実行する。\
+ページング使用時の検索条件と同様に、ウィンドウスコープを使用して検索条件を維持する。
+
+並び替えのサブミット要素では、常に先頭ページ(ページ番号:1)を検索する。\
+並び替えが変更された場合、検索前のページ番号は異なる並び順に対する相対位置となり、\
+検索後に意味のあるページ位置とならないためである。
+
+
+**現在の並び替え状態に応じたlistSearchSortSubmitタグの動作**
+
+listSearchSortSubmitタグは、現在の並び替え状態に応じて下記の値を決定する。\
+現在の並び替え状態は、検索に使用されたソートIDとなる。
+
+* サブミット要素が選択された場合にリスエスト送信するソートID
+* 昇順又は降順に応じてサブミット要素に指定するCSSクラス
+
+ここでは、下記の実装例を前提に、listSearchSortSubmitタグの動作を解説する。\
+
+.. code-block:: jsp
+
+ <%-- 漢字氏名を並び替え用のリンクにする。--%>
+ <%-- SQL文に合わせて昇順(kanjiName_asc)と降順(kanjiName_desc)のソートIDを指定する。 --%>
+ <nbs:listSearchSortSubmit ascSortId="kanjiName_asc" descSortId="kanjiName_desc"
+                           label="漢字氏名" uri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                           name="kanjiNameSort" listSearchInfoName="11AC_W11AC01" />
+
+
+==================================================== ================================================================================================== ======================================================================================================
+検索に使用されたソートID                             リクエスト送信するソートID                                                                         使用されるCSSクラス
+==================================================== ================================================================================================== ======================================================================================================
+kanjiName_asc                                        ascSortId属性(=kanjiName_asc)と等しいため、descSortId属性の値(=kanjiName_desc)を使用する。         ascSortId属性(=kanjiName_asc)と等しいため、ascCss属性の値(nablarch_asc)を使用する。
+kanjiName_desc                                       descSortId属性(=kanjiName_desc)と等しいため、ascSortId属性の値(=kanjiName_asc)を使用する。         descSortId属性(=kanjiName_desc)と等しいため、descCss属性の値(nablarch_desc)を使用する。
+漢字氏名とは異なる列のソートID                       ascSortId属性(=kanjiName_asc)及びdescSortId属性(=kanjiName_desc)に等しくないため、\                ascSortId属性(=kanjiName_asc)及びdescSortId属性(=kanjiName_desc)に等しくないため、指定する値はなし。
+                                                     defaultSortId属性の値(=asc)に応じて、ascSortId属性の値(=kanjiName_asc)を使用する。  
+==================================================== ================================================================================================== ======================================================================================================
+
+
+**昇順又は降順に応じたCSSの実装例**
+
+画面イメージのように、並び替え用のリンクに対して、昇順又は降順を明示するイメージを表示したい場合は、\
+CSSにより実現する。CSSの実装例を下記に示す。\
+CSSファイルから参照できる位置にイメージファイルが配置されているものとし、CSSクラス名はデフォルトの名前で定義している。
+
+.. code-block:: css
+
+ /*
+  * sortCss属性に対する設定。
+  * sortCss属性のCSSクラス名は常に出力される。
+  */
+ a.nablarch_sort {
+     padding-right: 15px;
+     background-position: 100% 0%;
+     background-repeat: no-repeat;
+ }
+ 
+ /*
+  * ascCss属性に対する設定。
+  * ascCss属性のCSSクラス名はサブミット要素が選択され、かつ昇順の場合のみ出力される。
+  */
+ a.nablarch_asc {
+     background-image: url("../img/asc.jpg");
+ }
+ 
+ /*
+  * descCss属性に対する設定。
+  * descCss属性のCSSクラス名はサブミット要素が選択され、かつ降順の場合のみ出力される。
+  */
+ a.nablarch_desc {
+     background-image: url("../img/desc.jpg");
+ }
+
+.. _ListSearchResult_NoPaging:
+
+-------------------------------------------------------
+1画面にすべての検索結果を一覧表示する場合の実装方法
+-------------------------------------------------------
+これまではページングを使用することを前提に解説してきたが、ここでは、1画面にすべての検索結果を一覧表示する場合の実装方法について解説する。
+
+1画面にすべての検索結果を一覧表示する場合、基本的な実装方法はページングを使用する場合と変わらない。\
+また、検索処理や並び替えの処理もページングを使用する場合と同じ実装方法となる。
+
+以下に実装方法を解説する。\
+ページングを使用する場合と同じ、ユーザ検索を行う業務アプリケーションのクラスやJSPを実装例に使用する。
+
+**ListSearchInfoを継承するクラス(W11AC01SearchForm)の実装例**
+
+.. code-block:: java
+
+ // ListSearchInfoを継承したクラス。
+ public class W11AC01SearchForm extends ListSearchInfo {
+     
+     // 検索条件のプロパティ定義は省略。
+     
+     // バリデーション機能に対応したコンストラクタ。
+     public W11AC01SearchForm(Map<String, Object> params) {
+     
+        // 検索条件のプロパティ設定は省略。
+        
+        // ページングを使用する場合と異なり、ListSearchInfoのpageNumberプロパティの設定は不要。
+        // pageNumberプロパティの初期値は1のため常に1ページ目となる。
+        
+     }
+     
+     /** 精査対象プロパティ(検索条件のプロパティのみとなる) */
+     private static final String[] SEARCH_COND_PROPS = new String[] { ... };
+     
+     // オーバーライドして検索条件のプロパティ名を返す。
+     // 通常は精査対象プロパティと同じとなる。
+     // 並び替えの各サブミット要素が検索条件をサブミットする際に使用する。
+     public String[] getSearchConditionProps() {
+         return SEARCH_COND_PROPS;
+     }
+ }
+
+**JSP(ユーザ検索)への遷移を行うActionクラス**
+
+.. code-block:: java
+
+  public class W11AC01Action extends DbAccessSupport {
+  
+      @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0101.jsp")
+      public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+          
+          // 業務処理は省略。
+          // 入力精査省略
+          
+          // ListSearchInfo継承クラスを作成。
+          W11AC01SearchForm condition = searchConditionCtx.createObject();
+          
+          // 検索結果の取得件数(1ページの表示件数)に検索結果の最大件数(上限)を設定する。
+          // ページングを使用しないため下記の設定が必須となる。
+          condition.setMax(condition.getMaxResultCount());
+          
+          
+          // 検索処理省略
+          
+      }
+  }
+
+
+
+**JSP(ユーザ検索)の実装例**
+
+.. code-block:: jsp
+
+ <%-- ページングを使用しないのでusePaging属性にfalseを指定する。 --%>
+ <%-- ページングを使用しないのでsearchUri属性の指定は不要。 --%>
+ <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                     usePaging="false"
+                     resultSetName="searchResult">
+ 
+     <%-- その他の属性は省略。 --%>
+     
+ </nbs:listSearchResult>
+
+
+.. _ListSearchResult_DefaultCondition:
+
+-------------------------------------------------------------------------------------------------
+デフォルトの検索条件で検索した結果を初期表示する場合の実装方法
+-------------------------------------------------------------------------------------------------
+これまでは、検索画面の初期表示で単に検索条件フォームを表示する前提で説明してきた。
+しかし、検索画面の初期表示にて、デフォルトの検索条件で検索した結果を表示することが求められる場合もある。
+
+この場合、検索条件がリクエストパラメータとして送信されず、サーバサイドでデフォルトの検索条件を組み立てて検索するため、\
+ページングで使用する検索条件がウィンドウスコープに存在しない状態となる。\
+このため、アクションの初期表示処理にて、デフォルトの検索条件をウィンドウスコープに設定する実装が必要となる。\
+JSPなど、アクションの初期表示処理以外は、通常のページングを使用する場合と実装方法は変わらない。
+
+デフォルトの検索条件をウィンドウスコープに設定する処理は、共通処理のため、\
+サンプル実装ではユーティリティ(ListSearchInfoUtil)として提供している。
+
+以下に実装方法を解説する。\
+ページングを使用する場合と同じ、ユーザ検索を行う業務アプリケーションのクラスやJSPを実装例に使用する。
+
+**Actionクラスの初期表示処理**
+
+.. code-block:: java
+
+    public HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {
+        
+        // 業務処理は省略。
+
+        // フォームを生成しデフォルトの検索条件を設定
+        W11AC01SearchForm condition = new W11AC01SearchForm();
+        condition.setUserIdLocked("0");
+        condition.setSortId("kanjiName_asc");
+        condition.setDate("20130703");
+        condition.setMoney(BigDecimal.valueOf(123456789.12d));
+
+        // デフォルトの検索条件を入力フォームに表示するため、
+        // デフォルトの検索条件をリクエストスコープに設定
+        ctx.setRequestScopedVar("11AC_W11AC01", condition);
+
+        // ページングでデフォルトの検索条件を使用するため、
+        // デフォルトの検索条件をウィンドウスコープに設定。
+        // この設定処理は共通処理のため、ユーティリティを使用。
+        ListSearchInfoUtil.setDefaultCondition(req, "11AC_W11AC01", condition);
+
+        // 検索実行
+        SqlResultSet searchResult;
+        try {
+            searchResult = selectByCondition(condition);
+        } catch (TooManyResultException e) {
+            throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, "MSG00035", e.getMaxResultCount()));
+        }
+
+        // 検索結果をリクエストスコープに設定
+        ctx.setRequestScopedVar("searchResult", searchResult);
+        ctx.setRequestScopedVar("resultCount", condition.getResultCount());
+
+        return new HttpResponse("/ss11AC/W11AC0101.jsp");
+    }
+
+.. _ListSearchResult_Setting:
+
+----------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `biz-samples-03_ListSearchResult--s18`
+
+```json
+{
+  "id": "biz-samples-03_ListSearchResult--s18",
+  "title": "検索結果の並び替え",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の並び替え",
+      "hints": [
+        "ListSearchInfo",
+        "sortId",
+        "listSearchSortSubmit",
+        "listSearchSortSubmitTag",
+        "可変ORDER BY構文",
+        "検索結果並び替え",
+        "ascSortId",
+        "descSortId",
+        "defaultSort",
+        "W11AC01SearchForm",
+        "nablarch_sort",
+        "nablarch_asc",
+        "nablarch_desc"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1画面にすべての検索結果を一覧表示する場合の実装方法",
+      "hints": [
+        "ListSearchInfo",
+        "setMax",
+        "getMaxResultCount",
+        "usePaging",
+        "ページングなし",
+        "全件表示",
+        "W11AC01SearchForm"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "デフォルトの検索条件で検索した結果を初期表示する場合の実装方法",
+      "hints": [
+        "ListSearchInfoUtil",
+        "setDefaultCondition",
+        "ウィンドウスコープ",
+        "デフォルト検索条件",
+        "初期表示",
+        "W11AC01SearchForm",
+        "TooManyResultException"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 検索結果の並び替え\n\n検索結果の並び替えは、:ref:`ListSearchResult_ListSearchSortSubmitTag` と可変ORDER BY構文（ORDER BY句を動的に変更する構文）を組み合わせて実現する。\n\n### 検索処理の実装\n\nSQL文に可変ORDER BY構文を定義する。`$sort (sortId)` により、検索条件オブジェクトの `sortId` フィールドの値でORDER BY句が決定される（例: sortIdが `kanaName_asc` の場合、`ORDER BY USR.KANA_NAME, SA.LOGIN_ID` に変換）。\n\n```sql\nSELECT -- 省略\nFROM   -- 省略\nWHERE  -- 省略\n$sort (sortId) {\n   (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)\n   (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)\n   (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)\n   (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID) }\n```\n\n**クラス**: `ListSearchInfo` はsortIdプロパティを持つ。並び替えを使用する場合、`sortId` を入力精査対象に含めること。\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        // 検索条件プロパティ設定省略\n        setSortId((String) params.get(\"sortId\"));\n    }\n\n    @PropertyName(\"ソートID\")\n    @Required\n    public void setSortId(String sortId) {\n        super.setSortId(sortId);\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"sortId\" };\n\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n### listSearchSortSubmitタグ\n\n並び替え用サブミット要素を出力するタグ。全属性については :ref:`ListSearchResult_ListSearchSortSubmitTag` を参照。\n\n| 属性 | 必須 | デフォルト | 説明 |\n|---|---|---|---|\n| sortCss | | nablarch_sort | サブミットのclass属性（常に出力） |\n| ascCss | | nablarch_asc | 昇順時に付加するclass属性（出力例: class=\"nablarch_sort nablarch_asc\"） |\n| descCss | | nablarch_desc | 降順時に付加するclass属性（出力例: class=\"nablarch_sort nablarch_desc\"） |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトのソート方向（asc/desc） |\n| label | ○ | | サブミットのラベル |\n| name | ○ | | タグのname属性（画面内で一意にすること） |\n| listSearchInfoName | ○ | | リクエストスコープからListSearchInfoを取得する名前 |\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    resultSetName=\"searchResult\"\n                    usePageNumberSubmit=\"true\"\n                    useLastSubmit=\"true\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>\n                <nbs:listSearchSortSubmit ascSortId=\"kanjiName_asc\" descSortId=\"kanjiName_desc\"\n                                        label=\"漢字氏名\" uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                                        name=\"kanjiNameSort\" listSearchInfoName=\"11AC_W11AC01\" />\n            </th>\n        </tr>\n    </jsp:attribute>\n</nbs:listSearchResult>\n```\n\n並び替えサブミット要素の動作:\n- ウィンドウスコープで検索条件を維持する\n- 常に先頭ページ（ページ番号:1）で検索する（並び替え変更後は旧ページ番号が意味を持たないため）\n\n**現在の並び替え状態に応じたタグの動作**（実装例: ascSortId=\"kanjiName_asc\", descSortId=\"kanjiName_desc\"）:\n\n| 現在のソートID | リクエスト送信するソートID | 使用されるCSSクラス |\n|---|---|---|\n| kanjiName_asc | kanjiName_desc（descSortId属性値を使用） | nablarch_asc（ascCss属性値） |\n| kanjiName_desc | kanjiName_asc（ascSortId属性値を使用） | nablarch_desc（descCss属性値） |\n| 上記以外 | kanjiName_asc（defaultSort=ascのためascSortId属性値） | なし |\n\n**昇順/降順に応じたCSSの実装例**（CSSクラス名はデフォルト値で定義）:\n\n```css\n/* sortCss: 常に出力 */\na.nablarch_sort {\n    padding-right: 15px;\n    background-position: 100% 0%;\n    background-repeat: no-repeat;\n}\n/* ascCss: サブミット要素が選択され昇順の場合のみ出力 */\na.nablarch_asc {\n    background-image: url(\"../img/asc.jpg\");\n}\n/* descCss: サブミット要素が選択され降順の場合のみ出力 */\na.nablarch_desc {\n    background-image: url(\"../img/desc.jpg\");\n}\n```",
+    "s2": "## 1画面にすべての検索結果を一覧表示する場合の実装方法\n\nページングなしで全件表示する場合、基本的な実装はページングを使用する場合と同じ。検索処理や並び替えの実装も同様。\n\n**ページングとの相違点**:\n- `pageNumber` プロパティの設定不要（初期値は1のため常に1ページ目）\n- `SEARCH_COND_PROPS` に `pageNumber` を含めない（検索条件プロパティのみ）\n- Actionクラスで `setMax(getMaxResultCount())` の設定が必須\n\n```java\n// Actionクラス\nW11AC01SearchForm condition = searchConditionCtx.createObject();\n// ページングを使用しないため、検索取得件数(1ページの表示件数)に最大件数(上限)を設定する（必須）\ncondition.setMax(condition.getMaxResultCount());\n```\n\n```jsp\n<%-- ページングを使用しない: usePaging=\"false\" を指定、searchUri属性は不要 --%>\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    usePaging=\"false\"\n                    resultSetName=\"searchResult\">\n    <%-- その他の属性は省略 --%>\n</nbs:listSearchResult>\n```",
+    "s3": "## デフォルトの検索条件で検索した結果を初期表示する場合の実装方法\n\n初期表示でデフォルト条件による検索結果を表示する場合、検索条件がリクエストパラメータとして送信されないため、ウィンドウスコープに検索条件が存在しない状態となる。アクションの初期表示処理でデフォルト検索条件をウィンドウスコープに設定する実装が必要。JSPなどアクション以外の実装は通常のページングを使用する場合と変わらない。\n\nウィンドウスコープへの設定は共通処理として `ListSearchInfoUtil.setDefaultCondition()` ユーティリティを使用する。\n\n```java\npublic HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {\n    // デフォルト検索条件を設定\n    W11AC01SearchForm condition = new W11AC01SearchForm();\n    condition.setUserIdLocked(\"0\");\n    condition.setSortId(\"kanjiName_asc\");\n    condition.setDate(\"20130703\");\n    condition.setMoney(BigDecimal.valueOf(123456789.12d));\n\n    // デフォルト検索条件を入力フォームに表示するためリクエストスコープに設定\n    ctx.setRequestScopedVar(\"11AC_W11AC01\", condition);\n\n    // ページングでデフォルト検索条件を使用するためウィンドウスコープに設定（必須）\n    ListSearchInfoUtil.setDefaultCondition(req, \"11AC_W11AC01\", condition);\n\n    // 検索実行\n    SqlResultSet searchResult;\n    try {\n        searchResult = selectByCondition(condition);\n    } catch (TooManyResultException e) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount()));\n    }\n\n    ctx.setRequestScopedVar(\"searchResult\", searchResult);\n    ctx.setRequestScopedVar(\"resultCount\", condition.getResultCount());\n\n    return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — footnote about @ValidateFor matching mechanism",
+      "description": "The source footnote explains the matching mechanism in detail: (1) the 4th argument of `validateAndConvertRequest` is compared against the strings specified in `@ValidateFor` annotations, and (2) any single match ('1つでも一致した') is sufficient to invoke that validateFor method. The knowledge file only says '子Formの @ValidateFor に複数の文字列を指定することで対応可能' but omits this behavioral detail. The source code comment also states: '@ValidateFor アノテーションに設定した文字列のうち、ValidationUtil.validateAndConvertRequest の第4引数と1つでも一致した validateFor メソッドが呼び出される。'",
+      "source_evidence": "脚注コード UserEntity コメント: '// @ValidateFor アノテーションに設定した文字列のうち、ValidationUtil.validateAndConvertRequest の第4引数と1つでも一致した validateFor メソッドが呼び出される。' および 'ValidationUtil.validateAndConvertRequest メソッドの第4引数に \"multiInsert\" を指定して UserForm のバリデーションを実行することで、UserEntity のバリデーションには validateForInsert メソッドが呼び出される。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`ValidationUtil` is a PascalCase class referenced in the s2 code example (`ValidationUtil.validate(context, ...)`) but is absent from s2's hints list.",
+      "source_evidence": "s2 code: `ValidationUtil.validate(context, new String[] {\"entityArray\"});`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "`Example2Form` is a PascalCase class explicitly named in the s5 code example (constructor `public Example2Form(Map<String, Object> params)`) but is absent from s5's hints list.",
+      "source_evidence": "s5 code: `public Example2Form(Map<String, Object> params) { entityArray = ...; entityArraySize = ...; }`"
+    }
+  ]
+}

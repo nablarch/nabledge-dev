@@ -1,0 +1,198 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/FAQ/batch/4.rst`
+- Format: `rst`
+
+```
+入出力ファイルの各項目の項目IDは、対応するテーブルのカラム名と一致させたほうが良いのでしょうか？
+=============================================================================================================
+.. admonition:: question
+
+    入出力ファイルのインタフェース設計時に定義する各項目の項目IDは、
+    対応するテーブルのカラム物理名と一致させる必要はあるのでしょうか？
+
+.. admonition:: answer
+
+    項目IDは、テーブルのカラム物理名と一致させると実装時の負荷を軽減することができます。
+    このため、テーブルのカラム物理名と一致させることを推奨します。
+
+    なお、Nablarchのデータベースの結果レコードを表すSqlRowや、ファイルのレコードを表すDataRecordは、
+    大文字、小文字、アンダースコアの有無を区別しない仕様のため、以下のように定義することができます。
+
+    以下に例を示します。
+
+    ====================    ====================    ===========================
+    項目名                  カラム物理名            ファイルの項目ID
+    ====================    ====================    ===========================
+    ユーザID                USER_ID                 userId
+    漢字名称                KANJI_NAME              kanjiName
+    カナ名称                KANA_NAME               kanaName
+    電話番号                TEL_NO                  telNo
+    ====================    ====================    ===========================
+
+    ただし、ファイルのレイアウトはテーブルのように正規化されているわけではないので、
+    テーブルのカラム名1に対して、ファイルの項目が複数となる場合があります。
+    このようなケースでは、テーブルのカラム物理名とは一致させることはできません。
+
+    ファイル出力を例に、項目IDをカラム物理名と一致させた場合と一致させなかった場合の実装の違いを示します。
+
+    * カラム物理名と一致させた場合
+
+      .. code-block :: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext context) {
+            // データベースから取得したinputDataをそのままファイル出力することが出来る。
+            FileRecordWriterHolder.write("data", inputData, "ファイルID");
+            return new Success();
+        }
+
+    * カラム物理名と一致させなかった場合
+
+      .. code-block :: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext context) {
+            // ファイル出力用のMapを生成し、値の詰め直しを行う必要があります。
+            Map<String, Object> outputData = new HashMap<String, Object>();
+            outputData.put("userId", inputData.get("id"));
+            outputData.put("kanjiName", inputData.get("name"));
+            outputData.put("kanaName", inputData.get("kana_name"));
+            outputData.put("telNo", inputData.get("tel"));
+            FileRecordWriterHolder.write("data", outputData, "ファイルID");
+            return new Success();
+        }
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-4`
+
+```json
+{
+  "id": "nablarch-batch-4",
+  "title": "入出力ファイルの各項目の項目IDは、対応するテーブルのカラム名と一致させたほうが良いのでしょうか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイル項目IDとカラム物理名の一致推奨",
+      "hints": [
+        "SqlRow",
+        "DataRecord",
+        "FileRecordWriterHolder",
+        "項目ID",
+        "カラム物理名",
+        "ファイルレイアウト設計",
+        "バッチ入出力ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルの項目IDはテーブルのカラム物理名と一致させることを推奨。一致させると実装時の負荷を軽減できる。\n\nNablarchの`SqlRow`（DBの結果レコード）および`DataRecord`（ファイルのレコード）は、大文字・小文字・アンダースコアの有無を区別しない仕様のため、以下のような対応が可能:\n\n| 項目名 | カラム物理名 | ファイルの項目ID |\n|---|---|---|\n| ユーザID | USER_ID | userId |\n| 漢字名称 | KANJI_NAME | kanjiName |\n| カナ名称 | KANA_NAME | kanaName |\n| 電話番号 | TEL_NO | telNo |\n\nただし、テーブルの1カラムに対してファイルの項目が複数となる場合は一致させることができない。\n\n**カラム物理名と一致させた場合**: `SqlRow`をそのままファイル出力可能。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext context) {\n    FileRecordWriterHolder.write(\"data\", inputData, \"ファイルID\");\n    return new Success();\n}\n```\n\n**カラム物理名と一致させなかった場合**: ファイル出力用のMapを生成し、値の詰め直しが必要。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext context) {\n    Map<String, Object> outputData = new HashMap<String, Object>();\n    outputData.put(\"userId\", inputData.get(\"id\"));\n    outputData.put(\"kanjiName\", inputData.get(\"name\"));\n    outputData.put(\"kanaName\", inputData.get(\"kana_name\"));\n    outputData.put(\"telNo\", inputData.get(\"tel\"));\n    FileRecordWriterHolder.write(\"data\", outputData, \"ファイルID\");\n    return new Success();\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

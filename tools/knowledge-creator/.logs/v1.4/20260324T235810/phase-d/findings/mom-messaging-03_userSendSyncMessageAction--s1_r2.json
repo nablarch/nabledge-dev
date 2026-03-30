@@ -1,0 +1,27 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — Javaコードサンプル末尾",
+      "description": "ソースコードに含まれる引き継ぎ項目格納処理（W11AC01SearchForm生成、setSystemAccount、ctx.setRequestScopedVar呼び出し）がナレッジファイルのコードサンプルから省略されている。",
+      "source_evidence": "// 引き継ぎ項目を格納\nW11AC01SearchForm successionForm = new W11AC01SearchForm();\nsuccessionForm.setSystemAccount(systemAccount);\nctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints配列",
+      "description": "コードサンプル内のNablarchフレームワーククラス名 `HttpResponse`、`ExecutionContext`、`HttpRequest` がhintsに含まれていない。",
+      "source_evidence": "public HttpResponse doRW11AC0205(HttpRequest req, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints配列",
+      "description": "XMLコンポーネント定義のプロパティ名 `basePathSettings`、`fileExtensions` がhintsに含まれていない。",
+      "source_evidence": "<property name=\"basePathSettings\"> ... <property name=\"fileExtensions\">"
+    }
+  ]
+}

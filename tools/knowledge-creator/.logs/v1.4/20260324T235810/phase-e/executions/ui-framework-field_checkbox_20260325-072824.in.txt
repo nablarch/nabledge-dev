@@ -1,0 +1,253 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-field_checkbox",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 属性値一覧: elementLabelProperty",
+      "description": "Knowledge file describes elementLabelProperty as 'リスト要素からラベルを取得するためのプロパティ名', but the source states 'リスト要素から値を取得するためのプロパティ名'. The descriptions for elementLabelProperty and elementValueProperty are swapped relative to the source.",
+      "source_evidence": "elementLabelProperty | リスト要素から値を取得する 文字列 ◎ ×\n                       ためのプロパティ名"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 属性値一覧: elementValueProperty",
+      "description": "Knowledge file describes elementValueProperty as 'リスト要素から値を取得するためのプロパティ名', but the source states 'リスト要素からラベルを取得するためのプロパティ名'. The descriptions for elementLabelProperty and elementValueProperty are swapped relative to the source.",
+      "source_evidence": "elementValueProperty | リスト要素からラベルを取得 文字列 ◎ ×\n                       するためのプロパティ名"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ローカル動作時の挙動",
+      "description": "The source's behavior description notes '(デフォルトでは改行区切り)' when describing how checkboxes are displayed by default, but this is omitted from the knowledge file. The knowledge file only captures the attribute table default of 'span', losing this behavioral detail from the prose description.",
+      "source_evidence": "各チェックボックスとラベルの組は、listFormatに指定された形式で表示される。(デフォルトでは改行区切り)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "Four property names from the attribute table (first column) are absent from the s2 hints array: 'disabled', 'dataFrom', 'comment', 'initialValueDesc'."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=================================================
+チェックボックス入力項目ウィジェット
+=================================================
+:doc:`field_checkbox` は **UI標準 UI部品 チェックボックス**
+の内容に準拠したチェックボックスのリストを出力する。
+
+本部品には以下のバリエーションがあり、必要に応じて使い分けること。
+
+  - :doc:`field_code_checkbox`
+    Nablarchコード定義の内容をもとにしたチェックボックスのリストを表示する場合に使用する。
+
+  - :doc:`column_checkbox`
+    処理対象行を複数選択するためのチェックボックスを各行のカラム中に表示する場合に使用する。
+
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <field:checkbox
+      title="利用航空会社"
+      listFormat="ul"
+      sample="[AAA航空]|BBBエアライン|[CCCエアシステム]">
+    </field:checkbox>
+
+
+**実装成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <field:checkbox
+      title="利用航空会社"
+      name="formdata.company"
+      cssClass="company"
+      readonly="true"
+      listName="companies"
+      listFormat="ul"
+      elementLabelPattern="$LABEL$"
+      elementLabelProperty="name"
+      elementValueProperty="id" 
+      sample="[AAA航空]|BBBエアライン|[CCCエアシステム]">
+    </field:checkbox>
+
+
+仕様
+=============================================
+
+このウィジェットは :doc:`field_base` を用いて実装している。
+:doc:`field_base` が実装する共通仕様についてはここでは記述しない。
+
+**ローカル動作時の挙動**
+  入力画面では **sample** に指定したラベル分だけチェックボックスとラベルを表示する。
+  各チェックボックスとラベルの組は、listFormatに指定された形式で表示される。
+  (デフォルトでは改行区切り) 
+
+  確認画面では、選択済み項目(**"[]"** で囲われた項目) のラベルの一覧を表示する。
+ 
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+(:doc:`field_base` の共通属性は省略)
+
+==================== ============================== ============== ========== ========= ================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ================================
+domain               項目のドメイン型               文字列         ○          ○
+readonly             編集可能かどうか               真偽値         ○          ○         デフォルトは 'false'
+disabled             | サーバに対する入力値の送信を 真偽値         ○          ○         デフォルトは 'false'
+                       抑制するかどうか
+cssClass             HTMLのclass属性値              文字列         ○          ○        
+nameAlias            | 一つのエラーメッセージに     文字列         ○          ×        
+                       対して複数の入力項目を
+                       ハイライト表示する場合に
+                       指定する。
+listName             選択項目のリストの属性名       文字列         ◎          × 
+elementLabelProperty | リスト要素から値を取得する   文字列         ◎          × 
+                       ためのプロパティ名
+elementValueProperty | リスト要素からラベルを取得   文字列         ◎          ×
+                       するためのプロパティ名
+elementLabelPattern  | ラベルを整形するための       文字列         ○          × 
+                       フォーマットパターン
+listFormat           | リスト表示時に使用する       文字列         ○          ○         デフォルト値は 'span'
+                       フォーマット                  
+sample               | ローカル動作時に表示する     文字列         ×          ○         | **"|"** 区切りで複数指定する。
+                       チェックボックスのラベル                                           **"[]"** で囲われた項目は選択状態
+                                                                                          で表示される。 
+dataFrom             | 表示するデータの取得元       文字列         ×          ×         | 画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+comment              チェックボックスについての備考 文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+==================== ============================== ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/field/checkbox.tag        :doc:`field_checkbox`
+
+/WEB-INF/tags/widget/field/base.tag            :doc:`field_base`
+
+/js/jsp/taglib/nablarch.js                     `<n:checkboxes>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+/css/style/base.less                           | 基本HTMLの要素のスタイル定義。
+                                                 チェックボックスに関する定義もここに含まれる。 
+  
+============================================== ==================================================
+  
+  
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-field_checkbox",
+  "title": "チェックボックス入力項目ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "field:checkbox",
+        "チェックボックスウィジェット",
+        "field_code_checkbox",
+        "column_checkbox",
+        "sample属性",
+        "listFormat属性",
+        "ローカル動作",
+        "サーバ動作"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "elementLabelPattern",
+        "listFormat",
+        "sample",
+        "readonly",
+        "disabled",
+        "cssClass",
+        "nameAlias",
+        "domain",
+        "チェックボックス属性一覧",
+        "ローカル動作時挙動",
+        "確認画面"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "checkbox.tag",
+        "base.tag",
+        "nablarch.js",
+        "n:checkboxes",
+        "base.less",
+        "部品一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`field_checkbox` のバリエーション（用途に応じて使い分ける）:\n\n- :doc:`field_code_checkbox`: Nablarchコード定義の内容をもとにしたチェックボックスリストを表示する場合に使用\n- :doc:`column_checkbox`: 処理対象行を複数選択するためのチェックボックスを各行のカラム中に表示する場合に使用\n\n**設計成果物（ローカル動作）**:\n```jsp\n<field:checkbox\n  title=\"利用航空会社\"\n  listFormat=\"ul\"\n  sample=\"[AAA航空]|BBBエアライン|[CCCエアシステム]\">\n</field:checkbox>\n```\n\n**実装成果物（サーバ動作）**:\n```jsp\n<field:checkbox\n  title=\"利用航空会社\"\n  name=\"formdata.company\"\n  cssClass=\"company\"\n  readonly=\"true\"\n  listName=\"companies\"\n  listFormat=\"ul\"\n  elementLabelPattern=\"$LABEL$\"\n  elementLabelProperty=\"name\"\n  elementValueProperty=\"id\"\n  sample=\"[AAA航空]|BBBエアライン|[CCCエアシステム]\">\n</field:checkbox>\n```",
+    "s2": ":doc:`field_base` の共通仕様を用いて実装。field_baseの共通属性についてはここでは省略。\n\n**ローカル動作時の挙動**:\n- 入力画面: `sample` に指定したラベル分のチェックボックスとラベルを表示。各組は `listFormat` 指定の形式で表示（デフォルト: `span`）。\n- 確認画面: 選択済み項目（`\"[]\"` で囲われた項目）のラベル一覧を表示。\n\n**属性値一覧**（field_baseの共通属性は除く。◎=必須 ○=任意 ×=無効）:\n\n| 名称 | タイプ | サーバ | ローカル | デフォルト | 説明 |\n|---|---|---|---|---|---|\n| domain | 文字列 | ○ | ○ | | 項目のドメイン型 |\n| readonly | 真偽値 | ○ | ○ | false | 編集可能かどうか |\n| disabled | 真偽値 | ○ | ○ | false | サーバに対する入力値の送信を抑制するかどうか |\n| cssClass | 文字列 | ○ | ○ | | HTMLのclass属性値 |\n| nameAlias | 文字列 | ○ | × | | 複数の入力項目を一つのエラーメッセージでハイライト表示する場合に指定 |\n| listName | 文字列 | ◎ | × | | 選択項目のリストの属性名 |\n| elementLabelProperty | 文字列 | ◎ | × | | リスト要素からラベルを取得するためのプロパティ名 |\n| elementValueProperty | 文字列 | ◎ | × | | リスト要素から値を取得するためのプロパティ名 |\n| elementLabelPattern | 文字列 | ○ | × | | ラベルを整形するためのフォーマットパターン |\n| listFormat | 文字列 | ○ | ○ | span | リスト表示時に使用するフォーマット |\n| sample | 文字列 | × | ○ | | ローカル動作時に表示するチェックボックスのラベル。`\"|\"` 区切りで複数指定。`\"[]\"` で囲われた項目は選択状態で表示。 |\n| dataFrom | 文字列 | × | × | | 表示するデータの取得元。「表示情報取得元」.「表示項目名」の形式で設定。 |\n| comment | 文字列 | × | × | | 設計書の画面項目定義の備考に表示。 |\n| initialValueDesc | 文字列 | × | × | | 設計書の画面項目定義の備考に表示。初期表示内容に関する説明。 |",
+    "s3": "**部品一覧**:\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/field/checkbox.tag | :doc:`field_checkbox` |\n| /WEB-INF/tags/widget/field/base.tag | :doc:`field_base` |\n| /js/jsp/taglib/nablarch.js | `<n:checkboxes>` のエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/base.less | 基本HTMLの要素のスタイル定義。チェックボックスに関する定義を含む。 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

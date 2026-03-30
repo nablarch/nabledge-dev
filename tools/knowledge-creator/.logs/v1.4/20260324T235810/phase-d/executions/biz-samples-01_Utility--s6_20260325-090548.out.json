@@ -1,0 +1,48 @@
+{
+  "file_id": "biz-samples-01_Utility--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "validationData（入力値の期待値） section",
+      "description": "The Objective-C code example for validationData is entirely missing. The source contains a full code block demonstrating: (1) NMMockUtil initialization with `initWithFileName:bodyConvertor:nil`, (2) NMMessage creation using `initWithDictionary:`, (3) validation success case (matching expected values), and (4) validation failure case (exception thrown). The `initWithDictionary:` usage for NMMessage creation is shown only in this example and is absent from the knowledge file.",
+      "source_evidence": "Source section `入力値の期待値を表すデータ` contains: `NMMockUtil *mockUtil = [[NMMockUtil alloc] initWithFileName:@\"fileName\" bodyConvertor:nil]; NSDictionary *dict1 = @{@\"key01\" : @\"dummyStirng11\", ...}; NMMessage *sendMessage = [[NMMessage alloc] initWithDictionary:dict]; ... 検証失敗となり例外が発生する。`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "connectionInfo section and errorData section",
+      "description": "The source text explicitly names the instance variable as `connectonInfoId` in both the connectionInfo and errorData sections, but the knowledge file replaces this with `connectionDataId`. While `connectionDataId` matches the code examples (which use `mockUtil.connectionDataId`), the source text states a different variable name. Two occurrences: connectionInfo section and errorData section both say `connectonInfoIdというインスタンス変数`.",
+      "source_evidence": "Source connectionInfo: 「sendメソッドが呼び出された時点で、connectonInfoIdというインスタンス変数に保存されている値と同名の通信データIDの設定が読み込まれる。」; Source errorData: 「connectonInfoIdというインスタンス変数に保存されている値と同名の通信データIDのエラー情報が読み込まれる。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "ファイル内の構造 (file structure) subsection",
+      "description": "The image `mockUtil_fileConstract.png` showing the overall file structure example is not referenced in the knowledge file. All other subsection images (connectionInfo, responseMessage, validationData, dictionaryData, arrayData) are referenced, making this inconsistent.",
+      "source_evidence": "Source ファイル内の構造 section: `.. image:: _images/mockUtil_fileConstract.png`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "validationData 検証無視項目 subsection",
+      "description": "The image `mockUtil_ignoreData.png` showing the ignoreList data format example is not referenced in the knowledge file's 検証無視項目 subsection, even though the other data type images are included.",
+      "source_evidence": "Source 検証無視項目 section: `記述例 .. image:: _images/mockUtil_ignoreData.png`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections (overall structure)",
+      "description": "All content is placed in a single section `s1` despite the source containing multiple h2-level sections (機能一覧, 通信モック設定ファイル, 通信モッククラスに要求される処理) with extensive h3 subsections (ファイル内の構造, コメント, connectionInfo, responseMessage, validationData, errorData, dictionaryData, arrayData). The total plain-text content far exceeds 2000 characters.",
+      "source_evidence": "Source RST h2 headings: 機能一覧 (=====), 通信モック設定ファイル (=====), 通信モッククラスに要求される処理 (=====), plus multiple h3 subsections (^^^^^, ~~~~~)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "Several important terms from the source are absent from hints: `listMap` (the required data name format keyword used in every CSV block), `be_empty` (the special value required for empty strings and NSNull), and `initWithFileName` (the NMMockUtil initialization method shown in code examples).",
+      "source_evidence": "Source: `データ1行目は「listMap=<データ名>」の形式`; `空文字を指定したい場合は「be_empty」とすること`; code: `[[NMMockUtil alloc] initWithFileName:@\"fileName\" bodyConvertor:nil]`"
+    }
+  ]
+}

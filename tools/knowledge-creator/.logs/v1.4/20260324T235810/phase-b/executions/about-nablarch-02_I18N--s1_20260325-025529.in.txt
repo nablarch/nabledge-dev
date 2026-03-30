@@ -1,0 +1,659 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `about-nablarch-02_I18N--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `about`
+- Category: `about-nablarch`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+==========================================
+国際化対応
+==========================================
+本フレームワークが国際化対応で実装する要求と実装方針について以下に示す。
+
+要求
+================
+本フレームワークでは、次の方針に基づき国際化対応で実装する要求を選定する。
+
+ * | アプリケーションを多言語化する際に使用頻度が高い要求に対応する。
+ * | アプリケーション毎の差異がない一般化された要求(日付、数字など)に対応する。
+   | 一般化できない要求の一例を下記に示す。
+
+   * 名前(姓名順序、ミドルネーム)
+   * 住所
+   * 通貨変換
+   * 単位変換(長さ(メートル、マイルなど)、重さ(キロ、ポンドなど))
+
+本フレームワークが国際化対応で実装する要求を下記に示す。
+
+ * ユーザが言語とタイムゾーンを選択できる。
+
+   * リクエストパラメータ(選択画面またはリンクなど)
+   * ブラウザの言語設定
+
+ * ユーザが選択した言語とタイムゾーンを保持できる。(クッキーまたはHTTPセッション)
+
+ * 指定された言語で表示できる。
+
+   * 画面(メッセージ、項目名、画面名、メニュー名、ボタン名など)
+   * 帳票(タイトル、項目名など)
+   * 照会結果ファイル(CSVファイルのヘッダ部など)
+   * メール(件名、メール本文)
+   * コード(コード値としてあらかじめマスタ登録する項目(性別、単位、区分など)の名称)
+   * 日付(年月日順(YYMMDD、MMDDYY、DDMMYYなど))
+   * 数字(区切り文字(123,456.789、123.456,789))
+   * 障害メッセージ(障害発生時に出力される障害コードに対応するメッセージ)
+
+ * 指定されたタイムゾーン(サマータイム含む)に応じて日時を表示できる。(基準となるタイムゾーンからの時差を考慮し表示する)
+ * リソース(ファイルやデータなど)追加のみで対応言語を追加できる。
+
+本フレームワークで対応していない要求については、多言語化を行うアプリケーション毎に対応する。
+
+本フレームワークの全ての機能に共通する国際化対応の実装方針
+=======================================================================
+
+--------------------------------------
+RDBMS上データの保持方法
+--------------------------------------
+本フレームワークでは、RDBMS上に各国語対応が必要なデータを配置する際、必ずデータベースに対応する言語を表すカラムを持つポリシーとする。
+例えばメッセージを保持するデータベースは下記例のようなカラム定義を行うことを前提としている。
+
++------------+-------------+--------------------------------------------+
+| カラム名   | データ型    | 備考                                       |
++============+=============+============================================+
+| MESSAGE_ID | VARCHR2(10) | メッセージのキー                           |
++------------+-------------+--------------------------------------------+
+| LANG       | VARCHR2(10) | 対応する言語('EN','JA'等)                  |
++------------+-------------+--------------------------------------------+
+| MESSAGE    | VARCHR2(150)| メッセージ                                 |
++------------+-------------+--------------------------------------------+
+
+なお、この方針は本フレームワークのみに影響する方針であり、本フレームワークを使用したアプリケーションではこの方針に従う必要はない。
+
+--------------------------------------
+言語を指定した取得方法
+--------------------------------------
+本フレームワークの各国語対応を行う機能は、基本的にスレッドローカルに保持した言語を使用するため、言語を明示的に渡す必要はない。
+ただし、複数言語を同時に1つの画面内に表示するなど、言語を明示的に指定するようなケースを想定して、
+言語によって処理内容が異なる機能では必ず言語を指定した呼び出しができるよう考慮する。
+
+例えば言語に対応するメッセージを取得する機能を提供するクラスであれば、下記のように2通りの呼び出し方法を持つ。
+
+
+スレッドに紐付けられた言語でメッセージを取得する場合
+
+.. code-block:: java
+
+  String msg = MessageResource.get("MSG0001");
+
+英語のメッセージを取得する場合
+
+.. code-block:: java
+
+  String msg = MessageResource.get("MSG0001", "EN");
+
+----------------------------------------------------------------------------
+フレームワーク内で作成するログ出力メッセージの使用言語
+----------------------------------------------------------------------------
+本フレームワーク内で作成するログ出力メッセージは、世界で広く普及している英語を使用することとし、国際化は行わない。
+
+----------------------------------------------------------------------------
+ファイル入出力の文字コード
+----------------------------------------------------------------------------
+本フレームワークでファイル入出力を伴う機能を提供する場合は、設定によりファイルの文字コードを指定できるよう考慮する。
+このため、本フレームワークのファイル入出力機能を使用することで、アプリケーションを国際化対応できる。
+
+Webアプリケーションに特化した国際化対応の実装方針
+=========================================================================
+
+.. _i18n_lang_select_keep:
+
+--------------------------------
+言語の選択と保持
+--------------------------------
+
+Webアプリケーションでは、言語を選択する方法には、様々な方法が存在する。\
+本フレームワークでは、言語を選択する方法のうち、頻繁に使用される下記の選択方法のみ提供する。
+
+ * ブラウザの言語設定で指定された言語を選択する。
+
+アプリケーションで言語を選択する方法には、上記本フレームワークが提供する選択方法の他に、ユーザが言語を選択\
+する方法が考えられる。\
+しかし、下記のようなユーザの操作により言語を選択する方法は実現方法、選択方法が多岐に渡り、典型的な方法を特定できない。
+
+ * ユーザが画面上で言語を選択する。
+ * ログインしたユーザに紐づく言語を選択する。
+
+このため、本フレームワークではユーザの操作により言語を選択する方法自体は提供しない。\
+ただし、本フレームワークの規定する拡張ポイントで、アプリケーション毎にユーザが選択した言語を取得する方法を実装\
+した場合には、選択した言語による表示が可能となるよう考慮する。
+
+本フレームワークでは、使用する言語をユーザからのリクエストごとに下記の優先順位で選択する。
+
+1. クッキーまたはHTTPセッションに保持している言語を選択する。
+2. ブラウザの言語設定が取得できた場合、最も優先されている言語を選択する。
+3. アプリケーションで設定するデフォルト言語を選択する。
+
+なお、上記で選択した言語は、スレッドローカルに保持することとし、リクエストの処理完了までいつでも取得できる。
+
+言語の選択と保持方法の詳細は、共通ハンドラの :ref:`ThreadContextHandler` を参照。
+
+--------------------------------
+タイムゾーンの選択と保持
+--------------------------------
+
+タイムゾーンの選択と保持は、 :ref:`i18n_lang_select_keep` と同じ方針とする。\
+ただし、ブラウザの設定でタイムゾーンを指定することができないため、ブラウザの設定によるタイムゾーン選択は存在しない。\
+ユーザにタイムゾーンを選択させる場合は、アプリケーション毎に選択方法を実装する必要がある。
+
+タイムゾーンの選択と保持方法の詳細は、共通ハンドラの :ref:`ThreadContextHandler` を参照。
+
+------------------------------------------------
+JSPファイルおよび静的ファイルのパス
+------------------------------------------------
+一般的にJSPファイルと、JSPファイルから参照される画像ファイルやCSSファイルといった静的ファイルのパスは、\
+言語ごとに異なる指定が必要となるため、国際化対応の検討が必要となる。
+
+JSPファイルを国際化対応する方法には、次の2通りの方法が考えられる。
+
+* JSPファイル中に記述する全ての文字列を国際化されたリソースから取得するように記述する方法
+* JSPファイル自体を言語ごとに用意する方法
+
+本フレームワークでは、上記2通りの方法をサポートする。\
+これは、多言語化対象の言語種類により、デザインが異ならないためJSPファイルを共通化することが可能な場合と、
+デザインが異なるためJSPファイルを共通化できない場合があり、どちらのケースにも対応できるようにするためである。
+
+本フレームワークでは複数言語に対してJSPファイルを共通化することを可能とするため、
+JSPファイルに記述される静的ファイルのパスについてもファイル自体を言語ごとに用意する方法をサポートする。
+
+ファイル自体を言語ごとに用意する場合、次の2通りの方法を提供する。
+
+* 言語毎にディレクトリを分ける方法
+* 言語ごとにファイルを分ける方法
+
+| JSPファイル中で国際化されたリソースの取得方法の詳細は、カスタムタグの :ref:`WebView_Message` を参照。
+| JSPファイルの言語ごとのパス切り替え方法の詳細は、Webフロントコントローラの :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。
+| 静的ファイルの言語ごとのパス切り替え方法の詳細は、カスタムタグの :ref:`WebView_LangResourcePath` を参照。
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 
+- RDBMS上データの保持方法
+- 
+- 言語を指定した取得方法
+- 
+- フレームワーク内で作成するログ出力メッセージの使用言語
+- 
+- ファイル入出力の文字コード
+- 
+- 言語の選択と保持
+- 
+- タイムゾーンの選択と保持
+- 
+- JSPファイルおよび静的ファイルのパス
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/about-nablarch-02_I18N--s1/filename.png)` |
+
+Office attachments → reference in `assets/about-nablarch-02_I18N--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `about-nablarch-02_I18N--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

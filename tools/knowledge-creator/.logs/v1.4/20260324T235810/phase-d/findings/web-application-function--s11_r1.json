@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-function--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 複合キーを用いた排他制御の実装 / Form実装例",
+      "description": "The `getDeletedUsers()` method implementation in `UsersBulkDeleteForm` is entirely omitted. The source shows the complete logic: creating a `List<CompositeKey>` from `Arrays.asList(userCompositeKeys)`, iterating over all users, building a `CompositeKey` per user via `new CompositeKey(user.getUserId(), user.getPk2(), user.getPk3())`, and using `deletedCompositeKeys.contains(compositeKey)` to collect only checked users. This is the key mechanism for filtering selected rows and is decision-necessary.",
+      "source_evidence": "Source 'Action で使用する Form の実装例' code block shows the full `getDeletedUsers()` implementation including `Arrays.asList(userCompositeKeys)`, `CompositeKey` construction, and `contains()` check."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 複合キーを用いたUIの実装 / JSP実装例",
+      "description": "The full JSP example is truncated to only the `n:compositeKeyCheckbox` tag. The source example also shows the pattern of using multiple `n:hidden` fields alongside `n:compositeKeyCheckbox` to preserve all row properties (userId, pk2, pk3, name, profile, version) via `form.users[${count-1}].xxx` during form submission. This hidden-fields pattern is part of the implementation guidance.",
+      "source_evidence": "Source JSP block shows six `<n:hidden name=\"form.users[${count -1}].userId\" />` etc. fields alongside `n:compositeKeyCheckbox`."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "Source contains 4 headings (top-level title, 複合キーを用いたUIの実装, 複合キーを用いた排他制御の実装, Javascriptの使用) but the knowledge file merges the first three into a single section s1. The two h2-level source sections (UIの実装 and 排他制御の実装) are distinct topics with substantial content (well over 2000 characters combined), and merging them reduces topical findability.",
+      "source_evidence": "Automated warning S9 confirmed: source headings=4, knowledge sections=2."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ExclusiveUserCondition` is a PascalCase class name used repeatedly in multiple code examples (prepareVersions, checkVersion, updateVersionWithCheck calls) but is absent from s1's hints array.",
+      "source_evidence": "Source code blocks show `new ExclusiveUserCondition(row.getString(\"USER_ID\"), ...)` in all three Action implementation examples."
+    }
+  ]
+}

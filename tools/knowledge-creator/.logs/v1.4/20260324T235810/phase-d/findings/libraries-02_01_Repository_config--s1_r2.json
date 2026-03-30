@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 (section header)",
+      "description": "The class labels '**クラス**: `XmlComponentDefinitionLoader`, `DiContainer`' appear at the top of s3, but neither class is mentioned in the source content that s3 covers (DIコンテナの責務, コンポーネント登録条件, HelloMessageProvider/HelloComponent class definitions). Both classes first appear in the source's '値を取得する実装例' subsection, which maps to s4, and in 'DIコンテナをObjectLoaderとして使用する', which maps to s5.",
+      "source_evidence": "The classes XmlComponentDefinitionLoader and DiContainer appear for the first time in the source under '値を取得する実装例': 'XmlComponentDefinitionLoader loader = new XmlComponentDefinitionLoader(...); DiContainer container = new DiContainer(loader);'. The s3 source content (DIコンテナの責務・条件・HelloMessageProvider・HelloComponent) contains no mention of these classes."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (note about business logic registration)",
+      "description": "The note that the repository does not have lazy-load functionality ('リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない') is omitted. The knowledge file captures the consequence (slow startup, degraded test efficiency) but not the root cause (no lazy-load), which is relevant context for understanding why the limitation exists and how it compares to Spring Framework or Seasar2.",
+      "source_evidence": "Source note: '| この前提により、リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない。 | このため、DIコンテナにビジネスロジックやデータアクセスを行うオブジェクトを登録する使用方法を行うと、アプリケーションの起動が遅くなり...'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (section content)",
+      "description": "The opening statement of the source's '環境設定ファイルからの読み込み' section — that objects held in the repository must be loaded via ObjectLoader, and that SystemRepository.load() is the method to do so — is absent from s2. This establishes ObjectLoader as the required interface and explains the role of SystemRepository.load().",
+      "source_evidence": "Source opens with: 'リポジトリの内部に保持するオブジェクトはObjectLoaderで読み込む必要がある。ObjectLoaderからリポジトリにオブジェクトを読み込む処理には、SystemRepositoryのloadメソッドを呼び出す。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The PascalCase class name `ObjectLoader` is mentioned in the source content for s2 but is absent from s2's hints array. It is only present in s5's hints.",
+      "source_evidence": "'リポジトリの内部に保持するオブジェクトはObjectLoaderで読み込む必要がある。ObjectLoaderからリポジトリにオブジェクトを読み込む処理には、SystemRepositoryのloadメソッドを呼び出す。'"
+    }
+  ]
+}

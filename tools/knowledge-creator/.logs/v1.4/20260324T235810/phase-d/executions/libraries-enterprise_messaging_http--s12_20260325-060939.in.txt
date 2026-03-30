@@ -1,0 +1,273 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/core_library/enterprise_messaging_http.rst`
+- Format: `rst`
+
+```
+通信クライアント
+------------------------------------
+
+本節では、送信処理を実行するためのAPIが定義された本機能の中心となるクラス群(通信クライアント)について解説する。
+
+ここでは、以下の2つのクラスを使用する。
+
+  - メッセージング送信ユーティリティ (`MessageSender`_) 
+
+    同期送信機能を実装したクラス。
+
+  - 送受信電文オブジェクト (`SyncMessage`_)
+
+    送受信電文に関する情報を格納するクラス。
+
+
+以下の説明では、本機能を使用することで実装可能な以下の処理パターンについて、
+処理フローの概要とサンプルコードを示す。
+
+
+.. _HTTPメッセージ送信:
+
+**1. HTTPメッセージ送信**
+
+  通信先システムに対してメッセージを送信し、その応答を受信する。
+  応答メッセージを受信するか、待機タイムアウト時間が経過するまで待機する。
+
+  規定時間内に応答を受信できずにタイムアウトした場合は、
+  何らかの補償処理を行う必要がある。
+  
+  以下の図は、本処理のフローを表したものである。
+
+    .. figure::  ../_image/messaging_http_send.png
+       :align: center
+
+  以下は、ここで述べた送信処理を実際に行うコードサンプルである。
+
+    .. code-block:: java
+
+      // 要求電文の作成
+      SyncMessage requestMessage = new SyncMessage("RM11AC0202")        // メッセージIDを設定
+                                     .addDataRecord(new HashMap() {{    // メッセージボディの内容
+                                          put("FIcode",     "9999");
+                                          put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+                                          put("officeCode", "111");
+                                          /*
+                                           * (後略)
+                                           */
+                                      }})
+      // 要求電文の送信
+      SyncMessage responseMessage = MessageSender.sendSync(requestMessage);
+
+  また、HTTPヘッダーとして独自の項目を送信したい場合は、
+  下記のように作成したメッセージのヘッダーレコードに設定すること。
+
+    .. code-block:: java
+
+      // メッセージヘッダの内容
+      requestMessage.getHeaderRecord().put("Accept-Charset", "UTF-8");
+
+
+
+HTTP通信クライアント
+=====================================
+
+HTTP通信プロトコル向けのHTTP通信インターフェースの実装である。
+使用する場合は下記の設定をリポジトリの定義ファイルに追加すること。
+
+
+**リポジトリによる初期化設定例**
+
+    .. code-block:: xml
+
+      <!-- HTTP通信用クライアント定義 -->
+      <component 
+        name="defaultMessageSenderClient"
+        class="nablarch.fw.messaging.realtime.http.client.HttpMessagingClient">
+      </component>
+
+.. toctree::
+   :hidden:
+
+   messaging_sending_batch 
+   messaging_sender_util
+
+
+.. note::
+
+  HttpMessagingClient.sendSync(MessageSenderSettings, SyncMessage)を用いたHTTPメッセージングにおいて、
+  通信先からHTTPステータスコードとして"302"が返却された場合、フレームワーク側ではリダイレクト処理が実施される。
+  
+  なお、フレームワーク側でのリダイレクト処理を実施を行いたくない場合は、
+  下記の例を参考にリダイレクトを許可しない設定を行う必要がある。
+  
+  コンポーネント定義
+  
+    .. code-block:: xml
+
+      <!-- プロジェクト固有のHTTP通信用クライアントを設定 -->
+      <component
+        name="defaultMessageSenderClient"
+        class="please.change.me.common.CustomHttpMessagingClient">
+      </component>
+
+  プロジェクト固有のHTTP通信用クライアントのクラス
+
+    .. code-block:: java
+
+      public class CustomHttpMessagingClient extends HttpMessagingClient {
+        protected HttpProtocolClient createHttpProtocolClient() {
+          //HTTPプロトコルの通信クライアントを差し替え
+          return new CustomHttpProtocolBasicClient();
+        }
+      }
+    
+  プロジェクト固有のHTTPプロトコル通信クライアントのクラス
+
+    .. code-block:: java
+
+      public class CustomHttpProtocolBasicClient extends HttpProtocolBasicClient {
+
+        @Override
+        protected HttpURLConnection createHttpConnection(String targetUrl, HttpRequestMethodEnum method, Map<String, List<String>> headerInfo)
+            throws IOException {
+          HttpURLConnection httpConnection = super.createHttpConnection(targetUrl, method, headerInfo);
+          // リダイレクトを自動で許可しない設定
+          httpConnection.setInstanceFollowRedirects(false);
+          return httpConnection;
+        }
+
+      }
+```
+
+## Knowledge File
+
+- ID: `libraries-enterprise_messaging_http--s12`
+
+```json
+{
+  "id": "libraries-enterprise_messaging_http--s12",
+  "title": "HTTP通信クライアント",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "通信クライアント",
+      "hints": [
+        "MessageSender",
+        "SyncMessage",
+        "HttpMessagingClient",
+        "HttpProtocolBasicClient",
+        "HttpProtocolClient",
+        "CustomHttpMessagingClient",
+        "CustomHttpProtocolBasicClient",
+        "HTTP メッセージ送信",
+        "同期送信",
+        "通信クライアント",
+        "リダイレクト無効化",
+        "HTTPヘッダー設定",
+        "タイムアウト補償処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `MessageSender`, `SyncMessage`, `HttpMessagingClient`\n\n- **`MessageSender`**: 同期送信機能を実装したクラス\n- **`SyncMessage`**: 送受信電文情報を格納するクラス\n- **`HttpMessagingClient`** (`nablarch.fw.messaging.realtime.http.client.HttpMessagingClient`): HTTP通信プロトコル向けのHTTP通信インターフェース実装\n\n### HTTPメッセージ送信\n\n処理フロー:\n1. 要求電文（`SyncMessage`）を作成\n2. `MessageSender.sendSync()` で送信\n3. 応答受信を待機（タイムアウトまで）\n4. タイムアウト時は補償処理を実施\n\n> **重要**: 規定時間内に応答を受信できずタイムアウトした場合は、補償処理を行う必要がある。\n\nコード例（送信）:\n```java\nSyncMessage requestMessage = new SyncMessage(\"RM11AC0202\")\n    .addDataRecord(new HashMap() {{\n        put(\"FIcode\",     \"9999\");\n        put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n        put(\"officeCode\", \"111\");\n    }});\nSyncMessage responseMessage = MessageSender.sendSync(requestMessage);\n```\n\nHTTPヘッダーに独自項目を追加する場合:\n```java\nrequestMessage.getHeaderRecord().put(\"Accept-Charset\", \"UTF-8\");\n```\n\n### HTTP通信クライアント設定\n\nコンポーネント定義:\n```xml\n<component\n  name=\"defaultMessageSenderClient\"\n  class=\"nablarch.fw.messaging.realtime.http.client.HttpMessagingClient\">\n</component>\n```\n\n> **注意**: `HttpMessagingClient.sendSync(MessageSenderSettings, SyncMessage)` を用いたHTTPメッセージングにおいて、通信先からHTTPステータスコード「302」が返却された場合、フレームワーク側でリダイレクト処理が自動実施される。リダイレクト処理を無効化したい場合は、カスタム実装が必要。\n\nリダイレクト無効化のカスタム実装:\n\nコンポーネント定義にカスタムクライアントを設定:\n```xml\n<component\n  name=\"defaultMessageSenderClient\"\n  class=\"please.change.me.common.CustomHttpMessagingClient\">\n</component>\n```\n\n`HttpMessagingClient` を継承したカスタムクライアント:\n```java\npublic class CustomHttpMessagingClient extends HttpMessagingClient {\n  protected HttpProtocolClient createHttpProtocolClient() {\n    return new CustomHttpProtocolBasicClient();\n  }\n}\n```\n\n`HttpProtocolBasicClient` を継承してリダイレクトを無効化:\n```java\npublic class CustomHttpProtocolBasicClient extends HttpProtocolBasicClient {\n  @Override\n  protected HttpURLConnection createHttpConnection(String targetUrl, HttpRequestMethodEnum method, Map<String, List<String>> headerInfo)\n      throws IOException {\n    HttpURLConnection httpConnection = super.createHttpConnection(targetUrl, method, headerInfo);\n    httpConnection.setInstanceFollowRedirects(false);\n    return httpConnection;\n  }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

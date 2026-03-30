@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-06_residentBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 実行タイミング table, 都度起動バッチ row",
+      "description": "The 都度起動バッチ description row omits 'ジョブスケジューラから起動される' context. The source states '毎月月末にジョブスケジューラから起動される' as the first sentence, which conveys that 都度起動バッチ is externally triggered by a scheduler — a meaningful contrast with 常駐バッチ's self-looping behavior. The knowledge file only retains the process-termination sentence.",
+      "source_evidence": "都度起動バッチ | 月次 | 毎月月末にジョブスケジューラから起動される / 入力データに対する処理が終了すると、バッチプロセスは終了する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "SqlPStatement is referenced in the code example as a class used to set up the batch input query, but is absent from the hints array. Adding it would allow AI to retrieve this section when questions about SqlPStatement arise in a batch context.",
+      "source_evidence": "SqlPStatement statement = getSqlPStatement(\"GET_BATCH_INPUT_DATA\");"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "toolbox-01_MasterDataSetupTool--s1",
+  "title": "マスタデータ投入ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提条件",
+      "hints": [
+        "マスタデータ投入ツール前提条件",
+        "設定ファイル",
+        "事前準備"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "データ作成方法",
+      "hints": [
+        "MASTER_DATA.xls",
+        "マスタデータ投入",
+        "テストデータ形式",
+        "データ記載方法",
+        "自動テスト同形式"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "実行方法",
+      "hints": [
+        "Antビュー",
+        "データ投入(main)",
+        "データ投入(test)",
+        "マスタデータ投入ターゲット",
+        "バックアップスキーマ",
+        "自動テスト用スキーマ",
+        "同時投入"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`02_ConfigMasterDataSetupTool` の :ref:`master_data_setup_prerequisite` 参照。",
+    "s2": "投入データを `MASTER_DATA.xls` に記載する。記載形式は自動テストのテストデータと同じ。記載方法は :ref:`how_to_write_setup_table` 参照。",
+    "s3": "AntビューからターゲットをダブルクリックしてDB投入を実行する。Antビューの設定は :ref:`how_to_setup_ant_view_in_eclipse` 参照。\n\n| ターゲット名 | 説明 |\n|---|---|\n| データ投入(main) | mainプロジェクトの設定ファイルを使用してDB投入。APサーバ上でアプリを動作させる際のスキーマにデータが投入される。 |\n| データ投入(test) | testプロジェクトの設定ファイルを使用してDB投入。自動テスト用スキーマおよびマスタデータバックアップスキーマに同時にデータが投入される。 |\n| マスタデータ投入 | 上記2つのターゲットをまとめて実行する。 |\n\nバックアップ用スキーマ（ :doc:`../../06_TestFWGuide/04_MasterDataRestore` で使用）には自動テスト用スキーマと同じマスタデータを投入する必要がある。データ投入(test)ターゲットを使用することで2つのスキーマへ同時にデータ投入できる。"
+  }
+}

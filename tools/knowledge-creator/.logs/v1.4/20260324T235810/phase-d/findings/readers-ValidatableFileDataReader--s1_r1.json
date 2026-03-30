@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ValidatableFileDataReader--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doTrailer implementation example",
+      "description": "The source's doTrailer method contains an important validation: `if (dataRecordCount == 0) { throw new TransactionAbnormalEnd(104, \"NB11AA0106\"); }` which enforces that files with zero data records are rejected. This check is entirely absent from the knowledge file's code example, leaving the implementation example incomplete regarding the empty-file rejection rule.",
+      "source_evidence": "Source lines in doTrailer: `if (dataRecordCount == 0) { // データレコードのレコード数が0の場合 throw new TransactionAbnormalEnd(104, \"NB11AA0106\"); }`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — doHeader implementation comment",
+      "description": "The knowledge file's doHeader code comment reads '1レコード目がヘッダーであること、業務日付との一致を精査', implying the shown code validates the business date. However, the actual code shown only checks `preRecordKbn != null` and does not include the date validation logic (`BusinessDateUtil.getDate()` comparison). The comment claims behaviour that the shown code does not implement.",
+      "source_evidence": "Source doHeader includes: `String date = inputData.getString(\"date\"); String businessDate = BusinessDateUtil.getDate(); if (!businessDate.equals(date)) { throw new TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate); }` — this logic is absent from the knowledge file's code but referenced in its comment."
+    }
+  ]
+}

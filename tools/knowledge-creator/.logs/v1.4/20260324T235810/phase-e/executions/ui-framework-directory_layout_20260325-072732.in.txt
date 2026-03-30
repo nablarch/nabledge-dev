@@ -1,0 +1,217 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-directory_layout",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — code block, ui_plugins line comment",
+      "description": "The code block comment for ui_plugins/ has been changed from the source text. Knowledge file shows `# プロジェクト固有UIプラグイン` but the source code block says `# UI開発基盤プロジェクトカスタマイズ用フォルダ`. These are not equivalent: the source describes it as a customization folder for the UI framework, not merely a folder for project-specific plugins.",
+      "source_evidence": "Source: `├── ui_plugins/            # UI開発基盤プロジェクトカスタマイズ用フォルダ`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for nablarch_plugins_bundle",
+      "description": "The description for nablarch_plugins_bundle omits the update procedure: 'UI基盤のアップデートを行う際に洗い替えを行う'. This is operationally important — it tells users that when updating the UI framework, the entire directory should be replaced wholesale.",
+      "source_evidence": "Source: 'リリース物をそのまま格納し、UI基盤のアップデートを行う際に洗い替えを行う。(プロジェクト側での改変は禁止)'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for web_common など",
+      "description": "The description for web_common omits '実装工程以降で使用する', which specifies that this project is only used from the implementation phase onward. This is relevant timing/lifecycle information for users deciding when to work with web_common.",
+      "source_evidence": "Source: '実際にサーバ環境にデプロイされる資源を格納するプロジェクト。実装工程以降で使用する。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — code block, ui_demo directory contents",
+      "description": "The directory tree for ui_demo is missing the ss12AC/ entry. The source shows both ss11AC/ and ss12AC/ to illustrate that there are multiple per-subsystem directories. Omitting ss12AC/ removes evidence that this pattern repeats for each subsystem.",
+      "source_evidence": "Source: `│     ├── ss11AC/         # 業務画面JSP(サブシステム毎)\\n│     ├── ss12AC/`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=======================
+標準プロジェクト構成
+=======================
+以下の図は、UI開発基盤を採用するプロジェクトの標準的な構成を表したものである。
+この図にあるように、プロジェクト直下は以下の4つサブディレクトリから構成される。
+
+=========================== ====================================== ===========================================================
+ディレクトリ名              概要                                   詳細
+=========================== ====================================== ===========================================================
+**ui_demo**                 業務画面モック開発用プロジェクト       **UI画面開発ツール**\ として展開されている作業ディレクトリ\
+                                                                   を展開する。外部設計工程で作成したJSP画面モックを格納する。
+
+                                                                   ビルドコマンドを実行することで、各プラグイン中の成果物を\
+                                                                   集約したものがここに配備される。
+
+**ui_test**                 UI開発基盤テスト用プロジェクト         プロジェクト固有UIプラグイン(ui_plugins配下で開発されるプラグイン)\
+                                                                   のテスト用プロジェクト。
+                                                                   
+                                                                   ビルドコマンドを実行することで、各プラグイン中の成果物及び\
+                                                                   テスト用リソースがここに配備される。
+
+
+**nablarch_plugins_bundle** Nablarch標準UIプラグイン               Nablarch UI開発基盤としてリリースされるプラグイン一式。
+
+                                                                   リリース物をそのまま格納し、UI基盤のアップデートを行う際\
+                                                                   に洗い替えを行う。(プロジェクト側での改変は禁止)
+
+**ui_plugins**              プロジェクト固有UIプラグイン           プロジェクトで実際に使用するプラグインを配置する。
+
+                                                                   既存のプラグインを基盤側でカスタマイズする場合、\
+                                                                   元にするプラグインをここにコピーした上で修正する。
+                                                                   (後述)
+
+**web_common** など         デプロイ対象プロジェクト               実際にサーバ環境にデプロイされる資源を格納するプロジェクト。\
+                                                                   実装工程以降で使用する。
+
+                                                                   ビルドコマンドの実行により、\
+                                                                   **業務画面モック作成用プロジェクト**\ と同等のビルド成果物が\
+                                                                   サーブレットコンテキスト配下に配置される。
+
+=========================== ====================================== ===========================================================
+
+
+  .. code-block:: bash
+
+    プロジェクトルート/
+      │
+      ├─ nablarch_plugins_bundle/         # Nablarch標準UIプラグイン
+      │     └── node_modules/
+      │              │
+      │              ├── jquery/                         # jqueryプラグイン
+      │              │     └── 1.11.0/
+      │              │
+      │              ├── nablarch_widget_filed_calendar/ # カレンダー日付入力ウィジェットプラグイン
+      │              │     └── 1.0.2/
+      │              │
+      │              └── nablarch-css-color-default/     # カラースキームテーマ(Nablarchブランドカラー)プラグイン
+      │                     └── 1.0.0/
+      │     
+      └─ xxx_project/             # プロジェクトトップ
+             │  
+             ├── ui_demo/              # 業務画面モック開発用プロジェクト
+             │     ├── ss11AC/         # 業務画面JSP(サブシステム毎)
+             │     ├── ss12AC/
+             │     ├── css/            # スタイルシート
+             │     ├── fonts/          # フォント
+             │     ├── img/            # 画像
+             │     ├── include/        # 共通インクルードJSP
+             │     ├── js/             # javascript
+             │     └── WEB-INF/
+             │           └── tags/     # タグファイル
+             │
+             ├── ui_test/              # UI開発基盤テスト用プロジェクト
+             │     ├── css/            # スタイルシート
+             │     ├── fonts/          # フォント
+             │     ├── img/            # 画像
+             │     ├── include/        # 共通インクルードJSP
+             │     ├── js/             # javascript
+             │     ├── jsp/            # テスト用JSP
+             │     └── WEB-INF/
+             │           └── tags/     # タグファイル
+             │
+             │
+             ├── ui_plugins/            # UI開発基盤プロジェクトカスタマイズ用フォルダ
+             │     ├── package.json     # 利用プラグイン定義
+             │     └── node_modules/    # UIプラグインフォルダ
+             │           │
+             │           ├── jquery/                         # jqueryプラグイン
+             │           │     ├── dist/
+             │           │     │     └── jquery.js
+             │           │     └── src/
+             │           │
+             │           ├── nablarch-widget-field-calendar/  # カレンダー日付入力ウィジェットプラグイン
+             │           │     ├── package.json
+             │           │     ├── bin/
+             │           │     ├── ui_public/
+             │           │     ├── ui_local/
+             │           │     └── ui_test/
+             │           │
+             │           ├── xxxproject_css_color/            # カラースキーム定義(プロジェクトカスタマイズ)
+             │           │     ├── package.json
+             │           │     ├── bin/
+             │           │     ├── ui_public/
+             │           │     ├── ui_local/
+             │           │     └── ui_test/
+             │           │
+             │  
+             │  
+             ├── web_common/             # デプロイ対象プロジェクト#1
+             │     └── main/
+             │           └── web/
+             │
+             └── web_xxxx/               # デプロイ対象プロジェクト#2
+                   └── main/
+                         └── web/
+
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-directory_layout",
+  "title": "標準プロジェクト構成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "標準プロジェクト構成",
+      "hints": [
+        "ui_demo",
+        "ui_test",
+        "nablarch_plugins_bundle",
+        "ui_plugins",
+        "web_common",
+        "標準プロジェクト構成",
+        "UI開発基盤",
+        "ディレクトリ構成",
+        "プラグイン管理",
+        "業務画面モック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "| ディレクトリ名 | 概要 | 説明 |\n|---|---|---|\n| **ui_demo** | 業務画面モック開発用プロジェクト | JSP画面モックを格納。ビルドコマンドで各プラグイン成果物を集約・配備。 |\n| **ui_test** | UI開発基盤テスト用プロジェクト | プロジェクト固有UIプラグインのテスト用。ビルドコマンドで成果物およびテスト用リソースを配備。 |\n| **nablarch_plugins_bundle** | Nablarch標準UIプラグイン | リリース物をそのまま格納。**プロジェクト側での改変は禁止。** |\n| **ui_plugins** | プロジェクト固有UIプラグイン | プロジェクトで使用するプラグインを配置。既存プラグインをカスタマイズする場合はここにコピーして修正する。 |\n| **web_common** など | デプロイ対象プロジェクト | サーバ環境にデプロイされる資源を格納。ビルドコマンドでサーブレットコンテキスト配下に配置。 |\n\n```bash\nプロジェクトルート/\n  │\n  ├─ nablarch_plugins_bundle/         # Nablarch標準UIプラグイン\n  │     └── node_modules/\n  │              │\n  │              ├── jquery/                         # jqueryプラグイン\n  │              │     └── 1.11.0/\n  │              │\n  │              ├── nablarch_widget_filed_calendar/ # カレンダー日付入力ウィジェットプラグイン\n  │              │     └── 1.0.2/\n  │              │\n  │              └── nablarch-css-color-default/     # カラースキームテーマプラグイン\n  │                     └── 1.0.0/\n  │\n  └─ xxx_project/             # プロジェクトトップ\n         │\n         ├── ui_demo/              # 業務画面モック開発用プロジェクト\n         │     ├── ss11AC/         # 業務画面JSP(サブシステム毎)\n         │     ├── css/\n         │     ├── fonts/\n         │     ├── img/\n         │     ├── include/\n         │     ├── js/\n         │     └── WEB-INF/\n         │           └── tags/\n         │\n         ├── ui_test/              # UI開発基盤テスト用プロジェクト\n         │     ├── css/\n         │     ├── fonts/\n         │     ├── img/\n         │     ├── include/\n         │     ├── js/\n         │     ├── jsp/\n         │     └── WEB-INF/\n         │           └── tags/\n         │\n         ├── ui_plugins/            # プロジェクト固有UIプラグイン\n         │     ├── package.json     # 利用プラグイン定義\n         │     └── node_modules/\n         │           ├── jquery/\n         │           ├── nablarch-widget-field-calendar/\n         │           │     ├── package.json\n         │           │     ├── bin/\n         │           │     ├── ui_public/\n         │           │     ├── ui_local/\n         │           │     └── ui_test/\n         │           └── xxxproject_css_color/\n         │                 ├── package.json\n         │                 ├── bin/\n         │                 ├── ui_public/\n         │                 ├── ui_local/\n         │                 └── ui_test/\n         │\n         ├── web_common/             # デプロイ対象プロジェクト#1\n         │     └── main/web/\n         │\n         └── web_xxxx/               # デプロイ対象プロジェクト#2\n               └── main/web/\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

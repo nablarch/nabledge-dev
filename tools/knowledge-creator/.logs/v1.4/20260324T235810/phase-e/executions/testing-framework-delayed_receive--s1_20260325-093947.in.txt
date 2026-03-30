@@ -1,0 +1,163 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-delayed_receive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (正常系のケース)",
+      "description": "The purpose statement for the normal test case is missing: \"電文が正しくデータベースに取り込まれることを確認する\". This tells the AI what the normal case specifically verifies (correct database ingestion of the message), which is useful context for answering questions about what to test.",
+      "source_evidence": "このケースでは、電文が正しくデータベースに取り込まれることを確認する。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================================================================
+リクエスト単体テストの実施方法（応答不要メッセージ受信処理）
+====================================================================
+
+--------------------
+概要
+--------------------
+応答不要メッセージ処理用のアクションクラスは、Nablarchの一部として提供される。
+このため、リクエスト単体テストではこのアクションクラスを使用して、以下の\ `テスト対象の成果物`_ の確認を行う。
+
+**※ 他のテストのようにアクションクラスに対する条件網羅や、限界値テストなどは実施不要である。**
+
+テスト対象の成果物
+===================
+* 電文のレイアウトを定義したフォーマット定義ファイル
+* データベースへ電文を登録する際に使用するFormクラス
+* データベースへ電文を登録するためのINSERT文
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象機能のパッケージとする。
+* <電文のリクエストID>RequestTestというクラス名でテストクラスを作成する。
+* \ ``nablarch.test.core.messaging.MessagingReceiveTestSupport``\ を継承する。
+
+例えば、テスト対象機能のパッケージがnablarch.sample.ss21AA、電文のリクエストIDがRM21AA100だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  
+  // ～中略～
+
+  public class RM21AA100RequestTest extends MessagingReceiveTestSupport {
+
+--------------------
+データシートの書き方
+--------------------
+`テスト対象の成果物`_ のテストを行うために必要なデータシートの記述方法を説明する。
+
+データシートの記述方法は、\ :ref:`real_request_test`\ を参照すること。
+本項では、\ :ref:`real_request_test`\ と記述方法が異なる箇所の解説を行う。
+
+
+正常系のケース
+==============
+
+  このケースでは、電文が正しくデータベースに取り込まれることを確認する。
+
+  .. note::
+
+   応答不要メッセージ受信処理では、応答電文は存在しないため応答電文が期待値通りであることの確認を行う必要はない。
+   このため、データシートには、下記の記述は不要である。
+
+   * 期待値及び準備データの定義
+
+     * 「MESSAGE=expectedMessages」の定義は不要
+   
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-delayed_receive--s1",
+  "title": "リクエスト単体テストの実施方法（応答不要メッセージ受信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "リクエスト単体テスト",
+        "テスト対象成果物",
+        "フォーマット定義ファイル",
+        "Formクラス",
+        "INSERT文",
+        "条件網羅不要",
+        "限界値テスト不要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "nablarch.test.core.messaging.MessagingReceiveTestSupport",
+        "テストクラス命名規則",
+        "RequestTest",
+        "応答不要メッセージ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データシートの書き方",
+      "hints": [
+        "正常系テスト",
+        "応答電文",
+        "expectedMessages",
+        "MESSAGE=expectedMessages",
+        "データシート",
+        "応答不要メッセージ受信処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "応答不要メッセージ処理用のアクションクラスはNablarchが提供するため、リクエスト単体テストでは以下の成果物を確認する:\n\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文\n\n> **重要**: 他のテストのようなアクションクラスに対する条件網羅や限界値テストは実施不要。",
+    "s2": "テストクラス作成ルール:\n1. テスト対象機能と同一パッケージに配置する\n2. クラス名は `{電文のリクエストID}RequestTest` とする\n3. `nablarch.test.core.messaging.MessagingReceiveTestSupport` を継承する",
+    "s3": "基本的な記述方法は :ref:`real_request_test` に従う。\n\n**正常系ケース**\n\n応答不要メッセージ受信処理では応答電文が存在しないため、応答電文の期待値確認は不要。\n\n> **注意**: データシートに「MESSAGE=expectedMessages」の定義は不要。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

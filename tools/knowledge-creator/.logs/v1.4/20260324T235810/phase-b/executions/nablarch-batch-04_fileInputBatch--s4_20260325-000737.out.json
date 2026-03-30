@@ -1,0 +1,84 @@
+{
+  "id": "nablarch-batch-04_fileInputBatch--s4",
+  "title": "１件ごとの処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "エンドレコードの精査処理",
+      "hints": [
+        "doEnd",
+        "TransactionAbnormalEnd",
+        "エンドレコード精査",
+        "レコード区分チェック",
+        "TRAILER_RECORD",
+        "ファイルレイアウトエラー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデータクラスの終了処理",
+      "hints": [
+        "onFileEnd",
+        "TransactionAbnormalEnd",
+        "バリデータクラス終了処理",
+        "最終レコードチェック",
+        "レコード件数ログ出力",
+        "END_RECORD"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ヘッダーレコードの処理",
+      "hints": [
+        "doHeader",
+        "ヘッダーレコード処理",
+        "RecordTypeBindingハンドラ",
+        "前処理済みスキップ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データレコードの処理",
+      "hints": [
+        "N11AA004DataForm",
+        "TransactionAbnormalEnd",
+        "ApplicationException",
+        "IdGeneratorUtil",
+        "ParameterizedSqlPStatement",
+        "データレコード処理",
+        "バリデーション",
+        "テンポラリテーブル登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "トレーラレコードの処理",
+      "hints": [
+        "doTrailer",
+        "トレーラレコード処理",
+        "RecordTypeBindingハンドラ",
+        "メソッド実装要件"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "エンドレコードの処理",
+      "hints": [
+        "doEnd",
+        "エンドレコード処理",
+        "RecordTypeBindingハンドラ",
+        "メソッド実装要件"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "エンドレコード精査の`doEnd`メソッドでは、前レコードのレコード区分が`TRAILER_RECORD`であることを確認する。トレーラでない場合は`TransactionAbnormalEnd`をスローする。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    if (!TRAILER_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    preRecordKbn = END_RECORD;\n    return new Success();\n}\n```",
+    "s2": "全レコードの精査終了後に`onFileEnd`が起動される。処理内容:\n1. 最終レコードのレコードタイプがエンドレコードであることの確認（エンドレコードでない場合は`TransactionAbnormalEnd`をスロー）\n2. 精査レコード件数のログ出力\n\n```java\npublic void onFileEnd(ExecutionContext ctx) {\n    if (!END_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());\n    }\n    writeLog(\"M000000002\", ctx.getLastRecordNumber());\n    writeLog(\"M000000003\", dataRecordCount);\n}\n```\n\nwriteLogメソッドについては:doc:`03_dbInputBatch`の:ref:`log_output_in_batch_action`を参照。",
+    "s3": "ヘッダーレコードの妥当性はファイルバリデータクラスの前処理で確認済みのため、本処理では何も行わない。\n\n> **注意**: ファイルバリデータクラスにてファイル形式の精査は実施済みのため、1件ごとの本処理ではファイル形式異常は考慮しなくて良い。\n\nRecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doHeader(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s4": "データレコード1件ごとに精査処理とテンポラリテーブルへの登録を行う。精査処理の方法は画面オンライン処理と同様で、精査対象データの種類のみ異なる。\n\n| 実行制御基盤 | 精査対象データ |\n|---|---|\n| 画面オンライン | HTTPリクエストパラメータ |\n| バッチ | DB検索結果、ファイルのレコード等 |\n\n```java\npublic Result doData(DataRecord inputData, ExecutionContext ctx) {\n    N11AA004DataForm form;\n    try {\n        form = N11AA004DataForm.validate(inputData, \"insert\");\n    } catch (ApplicationException e) {\n        throw new TransactionAbnormalEnd(\n                103, e, \"NB11AA0105\", inputData.getRecordNumber());\n    }\n    UserInfoTempEntity entity = form.getUserInfoTempEntity();\n    entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_USER_INFO_TEMP\");\n    statement.executeUpdateByObject(entity);\n    return new Success();\n}\n```",
+    "s5": "トレーラレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理はなし）。RecordTypeBindingハンドラによりレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doTrailer(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s6": "エンドレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理はなし）。RecordTypeBindingハンドラによりレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```"
+  }
+}

@@ -1,0 +1,497 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/02_basic.rst`
+- Format: `rst`
+
+```
+.. _basic:
+
+============
+画面初期表示
+============
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 画面上のリンクやボタンを押下後、ビジネスロジックを実行して次の画面へ遷移するまでの処理
+* 基本的なデータベースアクセス処理
+
+作成内容
+========
+
+本項で説明するのは、下記画面遷移図の赤丸の部分である。
+
+.. image:: ./_image/02/screenTransition.png
+ :scale: 55
+
+取りあげるソースコードは以下のとおり。
+
+================================================================================= ============== ===============================================================================================================================
+名称(右クリック->保存でダウンロード)                                              ステレオタイプ 処理内容
+================================================================================= ============== ===============================================================================================================================
+:download:`CM311AC1Component.java<./_source/download/CM311AC1Component.java>`     Component      ユーザ一覧照会画面に表示する、検索条件のグループ欄ドロップダウンリストに使用するグループの一覧をデータベースから取得する。 
+
+                                                                                                 本クラスから使用するSQLファイルは、下記リンク先のファイルを参照すること。
+                                                                                                 (右クリック->保存でダウンロード)
+
+                                                                                                 :download:`CM311AC1Component.sql<./_source/download/CM311AC1Component.sql>`
+
+
+:download:`W11AC01Action.java<./_source/download/W11AC01Action.java>`             Action         作成した上記Componentのメソッドを呼び出し、結果をリクエストスコープに格納、JSPに遷移させる。
+:download:`W11AC0101.jsp<./_source/download/W11AC0101.jsp>`                       View           ユーザ一覧照会画面を表示する。
+================================================================================= ============== ===============================================================================================================================
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+ビジネスロジック(Component)の作成
+=================================
+
+\ *CM311AC1Componentクラス*\ を作成し、以下のメソッドを追加する。\
+このメソッドの目的は、検索条件のグループ欄ドロップダウンリストに使用する\
+グループの一覧をデータベースから取得することである。
+
+ 追加するメソッド
+  ``SqlResultSet getUserGroups()``
+
+.. note::
+
+  サンプルアプリケーションでは、このメソッドをユーザ一覧照会機能、ユーザ情報登録機能の両機能で共用しているため、実装はComponentで行っている。\
+  一つの機能のみで使用する（1つのActionクラスからしか呼ばれない）ロジックの場合、その機能(Actionクラス)に実装すること。
+
+処理内容は以下のとおり。
+  :a): プリペアドステートメントの作成。(プリペアドステートメントは、DbAccessSupportで提供されるヘルパーメソッドを使用して生成する）
+  :b): 検索を実行し、結果を返す。
+
+* CM311AC1Component.sql
+
+ .. code-block:: sql
+
+    -- ユーザグループ全件検索（表示）
+    SELECT_ALL_UGROUPS=
+    SELECT
+        UGROUP_ID,
+        UGROUP_NAME
+    FROM
+        UGROUP
+    ORDER BY
+        UGROUP_ID
+
+
+* CM311AC1Component.java
+
+ .. code-block:: java
+
+  // 【説明】
+  // DbAccessSupportクラスを継承する。
+  class CM311AC1Component extends DbAccessSupport {  
+
+
+      /**
+       * ユーザグループの検索を実行する。
+       *
+       * @return 検索結果
+       */
+       SqlResultSet getUserGroups() {
+          // 【説明】プリペアドステートメントの作成
+          // SQL_IDには、上記のCM311AC1Component.sqlで定義している「SELECT_ALL_UGROUPS」を指定する。
+          SqlPStatement statement = getSqlPStatement("SELECT_ALL_UGROUPS");
+
+          // 【説明】検索実行
+          return statement.retrieve();
+      }
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ビジネスロジックを呼び出す処理(Action)の作成
+============================================
+
+.. _actionClassMethodName:
+
+Actionのメソッド名命名方法
+--------------------------
+Actionのメソッド名は次のようにする。
+  "do" + リクエストID
+
+例を以下に示す。
+
+  リクエストID::
+
+    RW11AC0101
+
+  Actionのメソッド名::
+
+    doRW11AC0101
+   
+
+.. note::
+ 厳密には以下のようなルールになっている。
+
+ リクエストURI:\http://サーバアドレス/action/△△△/・・・/×××/□□□の時、
+
+ **/△△△/・・・/×××/**::
+
+   Actionのパッケージ名のss11AA以降の部分+Action名(×××)。Actionを示す。
+    
+ **□□□**::
+
+   リクエストID。Actionのメソッド名(の一部)を示す。実際に呼び出されるActionのメソッドは以下のとおり。
+      
+     (リクエストのHTTPメソッド名、もしくは"do")+□□□
+    
+ 以下に例を示す。太字部分が対応している。
+    
+  URI
+   \http://localhost:8080/action/**ss11AA/W11AA01Action/RW11AA0101**
+
+  クラス
+   nablarch.sample.\ **ss11AC.W11AC01Action#doRW11AC0101**
+    
+
+.. _makeActionClass:
+
+Actionの作成
+------------------
+
+\ *W11AC01Actionクラス*\ を作成し、\ :ref:`actionClassMethodName`\ に従い以下のメソッドを追加する。
+
+
+ ``HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx)``
+
+処理内容は以下のとおり。
+  :a): Componentのインスタンス化。
+  
+  :b): ビジネスロジックの呼び出し。
+  
+  :c): ビジネスロジックの戻り値をリクエストスコープに格納。
+  
+  :d): /ss11AC/W11AC0101.jspへ遷移させる。 [#jsp_path]_
+
+.. code-block:: java
+  
+   /**
+    * ユーザ一覧照会画面を表示する。<br/>
+    * 
+    * @param req リクエストコンテキスト
+    * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+    * @return HTTPレスポンス
+    */
+   public HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {
+       CM311AC1Component function = new CM311AC1Component(); // 【説明】Componentのインスタンス化
+       SqlResultSet ugroupList = function.getUserGroups();   // 【説明】ビジネスロジックの呼び出し
+       /* 【説明】
+          ビジネスロジックの戻り値をリクエストスコープに格納。第1引数はキー名、第2引数は格納するオブジェクト。
+          JSPでは、この第1引数で指定したキーで第2引数に渡したオブジェクトを取得する。 */
+       ctx.setRequestScopedVar("ugroupList", ugroupList);
+       
+       /* 【説明】/ss11AC/W11AC0101.jspへ遷移させる。
+           JSPに遷移させる場合は、servlet://"JSPのパス"と記述する。
+           別のリクエストID(他の処理、メソッド)を実行させるときは、forward://"リクエストIDのパス"と記述する。
+           servletやforwardのどちらも書かなかった場合のデフォルトはservlet://である。 */
+       return new HttpResponse("/ss11AC/W11AC0101.jsp");
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. [#jsp_path]
+  遷移させるJSPファイルのパスは、基本的にアプリケーションの web ルートディレクトリからの絶対パスで記述する。
+  ただし、言語によって遷移先のファイルを切り替える場合に、web ルート直下に言語フォルダを配置してその言語フォルダ配下にJSPファイルを配置することがある。
+  この場合、言語フォルダからの絶対パスで記述する。
+  
+  ここで示した例は後者の場合であり、
+  W11AC0101.jspを「<webルートディレクトリ>/<言語>/ss11AC/W11AC0101.jsp」に配置した場合のものである。
+  
+  ※ <言語>の箇所にはユーザが選択した言語("ja"や"en")が自動的に設定される。\
+  これはアプリケーションの国際化にあたり、言語ごとに異なるJSPファイルを配置するための機能である。\
+  なお、通常のプロジェクトではプロジェクトが決めた国際化の方針に従いJSPファイルを配置すること。\
+  国際化の詳細については、 `アーキテクチャ解説書 <../../../fw/reference/01_SystemConstitution/02_I18N.html>`_ を参照のこと。
+
+View(JSP)の作成
+==================================================
+
+以下の内容で\ *W11AC0101.jsp*\ を作成する。
+
+JSPの動的な部分は、フレームワークが提供するカスタムタグライブラリ及びサンプル提供されるタグファイルを使用して作成する。\
+カスタムタグライブラリのネームスペースには「n」を付け、タグファイルのネームスペースにはタグファイルの配置ディレクトリ名を付ける。
+
+.. note::
+
+  本ガイドでは、サンプルで提供される以下タグファイルを使用している。
+
+    * template
+    * button
+    * column
+    * field
+    * link
+    * tab
+    * table
+
+  サンプルとして提供されるタグファイルは、Nablarch導入プロジェクトのアーキテクの判断により変更（追加、削除含む）が行われる。
+  このため、Nablarch導入プロジェクトでは本ガイドではなくアーキテクトより提供されるガイドなどを元にJSPを作成すること。
+
+
+取得したグループの一覧は、サンプルタグファイルの\ **field:pulldown**\ を使用してドロップダウンとして画面出力する。
+
+.. literalinclude:: ./_source/02/W11AC0101.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. note::
+ 上記サンプルコードでは、検索結果(ugroupList)からugroupNameとugroupIdという名前で値を取得している。
+ この点については、\ :doc:`DB/01_DbAccessSpec_Example`\ の『 :ref:`how_to_use_sql_result_set`\ 』を参照
+
+
+------------
+次に読むもの
+------------
+* `データベースアクセス処理を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html>`_
+* `データベースアクセス処理の実例を知りたい時 <./DB/01_DbAccessSpec_Example.html>`_
+* `Actionのメソッド名とURIの関係を詳しく知りたい時 <../../../fw/reference/handler/HttpMethodBinding.html#http-dispatch>`_
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+* `言語ごとにJSPファイルおよび静的ファイルを切り替える方法を詳しく知りたい時 <../../../fw/reference/01_SystemConstitution/02_I18N.html>`_
+
+```
+
+## Knowledge File
+
+- ID: `web-application-02_basic--s1`
+
+```json
+{
+  "id": "web-application-02_basic--s1",
+  "title": "画面初期表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "画面初期表示",
+        "画面遷移",
+        "ビジネスロジック実行",
+        "データベースアクセス",
+        "リンク・ボタン押下処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "本項で説明する内容",
+      "hints": [
+        "CM311AC1Component",
+        "W11AC01Action",
+        "W11AC0101.jsp",
+        "Component",
+        "Action",
+        "View",
+        "ステレオタイプ",
+        "作成内容"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "CM311AC1Component",
+        "DbAccessSupport",
+        "SqlResultSet",
+        "getUserGroups",
+        "getSqlPStatement",
+        "retrieve",
+        "SELECT_ALL_UGROUPS",
+        "SqlPStatement",
+        "Component作成",
+        "DBアクセス"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "作成手順",
+      "hints": [
+        "W11AC01Action",
+        "HttpResponse",
+        "doRW11AC0101",
+        "HttpRequest",
+        "ExecutionContext",
+        "Action作成",
+        "ビジネスロジック呼び出し"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Actionのメソッド名命名方法",
+      "hints": [
+        "Actionメソッド名",
+        "リクエストID",
+        "do＋リクエストID",
+        "HTTPメソッド名",
+        "URI対応",
+        "メソッド名命名規則"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Actionの作成",
+      "hints": [
+        "W11AC01Action",
+        "doRW11AC0101",
+        "setRequestScopedVar",
+        "HttpResponse",
+        "servlet://",
+        "forward://",
+        "JSPパス",
+        "リクエストスコープ",
+        "CM311AC1Component"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "",
+      "hints": [
+        "W11AC0101.jsp",
+        "field:pulldown",
+        "カスタムタグ",
+        "JSP作成",
+        "タグファイル",
+        "ネームスペース",
+        "ugroupList",
+        "SqlResultSet",
+        "ugroupName",
+        "ugroupId"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "次に読むもの",
+      "hints": [
+        "データベースアクセス",
+        "HttpMethodBinding",
+        "カスタムタグ",
+        "国際化",
+        "JSP切り替え",
+        "DbAccessSpec"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "- 画面上のリンクやボタンを押下後、ビジネスロジックを実行して次の画面へ遷移するまでの処理\n- 基本的なデータベースアクセス処理",
+    "s2": "作成するソースコード:\n\n| 名称 | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`CM311AC1Component.java<./_source/download/CM311AC1Component.java>` | Component | ユーザ一覧照会画面の検索条件グループ欄ドロップダウンリスト用グループ一覧をDBから取得する。SQLファイル: :download:`CM311AC1Component.sql<./_source/download/CM311AC1Component.sql>` |\n| :download:`W11AC01Action.java<./_source/download/W11AC01Action.java>` | Action | ComponentのメソッドをCallし、結果をリクエストスコープに格納してJSPへ遷移させる |\n| :download:`W11AC0101.jsp<./_source/download/W11AC0101.jsp>` | View | ユーザ一覧照会画面を表示する |\n\nステレオタイプについては :ref:`stereoType` を参照。",
+    "s3": "**クラス**: `CM311AC1Component` extends `DbAccessSupport`\n\n追加メソッド: `SqlResultSet getUserGroups()`\n\n> **注意**: 複数の機能（複数のActionクラス）から共用するロジックはComponentで実装する。1つのActionクラスからしか呼ばれないロジックはそのActionクラスに実装すること。\n\n**SQL** (CM311AC1Component.sql):\n```sql\nSELECT_ALL_UGROUPS=\nSELECT\n    UGROUP_ID,\n    UGROUP_NAME\nFROM\n    UGROUP\nORDER BY\n    UGROUP_ID\n```\n\n**Java実装**:\n```java\nclass CM311AC1Component extends DbAccessSupport {\n    SqlResultSet getUserGroups() {\n        SqlPStatement statement = getSqlPStatement(\"SELECT_ALL_UGROUPS\");\n        return statement.retrieve();\n    }\n}\n```\n\n処理手順:\n1. `getSqlPStatement(\"SELECT_ALL_UGROUPS\")` でプリペアドステートメントを作成（`DbAccessSupport` のヘルパーメソッドを使用）\n2. `statement.retrieve()` で検索実行し結果を返す",
+    "s4": "`W11AC01Action` クラスを作成し、:ref:`actionClassMethodName` に従ってメソッドを追加する。\n\n追加するメソッド: `HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx)`\n\n処理手順:\n1. Componentのインスタンス化\n2. ビジネスロジックの呼び出し\n3. ビジネスロジックの戻り値をリクエストスコープに格納\n4. /ss11AC/W11AC0101.jspへ遷移",
+    "s5": "Actionのメソッド名: `\"do\" + リクエストID`\n\n例: リクエストID `RW11AC0101` → メソッド名 `doRW11AC0101`\n\nURIとActionクラス/メソッドの対応:\n- URI: `http://サーバアドレス/action/△△△/・・・/×××/□□□`\n- `/△△△/・・・/×××/` 部分 → Actionのパッケージ名（ss11AA以降）＋Action名\n- `□□□` 部分 → リクエストID。実際に呼ばれるメソッドは `(HTTPメソッド名もしくは\"do\") + □□□`\n\n例:\n- URI: `http://localhost:8080/action/ss11AA/W11AA01Action/RW11AA0101`\n- クラス/メソッド: `nablarch.sample.ss11AC.W11AC01Action#doRW11AC0101`",
+    "s6": "**クラス**: `W11AC01Action`\n\n```java\npublic HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {\n    CM311AC1Component function = new CM311AC1Component();\n    SqlResultSet ugroupList = function.getUserGroups();\n    ctx.setRequestScopedVar(\"ugroupList\", ugroupList);\n    return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n}\n```\n\n`ctx.setRequestScopedVar(キー名, オブジェクト)`: 第1引数のキー名でJSPからオブジェクトを取得できる。\n\n> **注意**: `HttpResponse` のパス指定方法:\n> - `servlet://JSPのパス` → JSPへ遷移（デフォルト。`servlet://` を省略してパスのみ記述も可）\n> - `forward://リクエストIDのパス` → 別リクエストIDを実行\n\nJSPファイルのパスは基本的にwebルートからの絶対パス。言語ごとにJSPを切り替える場合は言語フォルダからの絶対パスで記述する（例: `<webルート>/<言語>/ss11AC/W11AC0101.jsp`。`<言語>` にはユーザ選択言語が自動設定される）。\n\n> **注意**: 通常のプロジェクトではプロジェクトが決めた国際化の方針に従いJSPファイルを配置すること。",
+    "s7": "**ファイル**: `W11AC0101.jsp`\n\nJSPの動的部分はフレームワーク提供のカスタムタグライブラリおよびサンプルタグファイルを使用する:\n- カスタムタグライブラリのネームスペース: `n`\n- タグファイルのネームスペース: タグファイルの配置ディレクトリ名\n\n> **注意**: サンプルタグファイル（template, button, column, field, link, tab, table）はNablarch導入プロジェクトのアーキテクトの判断で変更される場合がある。導入プロジェクトではアーキテクトより提供されるガイドに従いJSPを作成すること。\n\nグループ一覧のドロップダウン表示には `field:pulldown` タグファイルを使用する。\n\n検索結果（ugroupList）からは `ugroupName` および `ugroupId` という名前で値を取得する（:doc:`DB/01_DbAccessSpec_Example` の :ref:`how_to_use_sql_result_set` 参照）。",
+    "s8": "- [データベースアクセス処理の詳細](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html)\n- [データベースアクセス処理の実例](./DB/01_DbAccessSpec_Example.html)\n- [Actionのメソッド名とURIの関係](../../../fw/reference/handler/HttpMethodBinding.html#http-dispatch)\n- [カスタムタグの使用方法](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)\n- [言語ごとのJSP/静的ファイル切り替え](../../../fw/reference/01_SystemConstitution/02_I18N.html)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

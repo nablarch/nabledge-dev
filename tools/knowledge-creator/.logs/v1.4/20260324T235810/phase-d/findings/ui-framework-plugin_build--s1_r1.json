@@ -1,0 +1,27 @@
+{
+  "file_id": "ui-framework-plugin_build--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source file beyond truncation point (after `.. _pjconf_json:` anchor)",
+      "description": "The automated pre-check reports 11 source headings but the knowledge file covers only 7 sections. The source file is truncated after `.. _pjconf_json:` — approximately 4 additional sections (pjconf.json詳細, lessImport.less詳細, and other build command/file specs) exist in the full source but are entirely absent from the knowledge file.",
+      "source_evidence": "Automated warning: 'Section count 7 < source headings 11'. Source ends with `.. _pjconf_json:` label indicating a section begins there but is not shown. The s7 設定ファイル section table lists pjconf.json and ${cssMode}.less as entries with their own ref anchors, implying full spec sections follow."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — :ref:`install` の設定, UI_PLUGINS_DIRS table row, 備考 column",
+      "description": "The knowledge file adds a note 'プラグインが個別のため両方を指定' for the UI_PLUGINS_DIRS entry, but the source table has no備考 (note) for this row.",
+      "source_evidence": "Source table for s5 install.bat: `UI_PLUGINS_DIRS  \"ui_plugins_public,ui_plugins_manage\"` — the備考 column is empty. Knowledge file row: `| UI_PLUGINS_DIRS | \"ui_plugins_public,ui_plugins_manage\" | プラグインが個別のため両方を指定 |`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3, s4, s5 — pathSettings/* property hints",
+      "description": "Sections s3, s4, and s5 contain tables with multiple pathSettings/* configuration properties (demoProjectPath, testProjectPath, pluginProjectPath) that are primary configuration targets but are not included in any section's hints. Only projectRootPath and webProjectPath appear in s3 hints; the rest are absent from all three sections.",
+      "source_evidence": "s3 source pjconf.json table first-column properties: projectRootPath, webProjectPath, demoProjectPath, testProjectPath, pluginProjectPath. s3 hints only list pathSettings/projectRootPath and pathSettings/webProjectPath. Same gap exists in s4 and s5."
+    }
+  ]
+}

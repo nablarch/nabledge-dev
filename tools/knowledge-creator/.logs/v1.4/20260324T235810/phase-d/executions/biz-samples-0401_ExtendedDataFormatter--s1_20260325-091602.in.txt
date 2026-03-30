@@ -1,0 +1,448 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/biz_sample/doc/0401_ExtendedDataFormatter.rst`
+- Format: `rst`
+
+```
+=====================================
+データフォーマッタの拡張
+=====================================
+
+本サンプルで提供するフォーマッタ機能の仕様を解説する。
+
+フォーマッタ機能の概要、基本となる汎用データフォーマット機能に関する詳細は、Nablarch Application Framework解説書の汎用データフォーマット機能に関する解説を参照すること。
+
+----------------------------
+概要
+----------------------------
+
+Nablarchが用意しているフォーマッタ（例えば、Json形式やXml形式）とは別のフォーマッタを利用したい場合、
+データフォーマッタを追加することで対応できる。
+
+本サンプルでは、HTTPのPOSTパラメータのように、
+Key項目=Value項目を&で結合するようなデータ形式(application/x-www-form-urlencoded)に対応したフォーマッタを作成する場合を想定している。
+
+
+
+提供パッケージ
+--------------------------------------------------------------------
+
+本機能は、下記のパッケージで提供される。
+
+  *please.change.me.* **core.dataformat**
+
+  *please.change.me.* **core.dataformat.convertor**
+
+  *please.change.me.* **test.core.file**
+
+.. _ExtendedFormatter_FormUrlEncodedFormatter:
+
+
+
+FormUrlEncodedデータフォーマッタの構成
+--------------------------------------------------------------------
+
+FormUrlEncodedデータフォーマッタはapplication/x-www-form-urlencodedで使用されるデータを取り扱う。
+このデータはname1=value1&name2=value2のように、名前と値の組を等号でつなげたものをアンド記号で結んで表現される。
+同一のキーで複数の値を扱うこともできる。
+
+値についてURLエンコードを行う。
+キーについては汎用データフォーマットのフォーマット定義書式に従いURLエンコードは行わず、特殊文字をキー文字列に使用することはできない。
+
+以下に本機能で使用するクラス一覧を記す。
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - パッケージ名
+     - クラス名
+     - 概要
+   * - *please.change.me.* **core.dataformat**
+     - FormUrlEncodedDataFormatterFactory
+     - | フォーマッタファクトリクラス。
+       | サンプル実装ではcreateFormatter(String fileType, String formatFilePath)メソッドをオーバーライドし、FormUrlEncodedDataRecordFormatterのインスタンス生成を可能としている。
+   * - *please.change.me.* **core.dataformat**
+     - FormUrlEncodedDataRecordFormatter
+     - | フォーマッタクラス。
+       | application/x-www-form-urlencodedで使用されるデータを解析、構築する。
+       | サンプル実装では読み込み時はパラメータの出現順を意識せず、書き込み時はフォーマット定義順でパラメータを出力する。
+   * - *please.change.me.* **core.dataformat.convertor**
+     - FormUrlEncodedDataConvertorFactory
+     - | データコンバータのファクトリクラス。
+       | デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持する。
+   * - *please.change.me.* **core.dataformat.convertor**
+     - FormUrlEncodedDataConvertorSetting
+     - | コンバータの設定情報を保持するクラス。
+       | コンバータ名とコンバータ実装クラスの対応表を、DIコンテナから設定する。
+   * - *please.change.me.* **test.core.file**
+     - FormUrlEncodedTestDataConverter
+     - | テストデータコンバータクラス。
+       | サンプル実装ではテストデータとして項目ごとにKey=Value形式を設定されたデータを解析し、Value部の値に対し動的にURLエンコーディングを行う。
+
+
+----------------------------
+使用方法
+----------------------------
+
+FormUrlEncodedデータフォーマッタの使用方法
+--------------------------------------------------------------------
+  業務アプリケーションで作成したフォーマッタファクトリクラスを使用する場合、以下の設定を行う必要がある。
+
+  .. code-block:: xml
+
+    <component name="formatterFactory" class="please.change.me.core.dataformat.FormUrlEncodedDataFormatterFactory"/>
+
+
+フォーマット定義ファイルの記述例
+--------------------------------------------------------------------
+  サンプルのソースコードに対応するフォーマット定義ファイルの記述例を以下に示す。
+
+  .. code-block:: bash
+
+    #
+    # ディレクティブ定義部
+    #
+    file-type:     "FormUrlEncoded"  # フォームURLエンコード形式ファイル
+    text-encoding: "UTF-8"  # 文字列型フィールドの文字エンコーディング
+
+    #
+    # データレコード定義部
+    #
+    [data]
+    1    key1   X      # 項目1
+    2    key2   X      # 項目2
+
+
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+  FormUrlEncodedデータフォーマッタで使用されるフィールドタイプ・フィールドコンバータについて解説する。
+
+  **フィールドタイプ**
+
+  .. list-table::
+   :widths: 130 150 200
+   :header-rows: 1
+
+   * - タイプ識別子
+     - Java型
+     - 内容
+
+   * - X、N、XN、X9、SX9
+     - String
+     - | FormUrlEncodedデータフォーマッタでは、すべてのフィールドを文字列（String）として読み書きする。
+       | よって、どのタイプ識別子を指定しても動作は変わらない。
+       | また、フィールド長の概念が無いので、引数は不要である。
+       | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+
+  いずれのタイプ識別子もフィールド長の概念が無いので、引数は不要である。
+
+  **フィールドコンバータ**
+
+  .. list-table::
+   :widths: 70 100 350
+   :header-rows: 1
+
+   * - コンバータ名
+     - Java型(変換前後)
+     - 内容
+
+   * - リテラル値
+     - Object <-> Object
+     - | **入力時:** (なにもしない)
+       | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+       | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+       | **引数:** なし
+
+   * - number
+     - String <-> BigDecimal
+     - | **入力時:** 入力された値が符号なし数値であることを形式チェックした上でBigDecimal型に変換して、返却する。
+       |         もし入力された値がnullまたは空文字の場合、nullを返却する。
+       | **出力時:** 出力する値を文字列に変換し、符号なし数値であることを形式チェックした上で出力する。
+       |         もし出力する値がnullの場合、空文字を出力する。
+       | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.NumberString
+       | **引数:** なし
+
+   * - signed_number
+     - String <-> BigDecimal
+     - | 符号が許可される点以外は **number** コンバータと同じ仕様。
+       | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.SignedNumberString
+       | **引数:** なし
+
+
+同一キーで複数の値を取り扱う場合
+--------------------------------------------------------------------
+  同一キーで複数の値を取り扱う場合、データはString配列形式で保持される。
+  また、フォーマット定義ファイルにて多重度を設定する必要がある。
+  定義方法についてはNablarch Application Framework解説書の汎用データフォーマット機能を参照すること。
+
+
+テストデータの記述方法
+--------------------------------------------------------------------
+
+  FormUrlEncodedデータフォーマッタを使用した場合、入力データをURLエンコーディングする必要がある。
+  しかし、URLエンコーディングされたデータをExcelファイルに直接記述することは、可読性や保守性、作業効率といった面で現実的ではない。
+  そのため、以下の例のようにテストデータコンバータを指定する。
+  
+  テストデータコンバータについてはプログラミング・単体テストガイドの自動テストフレームワークの使用方法を参照すること。
+  
+  **コンポーネント設定ファイル**
+
+    テスト側のコンポーネント設定ファイルに以下の設定を追記する。
+
+    .. code-block:: xml
+
+      <!-- テストデータコンバータ定義 -->
+      <component name="TestDataConverter_FormUrlEncoded" 
+                 class="please.change.me.test.core.file.FormUrlEncodedTestDataConverter"/>
+
+  **Excelファイル**
+
+    以下のようにfile-typeに"FormUrlEncoded"を指定し、テストデータとして項目ごとにKey-Value形式となるように記述する。
+
+    .. image:: ./_images/04/test_data_example.png
+
+    この場合、テストデータ読み込み時にテストフレームワークによりFormUrlEncodedTestDataConverterが呼び出され、
+    結果的にFormUrlEncodedデータフォーマッタには以下のデータが入力される。
+    
+    .. code-block:: text
+
+      kanjiName=%E6%BC%A2%E5%AD%97%E6%B0%8F%E5%90%8D&kanaName=%E3%82%AB%E3%83%8A%E3%82%B7%E3%83%A1%E3%82%A4&mailAddr=test%40anydomain.com
+
+
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-0401_ExtendedDataFormatter--s1`
+
+```json
+{
+  "id": "biz-samples-0401_ExtendedDataFormatter--s1",
+  "title": "データフォーマッタの拡張",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "データフォーマッタ",
+        "カスタムフォーマッタ",
+        "フォーマッタ拡張"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "概要",
+      "hints": [
+        "データフォーマッタ追加",
+        "カスタムフォーマッタ",
+        "フォーマッタ拡張",
+        "application/x-www-form-urlencoded"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "提供パッケージ",
+      "hints": [
+        "提供パッケージ",
+        "please.change.me.core.dataformat",
+        "FormUrlEncoded",
+        "コアパッケージ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "FormUrlEncodedデータフォーマッタの構成",
+      "hints": [
+        "FormUrlEncodedDataFormatterFactory",
+        "FormUrlEncodedDataRecordFormatter",
+        "FormUrlEncodedDataConvertorFactory",
+        "FormUrlEncodedDataConvertorSetting",
+        "FormUrlEncodedTestDataConverter",
+        "application/x-www-form-urlencoded",
+        "URLエンコード",
+        "クラス構成"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "使用方法",
+      "hints": [
+        "FormUrlEncoded",
+        "使用方法",
+        "フォーマッタ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "FormUrlEncodedデータフォーマッタの使用方法",
+      "hints": [
+        "FormUrlEncodedDataFormatterFactory",
+        "formatterFactory",
+        "コンポーネント設定",
+        "フォーマッタファクトリ登録"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "フォーマット定義ファイルの記述例",
+      "hints": [
+        "フォーマット定義ファイル",
+        "file-type",
+        "FormUrlEncoded",
+        "text-encoding",
+        "データレコード定義"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "フィールドタイプ",
+        "フィールドコンバータ",
+        "number",
+        "signed_number",
+        "nablarch.core.dataformat.convertor.value.NumberString",
+        "nablarch.core.dataformat.convertor.value.SignedNumberString",
+        "nablarch.core.dataformat.convertor.value.DefaultValue",
+        "BigDecimal変換"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "同一キーで複数の値を取り扱う場合",
+      "hints": [
+        "同一キー複数値",
+        "String配列",
+        "多重度",
+        "複数値パラメータ"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "テストデータの記述方法",
+      "hints": [
+        "テストデータ",
+        "URLエンコーディング",
+        "FormUrlEncodedTestDataConverter",
+        "テストデータコンバータ",
+        "TestDataConverter_FormUrlEncoded",
+        "Excelテストデータ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "JSON形式・XML形式など、Nablarch標準以外のフォーマッタが必要な場合、データフォーマッタを追加することで対応できる。",
+    "s3": "本機能が提供されるパッケージ:\n- `please.change.me.core.dataformat`\n- `please.change.me.core.dataformat.convertor`\n- `please.change.me.test.core.file`",
+    "s4": "application/x-www-form-urlencodedデータ（`name1=value1&name2=value2`形式）を取り扱う。同一キーで複数値も扱える。\n\n**制約**:\n- 値はURLエンコードされる\n- キーはURLエンコードされない。キー文字列に特殊文字は使用不可\n\n**クラス一覧**:\n\n| クラス名 | パッケージ | 概要 |\n|---|---|---|\n| `FormUrlEncodedDataFormatterFactory` | `please.change.me.core.dataformat` | フォーマッタファクトリクラス。`createFormatter(String fileType, String formatFilePath)`をオーバーライドし、`FormUrlEncodedDataRecordFormatter`のインスタンスを生成 |\n| `FormUrlEncodedDataRecordFormatter` | `please.change.me.core.dataformat` | フォーマッタクラス。読み込み時はパラメータの出現順を意識しない。書き込み時はフォーマット定義順でパラメータを出力 |\n| `FormUrlEncodedDataConvertorFactory` | `please.change.me.core.dataformat.convertor` | コンバータファクトリクラス。デフォルトのコンバータ名とコンバータ実装クラスの対応表を保持 |\n| `FormUrlEncodedDataConvertorSetting` | `please.change.me.core.dataformat.convertor` | コンバータ設定クラス。コンバータ名と実装クラスの対応表をDIコンテナから設定 |\n| `FormUrlEncodedTestDataConverter` | `please.change.me.test.core.file` | テストデータコンバータクラス。Key=Value形式のテストデータを解析し、Value部を動的にURLエンコード |",
+    "s5": "なし",
+    "s6": "業務アプリケーションでFormUrlEncodedフォーマッタを使用する場合、コンポーネント設定ファイルに以下を追加する:\n\n```xml\n<component name=\"formatterFactory\" class=\"please.change.me.core.dataformat.FormUrlEncodedDataFormatterFactory\"/>\n```",
+    "s7": "```\n#\n# ディレクティブ定義部\n#\nfile-type:     \"FormUrlEncoded\"  # フォームURLエンコード形式ファイル\ntext-encoding: \"UTF-8\"  # 文字列型フィールドの文字エンコーディング\n\n#\n# データレコード定義部\n#\n[data]\n1    key1   X      # 項目1\n2    key2   X      # 項目2\n```",
+    "s8": "**フィールドタイプ**:\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN、X9、SX9 | String | 全フィールドをStringとして読み書き。どのタイプ識別子を指定しても動作は変わらない。フィールド長の概念がないため引数不要 |\n\n> **注意**: Number型（BigDecimalなど）を読み書きする場合はnumber/signed_numberコンバータを使用すること。\n\n**フィールドコンバータ**:\n\n| コンバータ名 | Java型（変換前後） | 内容 |\n|---|---|---|\n| リテラル値 | Object <-> Object | 入力時: なにもしない。出力時: 出力値が未設定の場合に指定リテラル値を出力。デフォルト実装: `nablarch.core.dataformat.convertor.value.DefaultValue`。引数: なし |\n| number | String <-> BigDecimal | 入力時: 符号なし数値チェック後BigDecimalに変換。null/空文字の場合はnullを返却。出力時: 文字列変換後符号なし数値チェック。nullの場合は空文字を出力。デフォルト実装: `nablarch.core.dataformat.convertor.value.NumberString`。引数: なし |\n| signed_number | String <-> BigDecimal | 符号が許可される点以外はnumberと同じ仕様。デフォルト実装: `nablarch.core.dataformat.convertor.value.SignedNumberString`。引数: なし |",
+    "s9": "同一キーで複数の値を取り扱う場合:\n- データはString配列形式で保持される\n- フォーマット定義ファイルで多重度を設定する必要がある",
+    "s10": "URLエンコーディングされたデータをExcelファイルに直接記述することは可読性・保守性・作業効率の面で非現実的なため、テストデータコンバータを使用する。\n\n**コンポーネント設定ファイルへの追加**:\n\n```xml\n<!-- テストデータコンバータ定義 -->\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\n**Excelファイル**:\n\nfile-typeに`\"FormUrlEncoded\"`を指定し、テストデータとして項目ごとにKey=Value形式で記述する。\n\n![テストデータ記述例](assets/biz-samples-0401_ExtendedDataFormatter--s1/test_data_example.png)\n\nテストフレームワークにより`FormUrlEncodedTestDataConverter`が呼び出され、以下のようなデータに変換されてフォーマッタに入力される:\n\n```\nkanjiName=%E6%BC%A2%E5%AD%97%E6%B0%8F%E5%90%8D&kanaName=%E3%82%AB%E3%83%8A%E3%82%B7%E3%83%A1%E3%82%A4&mailAddr=test%40anydomain.com\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 10 < source headings 11
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

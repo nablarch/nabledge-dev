@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-thread_context--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s8 — LanguageAttribute選択基準 (LanguageAttributeInHttpSession 行)",
+      "description": "LanguageAttributeInHttpSessionを使用する場合のアプリケーション実装要件が不完全。ソースでは「アプリケーションでは下記の実装を行う」として3項目（①ログイン時にユーザに紐づく言語の取得処理、②ユーザに言語を選択させる画面処理、③選択された言語をユーザに紐付けてデータベースに保存する処理）を列挙している。知識ファイルは③のDBへの保存のみを記載し、①のログイン時の言語取得処理（必須のアプリ実装）が欠落している。また、①と②の両方において「HTTPセッションに言語を設定する処理はLanguageAttributeInHttpUtilが提供する」という重要な情報も欠落している。",
+      "source_evidence": "LanguageAttributeInHttpSession選択基準の説明欄: 「アプリケーションでは下記の実装を行う。ログイン時にユーザに紐づく言語の取得処理。HTTPセッションに言語を設定する処理はLanguageAttributeInHttpUtilが提供する。ユーザに言語を選択させる画面処理。選択された言語をHTTPセッションに設定する処理はLanguageAttributeInHttpUtilが提供する。選択された言語をユーザに紐付けてデータベースに保存する処理。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s8 — TimeZoneAttribute選択基準 (TimeZoneAttributeInHttpSession 行)",
+      "description": "TimeZoneAttributeInHttpSessionを使用する場合のアプリケーション実装要件が不完全。ソースでは3項目（①ログイン時にユーザに紐づくタイムゾーンの取得処理、②ユーザにタイムゾーンを選択させる画面処理、③選択されたタイムゾーンをユーザに紐付けてデータベースに保存する処理）を列挙している。知識ファイルは③のみを記載し、①のログイン時のタイムゾーン取得処理が欠落している。また「HTTPセッションにタイムゾーンを設定する処理はTimeZoneAttributeInHttpUtilが提供する」という情報も欠落している。",
+      "source_evidence": "TimeZoneAttributeInHttpSession選択基準の説明欄: 「アプリケーションでは下記の実装を行う。ログイン時にユーザに紐づくタイムゾーンの取得処理。HTTPセッションにタイムゾーンを設定する処理はTimeZoneAttributeInHttpUtilが提供する。ユーザにタイムゾーンを選択させる画面処理。選択されたタイムゾーンをHTTPセッションに設定する処理はTimeZoneAttributeInHttpUtilが提供する。選択されたタイムゾーンをユーザに紐付けてデータベースに保存する処理。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s8 — 使用方法",
+      "description": "s8はソースの「使用方法」セクション全体（2000文字超）をまとめており、ソース内に存在する複数のh3サブセクション（RequestIdAttribute、InternalRequestIdAttribute、UserIdAttribute、LanguageAttribute、TimeZoneAttribute、ExecutionIdAttribute、設定例）が個別のknowledgeセクションに分割されていない。LanguageAttribute/TimeZoneAttributeの選択基準テーブルや設定例コードブロックなどの内容量が多く、分割が望ましい。",
+      "source_evidence": "使用方法セクション内にRequestIdAttribute (====)、InternalRequestIdAttribute (====)、UserIdAttribute (====)、LanguageAttribute (====)、TimeZoneAttribute (====)、ExecutionIdAttribute (====)、設定例 (====) の各h3サブセクションが存在する"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — クラス定義",
+      "description": "s3のコンテンツには LanguageAttributeInHttpSupport および TimeZoneAttributeInHttpSupport クラスが含まれているが、hintsに記載がない。",
+      "source_evidence": "クラス定義テーブル: 「nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSupport」「nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSupport」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 — 使用方法",
+      "description": "s8のコンテンツには LanguageAttributeInHttpUtil、TimeZoneAttributeInHttpUtil、LanguageAttributeInHttpSupport、TimeZoneAttributeInHttpSupport クラスが含まれているが、hintsに記載がない。",
+      "source_evidence": "s8内で参照: LanguageAttributeInHttpUtil（リポジトリ登録名「languageAttribute」の説明）、TimeZoneAttributeInHttpUtil（リポジトリ登録名「timeZoneAttribute」の説明）、LanguageAttributeInHttpSupport/TimeZoneAttributeInHttpSupport（サブクラス登録要件）"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "mom-messaging-02_basic-04_Explanation_real--s1",
+  "title": "同期応答型メッセージ受信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "電文受信時のコールバック",
+      "hints": [
+        "onReceive",
+        "RequestMessage",
+        "ResponseMessage",
+        "ExecutionContext",
+        "MessagingAction",
+        "電文受信コールバック",
+        "同期応答型メッセージ受信"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エラー発生時のコールバック",
+      "hints": [
+        "onError",
+        "RequestMessage",
+        "ResponseMessage",
+        "ExecutionContext",
+        "Throwable",
+        "エラーコールバック",
+        "トランザクションロールバック",
+        "エラー電文"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 電文受信時のコールバック\n\n`onReceive` メソッドを実装する（必須）。\n\n**メソッド**: `ResponseMessage onReceive(RequestMessage request, ExecutionContext context)`\n\n処理対象リクエストIDの要求電文受信時にフレームワークにより起動される。要求電文を引数として受け取り、処理結果の応答電文を戻り値として返却する。",
+    "s2": "## エラー発生時のコールバック\n\n`onError` メソッドを実装する（必須）。\n\n**メソッド**: `ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context)`\n\nメイン処理でエラー発生時のみ呼び出される。エラーが発生しなかった場合は起動されない。メイン処理で発生した例外またはエラーは引数で渡される。\n\nエラー発生時の処理はメイン処理とは別のトランザクションで実行される（メイン処理でエラーが発生した場合、そのトランザクションはロールバックされて終了するため）。\n\n> **注意**: 実装すべき処理の例:\n> - エラーが発生したレコードのステータスを異常終了に更新する\n> - 相手先システムにエラーを通知するためのエラー電文を作成する"
+  }
+}

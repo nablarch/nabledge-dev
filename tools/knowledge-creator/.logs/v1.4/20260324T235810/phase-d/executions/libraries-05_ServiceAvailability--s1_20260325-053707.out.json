@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-05_ServiceAvailability--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s10 — BasicServiceAvailability プロパティ表の「型」列",
+      "description": "プロパティ `tableName`、`requestTableRequestIdColumnName`、`requestTableServiceAvailableColumnName`、`requestTableServiceAvailableOkStatus` の型として `String` が記載されているが、ソースの設定内容詳細テーブルには「property名」と「設定内容」の2列しかなく、これらプロパティのJava型は明示されていない。`dbManager` の `SimpleDbTransactionManager` 型はソースに明示されており問題ない。",
+      "source_evidence": "ソース設定内容詳細テーブルの列構成: 「property名」「設定内容」のみ。tableName の設定内容は「リクエストテーブルの名前。」のみで型の記述なし。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 概要図",
+      "description": "ソースの「概要図」サブセクション（`ServiceAvailability_ServiceImage.jpg`）の画像参照がナレッジファイルに含まれていない。s4（クラス図）、s6（シーケンス図）、s7（シーケンス図）は画像参照を含んでいるが、s1のみ概要図が省略されており一貫性がない。",
+      "source_evidence": ".. image:: ./_images/05/ServiceAvailability_ServiceImage.jpg\n    :scale: 90"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8 — テーブル定義の例",
+      "description": "ソースの「テーブル定義の例」セクションに含まれるERダイアグラム画像（`ServiceAvailability_ERDiagram.jpg`）の参照がナレッジファイルs8に含まれていない。テーブルのテキスト定義は含まれているが、他セクション（s4、s6、s7）が一貫して画像参照を含んでいるのと対照的。",
+      "source_evidence": ".. image:: ./_images/05/ServiceAvailability_ERDiagram.jpg"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "s4のhintsに主要インタフェース `ServiceAvailability`（`nablarch.common.availability.ServiceAvailability`）が含まれていない。s4のクラス・インタフェース一覧表にはこのインタフェースが最初に記載されており、重要なエントリポイントである。",
+      "source_evidence": "インタフェース定義テーブル: nablarch.common.availability.ServiceAvailability — リクエストIDをもとに、サービス提供可否状態を判定するインタフェース。"
+    }
+  ]
+}

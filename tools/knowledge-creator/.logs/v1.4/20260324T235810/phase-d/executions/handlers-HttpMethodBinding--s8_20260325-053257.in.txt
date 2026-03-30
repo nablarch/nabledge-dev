@@ -1,0 +1,264 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/HttpMethodBinding.rst`
+- Format: `rst`
+
+```
+
+-----------------------------------
+
+
+**リクエストスコープ**
+  3つの変数スコープのうちで最も維持期間が短い。
+  各HTTPリクエストごとに作成され、レスポンス処理が完了するまで維持される。
+  単一のリクエスト間で完結し、次画面以降に引き継ぐ必要の無いデータはここに保存する。
+  
+  画面オンライン処理方式におけるリクエストスコープは基本的にServletAPIの
+  HTTPServletRequest#getAttribute()/setAttribute()メソッドのラッパーである。
+  
+  **リクエストスコープに保持するデータ**
+    - 画面に表示するデータオブジェクト（次画面以降に引き継がないもの）
+    - バリデーションエラー等のメッセージ
+    - JSP側で表示用に使用するフラグ
+
+-------------------------
+
+
+**ウィンドウスコープ**
+  ウィンドウスコープは、ブラウザのウィンドウ、タブ、フレームごとに作成される。
+  (以降この節では、これらをまとめて単に"ウィンドウ"と表現する。)
+  ウィンドウスコープは、各ウィンドウが閉じられるか、セッションが終了するまで維持される。
+  
+  例えば、ログインユーザIDや、ショッピングカート内の商品一覧などの
+  ウィンドウ間で同一の値を共有しなければならない一部のデータを除けば、
+  画面遷移を跨って使用する必要があるデータは、全てウィンドウスコープ上に保持する。
+  
+  これにより、アプリケーション側で特段の考慮をしなくとも
+  複数のウィンドウを用いた並行操作や、ブラウザのヒストリバックによる遷移が可能となる。
+  
+  **ウィンドウスコープに保持するデータ**
+    - 画面の入力項目(入力項目復帰が必要なもの)
+    - 他業務画面からの引き継ぎデータ
+    - 画面遷移履歴情報
+    - 楽観ロック用バージョン番号 [#]_
+  
+  **使用方法**
+    ウィンドウスコープ変数は hidden属性のinputタグとして各ウィンドウの画面内に維持される。
+    従って、ウィンドウスコープ上の変数は通常のリクエストパラメータと同等に扱われる。
+    ウィンドウスコープ変数を含めたリクエストパラメータにアクセスするには
+    :ref:`validation` 機能のAPIを使用する。
+  
+    リクエストパラメータはフレームワークによって自動的にhiddenタグとして画面に出力される。
+    従って、ウィンドウスコープに変数を追加するには、HttpRequestクラスに定義されているsetParam()メソッドを使用する。
+  
+    .. code-block:: java
+  
+      public class HttpRequest extends Request {
+          /**
+           * リクエストパラメータを設定する。
+           */
+          @Published
+          public HttpRequest setParam(String name, String... params);
+      }
+      
+  **セキュリティ上の考慮**
+    フレームワークが出力したhiddenタグの値はフレームワークによって
+    リクエストURIおよびname属性のハッシュ値とともに暗号化される。
+    暗号化処理に使用する共通鍵はユーザログイン時に作成しメモリ上に保持される。
+    この鍵はログアウトもしくはセッションタイムアウトの時点で廃棄されるので、
+    極めて安全性が高い。
+  
+  .. [#]
+  
+    あるデータに対する複数ユーザからの変更に対して、
+    複数のリクエスト(画面)を跨いだトランザクションを実装する場合に使用する制御情報のこと。
+
+--------------------------------------------
+
+
+**セッションスコープ**
+  ログインユーザごとに作成されるスコープであり、
+  本フレームワークでは複数のウィンドウで共有されるデータを保持する目的で使用する。
+  ユーザがログインした時点で作成され、ログアウトもしくはセッションタイムアウトが発生するまで維持される。
+  
+  セッションスコープ上のデータは複数のウィンドウから同時にアクセスされる可能性があり、
+  適切に同期化しなければならない。
+  
+  **セッションスコープに保持するデータ**
+    - ログインユーザに紐づくデータ（ログインユーザID、認証・認可情報）
+    - ウィンドウ間で同一のデータを参照・更新する必要があるデータ（ショッピングカート内の商品情報など）
+  
+  
+  **セッションスコープの実装方式**
+    セッションスコープの実装方式には、HTTPSessionオブジェクトを使用するものと、
+    データベースを使用した独自実装の2通りの方式が存在する。
+    この選択は、アプリケーションサーバのスケーリング方式に大きく影響する。
+  
+    HTTPSessionオブジェクトを使用する場合、同じログインユーザからのリクエストを
+    セッションスコープが存在するサーバインスタンスに必ず振り分けるようにするか、
+    (セッションアフィニティ方式)
+    サーバクラスタ内の全てのサーバインスタンスでセッションスコープを同期する必要がある。
+    (セッションパーシステント方式)
+  
+    データベースを使用した独自実装を使用した場合、アプリケーションサーバについては
+    ほぼ制約無くスケールアップさせることができるが、データベースへの負荷は増加する。
+    
+  .. note::
+  
+     データベースを使用したHTTPセッション実装は現時点では提供されていない。
+     
+```
+
+## Knowledge File
+
+- ID: `handlers-HttpMethodBinding--s8`
+
+```json
+{
+  "id": "handlers-HttpMethodBinding--s8",
+  "title": "変数スコープ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエストスコープ",
+      "hints": [
+        "リクエストスコープ",
+        "HTTPServletRequest",
+        "変数スコープ",
+        "リクエスト単位のデータ管理",
+        "バリデーションエラーメッセージ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ウィンドウスコープ",
+      "hints": [
+        "ウィンドウスコープ",
+        "HttpRequest",
+        "setParam",
+        "複数ウィンドウ並行操作",
+        "楽観ロック",
+        "hiddenタグ暗号化",
+        "ヒストリバック"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "セッションスコープ",
+      "hints": [
+        "セッションスコープ",
+        "セッション同期",
+        "セッションアフィニティ",
+        "セッションパーシステント",
+        "ログインユーザデータ",
+        "HTTPSession"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## リクエストスコープ\n\n3つの変数スコープのうち最も維持期間が短い。各HTTPリクエストごとに作成され、レスポンス処理が完了するまで維持される。単一のリクエスト間で完結し、次画面以降に引き継ぐ必要のないデータを保持する。\n\n画面オンライン処理方式におけるリクエストスコープは `HTTPServletRequest#getAttribute()/setAttribute()` のラッパーである。\n\n**リクエストスコープに保持するデータ**\n\n- 画面に表示するデータオブジェクト（次画面以降に引き継がないもの）\n- バリデーションエラー等のメッセージ\n- JSP側で表示用に使用するフラグ",
+    "s2": "## ウィンドウスコープ\n\nブラウザのウィンドウ・タブ・フレームごとに作成される。各ウィンドウが閉じられるか、セッションが終了するまで維持される。\n\nウィンドウ間で同一の値を共有しなければならない一部のデータ（ログインユーザIDやショッピングカート内の商品一覧など）を除き、画面遷移を跨って使用するデータは全てウィンドウスコープ上に保持する。これにより、複数ウィンドウを用いた並行操作やブラウザのヒストリバックによる遷移が可能となる。\n\n**ウィンドウスコープに保持するデータ**\n\n- 画面の入力項目（入力項目復帰が必要なもの）\n- 他業務画面からの引き継ぎデータ\n- 画面遷移履歴情報\n- 楽観ロック用バージョン番号\n\n**使用方法**\n\nウィンドウスコープ変数は hidden属性のinputタグとして各ウィンドウの画面内に維持される。ウィンドウスコープ変数を含むリクエストパラメータにアクセスするには :ref:`validation` 機能のAPIを使用する。\n\nウィンドウスコープに変数を追加するには `HttpRequest#setParam()` を使用する。\n\n```java\npublic HttpRequest setParam(String name, String... params);\n```\n\n**セキュリティ上の考慮**\n\nフレームワークが出力したhiddenタグの値は、リクエストURIおよびname属性のハッシュ値とともに暗号化される。暗号化に使用する共通鍵はユーザログイン時に作成してメモリ上に保持され、ログアウトまたはセッションタイムアウト時に廃棄される。",
+    "s3": "## セッションスコープ\n\nログインユーザごとに作成されるスコープで、複数のウィンドウで共有されるデータを保持する。ユーザがログインした時点で作成され、ログアウトまたはセッションタイムアウトが発生するまで維持される。\n\nセッションスコープ上のデータは複数のウィンドウから同時にアクセスされる可能性があるため、適切に同期化しなければならない。\n\n**セッションスコープに保持するデータ**\n\n- ログインユーザに紐づくデータ（ログインユーザID、認証・認可情報）\n- ウィンドウ間で同一のデータを参照・更新する必要があるデータ（ショッピングカート内の商品情報など）\n\n**セッションスコープの実装方式**\n\nHTTPSessionオブジェクトを使用する方式とデータベースを使用した独自実装の2通りがある。\n\n- **HTTPSession方式**: 同じログインユーザからのリクエストをセッションスコープが存在するサーバインスタンスに振り分ける（セッションアフィニティ方式）か、クラスタ内全サーバインスタンスでセッションスコープを同期する（セッションパーシステント方式）必要がある。\n- **DB独自実装方式**: アプリケーションサーバをほぼ制約なくスケールアップできるが、データベースへの負荷が増加する。\n\n> **注意**: データベースを使用したHTTPセッション実装は現時点では提供されていない。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

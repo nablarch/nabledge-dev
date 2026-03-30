@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sender_util--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (code sample)",
+      "description": "The variable declaration `String timeoutErrorMessageId = \"MW11AD01\";` is omitted from the code example, but `timeoutErrorMessageId` is still referenced in the catch block. This leaves the code sample with an undeclared variable, making it incomplete and potentially confusing.",
+      "source_evidence": "Source contains: `String timeoutErrorMessageId = \"MW11AD01\";` as the second line of the code sample, immediately after the requestId declaration."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (onError method description)",
+      "description": "The `onError` method behavior when returning `true` and no next SyncMessagingEventHook exists is omitted. The source specifies that in this case the value of the `responseMessage` argument is returned to the caller of MessageSender. This is a decision-relevant behavioral detail for developers building hook chains.",
+      "source_evidence": "Source states: 「次のSyncMessagingEventHookが存在しない場合は、引数responseMessageに設定されている値をMessageSenderの呼び出し元に返す。」 in the onError row description."
+    }
+  ]
+}

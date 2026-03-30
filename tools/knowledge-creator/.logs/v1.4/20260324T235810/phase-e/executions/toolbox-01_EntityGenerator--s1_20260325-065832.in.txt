@@ -1,0 +1,619 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "toolbox-01_EntityGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source lines 1–30)",
+      "description": "The entire 概要 section is absent from the knowledge file. The source states the tool generates Form templates from table definitions, external interface design documents, domain definitions, and code design documents; that it automates adding properties (per table/IF design) and setting validation annotations (per domain definitions); and includes a note that external interface design documents have a different format when the data structure is hierarchical (XML/JSON).",
+      "source_evidence": "本ツールは、下記のファイルからアプリケーションで使用するFormのひな形を作成する。... 外部インタフェース設計書は、データ形式が階層構造（XML形式またはJSON形式）かどうかでフォーマットが異なる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ツール配置場所 section (source lines ~32–47)",
+      "description": "The entire ツール配置場所 section is absent. It specifies the tool's location (tutorial project's tool/formgenerator directory) and lists the four key entries: doc (design document directory), resources (configuration files), formgen.xml (Ant build file used in execution), and formgen.properties (Ant property file).",
+      "source_evidence": "本ツールはチュートリアルプロジェクトの tool/formgenerator ディレクトリに配置されている。... formgen.xml | 本ツールを実行するためのAntビルドファイル ... formgen.properties | Antビルドファイルのプロパティファイル"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "自動生成ツールの実行手順 section (source lines ~250–260)",
+      "description": "The entire execution procedure section is absent. The source provides the Ant commands required to run the tool: `ant -f formgen.xml generate-entity` (for table definition input) and `ant -f formgen.xml generate-form` (for external interface design input). Without these commands a user cannot operate the tool.",
+      "source_evidence": "ant -f formgen.xml generate-entity\n# 外部IF設計書を入力とする場合\nant -f formgen.xml generate-form"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file index (s1–s11)",
+      "description": "Three substantive source sections — 概要, ツール配置場所, 自動生成ツールの実行手順 — are not represented as knowledge sections, giving 11 sections vs ~14 in the source.",
+      "source_evidence": "Source h2 headings: 概要, ツール配置場所, 利用の準備, 自動生成ツールの実行手順, 自動生成ツールの仕様詳細 (with h3/h4 sub-sections)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s10 hints",
+      "description": "`toMap_template.txt` is listed in the source template file table and is included in s10 section content, but is absent from the s10 hints array.",
+      "source_evidence": "nablarch/tool/formgenerator/toMap_template.txt | フィールドをMapに変換するメソッド部のテンプレート"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 hints",
+      "description": "The Japanese external-interface type names used as mapping keys (`半角数字`, `半角`, `符号無ゾーン10進数`, `符号無数値`) are missing from the s9 hints, making it harder for an AI to match questions about those types to this section.",
+      "source_evidence": "<entry key=\"半角数字\" value=\"java.lang.String\"/> ... <entry key=\"符号無ゾーン10進数\" value=\"java.math.BigDecimal\"/>"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`entity_generator`:
+
+====================
+Form自動生成ツール
+====================
+
+概要
+====
+
+本ツールは、下記のファイルからアプリケーションで使用するFormのひな形を作成する。
+
+ * テーブル定義書または、外部インタフェース設計書
+ * ドメイン定義書
+ * コード設計書
+
+本ツールでFormのひな形を自動生成することで、Formの作成に必要な下記の作業が自動化できる。
+
+ * テーブル設計(外部インタフェース設計書)に従い、Formにプロパティを追加する。
+ * ドメイン定義に従い、Form の単項目精査で使用するアノテーションを設定する。
+
+
+自動生成ツールの詳細な仕様については `自動生成ツールの仕様詳細`_ を参照。
+
+
+本ツールを使用することで、データベース上で設計されたカラムを全て持つFormのひな形が生成できる。
+また、作成したFormのひな形にはドメイン定義書に従って Form の単項目精査に必要なアノテーションが設定される。
+
+.. note::
+
+ 外部インタフェース設計書は、データ形式が階層構造（XML形式またはJSON形式）かどうかでフォーマットが異なる。
+ 以降で、外部インタフェース設計書の種類によって異なる内容があれば、その旨記載する。
+
+ツール配置場所
+==============
+
+本ツールはチュートリアルプロジェクトの\ ``tool/formgenerator``\ ディレクトリに配置されている。
+
+配下のファイル/ディレクトリ構成を以下に示す。
+
+===================== ================================================================================= 
+ファイル/ディレクトリ 説明
+===================== =================================================================================
+doc                   テーブル定義書等の配置場所（変更可能。\ `環境設定ファイル`_\ を参照）
+resources             本ツールの設定ファイル配置場所（\ `利用の準備`_\ を参照）
+formgen.xml           本ツールを実行するためのAntビルドファイル(\ `自動生成ツールの実行手順`_\ を参照)
+formgen.properties    Antビルドファイルのプロパティファイル（通常、変更の必要なし）
+===================== ================================================================================= 
+
+利用の準備
+==========
+
+自動生成ツールの設定ファイルに、利用に必要な設定を記述する。
+
+設定ファイルとその設定内容は下記の通り。
+
+=================================================================================== ================================================================
+ファイル                                                                            設定内容                  
+=================================================================================== ================================================================
+**テーブル定義書から自動生成する場合の設定ファイル**
+----------------------------------------------------------------------------------------------------------------------------------------------------
+nablarch/tool/formgenerator/loader/poi/formgeneratorFromTableDesign.xml             コンポーネント定義ファイル。設計書のレイアウト等。
+nablarch/tool/formgenerator/loader/poi/formgeneratorFromTableDesign.config          環境設定ファイル。出力ファイルのパス等。
+nablarch/tool/formgenerator/class_template.txt                                      クラス全体のテンプレート
+nablarch/tool/formgenerator/accessor_template.txt                                   アクセサ部のテンプレート
+**外部インタフェース設計書から自動生成する場合の設定ファイル**
+----------------------------------------------------------------------------------------------------------------------------------------------------
+nablarch/tool/formgenerator/loader/poi/formgeneratorFromIFDesign.config             コンポーネント定義ファイル。設計書のレイアウト等。
+nablarch/tool/formgenerator/loader/poi/formgeneratorFromIFDesign.xml                環境設定ファイル。出力ファイルのパス等。
+nablarch/tool/formgenerator/if_class_template.txt                                   クラス全体のテンプレート
+nablarch/tool/formgenerator/if_accessor_template.txt                                アクセサ部のテンプレート
+nablarch/tool/formgenerator/if_toMap_template.txt                                   フィールドをMapに変換するメソッド部のテンプレート
+nablarch/tool/formgenerator/if_property_name_annotation_template.txt                | アクセサ部に付与するプロパティ名用アノテーションのテンプレート
+                                                                                    | 単項目精査エラーメッセージのプレスホルダーとして利用
+**共通の設定ファイル**
+----------------------------------------------------------------------------------------------------------------------------------------------------
+nablarch/tool/formgenerator/import_template.txt                                     インポート部のテンプレート
+nablarch/tool/formgenerator/field_template.txt                                      フィールド部のテンプレート
+nablarch/tool/formgenerator/constructor_assign_template.txt                         コンストラクタ代入部のテンプレート
+=================================================================================== ================================================================
+
+それぞれの設定内容は下記の通り。
+
+----------------
+環境設定ファイル
+----------------
+
+基本的な設定は、この環境設定ファイルで行う。
+設計書のレイアウトも含めNablarch標準のものを使用している場合、
+ファイルパス以外は修正する必要はない。
+
+
+入力元となる設計書に関する設定
+------------------------------
+* テーブル定義書を元に自動生成する場合(formgeneratorFromTableDesign.config)
+
+ ======================== ========================================================================================
+ キー名                   設定内容
+ ======================== ========================================================================================
+ tableDefinitionFilePath  テーブル定義書のファイルパス              
+ domainDefinitionFilePath ドメイン定義書のファイルパス              
+ codeDesignFilePath       コード設計書のファイルパス                
+ tablePrefix              テーブル物理名のプレフィックス（例：テーブル名に一律"T\_"を付与する場合は、"T\_"を指定）            
+ classSuffix              生成するJavaクラスに付与するサフィックス（例：XxxEntityとする場合は、"Entity"を指定）
+ ======================== ========================================================================================
+
+* 外部インタフェース設計書を元に自動生成する場合(formgeneratorFromIFDesign.config)
+
+ ======================== ========================================================================================
+ キー名                   設定内容
+ ======================== ========================================================================================
+ interfaceFileDir         外部インタフェース設計書が置かれているディレクトリ
+ interfaceFileNamePattern 自動生成対象の外部インタフェース設計書を正規表現で指定する。
+
+                          例::
+
+                           .*.xls                                       # 全EXCELが対象
+                           外部インターフェース設計書_サンプル1.xls     # ファイル名を完全一致で指定
+
+ domainDefinitionFilePath ドメイン定義書のファイルパス
+ codeDesignFilePath       コード設計書のファイルパス
+ classSuffix              生成するJavaクラスに付与するサフィックス（例：XxxFormとする場合は、"Form"を指定）
+ ======================== ========================================================================================
+
+ファイル生成に関する設定
+------------------------
+
+==================  ================================================
+キー名              設定内容
+==================  ================================================
+outputDir           ファイル出力先ディレクトリ                      
+templateEncoding    テンプレートファイルのファイルエンコーディング  
+outputEncoding      出力ファイルのファイルエンコーディング          
+lineSeparator       出力ファイル改行（"CR","LF","CRLF"のいずれか）  
+spaceSizeForIndent  インデントに使用するスペースの数                
+==================  ================================================
+
+--------------------------
+コンポーネント定義ファイル
+--------------------------
+
+入力元ファイル読み取り設定
+--------------------------
+
+コンポーネント定義ファイルには、設計書からどのように情報を読み取るかという設定が記載されている。
+
+読み取り対象となる設計書に以下の変更が生じた場合、この定義を修正する必要がある。
+
+================================================  ========================
+変更内容                                          修正対象プロパティ名
+================================================  ========================
+設計書シート名                                    sheetName       
+列の追加（読み取り対象カラムの位置がずれた場合）  indexNamePairs  
+行の追加（読み取り開始行がずれた場合）            startRowIndex
+================================================  ========================
+
+
+ドメイン定義書を読み取る設定例を以下に示す。
+
+.. code-block:: xml
+
+  <!-- ドメイン定義 -->
+  <component name="domainDefinitionLoader"
+             class="nablarch.tool.formgenerator.loader.poi.DomainDefinitionLoader">
+    <!-- 入力元ファイルのパス -->
+    <property name="pathToBook" value="${inputBasePath}/${domainDefinitionFileName}"/>
+    <!-- 読み込み対象シート名 -->
+    <property name="sheetName" value="ドメイン定義"/>
+    <!-- 読み取り開始行（0オリジン） -->
+    <property name="startRowIndex" value="5"/>
+    <!-- Excelファイルのレイアウト -->
+    <property name="columnDefs" ref="domainDefinitionColumnDefs"/>
+    <!-- データタイプ定義のローダ -->
+    <property name="dataTypeDefinitionLoader" ref="dataTypeDefinitionLoader"/>
+  </component>
+  <!-- ドメイン定義書のレイアウト -->
+  <component name="domainDefinitionColumnDefs"
+             class="nablarch.tool.formgenerator.loader.poi.util.XlsColumnDefs">
+    <property name="indexNamePairs">
+      <map>
+        <!-- ドメイン名(論理) -->
+        <entry key="0" value="domainLogicalName"/>
+        <!-- 意味・説明 -->
+        <entry key="5" value="description"/>
+        <!-- データタイプ -->
+        <entry key="14" value="dataTypeName"/>
+        <!-- 桁数( '=' or '=<' ) -->
+        <entry key="17" value="eqOrLe"/>
+        <!-- 桁数 -->
+        <entry key="18" value="precision"/>
+        <!-- 小数部桁数 -->
+        <entry key="20" value="fraction"/>
+        <!-- データタイプ詳細 -->
+        <entry key="22" value="dataTypeDetail"/>
+      </map>
+    </property>
+  </component>
+
+データベースまたは外部インターフェース上の型 - Java型マッピング設定
+-------------------------------------------------------------------
+
+DBのデータ型または外部インターフェース上の型とJavaのデータ型の対応関係を設定する。
+この設定に基づいて、生成される Form のプロパティのデータ型が決定する。
+データベースのデータ型または外部インターフェース上の型は、各プロジェクトで使用するRDBMSや設計書の標準に応じてこの設定を行う必要がある。
+
+記述例を以下に示す。
+
+キーをDBのデータ型または外部インタフェース上の型、値をJavaのデータ型としてMap形式で記載する。
+
+.. code-block:: xml
+
+  <!-- Java-DBデータ型対応表の例 -->
+  <component name="dataTypeMapping" class="nablarch.tool.formgenerator.helper.DataTypeMapping">
+    <property name="mapping">
+      <map>
+        <entry key="NCHAR" value="java.lang.String"/>
+        <entry key="NVARCHAR2" value="java.lang.String"/>
+        <entry key="NUMBER" value="java.math.BigDecimal"/>
+        <entry key="TIMESTAMP" value="java.sql.Timestamp"/>
+      </map>
+    </property>
+  </component>
+
+  <!-- Java-外部インタフェース設計上の型対応表 -->
+  <component name="dataTypeMapping" class="nablarch.tool.formgenerator.helper.DataTypeMapping">
+    <property name="mapping">
+      <map>
+        <entry key="半角数字" value="java.lang.String"/>
+        <entry key="半角" value="java.lang.String"/>
+        <entry key="符号無ゾーン10進数" value="java.math.BigDecimal"/>
+        <entry key="符号無数値" value="java.math.BigDecimal"/>
+      </map>
+    </property>
+  </component>
+
+
+.. note::
+ RDBMSがサポートする全ての型を網羅する必要はなく、そのプロジェクトで使用するものだけを記載すれば良い。
+
+
+テンプレート
+------------
+
+自動生成ツールが出力する Form のひな形を設定する。
+
+テンプレートファイルは以下のように分割されている。
+
+================================================================== ========================================
+ファイル                                                            説明
+================================================================== ========================================
+nablarch/tool/formgenerator/class_template.txt                     クラス全体のテンプレート
+nablarch/tool/formgenerator/import_template.txt                    インポート部のテンプレート
+nablarch/tool/formgenerator/field_template.txt                     フィールド部のテンプレート
+nablarch/tool/formgenerator/constructor_assign_template.txt        コンストラクタ代入部のテンプレート
+nablarch/tool/formgenerator/toMap_template.txt                     フィールドをMapに変換するメソッド部\
+                                                                   のテンプレート
+nablarch/tool/formgenerator/accessor_template.txt                  アクセサ部のテンプレート
+nablarch/tool/formgenerator/property_name_annotation_template.txt  PropertyNameアノテーションのテンプレート
+================================================================== ========================================
+
+個別に設定すべき個所は、基本的にクラスヘッダの @author のみでよい。
+ただし、Formのクラス名の命名ルールを変更するなどのプロジェクト固有のルールが存在する場合、
+そのルールに合致するよう必要に応じて変更すること。
+
+以下に @author の設定例と、自動生成されるコードの例を示す。
+
+
+**@author 設定前**
+
+.. code-block:: none
+	
+    /**
+     * $TABLE_LNAME$テーブルの情報を保持するクラス。
+     *
+     * $JAVA_CLASS$ クラスは $TABLE_PNAME$ テーブルにマッピングされるテーブルフィールドを保持する。
+     *
+     * @author Form Generator
+     * @since 1.0
+     */
+
+**@author 設定後(利用者の氏名が "Nabla Taro" の場合)**
+
+.. code-block:: none
+
+    /**
+     * $TABLE_LNAME$テーブルの情報を保持するクラス。
+     *
+     * $JAVA_CLASS$ クラスは $TABLE_PNAME$ テーブルにマッピングされるテーブルフィールドを保持する。
+     *
+     * @author Nabla Taro
+     * @since 1.0
+     */
+
+
+**自動生成されたソースコード(ID_GENERATEテーブルに対応するFormのクラス)**
+
+.. code-block:: none
+	
+    /**
+     * 採番テーブルの情報を保持するクラス。
+     *
+     * IdGenerateEntity クラスは ID_GENERATE テーブルにマッピングされるテーブルフィールドを保持する。
+     * 
+     * 
+     * @author Nabla Taro
+     * @since 1.0
+     */
+
+
+自動生成ツールは上記の例のように "$TABLE_PNAME$" など "$" または "#" で挟まれた置き換え文字を置き換えてソースコードを自動生成する。
+ここで使用できる置き換え文字の一覧を以下に示す。
+
+
+===========================  =======================================
+置き換え文字                 置き換えられる文字列
+===========================  =======================================
+$TABLE_LNAME$                Entityに対応するテーブル論理名
+$TABLE_PNAME$                Entityに対応するテーブル物理名
+$JAVA_CLASS$                 Javaクラス名
+$PROP_LNAME$                 プロパティ論理名
+$PROP_PNAME$                 プロパティ物理名
+$PROP_TYPE$                  プロパティの型
+$GETTER$                     Getterメソッド名
+$SETTER$                     Setterメソッド名
+#PACKAGE#                    パッケージ宣言
+#VALIDATION_IMPORTS#         精査アノテーションのimport文
+#FIELDS#                     フィールド定義
+#FIELD_ANNOTATION#           フィールドに対するアノテーション
+#PARAM_TO_FIELD#             Mapパラメータからフィールドへの代入
+#FIELD_TO_MAP#               フィールドからMapへの代入
+#ACCESSORS#                  アクセサ定義
+#SETTER_ANNOTATIONS#         Setterに対するアノテーション
+#PROPERTY_NAME_ANNOTATION#   PropertyNameアノテーション
+===========================  =======================================
+
+
+自動生成ツールの実行手順
+========================
+
+Entityの自動生成を行う手順は下記の通り。
+
+.. code-block:: bash 
+
+ # テーブル定義書を入力とする場合
+ ant -f formgen.xml generate-entity
+ # 外部IF設計書を入力とする場合
+ ant -f formgen.xml generate-form
+   
+
+
+自動生成ツールの仕様詳細
+========================
+
+自動生成ツールの仕様の詳細について以下に記載する。
+
+
+-----------------
+Entity 出力の仕様
+-----------------
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "toolbox-01_EntityGenerator--s1",
+  "title": "Form自動生成ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テーブル定義書から自動生成する場合の設定ファイル",
+      "hints": [
+        "formgeneratorFromTableDesign.xml",
+        "formgeneratorFromTableDesign.config",
+        "class_template.txt",
+        "accessor_template.txt",
+        "テーブル定義書",
+        "Form自動生成",
+        "設定ファイル一覧"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "外部インタフェース設計書から自動生成する場合の設定ファイル",
+      "hints": [
+        "formgeneratorFromIFDesign.config",
+        "formgeneratorFromIFDesign.xml",
+        "if_class_template.txt",
+        "if_accessor_template.txt",
+        "if_toMap_template.txt",
+        "if_property_name_annotation_template.txt",
+        "外部インタフェース設計書",
+        "Form自動生成",
+        "設定ファイル一覧"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "共通の設定ファイル",
+      "hints": [
+        "import_template.txt",
+        "field_template.txt",
+        "constructor_assign_template.txt",
+        "共通設定ファイル",
+        "Form自動生成"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "環境設定ファイル",
+      "hints": [
+        "環境設定ファイル",
+        "ファイルパス設定",
+        "Nablarch標準レイアウト",
+        "Form自動生成設定",
+        "formgeneratorFromTableDesign.config",
+        "formgeneratorFromIFDesign.config"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力元となる設計書に関する設定",
+      "hints": [
+        "tableDefinitionFilePath",
+        "domainDefinitionFilePath",
+        "codeDesignFilePath",
+        "tablePrefix",
+        "classSuffix",
+        "interfaceFileDir",
+        "interfaceFileNamePattern",
+        "設計書パス設定",
+        "テーブル定義書設定",
+        "外部インタフェース設計書設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ファイル生成に関する設定",
+      "hints": [
+        "outputDir",
+        "templateEncoding",
+        "outputEncoding",
+        "lineSeparator",
+        "spaceSizeForIndent",
+        "ファイル出力設定",
+        "エンコーディング設定",
+        "改行コード設定"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "コンポーネント定義ファイル",
+      "hints": [
+        "sheetName",
+        "indexNamePairs",
+        "startRowIndex",
+        "コンポーネント定義",
+        "設計書読み取り設定",
+        "シート設定",
+        "カラム位置設定"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "入力元ファイル読み取り設定",
+      "hints": [
+        "DomainDefinitionLoader",
+        "nablarch.tool.formgenerator.loader.poi.DomainDefinitionLoader",
+        "XlsColumnDefs",
+        "nablarch.tool.formgenerator.loader.poi.util.XlsColumnDefs",
+        "domainDefinitionLoader",
+        "domainDefinitionColumnDefs",
+        "ドメイン定義書読み取り",
+        "columnDefs",
+        "pathToBook",
+        "indexNamePairs"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "データベースまたは外部インターフェース上の型 - Java型マッピング設定",
+      "hints": [
+        "DataTypeMapping",
+        "nablarch.tool.formgenerator.helper.DataTypeMapping",
+        "dataTypeMapping",
+        "データ型マッピング",
+        "DB型とJava型の対応",
+        "NCHAR",
+        "NVARCHAR2",
+        "NUMBER",
+        "TIMESTAMP",
+        "型対応表"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "テンプレート",
+      "hints": [
+        "class_template.txt",
+        "import_template.txt",
+        "field_template.txt",
+        "constructor_assign_template.txt",
+        "accessor_template.txt",
+        "property_name_annotation_template.txt",
+        "$TABLE_LNAME$",
+        "$TABLE_PNAME$",
+        "$JAVA_CLASS$",
+        "#PACKAGE#",
+        "#VALIDATION_IMPORTS#",
+        "#FIELDS#",
+        "#ACCESSORS#",
+        "テンプレート置き換え文字",
+        "@author設定"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "Entity 出力の仕様",
+      "hints": [
+        "Entity出力",
+        "自動生成仕様詳細",
+        "Form自動生成ツール仕様"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テーブル定義書を元にFormを自動生成する場合に使用する設定ファイル。\n\n| ファイル | 説明 |\n|---|---|\n| `nablarch/tool/formgenerator/loader/poi/formgeneratorFromTableDesign.xml` | コンポーネント定義ファイル（設計書のレイアウト等） |\n| `nablarch/tool/formgenerator/loader/poi/formgeneratorFromTableDesign.config` | 環境設定ファイル（出力ファイルのパス等） |\n| `nablarch/tool/formgenerator/class_template.txt` | クラス全体のテンプレート |\n| `nablarch/tool/formgenerator/accessor_template.txt` | アクセサ部のテンプレート |",
+    "s2": "外部インタフェース設計書を元にFormを自動生成する場合に使用する設定ファイル。\n\n| ファイル | 説明 |\n|---|---|\n| `nablarch/tool/formgenerator/loader/poi/formgeneratorFromIFDesign.config` | コンポーネント定義ファイル（設計書のレイアウト等） |\n| `nablarch/tool/formgenerator/loader/poi/formgeneratorFromIFDesign.xml` | 環境設定ファイル（出力ファイルのパス等） |\n| `nablarch/tool/formgenerator/if_class_template.txt` | クラス全体のテンプレート |\n| `nablarch/tool/formgenerator/if_accessor_template.txt` | アクセサ部のテンプレート |\n| `nablarch/tool/formgenerator/if_toMap_template.txt` | フィールドをMapに変換するメソッド部のテンプレート |\n| `nablarch/tool/formgenerator/if_property_name_annotation_template.txt` | アクセサ部に付与するプロパティ名用アノテーションのテンプレート（単項目精査エラーメッセージのプレースホルダーとして利用） |",
+    "s3": "テーブル定義書・外部インタフェース設計書共通の設定ファイル。\n\n| ファイル | 説明 |\n|---|---|\n| `nablarch/tool/formgenerator/import_template.txt` | インポート部のテンプレート |\n| `nablarch/tool/formgenerator/field_template.txt` | フィールド部のテンプレート |\n| `nablarch/tool/formgenerator/constructor_assign_template.txt` | コンストラクタ代入部のテンプレート |",
+    "s4": "自動生成ツールの基本設定はこの環境設定ファイルで行う。設計書のレイアウトも含めNablarch標準のものを使用している場合、ファイルパス以外の設定変更は不要。",
+    "s5": "テーブル定義書の場合と外部インタフェース設計書の場合で設定キーが異なる。\n\n**テーブル定義書を元に自動生成する場合**（formgeneratorFromTableDesign.config）:\n\n| キー名 | 設定内容 |\n|---|---|\n| tableDefinitionFilePath | テーブル定義書のファイルパス |\n| domainDefinitionFilePath | ドメイン定義書のファイルパス |\n| codeDesignFilePath | コード設計書のファイルパス |\n| tablePrefix | テーブル物理名のプレフィックス（例：一律`T_`を付与する場合は`T_`を指定） |\n| classSuffix | 生成するJavaクラスのサフィックス（例：`XxxEntity`とする場合は`Entity`を指定） |\n\n**外部インタフェース設計書を元に自動生成する場合**（formgeneratorFromIFDesign.config）:\n\n| キー名 | 設定内容 |\n|---|---|\n| interfaceFileDir | 外部インタフェース設計書が置かれているディレクトリ |\n| interfaceFileNamePattern | 自動生成対象の外部インタフェース設計書を正規表現で指定（例：`.*.xls`で全EXCELが対象、ファイル名完全一致指定も可） |\n| domainDefinitionFilePath | ドメイン定義書のファイルパス |\n| codeDesignFilePath | コード設計書のファイルパス |\n| classSuffix | 生成するJavaクラスのサフィックス（例：`XxxForm`とする場合は`Form`を指定） |",
+    "s6": "ファイル生成に関する設定（環境設定ファイルに記述）:\n\n| キー名 | 設定内容 |\n|---|---|\n| outputDir | ファイル出力先ディレクトリ |\n| templateEncoding | テンプレートファイルのファイルエンコーディング |\n| outputEncoding | 出力ファイルのファイルエンコーディング |\n| lineSeparator | 出力ファイル改行（`CR`、`LF`、`CRLF`のいずれか） |\n| spaceSizeForIndent | インデントに使用するスペースの数 |",
+    "s7": "コンポーネント定義ファイルには、設計書からどのように情報を読み取るかの設定が記載されている。\n\n読み取り対象の設計書に以下の変更が生じた場合、コンポーネント定義ファイルの修正が必要:\n\n| 変更内容 | 修正対象プロパティ名 |\n|---|---|\n| 設計書シート名の変更 | sheetName |\n| 列の追加（読み取り対象カラムの位置がずれた場合） | indexNamePairs |\n| 行の追加（読み取り開始行がずれた場合） | startRowIndex |",
+    "s8": "ドメイン定義書を読み取る設定例（`nablarch.tool.formgenerator.loader.poi.DomainDefinitionLoader` および `nablarch.tool.formgenerator.loader.poi.util.XlsColumnDefs` を使用）:\n\n```xml\n<component name=\"domainDefinitionLoader\"\n           class=\"nablarch.tool.formgenerator.loader.poi.DomainDefinitionLoader\">\n  <!-- 入力元ファイルのパス -->\n  <property name=\"pathToBook\" value=\"${inputBasePath}/${domainDefinitionFileName}\"/>\n  <!-- 読み込み対象シート名 -->\n  <property name=\"sheetName\" value=\"ドメイン定義\"/>\n  <!-- 読み取り開始行（0オリジン） -->\n  <property name=\"startRowIndex\" value=\"5\"/>\n  <property name=\"columnDefs\" ref=\"domainDefinitionColumnDefs\"/>\n  <property name=\"dataTypeDefinitionLoader\" ref=\"dataTypeDefinitionLoader\"/>\n</component>\n<component name=\"domainDefinitionColumnDefs\"\n           class=\"nablarch.tool.formgenerator.loader.poi.util.XlsColumnDefs\">\n  <property name=\"indexNamePairs\">\n    <map>\n      <entry key=\"0\" value=\"domainLogicalName\"/>\n      <entry key=\"5\" value=\"description\"/>\n      <entry key=\"14\" value=\"dataTypeName\"/>\n      <entry key=\"17\" value=\"eqOrLe\"/>\n      <entry key=\"18\" value=\"precision\"/>\n      <entry key=\"20\" value=\"fraction\"/>\n      <entry key=\"22\" value=\"dataTypeDetail\"/>\n    </map>\n  </property>\n</component>\n```",
+    "s9": "DBデータ型または外部インタフェース上の型とJavaデータ型の対応関係を設定する。この設定に基づいて生成されるFormのプロパティのデータ型が決定する。各プロジェクトで使用するRDBMSや設計書の標準に応じて設定する。\n\n> **注意**: RDBMSがサポートする全ての型を網羅する必要はなく、プロジェクトで使用するものだけを記載すれば良い。\n\n**クラス**: `nablarch.tool.formgenerator.helper.DataTypeMapping`\n\nキーをDB型または外部インタフェース上の型、値をJava型としてMap形式で記載する。\n\nテーブル定義書の場合の設定例:\n```xml\n<component name=\"dataTypeMapping\" class=\"nablarch.tool.formgenerator.helper.DataTypeMapping\">\n  <property name=\"mapping\">\n    <map>\n      <entry key=\"NCHAR\" value=\"java.lang.String\"/>\n      <entry key=\"NVARCHAR2\" value=\"java.lang.String\"/>\n      <entry key=\"NUMBER\" value=\"java.math.BigDecimal\"/>\n      <entry key=\"TIMESTAMP\" value=\"java.sql.Timestamp\"/>\n    </map>\n  </property>\n</component>\n```\n\n外部インタフェース設計書の場合の設定例:\n```xml\n<component name=\"dataTypeMapping\" class=\"nablarch.tool.formgenerator.helper.DataTypeMapping\">\n  <property name=\"mapping\">\n    <map>\n      <entry key=\"半角数字\" value=\"java.lang.String\"/>\n      <entry key=\"半角\" value=\"java.lang.String\"/>\n      <entry key=\"符号無ゾーン10進数\" value=\"java.math.BigDecimal\"/>\n      <entry key=\"符号無数値\" value=\"java.math.BigDecimal\"/>\n    </map>\n  </property>\n</component>\n```",
+    "s10": "自動生成ツールが出力するFormのひな形のテンプレートファイル。`$` または `#` で囲まれた置き換え文字を置き換えてソースコードを自動生成する。\n\n| ファイル | 説明 |\n|---|---|\n| `nablarch/tool/formgenerator/class_template.txt` | クラス全体のテンプレート |\n| `nablarch/tool/formgenerator/import_template.txt` | インポート部のテンプレート |\n| `nablarch/tool/formgenerator/field_template.txt` | フィールド部のテンプレート |\n| `nablarch/tool/formgenerator/constructor_assign_template.txt` | コンストラクタ代入部のテンプレート |\n| `nablarch/tool/formgenerator/toMap_template.txt` | フィールドをMapに変換するメソッド部のテンプレート |\n| `nablarch/tool/formgenerator/accessor_template.txt` | アクセサ部のテンプレート |\n| `nablarch/tool/formgenerator/property_name_annotation_template.txt` | PropertyNameアノテーションのテンプレート |\n\n個別に設定が必要な箇所はクラスヘッダの `@author` のみ。Formのクラス名の命名ルールを変更するなどのプロジェクト固有のルールがある場合は必要に応じて変更する。\n\n使用できる置き換え文字:\n\n| 置き換え文字 | 置き換えられる文字列 |\n|---|---|\n| `$TABLE_LNAME$` | Entityに対応するテーブル論理名 |\n| `$TABLE_PNAME$` | Entityに対応するテーブル物理名 |\n| `$JAVA_CLASS$` | Javaクラス名 |\n| `$PROP_LNAME$` | プロパティ論理名 |\n| `$PROP_PNAME$` | プロパティ物理名 |\n| `$PROP_TYPE$` | プロパティの型 |\n| `$GETTER$` | Getterメソッド名 |\n| `$SETTER$` | Setterメソッド名 |\n| `#PACKAGE#` | パッケージ宣言 |\n| `#VALIDATION_IMPORTS#` | 精査アノテーションのimport文 |\n| `#FIELDS#` | フィールド定義 |\n| `#FIELD_ANNOTATION#` | フィールドに対するアノテーション |\n| `#PARAM_TO_FIELD#` | Mapパラメータからフィールドへの代入 |\n| `#FIELD_TO_MAP#` | フィールドからMapへの代入 |\n| `#ACCESSORS#` | アクセサ定義 |\n| `#SETTER_ANNOTATIONS#` | Setterに対するアノテーション |\n| `#PROPERTY_NAME_ANNOTATION#` | PropertyNameアノテーション |",
+    "s11": "なし"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

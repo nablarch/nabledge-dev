@@ -1,0 +1,398 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "mom-messaging-messaging_receive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 has no corresponding source content. The `++++++++++++++++++++++++` line in the RST source between the intro and the '業務アクションハンドラの実装' heading is a decorative visual separator, not a real content section. s3 content is 'なし' (3 characters), well below the 50-character threshold. The source has 3 natural sections (intro + 2 h2), but the knowledge file has 4 sections.",
+      "source_evidence": "The `++++++++++++++++++++++++` line appears between the introductory content and the `------------------------------------------業務アクションハンドラの実装------------------------------------------` heading. It has no associated text and functions as a horizontal rule, not a section heading."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "s1 hints are missing `DataReadHandler`, which is explicitly referenced in s1 content (point 4: 閉局時の挙動が異なる — `:doc:`../handler/DataReadHandler` の上位に :doc:`../handler/ServiceAvailabilityCheckHandler` を配置し`).",
+      "source_evidence": "Source point 4: ':doc:`../handler/DataReadHandler` の上位に :doc:`../handler/ServiceAvailabilityCheckHandler` を配置し、閉局中はメッセージキュー上の受信電文は取得せずに滞留させ'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4 hints are missing several PascalCase handler names that appear in the standard handler queue list and processing flow details within the section content: StatusCodeConvertHandler, GlobalErrorHandler, ThreadContextClearHandler, ThreadContextHandler_main, ThreadContextHandler_request, MultiThreadExecutionHandler, RequestPathJavaPackageMapping.",
+      "source_evidence": "Source HandlerQueue array: ['Main', 'StatusCodeConvertHandler', 'GlobalErrorHandler', 'ThreadContextClearHandler', 'ThreadContextHandler_main', 'DuplicateProcessCheckHandler', 'RequestPathJavaPackageMapping', 'MultiThreadExecutionHandler', ...]. These all appear in the knowledge file's s4 content under '標準ハンドラ構成' and flow details, but are absent from the hints array."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+====================================================
+MOM応答不要メッセージング実行制御基盤
+====================================================
+本節で解説する :doc:`messaging_receive` では、
+外部から送信された要求電文の内容をDB上に一旦格納した後で、後続のバッチにより業務処理を行う仕組みを提供する。
+また、受信電文に対する応答電文の送信は行わない。
+
+本方式では、先行処理部分が極めて単純な構造となるため、フレームワークが提供する業務アクションハンドラをそのまま使用することができる。
+その場合、必要な設定を行うだけでよく、コーディングは不要である。
+
+後続のバッチ処理は、通常のバッチとして作成する。
+バッチ処理の実装については、以下の各稿を参照すること。
+
+  - :doc:`batch_single_shot`
+  - :doc:`batch_resident`
+
+先行処理部分は、基本的に :doc:`messaging_request_reply` の構造を踏襲する。
+差異となる部分は以下の3点である。
+
+  **1. 応答電文を送信しない**
+    本方式では要求電文に対する応答を行わないため
+    :doc:`messaging_request_reply` で使用していた以下のハンドラについては使用しない。
+
+      - :doc:`../handler/MessageReplyHandler`
+      - :doc:`../handler/MessageResendHandler`
+
+  **2. 業務アクションハンドラは作成不要**
+    先行処理の業務アクションハンドラは、1電文の内容をDBの1レコードとして保存する定型処理となるため、
+    基本的にはフレームワークが提供するハンドラに対して設定を行うだけでよい。
+    詳細については、以下を参照すること。
+
+      - :doc:`../handler/AsyncMessageReceiveAction`
+    
+    
+  **3. 2相コミットを使用する**
+    本方式では、電文の保存に失敗した場合にエラー応答を送信することができないので、
+    取得した電文を一旦キューに戻した後で既定回数に達するまでリトライする。
+    このため、DBに対する登録処理とキューに対する操作を1つのトランザクションとして扱う必要がある(2相コミット制御)。
+    具体的には、トランザクション制御ハンドラの設定を変更し、2相コミットに対応した実装に差し替える必要がある。
+
+
+  **4. 閉局時の挙動が異なる**
+    :doc:`messaging_request_reply` では、要求された業務機能が閉局中だった場合にエラー応答電文を送信し、
+    業務閉局中であることを直ちに通知する設計となっている。
+    しかし、 :doc:`messaging_receive` では応答の送信を行わないため、
+    :doc:`../handler/DataReadHandler` の上位に :doc:`../handler/ServiceAvailabilityCheckHandler` を配置し、
+    閉局中はメッセージキュー上の受信電文は取得せずに滞留させ、開局後に処理するような設計となっている。
+
+++++++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+先に述べたように、本方式での業務処理は定型処理となるため、業務アクションハンドラを実装する必要は無く、
+定型処理を実装した下記のハンドラに対して必要な設定を行うだけでよい。
+
+      - :doc:`../handler/AsyncMessageReceiveAction`
+
+
++++++++++++++++++++++++++++++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`messaging_receive` の標準ハンドラ構成とその上で発生しうる処理フローを表した図である。
+
+.. _flow-table:
+  
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  | 区分                   | 種別       | 処理フロー名           | 概要                                      | 機能                 |
+  +========================+============+========================+===========================================+======================+
+  | プロセス起動制御       | 正常フロー | 正常起動               | Javaコマンドからプロセスを起動し、        | .. _launch:          |
+  |                        |            |                        | リクエストスレッドを初期化する。          |                      |
+  |                        |            |                        | 各スレッドは受信キュー上で電文を待機する。| `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 重複起動エラー         | プロセス起動時、既に同一プロセスが        | .. _duplaunch:       |
+  |                        |            |                        | 起動していた場合は異常終了する。          |                      |
+  |                        |            |                        |                                           | `フローを表示`_      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  | リクエストスレッド内   | 正常フロー | 受付正常終了           | 各リクエストスレッドは、受信電文の受付後、| .. _normalreply:     |
+  | 制御                   |            |                        | 電文内のレコードを電文テーブルに保存する。|                      |
+  |                        |            |                        |                                           | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | 受信待機タイムアウト   | 各リクエストスレッドは、受信キューでの    | .. _readtimeout:     |
+  |                        |            |                        | 待機状態が一定時間異常継続した場合は、    |                      |
+  |                        |            |                        | プロセス管理テーブルの状態を確認するために|                      |
+  |                        |            |                        | 待機を解除してスレッドループの先頭に戻る。| `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 受付エラー             | アクションハンドラ側でエラーが発生した    | .. _errorreply:      |
+  |                        |            |                        | 場合、業務トランザクションをロールバック  |                      |
+  |                        |            |                        | し、障害ログを出力する。                  |                      |
+  |                        |            |                        |                                           | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | 認可エラー             | 要求電文中のリクエストID/ユーザIDヘッダの | .. _unauthorized:    |
+  |                        |            |                        | 値をもとに認可チェックを行い、            |                      |
+  |                        |            |                        | 権限が無い場合は、障害ログを出力する。    | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | 閉局中待機             | 業務機能が閉局中であった場合は、          | .. _notonservice:    |
+  |                        |            |                        | メッセージキュー上の受信電文取得処理を    |                      |
+  |                        |            |                        | 休止し、再度開局するまで待機する。        |                      |
+  |                        |            |                        | 閉局中に滞留した電文は開局後に処理される。| `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | DB/MQ接続エラー        | DB/MQに対する接続に失敗した場合は         | .. _connectionerror: |
+  |                        |            |                        | 障害ログを出力した後、                    |                      |
+  |                        |            |                        | 再接続処理を行う。                        | `フローを表示`_      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  |  プロセス停止制御      | 正常フロー | プロセス正常停止       | プロセス管理テーブルのフラグを変更する    | .. _termination:     |
+  |                        |            |                        | ことで、リクエストスレッドでの新規処理    |                      |
+  |                        |            |                        | 受付を停止する。その後、全スレッドの      | `フローを表示`_      |
+  |                        |            |                        | 終了を待ってプロセスを正常終了させる。    |                      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+
+
+.. _フローを表示:
+
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'messaging'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "RequestPathJavaPackageMapping"
+      , "MultiThreadExecutionHandler"
+      , "RetryHandler"
+      , "MessagingContextHandler"
+      , "DbConnectionManagementHandler"
+      , "RequestThreadLoopHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_request"
+      , "ProcessStopHandler"
+      , "ServiceAvailabilityCheckHandler"
+      , "TransactionManagementHandler"
+      , "DataReadHandler_messaging"
+      , "PermissionCheckHandler"
+      , "AsyncMessageReceiveAction"
+      ]
+
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["Main",                          "inbound"]
+        , ["ThreadContextHandler_main",     "inbound"]
+        , ["MultiThreadExecutionHandler",   "inbound"]
+        , ["MessagingContextHandler",       "inbound", "ここで取得したMQ接続を、以降の処理で使いまわす。"]
+        , ["DbConnectionManagementHandler", "inbound", "ここで取得したDB接続を、以降の処理で使いまわす。"]
+        , ["RequestThreadLoopHandler",      "inbound", "このハンドラ以降の処理をリクエスト毎にループする。"]
+        , ["DataReadHandler_messaging",     "inbound", "各リクエストスレッドはここで受信キュー上の要求電文を待機する。"
+                                                     + "以降は、要求電文の受信→業務処理の実行"
+                                                     + "を繰り返す。"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["StatusCodeConvertHandler",     "outbound"]
+        , ["Main",                         "outbound", "異常終了"]
+        ],
+
+        // 要求受付正常終了
+        normalreply: [
+          ["RequestPathJavaPackageMapping", "inbound", "AsyncMessageReceiveActionにディスパッチする。"]
+        , ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["AsyncMessageReceiveAction",     "inbound"]
+        , ["AsyncMessageReceiveAction",     "outbound"]
+        , ["TransactionManagementHandler",  "outbound"]
+        , ["RequestThreadLoopHandler",      "outbound", "→②  へ"]
+        ],
+
+
+        // 電文受信タイムアウト
+        readtimeout: [
+          ["DataReadHandler_messaging",     "outbound","タイムアウト間隔を経過してもメッセージを受信できなかった場合、"
+                                                     + "DataReader.NoMoreRecord をリターンする。"]
+        , ["RequestThreadLoopHandler",      "outbound","→③  へ"]
+        , ["RequestThreadLoopHandler",      "inbound"]
+        , ["ProcessStopHandler",            "inbound", "プロセス停止フラグ確認後、⑤ にもどる。"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        ],
+
+
+        // 要求受付エラー
+        errorreply: [
+          ["RequestPathJavaPackageMapping", "inbound", "AsyncMessageReceiveActionにディスパッチする。"]
+        , ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["AsyncMessageReceiveAction",     "inbound", "電文データ部の形式エラー等の事由により実行時例外が発生"]
+        , ["TransactionManagementHandler",  "error"   ]
+        , ["RequestThreadLoopHandler",      "error", "ここで障害ログを出力した後、→②  へ"]
+        ],　
+
+
+        // 認可エラー応答
+        unauthorized: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["PermissionCheckHandler",        "inbound", "認可エラー(Result.Forbidden/ステータスコード:403)を送出する。"]
+        , ["TransactionManagementHandler",  "error"]
+        , ["RequestThreadLoopHandler",      "error",   "起因例外をここで障害ログとして出力した後、→① へ"]
+        ],　
+
+
+        // 閉局中待機
+        notonservice: [
+          ["RequestThreadLoopHandler",        "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",    "inbound"]
+        , ["ServiceAvailabilityCheckHandler", "inbound", "閉局エラー(Result.ServiceUnavailable)を送出する。"]
+        , ["RequestThreadLoopHandler",        "error",   "INFOログを出力し、一定時間待機後、→① へ。\n" 
+                                                       + "以降、開局するまでループする。" ]
+        ],　
+
+        // DB/MQ接続エラー
+        connectionerror: [
+          ["RequestThreadLoopHandler",      "inbound",  "リクエストスレッド内での処理の起点"]
+        , ["AsyncMessageReceiveAction",     "inbound",  "電文保存中にDB接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error", "→ ⑤  へ"]
+        , ["MessagingContextHandler",       "inbound", "MQ再接続"]
+        , ["DbConnectionManagementHandler", "inbound", "DB再接続 → ① にもどる "]
+        ],　
+
+        // プロセス正常停止
+        termination: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound",  "ここで、リクエストIDの値が起動引数-requestPathで指定された値に戻される。"]
+        , ["ProcessStopHandler",            "inbound" ]
+        , ["RequestThreadLoopHandler",      "error",  "ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、"
+                                                    + "処理結果オブジェクトをリターンする。(ステータスコード:200)"]
+        , ["MultiThreadExecutionHandler",   "outbound"]
+        , ["StatusCodeConvertHandler",      "outbound", "ステータスコード:200 → 終了コード:0"]
+        , ["Main",                          "outbound", "正常終了"]
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "mom-messaging-messaging_receive--s1",
+  "title": "MOM応答不要メッセージング実行制御基盤",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "MOM応答不要メッセージング",
+        "messaging_receive",
+        "AsyncMessageReceiveAction",
+        "MessageReplyHandler",
+        "MessageResendHandler",
+        "ServiceAvailabilityCheckHandler",
+        "2相コミット",
+        "閉局中待機",
+        "応答不要メッセージング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "AsyncMessageReceiveAction",
+        "業務アクションハンドラ",
+        "MOM受信アクション",
+        "受信電文DB保存"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "MOM応答不要メッセージング"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "標準ハンドラ構成",
+        "処理フロー",
+        "正常起動",
+        "重複起動エラー",
+        "受付正常終了",
+        "受信待機タイムアウト",
+        "受付エラー",
+        "認可エラー",
+        "閉局中待機",
+        "DB/MQ接続エラー",
+        "プロセス正常停止",
+        "RequestThreadLoopHandler",
+        "MessagingContextHandler",
+        "DbConnectionManagementHandler",
+        "AsyncMessageReceiveAction",
+        "ServiceAvailabilityCheckHandler",
+        "RetryHandler",
+        "ProcessStopHandler",
+        "DuplicateProcessCheckHandler",
+        "TransactionManagementHandler",
+        "DataReadHandler_messaging",
+        "PermissionCheckHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`messaging_receive` は、受信した要求電文をDBに格納し後続バッチで業務処理を行う方式。応答電文の送信は行わない。\n\n先行処理部分は :doc:`messaging_request_reply` の構造を踏襲するが、以下の4点が異なる。\n\n1. **応答電文を送信しない**: :doc:`../handler/MessageReplyHandler` および :doc:`../handler/MessageResendHandler` は使用しない\n2. **業務アクションハンドラは作成不要**: 1電文をDBの1レコードとして保存する定型処理は :doc:`../handler/AsyncMessageReceiveAction` が担う。設定のみで動作し、コーディング不要\n3. **2相コミットを使用する**: 電文保存失敗時にエラー応答を送信できないため、取得電文をキューに戻してリトライする。DBへの登録処理とキュー操作を1トランザクションとして扱う（2相コミット制御）必要があり、トランザクション制御ハンドラを2相コミット対応実装に差し替える\n4. **閉局時の挙動が異なる**: :doc:`messaging_request_reply` は閉局中にエラー応答電文を送信して即通知するが、本方式は応答を送信しない。:doc:`../handler/ServiceAvailabilityCheckHandler` を :doc:`../handler/DataReadHandler` の上位に配置し、閉局中はキュー上の受信電文を取得せず滞留させ、開局後に処理する",
+    "s2": "業務アクションハンドラの実装は不要。:doc:`../handler/AsyncMessageReceiveAction` に対して必要な設定を行うだけでよい。",
+    "s3": "なし",
+    "s4": "**処理フロー一覧**\n\n| 区分 | 種別 | 処理フロー名 | 概要 |\n|---|---|---|---|\n| プロセス起動制御 | 正常フロー | 正常起動 | Javaコマンドからプロセスを起動し、リクエストスレッドを初期化する。各スレッドは受信キュー上で電文を待機する |\n| プロセス起動制御 | 異常フロー | 重複起動エラー | プロセス起動時、既に同一プロセスが起動していた場合は異常終了する |\n| リクエストスレッド内制御 | 正常フロー | 受付正常終了 | 受信電文の受付後、電文内のレコードを電文テーブルに保存する |\n| リクエストスレッド内制御 | 代替フロー | 受信待機タイムアウト | 受信キューでの待機が一定時間継続した場合、プロセス管理テーブルの状態を確認するため待機を解除してスレッドループ先頭に戻る |\n| リクエストスレッド内制御 | 異常フロー | 受付エラー | アクションハンドラ側でエラーが発生した場合、業務トランザクションをロールバックし障害ログを出力する |\n| リクエストスレッド内制御 | 代替フロー | 認可エラー | 要求電文中のリクエストID/ユーザIDヘッダをもとに認可チェックし、権限が無い場合は障害ログを出力する |\n| リクエストスレッド内制御 | 代替フロー | 閉局中待機 | 業務機能が閉局中の場合、受信電文取得処理を休止し開局まで待機する。閉局中に滞留した電文は開局後に処理される |\n| リクエストスレッド内制御 | 異常フロー | DB/MQ接続エラー | DB/MQへの接続失敗時は障害ログ出力後、再接続処理を行う |\n| プロセス停止制御 | 正常フロー | プロセス正常停止 | プロセス管理テーブルのフラグ変更により新規処理受付を停止し、全スレッドの終了を待ってプロセスを正常終了させる |\n\n**標準ハンドラ構成**\n\n1. Main\n2. StatusCodeConvertHandler\n3. GlobalErrorHandler\n4. ThreadContextClearHandler\n5. ThreadContextHandler_main\n6. DuplicateProcessCheckHandler\n7. RequestPathJavaPackageMapping\n8. MultiThreadExecutionHandler\n9. RetryHandler\n10. MessagingContextHandler\n11. DbConnectionManagementHandler\n12. RequestThreadLoopHandler\n13. ThreadContextClearHandler\n14. ThreadContextHandler_request\n15. ProcessStopHandler\n16. ServiceAvailabilityCheckHandler\n17. TransactionManagementHandler\n18. DataReadHandler_messaging\n19. PermissionCheckHandler\n20. AsyncMessageReceiveAction\n\n**処理フロー詳細**\n\n**正常起動**\n\n1. Main (inbound)\n2. ThreadContextHandler_main (inbound)\n3. MultiThreadExecutionHandler (inbound)\n4. MessagingContextHandler (inbound): 取得したMQ接続を以降の処理で使いまわす\n5. DbConnectionManagementHandler (inbound): 取得したDB接続を以降の処理で使いまわす\n6. RequestThreadLoopHandler (inbound): このハンドラ以降の処理をリクエスト毎にループする\n7. DataReadHandler_messaging (inbound): 受信キュー上の要求電文を待機する。要求電文受信後は業務処理を繰り返す\n\n**重複起動エラー**\n\n1. Main (inbound)\n2. ThreadContextHandler_main (inbound): 起動引数-requestPathからリクエストIDを決定する\n3. DuplicateProcessCheckHandler (inbound): 起動停止時の終了コードはこのハンドラに設定する\n4. GlobalErrorHandler (error): 障害ログを出力する\n5. StatusCodeConvertHandler (outbound)\n6. Main (outbound): 異常終了\n\n**受付正常終了**\n\n1. RequestPathJavaPackageMapping (inbound): AsyncMessageReceiveActionにディスパッチする\n2. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n3. ThreadContextHandler_request (inbound)\n4. TransactionManagementHandler (inbound)\n5. DataReadHandler_messaging (inbound)\n6. AsyncMessageReceiveAction (inbound)\n7. AsyncMessageReceiveAction (outbound)\n8. TransactionManagementHandler (outbound)\n9. RequestThreadLoopHandler (outbound): →②へ\n\n**電文受信タイムアウト**\n\n1. DataReadHandler_messaging (outbound): タイムアウト間隔を経過してもメッセージを受信できなかった場合、DataReader.NoMoreRecordをリターンする\n2. RequestThreadLoopHandler (outbound): →③へ\n3. RequestThreadLoopHandler (inbound)\n4. ProcessStopHandler (inbound): プロセス停止フラグ確認後、⑤にもどる\n5. DataReadHandler_messaging (inbound)\n\n**受付エラー**\n\n1. RequestPathJavaPackageMapping (inbound): AsyncMessageReceiveActionにディスパッチする\n2. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n3. ThreadContextHandler_request (inbound)\n4. TransactionManagementHandler (inbound)\n5. DataReadHandler_messaging (inbound)\n6. AsyncMessageReceiveAction (inbound): 電文データ部の形式エラー等の事由により実行時例外が発生\n7. TransactionManagementHandler (error)\n8. RequestThreadLoopHandler (error): 障害ログを出力した後、→②へ\n\n**認可エラー**\n\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. PermissionCheckHandler (inbound): 認可エラー(Result.Forbidden/ステータスコード:403)を送出する\n5. TransactionManagementHandler (error)\n6. RequestThreadLoopHandler (error): 起因例外を障害ログとして出力した後、→①へ\n\n**閉局中待機**\n\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. ServiceAvailabilityCheckHandler (inbound): 閉局エラー(Result.ServiceUnavailable)を送出する\n4. RequestThreadLoopHandler (error): INFOログを出力し、一定時間待機後、→①へ。開局するまでループする\n\n**DB/MQ接続エラー**\n\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. AsyncMessageReceiveAction (inbound): 電文保存中にDB接続エラーが発生した場合、リトライ可能実行時例外(Retryableを実装した例外)が送出される\n3. RequestThreadLoopHandler (error): リトライ可能例外はそのまま再送出する\n4. RetryHandler (error): →⑤へ\n5. MessagingContextHandler (inbound): MQ再接続\n6. DbConnectionManagementHandler (inbound): DB再接続 → ①にもどる\n\n**プロセス正常停止**\n\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound): リクエストIDの値が起動引数-requestPathで指定された値に戻される\n3. ProcessStopHandler (inbound)\n4. RequestThreadLoopHandler (error): プロセス停止要求(ProcessStop)を捕捉するとINFOログを出力後、処理結果オブジェクトをリターンする（ステータスコード:200）\n5. MultiThreadExecutionHandler (outbound)\n6. StatusCodeConvertHandler (outbound): ステータスコード:200 → 終了コード:0\n7. Main (outbound): 正常終了"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ロガー設定 subsection",
+      "description": "Source explicitly states \"LoggerManager#getメソッドでクラスを指定した場合は、FQCNがロガー名となる\" (when a class is passed to LoggerManager#get, the FQCN becomes the logger name). The knowledge file omits this rule. It affects how users write nameRegex patterns — patterns like `nablarch\\\\.core\\\\.validation\\\\..*` only make sense if users know class-based logger names use FQCNs.",
+      "source_evidence": "「LoggerManager#getメソッドでクラスを指定した場合は、FQCNがロガー名となる。」(ロガー設定 ^^^ section)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — FileLogWriter hints",
+      "description": "`BasicLogFormatter` is a PascalCase class name referenced in the FileLogWriter configuration example (`writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter`) but is absent from s4 hints. Users asking about log formatters usable with FileLogWriter would not be routed to this section.",
+      "source_evidence": "「writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter」(FileLogWriter 設定例)"
+    }
+  ]
+}

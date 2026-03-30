@@ -1,0 +1,88 @@
+{
+  "id": "web-application-screenTransition--s8",
+  "title": "複数ウィンドウを立ち上げたい場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げたい場合",
+      "hints": [
+        "popupSubmit",
+        "popupButton",
+        "popupLink",
+        "popupOption",
+        "changeParamName",
+        "複数ウィンドウ",
+        "ポップアップ",
+        "パラメータ名変更"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "別ウィンドウにサブミットする場合のJSPの実装例",
+      "hints": [
+        "popupButton",
+        "changeParamName",
+        "別ウィンドウサブミット",
+        "郵便番号検索",
+        "パラメータ名変更",
+        "n:param"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "別ウィンドウから元画面に値を設定する場合のJSPの実装例",
+      "hints": [
+        "setInputValueToOpener",
+        "window.opener",
+        "別ウィンドウ 元画面 値設定",
+        "JavaScript 外部ファイル",
+        "n:a",
+        "n:button",
+        "window.close"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "リクエストの二重送信防止",
+        "処理済リクエストの受信防止",
+        "DBコミット",
+        "クライアント側対策",
+        "サーバ側対策"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力画面と確認画面の共通化をサポートするカスタムタグ",
+      "hints": [
+        "入力画面と確認画面の共通化",
+        "JSPファイル共通化",
+        "カスタムタグ",
+        "確認画面"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "noCacheタグ",
+        "ブラウザキャッシュ防止",
+        "戻るボタン",
+        "ブラウザの戻るボタン",
+        "履歴バック防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数ウィンドウを立ち上げたい場合は以下のタグを使用する。新しいウィンドウを開き、そのウィンドウに対してサブミットを行う。\n\n- `popupSubmit`\n- `popupButton`\n- `popupLink`\n\n新しいウィンドウのスタイルは `popupOption` 属性で指定する。\n\n| 属性 | 説明 |\n|---|---|\n| popupOption | ポップアップのオプション情報。`window.open` 関数の第3引数（JavaScript）に指定する。 |\n\nオープンしたウィンドウのアクションと元画面のアクションでパラメータ名が異なる場合は、`changeParamName` タグでパラメータ名を変更する。",
+    "s2": "郵便番号から住所を検索する別ウィンドウにサブミットする場合の実装例を示す。\n\n**JSP実装例:**\n\n```jsp\n<%-- 郵便番号の入力項目以外は省略 --%>\n<tr>\n    <th>\n        <span class=\"essential\">*</span>郵便番号<span class=\"instruct\">(半角数字)</span>\n    </th>\n    <td>\n        <n:text name=\"W11AC01.postalCode\" size=\"7\" maxlength=\"9\"/>\n        <%-- popupButtonタグを指定する。name属性やuri属性の指定は通常のbuttonタグと同じ。 --%>\n        <n:popupButton name=\"searchAddress\" uri=\"/action/ss11AB/W11AB01Action/RW11AB0101\">\n            検索\n            <%-- 郵便番号のパラメータ名を別画面のアクションに合わせて変更する。 --%>\n            <n:changeParamName inputName=\"W11AC01.postalCode\" paramName=\"W11AB01.postalCode\" />\n            <%-- 別画面のアクションに合わせてパラメータを追加する。 --%>\n            <n:param paramName=\"W11AB01.max\" value=\"10\" />\n        </n:popupButton>\n    </td>\n</tr>\n```",
+    "s3": "別ウィンドウから元画面に値を設定したい場合はJavaScriptで実現する。JavaScriptは動的な値の埋め込みを防ぐために外部ファイルに記述する。`window.opener` を使用して元画面を参照する。\n\n> **警告**: JavaScriptに対するエスケープ処理はフレームワーク未実装のため、scriptタグのボディやonclick属性など、JavaScriptを記述する部分には動的な値（入力データなど）を埋め込まないこと。\n\n**JavaScript実装例（/js/common.js）:**\n\n```javascript\nfunction setInputValueToOpener(openerInputName, element, prefix, attributeName) {\n    if (attributeName == null) {\n        attributeName = \"name\";\n    }\n    var value = element[attributeName];\n    value = value.substring(prefix.length, value.length);\n    /* window.openerを使用して元画面を参照する。*/\n    var input = window.opener.document.getElementsByName(openerInputName)[0];\n    input.value = value;\n    window.close();\n}\n```\n\n**JSP実装例（リンクで選択させる場合）:**\n\n```jsp\n<%-- 外部ファイルに記述したJavaScriptを読み込む。n:scriptタグはheadタグ内に記述する。 --%>\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n\n<%-- name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。 --%>\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:a href=\"#\" name=\"val_${row.postalCode}\"\n             onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:a>\n    </div>\n</c:forEach>\n</n:form>\n```\n\n**JSP実装例（ボタンで選択させる場合）:**\n\n```jsp\n<%-- 外部ファイルに記述したJavaScriptを読み込む。n:scriptタグはheadタグ内に記述する。 --%>\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n\n<%-- name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。 --%>\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:button uri=\"#\" name=\"val_${row.postalCode}\"\n            onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:button>\n    </div>\n</c:forEach>\n</n:form>\n```",
+    "s4": "DBコミットを伴う画面では二重サブミットを防止する必要がある。クライアント側の対策（リクエストの二重送信防止）とサーバ側の対策（処理済リクエストの受信防止）の両方を実施する必要がある。",
+    "s5": "入力画面と確認画面が1対1に対応する場合、表示用のJSPファイルを共通化できる。",
+    "s6": "ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、`noCacheタグ` を使用する。"
+  }
+}

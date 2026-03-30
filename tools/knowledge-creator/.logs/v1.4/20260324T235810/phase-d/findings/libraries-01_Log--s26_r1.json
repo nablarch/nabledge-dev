@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-01_Log--s26",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s5",
+      "description": "Section s5 has an empty title string. The source has a clear heading 「ロガーファクトリの設定」 for this content.",
+      "source_evidence": "Source heading: 「ロガーファクトリの設定」 under 「プロパティファイルの記述ルール」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s7",
+      "description": "Section s7 has an empty title string. The source has clear headings for FileLogWriterの設定、SynchronousFileLogWriterの設定、BasicLogFormatterの設定.",
+      "source_evidence": "Source headings: 「FileLogWriterの設定」「SynchronousFileLogWriterの設定」「BasicLogFormatterの設定」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s6, title field",
+      "description": "Section s6 uses the parent section title 「プロパティファイルの記述ルール」, but the content only covers the subsections 「ログライタの設定」 and 「ロガーの設定」, which are under the sub-heading 「フレームワーク実装の設定」. The parent title is misleadingly assigned to a partial subsection.",
+      "source_evidence": "Source structure: 「プロパティファイルの記述ルール」(---) → 「ロガーファクトリの設定」(===) + 「フレームワーク実装の設定」(===) → 「ログライタの設定」/「ロガーの設定」/etc. s6 only covers 「ログライタの設定」+「ロガーの設定」 but claims the parent's title."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s7, hints",
+      "description": "Section s7 covers SynchronousFileLogWriter properties but the hints are missing the failure code property names: failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait. Also missing: encoding (FileLogWriter property).",
+      "source_evidence": "Source table for SynchronousFileLogWriter includes: writer.<名称>.failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait. FileLogWriter table includes: writer.<名称>.encoding."
+    }
+  ]
+}

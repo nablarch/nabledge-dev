@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_BasicRules--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (section ordering)",
+      "description": "Section order in the knowledge file does not match the source document. In the source: (1) 命名ルール, (2) taglibディレクティブ, (3) URIの指定方法, (4a) HTMLエスケープ, (4b) 改行変換, (4c) HTMLエスケープなし出力, (5) 言語リソースパス, (6) 静的コンテンツキャッシュ. In the knowledge file: s1=命名ルール+taglib, s2=HTMLエスケープ, s3=URI指定方法, s4=改行変換, s5=言語+キャッシュ, s6=HTMLエスケープなし出力. Specifically: s2 (HTMLエスケープ) and s3 (URIの指定方法) are swapped relative to the source, and s6 (HTMLエスケープせずに値を出力する方法) is placed after s5 even though in the source it precedes the 言語毎のリソースパスの切り替え section.",
+      "source_evidence": "Source order: 命名ルール → taglibディレクティブ → URIの指定方法 → HTMLエスケープと改行変換 (with subsections: HTMLエスケープ, 改行変換, HTMLエスケープなし出力) → 言語毎のリソースパス → 静的コンテンツキャッシュ"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s5 hints",
+      "description": "Section s5 discusses several tag names as part of its content (both for language-based resource path switching and static content versioning), but many are absent from the hints array. Missing: WebView_ATag, WebView_ImgTag, WebView_ScriptTag, WebView_LinkTag (listed as tags supporting language resource path switching), and WebView_SubmitTag, WebView_PopupSubmitTag, WebView_DownloadSubmitTag (listed as tags whose src/href attributes support static_content_version).",
+      "source_evidence": "Source lists WebView_ATag, WebView_ImgTag, WebView_ScriptTag, WebView_LinkTag, WebView_ConfirmationPageTag, WebView_IncludeTag under 言語毎のリソースパスの切り替え, and WebView_ImgTag, WebView_ScriptTag, WebView_LinkTag, WebView_SubmitTag, WebView_PopupSubmitTag, WebView_DownloadSubmitTag under 静的コンテンツのバージョン対応属性."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "file_id": "handlers-RequestPathJavaPackageMapping--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2, step 3 (ディスパッチ対象クラスのインスタンス作成)",
+      "description": "Source specifies 'コンテキストクラスパスから' (context class path), but the knowledge file simplifies this to 'クラスパスから'. In Java, the context class path (Thread context class loader) is technically distinct from the regular class path, and this distinction is meaningful for understanding how class loading works in this handler.",
+      "source_evidence": "コンテキストクラスパスから、**2.** で決定された完全修飾名のクラスをロードし、デフォルトコンストラクタを用いてインスタンスを作成する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "FwHeaderReader is mentioned in the related handlers table (in s1 content) as the reader that reads the requestId header in the messaging_request_reply architecture, but it is absent from the s1 hints array.",
+      "source_evidence": ":doc:`../reader/FwHeaderReader` が読み込むフレームワーク制御ヘッダ領域のリクエストIDヘッダ **(項目名:requestId)** の値を使用する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning: Section count 3 < source headings 6",
+      "description": "The automated pre-check reports 6 source headings, but inspection of the RST source confirms only 3 h2 sections (概要, ハンドラ処理フロー, 設定項目・拡張ポイント). The '++++++' lines are decorative separators and '**bold text**' entries are not RST headings. The 3 knowledge file sections correctly correspond to all 3 h2 source sections. This automated warning is a false positive and does not represent a real issue."
+    }
+  ]
+}

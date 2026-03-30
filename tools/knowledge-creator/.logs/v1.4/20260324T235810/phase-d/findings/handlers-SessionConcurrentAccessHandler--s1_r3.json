@@ -1,0 +1,19 @@
+{
+  "file_id": "handlers-SessionConcurrentAccessHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Knowledge file states the handler guarantees session object integrity ('この整合性を保証する'), but the source only says it 'implements concurrent access control at the framework level'. The source never explicitly claims integrity is guaranteed.",
+      "source_evidence": "Source: '本ハンドラはセッションスコープに対する並行アクセス制御をフレームワークレベルで実装するものである。' — Knowledge: '本ハンドラはセッションスコープへの並行アクセス制御をフレームワークレベルで実装することで、この整合性を保証する。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / automated warning S9",
+      "description": "Automated check flagged section count 3 < source headings 6. After analysis, the source contains exactly 3 h2 sections (概要, ハンドラ処理フロー, 設定項目・拡張ポイント). The remaining apparent headings are bold text labels ([往路処理], [復路処理], [例外処理], **ハンドラ処理概要**) within sections, not independent RST headings. The 3 knowledge sections are appropriate and the warning does not represent a real structural omission."
+    }
+  ]
+}

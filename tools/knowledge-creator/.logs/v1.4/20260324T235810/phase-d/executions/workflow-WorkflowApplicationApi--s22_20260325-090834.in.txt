@@ -1,0 +1,447 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/workflow/doc/09/WorkflowApplicationApi.rst`
+- Format: `rst`
+
+```
+現在有効なワークフローバージョンの取得
+------------------------------------------------
+
+複数のバージョンのワークフロー定義が同時に存在している場合、
+それぞれのワークフロー定義の内容によっては、アプリケーションの実装でバージョンに応じて分岐する必要がある。
+
+たとえば、バージョン1のワークフロー定義では担当ユーザを一人しか割り当てられないものとしていたが、
+バージョン2のワークフロー定義では、担当ユーザを複数割り当てることが出来るように修正した場合、
+変更画面などで担当者を選択するユーザインタフェースは、「バージョン1の場合はプルダウンが一つ」
+「バージョン2の場合はプルダウンが複数個」などのように分岐しておく必要がある。
+
+ワークフローが既に開始している場合には、ワークフローインスタンスからバージョンを取得することができるが、
+ワークフローが未開始の場合にも、以下のAPIを利用して、現在有効なワークフローバージョンを取得することができる。
+
+
+**メソッド詳細**
+
+.. function:: please.change.me.workflow.WorkflowManager#getCurrentVersion(workflowId)
+
+  :param java.lang.Strng workflowId: * ワークフローID
+  :return: * 指定されたワークフローIDで現在有効なバージョン
+  :rtype: * int
+
+**実装例**
+
+.. code-block:: java
+
+   int version = WorkflowManager.getCurrentVersion("WF00001");
+
+   if (version == 1) {
+     // バージョン1の場合の処理
+   } else if (version == 2) {
+     // バージョン1の場合の処理
+   }
+
+
+.. _flowProceedCondition:
+
+======================================
+ゲートウェイの進行先ノードの判定制御
+======================================
+:ref:`workflow_element_gateway_xor` を使用した場合、次のフローノード(タスクやイベントなど)のフロー定義が複数存在する。
+
+本機能では、 `ワークフローの進行`_ で指定されたパラメータと、 :ref:`workflow_element_sequence_flows` に対して設定された
+フロー進行条件( ``please.change.me.workflow.condition.FlowProceedCondition`` の実装クラス ) を使用して、
+遷移先のフローノードを判断する。
+
+フロー進行条件は、:ref:`ワークフロー定義ローダー <definitionLoader>` がワークフロー定義を読み込む際に、
+インスタンス化され、ワークフローライブラリから利用される。
+
+---------------------------------------
+FlowProceedConditionインタフェース
+---------------------------------------
+本インタフェースには、シーケンスフローへ進行可能かを判断するための ``isMatch`` メソッドが定義されている。
+
+ワークフローライブラリでは、 `ワークフローの進行`_ の際に :ref:`workflow_element_gateway_xor` での分岐が存在すると、
+そのXORゲートウェイから流出するシーケンスフローそれぞれに対して、設定されているフロー進行条件の ``isMatch`` を評価し、
+``true`` を返却したシーケンスフローに従ってワークフローを進行させる。
+
+本インタフェースの実装クラスに属性を設定する場合には、コンストラクタの引数で値を受け取る必要がある。
+コンストラクタ引数に指定可能な型は ``java.lang.String`` のみである。
+クラスの属性としてString以外の方を用いる必要がある場合には、コンストラクタ内で型変換を行うこと。
+
+isMatchメソッドの定義
+===========================
+``isMatch`` メソッドの定義を以下に示す。
+
+.. code-block:: java
+
+    /**
+     * シーケンスフローに従ってワークフローが進行可能か判定する。
+     *
+     * @param instanceId インスタンスID
+     * @param param パラメータ
+     * @param sequenceFlow シーケンス
+     * @return 遷移可能な場合はtrue
+     */
+    boolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow sequenceFlow);
+
+``isMatch`` メソッドにはワークフローインスタンスのインスタンスID、 `ワークフローの進行`_ 時にパラメータとして
+引数に渡されている ``Map`` 、評価対象となっているシーケンスフロー自体が渡される。
+
+実装クラスでは、これらの情報と、ワークフローの進行状態を管理するテーブルや業務テーブルなどの情報を
+利用して、そのシーケンスフローに従って進行させるかどうかを判断し、進行させる場合には ``true`` を返却する必要がある。
+
+
+本機能で提供するFlowProceedCondition実装クラス
+==================================================
+本機能で提供する進行条件クラスについて説明する。
+
+**文字列比較を行う進行条件クラス**
+
+文字列比較を行う進行条件クラスでは、タスク進行時に指定されたパラメータの中から進行条件クラスに指定されたキー値の値を取得し、
+文字列として期待値と比較処理を行う。
+
+比較対象のパラメータのキー値と期待する値は、コンストラクタで指定する。
+
++------------------------------------+----------------------------------------------------------------------------------+
+| クラス名                           | 概要                                                                             |
++====================================+==================================================================================+
+| StringEqualFlowProceedCondition    | パラメータ値と期待値が一致する場合に、このシーケンスフローへ進行可能と判断する。 |
+|                                    |                                                                                  |
++------------------------------------+----------------------------------------------------------------------------------+
+| StringNotEqualFlowProceedCondition | パラメータ値と期待値が不一致の場合に、このシーケンスフローへ進行可能と判断する。 |
+|                                    |                                                                                  |
++------------------------------------+----------------------------------------------------------------------------------+
+
+**数値比較を行う進行条件クラス**
+
+数値比較を行う進行条件クラスでは、タスク進行時に指定されたパラメータの中から進行条件クラスに指定されたキー値の値を取得し、
+数値として期待値と比較処理を行う。
+
+* パラメータ値がjava.lang.Numberのサブタイプの場合には、Number#longValue()を使用して数値に変換して比較を行う。
+
+* パラメータ値がjava.lang.Stringの場合には、Long#valueOfを使用して数値に変換して比較を行う。
+
+  Stringから数値への変換に失敗した場合は、このシーケンスフローでは進行不可能として結果を返却する。（異常終了とはしない）
+
+* 上記以外の型の場合には、比較処理は実施せずにこのシーケンスフローでは進行不可能として結果を返却する。（異常終了とはしない）
+
+比較対象のパラメータのキー値と期待する値は、コンストラクタで指定する。
+
++------------------------+----------------------------------------------------------------------------------+
+| クラス名               | 概要                                                                             |
++========================+==================================================================================+
+| EqFlowProceedCondition | パラメータ値と期待値が一致する場合に、このシーケンスフローへ進行可能と判断する。 |
+|                        |                                                                                  |
++------------------------+----------------------------------------------------------------------------------+
+| NeFlowProceedCondition | パラメータ値と期待値が不一致の場合に、このシーケンスフローへ進行可能と判断する。 |
+|                        |                                                                                  |
++------------------------+----------------------------------------------------------------------------------+
+| GtFlowProceedCondition | パラメータ値が期待値より大きい場合に、このシーケンスフローへ進行可能と判断する。 |
+|                        |                                                                                  |
++------------------------+----------------------------------------------------------------------------------+
+| GeFlowProceedCondition | パラメータ値が期待値以上の場合に、このシーケンスフローへ進行可能と判断する。     |
++------------------------+----------------------------------------------------------------------------------+
+| LtFlowProceedCondition | パラメータ値が期待値より小さい場合に、このシーケンスフローへ進行可能と判断する。 |
+|                        |                                                                                  |
++------------------------+----------------------------------------------------------------------------------+
+| LeFlowProceedCondition | パラメータ値が期待値以下の場合に、このシーケンスフローへ進行可能と判断する。     |
++------------------------+----------------------------------------------------------------------------------+
+
+--------------------------------------------------
+使用例
+--------------------------------------------------
+以下のワークフロー定義で、承認タスクがアクティブな状態での次タスクへの遷移例を示す。
+
+.. image:: _images/gateway-condition.png
+
+
+**実装例**
+
+.. code-block:: java
+
+   // インスタンスIDを元に承認(却下)対象のワークフローを検索する。
+   WorkflowInstance workflow = WorkflowManager.findInstance(instanceId);
+
+   // 進行条件で使用するパラメータを作成する。
+   Map<Stirng, String> parameter = new HashMap<String, String>();
+   parameter.put("status", "1");
+
+   // ワークフローの進行
+   // パラメータのステータスに"1"を設定してワークフローを進行したので、上位者承認タスクがアクティブとなる
+   workflow.completeUserTask(parameter);
+
+.. _completionCondition:
+
+=========================================
+マルチインスタンス・タスクの終了判定
+=========================================
+:ref:`workflow_element_multi_instance_task` （複数のユーザやグループが割り当て可能なタスク)の場合、タスクを終了させるための条件が必要となる。
+例えば、複数ユーザが割り当てられているタスクで2人がタスクの実行(承認行為などのこと)を行えば、タスクを終了する等の定義が必要となる。
+
+終了判定は、タスクに対して設定された終了条件( ``please.change.me.workflow.condition.CompletionCondition`` の実装クラス)を用いて行う。
+ユーザやグループがタスク実行した際に、この終了条件を都度判定し、条件にマッチするとタスクが終了し次のフローノード(タスクやイベント)がアクティブとなる。
+
+-----------------------------------------
+CompletionConditionインタフェース
+-----------------------------------------
+本インタフェースには、タスクを終了していいかを判断するための ``isCompletedUserTask`` および ``isCompletedGroupTask`` メソッドが定義されている。
+実装クラスは、 ``isCompletedUserTask`` メソッドでユーザタスク場合の終了判断を、 ``isCompletedGroupTask`` でグループタスクの場合の終了判断を行い、
+終了条件にマッチした場合は、 ``true`` を返却する。
+
+本インタフェースの実装クラスに属性を設定する場合には、コンストラクタの引数で値を受け取る必要がある。
+コンストラクタ引数に指定可能な型は ``java.lang.String`` のみである。
+クラスの属性としてString以外の型を用いる必要がある場合には、コンストラクタ内で型変換を行うこと。
+
+isCompletionメソッドの定義
+========================================
+``isCompletion`` メソッドの定義を以下に示す。
+
+.. code-block:: java
+
+    /**
+     * ユーザタスクの終了判定を行う。
+     *
+     * @param param パラメータ
+     * @param instanceId インスタンスID
+     * @param task タスク
+     * @return 終了条件と一致した場合はtrue
+     */
+    boolean isCompletedUserTask(Map<String, ?> param, String instanceId, Task task);
+
+    /**
+     * グループタスクの終了判定を行う。
+     *
+     * @param param パラメータ
+     * @param instanceId インスタンスID
+     * @param task タスク
+     * @return 終了条件と一致した場合はtrue
+     */
+    boolean isCompletedGroupTask(Map<String, ?> param, String instanceId, Task task);
+
+``isCompletedUserTask`` メソッドおよび ``isCompletedGroupTask`` メソッドにはワークフローインスタンスのインスタンスID、
+`ワークフローの進行`_ 時にパラメータとして引数に渡されている ``Map`` 、完了判定の対象となっているタスク自体が渡される。
+
+実装クラスでは、これらの情報と、ワークフローの進行状態を管理するテーブルや業務テーブルなどの情報を利用して、
+タスクを完了としてよいかを判断し、完了させる場合には ``true`` を返却する必要がある。
+
+本機能で提供するCompletionCondition実装クラス
+=============================================
+本機能で提供するマルチインスタンス終了判定クラスについて説明する。
+
++------------------------+--------------------------------------------------------------------------------------------+
+| クラス名               | 概要                                                                                       |
++========================+============================================================================================+
+| AllCompletionCondition | 割り当てられている全てのユーザ(グループ)がタスク実行済みの場合、                           |
+|                        | マルチインスタンスタスクを終了と判断する。                                                 |
++------------------------+--------------------------------------------------------------------------------------------+
+| OrCompletionCondition  | 一定の数のユーザ(グループ)がタスク実行済みの場合、                                         |
+|                        | マルチインスタンスタスクを終了と判断する。                                                 |
+|                        |                                                                                            |
+|                        | 実際に割り当てられているユーザ(グループ)数より、本クラスに指定されている数が大きい場合は、 |
+|                        | 全てのユーザ(グループ)がタスク実行済みとなった場合にマルチインスタンスを終了と判断する。   |
++------------------------+--------------------------------------------------------------------------------------------+
+```
+
+## Knowledge File
+
+- ID: `workflow-WorkflowApplicationApi--s22`
+
+```json
+{
+  "id": "workflow-WorkflowApplicationApi--s22",
+  "title": "ゲートウェイの進行先ノードの判定制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "現在有効なワークフローバージョンの取得",
+      "hints": [
+        "WorkflowManager",
+        "getCurrentVersion",
+        "ワークフローバージョン取得",
+        "バージョン分岐",
+        "現在有効バージョン"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ゲートウェイの進行先ノードの判定制御",
+      "hints": [
+        "FlowProceedCondition",
+        "ゲートウェイ進行先判定",
+        "XORゲートウェイ",
+        "シーケンスフロー遷移",
+        "フロー進行条件"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "FlowProceedConditionインタフェース",
+      "hints": [
+        "FlowProceedCondition",
+        "isMatch",
+        "SequenceFlow",
+        "フロー進行条件インタフェース",
+        "コンストラクタ引数型制約"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "本機能で提供するFlowProceedCondition実装クラス",
+      "hints": [
+        "StringEqualFlowProceedCondition",
+        "StringNotEqualFlowProceedCondition",
+        "EqFlowProceedCondition",
+        "NeFlowProceedCondition",
+        "GtFlowProceedCondition",
+        "GeFlowProceedCondition",
+        "LtFlowProceedCondition",
+        "LeFlowProceedCondition",
+        "文字列比較進行条件",
+        "数値比較進行条件"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "使用例",
+      "hints": [
+        "completeUserTask",
+        "WorkflowInstance",
+        "XORゲートウェイ使用例",
+        "ステータスパラメータ遷移",
+        "WorkflowManager"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "マルチインスタンス・タスクの終了判定",
+      "hints": [
+        "CompletionCondition",
+        "マルチインスタンスタスク終了判定",
+        "AllCompletionCondition",
+        "OrCompletionCondition"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "CompletionConditionインタフェース",
+      "hints": [
+        "CompletionCondition",
+        "isCompletedUserTask",
+        "isCompletedGroupTask",
+        "AllCompletionCondition",
+        "OrCompletionCondition",
+        "マルチインスタンス終了条件実装",
+        "Task"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数バージョンのワークフロー定義が共存する場合、バージョンに応じたUI分岐など実装での対応が必要。ワークフロー未開始時でも以下のAPIで現在有効なワークフローバージョンを取得できる。\n\n**メソッド**: `please.change.me.workflow.WorkflowManager#getCurrentVersion(workflowId)`\n\n| パラメータ | 型 | 説明 |\n|---|---|---|\n| workflowId | java.lang.Strng | ワークフローID |\n\n**戻り値**: `int` — 指定ワークフローIDの現在有効なバージョン番号\n\n```java\nint version = WorkflowManager.getCurrentVersion(\"WF00001\");\n\nif (version == 1) {\n    // バージョン1の場合の処理\n} else if (version == 2) {\n    // バージョン1の場合の処理\n}\n```",
+    "s2": ":ref:`workflow_element_gateway_xor` 使用時、次のフローノードのフロー定義が複数存在する場合に使用する。ワークフロー進行時のパラメータと :ref:`workflow_element_sequence_flows` に設定されたフロー進行条件（`please.change.me.workflow.condition.FlowProceedCondition`の実装クラス）を使用して遷移先フローノードを判断する。\n\nフロー進行条件は、:ref:`definitionLoader` がワークフロー定義を読み込む際にインスタンス化される。",
+    "s3": "**インタフェース**: `please.change.me.workflow.condition.FlowProceedCondition`\n\nシーケンスフローへ進行可能かを判断する`isMatch`メソッドを定義する。XORゲートウェイ分岐時、各シーケンスフローの`isMatch`を評価し、`true`を返したシーケンスフローに従ってワークフローを進行させる。\n\n> **重要**: 実装クラスのコンストラクタ引数に指定可能な型は`java.lang.String`のみ。String以外の型が必要な場合はコンストラクタ内で型変換すること。\n\n**isMatchメソッド定義**:\n\n```java\nboolean isMatch(String instanceId, Map<String, ?> param, SequenceFlow sequenceFlow);\n```\n\n| パラメータ | 型 | 説明 |\n|---|---|---|\n| instanceId | String | ワークフローインスタンスID |\n| param | Map<String, ?> | ワークフロー進行時のパラメータ |\n| sequenceFlow | SequenceFlow | 評価対象のシーケンスフロー |\n\n実装クラスではインスタンスID、パラメータMap、ワークフロー進行状態テーブル、業務テーブル等を利用して進行可否を判断し、進行させる場合は`true`を返す。",
+    "s4": "**文字列比較クラス**（比較対象パラメータのキー値と期待値はコンストラクタで指定）:\n\n| クラス名 | 概要 |\n|---|---|\n| StringEqualFlowProceedCondition | パラメータ値と期待値が一致する場合に進行可能 |\n| StringNotEqualFlowProceedCondition | パラメータ値と期待値が不一致の場合に進行可能 |\n\n**数値比較クラス**（比較対象パラメータのキー値と期待値はコンストラクタで指定）:\n\n| クラス名 | 概要 |\n|---|---|\n| EqFlowProceedCondition | パラメータ値と期待値が一致する場合に進行可能 |\n| NeFlowProceedCondition | パラメータ値と期待値が不一致の場合に進行可能 |\n| GtFlowProceedCondition | パラメータ値が期待値より大きい場合に進行可能 |\n| GeFlowProceedCondition | パラメータ値が期待値以上の場合に進行可能 |\n| LtFlowProceedCondition | パラメータ値が期待値より小さい場合に進行可能 |\n| LeFlowProceedCondition | パラメータ値が期待値以下の場合に進行可能 |\n\n数値比較の型変換ルール:\n- `java.lang.Number`サブタイプ: `Number#longValue()`で変換\n- `java.lang.String`: `Long#valueOf`で変換。変換失敗時は進行不可として扱う（異常終了なし）\n- 上記以外の型: 比較せず進行不可として扱う（異常終了なし）",
+    "s5": "承認タスクがアクティブな状態での次タスクへの遷移例（:ref:`workflow_element_gateway_xor` 使用）:\n\n![ゲートウェイ進行条件のワークフロー図](assets/workflow-WorkflowApplicationApi--s22/gateway-condition.png)\n\n```java\n// インスタンスIDを元に承認(却下)対象のワークフローを検索する。\nWorkflowInstance workflow = WorkflowManager.findInstance(instanceId);\n\n// 進行条件で使用するパラメータを作成する。\nMap<Stirng, String> parameter = new HashMap<String, String>();\nparameter.put(\"status\", \"1\");\n\n// ワークフローの進行（パラメータのステータスに\"1\"を設定→上位者承認タスクがアクティブとなる）\nworkflow.completeUserTask(parameter);\n```",
+    "s6": ":ref:`workflow_element_multi_instance_task` （複数のユーザやグループが割り当て可能なタスク）では、タスク終了条件（`please.change.me.workflow.condition.CompletionCondition`の実装クラス）の設定が必要。ユーザ/グループがタスク実行するたびに終了条件を判定し、条件マッチ時にタスクが終了して次のフローノードがアクティブになる。",
+    "s7": "**インタフェース**: `please.change.me.workflow.condition.CompletionCondition`\n\nユーザタスク終了判断用の`isCompletedUserTask`メソッドとグループタスク終了判断用の`isCompletedGroupTask`メソッドを定義する。\n\n> **重要**: 実装クラスのコンストラクタ引数に指定可能な型は`java.lang.String`のみ。String以外の型が必要な場合はコンストラクタ内で型変換すること。\n\n**メソッド定義**:\n\n```java\nboolean isCompletedUserTask(Map<String, ?> param, String instanceId, Task task);\nboolean isCompletedGroupTask(Map<String, ?> param, String instanceId, Task task);\n```\n\n| パラメータ | 型 | 説明 |\n|---|---|---|\n| param | Map<String, ?> | ワークフロー進行時のパラメータ |\n| instanceId | String | ワークフローインスタンスID |\n| task | Task | 完了判定の対象タスク |\n\n実装クラスではインスタンスID、パラメータMap、ワークフロー進行状態テーブル、業務テーブル等を利用してタスク完了可否を判断し、完了させる場合は`true`を返す。\n\n**提供される実装クラス**:\n\n| クラス名 | 概要 |\n|---|---|\n| AllCompletionCondition | 割り当て全ユーザ(グループ)がタスク実行済みの場合にタスク終了と判断 |\n| OrCompletionCondition | 指定数のユーザ(グループ)がタスク実行済みの場合にタスク終了と判断。指定数が実際の割り当て数より大きい場合は全員実行済みで終了と判断 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-01_Utility--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "RST cross-reference markup `:ref:`newClassFromPropertyList`` leaked into knowledge file content. The sentence \"詳細は :ref:`newClassFromPropertyList` を参照すること。\" contains raw RST syntax that will render as broken markup in a knowledge file context. Since s3 already covers the detailed content, this navigation sentence should either be omitted or rewritten as plain text.",
+      "source_evidence": "Source: \"詳細は :ref:`newClassFromPropertyList` を参照すること。\" — this is RST-specific cross-reference syntax not suitable for a markdown knowledge file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`NMMessageRequester` is a PascalCase protocol name referenced in the プロトコル実装確認 code example (`@protocol(NMMessageRequester)`), but it is absent from the s2 hints array.",
+      "source_evidence": "Source s2 code example: `[NMCommonUtil protocol:@protocol(NMMessageRequester) isImplementedIn:sender];`"
+    }
+  ]
+}

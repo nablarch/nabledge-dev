@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-07_confirm_view--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Step 6",
+      "description": "JSP静的チェックツールの実行ステップが知識ファイルに記載されていない。ソースでは「jsp_static_analysis_tool を実行し、該当ファイルに静的チェックエラーがないことを確認する」が必須ステップとして明示されているが、s1セクションに一切言及がない。",
+      "source_evidence": "6) JSP静的チェックツールの実行 — :ref:`jsp_static_analysis_tool` を実行し、該当ファイルに静的チェックエラーがないことを確認する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Step 5",
+      "description": "リクエスト単体テスト実施後に確認すべき具体的な検証項目が省略されている。「確認画面であること」「レイアウトが崩れていないこと」「漢字氏名とカナ氏名にリクエストパラメータで送った文字列が表示されていること」の3点が検証ポイントとして挙げられているが、知識ファイルに記載がない。",
+      "source_evidence": "出力されたHTMLをWebブラウザで開き、以下を確認する。* 確認画面であること * レイアウトが崩れていないこと * 漢字氏名とカナ氏名に、リクエストパラメータで送った文字列が表示されていること。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Step 4",
+      "description": "精査処理実装後のリクエスト単体テスト検証内容（精査OK時・精査NG時の期待動作）が省略されている。精査OKの場合は登録確認画面のHTMLが出力されること、精査NGの場合は登録画面のHTMLが出力されエラーメッセージも出力されることという期待挙動の説明が知識ファイルに含まれていない。",
+      "source_evidence": "精査OKの場合に登録確認画面が出力される。⇒実行結果が成功であり、登録確認画面のHTMLが出力されること。精査NGの場合に登録画面が出力される。⇒実行結果が成功であり、登録画面のHTMLが出力され、エラーメッセージも出力されていること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "テストクラス名 `W11AC02ActionRequestTest` およびテストメソッド名 `testRW11AC0202` がhintsに含まれていない。ソースに明示された具体的なクラス名・メソッド名であり、これらで検索が行われる可能性がある。",
+      "source_evidence": "テストクラス名: W11AC02ActionRequestTest / メソッド名: testRW11AC0202() — test/java/nablarch/sample/ss11AC"
+    }
+  ]
+}

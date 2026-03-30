@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_04_Repository_override--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s12 — dir属性を使用した読み込み時の優先順位",
+      "description": "The source directory listing for `/opt/config/` includes four files: `test1.xml`, `test2.xml`, `test3.xml`, and `environment.config`. The knowledge file omits `environment.config`, reducing the example to only three xml files. The presence of `environment.config` is intentional in the source — it demonstrates that the `*.xml` glob pattern filters out non-xml files. Without it, the example loses the important context that `dir` + `file` glob actively excludes non-matching files.",
+      "source_evidence": "/opt/config/ ディレクトリに存在するファイル\n * test1.xml\n * test2.xml\n * test3.xml\n * environment.config"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s13 — 設定をロードする際の実装例",
+      "description": "`DiContainer` is used in the s13 code example (`DiContainer container = new DiContainer(loader);`) but is absent from the s13 hints array. It appears only in s16's hints.",
+      "source_evidence": "DiContainer container = new DiContainer(loader);"
+    }
+  ]
+}

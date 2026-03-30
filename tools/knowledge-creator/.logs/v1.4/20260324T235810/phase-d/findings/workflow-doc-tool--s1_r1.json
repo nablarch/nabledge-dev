@@ -1,0 +1,41 @@
+{
+  "file_id": "workflow-doc-tool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (利用の準備) — 環境設定ファイルキー表",
+      "description": "Source footnote (※) applies to all four column-length keys: workflowIdColumnLength, laneIdColumnLength, flowNodeIdColumnLength, boundaryEventTriggerIdColumnLength. The note 'ID体系で定義された桁数。ワークフロー定義ファイル内に定義したIDの桁数指定が正しいか精査を行うための設定値' is included only for workflowIdColumnLength in the knowledge file; laneIdColumnLength, flowNodeIdColumnLength, and boundaryEventTriggerIdColumnLength omit it.",
+      "source_evidence": "workflowIdColumnLength ワークフローID桁数。（※）\nlaneIdColumnLength レーンID桁数。（※）\nflowNodeIdColumnLength フローノードID桁数。（※）\nboundaryEventTriggerIdColumnLength 境界イベントトリガーID桁数。（※）\n　※ID体系で定義された桁数。ワークフロー定義ファイル内に定義したIDの桁数指定が正しいか精査を行うための設定値。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s18 (ワークフローライブラリの制約に関する精査) — 注意ノート",
+      "description": "The source note for this section includes '（正常に読み込みが行えたファイルについては出力する）', indicating that validly-read files are still output. The knowledge file note omits this half of the behavior, saying only that the errored file is not output.",
+      "source_evidence": "精査エラーが発生した場合、そのファイルのワークフロー定義データを出力しない（正常に読み込みが行えたファイルについては出力する）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 (ツール配置場所) — hints",
+      "description": "The filename `WorkflowDefinitionGenerator_build.properties` appears in the s3 content table but is absent from the s3 hints array.",
+      "source_evidence": "WorkflowDefinitionGenerator_build.properties   Antビルドファイルのプロパティファイル。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s19 (プロジェクト固有の設定について) — hints",
+      "description": "The concrete class name `WorkflowDefinitionExcelWriter` appears in the XML code example within s19 but is absent from the s19 hints.",
+      "source_evidence": "<component name=\"workflowDefinitionWriter\" class=\"nablarch.tool.workflow.WorkflowDefinitionExcelWriter\">"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s20 (省略記法について) — hints",
+      "description": "The s20 hints include `EqFlowProceedCondition` and `GeFlowProceedCondition` but omit `GtFlowProceedCondition`, `LeFlowProceedCondition`, `LtFlowProceedCondition`, and `NeFlowProceedCondition`, all of which are explicitly listed in the source's flowProceedCondition map.",
+      "source_evidence": "<entry key=\"gt\" value=\"nablarch.tool.workflow.GtFlowProceedCondition\"/>\n<entry key=\"le\" value=\"nablarch.tool.workflow.LeFlowProceedCondition\"/>\n<entry key=\"lt\" value=\"nablarch.tool.workflow.LtFlowProceedCondition\"/>\n<entry key=\"ne\" value=\"nablarch.tool.workflow.NeFlowProceedCondition\"/>"
+    }
+  ]
+}

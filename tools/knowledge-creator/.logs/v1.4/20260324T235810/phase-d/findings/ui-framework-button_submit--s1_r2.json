@@ -1,0 +1,20 @@
+{
+  "file_id": "ui-framework-button_submit--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The description for `/WEB-INF/tags/widget/button/*.tag` in the knowledge file reads「ボタンウィジェットのタグファイル（`button_submit`等）」, but the source table's 内容 column only contains `:doc:\\`button_submit\\`` (an RST cross-reference link). The phrase「ボタンウィジェットのタグファイル」does not appear in the source.",
+      "source_evidence": "/WEB-INF/tags/widget/button/\\*.tag → :doc:`button_submit` (source table row, 内容 column)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The `lockTarget` footnote lists 8 button tags where the attribute is applicable, but s5 hints only includes `button:confirm`, `button:delete`, and `button:update`. Missing: `button:search`、`button:submit`（汎用ボタン）、`button:download`、`button:popup`.",
+      "source_evidence": ".. [#lockTarget]: lockTarget属性が指定可能なボタンタグ — 確認ボタン、確定ボタン、更新ボタン、削除ボタン、汎用ボタン、検索ボタン、ダウンロードボタン、ポップアップボタン"
+    }
+  ]
+}

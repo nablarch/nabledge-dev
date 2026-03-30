@@ -1,0 +1,147 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-event_window_close",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (仕様 — 属性値一覧)",
+      "description": "The `内容` column is missing from the attribute table. The source table has six columns: 名称, 内容, タイプ, サーバ, ローカル, 備考. The knowledge file renders only five columns (名称, タイプ, サーバ, ローカル, 備考), dropping the `内容` value `処理内容の簡単な説明` for the `title` attribute.",
+      "source_evidence": "title | 処理内容の簡単な説明 | 文字列 | × | × | 設計書表示用"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+ウィンドウクローズイベントアクション
+===================================================
+:doc:`event_window_close` は :doc:`event_listen` で定義したイベントが発生した際に
+画面を閉じるイベントアクションである。
+
+ウィンドウクローズアクションはイベント発生時に他のイベントのアクション、イベントハンドラを処理した後に動作させるため、
+:doc:`../internals/jsp_page_templates` の属性を利用してbody直下などに定義することが望ましい。
+
+
+コードサンプル
+==================================
+
+**リンクをクリックした場合に画面を閉じる例**
+
+  .. code-block:: jsp
+
+       <event:listen event="a.windowClose click">
+         <event:window_close></event:window_close>
+       </event:listen>
+
+       <n:a href="#" cssClass="windowClose">閉じる</n:a>
+
+仕様
+=============================================
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+title                     処理内容の簡単な説明             文字列         ×          ×         設計書表示用
+
+========================= ================================ ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== =====================================================
+パス                                           内容
+============================================== =====================================================
+/WEB-INF/tags/widget/event/window_close.tag    このイベントアクションの実体となるタグファイル　
+
+
+/js/nablarch/ui/event/WindowCloseAction.js     画面のクローズ機能を実装するJavaScript部品。 
+
+============================================== =====================================================
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-event_window_close",
+  "title": "ウィンドウクローズイベントアクション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "ウィンドウクローズ",
+        "イベントアクション",
+        "event:window_close",
+        "event:listen",
+        "画面を閉じる",
+        "body直下に定義"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "属性値一覧",
+        "title属性",
+        "設計書表示用"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "WindowCloseAction",
+        "window_close.tag",
+        "JavaScript部品",
+        "内部構造",
+        "部品一覧"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **補足**: :doc:`event_window_close` は他のイベントのアクション・イベントハンドラを処理した後に動作するため、:doc:`../internals/jsp_page_templates` の属性を利用してbody直下などに定義することが望ましい。\n\n**リンクをクリックした場合に画面を閉じる例**:\n\n```jsp\n<event:listen event=\"a.windowClose click\">\n  <event:window_close></event:window_close>\n</event:listen>\n\n<n:a href=\"#\" cssClass=\"windowClose\">閉じる</n:a>\n```",
+    "s2": "| 名称 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| title | 文字列 | × | × | 設計書表示用 |",
+    "s3": "| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/event/window_close.tag | このイベントアクションの実体となるタグファイル |\n| /js/nablarch/ui/event/WindowCloseAction.js | 画面のクローズ機能を実装するJavaScript部品 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

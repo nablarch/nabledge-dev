@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 悲観的ロック row, 説明 column",
+      "description": "Knowledge file says '排他制御用テーブルのロックを取得し続け' but the source 概要 section says '更新対象データのロックを取得し続け'. The 概要 section uses an abstract description (lock on target data); it does not mention the exclusive control table. The mechanism using the version table is described only later in the 排他制御の実現方法 section.",
+      "source_evidence": "悲観的ロックは、データ検索から更新までの間、更新対象データのロックを取得し続け、更新が完了したタイミングでロックを解除する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 悲観的ロック row, 採用場面 column",
+      "description": "The source 概要 table lists two adoption scenarios for pessimistic lock: (1) processing where time from search to update is short, and (2) processing where update failure must be prevented even at the cost of longer lock times. The knowledge file captures only the batch-processing (1-transaction) scenario, omitting the second use-case guidance.",
+      "source_evidence": "検索から更新までにかかる時間が短い処理、またはロックを取得する時間が長くなるデメリットを差し置いても、更新処理を失敗させたくない処理で使用される。"
+    }
+  ]
+}

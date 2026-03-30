@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Four distinct RST h2 (====) sections — バイナリデータの検索方法, バイナリデータの登録方法, ファイルの内容をバイナリデータとして登録する方法, バイナリデータをファイルとして出力する方法 — are merged into a single knowledge section s2. Each has its own heading, code example, and warnings in the source, making the merged section very large and reducing retrieval granularity.",
+      "source_evidence": "Source contains four separate h2 headings with ==== adornment: 「バイナリデータの検索方法」, 「バイナリデータの登録方法」, 「ファイルの内容をバイナリデータとして登録する方法」, 「バイナリデータをファイルとして出力する方法」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "SQL ID `UPDATE_SALES` is defined in the SQL file shown in s3 but is absent from the hints array. A user asking about updating sales data with ParameterizedSqlPStatement would benefit from this hint.",
+      "source_evidence": "Source SQL file defines: `-- SQL_ID:UPDATE_SALES` with `UPDATE_SALES = UPDATE SALES SET KINGAKU = :KINGAKU WHERE CST_ID = :CST_ID`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`getBatchSize` is a key method used in the batch update code example to check when to flush, but it is absent from the hints array.",
+      "source_evidence": "Source batch code: `if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) { insert.executeBatch(); }`"
+    }
+  ]
+}

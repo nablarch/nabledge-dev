@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — ビジネスロジック（Component）の作成 / SQLファイル定義例",
+      "description": "CM311AC1Component.sqlの2つ目のSQL定義「INSERT_SYSTEM_ACCOUNT_AUTHORITY」が知識ファイルのSQLコード例から省略されている。Javaコード例では `getParameterizedSqlStatement(\"INSERT_SYSTEM_ACCOUNT_AUTHORITY\")` を参照しているが、その SQL 定義（SYSTEM_ACCOUNT_AUTHORITY テーブルへの INSERT 文）は掲載されていない。",
+      "source_evidence": "ソースファイルの「CM311AC1Component.sqlの内容」に INSERT_SYSTEM_ACCOUNT_AUTHORITY= ... INSERT INTO SYSTEM_ACCOUNT_AUTHORITY (...) VALUES (...) が明示されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "コード例に登場する複数のPascalCaseクラス名がs4のhintsに含まれていない: `SystemAccountEntity`（SQL・Javaコード双方で使用）、`SystemAccountAuthorityEntity`（registerSystemAccountAuthorityメソッドで使用）、`ApplicationException`（DuplicateStatementException catchブロックでスローされる）、`W11AC02Form`（Actionのvalidate呼び出しで使用）。",
+      "source_evidence": "ソースのJavaコード例に `SystemAccountEntity systemAccount`、`SystemAccountAuthorityEntity systemAccountAuthority = new SystemAccountAuthorityEntity()`、`throw new ApplicationException(...)`、`W11AC02Form form = validate(req)` が記述されている。"
+    }
+  ]
+}

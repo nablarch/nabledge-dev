@@ -1,0 +1,567 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-05_MessagingLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力項目テーブル",
+      "description": "The source's 出力項目 table lists 16 items including 6 common items (出力日時、起動プロセスID、処理方式区分、リクエストID、実行時ID、ユーザID) that are part of the messaging log output. The knowledge file table omits all 6 common items, only showing individual items from スレッド名 onwards. While the knowledge file notes these are configured via BasicLogFormatter, their absence from the table means an AI cannot enumerate the full set of messaging log output fields.",
+      "source_evidence": "Source table rows: 出力日時、起動プロセスID、処理方式区分、リクエストID、実行時ID、ユーザID — present in source table but absent from knowledge file table"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力方法（処理シーケンス）",
+      "description": "The source contains two explanatory notes about MOM応答不要 processing: (1) MOM応答不要メッセージ受信処理 performs MOM receive log output and business action invocation, with sequence diagram omitted; (2) MOM応答不要メッセージ送信処理 performs MOM send log output and queue message sending, with sequence diagram omitted. Both notes are absent from the knowledge file.",
+      "source_evidence": "\"MOM応答不要メッセージ受信処理では、MOM受信ログの出力および業務アクションの呼び出しまでの処理が行われる。シーケンス図の記載は省略する。\" and \"MOM応答不要メッセージ送信処理では、MOM送信ログの出力および要求キューメッセージの送信までの処理が行われる。シーケンス図の記載は省略する。\""
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 出力例",
+      "description": "The source output example shows two log entries: HTTP RECEIVED MESSAGE and HTTP SENT MESSAGE. The knowledge file only includes the HTTP RECEIVED MESSAGE entry in the code block; the HTTP SENT MESSAGE log output example is completely absent.",
+      "source_evidence": "Source contains: \"2014-06-27 11:07:51.329 -INFO- MESSAGING [null] ... @@@@ HTTP SENT MESSAGE @@@@\\n    thread_name = [main]\\n    message_id = [null]\\n    destination = [/action/RM11AC0102]...\" which is not present in the knowledge file's output example."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _MessagingLog:
+
+---------------------------------------
+メッセージングログの出力
+---------------------------------------
+メッセージングログは、フレームワークが提供するシステム間メッセージング機能の中でメッセージ送受信時に出力する。\
+アプリケーションでは、ログ出力の設定を行うことにより出力する。
+
+メッセージングログの出力方針
+==================================================================
+メッセージングログで想定している出力方針と出力項目を下記に示す。\
+メッセージングログは、アプリケーション全体のログ出力を行うアプリケーションログに出力する。
+
+================= =======================
+ログレベル        ロガー名
+================= =======================
+INFO              MESSAGING
+================= =======================
+
+上記出力方針に対するログ出力の設定例を下記に示す。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ # アプリケーションログの出力先
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=/var/log/app/app.log
+ writer.appFile.encoding=UTF-8
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=<アプリケーションログ用のフォーマット>
+ 
+ availableLoggersNamesOrder=MESSAGING,ROO
+ 
+ # アプリケーションログの設定
+ loggers.ROO.nameRegex=.*
+ loggers.ROO.level=INFO
+ loggers.ROO.writerNames=appFile
+ 
+ # メッセージングログの設定
+ loggers.MESSAGING.nameRegex=MESSAGING
+ loggers.MESSAGING.level=INFO
+ loggers.MESSAGING.writerNames=appFile
+
+メッセージングログの出力項目
+==================================================================
+メッセージングログの出力項目を下記に示す。
+
+==================================  =================================================================================
+項目名                              説明                                                                             
+==================================  =================================================================================
+出力日時                            ログ出力時のシステム日時。
+起動プロセスID                      アプリケーションを起動したプロセス名。実行環境の特定に使用する。
+処理方式区分                        処理方式の特定に使用する。
+リクエストID                        処理を一意に識別するID。
+実行時ID                            処理の実行を一意に識別するID。
+ユーザID                            ログインユーザのユーザID。
+スレッド名                          処理を実行したスレッド名。
+メッセージID                        メッセージに設定されているメッセージID。
+送信宛先                            メッセージに設定されている送信宛先。
+関連メッセージID                    メッセージに設定されている関連メッセージID。
+応答宛先                            メッセージに設定されている応答宛先。
+有効期間                            メッセージに設定されている有効期間。
+メッセージヘッダ                    メッセージに設定されているヘッダ。
+メッセージボディ                    メッセージボディ部のダンプ。
+
+                                    メッセージボディに含まれる個人情報や機密情報は、マスクして出力する。
+                                    (マスク用の設定が必要となる。)
+メッセージボディのヘキサダンプ      メッセージボディ部のヘキサダンプ。
+
+                                    メッセージボディに含まれる個人情報や機密情報は、マスク文字列の\
+                                    ヘキサダンプを出力する。
+                                    (マスク用の設定が必要となる。)
+メッセージボディのバイト長          メッセージボディ部のバイト長。
+==================================  =================================================================================
+
+メッセージングログの個別項目は、スレッド名からメッセージボディのバイト長までとなる。\
+残りの項目は、 :ref:`Log_BasicLogFormatter` の設定で指定する共通項目となる。\
+共通項目と個別項目を組み合わせたフォーマットについては、 :ref:`AppLog_Format` を参照。
+
+
+メッセージングログの出力方法
+==================================================================
+メッセージングログの出力に使用するクラスを下記に示す。
+
+.. image:: ./../_images/01/Log_MessagingLog_ClassDiagram.jpg
+   :scale: 80
+
+\
+
+ ================================================================================== ============================================================================================================================
+ クラス名                                                                           概要
+ ================================================================================== ============================================================================================================================
+ nablarch.fw.messaging.MessagingContext                                             MOMメッセージ送受信処理において、MOM用のメッセージと本フレームワーク内部で使用する要求および\
+                                                                                    応答メッセージとを相互に変換し、送受信を行うクラス。
+                                                                                    実際に送受信が行われるメッセージ内容のログを出力する。
+ nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler                   HTTPメッセージ受信処理において、HTTPリクエストを解析し本フレームワーク内部で使用する要求メッセージへの変換\
+                                                                                    を行うハンドラ。
+                                                                                    実際に受信されるメッセージ内容のログを出力する。
+ nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler                 HTTPメッセージ受信処理において、応答メッセージをHTTPレスポンスへ変換するハンドラ\
+                                                                                    実際に送信されるメッセージ内容のログを出力する。
+ nablarch.fw.messaging.realtime.http.client.HttpMessagingClient                     HTTPメッセージ送信処理において、本フレームワーク内部で使用する要求メッセージからHTTPリクエストへの変換\
+                                                                                    およびHTTPレスポンスの応答メッセージへの変換を行うクラス。
+                                                                                    実際に送受信が行われるメッセージ内容のログを出力する。
+ nablarch.fw.messaging.logging.MessagingLogUtil                                     メッセージング処理中のログの出力内容に関連した処理を行うクラス。
+ nablarch.fw.messaging.logging.MessagingLogFormatter                                メッセージングログの個別項目をフォーマットするクラス。
+ ================================================================================== ============================================================================================================================
+
+各メッセージング処理方式におけるログ出力時の処理シーケンスを下記に示す。\
+ログ出力を行う各クラスは、MessagingLogUtilを使用してメッセージングログを整形し、Loggerを使用してログ出力を行う。
+
+**MOM同期応答メッセージ受信**
+
+.. image:: ./../_images/01/Log_MessagingLog_SequenceDiagram_mom_incoming.jpg
+   :scale: 80
+
+MOM応答不要メッセージ受信処理では、MOM受信ログの出力および業務アクションの呼び出しまでの処理が行われる。\
+シーケンス図の記載は省略する。
+
+**MOM同期応答メッセージ送信**
+
+.. image:: ./../_images/01/Log_MessagingLog_SequenceDiagram_mom_outgoing.jpg
+   :scale: 80
+
+MOM応答不要メッセージ送信処理では、MOM送信ログの出力および要求キューメッセージの送信までの処理が行われる。\
+シーケンス図の記載は省略する。
+
+**HTTPメッセージ受信**
+
+.. image:: ./../_images/01/Log_MessagingLog_SequenceDiagram_http_incoming.jpg
+   :scale: 80
+
+**HTTPメッセージ送信**
+
+.. image:: ./../_images/01/Log_MessagingLog_SequenceDiagram_http_outgoing.jpg
+   :scale: 80
+
+
+メッセージングログの設定方法
+==================================================================
+MessagingLogUtilは、プロパティファイル(app-log.properties)を読み込み、\
+MessagingLogFormatterオブジェクトを生成して、個別項目のフォーマット処理を委譲する。\
+プロパティファイルのパス指定や実行時の設定値の変更方法は、 :ref:`AppLog_Config` を参照。\
+メッセージングログの設定例を下記に示す。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # MessagingLogFormatter
+ messagingLogFormatter.className=nablarch.fw.messaging.logging.MessagingLogFormatter
+ messagingLogFormatter.maskingChar=#
+ messagingLogFormatter.maskingPatterns=<password>(.+?)</password>,<mobilePhoneNumber>(.+?)</mobilePhoneNumber>
+ 
+ # MOMメッセージング用フォーマット
+ messagingLogFormatter.sentMessageFormat=@@@@ SENT MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\treply_to       = [$replyTo$]\n\ttime_to_live   = [$timeToLive$]\n\tmessage_body   = [$messageBody$]
+ messagingLogFormatter.receivedMessageFormat=@@@@ RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\treply_to       = [$replyTo$]\n\tmessage_body   = [$messageBody$]
+
+ # HTTPメッセージング用フォーマット
+ messagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_body   = [$messageBody$]
+ messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_body   = [$messageBody$]
+
+プロパティの説明を下記に示す。
+
+================================================================ ===================================================================================
+プロパティ名                                                     設定値
+================================================================ ===================================================================================
+messagingLogFormatter.className                                  MessagingLogFormatterのクラス名。
+                                                                 MessagingLogFormatterクラスを差し替える場合に指定する。
+messagingLogFormatter.maskingPatterns                            メッセージ本文のマスク対象文字列を正規表現で指定する。
+
+                                                                 正規表現で指定された最初のキャプチャ部分(括弧で囲まれた部分)がマスク対象となる。
+                                                                 
+                                                                 例えばパターンとして「`<password>(.+?)</password>`」と指定し、\
+                                                                 実電文に「`<password>hoge</password>`」が含まれる場合、\
+                                                                 出力される文字列は「`<password>****</password>`」となる。
+
+                                                                 複数指定する場合はカンマ区切り。\
+                                                                 指定した正規表現は、Pattern.CASE_INSENSITIVEを指定してコンパイルする。\
+                                                                 コンパイル処理の呼び出しを下記に示す。
+                                                                 
+                                                                  .. code-block:: java
+                                                                  
+                                                                   Pattern.compile(<指定した正規表現>, Pattern.CASE_INSENSITIVE)
+                                                                  
+messagingLogFormatter.maskingChar                                マスクに使用する文字。\
+                                                                 デフォルトは'*'。
+messagingLogFormatter.sentMessageFormat                          MOM送信メッセージのログ出力に使用するフォーマット。
+messagingLogFormatter.receivedMessageFormat                      MOM受信メッセージのログ出力に使用するフォーマット。
+messagingLogFormatter.httpSentMessageFormat                      HTTP送信メッセージのログ出力に使用するフォーマット。
+messagingLogFormatter.httpReceivedMessageFormat                  HTTP受信メッセージのログ出力に使用するフォーマット。
+================================================================ ===================================================================================
+
+フォーマットに指定可能なプレースホルダの一覧とデフォルトのフォーマットを下記に示す。\
+フォーマットの改行位置で改行して表示する。
+
+.. _MessagingLog_MomSentFormat:
+
+MOM送信メッセージのログ出力に使用するフォーマット
+------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+スレッド名                      $threadName$
+メッセージID                    $messageId$
+送信宛先                        $destination$
+関連メッセージID                $correlationId$
+応答宛先                        $replyTo$
+有効期間                        $timeToLive$
+メッセージボディの内容          $messageBody$
+メッセージボディのヘキサダンプ  $messageBodyHex$
+メッセージボディのバイト長      $messageBodyLength$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ @@@@ SENT MESSAGE @@@@
+     \n\tthread_name    = [$threadName$]
+     \n\tmessage_id     = [$messageId$]
+     \n\tdestination    = [$destination$]
+     \n\tcorrelation_id = [$correlationId$]
+     \n\treply_to       = [$replyTo$]
+     \n\ttime_to_live   = [$timeToLive$]
+     \n\tmessage_body   = [$messageBody$]
+
+
+.. _MessagingLog_MomReceivedFormat:
+
+MOM受信メッセージのログ出力に使用するフォーマット
+------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+スレッド名                      $threadName$
+メッセージID                    $messageId$
+送信宛先                        $destination$
+関連メッセージID                $correlationId$
+応答宛先                        $replyTo$
+有効期間                        $timeToLive$
+メッセージボディの内容          $messageBody$
+メッセージボディのヘキサダンプ  $messageBodyHex$
+メッセージボディのバイト長      $messageBodyLength$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ @@@@ RECEIVED MESSAGE @@@@
+     \n\tthread_name    = [$threadName$]
+     \n\tmessage_id     = [$messageId$]
+     \n\tdestination    = [$destination$]
+     \n\tcorrelation_id = [$correlationId$]
+     \n\treply_to       = [$replyTo$]
+     \n\tmessage_body   = [$messageBody$]
+
+
+.. _MessagingLog_HttpSentFormat:
+
+HTTP送信メッセージのログ出力に使用するフォーマット
+------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+スレッド名                      $threadName$
+メッセージID                    $messageId$
+送信先                          $destination$
+関連メッセージID                $correlationId$
+メッセージボディの内容          $messageBody$
+メッセージボディのヘキサダンプ  $messageBodyHex$
+メッセージボディのバイト長      $messageBodyLength$
+メッセージのヘッダ              $messageHeader$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ @@@@ HTTP SENT MESSAGE @@@@
+     \n\tthread_name    = [$threadName$]
+     \n\tmessage_id     = [$messageId$]
+     \n\tdestination    = [$destination$]
+     \n\tcorrelation_id = [$correlationId$] 
+     \n\tmessage_header = [$messageHeader$]
+     \n\tmessage_body   = [$messageBody$]
+
+
+.. _MessagingLog_HttpReceivedFormat:
+
+HTTP受信メッセージのログ出力に使用するフォーマット
+------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+スレッド名                      $threadName$
+メッセージID                    $messageId$
+送信先                          $destination$
+関連メッセージID                $correlationId$
+メッセージボディの内容          $messageBody$
+メッセージボディのヘキサダンプ  $messageBodyHex$
+メッセージボディのバイト長      $messageBodyLength$
+メッセージのヘッダ              $messageHeader$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ @@@@ HTTP RECEIVED MESSAGE @@@@
+     \n\tthread_name    = [$threadName$]
+     \n\tmessage_id     = [$messageId$]
+     \n\tdestination    = [$destination$]
+     \n\tcorrelation_id = [$correlationId$]
+     \n\tmessage_header = [$messageHeader$]
+     \n\tmessage_body   = [$messageBody$]
+
+
+メッセージングログの出力例
+==================================================================
+メッセージングログの出力例を下記に示す。\
+XMLデータを取り扱うHTTPメッセージ受信処理の例である。
+
+メッセージングログの個別項目のフォーマットは、デフォルトのフォーマットに加えバイト長およびヘキサダンプを追加し、本文中のcnoタグの内容をマスク対象としている。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # MessagingLogFormatterの設定
+ messagingLogFormatter.maskingChar=#
+ messagingLogFormatter.maskingPatterns=<cno>(.*?)</cno>
+ messagingLogFormatter.httpSentMessageFormat=@@@@ SENT MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_length = [$messageBodyLength$]\n\tmessage_body   = [$messageBody$]\n\tmessage_bodyhex= [$messageBodyHex$]
+ messagingLogFormatter.httpReceivedMessageFormat=@@@@ RECEIVED MESSAGE @@@@\n\tthread_name    = [$threadName$]\n\tmessage_id     = [$messageId$]\n\tdestination    = [$destination$]\n\tcorrelation_id = [$correlationId$]\n\tmessage_header = [$messageHeader$]\n\tmessage_length = [$messageBodyLength$]\n\tmessage_body   = [$messageBody$]\n\tmessage_bodyhex= [$messageBodyHex$]
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ # appFile
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=./app.log
+ writer.appFile.encoding=UTF-8
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$
+
+ availableLoggersNamesOrder=MESSAGING
+ 
+ # MESSAGING
+ loggers.MESSAGING.nameRegex=MESSAGING
+ loggers.MESSAGING.level=INFO
+ loggers.MESSAGING.writerNames=appFile
+
+cnoタグの内容は、MessagingLogFormatterの設定で指定した文字にマスクして出力される。\
+また、ヘキサダンプされた内容もマスク文字列のヘキサダンプが出力される。
+
+.. code-block:: bash
+
+ 2014-06-27 11:07:51.314 -INFO- MESSAGING [null] boot_proc = [] proc_sys = [] req_id = [RM11AC0102] usr_id = [unitTest] @@@@ HTTP RECEIVED MESSAGE @@@@
+     thread_name    = [main]
+     message_id     = [1403834871251]
+     destination    = [null]
+     correlation_id = [null]
+     message_header = [{x-message-id=1403834871251, MessageId=1403834871251, ReplyTo=/action/RM11AC0102}]
+     message_length = [216]
+     message_body   = [<?xml version="1.0" encoding="UTF-8"?><request><_nbctlhdr><userId>unitTest</userId><resendFlag>0</resendFlag></_nbctlhdr><user><id>nablarch</id><name>ナブラーク</name><cno>****************</cno></user></request>]
+     message_bodyhex= [3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D225554462D38223F3E3C726571756573743E3C5F6E6263746C6864723E3C7573657249643E756E6974546573743C2F7573657249643E3C726573656E64466C61673E303C2F726573656E64466C61673E3C2F5F6E6263746C6864723E3C757365723E3C69643E6E61626C617263683C2F69643E3C6E616D653E3F3F3F3F3F3C2F6E616D653E3C636E6F3E2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A3C2F636E6F3E3C2F757365723E3C2F726571756573743E]
+ 2014-06-27 11:07:51.329 -INFO- MESSAGING [null] boot_proc = [] proc_sys = [] req_id = [RM11AC0102] usr_id = [unitTest] @@@@ HTTP SENT MESSAGE @@@@
+     thread_name    = [main]
+     message_id     = [null]
+     destination    = [/action/RM11AC0102]
+     correlation_id = [1403834871251]
+     message_header = [{CorrelationId=1403834871251, Destination=/action/RM11AC0102}]
+     message_length = [145]
+     message_body   = [<?xml version="1.0" encoding="UTF-8"?><response><_nbctlhdr><statusCode>200</statusCode></_nbctlhdr><result><msg>success</msg></result></response>]
+     message_bodyhex= [3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D225554462D38223F3E3C726573706F6E73653E3C5F6E6263746C6864723E3C737461747573436F64653E3230303C2F737461747573436F64653E3C2F5F6E6263746C6864723E3C726573756C743E3C6D73673E737563636573733C2F6D73673E3C2F726573756C743E3C2F726573706F6E73653E]
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-05_MessagingLog--s1",
+  "title": "メッセージングログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メッセージングログの出力",
+      "hints": [
+        "MessagingLogUtil",
+        "MessagingLogFormatter",
+        "MessagingContext",
+        "HttpMessagingRequestParsingHandler",
+        "HttpMessagingResponseBuildingHandler",
+        "HttpMessagingClient",
+        "messagingLogFormatter.maskingPatterns",
+        "messagingLogFormatter.maskingChar",
+        "messagingLogFormatter.sentMessageFormat",
+        "messagingLogFormatter.receivedMessageFormat",
+        "messagingLogFormatter.httpSentMessageFormat",
+        "messagingLogFormatter.httpReceivedMessageFormat",
+        "messagingLogFormatter.className",
+        "メッセージングログ設定",
+        "メッセージボディマスク",
+        "MOMメッセージング",
+        "HTTPメッセージング",
+        "個人情報マスク"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "MOM送信メッセージのログ出力に使用するフォーマット",
+      "hints": [
+        "$threadName$",
+        "$messageId$",
+        "$destination$",
+        "$correlationId$",
+        "$replyTo$",
+        "$timeToLive$",
+        "$messageBody$",
+        "$messageBodyHex$",
+        "$messageBodyLength$",
+        "MOM送信メッセージフォーマット",
+        "sentMessageFormat",
+        "SENT MESSAGE"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "MOM受信メッセージのログ出力に使用するフォーマット",
+      "hints": [
+        "$threadName$",
+        "$messageId$",
+        "$destination$",
+        "$correlationId$",
+        "$replyTo$",
+        "$timeToLive$",
+        "$messageBody$",
+        "$messageBodyHex$",
+        "$messageBodyLength$",
+        "MOM受信メッセージフォーマット",
+        "receivedMessageFormat",
+        "RECEIVED MESSAGE"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "HTTP送信メッセージのログ出力に使用するフォーマット",
+      "hints": [
+        "$threadName$",
+        "$messageId$",
+        "$destination$",
+        "$correlationId$",
+        "$messageBody$",
+        "$messageBodyHex$",
+        "$messageBodyLength$",
+        "$messageHeader$",
+        "HTTP送信メッセージフォーマット",
+        "httpSentMessageFormat",
+        "HTTP SENT MESSAGE"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "HTTP受信メッセージのログ出力に使用するフォーマット",
+      "hints": [
+        "$threadName$",
+        "$messageId$",
+        "$destination$",
+        "$correlationId$",
+        "$messageBody$",
+        "$messageBodyHex$",
+        "$messageBodyLength$",
+        "$messageHeader$",
+        "HTTP受信メッセージフォーマット",
+        "httpReceivedMessageFormat",
+        "HTTP RECEIVED MESSAGE"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 出力方針\n\nログレベル: INFO、ロガー名: MESSAGINGとしてアプリケーションログへ出力する。\n\nlog.propertiesの設定例:\n```bash\nwriterNames=appFile\n\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=/var/log/app/app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=<アプリケーションログ用のフォーマット>\n\navailableLoggersNamesOrder=MESSAGING,ROO\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appFile\n\nloggers.MESSAGING.nameRegex=MESSAGING\nloggers.MESSAGING.level=INFO\nloggers.MESSAGING.writerNames=appFile\n```\n\n## 出力項目\n\n| 項目名 | 説明 |\n|---|---|\n| スレッド名 | 処理を実行したスレッド名 |\n| メッセージID | メッセージに設定されているメッセージID |\n| 送信宛先 | メッセージに設定されている送信宛先 |\n| 関連メッセージID | メッセージに設定されている関連メッセージID |\n| 応答宛先 | メッセージに設定されている応答宛先 |\n| 有効期間 | メッセージに設定されている有効期間 |\n| メッセージヘッダ | メッセージに設定されているヘッダ |\n| メッセージボディ | メッセージボディ部のダンプ。個人情報・機密情報はマスクして出力（マスク設定が必要） |\n| メッセージボディのヘキサダンプ | メッセージボディ部のヘキサダンプ。マスク対象部分はマスク文字列のヘキサダンプを出力（マスク設定が必要） |\n| メッセージボディのバイト長 | メッセージボディ部のバイト長 |\n\n個別項目（スレッド名〜メッセージボディのバイト長）以外の共通項目は :ref:`Log_BasicLogFormatter` で指定する。共通項目と個別項目を組み合わせたフォーマットは :ref:`AppLog_Format` を参照。\n\n## 出力に使用するクラス\n\n![メッセージングログクラス図](assets/libraries-05_MessagingLog--s1/Log_MessagingLog_ClassDiagram.jpg)\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.fw.messaging.MessagingContext` | MOMメッセージ送受信処理で要求/応答メッセージの相互変換と送受信を行う。実際の送受信メッセージ内容をログ出力する |\n| `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler` | HTTPリクエストを解析して要求メッセージへ変換するハンドラ。受信メッセージ内容をログ出力する |\n| `nablarch.fw.messaging.handler.HttpMessagingResponseBuildingHandler` | 応答メッセージをHTTPレスポンスへ変換するハンドラ。送信メッセージ内容をログ出力する |\n| `nablarch.fw.messaging.realtime.http.client.HttpMessagingClient` | 要求メッセージからHTTPリクエストへの変換およびHTTPレスポンスの応答メッセージへの変換を行う。送受信メッセージ内容をログ出力する |\n| `nablarch.fw.messaging.logging.MessagingLogUtil` | メッセージング処理中のログ出力内容に関連した処理を行う |\n| `nablarch.fw.messaging.logging.MessagingLogFormatter` | メッセージングログの個別項目をフォーマットする |\n\n各クラスはMessagingLogUtilを使用してメッセージングログを整形し、Loggerを使用してログ出力を行う。\n\n処理シーケンス:\n- MOM同期応答メッセージ受信: ![MOM受信シーケンス図](assets/libraries-05_MessagingLog--s1/Log_MessagingLog_SequenceDiagram_mom_incoming.jpg)\n- MOM同期応答メッセージ送信: ![MOM送信シーケンス図](assets/libraries-05_MessagingLog--s1/Log_MessagingLog_SequenceDiagram_mom_outgoing.jpg)\n- HTTPメッセージ受信: ![HTTP受信シーケンス図](assets/libraries-05_MessagingLog--s1/Log_MessagingLog_SequenceDiagram_http_incoming.jpg)\n- HTTPメッセージ送信: ![HTTP送信シーケンス図](assets/libraries-05_MessagingLog--s1/Log_MessagingLog_SequenceDiagram_http_outgoing.jpg)\n\n## 設定方法\n\nMessagingLogUtilはapp-log.propertiesを読み込みMessagingLogFormatterオブジェクトを生成して個別項目のフォーマット処理を委譲する。プロパティファイルのパス指定や実行時設定変更は :ref:`AppLog_Config` を参照。\n\napp-log.propertiesの設定例:\n```bash\nmessagingLogFormatter.className=nablarch.fw.messaging.logging.MessagingLogFormatter\nmessagingLogFormatter.maskingChar=#\nmessagingLogFormatter.maskingPatterns=<password>(.+?)</password>,<mobilePhoneNumber>(.+?)</mobilePhoneNumber>\n\nmessagingLogFormatter.sentMessageFormat=@@@@ SENT MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\treply_to       = [$replyTo$]\\n\\ttime_to_live   = [$timeToLive$]\\n\\tmessage_body   = [$messageBody$]\nmessagingLogFormatter.receivedMessageFormat=@@@@ RECEIVED MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\treply_to       = [$replyTo$]\\n\\tmessage_body   = [$messageBody$]\nmessagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\tmessage_header = [$messageHeader$]\\n\\tmessage_body   = [$messageBody$]\nmessagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\tmessage_header = [$messageHeader$]\\n\\tmessage_body   = [$messageBody$]\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| messagingLogFormatter.className | MessagingLogFormatterのクラス名。差し替える場合に指定 |\n| messagingLogFormatter.maskingPatterns | メッセージ本文のマスク対象文字列を正規表現で指定。最初のキャプチャ部分（括弧で囲まれた部分）がマスク対象。複数指定はカンマ区切り。Pattern.CASE_INSENSITIVEでコンパイルされる |\n| messagingLogFormatter.maskingChar | マスクに使用する文字。デフォルトは'*' |\n| messagingLogFormatter.sentMessageFormat | MOM送信メッセージのログ出力フォーマット |\n| messagingLogFormatter.receivedMessageFormat | MOM受信メッセージのログ出力フォーマット |\n| messagingLogFormatter.httpSentMessageFormat | HTTP送信メッセージのログ出力フォーマット |\n| messagingLogFormatter.httpReceivedMessageFormat | HTTP受信メッセージのログ出力フォーマット |\n\n## 出力例\n\ncnoタグ内容をマスクするHTTPメッセージ受信処理の例。\n\napp-log.propertiesの設定例:\n```bash\nmessagingLogFormatter.maskingChar=#\nmessagingLogFormatter.maskingPatterns=<cno>(.*?)</cno>\nmessagingLogFormatter.httpSentMessageFormat=@@@@ SENT MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\tmessage_header = [$messageHeader$]\\n\\tmessage_length = [$messageBodyLength$]\\n\\tmessage_body   = [$messageBody$]\\n\\tmessage_bodyhex= [$messageBodyHex$]\nmessagingLogFormatter.httpReceivedMessageFormat=@@@@ RECEIVED MESSAGE @@@@\\n\\tthread_name    = [$threadName$]\\n\\tmessage_id     = [$messageId$]\\n\\tdestination    = [$destination$]\\n\\tcorrelation_id = [$correlationId$]\\n\\tmessage_header = [$messageHeader$]\\n\\tmessage_length = [$messageBodyLength$]\\n\\tmessage_body   = [$messageBody$]\\n\\tmessage_bodyhex= [$messageBodyHex$]\n```\n\nlog.propertiesの設定例:\n```bash\nwriterNames=appFile\n\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=./app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=MESSAGING\n\nloggers.MESSAGING.nameRegex=MESSAGING\nloggers.MESSAGING.level=INFO\nloggers.MESSAGING.writerNames=appFile\n```\n\n出力例（cnoタグの内容はmaskingCharで指定した文字にマスクされ、ヘキサダンプ部分もマスク文字列のヘキサダンプが出力される）:\n```\n2014-06-27 11:07:51.314 -INFO- MESSAGING [null] boot_proc = [] proc_sys = [] req_id = [RM11AC0102] usr_id = [unitTest] @@@@ HTTP RECEIVED MESSAGE @@@@\n    thread_name    = [main]\n    message_id     = [1403834871251]\n    destination    = [null]\n    correlation_id = [null]\n    message_header = [{x-message-id=1403834871251, MessageId=1403834871251, ReplyTo=/action/RM11AC0102}]\n    message_length = [216]\n    message_body   = [<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><_nbctlhdr><userId>unitTest</userId><resendFlag>0</resendFlag></_nbctlhdr><user><id>nablarch</id><name>ナブラーク</name><cno>****************</cno></user></request>]\n    message_bodyhex= [3C3F786D6C...（マスク文字列のヘキサダンプ）]\n```",
+    "s2": "## プレースホルダ一覧\n\n| 項目名 | プレースホルダ |\n|---|---|\n| スレッド名 | $threadName$ |\n| メッセージID | $messageId$ |\n| 送信宛先 | $destination$ |\n| 関連メッセージID | $correlationId$ |\n| 応答宛先 | $replyTo$ |\n| 有効期間 | $timeToLive$ |\n| メッセージボディの内容 | $messageBody$ |\n| メッセージボディのヘキサダンプ | $messageBodyHex$ |\n| メッセージボディのバイト長 | $messageBodyLength$ |\n\n## デフォルトフォーマット\n\n```bash\n@@@@ SENT MESSAGE @@@@\n    \\n\\tthread_name    = [$threadName$]\n    \\n\\tmessage_id     = [$messageId$]\n    \\n\\tdestination    = [$destination$]\n    \\n\\tcorrelation_id = [$correlationId$]\n    \\n\\treply_to       = [$replyTo$]\n    \\n\\ttime_to_live   = [$timeToLive$]\n    \\n\\tmessage_body   = [$messageBody$]\n```",
+    "s3": "## プレースホルダ一覧\n\n| 項目名 | プレースホルダ |\n|---|---|\n| スレッド名 | $threadName$ |\n| メッセージID | $messageId$ |\n| 送信宛先 | $destination$ |\n| 関連メッセージID | $correlationId$ |\n| 応答宛先 | $replyTo$ |\n| 有効期間 | $timeToLive$ |\n| メッセージボディの内容 | $messageBody$ |\n| メッセージボディのヘキサダンプ | $messageBodyHex$ |\n| メッセージボディのバイト長 | $messageBodyLength$ |\n\n## デフォルトフォーマット\n\n```bash\n@@@@ RECEIVED MESSAGE @@@@\n    \\n\\tthread_name    = [$threadName$]\n    \\n\\tmessage_id     = [$messageId$]\n    \\n\\tdestination    = [$destination$]\n    \\n\\tcorrelation_id = [$correlationId$]\n    \\n\\treply_to       = [$replyTo$]\n    \\n\\tmessage_body   = [$messageBody$]\n```",
+    "s4": "## プレースホルダ一覧\n\n| 項目名 | プレースホルダ |\n|---|---|\n| スレッド名 | $threadName$ |\n| メッセージID | $messageId$ |\n| 送信先 | $destination$ |\n| 関連メッセージID | $correlationId$ |\n| メッセージボディの内容 | $messageBody$ |\n| メッセージボディのヘキサダンプ | $messageBodyHex$ |\n| メッセージボディのバイト長 | $messageBodyLength$ |\n| メッセージのヘッダ | $messageHeader$ |\n\n## デフォルトフォーマット\n\n```bash\n@@@@ HTTP SENT MESSAGE @@@@\n    \\n\\tthread_name    = [$threadName$]\n    \\n\\tmessage_id     = [$messageId$]\n    \\n\\tdestination    = [$destination$]\n    \\n\\tcorrelation_id = [$correlationId$]\n    \\n\\tmessage_header = [$messageHeader$]\n    \\n\\tmessage_body   = [$messageBody$]\n```",
+    "s5": "## プレースホルダ一覧\n\n| 項目名 | プレースホルダ |\n|---|---|\n| スレッド名 | $threadName$ |\n| メッセージID | $messageId$ |\n| 送信先 | $destination$ |\n| 関連メッセージID | $correlationId$ |\n| メッセージボディの内容 | $messageBody$ |\n| メッセージボディのヘキサダンプ | $messageBodyHex$ |\n| メッセージボディのバイト長 | $messageBodyLength$ |\n| メッセージのヘッダ | $messageHeader$ |\n\n## デフォルトフォーマット\n\n```bash\n@@@@ HTTP RECEIVED MESSAGE @@@@\n    \\n\\tthread_name    = [$threadName$]\n    \\n\\tmessage_id     = [$messageId$]\n    \\n\\tdestination    = [$destination$]\n    \\n\\tcorrelation_id = [$correlationId$]\n    \\n\\tmessage_header = [$messageHeader$]\n    \\n\\tmessage_body   = [$messageBody$]\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

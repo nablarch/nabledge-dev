@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-thread_context--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The property table adds columns '型 (List)', '必須 (○)', and 'デフォルト値 (empty)' that do not exist in the source. The source table only has 'property名' and '設定内容' columns. The type 'List' and required status '○' are inferences not present in the source.",
+      "source_evidence": "Source table for ThreadContextHandlerの設定 has only two columns: 'property名' and '設定内容'. No type, required, or default value columns are defined."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The property table adds a '型 (String)' column for sessionKey and anonymousId that does not exist in the source. The source table only has 'property名' and '設定内容' columns. The String type is an inference not stated in the source.",
+      "source_evidence": "Source table for UserIdAttributeの設定 has only two columns: 'property名' and '設定内容'. No type column is defined."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — LanguageAttribute and TimeZoneAttribute descriptions",
+      "description": "The selection criteria table omits that LanguageAttribute sets the language from repository configuration ('リポジトリの設定で指定された言語') and falls back to the system default locale when not explicitly set ('明示的に指定しなかった場合、システムのデフォルトロケールが使用される'). Similarly, TimeZoneAttribute falls back to the system default timezone. These are important for correct configuration decisions.",
+      "source_evidence": "Source: 'LanguageAttribute: リポジトリの設定で指定された言語をスレッドコンテキストに設定する。明示的に指定しなかった場合、システムのデフォルトロケールが使用される。' and 'TimeZoneAttribute: リポジトリの設定で指定されたタイムゾーンをスレッドコンテキストに設定する。明示的に指定しなかった場合、システムのデフォルトタイムゾーンが使用される。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 is oversized: it merges the main introduction, クラス図, the entire 使用方法 h2 section (which has 7+ h3 subsections covering each attribute class in detail, totaling well over 2000 chars of plain text), and the 設定例 section. Per V3, when a source h2 section has >= 2000 chars and h3 subsections exist but the knowledge file does not split them, this should be reported. The automated check also flags section count (7) as less than source heading count (8).",
+      "source_evidence": "Source 使用方法 (h2) contains h3 subsections: RequestIdAttribute, InternalRequestIdAttribute, UserIdAttribute, LanguageAttribute (with two large tables), TimeZoneAttribute (with two large tables), ExecutionIdAttribute, 設定例 — all merged into s1."
+    }
+  ]
+}

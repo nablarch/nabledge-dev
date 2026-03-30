@@ -1,0 +1,34 @@
+{
+  "file_id": "toolbox-01_DefInfoGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source lines 7-16)",
+      "description": "The entire 概要 section is absent from the knowledge file. This section contains the tool's purpose (UI開発基盤の画面項目定義で使用する定義データを生成) and the complete list of input file types: テーブル定義書, ドメイン定義書, コード設計書, メッセージ設計書, 外部インターフェース設計書. An AI agent needs this to answer basic questions about what the tool does and what inputs it accepts.",
+      "source_evidence": "本ツールは、下記のファイルからUI開発基盤の画面項目定義で使用する定義データを生成する。 * テーブル定義書 * ドメイン定義書 * コード設計書 * メッセージ設計書 * 外部インターフェース設計書"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ツール配置場所 section (source lines 18-31)",
+      "description": "The entire ツール配置場所 section is absent from the knowledge file. This section specifies: (1) the tool is located in the tutorial project's `tool/definitioninfogenerator` directory, (2) the file/directory structure including: `doc` (入力ファイル配置場所), `resources` (設定ファイル配置場所), `definfogen.xml` (Ant build file for execution), and `definfogen.properties` (property file, normally no changes needed). These are needed to locate and run the tool.",
+      "source_evidence": "本ツールはチュートリアルプロジェクトの`tool/definitioninfogenerator`ディレクトリに配置されている。ファイル/ディレクトリ: doc, resources, definfogen.xml (Antビルドファイル), definfogen.properties (プロパティファイル、通常変更不要)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (sections count)",
+      "description": "The knowledge file has 10 sections (s1–s10) but the source has at least 12 distinct headings including 概要 and ツール配置場所, neither of which maps to any section in the knowledge file.",
+      "source_evidence": "Source headings: 概要, ツール配置場所, 利用の準備, 環境設定ファイル, 入力となる設計書に関する設定, ファイル生成に関する設定, コンポーネント定義ファイル, 入力ファイル読み取り設定, メッセージ設計書の読込設定, テーブル定義書の読込設定, コード設計書の読込設定"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s9].hints",
+      "description": "Section s9 (テーブル定義書の読込設定) is missing several column property names from the tableDefinitionColumnDefs indexNamePairs that users may search for: `dataType`, `length`, `primaryKeyOrder`, `required`, `columnDefinition`, `initialValue`, `encryptionTarget`, `note`. Current hints only include `physicalColumnName`, `logicalColumnName`, and `domainName`.",
+      "source_evidence": "<entry key=\"16\" value=\"dataType\"/><entry key=\"19\" value=\"length\"/><entry key=\"21\" value=\"primaryKeyOrder\"/><entry key=\"22\" value=\"required\"/><entry key=\"30\" value=\"columnDefinition\"/><entry key=\"40\" value=\"initialValue\"/><entry key=\"42\" value=\"encryptionTarget\"/><entry key=\"44\" value=\"note\"/>"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Permission--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1 — PermissionCheckHandlerの設定 property table, ignoreRequestIds row",
+      "description": "The type column lists 'String' for the ignoreRequestIds property, but the source property table only specifies property name and description ('認可判定を行わないリクエストID。複数指定する場合はカンマ区切り。') with no type annotation. The type 'String' is an inference not stated in the source.",
+      "source_evidence": "Source table for PermissionCheckHandlerの設定 has only two columns (property名, 設定内容) and does not mention 'String' as the type for ignoreRequestIds."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections — single section s1 covering entire document",
+      "description": "The source document's top-level heading (使用方法, h2) contains multiple h3 subsections: 'BasicPermissionFactoryの設定方法', '特定のリクエストIDを認可判定の対象から除外する方法', '使用例'. The total plain-text content well exceeds 2000 characters, but the knowledge file places everything in a single section s1 without splitting.",
+      "source_evidence": "Source headings: 'BasicPermissionFactoryの設定方法' (===), '特定のリクエストIDを認可判定の対象から除外する方法' (===), '使用例' (===) are all h3-level subsections under the h2 '使用方法'."
+    }
+  ]
+}

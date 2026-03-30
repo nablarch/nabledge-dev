@@ -1,0 +1,33 @@
+{
+  "file_id": "ui-framework-reference_ui_standard--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 対応ブラウザを追加したい",
+      "description": "The source contains an important warning about the risk of directly modifying plugin source code when addressing browser-specific issues: 'テストの結果、修正を要する問題が検出された場合、当該のソースコード(プラグイン)を直接修正すると、既存の対応ブラウザ上の挙動に問題を生じさせる危険性がある。' and explains that this is why nablarch-device-fix plugins exist. The knowledge file mentions using nablarch-device-fix but omits the critical failure mode warning that explains WHY direct modification is prohibited.",
+      "source_evidence": "「当該のソースコード(プラグイン)を直接修正すると、既存の対応ブラウザ上の挙動に問題を生じさせる危険性がある。このため、ブラウザ固有の特性や不具合に起因する問題への対処は nablarch-device-fix としてまとめられている。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — どうしてもIE6/7はサポートできないのか?",
+      "description": "The source advises contacting ADC Nablarch support when IE6 support is actually required: '実際にIE6のサポートが必要な場合は、ADCのNablarch担当窓口まで問い合わせを行うこと。' This is omitted from the knowledge file.",
+      "source_evidence": "「実際にIE6のサポートが必要な場合は、ADCのNablarch担当窓口まで問い合わせを行うこと。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 画面の配色を変更したい",
+      "description": "The source provides a concrete color scheme adjustment example demonstrating use of the LESS `darken()` function for color manipulation. This example is omitted from the knowledge file, which only includes the default color values.",
+      "source_evidence": "Source code block: `@mainColor1 : darken(rgb(173, 210, 16), 15%); // 薄い緑` and `@mainColor2 : darken(rgb(82, 108, 8), 20%); // 濃い緑`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated warning: S9: Section count 9 < source headings 19",
+      "description": "The automated check flagging 9 sections vs 19 headings is a false positive. The source has exactly 9 h2-level headings (dashed underlines), which maps 1:1 to the 9 knowledge file sections. The remaining 10 headings are h3-level (equal-sign underlines) representing sub-questions within each h2 section — these are correctly embedded as markdown sub-headings within their parent sections rather than split into separate sections."
+    }
+  ]
+}

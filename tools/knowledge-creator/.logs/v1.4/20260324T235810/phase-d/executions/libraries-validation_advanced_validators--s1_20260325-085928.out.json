@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-validation_advanced_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — 実装例 code block",
+      "description": "The knowledge file shows `@YYYYMMDD(allowFormat = \"yyyy/MM/dd\")` but the source code example contains `@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")` (note: `allowFomat` without the 'r'). The knowledge file silently corrects this typo rather than faithfully reproducing the source code.",
+      "source_evidence": "Source line: `@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")` — the attribute name is misspelled as `allowFomat` in the source code block"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "The annotation attributes table in s2 lists `messageId` as a configurable attribute, but `messageId` is not included in the s2 hints array.",
+      "source_evidence": "Source annotation attributes table first column: `allowFormat` (必須), `messageId` — `messageId` is a key property name from the table that should appear in hints"
+    }
+  ]
+}

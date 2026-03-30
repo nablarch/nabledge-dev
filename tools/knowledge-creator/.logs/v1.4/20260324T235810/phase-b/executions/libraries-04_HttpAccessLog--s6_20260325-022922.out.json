@@ -1,0 +1,34 @@
+{
+  "id": "libraries-04_HttpAccessLog--s6",
+  "title": "HTTPアクセスログの出力例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエスト処理終了時のログ出力に使用するフォーマット",
+      "hints": [
+        "リクエスト処理終了時",
+        "HTTPアクセスログ",
+        "$dispatchingClass$",
+        "$statusCode$",
+        "$responseStatusCode$",
+        "$contentPath$",
+        "$startTime$",
+        "$endTime$",
+        "$executionTime$",
+        "$maxMemory$",
+        "$freeMemory$",
+        "maskingChar",
+        "maskingPatterns",
+        "マスク",
+        "FileLogWriter",
+        "BasicLogFormatter",
+        "アクセスログ出力例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## リクエスト処理終了時のログ出力プレースホルダ\n\n:ref:`HttpAccessLog_BeginFormat` のプレースホルダに加え、以下を指定可能。リクエストパラメータは :ref:`WebView_HiddenEncryption` 機能の復号後の状態となる。\n\n| 項目名 | プレースホルダ |\n|---|---|\n| ディスパッチ先クラス | $dispatchingClass$ |\n| ステータスコード(内部) | $statusCode$ |\n| ステータスコード(クライアント) | $responseStatusCode$ |\n| コンテンツパス | $contentPath$ |\n| 開始日時 | $startTime$ |\n| 終了日時 | $endTime$ |\n| 実行時間 | $executionTime$ |\n| 最大メモリ量 | $maxMemory$ |\n| 空きメモリ量(開始時) | $freeMemory$ |\n\nデフォルトフォーマット:\n\n```bash\n@@@@ END @@@@ rid = [$requestId$] uid = [$userId$] sid = [$sessionId$] url = [$url$] status_code = [$statusCode$] content_path = [$contentPath$]\n    \\n\\tstart_time     = [$startTime$]\n    \\n\\tend_time       = [$endTime$]\n    \\n\\texecution_time = [$executionTime$]\n    \\n\\tmax_memory     = [$maxMemory$]\n    \\n\\tfree_memory    = [$freeMemory$]\n```\n\n## HTTPアクセスログの出力例\n\napp-log.propertiesの設定例（passwordを含むパラメータをマスク）:\n\n```xml\nhttpAccessLogFormatter.maskingChar=#\nhttpAccessLogFormatter.maskingPatterns=\\\\.*password\\\\.*\n```\n\nlog.propertiesの設定例:\n\n```bash\nwriterNames=appFile\n\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=./app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=$date$ -$logLevel$- $loggerName$ [$executionId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=ACC\n\nloggers.ACC.nameRegex=HTTP_ACCESS\nloggers.ACC.level=INFO\nloggers.ACC.writerNames=appFile\n```\n\npasswordを含むパラメータはmaskingCharで指定した文字でマスクして出力される。"
+  }
+}

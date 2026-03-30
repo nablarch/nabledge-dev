@@ -1,0 +1,33 @@
+{
+  "file_id": "ui-framework-field_checkbox",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 属性値一覧: elementLabelProperty",
+      "description": "Knowledge file describes elementLabelProperty as 'リスト要素からラベルを取得するためのプロパティ名', but the source states 'リスト要素から値を取得するためのプロパティ名'. The descriptions for elementLabelProperty and elementValueProperty are swapped relative to the source.",
+      "source_evidence": "elementLabelProperty | リスト要素から値を取得する 文字列 ◎ ×\n                       ためのプロパティ名"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 属性値一覧: elementValueProperty",
+      "description": "Knowledge file describes elementValueProperty as 'リスト要素から値を取得するためのプロパティ名', but the source states 'リスト要素からラベルを取得するためのプロパティ名'. The descriptions for elementLabelProperty and elementValueProperty are swapped relative to the source.",
+      "source_evidence": "elementValueProperty | リスト要素からラベルを取得 文字列 ◎ ×\n                       するためのプロパティ名"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ローカル動作時の挙動",
+      "description": "The source's behavior description notes '(デフォルトでは改行区切り)' when describing how checkboxes are displayed by default, but this is omitted from the knowledge file. The knowledge file only captures the attribute table default of 'span', losing this behavioral detail from the prose description.",
+      "source_evidence": "各チェックボックスとラベルの組は、listFormatに指定された形式で表示される。(デフォルトでは改行区切り)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "Four property names from the attribute table (first column) are absent from the s2 hints array: 'disabled', 'dataFrom', 'comment', 'initialValueDesc'."
+    }
+  ]
+}

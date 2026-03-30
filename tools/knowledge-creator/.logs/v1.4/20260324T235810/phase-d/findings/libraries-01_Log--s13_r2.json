@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (FileLogWriter)",
+      "description": "FileLogWriterの第3の特徴「初期処理と終了処理、ログファイルの切り替え時に、書き込み先のログファイルにINFOレベルでメッセージを出力する」が記載されていない。ソースでは3つの特徴として列挙されているが、知識ファイルには最初の2つのみ反映されている。",
+      "source_evidence": "FileLogWriterクラスの特徴: 「初期処理と終了処理、ログファイルの切り替え時に、書き込み先のログファイルにINFOレベルでメッセージを出力する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 (FileLogWriter) - hints",
+      "description": "FileLogWriterの設定プロパティ `level` がhintsに含まれていない。知識ファイルのプロパティ表に明示されており、ソースでも「LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する」と説明されている重要プロパティ。",
+      "source_evidence": "writer.appFile.level=INFO (設定例) および「LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。」"
+    }
+  ]
+}

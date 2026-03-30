@@ -1,0 +1,26 @@
+{
+  "id": "readers-DatabaseTableQueueReader",
+  "title": "データベーステーブルキューリーダ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベーステーブルキューリーダ",
+      "hints": [
+        "DatabaseTableQueueReader",
+        "DatabaseRecordReader",
+        "SqlRow",
+        "nablarch.fw.reader.DatabaseTableQueueReader",
+        "nablarch.core.db.statement.SqlRow",
+        "データベーステーブルキュー",
+        "常駐バッチ",
+        "マルチスレッド重複処理防止",
+        "待機時間"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.reader.DatabaseTableQueueReader`\n\n**読み込むデータの型**: `nablarch.core.db.statement.SqlRow`\n\n> **注意**: :doc:`../architectural_pattern/batch_resident` 上でのみ使用すること。:doc:`../architectural_pattern/batch_resident_thread_sync` 上で使用した場合、プロセスを停止できなくなるため使用してはならない。\n\nマルチスレッド環境では処理中レコードをヒープ上で管理し、他スレッドが同一レコードを取得した場合はスキップして重複処理を防止する。処理後はヒープから削除されるためヒープを圧迫しない。\n\n**コンストラクタパラメータ**:\n\n| 設定項目 | データ型 |\n|---|---|\n| データベースからレコードを読み込む :doc:`DatabaseRecordReader` | DatabaseRecordReader |\n| データが存在しない場合の待機時間(ミリ秒) | int |\n| 主キーのカラム名リスト(処理中のレコードを識別する際に使用する) | String... (可変長引数) |\n\n**使用例** (待機時間1000ms、主キー `ID`):\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_DELETE_USER_LIST\");\n\nDatabaseRecordReader reader = new DatabaseRecordReader();\nreader.setStatement(statement);\n\nreturn new DatabaseTableQueueReader(reader, 1000, \"ID\");\n```"
+  }
+}

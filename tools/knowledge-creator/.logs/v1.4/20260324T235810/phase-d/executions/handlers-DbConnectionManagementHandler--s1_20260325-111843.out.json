@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-DbConnectionManagementHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source says \"本ハンドラを複数ハンドラキューに配置することで\" (placing this handler multiple times in the handler queue), meaning multiple instances of the same handler class in one queue chain. The knowledge file says \"複数のハンドラキューに配置することで\" (placing in multiple handler queues), which subtly shifts the meaning to deploying across multiple separate queues rather than adding multiple instances to one queue.",
+      "source_evidence": "本ハンドラを複数ハンドラキューに配置することで、1スレッドに複数のDB接続を割り当てることができる。"
+    }
+  ]
+}

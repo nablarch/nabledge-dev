@@ -1,0 +1,383 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation/01_sampleApplicationExplanation.rst`
+- Format: `rst`
+
+```
+.. _sampleApplicationExplanation:
+
+==============================
+サンプルアプリケーションの概要
+==============================
+
+--------
+画面遷移
+--------
+
+本書で取りあげるサンプルアプリケーションは次の機能を持っている。このうち、本書で説明する機能の画面遷移を以下に示す。
+
+* ログイン機能
+* メニュー機能
+* ユーザ情報照会機能
+* ユーザ情報登録機能
+* ユーザ情報更新機能
+* ユーザ情報削除機能
+* ユーザ情報一括削除機能
+
+.. image:: ./_image/01/screenTransition.png
+ :width: 800px
+ :height: 300
+ :scale: 100
+
+.. TODO
+ AEの画面遷移図に差し替えたい。
+
+本書では、アプリケーションフレームワークの使用方法を説明するため、一般的によく使用される処理である検索、新規登録、更新を例に説明を進める。このため、\
+サンプルアプリケーションの中から説明で取り上げる機能は、ユーザ一覧照会機能、ユーザ情報登録機能、ユーザ情報更新機能とする。
+
+ログイン機能もメニュー機能も必ず使用される機能ではあるが、アプリケーションフレームワークの使い方を説明するには、機能が限定されすぎているため、\
+本書では取り上げない。
+また、ユーザ情報削除機能とユーザ情報一括削除機能は、本書で取りあげる機能を利用して実装できるため、特に取り上げることはしない。
+
+--------------------------------------------
+サンプルアプリケーションの機能と説明する処理
+--------------------------------------------
+
+サンプルアプリケーションのユーザ情報照会機能、ユーザ情報登録機能、ユーザ情報更新機能には、通常のアプリケーションで頻繁に発生する典型的な処理パターンが含まれている。
+そこで本章では、各機能の実装を例に取って、典型的な処理パターンの実装方法について説明する。
+ユーザ情報照会機能、ユーザ情報登録機能、ユーザ情報更新機能で説明する処理パターンは下記のとおり。
+
+================== ==============================================================================
+機能               処理
+================== ==============================================================================
+ユーザ情報照会機能 * :ref:`画面初期表示(初期表示に必要な情報をデータベースから取得し、画面を表示する) <basic>`
+                   * :ref:`一覧検索 <listSearch>`
+ユーザ情報登録機能 * :ref:`入力内容の精査 <how_to_validate>`
+                   * :ref:`画面遷移 <screenTransition>`
+                   * :ref:`入力画面と確認画面の共通化 <sharingInputAndConfirmationJsp>`
+                   * :ref:`データベースへの挿入、二重サブミットの防止 <insert>`
+ユーザ情報更新機能 * :ref:`一覧表示から個別の情報を扱う画面への遷移<submitParameter>`
+                   * :ref:`排他制御<exclusiveControl>`
+================== ==============================================================================
+
+--------
+主な仕様
+--------
+
+ユーザ情報照会機能
+==================
+
+ユーザ情報照会機能の主な仕様は以下のとおり。
+
+  * 検索条件は以下のとおり
+
+    * ログインID
+    * 漢字氏名
+    * カナ氏名
+    * グループ(ドロップダウンリストから選択。リストは表示の度に最新の情報を取得し表示する)
+    * ユーザIDロック(ドロップダウンリストから選択。リストは表示の度に最新の情報を取得し表示する)
+  * 検索条件に対する精査を行う。
+
+    * 検索条件に対する単項目精査を行う。
+    * 検索条件は最低1つは設定しなければならない。
+  * 精査エラーが発生しなかった場合、検索条件に一致する情報を検索する。
+
+  * 検索結果が検索上限件数を越えない場合、結果をユーザ情報一覧照会画面に表示する。
+
+    * 検索結果が１ページの表示上限件数を越えた場合、ページング機能によりページ遷移を行える。
+    * 検索結果は以下の項目名でソートできる。
+
+      * ログインID
+      * 漢字氏名
+      * カナ氏名
+  * 一覧表示されたログインIDリンクをクリックすると、ログインIDに紐付くユーザの以下の情報を表示する。
+
+    * ログインID
+    * 漢字氏名
+    * カナ氏名
+    * メールアドレス
+    * 内線番号
+    * 携帯電話番号
+    * グループ
+    * 認可単位
+
+
+ユーザ情報登録機能
+==================
+
+ユーザ情報登録機能の主な仕様は以下のとおり。
+
+  * 登録する情報は以下のとおり
+
+    * ログインID(必須)
+    * パスワード(必須)
+    * パスワード(確認用)(必須)
+    * 漢字氏名(必須)
+    * カナ氏名(必須)
+    * メールアドレス(必須)
+    * 内線番号(ビル番号、個人番号から成る。必須)
+    * 携帯電話番号(市外番号、市内番号、加入番号から成る。任意)
+    * グループ(ドロップダウンリストから選択。リストは表示の度に最新の情報を取得し表示する。必須)
+    * 認可単位(リストビルダーで選択。リストは表示の度に最新の情報を取得し表示する。任意)
+  * 入力内容に対する精査を行う。
+
+    * 入力内容に対する単項目精査
+    * パスワードとパスワード(確認用)は一致しなければならない。
+    * 携帯電話番号は全て入力されているか、全て未入力でなければならない。
+    * ログインIDは、既に登録されているものは使えない。
+    * グループ、認可単位はあらかじめシステムに登録されていなければならない。
+
+  * 精査エラーが発生した場合は、ユーザ情報登録画面にエラーメッセージを表示する。
+  * 精査エラーが発生しなかった場合は、ユーザ情報登録確認画面を表示する。この画面で登録を指示された場合は入力内容をデータベースに登録する。
+
+
+ユーザ情報更新機能
+==================
+
+ユーザ情報更新機能の主な仕様は以下のとおり。
+
+  * 更新画面に初期表示する情報は以下の通り
+
+    * ログインID
+    * 漢字氏名
+    * カナ氏名
+    * メールアドレス
+    * 内線番号(ビル番号、個人番号から成る。)
+    * 携帯電話番号(市外番号、市内番号、加入番号から成る。)
+    * グループ(ドロップダウンリストから選択。リストは表示の度に最新の情報を取得し表示する。)
+    * 認可単位(リストビルダーで選択。リストは表示の度に最新の情報を取得し表示する。)
+  * 更新する情報は以下の通り
+
+    * 漢字氏名(必須)
+    * カナ氏名(必須)
+    * メールアドレス(必須)
+    * 内線番号(ビル番号、個人番号から成る。必須)
+    * 携帯電話番号(市外番号、市内番号、加入番号から成る。任意)
+    * グループ(ドロップダウンリストから選択。リストは表示の度に最新の情報を取得し表示する。必須)
+    * 認可単位(リストビルダーで選択。リストは表示の度に最新の情報を取得し表示する。任意)
+  * 入力内容に対する精査を行う。
+
+    * 入力内容に対する単項目精査
+    * 携帯電話番号は全て入力されているか、全て未入力でなければならない。
+    * グループ、認可単位はあらかじめシステムに登録されていなければならない。
+
+  * 精査エラーが発生した場合は、ユーザ情報更新画面にエラーメッセージを表示する。
+  * 精査エラーが発生しなかった場合は、ユーザ情報更新確認画面を表示する。この画面で更新を指示された場合は入力内容をデータベースに更新する。
+  * 排他制御を行う。排他制御エラーが発生した場合は、ユーザ情報詳細画面にエラーメッセージを表示する。
+
+----------------------------------
+サンプルアプリケーションの実行方法
+----------------------------------
+
+  :a): 開発環境構築ガイドに従いログインする。
+
+  :b): トップメニューで使用したい機能をクリックする。
+
+    以下の機能は、ユーザ情報一覧照会の結果から実行できる。
+
+     * ユーザ情報更新機能
+     * ユーザ情報削除機能
+     * ユーザ情報一括削除機能
+
+    .. image:: ./_image/01/topMenu.png
+     :scale: 55
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-01_sampleApplicationExplanation--s1`
+
+```json
+{
+  "id": "web-application-01_sampleApplicationExplanation--s1",
+  "title": "サンプルアプリケーションの概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面遷移",
+      "hints": [
+        "画面遷移",
+        "ユーザ一覧照会機能",
+        "ユーザ情報登録機能",
+        "ユーザ情報更新機能",
+        "サンプルアプリケーション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "サンプルアプリケーションの機能と説明する処理",
+      "hints": [
+        "処理パターン",
+        "画面初期表示",
+        "一覧検索",
+        "入力内容の精査",
+        "二重サブミット防止",
+        "排他制御",
+        "画面遷移"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "主な仕様 - ユーザ情報照会機能",
+      "hints": [
+        "ユーザ情報照会機能",
+        "検索条件",
+        "バリデーション精査",
+        "ページング",
+        "ソート",
+        "ログインID",
+        "ドロップダウン",
+        "ユーザIDロック"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "主な仕様 - ユーザ情報登録機能",
+      "hints": [
+        "ユーザ情報登録機能",
+        "登録項目",
+        "バリデーション精査",
+        "パスワード確認",
+        "ログインID重複チェック",
+        "グループ",
+        "認可単位",
+        "リストビルダー"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "主な仕様 - ユーザ情報更新機能",
+      "hints": [
+        "ユーザ情報更新機能",
+        "更新項目",
+        "バリデーション精査",
+        "排他制御",
+        "携帯電話番号",
+        "グループ",
+        "認可単位",
+        "初期表示"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "サンプルアプリケーションの実行方法",
+      "hints": [
+        "サンプルアプリ実行",
+        "トップメニュー",
+        "ログイン",
+        "ユーザ情報一覧照会"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本書で説明する機能: ユーザ一覧照会機能、ユーザ情報登録機能、ユーザ情報更新機能（検索・新規登録・更新の典型的な処理パターンを説明）。\n\nログイン機能・メニュー機能は機能が限定されすぎるため取り上げない。ユーザ情報削除機能・一括削除機能は本書で取り上げる機能を利用して実装できるため取り上げない。\n\n![画面遷移図](assets/web-application-01_sampleApplicationExplanation--s1/screenTransition.png)",
+    "s2": "各機能で説明する処理パターン:\n\n| 機能 | 処理 |\n|---|---|\n| ユーザ情報照会機能 | :ref:`画面初期表示(初期表示に必要な情報をデータベースから取得し、画面を表示する) <basic>`、:ref:`一覧検索 <listSearch>` |\n| ユーザ情報登録機能 | :ref:`入力内容の精査 <how_to_validate>`、:ref:`画面遷移 <screenTransition>`、:ref:`入力画面と確認画面の共通化 <sharingInputAndConfirmationJsp>`、:ref:`データベースへの挿入、二重サブミットの防止 <insert>` |\n| ユーザ情報更新機能 | :ref:`一覧表示から個別の情報を扱う画面への遷移<submitParameter>`、:ref:`排他制御<exclusiveControl>` |",
+    "s3": "**検索条件**: ログインID、漢字氏名、カナ氏名、グループ（ドロップダウン・表示ごとに最新取得）、ユーザIDロック（ドロップダウン・表示ごとに最新取得）\n\n**精査**: 単項目精査を実施。検索条件は最低1つ必須。\n\n精査エラーなし → 検索実行。検索結果が上限件数を超えない場合は一覧表示（ページング対応）。\n\n**ソート**: ログインID・漢字氏名・カナ氏名でソート可能。\n\n**詳細表示**: 一覧のログインIDリンククリックで、ログインID・漢字氏名・カナ氏名・メールアドレス・内線番号・携帯電話番号・グループ・認可単位を表示。",
+    "s4": "**登録項目**:\n- ログインID（必須）、パスワード（必須）、パスワード（確認用）（必須）\n- 漢字氏名（必須）、カナ氏名（必須）、メールアドレス（必須）\n- 内線番号（ビル番号・個人番号、必須）\n- 携帯電話番号（市外番号・市内番号・加入番号、任意）\n- グループ（ドロップダウン・表示ごとに最新取得、必須）\n- 認可単位（リストビルダー・表示ごとに最新取得、任意）\n\n**精査**:\n- 単項目精査\n- パスワードとパスワード（確認用）は一致必須\n- 携帯電話番号は全入力か全未入力\n- ログインIDは重複不可\n- グループ・認可単位はシステムに登録済みであること\n\n精査エラー → 登録画面にエラーメッセージ表示。精査OK → 確認画面表示 → 登録指示でDBに挿入。",
+    "s5": "**初期表示項目**: ログインID、漢字氏名、カナ氏名、メールアドレス、内線番号（ビル番号・個人番号）、携帯電話番号（市外番号・市内番号・加入番号）、グループ（ドロップダウン・表示ごとに最新取得）、認可単位（リストビルダー・表示ごとに最新取得）\n\n**更新項目**:\n- 漢字氏名（必須）、カナ氏名（必須）、メールアドレス（必須）\n- 内線番号（ビル番号・個人番号、必須）\n- 携帯電話番号（市外番号・市内番号・加入番号、任意）\n- グループ（ドロップダウン・表示ごとに最新取得、必須）\n- 認可単位（リストビルダー・表示ごとに最新取得、任意）\n\n**精査**:\n- 単項目精査\n- 携帯電話番号は全入力か全未入力\n- グループ・認可単位はシステムに登録済みであること\n\n精査エラー → 更新画面にエラーメッセージ表示。精査OK → 確認画面表示 → 更新指示でDBを更新。\n\n**排他制御あり**: 排他制御エラー発生時はユーザ情報詳細画面にエラーメッセージを表示。",
+    "s6": "1. 開発環境構築ガイドに従いログインする。\n2. トップメニューで使用したい機能をクリックする。\n\n以下の機能はユーザ情報一覧照会の結果から実行できる: ユーザ情報更新機能、ユーザ情報削除機能、ユーザ情報一括削除機能。\n\n![トップメニュー](assets/web-application-01_sampleApplicationExplanation--s1/topMenu.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,55 @@
+{
+  "id": "libraries-04_Connection--s6",
+  "title": "設定内容詳細",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定内容詳細",
+      "hints": [
+        "SimpleDbTransactionManager",
+        "BasicDbConnectionFactoryForDataSource",
+        "JdbcTransactionFactory",
+        "BasicDbAccessExceptionFactory",
+        "ConnectionFactory",
+        "TransactionFactory",
+        "connectionFactory",
+        "transactionFactory",
+        "dbTransactionName",
+        "statementReuse",
+        "dataSource",
+        "statementFactory",
+        "dbAccessExceptionFactory",
+        "isolationLevel",
+        "initSqlList",
+        "データベース接続設定",
+        "トランザクション設定",
+        "Statementキャッシュ",
+        "アイソレーションレベル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicDbConnectionFactoryForJndi",
+        "BasicStatementFactory",
+        "BasicSqlStatementExceptionFactory",
+        "BasicDbAccessExceptionFactory",
+        "jndiProperties",
+        "jndiResourceName",
+        "statementReuse",
+        "statementFactory",
+        "dbAccessExceptionFactory",
+        "JNDI接続設定",
+        "JNDIリソース名",
+        "データベース接続（JNDI）"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## a) SimpleDbTransactionManagerの設定\n\n**クラス**: `nablarch.core.db.connection.SimpleDbTransactionManager`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| connectionFactory | ○ | `nablarch.core.db.connection.ConnectionFactory` 実装クラスを設定する。 |\n| transactionFactory | ○ | `nablarch.core.transaction.TransactionFactory` 実装クラスを設定する。 |\n| dbTransactionName | | データベーストランザクション名。未設定の場合、デフォルトのトランザクション名が自動設定される。 |\n\n## b) BasicDbConnectionFactoryForDataSourceの設定\n\n**クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| statementReuse | ○ | Statementをキャッシュするか否か（true/false）。trueの場合、`BasicDbConnection`インスタンス単位でStatementオブジェクトがキャッシュされる。 |\n| dataSource | ○ | `javax.sql.DataSource` 実装クラスを設定する。 |\n| statementFactory | ○ | `nablarch.core.statement.StatementFactory` 実装クラスを設定する。:ref:`db-sqlstatement-label` を参照。 |\n| dbAccessExceptionFactory | ○ | DBアクセス例外発生時に送出する例外を生成するクラス（`DbAccessExceptionFactory` 実装クラス）を設定する。 |\n\n> **注意**: `statementReuse=true` はバッチ処理（同一SQL文を繰り返し実行する処理）で効果的。画面処理では同一SQL文の繰り返しが少ないためメリットは薄い。\n\n## c) JdbcTransactionFactoryの設定\n\n**クラス**: `nablarch.core.db.transaction.JdbcTransactionFactory`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| isolationLevel | | アイソレーションレベル。設定可能値: `READ_COMMITTED`、`READ_UNCOMMITTED`、`REPEATABLE_READ`、`SERIALIZABLE`。未設定時のデフォルトは `READ_COMMITTED`。 |\n| initSqlList | | トランザクション開始時に実行するSQL文のリスト。不要な場合は設定不要。 |\n\n> **注意**: データベースにより使用できるアイソレーションレベルが限られる。データベースベンダーのマニュアルを参照すること。\n\n## d) BasicDbAccessExceptionFactoryの設定\n\n**クラス**: `nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| sql | ○ | DB接続の有効性確認用SQL文。負荷の少ないSQL文を設定すること（例: Oracleの場合 `select '1' from dual`）。 |",
+    "s2": "## 設定ファイル例（JNDIを使用してデータベース接続を行う場合）\n\nJNDIに関連のない設定については、:ref:`db-connection-config-label` を参照。\n\n**クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForJndi`\n\n```xml\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForJndi\">\n    <property name=\"jndiProperties\">\n        <map>\n            <entry key=\"java.naming.factory.initial\" value=\"weblogic.jndi.WLInitialContextFactory\"/>\n            <entry key=\"java.naming.provider.url\" value=\"t3://localhost:7001\"/>\n        </map>\n    </property>\n    <property name=\"jndiResourceName\" value=\"NablarchDataSource\"/>\n    <property name=\"statementFactory\">\n        <component name=\"statementFactory\"\n                   class=\"nablarch.core.db.statement.BasicStatementFactory\">\n            <property name=\"fetchSize\" value=\"500\"/>\n            <property name=\"queryTimeout\" value=\"600\" />\n            <property name=\"sqlStatementExceptionFactory\">\n                <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n                    <property name=\"duplicateErrorSqlState\" value=\"\"/>\n                    <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n                </component>\n            </property>\n        </component>\n    </property>\n    <property name=\"statementReuse\" value=\"true\"/>\n    <property name=\"dbAccessExceptionFactory\">\n        <component name=\"dbAccessExceptionFactory\" class=\"nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory\">\n            <property name=\"sql\" value=\"select * from dual\" />\n        </component>\n    </property>\n</component>\n```\n\n## 設定内容詳細\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| statementReuse | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照。 |\n| statementFactory | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照。 |\n| dbAccessExceptionFactory | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照。 |\n| jndiProperties | | JNDI経由でDataSourceを取得するための環境設定。Webサーバ上で稼働する場合やクラスパス配下に `jndi.properties` を配置している場合は省略可。 |\n| jndiResourceName | ○ | JNDIリソース名を設定する。 |"
+  }
+}

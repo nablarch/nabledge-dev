@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-screenTransition--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The paramタグ attribute table in s6 includes `paramName` as a row, but in the source the table contains only `value` and `name`. The `paramName` attribute is described in the text preceding the table ('リクエスト送信時に使用するパラメータ名はparamName属性で指定する'), not as a table entry.",
+      "source_evidence": "Source table has only two rows: `value`（データを直接指定）and `name`（リクエストスコープやウィンドウスコープ上のオブジェクトを参照して指定）. paramName is described in the sentence before the table."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The first h2 section ('ボタン又はリンクによるサブミット') contains two substantial h3 subsections ('サブミット先の指定方法' and 'アプリケーションでonclick属性を指定する場合'), each with Java/JSP/JavaScript code examples. The total content exceeds 2000 characters but both h3 subsections are merged into s2 without splitting into separate sections.",
+      "source_evidence": "Source h3 headings: 'サブミット先の指定方法' (====) and 'アプリケーションでonclick属性を指定する場合' (===), each containing multi-block code examples."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 index entry",
+      "description": "The hints for s6 are missing the attribute names `value` and `name` from the paramタグ attribute table (first column of the source table).",
+      "source_evidence": "Source table first column contains: `value`, `name`. Both are paramタグ attribute names used to specify send data."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — コンストラクタに対するテストケース, getParamMap code example",
+      "description": "`getListParamMap` の使用条件が省略されている。ソースのコードコメントには「テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。」と記載されており、`getParamMap` と `getListParamMap` の使い分け指針が示されている。知識ファイルの s4 はコード例を示しているが、複数プロパティの場合は `getListParamMap` を使用するという情報が欠落している。",
+      "source_evidence": "// (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — s4, s5 の title",
+      "description": "s4 と s5 の index タイトルがそれぞれ「Excelへの定義」となっているが、これはソースにおける下位セクション（---- レベル）のタイトルにすぎない。s4 はソース上の上位セクション「コンストラクタに対するテストケース」（==== レベル）の全内容（コンストラクタテストの概要・注意事項・コード例・型制限など）を含んでおり、s5 も「setter、getterに対するテストケース」（==== レベル）の全内容を含んでいる。タイトルが下位セクション名になっていると、AI がコンストラクタテストや setter/getter テストのトピックでセクションを特定しにくくなる。",
+      "source_evidence": "コンストラクタに対するテストケース\n==================================\n...\nExcelへの定義\n-------------\n\nsetter、getterに対するテストケース\n==================================\n...\nExcelへの定義\n-------------"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index — s4 の hints",
+      "description": "`getListParamMap` が s4 の hints に含まれていない。ソースのコード例では `getParamMap`（単一プロパティ）と並んで複数プロパティの場合に使う `getListParamMap` が言及されており、ユーザーが検索しうるメソッド名である。",
+      "source_evidence": "// (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)"
+    }
+  ]
+}

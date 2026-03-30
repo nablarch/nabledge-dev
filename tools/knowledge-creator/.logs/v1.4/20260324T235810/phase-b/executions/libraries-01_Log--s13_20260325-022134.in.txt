@@ -1,0 +1,796 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `libraries-01_Log--s13`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `libraries`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+列挙型
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  =========================================================== ===========================================================================================
+  クラス名                                                    概要
+  =========================================================== ===========================================================================================
+  nablarch.core.log.basic.LogLevel                            ログレベルを表す列挙型。
+  =========================================================== ===========================================================================================
+
+.. _basicSetting:
+
+フレームワーク実装の設定方法
+====================================================================================
+フレームワーク実装の設定は、ロガーファクトリの設定と同じプロパティファイルに記述する。\
+プロパティファイルのパスの指定方法については、 :ref:`loggerFactorySetting` を参照すること。
+
+プロパティファイルの記述例を下記に示す。\
+記述ルールの詳細は、 :ref:`propsSettingRules` に記述する。
+
+.. code-block:: bash
+
+ # フレームワーク実装のロガーファクトリを指定する。
+ loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory
+ 
+ # 使用する全てのログライタの名称を指定する。
+ # 「"writer." + <ここで指定した名称>」を使用してログライタ毎の設定を行う。
+ writerNames=appFile,sqlFile,monitorFile,stdout
+ 
+ # ログライタ毎の設定
+ # <ログライタのプレフィックス>.classNameに使用するログライタのクラス名を指定する。
+ # className以外のプロパティは、使用するログライタに応じて設定内容が変わるため、
+ # ログライタのJavadocを参照すること。
+ 
+ # アプリケーション用のログファイルの設定例
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=/var/log/app/app.log
+ 
+ # SQL出力用のログファイルの設定例
+ writer.sqlFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.sqlFile.filePath=/var/log/app/sql.log
+ 
+ # 監視用のログファイルの設定例
+ writer.monitorFile.className=nablarch.core.log.basic.SynchronousFileLogWriter
+ writer.monitorFile.filePath=/var/log/app/monitoring.log
+ writer.monitorFile.lockFilePath=/var/log/lock/monitor.lock
+ writer.monitorFile.failureCodeCreateLockFile=MSG00101
+ writer.monitorFile.failureCodeReleaseLockFile=MSG00102
+ writer.monitorFile.failureCodeForceDeleteLockFile=MSG00103
+ writer.monitorFile.failureCodeInterruptLockWait=MSG00104 
+
+ # 標準出力の設定例
+ writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter
+ 
+ # 全てのロガー設定の名称を指定する。
+ # ロガー設定については、下記の「ロガー設定」にて解説する。
+ # 「"loggers." + <ここで指定された名称>」を使用してロガー設定毎の設定を行う。
+ # ここでの記述順は、意味があるので注意すること。下記の警告を参照。
+ availableLoggersNamesOrder=sql,monitoring,access,validation,root
+ 
+ # 全てのロガー名をログ出力の対象にする設定例
+ # 全てのロガー取得を対象に、WARNレベル以上をappFileに出力する。
+ loggers.root.nameRegex=.*
+ loggers.root.level=WARN
+ loggers.root.writerNames=appFile
+ 
+ # 特定のロガー名をログ出力の対象にする設定例。
+ # ロガー名に"MONITOR"を指定したロガー取得を対象に、
+ # ERRORレベル以上をappFile,monitorFileに出力する。
+ loggers.monitoring.nameRegex=MONITOR
+ loggers.monitoring.level=ERROR
+ loggers.monitoring.writerNames=appFile,monitorFile
+ 
+ # 特定のロガー名をログ出力の対象にする設定例。
+ # ロガー名に"SQL"を指定したロガー取得を対象に、
+ # DEBUGレベル以上をsqlFileに出力する。
+ loggers.sql.nameRegex=SQL
+ loggers.sql.level=DEBUG
+ loggers.sql.writerNames=sqlFile
+ 
+ # 特定のクラスをログ出力の対象にする設定例。
+ # ロガー名に"app.user.UserManager"を指定したロガー取得を対象に、
+ # INFOレベル以上をappFileとstdoutに出力する。
+ loggers.access.nameRegex=app\\.user\\.UserManager
+ loggers.access.level=INFO
+ loggers.access.writerNames=appFile,stdout
+ 
+ # 特定のパッケージ以下をログ出力の対象にする設定例。
+ # ロガー名に"nablarch.core.validation"から始まる名前を指定したロガー取得を対象に、
+ # DEBUGレベル以上をstdoutに出力する。
+ loggers.validation.nameRegex=nablarch\\.core\\.validation\\..*
+ loggers.validation.level=DEBUG
+ loggers.validation.writerNames=stdout
+
+.. warning::
+
+ availableLoggersNamesOrderプロパティは、記述順に意味があるので注意すること。\
+ ロガーの取得では、ログ出力を行うクラスが指定したロガー名に対して、\
+ ここに記述した順番でロガーのマッチングを行い、最初にマッチしたロガーを返す。\
+ 例えば、上記の設定にあるavailableLoggersNamesOrderの記述順をavailableLoggersNamesOrder=root,sqlと記述した場合、\
+ 全てのロガー取得がロガー設定「root」にマッチしてしまう。\
+ その結果、ロガー名「SQL」でログ出力してもログライタ「sqlFile」に出力されず、\
+ ロガー設定「root」に指定されたログライタ「appFile」に出力される。\
+ したがって、availableLoggersNamesOrderプロパティは、より限定的な正規表現を指定したロガー設定から順に記述すること。
+
+.. warning::
+
+ availableLoggersNamesOrderとloggers.*で指定するロガー設定の名称は、必ず一致させる必要がある。\
+ BasicLoggerFactoryの初期処理で一致しているかチェックを行い、一致しない場合は例外をスローする。\
+ 例えば、上記の設定にあるavailableLoggersNamesOrderからaccessを取り除くと、例外がスローされる。\
+ このチェックは、設定漏れの発生を防ぐために行っている。\
+ 上記の設定にあるavailableLoggersNamesOrderからaccessを取り除いた場合は、明示的にloggers.access.*の設定も取り除く必要がある。
+
+.. note::
+
+ ロガー設定では、全てのログ出力にマッチするロガー設定を1つ用意し、availableLoggersNamesOrderの最後に指定することを推奨する。\
+ 万が一設定が漏れた場合でも、重要なログの出力を逃してしまう事態を防ぐことができる。
+ 
+ 設定例を以下に示す。
+ 
+ .. code-block:: bash
+  
+   availableLoggersNamesOrder=sql,app,root
+   
+   loggers.root.nameRegex=.*
+   loggers.root.level=WARN
+   loggers.root.writerNames=appFile
+
+プロパティファイルの設定は、システムプロパティを使用して、プロパティファイルと同じキー名で値を指定することにより上書きすることができる。\
+この機能を使用して、共通のプロパティファイルに記述し、プロセス毎にログ出力設定を変更したい場合には **-D** オプションで上書きを行うことが出来るようになる。
+例えば、上記の設定にあるロガー「root」のログレベルをWARNからINFOに変更したい場合は、javaコマンドのオプション **-D** による指定を用いて、\
+下記のように実行時のオプションとしてシステムプロパティを設定する。
+
+.. code-block:: bash
+
+ >java -Dloggers.root.level=INFO ... 
+
+BasicLoggerFactoryクラスは、初期処理完了後に、各ログライタに対してロガー設定の情報をINFOレベルで出力する。\
+上記設定例のログライタ「appFile」に対する出力例を下記に示す。
+
+.. code-block:: java
+
+    2012-04-18 11:11:04.525 -INFO- nablarch.core.log.basic.BasicLoggerFactory [null] boot_proc = [] proc_sys = [] req_id = [null] usr_id = [null] initialized.
+    	LOGGER = [monitoring] NAME REGEX = [MONITOR] LEVEL = [ERROR]
+    	LOGGER = [access] NAME REGEX = [app\.user\.UserManager] LEVEL = [INFO]
+    	LOGGER = [root] NAME REGEX = [.*] LEVEL = [WARN]
+
+.. _loggersSetting:
+
+ロガー設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ロガー設定では、3つのプロパティを指定する。::
+
+ a) <ロガー設定のプレフィックス>.nameRegex   : このロガー設定の対象となるロガーを絞り込むための正規表現
+ b) <ロガー設定のプレフィックス>.level       : ログの出力有無の基準とするログレベル
+ c) <ロガー設定のプレフィックス>.writerNames : 出力先とするログライタの名称（複数可）
+
+aは、bとcと設定値の意味が異なる。\
+aの正規表現は、ロガー設定(bとc)の対象となるロガーを絞り込むために使用する。\
+ロガーの取得時に指定されたロガー名（つまりLoggerManager#getメソッドの引数に指定されたロガー名）に対してマッチングを行う。\
+一方、bとcは、aで絞り込まれたロガーに対して設定される。
+
+ロガー設定のイメージをつかむために例を示す。
+
+例えば、下記3つのクラスのロガー取得に対する設定例を示す。\
+LoggerManager#getメソッドでクラスを指定した場合は、FQCNがロガー名となる。
+
+.. code-block:: java
+
+ // 説明のために変数名に番号を振っているが、実際の開発ではこのような実装を行わない。
+ 
+ // nablarch.core.validation.validator.NumberRangeValidator
+ private static final Logger LOGGER1 = LoggerManager.get(NumberRangeValidator.class);
+ 
+ // nablarch.core.validation.validator.RequiredValidator
+ private static final Logger LOGGER2 = LoggerManager.get(RequiredValidator.class);
+ 
+ // nablarch.core.validation.convertor.LongConvertor
+ private static final Logger LOGGER3 = LoggerManager.get(LongConvertor.class);
+
+3つのロガーを対象とする設定例を示す。\
+以降、ロガー設定の名称はsampleとする。
+
+.. code-block:: bash
+
+ loggers.sample.nameRegex=nablarch\\.core\\.validation\\..*
+ loggers.sample.level=INFO
+ loggers.sample.writerNames=xxx,yyy,zzz
+
+上記の設定により、LOGGER1,LOGGER2,LOGGER3のINFOレベル以上のログ出力がxxx,yyy,zzzのログライタに対して出力される。
+
+RequiredValidatorのロガーのみを対象とする設定例を示す。
+
+.. code-block:: bash
+
+ loggers.sample.nameRegex=nablarch\\.core\\.validation\\.validator\\.RequiredValidator
+ loggers.sample.level=DEBUG
+ loggers.sample.writerNames=aaa,bbb,ccc
+
+上記の設定により、LOGGER2のDEBUGレベル以上のログ出力がaaa,bbb,cccのログライタに対して出力される。
+
+ロガーのインスタンス構造
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+上記プロパティファイルの記述例を基に、ロガーのインスタンス構造を示す。\
+一番左の列は、ログ出力を要求するクラスのインスタンスを示しており、ノートにロガー取得時のコードを示している。
+
+* ロガーのインスタンスはロガー設定毎に生成され、複数のログ出力を要求するインスタンスから使用される。
+* ログライタのインスタンスはログライタの設定毎に生成され、複数のロガーから使用される。
+
+.. image:: ./_images/01/Log_Basic_InstanceImage.jpg
+   :scale: 85
+
+ログライタの使用方法
+============================================================
+フレームワーク実装が提供するログライタの使用方法を解説する。
+
+FileLogWriter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileLogWriterクラスは、ファイルにログを書き込むログライタである。
+
+FileLogWriterクラスの特徴を下記に示す。
+
+* ログフォーマッタを設定で指定できる。
+* ログファイルが指定サイズに達したら、出力ファイルを自動で切り替える。
+* 初期処理と終了処理、ログファイルの切り替え時に、書き込み先のログファイルにINFOレベルでメッセージを出力する。
+
+FileLogWriterクラスを使用する場合の設定例を下記に示す。\
+記述ルールの詳細は、 :ref:`propsSettingRules` を参照すること。
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ # FileLogWriterクラスを指定する。
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ # 書き込み先のファイルパスを指定する。
+ writer.appFile.filePath=/var/log/app/app.log
+ # 書き込み時に使用する文字エンコーディングを指定する。
+ writer.appFile.encoding=UTF-8
+ # 出力バッファのサイズを指定する。（単位はキロバイト。1000バイトを1キロバイトと換算する。指定しなければ8KB）
+ writer.appFile.outputBufferSize=8
+ # 書き込み先ファイルの最大サイズを指定する。（単位はキロバイト。1000バイトを1キロバイトと換算する）
+ writer.appFile.maxFileSize=50000
+ # ログフォーマッタのクラス名を指定する。
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ # LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。
+ # この設定項目については、下記の「ログライタにおけるレベルに応じた出力制御」にて解説する。
+ writer.appFile.level=INFO
+
+上記設定例に対する初期処理後のログ出力例を下記に示す。\
+初期処理の後は、ログライタの設定情報が出力される。
+
+.. code-block:: java
+
+    2012-04-18 11:24:02.959 -INFO- nablarch.core.log.basic.FileLogWriter [null] boot_proc = [] proc_sys = [] req_id = [null] usr_id = [null] initialized.
+        WRITER NAME        = [appFile]
+        WRITER CLASS       = [nablarch.core.log.basic.FileLogWriter]
+        FORMATTER CLASS    = [nablarch.core.log.basic.BasicLogFormatter]
+        LEVEL              = [INFO]
+        FILE PATH          = [/var/log/app/app.log]
+        ENCODING           = [UTF-8]
+        OUTPUT BUFFER SIZE = [8000]
+        FILE AUTO CHANGE   = [true]
+        MAX FILE SIZE      = [50000000]
+        CURRENT FILE SIZE  = [0]
+
+上記の設定例では、ファイルの最大サイズを指定しているので、出力ファイルが自動で切り替わる。\
+出力ファイルが自動で切り替わった後のファイル一覧の例を下記に示す。\
+app.logファイルが現在の出力ファイルである。\
+古いログファイルは、<通常のファイル名>.yyyyMMddHHmmssSSS.oldという命名ルールで同じディレクトリにバックアップされる。
+
+.. code-block:: java
+
+ app.log
+ app.log.20120418112403395.old
+ app.log.20120418112403411.old
+ app.log.20120418112403489.old
+
+ファイルの切り替え時に、切り替え元と切り替え先それぞれで出力されるログの例を下記に示す。\
+切り替え元のファイルには、ファイル名を変更したメッセージが出力される。\
+切り替え先のファイルには、ファイル名の変更に加えて、ログライタの設定情報が出力される。
+
+.. code-block:: java
+
+  // 切り替え元
+  2012-04-18 11:24:03.411 -INFO- nablarch.core.log.basic.FileLogWriter [null] boot_proc = [] proc_sys = [] req_id = [null] usr_id = [null] change [/var/log/app/app.log] -> [/var/log/app/app.log.20120418112403411.old]
+
+  
+.. code-block:: java
+
+  // 切り替え先
+  2012-04-18 11:24:02.959 -INFO- nablarch.core.log.basic.FileLogWriter [null] boot_proc = [] proc_sys = [] req_id = [null] usr_id = [null] initialized.
+      WRITER NAME        = [appFile]
+      WRITER CLASS       = [nablarch.core.log.basic.FileLogWriter]
+      FORMATTER CLASS    = [nablarch.core.log.basic.BasicLogFormatter]
+      LEVEL              = [INFO]
+      FILE PATH          = [./log/app.log]
+      ENCODING           = [UTF-8]
+      OUTPUT BUFFER SIZE = [8000]
+      FILE AUTO CHANGE   = [true]
+      MAX FILE SIZE      = [50000000]
+      CURRENT FILE SIZE  = [0]
+
+終了処理後のログ出力例を下記に示す。
+
+.. code-block:: java
+ 
+  2012-04-18 11:32:58.939 -INFO- nablarch.core.log.basic.FileLogWriter [null] boot_proc = [] proc_sys = [] req_id = [null] usr_id = [null] terminated.
+
+
+```
+
+
+## 画像・添付ファイル一覧
+
+| ソース内パス | assetsパス |
+|---|---|
+| ./_images/01/Log_Basic_InstanceImage.jpg | assets/libraries-01_Log--s13/Log_Basic_InstanceImage.jpg |
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 列挙型
+- ロガー設定
+- ロガーのインスタンス構造
+- FileLogWriter
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/libraries-01_Log--s13/filename.png)` |
+
+Office attachments → reference in `assets/libraries-01_Log--s13/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `libraries-01_Log--s13`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (section count)",
+      "description": "Source contains 6 top-level headings (固有の処理を追加する場合 / ダウンロードファイルのテスト / テスト起動方法 / テスト結果確認（目視）/ HTMLダンプ出力結果 / リクエスト単体テストクラス作成時の注意点) but knowledge file has only 4 sections. Notably, 「ダウンロードファイルのテスト」(=== underline) is a standalone major topic merged into s1 which covers 「固有の処理を追加する場合」. These are distinct concerns and the merge produces an unusually long s1.",
+      "source_evidence": "Source headings: 固有の処理を追加する場合 (----), ダウンロードファイルのテスト (====), テスト起動方法 (----), テスト結果確認（目視）(----), HTMLダンプ出力結果 (====), リクエスト単体テストクラス作成時の注意点 (----)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`ExecutionContext` is a PascalCase class name that appears in the source code examples and knowledge file content for s1 (passed to both beforeExecute and afterExecute callbacks), but is not listed in s1 hints.",
+      "source_evidence": "Source: `public void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` and `public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The note about extracting long or shared processing into private methods is partially captured (only 'both methods need not be overridden' is included), but the second recommendation is missing: when code in beforeExecute/afterExecute becomes long or shares logic across test methods, it should be extracted into a private method.",
+      "source_evidence": "Source note: 「また、これらのメソッド内に全ての処理を記述する必要はない。記述が長くなったり、テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 (リクエストパラメータの値を検証したい場合)",
+      "description": "The context explaining *when* request parameter validation is needed is omitted: the feature under test may rewrite request parameters in order to reset window scope values. This explains the use case and when to apply this pattern.",
+      "source_evidence": "Source: 「ウィンドウスコープの値をリセットするために、テスト対象機能にてリクエストパラメータを書き換える場合がある。」"
+    }
+  ]
+}

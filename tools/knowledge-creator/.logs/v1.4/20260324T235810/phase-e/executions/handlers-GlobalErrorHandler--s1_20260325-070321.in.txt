@@ -1,0 +1,228 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-GlobalErrorHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The knowledge file presents the configuration note as '> **注意**: プロジェクト固有の要件で例外処理を変更したい場合は...' with a '注意' (caution/warning) label. The source does not designate this sentence as a warning or note — it is plain body text. Adding the '注意' label implies an elevated warning status not present in the source.",
+      "source_evidence": "プロジェクト固有の要件により、例外処理を変更したい場合は、本ハンドラ自体を別実装したものに差し替えること。(plain text, no warning label in source)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The exception table in s2 references three class/type names that are absent from the s2 hints array: 'InternalError' (java.lang.InternalError), 'UnknownError' (java.lang.UnknownError), and 'Result.InternalError' (the processing result type returned for StackOverflowError, OutOfMemoryError, and other runtime exceptions). All three appear as key identifiers in the exception control table.",
+      "source_evidence": "Table rows: java.lang.InternalError, java.lang.UnknownError, Result.InternalError (処理結果 column for StackOverflowError / OutOfMemoryError / その他 rows)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+.. include:: ../api/link.rst
+
+===============================
+グローバルエラーハンドラ
+===============================
+
+**クラス名:** ``nablarch.fw.handler.GlobalErrorHandler``
+
+
+----------------------------------------------
+概要
+----------------------------------------------
+:doc:`GlobalErrorHandler` は、ハンドラキュー上のどのハンドラでも捕捉されなかった
+全ての実行時例外・エラーを捕捉し、運用ログを含むログ出力を行なう。
+
+このハンドラでは、致命的な一部の例外を除いて、捕捉した例外を
+処理結果オブジェクト(`Result`_ )に変換して返す。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = ["GlobalErrorHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラへの処理委譲)**
+    往路では何もせずに後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+ 
+**[復路処理]**
+  **2. (正常終了)**
+    **1.** で取得した結果をそのままリターンし終了する。
+
+.. _error:
+
+**[例外処理]**
+  **2a. (例外制御)**
+    後続ハンドラの処理中に実行時例外もしくはエラーが送出された場合は以下の表に従い例外処理を行う。
+    基本的には発生したエラーをログに出力し、エラーの内容を格納した `Result`_ オブジェクトをリターンする。
+    ただし、プロセスの継続に影響するような致命的なエラーが発生した場合のみ例外を再送出する。
+
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | 捕捉した例外クラス                      | 障害ログ出力 | ログレベル | 処理結果     | 備考                                                       |
+    |                                         | [#rf1]_      |            |              |                                                            |
+    +=========================================+==============+============+==============+============================================================+
+    | java.lang.ThreadDeath                   | なし         | Info       | 捕捉した例外 | 外部からスレッド停止APIが呼ばれた場合に発生する。          |
+    |                                         |              |            | を再送出     | 通常運用で発生しうるため、Infoレベルのログを出力し、       |
+    |                                         |              |            |              | 再送出する。                                               |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | java.lang.InternalError                 | なし         | Fatal      | 捕捉した例外 | VMの内部動作に起因するエラーが発生した場合に送出される。   |
+    |                                         |              |            | を再送出     |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | java.lang.UnknownError                  | なし         | Fatal      | 捕捉した例外 |                                                            |
+    |                                         |              |            | を再送出     |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | java.lang.StackOverflowError            | なし         | Fatal      | Result.      | アプリケーションロジックの問題(無限ループ等)である         |
+    |                                         |              |            | InternalError| 可能性が高いのでFatalログを出力し、再送出はしない。        |
+    |                                         |              |            | を返す。     |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | java.lang.OutOfMemoryError              | なし         | Fatal      | Result.      | リソースを浪費しているリクエストスレッドが終了することで   |
+    |                                         |              |            | InternalError| 復旧する可能性があるため、Fatalログを出力し再送出はしない。|
+    |                                         |              |            | を返す。     | なお、ログ出力の際には失敗する可能性があるので、           |
+    |                                         |              |            |              | ログ出力前に標準エラー出力に最小限のメッセージを出力する。 |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | | java.lang.VirtualMachineError         | なし         | Fatal      | 捕捉した例外 |                                                            |
+    | | (OutOfMemoryError                     |              |            | を再送出     |                                                            |
+    | |  /StackOverFlowErrorを除く)           |              |            |              |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | nablarch.fw.launcher.ProcessAbnormalEnd | あり         | Fatal      | 捕捉した例外 | 駐起動バッチ等で、アプリケーション側からプロセス停止を     |
+    |                                         |              |            | を再送出     | 要求する場合に送出される。                                 |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | nablarch.fw.Result.ServiceError         | あり         | Fatal/Warn | 捕捉した例外 | アプリケーション側から障害ログの出力が要求された場合に     |
+    |                                         |              |            | を返す。     | 送出される。                                               |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | nablarch.fw.Result.Error                | なし         | Fatal      | 捕捉した例外 |                                                            |
+    |                                         |              |            | を返す。     |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+    | (上記以外の実行時例外/エラー)           | なし         | Fatal      | Result.      |                                                            |
+    |                                         |              |            | InternalError|                                                            |
+    |                                         |              |            | を返す。     |                                                            |
+    +-----------------------------------------+--------------+------------+--------------+------------------------------------------------------------+
+
+    .. [#rf1] 運用ログに障害内容とメッセージを出力する。
+              
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの実装内容は基本的に変更不要なものであり、そのまま使用することができる。
+以下は設定ファイルの記述例である。
+
+  .. code-block:: xml
+
+    <component class="nablarch.fw.handler.GlobalErrorHandler" />
+
+プロジェクト固有の要件により、例外処理を変更したい場合は、本ハンドラ自体を別実装したものに差し替えること。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-GlobalErrorHandler--s1",
+  "title": "グローバルエラーハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "GlobalErrorHandler",
+        "nablarch.fw.handler.GlobalErrorHandler",
+        "グローバルエラーハンドラ",
+        "例外キャッチ",
+        "ログ出力",
+        "Result変換"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ハンドラ処理フロー",
+        "ThreadDeath",
+        "StackOverflowError",
+        "OutOfMemoryError",
+        "VirtualMachineError",
+        "ProcessAbnormalEnd",
+        "nablarch.fw.launcher.ProcessAbnormalEnd",
+        "nablarch.fw.Result.ServiceError",
+        "nablarch.fw.Result.Error",
+        "例外制御",
+        "障害ログ",
+        "Fatal",
+        "再送出"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "GlobalErrorHandler",
+        "コンポーネント設定",
+        "XML設定",
+        "拡張ポイント",
+        "例外処理カスタマイズ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.GlobalErrorHandler`\n\nハンドラキュー上のどのハンドラでも捕捉されなかった全ての実行時例外・エラーを捕捉し、運用ログを含むログ出力を行う。致命的な一部の例外を除いて、捕捉した例外を`Result`オブジェクトに変換して返す。",
+    "s2": "1. **[往路]** 何もせずに後続ハンドラに処理を委譲し、結果を取得する。\n2. **[復路・正常終了]** 取得した結果をそのままリターンして終了する。\n3. **[例外処理]** 後続ハンドラの処理中に実行時例外またはエラーが送出された場合、以下の表に従い処理する。基本的に発生したエラーをログに出力し`Result`オブジェクトをリターンする。プロセスの継続に影響するような致命的なエラーのみ再送出する。\n\n| 捕捉した例外クラス | 障害ログ出力[1] | ログレベル | 処理結果 | 備考 |\n|---|---|---|---|---|\n| java.lang.ThreadDeath | なし | Info | 捕捉した例外を再送出 | 外部からスレッド停止APIが呼ばれた場合に発生。通常運用で発生しうるためInfoレベルで出力し再送出 |\n| java.lang.InternalError | なし | Fatal | 捕捉した例外を再送出 | VMの内部動作に起因するエラー |\n| java.lang.UnknownError | なし | Fatal | 捕捉した例外を再送出 | |\n| java.lang.StackOverflowError | なし | Fatal | Result.InternalErrorを返す | アプリケーションロジックの問題（無限ループ等）の可能性が高いためFatalログを出力し再送出はしない |\n| java.lang.OutOfMemoryError | なし | Fatal | Result.InternalErrorを返す | リソースを浪費しているリクエストスレッドが終了することで復旧する可能性があるため再送出しない。ログ出力前に標準エラー出力に最小限のメッセージを出力する |\n| java.lang.VirtualMachineError（OutOfMemoryError/StackOverflowError除く） | なし | Fatal | 捕捉した例外を再送出 | |\n| nablarch.fw.launcher.ProcessAbnormalEnd | あり | Fatal | 捕捉した例外を再送出 | 駐起動バッチ等でアプリケーション側からプロセス停止を要求する場合に送出される |\n| nablarch.fw.Result.ServiceError | あり | Fatal/Warn | 捕捉した例外を返す | アプリケーション側から障害ログの出力が要求された場合に送出される |\n| nablarch.fw.Result.Error | なし | Fatal | 捕捉した例外を返す | |\n| 上記以外の実行時例外/エラー | なし | Fatal | Result.InternalErrorを返す | |\n\n[1] 運用ログに障害内容とメッセージを出力する。",
+    "s3": "本ハンドラは基本的に変更不要でそのまま使用できる。\n\n```xml\n<component class=\"nablarch.fw.handler.GlobalErrorHandler\" />\n```\n\n> **注意**: プロジェクト固有の要件で例外処理を変更したい場合は、本ハンドラ自体を別実装に差し替えること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

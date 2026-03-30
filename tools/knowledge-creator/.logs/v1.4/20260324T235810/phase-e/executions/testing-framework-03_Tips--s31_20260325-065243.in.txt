@@ -1,0 +1,196 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-03_Tips--s31",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "s2 is an extra section created for the RST anchor `.. _how_to_convert_test_data:` which is not a content section. The source has 2 h2-level headings, but the knowledge file has 3 sections. RST anchors are navigation targets, not content, and do not warrant a separate section.",
+      "source_evidence": "Source contains only 2 h2 headings: 'テストデータ読み込みディレクトリを変更したい' and 'メッセージング処理でテストデータに対し定型的な変換処理を追加したい'. The `.. _how_to_convert_test_data:` is a cross-reference anchor with no associated content."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`FormUrlEncodedTestDataConverter` is a PascalCase class name present in the XML code example but missing from s3 hints.",
+      "source_evidence": "Source XML: `<component name=\"TestDataConverter_FormUrlEncoded\" class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+テストデータ読み込みディレクトリを変更したい
+--------------------------------------------
+
+デフォルトの設定では、テストデータは\ ``test/java``\ 配下から読み込まれる。
+
+プロジェクトのディレクトリ構成に応じて、テストデータディレクトリを変更する必要がある場合、
+コンポーネント定義ファイルに以下の設定を追加する\ [#]_\ 。
+
+============================ =================================================
+キー                         値
+============================ =================================================
+nablarch.test.resource-root  テスト実行時のカレントディレクトリからの相対パス
+                             セミコロン(;)区切りで複数指定可 \ [#]_\ 
+============================ =================================================
+
+\
+
+
+
+設定例を以下に示す。
+
+.. code-block:: bash
+
+ nablarch.test.resource-root=path/to/test-data-dir
+ 
+\
+
+複数のディレクトリからテストデータを読み込みたい場合は、
+セミコロンで区切ることにより複数指定することができる。
+設定例を以下に示す。
+
+.. code-block:: text
+
+ nablarch.test.resource-root=test/online;test/batch
+
+\
+
+.. [#]
+ 一時的に設定を変更する場合は、設定ファイルを変更しなくても、
+ テスト実行時のVM引数指定を追加することで代替可能である。
+ 
+ 【例】 \ ``-Dnablarch.test.resource-root=path/to/test-data-dir``\
+
+\
+
+.. [#] 
+ 複数のディレクトリを指定した場合、同名のテストデータが存在した場合、
+ 最初に発見されたテストデータが読み込まれる。
+
+
+ 
+.. _how_to_convert_test_data:
+
+------------------------------------------------------------------
+メッセージング処理でテストデータに対し定型的な変換処理を追加したい
+------------------------------------------------------------------
+
+テストデータ用のExcelに記述されたデータはデフォルトでは指定されたエンコーディングを使用してバイト列に変換されるのみである。
+例えばURLエンコーディングされたデータが他システムから連携される場合、URLエンコーディングされたデータをExcelに記述する必要があるが、
+可読性や保守性、作業効率といった面で現実的ではない。
+
+以下のインタフェースを実装し、リポジトリに登録することでURLエンコーディングのような定型的な変換処理を追加することができる。
+
+実装するインタフェース
+======================
+
+ * ``nablarch.test.core.file.TestDataConverter`` 
+
+リポジトリ登録内容
+==================
+
+============================== =================================================
+キー                           値
+============================== =================================================
+TestDataConverter_<データ種別> 上記インタフェースを実装したクラスのクラス名。
+                               データ種別はテストデータのfile-typeに指定した値。
+============================== =================================================
+
+リポジトリ登録例
+================
+
+.. code-block:: xml
+
+  <!-- テストデータコンバータ定義 -->
+  <component name="TestDataConverter_FormUrlEncoded" 
+             class="please.change.me.test.core.file.FormUrlEncodedTestDataConverter"/>
+
+Excelファイル記述例
+====================
+
+.. image:: ./_images/data_convert_example.png
+
+上記で指定したコンバータでセル内の各データにURLエンコーディングを行うように実装した場合、
+テストフレームワーク内部では以下のデータを記述した場合と同様に扱われる。
+
+.. image:: ./_images/data_convert_internal.png
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-03_Tips--s31",
+  "title": "テストデータ読み込みディレクトリを変更したい",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストデータ読み込みディレクトリを変更したい",
+      "hints": [
+        "nablarch.test.resource-root",
+        "テストデータディレクトリ変更",
+        "resource-root設定",
+        "セミコロン区切り複数ディレクトリ指定",
+        "VMオプション一時設定変更"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "how_to_convert_test_data",
+        "テストデータ変換アンカー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メッセージング処理でテストデータに対し定型的な変換処理を追加したい",
+      "hints": [
+        "TestDataConverter",
+        "nablarch.test.core.file.TestDataConverter",
+        "TestDataConverter_データ種別",
+        "テストデータ変換処理",
+        "URLエンコーディング変換",
+        "file-type"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "デフォルトでは `test/java` 配下からテストデータを読み込む。変更する場合はコンポーネント定義ファイルに `nablarch.test.resource-root` を設定する。\n\n| キー | 値 |\n|---|---|\n| `nablarch.test.resource-root` | テスト実行時のカレントディレクトリからの相対パス。セミコロン(`;`)区切りで複数指定可 |\n\n設定例:\n```\nnablarch.test.resource-root=path/to/test-data-dir\n```\n\n複数ディレクトリ指定例:\n```\nnablarch.test.resource-root=test/online;test/batch\n```\n\n> **補足**: 一時的な設定変更はVMの引数 `-Dnablarch.test.resource-root=path/to/test-data-dir` で代替可能（設定ファイルの変更不要）。\n\n> **注意**: 複数ディレクトリ指定時、同名のテストデータが存在した場合は最初に発見されたものが読み込まれる。",
+    "s2": "なし",
+    "s3": "テストデータのExcelに記述されたデータはデフォルトでは指定エンコーディングでバイト列に変換されるのみ。URLエンコーディングのような定型的な変換処理を追加するには、`nablarch.test.core.file.TestDataConverter` インタフェースを実装してリポジトリに登録する。\n\n**インタフェース**: `nablarch.test.core.file.TestDataConverter`\n\nリポジトリ登録:\n\n| キー | 値 |\n|---|---|\n| `TestDataConverter_<データ種別>` | 上記インタフェースを実装したクラスのクラス名。データ種別はテストデータのfile-typeに指定した値 |\n\n```xml\n<component name=\"TestDataConverter_FormUrlEncoded\"\n           class=\"please.change.me.test.core.file.FormUrlEncodedTestDataConverter\"/>\n```\n\n![Excel記述例（変換前）](assets/testing-framework-03_Tips--s31/data_convert_example.png)\n\n![フレームワーク内部での扱い（変換後）](assets/testing-framework-03_Tips--s31/data_convert_internal.png)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

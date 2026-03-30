@@ -1,0 +1,283 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-batch-03_DealUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 基本的な記述方法 section",
+      "description": "The fundamental `execute()` call (no arguments) pattern from the source's '基本的な記述方法' section is entirely absent. The source shows this as the primary basic usage: `execute()` runs all batch rows listed in the current sheet. The knowledge file only shows `execute(\"シート名\")` (multi-sheet variant), omitting the more basic single-sheet invocation. This distinction is decision-necessary for users choosing between the two approaches.",
+      "source_evidence": "Source 基本的な記述方法: `@Test public void testSuccess() { execute(); }` followed by a testSuccessシート with three batch rows (fileInputBatch, userDeleteBatch, fileOutputBatch) — demonstrating that a single `execute()` call processes all rows in the sheet."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 1シートに複数ケースを含める場合 table",
+      "description": "The `expectedFile` column is present in the source table header for the multi-case example but is absent from the knowledge file's reproduced table. Even though all data rows in the source have blank values for this column, the column definition is part of the schema.",
+      "source_evidence": "Source table header: `no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath`. Knowledge file table header omits `expectedFile`."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — s1 title and section mapping",
+      "description": "The source has 4 distinct H2 sections (テストケース分割方針, 基本的な記述方法, 1テストケースを複数シートを分割する場合, 1シートに複数ケースを含める場合), but the knowledge file collapses them into 2 sections. Additionally, the s1 index title '複雑なテストケースの場合' is a H3 sub-heading from the source, not an accurate label for s1 which actually covers the intro, test class rules, basic method, and multi-sheet splitting — a much broader scope.",
+      "source_evidence": "Source H2 headings: テストケース分割方針 / 基本的な記述方法 / 1テストケースを複数シートを分割する場合 / 1シートに複数ケースを含める場合. '複雑なテストケースの場合' is an H3 under テストケース分割方針."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==================================
+取引単体テストの実施方法（バッチ）
+==================================
+
+バッチ処理の取引単体テストは、自動テストフレームワークを使用してテストを行う。
+リクエスト単体テストを連続実行することにより、取引単位でのテストを行う。
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージはテスト対象取引のパッケージとする。
+* <取引ID>Testというクラス名でテストクラスを作成する。
+
+例えば、テスト対象取引の取引IDがB21AC01だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+ package nablarch.sample.ss21AC01
+
+ import nablarch.test.core.batch.BatchRequestTestSupport;
+
+ // 中略
+ 
+ public class B21AC01Test extends BatchRequestTestSupport {
+ 
+
+テストケース分割方針
+====================
+
+基本的には、\ **1シートにつき1テストケース**\ とする。
+以下、例外事項を示す。
+
+
+複雑なテストケースの場合
+------------------------
+
+テストデータが大量であったり、1取引に含まれる処理が多い場合に、\
+１つのシートに全てのテストデータを詰め込むと、シート内にデータが多くなり過ぎて、\
+テストデータの可読性が落ちる場合がある。\
+このような場合は、1ケースを複数シートに分割して記述しても良い。
+
+
+非常に簡単なテストケースの場合
+------------------------------
+
+非常に簡単なテストケースで、テストデータ量が少ない場合、
+1シートに全テストケースを含めてもよい。
+
+
+基本的な記述方法
+================
+
+基本的には、1テストケースを1シートにまとめて記述する。\
+1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。
+
+以下の例では、３つのバッチ(ファイル入力バッチ、ユーザ削除バッチ、ファイル出力バッチ)\
+で構成される取引を実行している。
+
+.. code-block:: java
+
+ /** 正常終了するケース */
+ @Test
+ public void testSuccess() {
+     execute();
+ }
+
+
+**【testSuccessシート】**
+
+LIST_MAP=testShots
+
+=== ============= ==================  ========== ========= ============== ============ ===============
+no  description   expectedStatusCode  setUpTable setUpFile expectedTable  expectedFile   requestPath    
+=== ============= ==================  ========== ========= ============== ============ ===============
+ 1  ファイル入力                 100  default    default   default                     fileInputBatch 
+ 2  ユーザ削除                   100  default              default                     userDeleteBatch
+ 3  ファイル出力                 100  default              fileInputBatch default      fileOutputBatch          
+=== ============= ==================  ========== ========= ============== ============ ===============
+
+
+1テストケースを複数シートを分割する場合
+=======================================
+
+                                           
+例えば、前項(\ `基本的な記述方法`_\ )で例示したテストケースは、以下のように分割して記述可能である。
+
+
+.. code-block:: java
+
+ package nablarch.sample.ss21AA01
+
+ import org.junit.Test;
+ import nablarch.test.core.messaging.BatchRequestTestSupport;
+
+ // 中略
+
+ public class B21AA01Test extends BatchRequestTestSupport {
+
+     @Test
+     public void testSuccess() {
+      
+         // 入力ファイルをテンポラリテーブルに登録
+         execute("testSuccess_fileInput");
+      
+         // テンポラリテーブルの情報をユーザ関連テーブルを削除
+         execute("testSuccess_userDelete");
+      
+         // 結果をファイル出力
+         execute("testSuccess_fileOutput");
+     }
+
+\
+
+**【testSuccess_fileInputシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ========= ===============
+ no  case          expectedStatusCode  setUpTable setUpFile    requestPath    
+==== ============= ==================  ========== ========= ===============
+  1  ファイル入力                 100  default    default   fileInputBatch 
+==== ============= ==================  ========== ========= ===============
+
+\
+
+**【testSuccess_userDeleteシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ============= ===============
+ no  case          expectedStatusCode  setUpTable expectedTable requestPath    
+==== ============= ==================  ========== ============= ===============
+  1  ユーザ削除                   100  default    default       userDeleteBatch
+==== ============= ==================  ========== ============= ===============
+
+
+**【testSuccess_fileOutputシート】**
+
+LIST_MAP=testShots
+
+==== ============= ==================  ========== ========= ===============
+ no  case          expectedStatusCode  setUpTable outFile    requestPath    
+==== ============= ==================  ========== ========= ===============
+  1  ファイル出力                 100  default    default   fileOutputBatch 
+==== ============= ==================  ========== ========= ===============
+
+
+1シートに複数ケースを含める場合
+===============================
+
+非常に簡単なテストケースの場合は、複数にまとめてもよい。
+
+以下の例では、２つのテストケース（通常のケースと入力データが0件のケース）を\
+１つのシートで記述している
+
+.. code-block:: java
+
+ /** 正常終了するケース */
+ @Test
+ public void testSuccess() {
+     execute();
+ }
+
+
+**【testSuccessシート】**
+
+LIST_MAP=testShots
+
+=== ==================== ==================  ========== ========= ============== ============ ===============
+ no  description         expectedStatusCode  setUpTable setUpFile expectedTable  expectedFile   requestPath    
+=== ==================== ==================  ========== ========= ============== ============ ===============
+1-1  ファイル入力                    100      shot1      shot1                                fileInputBatch 
+1-2  ユーザ削除                      100                           shot1                      userDeleteBatch
+2-1  ファイル入力（0件）             100      shot2      shot2                                fileInputBatch 
+2-2  ユーザ削除（0件）               100                           shot2                      userDeleteBatch
+=== ==================== ==================  ========== ========= ============== ============ ===============
+
+\
+
+.. note::
+ グループIDを利用することで1シートに複数ケースのテストデータを記述できる。
+ 詳細は、『\ :ref:`tips_groupId`\ 』の項を参照。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-batch-03_DealUnitTest--s1",
+  "title": "取引単体テストの実施方法（バッチ）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複雑なテストケースの場合",
+      "hints": [
+        "BatchRequestTestSupport",
+        "execute",
+        "取引単体テスト",
+        "テストケース分割",
+        "複数シート分割",
+        "LIST_MAP",
+        "requestPath",
+        "バッチリクエストテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "非常に簡単なテストケースの場合",
+      "hints": [
+        "グループID",
+        "複数テストケース",
+        "1シート複数ケース",
+        "テストケース集約",
+        "tips_groupId",
+        "no列プレフィックス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象取引と同一パッケージ (2) クラス名は`{取引ID}Test` (3) `BatchRequestTestSupport`を継承。\n\nテストケース分割方針: 基本は1シート=1テストケース。1シートに複数バッチ実行を記述することで取引単位テストとなる。\n\nテストデータが大量または1取引に含まれる処理が多い場合は、1ケースを複数シートに分割して記述可能。`execute(\"シート名\")`で特定シートを指定して実行する:\n\n```java\n@Test\npublic void testSuccess() {\n    execute(\"testSuccess_fileInput\");\n    execute(\"testSuccess_userDelete\");\n    execute(\"testSuccess_fileOutput\");\n}\n```\n\n各シートに LIST_MAP=testShots を定義。使用可能な列: `no`, `description`/`case`, `expectedStatusCode`, `setUpTable`, `setUpFile`, `expectedTable`, `expectedFile`/`outFile`, `requestPath`",
+    "s2": "テストデータ量が少なく非常に簡単なテストケースの場合は、1シートに全テストケースをまとめて記述可能。\n\n`no`列のプレフィックスでケースをグループ化（例: `1-1`, `1-2`が1つ目のケース、`2-1`, `2-2`が2つ目のケース）:\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | requestPath |\n|---|---|---|---|---|---|---|\n| 1-1 | ファイル入力 | 100 | shot1 | shot1 | | fileInputBatch |\n| 1-2 | ユーザ削除 | 100 | | | shot1 | userDeleteBatch |\n| 2-1 | ファイル入力（0件） | 100 | shot2 | shot2 | | fileInputBatch |\n| 2-2 | ユーザ削除（0件） | 100 | | | shot2 | userDeleteBatch |\n\n> **注意**: グループIDを利用することで1シートに複数ケースのテストデータを記述できる。詳細は:ref:`tips_groupId`を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

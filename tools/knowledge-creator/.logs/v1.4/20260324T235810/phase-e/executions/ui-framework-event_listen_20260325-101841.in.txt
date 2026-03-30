@@ -1,0 +1,368 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-event_listen",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — イベントの監視と捕捉",
+      "description": "JavaScriptの等価実装コード例が省略されている。ソースは書式1・書式2それぞれについて「相当するJavaScriptの実装はおおまかには以下のようになる」として jQuery の `.on()` 呼び出し例を示しており、ウィジェットがどのようなイベントバインディングに変換されるかを理解するための情報である。",
+      "source_evidence": "「上記のイベント定義に相当するJavaScriptの実装はおおまかには以下のようになる。」→ `$('#usrForm').on('change', function() {...})` および `$('#usrForm').on('click', \"input[type='submit']\", function() {...})`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — コンテキストの指定（警告内）",
+      "description": "context属性とevent属性セレクタ式が「ほぼ同じ挙動」となる比較用JSPコード2例が省略されている。ソースはこの等価性を示す具体的なコードと、context属性を使った場合に対応するJavaScript（すべてのサブミットボタンに直接イベント登録する形）を提示しており、パフォーマンス上の問題を具体的に説明するために使われている。",
+      "source_evidence": "ソースの「例えば、以下の2つのコードは、ほぼ同じ挙動となる。」以降の2つのJSPコードブロックと、それに対応するJavaScript: `$(\"#usrForm input[type='submit']\").on('click', function() {...})`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — イベントの監視と捕捉 (書式1の説明)",
+      "description": "書式1の説明に「親要素内のすべての要素のイベントを監視」と記載されているが、ソースに「すべての要素」という表現はない。ソースは「親要素内で発生するイベントを監視する」と述べているのみで、「すべての」という限定表現は知識ファイルによる追加。",
+      "source_evidence": "ソース: 「本ウィジェットは、親要素内で発生するイベントを監視する。監視するイベントは event属性 に以下のいずれかの書式で指定する。1. [イベント名]」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`event:confirm` がs2のhintsに含まれていない。s2のセクション本文中に「一部のアクション（:doc:`event_confirm` など）では後続イベントアクションの実行中止や、イベントバブリングやデフォルトアクションの停止を行わせることが可能」と明示されており、重要なウィジェット名として検索対象になり得る。",
+      "source_evidence": "ソースおよびknowledge file s2本文: 「一部のイベントアクション ( :doc:`event_confirm` など) では後続イベントアクションの実行中止や、イベントバブリングやデフォルトアクションの停止を行わせることが可能である。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+ページ内イベント定義
+===================================================
+:doc:`event_listen` は画面内で発生する特定のイベントを監視することで、
+あらかじめ登録しておいたJavaScript処理をイベント発生時に実行するウィジェットである。
+
+本ウィジェットに登録可能なJavaScript処理を **イベントアクション** とよび、
+以下のような処理を宣言的に実装することができる。
+
+  - ダイアログ表示
+  - 入力項目の活性・非活性制御
+  - Ajaxリクエスト送信とその結果表示
+  - 入力値の差し戻し
+  - チェックボックス、ラジオボタンの一括ON/OFF
+
+.. warning::
+
+  本ウィジェットの実装は、他のウィジェットの実装に比べると抽象度が低く
+  汎用的なものとなっているため、これらのタグを各業務画面JAP内で直接使用すると
+  記述が複雑化しやすい。
+
+  例えば 「Ajax入力補完機能付きの入力部品」のような形で共通化できる
+  ものについては、プロジェクトのカスタムウィジェットとして提供し、
+  業務画面JSPにイベント系のウィジェットを直接記述しないような形にすることが望ましい。
+
+  やむなくイベント系のウィジェットを業務画面JSP内に直接記述する際には
+  その使用是非について、プロジェクトのアーキテクトに確認すること。
+
+
+コードサンプル
+==================================
+
+**プルダウンで特定の項目を選択した場合に確認のダイアログを表示する例**
+
+  .. code-block:: jsp
+
+     <event:listen event="select.amount change">
+       <event:confirm
+         message="この商品の注文をキャンセルしますがよろしいですか？"
+         condition=":is-blank">
+       </event:confirm>
+     </event:listen>
+
+
+仕様
+=============================================
+
+**イベントの監視と捕捉**
+  本ウィジェットは、親要素内で発生するイベントを監視する。
+  監視するイベントは **event属性** に以下のいずれかの書式で指定する。
+
+  1. **[イベント名]**
+  2. **[セレクタ式]** + (半角スペース) + **[イベント名]**
+
+  次のソースコードは前者の書式を使用した例である。
+  親要素であるフォーム要素 **(form#usrForm)** 内の入力要素の変更を監視し、
+  変更があった場合にダイアログを表示させる。
+
+
+  .. code-block:: jsp
+
+      <form id="usrForm">
+        <event:listen event="change">
+          <event:alert
+            message="変更を反映するには「確定ボタン」を押してください。"
+            revert="false">
+          </event:alert>
+
+          ... (中略) ...
+
+        </event:listen>
+      </form>
+
+  上記のイベント定義に相当するJavaScriptの実装はおおまかには以下のようになる。
+
+  .. code-block:: javascript
+
+    $(function()  {
+      $('#usrForm').on('change', function() {
+        //
+        // ダイアログ表示処理の実装コード
+        //
+      });
+    });
+
+  一方、後者の書式では、イベントの種別とともにイベントの発生元の限定するセレクタ式を指定する。
+  次のソースはこれを利用した例である。
+
+  この例では、親要素であるフォーム内のクリックイベントを監視する。
+  クリックイベントの発生元がサブミットボタンであった場合にダイアログを表示させる。
+
+  .. code-block:: jsp
+
+      <form id="usrForm">
+        <event:listen event="input[type='submit'] click">
+          <event:confirm
+            message="設定を変更します。よろしいですか。">
+          </event:confirm>
+
+          ... (中略) ...
+
+        </event:listen>
+      </form>
+
+  なお、このイベント定義に相当するJavaScriptの実装は
+  おおまかにいうと以下のようなものになる。
+
+  .. code-block:: javascript
+
+    $(function()  {
+      $('#usrForm').on('click', "input[type='submit']", function() {
+        //
+        // ダイアログ表示処理の実装コード
+        //
+      });
+    });
+
+
+**イベントの捕捉とアクションの実行**
+  イベントのバブリングおよびデフォルトアクションの実行は通常のJavaScriptのイベントモデルに従う。
+  すなわち、イベントの捕捉はイベントの発生元要素からその親要素に対して順次行われる。
+
+  **event要素** に合致するイベントを捕捉すると、ウィジェットの子要素となるイベントアクションを順次実行する。
+  すべてのアクションの実行が完了すると親要素に対するイベントバブリングを再開する。
+
+  ただし、一部のイベントアクション ( :doc:`event_confirm` など) では後続イベントアクションの実行中止や、
+  イベントバブリングやデフォルトアクションの停止を行わせることが可能である。
+
+  .. attention::
+
+   サブミットイベントを監視する場合は、**click** イベントを監視すること。
+   **Nablarchカスタムサブミットイベント** を監視すると、イベント停止時に他の機能が動作しなくなる可能性があるため、サポートしていない。
+
+
+**コンテキストの指定**
+  すでに述べたように、このウィジェットはデフォルトで親要素内のイベントを監視対象とするが、
+  **context属性** を指定することにより、画面内の任意の要素内のイベントを監視することができる。
+
+  これは、画面内の他のインクルードJSP上の要素を監視する場合などに使用する。
+  以下はcontext属性の使用例である。
+  この例では、画面内のすべてのform要素内のサブミットボタン上のイベントを監視対象としている。
+
+  .. code-block:: jsp
+
+      <event:listen
+        event="input[type='submit'] click"
+        context="form">
+        <event:confirm
+          message="設定を変更します。よろしいですか。">
+        </event:confirm>
+
+        ... (中略) ...
+
+      </event:listen>
+
+
+
+  .. warning::
+
+    context属性は、 **event属性** 内に記述するセレクタ式の代替として使用できるが、
+    後者の方が性能的に優れているので、そのような用途では使用しないこと。
+
+    例えば、以下の2つのコードは、ほぼ同じ挙動となる。
+
+
+    .. code-block:: jsp
+
+        <event:listen
+          event="#usrForm input[type='submit'] click"
+          context="">
+          <event:confirm
+            message="設定を変更します。よろしいですか。">
+          </event:confirm>
+
+          ... (中略) ...
+
+        </event:listen>
+
+
+
+    .. code-block:: jsp
+
+        <event:listen
+          event="click"
+          context="#usrForm input[type='submit']">
+          <event:confirm
+            message="設定を変更します。よろしいですか。">
+          </event:confirm>
+
+          ... (中略) ...
+
+        </event:listen>
+
+    しかし、このソースコードと等価なJavaScriptは以下のようなものとなり、
+    画面内のすべてのサブミットボタンにイベントを登録することなる。
+    このため、監視対象のノードに比例して
+    メモリ使用量および画面ロード時の処理時間が増加する。
+
+    .. code-block:: javascript
+
+      $(function()  {
+        $("#usrForm input[type='submit']").on('click', function() {
+          //
+          // ダイアログ表示処理の実装コード
+          //
+        });
+      });
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+event                     監視対象イベントの定義式         文字列         ◎          ◎
+
+context                   イベントの発生を監視する要素     文字列         ○          ○         デフォルトは、このタグの親要素内
+                          を指定するセレクタ式。                                               のイベントを監視する。
+
+title                     監視するイベントの簡単な説明     文字列         ×          ×         設計書表示用
+
+
+operation                 監視イベントが発生する画面操作　 文字列         ×          ×         設計書表示用
+                          の説明。
+
+comment                   このイベントに対する補足説明。　 文字列         ×          ×         設計書表示用
+
+========================= ================================ ============== ========== ========= ================================
+
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== =====================================================
+パス                                           内容
+============================================== =====================================================
+/WEB-INF/tags/widget/event/listen.tag          このウィジェットの実体となるタグファイル　
+
+/js/nablarch/ui/event/Listener.js              イベント監視機能を実装するJS部品。
+
+============================================== =====================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-event_listen",
+  "title": "ページ内イベント定義",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "event:listen",
+        "event:confirm",
+        "イベントアクション",
+        "ダイアログ表示",
+        "活性・非活性制御",
+        "Ajaxリクエスト送信",
+        "カスタムウィジェット",
+        "ページ内イベント定義"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "event属性",
+        "context属性",
+        "イベント監視",
+        "イベントバブリング",
+        "セレクタ式",
+        "サブミットイベント",
+        "click",
+        "Nablarchカスタムサブミットイベント",
+        "属性値一覧",
+        "event:alert"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "listen.tag",
+        "Listener.js",
+        "タグファイル",
+        "内部構造"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`event_listen` は、画面内で発生するイベントを監視し、登録済みのJavaScript処理をイベント発生時に実行するウィジェット。\n\n対応するイベントアクション:\n- ダイアログ表示\n- 入力項目の活性・非活性制御\n- Ajaxリクエスト送信とその結果表示\n- 入力値の差し戻し\n- チェックボックス、ラジオボタンの一括ON/OFF\n\n> **警告**: 本ウィジェットは抽象度が低いため、業務画面JSP内に直接記述すると複雑化しやすい。「Ajax入力補完機能付き入力部品」のような共通化できるものはプロジェクトのカスタムウィジェットとして提供し、業務画面JSPへの直接記述は避けること。やむなく使用する場合はプロジェクトのアーキテクトに確認すること。\n\nプルダウンで特定の項目を選択した場合に確認ダイアログを表示する例:\n\n```jsp\n<event:listen event=\"select.amount change\">\n  <event:confirm\n    message=\"この商品の注文をキャンセルしますがよろしいですか？\"\n    condition=\":is-blank\">\n  </event:confirm>\n</event:listen>\n```",
+    "s2": "**イベントの監視と捕捉**\n\n`event`属性に以下の書式でイベントを指定する:\n1. `[イベント名]` — 親要素内のすべての要素のイベントを監視\n2. `[セレクタ式] [イベント名]` — セレクタに合致する要素のイベントに限定\n\n書式1の例 (フォーム内の変更イベントを監視):\n\n```jsp\n<form id=\"usrForm\">\n  <event:listen event=\"change\">\n    <event:alert\n      message=\"変更を反映するには「確定ボタン」を押してください。\"\n      revert=\"false\">\n    </event:alert>\n  </event:listen>\n</form>\n```\n\n書式2の例 (サブミットボタンのクリックイベントに限定):\n\n```jsp\n<form id=\"usrForm\">\n  <event:listen event=\"input[type='submit'] click\">\n    <event:confirm message=\"設定を変更します。よろしいですか。\">\n    </event:confirm>\n  </event:listen>\n</form>\n```\n\n**イベントの捕捉とアクションの実行**\n\n`event`要素に合致するイベントを捕捉すると、子要素のイベントアクションを順次実行する。すべてのアクション完了後、親要素へのイベントバブリングを再開する。一部のアクション（:doc:`event_confirm` など）は後続アクションの実行中止やバブリング/デフォルトアクションの停止が可能。\n\n> **注意**: サブミットイベントを監視する場合は `click` イベントを使用すること。**Nablarchカスタムサブミットイベント** を監視するとイベント停止時に他の機能が動作しなくなる可能性があるため、サポートしていない。\n\n**コンテキストの指定**\n\n`context`属性でイベント発生を監視する要素をセレクタ式で指定できる（デフォルト: このタグの親要素内）。他のインクルードJSP上の要素を監視する場合などに使用する。\n\n```jsp\n<event:listen\n  event=\"input[type='submit'] click\"\n  context=\"form\">\n  <event:confirm message=\"設定を変更します。よろしいですか。\">\n  </event:confirm>\n</event:listen>\n```\n\n> **警告**: `context`属性は`event`属性内のセレクタ式の代替として使用できるが、パフォーマンス面でセレクタ式の方が優れているため、そのような用途では使用しないこと。`context`属性を使うと画面内のすべての対象要素にイベントを登録するため、対象ノード数に比例してメモリ使用量と画面ロード時間が増加する。\n\n**属性値一覧**\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| event | 監視対象イベントの定義式 | 文字列 | ◎ | ◎ | |\n| context | イベント発生を監視する要素を指定するセレクタ式 | 文字列 | ○ | ○ | デフォルト: このタグの親要素内 |\n| title | 監視するイベントの簡単な説明 | 文字列 | × | × | 設計書表示用 |\n| operation | 監視イベントが発生する画面操作の説明 | 文字列 | × | × | 設計書表示用 |\n| comment | このイベントに対する補足説明 | 文字列 | × | × | 設計書表示用 |",
+    "s3": "| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/event/listen.tag | このウィジェットの実体となるタグファイル |\n| /js/nablarch/ui/event/Listener.js | イベント監視機能を実装するJS部品 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

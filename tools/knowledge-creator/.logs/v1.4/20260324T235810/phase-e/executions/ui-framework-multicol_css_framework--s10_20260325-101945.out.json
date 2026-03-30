@@ -1,0 +1,68 @@
+{
+  "id": "ui-framework-multicol_css_framework--s10",
+  "title": "使用例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用例 - マルチレイアウトモードの重要ポイント",
+      "hints": [
+        "マルチレイアウトモード",
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "@contentGridSpan",
+        "UI部品ウィジェット",
+        "業務コンテンツ部",
+        "グリッド数",
+        "幅指定",
+        "折り返し"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1行に複数のUI部品を並べる場合",
+      "hints": [
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "複数UI部品の横並び配置",
+        "マージン設定",
+        "n:set",
+        "titleSize",
+        "inputSize",
+        "field:text",
+        "field:pulldown",
+        "button:submit",
+        "button:check",
+        "button:back",
+        "button:confirm",
+        "n:forInputPage",
+        "n:forConfirmationPage",
+        "変数切り出し"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "列によって異なる行数を定義する場合",
+      "hints": [
+        "layout:row",
+        "layout:cell",
+        "gridSize",
+        "ネストした行",
+        "rowspan相当",
+        "field:text",
+        "field:radio",
+        "列ごとに異なる行数",
+        "ネスト",
+        "幅の合計制限"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## マルチレイアウトモード使用上の重要ポイント\n\n- UI部品ウィジェットは必ず行内(`layout:row`)に配置する（ただし行を表すUI部品ウィジェット自体は除く）\n- 各UI部品ウィジェット使用時には幅（グリッド数）を指定する\n- 行内に配置するUI部品ウィジェットの幅の合計は業務コンテンツ部の幅（`@contentGridSpan`で定義）以内とする\n- 幅の合計が業務コンテンツ部の幅を超えた場合、自動的に折り返されて次の行に出力される。折り返し位置はブラウザ依存のため、業務コンテンツ部の幅に収まるよう配置すること",
+    "s2": "## 1行に複数のUI部品を並べる場合\n\n**実装ポイント**:\n- UI部品を並べる場合は行(`layout:row`)を定義する\n- タイトル部・入力部の幅を統一する場合は変数(`<n:set>`)に切り出す（変数を変更するだけでサイズ変更が可能になる）\n- UI部品間にマージンを設ける場合は空の列(`layout:cell` + `gridSize`指定)を配置する\n\n```jsp\n<n:form windowScopePrefixes=\"user\">\n  <n:set var=\"titleSize\" value=\"10\" />\n  <n:set var=\"inputSize\" value=\"10\" />\n  <layout:row>\n    <field:text title=\"郵便番号\" required=\"true\" name=\"user.postNo\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n    <layout:cell gridSize=\"10\"></layout:cell>\n    <n:forInputPage>\n      <button:submit label=\"住所検索\" uri=\"dummy\" size=\"10\"></button:submit>\n    </n:forInputPage>\n  </layout:row>\n  <layout:row>\n    <field:pulldown title=\"都道府県\" name=\"user.address1\" required=\"true\"\n        listName=\"都道府県リスト\" elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:pulldown>\n    <field:text title=\"市区郡町村名\" name=\"user.address2\" required=\"true\"\n        titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n    </field:text>\n  </layout:row>\n  <layout:row>\n    <n:forInputPage>\n      <layout:cell gridSize=\"17\"></layout:cell>\n      <button:check size=\"10\" uri=\"./確認画面_ページ.jsp\"></button:check>\n    </n:forInputPage>\n    <n:forConfirmationPage>\n      <layout:cell gridSize=\"10\"></layout:cell>\n      <button:back uri=\"./登録画面.jsp\" size=\"10\"></button:back>\n      <layout:cell gridSize=\"5\"></layout:cell>\n      <button:confirm uri=\"dummy\" size=\"10\"></button:confirm>\n    </n:forConfirmationPage>\n  </layout:row>\n</n:form>\n```",
+    "s3": "## 列によって異なる行数を定義する場合（rowspan相当）\n\n**実装ポイント**:\n- 列ごとに異なる行数を定義する場合は、外側の行(`layout:row`)内に列(`layout:cell`)を定義し、列内にネストした行(`layout:row`)を配置する\n- ネストした行内に配置するUI部品の幅の合計は、列(`layout:cell`)の幅(`gridSize`)を超えてはならない\n\n```jsp\n<layout:row>\n  <layout:cell gridSize=\"20\">\n    <layout:row>\n      <field:text title=\"漢字氏名\" name=\"user.kanjiName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n    <layout:row>\n      <field:text title=\"カナ氏名\" name=\"user.kanaName\" required=\"true\"\n          titleSize=\"10\" inputSize=\"10\">\n      </field:text>\n    </layout:row>\n  </layout:cell>\n  <field:radio title=\"性別\" name=\"user.sex\" required=\"true\"\n      listName=\"sexList\" listFormat=\"br\"\n      elementLabelProperty=\"name\" elementValueProperty=\"cd\"\n      titleSize=\"${titleSize}\" inputSize=\"${inputSize}\">\n  </field:radio>\n</layout:row>\n```"
+  }
+}

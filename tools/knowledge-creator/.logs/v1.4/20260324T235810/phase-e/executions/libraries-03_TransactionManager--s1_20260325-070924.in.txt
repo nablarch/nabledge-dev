@@ -1,0 +1,240 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-03_TransactionManager--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Knowledge file adds \"（実装予定）\" at the end of the distributed transaction description, implying future implementation is planned. The source only states the feature is unimplemented (\"未実装機能\") and does not mention any plan to implement it.",
+      "source_evidence": "Source heading: \"分散トランザクション機能(未実装機能)\" — no mention of future plans. Knowledge file: \"設定ファイルの記述のみで切り替え可能（実装予定）。\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+============================
+トランザクション管理
+============================
+
+-----
+概要
+-----
+様々なリソース（主にデータベースやメッセージキュー）に対するトランザクション管理機能を提供する。
+ 
+本機能は、本フレームワークの他の機能から使用されることを想定している。
+Webアプリケーションでは、\ :doc:`../../handler/TransactionManagementHandler`\ の機能が使用する。
+このため、アプリケーションプログラマは、本機能を直接使用することはない。
+
+-----
+特徴
+-----
+
+任意のリソースに対するトランザクション制御を追加可能
+====================================================
+トランザクション制御部品を追加することにより、任意のリソースに対するトランザクション制御を行うことが可能となっている。
+
+分散トランザクション機能(未実装機能)
+====================================
+Webコンテナが提供するトランザクションマネージャ(ユーザトランザクション)機能を使用して分散トランザクションを行う機能。
+分散トランザクションを使用するかどうかは、設定ファイルに記述するのみで実現可能となっている。
+
+
+-----
+要求
+-----
+実装済み
+========
+* RDBMSのトランザクション管理ができる。
+* アイソレーションレベルが設定できる。
+* トランザクション開始時に任意のSQL文を実行できる。
+* トランザクションタイムアウト処理ができる。
+
+未実装
+========
+* | 分散トランザクションに対応できる。
+* | トランザクションのリトライ(デッドロックやロック要求タイムアウト発生時のリトライ)ができる。
+  | データベースに対するトランザクション使用時に、特定のエラーの発生を検知しトランザクションを自動リトライする機能。
+  | リトライ対象のエラーは、SQLStateまたはベンダー依存のSQLエラーコードで設定が可能である。
+
+-----
+構造
+-----
+クラス図
+==========
+.. image:: _images/03/TransactionManagerSpec_ClassDesign.jpg
+
+各クラスの責務
+^^^^^^^^^^^^^^
+インタフェース定義
+~~~~~~~~~~~~~~~~~~
+.. list-table:: 
+  :widths: 125 200
+  :header-rows: 1
+  
+  * - インタフェース名
+    - 概要
+
+  * - nablarch.core.transaction.TransactionFactory
+    - トランザクション制御オブジェクト(Transaction)を取得するインタフェース
+
+  * - nablarch.core.transaction.Transaction
+    - トランザクション制御オブジェクト。
+
+      新たなトランザクション方式を追加する場合は、このインタフェースの実装クラスを新たに追加する必要がある。
+
+クラス定義
+~~~~~~~~~~
+\a) nablarch.core.transaction.TransactionFactoryの実装クラス
+
+  .. list-table:: 
+    :widths: 125 200
+    :header-rows: 1
+  
+    * - クラス名
+      - 概要
+    * - nablarch.core.db.transaction.JdbcTransactionFactory
+      - JdbcTransactionを生成するクラス。
+        トランザクションタイムアウトの設定は本クラスに行う。
+
+        設定内容の詳細は、\ :ref:`transactionTimeoutSettings`\ を参照。
+
+\b) nablarch.core.transaction.Transactionの実装クラス
+
+  .. list-table:: 
+    :widths: 125 200
+    :header-rows: 1
+  
+    * - クラス名
+      - 概要
+    * - nablarch.core.db.transaction.JdbcTransaction
+      - JDBCで提供されるトランザクション機能を使用して、トランザクション制御を行うクラス。
+
+\c) その他のクラス
+
+  .. list-table:: 
+    :widths: 125 200
+    :header-rows: 1
+
+    * - クラス名
+      - 概要
+    * - nablarch.core.transaction.TransactionContext
+      - ThreadLocal(スレッド内)にTransactionを保持するクラス。
+
+        保持するTransactionには、任意の名前(トランザクション名)を付加することができる。
+        トランザクション名の詳細は、 :ref:`データベースコネクション名とトランザクション名 <db-connection-name-label>` を参照すること。
+
+        .. warning::
+          ThreadLocalでTransactionが管理されるため、アプリケーションのスレッドと同一のスレッドでTransactionを設定する必要がある。
+
+          マルチスレッド環境では、各スレッドに対してTransactionを設定する必要があるため、注意が必要である。
+
+------
+使用例
+------
+データベースに対するトランザクション管理
+========================================
+詳細は、 :doc:`./04_DbAccessSpec` を参照。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-03_TransactionManager--s1",
+  "title": "トランザクション管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "トランザクション管理",
+        "TransactionManagementHandler",
+        "アプリケーションプログラマ直接使用不可"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "任意リソースへのトランザクション制御追加",
+        "分散トランザクション",
+        "ユーザトランザクション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "RDBMSトランザクション管理",
+        "アイソレーションレベル設定",
+        "トランザクションタイムアウト",
+        "分散トランザクション未実装",
+        "トランザクションリトライ未実装",
+        "SQLState",
+        "SQLエラーコード"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構造",
+      "hints": [
+        "TransactionFactory",
+        "Transaction",
+        "JdbcTransactionFactory",
+        "JdbcTransaction",
+        "TransactionContext",
+        "ThreadLocal",
+        "トランザクション制御クラス設計",
+        "transactionTimeoutSettings",
+        "db-connection-name-label"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "使用例",
+      "hints": [
+        "データベーストランザクション管理使用例",
+        "DbAccessSpec"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "様々なリソース（データベース、メッセージキューなど）に対するトランザクション管理機能。\n\n本機能はフレームワーク内部から使用される。Webアプリケーションでは :doc:`../../handler/TransactionManagementHandler` が本機能を使用する。アプリケーションプログラマが直接使用することはない。",
+    "s2": "- トランザクション制御部品を追加することで、任意のリソースへのトランザクション制御を追加可能。\n- 分散トランザクション機能（未実装）: Webコンテナが提供するユーザトランザクション機能を使用した分散トランザクション。設定ファイルの記述のみで切り替え可能（実装予定）。",
+    "s3": "**実装済み**:\n- RDBMSのトランザクション管理\n- アイソレーションレベルの設定\n- トランザクション開始時の任意SQL文実行\n- トランザクションタイムアウト処理\n\n**未実装**:\n- 分散トランザクション対応\n- トランザクションリトライ（デッドロック・ロックタイムアウト発生時）。リトライ対象エラーはSQLStateまたはベンダー依存SQLエラーコードで設定可能。",
+    "s4": "**インタフェース**:\n\n- **インタフェース**: `nablarch.core.transaction.TransactionFactory` — トランザクション制御オブジェクト（Transaction）を取得するインタフェース。\n- **インタフェース**: `nablarch.core.transaction.Transaction` — トランザクション制御オブジェクト。新たなトランザクション方式を追加する場合は、このインタフェースの実装クラスを新たに追加する必要がある。\n\n**クラス**:\n\n- **クラス**: `nablarch.core.db.transaction.JdbcTransactionFactory` — JdbcTransactionを生成するクラス。トランザクションタイムアウトの設定は本クラスに行う。設定詳細は :ref:`transactionTimeoutSettings` を参照。\n- **クラス**: `nablarch.core.db.transaction.JdbcTransaction` — JDBCのトランザクション機能を使用してトランザクション制御を行うクラス。\n- **クラス**: `nablarch.core.transaction.TransactionContext` — ThreadLocalにTransactionを保持するクラス。任意の名前（トランザクション名）を付加できる。トランザクション名の詳細は :ref:`データベースコネクション名とトランザクション名 <db-connection-name-label>` を参照。\n\n> **警告**: ThreadLocalでTransactionが管理されるため、アプリケーションのスレッドと同一のスレッドでTransactionを設定する必要がある。マルチスレッド環境では各スレッドに対してTransactionを設定する必要があるため注意が必要。",
+    "s5": "データベースに対するトランザクション管理の使用例は :doc:`./04_DbAccessSpec` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

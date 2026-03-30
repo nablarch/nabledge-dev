@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index entries s2, s4, s7",
+      "description": "Three sections (s2, s4, s7) have empty string titles (\"\") and content set to \"なし\". These appear to be placeholder entries marking section boundaries, but empty titles in the index degrade discoverability. The introductory paragraphs of 値の変換, 入力値のトリム, and プロパティに紐付くメッセージの作成 are omitted in these sections; their substance is merged into the following sections (s3, s5, s8 respectively), so no content is lost. However, empty title strings are a structural issue.",
+      "source_evidence": "Source h2 headings: 値の変換, 入力値のトリム, プロパティに紐付くメッセージの作成 — each has a non-trivial introductory paragraph before their code examples."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s8 hints",
+      "description": "The `Message` class is used in the s8 code example (`Message message = ValidationUtil.createMessageForProperty(...)`) but is absent from s8's hints array.",
+      "source_evidence": "Source: `Message message = ValidationUtil.createMessageForProperty(\"user.loginId\", \"MSG00091\");`"
+    }
+  ]
+}

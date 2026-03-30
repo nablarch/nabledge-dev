@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_06_direct_call_of_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — second annotation equivalent code block",
+      "description": "The annotation equivalent for the CodeValue/Map example omits `@PropertyName(\"都道府県\")` and `@Required` from the code snippet. The knowledge file shows only `@CodeValue(...)`, but the source explicitly shows all three annotations (`@PropertyName`, `@Required`, `@CodeValue`) as the full equivalent, making the knowledge file's equivalent appear incomplete.",
+      "source_evidence": "@PropertyName(\"都道府県\")\n@Required\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) { this.value = value; }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "`PropertyName` and `@PropertyName` are absent from the hints array, despite `@PropertyName` appearing in both annotation-equivalent code examples in the source.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\") ... @PropertyName(\"都道府県\")"
+    }
+  ]
+}

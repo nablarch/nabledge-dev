@@ -1,0 +1,432 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_QueryCache--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — SQL ID毎のキャッシュ設定 XMLコード例",
+      "description": "キャッシュ有効期限設定のXMLコード例にあるSQL IDが、ソースの値から別の値に変更されている。ソースは `please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` 等を使用しているが、ナレッジファイルは `com.example.Action1#SELECT` 等に置き換えている。サブシステム分割例も同様で、`please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` → `com.example.ss11AA.Action1#SELECT`、`please.change.me.tutorial.ss11BB.W11BB01Action#SELECT` → `com.example.ss11BB.Action1#SELECT` に変更されている。",
+      "source_evidence": "ソース: `<entry key=\"please.change.me.tutorial.ss11AA.W11AA01Action#SELECT\" value=\"100ms\"/>` / ナレッジ: `<entry key=\"com.example.Action1#SELECT\" value=\"100ms\"/>`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 特定のエントリを削除する方法 Javaコード例",
+      "description": "ResultSetCacheKeyBuilderに渡すSQL IDがソースの値から変更されている。ソースは `please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` を使用しているが、ナレッジファイルは `SqlId#SELECT` に置き換えている。",
+      "source_evidence": "ソース: `new ResultSetCacheKeyBuilder(\"please.change.me.tutorial.ss11AA.W11AA01Action#SELECT\")` / ナレッジ: `new ResultSetCacheKeyBuilder(\"SqlId#SELECT\")`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — クエリ結果キャッシュ実装クラスの登録 プロパティテーブル",
+      "description": "`cacheSize` プロパティの型が `int` と記載されているが、ソースファイルには型の明示的な記載はなく (`value=\"100\"` から推測)、ナレッジファイルで追加された情報である。",
+      "source_evidence": "ソース: `<property name=\"cacheSize\" value=\"100\"/>` のみで型の記載なし"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — index hints",
+      "description": "s1のXMLコード例に登場するクラス `BasicDbConnectionFactoryForDataSource` がhintsに含まれていない。",
+      "source_evidence": "ソース: `class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\"`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+キャッシュ機能を有効にする設定方法
+----------------------------------
+
+
+クエリ結果キャッシュ実装クラスの登録
+====================================
+
+クエリ結果キャッシュ実装クラスをコンポーネント定義ファイルに登録する。
+
+.. code-block:: xml
+
+  <!-- クエリ結果キャッシュ -->
+  <!-- キャッシュクラス -->
+  <component name="resultSetCache" class="nablarch.core.db.cache.InMemoryResultSetCache">
+    <!-- キャッシュ上限件数 -->
+    <property name="cacheSize" value="100"/>
+    <property name="systemTimeProvider" ref="systemTimeProvider"/>
+  </component>
+
+
+StatementFactory実装クラスの差し替え
+====================================
+
+ConnectionFactorySupportサブクラスのプロパティ\ ``statementFactory``\ に、
+本機能が提供するCacheableStatementFactoryを設定する。
+
+.. code-block:: xml
+
+  <!-- データベース接続用設定 -->
+  <component name="connectionFactory"
+             class="nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource">
+    <property name="dataSource" ref="dataSource" />
+    <!-- StatementFactory実装クラスを差し替え -->
+    <property name="statementFactory" ref="cacheableStatementFactory" />
+    <!-- 中略 -->
+  </component>
+
+  <!-- キャッシュ可能なステートメントを生成するStatementFactory実装クラス -->
+  <component name="cacheableStatementFactory"
+             class="nablarch.core.db.cache.CacheableStatementFactory">
+
+    <!-- 中略（BasicStatementFactoryと同じ) -->
+
+    <!-- 有効期限設定 -->
+    <property name="expirationSetting" ref="expirationSetting"/>
+    <!-- キャッシュ実装 -->
+    <property name="resultSetCache" ref="resultSetCache"/>
+  </component>
+
+
+
+SQL ID毎のキャッシュ設定
+========================
+
+
+基本実装クラスでは、SQL ID毎に有効期限を設定する。
+
+
+.. code-block:: xml
+
+  <!-- キャッシュ有効期限設定 -->
+  <component class="nablarch.core.cache.expirable.BasicExpirationSetting"
+             name="expirationSetting">
+    <property name="expiration">
+      <map>
+        <entry key="please.change.me.tutorial.ss11AA.W11AA01Action#SELECT" value="100ms"/>  <!-- 100ミリ秒 -->
+        <entry key="please.change.me.tutorial.ss11AA.W11AA02Action#SELECT" value="30sec"/>  <!-- 30秒 -->
+        <entry key="please.change.me.tutorial.ss11AA.W11AA03Action#SELECT" value="10min"/>  <!-- 10分 -->
+        <entry key="please.change.me.tutorial.ss11AA.W11AA04Action#SELECT" value="1h"/>     <!-- 1時間 -->
+      </map>
+    </property>
+  </component>
+
+.. note::
+
+ 基本実装では以下の単位が使用できる。
+
+  =========== =========
+   単位表記   意味    
+  =========== =========
+   ms         ミリ秒 
+   sec        秒     
+   min        分     
+   h          時     
+  =========== =========
+
+
+.. note::
+  キャッシュ有効期限の設定をサブシステム毎に分割する場合、
+  コンポーネント定義を以下のように分割する。
+
+  .. code-block:: xml
+   
+    <!-- キャッシュ有効期限設定 -->
+    <component class="nablarch.core.cache.expirable.BasicExpirationSetting"
+               name="expirationSetting">
+      <property name="expirationList">
+        <list>
+          <component-ref name="expireSettingSS11AA"/>
+          <component-ref name="expireSettingSS11BB"/>
+          </map>
+        </list>
+      </property>
+    </component>
+    
+  .. code-block:: xml
+
+    <!-- サブシステムSS11AAの設定(別ファイル) -->
+    <map name="expireSettingSS11AA">
+      <entry key="please.change.me.tutorial.ss11AA.W11AA01Action#SELECT"
+             value="100ms"/>
+    </map>
+
+  .. code-block:: xml
+   
+    <!-- サブシステムSS11BBの設定(別ファイル) -->
+    <map name="expireSettingSS11BB">
+      <entry key="please.change.me.tutorial.ss11BB.W11BB01Action#SELECT"
+             value="1h"/>
+    </map>
+
+----------------------------------
+キャッシュを明示的にクリアする方法
+----------------------------------
+
+特定のエントリを削除する方法
+============================
+
+システムリポジトリからキャッシュインスタンスを取得し、キーを指定して削除を依頼する。
+
+.. code-block:: java
+
+    // リポジトリからキャッシュのインスタンスを取得する。
+    ResultSetCache cache = SystemRepository.get("resultSetCache");
+
+    // キャッシュキーを組み立てる。
+    ResultSetCacheKey key
+            = new ResultSetCacheKeyBuilder("please.change.me.tutorial.ss11AA.W11AA01Action#SELECT") // SqlId
+                           .addParam("name", "yamada")
+                           .addParam("address", "tokyo")
+                           .build();
+
+    // キャッシュから該当するエントリを削除する。
+    cache.remove(key);
+
+
+全エントリをクリアする方法
+==========================
+
+
+システムリポジトリからキャッシュインスタンスを取得し、全エントリを削除するメソッドを起動する。
+
+
+.. code-block:: java
+    
+    @org.junit.After
+    public void clearResultSetCache() {
+
+        // リポジトリからキャッシュのインスタンスを取得する。
+        ResultSetCache cache = SystemRepository.get("resultSetCache");
+
+        // キャッシュクリア
+        cache.clear();
+    }
+
+.. note::
+ 全エントリ削除機能は、クラス単体テストの前後に使用することを想定している。
+ （あるテストでキャッシュされた値が、別のテストで使用されないようにするため）
+
+
+
+--------
+ログ出力
+--------
+
+本基本実装クラス（InMemoryResultSetCache）は、各種イベント発生時に以下のロガーによりログ出力を行う。
+
+* ロガー名: RS_CACHE
+* ログレベル: DEBUG
+
+
+イベントとログ出力フォーマット
+==============================
+
+以下に、イベントとイベント発生時のログ出力フォーマットの対応を示す。
+
+================================================================= =======================================================================================
+イベント                                                          ログ出力フォーマット
+================================================================= =======================================================================================
+キャッシュに値取得の要求が来て、キャッシュにヒットした場合        cache hit: key=[\ `<SQL ID>`\ ], current=[\ `<システム日時>`\ ]
+キャッシュに値取得の要求が来て、キャッシュにヒットしなかった場合  cache not hit: key=[\ `<SQL ID>`\ ]
+キャッシュ有効期限切れが検知された場合                            cache entry expired: key=[\ `<SQL ID>`\ ], expire=[`\ <有効期限>`\ ], current=[\ `<システム日時>`\ ] 
+キャッシュに値が設定された場合                                    cache entry added: key=[\ `<SQL ID>`\ ], expire=[`\ <有効期限>`\ ]
+キャッシュに対して削除要求が発生した場合                          cache entry removed: key=[\ `<SQL ID>`\ ]
+キャッシュ全クリア要求が発生した                                  cache cleared.
+LRUアルゴリズムにより、古いエントリが削除された場合               the eldest entry removed: key=[\ `<SQL ID>`\ ]
+================================================================= ======================================================================================= 
+ 
+
+------------------------------------
+キャッシュ機能のチューニングについて
+------------------------------------
+
+本機能を使用する際のチューニング方法について記載する。
+
+キャッシュ上限件数とヒープサイズ
+================================
+
+本基本実装クラス（InMemoryResultSetCache）は、メモリ（JVMヒープ）上にキャッシュを保持する。
+設定したキャッシュ上限件数を格納できるだけの十分なヒープサイズを確保し、
+問題がないことを、性能試験等で確認すること。
+ヒープサイズが不足した場合はOutOfMemoryErrorが発生するので、ヒープサイズおよび上限件数の見直しを行う。
+
+
+ログによる分析
+==============
+
+基本実装では、\ ``nablarch.core.db.cache.InMemoryResultSetCache``\ クラスからのログ出力から
+各種イベントの情報を入手できる（\ `ログ出力`_\ を参照） 。
+
+性能試験等で、キャッシュが有効に機能しているかを判定すること。
+キャッシュミスが多い場合は、以下の様な対処を行う。
+
+* キャッシュ上限件数を増やす
+* 許容できる範囲内でキャッシュ有効期限を伸ばす
+
+
+--------
+制約事項
+--------
+
+
+BLOB、CLOB型はキャッシュできない
+================================
+
+SELECTにより、BLOB型、CLOB型のカラムを取得した場合、
+実際にDBに格納されたデータが取得されているのではなく、
+LOBロケータが取得されている。
+実際の値を取得する場合は、このLOBロケータ経由で値を取得する。
+
+このLOBロケータの有効期間は、RDBMS毎の実装に依存している。
+通常、java.sql.ResultSetやjava.sql.Connectionがクローズされた時点で
+アクセスできなくなる。
+
+このため、ResultSetやConnectionよりも生存期間が長いキャッシュには
+BLOB、CLOB型を含めることができない。
+
+.. warning::
+ 上記理由により、BLOB型、CLOB型を含むクエリを本機能の対象としてはならない。
+ 
+
+APサーバを冗長化する場合の注意点
+================================
+
+基本実装クラスでは、JVMヒープ上にキャッシュを保持する。
+よって、サーバを跨ってキャッシュを共有することはできない。
+
+APサーバを冗長化した環境で基本実装クラスを使用した場合、各APサーバが別のキャッシュを持つことになる。
+クエリを発行するタイミングによってキャッシュされた値がAPサーバ毎に異なる可能性がある。
+
+ロードバランサをラウンドロビンで使用した場合、
+リクエスト毎にAPサーバが変わる可能性があるので、
+それにともなってキャッシュの値も、前回リクエスト時の値と
+変わることがありうる。
+
+.. note::
+ 現状、この問題を回避する手段は提供されていない。
+ 
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_QueryCache--s14",
+  "title": "キャッシュ機能を有効にする設定方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "キャッシュ機能を有効にする設定方法",
+      "hints": [
+        "InMemoryResultSetCache",
+        "CacheableStatementFactory",
+        "BasicExpirationSetting",
+        "nablarch.core.db.cache.InMemoryResultSetCache",
+        "nablarch.core.db.cache.CacheableStatementFactory",
+        "nablarch.core.cache.expirable.BasicExpirationSetting",
+        "cacheSize",
+        "statementFactory",
+        "expirationSetting",
+        "resultSetCache",
+        "expirationList",
+        "クエリ結果キャッシュ設定",
+        "キャッシュ有効期限",
+        "SQL IDキャッシュ",
+        "StatementFactory差し替え"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "キャッシュを明示的にクリアする方法",
+      "hints": [
+        "ResultSetCache",
+        "ResultSetCacheKeyBuilder",
+        "ResultSetCacheKey",
+        "SystemRepository",
+        "cache.remove",
+        "cache.clear",
+        "キャッシュクリア",
+        "キャッシュエントリ削除",
+        "単体テストキャッシュ初期化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ログ出力",
+      "hints": [
+        "RS_CACHE",
+        "InMemoryResultSetCache",
+        "nablarch.core.db.cache.InMemoryResultSetCache",
+        "キャッシュログ",
+        "cache hit",
+        "cache not hit",
+        "cache entry expired",
+        "cache entry added",
+        "cache cleared",
+        "the eldest entry removed"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "キャッシュ機能のチューニングについて",
+      "hints": [
+        "InMemoryResultSetCache",
+        "nablarch.core.db.cache.InMemoryResultSetCache",
+        "OutOfMemoryError",
+        "キャッシュチューニング",
+        "ヒープサイズ",
+        "キャッシュ上限件数",
+        "キャッシュミス",
+        "性能試験"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "制約事項",
+      "hints": [
+        "InMemoryResultSetCache",
+        "BLOB",
+        "CLOB",
+        "LOBロケータ",
+        "APサーバ冗長化",
+        "キャッシュ制約",
+        "ラウンドロビン",
+        "キャッシュ共有不可"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## クエリ結果キャッシュ実装クラスの登録\n\n**クラス**: `nablarch.core.db.cache.InMemoryResultSetCache`\n\nコンポーネント定義ファイルに登録する。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| cacheSize | int | | | キャッシュ上限件数 |\n| systemTimeProvider | | | | システム時刻プロバイダ |\n\n```xml\n<component name=\"resultSetCache\" class=\"nablarch.core.db.cache.InMemoryResultSetCache\">\n  <property name=\"cacheSize\" value=\"100\"/>\n  <property name=\"systemTimeProvider\" ref=\"systemTimeProvider\"/>\n</component>\n```\n\n## StatementFactory実装クラスの差し替え\n\n`ConnectionFactorySupport`サブクラスの`statementFactory`プロパティに`CacheableStatementFactory`を設定する。\n\n**クラス**: `nablarch.core.db.cache.CacheableStatementFactory`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| expirationSetting | | | | 有効期限設定 |\n| resultSetCache | | | | キャッシュ実装 |\n\n```xml\n<component name=\"connectionFactory\"\n           class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n  <property name=\"dataSource\" ref=\"dataSource\" />\n  <property name=\"statementFactory\" ref=\"cacheableStatementFactory\" />\n</component>\n\n<component name=\"cacheableStatementFactory\"\n           class=\"nablarch.core.db.cache.CacheableStatementFactory\">\n  <property name=\"expirationSetting\" ref=\"expirationSetting\"/>\n  <property name=\"resultSetCache\" ref=\"resultSetCache\"/>\n</component>\n```\n\n## SQL ID毎のキャッシュ設定\n\n**クラス**: `nablarch.core.cache.expirable.BasicExpirationSetting`\n\nSQL ID毎に有効期限を設定する。\n\n有効期限の単位:\n\n| 単位表記 | 意味 |\n|---|---|\n| ms | ミリ秒 |\n| sec | 秒 |\n| min | 分 |\n| h | 時 |\n\n```xml\n<component class=\"nablarch.core.cache.expirable.BasicExpirationSetting\"\n           name=\"expirationSetting\">\n  <property name=\"expiration\">\n    <map>\n      <entry key=\"com.example.Action1#SELECT\" value=\"100ms\"/>\n      <entry key=\"com.example.Action2#SELECT\" value=\"30sec\"/>\n      <entry key=\"com.example.Action3#SELECT\" value=\"10min\"/>\n      <entry key=\"com.example.Action4#SELECT\" value=\"1h\"/>\n    </map>\n  </property>\n</component>\n```\n\n> **注意**: サブシステム毎に有効期限設定を分割する場合は、`expirationList`プロパティにリスト形式で各サブシステムの`map`コンポーネントを参照させる。\n\n```xml\n<component class=\"nablarch.core.cache.expirable.BasicExpirationSetting\"\n           name=\"expirationSetting\">\n  <property name=\"expirationList\">\n    <list>\n      <component-ref name=\"expireSettingSS11AA\"/>\n      <component-ref name=\"expireSettingSS11BB\"/>\n    </list>\n  </property>\n</component>\n\n<!-- サブシステムSS11AAの設定（別ファイル） -->\n<map name=\"expireSettingSS11AA\">\n  <entry key=\"com.example.ss11AA.Action1#SELECT\" value=\"100ms\"/>\n</map>\n\n<!-- サブシステムSS11BBの設定（別ファイル） -->\n<map name=\"expireSettingSS11BB\">\n  <entry key=\"com.example.ss11BB.Action1#SELECT\" value=\"1h\"/>\n</map>\n```",
+    "s2": "## 特定のエントリを削除する方法\n\nシステムリポジトリからキャッシュインスタンスを取得し、キーを指定して削除する。\n\n```java\n// リポジトリからキャッシュのインスタンスを取得する。\nResultSetCache cache = SystemRepository.get(\"resultSetCache\");\n\n// キャッシュキーを組み立てる。\nResultSetCacheKey key\n        = new ResultSetCacheKeyBuilder(\"SqlId#SELECT\")\n                       .addParam(\"name\", \"yamada\")\n                       .addParam(\"address\", \"tokyo\")\n                       .build();\n\n// キャッシュから該当するエントリを削除する。\ncache.remove(key);\n```\n\n## 全エントリをクリアする方法\n\nシステムリポジトリからキャッシュインスタンスを取得し、全エントリを削除するメソッドを呼び出す。\n\n```java\nResultSetCache cache = SystemRepository.get(\"resultSetCache\");\ncache.clear();\n```\n\n> **注意**: 全エントリ削除機能はクラス単体テストの前後での使用を想定している（あるテストでキャッシュされた値が別のテストで使用されないようにするため）。",
+    "s3": "- ロガー名: `RS_CACHE`\n- ログレベル: DEBUG\n\n| イベント | ログ出力フォーマット |\n|---|---|\n| キャッシュにヒットした場合 | `cache hit: key=[<SQL ID>], current=[<システム日時>]` |\n| キャッシュにヒットしなかった場合 | `cache not hit: key=[<SQL ID>]` |\n| キャッシュ有効期限切れが検知された場合 | `cache entry expired: key=[<SQL ID>], expire=[<有効期限>], current=[<システム日時>]` |\n| キャッシュに値が設定された場合 | `cache entry added: key=[<SQL ID>], expire=[<有効期限>]` |\n| キャッシュに対して削除要求が発生した場合 | `cache entry removed: key=[<SQL ID>]` |\n| キャッシュ全クリア要求が発生した場合 | `cache cleared.` |\n| LRUアルゴリズムにより古いエントリが削除された場合 | `the eldest entry removed: key=[<SQL ID>]` |",
+    "s4": "## キャッシュ上限件数とヒープサイズ\n\n`nablarch.core.db.cache.InMemoryResultSetCache`はメモリ（JVMヒープ）上にキャッシュを保持する。設定したキャッシュ上限件数を格納できる十分なヒープサイズを確保し、性能試験等で問題がないことを確認すること。ヒープサイズが不足した場合は`OutOfMemoryError`が発生するため、ヒープサイズおよび上限件数の見直しを行う。\n\n## ログによる分析\n\n`nablarch.core.db.cache.InMemoryResultSetCache`クラスのログ出力から各種イベントの情報を確認できる（ログ出力フォーマットの詳細はログ出力セクションを参照）。キャッシュミスが多い場合の対処:\n\n- キャッシュ上限件数を増やす\n- 許容できる範囲内でキャッシュ有効期限を伸ばす",
+    "s5": "## BLOB、CLOB型はキャッシュできない\n\n> **警告**: BLOB型、CLOB型を含むクエリを本機能の対象としてはならない。\n\nSELECTでBLOB型・CLOB型カラムを取得した場合、実際のデータではなくLOBロケータが取得される。LOBロケータの有効期間は`java.sql.ResultSet`や`java.sql.Connection`がクローズされるまでであり（RDBMS実装依存）、それより生存期間が長いキャッシュにはBLOB・CLOB型を含めることができない。\n\n## APサーバを冗長化する場合の注意点\n\n`nablarch.core.db.cache.InMemoryResultSetCache`はJVMヒープ上にキャッシュを保持するため、サーバをまたいでキャッシュを共有することはできない。APサーバを冗長化した環境では各APサーバが別のキャッシュを持つため、ロードバランサをラウンドロビンで使用した場合、リクエスト毎にキャッシュの値が前回リクエスト時と変わる可能性がある。\n\n> **注意**: 現状、この問題を回避する手段は提供されていない。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

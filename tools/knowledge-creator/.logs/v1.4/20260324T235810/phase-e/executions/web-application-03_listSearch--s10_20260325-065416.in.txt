@@ -1,0 +1,302 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-03_listSearch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "s2のインデックスタイトルが空文字列になっている。s2はソースの「リクエストに対応するメソッドの作成」と「View(JSP)の作成」の2セクションをまとめた内容であり、意味のあるタイトル（例：「リクエストに対応するメソッドの作成」）が必要。",
+      "source_evidence": "ソースファイルの見出し: 「リクエストに対応するメソッドの作成」(===アンダーライン) および「View(JSP)の作成」(===アンダーライン)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "s2のコード例で使用されているPascalCaseクラス名 `MessageUtil` と `MessageLevel` がs2のhintsに含まれていない。",
+      "source_evidence": "ソースJavaコード: `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount())`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "s2のコード例で使用されているクラス名 `W11AC01SearchForm` がs2のhintsに含まれていない（s1にはあるが、s2でも直接使用されている）。",
+      "source_evidence": "ソースJavaコード: `W11AC01SearchForm condition = searchConditionCtx.createObject();`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+メソッドの実装
+--------------
+
+\ :ref:`03_field`\ 、\ :ref:`03_SQL`\ 、\ :ref:`03_like`\ 、\ :ref:`03_orderBy`\ を参考に、\ *W11AC01Actionクラス*\ を作成し以下のメソッドを追加する。このメソッドの目的は、指定された検索条件に一致する情報を\
+データベースから取得することである。
+
+このメソッドでは、条件が可変のSQL文を組み立てる機能、LIKE検索を簡易的に実装できる機能、ORDER BY句を動的に変更する機能を組み合わせて使っている。
+
+* W11AC01Action.sqlの内容
+
+ .. code-block:: sql
+
+    -- 
+    -- 条件指定によるユーザ情報照会
+    --
+    SELECT_USER_BY_CONDITION = 
+    SELECT
+      SA.LOGIN_ID,
+      SA.USER_ID,
+      SA.USER_ID_LOCKED,
+      USR.KANJI_NAME,
+      USR.KANA_NAME,
+      USR.MAIL_ADDRESS,
+      USR.EXTENSION_NUMBER_BUILDING,
+      USR.EXTENSION_NUMBER_PERSONAL,
+      UGRP.UGROUP_ID,
+      UGRP.UGROUP_NAME
+    FROM
+        USERS USR
+    INNER JOIN
+        UGROUP_SYSTEM_ACCOUNT USA
+    ON
+        USR.USER_ID = USA.USER_ID
+    INNER JOIN
+        SYSTEM_ACCOUNT SA
+    ON
+        USR.USER_ID = SA.USER_ID
+    INNER JOIN
+        UGROUP UGRP
+    ON
+        UGRP.UGROUP_ID = USA.UGROUP_ID
+    WHERE
+        -- 【説明】
+        --  条件が可変のSQL文を組み立てる機能を利用。search実行時に引き渡されるオブジェクトに
+        --  該当フィールドがあり、その値がnullでも空文字でなければ、({}内が)検索条件に組み込まれる。
+        --  また、LIKE検索を簡易的に実装出来る機能も使用。LIKE検索時のエスケープ処理は不要
+        $if (loginId) {SA.LOGIN_ID = :loginId}
+        AND $if (kanjiName) {USR.KANJI_NAME LIKE :%kanjiName%}
+        AND $if (kanaName) {USR.KANA_NAME  LIKE :%kanaName%}
+        AND $if (ugroupId) {UGRP.UGROUP_ID = :ugroupId}
+        AND $if (userIdLocked) {SA.USER_ID_LOCKED = :userIdLocked}
+    -- 【説明】
+    --  ORDER BY句を動的に変更する機能を利用。prepareParameterizedSqlStatement実行時に引き渡され
+    --  るオブジェクトに該当フィールドがあり、その値に応じた条件がORDER BY句に組み込まれる。
+    $sort (sortId) {
+        (loginId_asc    SA.LOGIN_ID)
+        (loginId_desc   SA.LOGIN_ID DESC)
+        (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)
+        (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)
+        (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)
+        (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID)
+    }
+
+* W11AC01Action.javaの内容
+
+ .. code-block:: java
+
+  // 【説明】
+  // DbAccessSupportクラスを継承する。
+  public class W11AC01Action extends DbAccessSupport {
+
+      /**
+       * 条件検索を行う。<br/>
+       * 引数で検索条件を指定することにより条件検索ができる。<br/>
+       * 検索条件を指定しない場合は、引数にnullまたは空文字を渡すようにする。<br/>
+       * これにより、その引数に関する検索条件を外すことができる。<br/>
+       *
+       * @param condition 検索条件
+       * @return 検索結果
+       */
+      private SqlResultSet selectByCondition(W11AC01SearchForm condition) {
+
+          // 【説明】
+          //  一覧検索の検索処理を行う。
+          //  引数のconditionに設定されているフィールドの値に従って組み立てたSQL文を用いて検索を行う。
+          //  SQL_IDには、上記のW11AC01Action.sqlで定義している「SELECT_USER_BY_CONDITION」を指定する。
+          //  LIKE検索に対するエスケープや%を付加するJavaコードは不要
+          return search("SELECT_USER_BY_CONDITION", condition);
+      }
+  }
+
+  // ～後略～
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+  :ref:`03_field`\ を明示的に使用する場合、getParameterizedSqlStatementの第2引数(上記のサンプルではcondition)とretrieveの引数(同じくcondition)は、両方に同じインスタンスを渡すこと。
+  そうしないと意図した条件で検索が行われない。その場合の実装例は、以下を参照。
+
+    .. code-block:: java
+
+       public SqlResultSet selectWithCondition(SearchCondition condition) {
+
+           // 【説明】引数のcondに設定されているフィールドの値に従ってSQL文を組み立て
+           // SQL_IDには、上記のW11AC01Action.sqlで定義している「SELECT_USER_BY_CONDITION」を指定する。
+           ParameterizedSqlPStatement statement = getParameterizedSqlStatement(
+                   "SELECT_USER_BY_CONDITION", condition);
+
+           // 【説明】
+           //  引数のcondのフィールドの値をSQLの条件の対応する場所(:フィールド名)に
+           //  設定して検索実行。LIKE検索に対するエスケープや%を付加するJavaコードは不要
+           return statement.retrieve(condition);
+       }
+
+リクエストに対応するメソッドの作成
+==================================
+
+\ *W11AC01Actionクラス*\ に以下のメソッドを追加する。検索条件入力チェックは\ :ref:`how_to_validate`\ を参照。
+
+.. code-block:: java
+
+  /**
+   * ユーザ一覧照会結果を表示する。<br/>
+   *
+   * @param req リクエストコンテキスト
+   * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+   * @return HTTPレスポンス
+   */
+  @OnError(type = ApplicationException.class,
+           path = "/ss11AC/W11AC0101.jsp")
+  public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+
+      // ～中略～
+
+      // 検索条件入力チェック                                           // 【説明】検索条件入力チェックは後述
+      W11AC01Form form = W11AC01Form.validate(req, "search");
+
+      // ～中略～
+
+      W11AC01SearchForm condition = searchConditionCtx.createObject();
+      ctx.setRequestScopedVar("11AC_W11AC01", condition);
+
+      // 検索実行
+      SqlResultSet searchResult;
+      try {
+          searchResult = selectByCondition(condition);
+      } catch (TooManyResultException e) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, "MSG00035", e.getMaxResultCount()));
+      }
+
+      // 検索結果をリクエストスコープに設定
+      ctx.setRequestScopedVar("searchResult", searchResult);
+      ctx.setRequestScopedVar("resultCount", condition.getResultCount());
+
+      // ～中略～
+
+      return new HttpResponse("/ss11AC/W11AC0101.jsp");
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+View(JSP)の作成
+==================================================
+
+以下の内容で *W11AC0101.jsp* を作成する。
+
+検索結果はリスト-マップ(検索結果の1レコードを表すMapを要素とするList)で取得できるが、検索結果一覧表示用のカスタムタグを使用しているためJSP内でループ処理を行わない。
+
+.. literalinclude:: ./_source/03/W11AC0101.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. note::
+  本画面で使用している一覧表示用のカスタムタグも含め、検索結果の一覧表示を行う方法は、 :ref:`使用例集<custom_tag_paging>` を参照。
+
+------------
+次に読むもの
+------------
+* `データベースアクセス処理を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html>`_
+* `データベースアクセス処理の実例を知りたい時 <./DB/01_DbAccessSpec_Example.html>`_
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-03_listSearch--s10",
+  "title": "リクエストに対応するメソッドの作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メソッドの実装",
+      "hints": [
+        "W11AC01Action",
+        "DbAccessSupport",
+        "SqlResultSet",
+        "W11AC01SearchForm",
+        "ParameterizedSqlPStatement",
+        "条件可変SQL",
+        "LIKE検索",
+        "動的ORDER BY",
+        "一覧検索",
+        "$if条件",
+        "$sort"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "W11AC01Form",
+        "TooManyResultException",
+        "ApplicationException",
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "@OnError",
+        "リクエスト処理",
+        "一覧検索結果表示",
+        "カスタムタグ",
+        "JSP"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "データベースアクセス",
+        "カスタムタグ",
+        "一覧表示",
+        "参照先"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `W11AC01Action` extends `DbAccessSupport`\n\n条件が可変なSQL文、LIKE検索（自動エスケープ）、動的ORDER BYを組み合わせた一覧検索の実装例。\n\n### SQL定義 (W11AC01Action.sql)\n\n- `$if (field) {条件}`: `search` 実行時に渡されたオブジェクトにフィールドが存在し、nullでも空文字でもなければWHERE句に組み込まれる\n- LIKE検索: `LIKE :%field%` 記法。エスケープ処理は不要（フレームワークが自動処理）\n- `$sort (sortId) {(key ORDER句)...}`: `sortId` フィールドの値に応じたORDER BY句を動的に組み込む\n\n```sql\nSELECT_USER_BY_CONDITION =\nSELECT\n  SA.LOGIN_ID, SA.USER_ID, SA.USER_ID_LOCKED,\n  USR.KANJI_NAME, USR.KANA_NAME, USR.MAIL_ADDRESS,\n  USR.EXTENSION_NUMBER_BUILDING, USR.EXTENSION_NUMBER_PERSONAL,\n  UGRP.UGROUP_ID, UGRP.UGROUP_NAME\nFROM\n    USERS USR\nINNER JOIN UGROUP_SYSTEM_ACCOUNT USA ON USR.USER_ID = USA.USER_ID\nINNER JOIN SYSTEM_ACCOUNT SA ON USR.USER_ID = SA.USER_ID\nINNER JOIN UGROUP UGRP ON UGRP.UGROUP_ID = USA.UGROUP_ID\nWHERE\n    $if (loginId) {SA.LOGIN_ID = :loginId}\n    AND $if (kanjiName) {USR.KANJI_NAME LIKE :%kanjiName%}\n    AND $if (kanaName) {USR.KANA_NAME  LIKE :%kanaName%}\n    AND $if (ugroupId) {UGRP.UGROUP_ID = :ugroupId}\n    AND $if (userIdLocked) {SA.USER_ID_LOCKED = :userIdLocked}\n$sort (sortId) {\n    (loginId_asc    SA.LOGIN_ID)\n    (loginId_desc   SA.LOGIN_ID DESC)\n    (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)\n    (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)\n    (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)\n    (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID)\n}\n```\n\n### Java実装 (W11AC01Action.java)\n\n`search()` 使用時：\n\n```java\nprivate SqlResultSet selectByCondition(W11AC01SearchForm condition) {\n    return search(\"SELECT_USER_BY_CONDITION\", condition);\n}\n```\n\nLIKE検索のエスケープや `%` 付加のJavaコードは不要。\n\n### getParameterizedSqlStatement を使う場合\n\n> **注意**: `getParameterizedSqlStatement` の第2引数（condition）と `retrieve` の引数には、必ず**同じインスタンス**を渡すこと。異なるインスタンスを渡すと、意図した条件で検索が行われない。\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\n        \"SELECT_USER_BY_CONDITION\", condition);\nreturn statement.retrieve(condition);\n```",
+    "s2": "## リクエストに対応するメソッドの作成\n\n**アノテーション**: `@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")`\n\n```java\npublic HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n    W11AC01Form form = W11AC01Form.validate(req, \"search\");\n\n    W11AC01SearchForm condition = searchConditionCtx.createObject();\n    ctx.setRequestScopedVar(\"11AC_W11AC01\", condition);\n\n    SqlResultSet searchResult;\n    try {\n        searchResult = selectByCondition(condition);\n    } catch (TooManyResultException e) {\n        throw new ApplicationException(\n            MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount()));\n    }\n\n    ctx.setRequestScopedVar(\"searchResult\", searchResult);\n    ctx.setRequestScopedVar(\"resultCount\", condition.getResultCount());\n    return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n}\n```\n\n- `TooManyResultException` をキャッチし、`ApplicationException` に変換すること\n- 検索条件入力チェックは :ref:`how_to_validate` を参照\n\n## View(JSP)の作成 (W11AC0101.jsp)\n\n- 検索結果はリスト-マップ（1レコードを表す `Map` を要素とする `List`）で取得できる\n- 検索結果一覧表示用のカスタムタグを使用するため、JSP内でループ処理は不要\n- 一覧表示用カスタムタグの使用方法: :ref:`custom_tag_paging`",
+    "s3": "- [データベースアクセス処理を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html)\n- [データベースアクセス処理の実例を知りたい時](./DB/01_DbAccessSpec_Example.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

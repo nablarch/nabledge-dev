@@ -1,0 +1,67 @@
+{
+  "id": "libraries-07_SubmitTag--s14",
+  "title": "サブミットタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げる方法",
+      "hints": [
+        "WebView_PopupSubmitTag",
+        "WebView_PopupButtonTag",
+        "WebView_PopupLinkTag",
+        "WebView_ChangeParamNameTag",
+        "popupWindowName",
+        "popupOption",
+        "changeParamName",
+        "複数ウィンドウ",
+        "ポップアップ",
+        "パラメータ名変更"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "オープンしたウィンドウへのアクセス方法",
+      "hints": [
+        "nablarch_opened_windows",
+        "ポップアップウィンドウ管理",
+        "ウィンドウクローズ",
+        "onunload"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ファイルダウンロードの実現方法",
+      "hints": [
+        "StreamResponse",
+        "DataRecordResponse",
+        "WebView_DownloadSubmitTag",
+        "WebView_DownloadButtonTag",
+        "WebView_DownloadLinkTag",
+        "ファイルダウンロード",
+        "BLOBダウンロード",
+        "CSVダウンロード",
+        "downloadButton",
+        "downloadLink"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "リクエスト二重送信防止",
+        "処理済みリクエスト受信防止",
+        "ダブルクリック防止",
+        "prevent_double_submission"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ポップアップタグ（複数ウィンドウ起動専用）：:ref:`WebView_PopupSubmitTag`、:ref:`WebView_PopupButtonTag`、:ref:`WebView_PopupLinkTag`\n\n通常のsubmit/button/submitLinkタグとの違い：\n- 新しいウィンドウをオープンし、そのウィンドウに対してサブミットを行う\n- 入力項目のパラメータ名を変更できる\n\nポップアップはJavaScriptの`window.open`関数で実現する。\n\n| 属性 | 説明 |\n|---|---|\n| popupWindowName | ポップアップのウィンドウ名。`window.open`の第2引数に指定。省略時は :ref:`WebView_CustomTagConfig` のデフォルト値を使用。デフォルト値未設定の場合はDate関数の現在時刻(ms)をウィンドウ名に使用。 |\n| popupOption | ポップアップのオプション情報。`window.open`の第3引数に指定。省略時は :ref:`WebView_CustomTagConfig` のデフォルト値を使用（デフォルト値未設定の場合は何も指定しない）。 |\n\n`popupWindowName`のデフォルト値設定による動作の違い：\n- デフォルト値あり：常に同じウィンドウ名を使用 → ウィンドウが1つに固定される\n- デフォルト値なし：常に異なるウィンドウ名を使用 → 常に新しいウィンドウをオープン\n\n**changeParamNameタグ**\n\nポップアップタグは元画面フォームの全input要素を動的追加してサブミットするため、パラメータ名が一致しない場合に :ref:`WebView_ChangeParamNameTag` でパラメータ名を変更する。\n\n| 属性 | 必須 | 説明 |\n|---|---|---|\n| paramName | ○ | サブミット時に使用するパラメータの名前 |\n| inputName | ○ | 変更元となる元画面のinput要素のname属性 |\n\n使用例（郵便番号から住所検索の別ウィンドウを開く）：\n\n![住所検索ポップアップのサンプル画面](assets/libraries-07_SubmitTag--s14/WebView_MultiWindowSample.jpg)\n\n```jsp\n<n:popupButton name=\"searchAddress\" uri=\"/action/SearchAction/RW11AB0101\">\n    検索\n    <n:changeParamName inputName=\"users.postalCode\" paramName=\"condition.postalCode\" />\n    <n:param paramName=\"condition.max\" value=\"10\" />\n</n:popupButton>\n```\n\n上記でサブミットされるリクエスト（新しいウィンドウに対して送信）：\n- URI: `<コンテキストパス>/action/SearchAction/RW11AB0101`\n- `condition.postalCode=1234567`（changeParamNameにより`users.postalCode`はパラメータ名が変更され、元のパラメータは除外）\n- `condition.max=10`（paramタグで追加したパラメータ）\n- 元画面フォームの他のinput要素（`users.xxxxx`等）",
+    "s2": "フレームワークはオープンしたウィンドウへの参照をJavaScriptグローバル変数 `nablarch_opened_windows` に保持する（keyはウィンドウ名）。\n\n```javascript\n// keyはウィンドウ名\nvar nablarch_opened_windows = {};\n```\n\n元画面遷移時（`onunload`）に別ウィンドウを全て閉じる実装例：\n\n```javascript\nonunload = function() {\n  for (var key in nablarch_opened_windows) {\n    var openedWindow = nablarch_opened_windows[key];\n    if (openedWindow && !openedWindow.closed) {\n      openedWindow.close();\n    }\n  }\n  return true;\n};\n```",
+    "s3": "ダウンロード専用タグ：:ref:`WebView_DownloadSubmitTag`、:ref:`WebView_DownloadButtonTag`、:ref:`WebView_DownloadLinkTag`\n\n> **重要**: フレームワークはフォームのサブミット制御にJavaScriptを使用するため、通常のsubmitタグでダウンロードを行うと同じフォーム内の他のサブミットが機能しなくなる。ダウンロードを行うボタンやリンクには必ずダウンロードタグを使用すること。\n\nダウンロードタグの特徴（通常のsubmit/button/submitLinkタグとの違い）：\n- 新しいフォームを作成し、新規フォームに対してサブミットを行う\n- 入力項目のパラメータ名を変更できる（:ref:`WebView_ChangeParamNameTag` を使用）\n\n**ダウンロードユーティリティ**\n\n| クラス名 | 説明 |\n|---|---|\n| `StreamResponse` | ストリームからHTTPレスポンスを生成。`java.io.File`または`java.sql.Blob`のダウンロードをサポート。 |\n| `DataRecordResponse` | データレコードからHTTPレスポンスを生成。フォーマット定義ファイルを使用してフォーマット。`Map<String, ?>`型データ（SqlRowなど）をサポート。 |\n\n**Fileのダウンロード（StreamResponse使用例）**\n\n```java\nStreamResponse response = new StreamResponse(file, true); // 第2引数true=ダウンロード後にファイルを削除\nresponse.setContentType(\"text/plain; charset=UTF-8\");\nresponse.setContentDisposition(file.getName());\nreturn response;\n```\n\n**BLOBカラムのダウンロード（StreamResponse使用例）**\n\n```java\nStreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\nresponse.setContentType(\"image/jpeg\");\nresponse.setContentDisposition(record.getString(\"FILE_NAME\"));\nreturn response;\n```\n\n**データレコード（CSV）のダウンロード（DataRecordResponse使用例）**\n\n```java\n// コンストラクタ引数: フォーマット定義のベースパス論理名, フォーマット定義のファイル名\nDataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\nresponse.write(\"header\", Collections.<String, Object>emptyMap()); // デフォルトヘッダー情報を使用\nfor (SqlRow record : records) {\n    response.write(\"data\", record);\n}\nresponse.setContentType(\"text/csv; charset=Shift_JIS\");\nresponse.setContentDisposition(\"メッセージ一覧.csv\");\nreturn response;\n```",
+    "s4": "DBコミットを伴う処理を要求する画面で使用する。クライアント側とサーバ側の2種類があり、**両方を併用することを推奨**。\n\n- **リクエストの二重送信防止（クライアント側）**: ダブルクリックやレスポンス待ちの再クリックによる2回以上のリクエスト送信を防止\n- **処理済みリクエストの受信防止（サーバ側）**: ブラウザの戻るボタンで確認画面に戻り再サブミットした場合など、処理済みリクエストの重複処理を防止\n\n片方のみ使用した場合のリスク：\n- クライアント側のみ使用した場合：処理済みリクエストを重複して処理する恐れがある\n- サーバ側のみ使用した場合：ダブルクリックで2回リクエストが送信されると、ユーザに2回目のリクエストに対するエラーが返され、1回目の処理結果が返されない"
+  }
+}

@@ -1,0 +1,260 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-Other--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — n:errors CSS class names",
+      "description": "The source states CSS class names are output 'デフォルトでは' (by default), implying they may be configurable. The knowledge file omits this qualifier, presenting the class names as fixed rather than as defaults.",
+      "source_evidence": "デフォルトでは下記の対応でクラス名が出力される。 情報レベル(MessageLevel.INFO): \"nablarch_info\" / 警告レベル(MessageLevel.WARN): \"nablarch_warn\" / エラーレベル(MessageLevel.ERROR): \"nablarch_error\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+コード名称と値の取得方法
+------------------------------------------------------------------------
+コード管理機能を用いたコード名称と値の取得方法を示す。
+
+コードパターンテーブルとコード名称テーブルは、下記のとおりデータ設定されているものとして実装例を示す。
+
+* コードパターンテーブルのデータ例
+
+  ============ =========== ================= ================= =================
+  ID           VALUE       PATTERN1          PATTERN2          PATTERN3
+  ============ =========== ================= ================= =================
+  0001         1           1                 0                 0
+  0001         2           1                 0                 0
+  0001         9           0                 0                 0
+  ============ =========== ================= ================= =================
+
+* コード名称テーブルのデータ例
+
+  ============ =========== =================== =================== ================================ ================= =====================
+  ID           VALUE       SORT_ORDER          LANG                NAME                             SHORT_NAME        NAME_WITH_VALUE
+  ============ =========== =================== =================== ================================ ================= =====================
+  0001         1           1                   ja                  男性                             男                1:男性
+  0001         2           2                   ja                  女性                             女                2:女性
+  0001         9           3                   ja                  不明                             不                9:不明
+  0001         1           2                   en                  Male                             M                 1:Male
+  0001         2           1                   en                  Female                           F                 2:Female
+  0001         9           3                   en                  Unknown                          U                 9:Unknown
+  ============ =========== =================== =================== ================================ ================= =====================
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード名称の取得方法。
+
+        CodeUtilのgetNameメソッドを使用する。
+        name変数はThreadContextに保持した言語に合わせた名称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定される名称
+        en -> "Male"
+        ja -> "男性" */
+    String name = CodeUtil.getName("0001", "1");
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード略称の取得方法。
+
+        CodeUtilのgetShortNameメソッドを使用する。
+        name変数はThreadContextに保持した言語に合わせた略称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定される略称
+        en -> "男"
+        ja -> "M" */
+    String name = CodeUtil.getShortName("0001", "1");
+
+  .. code-block:: java
+
+    /* 【説明】
+        オプション名称の取得方法。
+
+        コード名称テーブルのNAME_WITH_VALUEカラムは、
+        任意のカラム名を指定したオプション名称用のカラムである。
+
+        CodeUtilのgetOptionalNameメソッドを使用し、オプション名称用カラムの名前を指定する。
+        name変数はThreadContextに保持した言語に合わせたオプション名称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定されるオプション名称
+        en -> "1:Male"
+        ja -> "1:男性" */
+    String name = CodeUtil.getOptionalName("0001", "1", "NAME_WITH_VALUE");
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード値の取得方法。
+
+        CodeUtilのgetValuesメソッドを使用する。
+        value変数はThreadContextに保持した言語に合わせた値となる。
+
+        ThreadContextに保持した言語 -> values変数に設定される値
+        en -> {"2", "1", "9"}
+        ja -> {"1", "2", "9" }
+        コードパターンテーブルのSORT_ORDERカラムの昇順にソートされた順序で
+        コード値が取得される。
+        */
+    List<String> values = CodeUtil.getValues("0001");
+
+
+  .. code-block:: java
+
+    /* 【説明】
+        パターンごとのコード値の取得方法。
+
+        コードパターンテーブルのPATTERN1からPATTERN3カラムは、
+        任意のカラム名を指定したパターン用のカラムである。
+        各カラムが表すパターンに含める行には"1"を指定する。
+
+        CodeUtilのgetValuesメソッドを使用し、パターン用カラムの名前を指定する。
+        value変数はThreadContextに保持した言語に合わせた値となる。
+
+        ThreadContextに保持した言語 -> values変数に設定される値
+        en -> {"2" , "1"}
+        ja -> {"1" , "2"}
+        コードパターンテーブルのSORT_ORDERカラムの昇順にソートされた順序で
+        コード値が取得される。
+        */
+    List<String> values = CodeUtil.getValues("0001", "PATTERN1");
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`other_example_warn_message`:
+
+------------------------------------------------------------------------------------
+正常な画面遷移においてメッセージを表示する方法
+------------------------------------------------------------------------------------
+ここでは正常な画面遷移においてメッセージを表示する方法を示す。
+
+精査エラーの場合と異なり、何らかの業務仕様上のチェックを行い、チェック結果によって警告メッセージを次画面に表示したい場合がある。\
+このように正常な画面遷移においてメッセージを表示したい場合は、ActionでWebUtilのnotifyMessagesメソッドを使用してメッセージを設定し、\
+n:errorsタグを使用して画面表示を行う。\
+ユーザ情報更新確認画面に警告メッセージ(MSG00022)を表示する実装例を示す。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】Actionのメソッド実装例。
+               JavaDocは省略。*/
+    public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+
+        /* 【説明】入力精査および業務処理は省略。 */
+
+        /* 【説明】
+            Actionでメッセージを設定する。
+            WebUtilのnotifyMessagesメソッドを使用してメッセージを設定する。
+            指定したメッセージは n:errors タグを使用して出力する。 */
+        Message message = MessageUtil.createMessage(MessageLevel.WARN, "MSG00022");
+        WebUtil.notifyMessages(ctx, message);
+
+        return new HttpResponse("/ss11AC/W11AC0302.jsp");
+    }
+
+  .. code-block:: jsp
+
+    <%-- 【説明】JSPの実装例。
+          WebUtilのnotifyMessagesメソッドで設定したメッセージを出力する。 --%>
+    <n:errors />
+
+  .. code-block:: css
+
+    /* 【説明】CSSの実装例。
+        CSS定義により警告メッセージを装飾する。
+        n:errors タグはメッセージレベル(MessageLevel)に応じたCSSクラス名が出力される。
+        デフォルトでは下記の対応でクラス名が出力される。
+
+            情報レベル(MessageLevel.INFO): "nablarch_info"
+            警告レベル(MessageLevel.WARN): "nablarch_warn"
+            エラーレベル(MessageLevel.ERROR): "nablarch_error"
+    */
+    li.nablarch_warn {
+        color: #0000FF;
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-Other--s14",
+  "title": "コード名称と値の取得方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード名称と値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "getValues",
+        "コード名称取得",
+        "コード略称取得",
+        "オプション名称取得",
+        "コード値一覧取得",
+        "パターン別コード値取得"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "正常な画面遷移においてメッセージを表示する方法",
+      "hints": [
+        "WebUtil.notifyMessages",
+        "MessageUtil.createMessage",
+        "n:errors",
+        "警告メッセージ表示",
+        "正常画面遷移でのメッセージ",
+        "MessageLevel",
+        "nablarch_warn",
+        "nablarch_info",
+        "nablarch_error"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `CodeUtil`\n\n**コードパターンテーブル例**\n\n| ID | VALUE | PATTERN1 | PATTERN2 | PATTERN3 |\n|---|---|---|---|---|\n| 0001 | 1 | 1 | 0 | 0 |\n| 0001 | 2 | 1 | 0 | 0 |\n| 0001 | 9 | 0 | 0 | 0 |\n\n**コード名称テーブル例**\n\n| ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | NAME_WITH_VALUE |\n|---|---|---|---|---|---|---|\n| 0001 | 1 | 1 | ja | 男性 | 男 | 1:男性 |\n| 0001 | 2 | 2 | ja | 女性 | 女 | 2:女性 |\n| 0001 | 9 | 3 | ja | 不明 | 不 | 9:不明 |\n| 0001 | 1 | 2 | en | Male | M | 1:Male |\n| 0001 | 2 | 1 | en | Female | F | 2:Female |\n| 0001 | 9 | 3 | en | Unknown | U | 9:Unknown |\n\nコード名称取得: `CodeUtil.getName(codeId, value)` — ThreadContextの言語に合わせた名称を返す。\n\n```java\nString name = CodeUtil.getName(\"0001\", \"1\");\n// en -> \"Male\", ja -> \"男性\"\n```\n\nコード略称取得: `CodeUtil.getShortName(codeId, value)` — ThreadContextの言語に合わせた略称を返す。\n\n```java\nString name = CodeUtil.getShortName(\"0001\", \"1\");\n// en -> \"男\", ja -> \"M\"\n```\n\nオプション名称取得: `CodeUtil.getOptionalName(codeId, value, columnName)` — コード名称テーブルの任意カラム（NAME_WITH_VALUE等）からオプション名称を取得する。\n\n```java\nString name = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n// en -> \"1:Male\", ja -> \"1:男性\"\n```\n\nコード値一覧取得: `CodeUtil.getValues(codeId)` — SORT_ORDER昇順でコード値のリストを返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\");\n// en -> {\"2\", \"1\", \"9\"}, ja -> {\"1\", \"2\", \"9\"}\n```\n\nパターン別コード値取得: `CodeUtil.getValues(codeId, patternColumn)` — パターン用カラム（PATTERN1等）に\"1\"が設定された行のコード値をSORT_ORDER昇順で返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n// en -> {\"2\", \"1\"}, ja -> {\"1\", \"2\"}\n```",
+    "s2": "精査エラーではなく業務仕様上のチェック結果として警告メッセージを次画面に表示する場合、ActionでWebUtilのnotifyMessagesメソッドを使用してメッセージを設定し、`n:errors`タグで画面表示する。\n\n**クラス**: `WebUtil`, `MessageUtil`\n\n**Actionでのメッセージ設定**:\n\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    Message message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG00022\");\n    WebUtil.notifyMessages(ctx, message);\n    return new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n}\n```\n\n**JSPでのメッセージ出力**:\n\n```jsp\n<n:errors />\n```\n\n`n:errors`タグはMessageLevelに応じたCSSクラス名を出力する。\n\n| MessageLevel | CSSクラス名 |\n|---|---|\n| INFO | nablarch_info |\n| WARN | nablarch_warn |\n| ERROR | nablarch_error |\n\n```css\nli.nablarch_warn {\n    color: #0000FF;\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

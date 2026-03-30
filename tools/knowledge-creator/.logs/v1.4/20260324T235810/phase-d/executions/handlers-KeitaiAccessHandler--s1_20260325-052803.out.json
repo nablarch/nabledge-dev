@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-KeitaiAccessHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — step 2 of inbound processing",
+      "description": "The knowledge file writes `nablarch_sumbit` (with 'b') as the parameter set during request path rewriting, but the source text in the processing flow step 2 says `nablarch_sumit` (without 'b'). The source document is internally inconsistent — the related handlers table uses `nablarch_sumbit` — but the knowledge file silently normalized the spelling rather than reproducing what the source says in that step.",
+      "source_evidence": "Source ハンドラ処理フロー step 2: 「リクエストパラメータ **nablarch_sumit** の値を設定する」; Source 関連するハンドラ (NablarchTagHandler row): 「リクエストパラメータ **nablarch_sumbit** の値をもとに」"
+    }
+  ]
+}

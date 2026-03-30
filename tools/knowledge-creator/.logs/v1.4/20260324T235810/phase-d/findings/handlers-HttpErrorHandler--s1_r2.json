@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpErrorHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s4.hints",
+      "description": "Section s4 (ハンドラ処理フロー) references the `HttpResponse` class multiple times via method calls (`HttpResponse#setInputStream()`, `HttpResponse#write()`, `HttpResponse#getStatusCode()`), but `HttpResponse` is absent from the hints list. Per V4 rules, PascalCase class names appearing in section content should be included as hints.",
+      "source_evidence": "復路処理 step 2: '`HttpResponse#setInputStream()` により、レスポンスボディとして出力する内容が `InputStream` で与えられている', '`HttpResponse#write()` により...', `HttpResponse#getStatusCode()` の値に合致するデフォルトページ"
+    }
+  ]
+}

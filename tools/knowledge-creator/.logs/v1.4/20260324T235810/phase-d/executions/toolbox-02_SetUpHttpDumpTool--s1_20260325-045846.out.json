@@ -1,0 +1,27 @@
+{
+  "file_id": "toolbox-02_SetUpHttpDumpTool--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提事項 section (source h2)",
+      "description": "The entire 前提事項 section is absent from the knowledge file. It lists three prerequisites: (1) java command must be in PATH, (2) HTML files must be associated with a browser, (3) localhost must be excluded from the browser's proxy settings. These are installation constraints that an AI agent needs to answer setup questions correctly.",
+      "source_evidence": "* javaコマンドがパスに含まれていること\n* htmlファイルがブラウザに関連付けされていること\n* ブラウザのプロキシ設定で、localhostが除外されていること"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "提供方法 section (source h2)",
+      "description": "The entire 提供方法 section is absent. It describes how the tool is distributed (bundled with Nablarch sample application), lists the 6 constituent files with descriptions (httpDump.bat, nablarch-tfw-X.X.jar, poi-X.X.jar, jetty.jar, jetty-util.jar, servlet-api.jar), and provides the installation path /test/tool/httpDump.bat. This information is necessary to understand what the tool consists of and where to find it.",
+      "source_evidence": "本ツールは、Nablarchのサンプルアプリケーションに同梱して提供する。 / file table with 6 entries / /test/tool/httpDump.bat"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s2",
+      "description": "The knowledge file's s2 (外部プログラム選択) adds '参照(Browse)ボタンを押下してバッチファイル／シェルスクリプトを指定する'. The source for this section only says to click the Browse button — it says nothing about selecting a batch file or shell script at this step. That detail belongs to the next section (起動用バッチファイル（シェルスクリプト）選択) and was incorrectly merged into s2.",
+      "source_evidence": "Source for 外部プログラム選択: 'ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。' — no mention of specifying a batch file or shell script here."
+    }
+  ]
+}

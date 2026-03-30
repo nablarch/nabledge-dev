@@ -1,0 +1,445 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_messaging/04_Explanation_delayed_receive/03_mqDelayedReceive.rst`
+- Format: `rst`
+
+```
+.. _mqDelayedReceiveTitle:
+
+==========================================
+応答不要メッセージ受信処理
+==========================================
+
+:ref:`ユーザ登録情報電文受信処理<userRegisterMessageReceiveSpec>`\ を例に、応答不要メッセージ受信処理の実装方法を説明する。
+
+.. image:: _image/userRegisterMessageReceive.png
+
+--------------------------------------
+アプリケーション開発者が実装する成果物
+--------------------------------------
+:ref:`messageDelayedReceiveDesign`\ からわかるように、電文を受信するアクションはNablarchの一部として提供される。
+このため、アプリケーション開発者は電文を受信テーブルに登録するために必要となる下記成果物のみを作成すれ良い。
+
+* 電文のレイアウトを定義したフォーマット定義ファイル
+* 電文を登録するテーブル(一時テーブル)の定義
+* データベースへ電文を登録する際に使用するFormクラス
+* データベースへ電文を登録するためのINSERT文が記述されたSQLファイル
+
+--------------------------------------------
+フォーマット定義ファイル
+--------------------------------------------
+電文の業務電文部がどのようなレイアウトで構成されているかを表すフォーマット定義ファイルを作成する。
+
+フォーマット定義ファイルは、外部インタフェース設計書を入力元として、
+フォーマット定義ファイル自動生成ツールにより生成する。
+
+
+参考として、サンプルで使用しているフォーマット定義ファイルを以下に示す。
+
+.. code-block:: bash
+
+  #-------------------------------------------------------------------------------
+  # ユーザ登録情報電文のレイアウト
+  #-------------------------------------------------------------------------------
+  text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+  record-length:    420     # 各レコードの長さ
+  file-type:        "Fixed" # 固定長
+  
+  [userData] # レコード名称
+  1   loginId                     X(20)       # ログインID
+  21  kanjiName                   N(100)      # 漢字氏名
+  121 kanaName                    N(100)      # カナ氏名
+  221 ?filler1                    X(50)       # 空白領域
+  271 mailAddress                 X(100)      # メールアドレス
+  371 extensionNumberBuilding     X(2)        # 内線番号（ビル番号）
+  373 extensionNumberPersonal     X(4)        # 内線番号（個人番号）
+  377 mobilePhoneNumberAreaCode   X(3)        # 携帯番号（市外）
+  380 mobilePhoneNumberCityCode   X(4)        # 携帯電話番号(市内)
+  384 mobilePhoneNumberSbscrCode  X(4)        # 携帯電話番号(加入)
+  388 ?filler2                    X(33)       # 空白領域
+
+.. _message-save-table:
+
+----------------------------------
+一時テーブルの定義
+----------------------------------
+受信した電文は、電文の種類毎に専用の一時テーブルに保存する。
+このため、一時テーブルを下記ルールに従い定義すること。
+
+* | 主キーは、電文を一意に識別するためのIDを格納するカラムとすること
+  | このカラムに格納する値は、Nablarchフレームワークで採番を行う。
+  | 桁数は、個々のプロジェクトで異なるため方式設計などに従いテーブル定義を行うこと。
+* テーブルの属性情報には、受信した電文の各項目に対応するカラムを定義する
+* 各プロジェクトの方式に合わせて共通項目（登録ユーザIDや登録日時など)を定義する
+
+
+実際のテーブル定義の例
+======================
+参考として、サンプルアプリケーションで電文を保存する一時テーブルを以下に示す。
+
+* 主キー
+
+ ===========================    ===========================
+ カラム論理名                   定義
+ ===========================    ===========================
+ 受信電文連番                   CHAR(10)
+ ===========================    ===========================
+
+* 属性項目(電文の項目に対応したカラム)
+
+ ===========================    ===========================
+ カラム論理名                   定義
+ ===========================    ===========================
+ ログインID                     VARCHAR2(20)
+ 漢字名称                       NVARCHAR2(100)
+ カナ名称                       NVARCHAR2(100)
+ メールアドレス                 VARCHAR2(100)
+ 内線番号(ビル番号)             VARCHAR2(2)
+ 内線番号(個人番号)             VARCHAR2(4)
+ 携帯電話番号(市外)             VARCHAR2(3)
+ 携帯電話番号(市内)             VARCHAR2(4)
+ 携帯電話番号(加入)             VARCHAR2(4)
+ ===========================    ===========================
+
+* 共通項目
+
+ ===========================    ===========================
+ カラム論理名                   定義
+ ===========================    ===========================
+ 登録ユーザID                   CHAR(10)
+ 登録日時                       TIMESTAMP
+ 更新ユーザID                   CHAR(10)
+ 更新日時                       TIMESTAMP
+ 登録リクエストID               CHAR(10)
+ 登録実行時ID                   CHAR(29)
+ ===========================    ===========================
+
+--------------------
+Formクラス
+--------------------
+Formクラスは、一時テーブルに電文を登録する際に使用する。
+これは、Nablarchフレームワークのデータベース機能で提供されるオブジェクトのフィールド値をデータベースへ保存する機能を使用するために必要となるクラスである。
+データベース機能の詳細は、 \ :ref:`db-object-save-samole`\ を参照すること。
+
+**Formクラスは、下記ルールに準拠すること**
+
+* クラス名は、受信電文のリクエストID + "Form"であること
+* 「String, nablarch.fw.messaging.RequestMessage」の2つの引数を持つコンストラクタを定義すること
+
+  それぞれのパラメータの意味は以下の通り。
+
+  * String  -> 受信電文連番
+  * nablarch.fw.messaging.RequestMessage -> 受信電文
+
+* Formクラスの配置パッケージは、下記設定例のようにAsyncMessageReceiveActionSettingsのformClassPackageプロパティに設定されたパッケージ名とすること
+
+  ※この設定値は、アーキテクトなどが設定するものであり個々の開発者が設定する必要はない。
+
+  .. code-block:: xml
+    
+    <!-- メッセージ受信アクション用の設定 -->
+    <component name="asyncMessageReceiveActionSettings"
+               class="nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings">
+      <property name="formClassPackage" value="nablarch.sample.messaging.form" />
+    </component>
+
+参考として、サンプルで使用しているFormクラスを以下に示す。
+
+ .. code-block:: java
+
+  package nablarch.sample.messaging.form;
+   
+   
+  // 中略
+   
+  /**
+   * ユーザ情報登録電文をユーザ情報電文受信テーブルに保存するためのフォームクラス。
+   *
+   * @author hisaaki sioiri
+   * @since 1.1
+   */
+  public class RM11AC0201Form {
+   
+      /** 受信電文連番 */
+      private String receivedMessageSequence;
+   
+   
+      // フィールドの定義は省略
+   
+   
+      /**
+       * コンストラクタ。
+       *
+       * @param receivedMessageSequence 受信電文連番
+       * @param message 受信電文
+       */
+      public RM11AC0201Form(String receivedMessageSequence, RequestMessage message) {
+          // 受信電文連番をフィールドに設定する。
+          this.receivedMessageSequence = receivedMessageSequence;
+          
+          // 電文に内容を各フィールドに設定する。
+          // 電文のボディ部は、RequestMessage#getRecordOf(<レコード名>)で取得することが出来る。
+          // レコード名は、フォーマット定義ファイルで設定したレコード名称を指定する。
+          DataRecord data = message.getRecordOf("userData");
+          loginId = data.getString("loginId");
+          kanjiName = data.getString("kanjiName");
+          kanaName = data.getString("kanaName");
+          mailAddress = data.getString("mailAddress");
+          extensionNumberBuilding = data.getString("extensionNumberBuilding");
+          extensionNumberPersonal = data.getString("extensionNumberPersonal");
+          mobilePhoneNumberAreaCode = data.getString("mobilePhoneNumberAreaCode");
+          mobilePhoneNumberCityCode = data.getString("mobilePhoneNumberCityCode");
+          mobilePhoneNumberSbscrCode = data.getString("mobilePhoneNumberSbscrCode");
+      }      
+  }  
+
+--------------------
+SQLファイル
+--------------------
+:ref:`一時テーブル<message-save-table>`\ に受信電文を保存するためのSQL文を記述したSQLファイルを用意する。
+
+**SQLファイルは、下記ルールに準拠すること**
+
+* SQLファイル名は、受信電文のリクエストID + ".sql"であること。
+* SQL_IDは、「INSERT_MESSAGE」であること。
+* SQLファイルの配置ディレクトリは、下記設定例のようにAsyncMessageReceiveActionSettingsのsqlFilePackageプロパティに設定されたディレクトリとすること。
+
+  ※この設定値は、アーキテクトなどが設定するものであり個々の開発者が設定する必要はない。
+
+.. code-block:: xml
+
+  <!-- メッセージ受信アクション用の設定 -->
+  <component name="asyncMessageReceiveActionSettings"
+      class="nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings">
+    <!-- SQLファイルの配置ディレクトリ -->
+    <property name="sqlFilePackage" value="nablarch.sample.messaging.sql" />
+  </component>
+    
+参考として、サンプルで使用しているSQLファイルを以下に示す。
+
+.. code-block:: sql
+  
+  --******************************************************************************
+  -- ユーザ情報メッセージをユーザ情報受信テーブルに登録するSQL
+  --******************************************************************************
+  INSERT_MESSAGE =
+  INSERT INTO USER_INFO_RECEIVE_MESSAGE (
+      RECEIVED_MESSAGE_SEQUENCE,
+      LOGIN_ID,
+      KANJI_NAME,
+      KANA_NAME,
+      MAIL_ADDRESS,
+      EXTENSION_NUMBER_BUILDING,
+      EXTENSION_NUMBER_PERSONAL,
+      MOBILE_PHONE_NUMBER_AREA_CODE,
+      MOBILE_PHONE_NUMBER_CITY_CODE,
+      MOBILE_PHONE_NUMBER_SBSCR_CODE,
+      STATUS,
+      INSERT_USER_ID,
+      INSERT_DATE,
+      INSERT_REQUEST_ID,
+      INSERT_EXECUTION_ID,
+      UPDATED_USER_ID,
+      UPDATED_DATE
+      )
+      VALUES
+      (
+      :receivedMessageSequence,
+      :loginId,
+      :kanjiName,
+      :kanaName,
+      :mailAddress,
+      :extensionNumberBuilding,
+      :extensionNumberPersonal,
+      :mobilePhoneNumberAreaCode,
+      :mobilePhoneNumberCityCode,
+      :mobilePhoneNumberSbscrCode,
+      '0',
+      :insertUserId,
+      :insertDate,
+      :insertRequestId,
+      :updatedUserId,
+      :updatedDate
+      )
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-03_mqDelayedReceive--s1`
+
+```json
+{
+  "id": "mom-messaging-03_mqDelayedReceive--s1",
+  "title": "応答不要メッセージ受信処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アプリケーション開発者が実装する成果物",
+      "hints": [
+        "応答不要メッセージ受信処理",
+        "MOM電文受信",
+        "アプリケーション開発者の成果物",
+        "フォーマット定義ファイル",
+        "一時テーブル",
+        "Formクラス",
+        "SQLファイル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット定義ファイル",
+      "hints": [
+        "フォーマット定義ファイル",
+        "電文レイアウト",
+        "固定長",
+        "text-encoding",
+        "record-length",
+        "file-type",
+        "自動生成ツール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "一時テーブルの定義",
+      "hints": [
+        "一時テーブル",
+        "受信電文保存",
+        "テーブル定義",
+        "主キー",
+        "Nablarchフレームワーク採番",
+        "共通項目"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Formクラス",
+      "hints": [
+        "Formクラス",
+        "AsyncMessageReceiveActionSettings",
+        "formClassPackage",
+        "RequestMessage",
+        "DataRecord",
+        "受信電文連番"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "SQLファイル",
+      "hints": [
+        "SQLファイル",
+        "INSERT_MESSAGE",
+        "sqlFilePackage",
+        "AsyncMessageReceiveActionSettings",
+        "受信電文INSERT"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "電文受信アクションはNablarchの一部として提供されるため、アプリケーション開発者が作成するのは以下の成果物のみ。\n\n- 電文のレイアウトを定義したフォーマット定義ファイル\n- 電文を登録するテーブル（一時テーブル）の定義\n- データベースへ電文を登録する際に使用するFormクラス\n- データベースへ電文を登録するためのINSERT文が記述されたSQLファイル",
+    "s2": "電文の業務電文部のレイアウトを定義するフォーマット定義ファイルを作成する。外部インタフェース設計書を入力元として、フォーマット定義ファイル自動生成ツールにより生成する。\n\n```bash\ntext-encoding:    \"MS932\"\nrecord-length:    420\nfile-type:        \"Fixed\"\n\n[userData]\n1   loginId                     X(20)\n21  kanjiName                   N(100)\n121 kanaName                    N(100)\n221 ?filler1                    X(50)\n271 mailAddress                 X(100)\n371 extensionNumberBuilding     X(2)\n373 extensionNumberPersonal     X(4)\n377 mobilePhoneNumberAreaCode   X(3)\n380 mobilePhoneNumberCityCode   X(4)\n384 mobilePhoneNumberSbscrCode  X(4)\n388 ?filler2                    X(33)\n```",
+    "s3": "受信した電文は電文の種類毎に専用の一時テーブルに保存する。テーブル定義ルール:\n\n- 主キー: 電文を一意に識別するIDカラム。格納値はNablarchフレームワークで採番。桁数はプロジェクト方式設計に従う\n- 属性情報: 受信した電文の各項目に対応するカラムを定義\n- 共通項目（登録ユーザIDや登録日時など）をプロジェクト方式に合わせて定義\n\n**主キー例:**\n\n| カラム論理名 | 定義 |\n|---|---|\n| 受信電文連番 | CHAR(10) |\n\n**属性項目例（電文の項目に対応）:**\n\n| カラム論理名 | 定義 |\n|---|---|\n| ログインID | VARCHAR2(20) |\n| 漢字名称 | NVARCHAR2(100) |\n| カナ名称 | NVARCHAR2(100) |\n| メールアドレス | VARCHAR2(100) |\n| 内線番号(ビル番号) | VARCHAR2(2) |\n| 内線番号(個人番号) | VARCHAR2(4) |\n| 携帯電話番号(市外) | VARCHAR2(3) |\n| 携帯電話番号(市内) | VARCHAR2(4) |\n| 携帯電話番号(加入) | VARCHAR2(4) |\n\n**共通項目例:**\n\n| カラム論理名 | 定義 |\n|---|---|\n| 登録ユーザID | CHAR(10) |\n| 登録日時 | TIMESTAMP |\n| 更新ユーザID | CHAR(10) |\n| 更新日時 | TIMESTAMP |\n| 登録リクエストID | CHAR(10) |\n| 登録実行時ID | CHAR(29) |",
+    "s4": "Formクラスは一時テーブルへの電文登録時に使用する。NablarchのDB機能でオブジェクトのフィールド値をDBへ保存するために必要。詳細は :ref:`db-object-save-samole` 参照。\n\n**Formクラスルール:**\n- クラス名: 受信電文のリクエストID + `\"Form\"`\n- コンストラクタ: `String`（受信電文連番）と `nablarch.fw.messaging.RequestMessage`（受信電文）の2引数を持つコンストラクタを定義\n- 配置パッケージ: `AsyncMessageReceiveActionSettings` の `formClassPackage` プロパティに設定されたパッケージ名\n\n```xml\n<component name=\"asyncMessageReceiveActionSettings\"\n           class=\"nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings\">\n  <property name=\"formClassPackage\" value=\"nablarch.sample.messaging.form\" />\n</component>\n```\n\n```java\npublic class RM11AC0201Form {\n    private String receivedMessageSequence;\n\n    public RM11AC0201Form(String receivedMessageSequence, RequestMessage message) {\n        this.receivedMessageSequence = receivedMessageSequence;\n        // 電文のボディ部はRequestMessage#getRecordOf(<レコード名>)で取得\n        // レコード名はフォーマット定義ファイルのレコード名称を指定\n        DataRecord data = message.getRecordOf(\"userData\");\n        loginId = data.getString(\"loginId\");\n        kanjiName = data.getString(\"kanjiName\");\n        kanaName = data.getString(\"kanaName\");\n        mailAddress = data.getString(\"mailAddress\");\n        extensionNumberBuilding = data.getString(\"extensionNumberBuilding\");\n        extensionNumberPersonal = data.getString(\"extensionNumberPersonal\");\n        mobilePhoneNumberAreaCode = data.getString(\"mobilePhoneNumberAreaCode\");\n        mobilePhoneNumberCityCode = data.getString(\"mobilePhoneNumberCityCode\");\n        mobilePhoneNumberSbscrCode = data.getString(\"mobilePhoneNumberSbscrCode\");\n    }\n}\n```",
+    "s5": ":ref:`一時テーブル<message-save-table>` に受信電文を保存するSQLファイルを用意する。\n\n**SQLファイルルール:**\n- ファイル名: 受信電文のリクエストID + `\".sql\"`\n- SQL_ID: `INSERT_MESSAGE`\n- 配置ディレクトリ: `AsyncMessageReceiveActionSettings` の `sqlFilePackage` プロパティに設定されたディレクトリ\n\n```xml\n<component name=\"asyncMessageReceiveActionSettings\"\n    class=\"nablarch.fw.messaging.action.AsyncMessageReceiveActionSettings\">\n  <property name=\"sqlFilePackage\" value=\"nablarch.sample.messaging.sql\" />\n</component>\n```\n\n```sql\nINSERT_MESSAGE =\nINSERT INTO USER_INFO_RECEIVE_MESSAGE (\n    RECEIVED_MESSAGE_SEQUENCE,\n    LOGIN_ID,\n    KANJI_NAME,\n    KANA_NAME,\n    MAIL_ADDRESS,\n    EXTENSION_NUMBER_BUILDING,\n    EXTENSION_NUMBER_PERSONAL,\n    MOBILE_PHONE_NUMBER_AREA_CODE,\n    MOBILE_PHONE_NUMBER_CITY_CODE,\n    MOBILE_PHONE_NUMBER_SBSCR_CODE,\n    STATUS,\n    INSERT_USER_ID,\n    INSERT_DATE,\n    INSERT_REQUEST_ID,\n    INSERT_EXECUTION_ID,\n    UPDATED_USER_ID,\n    UPDATED_DATE\n    )\n    VALUES (\n    :receivedMessageSequence,\n    :loginId,\n    :kanjiName,\n    :kanaName,\n    :mailAddress,\n    :extensionNumberBuilding,\n    :extensionNumberPersonal,\n    :mobilePhoneNumberAreaCode,\n    :mobilePhoneNumberCityCode,\n    :mobilePhoneNumberSbscrCode,\n    '0',\n    :insertUserId,\n    :insertDate,\n    :insertRequestId,\n    :updatedUserId,\n    :updatedDate\n    )\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 10
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

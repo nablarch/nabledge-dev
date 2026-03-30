@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-RetryHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — TimeRetryContextFactory / maxRetryTime",
+      "description": "The rationale for why `maxRetryTime` exists is omitted. The source explains: depending on handler configuration, control may never return to the retry handler while processing keeps succeeding, so `maxRetryTime` is provided for the retry handler to judge whether retry succeeded. This context is decision-necessary for understanding when to configure this property.",
+      "source_evidence": "ハンドラ構成によっては、処理が正常終了し続ける間、リトライ制御を行う側まで制御が戻ってこないケースが存在する。このような場合に、リトライが成功したか否かをリトライ制御を行う側が判断するために、最長リトライ時間を設けている。"
+    }
+  ]
+}

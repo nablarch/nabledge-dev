@@ -1,0 +1,489 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/05_UnitTestGuide/02_RequestUnitTest/batch.rst`
+- Format: `rst`
+
+```
+可変長ファイル（CSVファイル）の準備
+-----------------------------------
+
+可変長ファイル（CSVファイル）の準備も、固定長とほぼ同様である。
+固定長との違いは、可変長ファイルの場合はフィールド長を記載しない点である。
+
+``SETUP_VARIABLE=work/members.csv``
+               
++-----------------+-------------+-------------+-----------+
+|text-encoding    |Windows-31J                            |
++-----------------+-------------+-------------+-----------+
+|record-separator |CRLF                                   |
++-----------------+-------------+-------------+-----------+
+|ヘッダ           |レコード区分 |             |           |
+|                 +-------------+-------------+-----------+
+|                 |9            |             |           |
+|                 +-------------+-------------+-----------+
+|                 |0            |             |           |
++-----------------+-------------+-------------+-----------+
+|データ           |レコード区分 |会員番号     |入会日     |
+|                 +-------------+-------------+-----------+
+|                 |9            |X            |9          |
+|                 +-------------+-------------+-----------+
+|                 |1            |0000000001   |20100101   |
+|                 +-------------+-------------+-----------+
+|                 |1            |0000000002   |20100102   |
++-----------------+-------------+-------------+-----------+
+|トレーラ         |レコード区分 |レコード件数 |           |
+|                 +-------------+-------------+-----------+
+|                 |9            |9            |           |
+|                 +-------------+-------------+-----------+
+|                 |8            |2            |           |
++-----------------+-------------+-------------+-----------+
+|エンド           |レコード区分 |             |           |
+|                 +-------------+-------------+-----------+
+|                 |9            |             |           |
+|                 +-------------+-------------+-----------+
+|                 |9            |             |           |
++-----------------+-------------+-------------+-----------+
+
+.. note::
+ フィールド区切り文字を変更する場合、フィールド区切り文字を
+ ディレクティブで明示的に指定する。例えば、区切り文字をタブにしたい（TSVファイル）場合、
+ 以下のように、ディレクティブを指定する。
+ 
+ ``field-separator=\t``
+
+空のファイルを定義する方法
+----------------------------------------
+準備データや期待値として空のファイル(0バイトファイル)を定義したい場合がある。
+
+テストシート上での空ファイルの定義は、以下の例のようにディレクティブ行を定義しレコードの定義を省略することで実現出来る。
+
+**空のファイルの定義例**
+
+``SETUP_VARIABLE=work/members.csv``
+               
++-----------------+-------------+-------------+-----------+
+|text-encoding    |Windows-31J                            |
++-----------------+-------------+-------------+-----------+
+|record-separator |CRLF                                   |
++-----------------+-------------+-------------+-----------+
+|//空ファイル                                             |
++-----------------+-------------+-------------+-----------+
+
+各種期待値
+==========
+
+検索結果、データベースを期待値と比較する場合は、
+それぞれのデータとテストケース一覧とをIDで紐付けする。
+
+
+期待するデータベースの状態
+--------------------------
+
+:ref:`オンライン<request_test_expected_tables>`\ と同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。
+
+
+期待する固定長ファイル
+----------------------
+
+テスト対象バッチが出力する固定長ファイルをアサートする。\
+
+準備データの場合、データタイプが、\ `SETUP_FIXED`\ であったが、
+期待値を記述する場合は、\ `EXPECTED_FIXED`\ となる。
+
+その他のテストデータの記述方法は、準備データと同様である。\
+`固定長ファイルの準備`_\ を参照。
+
+期待する可変長ファイル
+----------------------
+
+テスト対象バッチが出力する可変長ファイルをアサートする。\
+
+準備データの場合、データタイプが、\ `SETUP_VARIABLE`\ であったが、
+期待値を記述する場合は、\ `EXPECTED_VARIABLE`\ となる。
+
+その他のテストデータの記述方法は、準備データと同様である。\
+`可変長ファイル（CSVファイル）の準備`_\ を参照。
+
+
+----------------------
+テストメソッドの書き方
+----------------------
+
+スーパクラスについて
+====================
+
+``BatchRequestTestSupport``\ クラスを継承する。
+このクラスでは、準備したテストデータを元に以下の手順でリクエスト単体テストを実行する。
+
+
+テストメソッド作成
+==================
+
+準備したテストシートに対応するメソッドを作成する。
+
+
+.. code-block:: java
+    
+    @Test
+    public void testRegisterUser() {
+    }
+
+
+スーパクラスのメソッド呼び出し
+==============================
+
+テストメソッド内で、スーパクラスの以下のいずれかのメソッドを呼び出す。
+
+* void execute()
+* void execute(String sheetName)
+
+通常の場合、execute()を使用する。\
+引数ありのexecuteメソッドでは、テストデータのシート名を指定できるが、
+通常、テストシート名とテストメソッド名は同一である。\
+引数なしのexecuteメソッドを使用すると、テストデータのシート名に
+テストメソッド名を指定したのと同じ動作となる。
+
+.. code-block:: java
+    
+    @Test
+    public void testResigster() {
+        execute();   // 【説明】execute("testRegisterUser") と等価
+    }
+
+
+--------------
+テスト起動方法
+--------------
+
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
+
+
+--------------
+テスト結果検証
+--------------
+
+
+
+データベースの結果検証
+======================
+
+テストケース一覧のexpectedTable欄にグループIDを記載することにより、
+そのグループIDのテストデータで実際のファイル出力結果を確認することができる。
+
+
+
+ファイルの結果検証
+==================
+
+テストケース一覧のexpectedFile欄にグループIDを記載することにより、
+そのグループIDのテストデータで実際のファイル出力結果を確認することができる。
+
+ファイル期待値の記述方法は、準備データの記述方法とほぼ同じである。
+IDの記述方法だけが異なる。
+ファイル種別ごとの記述方法を以下に示す。
+
+===================== ==============================================  =========================================================
+ファイル種別           グループID指定なし                             グループIDを指定ありの場合
+===================== ==============================================  =========================================================
+固定長ファイル        ``EXPECTED_FIXED=比較対象ファイルのパス``       ``EXPECTED_FIXED[グループID]=比較対象ファイルのパス``
+可変長ファイル        ``EXPECTED_VARIABLE=比較対象ファイルのパス``    ``EXPECTED_VARIABLE[グループID]=比較対象ファイルのパス``
+===================== ==============================================  =========================================================
+
+
+ログの結果検証
+==============
+
+テストケース一覧のexpectedLog欄にグループIDを記載することにより、
+そのグループIDのテストデータで実際のログ出力結果を確認することができる。
+
+
+以下の内容を記載する。
+
++------------------------+----------------------------+
+|カラム名                |内容                        |
++========================+============================+
+|logLevel                |期待するログのログレベル    |
++------------------------+----------------------------+
+|message\ **N**\ [#]_\   |期待するログに含まれる文言  |
++------------------------+----------------------------+
+
+\
+
+.. [#]
+ \ **N**\ は1以上の整数を指定することで複数の値（連続する値であること）
+ (例) messsage1, message2...
+
+.. note::
+ これらの条件は全て\ **AND**\ 条件である。
+ 以下のような場合には、期待するログが出力されたとは見なされない。
+ 
+ * 期待する文言はログ出力されているが、\ **ログレベルが期待通りでない**\ 場合
+ * ログレベルは合致しているが、期待する文言で、ログ出力されていないものが\ **１つでもある**\ 場合
+ 
+
+
+具体例を以下に示す。
+
+以下の例では、２種類のログ出力を期待している。
+
+``LIST_MAP=expectedLogMessages``
+
+======== ============= ====================== ==============
+logLevel   message1     message2               message3
+======== ============= ====================== ==============
+ INFO      NB11AA0101  処理を開始します。     会員ID=[0001]
+ FATAL     NB11AA0109  エラーが発生しました。	
+======== ============= ====================== ==============
+
+.. warning::
+
+  expectedLog欄にグループIDを記載した場合には、必ず期待するメッセージを1行以上設定すること。
+  期待するメッセージが設定されていない場合(期待するメッセージが0行の場合)や、expectedLog欄に記載されたグループIDに紐付く
+  LIST_MAP要素が存在しない場合には、本フレームワークは期待値の準備が不足していると判断し例外を送出する。
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-batch--s10`
+
+```json
+{
+  "id": "testing-framework-batch--s10",
+  "title": "各種期待値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "可変長ファイル（CSVファイル）の準備",
+      "hints": [
+        "SETUP_VARIABLE",
+        "可変長ファイル",
+        "CSVファイル",
+        "フィールド区切り文字",
+        "field-separator",
+        "TSVファイル",
+        "可変長ファイル定義",
+        "text-encoding",
+        "record-separator"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "空のファイルを定義する方法",
+      "hints": [
+        "空ファイル",
+        "0バイトファイル",
+        "SETUP_VARIABLE",
+        "ディレクティブ",
+        "空ファイル定義"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "期待するデータベースの状態",
+      "hints": [
+        "期待値",
+        "データベース",
+        "expectedTable",
+        "テストケース一覧",
+        "DB期待値"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "期待する固定長ファイル",
+      "hints": [
+        "EXPECTED_FIXED",
+        "固定長ファイル",
+        "期待値",
+        "ファイルアサート",
+        "期待ファイル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "期待する可変長ファイル",
+      "hints": [
+        "EXPECTED_VARIABLE",
+        "可変長ファイル",
+        "期待値",
+        "ファイルアサート",
+        "期待ファイル"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "",
+      "hints": [
+        "セクション区切り"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "テストメソッドの書き方",
+      "hints": [
+        "BatchRequestTestSupport",
+        "execute",
+        "テストメソッド",
+        "スーパクラス",
+        "JUnit",
+        "バッチテストメソッド"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "",
+      "hints": [
+        "セクション区切り"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト実行",
+        "バッチリクエスト単体テスト",
+        "テスト起動"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "",
+      "hints": [
+        "セクション区切り"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "テスト結果検証",
+      "hints": [
+        "expectedTable",
+        "expectedFile",
+        "expectedLog",
+        "EXPECTED_FIXED",
+        "EXPECTED_VARIABLE",
+        "logLevel",
+        "グループID",
+        "ログ検証",
+        "結果検証",
+        "LIST_MAP"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 可変長ファイル（CSVファイル）の準備\n\n固定長との違い: フィールド長を記載しない。`SETUP_VARIABLE=ファイルパス` で可変長ファイル（CSV）を定義する。\n\nテストシートでの定義例（`SETUP_VARIABLE=work/members.csv`）:\n\n| ディレクティブ | 値 |\n|---|---|\n| text-encoding | Windows-31J |\n| record-separator | CRLF |\n\nレコード定義: ヘッダ・データ・トレーラ・エンドの各レコード種別を行単位で定義する。各行は「フィールド名行（型定義）」と「値行」をセットで記述する。固定長と異なりフィールド長の列は不要。\n\n> **注意**: フィールド区切り文字を変更する場合はディレクティブで明示的に指定する。タブ区切り（TSVファイル）にする場合: `field-separator=\\t`",
+    "s2": "## 空のファイルを定義する方法\n\n準備データや期待値として空ファイル（0バイトファイル）を定義する方法: テストシート上でディレクティブ行を定義し、レコードの定義を省略する。\n\n空ファイル定義例（`SETUP_VARIABLE=work/members.csv`）:\n\n```\ntext-encoding  | Windows-31J\nrecord-separator | CRLF\n//空ファイル\n```\n\nディレクティブ行（`text-encoding`、`record-separator` 等）を定義したうえでレコード定義を省略することで、0バイトファイルとして定義される。例中の `//空ファイル` はコメント行であり、空ファイルを定義する必須ディレクティブではない。",
+    "s3": "## 期待するデータベースの状態\n\n:ref:`オンライン<request_test_expected_tables>` と同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。",
+    "s4": "## 期待する固定長ファイル\n\nテスト対象バッチが出力する固定長ファイルをアサートする。\n\n- データタイプ: `EXPECTED_FIXED`（準備データの `SETUP_FIXED` の代わりに使用）\n- その他の記述方法は固定長ファイルの準備と同様。",
+    "s5": "## 期待する可変長ファイル\n\nテスト対象バッチが出力する可変長ファイルをアサートする。\n\n- データタイプ: `EXPECTED_VARIABLE`（準備データの `SETUP_VARIABLE` の代わりに使用）\n- その他の記述方法は可変長ファイルの準備と同様。",
+    "s6": "なし",
+    "s7": "## テストメソッドの書き方\n\n### スーパクラス\n\n**クラス**: `BatchRequestTestSupport` を継承する。このクラスが準備したテストデータを元にリクエスト単体テストを実行する。\n\n### テストメソッド作成\n\n準備したテストシートに対応するメソッドを `@Test` アノテーションを付与して作成する。\n\n```java\n@Test\npublic void testRegisterUser() {\n}\n```\n\n### スーパクラスのメソッド呼び出し\n\nテストメソッド内でスーパクラスの以下いずれかを呼び出す:\n\n- `void execute()` — 引数なし: テストメソッド名をシート名として使用（通常はこちらを使用）\n- `void execute(String sheetName)` — テストデータのシート名を明示指定\n\n引数なしの `execute()` は `execute(テストメソッド名)` と等価。\n\n```java\n@Test\npublic void testResigster() {\n    execute();   // execute(\"testRegisterUser\") と等価\n}\n```",
+    "s8": "なし",
+    "s9": "## テスト起動方法\n\n通常のJUnitテストと同じように実行する。クラス単体テストの起動方法と同様。",
+    "s10": "なし",
+    "s11": "## テスト結果検証\n\n### データベースの結果検証\n\nテストケース一覧の `expectedTable` 欄にグループIDを記載することで、そのグループIDのテストデータで実際のDB状態を確認する。\n\n### ファイルの結果検証\n\nテストケース一覧の `expectedFile` 欄にグループIDを記載することで、そのグループIDのテストデータで実際のファイル出力結果を確認する。\n\n| ファイル種別 | グループID指定なし | グループID指定あり |\n|---|---|---|\n| 固定長ファイル | `EXPECTED_FIXED=比較対象ファイルのパス` | `EXPECTED_FIXED[グループID]=比較対象ファイルのパス` |\n| 可変長ファイル | `EXPECTED_VARIABLE=比較対象ファイルのパス` | `EXPECTED_VARIABLE[グループID]=比較対象ファイルのパス` |\n\n### ログの結果検証\n\nテストケース一覧の `expectedLog` 欄にグループIDを記載することで、そのグループIDのテストデータで実際のログ出力結果を確認する。\n\n`LIST_MAP=expectedLogMessages` に以下のカラムで期待値を記載する:\n\n| カラム名 | 内容 |\n|---|---|\n| logLevel | 期待するログのログレベル |\n| message**N** | 期待するログに含まれる文言（Nは1以上の整数、複数指定可、連続する値であること） |\n\n> **注意**: 全条件はAND条件。(1) 期待文言がログ出力されていてもログレベルが期待通りでない場合、(2) ログレベルが合致していても期待文言が1つでも出力されていない場合、は期待するログが出力されたとは見なされない。\n\n> **警告**: `expectedLog` 欄にグループIDを記載した場合は必ず期待メッセージを1行以上設定すること。期待メッセージが0行の場合、またはグループIDに紐付くLIST_MAP要素が存在しない場合、フレームワークは例外を送出する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

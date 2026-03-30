@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-batch-03_DealUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The knowledge file presents an explicit rule: \"基本的な1シートテストでは`nablarch.test.core.batch.BatchRequestTestSupport`を使用し、複数シート分割テストでは`nablarch.test.core.messaging.BatchRequestTestSupport`を使用する\". The source never states this rule. It simply shows two separate code examples that happen to use different import packages — the introductory class example uses `nablarch.test.core.batch.BatchRequestTestSupport`, and the split-sheet example uses `nablarch.test.core.messaging.BatchRequestTestSupport` — but no explanatory text in the source connects the import choice to single-sheet vs. multi-sheet usage.",
+      "source_evidence": "First code block (intro): `import nablarch.test.core.batch.BatchRequestTestSupport;`. Split-sheet code block: `import nablarch.test.core.messaging.BatchRequestTestSupport;`. No accompanying text in the source explains the difference or prescribes when to use each."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (s1)",
+      "description": "The source has 4 h2-level sections (テストケース分割方針, 基本的な記述方法, 1テストケースを複数シートを分割する場合, 1シートに複数ケースを含める場合), but the knowledge file merges the first three into s1, yielding only 2 sections total. The テストケース分割方針 h2 also has two h3 subsections (複雑なテストケースの場合, 非常に簡単なテストケースの場合) that are silently absorbed.",
+      "source_evidence": "Source h2 headings: 「テストケース分割方針」「基本的な記述方法」「1テストケースを複数シートを分割する場合」「1シートに複数ケースを含める場合」. Knowledge file index: s1 (merges first 3), s2 (4th)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Several column names used in the test sheet tables appear in the source but are absent from s1 hints: `expectedStatusCode`, `setUpTable`, `setUpFile`, `expectedTable`, `expectedFile`, `outFile`. These are searchable field identifiers a developer would use when looking up how to configure test sheets.",
+      "source_evidence": "Source table headers include: `expectedStatusCode`, `setUpTable`, `setUpFile`, `expectedTable`, `expectedFile`, `requestPath` (already present), `outFile`. Only `requestPath`, `LIST_MAP`, and `testShots` are currently in s1 hints."
+    }
+  ]
+}

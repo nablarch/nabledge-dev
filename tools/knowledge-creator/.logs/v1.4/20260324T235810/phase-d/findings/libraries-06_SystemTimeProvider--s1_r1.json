@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The override value table entry adds \"（yyyyMMdd形式）\" to the description of the override value, but the source table only says \"上書きしたい日付\" without specifying the format for the override mechanism.",
+      "source_evidence": "Source table: キー=「BasicBusinessDateProvider. + \"区分\"」, 値=「上書きしたい日付」 — no format constraint is stated for the override value in this context."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6",
+      "description": "PascalCase class name `DbConnectionContext` appears in the section content (in the `dbTransactionName` property explanation) but is not included in the hints array.",
+      "source_evidence": "Knowledge s6 content: 「デフォルトのトランザクション名（`DbConnectionContext.getConnection()`）を使用する場合は省略可能。`DbConnectionContext.getConnection(\"appTransactionName\")`のように引数を指定する場合はその引数値を設定する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8",
+      "description": "PascalCase class name `SystemRepository` appears in the code example but is not included in the hints array.",
+      "source_evidence": "Knowledge s8 code: `BusinessDateProvider bdp = (BasicBusinessDateProvider) SystemRepository.getObject(\"businessDateProvider\");`"
+    }
+  ]
+}

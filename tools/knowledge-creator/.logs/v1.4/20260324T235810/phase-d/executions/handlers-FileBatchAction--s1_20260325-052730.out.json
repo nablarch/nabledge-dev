@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-FileBatchAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section content is under 50 characters. Contains only the class name line (~46 chars): `**クラス名**: \\`nablarch.fw.action.FileBatchAction\\``",
+      "source_evidence": "Source preamble contains only the class name header before the 概要 section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`Result.Success` is missing from s3 hints. The source template methods table explicitly mentions `Result.Success` as the return value for `do[レコード種別名]()`, and the knowledge file s3 content references it as well.",
+      "source_evidence": "Source: 「正常に終了した場合は、ハンドラの処理が正常終了したことを表すマーカーオブジェクト(`Result.Success`_)をリターンすればよい。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`FileValidatorAction` is missing from s3 hints. The source and s3 content both reference `ValidatableFileDataReader.FileValidatorAction` as the type returned by `getValidatorAction()`, but only `ValidatableFileDataReader` is listed in hints.",
+      "source_evidence": "Source: 「入力ファイルの事前検証処理を実装したオブジェクト( `ValidatableFileDataReader.FileValidatorAction`_ )を返す。」"
+    }
+  ]
+}

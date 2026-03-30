@@ -1,0 +1,129 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-06_residentBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 実行タイミング table, 都度起動バッチ row",
+      "description": "The 都度起動バッチ description row omits 'ジョブスケジューラから起動される' context. The source states '毎月月末にジョブスケジューラから起動される' as the first sentence, which conveys that 都度起動バッチ is externally triggered by a scheduler — a meaningful contrast with 常駐バッチ's self-looping behavior. The knowledge file only retains the process-termination sentence.",
+      "source_evidence": "都度起動バッチ | 月次 | 毎月月末にジョブスケジューラから起動される / 入力データに対する処理が終了すると、バッチプロセスは終了する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "SqlPStatement is referenced in the code example as a class used to set up the batch input query, but is absent from the hints array. Adding it would allow AI to retrieve this section when questions about SqlPStatement arise in a batch context.",
+      "source_evidence": "SqlPStatement statement = getSqlPStatement(\"GET_BATCH_INPUT_DATA\");"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==========
+常駐バッチ
+==========
+
+常駐バッチの場合でも、アプリケーション実装方法は都度実行バッチと基本的には同じである。
+
+以下に、都度起動バッチと異なる実装点について解説する。
+
+**入力データを取得するためのデータリーダ生成方法が異なる**
+
+常駐バッチの場合には、データベースのテーブルをキューのように扱える
+``データベーステーブルキューリーダ`` を使用して入力データを取得する必要がある。
+
+以下に ``データベーステーブルキューリーダ`` の使用例を示す。
+
+.. code-block:: java
+
+    public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+        // 入力データをデータベースから取得するためのDatabaseRecordReaderを生成する。
+        DatabaseRecordReader reader = new DatabaseRecordReader();
+        SqlPStatement statement = getSqlPStatement("GET_BATCH_INPUT_DATA");
+        reader.setStatement(statement);
+
+        // 生成したDatabaseRecordReader及び、データが存在しない場合の待機時間(ms)と
+        // 主キーを指定してDatabaseTableQueueReaderを生成する。
+        return new DatabaseTableQueueReader(reader, 1000, "user_info_id");
+    }
+
+**実行タイミングが異なる**
+
+都度起動バッチはジョブスケジューラなどから決まったタイミングで実行されることを想定しているが、
+常駐バッチでは起動されるとプロセスは終了せずに入力データを定期的に取得し処理を行う。
+
+以下に例を示す。
+
+=============== ================= ==========================================
+形態            実行タイミング例  説明
+=============== ================= ==========================================
+都度起動バッチ  月次              毎月月末にジョブスケジューラから起動される
+
+                                  入力データに対する処理が終了すると、
+                                  バッチプロセスは終了する。
+常駐バッチ      1秒毎             データが存在しなかった場合のみ、左記の時間分
+                                  待機する。
+
+                                  待機後に入力データの再取得繰り返すため、
+                                  バッチプロセスは終了しない。
+=============== ================= ==========================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-06_residentBatch",
+  "title": "常駐バッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "常駐バッチの実装上の相違点",
+      "hints": [
+        "DatabaseTableQueueReader",
+        "DatabaseRecordReader",
+        "常駐バッチ",
+        "データベーステーブルキューリーダ",
+        "常駐プロセス",
+        "createReader"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "常駐バッチと都度起動バッチの主な相違点は以下の2点。\n\n**入力データ取得方法**\n\n常駐バッチでは、DBテーブルをキューのように扱える`DatabaseTableQueueReader`を使用して入力データを取得する必要がある。\n\n```java\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    DatabaseRecordReader reader = new DatabaseRecordReader();\n    SqlPStatement statement = getSqlPStatement(\"GET_BATCH_INPUT_DATA\");\n    reader.setStatement(statement);\n    // DatabaseRecordReader、待機時間(ms)、主キーを指定してDatabaseTableQueueReaderを生成\n    return new DatabaseTableQueueReader(reader, 1000, \"user_info_id\");\n}\n```\n\n**実行タイミング**\n\n| 形態 | 実行タイミング例 | 説明 |\n|---|---|---|\n| 都度起動バッチ | 月次 | 入力データ処理が終了するとバッチプロセスは終了する |\n| 常駐バッチ | 1秒毎 | データが存在しない場合のみ指定時間待機し、入力データ再取得を繰り返すためプロセスは終了しない |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-00_Introduction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The h2 section '実装方針' contains two h3 subsections ('iOSエラー処理実装方針' and 'initWithDictionaryメソッド実装方法') in the source, but both are merged into a single knowledge section s2. The combined content substantially exceeds 2000 characters. Per V3 rules, h2 sections with >= 2000 chars and existing h3 subsections should be split into separate knowledge sections.",
+      "source_evidence": "Source h3 headings: 'iOSエラー処理実装方針' and 'initWithDictionaryメソッド実装方法', both under h2 '実装方針'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — initWithDictionaryメソッド実装方法 code example",
+      "description": "The source code example includes `@implementation NMAesEncryption` wrapper with three `@synthesize` declarations (`keyManager`, `nmMode`, `nmPaddingType`). The knowledge file omits the `@implementation` block and all `@synthesize` lines, meaning the `keyManager` property is not mentioned anywhere in the knowledge file. An AI answering questions about NMAesEncryption's properties would miss `keyManager`.",
+      "source_evidence": "@implementation NMAesEncryption\n@synthesize keyManager;\n@synthesize nmMode;\n@synthesize nmPaddingType;"
+    }
+  ]
+}

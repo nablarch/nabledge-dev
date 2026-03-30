@@ -1,0 +1,35 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s16",
+  "title": "オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "1件のデータを更新する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "executeUpdateByMap",
+        "Map更新",
+        "1件更新"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "複数件を更新する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "addBatchMap",
+        "executeBatch",
+        "getBatchSize",
+        "バッチ更新",
+        "一括更新",
+        "BATCH_EXECUTE_MAX_CNT"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 1件のデータを更新する場合\n\n`ParameterizedSqlPStatement.executeUpdateByMap(Map)` でMapのデータを1件更新する。\n\n```java\nMap<String, Object> sales = new HashMap<String, Object>();\nsales.put(\"CST_ID\", \"00001\");\nsales.put(\"KINGAKU\", \"200\");\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\nint updCnt = statement.executeUpdateByMap(sales);\n```",
+    "s2": "## 複数件を更新する場合\n\n複数件を一括で更新する場合の注意点は、JDBC標準機能のexecuteBatchと同じである。\n\n```java\n// 1回のexecuteBatchで更新する最大の件数\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\n\nfor (Map<String, ?> sales : salesList) {\n    statement.addBatchMap(sales);\n    if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        statement.executeBatch();\n    }\n}\nif (statement.getBatchSize() != 0) {\n    statement.executeBatch();\n}\n```"
+  }
+}

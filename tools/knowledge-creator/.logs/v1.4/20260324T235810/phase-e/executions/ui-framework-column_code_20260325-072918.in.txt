@@ -1,0 +1,295 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-column_code",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints array",
+      "description": "属性名 `comment` と `initialValueDesc` が s2 の hints に含まれていない。これらは属性値一覧に記載された属性であり、ユーザーがこれらの属性名で検索した際にセクションが見つかるよう hints に含める必要がある。",
+      "source_evidence": "属性値一覧に `comment`（コード値表示についての備考）と `initialValueDesc`（初期表示内容に関する説明）が明示されている"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=============================================================
+コード値ラベル表示用カラムウィジェット
+=============================================================
+:doc:`column_code` は、 **UI標準 UI部品 テーブル** で、Nablarchのコード管理機能で取得したラベル、値を
+カラムに出力するウィジェットである。
+
+
+コードサンプル
+==================================
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <table:search_result
+      title         = "検索結果"
+      sampleResults = "15">
+
+      <column:checkbox
+        title = "選択">
+      </column:checkbox>
+
+      <column:code
+        title="性別">
+      </column:code>
+
+    </table:search_result>
+
+
+**実装成果物(サーバ動作)**
+
+  .. code-block:: jsp
+
+    <table:search_result
+      title               = "検索結果"
+      searchUri           = "/action/ss11AC/W11AC01Action/RW11AC0102"
+      listSearchInfoName  = "11AC_W11AC01"
+      resultSetName       = "searchResult"
+      sampleResults       = "15">
+
+      <column:checkbox
+        title    = "選択"
+        key      = "userId"
+        name     = "W11AC05.systemAccountEntityArray[${count-1}].userId"
+        offValue = "0000000000">
+      </column:checkbox>
+
+      <column:code
+        title  = "性別"
+        key    = "gender"
+        codeId = "code1">
+      </column:code>
+
+    </table:search_result>
+
+
+仕様
+=============================================
+
+**ローカル動作時の挙動**
+  カラムの内容には **sample** 属性に指定した **"|"** 区切りの文字列を順に表示する。
+  (テーブルのsampleResultsに指定された件数の方が多い場合はループする。)
+
+  ただし、**codeId** 属性にコードIDを指定した場合、下記のファイル内のエントリーから、
+  該当するコードの名称を取得し、表示する。 **pattern** 属性によるパターン指定や
+  **optionColumnName** 属性によるオプション名称指定も利用できる。
+  (**codeId** と **sample** を両方指定した場合は **sample** の値を優先する。)
+
+  **パス**
+    /js/devtool/resource/コード値定義.js
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+==================== ============================== ============== ========== ========= ===================================================
+名称                 内容                           タイプ         サーバ     ローカル  備考
+==================== ============================== ============== ========== ========= ===================================================
+key                  | リンク文字列とするコード値\  文字列         ◎          ×
+                       を、行データから取得するキー
+
+title                カラムヘッダーに表示する文字列 文字列         ◎          ◎
+
+cssClass             各カラムに指定するCSSクラス    文字列         ○          ○
+
+sortable             | カラムのソートリンクを表示\  文字列         ○          ○         | デフォルトは'false'
+                       するかどうか                                                     | :doc:`table_search_result` でのみ利用可能
+
+sample               テスト用のダミー表示値         文字列         ×          ○         "|" 区切りで複数指定する。
+
+samplePattern        | 一行あたりに出力するコード値 文字列         ×          ○         ","区切りで指定する。
+                       の件数のパターン 
+
+codeId               コード定義ID                   文字列         ◎          ○
+
+pattern              | 使用するコードパターンの\    文字列         ○          ○         デフォルトは 'PATTERN01'
+                       カラム名
+
+optionColumnName     | 取得するオプション名称の     文字列         ○          ○         デフォルトは 'OPTION01'
+                       カラム名
+
+labelPattern         ラベル表示書式                 文字列         ○          ○         | ラベルを整形するパターン。
+                                                                                          プレースホルダを下記に示す。
+                                                                                        | $NAME$:
+                                                                                          コード値に対応するコード名称
+                                                                                        | $SHORTNAME$:
+                                                                                          コード値に対応するコードの略称
+                                                                                        | $OPTIONALNAME$:
+                                                                                          コード値に対応するコードのオプション名称
+                                                                                        | $OPTIONALNAME$を使用する場合は
+                                                                                          optionColumnName属性の指定が必須となる。
+                                                                                        | $VALUE$: コード値
+                                                                                          デフォルトは”$NAME$”。
+
+listFormat           | リスト表示時に使用する       文字列         ○          ○         デフォルトは 'sp'
+                       フォーマット
+
+width                カラムの横幅の指定             文字列         ○          ○         
+
+additional           付加情報として扱うかどうか     真偽値         ○          ○         | trueを指定した場合、narrow表示モードで
+                                                                                          別形式での表示となる。下図では
+                                                                                          メールアドレス・登録日にadditional属性
+                                                                                          を設定しており、narrow表示モードでは
+                                                                                          インラインに展開するパネルに表示される。
+                                                                                          (デフォルトはfalse)
+
+                                                                                        .. figure:: ../_image/additional_column.png
+                                                                                          :scale: 80
+                                                                                          :align: left
+
+                                                                                        .. warning::
+
+                                                                                          autospan/rowspan 属性を使用している\
+                                                                                          テーブルではadditional 属性を使用することは\
+                                                                                          できない。
+
+colspan              横方向に結合するカラム数       数値           ○          ○         | 使用方法は、\ :doc:`table_row`\
+                                                                                            を参照
+
+rowspan              縦方向に結合するカラム数       数値           ○          ○         | 使用方法は、\ :doc:`table_row`\
+                                                                                            を参照
+
+dataFrom             | 表示するデータの取得元       文字列         ×          ×         | 画面項目定義に記載する、
+                                                                                          「表示情報取得元」.「表示項目名」
+                                                                                          の形式で設定する。
+
+comment              コード値表示についての備考     文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+
+initialValueDesc     初期表示内容に関する説明       文字列         ×          ×         | 設計書の表示時に、
+                                                                                          画面項目定義の項目定義一覧で、
+                                                                                          「備考」に表示される。
+==================== ============================== ============== ========== ========= ===================================================
+
+
+内部構造・改修時の留意点
+============================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/column/code.tag           :doc:`column_code`
+
+/WEB-INF/tags/listSearchResult/\*.tag          Nablarch検索結果テーブルタグファイル
+
+/js/jsp/taglib/nablarch.js                     `<n:code>` のエミュレーション機能を実装する
+                                               タグライブラリスタブJS
+
+/css/style/nablarch.less                       | Nablarch関連スタイル定義
+                                               | テーブルの配色などを定義している。
+
+/css/style/base.less                           | 基本HTMLの要素のスタイル定義。
+                                                 リンクに関する定義もここに含まれる。
+
+============================================== ==================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-column_code",
+  "title": "コード値ラベル表示用カラムウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードサンプル",
+      "hints": [
+        "column:code",
+        "table:search_result",
+        "column:checkbox",
+        "コードサンプル",
+        "JSPウィジェット",
+        "コード値表示",
+        "codeId",
+        "key"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "key",
+        "title",
+        "cssClass",
+        "sortable",
+        "sample",
+        "samplePattern",
+        "codeId",
+        "pattern",
+        "optionColumnName",
+        "labelPattern",
+        "listFormat",
+        "width",
+        "additional",
+        "colspan",
+        "rowspan",
+        "dataFrom",
+        "コード値ラベル",
+        "属性値一覧",
+        "ローカル動作",
+        "$NAME$",
+        "$SHORTNAME$",
+        "$OPTIONALNAME$",
+        "$VALUE$"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "内部構造・改修時の留意点",
+      "hints": [
+        "column/code.tag",
+        "nablarch.js",
+        "nablarch.less",
+        "base.less",
+        "タグファイル",
+        "部品構成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**設計成果物（ローカル動作）**\n\n```jsp\n<table:search_result\n  title         = \"検索結果\"\n  sampleResults = \"15\">\n\n  <column:checkbox\n    title = \"選択\">\n  </column:checkbox>\n\n  <column:code\n    title=\"性別\">\n  </column:code>\n\n</table:search_result>\n```\n\n**実装成果物（サーバ動作）**\n\n```jsp\n<table:search_result\n  title               = \"検索結果\"\n  searchUri           = \"/action/ss11AC/W11AC01Action/RW11AC0102\"\n  listSearchInfoName  = \"11AC_W11AC01\"\n  resultSetName       = \"searchResult\"\n  sampleResults       = \"15\">\n\n  <column:checkbox\n    title    = \"選択\"\n    key      = \"userId\"\n    name     = \"W11AC05.systemAccountEntityArray[${count-1}].userId\"\n    offValue = \"0000000000\">\n  </column:checkbox>\n\n  <column:code\n    title  = \"性別\"\n    key    = \"gender\"\n    codeId = \"code1\">\n  </column:code>\n\n</table:search_result>\n```",
+    "s2": "**ローカル動作時の挙動**\n\n- `sample` 属性の `\"|\"` 区切り文字列を順に表示（`sampleResults` の件数が多い場合はループ）\n- `codeId` 属性指定時は `/js/devtool/resource/コード値定義.js` からコード名称を取得。`pattern` 属性によるパターン指定や `optionColumnName` 属性によるオプション名称指定も利用可能\n- `codeId` と `sample` を両方指定した場合は `sample` の値を優先\n\n**属性値一覧** [◎ 必須属性 ○ 任意属性 × 無効]\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| key | 行データからコード値を取得するキー | 文字列 | ◎ | × | |\n| title | カラムヘッダーに表示する文字列 | 文字列 | ◎ | ◎ | |\n| cssClass | 各カラムに指定するCSSクラス | 文字列 | ○ | ○ | |\n| sortable | カラムのソートリンクを表示するかどうか | 文字列 | ○ | ○ | デフォルト`'false'`。:doc:`table_search_result` でのみ利用可能 |\n| sample | テスト用のダミー表示値 | 文字列 | × | ○ | `\"|\"` 区切りで複数指定 |\n| samplePattern | 一行あたりに出力するコード値の件数のパターン | 文字列 | × | ○ | `\",\"` 区切りで指定 |\n| codeId | コード定義ID | 文字列 | ◎ | ○ | |\n| pattern | 使用するコードパターンのカラム名 | 文字列 | ○ | ○ | デフォルト`'PATTERN01'` |\n| optionColumnName | 取得するオプション名称のカラム名 | 文字列 | ○ | ○ | デフォルト`'OPTION01'` |\n| labelPattern | ラベル表示書式 | 文字列 | ○ | ○ | プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称)、`$VALUE$`(コード値)。デフォルト`\"$NAME$\"`。`$OPTIONALNAME$` 使用時は `optionColumnName` の指定が必須 |\n| listFormat | リスト表示時のフォーマット | 文字列 | ○ | ○ | デフォルト`'sp'` |\n| width | カラムの横幅 | 文字列 | ○ | ○ | |\n| additional | 付加情報として扱うかどうか | 真偽値 | ○ | ○ | `true` の場合、narrow表示モードで別形式表示。デフォルト`false`。**autospan/rowspan属性を使用しているテーブルでは使用不可** |\n| colspan | 横方向に結合するカラム数 | 数値 | ○ | ○ | 使用方法は :doc:`table_row` を参照 |\n| rowspan | 縦方向に結合するカラム数 | 数値 | ○ | ○ | 使用方法は :doc:`table_row` を参照 |\n| dataFrom | 表示するデータの取得元 | 文字列 | × | × | 設計書用（画面項目定義の「表示情報取得元」.「表示項目名」形式） |\n| comment | コード値表示についての備考 | 文字列 | × | × | 設計書用（画面項目定義の「備考」に表示） |\n| initialValueDesc | 初期表示内容に関する説明 | 文字列 | × | × | 設計書用（画面項目定義の「備考」に表示） |\n\n![additional属性のnarrow表示モード例](assets/ui-framework-column_code/additional_column.png)\n\n> **警告**: autospan/rowspan属性を使用しているテーブルでは `additional` 属性を使用することはできない。",
+    "s3": "**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/column/code.tag | :doc:`column_code` |\n| /WEB-INF/tags/listSearchResult/*.tag | Nablarch検索結果テーブルタグファイル |\n| /js/jsp/taglib/nablarch.js | `<n:code>` のエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/nablarch.less | Nablarch関連スタイル定義（テーブルの配色など） |\n| /css/style/base.less | 基本HTMLの要素のスタイル定義（リンクに関する定義を含む） |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

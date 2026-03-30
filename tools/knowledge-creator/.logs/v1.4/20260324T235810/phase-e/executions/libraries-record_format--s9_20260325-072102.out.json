@@ -1,0 +1,45 @@
+{
+  "id": "libraries-record_format--s9",
+  "title": "フィールドコンバータ（文字列置換）の利用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フィールドコンバータ（文字列置換）の利用方法",
+      "hints": [
+        "CharacterReplacementManager",
+        "CharacterReplacementConfig",
+        "CharacterReplacementUtil",
+        "CharacterReplacementResult",
+        "BasicApplicationInitializer",
+        "typeName",
+        "filePath",
+        "encoding",
+        "byteLengthCheck",
+        "フィールドコンバータ",
+        "文字列置換",
+        "replacementコンバータ",
+        "変換ルール設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "可変長ファイルにおけるタイトル行の読み書き",
+      "hints": [
+        "requires-title",
+        "title-record-type-name",
+        "タイトル行",
+        "可変長ファイル",
+        "シングルフォーマット",
+        "マルチフォーマット",
+        "Titleレコードタイプ",
+        "タイトル行識別"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フィールドコンバータ（文字列置換）の設定\n\n**クラス**: `nablarch.core.dataformat.CharacterReplacementManager`, `nablarch.core.dataformat.CharacterReplacementConfig`\n\n初期化コンポーネント（`BasicApplicationInitializer`）の`initializeList`に`characterReplacementManager`を追加し、文字列置換コンポーネントを定義する。\n\n```xml\n<component name=\"initializer\"\n      class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n  <property name=\"initializeList\">\n    <list>\n      <component-ref name=\"characterReplacementManager\" />\n    </list>\n  </property>\n</component>\n\n<component name=\"characterReplacementManager\"\n    class=\"nablarch.core.dataformat.CharacterReplacementManager\">\n  <property name=\"configList\">\n    <list>\n      <component class=\"nablarch.core.dataformat.CharacterReplacementConfig\">\n        <property name=\"typeName\" value=\"sample\"/>\n        <property name=\"filePath\" value=\"classpath:messaging/characterconvertor/input.properties\"/>\n        <property name=\"encoding\" value=\"UTF-8\"/>\n        <property name=\"byteLengthCheck\" value=\"false\"/>\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n**CharacterReplacementConfigプロパティ**:\n\n| プロパティ名 | 説明 |\n|---|---|\n| typeName | 変換タイプの名称。フォーマット定義ファイルで利用する際に指定する。 |\n| filePath | 変換ルールの設定ファイルのパス |\n| encoding | 変換時のエンコーディング |\n| byteLengthCheck | 変換前後のバイト長チェック実施有無。デフォルト: `true`（実施する） |\n\n**変換ルール設定ファイル**: `変換前=変換後` の形式で1文字ごとに記述する。\n\n```properties\n\\u9ad9=\\u9ad8\n\\uff11=\\u4e00\n\\uff12=\\u4e8c\n```\n\nフォーマット定義ファイルでは、コンバータの引数に`typeName`で設定した変換タイプ名を渡すことで使用する変換タイプを指定する。\n\n```\n3  kanjiName  XN  replacement(\"sample\")  #漢字氏名\n```\n\n**置換結果の取得** (`CharacterReplacementUtil`):\n\n```java\n// 直前のフォーマット変換処理における置換結果を取得\nCharacterReplacementResult resultBean = CharacterReplacementUtil.getResult(\"kanjiName\");\nboolean result = resultBean.isReplacement();       // true=変換有り、false=変換無し\nString inputString = resultBean.getInputString();   // 変換前の文字列\nString resultString = resultBean.getResultString(); // 変換後の文字列\n```",
+    "s2": "## 可変長ファイルにおけるタイトル行の読み書き\n\n`requires-title: true` をフォーマット定義ファイルに設定すると、最初の行をタイトル行として通常のレコードタイプとは別に取り扱える。最初の行はレコードタイプ名 `[Title]` で読み書きされる。\n\nタイトル行とデータ行を識別するフィールドが存在しない場合でも、本機能を使用すればシングルフォーマット定義で読み込むことができる。最初の行がタイトル行であることが保証されるため、ファイルレイアウトの精査を省略できる。最初の行にタイトルが存在するファイルを読み込む場合は本機能を使用することを推奨する。\n\n**制約**:\n- レコードタイプ `[Title]` を必ずフォーマット定義しなければならない。\n- 最初の行を書き込む際に指定するレコードタイプは `[Title]` でなければならない。\n- 最初の行以降を書き込む際に指定するレコードタイプは `[Title]` 以外でなければならない。\n- レコードタイプ `[Title]` にフォーマットの適用条件が定義されている場合、最初の行は必ずその適用条件を満たさなければならない。また、最初の行以降の行はその適用条件を満たしてはいけない。\n\n**シングルフォーマット定義の例**:\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true         # 最初の行をタイトルとして読み書きする\n\n[Title]                      # タイトル固有のレコードタイプ\n1   Name       N  \"書籍名\"\n2   Publisher  N  \"出版社\"\n3   Authors    N  \"著者\"\n4   Price      N  \"価格\"\n\n[Books]                      # データのレコードタイプ\n1   Name       X\n2   Publisher  X\n3   Authors    X\n4   Price      X  Number\n```\n\n**マルチフォーマット定義の例**:\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true\n\n[Classifier]\n1  Kubun X\n\n[Title]                      # マルチフォーマットでもフォーマットの適用条件は不要\n1   Kubun      N  \"データ区分\"\n2   Name       N  \"書籍名\"\n3   Publisher  N  \"出版社\"\n4   Authors    N  \"著者\"\n5   Price      N  \"価格\"\n\n[DataRecord]\n  Kubun = \"1\"\n1   Kubun      X\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n\n[TrailerRecord]\n  Kubun = \"2\"\n1   Kubun      X\n2   RecordNum  X\n```\n\nタイトル固有のレコードタイプ名はデフォルトでは `[Title]` だが、`title-record-type-name` ディレクティブで個別に指定することも可能。"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[5] (s6) hints",
+      "description": "The default format for SqlPStatement#executeBatchメソッドの更新終了時 uses $updateCount$ (not $batchCount$), but $updateCount$ is absent from s6's hints. An AI searching for $updateCount$ context in batch operations would not find s6.",
+      "source_evidence": "Source default format: `$\\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]` — uses $updateCount$ while the placeholder table lists $batchCount$. Both identifiers are present in the section and should be indexed."
+    }
+  ]
+}

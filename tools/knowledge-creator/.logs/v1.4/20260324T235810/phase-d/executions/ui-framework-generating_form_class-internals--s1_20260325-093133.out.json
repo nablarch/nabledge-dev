@@ -1,0 +1,34 @@
+{
+  "file_id": "ui-framework-generating_form_class-internals--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — フィールド定義・アクセサ",
+      "description": "The Javadoc comment templates for the getter and setter methods are omitted from the output specification template in the knowledge file. The source specifies exactly what Javadoc gets generated: getter has `/** 【フィールド論理名】を取得する。\\n * @return 【フィールド論理名】。\\n**/` and setter has `/** 【フィールド論理名】を設定する。\\n * @param 【フィールド物理名】 設定する【フィールド論理名】。\\n**/`. These are part of the generated code specification.",
+      "source_evidence": "Source table row フィールド定義・アクセサ 【出力仕様】 shows full Javadoc for both getter and setter as part of the template."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — Mapへの変換",
+      "description": "The Javadoc comment template for the `toMap()` method is omitted. The source specifies: `/** プロパティの情報をMapに変換する。\\n * @return 変換後のMap\\n**/` as part of the output template. The knowledge file shows only the method signature without any Javadoc.",
+      "source_evidence": "Source table row Mapへの変換 【出力仕様】 includes `/** プロパティの情報をMapに変換する。 * @return 変換後のMap **/` before `protected Map<String, Object> toMap()`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — index hints",
+      "description": "`<table:search_result>` is missing from s4 hints. This tag is the explicit condition that determines whether `ListSearchInfo` is inherited in the generated class declaration. A user asking about `table:search_result` behavior in form generation would not find this section.",
+      "source_evidence": "Source: 【extends ListSearchInfo】欄 — 「画面内に検索結果表示用テーブル(<table:search_result>)が存在すれば ListSearchInfo を継承する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — index hints",
+      "description": "`@CodeValue` and `@NumberRange` are missing from s4 hints. Both are Nablarch-specific validation annotations included in the generated import declarations and are potential outputs of the data-format and data-length annotation generation rules (via domain definitions). A user asking about code value or number range validation in generated form classes would not find this section.",
+      "source_evidence": "Source import list includes `import nablarch.common.code.validator.CodeValue;` and `import nablarch.core.validation.validator.NumberRange;` as part of the fixed import output."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "no_knowledge_content_invalid",
+      "severity": "critical",
+      "location": "knowledge file root",
+      "description": "no_knowledge_content=true but source contains extensive Layer A/B content across 10 major sections.",
+      "source_evidence": "Source contains: (1) configuration properties table for FailureLogFormatter (failureLogFormatter.className, defaultFailureCode, defaultMessage, language, notificationFormat, analysisFormat, contactFilePath, appFailureCodeFilePath, fwFailureCodeFilePath) with types and defaults; (2) class/API specs: FailureLogUtil, FailureLogFormatter, TransactionAbnormalEnd, ProcessAbnormalEnd; (3) decision guidance: when to use FailureLogUtil vs TransactionAbnormalEnd/ProcessAbnormalEnd; (4) security warning about masking personal/confidential data in $data$ placeholder; (5) placeholder table ($failureCode$, $message$, $data$, $contact$); (6) multiple code examples in Java and properties format; (7) contact info configuration (failure-log-contact.properties, prefix-match search behavior); (8) runtime failure code override mechanism for both app codes and framework codes; (9) derived execution info output method; (10) FailureLogFormatter extension/customization pattern."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _FailureLog:
+
+------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-01_FailureLog--s1",
+  "title": "FailureLog",
+  "no_knowledge_content": true,
+  "official_doc_urls": [],
+  "index": [],
+  "sections": {}
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

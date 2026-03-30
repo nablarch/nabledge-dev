@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "official_doc_urls[0]",
+      "description": "The URL 'https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/support/DbAccessSupport.html' is not present in the source file. The source only mentions the fully-qualified class name `nablarch.core.db.support.DbAccessSupport` without any URL.",
+      "source_evidence": "Source references the class as '*nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能' — no URL provided."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — データベースをインプットとするバッチ",
+      "description": "The SQL code example (GET_DELETE_USER_LIST SELECT statement) is omitted. The source includes the full SQL query as part of the implementation example, showing the table name (SYSTEM_ACCOUNT), columns (USER_ID), and WHERE clause condition (:effectiveDateTo). An AI agent reproducing the complete example would be missing this SQL.",
+      "source_evidence": "Source contains: `GET_DELETE_USER_LIST = SELECT USER_ID FROM SYSTEM_ACCOUNT WHERE EFFECTIVE_DATE_TO <= :effectiveDateTo ORDER BY USER_ID`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "PascalCase/generic class names appearing in the code examples are missing from hints: `DataReader`, `SqlRow`, `ExecutionContext`. These appear in the method signature `public DataReader<SqlRow> createReader(ExecutionContext ctx)` and are Nablarch API types relevant for implementation.",
+      "source_evidence": "Source code: `public DataReader<SqlRow> createReader(ExecutionContext ctx) {`"
+    }
+  ]
+}

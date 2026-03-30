@@ -1,0 +1,118 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s6",
+      "description": "連絡先情報の検索キーが誤り。知識ファイルは「障害コードの先頭からプレフィックスとのマッチを試み」と記述しているが、ソースでは検索キーはThreadContextから取得した「リクエストID」である。障害コードとリクエストIDは全く別の概念。",
+      "source_evidence": "「キーに指定されたリクエストIDは、ThreadContextから取得したリクエストIDに対して、前方一致で検索する」(FailureLog_Contact セクション)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s6",
+      "description": "連絡先情報が見つからない場合の挙動が誤り。知識ファイルは「$contact$は空文字列になります」と記述しているが、ソースでは`null`が出力される。",
+      "source_evidence": "「リクエストIDに対応する連絡先情報が見つからない場合はnullが出力される」および出力例: `<null>`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s7",
+      "description": "`appFailureCodeFilePath`の説明が誤り。知識ファイルは「アプリケーションの例外クラスに対して障害コードをマッピングします」と記述し、クラス名をキーとした設定例を示しているが、ソースではキーは「ソースコード上にハードコードされた障害コード」であり、出力に使用する障害コードへのマッピングである。例外クラスとは無関係。",
+      "source_evidence": "「プロパティファイルには、ソースコード上の障害コード毎に出力に使用する障害コードを指定する」、設定例: `UM900003=MSG9003`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s7",
+      "description": "`fwFailureCodeFilePath`の仕組みが誤り。知識ファイルは「スローされた例外クラス（またはその親クラス）がオーバーライドファイルに定義されている場合」と記述し、クラス名をキーとした設定例を示しているが、ソースではキーはパッケージ名であり、スタックトレースのルート要素クラスのFQCNに対して前方一致で検索する。クラス継承階層は関係ない。",
+      "source_evidence": "「プロパティファイルでは、キーにフレームワークのパッケージ名、値に障害コードを指定する。キーに指定されたパッケージ名は、スタックトレースから取得した例外が送出されたクラスのFQCN(完全修飾クラス名)に対して、前方一致で検索する」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s8",
+      "description": "派生実行情報セクションの内容が全面的に誤り。知識ファイルは`getDerivedExecutionInfo()`メソッドのオーバーライドと`getExecutionContext()`・`getRequestId()`の呼び出しを説明しているが、ソースにはこれらのメソッドは登場しない。ソースでは、前段処理がINSERT_REQUEST_ID/INSERT_EXECUTION_ID/UPDATED_USER_IDなどのカラムに実行時情報をDBに書き込み、後段処理でDataReaderが読み込んだデータとして`$data$`プレースホルダに出力される仕組みを説明している。",
+      "source_evidence": "「派生元実行時情報の出力には、本機能のプレースホルダ「$data$」が使用できる。プレースホルダ「$data$」が指定された場合、データリーダを使用して読み込まれたデータが障害ログに出力される」および`failureLogFormatter.derivedRequestIdPropName`/`derivedUserIdPropName`プロパティ、INSERT_REQUEST_ID/INSERT_EXECUTION_ID/UPDATED_USER_IDカラム名の説明"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s10",
+      "description": "`FailureLogFormatter`の拡張ポイントとして`getContactStr()`、`getDerivedExecutionInfo()`、`formatNotificationMessage()`、`formatAnalysisMessage()`を列挙しているが、ソースにこれらのメソッドは登場しない。ソースで示されている唯一の拡張ポイントは`getLogItems()`メソッドのオーバーライドである。",
+      "source_evidence": "「FailureLogFormatterのgetLogItemsメソッドをオーバライドし、プレースホルダ「$data$」に対して上記のCustomDataItemを設定する」、`CustomDataFailureLogFormatter`の実装例でのみ`getLogItems()`が使用されている"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4",
+      "description": "`FailureLogUtil.logFatal()`を「通知ログの出力」メソッドとして示しているが、ソースのFailureLogUtil使用例には`logFatal()`は登場せず、`logError()`のみが使用されている。logFatalとlogErrorの役割分担もソースに根拠がない。",
+      "source_evidence": "FailureLogUtil使用例: `FailureLogUtil.logError(inputData, \"UM800001\")` および `FailureLogUtil.logError(e, inputData, \"UM800001\")` のみ示されている"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`language`プロパティのデフォルト値を「システムデフォルト」と記述しているが、ソースでは「指定がない場合はThreadContextに設定されている言語を使用する」と明記されている。",
+      "source_evidence": "「failureLogFormatter.language: メッセージの言語。指定がない場合はThreadContextに設定されている言語を使用する」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`defaultMessage`プロパティのデフォルト値を「空文字列」と記述しているが、ソースでは**(必須)**と明記されており、デフォルト値はない。",
+      "source_evidence": "「failureLogFormatter.defaultMessage(必須): デフォルトのメッセージ。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 / 障害ログの出力方針",
+      "description": "障害ログの出力方針セクションが欠落している。障害通知ログ（ロガー名: MONITOR、レベル: FATAL/ERROR）と障害解析ログ（ロガー名: クラス名指定なし）のログレベルとロガー名の区別は、log.properties設定に直結する重要情報。",
+      "source_evidence": "「障害ログの出力方針」セクションのテーブル: 障害通知ログ=MONITOR/FATAL・ERROR、障害解析ログ=指定なし(クラス名)/FATAL・ERROR"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 / 障害ログの出力項目",
+      "description": "障害ログの出力項目テーブル（出力日時、障害レベル、障害コード、起動プロセス、処理方式区分、リクエストID、実行時ID、ユーザID、メッセージ、処理対象データ、スタックトレース、付加情報と各ログへの適用有無）が完全に欠落している。",
+      "source_evidence": "「障害ログの出力項目」セクションの出力項目テーブル"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 / s5 / 障害ログの出力方法",
+      "description": "FailureLogUtilとTransactionAbnormalEnd/ProcessAbnormalEndの使い分け判断に必要な重要制約が欠落している: 「FailureLogUtilを使用した場合は、例外が送出されるわけではないのでトランザクションがコミットされる」",
+      "source_evidence": "「FailureLogUtilを使用した場合は、例外が送出されるわけではないのでトランザクションがコミットされる」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 / 障害ログの設定方法",
+      "description": "`failureLogFormatter.derivedRequestIdPropName`と`failureLogFormatter.derivedUserIdPropName`の2つのプロパティがプロパティ一覧から欠落している。これらは派生元実行時情報の出力に必要な設定プロパティ。",
+      "source_evidence": "app-log.propertiesの設定例: `failureLogFormatter.derivedRequestIdPropName=insertRequestId`、`failureLogFormatter.derivedUserIdPropName=updatedUserId`"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 / FailureLog_Contact",
+      "description": "連絡先情報ファイルが読み込み後にキー名の長さの降順にソートされる仕組みが欠落している。これはプレフィックスが重複する場合の検索順序に影響する重要な動作仕様。",
+      "source_evidence": "「このため、プロパティファイルの内容は読み込み後に、より限定的なリクエストIDから検索するように、キー名の長さの降順にソートする」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s7 / FailureLog_FwMsgId",
+      "description": "フレームワーク障害コードファイルも読み込み後にキー名の長さの降順にソートされる仕組みが欠落している。「例外が送出されたクラス」とはスタックトレースのルート要素（Caused byの最後）を指すという説明も欠落。",
+      "source_evidence": "「このため、プロパティファイルの内容は読み込み後に、より限定的なパッケージ名から検索するように、キー名の長さの降順にソートする」および「「例外が送出されたクラス」とは、スタックトレースのルート要素を指している」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 / FailureLog_AppMsgId",
+      "description": "ソース上の障害コードがappFailureCodeFilePath内に見つからない場合の動作が欠落: ソース上の障害コードをそのまま使用する（defaultFailureCodeは使わない）。",
+      "source_evidence": "「ソース上で指定された障害コードに対応する出力に使用する障害コードが見つからない場合は、ソース上で指定された障害コードを使用する」"
+    }
+  ]
+}

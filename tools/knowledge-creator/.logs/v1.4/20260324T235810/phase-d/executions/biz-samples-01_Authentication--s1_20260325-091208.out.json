@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-01_Authentication--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The entire 構成 h2 section (クラス図, 各クラスの責務, テーブル定義 subsections) is merged into a single section s3. The source 構成 section contains well over 2000 characters of plain text and has multiple h3/h4/h5 sub-headings. Per V3 rules, this warrants splitting (e.g., separating テーブル定義 into its own section). The automated pre-check flagged 'source headings 8 vs knowledge sections 6', and 2 of the unrepresented headings are the sub-sections of 構成.",
+      "source_evidence": "Source 構成 section contains h3: クラス図, h4: 各クラスの責務 (with h5: インタフェース定義, クラス定義), h5: テーブル定義 — all merged into knowledge s3."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Section s5 hints are missing several PascalCase class/interface names that appear in both the XML configuration example and the property description table: `SimpleDbTransactionManager` (used as the dbManager type), `SystemTimeProvider` (the interface for systemTimeProvider), and `BusinessDateProvider` (the interface for businessDateProvider).",
+      "source_evidence": "Source s5 property table: 'nablarch.core.db.transaction.SimpleDbTransactionManagerクラスのインスタンスを指定する', 'nablarch.core.date.SystemTimeProviderインタフェースを実装したクラス', 'nablarch.core.date.BusinessDateProviderインタフェースを実装したクラス'."
+    }
+  ]
+}

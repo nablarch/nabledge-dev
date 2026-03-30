@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-MessagingAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 (code example)",
+      "description": "The code example removes the try-catch-finally control structure from the source, replacing it with flat sequential code and comments. In the source, `rollback()` and `onError(e, req, ctx)` are inside a `catch(e)` block (executed only on exception), and `send(res)` is inside a `finally` block (always executed). The knowledge file presents all calls as sequential with the comments `// 例外発生時:` and `// 最終:`, which does not accurately convey the conditional vs. unconditional execution semantics. This misrepresents the control flow for an AI answering questions about error handling behavior.",
+      "source_evidence": "try { ... res = onReceive(req, ctx); commit(); } catch(e) { rollback(); res = onError(e, req, ctx); } finally { send(res); }"
+    }
+  ]
+}

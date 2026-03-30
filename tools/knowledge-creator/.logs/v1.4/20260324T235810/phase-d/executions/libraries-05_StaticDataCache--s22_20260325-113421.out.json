@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s22",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section content is under 50 characters. The s4 body contains only an introductory sentence (~47 chars with markup): \"`nablarch.core.cache.BasicStaticDataCache` の設定プロパティ名と設定内容の一覧。\"",
+      "source_evidence": "Source section '設定内容詳細' leads directly into the subsection 'nablarch.core.cache.BasicStaticDataCacheの設定' with the property table. The intro sentence is a reasonable extraction but falls below the 50-character threshold."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — refreshAndGetValue code example",
+      "description": "The inline code comment `// 使用者は、静的データがキャッシュにあるかを意識する必要はない` (\"users do not need to be aware of whether static data is in cache\") is omitted from the code example. This comment conveys a meaningful behavioral guarantee about cache transparency that is relevant to AI-assisted implementation guidance.",
+      "source_evidence": "Source code in '実装例' section contains the comment on the line after `cache.getValues(\"name\", name);`: `// 使用者は、静的データがキャッシュにあるかを意識する必要はない`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`SqlRow` is used in the `loadAll()` code example (`for (SqlRow row : results)`) but is absent from s2's hints array.",
+      "source_evidence": "Source code in 'ExampleDataをロードするクラス': `for (SqlRow row : results) { objs.add(createData(row)); }`"
+    }
+  ]
+}

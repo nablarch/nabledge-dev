@@ -1,0 +1,23 @@
+{
+  "id": "libraries-record_format--s11",
+  "title": "JSONおよびXMLデータ形式における固有の仕様について",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ノード名に関する制約事項",
+      "hints": [
+        "ノード名制約",
+        "レコードタイプ名重複禁止",
+        "親ノード名重複",
+        "フィールド名重複許容",
+        "XMLデータ形式",
+        "JSONデータ形式"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "\\`レコードタイプ名に関する注意事項\\`_ のとおり、レイアウト定義においてレコードタイプ名の重複は許容されない。そのため、**親ノード名が重複するXML・JSONは許容されない**。\n\n**禁止例（NG）** — フォーマット定義ファイル:\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]               #この要素と\n1 b OB\n[b]\n1 a OB\n[a]               #この要素が重複(NG)\n1 c X\n```\n\nXMLデータ:\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<a>       <!-- この要素と -->\n  <b>\n    <a>   <!-- この要素が重複(NG) -->\n      <c>val1</c>\n    </a>\n  </b>\n</a>\n```\n\n以下の重複は許容される:\n\n- **レコードタイプ名とフィールド名の重複**: レコードタイプ名が一意であることを妨げないため許容。\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]               #このレコードタイプ名と\n1 a X             #このフィールド名が重複(OK)\n2 b X9\n```\n\n- **異なるレコードタイプ間でのフィールド名の重複**: 別レコードタイプに同名フィールドが存在しても許容。\n\n```bash\nfile-type:        \"XML\"\ntext-encoding:    \"UTF-8\"\n[a]\n1 b OB\n2 c OB\n[b]\n1 d X9            #このフィールド名と\n[c]\n1 d X             #このフィールド名が重複(OK)\n```"
+  }
+}

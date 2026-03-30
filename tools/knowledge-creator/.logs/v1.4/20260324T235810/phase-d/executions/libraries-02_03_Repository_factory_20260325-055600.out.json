@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_03_Repository_factory",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファクトリークラスの実装例 — code comment",
+      "description": "The source code includes a prominent warning comment that this code is created by the project architect and that regular application programmers do not normally implement this kind of code. This is decision-necessary information that affects who should be using/implementing factory injection. The knowledge file omits this warning entirely.",
+      "source_evidence": "// ******** 注意 ********\n// 下記のコードはプロジェクトのアーキテクトが作成するものである。\n// 通常、各アプリケーション・プログラマはこのような実装を行わない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファクトリークラスの実装例 — createObject method comment",
+      "description": "The source explains that while the example simply calls `new`, for classes from software outside the framework, the necessary initialization processing must be hardcoded. This is implementation guidance that affects how developers write factory classes for external library integration. The knowledge file omits this guidance.",
+      "source_evidence": "// この例では単にクラスをnewして返しているが、フレームワーク外のソフトウェアに\n// 含まれるクラスの場合は、クラスに必要な初期化処理をハードコーディングする。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`SampleComponent` is a PascalCase class name referenced throughout the source (in the factory class signature, createObject return type, usage example cast, and SystemRepository call) but is absent from the hints array.",
+      "source_evidence": "public class SampleComponentFactory implements ComponentFactory<SampleComponent> { ... return new SampleComponent(); } ... SampleComponent comp = (SampleComponent) SystemRepository.getObject(\"sampleComponent\");"
+    }
+  ]
+}

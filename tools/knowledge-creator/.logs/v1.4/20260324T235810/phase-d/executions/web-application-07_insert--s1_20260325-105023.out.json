@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "s4 merges four distinct source h3-level sections (自動設定項目の指定, ビジネスロジック(Component)の作成, Actionの作成, JSPの作成) into a single section. The combined content is well over 2000 characters and the source clearly separates these as distinct subsections under 作成手順.",
+      "source_evidence": "Source has four separate === headings: '自動設定項目の指定(Entityの編集)', 'ビジネスロジック(Component)の作成', 'Actionの作成', 'JSPの作成'. Each covers distinct implementation concerns."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 index hints",
+      "description": "s4 hints are missing `MessageUtil` and `MessageLevel`, both of which appear in the Java code example within s4's content (in the DuplicateStatementException catch block).",
+      "source_evidence": "Source code in ビジネスロジック section: `throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"));` — both classes appear in the code example included in s4."
+    }
+  ]
+}

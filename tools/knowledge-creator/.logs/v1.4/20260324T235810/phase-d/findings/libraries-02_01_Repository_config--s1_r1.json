@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 登録するクラスのソースコード(HelloMessageProvider) / 登録するクラスのソースコード(HelloComponent)",
+      "description": "The Java source code examples for HelloMessageProvider and HelloComponent are omitted. These demonstrate the concrete implementation pattern for DI-registerable components: setter method naming convention (setHelloMessage, setHelloMessageProvider) and implicit default constructor. While the two requirements are stated textually, the code examples show what compliant component classes actually look like.",
+      "source_evidence": "Source contains full Java source for HelloMessageProvider (with setHelloMessage/getHelloMessage) and HelloComponent (with setHelloMessageProvider/printHello), presented as examples of registerable components."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — note about registering business logic in DI container",
+      "description": "The source note concludes with a recommendation: 'このような使用方法を行う際は、このデメリットが許容範囲にあるか十分に検討すること。' This actionable guidance (verify demerits are acceptable before proceeding) is omitted from the s3 note.",
+      "source_evidence": "Source note: 'このような使用方法を行う際は、このデメリットが許容範囲にあるか十分に検討すること。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — リポジトリに保持するインスタンスの生成(DIコンテナ)",
+      "description": "The source h2 section 'リポジトリに保持するインスタンスの生成(DIコンテナ)' has 4 h3 subsections and exceeds 2000 chars of plain text, but the knowledge file merges all content into a single section s3 without splitting. Per V3 rules, an h2 with ≥2000 chars and existing h3 subsections should be split.",
+      "source_evidence": "Source h3 subsections: 登録するクラスのソースコード(HelloMessageProvider), 登録するクラスのソースコード(HelloComponent), コンポーネント設定ファイルの記述(hello.xml), 値を取得する実装例 — all merged into s3."
+    }
+  ]
+}

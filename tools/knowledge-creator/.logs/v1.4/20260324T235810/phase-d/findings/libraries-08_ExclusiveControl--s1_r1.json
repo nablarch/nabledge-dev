@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s9",
+      "description": "The description of `prepareVersion()` states '排他制御用テーブルのバージョン番号を取得してセッションに保持する' — specifically 'セッションに保持する' (stores in session). The source only labels this step as 'バージョン番号の準備(HttpExclusiveControlUtilのprepareVersionメソッド)' and provides a sequence diagram. No text in the source states that the version number is stored in the HTTP session.",
+      "source_evidence": "Source only says: 'バージョン番号の準備(HttpExclusiveControlUtilのprepareVersionメソッド)' with a sequence diagram image reference. The phrase 'セッションに保持する' appears nowhere in the provided source text."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source contains 3 additional parallel-lock scenario diagrams that are not referenced in the knowledge file: (1) 悲観的ロック→楽観的ロックの動作イメージ (ExclusiveControl_Case1Image.jpg), (2) 楽観的ロック(バージョン番号の取得)→悲観的ロックの動作イメージ (ExclusiveControl_Case2Image.jpg), (3) 楽観的ロック(バージョン番号の更新)→悲観的ロックの動作イメージ (ExclusiveControl_Case3Image.jpg). These illustrate the three concurrent-use scenarios when pessimistic and optimistic locks are mixed, which is a key design consideration.",
+      "source_evidence": "Source section '悲観的ロックと楽観的ロックの動作イメージ' states: '悲観的ロックと楽観的ロックを並行して使用する場合の動作イメージを下記に示す。' followed by three image references (Case1Image, Case2Image, Case3Image). s4 only includes the two basic diagrams (PessimisticLockImage and OptimisticLockImage) and omits all three parallel-use case images."
+    }
+  ]
+}

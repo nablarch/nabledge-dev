@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-file_access--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The knowledge file states the fully qualified class name `nablarch.core.util.FileRecordWriterHolder`, but the source file never provides the package for this class. Only `FileRecordWriterHolder` (unqualified) appears in the source text. The package `nablarch.core.util` is inferred/guessed, not sourced.",
+      "source_evidence": "Source uses `FileRecordWriterHolder`_ (RST link reference without package). The only explicit full class name in the source is `nablarch.core.util.FilePathSetting` in the XML example."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 has an empty title and content of \"なし\" (3 characters, well below the 50-character threshold). This section corresponds to the visual `+++++++++++++++++++` separator lines in the RST source, which are decorative dividers — not a real content section. Creating a knowledge section for a visual separator is unnecessary and adds noise.",
+      "source_evidence": "The RST source contains `++++++++++++++++++++++` lines as visual separators between the 論理パス and ファイルアクセスAPI blocks. These are not RST headings and carry no content."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The class `DataRecord` is used in the code example within s4 (`Map<String, Object> results = new DataRecord();`) but is absent from the s4 hints array.",
+      "source_evidence": "Source code example: `Map<String, Object> results = new DataRecord();`"
+    }
+  ]
+}

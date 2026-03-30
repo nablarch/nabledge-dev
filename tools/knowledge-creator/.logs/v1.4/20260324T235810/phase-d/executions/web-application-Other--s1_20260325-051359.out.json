@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "index / sections (s7, s8 missing)",
+      "description": "The source TOC lists 7 sections, but the knowledge file only covers 6. Two sections referenced in the source and listed in the knowledge file's own s1 are completely absent: `other_example_code_get` (コード値の取得方法) and `other_example_warn_message` (警告メッセージの送出). The source file shows the h2 heading for `other_example_code_get` at the very end of the provided content (section 7), and `other_example_warn_message` is referenced in the TOC as section 8. Neither has a corresponding section (s7, s8) in the knowledge file.",
+      "source_evidence": "TOC in source lists: other_example_log_write, other_example_repository_get_settings, other_example_message_get, other_example_message_notify, other_error_message_for_property, other_example_code_get, other_example_warn_message. Knowledge file index and sections end at s6 (other_error_message_for_property)."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (メッセージの取得方法)",
+      "description": "The source notes that for non-internationalized cases, a plain string can be passed directly as the optional argument to `createMessage` instead of a `StringResource` or `Message` object. This implementation option is not mentioned in the knowledge file.",
+      "source_evidence": "Source: 「国際化を行わない場合はオプション引数に直接文字列を指定してもよい。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`getStringResource` is a method called explicitly in the s4 code example but is absent from the hints list.",
+      "source_evidence": "Source code: `StringResource nameResource = MessageUtil.getStringResource(\"PRP0002\");`"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-Validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5",
+      "description": "Section s5 is a one-sentence stub that lacks implementation content. The source section `validation_example_contains_key_param` follows the same pattern as `validation_example_contains_key` (s4), which includes JSP code, form class Java code, and implementation explanation. The automated check confirms 9 source headings vs 5 knowledge sections, indicating substantial content under this heading is missing. s5 contains only a brief description with no code examples or concrete implementation details.",
+      "source_evidence": "Source ends with `.. _`validation_example_contains_key_param`:` anchor, mirroring the structure of `validation_example_contains_key` which produced a full s4 section. Automated checker reports 9 source headings vs 5 knowledge sections."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index",
+      "description": "Knowledge file has 5 sections but automated check found 9 source headings. After accounting for the h1 title and the 4 named content sections visible in the truncated source, at least 3–4 additional headings exist in the unshown portion of the source file that are not represented in the knowledge file.",
+      "source_evidence": "Automated pre-check: 'Section count 5 < source headings 9'. Source TOC lists 4 sections; automated checker found 9 headings total."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The import statement for `CodeValidationUtil` is omitted. The source provides the full package path `please.change.me.core.validation.validator.CodeValidationUtil`, which is essential for developers who need to import and incorporate this sample class into their project.",
+      "source_evidence": "Source: `import please.change.me.core.validation.validator.CodeValidationUtil;` with comment explaining it is a sample that architects must incorporate into their project."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The Map-based constructor of `Example4Form` is omitted from the code example. The source shows `public Example4Form(Map<String, Object> params)` which initializes `value1` and `value2` from the parameter map. This is relevant to understanding how Nablarch form objects are constructed from request parameters.",
+      "source_evidence": "Source: `public Example4Form(Map<String, Object> params) { value1 = (String) params.get(\"value1\"); value2 = (String) params.get(\"value2\"); }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "`@ValidateFor` annotation is used in the s3 code example (`@ValidateFor(\"validate\")` on `CustomerEntity.validate()`) but is absent from s3 hints. Users asking about `@ValidateFor` and code validation may not retrieve s3.",
+      "source_evidence": "Source s3 code: `@ValidateFor(\"validate\") public static void validate(ValidationContext<CustomerEntity context) throws Exception {`"
+    }
+  ]
+}

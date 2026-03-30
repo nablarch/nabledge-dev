@@ -1,0 +1,26 @@
+{
+  "file_id": "ui-framework-jsp_widgets--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (構造 / タグファイル実装例)",
+      "description": "`sample` 属性（テスト用のダミー入力値。本番動作では使用されない）がソースの属性定義に明記されているが、s2 の属性テーブルに含まれていない。",
+      "source_evidence": "<%@ attribute name=\"sample\" description=\"テスト用のダミー入力値(本番動作では使用されない)\" rtexprvalue=\"true\" %>"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (構造 / タグファイル実装例)",
+      "description": "設計書用属性定義セクションの3属性（`dataFrom`「表示するデータの取得元（「表示情報取得元」.「表示項目名」の形式）」、`comment`「カレンダーについての備考（項目定義一覧の備考欄に表示）」、`initialValueDesc`「初期表示内容に関する説明」）がソースに定義されているが、s2 の属性テーブルに含まれていない。",
+      "source_evidence": "<%@ attribute name=\"dataFrom\" description=\"表示するデータの取得元（画面項目定義に記載する、「表示情報取得元」.「表示項目名」の形式で設定する）\" %>\n<%@ attribute name=\"comment\" description=\"このカレンダーについての備考（画面項目定義の項目定義一覧で、備考欄に表示される）\" %>\n<%@ attribute name=\"initialValueDesc\" description=\"初期表示内容に関する説明。\" %>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "s2 のヒントに `sample`、`dataFrom`、`comment`、`initialValueDesc` の属性名が含まれていない。これらはソースの属性定義テーブルの第一列に相当するキーワードであり、ヒントに追加すべき。"
+    }
+  ]
+}

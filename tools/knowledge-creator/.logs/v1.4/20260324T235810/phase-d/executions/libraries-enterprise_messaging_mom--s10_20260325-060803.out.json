@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-enterprise_messaging_mom--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 3: 応答不要メッセージ受信",
+      "description": "The protocol header table for Pattern 3 (応答不要メッセージ受信) is entirely absent. The source contains a table listing all five protocol headers for received messages (メッセージID: 一意文字列, 関連メッセージID: [N/A], 送信宛先: 宛先の論理名, 応答宛先: [N/A], 有効期間: 任意). The knowledge file includes similar tables for all other three patterns but omits it for Pattern 3.",
+      "source_evidence": "Source Pattern 3 section contains: `=========================  =========================================================\\nプロトコルヘッダー         受信内容\\n...\\n送信宛先                   宛先の論理名\\n...`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 has content 'なし' (4 characters), which is well below the 50-character threshold. The section exists in the index with hints (メッセージングプロバイダ, MessagingProvider) but has no substantive content. The corresponding source paragraph ('メッセージング基盤APIの実装系を与えるモジュールである…') is a navigation-only intro sentence, but the section should either contain that text or be removed rather than holding a placeholder 'なし'.",
+      "source_evidence": "Source: `メッセージング基盤API の実装系を与えるモジュールである。ここでは、次の2つのメッセージングプロバイダについて、詳細およびリポジトリによる初期化方法について述べる。`"
+    }
+  ]
+}

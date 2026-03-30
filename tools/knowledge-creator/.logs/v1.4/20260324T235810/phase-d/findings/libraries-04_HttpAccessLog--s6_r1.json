@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — HTTPアクセスログの出力例 section",
+      "description": "The actual log output example code block is entirely missing. The source contains a multi-line log showing all four log entries (BEGIN, PARAMETERS, DISPATCHING CLASS, END) with concrete values including masked passwords (########), nablarch_token, and timing data. This is the primary content of the 'HTTPアクセスログの出力例' section and is essential for users to understand what the actual log output looks like.",
+      "source_evidence": "Source contains: `2011-03-03 19:35:47.848 -INFO- ACC [...] @@@@ BEGIN @@@@` ... `@@@@ PARAMETERS @@@@` ... `@@@@ DISPATCHING CLASS @@@@` ... `@@@@ END @@@@` with all parameter values and masked password fields (########)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`HttpAccessLogFormatter` PascalCase class name is referenced in the source (in the app-log.properties comment `# HttpAccessLogFormatterの設定`) but is absent from the hints array.",
+      "source_evidence": "Source: `# HttpAccessLogFormatterの設定` and `httpAccessLogFormatter.maskingChar=#`"
+    }
+  ]
+}

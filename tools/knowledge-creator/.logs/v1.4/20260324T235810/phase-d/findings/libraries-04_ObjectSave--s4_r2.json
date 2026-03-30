@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — VariableOrderBySyntaxConvertor ケース部分の仕様",
+      "description": "ケース部分の解析ルール3項目が省略されている: (1)「括弧開き以降で最初に登場する文字列をソートIDとする」、(2)「ソートID以降で括弧閉じまでの間をケース本体とする」、(3)「ソートIDおよびケース本体はトリミングする」。特にトリミング仕様は、ソートIDに前後スペースが含まれる場合の動作に影響する実装上の判断情報となりうる。",
+      "source_evidence": "ケース部分の仕様: 「* 括弧開き以降で最初に登場する文字列をソートIDとする。* ソートID以降で括弧閉じまでの間をケース本体とする。* ソートIDおよびケース本体はトリミングする。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints配列",
+      "description": "各セクション見出しに対応するインタフェース/基底クラス名がhintsに含まれていない: `SqlParameterParserFactory`（a)節の見出しクラス）、`SqlParameterParser`（b)節の見出しクラス）、`SqlConvertor`（c)節の見出しクラス）。これらはNablarch APIの代表的な検索キーワードとなりうる。",
+      "source_evidence": "a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス / b) nablarch.core.db.statement.SqlParameterParserの実装クラス / c) nablarch.core.db.statement.SqlConvertorの実装クラス"
+    }
+  ]
+}

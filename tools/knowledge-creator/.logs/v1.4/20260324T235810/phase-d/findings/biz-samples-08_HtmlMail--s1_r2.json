@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-08_HtmlMail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The phrase 'ライブラリ依存として追加するのではなく、ソースコードをコピーして利用する' does not appear in the source. The source only says 'ソースコード(プロダクション、テストコード共に）をプロジェクトに取り込み、使用すること'. The 'rather than adding as a library dependency' framing is an interpretation added in the knowledge file.",
+      "source_evidence": "概要: 'なお、本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取り込み、使用すること。'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s8",
+      "description": "The knowledge file adds an explicit closing brace `}` for the else block before `} catch`, which is not present in the source. The source ends the else block with `// ---後略---` followed directly by `} catch (Exception e) {` at a lower indentation, leaving the else closing brace implicit.",
+      "source_evidence": "Source else block ends: '// ---後略---\\n      } catch (Exception e) {' — no explicit `}` before the catch in source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8",
+      "description": "Section s8 contains notable Nablarch-specific PascalCase class names that are absent from hints: `TransactionAbnormalEnd` (Nablarch abnormal-end exception used in the catch block), `SqlRow` (Nablarch data class used as the return type of `findAlternativeText`), and `CertificateWrapper` (used in the certificate chain lookup).",
+      "source_evidence": "Source code: 'SqlRow alternativeText = htmlTable.findAlternativeText(...)' / 'throw new TransactionAbnormalEnd(...)' / 'Map<String, CertificateWrapper> certificateChain = ...'"
+    }
+  ]
+}

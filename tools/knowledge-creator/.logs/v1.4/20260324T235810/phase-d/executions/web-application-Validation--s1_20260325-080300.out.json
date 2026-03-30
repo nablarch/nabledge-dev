@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5 / section count",
+      "description": "The automated pre-check reports 9 source headings but the knowledge file only has 5 sections. The source file is truncated immediately after the `validation_example_contains_key_param` label with no content shown, indicating approximately 3–4 additional source sections are entirely absent from the knowledge file. Section s5 contains only a single summary sentence with no code examples, whereas every comparable section in this file has substantial implementation code and annotations.",
+      "source_evidence": "Automated warning: 'Section count 5 < source headings 9'. Source ends at `.. _`validation_example_contains_key_param`:` with no body text. s5 knowledge content: one-sentence summary only."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The knowledge file adds the phrase '（順序に注意）' and frames the description as 'まず `ValidationUtil.validate()` で標準プロパティ精査を行い、その後 `CodeValidationUtil.validate()` でコード値精査を行う（順序に注意）', implying that the execution order is a required constraint. The source shows this order in code but contains no commentary stating that the order is important or mandatory.",
+      "source_evidence": "Source comment only says: '// 【説明】CodeValidationUtil#validateメソッドを使用してコード値精査を行う。' — no order-criticality note is present."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2, s3, s4",
+      "description": "Several PascalCase class names that appear in the code examples are absent from the hints arrays. In s2: `W11AC02Form`, `SystemAccountEntity`, `MessageLevel` are used in the code but not listed as hints. In s3: `BaseCustomerEntity` and `CustomerEntity` are the primary classes demonstrated but absent from hints. In s4: `HttpRequest` appears in the `validate(HttpRequest req, String validationName)` method signature but is not listed.",
+      "source_evidence": "s2 code: `W11AC02Form form = context.createObject(); SystemAccountEntity systemAccount = ...` / `MessageLevel.ERROR`. s3 code: `public class BaseCustomerEntity`, `public class CustomerEntity extends BaseCustomerEntity`. s4 code: `public static Example4Form validate(HttpRequest req, String validationName)`."
+    }
+  ]
+}

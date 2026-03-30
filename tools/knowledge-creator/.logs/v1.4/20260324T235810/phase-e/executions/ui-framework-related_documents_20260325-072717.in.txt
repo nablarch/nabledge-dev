@@ -1,0 +1,97 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-related_documents",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — introductory sentence",
+      "description": "The sentence '本機能を理解するために参照すべき関連文書の一覧。' was added as an introduction to section s1, but the source file contains no such sentence. The source goes directly into the three document entries after the title.",
+      "source_evidence": "Source has no introductory paragraph before the **UI標準** entry."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — JSP/HTML作成ガイド description",
+      "description": "The target audience '各画面機能の設計者・開発者が' and the stated purpose '画面作成作業の手順を理解しておくため' were omitted. The source specifies that the guide is intended for screen feature designers and developers, and that the reason to read it before this document is to understand the screen creation workflow.",
+      "source_evidence": "各画面機能の設計者・開発者が、UI開発基盤を使用して業務画面JSPを作成する際に参照するガイド。画面作成作業の手順を理解しておくため、本書を読む前に必ず通読しておくことが望ましい。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===========================
+関連文書
+===========================
+
+**UI標準**
+  本機能が提供する各UI部品は、全てUI標準の内容に沿って設計・実装されている。
+  このため、同書の内容を把握しておくことは、本書の理解のためには欠かせないものとなっている。
+
+**JSP/HTML作成ガイド**
+  各画面機能の設計者・開発者が、UI開発基盤を使用して業務画面JSPを作成する際に参照するガイド。
+  画面作成作業の手順を理解しておくため、本書を読む前に必ず通読しておくことが望ましい。
+
+**Nablarchアーキテクチャ解説書**
+  業務画面の各JSPや、共通部品として提供されるタグファイル群は
+  Nablarch Application Framework (NAF) が提供するタグライブラリなど、
+  NAFの機能に依存したものが多く存在するため、同書のWebアプリケーション基盤に関する部分を
+  理解しておくことが望ましい。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-related_documents",
+  "title": "関連文書",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "関連文書",
+      "hints": [
+        "UI標準",
+        "JSP/HTML作成ガイド",
+        "Nablarchアーキテクチャ解説書",
+        "UI開発基盤",
+        "関連ドキュメント一覧",
+        "事前読了推奨"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 関連文書\n\n本機能を理解するために参照すべき関連文書の一覧。\n\n**UI標準**\n本機能が提供する各UI部品は全てUI標準の内容に沿って設計・実装されている。同書の内容を把握しておくことは本書の理解に欠かせない。\n\n**JSP/HTML作成ガイド**\nUI開発基盤を使用して業務画面JSPを作成する際に参照するガイド。本書を読む前に必ず通読しておくことが望ましい。\n\n**Nablarchアーキテクチャ解説書**\n業務画面のJSPや共通部品として提供されるタグファイル群はNAFの機能に依存するものが多い。同書のWebアプリケーション基盤に関する部分を理解しておくことが望ましい。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

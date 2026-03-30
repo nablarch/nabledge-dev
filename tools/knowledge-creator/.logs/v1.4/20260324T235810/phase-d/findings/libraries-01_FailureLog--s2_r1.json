@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-01_FailureLog--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "障害ログの出力例 section (source)",
+      "description": "The entire 障害ログの出力例 section is omitted. This section provides a complete working example combining app-log.properties and log.properties configurations (with real BasicLogFormatter format strings such as $date$, $logLevel$, $executionId$, $requestId$, $userId$, $message$, $information$, $stackTrace$) and shows actual log output for both notification and analysis logs, illustrating how the configured format translates to real output.",
+      "source_evidence": "障害ログの出力例を下記に示す。...writer.monitorFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$...writer.appFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$$information$$stackTrace$"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "フレームワークの障害コードの変更方法 section",
+      "description": "The best practice recommendation that setting failure codes at class-level granularity is impractical, and that package-level specification is the recommended approach, is not captured in the knowledge file.",
+      "source_evidence": "ただし、フレームワークのクラス毎に障害コードを設定するのは、分類が細かすぎるため現実的ではない。基本はパッケージ名単位に障害コードを指定することで、フレームワークのどの機能で例外が送出されたか判断することができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "障害ログの出力項目 section — note on ID scheme design",
+      "description": "The note explaining that 起動プロセス and リクエストID schemes are project-specific and providing a concrete large-scale system example breakdown (起動プロセス: server name 8 chars + identifier 4 chars including batch JOBID; リクエストID: systemID 1 + subsystemID 2 + businessCode 3 + screenID 2 + eventID 2) is not captured.",
+      "source_evidence": "起動プロセスとリクエストIDは、システムの規模に応じてプロジェクト毎にID体系を規定する。例えば、大規模なシステムでは、下記のようなID体系となる。起動プロセス: サーバ名(8桁)＋識別文字列(4桁)…識別文字列にはバッチ処理のJOBIDなどが入る。リクエストID: システムID(1桁)＋サブシステムID(2桁)＋業務コード(3桁)＋画面ID(2桁)+イベントID(2桁)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source has 10 h2-level sections (障害ログの出力方針, 障害ログの出力項目, 障害ログの出力方法, 障害ログの設定方法, 障害ログの出力例, 障害の連絡先情報の追加方法, アプリケーションの障害コードの変更方法, フレームワークの障害コードの変更方法, 派生元実行時情報の出力方法, プレースホルダのカスタマイズ方法), all of which are merged into a single section s1. The resulting section content is thousands of characters long.",
+      "source_evidence": "障害ログの出力方針 (======), 障害ログの出力項目 (======), 障害ログの出力方法 (======), 障害ログの設定方法 (======), 障害ログの出力例 (===), 障害の連絡先情報の追加方法 (===), アプリケーションの障害コードの変更方法 (===), フレームワークの障害コードの変更方法 (===), 派生元実行時情報の出力方法 (===), プレースホルダのカスタマイズ方法 (===)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The following identifiers from the source are missing from hints: `MapValueEditor` and `MaskingMapValueEditor` (utility classes used in the placeholder customization example); `failureLogFormatter.language`, `failureLogFormatter.derivedRequestIdPropName`, `failureLogFormatter.derivedUserIdPropName` (configuration properties present in the source's app-log.properties examples).",
+      "source_evidence": "MapValueEditor mapValueEditor = new MaskingMapValueEditor(MASKING_CHAR, MASKING_PATTERNS); failureLogFormatter.language=en; failureLogFormatter.derivedRequestIdPropName=insertRequestId; failureLogFormatter.derivedUserIdPropName=updatedUserId"
+    }
+  ]
+}

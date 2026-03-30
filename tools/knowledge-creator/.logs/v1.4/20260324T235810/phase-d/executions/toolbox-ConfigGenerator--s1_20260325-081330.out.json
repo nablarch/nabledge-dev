@@ -1,0 +1,27 @@
+{
+  "file_id": "toolbox-ConfigGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (入力元となる設計書に関する設定)",
+      "description": "Source contains a usage note: '設計書のレイアウトや文言を変更しない限り、変更の必要はない。' This informs users that default values for ConfigurationLoader generally do not need to be changed. This context is absent from the knowledge file.",
+      "source_evidence": "設計書のレイアウトや文言を変更しない限り、変更の必要はない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (ファイル生成に関する設定)",
+      "description": "Source contains a usage note: 'デフォルト値が無い項目については、各プロジェクトにて設定を行う必要がある。' This clarifies that required items (systemSettingsFile, appSettingsDir, importFileName) must be configured per project. The knowledge file marks these as 必須 in the table but omits this explanatory note.",
+      "source_evidence": "デフォルト値が無い項目については、各プロジェクトにて設定を行う必要がある。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3, s4 (property tables)",
+      "description": "Both property tables include a '型' (type) column that has no basis in the source. The source tables only define キー名/設定内容/デフォルト値 columns. The '型' column is empty in all rows and was not present in the original documentation.",
+      "source_evidence": "Source table columns: キー名 / 設定内容 / デフォルト値 — no '型' column exists."
+    }
+  ]
+}

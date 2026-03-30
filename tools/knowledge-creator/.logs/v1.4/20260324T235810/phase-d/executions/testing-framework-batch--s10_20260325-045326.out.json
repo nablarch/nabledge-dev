@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The knowledge file states \"レコード定義行を記述せず `//空ファイル` コメント行のみ記載することで0バイトファイルとして定義される\" — this implies the `//空ファイル` comment row is the mechanism that defines the file as empty. The source explicitly states the mechanism is omitting record definitions (\"ディレクティブ行を定義しレコードの定義を省略することで実現出来る\"); the `//空ファイル` in the example table is a comment, not a required directive.",
+      "source_evidence": "「テストシート上での空ファイルの定義は、以下の例のようにディレクティブ行を定義しレコードの定義を省略することで実現出来る。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s11 index entry",
+      "description": "`LIST_MAP` is a key directive used in log validation (e.g., `LIST_MAP=expectedLogMessages`) and appears in the source, but is absent from the s11 hints array.",
+      "source_evidence": "「`LIST_MAP=expectedLogMessages`」が出典に記載されており、ログ結果検証の期待値データを紐付けるディレクティブとして使用される。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 index entry",
+      "description": "The directive property names `text-encoding` and `record-separator` appear in the source table as configurable properties for variable-length file definitions, but are absent from the s1 hints array.",
+      "source_evidence": "出典テーブルに「text-encoding | Windows-31J」「record-separator | CRLF」が記載されている。"
+    }
+  ]
+}

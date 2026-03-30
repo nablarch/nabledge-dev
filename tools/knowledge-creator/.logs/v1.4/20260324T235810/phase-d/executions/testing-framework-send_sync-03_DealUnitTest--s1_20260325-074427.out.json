@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — 要求電文のログ出力",
+      "description": "The source contains concrete log output examples for both Map format and CSV format, showing the exact structure of what gets logged. These examples are entirely omitted from the knowledge file. An AI agent answering questions like 'ログはどのような形式で出力されますか？' or 'エビデンスログの形式を教えてください' would lack this information.",
+      "source_evidence": "Source contains two code blocks under 要求電文のログ出力:\nMap形式: '2011-10-26 13:16:10.958 MESSAGING_SEND_MAP request id=[RM11AD0101]. following message has been sent:\\n  message fw header = {requestId=RM11AD0101, testCount=, resendFlag=0, reserved=}\\n  message body      = {authors=test3, title=test1, publisher=test2}'\nCSV形式: '2011-10-26 13:16:10.958 MESSAGING_SEND_CSV request id=[RM11AD0102]. following message has been sent:\\nheader:\\n\"requestId\",\"testCount\",...\\nbody:\\n\"authors\",\"title\",\"publisher\"\\n\"test3\",\"test1\",\"test2\"'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2 hints are missing `sendSync` (the method name referenced in the errorMode:timeout description: 'sendSyncメソッドの戻り値としてnullを返却する') and `log.properties` (the configuration file name explicitly referenced in the log output configuration section).",
+      "source_evidence": "Source table: 'sendSyncメソッドの戻り値としてnullを返却する。' under errorMode:timeout. Source log section: 'ログの出力設定は、log.propertiesにて行う。'"
+    }
+  ]
+}

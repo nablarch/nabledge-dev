@@ -1,0 +1,481 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "HTML form code example is omitted. The source contains a complete HTML form demonstrating the multi-form naming convention (form.user.name, form.user.remarks, form.address.zipCode, etc.), which illustrates the correct usage pattern for implementing HTML forms with multi-form validation.",
+      "source_evidence": "Source section 複数の Form に対するバリデーション contains: `<form method=\"POST\"><!-- ユーザの情報 -->ユーザ名: <input type=\"text\" name=\"form.user.name\"/>...郵便番号: <input type=\"text\" name=\"form.address.zipCode\"/>...`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "UserForm constructor `UserForm(Map<String, Object> params)` is omitted from the Form implementation code example. This constructor shows how to populate entity fields from request parameters, which is part of the correct implementation pattern.",
+      "source_evidence": "Source: `public UserForm(Map<String, Object> params) { user = (UserEntity) params.get(\"user\"); address = (AddressEntity) params.get(\"address\"); }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`ValidationContext` is missing from s2 hints despite appearing in the Form implementation code (`ValidationContext<Entity1>`) and Action code (`ValidationContext<Example2Form>`).",
+      "source_evidence": "Source s2 code: `@ValidateFor(\"validateForSample\") public static void validateForSample(ValidationContext<Entity1> context)` and `ValidationContext<Example2Form> validationResult = ...`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`validateAndConvertRequest` is missing from s2 hints despite being the primary API method used in the Action implementation example for this section.",
+      "source_evidence": "Source s2 Action section: `ValidationContext<Example2Form> validationResult = ValidationUtil.validateAndConvertRequest(\"form\", Example2Form.class, request, \"validateForSample\");`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================================
+階層構造を持つFormのバリデーション
+====================================
+
+.. _`multi-form-validation`:
+
+---------------------------------------------
+複数の Form に対するバリデーション
+---------------------------------------------
+:ref:`validation_and_convert` の例では、1画面で1つの Form のみをバリデーションの対象としていた。
+しかし実際のアプリケーションでは、1画面で入力した値を複数のテーブルに登録しなければならないことがほとんどである。
+このようなケースの画面をバリデーションする場合、2つ以上の Entity をバリデーションで使用することになる。
+
+このようなケースのため、 Form のプロパティに別の Form を保持し、複数の Form をまとめてバリデーションできる機能を提供している。
+
+この際必要な実装手順は下記のとおり。
+
+  1. 親の Form (親Form)のプロパティに別の Form (子Form)を追加する。
+  2. 親Formの子Formを設定するセッタに、 @ValidationTarget アノテーションを設定する。
+  3. 親Form、子Formに共通の名称 [#form_validate_for]_ で validateFor メソッドを作成する。
+
+
+例えば :ref:`entity-usage` で示した USER テーブルと、ユーザが持つ住所を保持する
+ADDRESS テーブルにまとめてデータを登録する画面の場合、下記のような Form を作成する。
+
+.. code-block:: java
+    
+    public class UserForm {
+    
+        // ユーザ
+        private UserEntity user;
+        // 住所
+        private AddressEntity address;
+    
+        @ValidationTarget
+        public void setUser(UserEntity user) {
+            this.user = user;
+        }
+    
+        // getterは省略
+    
+        public UserForm(Map<String, Object> params) {
+            user = (UserEntity) params.get("user");
+            address = (AddressEntity) params.get("address");
+        }
+        
+        @ValidationTarget
+        public void setAddress(AddressEntity address) {
+            this.address = address;
+        }
+    
+        public static final String[] UPDATE_PARAMS = new String[] {"user", "address"};
+        @ValidateFor("updateUser")
+        public static void validateForUpdate(ValidationContext<UserForm> context) {
+            ValidationUtil.validate(context, UPDATE_PARAMS);
+        }
+    }    
+        
+
+
+上記 Form の入力となるHTMLフォームは下記のようになる。
+
+
+.. code-block:: html
+
+  <form method="POST">
+  <!-- ユーザの情報 -->
+  ユーザ名: <input type="text" name="form.user.name"/> <br/>
+  備考: <input type="text" name="form.user.remarks"/> <br/>
+  <input type="hidden" name="form.user.id"/>
+  
+  <!-- 住所の情報 -->
+  郵便番号: <input type="text" name="form.address.zipCode"/> <br/>
+  都道府県: <input type="text" name="form.address.address1"/> <br/>
+  市区町村番地: <input type="text" name="form.address.address2"/> <br/>
+  マンション・ビル名: <input type="text" name="form.address.building"/> <br/>
+  <input type="submit" value="更新" />
+  </form>
+
+
+このように、複数の Form に対するバリデーションを行う場合、name属性に指定する文字列を「form.user.name」 
+のようにピリオドで3段階に分けて記載する。
+
+上記例から想像できるように、このname属性は1段階目がプレフィクス、
+2段階目が親 Form 上の子 Form のプロパティ名、
+3段階目が子 Form が持つプロパティとしてバリデーションされる。
+
+例えば、「form.user.name」 は UserForm の user プロパティである UserEntity の name プロパティとしてバリデーションされる。
+ 
+この例の入力値をバリデーションする方法は、下記のように1つの Form をバリデーションする場合と同様である。
+
+.. code-block:: java
+
+    // 複数のEntityをまとめてバリデーションする例。 
+    ValidationContext<UserForm> result
+        = ValidationUtil.validateAndConvertRequest(
+            "form", UserForm.class, req, "updateUser");
+
+    result.abortIfInvalid();
+
+    // Formの生成
+    UserForm userForm = result.createObject();
+    UserEntity userEntity = userForm.getUser();
+    AddressEntity addressEntity = userForm.getAddress();
+
+    // user、address を使用した業務処理の実装に続く。
+
+
+.. [#form_validate_for] 
+   | 共通の名称とは、実際に「同名メソッドであること」という意味ではなく 
+     「@ValidateFor メソッドに指定した文字列が同一である」という意味である。
+   | 例えば下記例の UserForm と UserEntity の場合、 ValidationUtil.validateAndConvertRequest 
+     メソッドの第4引数に "multiInsert" を指定して UserForm のバリデーションを実行することで、
+     UserEntity のバリデーションには validateForInsert メソッドが呼び出される。
+   | 子 Form の validateFor メソッドと親 Form の validateFor メソッド の名称を一致させられない場合、この方法を使用すること。
+     
+     .. code-block:: java
+
+        public class UserForm {
+            private class UserEntity user;
+            
+            @ValidationTarget
+            public void setUser(UserEntity user) {
+                this.user = user;
+            }
+            
+            // 中略
+            
+            @ValidateFor("multiInsert")
+            public static void validateForMultiInsert(ValidationContext<UserForm> context) {
+                ValidationUtil.validate(context, INSERT_PARAMS);
+            }
+        }
+
+     .. code-block:: java
+
+        public class UserEntity {
+            // 中略
+             
+            // @ValidateFor アノテーションに設定した文字列のうち、ValidationUtil.validateAndConvertRequest
+            // の第4引数と1つでも一致した validateFor メソッドが呼び出される。
+            private static final String[] INSERT_PARAMS = new String[] {"name", "remarks"};
+            @ValidateFor({"insert", "multiInsert"})
+            public static void validateForInsert(ValidationContext<UserEntity> context) {
+                ValidationUtil.validate(context, INSERT_PARAMS);
+            }
+        }
+
+.. _`form_array_validation`:
+
+---------------------------------------------------------------------
+Form の配列を入力する際のバリデーション
+---------------------------------------------------------------------
+実際のアプリケーションでは、複数の住所を1つの画面で入力するなど、同一の Entity を複数まとめて入力する場面がしばしば発生する。
+
+このような場合、 :ref:`multi-form-validation` で記載した方法と同様に Form に Form の配列を保持する実装を行うことで容易に実装を行える。
+
+以下にカスタムタグを使用して、任意の数の Entity をバリデーションする実装例を示す。
+カスタムタグの詳細は :ref:`custom_tag`  を参照のこと。
+
+
+Form の実装
+==================
+
+任意の数の Entity をバリデーションするためには、通常のFormの実装手順に加えて下記手順が必要となる。
+
+  1. | Form のプロパティに Entity の配列を追加する。
+  2. | Entity の配列のセッタに @ValidationTarget を設定する。 
+     | @ValidationTarget の size 属性には、配列の配列長を設定する。
+
+
+以下に実装例を示す。
+
+.. code-block:: java
+
+    public class Example2Form {
+        
+        // 手順1 Form のプロパティに Entity の配列を追加する
+        private Entity1[] entityArray;
+
+        public Example2Form() {
+            
+        }
+
+        public Example2Form(Map<String, Object> params) {
+            entityArray =  (Entity1[]) params.get("entityArray");
+            entityArraySize = (Integer) params.get("entityArraySize");
+        }
+
+        public Entity1[] getEntityArray() {
+            return entityArray;
+        }
+
+        // 手順2 固定の配列長を size 属性に設定する。
+        @ValidationTarget(size = 3)
+        public void setEntityArray(Entity1[] entityArray) {
+            this.entityArray = entityArray;
+        }
+
+        @ValidateFor("validateForSample")
+        public static void validateForSample(ValidationContext<Entity1> context) {
+            ValidationUtil.validate(context, new String[] {"entityArray"});
+        }
+    }
+
+
+JSPファイル の実装
+==================
+
+任意の数の Entity をバリデーションする際の JSP ファイルは、通常の実装に加えて下記手順が必要となる。
+
+   1. | form のプロパティに対するアクセスを配列リテラル形式で記載する。
+      | 配列リテラル形式とは、 form の Entity 配列に設定するプロパティを例えば
+        "form.entityArray[0].value1" のように、 Java 
+        ソースコードで配列に対するアクセスと同様の添え字で記載する形式である。
+
+以下に実装例を示す。
+
+
+.. code-block:: jsp
+
+    <n:form windowScopePrefixes="form" name="appForm">
+
+    <table>
+    <c:forEach begin="0" end="2" step="1" varStatus="status">
+        <tr>
+            <n:set var="loopIndex" value="${status.index}"/>
+            <th rowspan="3">配列 Entity1-<n:write name="loopIndex"/></th>
+            <th>値１(文字列)</th>
+            <td>
+                <%-- form のプロパティに対するアクセスを配列リテラル形式で記載する。 --%>
+                <n:error name="form.entityArray[${status.index}].value1" />
+                <n:text name="form.entityArray[${status.index}].value1" cssClass="input" />
+            </td>
+        </tr>
+        <tr>
+            <th>値２(文字列)</th>
+            <td>
+                <n:error name="form.entityArray[${status.index}].value2" />
+                <n:text name="form.entityArray[${status.index}].value2" cssClass="input" />
+            </td>
+        </tr>
+        <tr>
+            <th>数値</th>
+            <td>
+                <n:error name="form.entityArray[${status.index}].intVal" />
+                <n:text name="form.entityArray[${status.index}].intVal" cssClass="input" />
+            </td>
+        </tr>
+    </c:forEach>
+    <%-- サブミットボタン等は省略 --%>
+    </table>
+    </n:form>
+
+
+Action の実装
+==================
+
+Entity の配列を使用する際も、 Action の実装方法は通常のバリデーションと同様に実装できる。
+
+以下に上記 Form 、 JSPファイルを使用した際のバリデーション方法を示す。
+
+.. code-block:: java
+
+        ValidationContext<Example2Form> validationResult = ValidationUtil.validateAndConvertRequest("form"
+                , Example2Form.class, request, "validateForSample");
+
+        validateForSample.abortIfInvalid();
+
+        // form 内の Entity 配列を使用した業務処理の実装
+
+
+------------------------------------------------------
+可変配列長の Form 配列を入力する際の実装例
+------------------------------------------------------
+
+上記 :ref:`form_array_validation` の例は、Entityの配列長が固定である場合の実装例である。
+
+一般的なアプリケーションでは、この項目長が可変であることが珍しくない。
+このような場合、ValidationTarget アノテーションの size の代わりに sizeKey を使用し、可変長項目をリクエストパラメータに加えることで、
+配列の項目長を変更できる。
+
+JSPファイルでは、 sizeKey 属性で指定したキーで配列長が、リクエストパラメータとして送信されるよう設定する。
+このパラメータは、フレームワークがEntityの配列を処理するために使用する。
+
+以下に :ref:`form_array_validation` 例を可変長配列にした場合の実装例を示す。
+
+Form の実装
+==================
+
+
+.. code-block:: java
+
+     // Form のプロパティに Entity の配列長を表すプロパティを追加する。
+     private Integer entityArraySize;
+
+     public Example2Form() {
+         
+     }
+
+     public Example2Form(Map<String, Object> params) {
+         entityArray =  (Entity1[]) params.get("entityArray");
+         entityArraySize = (Integer) params.get("entityArraySize");
+     }
+     
+     // 中略
+
+     @Digits(integer=1)
+     @Required
+     @PropertyName("Entity配列長")
+     public void setEntityArraySize(Integer entityArraySize) {
+         this.entityArraySize = entityArraySize;
+     }
+
+     // Entity の配列のセッタに @ValidationTarget を設定。
+     // @ValidationTarget の sizeKey 属性に、配列長を表すプロパティ名を設定する。
+     @ValidationTarget(sizeKey="entityArraySize")
+     public void setEntityArray(Entity1[] entityArray) {
+         this.entityArray = entityArray;
+     }
+
+JSPの実装
+==================
+
+
+.. code-block:: jsp
+
+
+     <%-- @ValidationTarget の sizeKey 属性に設定したプロパティを hidden パラメータで送信する。 --%>
+     <n:hidden name="form.entityArraySize" />
+ 
+     <%-- ループの件数を設定 --%>
+     <n:set var="loopCount" name="form.entityArraySize"/>
+
+     <table>
+     <c:forEach begin="0" end="${loopCount - 1}" step="1" varStatus="status">
+         <tr>
+             <n:set var="loopIndex" value="${status.index}"/>
+             <th rowspan="3">配列 Entity1-<n:write name="loopIndex"/></th>
+             <th>値１(文字列)</th>
+             <td>
+                 <%-- form のプロパティに対するアクセスを配列リテラル形式で記載する。 --%>
+                 <n:error name="form.entityArray[${status.index}].value1" />
+                 <n:text name="form.entityArray[${status.index}].value1" cssClass="input" />
+             </td>
+         </tr>
+         <!-- 前述の実装と同じなので省略 -->
+     </c:forEach> 
+
+
+
+---------------------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_03_validation_recursive--s1",
+  "title": "階層構造を持つFormのバリデーション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数の Form に対するバリデーション",
+      "hints": [
+        "@ValidationTarget",
+        "@ValidateFor",
+        "ValidationUtil",
+        "ValidationContext",
+        "UserForm",
+        "UserEntity",
+        "AddressEntity",
+        "複数Formバリデーション",
+        "階層構造バリデーション",
+        "子Formバリデーション",
+        "validateAndConvertRequest"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Form の配列を入力する際のバリデーション",
+      "hints": [
+        "@ValidationTarget",
+        "@ValidateFor",
+        "ValidationUtil",
+        "Example2Form",
+        "Entity1",
+        "Form配列バリデーション",
+        "配列リテラル形式",
+        "固定配列長",
+        "size属性"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "可変配列長の Form 配列を入力する際の実装例",
+      "hints": [
+        "@ValidationTarget",
+        "sizeKey",
+        "@Digits",
+        "@Required",
+        "@PropertyName",
+        "可変配列長",
+        "Form配列バリデーション",
+        "entityArraySize",
+        "hiddenパラメータ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数のFormをまとめてバリデーションする実装手順:\n1. 親FormのプロパティにForm（子Form）を追加する\n2. 子Formのセッタに `@ValidationTarget` を設定する\n3. 親Form・子Formに `@ValidateFor` で共通名称の `validateFor` メソッドを作成する\n\nHTMLフォームのname属性はピリオド区切り3段階で指定する（例: `form.user.name`）:\n- 1段階目: プレフィクス\n- 2段階目: 親Form上の子FormのプロパティName（例: `user`）\n- 3段階目: 子Formのプロパティ（例: `name`）\n\n> **注意**: `@ValidateFor` の共通名称は「同名メソッドであること」ではなく「アノテーションに指定した文字列が同一であること」を意味する。子Formのメソッド名が一致できない場合、子Formの `@ValidateFor` に複数の文字列を指定することで対応可能。\n\n**アノテーション**: `@ValidationTarget`, `@ValidateFor`\n\nForm実装例:\n```java\npublic class UserForm {\n    private UserEntity user;\n    private AddressEntity address;\n\n    @ValidationTarget\n    public void setUser(UserEntity user) {\n        this.user = user;\n    }\n\n    @ValidationTarget\n    public void setAddress(AddressEntity address) {\n        this.address = address;\n    }\n\n    public static final String[] UPDATE_PARAMS = new String[] {\"user\", \"address\"};\n    @ValidateFor(\"updateUser\")\n    public static void validateForUpdate(ValidationContext<UserForm> context) {\n        ValidationUtil.validate(context, UPDATE_PARAMS);\n    }\n}\n```\n\nバリデーション実行例:\n```java\nValidationContext<UserForm> result\n    = ValidationUtil.validateAndConvertRequest(\n        \"form\", UserForm.class, req, \"updateUser\");\n\nresult.abortIfInvalid();\n\nUserForm userForm = result.createObject();\nUserEntity userEntity = userForm.getUser();\nAddressEntity addressEntity = userForm.getAddress();\n```\n\n子Formのメソッド名が一致できない場合（`@ValidateFor` に複数文字列を指定）:\n```java\n// 親Form\n@ValidateFor(\"multiInsert\")\npublic static void validateForMultiInsert(ValidationContext<UserForm> context) {\n    ValidationUtil.validate(context, INSERT_PARAMS);\n}\n\n// 子Form (UserEntity) — @ValidateFor に複数文字列を指定\n@ValidateFor({\"insert\", \"multiInsert\"})\npublic static void validateForInsert(ValidationContext<UserEntity> context) {\n    ValidationUtil.validate(context, INSERT_PARAMS);\n}\n```",
+    "s2": "Form配列を使ったバリデーションの実装手順:\n1. FormのプロパティにEntityの配列を追加する\n2. 配列のセッタに `@ValidationTarget` を設定し、`size` 属性に固定の配列長を指定する\n\nJSPでは配列リテラル形式（例: `form.entityArray[0].value1`）でname属性を記載する。\n\n**アノテーション**: `@ValidationTarget`, `@ValidateFor`\n\nForm実装例（固定配列長3）:\n```java\npublic class Example2Form {\n    private Entity1[] entityArray;\n\n    public Example2Form(Map<String, Object> params) {\n        entityArray = (Entity1[]) params.get(\"entityArray\");\n        entityArraySize = (Integer) params.get(\"entityArraySize\");\n    }\n\n    // 固定の配列長を size 属性に設定する\n    @ValidationTarget(size = 3)\n    public void setEntityArray(Entity1[] entityArray) {\n        this.entityArray = entityArray;\n    }\n\n    @ValidateFor(\"validateForSample\")\n    public static void validateForSample(ValidationContext<Entity1> context) {\n        ValidationUtil.validate(context, new String[] {\"entityArray\"});\n    }\n}\n```\n\nJSP実装例（配列リテラル形式）:\n```jsp\n<c:forEach begin=\"0\" end=\"2\" step=\"1\" varStatus=\"status\">\n    <n:error name=\"form.entityArray[${status.index}].value1\" />\n    <n:text name=\"form.entityArray[${status.index}].value1\" cssClass=\"input\" />\n</c:forEach>\n```\n\nAction実装例:\n```java\nValidationContext<Example2Form> validationResult = ValidationUtil.validateAndConvertRequest(\n    \"form\", Example2Form.class, request, \"validateForSample\");\n\nvalidateForSample.abortIfInvalid();\n```",
+    "s3": "配列長が可変の場合、`@ValidationTarget` の `size` 属性の代わりに `sizeKey` 属性を使用し、配列長をリクエストパラメータとして送信する。`sizeKey` にプロパティ名を指定することで、フレームワークがそのプロパティ値を配列長として使用する。\n\n**アノテーション**: `@ValidationTarget`, `@Digits`, `@Required`, `@PropertyName`\n\nForm実装例（可変配列長）:\n```java\nprivate Integer entityArraySize;\n\npublic Example2Form(Map<String, Object> params) {\n    entityArray = (Entity1[]) params.get(\"entityArray\");\n    entityArraySize = (Integer) params.get(\"entityArraySize\");\n}\n\n@Digits(integer=1)\n@Required\n@PropertyName(\"Entity配列長\")\npublic void setEntityArraySize(Integer entityArraySize) {\n    this.entityArraySize = entityArraySize;\n}\n\n// sizeKey に配列長プロパティ名を設定する\n@ValidationTarget(sizeKey=\"entityArraySize\")\npublic void setEntityArray(Entity1[] entityArray) {\n    this.entityArray = entityArray;\n}\n```\n\nJSP実装例（hiddenパラメータで配列長を送信）:\n```jsp\n<%-- sizeKey に設定したプロパティをhiddenパラメータで送信する --%>\n<n:hidden name=\"form.entityArraySize\" />\n\n<n:set var=\"loopCount\" name=\"form.entityArraySize\"/>\n<c:forEach begin=\"0\" end=\"${loopCount - 1}\" step=\"1\" varStatus=\"status\">\n    <n:error name=\"form.entityArray[${status.index}].value1\" />\n    <n:text name=\"form.entityArray[${status.index}].value1\" cssClass=\"input\" />\n</c:forEach>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

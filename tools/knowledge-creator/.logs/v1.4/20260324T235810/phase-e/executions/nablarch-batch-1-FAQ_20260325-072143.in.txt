@@ -1,0 +1,177 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "official_doc_urls[0]",
+      "description": "The URL 'https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/support/DbAccessSupport.html' is not present in the source file. The source only mentions the fully-qualified class name `nablarch.core.db.support.DbAccessSupport` without any URL.",
+      "source_evidence": "Source references the class as '*nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能' — no URL provided."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — データベースをインプットとするバッチ",
+      "description": "The SQL code example (GET_DELETE_USER_LIST SELECT statement) is omitted. The source includes the full SQL query as part of the implementation example, showing the table name (SYSTEM_ACCOUNT), columns (USER_ID), and WHERE clause condition (:effectiveDateTo). An AI agent reproducing the complete example would be missing this SQL.",
+      "source_evidence": "Source contains: `GET_DELETE_USER_LIST = SELECT USER_ID FROM SYSTEM_ACCOUNT WHERE EFFECTIVE_DATE_TO <= :effectiveDateTo ORDER BY USER_ID`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "PascalCase/generic class names appearing in the code examples are missing from hints: `DataReader`, `SqlRow`, `ExecutionContext`. These appear in the method signature `public DataReader<SqlRow> createReader(ExecutionContext ctx)` and are Nablarch API types relevant for implementation.",
+      "source_evidence": "Source code: `public DataReader<SqlRow> createReader(ExecutionContext ctx) {`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バッチの処理対象件数をログに出力する方法はありますか？
+=========================================================
+
+.. admonition:: question
+
+    バッチの処理対象件数をバッチの処理前（事前処理）でログに出力したいと考えています。
+    
+    具体的には、インプットデータの種類に応じて以下の値をログ出力したいのですが、
+    インプットデータの取得方法、及びログ出力はどのように実装したらいいでしょうか？
+
+    * データベースをインプットとするバッチの場合は、データベースの処理対象のレコードのレコード数
+    * ファイルをインプットとするバッチの場合は、ファイルの総レコード数とデータレコードのレコード数
+
+.. admonition:: answer
+
+    * データベースをインプットとする場合
+
+      *nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能を使用して処理対象レコード数を取得します。
+
+      実装例を以下に示します。
+
+      .. code-block:: sql
+
+        --------------------------------------------------------------------------------
+        -- 削除対象のユーザ一覧を取得する。
+        --------------------------------------------------------------------------------
+        GET_DELETE_USER_LIST =
+        SELECT
+            USER_ID
+        FROM
+            SYSTEM_ACCOUNT
+        WHERE
+            EFFECTIVE_DATE_TO <= :effectiveDateTo
+        ORDER BY
+            USER_ID
+
+      .. code-block:: java
+
+        //*****************************************
+        // 件数取得処理は、createReaderで行う。
+        //*****************************************
+        public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+            //*****************************************
+            // オブジェクトを条件とする場合の実装例
+            //*****************************************
+            // SQLのバインド変数に値を埋め込むための条件オブジェクトを生成する。
+            SystemAccountEntity condition = new SystemAccountEntity();
+            condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+
+            // 処理対象件数の取得時には、処理対象データを取得すためのSQL文のSQL_IDを指定する。
+            // Nablarchでは、処理対象データを取得するSQL文を件数取得用のSQL文に書き換え件数を取得して返却します。
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
+
+            //*****************************************
+            // Mapを条件とする場合の実装例
+            //*****************************************
+            Map<String, Object> condition = new HashMap<String, Object>();
+            condition.put("effectiveDateTo", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
+
+            //*****************************************
+            // 条件を必要としないSQL文の場合の実装例
+            //*****************************************
+            // SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST");
+        }
+
+    * ファイルをインプットとする場合
+
+      本処理の前に行うファイルのレイアウト構成精査時にファイルレコード数やデータレコードのレコード数をカウントすることにより、
+      ログ出力対象のレコード数を取得します。
+
+      詳細は、以下のガイドを参照してください。
+
+        * **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[ファイルを入力とするバッチ]** -> **[ファイルバリデータ生成]**
+
+    * ログ出力方法
+
+      バッチアクションの親クラスが提供する *writeLog* メソッドを使用することによりログ出力を行えます。
+
+      詳細は、以下のガイドを参照してください。
+
+        * **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[データベースを入力とするバッチ]** -> **[ログ出力]**
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-1-FAQ",
+  "title": "バッチの処理対象件数をログに出力する方法はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/db/support/DbAccessSupport.html"
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチ処理対象件数の取得とログ出力",
+      "hints": [
+        "DbAccessSupport",
+        "countByParameterizedSql",
+        "createReader",
+        "writeLog",
+        "バッチ件数取得",
+        "処理対象レコード数",
+        "ログ出力",
+        "データベース入力バッチ",
+        "ファイル入力バッチ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## バッチ処理対象件数の取得とログ出力\n\n### データベースをインプットとするバッチ\n\n`nablarch.core.db.support.DbAccessSupport` が提供する `countByParameterizedSql` を使用して処理対象レコード数を取得する。件数取得は `createReader` 内で実施する。\n\n処理対象データを取得するSQL文のSQL_IDを指定すると、NablarchがそのSQL文を件数取得用に書き換えてレコード数を返す。\n\n**実装パターン**:\n\n1. オブジェクトを条件とする場合:\n```java\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    SystemAccountEntity condition = new SystemAccountEntity();\n    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n}\n```\n\n2. Mapを条件とする場合:\n```java\nMap<String, Object> condition = new HashMap<String, Object>();\ncondition.put(\"effectiveDateTo\", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\nint count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n```\n\n3. 条件を必要としない場合:\n```java\nint count = countByParameterizedSql(\"GET_DELETE_USER_LIST\");\n```\n\n### ファイルをインプットとするバッチ\n\n本処理前のファイルレイアウト構成精査時に、ファイルレコード数とデータレコード数をカウントして取得する。\n\n### ログ出力\n\nバッチアクションの親クラスが提供する `writeLog` メソッドを使用してログ出力を行う。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_QueryCache--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — SQL ID毎のキャッシュ設定 XMLコード例",
+      "description": "キャッシュ有効期限設定のXMLコード例にあるSQL IDが、ソースの値から別の値に変更されている。ソースは `please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` 等を使用しているが、ナレッジファイルは `com.example.Action1#SELECT` 等に置き換えている。サブシステム分割例も同様で、`please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` → `com.example.ss11AA.Action1#SELECT`、`please.change.me.tutorial.ss11BB.W11BB01Action#SELECT` → `com.example.ss11BB.Action1#SELECT` に変更されている。",
+      "source_evidence": "ソース: `<entry key=\"please.change.me.tutorial.ss11AA.W11AA01Action#SELECT\" value=\"100ms\"/>` / ナレッジ: `<entry key=\"com.example.Action1#SELECT\" value=\"100ms\"/>`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 特定のエントリを削除する方法 Javaコード例",
+      "description": "ResultSetCacheKeyBuilderに渡すSQL IDがソースの値から変更されている。ソースは `please.change.me.tutorial.ss11AA.W11AA01Action#SELECT` を使用しているが、ナレッジファイルは `SqlId#SELECT` に置き換えている。",
+      "source_evidence": "ソース: `new ResultSetCacheKeyBuilder(\"please.change.me.tutorial.ss11AA.W11AA01Action#SELECT\")` / ナレッジ: `new ResultSetCacheKeyBuilder(\"SqlId#SELECT\")`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — クエリ結果キャッシュ実装クラスの登録 プロパティテーブル",
+      "description": "`cacheSize` プロパティの型が `int` と記載されているが、ソースファイルには型の明示的な記載はなく (`value=\"100\"` から推測)、ナレッジファイルで追加された情報である。",
+      "source_evidence": "ソース: `<property name=\"cacheSize\" value=\"100\"/>` のみで型の記載なし"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — index hints",
+      "description": "s1のXMLコード例に登場するクラス `BasicDbConnectionFactoryForDataSource` がhintsに含まれていない。",
+      "source_evidence": "ソース: `class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\"`"
+    }
+  ]
+}

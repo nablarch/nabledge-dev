@@ -1,0 +1,248 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_Validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (特徴 > アノテーションによる条件の記述)",
+      "description": "The source explicitly states three key benefits of annotation-based validation that are omitted from the knowledge file: (1) boilerplate single-field check implementation is unnecessary (煩雑な単項目の入力チェック処理の実装が不要), (2) validation implementation is minimized (バリデーションの実装が極小化できる), and (3) productivity improves compared to hard-coded validation (ハードコーディングによるバリデーションを行う場合と比較して生産性を向上できる). These characterize *why* annotations should be used, which is relevant when an AI agent explains this feature.",
+      "source_evidence": "「バリデーションは Form に設定したアノテーションをもとに実施されるため、煩雑な単項目の入力チェック処理の実装が不要となり、バリデーションの実装が極小化できる。このため、ハードコーディングによるバリデーションを行う場合と比較して生産性を向上できる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "The hints for s3 include '未実装機能' but omit '未検討' as a keyword. The 未検討 category is a distinct third tier in the requirements section listing features not yet evaluated. A user asking about unexamined/未検討 features would not match this section via hints.",
+      "source_evidence": "Source has three requirement tiers: 実装済み, 未実装, 未検討. The 未検討 section lists 8 distinct items."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+.. _validation-and-form:
+
+===================================
+バリデーションとFormの生成
+===================================
+.. _validation-abstract:
+
+-----
+概要
+-----
+| 画面や外部システムからの入力値に対して、入力値が有効なものであるかをチェックするバリデーションの機能と、
+  入力値から Form を生成する機能を提供する。
+| Form とは、下記2つの責務を持つ業務コンポーネントである。
+
+    1. 外部入力値の入力チェック
+    2. 外部入力値の保持
+
+
+| Form 以外の業務コンポーネントについては :ref:`fw-bussiness-component-label` を参照のこと。
+| 
+| 一般に入力値のバリデーションは、下記のレベルに分けられる。
+
+    1. 単項目の入力チェック
+    2. 複数項目にまたがる入力チェック
+    3. データベースのデータを使用した入力チェック
+
+| このうち、本機能では 1,2 の入力チェックをサポートする。
+| 本機能でサポートしない入力チェックについては、ビジネスロジックとしてアプリケーションプログラマが別途実装する。
+
+| 本機能を使用する際は、入力値は Map とし、生成する Form はセッタとゲッタを持つクラスである必要がある。
+
+| バリデーションに必要な情報は、この Form にアノテーションとして設定する。
+| 
+
+
+| 本機能は、 Action 側で業務ロジックを呼び出す前に実施する入力チェックで使用する。
+| アプリケーションプログラマは、 :ref:`validation_and_convert` 以降に記述したバリデーションの使用方法を参考にして、 Action を実装する。
+
+| なお、 Form をRDBMS上のテーブルと1対1に作成し、さらに Form のプロパティとテーブルのカラムを1対1に対応づける実装
+  を行うことで、下記2つの利点が得られる。
+
+    * バリデーションとデータベースへの反映を容易に実装できる。
+    * RDBMS の定義から実装の多くの部分を自動生成できる。
+
+| 上記の条件を満たす Form を特に Entity と呼称する。
+
+-----
+特徴
+-----
+
+アノテーションによる条件の記述
+====================================================== 
+
+ バリデーションは Form に設定したアノテーションをもとに実施されるため、煩雑な単項目の入力チェック処理の実装が不要となり、
+ バリデーションの実装が極小化できる。
+ このため、ハードコーディングによるバリデーションを行う場合と比較して生産性を向上できる。
+ 
+ また、バリデーションの条件をFormに保持するため、 画面処理とバッチ処理等、
+ 異なる入力元に対してバリデーションの条件を共有できる利点がある。
+
+メッセージ機能を使用
+====================================================== 
+
+ バリデーション結果のメッセージの作成には、 :doc:`./07_Message` の機能を使用しており、
+ バリデーション結果を表すメッセージとビジネスロジックが発生させるメッセージを透過的に扱える。
+ 
+ このため、エラーメッセージの表示を行う処理では、バリデーションで発生したメッセージと、その他のビジネスロジックで
+ 発生したメッセージを同じように取り扱うことができる。
+
+
+-----
+要求
+-----
+
+実装済み
+========
+
+ * 文字列が特定の文字種のみで構成されているかチェックするバリデーションができる。
+ * 文字列長をチェックするバリデーションができる。
+ * 必須入力値が入力されているかをチェックするバリデーションができる。
+ * 数値が規定の範囲に入っているかをチェックするバリデーションができる。
+ * 入力値の文字列を格納した Map から、Formのインスタンスを生成できる。
+ * 入力値の文字列をFormのプロパティの型に合うように変換可能かチェックするバリデーションができる。
+ * 入力値の文字列をFormのプロパティの型に合わせて変換できる。
+ * 生成した Form のプロパティに設定する前に、プロパティに設定する値に対してバリデーションを実行できる。
+ * エラーメッセージに出力するプロパティの表示名称を任意に指定できる。
+ * エラーメッセージに出力するプロパティの表示名称を国際化できる。
+ * Form 内部のプロパティの Form に対するバリデーションができる。
+ * 下記日付形式のチェックができる。
+ 
+   * 西暦(年月日)フォーマット(詳細は :ref:`ExtendedValidation_yyyymmddConvertor` を参照)
+
+ * 入力値の文字列に対してトリムが実行できる。
+ * コード値として有効かをチェックするバリデーションができる。
+
+未実装
+========
+
+ * 下記日付形式のチェックができる。
+ 
+   * 和暦フォーマット
+   * 年月フォーマット
+   * 営業日
+   
+ * 入力禁止文字をチェックするバリデーションができる。
+
+  システム毎に規定された、入力してはいけない文字が文字列に含まれていないかをチェックするバリデーションができる。
+
+ * 制御文字が含まれていないかをチェックするバリデーションができる。
+
+ * パスワードの強度判定をチェックするバリデーションができる。
+
+ * 氏名フォーマットをチェックするバリデーションができる。
+
+ * 入力値の文字列に対してアノテーションでトリム要否を設定できる。
+
+ * 日本語電話番号フォーマットをチェックするバリデーションができる。
+ 
+ * メールアドレスフォーマットをチェックするバリデーションができる。
+
+未検討
+========
+ * 文字列が正規表現にマッチするかをチェックするバリデーションができる。
+ * 複数のアノテーションをまとめたアノテーションが定義できる。
+ * カード番号として有効かをチェックするバリデーションができる。
+ * 郵便番号として有効かをチェックするバリデーションができる。
+ * 金額として有効な文字列かをチェックするバリデーションができる。
+ * 文字列の範囲(Ex. "0001"～"9999")をチェックするバリデーションができる。
+ * 文字列をトリムしてからバリデーションできる。
+ * 外部入力値とデータベースの値をマージした Form に対してバリデーションができる。
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_Validation--s1",
+  "title": "バリデーションとFormの生成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "バリデーション",
+        "Form生成",
+        "入力チェック",
+        "Map",
+        "アノテーション",
+        "Entity",
+        "単項目チェック",
+        "複数項目チェック",
+        "セッタ",
+        "ゲッタ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "アノテーション",
+        "メッセージ機能",
+        "バリデーション結果",
+        "入力元共有",
+        "画面処理",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "必須入力チェック",
+        "文字種チェック",
+        "文字列長チェック",
+        "数値範囲チェック",
+        "日付フォーマット",
+        "コード値チェック",
+        "未実装機能",
+        "トリム",
+        "国際化",
+        "ExtendedValidation_yyyymmddConvertor"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "入力値のバリデーション機能とFormの生成機能を提供する。\n\n**Form**の責務:\n1. 外部入力値の入力チェック\n2. 外部入力値の保持\n\nバリデーションのレベル:\n1. 単項目の入力チェック\n2. 複数項目にまたがる入力チェック\n3. データベースのデータを使用した入力チェック\n\n本機能では1, 2のチェックをサポートする。3はアプリケーションプログラマが別途実装すること。\n\n使用条件:\n- 入力値はMap形式であること\n- Formはセッタとゲッタを持つクラスであること\n- バリデーション情報はFormにアノテーションとして設定すること\n\n本機能はActionで業務ロジックを呼び出す前の入力チェックに使用する。:ref:`validation_and_convert` 以降のバリデーション使用方法を参考にしてActionを実装すること。\n\n**Entity**: FormをRDBMSのテーブルと1対1に作成し、Formのプロパティとテーブルのカラムを1対1に対応づけた形式のFormを特にEntityと呼ぶ。この条件を満たすと以下の利点がある:\n- バリデーションとデータベースへの反映を容易に実装できる\n- RDBMSの定義から実装の多くの部分を自動生成できる",
+    "s2": "**アノテーションによる条件の記述**\n\nバリデーションはFormに設定したアノテーションをもとに実施される。Formにバリデーション条件を保持するため、画面処理とバッチ処理等、異なる入力元に対してバリデーション条件を共有できる。\n\n**メッセージ機能の使用**\n\nバリデーション結果のメッセージには :doc:`./07_Message` の機能を使用する。バリデーションメッセージとビジネスロジックのメッセージを透過的に扱えるため、エラーメッセージ表示処理でどちらのメッセージも同じように取り扱える。",
+    "s3": "**実装済み**\n\n- 文字列が特定の文字種のみで構成されているかチェック\n- 文字列長チェック\n- 必須入力値チェック\n- 数値が規定の範囲に入っているかチェック\n- 入力値のMapからFormインスタンスを生成\n- 入力値をFormのプロパティの型に変換可能かチェック\n- 入力値をFormのプロパティの型に合わせて変換\n- Formのプロパティに設定する前に値に対してバリデーション実行\n- エラーメッセージに出力するプロパティの表示名称を任意指定\n- エラーメッセージに出力するプロパティの表示名称の国際化\n- Form内部のプロパティのFormに対するバリデーション\n- 西暦(年月日)フォーマットの日付チェック（詳細は :ref:`ExtendedValidation_yyyymmddConvertor` 参照）\n- 入力値の文字列に対してトリム\n- コード値として有効かのチェック\n\n**未実装**\n\n- 和暦フォーマット、年月フォーマット、営業日の日付チェック\n- 入力禁止文字チェック（システム毎に規定された禁止文字が含まれていないかのチェック）\n- 制御文字チェック\n- パスワード強度判定\n- 氏名フォーマットチェック\n- アノテーションによるトリム要否設定\n- 日本語電話番号フォーマットチェック\n- メールアドレスフォーマットチェック\n\n**未検討**\n\n- 正規表現マッチチェック\n- 複数アノテーションをまとめたアノテーション定義\n- カード番号チェック\n- 郵便番号チェック\n- 金額チェック\n- 文字列の範囲チェック\n- トリム後バリデーション\n- 外部入力値とDBの値をマージしたFormへのバリデーション"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,164 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "mom-messaging-01_userDeleteInfoMessageSendSpec--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "s2のインデックスタイトルが \"機能概要\" となっているが、s2の実際の内容はエンティティ情報と電文仕様であり、機能概要ではない。機能概要の内容はs1に含まれている。タイトルが内容を正確に反映していない。",
+      "source_evidence": "ソースファイルではエンティティ情報（================）と電文仕様（========）は独立したセクションとして存在し、機能概要（--------）とは別。知識ファイルのs1が機能概要の内容を含み、s2がエンティティ情報＋電文仕様を含む構成になっているが、s2のタイトルが誤って「機能概要」になっている。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1 (image alt text)",
+      "description": "画像のaltテキスト「ユーザ削除情報電文送信処理フロー」がソースに存在しない。ソースの画像ディレクティブ（.. image:: _image/userDeleteInfoMessageSend.png）にはaltテキストの指定がない。",
+      "source_evidence": "ソース: `.. image:: _image/userDeleteInfoMessageSend.png`（altテキストなし）。知識ファイル: `![ユーザ削除情報電文送信処理フロー](assets/...)`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _userDeleteInfoMessageSendSpec:
+
+======================================
+ユーザ削除情報電文送信処理の仕様
+======================================
+
+--------
+機能概要
+--------
+
+.. image:: _image/userDeleteInfoMessageSend.png
+
+ユーザ削除情報メッセージ送信テーブルを入力として外部システムに電文を送信する。
+
+.. note::
+ 送信対象のユーザ削除情報は、前段処理のユーザ情報削除バッチで登録される。
+ ユーザ情報削除バッチの仕様は、\ :doc:`../../04_Explanation_batch/01_userDeleteBatchSpec`\ を参照すること。
+
+主な仕様は、以下の通り。
+
+ 1.ユーザ削除情報送信処理
+
+   ユーザ削除情報メッセージ送信テーブルから送信対象のデータを抽出し、ユーザ削除情報電文として外部システムへ電文を送信する。
+
+   【INPUTデータ】
+
+   * ユーザ削除情報メッセージ送信テーブル
+
+   【OUTPUTデータ】
+
+   * ユーザ削除情報電文
+
+エンティティ情報
+================
+エンティティ論理名：ユーザ削除情報メッセージ送信
+
+ ===========================    ======================================================
+ カラム論理名                   備考
+ ===========================    ======================================================
+ 送信電文連番                   ユーザ登録情報送信登録時に採番した一意の連番
+ ユーザID                       ユーザ情報削除バッチで登録されたユーザID
+ 漢字名称                       ユーザ情報削除バッチで登録された漢字名称
+ カナ名称                       ユーザ情報削除バッチで登録されたカナ名称
+ ステータス                     | 0:未処理
+                                | 1:送信済み
+                                | 9:エラー
+ ===========================    ======================================================
+
+電文仕様
+========
+【ヘッダレコード:50バイト】
+
+  ==================== ============== ==========  ============ ========================================================================
+  項目名               データタイプ   開始位置    バイト数     説明
+  ==================== ============== ==========  ============ ========================================================================
+  リクエストID         X              1           20           'RM11AC0301' 固定 (要求電文ID)
+  連番                 X              21          10           ユーザ削除情報メッセージ送信.送信電文連番
+  (未使用)             X              31          20           空白（半角スペース）
+  ==================== ============== ==========  ============ ========================================================================
+
+【データレコード:270バイト】
+
+  ==================== ============== ==========  ============ ========================================================================
+  項目名               データタイプ   開始位置    バイト数     説明
+  ==================== ============== ==========  ============ ========================================================================
+  ユーザID             X              1           10           ユーザ削除情報メッセージ送信.ログインID
+  FILLER1              X              11          10           空白（半角スペース)
+  漢字氏名             N              21          100          ユーザ削除情報メッセージ送信.漢字氏名
+  カナ氏名             N              121         100          ユーザ削除情報メッセージ送信.カナ氏名
+  FILLER2              X              221         50           空白（半角スペース)
+  ==================== ============== ==========  ============ ========================================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "mom-messaging-01_userDeleteInfoMessageSendSpec--s1",
+  "title": "ユーザ削除情報電文送信処理の仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "MOMメッセージング",
+        "電文送信",
+        "ユーザ削除情報送信",
+        "外部システム連携",
+        "ユーザ削除情報メッセージ送信テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "機能概要",
+      "hints": [
+        "エンティティ情報",
+        "電文仕様",
+        "ヘッダレコード",
+        "データレコード",
+        "リクエストID",
+        "ユーザ削除情報メッセージ送信テーブル",
+        "ステータス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "![ユーザ削除情報電文送信処理フロー](assets/mom-messaging-01_userDeleteInfoMessageSendSpec--s1/userDeleteInfoMessageSend.png)\n\nユーザ削除情報メッセージ送信テーブルを入力として外部システムに電文を送信する。\n\n> **注意**: 送信対象のユーザ削除情報は、前段処理のユーザ情報削除バッチで登録される。ユーザ情報削除バッチの仕様は :doc:`../../04_Explanation_batch/01_userDeleteBatchSpec` を参照。\n\n**処理内容:**\n\n1. ユーザ削除情報メッセージ送信テーブルから送信対象データを抽出し、ユーザ削除情報電文として外部システムへ送信\n   - INPUT: ユーザ削除情報メッセージ送信テーブル\n   - OUTPUT: ユーザ削除情報電文",
+    "s2": "## エンティティ情報\n\nエンティティ論理名：ユーザ削除情報メッセージ送信\n\n| カラム論理名 | 備考 |\n|---|---|\n| 送信電文連番 | ユーザ登録情報送信登録時に採番した一意の連番 |\n| ユーザID | ユーザ情報削除バッチで登録されたユーザID |\n| 漢字名称 | ユーザ情報削除バッチで登録された漢字名称 |\n| カナ名称 | ユーザ情報削除バッチで登録されたカナ名称 |\n| ステータス | 0:未処理 / 1:送信済み / 9:エラー |\n\n## 電文仕様\n\n**ヘッダレコード（50バイト）**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| リクエストID | X | 1 | 20 | 'RM11AC0301' 固定（要求電文ID） |\n| 連番 | X | 21 | 10 | ユーザ削除情報メッセージ送信.送信電文連番 |\n| (未使用) | X | 31 | 20 | 空白（半角スペース） |\n\n**データレコード（270バイト）**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| ユーザID | X | 1 | 10 | ユーザ削除情報メッセージ送信.ログインID |\n| FILLER1 | X | 11 | 10 | 空白（半角スペース） |\n| 漢字氏名 | N | 21 | 100 | ユーザ削除情報メッセージ送信.漢字氏名 |\n| カナ氏名 | N | 121 | 100 | ユーザ削除情報メッセージ送信.カナ氏名 |\n| FILLER2 | X | 221 | 50 | 空白（半角スペース） |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4",
+      "description": "The content of s4 ('ウィンドウスコープは、同一ブラウザウィンドウ内の複数のHTTPリクエストをまたいでデータを保持するスコープである。') cannot be verified against the source file. The source file is truncated immediately after the `.. _howto_window_scope:` anchor and the section divider `---`, providing no body text for that section.",
+      "source_evidence": "Source ends at: `.. _\\`howto_window_scope\\`:\\n\\n--------------------------` — no section body is present in the provided source"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — List型/配列の要素のプロパティを受け渡す場合",
+      "description": "The Action class code that sends List/array data to JSP is omitted. The source includes a full implementation showing how to create a `UserEmailAddressEntity[]` array from a `SqlResultSet`, set `userEmailAddressArraySize` and `userEmailAddressArray` on a `W11AC03Form`, and call `ctx.setRequestScopedVar`. This code illustrates the required data structure and the mandatory pairing of the array property with its size property — context useful for AI to answer implementation questions.",
+      "source_evidence": "Source: `UserEmailAddressEntity[] emailAddressArray = new UserEmailAddressEntity[emailAddressList.size()]; ... form.setUserEmailAddressArraySize(emailAddressArray.length); form.setUserEmailAddressArray(emailAddressArray); ctx.setRequestScopedVar(\"W11AC03\", form);` — absent from knowledge s3"
+    }
+  ]
+}

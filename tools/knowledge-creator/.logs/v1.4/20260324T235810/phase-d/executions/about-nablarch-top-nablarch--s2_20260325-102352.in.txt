@@ -1,0 +1,990 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/TOP/top/nablarch/index.rst`
+- Format: `rst`
+
+```
+フォルダ構成
+----------------------------
+
+nablarchフォルダの構成について説明します。
+
+
+.. raw:: html
+
+  <style>
+  table {
+    border-collapse: collapse;
+  }
+  th {
+    border: solid 1px #666666;
+    color: #000000;
+    background-color:   #FF9933;
+  }
+  td {
+    border: solid 1px #666666;
+    color: #000000;
+    background-color: #ffffff;
+  }
+  </style>
+  <table>
+    <thead>
+      <tr>
+        <th colspan="6" align="left">
+          フォルダ構成
+        </th>
+        <th>
+          説明
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="6" align="left"  style="border-bottom:none; background-color:#ffcc33">
+          nablarch/
+        </td>
+        <td style="background-color:#ffcc33"> </td>
+      </tr>
+      <tr>
+        <td rowspan="88" style="border-top:none; background-color:#ffcc33">　</td>
+        <td colspan="5" style="background-color:#ffffcc">
+          release_note/
+        </td>
+        <td style="background-color:#ffffcc">
+          リリースノートが格納されています。
+          （<a target="_blank" href="./release_note">フォルダを開く</a>）
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="5" style="border-bottom:none; background-color:#ffffcc">
+          app_exe_env/
+        </td>
+        <td style="background-color:#ffffcc">
+          アプリケーション実行環境が格納されています。<br/>
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="8" style="border-top:none; background-color:#ffffcc">　</td>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          fw/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch Application Framework が格納されています。
+          （<a target="_blank" href="./app_exe_env/fw">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="3" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          dist/
+        </td>
+        <td>
+          オブジェクトコードが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          lib/
+        </td>
+        <td>
+          Application Framework のコンパイル時に使用したライブラリが格納されています。<br/>
+          ライブラリの詳細については、同ディレクトリに配置した<a href="./app_exe_env/fw/lib/readme.txt"> readme.txt </a>を参照してください。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          src/
+        </td>
+        <td>
+          ソースコードが格納されています。
+          （<a target="_blank" href="./app_exe_env/fw/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          fw_doc/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch Application Frameworkの解説書およびAPIドキュメントが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="3" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          doc/
+        </td>
+        <td>
+          解説書が格納されています。
+          （<a href="./app_exe_env/fw_doc/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          javadoc/
+        </td>
+        <td>
+          javadoc(プロジェクトのアーキテクトが使用可能なAPIのみ)が格納されています。<br/>
+          （<a href="./app_exe_env/fw_doc/javadoc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          javadoc_pg/
+        </td>
+        <td>
+          javadoc(プロジェクトのアプリケーションプログラマが使用可能なAPIのみ)が格納されています。<br/>
+          （<a href="./app_exe_env/fw_doc/javadoc_pg/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5" style="border-bottom:none; background-color:#ffffcc">
+          app_dev_env/
+        </td>
+        <td style="background-color:#ffffcc">
+          アプリケーション開発環境が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="64" style="border-top:none; background-color:#ffffcc">　</td>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          app_dev/
+        </td>
+        <td style="background-color:#ffffee">
+           アプリケーション開発基盤が格納されています。
+          （<a target="_blank" href="./app_dev_env/app_dev">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="4" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          開発環境構築ガイド
+        </td>
+        <td>
+          個々の開発者がPC用の統合開発環境をセットアップする手順を説明したガイドです。<br/>
+          （<a href="./app_dev_env/app_dev/開発環境構築ガイド.doc">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          開発リポジトリ構築ガイド
+        </td>
+        <td>
+          アプリケーションの開発環境(CI、バージョン管理システム、PC用の統合開発環境)の構築手順を説明したガイドです。<br />
+          アーキテクトなど、プロジェクトの開発環境構築を行う方が読まれることを想定しています。<br/>
+          （<a href="./app_dev_env/app_dev/開発リポジトリ構築ガイド.doc">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          開発リポジトリ構築ビルドファイル
+        </td>
+        <td>
+          開発リポジトリ構築に必要なAntのビルドファイルです。
+          （<a target="_blank" href="./app_dev_env/app_dev/開発リポジトリ構築ビルドファイル">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          開発環境パッケージ
+        </td>
+        <td>
+          チュートリアル用サンプルアプリケーションを動作させるのに必要なソフトウェアをまとめたパッケージです。以下のソフトウェアを含みます。<br>
+            <ul>
+              <li> Eclipse
+              <li> Apache Tomcat
+            </ul>
+          これらのソフトウェアは、それぞれのライセンスに従い再配布可能です。またNablarchは、本パッケージによる環境下で動作確認を行っています。<br />
+          （<a href="./app_dev_env/app_dev/Nablarch-dev-env.zip">ファイルを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          ui_dev/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch UI 開発基盤が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="3" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          解説書が格納されています。
+          （<a target="_blank" href="./app_dev_env/ui_dev/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          guide/
+        </td>
+        <td>
+          UI 開発基盤を利用したJSP/HTMLの作成ガイドが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/ui_dev/guide/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          ソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/ui_dev/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          mobile/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch モバイルライブラリが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/mobile">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="8" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          doc/
+        </td>
+        <td>
+          解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/mobile/doc/arch_doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none; ">
+          ios/
+        </td>
+        <td>
+          Nablarch モバイルライブラリ (iOS版)の資材が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="6" style="border-top:none;">　</td>
+        <td colspan="2">
+          bin/
+        </td>
+        <td>
+          オブジェクトコードが格納されています。<br/>
+          （<a target="_blank" href="./app_dev_env/mobile/ios/bin">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          src/
+        </td>
+        <td>
+          ソースコードが格納されています。<br>
+          （<a target="_blank" href="./app_dev_env/mobile/ios/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          appledoc/
+        </td>
+        <td>
+          appledocが格納されています。<br>
+          （<a target="_blank" href="./app_dev_env/mobile/ios/appledoc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+       <tr>
+       <td colspan="2" style="border-bottom:none">
+          sample/
+        </td>
+        <td>
+          サンプルが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/mobile/ios/sample/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/mobile/ios/sample/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          workflow/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch ワークフローライブラリが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="9" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          doc/
+        </td>
+        <td>
+          解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          src/
+        </td>
+        <td>
+          ソースコードが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow/src/">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          design_guide/
+        </td>
+        <td>
+          ワークフローの設計ガイドが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow/design_guide/">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none; ">
+          tool/
+        </td>
+        <td>
+          Nablarch ワークフローライブラリで提供するツールが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="2">
+          doc/
+        </td>
+        <td>
+          ツールの設定、使用方法についての解説書が格納されています。<br/>
+          （<a target="_blank" href="./app_dev_env/workflow/tool/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          src/
+        </td>
+        <td>
+          ツールのソースコードが格納されています。<br/>
+          （<a target="_blank" href="./app_dev_env/workflow/tool/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+       <td colspan="3" style="border-bottom:none">
+          sample_application/
+        </td>
+        <td>
+          ワークフローアプリケーションの実装ガイドと、サンプルアプリケーションが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="2" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          ワークフローライブラリを利用するアプリケーションの実装ガイドが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow/sample_application/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルアプリケーションのソースコードが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/workflow/sample_application/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          app_lib/
+        </td>
+        <td style="background-color:#ffffee">
+           Nablarchアプリケーションライブラリが格納されています。<br />
+           Nablarchアプリケーションライブラリは、下記のソースコードディレクトリから必要なファイルをプロジェクトに取り込んで利用してください。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="23" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3" style="border-bottom:none">
+          biz_sample/
+        </td>
+        <td>
+          頻繁に利用される業務機能のサンプルです。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="2" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/app_lib/biz_sample/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/app_lib/biz_sample/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          fw_integration_sample/
+        </td>
+        <td>
+          Nablarchを拡張して特定の製品に対応させる場合の拡張モジュールのサンプルです。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="12" style="border-top:none">　</td>
+        <td colspan="2" style="border-bottom:none">
+          log4j/
+        </td>
+        <td>
+          ログ出力機能でlog4jを使用する場合のサンプルです。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/log4j/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/log4j/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          smime/
+        </td>
+        <td>
+          メール送信機能でbouncycastleを使用する場合のサンプルです。<br />
+          本サンプルでは、 bouncycastle を使用してS/MIMEに対応した電子署名付きメール送信機能を実現しています。
+        </td>
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/smime/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/smime/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          wmq/
+        </td>
+        <td>
+          メッセージング機能でWebsphereMQを使用する場合のサンプルです。<br />
+          本サンプルでは、 WebsphereMQ の機能を使用して分散トランザクションを実現しています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/wmq/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/wmq/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          db/
+        </td>
+        <td>
+          特定のデータベース向けにNablarch実装を拡張する実装サンプルです。<br />
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/db/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/fw_integration_sample/db/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          messaging_simulator_sample/
+        </td>
+        <td>
+          メッセージング基盤テストシミュレータのサンプルです。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="2" style="border-bottom:none">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/app_lib/messaging_simulator_sample/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。<br />
+          （<a target="_blank" href="./app_dev_env/app_lib/messaging_simulator_sample/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          operation_sample/
+        </td>
+        <td>
+          運用機能サンプルが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="3" style="border-top:none">　</td>
+        <td colspan="2" style="border-bottom:none">
+          log_statistics_sample/
+        </td>
+        <td>
+          運用時に使用するログ集計機能のサンプルです。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="1">
+          doc/
+        </td>
+        <td>
+          サンプルの設定、使用方法についての解説書が格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/operation_sample/log_statistics_sample/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="1">
+          src/
+        </td>
+        <td>
+          サンプルのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/app_lib/operation_sample/log_statistics_sample/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          tfw/
+        </td>
+        <td style="background-color:#ffffee">
+           Nablarch Testing Frameworkが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="5" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3" style="border-bottom:none">
+          dist/
+        </td>
+        <td>
+          オブジェクトコードおよび単体テスト用のツールが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none">　</td>
+        <td colspan="2">
+          auto_test/
+        </td>
+        <td>
+          オブジェクトコードが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border-bottom:none">
+          test_tool/
+        </td>
+        <td>
+          単体テスト用のツールが格納されています。
+          （<a target="_blank" href="./app_dev_env/tfw/dist/test_tool">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          lib/
+        </td>
+        <td>
+          Testing Framework の実行に必要なライブラリが格納されています。<br/>
+          ライブラリの詳細については、同ディレクトリに配置した<a href="./app_dev_env/tfw/lib/readme.txt"> readme.txt </a>を参照してください。<br/>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          src/
+        </td>
+        <td>
+          Testing Frameworkのソースコードが格納されています。
+          （<a target="_blank" href="./app_dev_env/tfw/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          tfw_doc/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch Testing FrameworkのAPIドキュメントが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          javadoc/
+        </td>
+        <td>
+          javadoc(プロジェクトのアーキテクトが使用可能なAPIのみ)が格納されています。<br>
+          （<a href="./app_dev_env/tfw_doc/javadoc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          javadoc_pg/
+        </td>
+        <td>
+          javadoc(プロジェクトのアプリケーションプログラマが使用可能なAPIのみ)が格納されています。<br>
+          （<a href="./app_dev_env/tfw_doc/javadoc_pg/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          toolbox/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarch Toolbox が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          doc/
+        </td>
+        <td>
+          解説書とツールが格納されています。Toolboxの使用方法はこのドキュメントを参照してください。<br>
+          （<a href="./app_dev_env/toolbox/doc/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          src/
+        </td>
+        <td>
+          ソースコードが格納されています。<br />
+          Toolboxを改修する際に使用してください。<br />
+          （<a target="_blank" href="./app_dev_env/toolbox/src">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5" style="border-bottom:none; background-color:#ffffcc">
+          app_dev_guide/
+        </td>
+        <td style="background-color:#ffffcc">
+          Nablarch開発標準およびガイドが格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="11" style="border-top:none; background-color:#ffffcc">　</td>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          standard/
+        </td>
+        <td style="background-color:#ffffee">
+           Nablarch開発標準が格納されています。
+          （<a target="_blank" href="./app_dev_guide/standard/">フォルダを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="6" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          dev_process_standard/
+        </td>
+        <td>
+          開発プロセス標準が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          design_standard/
+        </td>
+        <td>
+          設計標準が格納されています。下記のものが含まれます。<br />
+          　・UI標準<br />
+          　・DB設計標準<br />
+          　・共通コンポーネント設計標準
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          coding_rule/
+        </td>
+        <td>
+          コーディング規約が格納されています。下記が含まれます。<br />
+          　・Javaコーディング規約<br />
+          　・Objective-Cコーディング規約<br />
+          　・JSPコーディング規約<br />
+          　・SQLコーディング規約<br />
+          　・javascriptコーディング規約<br />
+          　・シェルスクリプト開発標準
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          unit_test/
+        </td>
+        <td>
+          単体テスト標準が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          document_standard_style/
+        </td>
+        <td>
+          ドキュメント規約（設計書を記載する際のルールを定めたドキュメント）が格納されています。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          document_format/
+        </td>
+        <td>
+          設計書のフォーマットとサンプルが格納されています。<br />
+          詳細は当フォルダ内の「Nablarch設計ドキュメント解説書」を参照してください。
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border-bottom:none; background-color:#ffffee">
+          guide/
+        </td>
+        <td style="background-color:#ffffee">
+          Nablarchガイドが格納されています。<br />
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="3" style="border-top:none; background-color:#ffffee">　</td>
+        <td colspan="3">
+          development_guide/
+        </td>
+        <td>
+          Nablarch開発ガイドが格納されています。
+          （<a href="./app_dev_guide/guide/development_guide/index.html">ドキュメントを開く</a>）
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border-bottom:none">
+          tutorial/
+        </td>
+        <td>
+          基本的な業務アプリケーションの実装方法を示したチュートリアル用サンプルアプリケーションです。
+        </td>
+      </tr>
+      <tr>
+        <td style="border-top:none">　</td>
+        <td colspan="2">
+          チュートリアル用サンプルアプリケーション
+        </td>
+        <td>
+          チュートリアル用サンプルのソースコードです。<br />
+          Eclipseのワークスペースの形式で提供します。<br />
+          （<a href="./app_dev_guide/guide/tutorial/Nablarch-tutorial-workspace.zip">ファイルを開く</a>）
+        </td>
+      </tr>
+    </tbody>
+  </table>
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-top-nablarch--s2`
+
+```json
+{
+  "id": "about-nablarch-top-nablarch--s2",
+  "title": "フォルダ構成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォルダ構成",
+      "hints": [
+        "フォルダ構成",
+        "nablarch",
+        "Nablarch Application Framework",
+        "Nablarch Testing Framework",
+        "Nablarch UI開発基盤",
+        "ワークフローライブラリ",
+        "モバイルライブラリ",
+        "アプリケーションライブラリ",
+        "Nablarch Toolbox",
+        "開発標準",
+        "release_note",
+        "app_exe_env",
+        "app_dev_env",
+        "app_dev_guide"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フォルダ構成\n\nnablarchフォルダのトップレベル構成:\n\n- `nablarch/release_note/` — リリースノート\n- `nablarch/app_exe_env/` — アプリケーション実行環境\n- `nablarch/app_dev_env/` — アプリケーション開発環境\n- `nablarch/app_dev_guide/` — Nablarch開発標準およびガイド\n\n---\n\n### app_exe_env/ (アプリケーション実行環境)\n\n- `fw/` — Nablarch Application Framework本体\n  - `dist/` — オブジェクトコード\n  - `lib/` — コンパイル時使用ライブラリ（詳細はlib/readme.txt参照）\n  - `src/` — ソースコード\n- `fw_doc/` — Nablarch Application Frameworkの解説書およびAPIドキュメント\n  - `doc/` — 解説書\n  - `javadoc/` — Javadoc（アーキテクト向け：使用可能なAPIのみ）\n  - `javadoc_pg/` — Javadoc（アプリケーションプログラマ向け：使用可能なAPIのみ）\n\n---\n\n### app_dev_env/ (アプリケーション開発環境)\n\n- `app_dev/` — アプリケーション開発基盤\n  - 開発環境構築ガイド — 個々の開発者がPC用IDEをセットアップする手順\n  - 開発リポジトリ構築ガイド — CI・バージョン管理・IDEの開発環境構築手順（アーキテクト向け）\n  - 開発リポジトリ構築ビルドファイル — 開発リポジトリ構築に必要なAntビルドファイル\n  - 開発環境パッケージ（Eclipse、Apache Tomcat含む）\n- `ui_dev/` — Nablarch UI開発基盤\n  - `doc/` — 解説書\n  - `guide/` — JSP/HTML作成ガイド\n  - `src/` — ソースコード\n- `mobile/` — Nablarchモバイルライブラリ\n  - `doc/` — 解説書\n  - `ios/` — iOS版資材\n    - `bin/` — オブジェクトコード\n    - `src/` — ソースコード\n    - `appledoc/` — appledoc\n    - `sample/` — サンプル（doc/: 解説書、src/: ソースコード）\n- `workflow/` — Nablarchワークフローライブラリ\n  - `doc/` — 解説書\n  - `src/` — ソースコード\n  - `design_guide/` — ワークフロー設計ガイド\n  - `tool/` — 提供ツール（doc/: 解説書、src/: ソースコード）\n  - `sample_application/` — 実装ガイドとサンプルアプリケーション（doc/: 実装ガイド、src/: サンプルソース）\n- `app_lib/` — Nablarchアプリケーションライブラリ（必要なファイルをプロジェクトに取り込んで利用）\n  - `biz_sample/` — 頻繁に利用される業務機能のサンプル（doc/: 解説書、src/: ソースコード）\n  - `fw_integration_sample/` — Nablarchを拡張して特定製品に対応させる拡張モジュールサンプル\n    - `log4j/` — ログ出力機能でlog4jを使用する場合のサンプル\n    - `smime/` — メール送信機能でbouncycastleを使用してS/MIME対応電子署名付きメール送信を実現するサンプル\n    - `wmq/` — メッセージング機能でWebsphereMQを使用して分散トランザクションを実現するサンプル\n    - `db/` — 特定データベース向けにNablarch実装を拡張するサンプル\n  - `messaging_simulator_sample/` — メッセージング基盤テストシミュレータのサンプル\n  - `operation_sample/log_statistics_sample/` — 運用時に使用するログ集計機能のサンプル\n- `tfw/` — Nablarch Testing Framework\n  - `dist/auto_test/` — オブジェクトコード\n  - `dist/test_tool/` — 単体テスト用ツール\n  - `lib/` — Testing Framework実行に必要なライブラリ（詳細はlib/readme.txt参照）\n  - `src/` — ソースコード\n- `tfw_doc/` — Nablarch Testing FrameworkのAPIドキュメント\n  - `javadoc/` — Javadoc（アーキテクト向け：使用可能なAPIのみ）\n  - `javadoc_pg/` — Javadoc（アプリケーションプログラマ向け：使用可能なAPIのみ）\n- `toolbox/` — Nablarch Toolbox\n  - `doc/` — 解説書とツール（Toolboxの使用方法はこのドキュメントを参照）\n  - `src/` — ソースコード（Toolboxを改修する際に使用）\n\n---\n\n### app_dev_guide/ (Nablarch開発標準およびガイド)\n\n- `standard/` — Nablarch開発標準\n  - `dev_process_standard/` — 開発プロセス標準\n  - `design_standard/` — 設計標準（UI標準・DB設計標準・共通コンポーネント設計標準を含む）\n  - `coding_rule/` — コーディング規約（Java・Objective-C・JSP・SQL・JavaScript・シェルスクリプト開発標準を含む）\n  - `unit_test/` — 単体テスト標準\n  - `document_standard_style/` — ドキュメント規約（設計書記載ルール）\n  - `document_format/` — 設計書フォーマットとサンプル\n- `guide/` — Nablarchガイド\n  - `development_guide/` — Nablarch開発ガイド\n  - `tutorial/` — 基本的な業務アプリケーション実装方法を示したチュートリアル用サンプルアプリケーション\n    - チュートリアル用サンプルアプリケーション（Nablarch-tutorial-workspace.zip） — Eclipseのワークスペースの形式で提供"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

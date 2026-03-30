@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-DatabaseRecordReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — configuration table, 必須 column",
+      "description": "The knowledge file adds a '必須' column and marks both statement rows with '○', implying each is individually required. The source says '排他利用。いずれか必須' (exclusive use; one or the other is required), meaning at most one can be used and at least one must be used — not that both are independently required.",
+      "source_evidence": "備考列: 「排他利用。いずれか必須」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — configuration table, デフォルト値 column",
+      "description": "The knowledge file adds a 'デフォルト値' column to the configuration table. The source table has no such column and contains no information about default values.",
+      "source_evidence": "Source table columns are: 設定項目, プロパティ名, データ型, 備考 — no default values column exists"
+    }
+  ]
+}

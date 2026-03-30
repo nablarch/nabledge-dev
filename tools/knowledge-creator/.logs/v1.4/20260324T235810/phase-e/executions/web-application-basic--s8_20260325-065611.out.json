@@ -1,0 +1,64 @@
+{
+  "id": "web-application-basic--s8",
+  "title": "ウィンドウスコープの使用法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "windowScopePrefixes属性の使用方法",
+      "hints": [
+        "ウィンドウスコープ",
+        "windowScopePrefixes",
+        "複数画面データ引き継ぎ",
+        "hiddenタグ暗号化",
+        "confirmationPage",
+        "n:form",
+        "n:hidden",
+        "ValidationUtil",
+        "ValidationContext",
+        "画面遷移スコープ管理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法",
+      "hints": [
+        "ウィンドウスコープ",
+        "windowScopePrefixes",
+        "複数画面遷移",
+        "n:param",
+        "n:submitLink",
+        "ValidationUtil",
+        "ValidationContext",
+        "SqlResultSet",
+        "CM311AC1Component",
+        "getWindowScopeObject",
+        "setRequestScopedVar",
+        "一覧照会画面",
+        "更新画面",
+        "更新確認画面",
+        "更新完了画面"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アクションの実装方法",
+      "hints": [
+        "ウィンドウスコープ",
+        "Actionクラス実装",
+        "ValidationUtil",
+        "ValidationContext",
+        "型変換",
+        "データ引き継ぎ",
+        "abortIfInvalid",
+        "createObject"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープは、複数画面で引き継ぐデータ（入力データ、更新対象データのプライマリキーなど）をhiddenタグでクライアント側に保持する変数スコープ。\n\n> **注意**: ログイン情報など、全ての取引で使用される情報はセッションで保持する。\n\n`n:form`タグの`windowScopePrefixes`属性にプレフィックスを指定することでウィンドウスコープを使用できる。入力項目の`name`属性で使用したプレフィックスを指定すると、ウィンドウスコープに入力データが設定される。ウィンドウスコープに設定したデータはHTML出力時にhiddenで出力される（暗号化機能が使用される）。複数のプレフィックスを指定する場合はカンマ（,）で区切る。\n\n**登録画面のJSP例**:\n```jsp\n<n:form name=\"insert\" windowScopePrefixes=\"W11AC02\">\n    <n:text name=\"W11AC02.systemAccount.userId\" size=\"15\" maxlength=\"10\" />\n    <n:text name=\"W11AC02.systemUser.kanjiName\" size=\"65\" maxlength=\"25\" />\n    <n:submit type=\"button\" name=\"confirm\" value=\"確認\"\n              uri=\"/action/ss11AC/W11AC02Action/RW11AC0202\" />\n</n:form>\n```\n\n**登録確認画面のJSP例**（`n:confirmationPage`タグで入力画面のJSPにフォワード）:\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n<n:confirmationPage path=\"./W11AC0201.jsp\" />\n```\n\nhidden出力例（ウィンドウスコープデータは暗号化されてhiddenに出力される）:\n```html\n<input type=\"hidden\" name=\"nablarch_hidden\" value=\"QkyNL4ld+4izNDC5\" />\n```\n\n**Actionクラスの実装例**（登録確認画面へのフォワード。入力データを明示的にリクエストに設定しなくてもウィンドウスコープで自動引き継ぎされる）:\n```java\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    return new HttpResponse(\"/ss11AC/W11AC0202.jsp\");\n}\n```",
+    "s2": "`windowScopePrefixes`属性に複数のプレフィックスを指定して使い分けることで、特定のデータだけを複数画面で引き継ぐことができる。\n\n**遷移例**: 一覧照会画面（照会後）→更新画面→更新確認画面→更新完了画面\n\n| 画面 | windowScopePrefixes | 引き継ぐデータ |\n|---|---|---|\n| 一覧照会画面 | `11AC_W11AC01` | 検索条件 |\n| 更新画面 | `11AC_W11AC01,W11AC03` | 検索条件 + プライマリキー・更新データ |\n| 更新確認画面 | `11AC_W11AC01,W11AC03` | 検索条件 + プライマリキー・更新データ |\n| 更新完了画面 | `11AC_W11AC01` | 検索条件のみ（一覧照会画面へ戻るため） |\n\n**一覧照会画面のJSP例**（`n:param`タグでプライマリキーをサブミット）:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:text name=\"11AC_W11AC01.loginId\" size=\"25\" maxlength=\"20\" />\n    <n:text name=\"11AC_W11AC01.kanjiName\" size=\"25\" maxlength=\"20\" />\n</n:form>\n\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:submitLink uri=\"/action/ss11AC/W11AC03Action/RW11AC0301\" name=\"showUpdate_${count}\">\n        更新\n        <n:param paramName=\"W11AC03.systemAccount.userId\" name=\"row.userId\" />\n    </n:submitLink>\n</n:form>\n```\n\n**Actionクラスの実装例**（一覧照会画面→更新画面: `doRW11AC0301`）:\n```java\npublic HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {\n    // プライマリキーの精査\n    ValidationContext<W11AC03Form> userSearchFormContext =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"selectUserInfo\");\n    // プライマリキーの取得\n    String userId = userSearchFormContext.createObject().getSystemAccount().getUserId();\n\n    // プライマリキーで検索を行い、更新対象のデータを取得\n    CM311AC1Component comp = new CM311AC1Component();\n    SqlResultSet sysAcct = comp.selectSystemAccount(userId);\n    SqlResultSet users = comp.selectUsers(userId);\n    SqlResultSet permissionUnit = comp.selectPermissionUnit(userId);\n    SqlResultSet ugroup = comp.selectUgroup(userId);\n\n    // 検索結果からFormを生成し、\"W11AC03\"という名前でリクエストスコープに設定して更新画面へ遷移\n    W11AC03Form form = getWindowScopeObject(sysAcct, users, permissionUnit, ugroup);\n    ctx.setRequestScopedVar(\"W11AC03\", form);\n    return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n}\n```\n\n> **ポイント**: 更新画面への初回遷移時、更新対象データはリクエストスコープに明示的にセットする（`ctx.setRequestScopedVar`）。以降の画面遷移ではウィンドウスコープが自動的にデータを引き継ぐ。\n\n**更新画面のJSP例**（表示のみ項目は`n:hidden`でサブミット）:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write  name=\"W11AC03.systemAccount.loginId\" />\n    <n:hidden name=\"W11AC03.systemAccount.loginId\" />\n    <n:text name=\"W11AC03.users.kanjiName\" size=\"52\" maxlength=\"50\" />\n    <n:submit type=\"button\" name=\"update\" value=\"確認\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n</n:form>\n```\n\n**Actionクラスの実装例**（更新画面→更新確認画面: `doRW11AC0302`）:\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    // 更新画面で入力したデータに対するバリデーション\n    ValidationContext<W11AC03Form> formContext =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    // 更新対象のプライマリキーと更新データ（ともにプレフィックスがW11AC03）は、\n    // ウィンドウスコープにより自動的に更新確認画面へ引き継がれる。明示的にリクエストにデータを設定する必要は無い。\n    return new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n}\n```\n\n**更新確認画面のJSP例**（`n:confirmationPage`で入力画面と同じ記述で確認項目出力）:\n```jsp\n<n:confirmationPage />\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write  name=\"W11AC03.systemAccount.loginId\"/>\n    <n:hidden name=\"W11AC03.systemAccount.loginId\" />\n    <n:text name=\"W11AC03.users.kanjiName\" size=\"52\" maxlength=\"50\" />\n    <n:submit type=\"button\" name=\"confirm\" value=\"確定\"\n              uri=\"/action/ss11AC/W11AC03Action/RW11AC0304\" allowDoubleSubmission=\"false\" />\n</n:form>\n```\n\n**更新完了画面のJSP例**（検索条件のみを引き継ぐ）:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:write name=\"W11AC03.systemAccount.loginId\"/>\n    <n:write name=\"W11AC03.user.kanjiName\"/>\n    <n:submit type=\"button\" name=\"search\" value=\"一覧照会画面へ\"\n              uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"/>\n</n:form>\n```",
+    "s3": "ウィンドウスコープを使用する場合、以下のことに注意してActionクラスを実装すること。\n\n- **遷移先へのデータ引き継ぎ処理をActionクラスで明示的に行わない**: ウィンドウスコープ方式ではフレームワークが自動的に入力データを引き継ぐ。セッションを使う方式と異なり、Actionクラスで入力データをセッションに明示的に設定する必要はない。\n- **バリデーションを必ず行う**: Actionクラスでウィンドウスコープのデータを使用する場合はバリデーションを実施すること。バリデーション実行後にフォームのプロパティとしてデータを取得することで、String型からの自動型変換が行われる。\n\n**Actionクラスの実装例**（更新確認画面→更新完了画面: `doRW11AC0304`。検索条件の処理を記述しなくても更新完了画面に自動引き継ぎされる）:\n```java\npublic HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {\n    // 検索条件(11AC_W11AC01)の処理を記述しなくても更新完了画面に引き継がれる\n\n    // 更新情報のバリデーション\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n\n    formCtx.abortIfInvalid();\n\n    // 自動で型変換された更新情報がプロパティに設定されている\n    W11AC03Form form = formCtx.createObject();\n\n    // 以下、W11AC03Formインスタンスを使用した更新処理\n}\n```"
+  }
+}

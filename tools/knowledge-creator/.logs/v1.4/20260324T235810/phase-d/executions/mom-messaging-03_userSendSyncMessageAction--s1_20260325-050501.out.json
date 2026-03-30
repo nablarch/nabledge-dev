@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3",
+      "description": "The XML code block in s3 ends with `</component>` in the knowledge file, but the source file ends with `</property>`. The knowledge file silently corrected what appears to be a typo in the source, introducing content that has no basis in the source.",
+      "source_evidence": "Source line: `</property>` (final closing tag of the XML block). Knowledge file: `</component>`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4, s5",
+      "description": "Inline field comments that describe the semantic meaning of each record field are omitted from both format definition file examples. These comments clarify field purpose (e.g., `# レコード区分(固定)`, `# 採番したユーザID`, `# 障害事由コード`, `# 問い合わせID`) and could help an AI answer questions about the format structure.",
+      "source_evidence": "Source s4: `1   dataKbn  X(1)  \"2\"   # レコード区分(固定)`, `2   loginId  X(20)  # ログインID`, etc. Source s5: `2   userId  X(10)  # 採番したユーザID`, `12  failureCode  X(20)  # 障害事由コード`, `32  userInfoId  X(20)  # 問い合わせID`."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 index hints / missing s7, s8",
+      "description": "The source ToC lists 7 content sections, but the knowledge file contains only 6. The sections `other_example_code_get` (コード値の取得方法) and `other_example_warn_message` (警告メッセージ) are referenced in the ToC and their topics appear in s1 index hints ('コード値取得', '警告メッセージ'), but no corresponding content sections (s7, s8) exist in the knowledge file. An AI assistant queried about these topics would find the hint in s1 but have no content to return.",
+      "source_evidence": "ToC in source: `* :ref:`other_example_code_get`` and `* :ref:`other_example_warn_message`` — both appear in the list of 7 items. The source excerpt ends at the heading `.. _`other_example_code_get`:` with no content shown."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (設定値の取得方法)",
+      "description": "The knowledge file conveys the warning against using variable key values, but omits the two concrete anti-pattern code examples from the source. These examples illustrate exactly what patterns to avoid (concatenating entity field values or DB-retrieved values into key strings), which helps an AI recognize bad usage in user code.",
+      "source_evidence": "Source warning block contains:\n`String message = SystemRepository.getString(\"user\" + userEntity.getUserId() + \".message\");`\n`String message = SystemRepository.getString(\"user\" + row.getString(\"userId\") + \".message\");`\nNeither appears in s3."
+    }
+  ]
+}

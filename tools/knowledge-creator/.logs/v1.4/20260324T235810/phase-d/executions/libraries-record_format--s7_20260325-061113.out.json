@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-record_format--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SZ field type, arg4",
+      "description": "The description for SZ引数4 is significantly truncated. Source specifies '引数4: 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)' but the knowledge file only says '引数4: 負数時（任意）', omitting the technical description and hex format constraint '16進表記の文字列[0-9A-F]'.",
+      "source_evidence": "引数4: 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SP field type, arg3 and arg4",
+      "description": "For SP type, arg3 and arg4 are missing the hex format constraint. Source specifies arg3 as '正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)' and arg4 as '負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)'. The knowledge file reduces arg3 to '正数時の最下位4ビットパターン（任意）' and arg4 to merely '負数時（任意）', omitting the full technical description and the hex format constraint for both.",
+      "source_evidence": "引数3: 正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)\n引数4: 負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — SZ field type, arg3",
+      "description": "For SZ arg3, the hex format constraint is omitted. Source specifies '(16進表記の文字列[0-9A-F])' but the knowledge file only states '正数時の最小桁バイトの上位4ビットパターン（任意）' without the format constraint.",
+      "source_evidence": "引数3: 正数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "The hints for s2 are missing several field type identifiers that appear as first-column property names in the field type definition tables: X, N, XN, Z, SZ, P, SP, B. These are the primary identifiers users would search for when looking up field type behavior.",
+      "source_evidence": "Field type table first column entries: X, N, XN, Z, SZ, P, SP, B, X9, SX9 (X9 and SX9 are present in hints, but X, N, XN, Z, SZ, P, SP, B are absent)"
+    }
+  ]
+}

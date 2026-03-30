@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_DisplayTag--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — コード値の表示",
+      "description": "Source states 'codeタグ以外は選択項目、codeタグは表示項目を出力する。codeタグは :ref:`WebView_WriteTag` と同様の使い方で、一覧表示や参照画面においてコード値を出力する場合に使用する。' This key usage guidance—that codeタグ outputs display items (not selection items), is used for list/reference screens, and is used like WriteTag—is absent from the knowledge file. An AI needs this to answer questions about selecting the right code tag.",
+      "source_evidence": "codeタグ以外は選択項目、codeタグは表示項目を出力する。codeタグは :ref:`WebView_WriteTag` と同様の使い方で、一覧表示や参照画面においてコード値を出力する場合に使用する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "s4 combines two distinct major topics: 'nameAlias属性の使用方法' and 'コード値の表示'. In the source, コード値の表示 is a separate top-level section with its own `.. _code_tag:` anchor and `======` heading. These should be separate knowledge file sections (s4 and s5).",
+      "source_evidence": ".. _`code_tag`:\n\n======================================================\nコード値の表示\n======================================================"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — index hints",
+      "description": "s4 hints are missing 'WebView_SingleCheckBoxTag', which is explicitly referenced in the source description of codeCheckboxタグ ('codeCheckboxタグは、:ref:`WebView_SingleCheckBoxTag` と同様に').",
+      "source_evidence": "codeCheckboxタグは、 :ref:`WebView_SingleCheckBoxTag` と同様に、単一のinputタグ(type=checkbox)を出力し"
+    }
+  ]
+}

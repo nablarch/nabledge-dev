@@ -1,0 +1,513 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-batch-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The knowledge file states 「例えば`paramA=valueA`というカラムがあれば`-paramA=valueA`というオプションを指定したことになる」, misrepresenting the source. The source shows two separate columns named `paramA` and `paramB` with values `valueA` and `valueB` respectively. There is no single column named `paramA=valueA`; the column name (`paramA`) and its value (`valueA`) are distinct fields that together produce `-paramA=valueA` on the command line.",
+      "source_evidence": "Source table: no=1, case=xxxのケース, paramA=valueA, paramB=valueB → `-paramA=valueA -paramB=valueB`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 index hints",
+      "description": "The hints for s3 are missing `expectedMessageByClient` and `responseMessageByClient`, both of which are property names in the testShots table defined in this section.",
+      "source_evidence": "Source testShots table includes columns: expectedMessageByClient (HTTPメッセージ同期送信の期待要求電文), responseMessageByClient (HTTPメッセージ同期送信の返却応答電文)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The concrete complete example of a fixed-length file setup (SETUP_FIXED=work/members.txt) is omitted. The source provides a full working example showing Windows-31J encoding, CRLF record separator, and four record types (ヘッダ 1件, データ 2件, トレーラ 1件, エンド 1件) with actual field types (9, X), field lengths, and data values. This is the only concrete illustration of how to write the Excel-based fixed-length file test data in practice.",
+      "source_evidence": "Source section 固定長ファイルの準備: 「具体例を示す。このファイルは以下のレコードで構成されている。ヘッダレコード１件、データレコード２件、トレーラレコード１件、エンドレコード１件。文字コードはWindows-31J、レコード区切り文字はCRLF」 followed by complete SETUP_FIXED=work/members.txt table."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`batch_request_test`:
+
+======================================
+リクエスト単体テストの実施方法(バッチ)
+======================================
+
+--------------------
+テストクラスの書き方
+--------------------
+
+テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象のActionクラスと同じとする。
+* <Actionクラス名>RequestTestというクラス名でテストクラスを作成する。
+* \ ``nablarch.test.core.batch.BatchRequestTestSupport``\ を継承する。
+
+例えば、テスト対象のActionクラスが、\ ``nablarch.sample.ss21AA.RM21AA001Action``\ だとすると、\
+テストクラスは以下のようになる。
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  
+  // ～中略～
+
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+
+
+
+------------------
+テストメソッド分割
+------------------
+
+１テストケースにつき１テストメソッドを原則とする。
+以下の手順により、作成するテストメソッドを決定する。
+
+* 原則として、１つのテストケースに対して１つのテストメソッドを作成する。
+* 例外として、複数ケースをまとめて記述した方が効率が良い場合は、複数テストケースを１テストメソッドで行うことを検討する。
+
+バッチ処理では複数のレコードを１度に扱うので、テストデータが比較的多くなる。\
+１テストメソッドに複数のテストケースを記述すると、１つのシートに大量のテストデータを記載することになり、\
+可読性、保守性が低下してしまう。このため原則１テストケース１テストメソッドとしている。
+
+しかし、複数テストケースをまとめて記載したほうが効率が良い場合がある。\
+この場合複数ケースをまとめて記述することを検討する。
+
+* テストケース間の関連が強く、シートを分割することにより可読性が劣化する場合。（例：入力ファイルのフォーマットチェックのテストケース）
+
+
+* テストデータが少量であるため、１シートに記述しても可読性、保守性に影響しない。
+
+
+--------------------
+テストデータの書き方
+--------------------
+
+テストデータを記載したExcelファイルは、クラス単体テストと同様に\
+テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
+
+テストデータの記述方法詳細については、「\ :ref:`how_to_write_excel`\ 」を参照。
+
+
+テストクラスで共通のデータベース初期値
+======================================
+
+画面オンラインの場合と同様である。「\ :ref:`request_test_setup_db`\ 」を参照。
+ 
+
+.. _`batch_test_testcases`:
+
+テストケース一覧
+================
+
+LIST_MAPのデータタイプで１テストメソッド分のケース表を記載する。IDは、\ **testShots**\ とする。
+
+..    .. image:: ./_image/testShots.png
+..    :scale: 80
+
+
+１ケース毎に以下の要素を持たせる。
+
+======================= ========================================================================================= =====
+カラム名                説明                                                                                      必須 
+======================= ========================================================================================= =====
+no                      テストケース番号を1からの連番で記載する。                                                 必須     
+description             そのテストケースの説明を記載する。                                                        必須
+expectedStatusCode      期待するステータスコード                                                                  必須 
+setUpTable              各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの\            
+                        :ref:`グループID<tips_groupId>`\ を記載する\ [1]_\ 。データの投入は自動テストフレーム          
+                        ワークにより行われる。                                                                         
+setUpFile               各テストケース実行前に入力用ファイルを作成する場合は、同じシート内に記載したデータの\          
+                        :ref:`グループID<tips_groupId>`\ を記載する\ [1]_\ 。ファイルの作成は自動テストフレーム        
+                        ワークにより行われる。                                                                         
+expectedFile            出力ファイルの内容を比較する場合、期待するファイルの\ :ref:`グループID<tips_groupId>`\         
+                        を記載する\ [1]_\ 。                                                                           
+expectedTable           データベースの内容を比較する場合、期待するテーブルの\ :ref:`グループID<tips_groupId>`\         
+                        を記載する\ [1]_\ 。                                                                           
+expectedLog             期待するログメッセージを記載したLIST_MAPデータのIDを記載する。
+                        そのログメッセージが実際に出力されたかどうか、自動テストフレームワークにて検証される。
+                        (『\ `ログの結果検証`_\ 』を参照)
+diConfig                バッチを実行する際のコンポーネント設定ファイルへのパスを記載する。                        必須 
+                        (\ :ref:`about_commandline_argument`\ を参照)
+requestPath             バッチを実行する際のリクエストパスを記載する。                                            必須 
+                        (\ :ref:`about_commandline_argument`\ を参照)
+userId                  バッチ実行ユーザIDを記載する。                                                            必須 
+                        (\ :ref:`about_commandline_argument`\ を参照)
+expectedMessage         メッセージ同期送信を行う場合、期待する要求電文の :ref:`グループID<tips_groupId>`\
+                        を記載する。メッセージの作成は自動テストフレームワークにより行われる。
+responseMessage         メッセージ同期送信を行う場合、返却する応答電文の :ref:`グループID<tips_groupId>`\
+                        を記載する。メッセージの作成は自動テストフレームワークにより行われる。
+expectedMessageByClient HTTPメッセージ同期送信を行う場合、期待する要求電文の :ref:`グループID<tips_groupId>`\
+                        を記載する。メッセージの作成は自動テストフレームワークにより行われる。
+responseMessageByClient HTTPメッセージ同期送信を行う場合、返却する応答電文の :ref:`グループID<tips_groupId>`\
+                        を記載する。メッセージの作成は自動テストフレームワークにより行われる。
+======================= ========================================================================================= =====
+
+\
+
+
+.. [1]
+ デフォルトのグループIDを使用したい（グループIDを使わない）場合は、\ `default`\ と記載する。
+ デフォルトのグループIDと個別のグループを併用することも可能である。
+ 両方のデータが混在した場合、デフォルトのグループIDのデータとグループID指定のデータ両方が有効になる。
+
+
+
+コマンドライン引数
+------------------
+
+テストデータで、\ :ref:`about_commandline_argument`\ を指定する方法を説明する。
+
+
+バッチ起動時の引数を指定するには、\
+``args[n]``\ （\ **添字nは0以上の整数**\ ）という形式でカラムを追加する。
+
+
+ == =========== === ======= ======= =======
+ no case        ... args[0] args[1] args[2]
+ == =========== === ======= ======= =======
+ 1  xxxのケース ... 第1引数 第2引数 第3引数
+ == =========== === ======= ======= =======
+
+ .. warning::
+  添字nは連続した整数でなければならない。
+
+テストケース一覧に上記以外のカラムを追加すると、そのカラムは\
+コマンドラインオプションとみなされる。
+
+例えば、テストケース一覧に以下のようなカラムがあるとすると、
+
+
+ == =========== === ======== =======
+ no case        ...  paramA  paramB
+ == =========== === ======== =======
+ 1  xxxのケース ...  valueA  valueB
+ == =========== === ======== =======
+
+\
+
+.. code-block:: bash
+
+ -paramA=valueA -paramB=valueB
+
+というコマンドラインオプションを指定したことになる。
+
+
+
+各種準備データ
+==============
+
+テスト実施に際して必要となる各種準備データの記述方法を説明する。
+バッチでは、データベース、入力ファイルの準備を行う。
+
+
+データベースの準備
+------------------
+
+:ref:`オンライン<request_test_testcases>`\ と同様に、グループIDで対応付けを行う。
+
+
+.. _`how_to_setup_fixed_length_file`:
+
+固定長ファイルの準備
+--------------------
+
+テストデータに固定長ファイルの情報を記載しておくと、自動テストフレームワークがテスト実行前にファイルを作成する。
+以下の書式で記述する。
+
+
+SETUP_FIXED[グループID]=ファイルパス
+               
+ディレクティブ行
+
++--------------+------------------+------------------+--------------+
+|レコード種別  |フィールド名称(1) |フィールド名称(2) |...  [#]_\    |
+|              +------------------+------------------+--------------+
+|              |データ型(1)       |データ型(2)       |...           |
+|              +------------------+------------------+--------------+
+|              |フィールド長(1)   |フィールド長(2)   |...           |
+|              +------------------+------------------+--------------+
+|              |データ(1-1)       |データ(2-1)       |...           |
+|              +------------------+------------------+--------------+
+|              |データ(1-2)       |データ(2-2)       |...           |
+|              +------------------+------------------+--------------+
+|              |... \ [#]_\       |...               |...           |
++--------------+------------------+------------------+--------------+
+
+\ 
+
+.. [#] 
+ これより右側は、同様にフィールドの数だけ続いていく。
+
+.. [#]
+ これより下側は、同様にデータの数だけ続いていく。
+
+\
+
+
+================= =======================================================================================================
+名称               説明
+================= =======================================================================================================
+グループID        グループIDを指定する。テストケース一覧の\ ``setUpFile``\ に記載されたグループIDと紐付けられる。
+ファイルパス      カレントディレクトリからのファイルパスを記載する（ファイル名を含む）。
+ディレクティブ行  ディレクティブを記載する。ディレクティブ名のセルの右のセルに設定値を記載する（複数行指定可）。
+レコード種別      レコード種別を記載する。マルチレイアウトの場合は、この記述を連続で記載する。
+フィールド名称    フィールド名称を記載する。フィールドの数だけ記載する。
+データ型          そのフィールドのデータ型を記載する。フィールドの数だけ記載する。
+フィールド長      そのフィールドのフィールド長を記載する。フィールドの数だけ記載する。
+データ            そのフィールドに格納されるデータを記載する。複数レコード存在する場合は次の行に続けてデータを記載する。
+================= =======================================================================================================
+
+.. warning::
+ ひとつのレコード種別において、フィールド名称に\ **重複した名称は許容されない**\ 。例えば、「氏名」というフィールドが2つ以上存在してはならない。
+ （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）
+ 異なるレコード種別間で、同一の名称が存在する場合は問題ない。
+ （例えばヘッダレコードとトレーラレコードにそれぞれ「件数」というフィールド名称が存在してよい）
+ 
+
+.. note::
+ フィールド名称、データ型、フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。\
+ （ペーストする際、「\ **行列を入れ替える**\ 」オプションにチェックすること）
+
+.. note::
+ 「符号無数値」および「符号付数値」のデータ型を使用する場合、そのデータには、固定長ファイルから入力する値（固定長ファイルへ出力する値）をそのまま記載すること。
+ すなわち固定長ファイルにパディング文字や符号が存在する場合は、それらの記載まで行う必要がある。\
+  
+ 以下に、データ型が符号付数値の場合に表したい値とその表現方法の例を示す。（フォーマット定義： フィールド長10桁、パディング文字'0'、小数点必要、符号位置固定、正の符号不要）
+ 
+  =============== ===================== 
+  表したい数値    テストデータ上の記載 
+  =============== ===================== 
+  12345           0000012345 
+  -12.34          -000012.34 
+  =============== =====================
+
+ 「符号無数値」および「符号付数値」をテストデータとして使用する場合、テスト用のデータタイプを設定する必要がある。
+
+ 以下に設定例を参照し、テスト用の設定を追加すること。
+
+ .. code-block:: xml
+
+  <component name="fixedLengthConvertorSetting"
+      class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+    <property name="convertorTable">
+      <map>
+        <!--
+        デフォルトの設定
+        デフォルトの設定を行わないと、ここで設定した値でデフォルト設定が上書きされるため注意すること。
+        -->
+        <entry key="X" value="nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString"/>
+        <entry key="N" value="nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString"/>
+        <entry key="XN" value="nablarch.core.dataformat.convertor.datatype.ByteStreamDataString"/>
+        <entry key="Z" value="nablarch.core.dataformat.convertor.datatype.ZonedDecimal"/>
+        <entry key="SZ" value="nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal"/>
+        <entry key="P" value="nablarch.core.dataformat.convertor.datatype.PackedDecimal"/>
+        <entry key="SP" value="nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal"/>
+        <entry key="B" value="nablarch.core.dataformat.convertor.datatype.Bytes"/>
+        <entry key="X9" value="nablarch.core.dataformat.convertor.datatype.NumberStringDecimal"/>
+        <entry key="SX9" value="nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal"/>
+
+        <entry key="pad" value="nablarch.core.dataformat.convertor.value.Padding"/>
+        <entry key="encoding" value="nablarch.core.dataformat.convertor.value.UseEncoding"/>
+        <entry key="_LITERAL_" value="nablarch.core.dataformat.convertor.value.DefaultValue"/>
+        <entry key="number" value="nablarch.core.dataformat.convertor.value.NumberString"/>
+        <entry key="signed_number" value="nablarch.core.dataformat.convertor.value.SignedNumberString"/>
+
+        <!--
+        テスト用のデータタイプの設定
+        符号無数値(X9)->TEST_X9:nablarch.test.core.file.StringDataType
+        符号有数値(SX9)->TEST_SX9:nablarch.test.core.file.StringDataType
+        -->
+        <entry key="TEST_X9" value="nablarch.test.core.file.StringDataType"/>
+        <entry key="TEST_SX9" value="nablarch.test.core.file.StringDataType"/>
+      </map>
+    </property>
+  </component>
+
+
+
+
+
+----
+
+具体例を示す。このファイルは以下のレコードで構成されている。
+ * ヘッダレコード１件
+ * データレコード２件
+ * トレーラレコード１件
+ * エンドレコード１件
+
+
+文字コードは\ ``Windows-31J``\ 、レコード区切り文字は\ ``CRLF``\ である。
+
+
+----
+
+``SETUP_FIXED=work/members.txt``
+
++-----------------+------------+-------------+-----------+
+|text-encoding    |Windows-31J                           |
++-----------------+------------+-------------+-----------+
+|record-separator |CRLF                                  |
++-----------------+------------+-------------+-----------+
+|ヘッダ           |レコード区分|FILLER       |           |
+|                 +------------+-------------+-----------+
+|                 |9           |X            |           |
+|                 +------------+-------------+-----------+
+|                 |1           |10           |           |
+|                 +------------+-------------+-----------+
+|                 |0           |             |           |
++-----------------+------------+-------------+-----------+
+|データ           |レコード区分|会員番号     |入会日     |
+|                 +------------+-------------+-----------+
+|                 |9           |X            |9          |
+|                 +------------+-------------+-----------+
+|                 |1           |10           |8          |
+|                 +------------+-------------+-----------+
+|                 |1           |0000000001   |20100101   |
+|                 +------------+-------------+-----------+
+|                 |1           |0000000002   |20100102   |
++-----------------+------------+-------------+-----------+
+|トレーラ         |レコード区分|レコード件数 |FILLER     |
+|                 +------------+-------------+-----------+
+|                 |9           |9            |X          |
+|                 +------------+-------------+-----------+
+|                 |1           |5            |4          |
+|                 +------------+-------------+-----------+
+|                 |8           |2            |           |
++-----------------+------------+-------------+-----------+
+|エンド           |レコード区分|FILLER       |           |
+|                 +------------+-------------+-----------+
+|                 |9           |X            |           |
+|                 +------------+-------------+-----------+
+|                 |1           |10           |           |
+|                 +------------+-------------+-----------+
+|                 |9           |             |           |
++-----------------+------------+-------------+-----------+
+
+----
+
+.. _`how_to_setup_csv_file`:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-batch-02_RequestUnitTest--s1",
+  "title": "リクエスト単体テストの実施方法(バッチ)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "BatchRequestTestSupport",
+        "バッチリクエスト単体テスト",
+        "テストクラス命名規則",
+        "RequestTest"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド分割",
+      "hints": [
+        "テストメソッド分割",
+        "1テストケース1メソッド",
+        "バッチテスト設計",
+        "テストケース分割方針"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "testShots",
+        "LIST_MAP",
+        "テストケース一覧",
+        "setUpTable",
+        "setUpFile",
+        "expectedFile",
+        "expectedTable",
+        "expectedLog",
+        "diConfig",
+        "requestPath",
+        "userId",
+        "expectedMessage",
+        "responseMessage"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "コマンドライン引数",
+      "hints": [
+        "args[n]",
+        "コマンドライン引数",
+        "バッチ起動引数",
+        "コマンドラインオプション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データベースの準備",
+      "hints": [
+        "データベース準備",
+        "グループID",
+        "setUpTable",
+        "データベース初期値"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "固定長ファイルの準備",
+      "hints": [
+        "SETUP_FIXED",
+        "固定長ファイル",
+        "StringDataType",
+        "TEST_X9",
+        "TEST_SX9",
+        "fixedLengthConvertorSetting",
+        "フィールド名称重複",
+        "符号無数値",
+        "符号付数値"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は`{Action名}RequestTest` (3) `BatchRequestTestSupport`を継承\n\n**クラス**: `nablarch.test.core.batch.BatchRequestTestSupport`",
+    "s2": "原則: 1テストケース = 1テストメソッド。バッチは複数レコードを扱うためテストデータが多くなりやすく、1メソッドに複数ケースを記述すると1シートが肥大化して可読性・保守性が低下するため。\n\n複数ケースを1メソッドにまとめてよい条件:\n- テストケース間の関連が強く、シート分割で可読性が劣化する場合（例：入力ファイルのフォーマットチェック）\n- テストデータが少量で1シートに記述しても可読性・保守性に影響しない場合",
+    "s3": "Excelファイルはテストソースコードと同一ディレクトリに同名で格納（拡張子のみ異なる）。\n\nテストクラスで共通のデータベース初期値は :ref:`request_test_setup_db` を参照。\n\n## テストケース一覧\n\nLIST_MAPのデータタイプで1テストメソッド分のケース表を記載する。IDは`testShots`とする。\n\n| カラム名 | 説明 | 必須 |\n|---|---|---|\n| no | テストケース番号（1からの連番） | ○ |\n| description | テストケースの説明 | ○ |\n| expectedStatusCode | 期待するステータスコード | ○ |\n| setUpTable | 各テストケース実行前にDBに登録するデータの :ref:`グループID<tips_groupId>` | |\n| setUpFile | 各テストケース実行前に入力用ファイルを作成するデータの :ref:`グループID<tips_groupId>` | |\n| expectedFile | 出力ファイルの比較に使う期待ファイルの :ref:`グループID<tips_groupId>` | |\n| expectedTable | DB比較に使う期待テーブルの :ref:`グループID<tips_groupId>` | |\n| expectedLog | 期待するログメッセージを記載したLIST_MAPデータのID | |\n| diConfig | バッチ実行時のコンポーネント設定ファイルへのパス（:ref:`about_commandline_argument` 参照） | ○ |\n| requestPath | バッチ実行時のリクエストパス（:ref:`about_commandline_argument` 参照） | ○ |\n| userId | バッチ実行ユーザID（:ref:`about_commandline_argument` 参照） | ○ |\n| expectedMessage | メッセージ同期送信の期待要求電文の :ref:`グループID<tips_groupId>` | |\n| responseMessage | メッセージ同期送信の返却応答電文の :ref:`グループID<tips_groupId>` | |\n| expectedMessageByClient | HTTPメッセージ同期送信の期待要求電文の :ref:`グループID<tips_groupId>` | |\n| responseMessageByClient | HTTPメッセージ同期送信の返却応答電文の :ref:`グループID<tips_groupId>` | |\n\nグループIDに`default`と記載するとデフォルトのグループIDを使用できる。デフォルトと個別グループIDの併用も可能で、両方のデータが有効になる。",
+    "s4": "バッチ起動時の引数を指定するには、`args[n]`（nは0以上の整数）形式でテストケース一覧にカラムを追加する。\n\n> **警告**: 添字nは連続した整数でなければならない。\n\nテストケース一覧に`args[n]`以外のカラムを追加すると、そのカラムはコマンドラインオプションとみなされる。例えば`paramA=valueA`というカラムがあれば`-paramA=valueA`というオプションを指定したことになる。",
+    "s5": ":ref:`オンライン<request_test_testcases>` と同様に、グループIDで対応付けを行う。",
+    "s6": "テストデータに固定長ファイルの情報を記載しておくと、自動テストフレームワークがテスト実行前にファイルを作成する。\n\n書式: `SETUP_FIXED[グループID]=ファイルパス`\n\n| 名称 | 説明 |\n|---|---|\n| グループID | テストケース一覧の`setUpFile`に記載したグループIDと紐付け |\n| ファイルパス | カレントディレクトリからのファイルパス（ファイル名含む） |\n| ディレクティブ行 | text-encoding、record-separatorなどを指定 |\n| レコード種別 | レコード種別を記載（マルチレイアウトは連続記載） |\n| フィールド名称 | フィールドの数だけ記載 |\n| データ型 | フィールドの数だけ記載 |\n| フィールド長 | フィールドの数だけ記載 |\n| データ | 複数レコードは次の行に続けて記載 |\n\n> **警告**: 1つのレコード種別内でフィールド名称の重複は不可。異なるレコード種別間では同名フィールドは許容される。\n\n> **注意**: 「符号無数値」「符号付数値」のデータ型を使用する場合、固定長ファイルに存在するパディング文字や符号まで含めてテストデータに記載する。また、テスト用データタイプ（TEST_X9、TEST_SX9）の設定が必要。\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"convertorTable\">\n    <map>\n      <!-- デフォルトの設定（省略すると上書きされるため要注意） -->\n      <entry key=\"X\" value=\"nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString\"/>\n      <entry key=\"N\" value=\"nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString\"/>\n      <entry key=\"XN\" value=\"nablarch.core.dataformat.convertor.datatype.ByteStreamDataString\"/>\n      <entry key=\"Z\" value=\"nablarch.core.dataformat.convertor.datatype.ZonedDecimal\"/>\n      <entry key=\"SZ\" value=\"nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal\"/>\n      <entry key=\"P\" value=\"nablarch.core.dataformat.convertor.datatype.PackedDecimal\"/>\n      <entry key=\"SP\" value=\"nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal\"/>\n      <entry key=\"B\" value=\"nablarch.core.dataformat.convertor.datatype.Bytes\"/>\n      <entry key=\"X9\" value=\"nablarch.core.dataformat.convertor.datatype.NumberStringDecimal\"/>\n      <entry key=\"SX9\" value=\"nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal\"/>\n      <entry key=\"pad\" value=\"nablarch.core.dataformat.convertor.value.Padding\"/>\n      <entry key=\"encoding\" value=\"nablarch.core.dataformat.convertor.value.UseEncoding\"/>\n      <entry key=\"_LITERAL_\" value=\"nablarch.core.dataformat.convertor.value.DefaultValue\"/>\n      <entry key=\"number\" value=\"nablarch.core.dataformat.convertor.value.NumberString\"/>\n      <entry key=\"signed_number\" value=\"nablarch.core.dataformat.convertor.value.SignedNumberString\"/>\n      <!-- テスト用データタイプ -->\n      <entry key=\"TEST_X9\" value=\"nablarch.test.core.file.StringDataType\"/>\n      <entry key=\"TEST_SX9\" value=\"nablarch.test.core.file.StringDataType\"/>\n    </map>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

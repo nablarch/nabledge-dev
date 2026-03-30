@@ -1,0 +1,303 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/PermissionCheckHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+認可制御ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.common.handler.PermissionCheckHandler``
+
+
+----------------------------------------------
+概要
+----------------------------------------------
+リクエストIDを単位とした認可判定を行うハンドラ。
+
+また、認可通過以降は、認可関連情報をスレッドコンテキスト経由で取得することができる。
+認可機能の詳細については、 :doc:`../02_FunctionDemandSpecifications/03_Common/04_Permission` の章を参照すること。
+
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = ["ThreadContextHandler_request", "ForwardingHandler", "PermissionCheckHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+
+**関連するハンドラ**
+
+  ====================================  ================================================================================================
+  ハンドラ                              内容
+  ====================================  ================================================================================================
+  :doc:`ThreadContextHandler`           本ハンドラではスレッドコンテキスト上に設定されたリクエストID/ユーザIDをもとに
+                                        認可判定を行なうため、
+                                        :doc:`ThreadContextHandler` を本ハンドラの上位に配置する必要がある。
+
+  :doc:`ForwardingHandler`              :doc:`../architectural_pattern/web_gui` において、内部フォーワードを行った際の認可判定を
+                                        フォーワード先のリクエストID (:ref:`内部リクエストID<internal_request_id>`) で行う場合、
+                                        本ハンドラは :doc:`ForwardingHandler` より下位に配置する必要がある。  
+
+
+  :doc:`DataReadHandler`                :doc:`../architectural_pattern/messaging` では、 :doc:`../reader/FwHeaderReader`
+                                        が受信電文中のフレームワークヘッダ部を解析する際に、
+                                        **requestId** および **userId** ヘッダの値をスレッドコンテキストに設定する。
+  ====================================  ================================================================================================
+
+
+++++++++++++
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストIDの取得)**
+    スレッドコンテキストから :ref:`リクエストID<request_processing>` もしくは
+    :ref:`内部リクエストID<internal_request_id>` を取得する。
+
+  **1a. (認可処理のスキップ)**
+    **1.** 取得したリクエストIDの値が、本ハンドラに設定された **認可対象外リクエストIDリスト** に含まれている場合、
+    本ハンドラではそれ以上の処理を行なわず、後続ハンドラに処理を委譲し、その結果をリターンして終了する。
+
+  **2. (ユーザIDの取得)**
+    スレッドコンテキストからユーザIDを取得する。
+
+  **3. (認可情報取得)**
+    本ハンドラに設定された **認可情報取得コンポーネント** を用いて、 **2.** で取得したユーザIDに対する
+    認可情報を取得する。
+
+  **4. (認可判定)**
+    **1.** で取得したリクエストIDが **2.** で取得した認可情報に含まれていることを確認し、
+    認可情報をスレッドローカルに格納する。
+
+  **4a. (認可エラー)**
+    **1.** で取得したリクエストIDが **2.** で取得した認可情報に含まれていなかった場合は、
+    後続のハンドラの処理を実行せずに、実行時例外 `Result.Forbidden`_ を送出して終了する。
+
+  **5. (後続ハンドラの実行)**
+    後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+
+**[往路での処理]**
+  **6. (正常終了)**
+    **5.** で取得した処理結果をリターンし終了する。
+
+.. _error:
+
+**[例外処理]** 
+   **5a. (後続ハンドラの処理でエラー)**
+     後続ハンドラの実行中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+**認可情報取得コンポーネント** の設定については
+:doc:`../02_FunctionDemandSpecifications/03_Common/04_Permission` の章を参照すること。
+
+  ========================================== ============================ ============================ ==================================
+  設定項目                                   プロパティ名                 データ型　                   備考
+  ========================================== ============================ ============================ ==================================
+  認可情報取得コンポーネント                 permissionFactory            PermissionFactory            必須指定
+  認可判定対象外リクエストIDリスト　         ignoreRequestIds             String[]                     任意指定(デフォルトは空のリスト) 
+  内部リクエストIDによる判定を行うかどうか   usesInternalRequestId        boolean                      任意指定(デフォルト=false)
+  ========================================== ============================ ============================ ==================================
+
+**標準設定**
+  以下は :doc:`../architectural_pattern/web_gui` における本ハンドラの設定例である。
+  :doc:`../architectural_pattern/web_gui` では
+  **認可判定対象外リクエストIDリスト** にログイン画面に対するリクエストIDを設定する必要がある。
+  
+  .. code-block:: xml
+
+    <!-- 認可チェックハンドラ -->
+    <component name="permissionCheckHandler"
+               class="nablarch.common.handler.PermissionCheckHandler">
+      <property name="permissionFactory" ref="permissionFactory" />
+      <property name="ignoreRequestIds" value="login001, login002" />
+      <property name="usesInternalRequestId" value="true" />
+    </component>
+
+```
+
+## Knowledge File
+
+- ID: `handlers-PermissionCheckHandler--s1`
+
+```json
+{
+  "id": "handlers-PermissionCheckHandler--s1",
+  "title": "認可制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "PermissionCheckHandler",
+        "nablarch.common.handler.PermissionCheckHandler",
+        "ThreadContextHandler",
+        "ForwardingHandler",
+        "DataReadHandler",
+        "FwHeaderReader",
+        "認可制御",
+        "リクエストID単位認可",
+        "スレッドコンテキスト",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "PermissionCheckHandler",
+        "Result.Forbidden",
+        "認可判定フロー",
+        "認可対象外リクエストIDリスト",
+        "スレッドローカル",
+        "認可情報取得コンポーネント"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "permissionFactory",
+        "ignoreRequestIds",
+        "usesInternalRequestId",
+        "PermissionFactory",
+        "認可情報取得コンポーネント",
+        "認可判定対象外リクエストIDリスト",
+        "PermissionCheckHandler設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.PermissionCheckHandler`\n\nリクエストIDを単位とした認可判定を行うハンドラ。認可通過以降は、認可関連情報をスレッドコンテキスト経由で取得できる。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ThreadContextHandler` | スレッドコンテキスト上のリクエストID/ユーザIDをもとに認可判定を行うため、本ハンドラの上位に配置する必要がある |\n| :doc:`ForwardingHandler` | :doc:`../architectural_pattern/web_gui` において内部フォーワード時の認可判定をフォーワード先のリクエストID（:ref:`内部リクエストID<internal_request_id>`）で行う場合、本ハンドラは :doc:`ForwardingHandler` より下位に配置する必要がある |\n| :doc:`DataReadHandler` | :doc:`../architectural_pattern/messaging` では、:doc:`../reader/FwHeaderReader` が受信電文のフレームワークヘッダを解析する際に **requestId** および **userId** ヘッダの値をスレッドコンテキストに設定する |",
+    "s2": "**[往路処理]**\n\n1. スレッドコンテキストから :ref:`リクエストID<request_processing>` もしくは :ref:`内部リクエストID<internal_request_id>` を取得する。\n   - **1a.** 取得したリクエストIDが **認可対象外リクエストIDリスト** に含まれている場合、後続ハンドラに委譲してそのまま終了する（以降の処理はスキップ）。\n2. スレッドコンテキストからユーザIDを取得する。\n3. **認可情報取得コンポーネント** を用いて、ユーザIDに対する認可情報を取得する。\n4. リクエストIDが認可情報に含まれていることを確認し、認可情報をスレッドローカルに格納する。\n   - **4a.** リクエストIDが認可情報に含まれていない場合、後続ハンドラを実行せず実行時例外 `Result.Forbidden` を送出して終了する。\n5. 後続ハンドラに処理を委譲し、結果を取得する。\n\n**[往路での処理]**\n\n6. 処理結果をリターンして終了する。\n\n**[例外処理]**\n\n- **5a.** 後続ハンドラの実行中にエラーが発生した場合、そのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| permissionFactory | PermissionFactory | ○ | | 認可情報取得コンポーネント |\n| ignoreRequestIds | String[] | | 空のリスト | 認可判定対象外リクエストIDリスト |\n| usesInternalRequestId | boolean | | false | 内部リクエストIDによる判定を行うかどうか |\n\n> **補足**: 認可情報取得コンポーネント（permissionFactory）の詳細設定については :doc:`../02_FunctionDemandSpecifications/03_Common/04_Permission` を参照すること。\n\n:doc:`../architectural_pattern/web_gui` での設定例（**ignoreRequestIds** にログイン画面のリクエストIDを設定する必要がある）:\n\n```xml\n<component name=\"permissionCheckHandler\"\n           class=\"nablarch.common.handler.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\" />\n  <property name=\"ignoreRequestIds\" value=\"login001, login002\" />\n  <property name=\"usesInternalRequestId\" value=\"true\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

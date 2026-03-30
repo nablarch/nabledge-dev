@@ -1,0 +1,532 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/mobile/source/01_iOS/01_ConnectionFramework/01_ConnectionFramework.rst`
+- Format: `rst`
+
+```
+.. _`iOS_connection`:
+
+==========================================
+モバイルアプリとNablarchサーバ間の通信
+==========================================
+
+-----
+概要
+-----
+モバイルアプリとサーバ間での通信機能を提供する。
+
+
+
+
+-----
+特徴
+-----
+
+* | **通信機能の隠蔽**
+  | 本機能を使用することで、利用者は通信方式を意識することなくサーバとの通信を行える。
+* | **基本的な通信機能の提供**
+  | :ref:`aboutHttpConn` に記述されている通りの通信機能であれば、カスタマイズすることなく利用できる。
+* | **汎用的な電文の利用**
+  | 送受信する電文形式を自由に変更できる。
+
+
+
+
+----
+要求
+----
+
+実装済み
+========
+* REST APIを提供するサーバと通信
+* HTTP/HTTPS方式の通信
+* JSON形式の電文の送受信
+
+未実装
+========
+* XML形式の電文の送受信
+
+未検討
+========
+* ベーシック認証
+* ダイジェスト認証
+* 証明書を用いた認証
+
+
+
+
+----
+構造
+----
+
+クラス図
+========
+
+| 
+
+.. image:: _images/01/connectionFramework_classDiagram.jpg
+
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~
+
+============================== ===========================================================================================
+インタフェース名               概要
+============================== ===========================================================================================
+NMMessageRequester             | 通信を行うためのインタフェース。
+                               | 通信方式ごとに本インタフェースの実装クラスを作成する。NMMessageRequesterを実装したクラス
+                                 及びインスタンスをセンダと呼ぶ。
+NMSenderHook                   | 通信前後の処理を行うインタフェース。
+                                 本インタフェースを実装することで、通信前後に処理を加えられる。
+                               | NMSenderHookを実装したクラスおよびインスタンスをフックと呼ぶ。
+NMBodyConvertor                | NMMessageインスタンスをバイナリデータに変換するインタフェース。
+                               | 変換形式ごとに本インタフェースの実装クラスを作成する。NMBodyConvertorを実装したクラス及び
+                                 インスタンスをコンバータと呼ぶ。
+============================== ===========================================================================================
+
+
+クラス定義
+~~~~~~~~~~~~~~~~~~
+
+\a) 通信処理
+
+  ============================== =======================================================================================================
+  クラス名                       概要
+  ============================== =======================================================================================================
+  NMMessageSender                通信機能を提供するクラス。使用方法につていは :ref:`houToUse` に記載する。
+  NMHttpRequester                HTTP/HTTPS通信機能を実装したクラス。実装機能の詳細については :ref:`aboutHttpConn` に、\
+                                 本実装クラスの設定方法については :ref:`propertyAboutSender` に記載する。
+  ============================== =======================================================================================================
+  
+\b) 通信データ
+
+  ============== ========================================================================================================
+  クラス名       概要
+  ============== ========================================================================================================
+  NMMessage      通信のペイロード。本機能が想定するデータ形式のモデルは :ref:`aboutMessage` に記載する。
+  ============== ========================================================================================================
+
+\c) データ変換
+
+  ============================== ===========================================================================================
+  クラス名                       概要
+  ============================== ===========================================================================================
+  NMJsonBodyConvertor            JSON形式でNMMessageおよびNSData間の変換機能を提供するクラス。\
+                                 実装機能の詳細については :ref:`aboutJsonCon` に記載する。
+  ============================== ===========================================================================================
+
+\d) その他
+
+  ============================== ===========================================================================================
+  クラス名                       概要
+  ============================== ===========================================================================================
+  NMConnectionUtil               通信機能に関するユーティリティをまとめたクラス。各ユーティリティの詳細については\
+                                 :ref:`NMConnectionUtil` に記載する。
+  NMMockUtil                     通信モックに関するユーティリティをまとめたクラス。各ユーティリティの詳細については\
+                                 :ref:`NMMockUtil` に記載する。
+  ============================== ===========================================================================================
+
+
+
+
+シーケンス図
+==============
+
+通信時のシーケンスを以下に示す。
+
+.. image:: _images/01/connection_sequence.jpg
+
+
+フックを複数使用する場合、送信前処理は設定した順番に、送信後処理は設定した順番とは逆に呼び出される\
+(フックの設定方法については :ref:`connectionFWpropertyList` のb) SenderHookを参照)。
+例えば、以下の処理を行うフックを順に設定した場合
+  
+  #. | 通信ヘッダの設定/取得
+     | (この通信ヘッダとは通信プロトコルヘッダとは別に、システムの通信インタフェースごとに決められたものを指す。)
+  #. | 暗号化対象データ/復号データのフォーマット/パース
+  #. | 通信データの一部暗号化/復号
+  
+この場合、送信前には1、2、3の順にフックの前処理が呼び出される。つまり、
+ヘッダの設定、暗号化対象データのフォーマット、データの暗号化の順に処理が行われる。
+一方、送信後には3、2、1の順にフックの後処理が呼び出される。つまり
+データの復号、復号データのパース、ヘッダの取得の順に処理が行われる。
+また、フックを複数使用できることにより、処理の追加および削除が容易である。
+例えば、テスト実行時にはデータの暗号化は行いたくない、といった場合には3のフックだけを
+取り外せばよい。
+
+
+.. _aboutMessage:
+
+------------------------------
+データモデル
+------------------------------
+
+本機能では、送受信電文を以下のようなデータモデルで表現している。
+
+.. image:: _images/01/dataModel.jpg
+
+* | **プロトコルヘッダ**
+  | 各通信プロトコル(HTTPなど)のヘッダ情報を格納する領域。本領域へのアクセスはセンダで行うことを推奨する。
+* | **メッセージボディ**
+  | プロトコルヘッダを除いた電文のデータ領域をメッセージボディと呼ぶ。メッセージボディの解析はコンバータによって行う。
+  | これによりメッセージボディをNMMessageオブジェクトとして扱える。NMMessageオブジェクトはNSDictionaryと同様にキーと値を格納するコレクションクラスである。
+
+
+
+
+-------------
+使用方法
+-------------
+
+本機能の使用方法について記載する。
+ユーザはメッセージを送信するために、以下の3つのステップを実施する必要がある。
+
+ 1. プロパティリストの作成
+ 2. メッセージの作成
+ 3. 通信処理APIの呼び出し
+
+以下に各ステップの詳細を記載する。
+
+
+.. _connectionFWpropertyList:
+
+プロパティリストの作成
+===========================
+本機能を利用する際、通信機能に関する設定を記述したプロパティリストファイル(通信設定ファイル)を作成する必要がある。\
+通信設定ファイルでは以下の事柄について設定を行う。
+
+* センダの指定(Sender.class)
+* センダの初期値パラメータの指定(Sener.initializeLIst)
+* 複数のフックの指定(SenderHook[].class)
+* 各フックの初期値パラメータの指定(SenderHook[].initializeLIst)
+* フックの呼び出し順の指定
+
+設定例を以下に示す。
+
+.. image:: _images/01/propertyList.png
+
+プロパティの説明を下記に示す。
+
+================================= ================================= =========================================================
+項目名                            データ型                          概要
+================================= ================================= =========================================================
+Sender                            Dictionary                        センダの設定。
+SenderHook                        Array                             通信前後の処理を行う複数のフックの設定。
+================================= ================================= =========================================================
+
+.. _senderProperty:
+
+\a) Sender
+
+  ================================= ================================= =========================================================
+  項目名                            データ型                          概要
+  ================================= ================================= =========================================================
+  class                             String                            使用するセンダ名。
+  initializeList                    Dictionary                        使用するセンダの初期化時に使用するパラメータ。\
+                                                                      詳細は使用するクラスの初期化パラメータを参照すること。
+  ================================= ================================= =========================================================
+
+.. _hookProperty:
+
+\b) SenderHook
+
+  ================================= ================================= =========================================================
+  項目名                            データ型                          概要
+  ================================= ================================= =========================================================
+  SenderHook[]                      Dictionary                        各フックの設定。
+  SenderHook[].class                String                            使用するフック名。
+  SenderHook[].initializeList       Dictionary                        使用するフックの初期化時に使用するパラメータ。\
+                                                                      詳細は使用するクラスの初期化パラメータを参照すること。
+  ================================= ================================= =========================================================
+
+  フック処理は送信前処理であれば通信設定ファイルの配列順に、受信後処理であれば通信設定ファイルの配列逆順に実行される。\
+  従って、上記の設定例では以下の順番で通信前処理が実行される。
+  
+    1. HookAboutKeyManagerクラスで実装された送信前処理
+    2. SenderHookクラスで実装された送信前処理
+    3. HookAboutEncryptionクラスで実装された送信前処理
+    
+  また、受信後処理は以下の順番で実行される。
+  
+    1. HookAboutEncryptionクラスで実装された受信後処理
+    2. SenderHookクラスで実装された受信後処理
+    3. HookAboutKeyManagerクラスで実装された受信後処理
+
+初期値パラメータ
+^^^^^^^^^^^^^^^^^^^^
+
+初期値パラメータはクラスによって異なる。それぞれのクラスの初期値パラメータについて記載する。
+
+
+.. _propertyAboutSender:
+
+センダ
+~~~~~~~~~~~~~~~
+
+\a) NMHttpRequester
+
+  初期値パラメータ一覧
+  
+  ============================= ================ =========================================================
+  項目名                        データ型         概要
+  ============================= ================ =========================================================
+  URL                           String           宛先URL
+  timeInterval                  Number           待機タイムアウト時間
+  dumpMessageEnabled            Boolean          JSON形式でのメッセージダンプ要否
+  bodyConvertor                 Dictionary       コンバータの設定
+  bodyConvertor.class           String           使用するコンバータ名
+  bodyConvertor.initializeList  Dictionary       使用するコンバータの初期化パラメータ。\
+                                                 詳細は使用するクラスの初期化パラメータを参照すること。
+  ============================= ================ =========================================================
+  
+  設定例
+  
+  .. image:: _images/01/propertyList_httpRequester.png
+
+
+フック
+~~~~~~~~~~~~~~~
+フレームワークで提供する実装クラスなし
+
+
+コンバータ
+~~~~~~~~~~~~~~~~~~
+\a) NMJsonBodyConvertor
+
+ 特に無し
+
+
+
+
+メッセージの作成
+======================
+以下にメッセージを作成する実装例を示す。
+
+.. code-block:: objective-c
+ 
+ NSDictionary *dict = @{
+                        @"string" : @"dummyString",
+                        @"number_integer" : @10,
+                        @"number_double" : @1.0,
+                        @"number_bool" : @YES,
+                        @"array" : @[],
+                        @"object" : @{},
+                        @"null" : [NSNull null] };
+ NMMessage *sendMessage = [[NMMessage alloc] initWithDictionary:dict];
+ 
+ // NSDataは文字列にエンコードしてから格納する
+ NSString *str= [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+ [sendMessage setValue:str forKey:@"data"];
+
+
+.. _houToUse:
+
+通信処理APIの呼び出し
+======================
+以下に通信処理APIを呼び出す実装例を示す。
+
+.. code-block:: objective-c
+
+ /**
+  * 通信機能使用サンプル
+  */
+ - (NMMessage *)sample {
+     NMMessage *sendMessage = [self createSendMessage];
+     NMMessageSender *sender = [[NMMessageSender alloc] init];
+     
+     NSError *error = nil;
+     // 第一引数に設定された物と同名の通信設定ファイルが読み込まれる
+     // この例だとdestination.plistというプロパティリストが読み込まれる
+     NMMessage *response = [sender send:@"destination" sendMessage:sendMessage error:&error];
+ 
+     return response;
+ }
+
+
+
+
+------------------------------
+```
+
+## Knowledge File
+
+- ID: `biz-samples-01_ConnectionFramework--s1`
+
+```json
+{
+  "id": "biz-samples-01_ConnectionFramework--s1",
+  "title": "モバイルアプリとNablarchサーバ間の通信",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "モバイルアプリ通信",
+        "REST API通信",
+        "HTTP/HTTPS通信",
+        "JSON電文送受信",
+        "未実装機能",
+        "XML電文",
+        "ベーシック認証"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "NMMessageRequester",
+        "NMSenderHook",
+        "NMBodyConvertor",
+        "NMMessageSender",
+        "NMHttpRequester",
+        "NMMessage",
+        "NMJsonBodyConvertor",
+        "NMConnectionUtil",
+        "NMMockUtil",
+        "通信機能の隠蔽",
+        "フック処理順序",
+        "センダ",
+        "コンバータ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データモデル",
+      "hints": [
+        "NMMessage",
+        "プロトコルヘッダ",
+        "メッセージボディ",
+        "データモデル",
+        "電文形式"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用方法",
+      "hints": [
+        "NMHttpRequester",
+        "NMMessageSender",
+        "NMJsonBodyConvertor",
+        "プロパティリスト設定",
+        "SenderHook",
+        "Sender",
+        "URL",
+        "timeInterval",
+        "dumpMessageEnabled",
+        "bodyConvertor",
+        "通信処理API",
+        "メッセージ作成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "モバイルアプリとサーバ間での通信機能を提供する。\n\n**実装済み機能**:\n- REST APIを提供するサーバと通信\n- HTTP/HTTPS方式の通信\n- JSON形式の電文の送受信\n\n**未実装**:\n- XML形式の電文の送受信\n\n**未検討**:\n- ベーシック認証、ダイジェスト認証、証明書を用いた認証",
+    "s2": "- **通信機能の隠蔽**: 利用者は通信方式を意識することなくサーバとの通信を行える。\n- **基本的な通信機能の提供**: :ref:`aboutHttpConn` に記述された通信機能であれば、カスタマイズなしで利用できる。\n- **汎用的な電文の利用**: 送受信する電文形式を自由に変更できる。\n\n## インタフェース\n\n| インタフェース名 | 概要 |\n|---|---|\n| `NMMessageRequester` | 通信を行うためのインタフェース。通信方式ごとに実装クラスを作成する（実装クラス＝センダ）。 |\n| `NMSenderHook` | 通信前後の処理を行うインタフェース（実装クラス＝フック）。 |\n| `NMBodyConvertor` | NMMessageインスタンスをバイナリデータに変換するインタフェース（変換形式ごとに実装クラスを作成、実装クラス＝コンバータ）。 |\n\n## クラス\n\n| クラス名 | 概要 |\n|---|---|\n| `NMMessageSender` | 通信機能を提供するクラス。使用方法は :ref:`houToUse` 参照。 |\n| `NMHttpRequester` | HTTP/HTTPS通信機能を実装したクラス。設定方法は :ref:`propertyAboutSender` 参照。 |\n| `NMMessage` | 通信のペイロード。キーと値を格納するコレクション（NSDictionary相当）。 |\n| `NMJsonBodyConvertor` | JSON形式でNMMessageとNSData間の変換機能を提供するクラス。 |\n| `NMConnectionUtil` | 通信機能に関するユーティリティをまとめたクラス。 |\n| `NMMockUtil` | 通信モックに関するユーティリティをまとめたクラス。 |\n\n## フック処理順序\n\nフックを複数使用する場合、送信前処理は設定した順番に、送信後処理は設定した逆順に呼び出される（フック設定は :ref:`connectionFWpropertyList` 参照）。\n\n例: フック1（通信ヘッダ設定/取得）、フック2（暗号化対象データのフォーマット/パース）、フック3（データ暗号化/復号）を順に設定した場合:\n- 送信前: 1→2→3（ヘッダ設定→フォーマット→暗号化）\n- 送信後: 3→2→1（復号→パース→ヘッダ取得）\n\nこの仕組みにより、フックの追加・削除が容易（例: テスト時は暗号化フックだけ取り外す）。",
+    "s3": "送受信電文のデータモデル:\n\n- **プロトコルヘッダ**: 各通信プロトコル（HTTPなど）のヘッダ情報を格納する領域。アクセスはセンダで行うことを推奨する。\n- **メッセージボディ**: プロトコルヘッダを除いた電文のデータ領域。コンバータによって解析され、NMMessageオブジェクトとして扱える。NMMessageオブジェクトはNSDictionaryと同様にキーと値を格納するコレクションクラスである。",
+    "s4": "メッセージ送信の手順:\n1. プロパティリストの作成\n2. メッセージの作成\n3. 通信処理APIの呼び出し\n\n## プロパティリストの作成\n\n通信設定ファイル（プロパティリスト）のトップレベル項目:\n\n| 項目名 | データ型 | 概要 |\n|---|---|---|\n| Sender | Dictionary | センダの設定 |\n| SenderHook | Array | 通信前後の処理を行う複数のフックの設定 |\n\n**Sender設定**:\n\n| 項目名 | データ型 | 概要 |\n|---|---|---|\n| class | String | 使用するセンダ名 |\n| initializeList | Dictionary | センダの初期化パラメータ |\n\n**SenderHook設定**:\n\n| 項目名 | データ型 | 概要 |\n|---|---|---|\n| SenderHook[] | Dictionary | 各フックの設定 |\n| SenderHook[].class | String | 使用するフック名 |\n| SenderHook[].initializeList | Dictionary | フックの初期化パラメータ |\n\nフック処理順序: 送信前処理は配列順、受信後処理は配列逆順に実行される。\n\n### NMHttpRequester 初期値パラメータ\n\n| 項目名 | データ型 | 概要 |\n|---|---|---|\n| URL | String | 宛先URL |\n| timeInterval | Number | 待機タイムアウト時間 |\n| dumpMessageEnabled | Boolean | JSON形式でのメッセージダンプ要否 |\n| bodyConvertor | Dictionary | コンバータの設定 |\n| bodyConvertor.class | String | 使用するコンバータ名 |\n| bodyConvertor.initializeList | Dictionary | コンバータの初期化パラメータ |\n\n## メッセージの作成\n\n```objective-c\nNSDictionary *dict = @{\n    @\"string\" : @\"dummyString\",\n    @\"number_integer\" : @10,\n    @\"number_double\" : @1.0,\n    @\"number_bool\" : @YES,\n    @\"array\" : @[],\n    @\"object\" : @{},\n    @\"null\" : [NSNull null] };\nNMMessage *sendMessage = [[NMMessage alloc] initWithDictionary:dict];\n\n// NSDataは文字列にエンコードしてから格納する\nNSString *str= [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];\n[sendMessage setValue:str forKey:@\"data\"];\n```\n\n## 通信処理APIの呼び出し\n\n`NMMessageSender` の `send:sendMessage:error:` メソッドの第一引数に指定した名前と同名のプロパティリストが読み込まれる。\n\n```objective-c\n- (NMMessage *)sample {\n    NMMessage *sendMessage = [self createSendMessage];\n    NMMessageSender *sender = [[NMMessageSender alloc] init];\n    \n    NSError *error = nil;\n    // 第一引数に設定された物と同名の通信設定ファイルが読み込まれる\n    // この例だとdestination.plistというプロパティリストが読み込まれる\n    NMMessage *response = [sender send:@\"destination\" sendMessage:sendMessage error:&error];\n\n    return response;\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

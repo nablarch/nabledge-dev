@@ -1,0 +1,118 @@
+{
+  "id": "libraries-07_DisplayTag--s1",
+  "title": "値のフォーマット出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "値のフォーマット出力",
+      "hints": [
+        "valueFormat",
+        "フォーマット出力",
+        "yyyymmdd",
+        "yyyymm",
+        "dateTime",
+        "decimal",
+        "日付フォーマット",
+        "数値フォーマット",
+        "SimpleDateFormat",
+        "DecimalFormat",
+        "ExtendedValidation_yyyymmddConvertor",
+        "ExtendedValidation_yyyymmConvertor",
+        "WebView_CustomTagConfig",
+        "writeタグ",
+        "textタグ",
+        "ThreadContext"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット出力の使用例",
+      "hints": [
+        "valueFormat使用例",
+        "n:write",
+        "yyyymmdd{yyyy/M/d}",
+        "フォーマット出力サンプル",
+        "JSPコード例"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力画面でのフォーマット出力",
+      "hints": [
+        "windowScopePrefixes",
+        "ウィンドウスコープ",
+        "n:form",
+        "n:text",
+        "入力画面フォーマット",
+        "searchCondition"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アプリケーションでのフォーマットの変更方法",
+      "hints": [
+        "ValueFormatter",
+        "nablarch.common.web.tag.ValueFormatter",
+        "valueFormatters",
+        "YYYYMMDDFormatter",
+        "nablarch.common.web.tag.YYYYMMDDFormatter",
+        "DateTimeFormatter",
+        "nablarch.common.web.tag.DateTimeFormatter",
+        "DecimalFormatter",
+        "nablarch.common.web.tag.DecimalFormatter",
+        "フォーマットカスタマイズ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "エラー表示",
+      "hints": [
+        "errorsタグ",
+        "errorタグ",
+        "ApplicationException",
+        "OnError",
+        "エラーメッセージ表示",
+        "WebView_ErrorsTag",
+        "WebView_ErrorTag",
+        "リクエストスコープ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "errorsタグ",
+      "hints": [
+        "cssClass",
+        "infoCss",
+        "warnCss",
+        "errorCss",
+        "filter",
+        "nablarch_errors",
+        "nablarch_error",
+        "nablarch_info",
+        "nablarch_warn",
+        "ValidationResultMessage",
+        "global",
+        "errorsタグ属性"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "errorタグ（参照ラベル）",
+      "hints": [
+        "WebView_ErrorViewErrorTag",
+        "errorタグ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`WebView_WriteTag` と :ref:`WebView_TextTag` で `valueFormat` 属性を指定することで値をフォーマット出力できる。`valueFormat` 未指定時はフォーマットせずに出力する。\n\nフォーマット指定書式: `データタイプ{パターン}`\n\n> **注意**: データタイプは「アプリケーションでのフォーマットの変更方法」で設定するデータタイプを使用すること。\n\n> **注意**: `dateTime` は writeタグのみで使用できる。\n\n**yyyymmdd（年月日フォーマット）**\n\n- 値: yyyyMMdd形式またはパターン形式の文字列\n- パターン: java.text.SimpleDateFormat構文（**指定可能なパターン文字: y(年)、M(月)、d(月における日)のみ**）\n- パターン省略時: :ref:`WebView_CustomTagConfig` のデフォルトパターンを使用\n- ロケール指定: `{パターン|ロケール}` 形式。省略時はThreadContextのロケール、未設定時はシステムデフォルト\n\n```bash\nvalueFormat=\"yyyymmdd\"\nvalueFormat=\"yyyymmdd{yyyy/MM/dd}\"\nvalueFormat=\"yyyymmdd{|ja}\"\nvalueFormat=\"yyyymmdd{yyyy年MM月d日|ja}\"\n```\n\n> **注意**: textタグでvalueFormat指定した場合、入力画面にもフォーマット値が出力される。アクションで入力年月日を取得する場合は :ref:`ExtendedValidation_yyyymmddConvertor` を使用すること。textタグとコンバータが連携し、指定パターンでの値変換と入力精査を行う。\n\n**yyyymm（年月フォーマット）**\n\n- 値: yyyyMM形式またはパターン形式。使用方法はyyyymmddと同様\n- コンバータ: :ref:`ExtendedValidation_yyyymmConvertor`\n\n**dateTime（日時フォーマット、writeタグのみ）**\n\n- 値: java.util.Date型\n- パターン: java.text.SimpleDateFormat構文\n- デフォルトでは、スレッドコンテキスト（ThreadContext）に設定されたロケールとタイムゾーンに応じた日時が出力される\n- ロケール・タイムゾーン指定: `{パターン|ロケール|タイムゾーン}` 形式\n- :ref:`WebView_CustomTagConfig` でデフォルトパターンと区切り文字\"|\"を変更可能\n\n```bash\nvalueFormat=\"dateTime\"\nvalueFormat=\"dateTime{|ja|Asia/Tokyo}\"\nvalueFormat=\"dateTime{||Asia/Tokyo}\"\nvalueFormat=\"dateTime{yyyy年MMM月d日(E) a hh:mm|ja|America/New_York}}\"\nvalueFormat=\"dateTime{yy/MM/dd HH:mm:ss||Asia/Tokyo}\"\n```\n\n**decimal（10進数フォーマット）**\n\n- 値: java.lang.Number型または数字文字列（文字列は言語対応の1000区切り文字を除去後フォーマット）\n- パターン: java.text.DecimalFormat構文\n- デフォルトでは、ThreadContextに設定された言語を使用して、言語に応じた形式で値が出力される\n- 言語指定: `{パターン|言語}` 形式\n- :ref:`WebView_CustomTagConfig` で区切り文字\"|\"を変更可能\n\n```bash\nvalueFormat=\"decimal{###,###,###.000}\"\nvalueFormat=\"decimal{###,###,###.000|ja}\"\n```\n\n> **注意**: パターンで桁区切りと小数点を指定する場合、言語に関係なく常に桁区切りにカンマ、小数点にドットを使用すること。`decimal{###.###.###,000|es}` は実行時例外がスローされる。\n\n> **注意**: textタグのvalueFormat属性を指定した場合、入力画面にもフォーマット値が出力される。入力数値のアクション取得には :ref:`数値コンバータ(BigDecimalConvertor、IntegerConvertor、LongConvertor)<validator_and_convertor>` を使用する。textタグと数値コンバータが連携し、指定言語に対応する値変換と入力精査を行う。",
+    "s2": "年月日に `valueFormat=\"yyyymmdd{yyyy/M/d}\"` を指定した例。入力値 \"20101203\" に対して \"2010/12/3\" が出力される。\n\n```jsp\n<n:write name=\"systemAccount.effectiveDateFrom\" valueFormat=\"yyyymmdd{yyyy/M/d}\" />\n～\n<n:write name=\"systemAccount.effectiveDateTo\" valueFormat=\"yyyymmdd{yyyy/M/d}\" />\n```\n\nHTML出力例:\n```html\n<td width=\"400\">\n    2010/12/3\n    ～\n    2011/12/3\n</td>\n```",
+    "s3": "入力画面でフォーマット出力を行う場合、入力値をウィンドウスコープに設定する必要がある。ウィンドウスコープにフォーマットが設定されないとフォーマット編集が行えない。\n\n`n:form` の `windowScopePrefixes` 属性に対象プレフィックスを設定すること。\n\n```jsp\n<n:form windowScopePrefixes=\"searchCondition\">\n  <n:text name=\"searchCondition.yyyymmdd\" valueFormat=\"yyyymmdd{yyyy年MM月dd日|ja}\" />\n  <n:text name=\"searchCondition.yyyymm\" valueFormat=\"yyyymm{yyyy年MM月|ja}\" />\n</n:form>\n```",
+    "s4": "**インタフェース**: `nablarch.common.web.tag.ValueFormatter`\n\nこのインタフェースを実装したクラスをリポジトリに登録することでフォーマットを変更できる。Map型でデータタイプ名をキー、実装クラスを値に指定し、マップ名 `\"valueFormatters\"` でリポジトリに登録する。登録がない場合はフレームワークのデフォルトフォーマットを使用する。\n\n```xml\n<map name=\"valueFormatters\">\n    <entry key=\"yyyymmdd\">\n        <value-component class=\"nablarch.common.web.tag.YYYYMMDDFormatter\" />\n    </entry>\n    <entry key=\"dateTime\">\n        <value-component class=\"nablarch.common.web.tag.DateTimeFormatter\" />\n    </entry>\n    <entry key=\"decimal\">\n        <value-component class=\"nablarch.common.web.tag.DecimalFormatter\" />\n    </entry>\n</map>\n```\n\n> **注意**: データタイプ名（Mapキー値）はvalueFormat属性に指定するデータタイプ名と一致させること。",
+    "s5": "エラー表示用カスタムタグ:\n\n| カスタムタグ | 説明 |\n|---|---|\n| :ref:`WebView_ErrorsTag` | 複数のエラーメッセージをリスト表示する場合に使用 |\n| :ref:`WebView_ErrorTag` | エラーの原因となった入力項目の近くにエラーメッセージを個別表示する場合に使用 |\n\nerrorsタグとerrorタグはリクエストスコープからApplicationExceptionを取得してエラーメッセージを出力する。ApplicationExceptionはWebフロントコントローラの `@OnError` アノテーションを使用してリクエストスコープに設定する。\n\n```java\n@OnError(type = ApplicationException.class, path = \"forward://MENUS00103\")\npublic HttpResponse doUSERS00201(HttpRequest req, ExecutionContext ctx) {\n    // 省略\n}\n```",
+    "s6": "| 属性 | 説明 | デフォルト値 |\n|---|---|---|\n| cssClass | ulタグに使用するCSSクラス名 | `nablarch_errors` |\n| infoCss | 情報レベルメッセージのCSSクラス名 | `nablarch_info` |\n| warnCss | 警告レベルメッセージのCSSクラス名 | `nablarch_warn` |\n| errorCss | エラーレベルメッセージのCSSクラス名 | `nablarch_error` |\n| filter | リストに含めるメッセージのフィルタ条件。`all`（全メッセージ）または `global`（ValidationResultMessageのプロパティ名が設定されているメッセージを除去し、入力項目に対応しないメッセージのみ表示） | `all` |\n\n```jsp\n<n:errors />\n```\n\nHTML出力例:\n```html\n<ul class=\"nablarch_errors\">\n    <li class=\"nablarch_error\">パスワードを入力してください。</li>\n    <li class=\"nablarch_error\">漢字氏名を入力してください。</li>\n</ul>\n```\n\n![errorsタグ出力例](assets/libraries-07_DisplayTag--s1/WebView_Errors.jpg)",
+    "s7": "このセクションはerrorタグ（参照ラベル: `WebView_ErrorViewErrorTag`）に対応するが、本ソースファイルの収録範囲外のため内容は含まれていない。errorタグの詳細については別途参照すること。"
+  }
+}

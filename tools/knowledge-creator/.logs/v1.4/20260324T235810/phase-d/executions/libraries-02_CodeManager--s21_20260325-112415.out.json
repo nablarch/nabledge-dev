@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5, s6, s7 — property tables, Type column",
+      "description": "Property type 'String' is listed in the Type column for CodePatternSchema (s5), CodeNameSchema (s6), and CodeValueValidator messageId (s7) properties, but the source tables contain no type information for these properties. The source only lists property names and descriptions.",
+      "source_evidence": "Source tables for CodePatternSchema and CodeNameSchema only have two columns: 'property名' and '設定内容'. No type column exists. Similarly, the CodeValueValidator table in source has 'property名' and '設定内容' only."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — messageId note",
+      "description": "The parenthetical clarification '(コードの性質上、テキストで入力することは非常にまれである)' is omitted from the note about messageId usage context. This explains why text-box input of code values is a rare special case, which is useful context for understanding when to expect this message.",
+      "source_evidence": "Source: 'テキストボックスでコード値を入力する場合 (コードの性質上、テキストで入力することは非常にまれである) という特殊なケースでのみ使用される。' Knowledge file omits the parenthetical, rendering only: 'テキストボックスでコード値を入力するという特殊なケースでのみ使用される。'"
+    }
+  ]
+}

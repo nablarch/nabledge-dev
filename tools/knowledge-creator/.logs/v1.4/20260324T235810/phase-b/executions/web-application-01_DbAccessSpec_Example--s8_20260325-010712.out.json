@@ -1,0 +1,42 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s8",
+  "title": "大量データの検索機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "大量データの検索機能",
+      "hints": [
+        "executeQuery",
+        "ResultSetIterator",
+        "SqlPStatement",
+        "SqlRow",
+        "大量データ検索",
+        "for-eachループ",
+        "iterator複数回呼び出し禁止"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "更新(insert、update、delete)",
+      "hints": [
+        "executeUpdate",
+        "addBatch",
+        "executeBatch",
+        "getBatchSize",
+        "SqlPStatement",
+        "バッチ更新",
+        "一括更新",
+        "OutOfMemoryError",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "大量データ取得には簡易検索ではなく`executeQuery`を使用する。\n\n> **補足**: 大量データとはSELECT文で取得されるデータ件数が多いことをさす。`statement.retrieve(1, 10000000)`は最大1千万件取得のため大量データ。`statement.retrieve(10000000, 20)`は取得最大件数が20件のため大量データではない。\n\n**クラス**: `ResultSetIterator`, `SqlPStatement`, `SqlRow`\n\n`executeQuery()`は`ResultSetIterator`を返す。`ResultSetIterator`は`Iterable`を実装しており、for-each文で使用可能。\n\n```sql\nGET_ALL_USER =\nSELECT USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS\nFROM USER_MST ORDER BY USER_ID\n```\n\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_ALL_USER\");\nResultSetIterator rs = statement.executeQuery();\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\n> **警告**: `ResultSetIterator#iterator`の呼び出しは複数回不可。for-each文を2回使用すると2回目の`iterator`呼び出しになるためNG。\n>\n> ```java\n> // NG: iteratorを2回呼び出し\n> rs.iterator();\n> rs.iterator();\n>\n> // NG: 2回目のfor-each文でiterator2回目呼び出し\n> for (SqlRow row : rs) { /* 処理 */ }\n> for (SqlRow row : rs) { /* 処理 */ } // ← NG\n> ```",
+    "s2": "### 1件のデータを更新する場合\n\n`SqlPStatement.executeUpdate()`でINSERT/UPDATE/DELETE実行。UPDATE時は戻り値（更新件数）を確認し、0件の場合は対象なしエラーを表示すること。\n\n```sql\nREGISTER_USER =\nINSERT INTO USER_MST (USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS)\nVALUES (?, ?, ?, ?, ?)\n\nUPDATE_USER_NAME =\nUPDATE USER_MST SET USER_NAME = ? WHERE USER_ID = ?\n```\n\n```java\n// 登録\nSqlPStatement statement = getSqlPStatement(\"REGISTER_USER\");\nstatement.setString(1, userId);\nstatement.setString(2, userName);\nstatement.setString(3, userNameKana);\nstatement.setString(4, tel);\nstatement.setString(5, mailAddress);\nstatement.executeUpdate();\n\n// 更新（件数確認必須）\nSqlPStatement updateStatement = getSqlPStatement(\"UPDATE_USER_NAME\");\nupdateStatement.setString(1, userName);\nupdateStatement.setString(2, userId);\nint updCnt = updateStatement.executeUpdate();\nif (updCnt != 1) {\n    // 更新対象が存在しない場合は、対象なしエラーを表示する\n}\n```\n\n### 複数件を一括で更新する場合\n\n同一テーブルへの繰り返し更新（INSERT/UPDATE/DELETE）はバッチ更新機能（`executeBatch`）を使用すること。DBサーバとのラウンドトリップ回数を削減でき、性能改善が期待できる。\n\n> **警告**: 大量データを一括更新する場合、適宜`executeBatch`を呼び出すこと。未実施の場合、OutOfMemoryErrorが発生したり、GCが頻発して性能劣化の原因となる。\n\n```sql\nREGSITER_ALL_USER =\nINSERT INTO USER (ID, NAME) VALUES (?, ?)\n```\n\n```java\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nSqlPStatement batch = getSqlPStatement(\"REGSITER_ALL_USER\");\nfor (Map<String, ?> user : users) {\n    batch.setObject(1, user.get(\"ID\"));\n    batch.setObject(2, user.get(\"NAME\"));\n    batch.addBatch();\n    // 1000件単位で実行\n    if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        batch.executeBatch();\n    }\n}\nif (batch.getBatchSize() != 0) {\n    batch.executeBatch();\n}\n```"
+  }
+}

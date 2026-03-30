@@ -1,0 +1,468 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (簡易検索機能) — 大量データ footnote code examples",
+      "description": "The footnote code examples clarifying what constitutes 大量データ are omitted. The source provides three concrete examples: `statement.retrieve()` (large if result set is big), `statement.retrieve(1, 10000000)` (large — 10 million record limit), and `statement.retrieve(10000000, 20)` (NOT large — start position is 10M but count is only 20). These examples demonstrate the boundary case that start position alone does not make it 大量データ, only the count does. The knowledge file states the rule in prose but omits the illustrative code that helps AI distinguish edge cases.",
+      "source_evidence": "Source footnote [#]: `statement.retrieve(10000000, 20);    // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 (範囲指定での検索処理) — method signature parameter name",
+      "description": "The knowledge file documents the method signature as `SqlPStatement#retrieve(int startPos, int count)`, using `count` as the second parameter name. The source only specifies `SqlPStatement#retrieve(int, int)` without naming the second parameter. While `startPos` appears in the Java sample code, `count` as a parameter name does not appear anywhere in the source.",
+      "source_evidence": "Source: `SqlPStatement#retrieve(int, int)` and Java code `return statement.retrieve(startPos, 20);` — no parameter name `count` is used"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _db_Example:
+
+============================
+データベースアクセス実装例集
+============================
+
+----------------
+本ページの構成
+----------------
+
+本ページでは以下の実装例を説明する。
+
+* :ref:`basic_implementation`
+* :ref:`simple_search`
+
+  * :ref:`retrieve-variable-label`
+  * :ref:`range_search`
+  * :ref:`how_to_use_sql_result_set`
+
+* :ref:`executeQuery-label`
+
+* :ref:`insert_update_delete`
+
+  * :ref:`update_single_data`
+  * :ref:`executeBatch-label`
+
+* :ref:`access_to_binary_data`
+
+  * :ref:`searching_binary_data`
+  * :ref:`insert_binary_data`
+  * :ref:`insert_file_data_as_binary_data`
+  * :ref:`generate_binary_file`
+
+* :ref:`db-object-save-samole`
+
+  * :ref:`update_single_data_by_object`
+  * :ref:`update_multiple_data_by_object`
+
+* :ref:`map-save-label`
+
+  * :ref:`update_single_data_by_map`
+  * :ref:`update_multiple_data_by_map`
+
+* :ref:`object-select-label`
+
+  * :ref:`using_simple_search`
+  * :ref:`using_simple_search_having_like_conditions`
+  * :ref:`variable-condition-sql-label`
+  * :ref:`changing_dynamically_in`
+  * :ref:`changing_dynamically_order_by`
+  * :ref:`serching_for_mass_data`
+
+* :ref:`map-search-label`
+
+
+.. _basic_implementation:
+
+------------
+基本的な実装
+------------
+データベースアクセスを行うクラスは、本フレームワークにて提供されるDbAccessSupportクラスを継承して作成する。
+本実装例集は、DbAccessSupportを継承していることが前提となっている。
+
+* 実装例
+
+  .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    import nablarch.core.db.support.DbAccessSupport;
+
+    /**
+     * ユーザ登録に関する業務共通コンポーネントクラス<br/>
+     *
+     * @author Tsuyoshi Kawasaki
+     * @since 1.0
+     */
+    // 【説明】DbAccessSupportクラスを継承して、データベースアクセスクラスを作成する。
+    public class CM311AC1Component extends DbAccessSupport {
+    }
+
+.. note::
+
+  継承モデルを使用しない場合(別のスーパークラスを継承する必要があり、DbAccessSupportを継承出来ない場合)は、
+  下記例のようにDbAccessSupportをインスタンス化して使用すること。
+
+  .. code-block:: java
+
+    // 【説明】
+    // 自身のクラスオブジェクトをコンストラクタに指定して
+    // DbAccessSupportを取得する。
+    DbAccessSupport support = new DbAccessSupport(getClass());
+
+
+  .. warning::
+
+    継承モデルを使用しない場合で、デフォルトコンストラクタ(引数なしコンストラクタ)を使用した場合、
+    SQL実行クラスに対応するSQLファイルを特定することができず、実行時エラーとなるため注意すること。
+
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _simple_search:
+
+------------
+簡易検索機能
+------------
+検索処理では、基本的に簡易検索機能を使用する。
+簡易検索機能を使用すると、検索結果が\ *SqlResultSet*\ オブジェクトに格納されて返却される。
+
+.. admonition:: SqlResultSetとは
+
+  *SqlResultSet*\ は、\ *java.sql.ResultSet*\ と比較して簡易的に扱えるオブジェクトとなっている。
+  主に、以下の利点がある。
+
+  * リソース解放(close処理)を実装する必要がない
+  * 取得レコード数がわかる
+
+  **簡易検索結果のイメージ** 
+
+  .. image:: _images/DbAccessSpec_SampleSqlResultSet.jpg
+    :width: 800px
+    :scale: 100
+ 
+.. warning::
+  大量データ [#]_ を簡易検索機能で取得すると、大量にメモリを消費しOutOfMemoryErrorが発生する可能性がある。
+  このため大量データを取得する場合は、簡易検索機能ではなく\ :ref:`executeQuery-label`\ を使用してデータ取得を行うこと。
+
+
+.. [#]
+  大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。
+  
+  .. admonition:: 例
+
+   .. code-block:: java
+
+     // 大量データの取得に該当する例
+     statement.retrieve();                // この結果返却されるSqlResultSetのサイズが多い場合は、大量データとなる。
+     statement.retrieve(1, 10000000);     // 取得件数に1千万件を指定しているため、SqlResultSetのサイズが最大で1千万件となるため、大量データとなる。
+  
+     // 大量データに該当しない例
+     statement.retrieve(10000000, 20);    // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。
+
+.. _retrieve-variable-label:
+
+条件に紐付くデータの全件検索処理
+================================
+*SqlPStatement#retrieve()*\ を呼び出して、条件に紐付くデータを全件取得する。
+
+* SQLファイルの内容
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   -- 【説明】SQLファイル内へのSQL文の記述ルール
+   -- a) SQL_IDとSQL文の1グループは、空行で区切られて記述されている。
+   --
+   --    1つのSQL文の中に空行はいれてはならない。
+   --    また、異なるSQL文との間には必ず空行を入れなくてはならない。
+   --    コメント行は、空行とはならない。
+   --
+   -- b) 1つのSQL文の最初の「=」までがSQL_IDとなる。
+   --
+   --    SQL_IDとは、SQLファイル内でSQL文を一意に特定するためのIDである。
+   --    SQL_IDには、任意の値を設定することが可能となっている。
+   --
+   -- c) コメントは、「--」で開始されている必要がある。
+   --
+   --    「--」以降の値は、コメントとして扱い読み込まない。
+   --
+   -- d) SQL文の途中で改行を行っても良い。また、可読性を考慮してスペースやtabなどで桁揃えを行っても良い。
+
+   --------------------------
+   -- ユーザ情報を取得用
+   -- SQL_ID:GET_USER_INFO
+   --------------------------
+   GET_USER_INFO =
+   SELECT
+       USER_ID,
+       USER_NAME,
+       USER_NAME_KANA,
+       TEL,
+       MAIL_ADDRESS
+   FROM
+       USER_MST
+   WHERE
+       USER_ID = ?
+   ORDER BY
+       USER_ID
+
+* Javaの実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public SqlResultSet getUserInfo(String userId) {
+
+            // 【説明】SQL_IDを指定してStatementを取得する。
+            // 上記SQLファイル(nablarch/sample/ss11AC/CM311AC1Component.sql)のSQL_ID:GET_USER_INFOのSQLを元にStatementが生成される。
+            SqlPStatement statement = getSqlPStatement("GET_USER_INFO");
+
+            // 【説明】JDBC標準機能と同じように、バインド変数に条件を設定する
+            // 【説明】インデックスは、0からではなく1から開始する（java.sql.PreparedStatementと同様）。
+            statement.setString(1, "00001");
+
+            // 【説明】簡易検索機能のretrieveメソッドを使用して検索を行う
+            SqlResultSet resultSet = statement.retrieve();
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _range_search:
+
+範囲指定での検索処理
+====================
+*SqlPStatement#retrieve(int, int)*\ を呼び出して、対象範囲のデータを取得する。
+
+
+* SQLファイルの内容
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- ユーザ一覧を取得用
+   -- SQL_ID:GET_USER_LIST
+   --------------------------
+   GET_USER_LIST =
+   SELECT
+       USER_ID,
+       USER_NAME,
+       USER_NAME_KANA,
+       TEL,
+       MAIL_ADDRESS
+   FROM
+       USER_MST
+   ORDER BY
+       USER_ID
+
+
+* Javaの実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public SqlResultSet getUserInfo(int startPos, String userId) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement statement = getSqlPStatement("GET_USER_LIST");
+
+            // 【説明】retrieveメソッドに開始位置と取得件数を指定して実行する。
+            return statement.retrieve(startPos, 20);
+
+        }
+    }
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _how_to_use_sql_result_set:
+
+取得したSqlResultSetの使用方法
+==============================
+
+
+
+.. code-block:: java
+
+    SqlResultSet resultSet = statement.retrieve();
+
+    // 【説明】取得したSqlResultSetをループして全件処理を行う
+    for (SqlRow row : resultSet) {
+        String userId = row.getString("USER_ID");
+        String userName = row.getString("USER_NAME");
+        String userNameKana = row.getString("USER_NAME_KANA");
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+*SqlResultSet*\ には、レコードを表す\ *SqlRow*\ クラスが格納されており、ここからカラムの値を取り出すことができる。\
+SqlRowから値を取り出す際には、カラム名やJavaBeansのプロパティ命名規約に準じた名称を指定する。
+例えば、\ ``USER_ID``\ というカラム名であれば、\ ``USER_ID``\ だけでなく、\ ``userId``\ という指定でも値が取得できる。
+
+
+この機能を使用することにより、JSPでDB検索結果行(\ *SqlRow*\ )とJavaオブジェクトを透過的に扱うことができる。
+
+.. code-block:: jsp
+
+  <table>
+      <tr>
+          <th>ユーザID</th>
+          <th>ユーザ氏名</th>
+          <th>ユーザカナ氏名</th>
+      </tr>
+      <c:forEach var="row" items="${searchResult}">
+         <tr>
+             <%-- 【説明】 次の行は <td><n:write name="row['USER_ID']" /></td> と等価 --%>
+             <td><n:write name="row.userId" /></td>
+             <td><n:write name="row.userName" /></td>
+             <td><n:write name="row.kanaName" /></td>
+         </tr>
+     </c:forEach>
+  </table>
+
+上記の例では、変数\ *searchResult*\ の中身が、DB検索結果(\ *SqlResultSet*\ )であっても、
+Javaオブジェクトを格納したリストであっても同じように動作する。
+
+.. _executeQuery-label:
+
+--------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s1",
+  "title": "データベースアクセス実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "データベースアクセス実装例",
+        "簡易検索",
+        "バイナリデータアクセス",
+        "オブジェクト保存",
+        "マップ検索",
+        "DbAccessSupport",
+        "SqlResultSet"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本的な実装",
+      "hints": [
+        "DbAccessSupport",
+        "データベースアクセスクラス継承",
+        "継承モデル",
+        "DbAccessSupportインスタンス化",
+        "CM311AC1Component"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "簡易検索機能",
+      "hints": [
+        "SqlResultSet",
+        "簡易検索",
+        "リソース解放",
+        "close処理不要",
+        "取得レコード数",
+        "大量データ",
+        "OutOfMemoryError"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "条件に紐付くデータの全件検索処理",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "全件検索",
+        "SQL_ID",
+        "getSqlPStatement",
+        "SqlResultSet"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "範囲指定での検索処理",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "範囲指定検索",
+        "startPos",
+        "取得件数",
+        "ページング"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "取得したSqlResultSetの使用方法",
+      "hints": [
+        "SqlResultSet",
+        "SqlRow",
+        "getString",
+        "カラム名",
+        "JavaBeansプロパティ",
+        "JSP",
+        "n:write"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本ページで説明する実装例の一覧:\n\n- :ref:`basic_implementation`\n- :ref:`simple_search`\n  - :ref:`retrieve-variable-label`\n  - :ref:`range_search`\n  - :ref:`how_to_use_sql_result_set`\n- :ref:`executeQuery-label`\n- :ref:`insert_update_delete`\n  - :ref:`update_single_data`\n  - :ref:`executeBatch-label`\n- :ref:`access_to_binary_data`\n  - :ref:`searching_binary_data`\n  - :ref:`insert_binary_data`\n  - :ref:`insert_file_data_as_binary_data`\n  - :ref:`generate_binary_file`\n- :ref:`db-object-save-samole`\n  - :ref:`update_single_data_by_object`\n  - :ref:`update_multiple_data_by_object`\n- :ref:`map-save-label`\n  - :ref:`update_single_data_by_map`\n  - :ref:`update_multiple_data_by_map`\n- :ref:`object-select-label`\n  - :ref:`using_simple_search`\n  - :ref:`using_simple_search_having_like_conditions`\n  - :ref:`variable-condition-sql-label`\n  - :ref:`changing_dynamically_in`\n  - :ref:`changing_dynamically_order_by`\n  - :ref:`serching_for_mass_data`\n- :ref:`map-search-label`",
+    "s2": "**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\nデータベースアクセスクラスは `DbAccessSupport` を継承して作成する。\n\n```java\npackage nablarch.sample.ss11AC;\nimport nablarch.core.db.support.DbAccessSupport;\n\npublic class CM311AC1Component extends DbAccessSupport {\n}\n```\n\n> **注意**: 継承モデルを使用しない場合（別スーパークラスを継承しているためDbAccessSupportを継承できない場合）は、DbAccessSupportをインスタンス化して使用する。コンストラクタに自身のクラスオブジェクト（`getClass()`）を指定する。\n\n```java\nDbAccessSupport support = new DbAccessSupport(getClass());\n```\n\n> **警告**: 継承モデルを使用しない場合にデフォルトコンストラクタ（引数なし）を使用すると、SQLファイルを特定できず実行時エラーになる。",
+    "s3": "検索処理では基本的に簡易検索機能を使用する。検索結果は `SqlResultSet` オブジェクトに格納されて返却される。\n\n**SqlResultSetとは**\n\n`SqlResultSet` は `java.sql.ResultSet` と比較して簡易的に扱えるオブジェクト。主に以下の利点がある:\n\n- **リソース解放(close処理)を実装する必要がない** — 標準JDBCの `ResultSet` と異なり、close処理が不要\n- **取得レコード数がわかる** — 検索結果の件数を取得できる\n\n![SqlResultSetのイメージ図](assets/web-application-01_DbAccessSpec_Example--s1/DbAccessSpec_SampleSqlResultSet.jpg)\n\n> **警告**: 大量データを簡易検索機能で取得するとOutOfMemoryErrorが発生する可能性がある。大量データの取得には :ref:`executeQuery-label` を使用すること。大量データとはSELECT文の結果として取得されるデータ件数（SqlResultSetのサイズ）が大量なことをさす（取得開始位置でなく取得件数が基準）。",
+    "s4": "`SqlPStatement#retrieve()` で条件に紐付くデータを全件取得する。\n\nSQLファイルの記述ルール（ファイル名例: `nablarch/sample/ss11AC/CM311AC1Component.sql`）:\n- SQL_IDとSQL文の1グループは空行で区切る（1つのSQL文の中に空行を入れてはならない、異なるSQL文の間には必ず空行を入れる）\n- SQL文の最初の `=` までがSQL_ID\n- コメントは `--` で開始（`--` 以降はコメントとして読み込まない）\n- SQL文の途中での改行・スペース・tabによる桁揃えは可\n\n```sql\nGET_USER_INFO =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = ?\nORDER BY\n    USER_ID\n```\n\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_INFO\");\nstatement.setString(1, \"00001\");  // インデックスは1から開始（java.sql.PreparedStatementと同様）\nSqlResultSet resultSet = statement.retrieve();\n```",
+    "s5": "`SqlPStatement#retrieve(int startPos, int count)` で対象範囲のデータを取得する。\n\n```sql\nGET_USER_LIST =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nORDER BY\n    USER_ID\n```\n\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_LIST\");\nreturn statement.retrieve(startPos, 20);\n```\n\n> SQLファイルの記述ルールやSQL_IDの指定方法の詳細は :ref:`retrieve-variable-label` を参照すること。",
+    "s6": "`SqlResultSet` は `SqlRow` クラスの集合。`SqlRow` からカラム値を取得する際、カラム名（例: `USER_ID`）またはJavaBeansプロパティ命名規約に準じた名称（例: `userId`）のどちらでも指定可能。\n\n```java\nSqlResultSet resultSet = statement.retrieve();\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n    String userNameKana = row.getString(\"USER_NAME_KANA\");\n}\n```\n\nJSPでDB検索結果行（`SqlRow`）とJavaオブジェクトを透過的に扱える。変数 `searchResult` の中身が `SqlResultSet` でもJavaオブジェクトのリストでも同じように動作する。\n\n```jsp\n<c:forEach var=\"row\" items=\"${searchResult}\">\n    <td><n:write name=\"row.userId\" /></td>\n    <td><n:write name=\"row.userName\" /></td>\n    <td><n:write name=\"row.kanaName\" /></td>\n</c:forEach>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

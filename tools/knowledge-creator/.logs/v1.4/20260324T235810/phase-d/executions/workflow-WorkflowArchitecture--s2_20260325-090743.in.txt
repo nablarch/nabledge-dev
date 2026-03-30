@@ -1,0 +1,569 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/workflow/doc/09/WorkflowArchitecture.rst`
+- Format: `rst`
+
+```
+テーブル定義
+-----------------------------
+ワークフロー機能で必要となるテーブルの情報を以下に示す。
+
+テーブル名やカラム名は、プロジェクトの命名規則に従い設定することが想定される
+このため、これらの情報はコンポーネント定義ファイルを用いて設定可能としている。
+
+コンポーネント定義ファイルの設定例は、\ `コンポーネント定義`_\ を参照。
+
+.. _definitionTable: 
+
+ワークフローの定義情報を格納するテーブル
+==================================================
+ワークフローの定義情報を格納するテーブルの定義を下記に示す。
+
+
+**ワークフロー定義テーブルの定義**
+
+ワークフロー定義情報を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+ワークフロー名            java.lang.String
+
+適用日                    java.lang.String    8桁(yyyyMMdd)の文字列表記
+
+========================  =================== ============================================================
+
+**レーンテーブルの定義**
+
+ワークフローの :ref:`workflow_element_lane` を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+レーンID                  java.lang.String    PK
+
+レーン名                  java.lang.String
+
+========================  =================== ============================================================
+
+**フローノードテーブルの定義**
+
+:ref:`workflow_flow_node` の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+フローノードID            java.lang.String    PK
+
+フローノード名            java.lang.String
+
+========================  =================== ============================================================
+
+**タスクテーブルの定義**
+
+:ref:`workflow_element_task` の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+フローノードID            java.lang.String    PK
+
+マルチインスタンス種別    java.lang.String    以下の値が格納される。
+
+                                              * NONE(:ref:`workflow_element_task`)
+                                              * SEQUENTIAL(順次 :ref:`workflow_element_multi_instance_task`)
+                                              * PARALLEL(並行 :ref:`workflow_element_multi_instance_task`)
+
+完了条件                  java.lang.String    ``please.change.me.workflow.condition.CompletionCondition``
+                                              の実装クラスをFQCNで登録する。
+
+                                              ``CompletionCondition``\ の詳細は :ref:`completionCondition` を参照
+
+========================  =================== ============================================================
+
+**イベントテーブルの定義**
+
+イベント(:ref:`workflow_element_event_start` 、 :ref:`workflow_element_event_terminate`)の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+フローノードID            java.lang.String    PK
+
+イベント種別              java.lant.String    以下の値が格納される。
+
+                                              * START(:ref:`workflow_element_event_start`)
+                                              * TERMINATE(:ref:`workflow_element_event_terminate`)
+
+========================  =================== ============================================================
+
+**ゲートウェイテーブル定義**
+
+:ref:`workflow_element_gateway_xor` の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+フローノードID            java.lang.String    PK
+
+ゲートウェイ種別          java.lant.String    以下の値が格納される。
+
+                                              * EXCLUSIVE(:ref:`workflow_element_gateway_xor`)
+
+========================  =================== ============================================================
+
+**境界イベントテーブル定義**
+
+:ref:`workflow_element_boundary_event` の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+フローノードID            java.lang.String    PK
+
+境界イベントトリガーID    java.lang.String
+
+接続先タスクID            java.lang.String
+
+========================  =================== ============================================================
+
+**境界イベントトリガーテーブル定義**
+
+境界イベントトリガーの定義を管理するテーブル。境界イベントトリガーについては、 :ref:`workflow_element_boundary_event` を参照。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+境界イベントトリガーID    java.lang.String    PK
+
+境界イベントトリガー名    java.lang.String
+
+========================  =================== ============================================================
+
+.. _sequenceFlowDefinition:
+
+**シーケンスフローテーブル定義**
+
+:ref:`workflow_element_sequence_flows` の定義を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+ワークフローID            java.lang.String    PK
+
+バージョン                java.lang.Integer   PK
+                          (int)
+
+シーケンスフローID        java.lang.String    PK
+
+ 接続元フローノードID     java.lang.String
+
+ 接続先フローノードID     java.lang.String
+
+ フロー進行条件           java.lang.String    ``please.change.me.workflow.condition.FlowProceedCondition``
+                                              の実装クラス名をFQCNで登録する。
+
+                                              ``FlowProceedCondition``\ の詳細は :ref:`flowProceedCondition` を参照
+
+
+ シーケンスフロー名       java.lang.String
+========================  =================== ============================================================
+
+テーブル定義の例
+--------------------------------------------------
+
+.. image:: _images/workflow-table-example-definition.png
+   :align: center
+   :scale: 80
+
+
+.. _instanceTable:
+
+ワークフローの進行状態を管理するテーブル
+==================================================
+ワークフローの進行状態を管理するテーブルの定義を下記に示す。
+
+.. note::
+
+ ワークフローの進行状態は、ワークフローが終了するまでの状態を管理する。
+ ワークフローが完了した場合には、本テーブル群のデータはクリーニング（削除）される。
+
+**ワークフローインスタンステーブル定義**
+
+進行中のワークフローを管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+                                              進行中のインスタンスIDを識別する情報。
+
+                                              インスタンスIDは、業務側のワークフローデータを保持する
+                                              テーブルに格納する必要がある。
+
+                                              業務側テーブルに格納することで、ワークフローの進行状態と
+                                              業務データを紐付けて管理することができる。
+
+ワークフローID            java.lang.String
+
+バージョン                java.lang.Integer
+                          (int)
+
+========================  =================== ============================================================
+
+**インスタンスフローノードテーブル**
+
+進行中のワークフローに含まれるタスクの情報を管理するテーブル。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+ワークフローID            java.lang.String
+
+バージョン                java.lang.Integer
+                          (int)
+
+========================  =================== ============================================================
+
+.. _assign_user:
+
+**タスク担当ユーザテーブル**
+
+タスクに割り当てられた担当ユーザを管理するテーブル。 [#assign]_
+
+タスクへの担当ユーザの割り当てについては :ref:`workflow_task_assignee` を参照。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+担当ユーザID              java.lang.String    PK
+
+実行順                    java.lang.Integer   **順次** :ref:`workflow_element_multi_instance_task` の場合に
+                          (int)               ユーザの処理実行順を管理するために使用する。
+
+                                              非マルチインスタンスタスクや並行
+                                              :ref:`workflow_element_multi_instance_task` の場合には、
+                                              本属性値は使用しない。
+
+========================  =================== ============================================================
+
+.. _assign_group:
+
+**タスク担当グループテーブル**
+
+タスクに割り当てられた担当グループを管理するテーブル。 [#assign]_
+
+タスクへの担当グループの割り当てについては :ref:`workflow_task_assignee` を参照。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+担当グループID            java.lang.String    PK
+
+実行順                    java.lang.Integer   **順次** :ref:`workflow_element_multi_instance_task` の場合に
+                          (int)               ユーザの処理実行順を管理するために使用する。
+
+                                              非マルチインスタンスタスクや並行
+                                              :ref:`workflow_element_multi_instance_task` の場合には、
+                                              本属性値は使用しない。
+
+========================  =================== ============================================================
+
+.. [#assign]
+  
+  同一フローノードに対しては、ユーザかグループの一方のみの割り当てとなる。
+  このため、同一フローノードに対して、ユーザとグループの両方のデータが存在することはない。
+
+**アクティブフローノードテーブル**
+
+:ref:`workflow_active_flow_node` の情報を保持するテーブル
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+========================  =================== ============================================================
+
+.. _activeUserTask:
+
+**アクティブユーザタスクテーブル**
+
+ユーザが実行可能なタスクを管理するテーブル。
+
+ユーザが実行可能なタスク（アクティブユーザタスク）については、 :ref:`workflow_active_task` を参照。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+担当ユーザID              java.lang.String    PK
+
+実行順                    java.lang.Integer   :ref:`タスク担当ユーザテーブル <assign_user>` を参照
+                          (int)
+
+========================  =================== ============================================================
+
+.. _activeGroupTask:
+
+**アクティブグループタスクテーブル**
+
+グループが実行可能なタスクを管理するテーブル。
+
+グループが実行可能なタスク（アクティブグループタスク）については、 :ref:`workflow_active_task` を参照。
+
+========================  =================== ============================================================
+定義                      Javaの型            制約など
+========================  =================== ============================================================
+インスタンスID            java.lang.String    PK
+
+フローノードID            java.lang.String    PK
+
+担当グループID            java.lang.String    PK
+
+実行順                    java.lang.Integer   :ref:`タスク担当グループテーブル <assign_group>` を参照
+                          (int)
+
+========================  =================== ============================================================
+
+テーブル定義の例
+--------------------------------------------------
+
+.. image:: _images/workflow-table-example-instance.png
+   :align: center
+   :scale: 80
+
+.. _workflowComponentDefinition:
+
+-----------------------------
+```
+
+## Knowledge File
+
+- ID: `workflow-WorkflowArchitecture--s2`
+
+```json
+{
+  "id": "workflow-WorkflowArchitecture--s2",
+  "title": "テーブル定義",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テーブル定義",
+      "hints": [
+        "ワークフロー定義テーブル",
+        "レーンテーブル",
+        "フローノードテーブル",
+        "タスクテーブル",
+        "イベントテーブル",
+        "ゲートウェイテーブル",
+        "境界イベントテーブル",
+        "境界イベントトリガーテーブル",
+        "シーケンスフローテーブル",
+        "CompletionCondition",
+        "FlowProceedCondition",
+        "マルチインスタンス種別",
+        "テーブル定義",
+        "コンポーネント定義ファイル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ワークフローの進行状態を管理するテーブル",
+      "hints": [
+        "workflow-table-example-definition",
+        "ワークフローインスタンステーブル",
+        "インスタンスフローノードテーブル",
+        "タスク担当ユーザテーブル",
+        "タスク担当グループテーブル",
+        "アクティブフローノードテーブル",
+        "アクティブユーザタスクテーブル",
+        "アクティブグループタスクテーブル",
+        "インスタンスID",
+        "進行状態管理",
+        "テーブル定義例"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テーブル定義の例",
+      "hints": [
+        "テーブル定義例",
+        "インスタンステーブル図",
+        "workflow-table-example-instance"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "workflowComponentDefinition"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テーブル名やカラム名はプロジェクトの命名規則に従って設定し、コンポーネント定義ファイルで変更可能。\n\n## ワークフローの定義情報を格納するテーブル\n\n### ワークフロー定義テーブル\n\nワークフロー定義情報を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| ワークフロー名 | java.lang.String | |\n| 適用日 | java.lang.String | 8桁(yyyyMMdd)の文字列表記 |\n\n### レーンテーブル\n\n:ref:`workflow_element_lane` を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| レーンID | java.lang.String | PK |\n| レーン名 | java.lang.String | |\n\n### フローノードテーブル\n\n:ref:`workflow_flow_node` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| フローノードID | java.lang.String | PK |\n| フローノード名 | java.lang.String | |\n\n### タスクテーブル\n\n:ref:`workflow_element_task` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| フローノードID | java.lang.String | PK |\n| マルチインスタンス種別 | java.lang.String | NONE(:ref:`workflow_element_task`) / SEQUENTIAL(順次 :ref:`workflow_element_multi_instance_task`) / PARALLEL(並行 :ref:`workflow_element_multi_instance_task`) |\n| 完了条件 | java.lang.String | `please.change.me.workflow.condition.CompletionCondition` の実装クラスをFQCNで登録。詳細は :ref:`completionCondition` を参照 |\n\n### イベントテーブル\n\n:ref:`workflow_element_event_start`、:ref:`workflow_element_event_terminate` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| フローノードID | java.lang.String | PK |\n| イベント種別 | java.lang.String | START(:ref:`workflow_element_event_start`) / TERMINATE(:ref:`workflow_element_event_terminate`) |\n\n### ゲートウェイテーブル\n\n:ref:`workflow_element_gateway_xor` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| フローノードID | java.lang.String | PK |\n| ゲートウェイ種別 | java.lang.String | EXCLUSIVE(:ref:`workflow_element_gateway_xor`) |\n\n### 境界イベントテーブル\n\n:ref:`workflow_element_boundary_event` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| フローノードID | java.lang.String | PK |\n| 境界イベントトリガーID | java.lang.String | |\n| 接続先タスクID | java.lang.String | |\n\n### 境界イベントトリガーテーブル\n\n境界イベントトリガーの定義を管理するテーブル（:ref:`workflow_element_boundary_event` 参照）。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| 境界イベントトリガーID | java.lang.String | PK |\n| 境界イベントトリガー名 | java.lang.String | |\n\n### シーケンスフローテーブル\n\n:ref:`workflow_element_sequence_flows` の定義を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| ワークフローID | java.lang.String | PK |\n| バージョン | java.lang.Integer (int) | PK |\n| シーケンスフローID | java.lang.String | PK |\n| 接続元フローノードID | java.lang.String | |\n| 接続先フローノードID | java.lang.String | |\n| フロー進行条件 | java.lang.String | `please.change.me.workflow.condition.FlowProceedCondition` の実装クラス名をFQCNで登録。詳細は :ref:`flowProceedCondition` を参照 |\n| シーケンスフロー名 | java.lang.String | |",
+    "s2": "![ワークフロー定義テーブル定義例](assets/workflow-WorkflowArchitecture--s2/workflow-table-example-definition.png)\n\n> **注意**: ワークフローの進行状態はワークフローが終了するまでの状態を管理する。ワークフローが完了した場合、本テーブル群のデータはクリーニング（削除）される。\n\n## ワークフローの進行状態を管理するテーブル\n\n### ワークフローインスタンステーブル\n\n進行中のワークフローを管理するテーブル。インスタンスIDは業務側テーブルに格納し、ワークフロー進行状態と業務データを紐付ける。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK。業務側テーブルに格納してワークフロー進行状態と業務データを紐付ける |\n| ワークフローID | java.lang.String | |\n| バージョン | java.lang.Integer (int) | |\n\n### インスタンスフローノードテーブル\n\n進行中のワークフローに含まれるタスクの情報を管理するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n| ワークフローID | java.lang.String | |\n| バージョン | java.lang.Integer (int) | |\n\n### タスク担当ユーザテーブル\n\nタスクに割り当てられた担当ユーザを管理するテーブル（:ref:`workflow_task_assignee` 参照）。同一フローノードに対してはユーザかグループの一方のみ割り当て可能（両方同時は不可）。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n| 担当ユーザID | java.lang.String | PK |\n| 実行順 | java.lang.Integer (int) | 順次 :ref:`workflow_element_multi_instance_task` の場合にユーザ処理実行順を管理。非マルチインスタンス・並行マルチインスタンスでは使用しない |\n\n### タスク担当グループテーブル\n\nタスクに割り当てられた担当グループを管理するテーブル（:ref:`workflow_task_assignee` 参照）。同一フローノードに対してはユーザかグループの一方のみ割り当て可能（両方同時は不可）。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n| 担当グループID | java.lang.String | PK |\n| 実行順 | java.lang.Integer (int) | 順次 :ref:`workflow_element_multi_instance_task` の場合にユーザ処理実行順を管理。非マルチインスタンス・並行マルチインスタンスでは使用しない |\n\n### アクティブフローノードテーブル\n\n:ref:`workflow_active_flow_node` の情報を保持するテーブル。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n\n### アクティブユーザタスクテーブル\n\nユーザが実行可能なタスクを管理するテーブル（:ref:`workflow_active_task` 参照）。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n| 担当ユーザID | java.lang.String | PK |\n| 実行順 | java.lang.Integer (int) | :ref:`タスク担当ユーザテーブル <assign_user>` を参照 |\n\n### アクティブグループタスクテーブル\n\nグループが実行可能なタスクを管理するテーブル（:ref:`workflow_active_task` 参照）。\n\n| 定義 | Javaの型 | 制約など |\n|---|---|---|\n| インスタンスID | java.lang.String | PK |\n| フローノードID | java.lang.String | PK |\n| 担当グループID | java.lang.String | PK |\n| 実行順 | java.lang.Integer (int) | :ref:`タスク担当グループテーブル <assign_group>` を参照 |",
+    "s3": "![ワークフローインスタンステーブル定義例](assets/workflow-WorkflowArchitecture--s2/workflow-table-example-instance.png)",
+    "s4": "なし"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections object",
+      "description": "The source has 6 distinct headings but the knowledge file contains only 5 sections. The '様々なMapオブジェクトの精査と変換' heading (=== level, likely a parent/chapter section) is not represented as a separate section; its introductory content is silently merged into s4 ('SqlRowをインプットとして精査を行う例'). The index entry for s4 only describes the sub-topic (SqlRow example), not the parent section about general Map<String, ?> validation scope.",
+      "source_evidence": "Source heading: '様々なMapオブジェクトの精査と変換\\n=================================' — intro paragraph: '本機能で精査、変換可能なオブジェクトは、Map<String, ?>となっている。このため、キー値がStringであるMap実装クラスであれば、精査と変換処理を行うことが可能である。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "s4 hints are missing 'ValidationContext', which is explicitly used in the code example shown in s4 itself ('ValidationContext<UserEntity> context = ValidationUtil.validateAndConvertRequest(...)').",
+      "source_evidence": "s4 code: 'ValidationContext<UserEntity> context = ValidationUtil.validateAndConvertRequest(null, UserEntity.class, row, \"validateUserData\");'"
+    }
+  ]
+}

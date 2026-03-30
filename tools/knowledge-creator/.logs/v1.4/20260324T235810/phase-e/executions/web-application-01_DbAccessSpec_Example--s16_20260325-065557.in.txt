@@ -1,0 +1,129 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "Source contains 2 h2-level headings (「1件のデータを更新する場合」and「複数件を更新する場合」) but the knowledge file has only 1 section (s1) that merges both. Each source h2 should map to its own section.",
+      "source_evidence": "RST h2 headings: '1件のデータを更新する場合' (=====) and '複数件を更新する場合' (=====)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)
+----------------------------------------------------------
+
+.. _update_single_data_by_map:
+
+1件のデータを更新する場合
+=========================
+.. code-block:: java
+
+    // 登録対象のMapを生成する。
+    Map<String, Object> sales = new HashMap<String, Object>();
+    sales.put("CST_ID", "00001");
+    sales.put("KINGAKU", "200");
+
+    ParameterizedSqlPStatement statement = getParameterizedSqlStatement("UPDATE_SALES");
+    int updCnt = statement.executeUpdateByMap(sales);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _update_multiple_data_by_map:
+
+複数件を更新する場合
+====================
+複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。
+
+.. code-block:: java
+
+    // 1回のexecuteBatchで更新する最大の件数
+    private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+    // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+
+    ParameterizedSqlPStatement statement = getParameterizedSqlStatement("UPDATE_SALES");
+
+    for (Map<String, ?> sales : salesList) {
+        statement.addBatchMap(sales);
+        if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+            statement.executeBatch();
+        }
+    }
+    if (statement.getBatchSize() != 0) {
+        statement.executeBatch();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _object-select-label:
+
+--------------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s16",
+  "title": "オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "executeUpdateByMap",
+        "addBatchMap",
+        "executeBatch",
+        "getBatchSize",
+        "Map更新",
+        "バッチ更新",
+        "一括更新",
+        "BATCH_EXECUTE_MAX_CNT"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 1件のデータを更新する場合\n\n`ParameterizedSqlPStatement.executeUpdateByMap(Map)` でMapのデータを1件更新する。\n\n```java\nMap<String, Object> sales = new HashMap<String, Object>();\nsales.put(\"CST_ID\", \"00001\");\nsales.put(\"KINGAKU\", \"200\");\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\nint updCnt = statement.executeUpdateByMap(sales);\n```\n\n## 複数件を更新する場合\n\n複数件を一括で更新する場合の注意点は、:ref:`JDBC標準機能<executeBatch-label>` と同じである。\n\n```java\n// 1回のexecuteBatchで更新する最大の件数\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\n\nfor (Map<String, ?> sales : salesList) {\n    statement.addBatchMap(sales);\n    if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        statement.executeBatch();\n    }\n}\nif (statement.getBatchSize() != 0) {\n    statement.executeBatch();\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

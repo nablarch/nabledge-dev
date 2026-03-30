@@ -1,0 +1,57 @@
+{
+  "id": "web-application-function--s1",
+  "title": "ファイルダウンロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadButton",
+        "ファイルダウンロード",
+        "downloadSubmit",
+        "downloadLink"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "BLOB型カラムのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadLink",
+        "BLOBダウンロード",
+        "Blob"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データレコードのダウンロード方法",
+      "hints": [
+        "DataRecordResponse",
+        "downloadSubmit",
+        "データレコードダウンロード",
+        "CSVダウンロード",
+        "フォーマット定義"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "別ウィンドウを開いてダウンロードを開始する場合",
+      "hints": [
+        "popupButton",
+        "別ウィンドウダウンロード",
+        "downloadSubmit",
+        "onload",
+        "doOnclick"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## ファイルのダウンロード方法\n\nファイルダウンロードには以下のタグとユーティリティクラスを使用する。\n\n**タグ**: `downloadSubmit`, `downloadButton`, `downloadLink`\n\n**ユーティリティクラス**: `StreamResponse`, `DataRecordResponse`\n\n`downloadButton`タグでダウンロードボタンを実装し、アクションで`StreamResponse`を返す。\n\n`StreamResponse`コンストラクタ引数:\n- 第1引数: ダウンロード対象の`File`\n- 第2引数: リクエスト処理終了時にファイルを削除する場合は`true`、削除しない場合は`false`（ファイル削除はフレームワークが行う。通常は`true`を指定する）\n\n```java\nStreamResponse response = new StreamResponse(file, true);\nresponse.setContentType(\"text/plain; charset=UTF-8\");\nresponse.setContentDisposition(file.getName());\nreturn response;\n```",
+    "s2": "## BLOB型カラムのダウンロード方法\n\n`downloadLink`タグでリンクを実装し、アクションでBlobを`StreamResponse`に渡す。\n\nリンクに対応する行データを識別するため、`param`タグでパラメータを設定する。\n\n```java\nStreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\nresponse.setContentType(\"image/jpeg\");\nresponse.setContentDisposition(record.getString(\"FILE_NAME\"));\nreturn response;\n```",
+    "s3": "## データレコードのダウンロード方法\n\nデータレコードをフォーマット済みでダウンロードするには`DataRecordResponse`を使用する。フォーマット定義ファイル（プロジェクト規定の場所に配置）が必要。\n\n`DataRecordResponse`コンストラクタ引数: フォーマット定義のベースパス論理名、フォーマット定義ファイル名\n\n`write(recordType, record)`メソッドでヘッダーとデータを書き込む。ヘッダーにデフォルト値を使用する場合、空のマップを渡す。\n\nフォーマット定義例（`N11AA001.fmt`）:\n```\nfile-type:        \"Variable\"\ntext-encoding:    \"Shift_JIS\"\nrecord-separator: \"\\n\"\nfield-separator:  \",\"\n\n[header]\n1   messageId    N \"メッセージID\"\n2   lang         N \"言語\"\n3   message      N \"メッセージ\"\n\n[data]\n1   messageId    X\n2   lang         X\n3   message      N\n```\n\nアクション実装例:\n```java\nDataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\nresponse.write(\"header\", Collections.<String, Object>emptyMap());\nfor (SqlRow record : records) {\n    response.write(\"data\", record);\n}\nresponse.setContentType(\"text/csv; charset=Shift_JIS\");\nresponse.setContentDisposition(\"メッセージ一覧.csv\");\nreturn response;\n```",
+    "s4": "## 別ウィンドウを開いてダウンロードを開始する場合\n\n`popupButton`タグで別ウィンドウを開き（`howto_open_multi_window` 参照）、そのウィンドウのJSPでダウンロード用フォームを実装し、`onload`イベントでサブミットする。\n\n別ウィンドウを開くJSP実装例:\n```jsp\n<n:popupButton uri=\"/action/.../ShowSub\" name=\"showSub\">\n    ダウンロード\n</n:popupButton>\n```\n\n別ウィンドウJSP実装例（`onload`でサブミット）:\n```jsp\n<body onload=\"doOnclick('submit');\">\n    <n:form name=\"downloadForm\">\n        <n:downloadSubmit type=\"button\" uri=\"/action/.../TempFile\"\n                          name=\"submit\" value=\"ダウンロード\"\n                          allowDoubleSubmission=\"false\" />\n        <n:button uri=\"#\" name=\"close\" onclick=\"window.close();\">閉じる</n:button>\n    </n:form>\n</body>\n```\n\n`doOnclick`関数: 指定したname属性の要素のonclickイベントを発生させる（IE/非IE対応）。"
+  }
+}

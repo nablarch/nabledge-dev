@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The JSP implementation example for BLOB column download is omitted. The source shows a non-trivial pattern using c:forEach with varStatus.index for unique element naming and n:param for passing the fileId to identify the selected record. The knowledge file only states the concept textually ('param タグでパラメータを設定する') without showing the concrete loop structure.",
+      "source_evidence": "<c:forEach var=\"record\" items=\"${records}\" varStatus=\"status\">\\n    <n:set var=\"fileId\" name=\"record.fileId\" />\\n    <n:downloadLink uri=\"...\" name=\"blobColumn_${status.index}\">\\n        <n:write name=\"record.fileName\" />(<n:write name=\"fileId\" />)\\n        <n:param paramName=\"fileId\" name=\"fileId\" />\\n    </n:downloadLink>\\n</c:forEach>"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The full JavaScript implementation of the doOnclick function is omitted. The source provides complete cross-browser code with three branches (IE: fireEvent, standard: createEvent/dispatchEvent, fallback: onclick). The knowledge file only summarizes it as 'IE/非IE対応' without the actual implementable code.",
+      "source_evidence": "function doOnclick(name) {\\n    var element = document.getElementsByName(name)[0];\\n    if (element.fireEvent) { // for IE\\n        element.fireEvent(\"onclick\");\\n    } else if (document.createEvent) { // for not IE\\n        var evt = document.createEvent(\"MouseEvents\");\\n        ...\\n        element.dispatchEvent(evt);\\n    } else { // just in case\\n        element.onclick();\\n    }\\n}"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The download window JSP in the knowledge file omits <n:errors filter=\"global\" />, which is present in the source. This element handles display of global error messages in the popup window and is a functional part of the template.",
+      "source_evidence": "<body onload=\"doOnclick('submit');\">\\n    <h1><n:write name=\"title\" /></h1>\\n    <p>ダウンロードを開始します。</p>\\n    <n:errors filter=\"global\" />\\n    <n:form name=\"downloadForm\">"
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/08/08_06_direct_call_of_validators.rst`
+- Format: `rst`
+
+```
+.. _direct_call_of_validators:
+
+--------------------------------------
+バリデータの明示的な呼び出し
+--------------------------------------
+ここまで述べてきたアノテーションによる精査処理の実装方法は、ソースコードの記述がほとんど不要である一方、
+遷移元画面やフラグの有無によって精査対象が変わるような場合に対応することができない。
+
+そのようなケースでは、アクション側で精査処理を実装する必要がある。
+以下は、画面から送信された条件フラグに従って、精査処理の有無を判断している例である。
+
+.. code-block:: java
+
+  // 連絡先情報が更新されている場合、昼間連絡先電話番号が入力されていることを確認する。
+  if (contactInfoUpdated) {
+    ValidationUtil.validate(context, "daytimePhoneNumber", Required.class);
+    ValidationUtil.validate(context, "daytimePhoneNumber", JapaneseTelNumber.class);                        
+  }
+
+if文の条件に合致した場合に行われる精査処理は、下記のアノテーションと同等のものとなる。
+
+.. code-block:: java
+
+  @PropertyName("昼間連絡先電話番号")
+  @Required
+  @JapaneseTelNumber
+  public void setDaytimePhoneNumber(String value) {
+      this.value = value;
+  }
+
+アノテーションのプロパティは、以下のように **Map** を引数に渡すことで指定することが可能である。
+
+.. code-block:: java
+ 
+  // 入力値が都道府県コードに含まれていることを検証する。
+  Map<String, Object> params = new HashMap<String, Object>();
+  params.put("codeId", "1052");     // 都道府県コード
+  params.put("pattern", "A");       // 使用するコードパターン名
+  params.put("messageId", "M4865"); // 精査エラーメッセージのID
+  ValidationUtil.validate(context, "prefectureCode", CodeValue.class, params);
+
+この精査処理は、下記のアノテーションによる処理と同じものとなる。
+
+.. code-block:: java
+
+  @PropertyName("都道府県")
+  @Required
+  @CodeValue(codeId="1052", pattern="A", messageId="M4865")
+  public void setPrefectureCode(String value) {
+      this.value = value;
+  }
+
+
+.. note::
+
+  ここで述べている方法でバリデータを利用するためには、バリデータ側の対応も必要となる。
+  詳細については、下記の項を参照すること。
+
+    :ref:`implementing_DirectCallable`
+```
+
+## Knowledge File
+
+- ID: `libraries-08_06_direct_call_of_validators--s1`
+
+```json
+{
+  "id": "libraries-08_06_direct_call_of_validators--s1",
+  "title": "バリデータの明示的な呼び出し",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデータの明示的な呼び出し",
+      "hints": [
+        "ValidationUtil",
+        "ValidationUtil.validate",
+        "@Required",
+        "@JapaneseTelNumber",
+        "@CodeValue",
+        "@PropertyName",
+        "Required",
+        "JapaneseTelNumber",
+        "CodeValue",
+        "PropertyName",
+        "バリデータの明示的な呼び出し",
+        "条件付きバリデーション",
+        "アノテーションプロパティのMap指定",
+        "DirectCallable"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## バリデータの明示的な呼び出し\n\nアノテーションによる精査処理は、遷移元画面やフラグの有無によって精査対象が変わるケースに対応できない。そのような場合は、アクション側で `ValidationUtil.validate()` を明示的に呼び出して精査処理を実装する。\n\n**基本的な呼び出し方法**（条件付きで `Required`、`JapaneseTelNumber` を適用する例）:\n\n```java\nif (contactInfoUpdated) {\n    ValidationUtil.validate(context, \"daytimePhoneNumber\", Required.class);\n    ValidationUtil.validate(context, \"daytimePhoneNumber\", JapaneseTelNumber.class);\n}\n```\n\n上記は以下のアノテーション指定と同等:\n\n```java\n@PropertyName(\"昼間連絡先電話番号\")\n@Required\n@JapaneseTelNumber\npublic void setDaytimePhoneNumber(String value) { ... }\n```\n\n**アノテーションプロパティの指定**: `Map<String, Object>` を第4引数に渡す。\n\n```java\nMap<String, Object> params = new HashMap<String, Object>();\nparams.put(\"codeId\", \"1052\");\nparams.put(\"pattern\", \"A\");\nparams.put(\"messageId\", \"M4865\");\nValidationUtil.validate(context, \"prefectureCode\", CodeValue.class, params);\n```\n\n上記は以下のアノテーション指定と同等:\n\n```java\n@PropertyName(\"都道府県\")\n@Required\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) { ... }\n```\n\n> **注意**: この方法でバリデータを利用するには、バリデータ側が `DirectCallable` インタフェースを実装している必要がある。詳細は :ref:`implementing_DirectCallable` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 1 < source headings 2
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

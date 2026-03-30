@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-record_format--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s3, sections.s5",
+      "description": "Both s3 and s5 contain only \"なし\" (2 characters), well below the 50-character threshold. These sections have no corresponding content in the source file and appear to be extraneous. The source has two h2 sections (基本構造, 使用例) plus an introductory block — there is no source content that maps to s3 or s5.",
+      "source_evidence": "Source file contains only: intro block (→ s1), 基本構造 section (→ s2), and 使用例 section (→ s4). No content exists for s3 or s5."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "The s4 section covers the usage example code, but hints are missing three API method names used prominently in the code examples: `createFormatter`, `hasNext`, and `initialize`. These are callable methods on `FormatterFactory` and `DataRecordFormatter` that a developer would search for.",
+      "source_evidence": "Source 使用例 section: `FormatterFactory.getInstance().createFormatter(formatFile)`, `while (formatter.hasNext())`, `formatter.setInputStream(in).initialize()`, `formatter.setOutputStream(out).initialize()`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s4",
+      "description": "The format definition file code example omits the section-header comments (`# ディレクティブ定義部` and `# データレコード定義部`) that appear in the source. These comments convey the two-part structure of format definition files (a directive section and a data record section), which is structural information useful for understanding how to author such files.",
+      "source_evidence": "Source code block:\n```\n#\n# ディレクティブ定義部\n#\nfile-type: ...\n\n#\n# データレコード定義部\n#\n[Default]\n```"
+    }
+  ]
+}

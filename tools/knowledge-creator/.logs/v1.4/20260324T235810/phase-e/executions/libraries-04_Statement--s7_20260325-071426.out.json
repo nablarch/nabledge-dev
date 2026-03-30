@@ -1,0 +1,54 @@
+{
+  "id": "libraries-04_Statement--s7",
+  "title": "設定ファイル例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Javaの実装例(SQL文指定の場合)",
+      "hints": [
+        "AppDbConnection",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "DbConnectionContext",
+        "prepareStatement",
+        "SQL文直接指定",
+        "SQLインジェクション対策",
+        "フレームワーク内部実装"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicStatementFactory",
+        "BasicSqlStatementExceptionFactory",
+        "BasicSqlLoader",
+        "StaticDataLoader",
+        "SqlStatementExceptionFactory",
+        "ResultSetConvertor",
+        "SqlPStatement",
+        "sqlStatementExceptionFactory",
+        "resultSetConvertor",
+        "fetchSize",
+        "queryTimeout",
+        "sqlLoader",
+        "duplicateErrorSqlState",
+        "duplicateErrorErrCode",
+        "fileEncoding",
+        "extension",
+        "StatementFactory設定",
+        "一意制約違反設定",
+        "SQLファイルロード設定",
+        "プリフェッチサイズ",
+        "クエリータイムアウト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: SQL文を直接Javaコードに記述する実装は、テーブルのスキーマ情報から動的にSQL文を組み立てる必要があるフレームワーク機能にのみ使用する。通常、アプリケーション・プログラマはSQLインジェクション対策のためSQL文を外部ファイル化するため、この実装は行わない。\n\n**クラス**: `AppDbConnection`, `SqlPStatement`, `SqlResultSet`, `SqlRow`, `DbConnectionContext`\n\n```java\n// Statementの取得\nAppDbConnection connection = DbConnectionContext.getConnection(transaction.getDbTransactionName());\nSqlPStatement statement = connection.prepareStatement(\n        \"SELECT USER_ID, NAME, TEL, AGE FROM USER_MTR WHERE USER_ID = ?\");\n\n// 条件を設定し、SQL文を実行\nstatement.setObject(1, \"00001\");\nSqlResultSet resultSet = statement.retrieve();\n\n// 検索結果を処理する\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"user_id\");\n    String name = row.getString(\"name\");\n    String tel = row.getString(\"tel\");\n    String age = row.getString(\"age\");\n}\n```",
+    "s2": "**クラス**: `nablarch.core.db.statement.BasicStatementFactory`, `nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory`, `nablarch.core.db.statement.BasicSqlLoader`\n\n```xml\n<component name=\"statementFactory\"\n           class=\"nablarch.core.db.statement.BasicStatementFactory\">\n    <property name=\"sqlStatementExceptionFactory\">\n        <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n            <property name=\"duplicateErrorSqlState\" value=\"\"/>\n            <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n        </component>\n    </property>\n    <property name=\"fetchSize\" value=\"500\"/>\n    <property name=\"queryTimeout\" value=\"600\" />\n    <property name=\"sqlLoader\">\n        <component class=\"nablarch.core.db.statement.BasicSqlLoader\">\n            <property name=\"fileEncoding\" value=\"utf-8\"/>\n            <property name=\"extension\" value=\"sql\"/>\n        </component>\n    </property>\n</component>\n```\n\n## a) StatementFactory\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| sqlStatementExceptionFactory | ○ | | `SqlStatementExceptionFactory`実装クラスを設定 |\n| resultSetConvertor | | | `ResultSetConvertor`実装クラスを設定。SELECT結果のカラムデータ変換が必要な場合に設定 |\n| fetchSize | | 10 | プリフェッチサイズ。変更によりデータベースサーバとのラウンドトリップ数を削減でき性能改善が期待できる。Statement単位で`SqlPStatement#setFetchSize`で変更可能 |\n| queryTimeout | | 0（無制限） | クエリータイムアウト秒数。Statement単位で`SqlPStatement#setQueryTimeout`で変更可能 |\n| sqlLoader | | | `StaticDataLoader`実装クラスを設定 |\n\n> **注意**: `SqlPStatement#setFetchSize`または`setQueryTimeout`で変更した値は、変更されたインスタンスでのみ有効。`AppDbConnection#prepareStatement`を呼び出した場合は設定ファイルの値が使用される。これは:ref:`statementReuse<db-dataSourceConnectionFactory-label>`の設定内容に関わらず同一の振る舞い。\n\n**sqlLoaderをBasicSqlLoader以外に差し替える場合の仕様**:\n- generic型を`Map<String, String>`とすること（例: `implements StaticDataLoader<Map<String, String>>`）\n- `StaticDataLoader#getValue`メソッドでSQL読み込み処理を行い、それ以外はnullを返すこと\n- `getValue`の返却値: KEY=SQL_ID、VALUE=SQL文の`Map<String, String>`\n\n## b) BasicSqlStatementExceptionFactory\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| duplicateErrorSqlState | どちらか一方必須 | 一意制約違反のSqlState（`SQLException#getSqlState`の返却値） |\n| duplicateErrorErrCode | どちらか一方必須 | 一意制約違反のErrCode（`SQLException#getErrorCode`の返却値） |\n\n## c) BasicSqlLoader\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| fileEncoding | JVMデフォルトエンコーディング | SQLファイルのエンコーディング |\n| extension | sql | SQLファイルの拡張子 |"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "web-application-Other--s14",
+  "title": "コード名称と値の取得方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード名称と値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "getValues",
+        "コード名称取得",
+        "コード略称取得",
+        "オプション名称取得",
+        "コード値一覧取得",
+        "パターン別コード値取得"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "正常な画面遷移においてメッセージを表示する方法",
+      "hints": [
+        "WebUtil.notifyMessages",
+        "MessageUtil.createMessage",
+        "n:errors",
+        "警告メッセージ表示",
+        "正常画面遷移でのメッセージ",
+        "MessageLevel",
+        "nablarch_warn",
+        "nablarch_info",
+        "nablarch_error"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `CodeUtil`\n\n**コードパターンテーブル例**\n\n| ID | VALUE | PATTERN1 | PATTERN2 | PATTERN3 |\n|---|---|---|---|---|\n| 0001 | 1 | 1 | 0 | 0 |\n| 0001 | 2 | 1 | 0 | 0 |\n| 0001 | 9 | 0 | 0 | 0 |\n\n**コード名称テーブル例**\n\n| ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | NAME_WITH_VALUE |\n|---|---|---|---|---|---|---|\n| 0001 | 1 | 1 | ja | 男性 | 男 | 1:男性 |\n| 0001 | 2 | 2 | ja | 女性 | 女 | 2:女性 |\n| 0001 | 9 | 3 | ja | 不明 | 不 | 9:不明 |\n| 0001 | 1 | 2 | en | Male | M | 1:Male |\n| 0001 | 2 | 1 | en | Female | F | 2:Female |\n| 0001 | 9 | 3 | en | Unknown | U | 9:Unknown |\n\nコード名称取得: `CodeUtil.getName(codeId, value)` — ThreadContextの言語に合わせた名称を返す。\n\n```java\nString name = CodeUtil.getName(\"0001\", \"1\");\n// en -> \"Male\", ja -> \"男性\"\n```\n\nコード略称取得: `CodeUtil.getShortName(codeId, value)` — ThreadContextの言語に合わせた略称を返す。\n\n```java\nString name = CodeUtil.getShortName(\"0001\", \"1\");\n// en -> \"男\", ja -> \"M\"\n```\n\nオプション名称取得: `CodeUtil.getOptionalName(codeId, value, columnName)` — コード名称テーブルの任意カラム（NAME_WITH_VALUE等）からオプション名称を取得する。\n\n```java\nString name = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n// en -> \"1:Male\", ja -> \"1:男性\"\n```\n\nコード値一覧取得: `CodeUtil.getValues(codeId)` — SORT_ORDER昇順でコード値のリストを返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\");\n// en -> {\"2\", \"1\", \"9\"}, ja -> {\"1\", \"2\", \"9\"}\n```\n\nパターン別コード値取得: `CodeUtil.getValues(codeId, patternColumn)` — パターン用カラム（PATTERN1等）に\"1\"が設定された行のコード値をSORT_ORDER昇順で返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n// en -> {\"2\", \"1\"}, ja -> {\"1\", \"2\"}\n```",
+    "s2": "精査エラーではなく業務仕様上のチェック結果として警告メッセージを次画面に表示する場合、ActionでWebUtilのnotifyMessagesメソッドを使用してメッセージを設定し、`n:errors`タグで画面表示する。\n\n**クラス**: `WebUtil`, `MessageUtil`\n\n**Actionでのメッセージ設定**:\n\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    Message message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG00022\");\n    WebUtil.notifyMessages(ctx, message);\n    return new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n}\n```\n\n**JSPでのメッセージ出力**:\n\n```jsp\n<n:errors />\n```\n\n`n:errors`タグはMessageLevelに応じたCSSクラス名を出力する。\n\n| MessageLevel | CSSクラス名 |\n|---|---|\n| INFO | nablarch_info |\n| WARN | nablarch_warn |\n| ERROR | nablarch_error |\n\n```css\nli.nablarch_warn {\n    color: #0000FF;\n}\n```"
+  }
+}

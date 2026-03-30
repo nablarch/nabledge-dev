@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — HTTPアクセスログの出力項目 section (after the output items table)",
+      "description": "The design rationale explaining why リクエストIDとユーザID are specified as individual items despite also being available as common items is omitted. Source states: 「リクエストIDとユーザIDは、Log_BasicLogFormatterが出力を提供する共通項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている。」 This helps users understand the duplication is intentional and not an error.",
+      "source_evidence": "リクエストIDとユーザIDは、 :ref:`Log_BasicLogFormatter` が出力を提供する共通項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — リクエスト処理終了時のログ出力に使用するフォーマット",
+      "description": "Section s5 claims the end format uses 「リクエスト処理開始時のプレースホルダ一覧に加えて」 additional placeholders ($statusCode$, $contentPath$), following the same structural pattern as s3 and s4. However, the source file provided does not contain the 「リクエスト処理終了時のログ出力に使用するフォーマット」 section — the source ends after the ディスパッチ先クラス決定後 section. The default format string can be derived from the endFormat config example, but the explicit claim about inheriting all begin-format placeholders has no direct basis in the provided source text.",
+      "source_evidence": "Source file ends at ディスパッチ先クラス決定後 section. The endFormat config example (httpAccessLogFormatter.endFormat=< sid = [$sessionId$] @@@@ END @@@@ url = [$url$] status_code = [$statusCode$] content_path = [$contentPath$]) shows only $sessionId$, $url$, $statusCode$, and $contentPath$, but does not explicitly state the full placeholder inheritance rule described in s5."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-HttpResponseHandler--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The knowledge file states `nablarch.fw.web.handler.HttpResponseHandler` is the \"XMLコンフィグ\" (XML config) name for the same handler as `nablarch.fw.handler.HttpResponseHandler`, implying they are two names for the same class. The source document never establishes this relationship. The header declares the class name as `nablarch.fw.handler.HttpResponseHandler`, and XML config examples use `nablarch.fw.web.handler.HttpResponseHandler`, but the source makes no statement that these are alternative names for the same class.",
+      "source_evidence": "Source header: `**クラス名:** ``nablarch.fw.handler.HttpResponseHandler``` — XML examples: `<component class=\"nablarch.fw.web.handler.HttpResponseHandler\" />` — No source text connects these two as the same class."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5",
+      "description": "`ThreadContextHandler` is referenced in the s5 section content as the mechanism for setting language in the thread context, but it is absent from s5's hints array.",
+      "source_evidence": "Source: \"言語はスレッドコンテキストから取得する。スレッドコンテキストへの言語設定については、:ref:`ThreadContextHandler` を参照。\" — Knowledge file s5 content: \"言語は :ref:`ThreadContextHandler` で設定されたスレッドコンテキストから取得\" — Not present in s5 hints."
+    }
+  ]
+}

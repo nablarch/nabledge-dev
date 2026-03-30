@@ -1,0 +1,161 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_ObjectSave--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "s2 の title がドキュメントタイトル「オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)」になっているが、ソースの該当 h2 見出しは「クラス図」であるべき。ドキュメントタイトルは s1 が対応するセクションであり、s2 には「クラス図」を使用するのが正しい。",
+      "source_evidence": "ソースファイルの `クラス図` セクション（`========` アンダーライン）が対応するが、knowledge file の s2 title はドキュメントのメインタイトルが誤って設定されている。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _db-object-store-label:
+
+----------------------------------------------------------------------------------------------------
+オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)
+----------------------------------------------------------------------------------------------------
+本章では、 :ref:`db-feature-5-label` 、 :ref:`db-feature-6-label` 、 :ref:`db-feature-7-label` の機能説明を行う。
+本機能を使用した場合、SQL文のバインド変数には「?」ではなく、名前付きの変数名を記述する必要がある。
+
+下記は、名前付き変数を使用した場合とJDBCの標準機能を使用した場合のSQL文の記述例である。
+
+.. code-block:: sql
+
+  -- JDBC標準機能の場合
+
+  INSERT INTO USER_MTR
+  VALUES (?, ?, ?, ?)
+
+  -- 本機能を使用した場合
+  INSERT INTO USER_MTR
+  VALUES (:userId, :userName, :userNameKana, :tel)
+
+  -- 部分一致検索の「%」を使用した場合
+  SELECT USER_NAME
+    FROM USER_MTR
+   WHERE USER_NAME LIKE :userName%
+
+  -- 可変条件を定義できる。
+  SELECT USER_NAME
+    FROM USER_MTR
+   WHERE $if(userName) {USER_NAME LIKE :userName%}
+
+クラス図
+========
+.. image:: ../_images/04/DbAccessSpec_ObjectStatementClassDesign.jpg
+   :scale: 60
+
+各クラスの責務
+--------------
+本章に記載のないインタフェース、クラスは、 :ref:`db-sqlstatement-label` を参照。
+
+インタフェース定義
+^^^^^^^^^^^^^^^^^^
+
+  ===================================== ====================================================================================================
+  インタフェース名                      概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  SqlParameterParserFactory             名前付きバインド変数をもつSQL文を解析するためのオブジェクト(SqlParameterParser)を
+                                        取得するンタフェース
+
+  SqlParameterParser                    名前付きバインド変数をもつSQL文を解析するインタフェース
+
+                                        実装クラスでは、SQL文を解析し下記情報を取得できるようにすること。
+
+                                        * java.sql.PreparedStatementで実行できる形式のSQL文(バインド変数を「?」に置き換えたSQL文)
+                                        * 名前付きバインド変数のList
+
+  SqlConvertor                          SQL文の変換を行うインタフェース。
+
+  AutoPropertyHandler                   オブジェクトの自動設定項目のフィールドに値を設定するインタフェース。
+
+                                        実装クラスでは、フィールドのアノテーションやフィールド名等を元に値を自動設定する。
+  ===================================== ====================================================================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_ObjectSave--s1",
+  "title": "オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "名前付きバインド変数",
+        "SQL文",
+        "$if構文",
+        "可変条件",
+        "部分一致検索",
+        "バインド変数"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)",
+      "hints": [
+        "クラス図",
+        "オブジェクトフィールド値",
+        "データベース登録",
+        "クラス設計"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "インタフェース定義",
+      "hints": [
+        "SqlParameterParserFactory",
+        "SqlParameterParser",
+        "SqlConvertor",
+        "AutoPropertyHandler",
+        "名前付きバインド変数解析",
+        "インタフェース"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQL文のバインド変数には `?` ではなく名前付き変数名（`:変数名`）を記述する必要がある。\n\n```sql\n-- 名前付き変数を使用した INSERT\nINSERT INTO USER_MTR\nVALUES (:userId, :userName, :userNameKana, :tel)\n\n-- 部分一致検索（% はそのまま記述可能）\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE USER_NAME LIKE :userName%\n\n-- 可変条件（条件が存在する場合のみ WHERE 句に追加）\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE $if(userName) {USER_NAME LIKE :userName%}\n```",
+    "s2": "![クラス図](assets/libraries-04_ObjectSave--s1/DbAccessSpec_ObjectStatementClassDesign.jpg)",
+    "s3": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.db.statement.SqlParameterParserFactory` | 名前付きバインド変数をもつSQL文を解析するための `SqlParameterParser` を取得するインタフェース |\n| `nablarch.core.db.statement.SqlParameterParser` | 名前付きバインド変数をもつSQL文を解析するインタフェース。解析結果として (1) `PreparedStatement` で実行可能な形式のSQL文（バインド変数を `?` に置き換え）、(2) 名前付きバインド変数のList を取得できる |\n| `nablarch.core.db.statement.SqlConvertor` | SQL文の変換を行うインタフェース |\n| `nablarch.core.db.statement.AutoPropertyHandler` | オブジェクトの自動設定項目のフィールドに値を設定するインタフェース。フィールドのアノテーションやフィールド名等を元に値を自動設定する |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

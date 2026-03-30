@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "障害ログの出力項目 section — requestID design guidance",
+      "description": "Source states that requestID must include enough information to identify the first-tier triage person (e.g., 業務コード), as operations staff use the requestID in the failure notification log to identify who to contact. The knowledge file only mentions the Contact feature as a fallback for when this is not possible, but omits the primary recommendation/requirement.",
+      "source_evidence": "「リクエストIDには、業務コードなど、1次切り分け担当者を特定できるだけの情報(下記ノートを参照)を含める必要がある。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints array",
+      "description": "The class name `CustomDataFailureLogFormatter` is referenced by name in the knowledge file's code examples and app-log.properties configuration (`failureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatter`), but is absent from the hints list.",
+      "source_evidence": "Source contains: `public class CustomDataFailureLogFormatter extends FailureLogFormatter` and `failureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatter`"
+    }
+  ]
+}

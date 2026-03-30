@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "s2 のセクション本文が約49文字と50文字未満の閾値以下。ソースの `db-feature-2-label` 以降へのナビゲーションリスト（4件の参照）は省略可だが、「JDBCのAPIを拡張している機能は、下記特徴を参照すること」という説明文も省略されているため内容が薄い。",
+      "source_evidence": "JDBCのAPIを拡張している機能は、下記特徴を参照すること。 * :ref:`db-feature-4-label` * :ref:`db-feature-5-label` * :ref:`db-feature-6-label` * :ref:`db-feature-7-label`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[7] (s8)",
+      "description": "s8 のコード例で使用されている PascalCase クラス名 `ParameterizedSqlPStatement` が s8 の hints に含まれていない。s7 の hints には存在するが、動的SQL構築（s8）の文脈で検索された場合にルーティングされない。",
+      "source_evidence": "ParameterizedSqlPStatement sqlPStatement = dbConnection.prepareParameterizedSqlStatement(...)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[7] (s8)",
+      "description": "s8 のコード例で使用されている PascalCase クラス名 `SqlResultSet` が hints に含まれていない。",
+      "source_evidence": "SqlResultSet resultSet = sqlPStatement.retrieve(entity);"
+    }
+  ]
+}

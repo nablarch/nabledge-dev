@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-batch-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The knowledge file states 「例えば`paramA=valueA`というカラムがあれば`-paramA=valueA`というオプションを指定したことになる」, misrepresenting the source. The source shows two separate columns named `paramA` and `paramB` with values `valueA` and `valueB` respectively. There is no single column named `paramA=valueA`; the column name (`paramA`) and its value (`valueA`) are distinct fields that together produce `-paramA=valueA` on the command line.",
+      "source_evidence": "Source table: no=1, case=xxxのケース, paramA=valueA, paramB=valueB → `-paramA=valueA -paramB=valueB`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 index hints",
+      "description": "The hints for s3 are missing `expectedMessageByClient` and `responseMessageByClient`, both of which are property names in the testShots table defined in this section.",
+      "source_evidence": "Source testShots table includes columns: expectedMessageByClient (HTTPメッセージ同期送信の期待要求電文), responseMessageByClient (HTTPメッセージ同期送信の返却応答電文)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6",
+      "description": "The concrete complete example of a fixed-length file setup (SETUP_FIXED=work/members.txt) is omitted. The source provides a full working example showing Windows-31J encoding, CRLF record separator, and four record types (ヘッダ 1件, データ 2件, トレーラ 1件, エンド 1件) with actual field types (9, X), field lengths, and data values. This is the only concrete illustration of how to write the Excel-based fixed-length file test data in practice.",
+      "source_evidence": "Source section 固定長ファイルの準備: 「具体例を示す。このファイルは以下のレコードで構成されている。ヘッダレコード１件、データレコード２件、トレーラレコード１件、エンドレコード１件。文字コードはWindows-31J、レコード区切り文字はCRLF」 followed by complete SETUP_FIXED=work/members.txt table."
+    }
+  ]
+}

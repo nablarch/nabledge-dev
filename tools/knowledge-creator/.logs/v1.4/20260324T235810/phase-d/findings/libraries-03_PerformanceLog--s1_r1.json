@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-03_PerformanceLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 出力方法 / PerformanceLogUtil.end メソッド",
+      "description": "The `end` method's optional 3rd argument (ログ出力のオプション情報) is not mentioned. The source states: 「endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。」 and the code example even includes the comment 「以下ではログ出力のオプション情報は指定していない。」 The knowledge file only describes the 2-argument form, omitting that a 3rd optional argument exists.",
+      "source_evidence": "endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。 / 以下ではログ出力のオプション情報は指定していない。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "top-level structure",
+      "description": "The source has 3 h2 sections (出力方針, 出力項目, 出力方法) plus 1 h3 subsection (出力例), but the knowledge file uses a single section s1. The S9 pre-check warning is valid. The 出力方法 section is large and contains an h3, which per V3 rules warrants a split.",
+      "source_evidence": "Source headings: パフォーマンスログの出力方針 (====), パフォーマンスログの出力項目 (====), パフォーマンスログの出力方法 (====), パフォーマンスログの出力例 (^^^^)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "Several placeholder names from the first column of the placeholder table are missing from hints: $result$, $maxMemory$, $startFreeMemory$, $startUsedMemory$, $endFreeMemory$, $endUsedMemory$.",
+      "source_evidence": "Placeholder table first column: $result$, $maxMemory$, $startFreeMemory$, $startUsedMemory$, $endFreeMemory$, $endUsedMemory$"
+    }
+  ]
+}

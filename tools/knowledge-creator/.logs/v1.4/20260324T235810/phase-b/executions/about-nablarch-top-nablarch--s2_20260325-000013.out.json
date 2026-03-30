@@ -1,0 +1,31 @@
+{
+  "id": "about-nablarch-top-nablarch--s2",
+  "title": "フォルダ構成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォルダ構成",
+      "hints": [
+        "フォルダ構成",
+        "nablarch",
+        "Nablarch Application Framework",
+        "Nablarch Testing Framework",
+        "Nablarch UI開発基盤",
+        "ワークフローライブラリ",
+        "モバイルライブラリ",
+        "アプリケーションライブラリ",
+        "Nablarch Toolbox",
+        "開発標準",
+        "release_note",
+        "app_exe_env",
+        "app_dev_env",
+        "app_dev_guide"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## フォルダ構成\n\nnablarchフォルダのトップレベル構成:\n\n- `nablarch/release_note/` — リリースノート\n- `nablarch/app_exe_env/` — アプリケーション実行環境\n- `nablarch/app_dev_env/` — アプリケーション開発環境\n- `nablarch/app_dev_guide/` — Nablarch開発標準およびガイド\n\n---\n\n### app_exe_env/ (アプリケーション実行環境)\n\n- `fw/` — Nablarch Application Framework本体\n  - `dist/` — オブジェクトコード\n  - `lib/` — コンパイル時使用ライブラリ（詳細はlib/readme.txt参照）\n  - `src/` — ソースコード\n- `fw_doc/` — Nablarch Application Frameworkの解説書およびAPIドキュメント\n  - `doc/` — 解説書\n  - `javadoc/` — Javadoc（アーキテクト向け：使用可能なAPIのみ）\n  - `javadoc_pg/` — Javadoc（アプリケーションプログラマ向け：使用可能なAPIのみ）\n\n---\n\n### app_dev_env/ (アプリケーション開発環境)\n\n- `app_dev/` — アプリケーション開発基盤\n  - 開発環境構築ガイド — 個々の開発者がPC用IDEをセットアップする手順\n  - 開発リポジトリ構築ガイド — CI・バージョン管理・IDEの開発環境構築手順（アーキテクト向け）\n  - 開発リポジトリ構築ビルドファイル — 開発リポジトリ構築に必要なAntビルドファイル\n  - 開発環境パッケージ（Eclipse、Apache Tomcat含む）\n- `ui_dev/` — Nablarch UI開発基盤\n  - `doc/` — 解説書\n  - `guide/` — JSP/HTML作成ガイド\n  - `src/` — ソースコード\n- `mobile/` — Nablarchモバイルライブラリ\n  - `doc/` — 解説書\n  - `ios/` — iOS版資材\n    - `bin/` — オブジェクトコード\n    - `src/` — ソースコード\n    - `appledoc/` — appledoc\n    - `sample/` — サンプル（doc/: 解説書、src/: ソースコード）\n- `workflow/` — Nablarchワークフローライブラリ\n  - `doc/` — 解説書\n  - `src/` — ソースコード\n  - `design_guide/` — ワークフロー設計ガイド\n  - `tool/` — 提供ツール（doc/: 解説書、src/: ソースコード）\n  - `sample_application/` — 実装ガイドとサンプルアプリケーション（doc/: 実装ガイド、src/: サンプルソース）\n- `app_lib/` — Nablarchアプリケーションライブラリ（必要なファイルをプロジェクトに取り込んで利用）\n  - `biz_sample/` — 頻繁に利用される業務機能のサンプル（doc/: 解説書、src/: ソースコード）\n  - `fw_integration_sample/` — Nablarchを拡張して特定製品に対応させる拡張モジュールサンプル\n    - `log4j/` — ログ出力機能でlog4jを使用する場合のサンプル\n    - `smime/` — メール送信機能でbouncycastleを使用してS/MIME対応電子署名付きメール送信を実現するサンプル\n    - `wmq/` — メッセージング機能でWebSphereMQを使用して分散トランザクションを実現するサンプル\n    - `db/` — 特定データベース向けにNablarch実装を拡張するサンプル\n  - `messaging_simulator_sample/` — メッセージング基盤テストシミュレータのサンプル\n  - `operation_sample/log_statistics_sample/` — 運用時に使用するログ集計機能のサンプル\n- `tfw/` — Nablarch Testing Framework\n  - `dist/auto_test/` — オブジェクトコード\n  - `dist/test_tool/` — 単体テスト用ツール\n  - `lib/` — Testing Framework実行に必要なライブラリ（詳細はlib/readme.txt参照）\n  - `src/` — ソースコード\n- `tfw_doc/` — Nablarch Testing FrameworkのAPIドキュメント\n  - `javadoc/` — Javadoc（アーキテクト向け：使用可能なAPIのみ）\n  - `javadoc_pg/` — Javadoc（アプリケーションプログラマ向け：使用可能なAPIのみ）\n- `toolbox/` — Nablarch Toolbox\n  - `doc/` — 解説書とツール（Toolboxの使用方法はこのドキュメントを参照）\n  - `src/` — ソースコード（Toolboxを改修する際に使用）\n\n---\n\n### app_dev_guide/ (Nablarch開発標準およびガイド)\n\n- `standard/` — Nablarch開発標準\n  - `dev_process_standard/` — 開発プロセス標準\n  - `design_standard/` — 設計標準（UI標準・DB設計標準・共通コンポーネント設計標準を含む）\n  - `coding_rule/` — コーディング規約（Java・Objective-C・JSP・SQL・JavaScript・シェルスクリプト開発標準を含む）\n  - `unit_test/` — 単体テスト標準\n  - `document_standard_style/` — ドキュメント規約（設計書記載ルール）\n  - `document_format/` — 設計書フォーマットとサンプル\n- `guide/` — Nablarchガイド\n  - `development_guide/` — Nablarch開発ガイド\n  - `tutorial/` — 基本的な業務アプリケーション実装方法を示したチュートリアル用サンプルアプリケーション"
+  }
+}

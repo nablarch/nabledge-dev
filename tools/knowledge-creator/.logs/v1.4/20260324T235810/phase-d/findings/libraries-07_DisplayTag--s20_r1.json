@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_DisplayTag--s20",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 確認画面の出力例（両例）",
+      "description": "Confirmation screen output examples are completely omitted for both usage examples. The source shows that on confirmation screens, codeCheckbox renders as plain text (the label text) rather than an HTML input element. For codeId:0001: checked→「許可」, unchecked→「不許可」. For codeId:0002: checked→「Y:YES(イエス)」, unchecked→「N:NO(ノー)」. This is decision-necessary information for developers implementing confirmation screens — without it, an AI agent cannot explain how the tag behaves in confirmation mode.",
+      "source_evidence": "Source contains two `.. code-block:: html` blocks labelled as confirmation screen output for codeId:0001 (showing '許可' / '不許可') and two more for codeId:0002 (showing 'Y:YES(イエス)' / 'N:NO(ノー)'), each with inline comments explaining which request parameter value is set."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — CODE_PATTERN / CODE_NAME テーブル",
+      "description": "The example data tables (CODE_PATTERN and CODE_NAME) are omitted. These tables show the database structure used in the examples, including that OPTION01 is the column name referenced by optionColumnName=\"OPTION01\", and that CODE_PATTERN for 0001 has 3 rows while the example discusses 2-value behavior. Without this context, an AI agent may struggle to fully explain why certain attribute values (e.g., offCodeValue auto-detection requiring exactly 2 matching values) behave as described.",
+      "source_evidence": "Source contains a full CODE_PATTERN table (ID/VALUE columns) and CODE_NAME table (ID/VALUE/SORT_ORDER/LANG/NAME/SHORT_NAME/OPTION01 columns) with sample data for codeId 0001 and 0002."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_IdGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (概要)",
+      "description": "The source's 特徴 section explicitly states that the ID generation method can be specified per 採番単位 (ID category, e.g., 取引ID vs 売上明細ID), enabling different strategies for IDs that allow gaps vs. those that don't. This is called out as a key design characteristic but is not explicitly captured in s3.",
+      "source_evidence": "採番方法を採番単位(取引IDや、売上明細ID等の単位)で指定できるため、抜け番を許容するIDと許容しないIDで採番方法を切り替える事が可能となっている。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 (概要)",
+      "description": "The text preserves the RST cross-reference syntax `:ref:`repository`` verbatim in a markdown knowledge file. This will appear as literal punctuation-heavy text to an AI reader rather than a meaningful reference to the Repository feature documentation.",
+      "source_evidence": "このため、本機能に必要な初期化処理は :ref:`repository` が実行する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 hints",
+      "description": "`generateSampleId2` is a named method in the source code example but is absent from the s8 hints. Only `generateSampleId` is listed.",
+      "source_evidence": "public static String generateSampleId2() { ... }"
+    }
+  ]
+}

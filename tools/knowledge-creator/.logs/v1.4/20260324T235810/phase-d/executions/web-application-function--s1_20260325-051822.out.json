@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "The source contains 4 h3-level subsections (ファイルのダウンロード方法, BLOB型カラムのダウンロード方法, データレコードのダウンロード方法, 別ウィンドウを開きダウンロードを開始したい場合) with combined content well over 2000 characters. The knowledge file consolidates all into a single section (s1) without splitting. Per V3 rules, an h2 section ≥ 2000 chars with h3 subsections should be split into multiple knowledge sections.",
+      "source_evidence": "RST source has 4 subsections under ファイルダウンロードの実現方法, each delimited with ==== underlines."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "`popupButton` tag is used in the knowledge file content for the separate-window download scenario but is absent from the hints array, reducing discoverability when users ask about popup or separate-window download patterns.",
+      "source_evidence": "Source section 別ウィンドウを開きダウンロードを開始したい場合 uses `<n:popupButton>` tag; knowledge file mentions `popupButton`タグで別ウィンドウを開き but does not include `popupButton` in hints."
+    }
+  ]
+}

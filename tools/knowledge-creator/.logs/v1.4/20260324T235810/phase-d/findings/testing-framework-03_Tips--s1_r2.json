@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-03_Tips--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections s5–s16 (index entries only show s1–s4)",
+      "description": "The source file's table of contents lists 16 sections, but the knowledge file covers only 4 (s1–s4). At minimum 12 sections are entirely absent: how_to_numbering_sequence, using_ThreadContext, using_TestDataParser, using_junit_annotation, using_transactions, using_ohter_class, how_to_assert_property_from_excel, tips_test_data, how_to_express_empty_line, how_to_change_master_data, how_to_change_test_data_dir, how_to_convert_test_data. Even section 5 (how_to_numbering_sequence) has its heading visible in the truncated source and is absent from the knowledge file.",
+      "source_evidence": "Source TOC lists 16 ref targets; automated pre-check reports 'Section count 4 < source headings 9'. Source ends mid-page after `how_to_numbering_sequence` heading (line `--------------------------------------------------------`)."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — Java equivalence code block",
+      "description": "The knowledge file uses `second.put(\"expected\", \"鈴木一郎\")` but the source has `map.put(\"expected\", \"鈴木一郎\")`. The variable name was silently corrected from the source's `map` to `second`.",
+      "source_evidence": "Source code block: `map.put(\"expected\", \"鈴木一郎\");` — knowledge file renders it as `second.put(\"expected\", \"鈴木一郎\");`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Excelデータ例",
+      "description": "The knowledge file's Excel example omits the `LIST_MAP=expected02` data table. The source defines both `expected01` and `expected02` tables (both showing NO=00001, NAME=山田太郎), which together demonstrate the full loop-test pattern with multiple expected datasets.",
+      "source_evidence": "Source contains `// 期待するデータその２ / LIST_MAP=expected02 / NO NAME / 00001 山田太郎` as a second expected data block, absent from the knowledge file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The PascalCase class `EmployeeComponent` appears in the s1 code example but is not listed in the hints array.",
+      "source_evidence": "Source s1 code: `EmployeeComponent target = new EmployeeComponent();`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "The PascalCase class `SystemRepository` appears in the s4 code example but is not listed in the hints array.",
+      "source_evidence": "Source s4 code: `SystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject(\"systemTimeProvider\");`"
+    }
+  ]
+}

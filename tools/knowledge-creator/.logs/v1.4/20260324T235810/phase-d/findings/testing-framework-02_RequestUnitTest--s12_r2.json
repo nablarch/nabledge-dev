@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 (固有の処理を追加する場合)",
+      "description": "Section s1 represents a source h2 section with >= 2000 chars of plain text that contains 5 tilde-level (~~~) sub-headings (リクエストスコープに複数種類の検索結果が格納されている場合の例, リクエストスコープに検索結果(SqlResultSet)ではなくFormやエンティティが格納されている場合の例, リクエストスコープにSqlResultSetではなくSqlRowが格納されている場合の例, リクエストパラメータの値を検証したい場合, その他の場合), but the knowledge file does not split them into separate sections.",
+      "source_evidence": "Source has 5 sub-headings under 固有の処理を追加する場合 using `~~~~~~~~~~~~~~` markers, each with distinct code examples. V3 rule: 'if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 (テスト起動方法)",
+      "description": "Section s3 content is approximately 32 characters ('通常のJUnitテストと同じように実行する（クラス単体テストと同様）。'), which is below the 50-character threshold.",
+      "source_evidence": "Source section テスト起動方法 reads: 'クラス単体テストと同様。通常のJUnitテストと同じように実行する。' — the source is genuinely short, but the section still falls below the minimum content length."
+    }
+  ]
+}

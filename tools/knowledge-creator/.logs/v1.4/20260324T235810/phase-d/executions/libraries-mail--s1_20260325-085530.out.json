@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s5 (メール送信要求実装例)",
+      "description": "コード例の2箇所が原典と異なる。原典では `ctc.setReplaceKeyValue(\"opeion\", null);`（変数名 `ctc`、キー `\"opeion\"`）だが、知識ファイルでは `ctx.setReplaceKeyValue(\"option\", null);`（変数名 `ctx`、キー `\"option\"`）に修正されている。原典のタイポを訂正した形だが、原典に存在しないコードになっている。",
+      "source_evidence": "原典: `ctc.setReplaceKeyValue(\"opeion\", null);` with comment `// 以下のように値にnullを設定した場合、空文字列で置き換えが行われる。`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[0] (s6 = 概要)",
+      "description": "セクションIDが文書順に割り当てられていない。ドキュメントで最初に登場する「概要」セクションに `s6` が割り当てられており、後続セクション（クラス図〜メール送信要求実装例）が `s1`〜`s5` となっている。IDは文書順に `s1` から連番で割り当てるべき。",
+      "source_evidence": "原典の章順: 概要 → クラス図 → 各クラスの責務 → テーブル定義 → メール送信要求 → メール送信要求実装例。知識ファイルのindex順: s6(概要), s1(クラス図), s2(各クラスの責務), s3(テーブル定義), s4(メール送信要求), s5(メール送信要求実装例)"
+    }
+  ]
+}

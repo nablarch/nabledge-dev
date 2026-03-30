@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-02_basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "概要 section (source lines before 作業単位 subsection)",
+      "description": "The 概要 section explains that file I/O is simplified using auto-generated format definition files ('設計書から自動生成されたフォーマット定義ファイルを使用'), eliminating the need to handle physical file layouts (byte offsets, data types). This contextualizes why `getFormatFileName()` exists and how FileBatchAction is designed. The knowledge file omits this background entirely.",
+      "source_evidence": "ファイル入出力の簡易化: 設計書から自動生成されたフォーマット定義ファイルを使用することにより、物理的なファイルレイアウトを意識したプログラミングをしなくてよい。例えば、「レコード先頭xバイト目からxバイト分を半角数字として取得」するというような処理をプログラム上でする必要はなく、単に引数で与えられた入力データからそのフィールド名を指定して取得するだけでよい。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s2 and s3 hints",
+      "description": "`ExecutionContext` is a PascalCase class name that appears in multiple method signatures in both s2 and s3 (e.g., `DataReader<D> createReader(ExecutionContext context)`, `Result handle(D inputData, ExecutionContext context)`), but is absent from the hints arrays of both sections.",
+      "source_evidence": "Method signatures in DBを入力とするバッチを実装する場合 and ファイルを入力とするバッチを実装する場合 tables all include `ExecutionContext context` as a parameter."
+    }
+  ]
+}

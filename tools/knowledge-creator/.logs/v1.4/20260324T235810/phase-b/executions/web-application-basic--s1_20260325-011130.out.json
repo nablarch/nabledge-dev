@@ -1,0 +1,58 @@
+{
+  "id": "web-application-basic--s1",
+  "title": "Webアプリケーション（基本）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "taglibディレクティブの指定方法",
+      "hints": [
+        "taglibディレクティブ",
+        "prefix宣言",
+        "カスタムタグ",
+        "JSP実装",
+        "uri=http://tis.co.jp/nablarch",
+        "n:form"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "URIの指定方法",
+      "hints": [
+        "URIの指定",
+        "絶対URL",
+        "コンテキストルートからの相対パス",
+        "secure属性",
+        "プロトコル切り替え",
+        "HTTPS切り替え",
+        "n:img",
+        "n:a"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "JSPとActionクラスの間でデータを受け渡す方法",
+      "hints": [
+        "name属性",
+        "データ受け渡し",
+        "リクエストスコープ",
+        "Map型",
+        "List型",
+        "配列index",
+        "JSPとActionクラス",
+        "任意長配列",
+        "setRequestScopedVar",
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "n:text",
+        "n:hidden"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPでカスタムタグを使用する場合、taglibディレクティブを指定する。JSPの先頭でprefixを宣言し、そのprefixを用いてカスタムタグを使用する。\n\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n\n<n:form>\n  <%-- フォーム内の処理 --%>\n</n:form>\n```",
+    "s2": "カスタムタグでURIを指定する方法は2種類ある。\n\n### 絶対URLによる指定\n\nhttpまたはhttpsから始まるパス。パスがそのままURIとして使用される。\n\n```jsp\n<n:a href=\"http://www.tis.co.jp/\">tis</n:a>\n```\n\n出力URI: `http://www.tis.co.jp`\n\n### コンテキストルートからの相対パスによる指定\n\n`/`（スラッシュ）から始まるパス。先頭にコンテキストルートのパスが付加されてURIとして使用される。\n\n```jsp\n<n:img src=\"/img/header_bar.jpg\" alt=\"header\" />\n```\n\n出力URI: `<コンテキストルートのパス>/img/header_bar.jpg`\n\n### HTTPとHTTPSの切り替え\n\nコンテキストルートからの相対パスでプロトコルを切り替える場合、カスタムタグのsecure属性を指定する。httpとhttps用のポート番号とホストを設定する必要がある。\n\n> **注意**: secure属性はhttp→httpsまたはhttps→httpのプロトコル切り替え時のみ指定する。同一プロトコル（http→http、https→https）の場合は指定しない。\n\n```jsp\n<%-- secure=\"true\"でhttp→https、secure=\"false\"でhttps→http --%>\n<n:img src=\"/img/sample.jpg\" alt=\"sample\" secure=\"true\" />\n```\n\n```\n# secure=\"true\"の場合\nhttps://localhost:443/img/sample.jpg\n\n# secure=\"false\"の場合\nhttp://localhost:8080/img/sample.jpg\n```",
+    "s3": "JSPとActionクラスの間でデータを受け渡す場合、カスタムタグのname属性に以下の形式で値を指定する。この指定方法により、データがどのスコープまたはパラメータに設定されているかを意識せずに使用できる。\n\n### Map型/フォームのプロパティを受け渡す場合\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>.<プロパティ名>\n```\n\n**Actionクラス（JSPへデータを渡す）**:\n```java\nctx.setRequestScopedVar(\"W11AC03\", userInfo.get(0));\nreturn new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n```\n\n**JSP（name属性の指定例）**:\n```jsp\n<n:text name=\"W11AC03.kanjiName\" />\n<n:submit cssClass=\"mainBtn\" type=\"button\" name=\"confirm\" value=\"確認\"\n    uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n```\n\n**Actionクラス（JSPからデータを受け取る）**:\n```java\nValidationContext<W11AC03Form> formCtx =\n    ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\nformCtx.abortIfInvalid();\nW11AC03Form form = formCtx.createObject();\n```\n\n### List型/配列の要素のプロパティを受け渡す場合\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>[index].<プロパティ名>\n```\n\n**JSP（インデックスを使用した配列要素の指定例）**:\n```jsp\n<c:forEach begin=\"0\" end=\"${W11AC03.userEmailAddressArraySize}\" var=\"index\">\n  <n:text name=\"W11AC03.userEmailAddressArray[${index}].emailAddress\" />\n</c:forEach>\n<%-- フォームのプロパティが任意長配列の場合、入力画面で配列長をサブミットする必要がある --%>\n<n:hidden name=\"W11AC03.userEmailAddressArraySize\" />\n```\n\n**Actionクラス（JSPからデータを受け取る）**:\n```java\nValidationContext<W11AC03Form> formCtx =\n    ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\nformCtx.abortIfInvalid();\nW11AC03Form form = formCtx.createObject();\n```"
+  }
+}

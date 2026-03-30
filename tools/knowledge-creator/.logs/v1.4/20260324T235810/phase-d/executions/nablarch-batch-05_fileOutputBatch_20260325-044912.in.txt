@@ -1,0 +1,348 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_batch/05_fileOutputBatch.rst`
+- Format: `rst`
+
+```
+==========================
+ ファイルを出力するバッチ
+==========================
+
+:doc:`ユーザ情報削除バッチ<01_userDeleteBatchSpec>`\
+の「削除ユーザレポート出力バッチ」を例に、ファイルを出力するバッチ処理の実装方法を説明する。
+
+.. image:: ./_image/userDeleteBatch.jpg
+
+
+初期化処理
+==========
+
+初期化処理では、 ``FileRecordWriterHolder`` の ``open`` メソッドを使用して、出力先のファイルをオープンする。
+第1引数にベースパス名称、第2引数に出力先ファイル名、第3引数には、フォーマット定義ファイルのベースパス、第4引数にデータフォーマット定義ファイル名を指定している。
+ベースパス名称はリポジトリ設定ファイルに設定した、書き込むデータファイルのベースパス論理名を指定を指定している。
+フォーマット定義ファイルのベースパスはリポジトリ設定ファイルに設定した、フォーマット定義ファイルの格納ディレクトリの論理名を指定している。
+
+また、 ヘッダーレコードの出力を行う。ヘッダレコードのように、ファイル１レコード目に必ず出力するようなレコードはinitializeメソッドでファイル出力を行う。
+
+ファイル出力処理には ``FileRecordWriterHolder`` の ``write`` メソッドを使用している。
+``FileRecordWriterHolder`` の ``write`` メソッドの第1引数にレコードタイプ、第2引数に出力する1レコード情報、第3引数に出力先ファイル名を指定している。
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * ヘッダーレコードを出力する。
+     */
+    @Override
+    protected void initialize(CommandLine command, ExecutionContext context) {
+        
+        // 【説明】 出力先のファイルをオープンする。
+        FileRecordWriterHolder.open(BASE_PATH_NAME, FILE_ID, "format", FILE_ID);
+        
+        
+        // 【説明】 ヘッダー行の出力を行う。
+        Map<String, Object> header = new HashMap<String, Object>();
+        header.put("sysDate", SystemTimeUtil.getDateString());
+        writeRecord("header", header);
+
+        dataRecordCount = 0;
+    }
+    
+    /**
+     * ファイル出力処理。
+     * 指定されたMapを1レコードとしてファイル出力を行う。
+     *
+     * @param recordType レコードタイプを表す文字列
+     * @param record 1レコードの情報を格納したMap
+     */
+    private static void writeRecord(String recordType, Map<String, ?> record) {
+    
+        // 【説明】ファイル出力処理を行う。
+        FileRecordWriterHolder.write(recordType, record, BASE_PATH_NAME, FILE_ID);
+    }
+
+
+リーダ作成
+==========
+
+削除ユーザ一覧を読み込むリーダを生成する。\
+
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * ファイル出力対象のデータを読み込む{@link DatabaseRecordReader}を生成する。
+     */
+    @Override
+    public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+        int count = countByStatementSql("GET_OUTPUT_FILE_DATA");
+        writeLog("M000000001", count);
+
+        // 【説明】 データベースからファイル出力対象のデータを読み込むリーダを作成する。
+        DatabaseRecordReader reader = new DatabaseRecordReader();
+        SqlPStatement statement = getSqlPStatement("GET_OUTPUT_FILE_DATA");
+        reader.setStatement(statement);
+        return reader;
+
+    }
+
+
+
+１件ごとの処理
+==============
+
+
+削除ユーザ1件ごとの処理を行う。\
+この処理は、削除ユーザの件数分だけ繰り返し起動される。
+
+引数で渡された、1件ごとのデータが格納されたSqlRowをそのままファイル出力している。
+``SqlRow`` のカラム名と出力ファイルのフィールド名がマッピングされる為、\
+単純に ``FileRecordWriterHolder`` の ``write`` メソッドを呼び出すだけで1行分のデータがファイル出力される。
+ここでは、上記で定義したファイル出力処理を行う ``writeRecord`` に処理を委譲している。
+
+.. code-block:: java
+
+
+   /**
+     * {@inheritDoc}
+     * <p/>
+     * 削除ユーザレポートテンポラリから取得したレコードをデータレコードに出力する。
+     */
+    @Override
+    public Result handle(SqlRow inputData, ExecutionContext context) {
+
+        // 【説明】 データレコードの出力を行う。
+        writeRecord("data", inputData);
+
+        // 【説明】 総件数のインクリメントを行う。
+        dataRecordCount++;
+
+        return new Success();
+    }
+
+
+
+
+エラー処理
+==========
+
+特別な処理は必要ないため、実装しない。
+
+終了処理
+========
+
+トレーラレコードとエンドレコードをファイルに出力する。\
+
+.. note::
+ ``FileRecordWriterHolder`` を使用して書き込みを行った出力ファイルはフレームワークによって自動的に開放（クローズ）されるため、アプリケーション側で開放処理を実装する必要はない。
+
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * トレーラレコードと、エンドレコードを出力する。
+     */
+    @Override
+    protected void terminate(Result result, ExecutionContext context) {
+    
+        if (result.isSuccess()) {
+            // 【説明】 トレーラレコードの出力を行う。
+            writeTrailerRecord();
+            // 【説明】 エンドレコードの出力を行う。
+            writeEndRecord();
+        }
+    }
+
+    /** トレーラレコードを出力する。 */
+    private void writeTrailerRecord() {
+        Map<String, Object> trailer = new HashMap<String, Object>();
+        trailer.put("totalCount", dataRecordCount);
+        writeRecord("trailer", trailer);
+    }
+
+    /** エンドレコードを出力する。 */
+    private void writeEndRecord() {
+        writeRecord("end", new HashMap<String, Object>(0));
+    }
+
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-05_fileOutputBatch`
+
+```json
+{
+  "id": "nablarch-batch-05_fileOutputBatch",
+  "title": "ファイルを出力するバッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "初期化処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "ファイルオープン",
+        "ヘッダーレコード出力",
+        "initialize",
+        "ファイル出力バッチ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リーダ作成",
+      "hints": [
+        "DatabaseRecordReader",
+        "SqlPStatement",
+        "createReader",
+        "getSqlPStatement",
+        "データベース読み込み"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "１件ごとの処理",
+      "hints": [
+        "SqlRow",
+        "FileRecordWriterHolder",
+        "handle",
+        "データレコード出力",
+        "カラム名マッピング"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "エラー処理",
+      "hints": [
+        "エラー処理",
+        "実装不要",
+        "ファイル出力バッチ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "終了処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "terminate",
+        "トレーラレコード",
+        "エンドレコード",
+        "ファイル自動クローズ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 初期化処理\n\n`initialize` メソッドでファイルオープンとヘッダーレコード出力を行う。\n\n**ファイルオープン**: `FileRecordWriterHolder.open(ベースパス名称, 出力ファイル名, フォーマット定義ベースパス, フォーマット定義ファイル名)`\n- 第1引数: ベースパス名称（リポジトリ設定ファイルに設定したベースパス論理名）\n- 第2引数: 出力先ファイル名\n- 第3引数: フォーマット定義ファイルのベースパス（格納ディレクトリ論理名）\n- 第4引数: データフォーマット定義ファイル名\n\nヘッダーレコードのようにファイル先頭に必ず出力するレコードは `initialize` メソッド内で出力する。\n\n**ファイル出力**: `FileRecordWriterHolder.write(レコードタイプ, 1レコード情報, ベースパス名称, ファイルID)`\n\n```java\n@Override\nprotected void initialize(CommandLine command, ExecutionContext context) {\n    FileRecordWriterHolder.open(BASE_PATH_NAME, FILE_ID, \"format\", FILE_ID);\n\n    Map<String, Object> header = new HashMap<String, Object>();\n    header.put(\"sysDate\", SystemTimeUtil.getDateString());\n    writeRecord(\"header\", header);\n\n    dataRecordCount = 0;\n}\n\nprivate static void writeRecord(String recordType, Map<String, ?> record) {\n    FileRecordWriterHolder.write(recordType, record, BASE_PATH_NAME, FILE_ID);\n}\n```",
+    "s2": "## リーダ作成\n\n`createReader` メソッドで `DatabaseRecordReader` を生成し、`getSqlPStatement` でSQLステートメントを設定してデータベースからデータを読み込む。\n\n```java\n@Override\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    int count = countByStatementSql(\"GET_OUTPUT_FILE_DATA\");\n    writeLog(\"M000000001\", count);\n\n    DatabaseRecordReader reader = new DatabaseRecordReader();\n    SqlPStatement statement = getSqlPStatement(\"GET_OUTPUT_FILE_DATA\");\n    reader.setStatement(statement);\n    return reader;\n}\n```",
+    "s3": "## １件ごとの処理\n\n`SqlRow` のカラム名と出力ファイルのフィールド名が自動マッピングされるため、`FileRecordWriterHolder.write` を呼び出すだけで1行分のデータを出力できる。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext context) {\n    writeRecord(\"data\", inputData);\n    dataRecordCount++;\n    return new Success();\n}\n```",
+    "s4": "## エラー処理\n\n特別な処理は不要のため実装しない。",
+    "s5": "## 終了処理\n\n`terminate` メソッドでトレーラレコードとエンドレコードをファイルに出力する。\n\n> **注意**: `FileRecordWriterHolder` で書き込んだ出力ファイルはフレームワークが自動的にクローズするため、アプリケーション側でのクローズ処理は不要。\n\n```java\n@Override\nprotected void terminate(Result result, ExecutionContext context) {\n    if (result.isSuccess()) {\n        writeTrailerRecord();\n        writeEndRecord();\n    }\n}\n\nprivate void writeTrailerRecord() {\n    Map<String, Object> trailer = new HashMap<String, Object>();\n    trailer.put(\"totalCount\", dataRecordCount);\n    writeRecord(\"trailer\", trailer);\n}\n\nprivate void writeEndRecord() {\n    writeRecord(\"end\", new HashMap<String, Object>(0));\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

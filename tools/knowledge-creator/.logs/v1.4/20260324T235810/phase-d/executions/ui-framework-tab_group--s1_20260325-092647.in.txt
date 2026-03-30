@@ -1,0 +1,296 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/ui_dev/doc/reference_jsp_widgets/tab_group.rst`
+- Format: `rst`
+
+```
+====================
+タブウィジェット
+====================
+:doc:`tab_group` は **UI標準 UI部品 タブ** の内容に準拠したタブ表示用UI部品である。
+
+本部品には以下のバリエーションがあり、必要に応じて使い分けること。
+
+  - クライアントサイドでのタブ切り替えタイプ `<tab:content>`
+  - サーバにリクエストを送信するタイプ `<tab:link>`
+
+コードサンプル
+==================
+**設計成果物(ローカル動作)**
+
+.. code-block:: jsp
+
+  <tab:group name="tab">
+
+    <%-- クライアントサイドで切り替えを行うタブ --%>
+    <tab:content
+      title="ユーザ基本情報"
+      selected="true"
+      value="tab_baseinfo">
+
+      <field:text title="ログインID"
+                  domain="ログインID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="formdata.loginId"
+                  sample="test01">
+      </field:text>
+
+    </tab:content>
+
+    <%-- サーバサイドにリクエストを送信するタブ --%>
+    <tab:link
+        title="パスワード変更"
+        uri=""
+        dummyUri="RW99ZZ6104.jsp">
+    </tab:link>
+  </tab:group>
+
+**実装成果物(サーバ動作)**
+
+.. code-block:: jsp
+
+  <tab:group name="tab">
+
+    <%-- クライアントサイドで切り替えを行うタブ --%>
+    <tab:content
+      title="ユーザ基本情報"
+      selected="true"
+      value="tab_baseinfo">
+
+      <field:text title="ログインID"
+                  domain="ログインID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="formdata.loginId"
+                  sample="test01">
+      </field:text>
+
+    </tab:content>
+
+    <%-- サーバサイドにリクエストを送信するタブ --%>
+    <tab:link
+        title="パスワード変更"
+        uri="/action/ss99ZZ/W99ZZ61Action/RW99ZZ6104">
+    </tab:link>
+  </tab:group>
+
+仕様
+=============================================
+**ローカル動作時の挙動**
+
+サーバサイドにリクエストを送信するタイプのタブの場合、タブクリック時にはdummyUrlで指定されたJSPファイルに遷移する。
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+======================== ============================== ============== ========== ========= ================================
+名称                     内容                           タイプ         サーバ     ローカル  備考
+======================== ============================== ============== ========== ========= ================================
+**<tab:group>**
+----------------------------------------------------------------------------------------------------------------------------
+name                     タブグループ名を指定する       文字列         ◎          ×         ページ内で一意となる値を指定する
+
+**<tab:content>**
+----------------------------------------------------------------------------------------------------------------------------
+title                    タブに表示する見出し           文字列         ◎          ◎
+value                    タブの識別名                   文字列         ◎          ×         tabグループ内で一意となる値を指定する
+selected                 タブの初期選択状態             真偽値         ○          ○         tabグループ内で初期選択状態とする
+                                                                                            contentに'true'を設定する
+
+cssClass                 HTMLのclass属性値              文字列         ○          ○        
+
+**<tab:link>**
+----------------------------------------------------------------------------------------------------------------------------
+id                       htmlのid属性                   文字列         ○          ○       
+
+title                    タブに表示する見出し           文字列         ◎          ◎
+
+uri                      遷移先のuri                    文字列         ◎          ×
+
+cssClass                 HTMLのclass属性値              文字列         ○          ○        
+
+allowDoubleSubmission    二重サブミットを許容するか否か 真偽値         ○          ×         デフォルトは 'true(許容する)'
+
+dummyUri                 ローカル動作時の遷移先         文字列         ×          ○
+
+
+======================== ============================== ============== ========== ========= ================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/tab/\*.tag                :doc:`tab_group`
+
+/js/jsp/taglib/nablarch.js                     タブウィジェットが使用する以下タグの
+                                               のエミュレーション機能を実装するタグライブラリスタブJS
+
+                                               * n:submitLink
+
+/css/style/base.less                           | 基本HTMLの要素のスタイル定義。
+                                                 タブに関する定義もここに含まれる。 
+  
+============================================== ==================================================
+
+```
+
+## Knowledge File
+
+- ID: `ui-framework-tab_group--s1`
+
+```json
+{
+  "id": "ui-framework-tab_group--s1",
+  "title": "タブウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "<tab:group>",
+      "hints": [
+        "tab:group",
+        "タブウィジェット",
+        "タブグループ",
+        "name属性",
+        "タブ切り替え",
+        "tab:content",
+        "tab:link"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "<tab:content>",
+      "hints": [
+        "tab:content",
+        "title",
+        "value",
+        "selected",
+        "cssClass",
+        "クライアントサイドタブ切り替え",
+        "タブ初期選択"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "<tab:link>",
+      "hints": [
+        "tab:link",
+        "allowDoubleSubmission",
+        "dummyUri",
+        "uri",
+        "サーバリクエストタブ",
+        "ローカル動作",
+        "二重サブミット"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`tab_group` はUI標準 UI部品 タブの内容に準拠したタブ表示用UI部品。2種類のバリエーション:\n- `<tab:content>`: クライアントサイドでのタブ切り替えタイプ\n- `<tab:link>`: サーバにリクエストを送信するタイプ\n\n**`<tab:group>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| name | 文字列 | ◎ | × | タブグループ名。ページ内で一意となる値を指定する |\n\n**コードサンプル（サーバ動作）**\n\n```jsp\n<tab:group name=\"tab\">\n  <tab:content title=\"ユーザ基本情報\" selected=\"true\" value=\"tab_baseinfo\">\n    <field:text title=\"ログインID\" domain=\"ログインID\" required=\"true\" maxlength=\"20\"\n                hint=\"半角英数記号20文字以内\" name=\"formdata.loginId\" sample=\"test01\">\n    </field:text>\n  </tab:content>\n  <tab:link title=\"パスワード変更\" uri=\"/action/ss99ZZ/W99ZZ61Action/RW99ZZ6104\">\n  </tab:link>\n</tab:group>\n```\n\n**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/tab/*.tag | :doc:`tab_group` |\n| /js/jsp/taglib/nablarch.js | タブウィジェットが使用するn:submitLinkのエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/base.less | タブに関するスタイル定義を含む基本HTMLの要素スタイル定義 |",
+    "s2": "**`<tab:content>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| title | 文字列 | ◎ | ◎ | タブに表示する見出し |\n| value | 文字列 | ◎ | × | タブの識別名。tabグループ内で一意となる値を指定する |\n| selected | 真偽値 | ○ | ○ | タブの初期選択状態。tabグループ内で初期選択状態とするcontentに'true'を設定する |\n| cssClass | 文字列 | ○ | ○ | HTMLのclass属性値 |",
+    "s3": "> **注意**: ローカル動作時、`<tab:link>`タブクリック時はdummyUriで指定されたJSPファイルに遷移する。\n\n**`<tab:link>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| id | 文字列 | ○ | ○ | htmlのid属性 |\n| title | 文字列 | ◎ | ◎ | タブに表示する見出し |\n| uri | 文字列 | ◎ | × | 遷移先のuri |\n| cssClass | 文字列 | ○ | ○ | HTMLのclass属性値 |\n| allowDoubleSubmission | 真偽値 | ○ | × | 二重サブミットを許容するか否か。デフォルト: true（許容する） |\n| dummyUri | 文字列 | × | ○ | ローカル動作時の遷移先 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sending_batch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The '正常起動' (launch) processing flow is absent. The source defines this flow with a key annotation on ProcessResidentHandler: '以降、常駐処理を開始する。監視間隔ごとに後続のハンドラキューの処理が繰り返し実行される。' — i.e., subsequent handler queue processing repeats at each monitoring interval. This interval-repeat behavior is not explicitly captured in s3.",
+      "source_evidence": "launch: [ [\"Main\", \"inbound\"], [\"ThreadContextHandler_main\", \"inbound\"], [\"ProcessResidentHandler\", \"inbound\", \"以降、常駐処理を開始する。監視間隔ごとに後続のハンドラキューの処理が繰り返し実行される。\"] ]"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Several PascalCase handler class names explicitly listed in the s3 handler queue table and/or flow descriptions are absent from s3 hints: StatusCodeConvertHandler, GlobalErrorHandler, ThreadContextHandler_main, RetryHandler, RequestPathJavaPackageMapping, BatchAction.",
+      "source_evidence": "HandlerQueue includes: \"StatusCodeConvertHandler\", \"GlobalErrorHandler\", \"ThreadContextHandler_main\", \"RetryHandler\", \"RequestPathJavaPackageMapping\". BatchAction appears repeatedly in flow descriptions (callback events, error handling)."
+    }
+  ]
+}

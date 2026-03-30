@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging_mom--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3",
+      "description": "Corrupted text in the messaging architectural_pattern description. The knowledge file contains '実��するNAFの実行制御基盤' where the kanji '行' was replaced with Unicode replacement characters. The correct text should be '実行するNAFの実行制御基盤'.",
+      "source_evidence": "Source says: 'NAFの実行制御基盤の1つであり、外部から送信される要求電文に対して適切な業務アプリケーションを実行する制御基盤である。'"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — 共通プロトコルヘッダー table",
+      "description": "The 'JMSメッセージングプロバイダでの実装' column is entirely omitted from the 共通プロトコルヘッダー table. This column contains concrete JMS header mappings needed for JMS implementation: MessageId→MessageID JMSヘッダー, CorrelationId→CorrelationID JMSヘッダー, Destination→送信キューのDestinationオブジェクトに紐付けられた論理名, ReplyTo→応答受信キューのDestinationオブジェクトに紐付けられた論理名, TimeToLive→Expiration JMSヘッダーに(送信処理実行時点での時刻+有効期間)を設定.",
+      "source_evidence": "Source table has 4 columns including 'JMSメッセージングプロバイダでの実装' with entries for all 5 headers specifying exact JMS header names and values."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "Multiple PascalCase handler class names that appear in the s4 section content (フレームワーク制御ヘッダー table) are missing from the hints array: RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader, MessageResendHandler, MessageReplyHandler.",
+      "source_evidence": "Source フレームワーク制御ヘッダー table lists these handlers in the '主要なハンドラ' column for each header entry."
+    }
+  ]
+}

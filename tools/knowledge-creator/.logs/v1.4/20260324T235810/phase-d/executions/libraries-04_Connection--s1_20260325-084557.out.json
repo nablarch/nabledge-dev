@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-04_Connection--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "Section s5 contains a Java code example that uses the PascalCase Nablarch classes `SqlResultSet`, `SqlPStatement`, and `SystemRepository`, but none of these appear in the hints array. Per V4 rules, PascalCase class names from section content should be included as hints.",
+      "source_evidence": "Source Java code example: `SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(transactionManager) { ... public SqlResultSet execute(AppDbConnection connection) { SqlPStatement prepared = connection.prepareStatement(query); ... } }.doTransaction();` and `SimpleDbTransactionManager transactionManager = (SimpleDbTransactionManager) SystemRepository.getObject(\"transactionManager\");`"
+    }
+  ]
+}

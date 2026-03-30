@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 要求 section (実装済み / 未実装)",
+      "description": "The entire 要求 section is absent from the knowledge file. This section contains two decision-critical lists: (1) 実装済み — 13 supported capabilities including バイナリ(LOBやBYTE型)の検索・更新, プリフェッチ(SQLStatement#setFetchSize), バッチ更新(SQLStatement#addBatch), 重複エラーハンドリング, 共通項目の自動設定, IN句の項目数可変SQL生成, LIKEエスケープ処理, トランザクションタイムアウトチェック, SQL外部化; (2) 未実装 — 6 explicitly unsupported features including PL/SQL実行, 1トランザクション内でのSQL実行回数チェック, テーブル更新順序チェック, テーブル更新順序違反時の振る舞い指定, 指定機能のみの実行ログ出力, DBパスワードの暗号化管理. The unimplemented list is especially critical because it tells developers what NOT to rely on.",
+      "source_evidence": "要求 > 実装済み: '* PL/SQLの実行ができる。' etc. listed under 未実装; '* バイナリ(LOBやBYTE型)型の検索、更新ができる。' etc. listed under 実装済み"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "The PascalCase class names AppDbConnection and DbConnectionContext appear in the code examples within s1 but are absent from its hints array.",
+      "source_evidence": "Code example in SQLインジェクション対策: 'AppDbConnection connection = DbConnectionContext.getConnection();'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "Section s3 content retains RST :doc: inline syntax ('- :doc:`04/04_Connection`' etc.) instead of plain text. The RST cross-reference markup is not valid Markdown and will render as literal text for an AI consumer. The references should be presented as plain file names or omitted as pure navigation.",
+      "source_evidence": "Source toctree lists '04/04_Connection', '04/04_Statement', etc. without :doc: markup; knowledge file wraps them in ':doc:`...`'"
+    }
+  ]
+}

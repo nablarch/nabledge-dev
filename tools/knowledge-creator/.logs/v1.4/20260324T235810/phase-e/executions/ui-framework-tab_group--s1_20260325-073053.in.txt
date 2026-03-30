@@ -1,0 +1,232 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-tab_group--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "The note adds \"（サーバへのリクエストは送信されない）\" as a parenthetical, but this phrase does not appear anywhere in the source file. The source only states that in local operation the browser navigates to the dummyUri; it never explicitly says server requests are not sent.",
+      "source_evidence": "Source: 「タブクリック時にはdummyUrlで指定されたJSPファイルに遷移する。」— no mention of server request suppression."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================
+タブウィジェット
+====================
+:doc:`tab_group` は **UI標準 UI部品 タブ** の内容に準拠したタブ表示用UI部品である。
+
+本部品には以下のバリエーションがあり、必要に応じて使い分けること。
+
+  - クライアントサイドでのタブ切り替えタイプ `<tab:content>`
+  - サーバにリクエストを送信するタイプ `<tab:link>`
+
+コードサンプル
+==================
+**設計成果物(ローカル動作)**
+
+.. code-block:: jsp
+
+  <tab:group name="tab">
+
+    <%-- クライアントサイドで切り替えを行うタブ --%>
+    <tab:content
+      title="ユーザ基本情報"
+      selected="true"
+      value="tab_baseinfo">
+
+      <field:text title="ログインID"
+                  domain="ログインID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="formdata.loginId"
+                  sample="test01">
+      </field:text>
+
+    </tab:content>
+
+    <%-- サーバサイドにリクエストを送信するタブ --%>
+    <tab:link
+        title="パスワード変更"
+        uri=""
+        dummyUri="RW99ZZ6104.jsp">
+    </tab:link>
+  </tab:group>
+
+**実装成果物(サーバ動作)**
+
+.. code-block:: jsp
+
+  <tab:group name="tab">
+
+    <%-- クライアントサイドで切り替えを行うタブ --%>
+    <tab:content
+      title="ユーザ基本情報"
+      selected="true"
+      value="tab_baseinfo">
+
+      <field:text title="ログインID"
+                  domain="ログインID"
+                  required="true"
+                  maxlength="20"
+                  hint="半角英数記号20文字以内"
+                  name="formdata.loginId"
+                  sample="test01">
+      </field:text>
+
+    </tab:content>
+
+    <%-- サーバサイドにリクエストを送信するタブ --%>
+    <tab:link
+        title="パスワード変更"
+        uri="/action/ss99ZZ/W99ZZ61Action/RW99ZZ6104">
+    </tab:link>
+  </tab:group>
+
+仕様
+=============================================
+**ローカル動作時の挙動**
+
+サーバサイドにリクエストを送信するタイプのタブの場合、タブクリック時にはdummyUrlで指定されたJSPファイルに遷移する。
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+======================== ============================== ============== ========== ========= ================================
+名称                     内容                           タイプ         サーバ     ローカル  備考
+======================== ============================== ============== ========== ========= ================================
+**<tab:group>**
+----------------------------------------------------------------------------------------------------------------------------
+name                     タブグループ名を指定する       文字列         ◎          ×         ページ内で一意となる値を指定する
+
+**<tab:content>**
+----------------------------------------------------------------------------------------------------------------------------
+title                    タブに表示する見出し           文字列         ◎          ◎
+value                    タブの識別名                   文字列         ◎          ×         tabグループ内で一意となる値を指定する
+selected                 タブの初期選択状態             真偽値         ○          ○         tabグループ内で初期選択状態とする
+                                                                                            contentに'true'を設定する
+
+cssClass                 HTMLのclass属性値              文字列         ○          ○        
+
+**<tab:link>**
+----------------------------------------------------------------------------------------------------------------------------
+id                       htmlのid属性                   文字列         ○          ○       
+
+title                    タブに表示する見出し           文字列         ◎          ◎
+
+uri                      遷移先のuri                    文字列         ◎          ×
+
+cssClass                 HTMLのclass属性値              文字列         ○          ○        
+
+allowDoubleSubmission    二重サブミットを許容するか否か 真偽値         ○          ×         デフォルトは 'true(許容する)'
+
+dummyUri                 ローカル動作時の遷移先         文字列         ×          ○
+
+
+======================== ============================== ============== ========== ========= ================================
+
+**部品一覧**
+
+============================================== ==================================================
+パス                                           内容
+============================================== ==================================================
+/WEB-INF/tags/widget/tab/\*.tag                :doc:`tab_group`
+
+/js/jsp/taglib/nablarch.js                     タブウィジェットが使用する以下タグの
+                                               のエミュレーション機能を実装するタグライブラリスタブJS
+
+                                               * n:submitLink
+
+/css/style/base.less                           | 基本HTMLの要素のスタイル定義。
+                                                 タブに関する定義もここに含まれる。 
+  
+============================================== ==================================================
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-tab_group--s1",
+  "title": "タブウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "<tab:group>",
+      "hints": [
+        "tab:group",
+        "タブウィジェット",
+        "タブグループ",
+        "name属性",
+        "タブ切り替え",
+        "tab:content",
+        "tab:link"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "<tab:content>",
+      "hints": [
+        "tab:content",
+        "title",
+        "value",
+        "selected",
+        "cssClass",
+        "クライアントサイドタブ切り替え",
+        "タブ初期選択"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "<tab:link>",
+      "hints": [
+        "tab:link",
+        "allowDoubleSubmission",
+        "dummyUri",
+        "uri",
+        "サーバリクエストタブ",
+        "ローカル動作",
+        "二重サブミット"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`tab_group` はUI標準 UI部品 タブの内容に準拠したタブ表示用UI部品。2種類のバリエーション:\n- `<tab:content>`: クライアントサイドでのタブ切り替えタイプ\n- `<tab:link>`: サーバにリクエストを送信するタイプ\n\n**`<tab:group>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| name | 文字列 | ◎ | × | タブグループ名。ページ内で一意となる値を指定する |\n\n**コードサンプル（サーバ動作）**\n\n```jsp\n<tab:group name=\"tab\">\n  <tab:content title=\"ユーザ基本情報\" selected=\"true\" value=\"tab_baseinfo\">\n    <field:text title=\"ログインID\" domain=\"ログインID\" required=\"true\" maxlength=\"20\"\n                hint=\"半角英数記号20文字以内\" name=\"formdata.loginId\" sample=\"test01\">\n    </field:text>\n  </tab:content>\n  <tab:link title=\"パスワード変更\" uri=\"/action/ss99ZZ/W99ZZ61Action/RW99ZZ6104\">\n  </tab:link>\n</tab:group>\n```\n\n**部品一覧**\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/tab/*.tag | :doc:`tab_group` |\n| /js/jsp/taglib/nablarch.js | タブウィジェットが使用するn:submitLinkのエミュレーション機能を実装するタグライブラリスタブJS |\n| /css/style/base.less | タブに関するスタイル定義を含む基本HTMLの要素スタイル定義 |",
+    "s2": "**`<tab:content>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| title | 文字列 | ◎ | ◎ | タブに表示する見出し |\n| value | 文字列 | ◎ | × | タブの識別名。tabグループ内で一意となる値を指定する |\n| selected | 真偽値 | ○ | ○ | タブの初期選択状態。tabグループ内で初期選択状態とするcontentに'true'を設定する |\n| cssClass | 文字列 | ○ | ○ | HTMLのclass属性値 |",
+    "s3": "> **注意**: ローカル動作時、`<tab:link>`タブクリック時はdummyUriで指定されたJSPファイルに遷移する（サーバへのリクエストは送信されない）。\n\n**`<tab:link>` 属性** [◎ 必須, ○ 任意, × 無効]\n\n| 属性名 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|\n| id | 文字列 | ○ | ○ | htmlのid属性 |\n| title | 文字列 | ◎ | ◎ | タブに表示する見出し |\n| uri | 文字列 | ◎ | × | 遷移先のuri |\n| cssClass | 文字列 | ○ | ○ | HTMLのclass属性値 |\n| allowDoubleSubmission | 真偽値 | ○ | × | 二重サブミットを許容するか否か。デフォルト: true（許容する） |\n| dummyUri | 文字列 | × | ○ | ローカル動作時の遷移先 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

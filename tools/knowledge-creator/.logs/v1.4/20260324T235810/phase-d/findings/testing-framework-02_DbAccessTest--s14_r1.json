@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (s2, s3, s4 ordering)",
+      "description": "Section ordering in the knowledge file does not match the source document. In the source, 'デフォルト値' (the default values table) appears as a top-level section before 'デフォルト値の変更方法' (which contains 設定項目一覧 and コンポーネント設定ファイルの記述例). In the knowledge file, s4 (デフォルト値) is placed after s2 (設定項目一覧) and s3 (コンポーネント設定ファイルの記述例), reversing the logical order of 'what are the defaults' vs 'how to change the defaults'.",
+      "source_evidence": "Source order: (1) 関係のあるカラムのみ → (2) デフォルト値 [table] → (3) デフォルト値の変更方法 [設定項目一覧, コンポーネント設定ファイルの記述例] → (4) 注意点. Knowledge file order: s1 → s2 (設定項目一覧) → s3 (コンポーネント設定ファイル) → s4 (デフォルト値) → s5 (注意点)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file adds 'Excelに' ('関係のあるカラムのみをExcelに記述することで') but the source text for this section does not mention Excel — it simply states '関係のあるカラムのみを記載することで可読性、保守性が向上する。'",
+      "source_evidence": "Source: '関係のあるカラムのみを記載することで可読性、保守性が向上する。' — no mention of Excel in this paragraph. (Excel is mentioned later in the 注意点 section: 'Excelファイルには必ずしも全カラムを記述する必要はない')"
+    }
+  ]
+}

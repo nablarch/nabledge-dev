@@ -1,0 +1,134 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "about-nablarch-determining_stereotypes",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — Component row in responsibility table",
+      "description": "The knowledge file states \"直接依存してはならない\" (must not directly depend on), which is a stronger prohibition than the source, which uses \"直接依存することは避けること\" (should avoid directly depending on). This changes the guideline from a recommendation to an absolute prohibition, which could cause an AI to give overly strict implementation guidance.",
+      "source_evidence": "Source: \"このクラスでは、HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤に属するオブジェクトに直接依存することは避けること。\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+.. _fw-bussiness-component-label:
+
+業務コンポーネントの責務配置
+===============================================
+:ref:`implementing_action_handler` で述べるように、本フレームワークにおける業務機能は、
+業務アクションハンドラ、フォーム/エンティティ、業務共通コンポーネントと呼ばれるクラスにそれぞれ実装される。
+しかしながら、業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。
+以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。
+
+なお、本書に記載される業務アプリケーションの実装例は、ここで述べる責務配置を前提として記述されている。
+
+=================================== ========================================================================================================================== 
+名称 (クラス接尾辞)                 責務
+=================================== ==========================================================================================================================
+業務アクションハンドラ (Action)     フレームワークから直接コールバックされ、業務処理のエントリーポイントとなるモジュール。
+                                    Actionは、ユーザ一覧照会、ユーザ情報登録といった取引ごとに1つずつ作成する。
+                                    業務処理が比較的単純なものであれば、このクラスに直接実装してもよい。
+
+                                    複雑な業務処理や、複数の業務および処理形態(バッチと画面オンラインなど)から共用される
+                                    業務処理については、別途、業務共通コンポーネントを作成し、そこに実装する。
+             
+                                    .. note::
+
+                                      業務アクションハンドラは、HTTPリクエストオブジェクトや実行コンテキストなどの、
+                                      フレームワークが作成するオブジェクトに依存するため、自動テストは後述するリクエスト単体テストによって行う必要がある。
+                                      このため、複雑な内部条件をもつ業務ロジックを実装した場合、
+                                      テストデータのセットアップ作業が煩雑となり、作業効率が低下する。
+                                      このような場合は、業務処理部分を業務共通コンポーネントとして切り出した上で、
+                                      クラス単体テストを行うこと。
+
+業務共通コンポーネント (Component)  業務ロジックを実装するクラス。
+                                    このクラスでは、HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤に属するオブジェクトに
+                                    直接依存することは避けること。
+
+業務フォーム (Form)                 アプリケーションで使用するデータの保持と、外部入力値の精査を実行するモジュール。
+                                    業務処理のうち、単項目入力精査および、項目間入力精査を実装する。
+                                    ただし、データベース等へのアクセスが必要となる精査処理については、業務アクションハンドラにて実装する。
+        
+業務画面 (View)                     画面オンライン処理において、ユーザが使用するインタフェースを提供する。(通常はJSPを使用する。)
+                                    業務処理は実装せず、業務アクションハンドラから渡される処理結果を表示する。
+=================================== ========================================================================================================================== 
+
+
+各構成要素間の処理の流れは以下のようになる。(図は画面オンライン処理での例)
+
+  .. image:: _image/fw_app_flow.png
+
+  :a): View(を表示している、Webクライアント)からリクエストが送られる。
+  :b): アプリケーションフレームワークが、リクエストを受信し、Actionを呼び出す。
+  :c): Actionはバリデーションを実行し、画面入力値が格納されたオブジェクト(Form)を生成して、Componentを呼び出す。
+  :d): Componentはビジネスロジックを実行し、結果をActionに返す。
+  :e): Actionは必要に応じて、Componentの戻り値を処理(リクエストスコープへの値の格納など)し、アプリケーションフレームワークに処理を返す。
+  :f): アプリケーションフレームワークはViewを処理(JSPをHTMLに変換など)し、クライアントにレスポンスを返す。
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "about-nablarch-determining_stereotypes",
+  "title": "業務コンポーネントの責務配置",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務コンポーネントの責務配置",
+      "hints": [
+        "Action",
+        "Component",
+        "Form",
+        "View",
+        "業務アクションハンドラ",
+        "業務共通コンポーネント",
+        "業務フォーム",
+        "業務画面",
+        "責務配置",
+        "バリデーション",
+        "処理フロー",
+        "リクエスト単体テスト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "各業務クラスの責務配置を以下に示す。\n\n| 名称 (クラス接尾辞) | 責務 |\n|---|---|\n| 業務アクションハンドラ (Action) | フレームワークから直接コールバックされる業務処理のエントリーポイント。取引ごとに1つ作成する（例: ユーザ一覧照会、ユーザ情報登録）。単純な業務処理はActionに直接実装可。複雑な処理や複数業務・処理形態（バッチと画面オンラインなど）から共用される処理はComponentに分離する。 |\n| 業務共通コンポーネント (Component) | 業務ロジックを実装するクラス。HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤に属するオブジェクトに直接依存してはならない。 |\n| 業務フォーム (Form) | データ保持と外部入力値の精査を行うモジュール。単項目・項目間入力精査を実装する。DB等へのアクセスが必要な精査処理はActionで実装する。 |\n| 業務画面 (View) | 画面オンライン処理のユーザインタフェース（通常はJSP）。業務処理は実装せず、Actionから渡される処理結果を表示する。 |\n\n> **注意**: ActionはHTTPリクエストオブジェクトや実行コンテキストに依存するため、自動テストはリクエスト単体テストで行う必要がある。複雑な内部条件をもつ業務ロジックをActionに実装した場合、テストデータのセットアップが煩雑になる。このような場合は業務処理部分をComponentとして切り出し、クラス単体テストを行うこと。\n\n各構成要素間の処理フロー（画面オンライン処理の例）:\n\n1. View（Webクライアント）からリクエストが送られる\n2. アプリケーションフレームワークがリクエストを受信し、Actionを呼び出す\n3. Actionはバリデーションを実行し、画面入力値が格納されたForm（オブジェクト）を生成してComponentを呼び出す\n4. Componentはビジネスロジックを実行し、結果をActionに返す\n5. Actionは必要に応じてComponentの戻り値を処理（リクエストスコープへの値の格納など）し、フレームワークに処理を返す\n6. アプリケーションフレームワークはViewを処理（JSPをHTMLに変換など）し、クライアントにレスポンスを返す"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

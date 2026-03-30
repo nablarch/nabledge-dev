@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ResumeDataReader--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — レジューム処理概要 / 2回目の処理フロー",
+      "description": "2回目（再実行時）のフローでステップ4（バッチ業務アクションを実行する）とステップ5（レジュームポイントをリクエスト管理テーブルに保存する）が省略されており、さらに「ファイル終端まで No2〜5 の処理を繰り返す」というループの記述も欠落している。再実行中もレジュームポイントが更新され続けるという動作が伝わらない。",
+      "source_evidence": "② 2回目: 4. バッチ業務アクションを実行する。 5. レジュームデータリーダがレジュームポイントをリクエスト管理テーブルに保存する。 （ファイル終端まで No2〜5 の処理を繰り返す）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "s1のコンテンツで参照されているLoopHandlerとFileLayoutValidatorActionがhintsに含まれていない。LoopHandlerはコミット設定時の脚注で言及され、FileLayoutValidatorActionはコード例で使用されている。",
+      "source_evidence": "脚注: :doc:`../handler/LoopHandler` の設定により一定件数ごとにコミットを行なっている場合は…\nコード例: .setValidatorAction(new FileLayoutValidatorAction())"
+    }
+  ]
+}

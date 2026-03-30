@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Permission--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4 — シーケンス item 4",
+      "description": "Knowledge file says '認可判定の対象外リクエストのチェックは設定で指定されたリクエストIDを使用する' but the source says '認可判定の対象リクエストのチェックには、設定で指定されたリクエストIDを使用して行う'. The word '外' (excluded) was inserted, reversing the meaning: source says 'requests subject to authorization check' while the knowledge file says 'requests excluded from authorization check'.",
+      "source_evidence": "認可判定の対象リクエストのチェックには、設定で指定されたリクエストIDを使用して行う。設定方法は、:ref:`ignoreRequestIdsSetting` を参照のこと。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "The テーブル定義 subsection defines six tables but hints are missing table names: グループ権限, システムアカウント, 認可単位リクエスト, グループ. These are searchable terms a user may use when asking about permission table structure.",
+      "source_evidence": "テーブル定義セクション内: 「グループ」「システムアカウント」「グループシステムアカウント」「認可単位」「認可単位リクエスト」「グループ権限」「システムアカウント権限」の各テーブル。現在のhintsにはグループシステムアカウント・システムアカウント権限・認可単位は含まれているが、グループ権限・システムアカウント・認可単位リクエスト・グループが欠落。"
+    }
+  ]
+}

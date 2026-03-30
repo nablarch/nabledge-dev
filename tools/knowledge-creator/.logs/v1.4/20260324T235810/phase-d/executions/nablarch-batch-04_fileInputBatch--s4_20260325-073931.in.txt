@@ -1,0 +1,414 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/04_Explanation_batch/04_fileInputBatch.rst`
+- Format: `rst`
+
+```
+エンドレコードの精査処理
+------------------------
+
+前レコードのレコード区分は、トレーラであることを確認する。
+
+.. code-block:: java
+
+        /**
+         * エンドレコードの精査
+         * <p/>
+         * 前レコードのレコード区分は、トレーラであること。
+         *
+         * @param inputData 入力データ
+         * @param ctx 実行コンテキスト
+         * @return 結果オブジェクト
+         */
+        public Result doEnd(DataRecord inputData, ExecutionContext ctx) {
+            if (!TRAILER_RECORD.equals(preRecordKbn)) {
+                // 前レコードがトレーラでない場合
+                throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,
+                        INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());
+            }
+            preRecordKbn = END_RECORD;
+            return new Success();
+        }
+
+
+バリデータクラスの終了処理
+--------------------------
+
+全レコードの精査が終了後に、\ ``onFileEnd``\ が起動される。
+本サンプルでは、以下の処理を行っている。
+
+* 最終レコードのレコードタイプがエンドレコードであることの確認
+* 精査レコード件数のログ出力
+
+
+.. code-block:: java
+
+        /**
+         * {@inheritDoc}
+         * <p/>
+         * 最終レコードがエンドレコードであることをチェックする。
+         */
+        public void onFileEnd(ExecutionContext ctx) {
+            if (!END_RECORD.equals(preRecordKbn)) {
+                // 最終レコードがエンドレコードで無い場合
+                throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,
+                        INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());
+            }
+            // レコード数をログに出力
+            writeLog("M000000002", ctx.getLastRecordNumber());
+            writeLog("M000000003", dataRecordCount);
+        }
+
+\
+
+writeLogメソッドについては「\ :doc:`03_dbInputBatch`\ 」の\ :ref:`log_output_in_batch_action` \の項を参照。
+
+
+１件ごとの処理
+==============
+
+ファイルバリデータクラスと同様に、RecordTypeBindingハンドラにより、\
+入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\
+
+.. note::
+ ファイルバリデータクラスにてファイル形式の精査は実施済みであり、
+ 1件ごとの本処理ではファイル形式異常は考慮しなくて良い。
+
+
+ヘッダーレコードの処理
+--------------------------------
+
+ヘッダーレコードの妥当性は前処理で確認済みであるため、
+本処理においては処理は行わない。
+
+
+.. code-block:: java
+
+    /**
+     * ヘッダーレコードの処理。
+     * <p/>
+     * ヘッダーレコードの場合は、処理を行わない。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doHeader(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+データレコードの処理
+--------------------
+
+データレコード1件分の処理を行う。\
+精査処理およびテンポラリテーブルへの登録を行っている。
+
+精査処理の実施方法は画面オンライン処理と同様である。\
+違いは、精査対象となるデータの種類のみである。
+
+=============== ==================================
+実行制御基盤    精査対象データ
+=============== ==================================
+画面オンライン  HTTPリクエストパラメータ
+バッチ          DB検索結果、ファイルのレコード等
+=============== ==================================
+
+\
+
+.. code-block:: java
+
+    /**
+     * データレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doData(DataRecord inputData, ExecutionContext ctx) {
+
+        // 【説明】
+        // データレコードを表すフォームクラスを使用して入力値の精査及び
+        // フォームクラスへのマッピングを行う。
+        N11AA004DataForm form;
+        try {
+            form = N11AA004DataForm.validate(inputData, "insert");
+        } catch (ApplicationException e) {
+            throw new TransactionAbnormalEnd(
+                    103, e, "NB11AA0105", inputData.getRecordNumber());
+        }
+
+        // ユーザ情報IDを採番し、ユーザ情報テンポラリを登録する。
+        UserInfoTempEntity entity = form.getUserInfoTempEntity();
+        entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());
+
+        ParameterizedSqlPStatement statement = getParameterizedSqlStatement(
+                "INSERT_USER_INFO_TEMP");
+        statement.executeUpdateByObject(entity);
+
+        return new Success();
+    }
+
+
+トレーラレコードの処理
+----------------------
+
+特に処理はないが、トレーラレコードが読み込まれたときに\
+呼び出されるメソッドが必要であるため実装している。
+
+.. code-block:: java
+
+    /**
+     * トレーラレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doTrailer(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+エンドレコードの処理。
+----------------------
+
+特に処理はないが、エンドレコードが読み込まれたときに\
+呼び出されるメソッドが必要であるため実装している。
+
+.. code-block:: java
+
+    /**
+     * エンドレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doEnd(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+エラー発生時の処理
+==================
+
+特別な処理は必要ないため、実装しない。
+
+終了処理
+========
+
+特別な処理は必要ないため、実装しない。
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-04_fileInputBatch--s4`
+
+```json
+{
+  "id": "nablarch-batch-04_fileInputBatch--s4",
+  "title": "１件ごとの処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "エンドレコードの精査処理",
+      "hints": [
+        "doEnd",
+        "TransactionAbnormalEnd",
+        "エンドレコード精査",
+        "レコード区分チェック",
+        "TRAILER_RECORD",
+        "ファイルレイアウトエラー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデータクラスの終了処理",
+      "hints": [
+        "onFileEnd",
+        "TransactionAbnormalEnd",
+        "バリデータクラス終了処理",
+        "最終レコードチェック",
+        "レコード件数ログ出力",
+        "END_RECORD"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ヘッダーレコードの処理",
+      "hints": [
+        "doHeader",
+        "ヘッダーレコード処理",
+        "RecordTypeBindingハンドラ",
+        "前処理済みスキップ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データレコードの処理",
+      "hints": [
+        "N11AA004DataForm",
+        "TransactionAbnormalEnd",
+        "ApplicationException",
+        "IdGeneratorUtil",
+        "ParameterizedSqlPStatement",
+        "UserInfoTempEntity",
+        "データレコード処理",
+        "バリデーション",
+        "テンポラリテーブル登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "トレーラレコードの処理",
+      "hints": [
+        "doTrailer",
+        "トレーラレコード処理",
+        "RecordTypeBindingハンドラ",
+        "メソッド実装要件"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "エンドレコードの処理",
+      "hints": [
+        "doEnd",
+        "エンドレコード処理",
+        "RecordTypeBindingハンドラ",
+        "メソッド実装要件"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "エラー発生時の処理",
+      "hints": [
+        "エラー発生時の処理",
+        "実装不要"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "終了処理",
+      "hints": [
+        "終了処理",
+        "実装不要"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "エンドレコード精査の`doEnd`メソッドでは、前レコードのレコード区分が`TRAILER_RECORD`であることを確認する。トレーラでない場合は`TransactionAbnormalEnd`をスローする。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    if (!TRAILER_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    preRecordKbn = END_RECORD;\n    return new Success();\n}\n```",
+    "s2": "全レコードの精査終了後に`onFileEnd`が起動される。処理内容:\n1. 最終レコードのレコードタイプがエンドレコードであることの確認（エンドレコードでない場合は`TransactionAbnormalEnd`をスロー）\n2. 精査レコード件数のログ出力\n\n```java\npublic void onFileEnd(ExecutionContext ctx) {\n    if (!END_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());\n    }\n    writeLog(\"M000000002\", ctx.getLastRecordNumber());\n    writeLog(\"M000000003\", dataRecordCount);\n}\n```\n\nwriteLogメソッドについては:doc:`03_dbInputBatch`の:ref:`log_output_in_batch_action`を参照。",
+    "s3": "ヘッダーレコードの妥当性はファイルバリデータクラスの前処理で確認済みのため、本処理では何も行わない。\n\n> **注意**: ファイルバリデータクラスにてファイル形式の精査は実施済みのため、1件ごとの本処理ではファイル形式異常は考慮しなくて良い。\n\nRecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doHeader(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s4": "データレコード1件ごとに精査処理とテンポラリテーブルへの登録を行う。精査処理の方法は画面オンライン処理と同様で、精査対象データの種類のみ異なる。\n\n| 実行制御基盤 | 精査対象データ |\n|---|---|\n| 画面オンライン | HTTPリクエストパラメータ |\n| バッチ | DB検索結果、ファイルのレコード等 |\n\n```java\npublic Result doData(DataRecord inputData, ExecutionContext ctx) {\n    N11AA004DataForm form;\n    try {\n        form = N11AA004DataForm.validate(inputData, \"insert\");\n    } catch (ApplicationException e) {\n        throw new TransactionAbnormalEnd(\n                103, e, \"NB11AA0105\", inputData.getRecordNumber());\n    }\n    UserInfoTempEntity entity = form.getUserInfoTempEntity();\n    entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_USER_INFO_TEMP\");\n    statement.executeUpdateByObject(entity);\n    return new Success();\n}\n```",
+    "s5": "トレーラレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理はなし）。RecordTypeBindingハンドラによりレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doTrailer(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s6": "エンドレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理はなし）。RecordTypeBindingハンドラによりレコードタイプに応じてメソッドが呼び分けられる。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s7": "エラー発生時の処理は、特別な処理は必要ないため、実装しない。",
+    "s8": "終了処理は、特別な処理は必要ないため、実装しない。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "workflow-WorkflowApplicationApi--s22",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example, else if branch comment",
+      "description": "The code comment in the `else if (version == 2)` branch was changed from the source's `// バージョン1の場合の処理` to `// バージョン2の場合の処理`. While the source appears to contain a copy-paste error, the knowledge file altered the actual source content.",
+      "source_evidence": "Source: `} else if (version == 2) { // バージョン1の場合の処理 }` — Knowledge file: `} else if (version == 2) { // バージョン2の場合の処理 }`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — method parameter type",
+      "description": "The parameter type was silently corrected from `java.lang.Strng` (as written in the source) to `java.lang.String`. The source contains a typo that the knowledge file fixed without basis.",
+      "source_evidence": "Source: `:param java.lang.Strng workflowId:` — Knowledge file: `| workflowId | java.lang.String | ワークフローID |`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — code example, Map type declaration",
+      "description": "The Map generic type was silently corrected from `Map<Stirng, String>` (source typo) to `Map<String, String>`. The knowledge file introduced content not present in the source.",
+      "source_evidence": "Source: `Map<Stirng, String> parameter = new HashMap<String, String>();` — Knowledge file: `Map<String, String> parameter = new HashMap<String, String>();`"
+    }
+  ]
+}

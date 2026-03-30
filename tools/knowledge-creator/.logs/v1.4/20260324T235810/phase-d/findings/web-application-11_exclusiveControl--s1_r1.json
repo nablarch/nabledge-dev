@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-11_exclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The 作成手順 h2 section contains 3 h3 subsections (概要, 主キークラスの作成, Actionの作成) with substantial content (well over 2000 chars plain text), but all are merged into a single section s2 instead of being split into separate sections. The h3 content is represented via ## headings within the section text rather than separate section IDs.",
+      "source_evidence": "Source h3 headings under 作成手順: 概要 (line ~57), 主キークラス(ExclusiveCtrlSystemAccountContext)の作成 (line ~67), Actionの作成 (line ~112). Combined source content runs several hundred lines including multiple code blocks."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "s2 hints are missing @OnError and @OnErrors annotation names, which appear in the source code samples and are referenced in the s2 section text (\"@OnError(type = OptimisticLockException.class, ...) で排他制御エラー時の遷移先を指定する\").",
+      "source_evidence": "Source doRW11AC0302 uses @OnErrors({ @OnError(type = OptimisticLockException.class, ...), @OnError(type = ApplicationException.class, ...) }). Source doRW11AC0304 also uses @OnErrors with OptimisticLockException. Knowledge file s2 text explicitly references @OnError but the annotation name is absent from the hints array."
+    }
+  ]
+}

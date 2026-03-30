@@ -1,0 +1,340 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.rst`
+- Format: `rst`
+
+```
+注意点
+------
+データベース接続のプール機能について
+====================================
+| 本機能では、データベース接続のプール機能は提供しない。
+| 各プロジェクトでプール機能を使用したい場合には、下記のプール機能の有効化方法を参照し、プールの有効化作業を行うこと。
+
+**プール機能の有効化方法**
+
+\a) JNDI接続を使用する場合
+
+ | Webアプリケーションサーバに設定するデータベース接続のプール機能を有効にする。
+ | データベース接続の登録方法、プールの設定方法は、Webアプリケーションサーバのマニュアルを参照すること。
+
+\b) DataSource接続を使用する場合
+
+ | プール機能を有するDataSource実装クラスを使用する。
+
+ .. note::
+   例えばデータベースがOracleの場合、「oracle.jdbc.pool.OracleDataSource」や「oracle.ucp.jdbc.PoolDataSourceImpl」を使用して
+   プール用のプロパティを設定することにより、プール機能を使用することができる。
+
+ .. attention::
+   データベースベンダーによっては、プール機能を有するDataSourceが提供されていない可能性がある。詳細は各データベースベンダーのJDBCマニュアルを参照すること。
+
+.. _db-sql-injection-label:
+
+SQLインジェクション対策について
+=================================
+一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値 [#0]_ をバインド変数化することと言われている。
+ただし、この対策は各アプリケーションプログラマにルールを徹底させるものであり、対策としては不十分である。
+例えば、 :ref:`SQLインジェクションの脆弱性を含んだ実装<sql-injection-logic>` を業務ロジック内で行われた場合、問題を検出することが非常に困難である。
+
+この問題への対策として、本機能ではSQL文を外部ファイルに記述する機能を提供する。
+SQL文の外部化機能を使用した場合、業務ロジックではSQL文を参照することができないため、SQL文と入力値 [#0]_ とを文字列連結することを完全に防止することができる。
+これにより、アプリケーションプログラマが :ref:`SQLインジェクションの脆弱性を含んだ実装<sql-injection-logic>` を行うことを防ぐことができ、
+SQLインジェクション対策として最も有効な手段となる。
+
+※業務ロジックでSQL文実行時に使用する値は、SQL文ではなくSQL文を一意に識別するためのIDとなっている。
+
+* SQL文を外部ファイルに記述した場合の例
+
+  .. code-block:: java
+
+     private final String sqlResource = this.getClass().getName() + "#";
+
+     public List getUserName(String userId) {
+
+         // ステートメントを生成する際にSQL文ではなくSQLを識別するためのIDを指定する。
+         // このため、SQL文を直接編集（文字連結）することができないので、SQLインジェクション対策となる。
+         AppDbConnection connection = DbConnectionContext.getConnection();
+         connection.prepareStatementBySqlId(sqlResource + "SQL_ID");
+
+         // 以下省略
+     }
+
+詳細は、 :ref:`sql-gaibuka-label` を参照すること。
+
+.. _sql-injection-logic:
+
+* SQLインジェクションの脆弱性を含んだ実装の例
+
+  .. warning::
+
+    このような実装は、SQLインジェクションの可能性があるためすべきではない。
+
+  .. code-block:: java
+  
+     public List getUserName(String userId) {
+         // 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。
+         String sql = 
+              "SELECT "
+                + "USER_NAME"
+            + "FROM "
+                + "USER_MTR "
+            + "WHERE "
+                + "ID = " + userId;
+  
+         AppDbConnection connection = DbConnectionContext.getConnection();
+         connection.prepareStatement(sql);
+  
+         // 以下省略
+  
+     }
+  
+.. [#0] 入力値とは、ユーザ入力値や外部システムからの連携データの事である。
+
+
+----
+要求
+----
+実装済み
+========
+* データベースへの接続ができる。
+* SQL文の実行ができる。
+* SQL文の実行ログの出力ができる。
+* 各種リソース(Connection、Statement、ResultSet)の解放ができる。
+* バイナリ(LOBやBYTE型)型の検索、更新ができる。
+* プリフェッチ(SQLStatement#setFetchSize)ができる。
+* バッチ更新(SQLStatement#addBatch)ができる。
+* 重複エラー等をアプリケーションでハンドリングできる。
+* 共通項目(最終更新者、最終更新日時など)に設定する値を、自動で設定できる。
+* 条件が可変の場合のSQL文が生成できる。
+
+  * IN句の項目数が可変の場合のSQL文が生成できる。
+
+* LIKE検索時のエスケープ処理ができる。
+* SQL文を外部ファイルなどに定義でき、Javaコードとは分離できる。
+* データベースアクセス時にトランザクションタイムアウトチェックができる。
+
+
+未実装
+======
+* PL/SQLの実行ができる。
+* 1トランザクション内でのSQL文の実行回数がチェックできる。
+* テーブル更新順序がチェックできる。
+* テーブル更新順序に違反した場合の振る舞い(警告または例外)が指定できる。
+* SQL文の実行ログを指定機能(リクエストID)のみ出力する事ができる。
+* データベース接続パスワードを暗号化して管理できる。
+
+--------
+全体構造
+--------
+クラス図
+========
+本機能の全体構造図。各クラスの責務については、以降の章で解説を行う。
+
+.. image:: _images/04/DbAccessSpec_AllClassDesign.jpg
+   :scale: 40
+
+
+----------------
+各機能単位の構造
+----------------
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :glob:
+   
+   04/04_Connection
+   04/04_Statement
+   04/04_ObjectSave
+   04/04_TransactionTimeout
+   04/04_QueryCache
+
+```
+
+## Knowledge File
+
+- ID: `libraries-04_DbAccessSpec--s2`
+
+```json
+{
+  "id": "libraries-04_DbAccessSpec--s2",
+  "title": "DBアクセス仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "注意点",
+      "hints": [
+        "プール機能",
+        "データベース接続",
+        "JNDI接続",
+        "DataSource接続",
+        "oracle.jdbc.pool.OracleDataSource",
+        "oracle.ucp.jdbc.PoolDataSourceImpl",
+        "SQLインジェクション対策",
+        "SQL文外部化",
+        "prepareStatementBySqlId",
+        "PreparedStatement",
+        "バインド変数",
+        "AppDbConnection",
+        "DbConnectionContext"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "実装済み",
+        "未実装",
+        "サポート機能",
+        "非サポート機能",
+        "LOB",
+        "BYTE型",
+        "バイナリ",
+        "プリフェッチ",
+        "SQLStatement",
+        "setFetchSize",
+        "バッチ更新",
+        "addBatch",
+        "重複エラー",
+        "共通項目",
+        "IN句",
+        "LIKEエスケープ",
+        "SQL外部化",
+        "トランザクションタイムアウト",
+        "PL/SQL",
+        "DBパスワード暗号化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構造",
+      "hints": [
+        "クラス図",
+        "全体構造",
+        "全体クラス設計",
+        "DBアクセス機能"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "各機能単位の構造",
+      "hints": [
+        "04_Connection",
+        "04_Statement",
+        "04_ObjectSave",
+        "04_TransactionTimeout",
+        "04_QueryCache",
+        "機能構造",
+        "サブモジュール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## データベース接続のプール機能について\n\n本機能ではDB接続のプール機能を提供しない。使用する場合は以下の方法で有効化すること。\n\n- **JNDI接続の場合**: WebアプリケーションサーバのDB接続プール機能を有効にする。\n- **DataSource接続の場合**: プール機能を有するDataSource実装クラスを使用する。\n\n> **注意**: Oracleの場合、`oracle.jdbc.pool.OracleDataSource` または `oracle.ucp.jdbc.PoolDataSourceImpl` を使用してプール用プロパティを設定することでプール機能を利用できる。\n\n> **警告**: データベースベンダーによってはプール機能を有するDataSourceが提供されていない場合がある。各データベースベンダーのJDBCマニュアルを参照すること。\n\n## SQLインジェクション対策について\n\nPreparedStatementのバインド変数化だけでは対策として不十分（アプリケーションプログラマによる脆弱な実装を防げない）。\n\n本機能のSQL文外部化機能を使用することで、業務ロジックからSQL文への直接アクセスを遮断し、SQL文と入力値の文字列連結を完全に防止できる。これがSQLインジェクション対策として最も有効な手段。業務ロジックで使用する値はSQL文ではなくSQL IDのみ。\n\n> **警告**: 以下のような入力値を文字列連結してSQL文を構築する実装はSQLインジェクションの脆弱性があるため実装してはならない。\n\nSQLインジェクション脆弱性のある実装例（禁止）:\n```java\npublic List getUserName(String userId) {\n    // 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。\n    String sql = \n         \"SELECT \"\n           + \"USER_NAME\"\n       + \"FROM \"\n           + \"USER_MTR \"\n       + \"WHERE \"\n           + \"ID = \" + userId;\n\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatement(sql);\n    // 以下省略\n}\n```\n\nSQL文外部化使用時（安全な実装）:\n```java\nprivate final String sqlResource = this.getClass().getName() + \"#\";\n\npublic List getUserName(String userId) {\n    // ステートメントを生成する際にSQL文ではなくSQLを識別するためのIDを指定する。\n    // このため、SQL文を直接編集（文字連結）することができないので、SQLインジェクション対策となる。\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatementBySqlId(sqlResource + \"SQL_ID\");\n    // 以下省略\n}\n```",
+    "s2": "## 要求\n\n### 実装済み\n\n以下の機能は実装済み：\n\n- データベースへの接続\n- SQL文の実行\n- SQL文の実行ログの出力\n- 各種リソース（Connection、Statement、ResultSet）の解放\n- バイナリ（LOBやBYTE型）型の検索・更新\n- プリフェッチ（`SQLStatement#setFetchSize`）\n- バッチ更新（`SQLStatement#addBatch`）\n- 重複エラー等のアプリケーションによるハンドリング\n- 共通項目（最終更新者、最終更新日時など）への値の自動設定\n- 条件が可変の場合のSQL文生成（IN句の項目数が可変の場合を含む）\n- LIKE検索時のエスケープ処理\n- SQL文の外部ファイル定義（Javaコードとの分離）\n- データベースアクセス時のトランザクションタイムアウトチェック\n\n### 未実装\n\n以下の機能は**未実装**（使用不可）：\n\n- PL/SQLの実行\n- 1トランザクション内でのSQL文の実行回数チェック\n- テーブル更新順序のチェック\n- テーブル更新順序に違反した場合の振る舞い（警告または例外）の指定\n- SQL文の実行ログを指定機能（リクエストID）のみ出力\n- データベース接続パスワードの暗号化管理",
+    "s3": "## クラス図\n\n本機能の全体構造図。\n\n![DBアクセス機能 全体クラス図](assets/libraries-04_DbAccessSpec--s2/DbAccessSpec_AllClassDesign.jpg)",
+    "s4": "各機能単位の構造は以下のサブモジュールで構成される：\n\n- 04/04_Connection\n- 04/04_Statement\n- 04/04_ObjectSave\n- 04/04_TransactionTimeout\n- 04/04_QueryCache"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 5
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

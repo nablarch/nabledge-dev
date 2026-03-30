@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-08_HtmlMail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section",
+      "description": "The source explicitly states that since this is a sample implementation, users must copy the source code (both production and test) into their own project when adopting it: \"本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取り込み、使用すること。\" This is critical decision-making information—users need to know it is not a library dependency but must be copied into the project.",
+      "source_evidence": "本機能はサンプル実装のため、導入プロジェクトで使用する際には、ソースコード(プロダクション、テストコード共に）をプロジェクトに取り込み、使用すること。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s8 — code example inside addBodyContent",
+      "description": "The knowledge file adds a comment `// HTMLメールの場合` on the line before `bodyPart = new MimeBodyPart();` inside the `if (alternativeText != null)` branch. This comment does not exist in the source code.",
+      "source_evidence": "Source has no such comment; the if-branch begins directly with `bodyPart = new MimeBodyPart();` without any preceding inline comment."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 設定の記述 XML block",
+      "description": "The source XML config contains an explanatory block comment stating that while the main framework requires schema definition in config, this library can be modified directly in source code, so schema config is not done here—but component definitions ARE needed because table access is shared between Requester and Sender. This rationale for why `htmlMailTable` component must be defined is omitted from the knowledge file.",
+      "source_evidence": "<!-- Nablarchアプリケーションフレームワークのメール送信機能ではスキーマ定義を行うが、本ライブラリではソースコードを直接修正すれば良いため、設定ファイルでの定義は行わない。ただし、テーブルアクセスの機能はRequester,Senderで共通のため、コンポーネントの定義を行うこと。 -->"
+    }
+  ]
+}

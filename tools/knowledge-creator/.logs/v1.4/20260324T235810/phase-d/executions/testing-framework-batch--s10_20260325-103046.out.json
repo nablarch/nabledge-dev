@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s11 — ログの結果検証",
+      "description": "The concrete log example table is omitted. The source provides a sample `LIST_MAP=expectedLogMessages` table with two rows (INFO and FATAL) that demonstrate the actual data format, including how multiple message columns work and that some rows may leave later columns empty. This example helps AI advise users on how to write the expected log data.",
+      "source_evidence": "``LIST_MAP=expectedLogMessages``\n\n======== ============= ====================== ==============\nlogLevel   message1     message2               message3\n======== ============= ====================== ==============\n INFO      NB11AA0101  処理を開始します。     会員ID=[0001]\n FATAL     NB11AA0109  エラーが発生しました。\n======== ============= ====================== =============="
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6, s8, s10 — separator sections",
+      "description": "Three sections (s6, s8, s10) have content 'なし' (2 characters, well below 50). These correspond to decorative RST horizontal-rule separators in the source, not actual content sections. Including them as named knowledge sections adds no value and introduces empty index entries.",
+      "source_evidence": "Source uses decorative `---...---` overline/underline patterns (e.g., `----------------------\\nテストメソッドの書き方\\n----------------------`) which are RST title adornments, not independent content sections."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s11 — ログの結果検証 hints",
+      "description": "The table column name `messageN` (or `message1`, `message2`, etc.) is not included in s11's hints. The source table defines `message**N**` as the second column (カラム名) in the expected log table. Users may search for this property when configuring log assertions.",
+      "source_evidence": "+------------------------+----------------------------+\n|カラム名                |内容                        |\n|message\\ **N**\\ [#]_\\   |期待するログに含まれる文言  |"
+    }
+  ]
+}

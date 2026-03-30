@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-01_Utility--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "機能一覧テーブル（sendメソッドの機能リスト）",
+      "description": "sendメソッドが実行する機能の1つ「通信フォーマット変換後の入力値のダンプ(スキップ可能)」がknowledge fileに記載されていない。他の4機能（入力値の検証、受信メッセージの作成、通信エラー情報の作成、通信待ち時間の発生）は記載されているが、このダンプ機能だけ欠落している。",
+      "source_evidence": "機能一覧テーブルの「モック機能の実行」列に「通信フォーマット変換後の入力値のダンプ(スキップ可能)」が箇条書きで列挙されている"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints配列",
+      "description": "通信モック設定ファイルのデータ種別名である `responseMessage`、`validationData`、`dictionaryData`、`arrayData` がhintsに含まれていない。同じデータ種別名である `connectionInfo` と `errorData` はhintsに含まれており、不整合がある。",
+      "source_evidence": "ファイル内の構造セクションで「データには以下の種類がある: connectionInfo / responseMessage / validationData / errorData / dictionaryData / arrayData」と列挙されており、それぞれ独立したセクション見出し（_responseMessage, _validationData, _dictionaryData, _arrayData）として定義されている"
+    }
+  ]
+}

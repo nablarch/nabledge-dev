@@ -1,0 +1,263 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/guide/03_DevelopmentStep/04_generate_form_base.rst`
+- Format: `rst`
+
+```
+.. _process_generate_form_base:
+
+FormBaseクラスの自動生成
+============================================
+
+外部設計時に作成されている業務画面JSPから、以下のステップで作業を行い、FormBaseクラスの自動生成を行う。
+
+FormBaseクラスは、Nablarch UI開発基盤のフォーム自動生成機能を使用して、業務画面JSPから自動生成する。
+このクラスは、画面入力項目に対応したプロパティを持ち、それらの入力項目に対する精査を行う。
+
+
+.. contents::
+   :depth: 2
+   :local:
+   :backlinks: none
+
+
+業務画面JSPの修正
+--------------------------------------------
+
+業務画面JSPの修正を行うために、まず、外部設計で作成されている以下のJSPファイルを ``main/web/ss11AC`` ディレクトリに移動する。
+
+* ``main/web/W11AC0201.jsp``
+* ``main/web/W11AC0202.jsp``
+* ``main/web/W11AC0203.jsp``
+
+外部設計で作成された業務画面JSPでは、外部設計時に最低限必要な項目のみ設定されているため、
+フォームの自動生成に必要な以下の修正を行う。
+
+#. ``n:form`` タグで囲み、ウィンドウスコーププレフィックスを指定する。
+#. 入力項目・表示項目の ``name`` 属性の設定
+
+本機能では、修正対象となるのは ``W11AC0201.jsp`` のみである。
+
+**1\.\ n:formタグの追加**
+
+この画面では、formは一つしかないため、業務領域(``<jsp:attribute name="contentHtml">``)の内側\
+すべてを ``n:form`` で囲み、windowScopePrefixesに値を設定する。
+
+なお、すでにformが ``n:form`` で囲まれている場合には、windowScopePrefixesに値を設定するだけで良い。
+
+ここでは登録取引を行う取引IDから"W11AC02"というプレフィックスを使用する。
+
+.. code-block:: jsp
+
+   <n:form windowScopePrefixes="W11AC02">
+
+.. note:: ウィンドウスコープについては、以下のリンク先を参照
+
+   * `ウィンドウスコープの概念 <../../../fw/reference/architectural_pattern/concept.html#windowscope>`_
+   * カスタムタグ実装例集 - :ref:`howto_window_scope`
+
+
+**2\.\ 入力項目・出力項目のname属性を指定する。**
+
+入力項目・出力項目に表示する内容を指定するための ``name`` 属性を指定する。
+
+この画面の情報はすべてウィンドウスコープで持回るため、 ``name`` 属性は以下のルールに従って指定する。
+
+::
+
+   "ウィンドウスコーププレフィックス"."フォーム内のプロパティ名"
+
+なお、フォーム内のプロパティ名と、データベースのカラム名をキャメルケースに変換した文字列とを一致させることで、
+データベースへの登録処理の実装が容易になることが多いため、本ガイドでは、フォーム内のプロパティ名を
+データベースのカラム名をキャメルケースに変換した文字列に統一する。
+
+漢字氏名の入力エリアのタグ修正例を以下に示す。
+
+＜修正前＞
+
+.. code-block:: jsp
+
+   <field:text title="漢字氏名"
+               domain="KANJI_NAME"
+               required="true"
+               maxlength="50"
+               hint="全角50文字以内"
+               dataFrom="USERS.KANJI_NAME"
+               name=""
+               sample="名部　楽太郎">
+   </field:text>
+
+＜修正後＞
+
+.. code-block:: jsp
+
+   <%-- 【説明】field:textのname属性を修正する --%>
+   <field:text title="漢字氏名"
+               domain="KANJI_NAME"
+               required="true"
+               maxlength="50"
+               hint="全角50文字以内"
+               dataFrom="USERS.KANJI_NAME"
+               name="W11AC02.kanjiName"
+               sample="名部　楽太郎">
+   </field:text>
+
+
+業務画面JSPからFormBaseクラスを自動生成
+--------------------------------------------
+
+Nablarch UI開発基盤のForm自動生成機能を使用して、業務画面JSPからFormBaseクラスを自動生成する。
+
+まず、 ``main/web/tools/ローカル画面確認.bat`` を起動し、ブラウザに表示される画面で ``ss11AC/W11AC0201.jsp``
+を選択してユーザ情報登録画面を表示する。
+
+表示されたユーザ情報登録画面を右クリックすると、以下のようなメニューが表示される。
+
+.. image:: ./_images/local_right_click.png
+   :align: left
+
+このメニューで「フォームクラスを生成する」を選択すると、 ``W11AC02FormBase.java`` が生成・ダウンロードされるので、
+同ファイルを ``main/java/nablarch/sample/ss11AC`` にコピーする。
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-04_generate_form_base--s1`
+
+```json
+{
+  "id": "web-application-04_generate_form_base--s1",
+  "title": "FormBaseクラスの自動生成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務画面JSPの修正",
+      "hints": [
+        "業務画面JSP修正",
+        "n:formタグ",
+        "windowScopePrefixes",
+        "ウィンドウスコープ",
+        "name属性設定",
+        "field:text"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務画面JSPからFormBaseクラスを自動生成",
+      "hints": [
+        "FormBaseクラス自動生成",
+        "W11AC02FormBase",
+        "ローカル画面確認",
+        "フォームクラス生成",
+        "Nablarch UI開発基盤"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 業務画面JSPの修正\n\n外部設計で作成されたJSPファイルを `main/web/ss11AC` ディレクトリに移動する:\n- `main/web/W11AC0201.jsp`\n- `main/web/W11AC0202.jsp`\n- `main/web/W11AC0203.jsp`\n\n修正対象は `W11AC0201.jsp` のみ。以下の2点を修正する。\n\n**1. n:formタグの追加**\n\n業務領域（`<jsp:attribute name=\"contentHtml\">` の内側全体）を `n:form` で囲み、`windowScopePrefixes` に値を設定する。登録取引を行う取引IDから `W11AC02` というプレフィックスを使用する。\n\n```jsp\n<n:form windowScopePrefixes=\"W11AC02\">\n```\n\n> **注意**: すでに `n:form` で囲まれている場合は、`windowScopePrefixes` の設定のみ行う。\n\n**2. name属性の指定**\n\n`name` 属性の形式:\n```\n\"ウィンドウスコーププレフィックス\".\"フォーム内のプロパティ名\"\n```\n\nフォーム内のプロパティ名はDBカラム名をキャメルケース変換した文字列に統一する（DB登録処理の実装が容易になるため）。\n\n修正例（漢字氏名）:\n\n修正前:\n```jsp\n<field:text title=\"漢字氏名\"\n            domain=\"KANJI_NAME\"\n            required=\"true\"\n            maxlength=\"50\"\n            hint=\"全角50文字以内\"\n            dataFrom=\"USERS.KANJI_NAME\"\n            name=\"\"\n            sample=\"名部　楽太郎\">\n</field:text>\n```\n\n修正後:\n```jsp\n<field:text title=\"漢字氏名\"\n            domain=\"KANJI_NAME\"\n            required=\"true\"\n            maxlength=\"50\"\n            hint=\"全角50文字以内\"\n            dataFrom=\"USERS.KANJI_NAME\"\n            name=\"W11AC02.kanjiName\"\n            sample=\"名部　楽太郎\">\n</field:text>\n```",
+    "s2": "## 業務画面JSPからFormBaseクラスを自動生成\n\n1. `main/web/tools/ローカル画面確認.bat` を起動する\n2. ブラウザで `ss11AC/W11AC0201.jsp` を選択してユーザ情報登録画面を表示する\n3. 表示された画面を右クリックし、「フォームクラスを生成する」を選択する\n\n![右クリックメニュー](assets/web-application-04_generate_form_base--s1/local_right_click.png)\n\n4. `W11AC02FormBase.java` が生成・ダウンロードされるので、`main/java/nablarch/sample/ss11AC` にコピーする"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

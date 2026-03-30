@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-MessageReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — configuration table, formatFileDirName row",
+      "description": "The usage condition '受信メッセージにデフォルトフォーマットを設定したい場合のみ使用' is missing for the `formatFileDirName` property. In the source RST table, the 備考 cell spans both the `formatFileName` and `formatFileDirName` rows, meaning this condition applies to both properties. The knowledge file only includes this condition for `formatFileName`.",
+      "source_evidence": "Source table: formatFileName and formatFileDirName share the same 備考 cell (spanning rows) with content '任意設定 (受信メッセージにデフォルトフォーマットを設定したい場合のみ使用)'. The `+---+` separator is absent between these two rows in the last column, indicating the cell spans both rows."
+    }
+  ]
+}

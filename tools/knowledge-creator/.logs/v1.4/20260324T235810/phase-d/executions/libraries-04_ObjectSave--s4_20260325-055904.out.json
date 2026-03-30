@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor section",
+      "description": "4 literal-handling rules listed at the end of VariableInSyntaxConvertor are missing from the knowledge file.",
+      "source_evidence": "* リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない。\n* リテラル文字は、シングルクォート(\"'\")で囲われている。\n* リテラル文字のエスケープ文字は、シングルクォート(\"'\")である。\n* SQL文にコメントが存在しない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor warning",
+      "description": "The source contains an explicit `.. warning::` for VariableInSyntaxConvertor stating 'SQL文の妥当性のチェックは行わない' but the knowledge file does not include this warning for VariableInSyntaxConvertor. The warning is only applied to VariableConditionSyntaxConvertor and VariableOrderBySyntaxConvertor in the knowledge file.",
+      "source_evidence": ".. warning::\n  本クラスでは、SQL文の妥当性のチェックは行わない。\n  このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。  (under VariableInSyntaxConvertor)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — final warning block",
+      "description": "The knowledge file attributes the 'SQL文の妥当性チェックを行わない' warning to VariableConditionSyntaxConvertor, but the source does not contain this explicit warning for that class. The source only has this warning for VariableInSyntaxConvertor and VariableOrderBySyntaxConvertor.",
+      "source_evidence": "Knowledge file: '`VariableConditionSyntaxConvertor`および`VariableOrderBySyntaxConvertor`はSQL文の妥当性チェックを行わない'. Source has no '本クラスでは、SQL文の妥当性のチェックは行わない' warning under VariableConditionSyntaxConvertor."
+    }
+  ]
+}

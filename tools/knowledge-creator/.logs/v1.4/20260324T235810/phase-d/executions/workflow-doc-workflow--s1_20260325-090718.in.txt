@@ -1,0 +1,359 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/workflow/doc/index.rst`
+- Format: `rst`
+
+```
+====================================================
+ワークフローライブラリ
+====================================================
+
+------------
+概要
+------------
+
+申請フローや承認フローの進行状況、およびワークフロー内の各タスクに対する担当ユーザの割り当てや、割り当て状態の管理をするために必要な機能を提供する。
+
+ワークフローライブラリの説明をする上で必要な「ワークフロー定義」「ワークフローインスタンス」について、以下に記載する。
+
+
+.. _workflow_definition:
+
+ワークフロー定義
+============================================
+
+ワークフローの中で実行される処理の順序や分岐の条件などを定義し、実際の申請や要件毎のワークフローのひな型となる。
+
+ワークフロー定義は、以下のような `BPMN (Business Process Model and Notation) <http://www.bpmn.org/>`_ という表記法を利用して定義する。
+
+.. image:: 09/_images/concept_sample.png
+   :align: center
+   :scale: 80
+
+上記の表記で利用している各要素についての説明と、ワークフローライブラリで利用できる要素についての説明は、下記を参照。
+
+.. toctree::
+   :maxdepth: 2
+
+   09/WorkflowProcessElement
+
+
+.. _workflow_instance:
+
+ワークフローインスタンス
+============================================
+
+ワークフローを利用する個々の案件や申請と紐付けて生成され、ワークフロー定義に存在するタスクやその進行状態、
+各タスクの担当ユーザなどを管理する。
+
+タスクを終了するときに、対応するアクションなどから :ref:`workflow_complete_task` などを呼び出すことで、
+ワークフローインスタンスの :ref:`workflow_active_flow_node` が更新されて、ワークフローが進行する。
+
+ワークフローが進行した後は、 :ref:`workflow_definition` に従って進行先が判断され、次のタスク（もしくは停止イベント）まで
+進行して、再度ワークフローが進行するのを待つことになる。
+
+.. toctree::
+   :maxdepth: 2
+
+   09/WorkflowInstanceElement
+
+
+
+------------
+要求
+------------
+
+実装済み
+========================
+
+* ワークフロー定義として、以下の処理概念に相当するフローを定義し、進行状況を制御することができる。
+
+  .. toctree::
+     :maxdepth: 2
+
+     09/WorkflowProcessSample
+
+* ワークフロー内の各タスクに対して、対象のタスクが現在処理可能かどうかに関わらず、担当ユーザを割り当てることができる。
+
+* ワークフロー内の各タスクに対して、担当ユーザを特定せず、グループ内の任意のユーザが実行できることを表す意味で、
+  担当グループを設定することができる。
+
+* すでに担当ユーザ/担当グループが割り当てられているタスクに対して、別の担当ユーザ/担当グループを再度割り当てなおすことができる。
+
+* ワークフロー内の一つのタスクに対して、複数の担当ユーザ/担当グループを割り当てることができ、
+  各担当ユーザ/担当グループが順番に、もしくは平行して処理を行うように制御することができる。
+
+* ワークフロー内の一つのタスクに対して、複数の担当ユーザ/担当グループが割り当てられていて、
+  並行して処理を行う場合に、AND承認、OR承認を実現できる。
+
+
+
+未検討
+========================
+
+* 確認者不在などの場合に、現在承認待ちの承認者が承認を行うのでなく、先のステップの承認者が承認を行う
+  ことを認めるワークフロー（引上承認）を定義できる。
+
+
+
+----------------------
+対象外としている機能
+----------------------
+
+以下については、ワークフローライブラリでは機能を提供していない。必ずアプリケーションで実装する必要がある。
+
+* ワークフローインスタンス情報に関する排他制御は行われない。必ず、ワークフローに従って処理される業務データで排他制御を行うこと。
+
+また、以下については、アプリケーションに応じて要件が異なると想定されるため、
+ワークフローライブラリでは機能を提供していない。アプリケーションで適切な設計を行い、実装する必要がある。
+
+* ワークフローにおける処理履歴（承認履歴など）を取得する。
+* ワークフローに付随する情報を保持する。（個々の案件名や申請状況のステータス名など）
+* 処理対象ワークフローなどの検索を行う。
+* 担当ユーザと担当グループの関連など、ユーザや権限を管理する機能
+
+
+
+------------
+制約事項
+------------
+
+* タスクには、担当ユーザと担当グループのいずれかしか割り当てることはできず、一つのタスクにユーザとグループの両方が
+  割り当てられている状態にすることはできない。
+  担当ユーザが割り当てられているタスクをグループに割り当てなおす、もしくはその逆は可能である。
+
+* 並行処理となるような分岐や合流をおこなうワークフローを定義することはできない。
+
+* ワークフローの定義情報を、動的に変更することはできない。事前に登録されているワークフロー定義データを利用する。
+
+
+
+
+------------
+全体構造
+------------
+
+ワークフローライブラリの全体構造については、以下を参照。
+
+.. toctree::
+   :maxdepth: 2
+
+   09/WorkflowArchitecture
+
+.. note::
+
+   テーブル定義に対応する Object Browser ER のEDMファイルを、以下からダウンロードすることができる。
+
+   :download:`workflow_model.edm <_static/workflow_model.edm>`
+
+
+
+------------
+提供するAPI
+------------
+
+ワークフローライブラリで提供するAPIおよびその実装例については、以下を参照。
+
+.. toctree::
+   :maxdepth: 2
+
+   09/WorkflowApplicationApi
+
+```
+
+## Knowledge File
+
+- ID: `workflow-doc-workflow--s1`
+
+```json
+{
+  "id": "workflow-doc-workflow--s1",
+  "title": "ワークフローライブラリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ワークフロー定義",
+        "ワークフローインスタンス",
+        "BPMN",
+        "workflow_complete_task",
+        "workflow_active_flow_node",
+        "申請フロー",
+        "承認フロー",
+        "タスク管理",
+        "WorkflowProcessElement",
+        "WorkflowInstanceElement"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "AND承認",
+        "OR承認",
+        "担当ユーザ割り当て",
+        "担当グループ設定",
+        "並行処理",
+        "引上承認",
+        "WorkflowProcessSample",
+        "複数担当ユーザ",
+        "再割り当て"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "対象外としている機能",
+      "hints": [
+        "排他制御",
+        "処理履歴",
+        "承認履歴",
+        "ユーザ権限管理",
+        "ワークフロー検索",
+        "対象外機能",
+        "アプリケーション実装"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "制約事項",
+      "hints": [
+        "担当ユーザ",
+        "担当グループ",
+        "並行処理制約",
+        "ワークフロー定義変更不可",
+        "タスク割り当て制約",
+        "分岐合流制約"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "全体構造",
+      "hints": [
+        "WorkflowArchitecture",
+        "テーブル定義",
+        "workflow_model.edm",
+        "Object Browser ER",
+        "全体構造"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "提供するAPI",
+      "hints": [
+        "WorkflowApplicationApi",
+        "API実装例",
+        "ワークフローAPI"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "申請フロー・承認フローの進行状況管理、各タスクへの担当ユーザ割り当て・割り当て状態管理の機能を提供する。\n\n## ワークフロー定義\n\nワークフロー内で実行される処理の順序や分岐条件などを定義し、申請・案件ごとのワークフローのひな型となる。[BPMN (Business Process Model and Notation)](http://www.bpmn.org/) という表記法を利用して定義する。\n\n![BPMNサンプル概念図](assets/workflow-doc-workflow--s1/concept_sample.png)\n\n## ワークフローインスタンス\n\nワークフローを利用する個々の案件や申請と紐付けて生成され、ワークフロー定義に存在するタスク・進行状態・担当ユーザを管理する。\n\n- タスク終了時に :ref:`workflow_complete_task` などを呼び出すことで、:ref:`workflow_active_flow_node` が更新されワークフローが進行する。\n- ワークフロー進行後は :ref:`workflow_definition` に従って進行先が判断され、次のタスク（または停止イベント）まで進行して再度待機する。",
+    "s2": "## 実装済み\n\n- ワークフロー定義として処理概念に相当するフローを定義し、進行状況を制御できる。\n- タスクが現在処理可能かどうかに関わらず、担当ユーザを割り当てられる。\n- 担当グループを設定できる（グループ内の任意のユーザが実行可能であることを表す）。\n- すでに担当ユーザ/グループが割り当てられているタスクを、別の担当ユーザ/グループに再割り当てできる。\n- 一つのタスクに複数の担当ユーザ/グループを割り当て、順番または並行して処理できる。\n- 並行処理の場合、AND承認・OR承認を実現できる。\n\n## 未検討\n\n- 引上承認（確認者不在などの場合に、先のステップの承認者が承認を行う機能）は未検討。",
+    "s3": "以下はワークフローライブラリでは提供しない。アプリケーションで実装が必要。\n\n> **重要**: ワークフローインスタンス情報に関する排他制御は行われない。ワークフローに従って処理される業務データで排他制御を行うこと。\n\n以下はアプリケーションに応じて要件が異なるため、ワークフローライブラリでは提供しない。アプリケーションで適切な設計・実装が必要。\n\n- 処理履歴（承認履歴など）の取得\n- ワークフローに付随する情報の保持（案件名、申請状況のステータス名など）\n- 処理対象ワークフローなどの検索\n- 担当ユーザと担当グループの関連など、ユーザや権限管理機能",
+    "s4": "- タスクには担当ユーザと担当グループのいずれかしか割り当てられない。一つのタスクにユーザとグループの両方を同時に割り当てることはできない。ただし、担当ユーザが割り当てられているタスクをグループに再割り当て（またはその逆）は可能。\n- 並行処理となるような分岐や合流を行うワークフローは定義できない。\n- ワークフローの定義情報を動的に変更することはできない。事前に登録されているワークフロー定義データを利用する。",
+    "s5": "ワークフローライブラリの全体構造は :doc:`09/WorkflowArchitecture` を参照。\n\nテーブル定義に対応するObject Browser ERのEDMファイル: :download:`workflow_model.edm <_static/workflow_model.edm>`",
+    "s6": "ワークフローライブラリが提供するAPIおよびその実装例は :doc:`09/WorkflowApplicationApi` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 12
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,55 @@
+{
+  "file_id": "libraries-record_format--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 1: 取り扱い対象のデータについて",
+      "description": "Entire section is absent. Contains: JSON/XML has no data record concept; input/output treated as 1 record; multiple records are excluded from processing; Map object format equals the validation module's Map format; Map objects and Form format can be mutually converted to handle hierarchical/repeated data.",
+      "source_evidence": "JSONおよびXMLデータ形式ではデータレコードの概念が存在しない。そのため、入出力はデータ全体を１レコードとして取り扱い、複数レコードが設定されている場合は処理対象外とする。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 2: 階層構造について",
+      "description": "Entire section is absent. Contains: hierarchical structure represented using \".\" separated keys; Map objects are flat (1-level) internally; field names matching a record type definition are recognized as hierarchical objects and parsed/built recursively; no depth limit; full code examples (format definition file, JSON data, XML data, Map object table).",
+      "source_evidence": "本機能で取り扱うMapオブジェクトは\".\"で区切られたキー名を使用して階層構造を表現し、Mapオブジェクトとしては１階層のものとする。フィールド名に対応するレコードタイプ定義が存在する場合は、そのフィールドを階層オブジェクトとして認識し、子要素を再帰的に解析・構築する。階層の深さについて制限は無い。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 3: 繰り返しデータについて",
+      "description": "Entire section is absent. Contains: repeated strings stored as String arrays; repeated objects stored with array index notation ([0],[1]) appended to Map key names; full code examples (format definition with [1..3] and [0..2] notation, JSON data, XML data, Map object table with indexed keys like data[0].name).",
+      "source_evidence": "文字列: String配列としてデータを格納する。オブジェクト: Mapのキー名に配列添字([0],[1]など)を付与し階層構造格納時と同様に格納する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 4: データ型について",
+      "description": "Entire section is absent. Contains: JSON data types (string, number, boolean) are all treated as strings internally; output is converted to appropriate type per format definition file at output time; XML has no data type specification (except with schema), so all treated as strings.",
+      "source_evidence": "JSON形式ではJSONの仕様として文字列型や数値型、真偽値などのデータ型が規定されている。本機能では内部的にはすべて文字列として取り扱い、出力時にフォーマット定義ファイルに従い適切な型でデータ出力を行う。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 5: XMLでDTDを使う",
+      "description": "Entire section is absent. Contains: security warning that DTD cannot be used by default when reading XML (exception thrown); this is an XXE prevention measure; XmlDataParser's allowDTD property can be set to true to allow DTD for trusted XML; component configuration XML example; JDK bug note (NullPointerException in JDK6 < 6u65, JDK7 < 7u6 b15) with workaround (upgrade JDK version).",
+      "source_evidence": "本機能でXMLを入力する場合、DTDをデフォルトで使用することはできない。DTDを使用したXMLを読み込もうとした場合、例外が発生する。これはXML外部実体参照(XXE)を防止するための措置である。nablarch.core.dataformat.XmlDataParserのallowDTDプロパティを使用してDTDの使用を許可することができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 6: 名前空間について(XMLデータ形式のみ)",
+      "description": "Entire section is absent. Contains: XML namespace support; namespace-prefixed element names are represented in Map keys by removing \":\" and capitalizing the first letter of the next part (e.g., tns:key1 → tnsKey1); namespace prefix declaration fields must have \"?\" prefix to be skipped; code examples (format definition, XML data, Map object table).",
+      "source_evidence": "本機能で取り扱うMapオブジェクトでは、「:」を取り除いて、次の項目を大文字したキー名を使用して名前空間つきの要素名を表現する。名前空間の接頭辞の定義については、フィールド名の先頭に「?」をつけることにより読み飛ばす必要がある。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source section 7: XMLで属性を持つ要素にコンテンツを定義する方法について",
+      "description": "Entire section is absent. Contains: to define content for XML elements that also have attributes, add a field named \"body\" in the format definition; default content field name is \"body\"; body field name can be changed via contentName property; both XmlDataParser and XmlDataBuilder must be configured with the new contentName; component must be named exactly \"XmlDataParser\" / \"XmlDataBuilder\"; configuration XML examples; Map object table (child.attr → value1, child.body → value2).",
+      "source_evidence": "XMLで属性を持つ要素にコンテンツを定義したい場合は、フォーマット定義ファイルにコンテンツを表すフィールドを定義する。コンテンツを表すフィールド名をデフォルトのbodyから変更したい場合は、XmlDataParser と XmlDataBuilder をコンポーネント設定ファイルに設定し、contentNameプロパティに変更後のコンテンツ名をそれぞれ設定する。"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "testing-framework-real--s1",
+  "title": "リクエスト単体テストの実施方法(同期応答メッセージ受信処理)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "MessagingRequestTestSupport",
+        "テストクラス作成",
+        "リクエスト単体テスト",
+        "同期応答メッセージ受信処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド分割",
+      "hints": [
+        "テストメソッド分割",
+        "テストシート分割",
+        "テスト設計"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "テストショット一覧",
+        "testShots",
+        "LIST_MAP",
+        "setUpTable",
+        "expectedTable",
+        "expectedStatusCode",
+        "diConfig",
+        "requestPath",
+        "userId",
+        "テストデータExcel",
+        "グループID"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データベースの準備",
+      "hints": [
+        "データベース準備",
+        "setUpTable",
+        "グループID",
+        "テストデータ投入"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "リクエストメッセージ",
+      "hints": [
+        "setUpMessages",
+        "MESSAGE",
+        "要求電文",
+        "フレームワーク制御ヘッダ",
+        "ディレクティブ",
+        "メッセージボディ",
+        "フィールド名称重複"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "レスポンスメッセージ",
+      "hints": [
+        "expectedMessages",
+        "MESSAGE",
+        "応答電文",
+        "file-type",
+        "messaging.assertAsMapFileType",
+        "電文アサート",
+        "XML",
+        "JSON"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "期待するデータベースの状態",
+      "hints": [
+        "期待データベース",
+        "expectedTable",
+        "グループID",
+        "DB検証"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "テストメソッドの書き方",
+      "hints": [
+        "MessagingRequestTestSupport",
+        "execute",
+        "テストメソッド実装",
+        "sheetName"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト起動",
+        "テスト実行方法"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "テスト結果検証",
+      "hints": [
+        "レスポンスメッセージ検証",
+        "データベース検証",
+        "ログ検証",
+        "テスト結果",
+        "自動検証"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は`{Action名}RequestTest` (3) `nablarch.test.core.http.MessagingRequestTestSupport`を継承\n\n**クラス**: `nablarch.test.core.http.MessagingRequestTestSupport`",
+    "s2": "１テストクラスにつき１テストメソッド、１テストシートを原則とする。ケースが複雑またはデータ量が多い場合はメソッドやシートを分割可能。",
+    "s3": "テストデータのExcelファイルはテストソースコードと同じディレクトリに同じ名前で格納（拡張子のみ異なる）。\n\nテストクラスで共通のデータベース初期値は :ref:`request_test_setup_db` を参照。\n\n**テストショット一覧**: LIST_MAPのデータタイプで1テストメソッド分のテストショット表を記載。IDは `testShots` 固定。\n\n| カラム名 | 説明 | 必須 |\n|---|---|---|\n| no | テストケース番号（1からの連番） | ○ |\n| description | テストケースの説明 | ○ |\n| expectedStatusCode | 期待するステータスコード | ○ |\n| setUpTable | 各テストケース実行前にDBに登録するデータの :ref:`グループID<tips_groupId>` | |\n| expectedTable | DB内容比較時の期待するテーブルの :ref:`グループID<tips_groupId>` | |\n| expectedLog | 期待するログメッセージのID | |\n| diConfig | 常駐プロセスのコンポーネント設定ファイルへのパス（:ref:`about_commandline_argument` 参照） | ○ |\n| requestPath | 常駐プロセスのリクエストパス（:ref:`about_commandline_argument` 参照） | ○ |\n| userId | 常駐プロセス実行ユーザID（:ref:`about_commandline_argument` 参照） | ○ |\n\n> **注意**: setUpTable/expectedTableでデフォルトのグループIDを使用する場合は`default`と記載。デフォルトグループIDと個別グループIDの併用も可能で、両方のデータが有効になる。\n\n> **注意**: ここでの「常駐プロセス」はメッセージ送受信を行うプロセスを指す。",
+    "s4": ":ref:`オンライン<request_test_testcases>` と同様にグループIDで対応付けを行う。\n\nテストショット一覧の `setUpTable` の欄がない/空欄の場合、データベース準備は行われない。",
+    "s5": "テストの入力データとなる要求電文を記載する。\n\n- 先頭行の名前は `MESSAGE=setUpMessages` 固定\n- 共通情報（ディレクティブ、フレームワーク制御ヘッダ）をkey-value形式で記載\n- メッセージボディ構造:\n\n| 行 | 記述内容 | 備考 |\n|---|---|---|\n| 1行目 | フィールド名称 | 先頭セルは\"no\" |\n| 2行目 | データタイプ | 先頭セルは空白 |\n| 3行目 | フィールド長 | 先頭セルは空白 |\n| 4行目以降 | データ | 先頭セルは1からの通番 |\n\n> **警告**: フィールド名称に重複した名称は許容されない。例えば「氏名」というフィールドが2つ以上存在してはならない。\n\nテストショットのnoと本表の行（no）は対応関係にある（テストショットno1 → 本表1行目のデータ）。",
+    "s6": "リクエストメッセージと同じ形式。名前は `MESSAGE=expectedMessages` 固定。\n\nテストデータのディレクティブに設定されたfile-typeの値によりアサート方法が変化:\n\n| file-typeの値 | アサート方法 |\n|---|---|\n| Fixed または 指定なし | テストデータに記載された項目単位に電文を分割してアサート |\n| その他の値 | 電文全体を文字列としてアサート |\n\n項目単位アサートのfile-type値は以下の環境設定で変更可能:\n```\nmessaging.assertAsMapFileType=<カンマ区切りのfile-typeリスト>\n```\n\n> **注意**: XMLやJSONは電文ごとに電文長が異なるため、必ずfile-typeを設定して電文全体を文字列としてアサートすること。実電文とテストデータの電文長が異なると正常に読み込めない場合がある。フォーマット定義ファイルではなく、テストデータにfile-typeを設定する必要がある。",
+    "s7": "データベースの準備と同様に、期待するデータベースの状態をテストケース一覧（`expectedTable` カラム）とグループIDでリンクさせる。",
+    "s8": "`MessagingRequestTestSupport`クラスを継承したスーパクラスが提供する以下のメソッドをテストメソッド内で呼び出す:\n\n- `void execute()` — 引数なし。テストメソッド名をシート名として使用（`execute(\"testRegisterUser\")` と等価）\n- `void execute(String sheetName)` — テストデータのシート名を明示指定\n\n通常、テストシート名とテストメソッド名は同一のため、引数なしのexecuteを使用する。\n\n```java\n@Test\npublic void testRegisterUser() {\n    execute();\n}\n```",
+    "s9": "クラス単体テストと同様、通常のJUnitテストと同じように実行する。",
+    "s10": "自動テストフレームワーク側で以下の結果検証が行われる:\n\n1. レスポンスメッセージの結果検証（必須）\n2. データベースの結果検証\n3. ログの結果検証\n\nデータベースとログの結果検証はテストショット一覧の対応欄（`expectedTable`、`expectedLog`）が空欄の場合スキップされる。"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "file_id": "java-static-analysis-UnpublishedApi--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "仕様 section (main body)",
+      "description": "The main body of the 仕様 section is entirely absent from the knowledge file. Missing: (1) the 3 check rule types — 非公開クラスの参照（インスタンス化、クラスメソッドの呼び出し）、非公開メソッドの呼び出し、非公開例外の補足及び送出; (2) the table of 5 default config files (JavaOpenApi.config, NablarchApiForProgrammer.config, NablarchTFWApiForProgrammer.config, NablarchApiForArchitect.config, NablarchTFWApiForArchitect.config) with their descriptions; (3) the fact that the tool is provided as a FindBugs custom rule with bug code UPU and bug type UPU_UNPUBLISHED_API_USAGE; (4) that execution methods are Ant and Eclipse Plugin.",
+      "source_evidence": "仕様 section: '非公開クラスの参照（インスタンス化、クラスメソッドの呼び出し）/ 非公開メソッドの呼び出し / 非公開例外の補足、及び送出' and the 5-row config file table and '本ツールはFindBugsのカスタムルールとして提供する。バグコード：UPU / バグタイプ：UPU_UNPUBLISHED_API_USAGE'"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Eclipse Pluginとして使用 section",
+      "description": "The entire Eclipse Plugin usage section is absent. Missing: (1) the warning that Eclipse cannot perform classification-based checks (architect vs programmer, production vs test) and that Ant-based CI checks must also be used; (2) JAR placement instructions (nablarch-tfw.jar into FindBugsEclipsePlugin/plugin directory); (3) eclipse.ini modification to add system property nablarch-findbugs-config with the absolute path of the config directory; (4) how to view check results (bug mark in editor or FindBugs perspective).",
+      "source_evidence": "Source section 'Eclipse Pluginとして使用': 'Eclipseでのチェックではアーキテクト向けとプログラマ向け...の分類に従ったチェックを行うことができない。CIなどでAntタスクとしても実行し...定期的に必ずチェックすること。' and JAR/eclipse.ini setup details."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "FindBugsのAntタスクとして使用 section",
+      "description": "The entire FindBugs Ant task section is absent. Missing: (1) requirement to include nablarch-tfw.jar in the classpath; (2) requirement to set systemProperty nablarch-findbugs-config to the config directory absolute path; (3) the distinction between production code config dir and test code config dir for the systemProperty; (4) the complete Ant task XML example with findbugs target definition.",
+      "source_evidence": "Source section 'FindBugsのAntタスクとして使用': 'nablarch-tfw.jar をクラスパスに含めること。systemProperty要素に「nablarch-findbugs-config」というキーで...絶対パスを設定する必要がある。' and the XML code block."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "The source contains 6 h2 sections (概要, 前提条件, 仕様, 設定ファイル, Eclipse Pluginとして使用, FindBugsのAntタスクとして使用), but the knowledge file has only 3 sections. The Eclipse Plugin and Ant task h2 sections are entirely unrepresented in the index.",
+      "source_evidence": "Source headings: 概要 / 前提条件 / 仕様 / 設定ファイル / Eclipse Pluginとして使用 / FindBugsのAntタスクとして使用"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The class name ClassC appears in the code example in s1 but is not listed in hints.",
+      "source_evidence": "s1 code example: 'ClassC hoge = new ClassC(); hoge.methodA(); // 使用可能 / hoge.methodB(); // 使用不可'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Several PascalCase class names present in s3 content are missing from hints: HttpResponse, HttpRequest, ValidationContext, StringBuilder, CodeUtil, Boolean.",
+      "source_evidence": "s3 table and code example contain: nablarch.fw.web.HttpResponse, nablarch.fw.web.HttpRequest, nablarch.core.validation.ValidationContext, java.lang.StringBuilder, nablarch.common.code.CodeUtil, java.lang.Boolean"
+    }
+  ]
+}

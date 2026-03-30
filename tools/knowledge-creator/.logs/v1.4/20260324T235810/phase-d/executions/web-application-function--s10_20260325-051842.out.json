@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-function--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "Source contains 4 h2-level headings (ページングを使用した一覧表示 / 特定の一覧表示で表示件数と検索結果件数(上限)を個別に設定する方法 / 検索結果の並び替え / ページングを使用しない一覧表示) but the knowledge file has only 1 section (s1) covering all four. Each source section contains substantial content (code examples, constraints, API specs). Splitting into s1–s4 would improve retrieval precision.",
+      "source_evidence": "Source has four == underlined headings: ページングを使用した一覧表示, 特定の一覧表示で…, 検索結果の並び替え, ページングを使用しない一覧表示."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "Several annotations used in the implementation examples are absent from hints: @Required, @NumberRange, @Digits, @PropertyName, @OnError. These appear directly in the Java code samples and would help AI retrieval for validation-related questions.",
+      "source_evidence": "Source code: `@PropertyName(\"開始ページ\") @Required @NumberRange(max = 10, min = 1) @Digits(integer = 2) public void setPageNumber(...)` and `@OnError(type = ApplicationException.class, path = ...)` in the action class."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "ApplicationException class name is absent from hints despite being used in both the paging and no-paging action examples for error handling.",
+      "source_evidence": "Source: `throw new ApplicationException(MessageUtil.createMessage(...))` and `@OnError(type = ApplicationException.class, ...)` in multiple action implementations."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "Property names `max` and `maxResultCount` (exposed via setMax/getMax and setMaxResultCount/getMaxResultCount) are absent from hints. These are the key properties for the 'individual page-size settings' section and for the no-paging mandatory call `condition.setMax(condition.getMaxResultCount())`.",
+      "source_evidence": "Source: `condition.setMax(MAX_ROWS)`, `condition.setMaxResultCount(MAX_RESULT_COUNT)`, `condition.setMax(condition.getMaxResultCount())` appear in two distinct sections."
+    }
+  ]
+}

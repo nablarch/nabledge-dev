@@ -1,0 +1,386 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-06_initial_view--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — リクエスト単体テスト実施（Actionクラス作成前）",
+      "description": "最初の「リクエスト単体テスト実施」セクションが完全に欠落している。このセクションはActionクラス作成前にテストを実行して404が返ることを確認するTDDの手順を説明しており、具体的なコンソールログ出力（status_code=[404]、content_path=[/PAGE_NOT_FOUND_ERROR.jsp]）が含まれる。",
+      "source_evidence": "「リクエスト単体テストを実施し、テストが失敗することを確認する。（Actionクラスを作成していない為）」「ステータスコード404の箇所で処理がENDしていること。」と具体的なログ出力が記載されている。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — リクエスト単体テスト実施（Actionクラス作成後）",
+      "description": "2番目の「リクエスト単体テスト実施」セクションが完全に欠落している。このセクションはActionクラス作成後の検証手順を説明しており、(1) 「@@@@ DISPATCHING CLASS @@@@」の次に「**** BEFORE ACTION ****」が出力されることでActionクラスへの到達を確認する方法、(2) JSP内容不正時のエラー出力（`uri is null`）、(3) 「テストを繰り返しながらActionクラスを徐々に完成させる」という反復開発のノートが含まれる。これらは実装の正否を判断するための重要な情報である。",
+      "source_evidence": "「Actionクラスまで処理が到達していることを確認する」「ログ中の「@@@@ DISPATCHING CLASS @@@@」の次に「BEFORE ACTION」が出力されていれば」「javax.servlet.jsp.JspException: java.lang.IllegalArgumentException: uri is null.」「テストを繰り返しながらActionクラスを徐々に完成させる。」と記載されている。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — JSPの修正後のリクエスト単体テスト確認",
+      "description": "JSP修正後の検証手順（リクエスト単体テストを実行してHTML出力とHTTPステータスコード200を確認すること、および出力されたHTMLをWebブラウザで開いてレイアウト確認する手順）とHTML出力先フォルダのパス（`tmp/html_dump/W11AC02ActionRequestTest`）が欠落している。",
+      "source_evidence": "「リクエスト単体テストを実行し、HTML(JSP)が出力されること、HTTPステータスコード：200が返却されることを確認する。出力されたHTMLをWebブラウザで開き、登録画面であることと、レイアウトが崩れていないことを確認する。HTMLの出力先フォルダ：tmp/html_dump/W11AC02ActionRequestTest 配下」と記載されている。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — リクエスト単体テストデータシートの作成",
+      "description": "testRW11AC0201テストデータシートで検証する3項目（①登録画面の初期表示に必要なパラメータがリクエストに格納されていること、②表示するJSPが登録画面のものであること、③レスポンスのステータスがOKであること）が欠落している。",
+      "source_evidence": "「ここでは、以下を検証するためのテストデータを作成する。・登録画面の初期表示に必要なパラメータがリクエストに格納されていること。・表示するJSPが、登録画面のものであること。・レスポンスのステータスが OK であること。」と記載されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "s1のコード例（W11AC02ActionおよびW11AC02ActionRequestTest）に登場するPascalCaseクラス名 `HttpRequest` と `ExecutionContext` がhintsに含まれていない。",
+      "source_evidence": "ソースのActionクラスコード: `public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx)`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _process_register_view:
+
+登録画面初期表示の実装
+============================================
+
+登録画面の初期表示は、以下のステップで実装する。
+
+.. contents::
+   :depth: 2
+   :local:
+   :backlinks: none
+
+
+.. _register_view_action:
+
+Actionクラスの実装
+--------------------------------------------
+
+.. _03_06_action_request_test:
+
+リクエスト単体テストクラスの作成
+********************************************
+
+================================= ========================= ===============================
+テストクラス作成フォルダ          テストクラス名            リクエスト単体テスト親クラス名
+================================= ========================= ===============================
+test/java/nablarch/sample/ss11AC  W11AC02ActionRequestTest  BasicHttpRequestTestTemplate
+================================= ========================= ===============================
+
+
+リクエスト単体テストを作成するに当たり、テスト対象クラスへアクセスされる際のURLを指定する必要がある。
+
+チュートリアルアプリケーションでは、Nablarchの機能によりURIは以下の形式で解釈される。
+
+::
+
+   /action/`パッケージ名`/`アクションクラス名`/`メソッド名からdoを除いた文字列`
+
+なお、パッケージ名は、 nablarch.sample.までは無視され、それ以降の . が / に置換されてURIとなる。
+
+
+===================================== ===============================
+テスト対象クラス                      ベースURI                 
+===================================== ===============================
+nablarch.sample.ss11AC.W11AC02Action  /action/ss11AC/W11AC02Action/
+===================================== ===============================
+
+
+リクエスト単体テストは、 ``AbstractHttpRequestTestTemplate#execute(String)`` に、テストデータの記載されているシート名を指定して実行する。
+
+
+.. code-block:: java
+
+   /**
+    * {@link W11AC02Action}のテスト
+    *
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11AC02ActionRequestTest extends BasicHttpRequestTestTemplate {
+   
+       // 【説明】①ターゲットクラスのベースURIを返却する
+       @Override
+       protected String getBaseUri() {
+           return "/action/ss11AC/W11AC02Action/";
+       }
+   
+       // 【説明】②リクエスト単体テストを実行
+   
+       /**
+        * {@link W11AC02Action#doRW11AC0201(nablarch.fw.web.HttpRequest, nablarch.fw.ExecutionContext)} のテスト
+        */
+       @Test
+       public void testRW11AC0201() {
+           execute("testRW11AC0201");
+       }
+   
+   }
+
+
+
+リクエスト単体テストデータシートの作成
+********************************************
+
+ここでは、以下を検証するためのテストデータを作成する。（ :ref:`リクエスト単体テストデータシートの書き方<request_test_testcases>` ）
+
+* 登録画面の初期表示に必要なパラメータがリクエストに格納されていること。
+* 表示するJSPが、登録画面のものであること。
+* レスポンスのステータスが ``OK`` であること。
+
+============================= ===============
+ブック名                      シート名
+============================= ===============
+W11AC02ActionRequestTest.xlsx testRW11AC0201
+============================= ===============
+
+   .. image:: ./_images/action_test_early.png
+       :scale: 30
+
+
+.. warning::
+   現在のリクエスト単体テストでは、テストデータとしてテスト共通データシート(シート名：setUpDb)が必須である為、データのセットアップが不要な場合でもシートを作成すること。シート内には何も書かなくてよい。
+
+
+
+リクエスト単体テスト実施
+********************************************
+
+リクエスト単体テストを実施し、テストが失敗することを確認する。（Actionクラスを作成していない為）
+
+コンソールログに以下の内容が出力されれば良い。
+
+ステータスコード404の箇所で処理がENDしていること。
+
+＜出力内容＞
+
+.. code-block:: none
+
+   2011-09-28 18:25:28.041 -INFO- root [201109281825279950001] boot_proc = [] proc_sys = [] req_id = [RW11AC0201] usr_id = [0000000001] @@@@ END @@@@ rid = [RW11AC0201] uid = [0000000001] sid = [15dbmk0lzycbo1ajvrs2pqesk1] url = [http://127.0.0.1/action/ss11AC/W11AC02Action/RW11AC0201] status_code = [404] content_path = [/PAGE_NOT_FOUND_ERROR.jsp]
+
+
+
+Actionクラスの新規作成
+********************************************
+
+================================== ============== ====================================================
+ソース格納フォルダ                 クラス名       メソッド名
+================================== ============== ====================================================
+main/java/nablarch/sample/ss11AC   W11AC02Action  "do" ＋ RW11AC0201（登録画面初期表示のリクエストID）
+================================== ============== ====================================================
+
+
+ユーザ情報登録画面のJSP：W11AC0201.jspを指定して、 ``HttpResponse`` を作成し返却する。
+
+.. code-block:: java
+
+   /**
+    * ユーザー登録機能のアクションクラス。
+    *
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11AC02Action extends DbAccessSupport {
+   
+       /**
+        * ユーザの新規登録フォームを表示する。
+        *
+        * @param req HTTPリクエスト
+        * @param ctx 実行時コンテキスト
+        * @return HTTPレスポンス
+        */
+       public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {
+   
+           // 【説明】①ユーザ情報登録画面へ遷移
+           return new HttpResponse("/ss11AC/W11AC0201.jsp");
+       }
+
+   }
+
+
+
+リクエスト単体テスト実施
+********************************************
+
+リクエスト単体テストを実施し、Actionクラスまで処理が到達していることを確認する。
+
+コンソールログに以下の内容が出力されれば良い。
+
+- Actionクラスまで処理到達
+
+  ログ中の「@@@@ DISPATCHING CLASS @@@@」の次に「BEFORE ACTION」が出力されていれば、Actionまで処理が到達している。
+
+  ＜出力内容＞
+  
+  .. code-block:: none
+  
+     2011-09-28 18:26:39.163 -INFO- root [201109281826391630001] boot_proc = [] proc_sys = [] req_id = [RW11AC0201] usr_id = [0000000001] @@@@ DISPATCHING CLASS @@@@ class = [nablarch.sample.ss11AC.W11AC02Action]
+   2011-09-28 18:26:39.179 -DEBUG- root [201109281826391630001] boot_proc = [] proc_sys = [] req_id = [RW11AC0201] usr_id = [0000000001] **** BEFORE ACTION ****
+
+- JSP記載内容不正
+
+  ＜出力内容＞
+
+  .. code-block:: none
+
+    javax.servlet.jsp.JspException: java.lang.IllegalArgumentException: uri is null.
+
+.. note::
+   テストを繰り返しながらActionクラスを徐々に完成させる。
+
+
+
+.. _register_view_jsp:
+
+JSPの実装
+--------------------------------------------
+
+
+JSPの修正
+********************************************
+
+ボタン項目・リンク項目のuri属性に値が設定されていないことが原因でテストが失敗しているので、uri属性を指定する。
+
+   :URI属性の指定形式: /:ref:`03_06_action_request_test` で説明したベースURI/\`リクエストID\`
+
+   ＜修正前＞
+
+   .. code-block:: jsp
+
+      <button:block>
+        <n:forInputPage>
+          <button:check uri="" dummyUri="W11AC0202.jsp">
+          </button:check>
+        </n:forInputPage>
+        <n:forConfirmationPage>
+          <button:cancel uri="" dummyUri="W11AC0201.jsp">
+          </button:cancel>
+          <button:confirm uri="" dummyUri="W11AC0203.jsp">
+          </button:confirm>
+        </n:forConfirmationPage>
+      </button:block>
+
+
+   ＜修正後＞
+
+   .. code-block:: jsp
+
+      <button:block>
+        <n:forInputPage>
+          <button:check uri="/action/ss11AC/W11AC02Action/RW11AC0202" dummyUri="W11AC0202.jsp">
+          </button:check>
+        </n:forInputPage>
+        <n:forConfirmationPage>
+          <button:cancel uri="/action/ss11AC/W11AC02Action/RW11AC0203" dummyUri="W11AC0201.jsp">
+          </button:cancel>
+          <button:confirm uri="/action/ss11AC/W11AC02Action/RW11AC0204" dummyUri="W11AC0203.jsp">
+          </button:confirm>
+        </n:forConfirmationPage>
+      </button:block>
+
+リクエスト単体テストを実行し、HTML(JSP)が出力されること、HTTPステータスコード：200が返却されることを確認する。
+
+出力されたHTMLをWebブラウザで開き、登録画面であることと、レイアウトが崩れていないことを確認する。
+
+HTMLの出力先フォルダ：tmp/html_dump/W11AC02ActionRequestTest 配下
+
+
+JSP静的チェックツールの実行
+********************************************
+:ref:`jsp_static_analysis_tool` を実行し、該当ファイルに静的チェックエラーがないことを確認する。
+
+JSP静的解析ツールは、マスターデータセットアップツールと同様の方法でEclipseの
+Antビューに追加して実行する。
+
++-----------------------------------------+---------------------------+
+| Antビルドファイル                       | 実行するターゲット        |
++=========================================+===========================+
+| tool/jspanalysis/jsp-analysis-build.xml | JSP解析(HTMLレポート出力) |
++-----------------------------------------+---------------------------+
+
+
+.. note::
+
+   静的チェックでエラーが出る実装は、クロスサイトスクリプティングの脆弱性を含む可能性があるため、
+   必ず対処が必要になる。
+   アプリケーションの機能制約などから、どうしても静的チェックのエラーが回避できない場合は、
+   必ずプロジェクトのアーキテクトに確認し、対処方法を検討すること。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-06_initial_view--s1",
+  "title": "登録画面初期表示の実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Actionクラスの実装",
+      "hints": [
+        "W11AC02Action",
+        "W11AC02ActionRequestTest",
+        "BasicHttpRequestTestTemplate",
+        "DbAccessSupport",
+        "HttpResponse",
+        "AbstractHttpRequestTestTemplate",
+        "URI形式",
+        "Actionクラス実装",
+        "リクエスト単体テスト",
+        "テストクラス作成",
+        "setUpDb"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JSPの実装",
+      "hints": [
+        "uri属性",
+        "JSP静的チェック",
+        "jsp_static_analysis_tool",
+        "XSS脆弱性",
+        "ボタンリンクURI設定",
+        "JSP修正",
+        "静的解析ツール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Actionクラスの実装\n\n### URI形式\n\nNablarchのURIは以下の形式で解釈される:\n\n```\n/action/{パッケージ名}/{アクションクラス名}/{メソッド名からdoを除いた文字列}\n```\n\nパッケージ名は `nablarch.sample.` までは無視され、それ以降の `.` が `/` に置換される。\n\n例: `nablarch.sample.ss11AC.W11AC02Action` → ベースURI: `/action/ss11AC/W11AC02Action/`\n\n### リクエスト単体テストクラス\n\n| 項目 | 値 |\n|---|---|\n| テストクラス格納フォルダ | test/java/nablarch/sample/ss11AC |\n| テストクラス名 | W11AC02ActionRequestTest |\n| 親クラス | BasicHttpRequestTestTemplate |\n\n`getBaseUri()` でベースURIを返却し、`AbstractHttpRequestTestTemplate#execute(String)` にシート名を指定してテスト実行する。\n\n```java\npublic class W11AC02ActionRequestTest extends BasicHttpRequestTestTemplate {\n    @Override\n    protected String getBaseUri() {\n        return \"/action/ss11AC/W11AC02Action/\";\n    }\n\n    @Test\n    public void testRW11AC0201() {\n        execute(\"testRW11AC0201\");\n    }\n}\n```\n\nテストデータ: `W11AC02ActionRequestTest.xlsx` の `testRW11AC0201` シート（:ref:`request_test_testcases` 参照）\n\n> **警告**: テスト共通データシート（シート名: `setUpDb`）は必須。データのセットアップが不要な場合でも空シートを作成すること。\n\n### Actionクラスの新規作成\n\n| 項目 | 値 |\n|---|---|\n| ソース格納フォルダ | main/java/nablarch/sample/ss11AC |\n| クラス名 | W11AC02Action |\n| メソッド名 | doRW11AC0201（「do」＋リクエストID） |\n\n```java\npublic class W11AC02Action extends DbAccessSupport {\n    public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {\n        return new HttpResponse(\"/ss11AC/W11AC0201.jsp\");\n    }\n}\n```",
+    "s2": "## JSPの実装\n\n### URI属性の指定\n\nボタン・リンク項目の `uri` 属性の指定形式:\n\n```\n/{ベースURI}/{リクエストID}\n```\n\nベースURIは :ref:`03_06_action_request_test` で説明した形式を使用する。\n\n修正後の例:\n\n```jsp\n<button:block>\n  <n:forInputPage>\n    <button:check uri=\"/action/ss11AC/W11AC02Action/RW11AC0202\" dummyUri=\"W11AC0202.jsp\">\n    </button:check>\n  </n:forInputPage>\n  <n:forConfirmationPage>\n    <button:cancel uri=\"/action/ss11AC/W11AC02Action/RW11AC0203\" dummyUri=\"W11AC0201.jsp\">\n    </button:cancel>\n    <button:confirm uri=\"/action/ss11AC/W11AC02Action/RW11AC0204\" dummyUri=\"W11AC0203.jsp\">\n    </button:confirm>\n  </n:forConfirmationPage>\n</button:block>\n```\n\n### JSP静的チェックツール\n\n:ref:`jsp_static_analysis_tool` をEclipseのAntビューに追加して実行する。\n\n| Antビルドファイル | 実行ターゲット |\n|---|---|\n| tool/jspanalysis/jsp-analysis-build.xml | JSP解析(HTMLレポート出力) |\n\n> **注意**: 静的チェックエラーのある実装はXSS脆弱性を含む可能性があるため必ず対処すること。どうしても回避できない場合はプロジェクトのアーキテクトに確認し対処方法を検討すること。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

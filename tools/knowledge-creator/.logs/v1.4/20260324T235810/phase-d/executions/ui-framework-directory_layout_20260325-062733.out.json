@@ -1,0 +1,34 @@
+{
+  "file_id": "ui-framework-directory_layout",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — code block, ui_plugins line comment",
+      "description": "The code block comment for ui_plugins/ has been changed from the source text. Knowledge file shows `# プロジェクト固有UIプラグイン` but the source code block says `# UI開発基盤プロジェクトカスタマイズ用フォルダ`. These are not equivalent: the source describes it as a customization folder for the UI framework, not merely a folder for project-specific plugins.",
+      "source_evidence": "Source: `├── ui_plugins/            # UI開発基盤プロジェクトカスタマイズ用フォルダ`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for nablarch_plugins_bundle",
+      "description": "The description for nablarch_plugins_bundle omits the update procedure: 'UI基盤のアップデートを行う際に洗い替えを行う'. This is operationally important — it tells users that when updating the UI framework, the entire directory should be replaced wholesale.",
+      "source_evidence": "Source: 'リリース物をそのまま格納し、UI基盤のアップデートを行う際に洗い替えを行う。(プロジェクト側での改変は禁止)'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for web_common など",
+      "description": "The description for web_common omits '実装工程以降で使用する', which specifies that this project is only used from the implementation phase onward. This is relevant timing/lifecycle information for users deciding when to work with web_common.",
+      "source_evidence": "Source: '実際にサーバ環境にデプロイされる資源を格納するプロジェクト。実装工程以降で使用する。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — code block, ui_demo directory contents",
+      "description": "The directory tree for ui_demo is missing the ss12AC/ entry. The source shows both ss11AC/ and ss12AC/ to illustrate that there are multiple per-subsystem directories. Omitting ss12AC/ removes evidence that this pattern repeats for each subsystem.",
+      "source_evidence": "Source: `│     ├── ss11AC/         # 業務画面JSP(サブシステム毎)\\n│     ├── ss12AC/`"
+    }
+  ]
+}

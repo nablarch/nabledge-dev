@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — file:// content path",
+      "description": "Source explicitly states that relative paths for `file://` are resolved from the JVM process working directory (「JVMプロセスのワーキングディレクトリが起点とするパス」). This is non-obvious and implementation-relevant, but the knowledge file table entry only says「ファイルシステム上の静的ファイルを出力する」and the code examples have only generic 「相対パス指定」/「絶対パス指定」labels without this detail.",
+      "source_evidence": "相対パス指定の場合: JVMプロセスのワーキングディレクトリが起点とするパス。\n絶対パス指定の場合: ファイルシステムのルートディレクトリが起点とするパス。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — servlet:// content path",
+      "description": "Source specifies path resolution basis for `servlet://`: relative path starts from the current request URI, absolute path starts from the servlet context. The knowledge file table row for servlet:// omits these resolution rules; only the handler-queue note is included. The code examples label paths as 「相対パス指定」/「絶対パス指定」but do not state their respective bases.",
+      "source_evidence": "* 相対パス指定の場合: 現在のリクエストURIを起点とするパス。\n* 絶対パス指定の場合: サーブレットコンテキストを起点とするパス。"
+    }
+  ]
+}

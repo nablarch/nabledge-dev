@@ -1,0 +1,41 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The introductory paragraph describing what the system provides is absent from s1. Source states: '一定間隔ごとにバッチ処理を実行する常駐型プロセスを作成するための制御基盤を提供する' and gives a use-case example: 'オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される'. s1 only contains the warning.",
+      "source_evidence": "本節で解説する...常駐型プロセスを作成するための制御基盤を提供する。例えば、オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — 常駐処理業務エラー row",
+      "description": "The source states that incomplete (non-error) records are retried at the next execution: '処理が完了していないレコードは、次回以降の実行タイミングで処理される'. The knowledge file only mentions the error-status restriction (データメンテを行わない限り再実行されない) without capturing this complementary rule, which is needed to understand the full retry behavior.",
+      "source_evidence": "処理が完了していないレコードは、次回以降の実行タイミングで処理される。(ただし、エラーが発生したレコードはエラーステータスとなり、データメンテを行なわない限り再実行の対象とならない。)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "s3 is a spurious section with no title and content 'なし'. The source RST has no heading that corresponds to s3; the '++++++' dividers between sections are visual separators, not headings. This section has no basis in the source structure.",
+      "source_evidence": "Source h2 sections: 基本構造 / 業務アクションハンドラの実装 / 標準ハンドラ構成と主要処理フロー — no section maps to s3."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "s5 is a spurious section with no title and content 'なし'. Same issue as s3: the '++++++' RST dividers are not section headings, and no source heading maps to s5.",
+      "source_evidence": "Source h2 sections: 基本構造 / 業務アクションハンドラの実装 / 標準ハンドラ構成と主要処理フロー — no section maps to s5."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints",
+      "description": "Three handler names from the standard handler queue are present in the source but absent from s6 hints: FileRecordWriterDisposeHandler, RequestPathJavaPackageMapping, ThreadContextHandler_main.",
+      "source_evidence": "HandlerQueue in source JavaScript: 'FileRecordWriterDisposeHandler', 'RequestPathJavaPackageMapping', 'ThreadContextHandler_main'"
+    }
+  ]
+}

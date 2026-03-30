@@ -1,0 +1,119 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "readers-FileDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — property table, 必須 column",
+      "description": "The knowledge file adds a '必須' (required) column with ○ marks for layoutFile and dataFile. The source file has no required/optional column and does not indicate that these properties are required. Only bufferSize is annotated as optional ('任意指定') in the source; no corresponding 'required' designation exists for the other properties.",
+      "source_evidence": "Source table has columns: 設定項目, プロパティ名, データ型, 備考 — no 必須 column. bufferSize is annotated '(任意指定: デフォルト=8192B)' but layoutFile and dataFile have no such annotation either way."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===============================
+ファイルデータリーダ
+===============================
+指定されたファイルの内容を :doc:`../core_library/record_format` を使用して1レコードずつ読み込むデータリーダ。
+ファイル終端に達した時点で終了する。
+
+本クラスのプロパティとして指定するフォーマット定義ファイルの記述方法等については
+:doc:`../core_library/record_format` の項を参照すること。
+
+  **クラス名**
+    nablarch.fw.reader.FileDataReader   
+
+  **読み込むデータの型**
+    nablarch.core.dataformat.DataRecord
+
+  **設定項目一覧**
+
+   ================================ =============== ============================ ====================================================
+   設定項目                         プロパティ名    データ型　                   備考                          
+   ================================ =============== ============================ ====================================================
+   フォーマット定義ファイル         layoutFile      | String                     | ファイル名 (格納論理パスは"format")
+                                                    | String, String             | 格納ディレクトリ論理パス、ファイル名
+
+   データファイル                   dataFile        | String                     | ファイル名 (格納論理パスは"input")
+                                                    | String, String             | 格納ディレクトリ論理パス、ファイル名
+
+   バッファサイズ(バイト)           bufferSize      int                          | (任意指定: デフォルト=8192B)
+                                                                                 | 読込み時に使用するバッファサイズ。
+
+   ================================ =============== ============================ ====================================================
+
+
+  **使用例**
+
+  - データリーダファクトリ内でデータリーダを作成する例
+
+    .. code-block:: java
+
+      DataReader<DataRecord> reader = new FileDataReader()
+                                     .setLayoutFile("record")  // フォーマット定義ファイル名
+                                     .setDataFile("record.dat");   // 入力データファイル名
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "readers-FileDataReader",
+  "title": "ファイルデータリーダ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルデータリーダ",
+      "hints": [
+        "FileDataReader",
+        "nablarch.fw.reader.FileDataReader",
+        "DataRecord",
+        "nablarch.core.dataformat.DataRecord",
+        "layoutFile",
+        "dataFile",
+        "bufferSize",
+        "ファイルデータリーダ",
+        "レコードフォーマット",
+        "ファイル読み込み"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.reader.FileDataReader`\n\n指定ファイルを :doc:`../core_library/record_format` で1レコードずつ読み込むデータリーダ。ファイル終端で終了。\n\n**読み込みデータ型**: `nablarch.core.dataformat.DataRecord`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| layoutFile | String または String, String | ○ | | フォーマット定義ファイル名（格納論理パス `format`）または 格納ディレクトリ論理パス＋ファイル名 |\n| dataFile | String または String, String | ○ | | データファイル名（格納論理パス `input`）または 格納ディレクトリ論理パス＋ファイル名 |\n| bufferSize | int | | 8192 | 読込み時のバッファサイズ（バイト） |\n\n使用例（データリーダファクトリ内）:\n\n```java\nDataReader<DataRecord> reader = new FileDataReader()\n                               .setLayoutFile(\"record\")\n                               .setDataFile(\"record.dat\");\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

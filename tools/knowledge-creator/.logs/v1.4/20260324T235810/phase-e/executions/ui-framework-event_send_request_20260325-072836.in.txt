@@ -1,0 +1,196 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-event_send_request",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`n:button` is mentioned in the overview as an equivalent tag that produces the same POST request, but is absent from the hints array.",
+      "source_evidence": "源文: \"`<n:button>` `<n:subimitLink>` を使用した場合と同じPOSTリクエストを送信することができる。\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+XHRリクエスト送信イベントアクション
+===================================================
+:doc:`event_send_request` は、 :doc:`event_listen` 及び :doc:`event_listen_subwindow`
+が監視するイベントが発生した際に、指定したURLに対するXHR(Ajax)リクエストを送信する
+イベントアクションである。
+
+本アクションでは、Nablarch本体の機構(ウィンドウスコープ、Nablarch サブミット等) と連動し
+`<n:button>` `<n:subimitLink>` を使用した場合と同じPOSTリクエストを送信することができる。
+また `<n:param>` を用いたリクエストパラメータの付与も可能となっている。
+
+.. note::
+
+  本アクションでは、XHRレスポンスがXMLもしくはHTML形式であることを前提としている。
+  JSONなどの形式には対応していない。
+
+
+.. note::
+
+  本アクションはローカル表示では動作しない。
+
+コードサンプル
+==================================
+以下のソースコードは、商品コードを入力すると
+その商品名をXHRリクエストで検索して表示する例である。
+
+  .. code-block:: jsp
+
+    <event:listen
+      title     = "商品コード入力欄からフォーカスアウトする。"
+      event     = "input.productCode blur">
+      <event:send_request
+        title     = "入力欄に値が設定されていた場合は、それに合致するコードを検索するAjaxリクエストを送信し、検索結果テーブルを取得する。"
+        name      = "product_ajaxRequest"
+        uri       = "./product/list"
+        target    = "table"
+        condition = "input.productCode:is-not-blank">
+      </event:send_request>
+    </event:listen>
+
+    <event:listen
+      title = "Ajaxリクエスト成功"
+      event = "ajaxSuccess">
+      <event:write_to
+        title       = "入力した商品コードに合致するレコードがDB上に存在すれば商品名を表示する"
+        target      = "span.productName"
+        condition   = ":has(tr td)"
+        format      = "商品名: {td.productName}">
+      </event:write_to>
+    </event:listen>
+
+.. note::
+
+  XHRリクエスト完了後の処理は、上の例のように、
+  jQueryのajax関連グローバルイベントを監視する :doc:`event_listen`
+  を作成し、その中にイベントアクションを配置することで実装する。
+
+  ajaxイベントの詳細については下記のリンク先を参照すること。
+
+      http://api.jquery.com/Ajax_Events/
+
+仕様
+=============================================
+このアクションを実行するイベントは :doc:`event_listen`
+(もしくは :doc:`event_listen_subwindow` ) を用いて定義する必要がある。
+
+このアクションが実行されると、まず、イベントの発生元要素が `condition` 属性の
+セレクタにマッチするかをチェックし、マッチしなかった場合はなにもしない。
+
+マッチした場合、このタグを包含する **form** 要素に対してサブミット処理を実行する。
+このサブミット処理は `<n:submitLink>` タグによる処理と同等である。
+
+また、 `<n:param>` 等のタグについても、本タグの内側に記述することで
+`<n:submitLink>` と同様に利用することができる。
+
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ==============================================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ==============================================================
+title                     実行する処理の簡単な説明         文字列         ×          ×         設計書表示用　
+
+name                      サブミット名                     文字列         ◎          ×
+
+uri                       リクエスト送信先URI              文字列         ◎          ×
+
+target                    レスポンスの内容から取得する     文字列         ◎          ×
+                          要素を指定するセレクタ式
+
+condition                 本アクションを実行する事前条件。 文字列         ○          ×
+                          イベント発生元要素が満たすべき
+                          セレクタ式の形式で指定する。　
+
+paramNameAlias            リクエストを送信する際に         文字列         ○          ×         | 置換ルールの書式は以下のとおり。
+                          リクエストパラメータの置換を行う                                     |
+                          ルールを定義する。                                                   |   置換文字列1/置換後文字列1|置換文字列2/置換後文字列2 ...
+
+========================= ================================ ============== ========== ========= ==============================================================
+
+
+
+内部構造・改修時の留意点
+============================================
+本ウィジェットは以下のファイルによって実装されている。
+
+**部品一覧**
+
+================================================= =====================================================
+パス                                              内容
+================================================= =====================================================
+/WEB-INF/tags/widget/event/send_request.tag       このウィジェットの実体となるタグファイル　
+
+/js/nablarch/ui/event/AjaxAction.js               XHR処理を実装するイベントアクション
+
+================================================= =====================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-event_send_request",
+  "title": "XHRリクエスト送信イベントアクション",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要・コードサンプル・仕様",
+      "hints": [
+        "XHRリクエスト送信",
+        "Ajaxリクエスト",
+        "イベントアクション",
+        "event:send_request",
+        "event:listen",
+        "event:listen_subwindow",
+        "AjaxAction.js",
+        "send_request.tag",
+        "condition属性",
+        "paramNameAlias",
+        "n:param",
+        "n:submitLink"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":doc:`event_send_request` は、:doc:`event_listen` および :doc:`event_listen_subwindow` が監視するイベント発生時に、指定URLへXHR(Ajax)リクエストを送信するイベントアクション。Nablarch本体の機構（ウィンドウスコープ、Nablarchサブミット等）と連動し、`<n:button>` `<n:submitLink>` と同じPOSTリクエストを送信できる。`<n:param>` によるリクエストパラメータの付与も可能。\n\n> **注意**: XHRレスポンスはXMLまたはHTML形式のみ対応。JSONなどの形式には対応していない。\n\n> **注意**: ローカル表示では動作しない。\n\n## コードサンプル\n\n```jsp\n<event:listen\n  title     = \"商品コード入力欄からフォーカスアウトする。\"\n  event     = \"input.productCode blur\">\n  <event:send_request\n    title     = \"入力欄に値が設定されていた場合は、それに合致するコードを検索するAjaxリクエストを送信し、検索結果テーブルを取得する。\"\n    name      = \"product_ajaxRequest\"\n    uri       = \"./product/list\"\n    target    = \"table\"\n    condition = \"input.productCode:is-not-blank\">\n  </event:send_request>\n</event:listen>\n\n<event:listen\n  title = \"Ajaxリクエスト成功\"\n  event = \"ajaxSuccess\">\n  <event:write_to\n    title       = \"入力した商品コードに合致するレコードがDB上に存在すれば商品名を表示する\"\n    target      = \"span.productName\"\n    condition   = \":has(tr td)\"\n    format      = \"商品名: {td.productName}\">\n  </event:write_to>\n</event:listen>\n```\n\n> **補足**: XHRリクエスト完了後の処理は、jQueryのajax関連グローバルイベントを監視する :doc:`event_listen` を作成し、その中にイベントアクションを配置して実装する。ajaxイベント詳細: [Ajax Events](http://api.jquery.com/Ajax_Events/)\n\n## 仕様\n\nこのアクションを実行するイベントは :doc:`event_listen`（または :doc:`event_listen_subwindow`）で定義する必要がある。\n\n動作フロー:\n1. イベント発生元要素が `condition` 属性のセレクタにマッチするかをチェック\n2. マッチしない場合: 何もしない\n3. マッチした場合: このタグを包含する **form** 要素に対してサブミット処理を実行（`<n:submitLink>` タグの処理と同等）\n\n`<n:param>` 等のタグも本タグの内側に記述することで `<n:submitLink>` と同様に利用できる。\n\n### 属性値一覧\n\n◎ 必須属性、○ 任意属性、× 無効（指定しても効果なし）\n\n| 属性名 | 内容 | タイプ | サーバ | ローカル | 備考 |\n|---|---|---|---|---|---|\n| title | 実行する処理の簡単な説明 | 文字列 | × | × | 設計書表示用 |\n| name | サブミット名 | 文字列 | ◎ | × | |\n| uri | リクエスト送信先URI | 文字列 | ◎ | × | |\n| target | レスポンスの内容から取得する要素を指定するセレクタ式 | 文字列 | ◎ | × | |\n| condition | 本アクションを実行する事前条件。イベント発生元要素が満たすべきセレクタ式 | 文字列 | ○ | × | |\n| paramNameAlias | リクエスト送信時にリクエストパラメータの置換を行うルールを定義する | 文字列 | ○ | × | 書式: `置換文字列1/置換後文字列1\\|置換文字列2/置換後文字列2 ...` |\n\n## 内部構造・改修時の留意点\n\n| パス | 内容 |\n|---|---|\n| /WEB-INF/tags/widget/event/send_request.tag | このウィジェットの実体となるタグファイル |\n| /js/nablarch/ui/event/AjaxAction.js | XHR処理を実装するイベントアクション |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

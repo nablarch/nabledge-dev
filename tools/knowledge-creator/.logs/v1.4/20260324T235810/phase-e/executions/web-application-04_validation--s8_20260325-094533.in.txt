@@ -1,0 +1,387 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-04_validation--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "PascalCase class names `W11AC02FormSample` and `W11AC02FormBase` appear in the code example but are absent from the hints array.",
+      "source_evidence": "public class W11AC02FormSample extends W11AC02FormBase { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "PascalCase class names `HttpResponse`, `ExecutionContext`, and `MessageUtil` all appear in the code example but are missing from the hints array.",
+      "source_evidence": "public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) { ... } / MessageUtil.createMessage(MessageLevel.ERROR, ...)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バリデーションメソッドを複数作成したい場合
+-------------------------------------------
+
+登録処理時と更新処理時で精査内容が異なる場合など、独自の精査処理が複数必要になる場合がある。
+この場合、それぞれ処理に応じた精査メソッドを追加する。\
+各メソッドに付与する\ ``@ValidateFor``\ アノテーションの値は異なるものにしておき、\
+バリデーションを実施する際(\ :ref:`04_action`\ 参照)に呼び分ける。
+
+例えば、更新用に精査メソッドを追加する場合は以下のようになる。
+
+
+  .. code-block:: java
+
+   // 【説明】アノテーションの値を他の精査メソッドと別のものにしておく
+   @ValidateFor("updateUser")
+   public static void validateForUpdate(ValidationContext<SearchCondition> context) {
+      // 中略
+   }
+
+
+プロパティの表示名をカスタマイズしたい場合
+------------------------------------------
+例えば、"ユーザ名"(バリデーションエラー時などで画面に出力される表示名も"ユーザ名")というプロパティの表示名を"氏名"としたい場合は、Formの対応するプロパティのsetterをオーバーライドし、\
+@PropertyNameアノテーションを付与すればよい。このとき、バリデーションは元の指定(△△△.javaで指定されているもの)が、そのまま継承される。
+
+下記の例では、kanjiNameプロパティの表示名(元は(W11AC02FormBaseの@PropertyNameアノテーションの値)は"漢字氏名")を"氏名"に変更している。
+
+.. code-block:: java
+
+   public class W11AC02FormSample extends W11AC02FormBase {
+       @PropertyName("氏名")  /* 【説明】
+                                  setterをオーバーライドし、@PropertyNameアノテーションで変更したい表示名を指定する。
+                                  バリデーションは元のものがそのまま継承される */
+       public void setKanjiName(String kanjiName) {
+           super.setKanjiName(kanjiName);
+       }
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+
+  サンプルアプリケーションでは本機能は用いていない。このため、記載したコード例はサンプルアプリケーションには含まれない。
+
+.. _04_action:
+
+Actionの作成
+============
+
+.. _04_validation:
+
+バリデーションの実行と画面入力値が設定されたオブジェクトの取得
+--------------------------------------------------------------
+
+バリデーションの実行と、画面入力値が設定されたオブジェクトを生成するためのメソッドを、Formクラスにstaticメソッドとして実装する。
+
+  :a): ValidationUtil#validateAndConvertRequestを使用してバリデーションを実行する。独自に実装したバリデーション用のメソッドを実行するには、引数に「バリデーション対象メソッド」を用意したvalidateAndConvertRequestメソッドを使用する\ [#]_\ 。この引数の値に\ ``@ValidateFor``\ アノテーションを付与する際に設定した値とすることで、独自に実装したバリデーション用のメソッドが実行される。
+  :b): ValidationContext#abortIfInvalidメソッドを使用して、バリデーションエラーが存在していた場合はApplicationExceptionをthrowする。
+  :c): ValidationContext#createObjectメソッドを使用して、画面入力値が設定されたオブジェクトを取得する。このとき取得できるクラスはValidationUtil#validateAndConvertRequestの第2引数に設定したクラスとなる。
+
+W11AC02Formの例を以下に示す。
+
+.. code-block:: java
+
+    /**
+     * バリデーションを実施する。
+     *
+     * @param req 入力パラメータ情報
+     * @param validationName 使用するバリデーションの名前
+     * @return 入力パラメータを精査後に生成した本フォーム
+     */
+    public static W11AC02Form validate(HttpRequest req, String validationName) {
+        // 【説明】 バリデーションを実行する。
+        ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(
+                "W11AC02", W11AC02Form.class, req, validationName);
+
+        // 【説明】バリデーション結果を確認し、バリデーションエラーが存在した場合にはApplicationExceptionをthrowする。
+        context.abortIfInvalid();
+
+        // 【説明】画面入力値が設定されたオブジェクトを取得する。
+        return context.createObject();
+    }
+
+.. [#] ここでは以下のシグネチャのメソッドを使用している。\
+     ``validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)``
+
+
+.. _04_errHandling:
+
+例外発生時の処理
+----------------
+
+ComponentやActionで例外が発生した場合、デフォルトではHTTPステータス500のレスポンスがブラウザに返される。この応答を変更したい場合は、例外処理が必要なメソッドに、\
+@OnErrorアノテーションを付与し、例外発生時の処理(例外発生時の遷移先の指定)を行う。
+
+具体例は\ :ref:`04_actionClassCreate`\ を参照。
+
+.. _04_actionClassCreate:
+
+メソッドの実装
+--------------
+
+\ :ref:`04_validation`\ と\ :ref:`04_errHandling`\ に従い\ *W11AC02Actionクラス*\ を作成し以下のメソッドを追加する。このメソッドでは、次の処理を行っている。
+
+  :a): @OnErrorアノテーションを使用して、ApplicationException例外発生時の処理を記述。
+  :b): 画面入力値が設定されているオブジェクトの取得。
+  :c): データベースアクセスを伴う精査
+  :d): ビジネスロジックの実行
+
+.. code-block:: java
+
+  /**
+   * ユーザ情報登録画面の「確認」イベントの処理を行う。
+   *
+   * @param req リクエストコンテキスト
+   * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+   * @return HTTPレスポンス
+   */
+  @OnError(                              // 【説明】例外処理用アノテーション
+      type = ApplicationException.class, // 【説明】例外処理の対象とする例外クラス
+
+      /* 【説明】
+          例外発生時の処理。ここではリクエストID"RW11AC0201"の処理を行うよう(doRW11AC0201メソッドを実行するよう)
+          指定している。 */
+      path = "forward://RW11AC0201"
+  )
+  public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {
+
+      // 精査
+      validate(req);
+
+      // ～中略～
+
+  }
+
+  /**
+   * 入力データの精査と生成を行う。<br>
+   * <br>
+   * 精査エラーの場合はApplicationExceptionを送出する。
+   *
+   * @param req リクエスト
+   * @return 精査済みの入力データから生成したエンティティ
+   */
+  private W11AC02Form validate(HttpRequest req) {
+
+      // 生成
+      // 【説明】画面入力値が設定されたオブジェクトを生成する。
+      W11AC02Form form = W11AC02Form.validate(req, "insert");
+      SystemAccountEntity systemAccount = form.getSystemAccount();
+      CM311AC1Component component = new CM311AC1Component();
+
+      // 【説明】データベースアクセスを伴う精査を実施する。
+      // ログインIDのチェック
+      checkLoginId(systemAccount.getLoginId());
+
+      // グループIDのチェック
+      if (!function.existGroupId(form.getUgroupSystemAccount())) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0020001")));
+      }
+
+      // 認可単位IDのチェック
+      if (systemAccount.getPermissionUnit() != null
+              && !function.existPermissionUnitId(systemAccount)) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0030001")));
+      }
+
+      return form;
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+サンプルアプリケーションでは、バリデーションの処理をプライベートメソッドに切り出しているが、必ずプライベートメソッドに切り出す必要は\ **ない**\ 。
+
+.. note::
+  doRW11AC0201メソッドは、ユーザ情報登録画面を初期表示する処理。
+
+.. note::
+  @OnErrorのpathの記述方法はHttpResponseの引数と同じである。詳細は\ :ref:`画面初期表示のActionの作成<makeActionClass>`\ 参照。
+
+View(JSP)の作成
+==================================================
+
+以下の内容で *W11AC0201.jsp* を作成する。
+
+エラーメッセージを表示する場所に、アプリケーションフレームワーク提供のn:errorsタグとn:errorタグを記述する。\
+n:errorsタグは複数のエラーメッセージの一覧表示、n:errorタグは各入力項目のエラーメッセージ表示に使用する。\
+サンプルでは、各入力項目以外のエラーメッセージを画面上部に一覧表示するためにn:errorsタグを使用し、\
+各入力項目に関するエラーメッセージを入力項目の下に表示するためにn:errorタグを使用する。
+
+* app_error.jsp
+
+.. literalinclude:: ./_source/04/app_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(一覧表示)
+
+.. literalinclude:: ./_source/04/W11AC0201_errors.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(ログインIDの入力項目を抜粋)
+
+.. literalinclude:: ./_source/04/W11AC0201_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _04_JSPNameAttribute:
+
+画面の入力項目には、フレームワーク提供のカスタムタグ及びサンプル提供のカスタムタグファイルを使用する。
+入力項目のカスタムタグは、リクエストパラメータの名前となるname属性を、以下の形式で指定する。
+
+Formに追加したEntityのプロパティを指定する場合::
+
+  <バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>
+
+Formに直接追加したプロパティを指定する場合::
+
+  <バリデーションで指定するプレフィックス名>.<プロパティ名>
+
+  ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している。
+
+* W11AC0201.jsp(入力フォーム)
+
+.. literalinclude:: ./_source/04/W11AC0201_form.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+------------
+次に読むもの
+------------
+* `バリデーションとEntityの生成を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html>`_
+* `例外処理を詳しく知りたい時 <../../../fw/reference/handler/HttpMethodBinding.html>`_
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-04_validation--s8",
+  "title": "Actionの作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーションメソッドを複数作成したい場合",
+      "hints": [
+        "@ValidateFor",
+        "ValidationContext",
+        "バリデーションメソッド複数定義",
+        "登録更新で異なる精査"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "プロパティの表示名をカスタマイズしたい場合",
+      "hints": [
+        "@PropertyName",
+        "プロパティ表示名カスタマイズ",
+        "setterオーバーライド"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "バリデーションの実行と画面入力値が設定されたオブジェクトの取得",
+      "hints": [
+        "ValidationUtil",
+        "ValidationContext",
+        "ApplicationException",
+        "validateAndConvertRequest",
+        "abortIfInvalid",
+        "createObject",
+        "バリデーション実行",
+        "入力値オブジェクト取得"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "例外発生時の処理",
+      "hints": [
+        "@OnError",
+        "ApplicationException",
+        "例外処理",
+        "HTTPステータス500"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "メソッドの実装",
+      "hints": [
+        "@OnError",
+        "ApplicationException",
+        "データベース精査",
+        "Actionメソッド実装"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "View(JSP)の作成",
+      "hints": [
+        "n:errors",
+        "n:error",
+        "JSP作成",
+        "エラーメッセージ表示",
+        "name属性形式",
+        "バリデーションプレフィックス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "次に読むもの",
+      "hints": [
+        "バリデーション詳細参照",
+        "例外処理詳細参照",
+        "カスタムタグ参照"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数の精査メソッドが必要な場合（例: 登録用・更新用）、各メソッドに付与する `@ValidateFor` アノテーションの値をそれぞれ異なるものにしておき、バリデーション実施時に呼び分ける（:ref:`04_action` 参照）。\n\n**アノテーション**: `@ValidateFor`\n\n```java\n// アノテーションの値を他の精査メソッドと別のものにしておく\n@ValidateFor(\"updateUser\")\npublic static void validateForUpdate(ValidationContext<SearchCondition> context) {\n    // 中略\n}\n```",
+    "s2": "プロパティの表示名を変更するには、FormのsetterをオーバーライドしてPropertyNameアノテーションを付与する。バリデーションは元の指定がそのまま継承される。\n\n**アノテーション**: `@PropertyName`\n\n```java\npublic class W11AC02FormSample extends W11AC02FormBase {\n    @PropertyName(\"氏名\")\n    // setterをオーバーライドし、@PropertyNameアノテーションで変更したい表示名を指定する\n    // バリデーションは元のものがそのまま継承される\n    public void setKanjiName(String kanjiName) {\n        super.setKanjiName(kanjiName);\n    }\n}\n```\n\n> **注意**: サンプルアプリケーションでは本機能は用いていない。このため、記載したコード例はサンプルアプリケーションには含まれない。",
+    "s3": "バリデーションの実行と入力値オブジェクトの生成をFormクラスのstaticメソッドとして実装する。\n\n1. `ValidationUtil#validateAndConvertRequest` を呼び出す。独自の精査メソッドを実行するには、「バリデーション対象メソッド」引数（`validateFor`）を持つシグネチャを使用し、その値に `@ValidateFor` アノテーションの値を指定する。  \n   シグネチャ: `validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)`\n2. `ValidationContext#abortIfInvalid` を呼び出し、バリデーションエラーが存在する場合は `ApplicationException` をthrowする。\n3. `ValidationContext#createObject` で画面入力値が設定されたオブジェクトを取得する。取得されるクラスは `validateAndConvertRequest` の第2引数に設定したクラス。\n\n**クラス**: `ValidationUtil`, `ValidationContext`\n**例外**: `ApplicationException`\n\n```java\npublic static W11AC02Form validate(HttpRequest req, String validationName) {\n    ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(\n            \"W11AC02\", W11AC02Form.class, req, validationName);\n    context.abortIfInvalid();\n    return context.createObject();\n}\n```",
+    "s4": "ComponentやActionで例外が発生した場合、デフォルトではHTTPステータス500のレスポンスが返される。例外発生時の処理（遷移先など）を変更するには、メソッドに `@OnError` アノテーションを付与する。\n\n**アノテーション**: `@OnError`\n\n具体例は :ref:`04_actionClassCreate` 参照。",
+    "s5": ":ref:`04_validation` と :ref:`04_errHandling` に従い、Actionクラスのメソッドに以下の処理を実装する:\n\na. `@OnError` アノテーションで `ApplicationException` 発生時の遷移先を記述\nb. 画面入力値が設定されたオブジェクトの取得\nc. データベースアクセスを伴う精査\nd. ビジネスロジックの実行\n\n**アノテーション**: `@OnError`\n**例外**: `ApplicationException`\n\n```java\n@OnError(\n    type = ApplicationException.class,\n    path = \"forward://RW11AC0201\"\n)\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    validate(req);\n    // ～中略～\n}\n\nprivate W11AC02Form validate(HttpRequest req) {\n    W11AC02Form form = W11AC02Form.validate(req, \"insert\");\n    SystemAccountEntity systemAccount = form.getSystemAccount();\n    CM311AC1Component component = new CM311AC1Component();\n    checkLoginId(systemAccount.getLoginId());\n    if (!function.existGroupId(form.getUgroupSystemAccount())) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,\n                \"MSG00002\", MessageUtil.getStringResource(\"S0020001\")));\n    }\n    if (systemAccount.getPermissionUnit() != null\n            && !function.existPermissionUnitId(systemAccount)) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,\n                \"MSG00002\", MessageUtil.getStringResource(\"S0030001\")));\n    }\n    return form;\n}\n```\n\n> **注意**: バリデーション処理をプライベートメソッドに切り出すことは必須ではない。\n\n> **注意**: `@OnError` の `path` の記述方法は `HttpResponse` の引数と同じ。詳細は :ref:`makeActionClass` 参照。",
+    "s6": "JSPのエラーメッセージ表示には `n:errors` タグと `n:error` タグを使用する:\n- `n:errors` タグ: 複数エラーメッセージの一覧表示（入力項目以外のエラーを画面上部に表示）\n- `n:error` タグ: 各入力項目のエラーメッセージ表示（入力項目の下に表示）\n\n入力項目カスタムタグの `name` 属性（リクエストパラメータ名）の形式:\n\nFormに追加したEntityのプロパティを指定する場合:\n```\n<バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>\n```\n\nFormに直接追加したプロパティを指定する場合:\n```\n<バリデーションで指定するプレフィックス名>.<プロパティ名>\n```\n\n（ユーザ情報登録では `W11AC02` をプレフィックスとして使用）",
+    "s7": "- [バリデーションとEntityの生成を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html)\n- [例外処理を詳しく知りたい時](../../../fw/reference/handler/HttpMethodBinding.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

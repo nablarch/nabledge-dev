@@ -1,0 +1,275 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/HttpAccessLogHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+HTTPアクセスログハンドラ
+================================================
+
+**クラス名:** ``nablarch.common.web.handler.HttpAccessLogHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+このハンドラでは、往路と復路で、それぞれリクエストとレスポンスに関するHTTPアクセスログを出力する。
+
+出力されるアクセスログの詳細や、出力形式の設定については、 :doc:`../02_FunctionDemandSpecifications/01_Core/01/04_HttpAccessLog` を参照すること。
+
+
+++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread'
+    , HandlerQueue = [
+        "ThreadContextHandler_request"
+      , "HttpAccessLogHandler"
+      , "HttpErrorHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`ThreadContextHandler`           本ハンドラがログに出力する項目には、 :doc:`ThreadContextHandler`
+                                        が設定する項目が含まれるため、
+                                        本ハンドラより上位に配置する必要がある。
+
+  :doc:`HttpErrorHandler`               HTTPエラーレスポンス以外の例外は :doc:`HttpErrorHandler` によって
+                                        HTTPレスポンスオブジェクトに変換されるので
+                                        本ハンドラの後続に配置する必要がある。
+  ====================================  ===================================================================================
+
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路での処理]**
+  **1. (HTTPリクエストログの出力)**
+    引数となるHTTPリクエストオブジェクトおよび実行コンテキストの内容をもとに、HTTPアクセスログを出力する。
+    **(ログレベル: INFO、 ログカテゴリ: HTTP_ACCESS)**
+
+  **2. (後続ハンドラへの処理委譲)**
+    後続ハンドラに処理を委譲し、その結果としてHTTPレスポンスオブジェクトを取得する。
+
+
+.. _outbound:
+
+**[復路での処理]**
+  **3. (HTTPレスポンスログの出力)**
+    HTTPリクエストオブジェクトおよび実行コンテキストに加え、後続ハンドラの処理結果であるHTTPレスポンスオブジェクトの内容をもとに、
+    HTTPアクセスログを出力する。
+    **(ログレベル: INFO、 ログカテゴリ: HTTP_ACCESS)**
+
+  **4. (正常終了)**
+    HTTPレスポンスオブジェクトをリターンして終了する。
+
+.. _error:
+
+**[例外処理]**
+  **2a. (HTTPエラーレスポンスに対するログ出力)**
+    後続ハンドラの処理中に、HTTPエラーレスポンスが送出された場合、そのエラーレスポンスの内容と、
+    HTTPリクエスト、実行コンテキストの内容をもとにHTTPアクセスログを出力した上で、捕捉した例外を再送出する。
+
+  **2b. (HTTPエラーレスポンス以外のエラーに対するログ出力)**
+    後続ハンドラの処理中に、HTTPエラーレスポンス以外の例外が送出された場合は
+    HTTPリクエスト、実行コンテキストの内容をもとにHTTPアクセスログを出力した上で、例外を再送出する。
+
++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラ自体に設定項目は存在しない。
+ロガー側の設定については、 :doc:`../02_FunctionDemandSpecifications/01_Core/01/04_HttpAccessLog` を参照すること。
+
+
+**標準設定**
+  以下はDI設定の記述例である。
+
+    .. code-block:: xml
+
+      <!-- HTTPレスポンスハンドラ -->
+      <component name="httpAccessLogHandler"
+                 class="nablarch.common.web.handler.HttpAccessLogHandler" />
+
+```
+
+## Knowledge File
+
+- ID: `handlers-HttpAccessLogHandler--s1`
+
+```json
+{
+  "id": "handlers-HttpAccessLogHandler--s1",
+  "title": "HTTPアクセスログハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HttpAccessLogHandler",
+        "nablarch.common.web.handler.HttpAccessLogHandler",
+        "HTTPアクセスログ出力",
+        "ThreadContextHandler",
+        "HttpErrorHandler",
+        "ハンドラ配置順序",
+        "上位ハンドラ",
+        "後続ハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "HTTP_ACCESS",
+        "ログカテゴリ",
+        "HTTPアクセスログ",
+        "HTTPエラーレスポンス",
+        "ログレベルINFO"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "DI設定",
+        "httpAccessLogHandler",
+        "XML設定例",
+        "設定項目なし",
+        "nablarch.common.web.handler.HttpAccessLogHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.web.handler.HttpAccessLogHandler`\n\n往路と復路でHTTPリクエスト・レスポンスのアクセスログを出力する。\n\n**関連するハンドラ（配置制約）**\n\n| ハンドラ | 配置制約 |\n|---|---|\n| :doc:`ThreadContextHandler` | 本ハンドラがログに出力する項目には :doc:`ThreadContextHandler` が設定する項目が含まれるため、本ハンドラより**上位**に配置する必要がある。 |\n| :doc:`HttpErrorHandler` | HTTPエラーレスポンス以外の例外は :doc:`HttpErrorHandler` によってHTTPレスポンスオブジェクトに変換されるので、本ハンドラの**後続**に配置する必要がある。 |",
+    "s2": "**[往路での処理]**\n\n1. HTTPリクエストオブジェクトおよび実行コンテキストをもとにHTTPアクセスログを出力する（ログレベル: INFO、ログカテゴリ: HTTP_ACCESS）\n2. 後続ハンドラに処理を委譲し、HTTPレスポンスオブジェクトを取得する\n\n**[復路での処理]**\n\n3. HTTPリクエスト、実行コンテキスト、HTTPレスポンスオブジェクトをもとにHTTPアクセスログを出力する（ログレベル: INFO、ログカテゴリ: HTTP_ACCESS）\n4. HTTPレスポンスオブジェクトをリターンして終了する\n\n**[例外処理]**\n\n- 2a. HTTPエラーレスポンスが送出された場合: エラーレスポンスの内容とHTTPリクエスト、実行コンテキストをもとにHTTPアクセスログを出力した上で、例外を再送出する。\n- 2b. HTTPエラーレスポンス以外の例外が送出された場合: HTTPリクエスト、実行コンテキストをもとにHTTPアクセスログを出力した上で、例外を再送出する。",
+    "s3": "本ハンドラ自体に設定項目は存在しない。ロガー側の設定については :doc:`../02_FunctionDemandSpecifications/01_Core/01/04_HttpAccessLog` を参照すること。\n\n```xml\n<component name=\"httpAccessLogHandler\"\n           class=\"nablarch.common.web.handler.HttpAccessLogHandler\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-WebFrontController--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The knowledge file labels step 3's section as **[正常終了]**, but the source uses **[往路処理]** (with the `.. _outbound:` anchor). Although the source likely has a typo (both inbound and outbound headings use `[往路処理]`), the knowledge file's replacement heading has no direct basis in the source text at that position.",
+      "source_evidence": "Source `.. _outbound:` section: `**[往路処理]**\n  **3. (正常終了)**` — the outer heading is `[往路処理]`, not `[正常終了]`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3)",
+      "description": "The s3 code example references three additional component class names — `HttpCharacterEncodingHandler`, `sessionConcurrentAccessHandler`, `httpResponseHandler` — none of which appear in s3's hints array. Users asking about these components would not be routed to s3.",
+      "source_evidence": "Source standard configuration: `<component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\" />`, `<component-ref name=\"sessionConcurrentAccessHandler\" />`, `<component-ref name=\"httpResponseHandler\" />`"
+    }
+  ]
+}

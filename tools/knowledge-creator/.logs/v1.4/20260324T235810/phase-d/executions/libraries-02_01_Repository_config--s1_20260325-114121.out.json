@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — 値を取得する実装例 (DIコンテナの直接使用)",
+      "description": "The source code block for 'DiContainer direct usage' has explicit warning comments stating that this approach is NOT how it is normally done and should NOT be implemented in regular applications — 'しかし通常、コンポーネントの取得は以下で説明するSystemRepository からコンポーネントを取得する方法で実装する。従って、本フレームワークを使用する場合、このような実装は行わない。' The knowledge file presents the DiContainer direct usage code example without any such warning, which could mislead an AI agent into recommending this pattern as a valid implementation approach.",
+      "source_evidence": "// ******** 注意 ********\n// 直下のコードでは、DIコンテナの動作を説明するために、DIコンテナを直接使用してコンポーネントを取得している。\n// しかし通常、コンポーネントの取得は以下で説明するSystemRepository からコンポーネントを取得する方法で実装する。\n// 従って、本フレームワークを使用する場合、このような実装は行わない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Introduction (footnote #component)",
+      "description": "The source contains a terminology footnote clarifying that 'コンポーネント設定ファイル' is a chapter-specific term used to distinguish it from '環境設定ファイル', and that other chapters simply call it '設定ファイル'. This disambiguation is omitted from the knowledge file and may cause confusion when cross-referencing with other chapters that use '設定ファイル' to mean the same thing.",
+      "source_evidence": "「コンポーネント設定ファイル」は本章で登場する「環境設定ファイル」と区別するために使用する用語であり、他の章では単に「設定ファイル」と記述する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — コンポーネント設定ファイルの記述 (XSD / IDE recommendation)",
+      "description": "The source contains a strong recommendation ('必ず...推奨する') that xsi:schemaLocation must always be set when using an IDE. The knowledge file only lists the benefits (validation, completion, comment viewing) without conveying the explicit best-practice recommendation that this setting is required when using an IDE.",
+      "source_evidence": "IDEを使用する際は必ず xsi:schemaLocation を適切に設定することを推奨する。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ValidatableFileDataReader--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doData code example",
+      "description": "The knowledge file's doData code example includes the comment '前レコードがヘッダーまたはデータであることを精査' but omits the actual validation code. The source explicitly shows: `if (!HEADER_RECORD.equals(preRecordKbn) && !DATA_RECORD.equals(preRecordKbn)) { throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE, ...); }`. The comment implies validation is performed but the error-throwing check is absent, which could mislead an implementer into thinking no explicit check is needed.",
+      "source_evidence": "Source doData method: `if (!HEADER_RECORD.equals(preRecordKbn) && !DATA_RECORD.equals(preRecordKbn)) { throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE, INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber()); }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doTrailer code example",
+      "description": "The knowledge file's doTrailer code example omits the preceding record type validation check present in the source. The source first checks that the previous record is DATA or HEADER (throwing TransactionAbnormalEnd if not), before checking totalCount. The knowledge file's doTrailer starts directly with the totalCount check, leaving out the preRecordKbn guard entirely with no comment indicating it should be there.",
+      "source_evidence": "Source doTrailer method begins with: `if (!DATA_RECORD.equals(preRecordKbn) && !HEADER_RECORD.equals(preRecordKbn)) { throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE, INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber()); }`"
+    }
+  ]
+}

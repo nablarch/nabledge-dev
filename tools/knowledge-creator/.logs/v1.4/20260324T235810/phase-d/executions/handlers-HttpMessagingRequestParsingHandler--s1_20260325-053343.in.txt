@@ -1,0 +1,334 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/fw/handler/HttpMessagingRequestParsingHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+HTTPメッセージングリクエスト変換ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler``
+
+
+---------------------------
+概要
+---------------------------
+往路処理において、HTTPリクエストオブジェクト(HttpRequest) を要求電文オブジェクト(RequestMessage) に変換するハンドラ。
+HTTPメッセージング実行制御基盤にてHTTPリクエストを処理する場合に使用する。
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue =
+      [ "WebFrontController"
+      , "HttpAccessLogHandler"
+      , "HttpMessagingRequestParsingHandler"
+      , "MessageResendHandler"
+      , "MessagingAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`HttpAccessLogHandler`           :doc:`HttpAccessLogHandler` のようなHTTPリクエストオブジェクトに直接依存するハンドラ
+                                        は本ハンドラよりも上位に配置すること。
+
+  :doc:`MessageResendHandler`           :doc:`MessageResendHandler` や :doc:`MessagingAction` のような要求電文オブジェクトに
+                                        直接依存するハンドラは本ハンドラの後続に配置すること。
+  ====================================  ===================================================================================
+
+
+
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストボディの解析)**
+    HTTPリクエストオブジェクトのメッセージボディを読み込み、リクエストデータの解析を行う。
+    解析結果を格納した `RequestMessage`_ を作成する。
+
+  **2. (後続ハンドラに対する処理委譲)**
+     **1.** で作成した `RequestMessage`_ および実行コンテキストを引数として後続のハンドラに処理を委譲し、
+     その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (正常終了)**
+    2.で取得した処理結果をリターンし終了する。
+
+.. _error:
+
+**[例外処理]**
+  **1a. (リクエストの不備による要求電文構築時のエラー)**
+    **1.** の処理時に MessagingException および InvalidDataFormatException が発生した場合は、
+    リクエスト内容の不備が原因とみなし、INFOレベルのログを出力後、
+    元例外をネストしたHTTPエラーレスポンス(ステータスコード400) を送出して終了する。
+
+  **1b. (要求電文構築時のエラー)**
+    **1.** の処理中に上記以外の例外が発生した場合、本ハンドラではなにもせずにそのまま送出して終了する。
+
+  **2a. (後続ハンドラでのエラー)**
+    **2.** の処理中に例外が送出された場合、本ハンドラではなにもせずにそのまま再送出して終了する。
+
+++++++++++++++++++++
+
+
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定値は、以下の通りである。
+
+  ================================ ============================ =========== ======================================================
+  設定項目                         プロパティ名                 データ型　  備考
+  ================================ ============================ =========== ======================================================
+  リクエストボディサイズ上限       bodyLengthLimit              int         | 任意設定。(単位:バイト)
+                                                                            | リクエストのボディストリームから読み込む最大容量
+                                                                            | デフォルトは無制限。
+  ================================ ============================ =========== ======================================================
+
+
+**基本設定**
+
+以下は基本的な設定ファイルの記述例である。
+
+    .. code-block:: xml
+
+      <!-- HTTPメッセージングリクエスト変換ハンドラ -->
+      <component class="nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler">
+           <property name="bodyLengthLimit" value="${bodyLengthLimit}" />
+      </component>
+
+デフォルトでは読み込んだデータを構造化データとして取り扱うが、フレームワーク制御ヘッダに対する
+各項目の読み取りおよび設定は行わない。
+
+フレームワーク制御ヘッダに対する各項目を設定する場合、StructuredFwHeaderDefinitionコンポーネントを登録し、
+プロパティ"FwHeaderKeys"に電文よりヘッダ情報を取得する際のキー情報を定義する。
+
+    .. code-block:: xml
+
+      <!-- HTTPメッセージングリクエスト変換ハンドラ -->
+      <component class="nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler">
+        <property name="fwHeaderDefinition" ref="fwHeaderDefinition"/>
+      </component>
+
+      <component name = "fwHeaderDefinition"
+        class = "nablarch.fw.messaging.reader.StructuredFwHeaderDefinition">
+        <property name = "FwHeaderKeys">
+          <map>
+            <entry key="userId"     value="_nbctlhdr.userId"/>
+            <entry key="resendFlag" value="_nbctlhdr.resendFlag"/>
+            <entry key="statusCode" value="_nbctlhdr.statusCode"/>
+          </map>
+        </property>
+      </component>
+
+ヘッダ情報として以下の情報を、フィールド名をkey、電文上の位置をvalueとして指定する。
+電文上の位置は構造化データをMapに変換した後のキー情報を記述する。
+構造化データからMapに変換される際のキー情報については  :doc:`../core_library/record_format` を参照。
+
+  ======================== =============
+  フレームワーク制御ヘッダ フィールド名
+  ======================== =============
+  ユーザID                 userId
+  再送要求フラグ           resendFlag
+  ステータスコード         statusCode
+  ======================== =============
+
+また、固定長データや可変長データを取り扱う場合は標準フレームワーク制御ヘッダ定義を指定する。
+
+    .. code-block:: xml
+
+      <component
+        name = "fwHeaderDefinition"
+        class = "nablarch.fw.messaging.StandardFwHeaderDefinition">
+      </component>
+```
+
+## Knowledge File
+
+- ID: `handlers-HttpMessagingRequestParsingHandler--s1`
+
+```json
+{
+  "id": "handlers-HttpMessagingRequestParsingHandler--s1",
+  "title": "HTTPメッセージングリクエスト変換ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HttpMessagingRequestParsingHandler",
+        "nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler",
+        "RequestMessage",
+        "HttpRequest",
+        "HTTPメッセージングリクエスト変換",
+        "要求電文オブジェクト",
+        "HTTPメッセージング実行制御基盤"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "RequestMessage",
+        "MessagingException",
+        "InvalidDataFormatException",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "ステータスコード400"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "bodyLengthLimit",
+        "StructuredFwHeaderDefinition",
+        "nablarch.fw.messaging.reader.StructuredFwHeaderDefinition",
+        "StandardFwHeaderDefinition",
+        "nablarch.fw.messaging.StandardFwHeaderDefinition",
+        "フレームワーク制御ヘッダ",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "FwHeaderKeys"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler`\n\n往路処理において、HTTPリクエストオブジェクト(HttpRequest)を要求電文オブジェクト(RequestMessage)に変換するハンドラ。HTTPメッセージング実行制御基盤にてHTTPリクエストを処理する場合に使用する。\n\n**ハンドラキュー配置例:**\nWebFrontController → HttpAccessLogHandler → HttpMessagingRequestParsingHandler → MessageResendHandler → MessagingAction\n\n**関連するハンドラ配置ルール:**\n- :doc:`HttpAccessLogHandler` のようなHTTPリクエストオブジェクトに直接依存するハンドラは本ハンドラよりも上位に配置すること。\n- :doc:`MessageResendHandler` や :doc:`MessagingAction` のような要求電文オブジェクトに直接依存するハンドラは本ハンドラの後続に配置すること。",
+    "s2": "**[往路処理]**\n1. HTTPリクエストオブジェクトのメッセージボディを読み込み、リクエストデータの解析を行い、`RequestMessage`を作成する。\n2. 作成した`RequestMessage`および実行コンテキストを引数として後続のハンドラに処理を委譲し、結果を取得する。\n\n**[復路処理]**\n3. 取得した処理結果をリターンし終了する。\n\n**[例外処理]**\n- **1a.** 往路処理1でMessagingExceptionまたはInvalidDataFormatExceptionが発生した場合、リクエスト内容の不備が原因とみなし、INFOレベルのログを出力後、HTTPエラーレスポンス(ステータスコード400)を送出して終了する。\n- **1b.** 往路処理1で上記以外の例外が発生した場合、本ハンドラではなにもせずそのまま送出して終了する。\n- **2a.** 後続ハンドラ呼び出し中に例外が送出された場合、本ハンドラではなにもせずそのまま再送出して終了する。",
+    "s3": "**設定項目:**\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| bodyLengthLimit | int | | 無制限 | リクエストのボディストリームから読み込む最大容量(バイト) |\n\n**基本設定:**\n```xml\n<component class=\"nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler\">\n  <property name=\"bodyLengthLimit\" value=\"${bodyLengthLimit}\" />\n</component>\n```\n\nデフォルトでは読み込んだデータを構造化データとして取り扱うが、フレームワーク制御ヘッダに対する各項目の読み取りおよび設定は行わない。\n\n**フレームワーク制御ヘッダを設定する場合:** StructuredFwHeaderDefinitionコンポーネントを登録し、プロパティ`FwHeaderKeys`に電文よりヘッダ情報を取得する際のキー情報を定義する。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler\">\n  <property name=\"fwHeaderDefinition\" ref=\"fwHeaderDefinition\"/>\n</component>\n\n<component name=\"fwHeaderDefinition\"\n  class=\"nablarch.fw.messaging.reader.StructuredFwHeaderDefinition\">\n  <property name=\"FwHeaderKeys\">\n    <map>\n      <entry key=\"userId\"     value=\"_nbctlhdr.userId\"/>\n      <entry key=\"resendFlag\" value=\"_nbctlhdr.resendFlag\"/>\n      <entry key=\"statusCode\" value=\"_nbctlhdr.statusCode\"/>\n    </map>\n  </property>\n</component>\n```\n\nフレームワーク制御ヘッダのフィールド名:\n\n| フレームワーク制御ヘッダ | フィールド名 |\n|---|---|\n| ユーザID | userId |\n| 再送要求フラグ | resendFlag |\n| ステータスコード | statusCode |\n\n電文上の位置は構造化データをMapに変換した後のキー情報を記述する。キー情報については :doc:`../core_library/record_format` を参照。\n\n**固定長・可変長データを取り扱う場合:** StandardFwHeaderDefinitionを指定する。\n\n```xml\n<component name=\"fwHeaderDefinition\"\n  class=\"nablarch.fw.messaging.StandardFwHeaderDefinition\">\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

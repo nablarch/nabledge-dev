@@ -1,0 +1,226 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.4/document/mobile/source/01_iOS/01_ConnectionFramework/01_ConnectionFramework.rst`
+- Format: `rst`
+
+```
+実装クラス
+------------------------------
+
+Nablarch Mobileで提供する、各インタフェースの実装クラスについて解説する。
+
+
+.. _aboutHttpConn:
+
+HTTP/HTTPS通信
+=================
+
+NMHttpRequesterはHTTP/HTTPS通信を実装したセンダである。\
+実装したHTTP/HTTPS通信の仕様を以下に示す。
+
+* | **リクエストパス**
+  | URL：通信設定ファイルに設定された値に従う
+  | 　　　　設定されたURLのプロトコルがhttpの場合はHTTP通信を、httpsの場合はHTTPS通信を行う
+  | メソッド：POST
+* | **ヘッダ**
+  | 特に設定なし
+* | **ボディ**
+  | 送信時：コンバータによりバイナリデータに変換したメッセージオブジェクト
+  | 受信時：ダウンロードデータおよびHTTPステータス(ダウンロードデータがない場合はHTTPステータスだけを返す)
+* | **その他**
+  | キャッシュ：使用しない
+  | メッセージのダンプ：通信設定ファイルに設定された値によってはJSON形式のダンプを行う
+  | タイムアウト時間：通信設定ファイルに設定された値に従う
+
+
+.. _aboutJsonCon:
+
+JSONコンバータ
+=================
+NMJsonConvertorはJSONによるNMMessageオブジェクトからのエンコードおよびNMMessageオブジェクトへのデコードを実装したコンバータである。 
+
+以下にJSONとObjective-Cのデータ型の変換仕様を示す。
+
+================== =================================================
+JSON               Objective-C
+================== =================================================
+数値               NSNumber(数値、浮動小数点)
+文字列             NSString
+真偽値             NSNumber(真偽値)
+配列               NSArray
+オブジェクト       NSDictionary
+null               NSNull
+================== =================================================
+
+| NMMessageからバイナリデータに変換する際、上記以外のデータ型オブジェクトが格納されていると\
+  変換できない。
+| 例えばバイト配列をNMMessageに格納したい場合は、Base64でフォーマットして文字列へ変換してから\
+  格納するなどして対応すること。
+| またNMMessageに使用できるキーの型もNSStringに限られる。
+
+
+
+
+------------------------------
+ユーティリティ
+------------------------------
+
+:doc:`../03_Utility/01_Utility` 参照。
+```
+
+## Knowledge File
+
+- ID: `biz-samples-01_ConnectionFramework--s10`
+
+```json
+{
+  "id": "biz-samples-01_ConnectionFramework--s10",
+  "title": "実装クラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "実装クラス",
+      "hints": [
+        "NMHttpRequester",
+        "NMJsonConvertor",
+        "Nablarch Mobile",
+        "実装クラス一覧"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "NMHttpRequester",
+        "NMJsonConvertor",
+        "NMMessage",
+        "HTTP通信",
+        "HTTPS通信",
+        "JSONコンバータ",
+        "POST",
+        "タイムアウト",
+        "Base64",
+        "NSNumber",
+        "NSString",
+        "NSArray",
+        "NSDictionary",
+        "NSNull",
+        "センダ",
+        "コンバータ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ユーティリティ",
+      "hints": [
+        "ユーティリティ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch Mobileで提供される各インタフェースの実装クラス。HTTP/HTTPS通信を実装した`NMHttpRequester`とJSONコンバータを実装した`NMJsonConvertor`が提供される。",
+    "s2": "## HTTP/HTTPS通信\n\n**クラス**: `NMHttpRequester`（HTTP/HTTPS通信を実装したセンダ）\n\n| 項目 | 仕様 |\n|---|---|\n| URL | 通信設定ファイルに設定された値。プロトコルが `http` の場合はHTTP通信、`https` の場合はHTTPS通信 |\n| メソッド | POST |\n| ヘッダ | 特に設定なし |\n| 送信ボディ | コンバータによりバイナリデータに変換したメッセージオブジェクト |\n| 受信ボディ | ダウンロードデータおよびHTTPステータス（ダウンロードデータがない場合はHTTPステータスのみ） |\n| キャッシュ | 使用しない |\n| メッセージダンプ | 通信設定ファイルの設定値によってはJSON形式のダンプを行う |\n| タイムアウト | 通信設定ファイルに設定された値に従う |\n\n## JSONコンバータ\n\n**クラス**: `NMJsonConvertor`（JSONによる`NMMessage`オブジェクトのエンコード/デコードを実装したコンバータ）\n\nJSON ↔ Objective-C 型変換仕様:\n\n| JSON | Objective-C |\n|---|---|\n| 数値 | NSNumber（数値、浮動小数点） |\n| 文字列 | NSString |\n| 真偽値 | NSNumber（真偽値） |\n| 配列 | NSArray |\n| オブジェクト | NSDictionary |\n| null | NSNull |\n\n上記以外のデータ型オブジェクトが`NMMessage`に格納されている場合、バイナリデータへ変換できない。バイト配列を格納する場合はBase64でフォーマットして文字列に変換してから格納すること。`NMMessage`に使用できるキーの型は`NSString`のみ。",
+    "s3": ":doc:`../03_Utility/01_Utility` 参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,175 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "ui-framework-spec_layout",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "内部構造・改修時の留意点 section",
+      "description": "The entire '内部構造・改修時の留意点' section is omitted. This section contains substantive technical information: (1) layout.tag is a nearly empty dummy for JSP compilation containing only `<jsp:doBody>`; (2) the design document view is composed of SpecSheetTemplate.xlsx (template file) and SpecSheetInterpreter.js (display content control script). This context is relevant for developers troubleshooting server-side rendering or modifying the widget.",
+      "source_evidence": "サーバ表示で動作するタグファイル(layout.tag) は、JSPコンパイルを通すためだけの、ほぼ中身のないダミーである。(<jsp:doBody> のみを記述)\n設計書ビューはテンプレートファイルである SpecSheetTemplate.xlsx と、各項目の表示内容を制御する SpecSheetInterpreter.js によって構成される。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===================================================
+画面レイアウト定義用ウィジェット
+===================================================
+:doc:`spec_layout` は業務画面内の各UI要素の論理的なグループ(レイアウト)
+を設計情報として記述するための部品である。
+
+.. note::
+
+  この部品はJSPのサーバ表示の内容には一切影響しないため、
+  実装工程以降も削除する必要はない。
+
+
+コードサンプル
+==================================
+以下の例では、検索条件入力欄を1つの論理的グループ(レイアウト)
+として定義している。
+
+**設計成果物(ローカル動作)**
+
+  .. code-block:: jsp
+
+    <spec:layout name="検索条件入力欄">
+    <n:form windowScopePrefixes="11AC_W11AC01">
+      <field:block
+        title="検索条件"
+        id="search_condition">
+        <field:text
+          title      = "ログインID"
+          domain     = "USER_ID"
+          maxlength  = "20"
+          name       = "11AC_W11AC01.loginId"
+          comment    = "コメントです。">
+        </field:text>
+
+        <field:text
+          title      = "漢字氏名"
+          domain     = "KANJI_NAME"
+          maxlength  = "20"
+          name       = "11AC_W11AC01.kanjiName">
+        </field:text>
+    </n:form>
+    </spec:layout>
+
+
+仕様
+=============================================
+
+**ローカル動作時の挙動**
+  通常は、タグの内容をそのまま表示する。
+  URLにクエリパラメータ `nablarch_spec_layout` が含まれる場合、
+  レイアウト名がその値に含まれているものは非表示となる。
+
+
+**設計書ビュー上の表示**
+  このタグによって定義したレイアウトは、設計書ビューに以下のように反映される。
+
+  1. 「画面レイアウト」欄に、各レイアウトの表示・非表示を切り替えるリンクを表示する。
+      ( :doc:`spec_condition` を参照)
+  2. 「画面項目定義」欄にレイアウト内の各項目をグルーピングする見出しを表示する。
+
+
+
+**属性値一覧**  [**◎** 必須属性 **○** 任意属性 **×** 無効(指定しても効果なし)]
+
+========================= ================================ ============== ========== ========= ================================
+名称                      内容                             タイプ         サーバ     ローカル  備考
+========================= ================================ ============== ========== ========= ================================
+name                      レイアウト名                     文字列         ×          ◎
+
+========================= ================================ ============== ========== ========= ================================
+
+
+内部構造・改修時の留意点
+============================================
+
+サーバ表示で動作するタグファイル(layout.tag) は、JSPコンパイルを通すためだけの、
+ほぼ中身のないダミーである。(<jsp:doBody> のみを記述)
+
+設計書ビューはテンプレートファイルである SpecSheetTemplate.xlsx と、
+各項目の表示内容を制御する SpecSheetInterpreter.js によって構成される。
+
+**部品一覧**
+
+================================================== ===============================================
+パス                                               内容
+================================================== ===============================================
+/WEB-INF/tags/widget/spec/layout.tag               :doc:`spec_layout` のタグファイル
+
+/js/jsp/taglib/spec.js                             ローカル表示用スタブ
+
+/js/devtool/SpecSheetView.js                       設計書ビューJavaScriptUI部品
+
+/js/devtool/SpecSheetInterpreter.js                設計書ビュー表示内容制御スクリプト
+
+/tools/specsheet_template/SpecSheetTemplate.xlsx   設計書ビューテンプレートファイル
+
+/tools/specsheet_template/SpecSheetTemplate.files  | 設計書ビューテンプレートファイル
+                                                     (上記ファイルをHTML形式で保存したもの)
+
+================================================== ===============================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "ui-framework-spec_layout",
+  "title": "画面レイアウト定義用ウィジェット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面レイアウト定義用ウィジェット",
+      "hints": [
+        "spec:layout",
+        "画面レイアウト定義",
+        "ローカル動作",
+        "設計書ビュー",
+        "nablarch_spec_layout",
+        "画面項目定義",
+        "レイアウト非表示",
+        "name属性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "業務画面内の各UI要素の論理的なグループ(レイアウト)を設計情報として記述するための部品。\n\n> **注意**: この部品はJSPのサーバ表示の内容には一切影響しないため、実装工程以降も削除する必要はない。\n\n**コードサンプル**\n\n```jsp\n<spec:layout name=\"検索条件入力欄\">\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n  <field:block title=\"検索条件\" id=\"search_condition\">\n    <field:text title=\"ログインID\" domain=\"USER_ID\" maxlength=\"20\" name=\"11AC_W11AC01.loginId\" comment=\"コメントです。\"></field:text>\n    <field:text title=\"漢字氏名\" domain=\"KANJI_NAME\" maxlength=\"20\" name=\"11AC_W11AC01.kanjiName\"></field:text>\n  </field:block>\n</n:form>\n</spec:layout>\n```\n\n**ローカル動作時の挙動**: 通常はタグの内容をそのまま表示する。URLにクエリパラメータ `nablarch_spec_layout` が含まれる場合、レイアウト名がその値に含まれているものは非表示となる。\n\n**設計書ビュー上の表示**:\n1. 「画面レイアウト」欄に各レイアウトの表示・非表示を切り替えるリンクを表示する（:doc:`spec_condition` 参照）。\n2. 「画面項目定義」欄にレイアウト内の各項目をグルーピングする見出しを表示する。\n\n**属性値一覧** (◎ 必須属性、× 無効)\n\n| 名称 | 内容 | タイプ | サーバ | ローカル |\n|---|---|---|---|---|\n| name | レイアウト名 | 文字列 | × | ◎ |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

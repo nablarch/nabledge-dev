@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 簡易検索機能 (SqlResultSetとは admonition)",
+      "description": "The two key advantages of SqlResultSet over java.sql.ResultSet are omitted: (1) リソース解放(close処理)を実装する必要がない — developers coming from standard JDBC need to know they do NOT need to call close() on SqlResultSet; (2) 取得レコード数がわかる — record count is available. The first point especially affects implementation decisions.",
+      "source_evidence": "Source admonition 'SqlResultSetとは': 「主に、以下の利点がある。リソース解放(close処理)を実装する必要がない / 取得レコード数がわかる」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "Source contains 7 headings (4 h2: 本ページの構成, 基本的な実装, 簡易検索機能, executeQuery-label(start); 3 h3 under 簡易検索機能) but knowledge file has only 3 sections. The three h3 subsections (全件検索, 範囲指定検索, SqlResultSet使用方法) are folded into s3 as inline sub-headings rather than separate knowledge sections. Per V3 rule, s3 (簡易検索機能) contains ≥2000 chars and has ≥2 h3 children, which triggers the split requirement.",
+      "source_evidence": "RST h3 headings: '条件に紐付くデータの全件検索処理' (====), '範囲指定での検索処理' (====), '取得したSqlResultSetの使用方法' (====) — all under the 簡易検索機能 h2."
+    }
+  ]
+}
