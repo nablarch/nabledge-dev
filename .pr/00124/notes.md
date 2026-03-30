@@ -71,6 +71,270 @@ $439.42 for full ABCDEMV pipeline (371 files, 2 rounds)
 
 ---
 
+### 残存指摘の具体的内容（2026-03-30）
+
+#### 注記：重大（critical）の定義
+
+レポートの「重大14件」はPhase Dチェッカーの severity=critical カウント。
+file_evaluations の user_impact=high（7ファイル、10件の high-impact individual finding）が実質的な重大指摘に相当。
+以下では high user_impact ファイルの全指摘詳細と、medium user_impact 23ファイルの具体的問題を記述する。
+
+---
+
+#### 重大指摘（high user_impact）― 7ファイル 10件
+
+**handlers-MessageResendHandler**
+- 再送制御のCase 4条件が「業務処理が**正常終了**したがエラー応答電文が未達」と書かれているが、ソースは「業務処理が**異常終了（トランザクションをロールバック）**し」。正常/異常の意味が逆転している。
+- この区別はメッセージングシステムでハンドラが「ビジネスロジックを再実行するか、キャッシュ済みレスポンスを再送するか」を決定する分岐点。アーキテクチャ上の重大な誤誘導。
+- 原因: ソースRST内部に条件リストと動作見出しで記述が矛盾しており、Phase Eエージェントが動作見出しをそのまま再現した。
+
+**libraries-99_Utility**（2件、ソースRSTに元の誤りあり）
+- `addMonth("201103", 1)` が同一呼び出しで `201104`（正）と `201102`（誤）の2結果を並べて記載。月減算を実装しようとした開発者が正しい引数（-1）を使えない。
+- `getDays` の同日サンプルが存在しない2引数形式 `DateUtil.getDate("20110302", "20110302")` を呼び出している。コンパイル不能。正しくは `getDays`。
+- 原因: どちらもソースRSTに同じ誤りがあり、Phase Eエージェントがverbatimで再現。修正はソースRST側の問題であり、kcの追加ラウンドでは解決しない。
+
+**web-application-Other--s1**（3件、Phase Dがソースを切り捨てたことで発生）
+- s8: `CodeUtil.getValues` の戻り型が `List<CodeItem>`（誤、正は `List<String>`）。JSPタグ `n:codeSelect`/`n:select`/`listId` は存在しない。コンパイルエラーを引き起こすコード。
+- s9: `CodeUtil.contains` は存在しないメソッド。`@CodeValue` の必須属性 `pattern` が欠落した形式で記載。コンパイルエラー。
+- s10: JSPタグが `n:message`（誤）、正は `n:errors`。必須API `WebUtil.notifyMessages(ctx, message)` が丸ごと欠落。この呼び出しなしでは警告メッセージが画面に表示されない。
+- 原因: Phase Dがソース取得時にRSTを切り捨て、エージェントが不完全な情報から推測して生成。Phase Eは具体的なソースなしに誤りを特定できず無修正で終了。
+
+**web-application-07_insert--s1**（s9のfabrication）
+- Section s9でuseTokenが不要な理由を正しく説明しているが、最終文で「JSPにはallowDoubleSubmissionとuseToken両方の設定がある」と矛盾する内容を追記。
+- AIが「JSPには何が含まれるか」という質問に自己矛盾した回答を返す。
+- 原因: Phase Eが説明段落を編集したが矛盾する最終文を削除しなかった。
+
+**libraries-enterprise_messaging--s1**（section_issue）
+- 2つのセクションが丸ごと欠落: メッセージング基盤API（4パターン: 応答不要送信・同期応答送信・応答不要受信・同期応答受信のプロトコルヘッダテーブルとJavaコード例全部）とメッセージングプロバイダ（JMSプロバイダXML設定、embedded providerセットアップ）。
+- 「同期メッセージを送信するには？」「JMSプロバイダの設定方法は？」という質問に一切回答できない。
+- 原因: Phase Eログが未変更のJSON出力を返した（適用失敗）。
+
+**mom-messaging-03_userSendSyncMessageAction**（s2 omission）
+- Javaコード例で `systemAccount.getLoginId()`、`users.getKanjiName()` 等を使用しているが、どの変数も宣言されていない。`W11AC02Form`、`SystemAccountEntity`、`UsersEntity` の定義/インポートも欠落。4ステップ手順のステップ①が完全欠落。コンパイル不能なコード。
+- 原因: Phase Eが全くファイルを修正せず（出力JSONがPhase Dと完全一致）。
+
+**testing-framework-02_componentUnitTest**（s5 omission）
+- 「各データの同じ行で1組のテストデータとなる」（複数エンティティシートの行Nが1テストケースを構成する）というルールが欠落。
+- 複数エンティティ引数を持つメソッド（例: `registerUser(sysAcct, users, grpSysAcct)`）のテストデータをExcelで作成するとき、行の対応を誤っても**コンパイルエラーも実行時エラーも出ない**まま誤ったテストデータになる。
+- 原因: Phase Eの出力がs5途中でトランケートされており、修正が適用されなかった。
+
+---
+
+#### 中程度指摘（medium user_impact）― 23ファイル、具体的問題と傾向
+
+medium指摘は「間違いではないが不完全」ではなく、**実装を誤らせる具体的なリスク**を持つものが多い。以下、問題パターン別に整理する。
+
+**パターン1: 修正エージェントがソース整合性確認を誤りfabricationを存続させた（5ファイル）**
+
+- `web-application-04_validation--s12`: コードブロックに `（null guardなし）`/`（null guardあり）` コメントを追加（ソースに存在しない）。AIが公式Nablarchドキュメントの一部として引用・再生成するリスク。Phase Eがco-locatedデータと照合して「正確」と判断し残存。
+- `libraries-07_DisplayTag--s12`: `SORT_ORDERは言語ごとに異なる場合がある` という注記をAIが推論して追加（ソースにない）。多言語環境でのSORTORDER保証に関する誤ったドキュメントとして扱われる。Phase EがテーブルデータIと照合して矛盾なしと判断し残存。
+- `web-application-04_validation--s8`: `ListSearchInfo を継承する` が必須要件として記述されているがソースは単なる参照例。非テーブル検索BeanでのListSearchInfo不要な継承を誘発。
+- `toolbox-01_EntityGenerator--s1 s4`: `formgeneratorFromIFDesign.config` を `環境設定ファイル` に分類（正: `コンポーネント定義ファイル`）。s2と矛盾。IFデザイン用ファイルの役割が逆になる。
+- `libraries-02_SqlLog--s1 s22`: `executeBatch` ログのフィールドが `更新件数`/`$updateCount$`（誤）→ 正は `バッチ件数`/`$batchCount$`。ログフォーマットをカスタマイズする開発者が誤ったプレースホルダを使用する。
+
+**パターン2: コード例・実装例が不完全で開発者が手順を完成できない（7ファイル）**
+
+- `libraries-02_01_Repository_config--s18`: auto-injection の適格条件を示す3つのJavaクラス定義（interface + implementation + typed setter）が欠落。XMLスニペットだけ見ても「何があればauto-injectionできるか」が分からない。ネストコンポーネントの親取得コードも欠落。
+- `testing-framework-batch--s1`: SETUP_FIXEDファイルの具体例（`work/members.txt`）が欠落。フィールド型コード（`9`=数値, `X`=文字列）、ディレクティブ構文（`text-encoding`, `record-separator`）、マルチレコードレイアウト構造を示す唯一の箇所。抽象フォーマット表だけでは正しいファイルを作れない。
+- `handlers-HttpMethodBinding--s1`: s6が try/catch + HttpErrorResponse パターンを文章で説明するが具体的なコード例がない。ApplicationException → HTTP 400 のパターンを実装するには s6 の prose と無関係な s4 のサンプルを組み合わせる必要があり、ステータスコードや引数順の誤りを招く。
+- `web-application-screenTransition--s1`: ポップアップウィンドウ実装（`popupButton`/`popupLink`/`popupSubmit`/`changeParamName`）のセクションが丸ごと欠落。s1のhintsにはこれらタグが含まれるため検索でヒットするが、ヒットしたのに実装ガイダンスが一切ない状態。
+- `readers-FileDataReader`: FileDataReaderをDataReaderFactory内で生成する（Nablarch batchの必須構造）というコンテキストラベルが欠落。直接ActionやBusinessロジックに書くという誤ったアーキテクチャを誘発。
+- `web-application-03_datasetup`: 「MASTER_DATA.xlsに認可チェックデータを追加する」と書いているが、実際はダウンロード用プリセットファイルが提供されており手動編集不要。誤った手順を指示するリスク。
+- `libraries-08_02_validation_usage--s1`: HTMLフォーム実装例に「あくまで理解のための実装例であり本番に使用してはならない」という警告が削除されている。カスタムタグ推奨の文は残っているが、示されたコードが間違いであるとは言っていない。
+
+**パターン3: EL式制限・設計意図の欠落でセキュリティ・実装パターンを誤らせる（2ファイル）**
+
+- `web-application-basic--s10`: 「値の出力ではない場合にのみEL式が使用可能」という制限が欠落。現状の「変数参照時はEL式を使用可能」は無制限に使えると誤解させる。NablarchのJSPでは値出力コンテキストでのEL式は不正な動作・セキュリティ問題の可能性。
+- `web-application-basic--s10`: `windowScopePrefixes="11AC_W11AC01"` の設計意図（一覧照会画面へ戻った際に検索条件を復元するため）が欠落。これなしに同パターンを参照しても「なぜこの設定が必要か」が分からず、状態引き継ぎが必要な類似実装で適用されない。
+
+**パターン4: 重要クラス・タグ名がhintsに欠落し検索がヒットしない（7ファイル）**
+
+- `nablarch-batch-batch_resident`: `BatchAction` がs3 hintsに欠落。BatchActionの全コールバックイベント詳細（処理開始前、データリーダ作成、業務コミット後等）はs3のみにある。`BatchAction` で検索するとs2（1行のリファレンス）しか返らない。
+- `libraries-07_DisplayTag--s1`: `ThreadContext` がs1 hintsに欠落。「ThreadContextのロケールとフォーマットの関係」「タイムゾーンのデフォルト動作」という自然な質問でs1が取得されない。
+- `libraries-07_TagReference--s39`: `n:write` と `n:set` がs15 hintsに欠落。s15には「n:writeでvarStatusNameにアクセスするとランタイムエラー、n:setを使うこと」というトラブルシューティング情報がある。エラーにあたった開発者がタグ名で検索してもこのworkaroundが見つからない。
+- `libraries-07_BasicRules`: `WebView_PrettyPrintTag`/`WebView_RawWriteTag`（s4）と `WebView_IncludeTag`/`WebView_IncludeParamTag`/`WebView_ConfirmationPageTag`（s5）が欠落。ソース全体の`:ref:`クロスリファレンスで使われる正規名称。これらで検索すると該当セクションにルーティングされない。
+- `libraries-04_ObjectSave--s4`: 拡張ポイントインタフェース `SqlParameterParserFactory`/`SqlParameterParser`/`SqlConvertor` がhintsに欠落。カスタマイズ検討時にインタフェース名で検索しても拡張方法のセクションが取得されない。
+- `about-nablarch-concept--s8`: ハンドラ例（`RequestHandlerEntry`, `HttpResponseHandler`, `HttpAccessLogHandler`）が型変数テーブルの entries から欠落。「どのクラスがどの型変数を使うか」という質問に回答できない。
+- `libraries-07_FormTag--s16`: `リクエストパラメータ` がs3 hintsに欠落。writeタグがリクエストパラメータを検索スコープから除外するという動作（textタグとの違い）を説明するs3が、「writeタグとリクエストパラメータの関係」という質問でヒットしない。
+
+**パターン5: libraries-07_FormTagList の複合キー制約欠落**
+
+- `libraries-07_FormTagList--s1`: compositeKeyRadioButton/compositeKeyCheckboxタグのパターン固有制約2つが欠落: (1) `keyNames` の値がFormのcomposite keyプロパティ名と完全一致しなければならない、(2) `name` 属性はCompositeKeyプロパティ名を表さなければならない。違反しても**コンパイルエラーも実行時エラーも出ない**まま、データバインディングが壊れる。
+
+---
+
+#### 共通原因パターン
+
+medium以上の残存指摘の発生原因を分析すると、以下のパターンが繰り返されている:
+
+1. **Phase Eエージェントがファイルを無修正で返す**: 出力JSONがPhase D入力と完全一致。「修正適用失敗」または「minorと判断してスキップ」。7ファイル以上で確認。
+2. **Phase Eの出力がトランケート**: 出力が途中で切れており修正が反映されない。2〜3ファイルで確認。
+3. **修正エージェントがco-locatedデータと整合を確認して誤りをそのまま存続**: fabricationがソース内の他データと一致しているため修正対象と認識されなかった（DisplayTag, validation）。
+4. **Phase Dがソースを切り捨てた結果Phase Eにソースがない**: web-application-Other--s1の3件はこの原因で全修正が未適用。
+5. **ソースRST自体の誤り**: libraries-99_Utilityの2件はソース起因で追加ラウンドでは解決しない。
+
+---
+
+### 残存指摘の詳細分析
+
+#### 全体サマリー（最終検証 Round 3）
+
+| カテゴリ | 件数 | 割合 | 傾向 |
+|---------|-----|-----|-----|
+| hints_missing | 108 | 41% | 最多。Round 1: 188 → Round 2: 133 → Round 3: 108。減少しているが収束しにくい |
+| omission | 89 | 34% | Round 1: 181 → Round 2: 107 → Round 3: 89。改善効率が高かった |
+| fabrication | 42 | 16% | Round 1: 74 → Round 2: 40 → **Round 3: 42**。Round 2→3で微増。修正で新たな誤情報が混入している可能性 |
+| section_issue | 23 | 9% | Round 1: 73 → Round 2: 40 → Round 3: 23。最も改善率が高い |
+| **合計** | **262** | | |
+
+**重大 (critical)**: 14件（Round 1の81件から83%削減）
+**軽微 (minor)**: 248件
+
+#### カテゴリ別傾向分析
+
+**hints_missing（108件）**
+- 全カテゴリ中最多、かつ収束が最も遅い
+- ラウンドをまたいで修正エージェントがhintsの充実を後回しにする傾向
+- fabricationやomissionと比較して「間違いではないが足りない」ため、修正優先度が低くなる
+- 影響: 検索ヒット漏れ → ユーザーの質問に回答できない
+
+**omission（89件）**
+- Round 1→2の削減率が最も高い（181→107, 41%減）
+- Round 2→3は低減鈍化（107→89, 17%減）
+- libraries領域に集中（36件 / 89件中40%）
+- 重大omission（コンパイル不能コード、実装ガイド全欠落）は提案3に特定済み
+
+**fabrication（42件）**
+- **Round 2→3で微増（40→42）**: 修正エージェントが一部の修正で新たな誤情報を導入した可能性
+- web-application領域が最多（12件）、testing-framework（8件）
+- 重大fabricationは提案1の4ファイルに特定済み
+- ソースRSTに元々誤りがあるケース（libraries-99_UtilityのaddMonth/getDays）も含まれる
+
+**section_issue（23件）**
+- 最も改善効率が高かったカテゴリ（73→40→23）
+- libraries（11件）とweb-application（8件）に集中
+
+#### エリア別分析
+
+| エリア | omission | fabrication | hints_missing | section_issue | 合計 |
+|-------|---------|------------|--------------|--------------|-----|
+| libraries | 36 | 11 | 47 | 11 | **105** |
+| web-application | 21 | 12 | 22 | 8 | **63** |
+| handlers | 8 | 2 | 11 | 0 | **21** |
+| testing-framework | 6 | 8 | 4 | 1 | **19** |
+| nablarch-batch | 3 | 3 | 9 | 1 | **16** |
+| mom-messaging | 3 | 2 | 8 | 0 | **13** |
+| about-nablarch | 7 | 1 | 3 | 0 | **11** |
+| toolbox | 4 | 2 | 1 | 1 | **8** |
+| readers | 1 | 1 | 2 | 0 | **4** |
+| java-static-analysis | 0 | 0 | 1 | 1 | **2** |
+
+**libraries が全体の40%（105/262件）を占める。** タグ関連（07_TagReference, 07_BasicRules等）とDIコンテナ設定（02_01_Repository_config）に集中。
+
+#### 指摘集中ファイル TOP 10
+
+| ファイルID | 件数 | カテゴリ |
+|----------|-----|--------|
+| libraries-02_01_Repository_config--s18 | **11** | omission, hints_missing, fabrication |
+| libraries-07_TagReference--s54 | 5 | hints_missing |
+| web-application-08_complete | 4 | omission |
+| libraries-02_01_Repository_config--s1 | 4 | hints_missing, section_issue |
+| web-application-basic--s10 | 4 | omission, hints_missing, section_issue |
+| web-application-07_insert--s1 | 4 | omission, hints_missing, fabrication |
+| web-application-04_validation--s8 | 4 | omission, hints_missing, section_issue, fabrication |
+| libraries-07_BasicRules | 4 | hints_missing |
+| libraries-01_FailureLog--s11 | 3 | omission |
+| web-application-04_validation--s12 | 3 | omission, hints_missing, fabrication |
+
+`libraries-02_01_Repository_config--s18` は単独で11件と突出。DIコンテナ設定は複雑なため、修正エージェントが十分なコンテキストを取得できていない可能性。
+
+---
+
+### 重大指摘（14件）の全詳細
+
+重大 14件は提案1〜3の対象ファイルに集中している。
+
+#### 提案1: 意味を逆転・捏造するfabrication（4ファイル）
+
+**handlers-MessageResendHandler s1**
+- 問題: 再送制御のCase 4が「業務処理が正常終了したがエラー応答電文が未達」と記述されているが、ソースは「業務処理が異常終了（トランザクションをロールバック）し」
+- 影響: トランザクション結果の判断が逆になる。メッセージング基盤の重大なアーキテクチャ誤り
+- 修正: Case 4の条件を「異常終了（トランザクションをロールバック）」に訂正
+
+**libraries-99_Utility s1**（ソースRSTに元々誤りあり）
+- 問題1: `addMonth("201103", 1)` が `201104` と `201102` の矛盾した2つの結果を返す
+- 問題2: `getDays` が存在しない2引数形式 `DateUtil.getDate("20110302", "20110302")` を呼び出している
+- 影響: 月加算・日数計算のサンプルコードが誤動作する
+- 注記: ソースRSTに元の誤りが存在し、修正エージェントがverbatimで再現した。ソースRSTの誤りのため根本解決は困難
+
+**web-application-Other--s1 s8/s9/s10**（Phase Dがソースを切り捨てたため発生）
+- s8: `CodeUtil.getValues` の戻り型が `List<String>`（正）→ `List<CodeItem>`（誤）、存在しないタグ `n:codeSelect`/`n:select`/`listId` を参照
+- s9: 存在しないメソッド `CodeUtil.contains` を参照
+- s10: `n:message`（誤）を使用、必須の `WebUtil.notifyMessages()` 呼び出しが欠落
+- 影響: コンパイル不能コード、存在しないAPIの参照
+- 原因: Phase Dがソース取得時にRSTを切り捨て、エージェントが不完全な情報から推測した
+- 修正: フルソースRSTから s8/s9/s10 を再生成
+
+**libraries-02_SqlLog--s1 s22**
+- 問題: `executeBatch` ログのバッチ件数フィールドが `更新件数`/`$updateCount$`（誤）→ 正しくは `バッチ件数`/`$batchCount$`
+- 影響: ログ形式をカスタマイズする開発者が誤ったアイテム名・プレースホルダを使用する
+- 修正: s22 のプレースホルダテーブルを訂正
+
+---
+
+#### 提案2: 出典のない編集注釈・矛盾記述（5ファイル）
+
+**web-application-04_validation--s12 s1**
+- 問題: コードブロックに `（null guardなし）`/`（null guardあり）` というコメントが存在するが、ソースには記載なし
+- 影響: AIが公式ドキュメントの一部として引用・再生成する可能性
+- 修正: 発明されたコメントラベルを削除
+
+**libraries-07_DisplayTag--s12 s1**
+- 問題: `SORT_ORDERは言語ごとに異なる場合がある…` という注記がソースに存在しないにもかかわらず追加されている
+- 影響: AIが公式Nablarch動作保証として提示してしまう
+- 修正: 注記を削除
+
+**web-application-04_validation--s8 s1**
+- 問題: `ListSearchInfo（...）を継承する` が必須要件として記述されているが、ソースは単なる参照例
+- 影響: 開発者が不要なListSearchInfo継承を実装してしまう
+- 修正: 参照例であることを明示
+
+**web-application-07_insert--s1 s9**
+- 問題: `useToken` 不要の説明と矛盾する文が最後に追加されている
+- 影響: AIが矛盾した回答を返す
+- 修正: 矛盾する最終文を削除または訂正
+
+**toolbox-01_EntityGenerator--s1 s4**
+- 問題: `formgeneratorFromIFDesign.config` を `環境設定ファイル` に分類しているが、正しくは `コンポーネント定義ファイル`（s2と矛盾）
+- 影響: IFデザイン用ファイルの役割が逆になる
+- 修正: s4の分類を訂正
+
+---
+
+#### 提案3: コンパイル不能・実装ガイド欠落のomission（4ファイル）
+
+**mom-messaging-03_userSendSyncMessageAction s2**
+- 問題: `systemAccount.getLoginId()`, `users.getKanjiName()` 等の変数宣言がコード例に存在しない。`W11AC02Form`, `SystemAccountEntity`, `UsersEntity` の import/定義が欠落。4ステップ手順のステップ①が完全に欠落。`ctx.setRequestScopedVar()` ブロックも欠落
+- 影響: コンパイル不能なコード例
+- 修正: 変数宣言・エンティティ取得コードとステップ①を追加
+
+**testing-framework-02_componentUnitTest s5**
+- 問題: `各データの同じ行で1組のテストデータとなる`（各エンティティシートの同行が1テストケースを構成する）というルールが欠落
+- 影響: 複数エンティティ引数のテスト（例: `registerUser(sysAcct, users, grpSysAcct)`）で行の対応を誤ると、コンパイルエラーも実行時エラーも発生しないまま誤ったテストデータになる
+- 修正: 行対応ルールをs5の冒頭に追加
+
+**libraries-enterprise_messaging--s1**
+- 問題: 2つのセクションが完全欠落: (1) メッセージング基盤API（同期/非同期4パターン、プロトコルヘッダテーブル、Javaコード例）、(2) メッセージングプロバイダ（JMSプロバイダXML設定、組み込みプロバイダ設定）
+- 影響: 「同期メッセージを送信するには？」「JMSプロバイダの設定方法は？」という質問に全く回答できない
+- 修正: フルソースRSTから再生成
+
+**web-application-basic--s1 s8**
+- 問題: 配列データをJSPに渡す送信側Actionコードが欠落。受信側（JSPテンプレート、バリデーションAction）は存在するが、`SqlResultSet`→エンティティ配列変換ループ・配列サイズのFormへのセット・`setRequestScopedVar`登録という準備ステップがない
+- 影響: 配列データ受け渡しパターンが不完全
+- 修正: 送信側Actionコードをs8に追加
+
+---
+
 ## 2026-03-26
 
 ### Environment Check
