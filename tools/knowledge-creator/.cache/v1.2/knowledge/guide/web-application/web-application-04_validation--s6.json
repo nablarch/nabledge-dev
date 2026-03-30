@@ -1,0 +1,50 @@
+{
+  "id": "web-application-04_validation--s6",
+  "title": "バリデーションの実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーションの実装",
+      "hints": [
+        "@PropertyName",
+        "@Required",
+        "@SystemChar",
+        "@Length",
+        "@Digits",
+        "@NumberRange",
+        "@ValidateFor",
+        "ValidationUtil",
+        "ValidationContext",
+        "バリデーション実装",
+        "アノテーション付与",
+        "数値型バリデーション",
+        "バリデーションメソッド",
+        "SystemAccountEntity",
+        "UgroupSystemAccountEntity",
+        "UsersEntity",
+        "W11AC02Form"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "独自の精査処理(項目間精査)を行いたい場合",
+      "hints": [
+        "ValidationContext",
+        "addResultMessage",
+        "addMessage",
+        "項目間精査",
+        "カスタムバリデーション",
+        "精査エラー設定",
+        "@ValidateFor",
+        "ValidationUtil",
+        "W11AC02Form"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "バリデーション実装には以下の2つが必要:\n1. setterにアノテーションを付与する\n2. バリデーションメソッドを実装する\n\n## アノテーションの付与\n\nsetterへのアノテーション付与例:\n\n```java\n@PropertyName(\"パスワード\")                    // エラー発生時に表示される項目名\n@Required                                      // 必須入力チェック\n@SystemChar(charsetDef=\"asciiCharset\")         // ASCII文字チェック\n@Length(max = 20)                              // 最大20文字チェック\npublic void setConfirmPassword(String confirmPassword) {\n    this.confirmPassword = confirmPassword;\n}\n```\n\nバリデータの詳細は[基本バリデータ・コンバータ](../../../fw/reference/core_library/validation_basic_validators.html)および[拡張バリデータ](../../../fw/reference/core_library/validation_advanced_validators.html)を参照。\n\n> **注意**: Integer、Long、BigDecimalといった数値型プロパティには`@Digits`アノテーションを設定する。Webアプリケーションでは外部入力は文字列のみのため、数値型プロパティへの値設定にはデータ型変換が必要。`@Digits`を設定することで数値精査とデータ型変換が実行される。\n\n数値型プロパティのバリデーション例(SystemAccountEntity):\n\n```java\n@PropertyName(\"認証失敗回数\")\n@Required\n@Digits(integer = 1, fraction = 0)  // 整数部桁数・小数部桁数を指定\n@NumberRange(min = 0, max = 9)      // 桁数以外に最大値・最小値を指定\npublic void setFailedCount(Integer failedCount) {\n    this.failedCount = failedCount;\n}\n```\n\n## バリデーションメソッドの実装\n\n`@ValidateFor`アノテーションを付与したバリデーションメソッドをFormに追加する。このアノテーションの値はバリデーション実施時に使用する（:ref:`04_action` 参照）。\n\n処理に応じて精査対象プロパティを切り替えたい場合は、処理ごとにバリデーションメソッドを用意すること（詳細は :ref:`multiple_validation_method` 参照）。\n\n| 用意する配列 | 呼び出すメソッド |\n|---|---|\n| バリデーション対象プロパティ名の配列 | `ValidationUtil#validate` |\n| バリデーション対象外プロパティ名の配列 | `ValidationUtil#validateWithout` |\n\n呼び出し後、`ValidationContext#isValid`（エラーなしの場合true）でバリデーション結果を確認する。\n\nバリデーション対象プロパティ配列を使用した例:\n\n```java\nprivate static final String[] REGISTER_USER_VALIDATE_PROPS = new String[]{\"ugroupId\"};\n\n@ValidateFor(\"registerUser\")\npublic static void validateForRegisterUser(\n        ValidationContext<UgroupSystemAccountEntity> context) {\n    ValidationUtil.validate(context, REGISTER_USER_VALIDATE_PROPS);\n}\n```\n\nバリデーション対象外プロパティ配列を使用した例:\n\n```java\nprivate static final String[] REGISTER_USER_SKIP_PROPS = new String[]{\"userId\", \"insertUserId\",\n        \"insertDate\", \"updatedUserId\", \"updatedDate\"};\n\n@ValidateFor(\"registerUser\")\npublic static void validateForRegisterUser(ValidationContext<UsersEntity> context) {\n    ValidationUtil.validateWithout(context, REGISTER_USER_SKIP_PROPS);\n}\n```\n\nEntityクラスをプロパティとしてもつFormも同様に精査対象を指定できる。この場合、Formクラスの精査メソッドに`@ValidateFor`で指定した名称と同じ名称の精査メソッドが各Entityクラスで呼び出される。\n\nEntityクラスをプロパティとしてもつFormの例（W11AC02Form）:\n\n```java\n@ValidateFor(\"registerUser\")\npublic static void validateForRegister(ValidationContext<W11AC02Form> context) {\n    /* Form内のプロパティは全て精査対象。\n       \"newPassword\"、\"confirmPassword\"はsetterに直接設定したバリデーションを行う。\n       それ以外の項目は、各Entityクラスの精査メソッドが呼び出される。\n       呼び出される精査メソッドは、各Entity内で@ValidateFor(\"registerUser\")が指定されている精査メソッドである。 */\n    ValidationUtil.validateWithout(context, new String[0]);\n\n    if (!context.isValid()) {\n        return;\n    }\n    // 後略\n}\n```",
+    "s2": "独自精査（項目間精査）もバリデーションメソッド内で実装する。精査エラーの場合はValidationContextにエラーメッセージを格納し処理を終了する。エラーがない場合は特に何もしない。\n\n| メソッド | 用途 |\n|---|---|\n| `addResultMessage(String propertyName, String messageId, Object... params)` | 特定項目に対する精査エラー（例: 新パスワードと確認用パスワードが異なる場合） |\n| `addMessage(String messageId, Object... params)` | 全体に跨るエラー（例: 検索条件が1つも指定されなかった場合。詳細は :ref:`入力内容を保持するBean(検索条件など)<validation_searchCondition>` 参照） |\n\n項目間精査の実装例（新パスワードと確認用パスワードの一致チェック）:\n\n```java\n@ValidateFor(\"registerUser\")\npublic static void validateForRegister(ValidationContext<W11AC02Form> context) {\n    ValidationUtil.validateWithout(context, new String[0]);\n\n    // 単項目精査でエラーの場合はここで戻る\n    if (!context.isValid()) {\n        return;\n    }\n\n    W11AC02Form form = context.createObject();\n    // 新パスワードと確認用パスワードのチェック\n    if (!form.newPassword.equals(form.confirmPassword)) {\n        context.addResultMessage(\"newPassword\", \"MSG00003\");\n    }\n}\n```\n\n> **警告**: 独自精査処理内で`ValidationUtil#validate`または`ValidationUtil#validateWithout`を呼び出さないと、フレームワークが提供するバリデータによる精査は行われない。"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "testing-framework-01_UnitTestOutline--s7",
+  "title": "画面オンライン処理における取引単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面オンライン処理における取引単体テスト",
+      "hints": [
+        "画面オンライン処理",
+        "取引単体テスト",
+        "打鍵テスト",
+        "formタグ",
+        "画面遷移テスト",
+        "JavaScriptテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バッチ処理における取引単体テスト",
+      "hints": [
+        "バッチ処理",
+        "取引単体テスト",
+        "自動テストフレームワーク",
+        "連続実行"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メッセージング処理における取引単体テスト",
+      "hints": [
+        "メッセージング処理",
+        "取引単体テスト",
+        "1リクエスト1取引",
+        "複数メッセージ",
+        "連続実行"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "TomcatやWeblogic等のアプリケーションサーバにWebアプリケーションをデプロイして打鍵テストを行う。\n\n![画面遷移図](assets/testing-framework-01_UnitTestOutline--s7/screenTransition.png)\n\nリクエスト単体テストでは確認できない以下の項目をテストする:\n- ブラウザ入力がサーバアプリケーションに正しく受け渡しされているか（formタグおよびその内部タグの属性が正しいか）\n- 画面遷移が正しいか（anchorタグのリンク先が正しいか）\n- JavaScriptが正しく動作するか\n\n![取引単体テスト範囲](assets/testing-framework-01_UnitTestOutline--s7/DealUnitTestRange.png)",
+    "s2": "取引が一連のバッチ処理により構成される場合、取引単体テストにてその組み合わせを確認する。自動テストフレームワークを用いて各バッチを連続してテストすることで取引単体テストが実施可能。\n\n![バッチ取引単体テスト](assets/testing-framework-01_UnitTestOutline--s7/dealUnitTestOnBatch.png)\n![凡例](assets/testing-framework-01_UnitTestOutline--s7/hanrei.png)",
+    "s3": "メッセージング処理ではリクエストと取引のスコープが同じであることがほとんどのため、1リクエスト＝1取引の場合は取引単体テストを実施する必要はない。\n\n複数のメッセージにより取引が成立する場合（例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合）は、バッチ処理における取引単体テストと同様に、リクエスト毎のテストを連続実行することで取引単体テストが実施可能。"
+  }
+}

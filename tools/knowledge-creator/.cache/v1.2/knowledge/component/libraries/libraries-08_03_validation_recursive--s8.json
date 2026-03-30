@@ -1,0 +1,32 @@
+{
+  "id": "libraries-08_03_validation_recursive--s8",
+  "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+      "hints": [
+        "@ValidationTarget",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "ValidationContext",
+        "ValidationUtil",
+        "UserForm",
+        "UserEntity",
+        "ApplicationException",
+        "画面入力用プロパティ",
+        "データベース用プロパティ変換",
+        "複数入力を1カラムにマッピング",
+        "電話番号分割入力",
+        "バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DBでは1カラムだが画面では複数入力となる項目（電話番号など）は、FormにDB用プロパティとは別に画面用プロパティを保持することで、バリデーション機構をそのまま利用できる。文字列連結はActionで実施する。\n\nHTMLフォームのフィールド名にはプレフィックス `userForm` を付与する（`validateAndConvertRequest` の第1引数に対応）:\n\n```html\n<form method=\"POST\">\n  <input type=\"hidden\" name=\"userForm.user.id\" value=\"00000001\"/>\n  電話番号: <input type=\"text\" name=\"userForm.phoneNo1\"/> - <input type=\"text\" name=\"userForm.phoneNo2\"/> - <input type=\"text\" name=\"userForm.phoneNo3\"/> <br/>\n  <input type=\"submit\" value=\"変更\" />\n</form>\n```\n\n**アノテーション**: `@ValidationTarget`, `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`\n\n各プロパティへのバリデーション設定例（UserForm）:\n\n```java\npublic class UserForm {\n\n    private UserEntity user;\n    private String phoneNo1;\n    private String phoneNo2;\n    private String phoneNo3;\n\n    public UserForm(Map<String, Object> params) {\n        this.user = (UserEntity) params.get(\"user\");\n        this.phoneNo1 = (String) params.get(\"phoneNo1\");\n        this.phoneNo2 = (String) params.get(\"phoneNo2\");\n        this.phoneNo3 = (String) params.get(\"phoneNo3\");\n    }\n\n    @ValidationTarget\n    public void setUser(UserEntity user) {\n        this.user = user;\n    }\n\n    @PropertyName(\"電話番号1\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo1(String phoneNo1) {\n        this.phoneNo1 = phoneNo1;\n    }\n\n    @PropertyName(\"電話番号2\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo2(String phoneNo2) {\n        this.phoneNo2 = phoneNo2;\n    }\n\n    @PropertyName(\"電話番号3\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo3(String phoneNo3) {\n        this.phoneNo3 = phoneNo3;\n    }\n\n    private static final String[] VALIDATE_PROPS = new String[] {\"user\", \"phoneNo1\", \"phoneNo2\", \"phoneNo3\"};\n\n    @ValidateFor(\"updateUser\")\n    public static void validateForUpdateUser(ValidationContext<UserForm> context) {\n        ValidationUtil.validate(context, VALIDATE_PROPS);\n        if (!context.isValid()) {\n            return;\n        }\n        String phoneNo1 = (String) context.getConvertedValue(\"phoneNo1\");\n        String phoneNo2 = (String) context.getConvertedValue(\"phoneNo2\");\n        String phoneNo3 = (String) context.getConvertedValue(\"phoneNo3\");\n        if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {\n            context.addResultMessage(\"phoneNo1\", \"MSG00001\");\n        }\n    }\n}\n```\n\nActionでの文字列連結例:\n\n```java\nValidationContext<UserForm> result\n    = ValidationUtil.validateAndConvertRequest(\n        \"userForm\", UserForm.class, req, \"updateUser\");\n\nif (!result.isValid()) {\n    throw new ApplicationException(result.getMessages());\n}\n\nUserForm userForm = result.createObject();\nUserEntity userEntity = userForm.getUser();\n\nuserEntity.setPhoneNo(userForm.getPhoneNo1() + \"-\"\n    + userForm.getPhoneNo2() + \"-\" + userForm.getPhoneNo3());\n```"
+  }
+}
