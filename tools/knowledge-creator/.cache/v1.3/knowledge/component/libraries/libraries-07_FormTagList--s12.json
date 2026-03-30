@@ -1,0 +1,41 @@
+{
+  "id": "libraries-07_FormTagList--s12",
+  "title": "radioButtonsタグ、checkboxesタグ / selectタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "radioButtonsタグ、checkboxesタグ",
+      "hints": [
+        "radioButtonsタグ",
+        "checkboxesタグ",
+        "nablarch_radio",
+        "nablarch_checkbox",
+        "tabindex",
+        "labelタグ",
+        "id属性自動生成",
+        "ラジオボタン一覧",
+        "チェックボックス一覧",
+        "WebView_ListSelectCommon"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "selectタグ",
+      "hints": [
+        "selectタグ",
+        "withNoneOption",
+        "noneOptionLabel",
+        "選択なしオプション",
+        "セレクトボックス",
+        "ドロップダウン",
+        "WebView_ListSelectCommon"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "追加属性は :ref:`WebView_ListSelectCommon` のみ。\n\nラベル出力時にlabelタグを使用。id属性は「nablarch_<radio|checkbox><連番>」形式でフレームワークが自動生成。<連番>は画面内でのradio（またはcheckbox）タグ出現順（1起算）。tabindex属性値はすべてのinputタグにそのまま出力される。\n\n**使用例 (JSP)**:\n```jsp\n<n:radioButtons name=\"team.color\" tabindex=\"3\"\n          listName=\"allColors\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n<n:checkboxes name=\"team.titles\" tabindex=\"5\"\n          listName=\"allTitles\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n```\n\n**出力HTML (入力画面)**:\n```html\n<input id=\"nablarch_radio1\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"001\"><label for=\"nablarch_radio1\">001:red</label><br>\n<input id=\"nablarch_radio2\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"002\"><label for=\"nablarch_radio2\">002:blue</label><br>\n<input id=\"nablarch_radio3\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"003\"><label for=\"nablarch_radio3\">003:green</label><br>\n<input id=\"nablarch_checkbox1\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"01\"><label for=\"nablarch_checkbox1\">01:地区優勝</label><br>\n<input id=\"nablarch_checkbox2\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"02\"><label for=\"nablarch_checkbox2\">02:リーグ優勝</label><br>\n<input id=\"nablarch_checkbox3\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"03\"><label for=\"nablarch_checkbox3\">03:ファイナル優勝</label><br>\n```",
+    "s2": ":ref:`WebView_ListSelectCommon` の属性に加えて、以下の属性を追加。\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| withNoneOption | false | リスト先頭に選択なしオプションを追加するか（true: 追加、false: 追加しない） |\n| noneOptionLabel | \"\" | 選択なしオプションのラベル（withNoneOption=trueのみ有効） |\n\n「選択なし」オプションのvalue属性は常に空文字。\n\n**使用例 (JSP)**:\n```jsp\n<n:select name=\"user.groupIds\"\n          listName=\"allGroups\" elementLabelProperty=\"name\" elementValueProperty=\"id\"\n          elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\"\n          withNoneOption=\"true\" noneOptionLabel=\"選択なし\" />\n```\n\n**出力HTML (入力画面、user.groupIds = \"G002\" の場合)**:\n```html\n<select name=\"user.groupIds\">\n  <option value=\"\">選択なし</option>\n  <option value=\"G001\">G001 - グループA</option>\n  <option value=\"G002\" selected=\"selected\">G002 - グループB</option>\n  <option value=\"G003\">G003 - グループC</option>\n  <option value=\"G004\">G004 - グループD</option>\n  <option value=\"G005\">G005 - グループE</option>\n</select>\n```"
+  }
+}

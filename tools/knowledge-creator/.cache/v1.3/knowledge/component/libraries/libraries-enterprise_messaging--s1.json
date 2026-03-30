@@ -1,0 +1,92 @@
+{
+  "id": "libraries-enterprise_messaging--s1",
+  "title": "システム間メッセージング機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システム間メッセージング機能",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング基盤",
+        "メッセージングプロバイダ",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構成",
+      "hints": [
+        "メッセージング基盤API",
+        "JMSメッセージングプロバイダ",
+        "組込みメッセージングプロバイダ",
+        "応答不要メッセージ送信",
+        "同期応答メッセージ送信",
+        "応答不要メッセージ受信",
+        "同期応答メッセージ受信",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "message_model",
+        "メッセージデータモデル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "基本概念",
+      "hints": [
+        "プロトコルヘッダー",
+        "共通プロトコルヘッダー",
+        "フレームワーク制御ヘッダー",
+        "MessageId",
+        "CorrelationId",
+        "Destination",
+        "ReplyTo",
+        "TimeToLive",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "NablarchHeader",
+        "メッセージボディ",
+        "個別プロトコルヘッダ",
+        "RequestPathJavaPackageMapping",
+        "RequestHandlerEntry",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler",
+        "FwHeaderReader",
+        "MessageResendHandler",
+        "MessageReplyHandler"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "",
+      "hints": [
+        "messaging_api",
+        "メッセージング基盤API"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "なし",
+    "s3": "**1. メッセージング基盤API**\n以下の4種類の送受信処理APIを提供するクラス群:\n- 応答不要メッセージ送信\n- 同期応答メッセージ送信\n- 応答不要メッセージ受信\n- 同期応答メッセージ受信\n\n**2. メッセージングプロバイダ**\nメッセージング基盤APIの実装系:\n- **JMSメッセージングプロバイダ**: JMSインターフェース実装。JMS互換のメッセージングミドルウェアで利用可能。\n- **組込みメッセージングプロバイダ**: JVM上のサブスレッドとして動作するMOMを使用。自動テスト専用。\n\n**3. フレームワーク機能**\nメッセージング基盤APIを使用した機能群。フレームワーク制御ヘッダの利用を前提として設計。\n- :doc:`../architectural_pattern/messaging`: 外部からの要求電文に適切な業務アプリケーションを実行する制御基盤。\n- :doc:`messaging_sending_batch`: 監視テーブルのレコードからメッセージを作成・送信する常駐バッチ。業務側はINSERT文のみでメッセージ送信可能。応答不要メッセージ送信で使用。\n- :doc:`messaging_sender_util`: 対外システムへの同期メッセージ送信ユーティリティ。フレームワーク制御ヘッダの再送電文フラグによる再送/タイムアウト機構を実装。応答なしメッセージ送信には :doc:`messaging_sending_batch` を使用。",
+    "s4": "なし",
+    "s5": "**プロトコルヘッダー**\nMOMによるメッセージ送受信処理で使用される情報を格納したヘッダー領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダー**\nメッセージングコンテキストが使用するヘッダー群。特定のキー名でアクセス可能。\n\n| ヘッダー論理名 | キー名 | 内容 | JMS実装 |\n|---|---|---|---|\n| メッセージID | MessageId | MOMが電文ごとに一意採番する文字列。送信時:MOMが採番した値。受信時:送信側MOMが発番した値。 | MessageID JMSヘッダー |\n| 関連メッセージID | CorrelationId | 関連電文のメッセージID。応答電文:要求電文のMessageId。再送要求:応答再送を要求する要求電文のMessageId。 | CorrelationID JMSヘッダー |\n| 送信宛先 | Destination | 電文の送信宛先論理名。送信時:送信キュー論理名。受信時:受信キュー論理名。 | 送信キューのDestinationオブジェクト論理名 |\n| 応答宛先 | ReplyTo | 応答送信先論理名。同期応答送信時:応答受信キュー論理名。応答不要送信時:設定不要。受信時(同期応答):応答宛先キュー論理名が設定されている。受信時(応答不要):通常は何も設定されていない。 | 応答受信キューのDestinationオブジェクト論理名 |\n| 有効期間 | TimeToLive | 送信処理開始時点からの電文有効期間(msec)。受信時は設定されない。 | Expiration JMSヘッダーに(送信時刻+有効期間)を設定 |\n\n共通プロトコルヘッダー以外のヘッダーは**個別プロトコルヘッダ**としてプロバイダ側で任意に定義可能。JMSの場合、JMSヘッダー・JMS拡張ヘッダー・任意属性はすべて個別プロトコルヘッダとして扱われる。\n\n**メッセージボディ**\nプロトコルヘッダーを除いたデータ領域。メッセージングコンテキストはプロトコルヘッダー領域のみ使用し、それ以外は未解析のバイナリデータとして扱う。メッセージボディの解析は :doc:`record_format` で行い、フィールド名をキーとするMap形式で読み書き可能。\n\n**フレームワーク制御ヘッダー**\nフレームワーク機能が電文中に定義されていることを前提とする制御項目群。\n\n| フレームワーク制御ヘッダ | フィールド名 | 役割 | 使用するハンドラ |\n|---|---|---|---|\n| リクエストID | requestId | 実行すべき業務処理を識別するID | :doc:`../handler/RequestPathJavaPackageMapping`, :doc:`../handler/RequestHandlerEntry`, :doc:`../handler/ServiceAvailabilityCheckHandler`, :doc:`../handler/PermissionCheckHandler`, :doc:`../reader/FwHeaderReader` 他 |\n| ユーザID | userId | 電文の実行権限を表す文字列 | :doc:`../handler/PermissionCheckHandler` |\n| 再送要求フラグ | resendFlag | 再送要求電文送信時に設定されるフラグ | :doc:`../handler/MessageResendHandler` |\n| ステータスコード | statusCode | 要求電文に対する処理結果コード（応答電文に設定） | :doc:`../handler/MessageReplyHandler` |\n\nデフォルトではメッセージボディの最初のデータレコードに上記フィールド名で定義する必要がある。\n\n```bash\n#===================================================================\n# フレームワーク制御ヘッダ部 (50byte)\n#===================================================================\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n#====================================================================\n```\n\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、任意ヘッダ項目としてPJごとに簡易拡張可能。将来の項目追加に備えて予備領域を設けることを強く推奨。",
+    "s6": "なし"
+  }
+}

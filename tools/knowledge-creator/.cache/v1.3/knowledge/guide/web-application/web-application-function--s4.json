@@ -1,0 +1,132 @@
+{
+  "id": "web-application-function--s4",
+  "title": "ファイルアップロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルアップロード画面の作成方法（JSP）",
+      "hints": [
+        "file",
+        "ファイルアップロード",
+        "enctype",
+        "multipart/form-data",
+        "n:form",
+        "n:file",
+        "PartInfo",
+        "UploadHelper"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "アップロードファイルの取得方法（サーバサイド）",
+      "hints": [
+        "PartInfo",
+        "getPart",
+        "HttpRequest",
+        "ApplicationException",
+        "MessageUtil",
+        "MessageLevel",
+        "ファイルアップロード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アップロードファイルの保存方法",
+      "hints": [
+        "UploadHelper",
+        "moveFileTo",
+        "ファイル保存",
+        "PartInfo"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アップロードファイルを読み込む方法",
+      "hints": [
+        "PartInfo",
+        "getInputStream",
+        "InputStream",
+        "バイナリファイル",
+        "UploadHelper"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "アップロードファイルをDBに登録する方法",
+      "hints": [
+        "UploadHelper",
+        "DB一括登録",
+        "applyFormat",
+        "validateWith",
+        "importWith",
+        "UserInfoTempEntity",
+        "@OnError",
+        "ApplicationException",
+        "形式チェック",
+        "精査処理",
+        "空ファイルチェック"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "フォーマット定義ファイルパスの指定",
+      "hints": [
+        "applyFormat",
+        "フォーマット定義",
+        "UploadHelper",
+        "basePathName",
+        "layoutFileName"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "エラー発生時のメッセージID指定",
+      "hints": [
+        "setUpMessageIdOnError",
+        "エラーメッセージ",
+        "形式エラー",
+        "精査エラー",
+        "空ファイルチェック",
+        "メッセージID",
+        "UploadHelper"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "精査処理を実装したクラス、メソッドの指定",
+      "hints": [
+        "validateWith",
+        "精査処理",
+        "UploadHelper",
+        "フォームクラス",
+        "バリデーション",
+        "validateFor"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "データベース一括登録",
+      "hints": [
+        "importWith",
+        "データベース一括登録",
+        "DbAccessSupport",
+        "ApplicationException",
+        "SQLID",
+        "UploadHelper"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルアップロードを行うには `file` タグと `PartInfo`, `UploadHelper` クラスを使用する。\n\n> **警告**: ファイルアップロードを行う場合、`<n:form>` タグの `enctype` 属性に `\"multipart/form-data\"` を必ず指定すること。\n\n```jsp\n<n:form enctype=\"multipart/form-data\">\n  <n:file name=\"userList\" cssClass=\"input\" size=\"50\"/>\n  <n:submit name=\"submit\" type=\"submit\" value=\"アップロード\" uri=\"RW11AC0602\"/>\n</n:form>\n```",
+    "s2": "`HttpRequest.getPart(name)` でアップロードファイルを `List<PartInfo>` として取得する。\n\n```java\nList<PartInfo> partInfoList = req.getPart(\"userList\");\nif (partInfoList.isEmpty()) {\n    throw new ApplicationException(\n            MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\"));\n}\nPartInfo partInfo = partInfoList.get(0);\n```\n\n> **注意**: 同一フォーム内に同一name属性の `n:file` タグが複数ある場合、`partInfoList` には複数の `PartInfo` が含まれる。",
+    "s3": "`UploadHelper.moveFileTo(論理パス名, ファイル名)` でファイルを指定ディレクトリへ移動する。\n\n```java\nUploadHelper helper = new UploadHelper(partInfo);\nString fileName = generateUniqueFileName();\nhelper.moveFileTo(\"uploadFileSaveDir\", fileName);\n```",
+    "s4": "画像などのバイナリファイルは `PartInfo.getInputStream()` で入力ストリームとして取得する。\n\n```java\nPartInfo partInfo = req.getPart(\"imageFile\").get(0);\nInputStream in = partInfo.getInputStream();\n```",
+    "s5": "`UploadHelper` クラスを使用してファイル精査およびDB登録を簡易的に行うことができる。\n\n> **注意**: 前提事項: (1) 単一レイアウト（全レコードが同一レイアウト）、(2) 登録先テーブルが1つ（1レコードから複数テーブルへの登録不可）\n\n処理フロー:\n1. フォーマット定義のロード — アップロードファイルのデータフォーマット定義ファイルを読み込む\n2. 形式チェック — フォーマット定義に基づき各レコードを自動検証。通過したレコードはMap型に変換\n3. 精査処理 — 通常の業務Actionと同様にドメイン精査・DB精査・複雑なビジネスロジック精査が実装可能\n4. 空ファイルチェック — レコードが1件以上存在することを確認\n5. DB登録 — 全レコードが検査を通過した場合に一括登録\n\n実装例:\n\n```java\n@OnError(type = ApplicationException.class, path = \"forward://RW11AC0601\")\npublic HttpResponse doRW11AC0602(HttpRequest req, ExecutionContext ctx) {\n    PartInfo partInfo = req.getPart(\"fileToSave\").get(0);\n    UploadHelper helper = new UploadHelper(partInfo);\n    int cnt = helper.applyFormat(\"N11AC002\")\n                    .setUpMessageIdOnError(\"MSG00037\", \"MSG00038\", \"MSG00040\")\n                    .validateWith(UserInfoTempEntity.class, \"validateRegister\")\n                    .importWith(this, \"INSERT_SQL\");\n}\n```",
+    "s6": "`applyFormat(String layoutFileName)` でアップロードファイルに適用するフォーマットを指定する。\n\nフォーマット定義ファイルの読み込み先をデフォルト値から変更する場合は論理パス名を指定する:\n\n`applyFormat(String basePathName, String layoutFileName)`",
+    "s7": "`setUpMessageIdOnError(String messageIdOnFormatError, String messageIdOnValidationError, String messageIdOnEmptyFile)` でエラー発生時のメッセージIDを指定する。\n\n| 引数 | 設定内容 |\n|---|---|\n| 第1引数 | 形式エラー時のメッセージID |\n| 第2引数 | 精査エラー時のメッセージID |\n| 第3引数 | ファイルが空の場合のメッセージID |\n\n形式エラー時のメッセージプレースホルダー:\n- `{0}`: 形式エラーが発生したレコード行数\n\n例: `{0}行目に形式エラーがあります。` → `12行目に形式エラーがあります。`\n\n精査エラー時のメッセージプレースホルダー:\n- `{0}`: 精査エラーが発生したレコード行数\n- `{1}`: 精査エラーメッセージ文言\n\n例: `{0}行目に精査エラーがあります。 [{1}]` → `8行目に精査エラーがあります。 [カナ氏名は全角カナで入力してください。]`",
+    "s8": "`validateWith(Class<F> formClass, String validateFor)` で精査に使用するフォームクラスと精査メソッド名を指定する。\n\n精査エラーのメッセージは蓄積され、`importWith` が実行されるまで例外は送出されない。",
+    "s9": "`importWith(DbAccessSupport dbAccessSupport, String insertSqlId)` で精査済みのフォームを一括登録する。\n\n- 第1引数: `DbAccessSupport` のインスタンス（ActionクラスはDbAccessSupportを継承しているため通常は `this`）\n- 第2引数: レコード1件を登録するINSERT文のSQLID\n\n形式エラー・精査エラーが1件でも存在する場合は `ApplicationException` が送出される。この例外には蓄積された全エラーメッセージ（形式エラー・精査エラー）が含まれる。"
+  }
+}
