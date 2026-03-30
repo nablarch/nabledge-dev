@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 (期待するデータベースの状態)",
+      "description": "Section s2 contains raw RST cross-reference syntax `:ref:`オンライン<request_test_expected_tables>`` verbatim. This RST markup is meaningless to an AI agent reading the knowledge file in JSON context — the reference target cannot be resolved and provides no navigable information. It should either be omitted (treated as a navigation element) or replaced with plain-text context describing what the 'オンライン' case refers to.",
+      "source_evidence": "`:ref:`オンライン<request_test_expected_tables>`\\ と同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (overall structure)",
+      "description": "The source file contains 14 headings (可変長ファイルの準備, 各種期待値, 期待するDB, 期待する固定長, 期待する可変長, テストメソッドの書き方, スーパクラスについて, テストメソッド作成, スーパクラスのメソッド呼び出し, テスト起動方法, テスト結果検証, DBの結果検証, ファイルの結果検証, ログの結果検証), but the knowledge file has only 7 sections. Merging is acceptable where parent+child content is unified (s5 merges 4 headings; s7 merges 4 headings) and all content is present, but the count difference is flagged for awareness per the automated pre-check.",
+      "source_evidence": "Source headings at multiple RST levels (=== and ---) total 14; knowledge file index lists s1–s7 only."
+    }
+  ]
+}

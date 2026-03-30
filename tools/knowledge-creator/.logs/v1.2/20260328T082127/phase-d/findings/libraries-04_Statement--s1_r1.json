@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — DbAccessSupport methods table, `search` method row",
+      "description": "The `search` method's checked exception `throws TooManyResultException` is omitted from the knowledge file. The source explicitly declares `SqlResultSet search(String sqlId, ListSearchInfo condition) throws TooManyResultException`. Knowing that this method throws a checked exception is essential for correct implementation — callers must handle or declare it.",
+      "source_evidence": ".. function:: SqlResultSet search(String sqlId, ListSearchInfo condition) throws TooManyResultException"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Hints for s3 are missing `TooManyResultException` (the checked exception thrown by `DbAccessSupport#search`) and `ListSearchInfo` (the parameter type used in both `getParameterizedSqlStatement` and `search`). Both are PascalCase class names that appear in the section content.",
+      "source_evidence": "SqlResultSet search(String sqlId, ListSearchInfo condition) throws TooManyResultException"
+    }
+  ]
+}

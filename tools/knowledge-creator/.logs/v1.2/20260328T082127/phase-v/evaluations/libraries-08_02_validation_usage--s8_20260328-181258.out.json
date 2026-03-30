@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are structural artifacts from RST navigation anchors with no prose content. The actual substantive content exists in adjacent sections (s3 for 値の変換, s8 for プロパティに紐付くメッセージの作成). An agent retrieving s2 or s7 gets 'なし', but the real content remains retrievable via the richer hints in s3 and s8. No knowledge is lost; the worst case is a wasted retrieval slot.",
+  "findings_assessment": [
+    {
+      "category": "section_issue",
+      "location": "s2",
+      "impact": "low",
+      "justification": "s2 exists solely for the RST anchor `.. _convert_property:`. Its hints ('値変換', 'convert_property') partially overlap with s3, so a query matching s2 may retrieve 'なし' instead of the actual content. However, s3 carries more specific and distinctive hints (@Digits, @NumberRange, BigDecimal, 数値型変換) that make it independently discoverable. The anchor name 'convert_property' is an internal RST identifier unlikely to appear in real user queries. No content is missing — s3 fully covers 値の変換. Why D→E did not resolve: the RST source contains no prose for this anchor label; the fix agent had no source text to fill the section with, and restructuring (merging s2 into s3) was beyond the scope of a content fix."
+    },
+    {
+      "category": "section_issue",
+      "location": "s7",
+      "impact": "low",
+      "justification": "s7 exists solely for the RST anchor `.. _validation-message-creation:`. Its hints ('バリデーションメッセージ', 'validation-message-creation') are broader than s8's specific hints (createMessageForProperty, MessageUtil, プロパティエラーメッセージ). A query like 'バリデーションメッセージ' could surface s7 (no content) before s8, but s8 remains retrievable on its own. The anchor identifier 'validation-message-creation' is an internal RST name unlikely to appear verbatim in user queries. No knowledge is missing — s8 fully covers the topic. Why D→E did not resolve: same reason as s2; there is genuinely no prose in the RST source for this anchor label, so the fix agent left it as 'なし' rather than restructuring section boundaries."
+    }
+  ]
+}

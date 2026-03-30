@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 3: 応答不要メッセージ受信",
+      "description": "The protocol header table for Pattern 3 is completely absent from the knowledge file. The source contains a 5-row table specifying received message header contents (メッセージID: 送信先システム側で採番された一意文字列, 関連メッセージID: [N/A], 送信宛先: 宛先の論理名, 応答宛先: [N/A], 有効期間: 任意). This information characterizes what the receiver can expect in incoming messages.",
+      "source_evidence": "応答不要メッセージ受信 section, protocol header table: `メッセージID: 送信先システム側で採番された一意文字列が設定される。関連メッセージID: [N/A] 送信宛先: 宛先の論理名 応答宛先: [N/A] 有効期間: 任意`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 2: 同期応答メッセージ送信, response message header table",
+      "description": "The response message protocol header table shown for Pattern 2 is incomplete. The knowledge file shows only 2 of the 5 rows (関連メッセージID and 送信宛先), omitting: メッセージID (送信先システム側で採番された一意文字列が設定される), 応答宛先 ([N/A]), and 有効期間 (任意). The description of メッセージID on the response is relevant context for implementers.",
+      "source_evidence": "同期応答メッセージ送信 section, response header table: `メッセージID: 送信先システム側で採番された一意文字列が設定される。**関連メッセージID**: 送信電文のメッセージIDヘッダの値... **送信宛先**: 送信電文の応答宛先ヘッダの値... 応答宛先: [N/A] 有効期間: 任意`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 2: 同期応答メッセージ送信, sending header table",
+      "description": "The sending message protocol header table for Pattern 2 omits 2 rows: メッセージID ([設定不要(送信後に採番される)]) and 関連メッセージID ([設定不要]). The knowledge file shows only 送信宛先, 応答宛先, and 有効期間. Knowing メッセージID is auto-assigned after sending is useful for implementers.",
+      "source_evidence": "同期応答メッセージ送信 section, sending header table: `メッセージID: [設定不要(送信後に採番される)] 関連メッセージID: [設定不要] **送信宛先**: ... **応答宛先**: ... 有効期間: 任意`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 4: 同期応答メッセージ受信, sending header table",
+      "description": "The sending message protocol header table for Pattern 4 shows only 2 of 5 rows (関連メッセージID and 送信宛先), omitting: メッセージID ([設定不要(送信後に採番される)]), 応答宛先 ([設定不要]), and 有効期間 (任意). Knowing メッセージID and 応答宛先 require no configuration is relevant implementation guidance.",
+      "source_evidence": "同期応答メッセージ受信 section, sending header table: `メッセージID: [設定不要(送信後に採番される)] **関連メッセージID**: 受信電文のメッセージIDヘッダの値... **送信宛先**: 受信電文の応答宛先ヘッダの値... 応答宛先: [設定不要] 有効期間: 任意`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Patterns 2, 3, and 4: flow diagram images",
+      "description": "The knowledge file includes the flow diagram image for Pattern 1 (messaging_send.png) but omits the corresponding images for Patterns 2, 3, and 4 (messaging_sendSync.png, messaging_receive.png, messaging_replyToRequest.png). The inclusion is inconsistent across the four patterns.",
+      "source_evidence": "Pattern 2: `.. figure:: ../_image/messaging_sendSync.png`, Pattern 3: `.. figure:: ../_image/messaging_receive.png`, Pattern 4: `.. figure:: ../_image/messaging_replyToRequest.png`"
+    }
+  ]
+}

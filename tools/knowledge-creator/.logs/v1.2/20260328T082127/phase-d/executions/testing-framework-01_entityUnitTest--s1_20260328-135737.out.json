@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file states Form/Entityの単体テストは「同じ方法でテストする」(same method), but the source says「ほぼ同じように単体テストを行えるため、共通する内容についてはEntity単体テストをベースに説明し、特有の処理については個別に説明する」(almost the same, with Form-specific behaviors explained separately). The nuance that Form and Entity testing is \"almost\" the same—and that there are Form-specific behaviors—is lost.",
+      "source_evidence": "「両者はほぼ同じように単体テストを行えるため、共通する内容についてはEntity単体テストをベースに説明し、特有の処理については個別に説明する。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 (section titled テストメソッドの作成方法（文字種・文字列長）)",
+      "description": "Section s4 embeds the introductory explanation and caution note for「その他の単項目精査のテストケース」as a subsection「**その他の単項目精査**」. This content originates from the source h2 section「その他の単項目精査のテストケース」, which is the parent of s5's content (テストケース表の作成方法). Placing it inside s4 (テストメソッドの作成方法（文字種・文字列長）) mixes content from two different source sections and could mislead retrieval: a user asking about「その他の単項目精査」setup may not find the intro note because it is inside the 文字種・文字列長 test method section.",
+      "source_evidence": "Source h2「その他の単項目精査のテストケース」contains the intro paragraph about range validation and the note about nested Form limitation—both placed in s4 rather than s5."
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "nablarch-batch-04_fileInputBatch--s4",
+  "title": "１件ごとの処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "エンドレコードの精査処理",
+      "hints": [
+        "TransactionAbnormalEnd",
+        "DataRecord",
+        "doEnd",
+        "エンドレコード精査",
+        "レコード区分チェック",
+        "FILE_LAYOUT_ERROR_EXIT_CODE",
+        "INVALID_FILE_LAYOUT_FAILURE_CODE"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデータクラスの終了処理",
+      "hints": [
+        "onFileEnd",
+        "TransactionAbnormalEnd",
+        "ExecutionContext",
+        "writeLog",
+        "終了処理",
+        "レコード件数ログ出力",
+        "エンドレコード確認"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ヘッダーレコードの処理",
+      "hints": [
+        "RecordTypeBinding",
+        "doHeader",
+        "DataRecord",
+        "ヘッダーレコード処理",
+        "レコードタイプ振り分け",
+        "ファイル形式精査済み"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データレコードの処理",
+      "hints": [
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "ValidationContext",
+        "UserInfoTempEntity",
+        "TransactionAbnormalEnd",
+        "ApplicationException",
+        "IdGeneratorUtil",
+        "ParameterizedSqlPStatement",
+        "doData",
+        "バリデーション",
+        "データレコード処理",
+        "テンポラリテーブル登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "トレーラレコードの処理",
+      "hints": [
+        "doTrailer",
+        "DataRecord",
+        "トレーラレコード処理"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "エンドレコードの処理。",
+      "hints": [
+        "doEnd",
+        "DataRecord",
+        "エンドレコード処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "前レコードのレコード区分がトレーラ（`TRAILER_RECORD`）でない場合、`TransactionAbnormalEnd` をスローする。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    if (!TRAILER_RECORD.equals(preRecordKbn)) {\n        // 前レコードがトレーラでない場合\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    preRecordKbn = END_RECORD;\n    return new Success();\n}\n```",
+    "s2": "全レコードの精査終了後に `onFileEnd` が起動される。最終レコードがエンドレコード（`END_RECORD`）でない場合、`TransactionAbnormalEnd` をスロー。レコード数をログ出力する。\n\n```java\npublic void onFileEnd(ExecutionContext ctx) {\n    if (!END_RECORD.equals(preRecordKbn)) {\n        // 最終レコードがエンドレコードで無い場合\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());\n    }\n    // レコード数をログに出力\n    writeLog(\"M000000002\", ctx.getLastRecordNumber());\n    writeLog(\"M000000003\", dataRecordCount);\n}\n```\n\n`writeLog` メソッドについては :doc:`03_dbInputBatch` の :ref:`log_output_in_batch_action` を参照。",
+    "s3": "`RecordTypeBinding` ハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\n\n> **注意**: ファイルバリデータクラスにてファイル形式の精査は実施済みであり、1件ごとの本処理ではファイル形式異常は考慮しなくて良い。\n\nヘッダーレコードの妥当性は前処理で確認済みのため、本処理では処理を行わない。\n\n```java\npublic Result doHeader(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s4": "精査処理の実施方法は画面オンライン処理と同様。精査対象データの種類のみ異なる。\n\n| 実行制御基盤 | 精査対象データ |\n|---|---|\n| 画面オンライン | HTTPリクエストパラメータ |\n| バッチ | DB検索結果、ファイルのレコード等 |\n\n`ValidationUtil.validateAndConvertRequest` でデータレコードの精査およびエンティティへのマッピングを行う。精査エラーの場合は `TransactionAbnormalEnd` をスロー。\n\n```java\npublic Result doData(DataRecord inputData, ExecutionContext ctx) {\n\n    ValidationContext<UserInfoTempEntity> validationContext = ValidationUtil\n            .validateAndConvertRequest(UserInfoTempEntity.class,\n                    inputData, \"validateRegister\");\n\n    if (!validationContext.isValid()) {\n        throw new TransactionAbnormalEnd(103,\n                new ApplicationException(validationContext.getMessages()),\n                \"NB11AA0105\", recordNo);\n    }\n\n    UserInfoTempEntity entity = validationContext.createObject();\n    entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());\n\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\n            \"INSERT_USER_INFO_TEMP\");\n    statement.executeUpdateByObject(entity);\n\n    return new Success();\n}\n```",
+    "s5": "トレーラレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理なし）。\n\n```java\npublic Result doTrailer(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s6": "エンドレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する（特別な処理なし）。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```"
+  }
+}

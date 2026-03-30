@@ -1,0 +1,121 @@
+{
+  "id": "libraries-01_Log--s1",
+  "title": "ログ出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ログ出力",
+        "初期処理不要",
+        "終了処理",
+        "NablarchServletContextListener",
+        "リソース解放"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "ログ出力機能の拡張性",
+        "書き込み処理",
+        "フォーマット処理",
+        "ログ出力要求受付処理",
+        "Log4J",
+        "FailureLog",
+        "SqlLog",
+        "PerformanceLog",
+        "HttpAccessLog",
+        "差し替え可能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "ログレベル",
+        "出力先設定",
+        "ファイルローテーション",
+        "アクセスログ",
+        "複数プロセス",
+        "実装済み",
+        "未実装",
+        "マスク"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ログ出力要求受付処理",
+      "hints": [
+        "ログ出力要求受付処理",
+        "Log_LoggerProcess",
+        "ロガー",
+        "ロガーファクトリ",
+        "ロガーマネージャ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "クラス図",
+      "hints": [
+        "クラス図",
+        "ログ出力要求受付処理",
+        "Log_ClassDiagram"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "各クラスの責務",
+      "hints": [
+        "Logger",
+        "LoggerFactory",
+        "LoggerManager",
+        "ロガー",
+        "ロガーファクトリ",
+        "ロガーマネージャ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "インタフェース定義",
+      "hints": [
+        "nablarch.core.log.Logger",
+        "nablarch.core.log.LoggerFactory",
+        "Logger",
+        "LoggerFactory",
+        "ロガー",
+        "ロガーファクトリ"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "クラス定義",
+      "hints": [
+        "nablarch.core.log.basic.BasicLogger",
+        "nablarch.core.log.log4j.Log4JLogger",
+        "nablarch.core.log.basic.BasicLoggerFactory",
+        "nablarch.core.log.log4j.Log4JLoggerFactory",
+        "nablarch.core.log.LoggerManager",
+        "nablarch.core.log.LogSettings",
+        "BasicLogger",
+        "Log4JLogger",
+        "BasicLoggerFactory",
+        "Log4JLoggerFactory",
+        "LoggerManager",
+        "LogSettings"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "明示的な初期処理は不要。ただしリソース解放のため終了処理が必要で、フレームワークの他の機能で実行する。Webアプリケーションでは :doc:`../../handler/NablarchServletContextListener` で終了処理を行う。",
+    "s2": "## ログ出力機能の拡張性\n\nログ出力機能は以下3つの処理で構成され、それぞれ個別に差し替え可能:\n\n- a) ログの書き込み処理\n- b) ログのフォーマット処理\n- c) アプリケーションからのログ出力要求受付処理\n\nLog4Jについては専用のc実装を提供済み。過去プロジェクトのログ出力ライブラリを使用したい場合はcを差し替える。\n\n## 提供する各種ログ\n\n- :ref:`障害通知ログ<FailureLog>`\n- :ref:`障害解析ログ<FailureLog>`\n- :ref:`SQLログ<SqlLog>`\n- :ref:`パフォーマンスログ<PerformanceLog>`\n- :ref:`HTTPアクセスログ<HttpAccessLog>`\n\n各ログのフォーマットは設定で変更可能。",
+    "s3": "## 実装済み\n\n- ログ出力機能の実装を差し替え可能\n- ログ毎にログレベルと出力先を設定可能\n- パッケージ単位・クラス単位で設定対象のログを絞り込み可能\n- 1つのログを複数の出力先に出力可能\n- ログの出力先を変更可能\n- ログをファイルに出力可能\n- ログファイルが指定サイズに達したら出力ファイルを自動切り替え（バックアップ後初期化）\n- ログのフォーマットを変更可能\n- ログレベルを表す文言を変更可能\n- オブジェクト情報（クラス名・フィールド値）をログ出力可能\n- エラー情報（例外クラスのメッセージ・スタックトレース）をログ出力可能\n- ログのフォーマットを設定のみで変更可能\n- 性能測定目的のログ集計が可能\n- アクセスログの取得が可能（リクエストパラメータの出力・特定項目のマスク、アクション処理結果のログ出力）\n- ログ監視ツールから監視可能なフォーマットでのログ出力が可能\n- 複数プロセスから1つのログファイルへの出力が可能\n\n## 未実装\n\n- データベースへのログ出力\n- 日付毎の出力ファイル自動切り替え",
+    "s4": "ログ出力要求受付処理に関するクラス構成を示すセクション。クラス図・各クラスの責務・インタフェース定義・クラス定義で構成される。",
+    "s5": "![ログ出力要求受付処理 クラス図](assets/libraries-01_Log--s1/Log_ClassDiagram.jpg)",
+    "s6": "ログ出力要求受付処理を構成するインタフェース・クラスの責務一覧。インタフェース定義とクラス定義の2つで構成される。",
+    "s7": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.log.Logger` | ログを出力するインタフェース。ログ出力機能の実装毎に実装クラスを作成する。実装クラス・インスタンスをロガーと呼ぶ。 |\n| `nablarch.core.log.LoggerFactory` | ロガーを生成するインタフェース。フレームワーク内部でログ出力実装に対応するロガーを生成するために使用する。実装クラス・インスタンスをロガーファクトリと呼ぶ。 |",
+    "s8": "### a) ロガー\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.log.basic.BasicLogger` | ロガーの基本実装クラス。 |\n| `nablarch.core.log.log4j.Log4JLogger` | Log4Jを使用してログ出力を行うクラス。 |\n\n### b) ロガーファクトリ\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.log.basic.BasicLoggerFactory` | BasicLoggerを生成するロガーファクトリの基本実装クラス。 |\n| `nablarch.core.log.log4j.Log4JLoggerFactory` | Log4JLoggerを生成するクラス。 |\n\n### c) その他のクラス\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.log.LoggerManager` | ログ出力機能の全体を取りまとめるクラス。設定で指定されたロガーファクトリを生成・保持し、初期処理・終了処理・ロガー生成をロガーファクトリに委譲する。 |\n| `nablarch.core.log.LogSettings` | ログ出力機能の設定をロードして保持するクラス。 |"
+  }
+}

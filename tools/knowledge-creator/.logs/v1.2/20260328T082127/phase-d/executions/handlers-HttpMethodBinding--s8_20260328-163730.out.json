@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — セキュリティ上の考慮",
+      "description": "The knowledge file omits that the encryption key is held in memory (\"メモリ上に保持される\"). The source states: \"暗号化処理に使用する共通鍵はユーザログイン時に作成しメモリ上に保持される。\" The knowledge file captures the key lifecycle (created at login, discarded at logout/timeout) but drops the storage medium detail, which is relevant to the security model.",
+      "source_evidence": "暗号化処理に使用する共通鍵はユーザログイン時に作成しメモリ上に保持される。この鍵はログアウトもしくはセッションタイムアウトの時点で廃棄されるので、極めて安全性が高い。"
+    }
+  ]
+}

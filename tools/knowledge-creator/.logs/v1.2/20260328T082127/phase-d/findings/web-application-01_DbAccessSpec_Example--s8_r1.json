@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index.s2 / sections.s2",
+      "description": "s2 is a spurious extra section with no corresponding source h2 heading. The source transitions directly from「大量データの検索機能」(h2) to「更新(insert、update、delete)」(h2) with only an RST anchor label (`.. _insert_update_delete:`) between them — no intermediate section exists. The s2 hints (更新処理, insert, update, delete) all belong to s3, and s2 content is「なし」.",
+      "source_evidence": "RST h2 headings visible in source: (1)「大量データの検索機能」with `--------------------`, (2)「更新(insert、update、delete)」with `----------------------------`. The `.. _insert_update_delete:` between them is a label, not a section."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "s2 content is「なし」(3 characters), which is well below the 50-character threshold.",
+      "source_evidence": "No source section corresponds to s2; content is「なし」."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s1.hints",
+      "description": "`SqlResultSet` is referenced by name in the s1 section body (「`retrieve()` の結果 `SqlResultSet` が大量の場合」) but is absent from the s1 hints array.",
+      "source_evidence": "Source footnote: 「この結果返却されるSqlResultSetのサイズが多い場合は、大量データとなる」and 「SqlResultSetのサイズは最大で20件のため」. Knowledge file s1 body also uses `SqlResultSet` explicitly."
+    }
+  ]
+}

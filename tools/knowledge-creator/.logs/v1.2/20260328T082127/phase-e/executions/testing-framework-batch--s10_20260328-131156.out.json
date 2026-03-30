@@ -1,0 +1,101 @@
+{
+  "id": "testing-framework-batch--s10",
+  "title": "各種期待値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "可変長ファイル（CSVファイル）の準備",
+      "hints": [
+        "SETUP_VARIABLE",
+        "可変長ファイル",
+        "CSVファイル",
+        "field-separator",
+        "TSVファイル",
+        "フィールド区切り文字",
+        "フィールド長なし"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "期待するデータベースの状態",
+      "hints": [
+        "expectedTable",
+        "期待値",
+        "データベース結果検証",
+        "テストケース一覧",
+        "グループID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "期待する固定長ファイル",
+      "hints": [
+        "EXPECTED_FIXED",
+        "SETUP_FIXED",
+        "固定長ファイル",
+        "期待値",
+        "ファイルアサート"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "期待する可変長ファイル",
+      "hints": [
+        "EXPECTED_VARIABLE",
+        "SETUP_VARIABLE",
+        "可変長ファイル",
+        "期待値",
+        "ファイルアサート"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "テストメソッドの書き方",
+      "hints": [
+        "BatchRequestTestSupport",
+        "execute",
+        "テストメソッド",
+        "バッチリクエスト単体テスト",
+        "@Test"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "テスト起動方法",
+      "hints": [
+        "JUnit",
+        "テスト実行",
+        "バッチテスト起動",
+        "クラス単体テスト"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "テスト結果検証",
+      "hints": [
+        "expectedTable",
+        "expectedFile",
+        "expectedLog",
+        "EXPECTED_FIXED",
+        "EXPECTED_VARIABLE",
+        "LIST_MAP",
+        "logLevel",
+        "messageN",
+        "ログ検証",
+        "ファイル検証",
+        "AND条件"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "固定長との違い: フィールド長を記載しない。\n\n**データタイプ**: `SETUP_VARIABLE=ファイルパス`\n\nテーブル構造例（`SETUP_VARIABLE=work/members.csv`）:\n\n| セクション | カラム1 | カラム2 | カラム3 |\n|---|---|---|---|\n| text-encoding | Windows-31J | | |\n| record-separator | CRLF | | |\n| ヘッダ（型行） | 9（レコード区分） | | |\n| ヘッダ（値行） | 0 | | |\n| データ（型行） | 9（レコード区分） | X（会員番号） | 9（入会日） |\n| データ（値行） | 1 | 0000000001 | 20100101 |\n| データ（値行） | 1 | 0000000002 | 20100102 |\n| トレーラ（型行） | 9（レコード区分） | 9（レコード件数） | |\n| トレーラ（値行） | 8 | 2 | |\n| エンド（型行） | 9（レコード区分） | | |\n| エンド（値行） | 9 | | |\n\n> **注意**: フィールド区切り文字を変更する場合はディレクティブで明示的に指定する。タブ区切り（TSV）にする場合: `field-separator=\\t`",
+    "s2": "オンラインのリクエスト単体テストと同様に、期待するデータベースの状態をテストケース一覧とリンクさせる。",
+    "s3": "バッチが出力する固定長ファイルをアサートする。\n\n準備データのデータタイプ `SETUP_FIXED` の代わりに `EXPECTED_FIXED` を使用する。その他の記述方法は準備データ（固定長ファイルの準備）と同様。",
+    "s4": "バッチが出力する可変長ファイルをアサートする。\n\n準備データのデータタイプ `SETUP_VARIABLE` の代わりに `EXPECTED_VARIABLE` を使用する。その他の記述方法は準備データ（可変長ファイルの準備）と同様。",
+    "s5": "`BatchRequestTestSupport` クラスを継承する。\n\nテストメソッド:\n\n```java\n@Test\npublic void testRegisterUser() {\n}\n```\n\nスーパクラスのメソッド:\n\n- `void execute()` — テストメソッド名と同名のシートを使用（`execute(\"testRegisterUser\")` と等価）\n- `void execute(String sheetName)` — テストデータのシート名を明示指定\n\n通常は引数なしの `execute()` を使用する。",
+    "s6": "クラス単体テストと同様。通常のJUnitテストと同じように実行する。",
+    "s7": "**データベースの結果検証**: テストケース一覧の `expectedTable` 欄にグループIDを記載する。\n\n**ファイルの結果検証**: テストケース一覧の `expectedFile` 欄にグループIDを記載する。\n\nファイル種別別の記述形式:\n\n| ファイル種別 | グループIDなし | グループIDあり |\n|---|---|---|\n| 固定長ファイル | `EXPECTED_FIXED=比較対象ファイルのパス` | `EXPECTED_FIXED[グループID]=比較対象ファイルのパス` |\n| 可変長ファイル | `EXPECTED_VARIABLE=比較対象ファイルのパス` | `EXPECTED_VARIABLE[グループID]=比較対象ファイルのパス` |\n\n**ログの結果検証**: テストケース一覧の `expectedLog` 欄にグループIDを記載する。`LIST_MAP=expectedLogMessages` で期待ログを定義する。\n\nログ期待値のカラム:\n\n| カラム名 | 内容 |\n|---|---|\n| logLevel | 期待するログのログレベル |\n| messageN（N≥1、連続した整数） | 期待するログに含まれる文言（複数指定可） |\n\n> **注意**: 条件はすべてAND条件。ログレベルが期待通りでない場合、または期待する文言が1つでも出力されていない場合は、期待するログが出力されたとは見なされない。\n\n> **警告**: `expectedLog` 欄にグループIDを記載した場合、必ず期待するメッセージを1行以上設定すること。メッセージが0行の場合や `LIST_MAP` 要素が存在しない場合は例外が送出される。"
+  }
+}

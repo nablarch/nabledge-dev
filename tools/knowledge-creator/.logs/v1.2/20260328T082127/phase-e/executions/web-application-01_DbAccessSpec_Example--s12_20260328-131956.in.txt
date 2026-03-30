@@ -1,0 +1,501 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — 1件のデータを更新する場合",
+      "description": "The source contains the note '下記実装例はinsert文となっているが、update文やdelete文でも同じように実装することができる。' This is decision-necessary information: the section heading says '更新' but the code example is INSERT, and without this note an AI agent would not know that executeUpdateByObject applies equally to UPDATE and DELETE statements.",
+      "source_evidence": "| 下記実装例はinsert文となっているが、update文やdelete文でも同じように実装することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "PascalCase class name W11AE01Form appears in the section's code examples but is absent from the hints array.",
+      "source_evidence": "public class W11AE01Form { ... } / W11AE01Form form = new W11AE01Form();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "PascalCase class name W11AE02Form appears in the section's code example but is absent from the hints array.",
+      "source_evidence": "for (W11AE02Form form : forms) {"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バイナリデータへのアクセス
+--------------------------
+データベースのデータタイプがバイナリ型(BLOBやbyte)の場合の参照、更新方法の実装例
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- パスワード取得用
+   -- SQL_ID:GET_PASSWORD
+   --------------------------
+   GET_PASSWORD =
+   SELECT
+       PWD
+   FROM
+       USER_MST
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- パスワード更新用
+   -- SQL_ID:UPDATE_PASSWORD
+   --------------------------
+   UPDATE_PASSWORD =
+   UPDATE
+       USER_MST
+   SET
+       PWD = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF更新用
+   -- SQL_ID:UPDATE_PDF
+   --------------------------
+   UPDATE_PDF =
+   UPDATE
+       PDF_LIST
+   SET
+       PDF_DATA = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF取得用
+   -- SQL_ID:GET_PDF
+   --------------------------
+   GET_PDF =
+   SELECT
+       PDF_DATA
+   FROM
+       PDF_LIST
+   WHERE
+       USER_ID = ?
+
+.. _searching_binary_data:
+
+バイナリデータの検索方法
+========================
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public byte[] getPassword(String userId) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement select = getSqlPStatement("GET_PASSWORD");
+
+            select.setString(1, userId);
+            SqlResultSet rs = select.retrieve();
+
+            SqlRow row = rs.get(0);
+
+            // 【説明】バイナリデータは、SqlRow#getBytesで取得する。
+            return row.getBytes("pwd");
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 本実装例は、getBytesメソッドでバイナリデータを一括で取得しているが、ファイルデータのようにデータ量が大きい場合には、 :ref:`generate_binary_file` の実装例にしたがうこと。
+
+
+.. _insert_binary_data:
+
+バイナリデータの登録方法
+========================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PASSWORD");
+
+    statement.setBytes(1, pwd);
+    statement.setString(2, "00001");
+    int updNo = statement.executeUpdate();
+
+.. warning::
+ | 本実装例は、setBytesを使用してバイナリデータの設定しているが、データベースベンダーによってはsetBytesをサポートしない場合がある。
+ | どのsetメソッドを使用すればよいかは、データベースベンダーのJDBCマニュアルを参照すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _insert_file_data_as_binary_data:
+
+ファイルの内容をバイナリデータとして登録する方法
+================================================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PDF");
+
+    File file = new File("hoge.pdf");
+    FileInputStream fis = new FileInputStream(file);
+
+    try {
+        // 【説明】setBinaryStream(int, InputStream, int)を使用してファイルのストリームをバインド変数に設定
+        statement.setBinaryStream(1, fis, (int) file.length());
+        statement.setString(2, "00001");
+        statement.executeUpdate();
+    } finally {
+        fis.close();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. _generate_binary_file:
+
+バイナリデータをファイルとして出力する方法
+==========================================
+
+.. code-block:: java
+
+    SqlPStatement select = getSqlPStatement("GET_PDF");
+
+    select.setString(1, "00001");
+    SqlResultSet rs = select.retrieve();
+
+    // 【説明】データベースからBlobとしてデータを取得する。
+    Blob fileData = (Blob) rs.get(0).get("PDF_DATA");
+
+    InputStream pdfData = null;
+    FileOutputStream output = null;
+    try {
+        // 【説明】Blobデータからストリームを取得し、バイナリデータを読み込む
+        pdfData = fileData.getBinaryStream();
+
+        // 【説明】出力ファイルを開く
+        output = new FileOutputStream("hoge.pdf");
+
+        byte[] b = new byte[1024];
+        int size = 0;
+        while ((size = pdfData.read(b)) != -1) {
+            output.write(b, 0, size);
+            output.flush();
+        }
+    } finally {
+        try {
+            if (pdfData != null) {
+                pdfData.close();
+            }
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _db-object-save-samole:
+
+--------------------------------------------------------------
+オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)
+--------------------------------------------------------------
+オブジェクトのフィールドの値を登録する際の実装例
+
+画面処理の場合で、精査済みリクエストパラメータの値をJavaBeansで保持している場合には、本機能を使用することにより実装ステップ数を軽減することができる。
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AE/CM211AE1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- 売上登録
+   -- SQL_ID:REGISTER_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「オブジェクトのフィールド名」とすること。
+   REGISTER_SALES =
+   INSERT INTO
+       SALES
+       (
+       CST_ID,
+       KINGAKU,
+       INS_DATE_TIME,
+       INS_USER_ID,
+       UPD_DATE_TIME,
+       UPD_USER_ID,
+       EXECUTION_ID,
+       REQUEST_ID
+       )
+   VALUES
+       (
+       :cstId,
+       :kingaku,
+       :insDateTime,
+       :insUserId,
+       :updDateTime,
+       :updUserId,
+       :executionId,
+       :requestId
+       )
+
+   --------------------------
+   -- 売上更新
+   -- SQL_ID:UPDATE_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「Mapのキー名」とすること。
+   UPDATE_SALES =
+   UPDATE
+       SALES
+   SET
+       KINGAKU = :KINGAKU
+   WHERE
+       CST_ID = :CST_ID
+
+
+.. _update_single_data_by_object:
+
+1件のデータを更新する場合
+=========================
+
+| 下記実装例はinsert文となっているが、update文やdelete文でも同じように実装することができる。
+
+.. code-block:: java
+
+    // オブジェクト実装
+    public class W11AE01Form {
+        // 顧客ID
+        private String cstId;
+
+        // 金額
+        private long kingaku;
+
+        // 登録日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String insDateTime;
+
+        // 登録ユーザID
+        @UserId
+        private String insUserId;
+
+        // 更新日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String updDateTime;
+
+        // 更新ユーザID
+        @UserId
+        private String updUserId;
+
+        // リクエストID
+        @RequestId
+        private String requestId;
+
+        // 【説明】本来はここに各フィールド項目のアクセスメソッドを定義する。
+
+    }
+
+    public void doRW11AE0101() {
+        // 【説明】オブジェクトを生成し、自動設定項目以外を設定する。
+        W11AE01Form form = new W11AE01Form();
+        form.setCstId("0001");
+        form.setKingaku(100);
+
+        CM211AE1Component component = new CM211AE1Component();
+        component.registerSales(form);
+    }
+
+    package nablarch.sample.ss11AE;
+
+    public class CM211AE1Component extends DbAccessSupport {
+
+        public void registerSales(W11AE01Form form) {
+
+            // 【説明】SQL_IDを指定して、Statementオブジェクトを取得する。
+            ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+            // 【説明】executeUpdateByObjectを呼び出してオブジェクトのフィールドの値を登録する。
+            insert.executeUpdateByObject(form);
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _update_multiple_data_by_object:
+
+複数件を更新する場合
+====================
+複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。
+
+.. code-block:: java
+
+    // 1回のexecuteBatchで更新する最大の件数
+    private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+    // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+
+    ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+    for (W11AE02Form form : forms) {
+        statement.addBatchObject(form);
+        if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+            insert.executeBatch();
+        }
+    }
+    if (insert.getBatchSize() != 0) {
+        insert.executeBatch();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _map-save-label:
+
+----------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s12",
+  "title": "バイナリデータへのアクセス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バイナリデータへのアクセス",
+      "hints": [
+        "DbAccessSupport",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "getBytes",
+        "バイナリデータ検索",
+        "BLOB取得",
+        "バイナリデータアクセス",
+        "CM311AC1Component"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バイナリデータの登録・ファイル出力",
+      "hints": [
+        "SqlPStatement",
+        "setBytes",
+        "setBinaryStream",
+        "Blob",
+        "getBinaryStream",
+        "FileInputStream",
+        "FileOutputStream",
+        "バイナリデータ登録",
+        "ファイルデータ登録",
+        "バイナリデータファイル出力"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "DbAccessSupport",
+        "executeUpdateByObject",
+        "@CurrentDateTime",
+        "@UserId",
+        "@RequestId",
+        "オブジェクト登録",
+        "Form登録",
+        "バインド変数フィールド名",
+        "CM211AE1Component"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "複数件をオブジェクトで更新する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "addBatchObject",
+        "executeBatch",
+        "getBatchSize",
+        "複数件更新",
+        "バッチ更新"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## バイナリデータへのアクセス\n\nSQLファイル: `nablarch/sample/ss11AC/CM311AC1Component.sql`\n\n```sql\n-- SQL_ID:GET_PASSWORD (パスワード取得用)\nGET_PASSWORD =\nSELECT PWD FROM USER_MST WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PASSWORD (パスワード更新用)\nUPDATE_PASSWORD =\nUPDATE USER_MST SET PWD = ? WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PDF (PDF更新用)\nUPDATE_PDF =\nUPDATE PDF_LIST SET PDF_DATA = ? WHERE USER_ID = ?\n\n-- SQL_ID:GET_PDF (PDF取得用)\nGET_PDF =\nSELECT PDF_DATA FROM PDF_LIST WHERE USER_ID = ?\n```\n\n## バイナリデータの検索方法\n\n**クラス**: `DbAccessSupport`, `SqlPStatement`, `SqlResultSet`, `SqlRow`\n\nバイナリデータは `SqlRow#getBytes(columnName)` で取得する。\n\n```java\nSqlPStatement select = getSqlPStatement(\"GET_PASSWORD\");\nselect.setString(1, userId);\nSqlResultSet rs = select.retrieve();\nSqlRow row = rs.get(0);\n// バイナリデータはSqlRow#getBytesで取得する\nreturn row.getBytes(\"pwd\");\n```\n\n> **警告**: getBytesメソッドでバイナリデータを一括取得しているが、ファイルデータのようにデータ量が大きい場合には、:ref:`generate_binary_file` の実装例に従うこと。",
+    "s2": "## バイナリデータの登録方法\n\nバイナリデータは `SqlPStatement#setBytes(int, byte[])` で設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PASSWORD\");\nstatement.setBytes(1, pwd);\nstatement.setString(2, \"00001\");\nint updNo = statement.executeUpdate();\n```\n\n> **警告**: `setBytes` はデータベースベンダーによってはサポートされない場合がある。どのsetメソッドを使用するかはデータベースベンダーのJDBCマニュアルを参照すること。\n\n## ファイルの内容をバイナリデータとして登録する方法\n\nファイルのストリームを `setBinaryStream(int, InputStream, int)` でバインド変数に設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PDF\");\nFile file = new File(\"hoge.pdf\");\nFileInputStream fis = new FileInputStream(file);\ntry {\n    // setBinaryStream(int, InputStream, int)でファイルのストリームをバインド変数に設定\n    statement.setBinaryStream(1, fis, (int) file.length());\n    statement.setString(2, \"00001\");\n    statement.executeUpdate();\n} finally {\n    fis.close();\n}\n```\n\n> **警告**: java.ioパッケージを使用したこの実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合にはアーキテクトがコンポーネントを作成して対処すること。\n\n## バイナリデータをファイルとして出力する方法\n\nDBからBlobとしてデータを取得し、`Blob#getBinaryStream()` でストリームを取得してファイルに書き出す。\n\n```java\nSqlPStatement select = getSqlPStatement(\"GET_PDF\");\nselect.setString(1, \"00001\");\nSqlResultSet rs = select.retrieve();\n// データベースからBlobとしてデータを取得する\nBlob fileData = (Blob) rs.get(0).get(\"PDF_DATA\");\n\nInputStream pdfData = null;\nFileOutputStream output = null;\ntry {\n    // Blobデータからストリームを取得し、バイナリデータを読み込む\n    pdfData = fileData.getBinaryStream();\n    // 出力ファイルを開く\n    output = new FileOutputStream(\"hoge.pdf\");\n    byte[] b = new byte[1024];\n    int size = 0;\n    while ((size = pdfData.read(b)) != -1) {\n        output.write(b, 0, size);\n        output.flush();\n    }\n} finally {\n    try {\n        if (pdfData != null) pdfData.close();\n    } finally {\n        if (output != null) output.close();\n    }\n}\n```\n\n> **警告**: java.ioパッケージを使用したこの実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合にはアーキテクトがコンポーネントを作成して対処すること。",
+    "s3": "## オブジェクトのフィールドの値の登録機能（オブジェクト(Form)編）\n\n画面処理で精査済みリクエストパラメータの値をJavaBeansで保持している場合、本機能を使用することで実装ステップ数を削減できる。\n\nSQLファイル: `nablarch/sample/ss11AE/CM211AE1Component.sql`\n\nバインド変数には `?` ではなく `:フィールド名`（オブジェクトのフィールド名）または `:キー名`（Mapのキー名）を使用すること。\n\n```sql\n-- SQL_ID:REGISTER_SALES\nREGISTER_SALES =\nINSERT INTO SALES\n  (CST_ID, KINGAKU, INS_DATE_TIME, INS_USER_ID, UPD_DATE_TIME, UPD_USER_ID, EXECUTION_ID, REQUEST_ID)\nVALUES\n  (:cstId, :kingaku, :insDateTime, :insUserId, :updDateTime, :updUserId, :executionId, :requestId)\n\n-- SQL_ID:UPDATE_SALES\nUPDATE_SALES =\nUPDATE SALES SET KINGAKU = :KINGAKU WHERE CST_ID = :CST_ID\n```\n\n## 1件のデータを更新する場合\n\n**クラス**: `ParameterizedSqlPStatement`, `DbAccessSupport`\n**アノテーション**: `@CurrentDateTime`, `@UserId`, `@RequestId`\n\n`getParameterizedSqlStatement(\"SQL_ID\")` でParameterizedSqlPStatementを取得し、`executeUpdateByObject(form)` でオブジェクトのフィールドの値を登録する。\n\n```java\n// Formクラス例\npublic class W11AE01Form {\n    private String cstId;\n    private long kingaku;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String insDateTime;\n    @UserId\n    private String insUserId;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String updDateTime;\n    @UserId\n    private String updUserId;\n    @RequestId\n    private String requestId;\n    // 各フィールドのアクセスメソッド省略\n}\n\n// 呼び出し側\nW11AE01Form form = new W11AE01Form();\nform.setCstId(\"0001\");\nform.setKingaku(100);\ncomponent.registerSales(form);\n\n// コンポーネント側\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\ninsert.executeUpdateByObject(form);\n```",
+    "s4": "## 複数件を更新する場合\n\n複数件を一括で更新する場合の注意点は :ref:`JDBC標準機能<executeBatch-label>` と同じ。\n\n`addBatchObject(form)` でオブジェクトをバッチに追加し、最大件数に達したら `executeBatch()` を実行する。\n\n```java\n// 1回のexecuteBatchで更新する最大の件数\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\n\nfor (W11AE02Form form : forms) {\n    statement.addBatchObject(form);\n    if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        insert.executeBatch();\n    }\n}\nif (insert.getBatchSize() != 0) {\n    insert.executeBatch();\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

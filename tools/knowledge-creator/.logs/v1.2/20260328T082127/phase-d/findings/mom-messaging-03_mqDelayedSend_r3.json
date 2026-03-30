@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_mqDelayedSend",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (Formクラス)",
+      "description": "The source note inside the Formクラス section explicitly lists the physical column naming convention used in the sample app as the concrete reason why a single Form class can handle all message sending operations: 主キーは SEND_MESSAGE_SEQUENCE、更新カラムは UPDATED_USER_ID と UPDATED_DATE の2カラム。The knowledge file captures the general principle ('カラム名をプロジェクトで統一することで単一のFormクラスで処理可能') but omits these specific physical column names and their role in the unified convention.",
+      "source_evidence": "※ 主キーは、送信電文連番(物理名:SEND_MESSAGE_SEQUENCE) / データ更新時に、値を更新するカラムは下記2カラム: 更新ユーザID(物理名:UPDATED_USER_ID)、更新一時(物理名:UPDATED_DATE)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "The physical column names UPDATED_USER_ID and UPDATED_DATE appear in the source note for section s4 as key identifiers of the unified naming convention. They are not present in s4's hints array. (SEND_MESSAGE_SEQUENCE is already covered in s3 hints.)",
+      "source_evidence": "更新ユーザID(物理名:UPDATED_USER_ID) / 更新一時(物理名:UPDATED_DATE)"
+    }
+  ]
+}

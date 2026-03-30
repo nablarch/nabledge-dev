@@ -1,0 +1,55 @@
+{
+  "file_id": "libraries-01_Log--s30",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6 title",
+      "description": "Section s6 has an empty title string. The corresponding source content covers ロガーファクトリの設定, ログライタの設定, and ロガーの設定 under the プロパティファイルの記述ルール heading. A descriptive title should be present.",
+      "source_evidence": "Source headings: 'ロガーファクトリの設定', 'ログライタの設定', 'ロガーの設定' under 'プロパティファイルの記述ルール'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s8 title",
+      "description": "Section s8 has an empty title string. The corresponding source section is 'ログの種類' under '各種ログの出力'.",
+      "source_evidence": "Source heading: 'ログの種類' under '各種ログの出力'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s10 title",
+      "description": "Section s10 has an empty title string. The corresponding source section is '各種ログの設定'.",
+      "source_evidence": "Source heading: '各種ログの設定' under '各種ログの出力'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The FQCN `nablarch.core.log.basic.LogWriter` is stated explicitly for the LogWriter interface, but this FQCN does not appear in the source for this section or anywhere in the provided source text. The source only says 'LogWriterインタフェースを実装したクラスを作成する' without specifying the FQCN.",
+      "source_evidence": "Source: '新しいログライタを追加する場合は、LogWriterインタフェースを実装したクラスを作成する。' — no FQCN given for the LogWriter interface itself"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — SynchronousFileLogWriterの設定: failureCode* properties",
+      "description": "The default log messages for the four failureCode* properties are omitted. These are the messages output when no failure code is configured, and are useful for debugging when no code is specified.",
+      "source_evidence": "Source table: failureCodeCreateLockFile default: '\"failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].\"'; failureCodeReleaseLockFile default: '\"failed to delete lock file. lock file path=[{0}].\"'; failureCodeForceDeleteLockFile default: '\"failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].\"'; failureCodeInterruptLockWait default: '\"interrupted while waiting for lock retry.\"'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "Section s7 covers SynchronousFileLogWriter and BasicLogFormatter properties but hints are missing for: `failureCodeCreateLockFile`, `failureCodeReleaseLockFile`, `failureCodeForceDeleteLockFile`, `failureCodeInterruptLockWait` (SynchronousFileLogWriter failure code properties), and `datePattern` (BasicLogFormatter date pattern property).",
+      "source_evidence": "Source SynchronousFileLogWriter table includes properties: failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait. BasicLogFormatter table includes: formatter.datePattern."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "Section s6 covers ログライタの設定 which uses `LogWriter` as the required interface, but `LogWriter` is absent from s6's hints array. It appears only in s3.",
+      "source_evidence": "Source ログライタの設定 table: 'writer.<ログライタの名称>.className — LogWriterを実装したクラスのFQCNを指定する。'"
+    }
+  ]
+}

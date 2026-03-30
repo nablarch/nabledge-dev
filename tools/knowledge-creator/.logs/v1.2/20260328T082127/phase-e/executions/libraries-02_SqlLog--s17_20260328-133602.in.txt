@@ -1,0 +1,318 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s6] / sections[s6]",
+      "description": "Source has a distinct top-level section 'SQLログの出力例' (delimited with `===`) that is separate from 'SqlPStatement#executeBatchメソッドの更新終了時'. The knowledge file merges both into s6 without a separate index entry. The s6 index title remains 'SqlPStatement#executeBatchメソッドの更新終了時', so an AI navigating by index title would not recognize that s6 also contains the SQLログの出力例 content. The extra hints (log.properties, app-log.properties, sqlLogFormatter, SQLログ出力例) partially compensate, but the section title is misleading for the merged content.",
+      "source_evidence": "Source has two distinct sections: 'SqlPStatement#executeBatchメソッドの更新終了時' (------) and 'SQLログの出力例' (===). Knowledge file index has only s1–s6 with s6 titled 'SqlPStatement#executeBatchメソッドの更新終了時', absorbing the entire SQLログの出力例 section into s6's body."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+SqlPStatement#executeQueryメソッドの検索開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+SQL文                           $sql$
+付加情報                        $additionalInfo$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\tSQL = [$sql$]
+     \n\tadditional_info:
+     \n\t$additionalInfo$
+
+SqlPStatement#executeQueryメソッドの検索終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+実行時間                        $executeTime$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\texecute_time(ms) = [$executeTime$]
+
+SqlPStatement#executeUpdateメソッドの更新開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+SQL文                           $sql$
+付加情報                        $additionalInfo$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\tSQL = [$sql$]
+     \n\tadditional_info:
+     \n\t$additionalInfo$
+
+SqlPStatement#executeUpdateメソッドの更新終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+実行時間                        $executeTime$
+更新件数                        $updateCount$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]
+
+SqlPStatement#executeBatchメソッドの更新開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+SQL文                           $sql$
+付加情報                        $additionalInfo$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\tSQL = [$sql$]
+     \n\tadditional_info:
+     \n\t$additionalInfo$
+
+SqlPStatement#executeBatchメソッドの更新終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+実行時間                        $executeTime$
+バッチ件数                      $batchCount$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     $\n\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]
+
+SQLログの出力例
+===================================================
+SQLログの出力例を下記に示す。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ # ログの出力先
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=./app.log
+ writer.appFile.encoding=UTF-8
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- R[$requestId$] U[$userId$] E[$executionId$] $message$
+ 
+ availableLoggersNamesOrder=SQL
+ 
+ # SQL
+ loggers.SQL.nameRegex=SQL
+ loggers.SQL.level=TRACE
+ loggers.SQL.writerNames=appFile
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # SqlLogFormatterの設定(個別項目のフォーマット)
+ sqlLogFormatter.startRetrieveFormat=$methodName$\n\tSQL:$sql$\n\tstart:$startPosition$ size:$size$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endRetrieveFormat=$methodName$\n\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$
+
+上記設定から出力した結果を下記に示す。
+
+.. code-block:: bash
+
+ 2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve
+     SQL:SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?
+     start:1 size:0
+     additional_info:
+ 2011-02-15 18:06:05.952 -TRACE- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#Parameters
+     01 = [00]
+ 2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve
+     exe:0ms ret:0ms count:1
+ 2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.transaction.JdbcTransaction#commit()
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-02_SqlLog--s17",
+  "title": "SQLログの出力例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SqlPStatement#executeQueryメソッドの検索開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索開始時",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$",
+        "SQLログ プレースホルダ",
+        "検索ログフォーマット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "SqlPStatement#executeQueryメソッドの検索終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索終了時",
+        "$methodName$",
+        "$executeTime$",
+        "SQLログ 実行時間",
+        "検索終了ログフォーマット"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "SqlPStatement#executeUpdateメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新開始時",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$",
+        "SQLログ 更新"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "SqlPStatement#executeUpdateメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新終了時",
+        "$methodName$",
+        "$executeTime$",
+        "$updateCount$",
+        "SQLログ 更新件数"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "SqlPStatement#executeBatchメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新開始時",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$",
+        "SQLログ バッチ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "SqlPStatement#executeBatchメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新終了時",
+        "$methodName$",
+        "$executeTime$",
+        "$batchCount$",
+        "SQLログ バッチ件数",
+        "log.properties",
+        "app-log.properties",
+        "sqlLogFormatter",
+        "SQLログ出力例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## SqlPStatement#executeQueryメソッドの検索開始時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| SQL文 | `$sql$` |\n| 付加情報 | `$additionalInfo$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s2": "## SqlPStatement#executeQueryメソッドの検索終了時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| 実行時間 | `$executeTime$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$]\n```",
+    "s3": "## SqlPStatement#executeUpdateメソッドの更新開始時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| SQL文 | `$sql$` |\n| 付加情報 | `$additionalInfo$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s4": "## SqlPStatement#executeUpdateメソッドの更新終了時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| 実行時間 | `$executeTime$` |\n| 更新件数 | `$updateCount$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]\n```",
+    "s5": "## SqlPStatement#executeBatchメソッドの更新開始時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| SQL文 | `$sql$` |\n| 付加情報 | `$additionalInfo$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s6": "## SqlPStatement#executeBatchメソッドの更新終了時\n\nプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | `$methodName$` |\n| 実行時間 | `$executeTime$` |\n| バッチ件数 | `$batchCount$` |\n\nデフォルトフォーマット:\n\n```bash\n$methodName$\n    $\\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]\n```\n\n## SQLログの出力例\n\nlog.propertiesの設定例:\n\n```bash\nwriterNames=appFile\n\n# ログの出力先\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=./app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=$date$ -$logLevel$- R[$requestId$] U[$userId$] E[$executionId$] $message$\n\navailableLoggersNamesOrder=SQL\n\n# SQL\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appFile\n```\n\napp-log.propertiesの設定例:\n\n```bash\n# SqlLogFormatterの設定(個別項目のフォーマット)\nsqlLogFormatter.startRetrieveFormat=$methodName$\\n\\tSQL:$sql$\\n\\tstart:$startPosition$ size:$size$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\n\\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$\n```\n\n出力例:\n\n```bash\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    SQL:SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?\n    start:1 size:0\n    additional_info:\n2011-02-15 18:06:05.952 -TRACE- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#Parameters\n    01 = [00]\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    exe:0ms ret:0ms count:1\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.transaction.JdbcTransaction#commit()\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

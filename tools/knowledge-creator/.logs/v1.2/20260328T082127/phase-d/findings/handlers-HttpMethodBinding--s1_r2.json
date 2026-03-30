@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — コンテンツパス: 内部フォーワード (forward://)",
+      "description": "内部フォーワードの相対/絶対パス基準が省略されている。",
+      "source_evidence": "相対パス指定の場合: 現在のリクエストURIを起点とするパス。絶対パス指定の場合: サーブレットコンテキスト名を起点とするパス。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — コンテンツパス: ファイルシステム上のリソース (file://)",
+      "description": "file:// スキームの相対/絶対パス基準が省略されている。実装時に基点ディレクトリを知る必要があるため、意思決定に必要な情報。",
+      "source_evidence": "相対パス指定の場合: JVMプロセスのワーキングディレクトリが起点とするパス。絶対パス指定の場合: ファイルシステムのルートディレクトリが起点とするパス。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints",
+      "description": "サーブレットフォーワードおよび内部フォーワードの説明内で参照されるクラス `ForwardingHandler` がヒントに含まれていない。",
+      "source_evidence": "ハンドラキューの内容も含めたフォワード処理が必要な場合は、:doc:`ForwardingHandler` による内部フォーワードを使用すること。 / 内部フォーワード処理の詳細は :doc:`ForwardingHandler` を参照すること。"
+    }
+  ]
+}

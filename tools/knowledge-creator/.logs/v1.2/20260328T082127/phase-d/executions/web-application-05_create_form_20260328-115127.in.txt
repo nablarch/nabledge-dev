@@ -1,0 +1,537 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/03_DevelopmentStep/05_create_form.rst`
+- Format: `rst`
+
+```
+.. _process_update_validate_form:
+
+Formクラスの実装
+============================================
+
+Formクラスは、以下のステップで実装する。
+
+:ref:`1) Formクラスのプロパティの実装<set_property>`
+
+:ref:`2) Formクラスの精査処理実装<form_validation>`
+
+
+Formクラスのプロパティの実装、Formクラスの精査処理実装は、共に以下に示すFormクラスの精査処理実装の流れに沿って実施する。
+
+ .. image:: ./_images/development_flow_form.png
+      :scale: 70
+
+.. _set_property:
+
+\1) Formクラスのプロパティの実装
+ 本機能で使用するFormクラスを作成し、プロパティを実装する。
+ プロパティの実装では、単純にクラスにプロパティを追加するだけではなく、プロパティに対する精査で使用するアノテーション
+ を setter に追加する実装も行う。
+
+ \a) Formクラスの作成
+  本機能で使用するFormクラスを新規に追加し、プロパティ、コンストラクタ、ゲッター/セッターをそれぞれ実装する。
+  
+  **ソース格納フォルダ**
+   /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+  
+  **クラス名**
+   W11ACXXForm
+  
+  ①FormのプロパティとしてoperationTargetUserId（型：String）、users（型：UsersEntity）を実装
+
+  ②コンストラクタを実装
+
+  ③ゲッター/セッターを実装
+
+  ④精査仕様をアノテーションで設定
+
+  .. code-block:: java
+  
+   /**
+    * 更新機能（開発手順用）で使用するユーザ情報を保持するフォーム。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXForm {
+       
+       // 【説明】①プロパティのセット
+       
+       /** 更新対象のユーザID */
+       private String operationTargetUserId;
+       
+       /** ユーザエンティティ */
+       private UsersEntity users;
+
+       // 【説明】②コンストラクタの実装
+       /**
+        * デフォルトコンストラクタ。
+        */
+       public W11ACXXForm() {
+       }
+       
+       /**
+        * Mapを引数に取るコンストラクタ。
+        * @param data 各プロパティのデータを保持したMap
+        */
+       public W11ACXXForm(Map<String, Object> data) {
+           operationTargetUserId = (String) data.get("operationTargetUserId");
+           users = (UsersEntity) data.get("users");
+       }
+
+       // 【説明】③ゲッター/セッターの実装
+       // 【説明】④精査仕様をアノテーションで設定
+       
+       /**
+        * 更新対象のユーザIDを取得する。
+        * @return 更新対象のユーザID
+        */
+       public String getOperationTargetUserId() {
+           return operationTargetUserId;
+       }
+       
+       /**
+        * 更新対象のユーザIDを設定する。
+        * @param operationTargetuserId 更新対象のユーザID
+        */
+       @PropertyName("ユーザID")
+       @Required
+       @Length(max = 10)
+       @SystemChar(charsetDef="numericCharset")
+       public void setOperationTargetUserId(String operationTargetuserId) {
+           this.operationTargetUserId = operationTargetuserId;
+       }
+       
+       /**
+        * 更新対象のユーザ情報を取得する。
+        * @return 更新対象のユーザ情報
+        */
+       public UsersEntity getUsers() {
+           return users;
+       }
+
+       /**
+        * 更新対象のユーザ情報を設定する。
+        * @param users 更新対象のユーザ情報
+        */
+       @ValidationTarget
+       public void setUsers(UsersEntity users) {
+           this.users = users;
+       }
+   }
+   
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \b) クラス単体テストデータの作成
+  Formクラスのクラス単体テストデータシートを作成し、
+  プロパティの単項目精査用のテストデータシート(testCharsetAndLength)を追加する。
+  
+  **データシート格納フォルダ**
+   /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+  **データシートファイル名**
+   W11ACXXFormTest.xls [#]_\
+
+  **シート名**
+   testCharsetAndLength [#]_\
+  
+
+   .. [#] Formクラスのクラス単体テストデータシートの書き方は、Entityクラスのクラス単体テストデータシートと同じである。
+    データシートの書き方については、 :ref:`entityUnitTest` を参照。\
+
+   .. [#] シート名は任意で良いが、説明の為、上記の名称で作成することにする。\
+
+  .. image:: ./_images/form_test_property.png
+   :scale: 70
+
+  .. note::
+   Formクラスのアクセッサのテストはリクエスト単体テストでカバーできる。
+   
+   そのため、Formクラスの単体テストでアクセッサのテストを行う必要はない。
+
+ \c) クラス単体テストコードの作成
+  本機能で使用するテストクラスを作成し、単項目精査用のメソッド(testCharsetAndLength)を追加する。
+  
+  **テストクラス作成フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+   
+  **テストソースファイル名**
+    W11ACXXFormTest.java [#]_
+
+  **メソッド名（単項目精査用）**
+    testCharsetAndLength
+
+  .. [#] Formクラスのクラス単体テストコードの書き方は、Entityクラスのクラス単体テストコードと同じである。
+   テストコードの書き方については、 :ref:`entityUnitTest` を参照。
+
+  .. code-block:: java
+  
+   /**
+    * {@link W11ACXXForm}のテスト。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXFormTest extends EntityTestSupport {
+
+       /** テスト対象フォームクラス */
+       private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;
+       
+       /**
+        * 文字種と文字列長のテスト
+        */
+       @Test
+       public void testCharsetAndLength() {
+           String sheetName = "testCharsetAndLength";
+           String id = "charsetAndLength";
+           testValidateCharsetAndLength(FORM, sheetName, id);
+       }
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \d) クラス単体テスト実施
+  クラス単体テストを実施し、単項目精査が行われていることを確認する。
+
+
+.. _form_validation:
+
+\2) Formクラスの精査処理実装
+
+ .. _form_validation_make_testdata:
+ 
+ \a) クラス単体テストデータの作成
+  Formクラスのクラス単体テストデータシートを作成し、更新機能用のテストデータシート(testValidateForSimpleUpdate)を追加する。
+
+  **データシート格納フォルダ**
+   /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+  **データシートファイル名**
+   W11ACXXFormTest.xls [#]_\
+
+  **シート名**
+   testValidateForSimpleUpdate [#]_\
+  
+
+   .. [#] Formクラスのクラス単体テストデータシートの書き方については、 :ref:`entityUnitTest` を参照。\
+
+   .. [#] シート名は任意で良いが、説明の為、上記の名称で作成することにする。\
+
+  .. image:: ./_images/form_test_validation_01.png
+   :scale: 40
+
+
+ \b) クラス単体テストコードの作成
+  本機能で使用するテストクラスを作成し、更新機能用のメソッド(testValidateForSimpleUpdate)を追加する。
+  
+  **テストクラス作成フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+   
+  **テストソースファイル名**
+    W11ACXXFormTest.java [#]_
+
+  **メソッド名（更新機能用）**
+    testValidateForSimpleUpdate
+
+  .. [#] Formクラスのクラス単体テストコードの書き方については、 :ref:`entityUnitTest` を参照。
+
+  .. code-block:: java
+  
+   /**
+    * {@link W11ACXXForm}のテスト。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXFormTest extends EntityTestSupport {
+
+       /** テスト対象フォームクラス */
+       private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;
+       
+       /**
+        * {@link W11ACXXForm#validateForSimpleUpdate(nablarch.core.validation.ValidationContext)} のテスト。
+        */
+       @Test
+       public void testValidateForSimpleUpdate() {
+           // 精査実行
+           String sheetName = "testValidateForSimpleUpdate";
+           String validateFor = "simpleUpdate";
+           
+           testValidateAndConvert(FORM, sheetName, validateFor);
+       }
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \c) クラス単体テスト実施
+  クラス単体テストを実施し、更新機能用のテストが失敗することを確認する。（精査メソッドを実装していない為）
+
+   .. note::
+    クラス単体テストの実行方法は、テスト対象のクラス(～Test.java)を右クリックし、[実行]→[Junitテスト]を選択する。
+  
+
+
+ \d) Formクラスの修正
+  Formクラスに単項目精査の呼び出し処理を実装する。
+
+  **ソース格納フォルダ**
+   /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+
+  **ソースファイル名**
+   W11ACXXForm.java
+ 
+  
+  ①単項目精査を実施するプロパティとして「users」をセット
+   
+  ②単項目精査を実行するメソッドの引数として上記プロパティをセット
+
+
+  .. code-block:: java 
+
+   // 【説明】①単項目精査を実施するプロパティ「users」をセット
+   /** 
+    * ユーザ情報更新時に単項目精査を実施するプロパティ（開発手順用） 
+    */
+   private static final String[] SIMPLE_UPDATE_PROPS = 
+       new String[] {"users"};
+   
+   /**
+    * ユーザ情報更新時に実施するバリデーション（開発手順用）
+    * @param context バリデーションの実行に必要なコンテキスト
+    */
+   @ValidateFor("simpleUpdate")
+   public static void validateForSimpleUpdate(ValidationContext<W11ACXXForm> context) {
+       
+       // 【説明】②単項目精査対象項目変数のセット
+       // プロパティとして設定したエンティティ内の単項目精査を実行する。
+       ValidationUtil.validate(context, SIMPLE_UPDATE_PROPS);
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ .. _form_validation_execute_test:
+ 
+ \e) クラス単体テスト実施
+  クラス単体テストを実施し、UsersEntityの単項目精査呼び出しが行われていることを確認する。
+
+ \f) 精査処理の追加
+  本機能に必要な精査処理を追加する。
+  実装時の手順は :ref:`a) クラス単体テストデータの作成<form_validation_make_testdata>` 
+  ～ :ref:`e) クラス単体テスト実施<form_validation_execute_test>` と同じなので、必要なデータのみ以下に記載する。
+
+  f)-1 クラス単体テストデータ
+
+   **データシート格納フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+   **データシートファイル名**
+    W11ACXXFormTest.xls
+
+   **シート名**
+    testValidateForSelectUserInfo
+
+   .. image:: ./_images/form_test_validation_02.png
+    :scale: 40
+
+  f)-2 クラス単体テストコード
+
+   **テストクラス作成フォルダ**
+     /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+    
+   **テストソースファイル名**
+     W11ACXXFormTest.java
+
+   **メソッド名（更新機能用）**
+     testValidateForSelectUserInfo
+
+   .. code-block:: java
+  
+    // ～前略～
+  
+    /**
+     * {@link W11ACXXForm#validateForSelectUserInfo(nablarch.core.validation.ValidationContext)} のテスト。
+     */
+    @Test
+    public void testValidateForSelectUserInfo() {
+        // 精査実行
+        String sheetName = "testValidateForSelectUserInfo";
+        String validateFor = "selectUserInfo";
+        
+        testValidateAndConvert(FORM, sheetName, validateFor);
+    }
+    
+    // ～後略～
+
+   (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+  f)-3 Formクラスのソースコード
+
+   **ソース格納フォルダ**
+    /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+
+   **ソースファイル名**
+    W11ACXXForm.java
+ 
+  
+   ①単項目精査を実施するプロパティとして「operationTargetUserId」をセット
+    
+   ②単項目精査を実行するメソッドの引数として上記プロパティをセット
+
+
+   .. code-block:: java 
+
+    // 【説明】①単項目精査を実施するプロパティ「operationTargetUserId」をセット
+    /** ユーザID取得時に精査を実施するプロパティ */
+    private static final String[] SELECT_USERINFO_PROPS =
+        new String[] {"operationTargetUserId"};
+    
+    /**
+     * ユーザID取得時に実施するバリデーション
+     * @param context バリデーションの実行に必要なコンテキスト
+     */
+    @ValidateFor("selectUserInfo")
+    public static void validateForSelectUserInfo(ValidationContext<W11ACXXForm> context) {
+        
+        // 【説明】②単項目精査対象項目変数のセット
+        // プロパティとして設定したエンティティ内の単項目精査を実行する。
+        ValidationUtil.validate(context, SELECT_USERINFO_PROPS);
+    }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+```
+
+## Knowledge File
+
+- ID: `web-application-05_create_form`
+
+```json
+{
+  "id": "web-application-05_create_form",
+  "title": "Formクラスの実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Formクラスの実装",
+      "hints": [
+        "W11ACXXForm",
+        "UsersEntity",
+        "EntityTestSupport",
+        "ValidationUtil",
+        "ValidationContext",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@SystemChar",
+        "@ValidationTarget",
+        "@ValidateFor",
+        "Formクラス実装",
+        "バリデーション",
+        "精査処理",
+        "単項目精査",
+        "アノテーション設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Formクラスのプロパティの実装\n\n**アノテーション**: `@PropertyName`, `@Required`, `@Length`, `@SystemChar`, `@ValidationTarget`\n\nFormクラスのsetterにアノテーションで精査仕様を設定する。\n\n```java\npublic class W11ACXXForm {\n    private String operationTargetUserId;\n    private UsersEntity users;\n\n    public W11ACXXForm(Map<String, Object> data) {\n        operationTargetUserId = (String) data.get(\"operationTargetUserId\");\n        users = (UsersEntity) data.get(\"users\");\n    }\n\n    @PropertyName(\"ユーザID\")\n    @Required\n    @Length(max = 10)\n    @SystemChar(charsetDef=\"numericCharset\")\n    public void setOperationTargetUserId(String operationTargetuserId) {\n        this.operationTargetUserId = operationTargetuserId;\n    }\n\n    @ValidationTarget\n    public void setUsers(UsersEntity users) {\n        this.users = users;\n    }\n}\n```\n\n> **注意**: Formクラスのアクセッサのテストはリクエスト単体テストでカバーできる。そのため、Formクラスの単体テストでアクセッサのテストを行う必要はない。\n\n単項目精査テスト（`EntityTestSupport`継承、`testValidateCharsetAndLength`使用）:\n\n```java\npublic class W11ACXXFormTest extends EntityTestSupport {\n    private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;\n\n    @Test\n    public void testCharsetAndLength() {\n        testValidateCharsetAndLength(FORM, \"testCharsetAndLength\", \"charsetAndLength\");\n    }\n}\n```\n\n## Formクラスの精査処理実装\n\n**アノテーション**: `@ValidateFor`\n**クラス**: `ValidationUtil`\n\n精査対象プロパティを定数配列で定義し、`@ValidateFor`アノテーション付きの静的メソッドで `ValidationUtil.validate()` を呼び出す。\n\n```java\nprivate static final String[] SIMPLE_UPDATE_PROPS = new String[] {\"users\"};\n\n@ValidateFor(\"simpleUpdate\")\npublic static void validateForSimpleUpdate(ValidationContext<W11ACXXForm> context) {\n    ValidationUtil.validate(context, SIMPLE_UPDATE_PROPS);\n}\n\nprivate static final String[] SELECT_USERINFO_PROPS = new String[] {\"operationTargetUserId\"};\n\n@ValidateFor(\"selectUserInfo\")\npublic static void validateForSelectUserInfo(ValidationContext<W11ACXXForm> context) {\n    ValidationUtil.validate(context, SELECT_USERINFO_PROPS);\n}\n```\n\n精査処理テスト（`testValidateAndConvert`使用）:\n\n```java\n@Test\npublic void testValidateForSimpleUpdate() {\n    testValidateAndConvert(FORM, \"testValidateForSimpleUpdate\", \"simpleUpdate\");\n}\n\n@Test\npublic void testValidateForSelectUserInfo() {\n    testValidateAndConvert(FORM, \"testValidateForSelectUserInfo\", \"selectUserInfo\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

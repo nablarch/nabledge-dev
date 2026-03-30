@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-GlobalErrorHandler",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a minor omission of explanatory rationale. The knowledge file correctly captures the key behavior (stderr output before log), the exception handling policy (no rethrow, returns Result.InternalError), and the recovery rationale. The missing clause explains *why* stderr is used first, but does not affect how a developer configures or uses the handler. No practical decision depends on knowing that logging itself may fail during OOM — the behavior is already fully described.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — OutOfMemoryError 備考列",
+      "impact": "low",
+      "justification": "The knowledge file already states 'ログ出力前に標準エラー出力に最小限のメッセージを出力する', which is the actionable fact. The omitted clause ('ログ出力の際には失敗する可能性があるので') is the design rationale. Developers reading this file gain full understanding of OOM handling behavior without it. Phase E did not apply the fix — the s2 section is identical between Phase D and Phase E outputs — but the impact remains low because the omission is explanatory context, not actionable information."
+    }
+  ]
+}

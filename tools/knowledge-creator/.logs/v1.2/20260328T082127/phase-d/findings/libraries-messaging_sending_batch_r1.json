@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-messaging_sending_batch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source intro paragraph (before 基本構造)",
+      "description": "The introduction paragraph contains two pieces of substantive information not captured anywhere in the knowledge file: (1) this batch is used for message sending without responses (「応答を伴わないメッセージ送信処理で用いる」— when-to-use guidance); (2) callers only need to issue an INSERT statement to the target table to send a message (「利用側からは対象テーブルへのINSERT文を発行するだけでメッセージを送信することができる」— key usage interface). The second point in particular is decision-necessary for developers choosing or integrating this batch.",
+      "source_evidence": "利用側からは対象テーブルへのINSERT文を発行するだけでメッセージを送信することができる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 常駐処理異常終了 flow (errorend)",
+      "description": "The errorend flow includes MultiThreadExecutionHandler callbacks at four events: 1.処理開始前、2.データリーダ作成、3.エラー終了後、4.全件終了後. The knowledge file omits this for the errorend flow entirely, and crucially the third event differs from the normalend flow (「3.業務コミット後」vs「3.エラー終了後」). This difference is relevant for developers implementing BatchAction callbacks that branch on the callback event type. The MultiThreadExecutionHandler (error) callback (「異常終了後に業務アクションへのコールバックを行う。」) is also omitted.",
+      "source_evidence": "errorend flow: [\"BatchAction\", \"callback\", \"以下のイベントでコールバックされる。<br/>1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後\"] and [\"MultiThreadExecutionHandler\", \"error\", \"異常終了後に業務アクションへのコールバックを行う。\"]"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Several PascalCase class names that appear in the s2 section content are missing from the s2 hints array: GlobalErrorHandler (appears in duplaunch and forcestop flows), RetryHandler (appears in handler queue), ProcessStopHandler (appears in handler queue and termination flow description), ThreadContextHandler_main (appears in duplaunch flow description).",
+      "source_evidence": "HandlerQueue includes: \"RetryHandler\", \"ProcessStopHandler\", \"ThreadContextHandler_main\". Flow descriptions reference GlobalErrorHandler (duplaunch/forcestop), ThreadContextHandler_main (duplaunch), ProcessStopHandler (termination)."
+    }
+  ]
+}

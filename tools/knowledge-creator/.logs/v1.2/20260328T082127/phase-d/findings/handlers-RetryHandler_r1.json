@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-RetryHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — RetryHandler設定項目テーブル, retryContextFactory行",
+      "description": "知識ファイルでは retryContextFactory のデータ型を `RetryContextFactory` と記載しているが、ソースの設定項目テーブルには `RetryContextFactor`（末尾 'y' なし）と記載されている。ソースの誤植を暗黙的に修正している。",
+      "source_evidence": "リトライコンテキスト生成 | retryContextFactory | RetryContextFactor | 必須設定"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "`maxRetryTime` プロパティがソースの TimeRetryContextFactory XML設定例に登場するが、s3 の hints に含まれていない。",
+      "source_evidence": "<property name=\"maxRetryTime\" value=\"35000\" /> （TimeRetryContextFactory使用例のXMLコード内）"
+    }
+  ]
+}

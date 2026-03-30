@@ -1,0 +1,564 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/Other/index.rst`
+- Format: `rst`
+
+```
+.. _Other_Example:
+
+==========================================
+その他実装例集
+==========================================
+
+--------------
+本ページの構成
+--------------
+
+本ページでは以下の使用例を説明する。
+
+* :ref:`other_example_log_write`
+* :ref:`other_example_repository_get_settings`
+* :ref:`other_example_message_get`
+* :ref:`other_example_message_notify`
+* :ref:`other_database_access_error`
+* :ref:`other_error_message_for_property`
+* :ref:`other_example_code_get`
+* :ref:`other_example_code_validate`
+* :ref:`other_example_warn_message`
+
+.. _`other_example_log_write`:
+
+------------------------------------------
+ログの出力方法
+------------------------------------------
+開発時にデバッグ目的で出力するログの出力方法を示す。\
+ログ出力の設定方法については、 :ref:`Web_Log` を参照。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        ログ出力を行うためのロガーの取得方法。
+
+        クラス変数にロガーを設定する。
+        LoggerManagerのgetメソッドを使用してLoggerを取得する。
+        getメソッドの引数には自身のクラスを指定する。 */
+
+    /* 【説明】CM311AC1ComponentクラスのJavaDocは省略。 */
+    public class CM311AC1Component {
+
+        /** ロガー */
+        private static final Logger LOGGER = LoggerManager.get(CM311AC1Component.class);
+    }
+
+  .. code-block:: java
+
+    /* 【説明】
+        ログの出力方法。
+
+        LoggerのlogDebugメソッドを使用してログを出力する。
+        メッセージの組み立て処理が必要な場合は事前に出力有無をチェックする。
+        ログの出力を行わない場合に不必要なログ組み立て処理が実行されることによる
+        性能劣化を防ぐためである。*/
+    if (LOGGER.isDebugEnabled()) {
+        String message = String.format("user was not found. userId = [%s], name = [%s]",
+                                       user.getUserId(), user.getName());
+        LOGGER.logDebug(message);
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`other_example_repository_get_settings`:
+
+------------------------------------------------
+設定値の取得方法
+------------------------------------------------
+リポジトリ機能を用いた設定値の取得方法を示す。
+
+環境設定ファイルは下記のとおり配置されているものとして実装例を示す。\
+実際の開発ではプロジェクトで規定された環境設定ファイルに設定値を指定すること。
+
+* 環境設定ファイルの配置例
+
+  .. code-block:: bash
+
+    # 【説明】
+    #  コンポーネント設定ファイルはフレームワークにより読み込まれる。
+    #  ここでは画面オンライン用のコンポーネント設定ファイルを想定している。
+    resources
+      +-application
+      |   +-system.config(環境設定ファイル)
+      |
+      +-web-component-configuration.xml(コンポーネント設定ファイル)
+
+* コンポーネント設定ファイル(web-component-configuration.xml)の設定例
+
+  .. code-block:: xml
+
+    <!-- 【説明】
+          リポジトリに環境設定ファイルを読み込ませるために
+          コンポーネント設定ファイルにconfig-fileタグを定義する。 -->
+    <!-- 設定値項目 -->
+    <config-file file="application/system.config" />
+
+* 環境設定ファイル(system.config)の設定例
+
+  .. code-block:: bash
+
+    #エラーメッセージID
+    notPermissionMessage=MSG00001
+
+    #登録可能フラグ
+    registerUserPermission=false
+
+    #ユーザの有効期限を現在日付から何ヶ月後にするか
+    userEffectiveDateTo=12
+
+  .. note::
+
+    環境設定ファイルの記述ルールの詳細については、 `環境設定ファイルの記述ルール <../../../../fw/reference/02_FunctionDemandSpecifications/01_Core/02/02_01_Repository_config.html#repository-config-loader-setting>`_ を参照。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        文字列の取得方法。
+        SystemRepositoryのgetStringメソッドを使用する。 */
+    String messageId = SystemRepository.getString("notPermissionMessage");
+
+    /* 【説明】
+        真偽値の取得方法。
+        SystemRepositoryのgetBooleanメソッドを使用する。 */
+    boolean registerFlg = SystemRepository.getBoolean("registerUserPermission");
+
+    /* 【説明】
+        文字列または真偽値以外の取得方法。
+        SystemRepositoryのgetStringメソッドで取得後に変換処理を行う。 */
+    int effectiveDateTo = Integer.parseInt(
+                              SystemRepository.getString("userEffectiveDateTo"));
+
+
+.. warning::
+
+  環境設定値を取得する際に指定するキー値には、ユーザ入力値やデータベースから取得した値を使用しないこと。
+  この様なキー値を使用した場合、環境設定値が取得できないことにより、障害が発生する可能性が高くなる。
+  また、設定値が取得せずに障害が発生した場合も、キー値が可変であることが原因で障害解析が非常に困難となる。
+
+  キー値を常に固定値としていた場合、仮に設定値が取得出来なかった場合でも障害発生箇所を元に、
+  キー値を割り出すことが容易であるため、上記のような問題は発生しない。
+
+  以下に良くない例を示す。
+
+  .. code-block:: java
+
+    /* 【説明】
+        Entityから取得した値をキー値の一部として使用しているため、良くない実装 */
+    String message = SystemRepository.getString("user" + userEntity.getUserId() + ".message");
+
+    /* 【説明】
+        データベースから取得した値をキー値の一部として使用しているため、良くない実装 */
+    String message = SystemRepository.getString("user" + row.getString("userId") + ".message");
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`other_example_message_get`:
+
+------------------------------------------------------------
+メッセージの取得方法
+------------------------------------------------------------
+メッセージ管理機能を用いたメッセージの取得方法を示す。
+
+メッセージテーブルは下記のとおりデータが設定されているものとして実装例を示す。
+
+* メッセージテーブルのデータ例
+
+  ===================  ========  =================================================
+  メッセージID         言語      メッセージ
+  ===================  ========  =================================================
+  MSG0001              en        User id is already registered.
+  MSG0001              ja        そのユーザIDは既に登録されています。
+  MSG0002              en        value of {0} is not valid.
+  MSG0002              ja        {0}の値が不正です。
+  PRP0002              en        name
+  PRP0002              ja        名前
+  ===================  ========  =================================================
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        メッセージの取得方法。
+
+        MessageUtilのcreateMessageメソッドを使用する。
+        messageStr変数はThreadContextに保持した言語に合わせたメッセージとなる。
+
+        ThreadContextに保持した言語 -> messageStr変数に設定されるメッセージ
+        en -> "User id is already registered."
+        ja -> "そのユーザIDは既に登録されています。" */
+    Message message = MessageUtil.createMessage(MessageLevel.ERROR, "MSG0001");
+    String messageStr = message.formatMessage();
+
+  .. code-block:: java
+
+    /* 【説明】
+        メッセージのフォーマット方法。
+
+        MessageUtilのcreateMessageメソッドにオプション引数を指定する。
+        国際化を行う場合はオプション引数にStringResourceまたはMessageを指定する。
+        国際化を行わない場合はオプション引数に直接文字列を指定してもよい。
+
+        ThreadContextに保持した言語 -> messageStr変数に設定されるメッセージ
+        en -> "value of name is not valid."
+        ja -> "名前の値が不正です。" */
+    StringResource nameResource = MessageUtil.getStringResource("PRP0002");
+    Message message = MessageUtil.createMessage(
+                          MessageLevel.ERROR, "MSG0002", nameResource);
+    String messageStr = message.formatMessage();
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`other_example_message_notify`:
+
+------------------------------------------------------------------------------
+エラーメッセージの通知方法
+------------------------------------------------------------------------------
+業務的なエラーが発生した際は、エラー内容を使用者に伝えるためにメッセージの出力が必要になる。\
+ApplicationExceptionクラス(またはApplicationExceptionクラスのサブクラス)を使用することで、\
+フレームワークが提供する例外処理機構を使用してエラー内容を使用者に伝えることができる。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        メッセージの通知方法。
+        メッセージを指定したApplicationExceptionを送出する。 */
+    Message message = MessageUtil.createMessage(MessageLevel.ERROR, "MSG0001");
+    throw new ApplicationException(message);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`other_database_access_error`:
+
+------------------------------------------------------------------------------------
+データベースアクセスを伴う精査を行う方法
+------------------------------------------------------------------------------------
+アプリケーションにおいて、データベースアクセスを伴う精査は
+単体項目、複合項目を問わず Entity ではなく Action に実装する。
+
+精査エラーは、 :ref:`other_example_message_notify` に示した ApplicationException
+クラスを使用する方法で使用者にメッセージを通知する。
+
+以下にユーザ登録時に行うログインIDの重複チェックを行う実装例を示す。
+
+* 実装例
+
+  .. code-block:: java
+
+
+
+        /* 【説明】
+            データベースアクセスを伴う精査の実装例。
+            Entityではなく Action (業務共通コンポーネントを含む) に精査の実装を行う。 */
+        // form 生成
+        W11AC02Form form = context.createObject();
+
+        // form から entity 取得
+        SystemAccountEntity systemAccount = form.getSystemAccount();
+
+        // entityからログインIDの取得
+        String loginId = systemAccount.getLoginId();
+
+        // ログインIDが登録済みか、DBを検索する
+        SqlPStatement statement = getSqlPStatement("SELECT_SYSTEM_ACCOUNT");
+        statement.setString(1, loginId);
+        if (!statement.retrieve().isEmpty()) {
+            // ログインIDが登録済みの場合、 ApplicationException を送出
+            throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, "MSG00001"));
+        }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`other_error_message_for_property`:
+
+------------------------------------------------------------------------------------
+エラーメッセージを任意の個所に表示する方法
+------------------------------------------------------------------------------------
+
+:ref:`other_database_access_error` で示した例のような、データベースアクセスを伴う精査など、
+Action 内で実装した精査でも、通常のバリデーション結果同様にエラーを発生させた入力値と同じ場所に表示させたいことがある。
+
+このような場合、 MessageUtil.createMessage メソッドではなく、
+ValidationUtil.createMessageForProperty メソッドを使用してエラーメッセージを作成することで、
+エラーメッセージを任意の箇所に出力できる。
+
+以下に :ref:`other_database_access_error` と同じログインIDの重複チェックを行う実装例でエラーメッセージをログインIDの近くに表示する方法を示す。
+
+* 実装例
+
+  .. code-block:: java
+
+
+
+        /* 【説明】
+            プロパティに紐付くエラーメッセージを設定する例。
+            */
+
+        // form 生成
+        W11AC02Form form = context.createObject();
+
+        // form から entity 取得
+        SystemAccountEntity systemAccount = form.getSystemAccount();
+
+        // entityからログインIDの取得
+        String loginId = systemAccount.getLoginId();
+
+        // ログインIDが登録済みか、DBの状態をチェック
+        SqlPStatement statement = getSqlPStatement("SELECT_SYSTEM_ACCOUNT");
+        statement.setString(1, loginId);
+        if (!statement.retrieve().isEmpty()) {
+            // ログインIDが登録済みの場合、 ApplicationException を送出
+            // ValidationUtil.createMessageForProperty メソッドでメッセージを作成する。
+            // 第1引数には n:error タグの name 属性で指定した名称を渡す。
+            throw new ApplicationException(ValidationUtil.createMessageForProperty(
+                    "W11AC02.systemAccount.loginId", "MSG00001"));
+        }
+
+
+  .. code-block:: jsp
+
+                <%--
+                  【説明】
+                  エラーメッセージを表示させるJSPの例。
+                --%>
+                <th>
+                    ログインID <n:forInputPage><span class="essential">*</span></n:forInputPage>
+                </th>
+                <td>
+                    <n:text name="W11AC02.systemAccount.loginId"
+                            size="50" maxlength="20"/>
+                    <n:forInputPage>
+                        (半角英数記号20文字以内)
+                    </n:forInputPage>
+                    <%--
+                      【説明】
+                      エラーメッセージを表示させる個所の書き方は、通常のバリデーション結果のエラー表示と同様。
+                    --%>
+                    <n:error name="W11AC02.systemAccount.loginId"/>
+                </td>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`other_example_code_get`:
+
+------------------------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-Other--s1`
+
+```json
+{
+  "id": "web-application-Other--s1",
+  "title": "その他実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "ログ出力",
+        "設定値取得",
+        "メッセージ取得",
+        "エラーメッセージ通知",
+        "データベース精査",
+        "コード値取得"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ログの出力方法",
+      "hints": [
+        "LoggerManager",
+        "Logger",
+        "isDebugEnabled",
+        "logDebug",
+        "ログ出力",
+        "デバッグログ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定値の取得方法",
+      "hints": [
+        "SystemRepository",
+        "getString",
+        "getBoolean",
+        "config-file",
+        "環境設定ファイル",
+        "設定値取得"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージの取得方法",
+      "hints": [
+        "MessageUtil",
+        "createMessage",
+        "MessageLevel",
+        "StringResource",
+        "getStringResource",
+        "メッセージ取得",
+        "国際化"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "エラーメッセージの通知方法",
+      "hints": [
+        "ApplicationException",
+        "MessageUtil",
+        "エラーメッセージ通知",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "データベースアクセスを伴う精査を行う方法",
+      "hints": [
+        "SqlPStatement",
+        "ApplicationException",
+        "データベース精査",
+        "重複チェック",
+        "Action実装"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "エラーメッセージを任意の個所に表示する方法",
+      "hints": [
+        "ValidationUtil",
+        "createMessageForProperty",
+        "n:error",
+        "プロパティ紐付け",
+        "エラー表示位置",
+        "JSP"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "このページで説明する実装例:\n\n- :ref:`other_example_log_write`\n- :ref:`other_example_repository_get_settings`\n- :ref:`other_example_message_get`\n- :ref:`other_example_message_notify`\n- :ref:`other_database_access_error`\n- :ref:`other_error_message_for_property`\n- :ref:`other_example_code_get`\n- :ref:`other_example_code_validate`\n- :ref:`other_example_warn_message`",
+    "s2": "**クラス**: `LoggerManager`, `Logger`\n\n`LoggerManager.get(ClassName.class)` でLoggerを取得し、クラス変数に保持する。\n\n```java\nprivate static final Logger LOGGER = LoggerManager.get(CM311AC1Component.class);\n```\n\nメッセージ組み立て処理が必要な場合は、事前に `isDebugEnabled()` で出力有無をチェックすること。不要な文字列組み立てによる性能劣化を防ぐためである。\n\n```java\nif (LOGGER.isDebugEnabled()) {\n    String message = String.format(\"user was not found. userId = [%s], name = [%s]\",\n                                   user.getUserId(), user.getName());\n    LOGGER.logDebug(message);\n}\n```\n\nログ出力の設定方法については、:ref:`Web_Log` を参照。",
+    "s3": "リポジトリ機能を使用した設定値の取得方法。環境設定ファイルをコンポーネント設定ファイルに `config-file` タグで登録し、`SystemRepository` で値を取得する。\n\nコンポーネント設定ファイルへの登録:\n\n```xml\n<config-file file=\"application/system.config\" />\n```\n\n**クラス**: `SystemRepository`\n\n| メソッド | 型 | 用途 |\n|---|---|---|\n| `getString(key)` | String | 文字列値の取得 |\n| `getBoolean(key)` | boolean | 真偽値の取得 |\n\n文字列・真偽値以外の型は `getString` で取得後に変換する:\n\n```java\nString messageId = SystemRepository.getString(\"notPermissionMessage\");\nboolean registerFlg = SystemRepository.getBoolean(\"registerUserPermission\");\nint effectiveDateTo = Integer.parseInt(SystemRepository.getString(\"userEffectiveDateTo\"));\n```\n\n> **警告**: 環境設定値取得のキー値にユーザ入力値やDB取得値を使用しないこと。キー値が可変になると、設定値が取得できなかった場合の障害解析が非常に困難となる。キー値は常に固定値とすること。",
+    "s4": "**クラス**: `MessageUtil`, `Message`, `StringResource`\n\n`MessageUtil.createMessage(MessageLevel, messageId)` でメッセージを取得し、`message.formatMessage()` で文字列化する。メッセージはThreadContextに保持した言語に合わせて返される。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\");\nString messageStr = message.formatMessage();\n```\n\nメッセージにプレースホルダがある場合、国際化対応では `getStringResource` で取得した `StringResource` をオプション引数に渡す:\n\n```java\nStringResource nameResource = MessageUtil.getStringResource(\"PRP0002\");\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0002\", nameResource);\nString messageStr = message.formatMessage();\n```",
+    "s5": "業務的エラーが発生した際は、`ApplicationException`（またはサブクラス）にメッセージを設定してスローする。フレームワークの例外処理機構によりエラー内容がユーザに通知される。\n\n**クラス**: `ApplicationException`\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\");\nthrow new ApplicationException(message);\n```",
+    "s6": "データベースアクセスを伴う精査は、単体項目・複合項目を問わず `Entity` ではなく `Action`（業務共通コンポーネントを含む）に実装すること。精査エラーは `ApplicationException` を使用してメッセージを通知する（:ref:`other_example_message_notify` 参照）。\n\n**クラス**: `SqlPStatement`, `ApplicationException`\n\nログインIDの重複チェックの実装例:\n\n```java\nSqlPStatement statement = getSqlPStatement(\"SELECT_SYSTEM_ACCOUNT\");\nstatement.setString(1, loginId);\nif (!statement.retrieve().isEmpty()) {\n    throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"));\n}\n```",
+    "s7": "Action内の精査で特定の入力項目の近くにエラーメッセージを表示するには、`MessageUtil.createMessage` ではなく `ValidationUtil.createMessageForProperty` を使用する。第1引数には `n:error` タグの `name` 属性で指定した名称を渡す。\n\n**クラス**: `ValidationUtil`\n\n```java\nthrow new ApplicationException(ValidationUtil.createMessageForProperty(\n        \"W11AC02.systemAccount.loginId\", \"MSG00001\"));\n```\n\nJSP側は通常のバリデーション結果のエラー表示と同様に `n:error` タグを使用する:\n\n```jsp\n<n:text name=\"W11AC02.systemAccount.loginId\" size=\"50\" maxlength=\"20\"/>\n<n:error name=\"W11AC02.systemAccount.loginId\"/>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 15
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,561 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.rst`
+- Format: `rst`
+
+```
+================================================
+データベースアクセス(検索、更新、登録、削除)機能
+================================================
+
+.. _db-summary-label:
+
+----
+概要
+----
+下記２種類の接続方法を使用してデータベース接続を行う機能を提供する。
+下記以外の接続方法を使用したい場合には、データベース接続を取得する部品(例えば、java.sql.DriverManagerから取得する部品)を追加することにより実現可能である。
+
+
+*デフォルトで提供するデータベース接続方法*
+
+\a) JNDI接続(Webアプリケーションサーバに登録したデータベース接続を使用する方式)
+ 
+ | Webアプリケーションサーバに登録したデータベース接続を使用する場合の接続方法。
+ | Webアプリケーションの場合には、本接続方式を使用することを推奨する。
+
+\b) DataSource接続(javax.sql.DataSourceの実装クラスを使用してデータベース接続を行う方式)
+
+ | java.sql.DataSourceを使用する場合の接続方法。
+ | バッチアプリケーションなどのようにWebアプリケーションサーバに登録したDataSourceを使用できない場合には、本接続方式を使用することになる。
+
+ .. note::
+  | 自動テストなどでWebアプリケーションサーバを必要としない場合には、本接続方式を使用することによりWebアプリケーションサーバを起動しなくてもテストの実行が可能となる。
+  | 接続方式の切り替えは、設定ファイルで行えるためアプリケーションコードに影響を与えることはない。
+
+| 
+| データベース接続は、本フレームワークの他の機能から初期化される。
+| Webアプリケーションでは、 :ref:`NablarchServletContextListener` により初期化が行われる。
+| 
+| アプリケーションプログラマは、本機能をSQL文の実行に使用する。
+| SQL文の実行方法については、 :ref:`db-sqlstatement-label` 以降に記述する。
+
+.. _db-feature-label:
+
+----
+特徴
+----
+
+JDBCのAPIを踏襲した機能
+=======================
+本機能は基本的にJDBCのAPIを踏襲(ラップ)しているため、JDBCプログラミング経験者であればスムーズに開発を行うことができる。
+JDBCのAPIを拡張している機能は、下記特徴を参照すること。
+
+ * :ref:`db-feature-4-label`
+ * :ref:`db-feature-5-label`
+ * :ref:`db-feature-6-label`
+ * :ref:`db-feature-7-label`
+
+.. _db-feature-2-label:
+
+頻繁に使用するデータベースリソースの自動解放機能
+================================================
+データベースアクセスで頻繁に使用する下記リソースの解放処理はアプリケーションで実装する必要はない。
+ただし、下記に該当しないリソース(BLOB型から取得したInputStreamや、バイナリファイルをデータベースに登録する際のファイルリソース等)は、本機能でのリソース解放対象外となるため、各アプリケーションで実装すること。
+
+**本機能で解放されるデータベースリソース**
+
+  * java.sql.Connection
+  * java.sql.Statement
+  * java.sql.ResultSet(Statementを解放することにより、自動で解放される。)
+
+SQL文の実行ログ(以降SQLログ)の出力する機能
+==========================================
+| SQLログはロガー名に文字列で「SQL」(SQLロガー)を指定してログ出力を行う。
+| SQLログをログ出力する場合は、このSQLロガーをログ出力対象に含める必要がある。
+|
+| ロガー名でのログ出力制御の設定方法は、 :doc:`./01_Log` を参照すること。
+| SQLログの詳細については、 :ref:`SQLログの出力<SqlLog>` を参照。
+
+.. note::
+  | 出力される内容と、出力時に使用されるログレベル
+  | SQLログの出力を抑制したい場合には、SQLカテゴリの下記ログレベルを出力対象外に設定する。
+  |
+
+  * DEBUGレベルで出力する内容
+
+    * 実行されたSQL
+    * SELECT文の場合には、取得件数
+    * 実行時間
+    * SQL文を外部ファイル化した場合のSQLを一意に特定するためのID
+  * TRACEレベルで出力する内容
+
+    * バインド変数に設定した値
+
+.. warning::
+  | 性能劣化(ディスクI/Oに起因する)やディスクリソースの圧迫(ログサイズの増加に起因する)の原因となるため、SQLログは本番環境では出力すべきでない。
+
+.. _db-feature-4-label:
+
+件数指定でデータを取得(簡易検索機能)できる機能
+==============================================
+開始位置、取得件数を指定してデータを取得することができる。
+これにより、ページ切り替え機能をもつ画面を作成する際に、アプリケーションで表示データをフィルタリングする必要がなくなる。
+
+.. _db-feature-5-label: 
+
+Javaオブジェクトのフィールドの値を容易にデータベースに登録できる機能
+====================================================================
+オブジェクトのフィールドの値を1項目ずつ指定するのではなく、オブジェクト自体を指定してデータベースへフィールドの値を登録することができる。
+オブジェクトを指定してデータベースに登録できるデータは、下記の２種類である。
+
+* 任意のオブジェクト(主に、 :doc:`../../determining_stereotypes` に定義されているFormオブジェクト)のフィールドの値
+* Map実装クラスのvalue
+
+この時に、ログインユーザIDとタイムスタンプは、オブジェクトに設定されていなくてもデータベースへ登録することが可能となっている。
+また、処理後にはこれらの値を参照することができるため、画面表示時に使用すること可能である。
+
+詳細は、 :ref:`オブジェクトのフィールドの値のデータベースへの登録例 <db-object-store-label>` を参照。
+
+.. note::
+ | 自動設定項目は、各開発プロジェクトで追加、変更が可能となっている。
+ | 例えば、アノテーションを使用せずにカラム名（フィールド名）で判断を行い値を設定するといったことも可能である。
+
+.. note::
+ | フィールドの値を個別に設定する場合と、オブジェクトを設定する場合の実装の違い
+ |
+ | **フィールドの値を個別に設定する場合**
+
+ .. code-block:: java
+
+   UserEntity entity = new UserEntity();
+   entity.setName("名前");
+   entity.setAddress("住所");
+
+   //********************************************************
+   // フィールドの値を一項目ずつ指定する場合
+   // テーブルの項目が増えると、ステップ数が増加する。
+   // また、テーブルの項目が増えた場合に修正が発生する。
+   //********************************************************
+   statement.setString(1, entity.getName());
+   statement.setString(2, entity.getAddress());
+
+   //********************************************************
+   // ユーザID、タイムスタンプを設定する。
+   //********************************************************
+   // ユーザIDをコンテキストから取得して設定する。
+   statement.setString(3, ThreadContext.getUserId());
+   // システム日時を、日付取得部品から取得して設定する。
+   // 日付取得部品は、リポジトリ機能から事前に取得しておく必要がある。
+   statement.setString(4, systemTimeProvider.getDate());
+   statement.executeUpdate();
+
+ |
+ | **オブジェクトを設定する場合**
+
+ .. code-block:: java
+
+   UserEntity entity = new UserEntity();
+   entity.setName("名前");
+   entity.setAddress("住所");
+
+   //********************************************************
+   // オブジェクトを指定する場合
+   // 1項目ずつ値を設定する必要がないため、1ステップでSQL文の実行が可能
+   // ログインユーザID、タイムスタンプは、executeUpdateByObject内で
+   // 自動で設定されるため、事前に設定は不要。
+   //********************************************************
+   statement.executeUpdateByObject(entity);
+
+.. _db-feature-6-label:
+
+LIKE検索を簡易的に実装出来る機能
+================================
+部分一致検索(LIKE)機能を簡易的に実装できる機能を提供する。
+この機能には、下記のメリットがある。
+
+ * LIKE条件に設定する文字列のエスケープ処理を実装する必要がない。(実装する必要がないので、エスケープ漏れは発生しない。)
+ * Javaコードで条件に「%」を付加する必要がない。(「%」はSQL文に記述するため、SQL文のレビューで仕様との相違がないかの確認が出来る。)
+ * Javaの実装は、 :ref:`db-feature-5-label` 機能と同様に、オブジェクトのフィールドの値を条件に設定できる。
+
+.. note::
+ | 本機能を使用した場合と、従来のJDBC標準機能を使用した場合での実装の違い
+ |
+ | **本機能を使用した場合の実装**
+
+ .. code-block:: java
+
+    UserEntity entity = new UserEntity();
+    entity.setUserName("ユーザ");
+
+    // 「%」は、SQL文に記述を行うため、Javaコードがなくても実装の確認が行える。
+    // また、escape句はフレームワークで自動挿入されるため、SQL文に記述を行う必要はない。
+
+    ParameterizedSqlPStatement st = dbConnection.prepareParameterizedSqlStatement(
+            "SELECT "
+              + "USER_ID, "
+              + "USER_NAME "
+          + "FROM "
+              + "USER_MTR "
+          + "WHERE "
+              + "USER_NAME LIKE :userName%");
+
+    // エスケープ処理は実装する必要がない。
+    st.retrieve(entity);
+
+ |
+ | **本機能を使用せずに従来のJDBC標準機能の実装(上記の本機能を使用した場合と同じ結果となる実装)**
+
+ .. code-block:: java
+
+    String userName = "ユーザ";
+
+    // likeが条件にある場合は、escape句を付ける必要がある。
+    SqlPStatement st = dbConnection.prepareStatement(
+            "SELECT "
+              + "USER_ID, "
+              + "USER_NAME "
+          + "FROM "
+              + "USER_MTR "
+          + "WHERE "
+              + "USER_NAME LIKE ? ESCAPE '\\'");
+
+    // 条件はエスケープ処理を行い、「%」を付加する必要がある。
+    st.setString(1, escape(userName) + "%");
+
+    st.retrieve();
+
+    // Oracle用escape処理の内容
+    // 「%」、「％」「_」「＿」「\」をエスケープ文字(\)でエスケープ処理を行う。
+    // エスケープ文字は、SQL文をエスケープ処理
+    private static String escape(String str) {
+        return str.replaceAll("(%|％|_|＿|\\\\)", "\\\\$1");
+    }
+
+
+.. _db-feature-7-label:
+
+条件が可変のSQL文を組み立てる機能
+=================================
+Web機能で多く見られる可変条件(画面で入力された場合のみ、検索条件に含める機能)のSQL文を、自動で生成できる機能を提供する。
+この機能には、下記のメリットがある。
+
+ * Javaで入力判定を行ない、SQL文を組み立てる必要がない。(生産性が向上する。)
+ * :ref:`db-feature-5-label` 機能と同様に、オブジェクトのフィールドの値を条件に設定できる。
+
+.. note::
+ | 本機能を使用した場合と、従来のJDBC標準機能を使用した場合での実装の違い
+ |
+ | **本機能を使用した場合の実装**
+
+ .. code-block:: java
+
+    Entity entity = new Entity();
+    entity.setUserName(null);
+    entity.setUserKanaName("ユーザメイ");
+
+    // 可変となるSQL文の組み立て
+    // prepareParameterizedSqlStatementを呼び出し時に、検索条件を持つオブジェクトを指定することで、SQL文の組み立てが行われる。
+    ParameterizedSqlPStatement sqlPStatement = dbConnection.prepareParameterizedSqlStatement(
+              "SELECT "
+                + "USER_ID, "
+                + "USER_NAME, "
+                + "USER_KANA_NAME "
+            + "FROM "
+                + "USER_MST "
+            + "WHERE "
+                + "$if(userName)         {user_name      LIKE :userName%} "
+                + "AND $if(userKanaName) {user_kana_name LIKE :userKanaName%} ", entity);
+
+    // 検索条件を持つオブエジェクトを指定してSQL文の実行
+    SqlResultSet resultSet = sqlPStatement.retrieve(entity);
+    System.out.println("resultSet = " + resultSet);
+
+ | **本機能を使用せずに従来のJDBC標準機能の実装(この実装は、上記の本機能を使用した場合の実装と同義である)**
+ | SQL文の組み立てを各プログラムで行う必要があり可読性が非常に悪くなる。
+
+ .. code-block:: java
+
+    String userName = null;
+    String userKanaName = "ユーザメイ";
+
+    // 固定部分のSQL文
+    StringBuffer sql = new StringBuffer(
+            "SELECT "
+              + "USER_ID, "
+              + "USER_NAME, "
+              + "USER_KANA_NAME "
+          + "FROM "
+              + "USER_MST ");
+
+    // 可変となるSQL文の組み立て
+    // 入力のある項目のみ絞り込み条件に設定する。
+    boolean first = true;
+    if (userName != null && userName.length() != 0) {
+        sql.append(" WHERE USER_NAME LIKE ? ESCAPE '\\'");
+        first = false;
+    }
+
+    if (userKanaName != null && userKanaName.length() != 0) {
+        sql.append(first ? " WHERE " : " AND ").append("USER_KANA_NAME LIKE ? ESCAPE '\\'");
+        first = false;
+    }
+
+    // バインド変数に入力された値を設定する。
+    // 入力されてた項目のみ値の設定をする。
+    SqlPStatement statement = dbConnection.prepareStatement(sql.toString());
+    int index = 0;
+    if (userName != null && userName.length() != 0) {
+        statement.setObject(++index, userName);
+    }
+    if (userKanaName != null && userKanaName.length() != 0) {
+        statement.setObject(++index, userKanaName);
+    }
+
+データベーストランザクションのタイムアウト機能
+===============================================
+本機能は、データベースアクセスに該当トランザクションがトランザクションの有効期限内（トランザクションがタイムアウトしていないこと）のチェックを行う機能を提供する。
+この機能は、以下のメリットがある。
+
+この機能は、データベースアクセスで処理遅延(データベースのロック解放待ちやSQL文の応答待ちなど)が発生し、
+トランザクションの有効期限を過ぎた場合に、トランザクションタイムアウトが発生したことを示す例外を送出する。
+これにより、処理遅延の発生した業務処理は強制的に終了されるため、遅延した処理が大量に残存することを防止できる。
+
+特に画面処理で本機能を適用した場合、Web Application Server上のデータベース接続プールやリクエスト要求を処理するスレッドが枯渇 [#t1]_ することを防ぐことが出来る。
+
+.. [#t1]
+
+  データベース接続プールなどが枯渇すると、クライアントからの処理要求はプールの解放待ちとなり、処理遅延が発生した業務処理が終了するまで後続のリクエストは全て待機状態となる。
+  
+
+------
+```
+
+## Knowledge File
+
+- ID: `libraries-04_DbAccessSpec--s1`
+
+```json
+{
+  "id": "libraries-04_DbAccessSpec--s1",
+  "title": "データベースアクセス(検索、更新、登録、削除)機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "データベース接続",
+        "JNDI接続",
+        "DataSource接続",
+        "接続方式切り替え",
+        "NablarchServletContextListener",
+        "Webアプリ推奨"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JDBCのAPIを踏襲した機能",
+      "hints": [
+        "JDBCラップ",
+        "JDBC API踏襲",
+        "データベースアクセス拡張機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "頻繁に使用するデータベースリソースの自動解放機能",
+      "hints": [
+        "リソース自動解放",
+        "Connection",
+        "Statement",
+        "ResultSet",
+        "BLOB",
+        "InputStream",
+        "リソース解放対象外"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "SQL文の実行ログ(SQLログ)の出力機能",
+      "hints": [
+        "SQLログ",
+        "SQLロガー",
+        "ログレベル",
+        "DEBUG",
+        "TRACE",
+        "本番環境出力禁止",
+        "バインド変数ログ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "件数指定でデータを取得(簡易検索機能)できる機能",
+      "hints": [
+        "簡易検索",
+        "件数指定取得",
+        "ページング",
+        "取得件数",
+        "開始位置",
+        "ページ切り替え"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Javaオブジェクトのフィールドの値を容易にデータベースに登録できる機能",
+      "hints": [
+        "executeUpdateByObject",
+        "自動設定",
+        "ログインユーザID自動設定",
+        "タイムスタンプ自動設定",
+        "オブジェクト登録",
+        "Formオブジェクト"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "LIKE検索を簡易的に実装出来る機能",
+      "hints": [
+        "LIKE検索",
+        "部分一致検索",
+        "エスケープ自動処理",
+        "prepareParameterizedSqlStatement",
+        "ParameterizedSqlPStatement"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "条件が可変のSQL文を組み立てる機能",
+      "hints": [
+        "可変条件SQL",
+        "$if構文",
+        "動的SQL組み立て",
+        "prepareParameterizedSqlStatement",
+        "ParameterizedSqlPStatement",
+        "SqlResultSet"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "データベーストランザクションのタイムアウト機能",
+      "hints": [
+        "トランザクションタイムアウト",
+        "処理遅延",
+        "接続プール枯渇防止",
+        "タイムアウト例外",
+        "スレッド枯渇防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベース接続方法（2種類）:\n\n**a) JNDI接続**: Webアプリケーションサーバに登録したDB接続を使用。**Webアプリでは本方式を推奨**。\n\n**b) DataSource接続**: `javax.sql.DataSource`実装クラスを使用。バッチアプリなどWebアプリサーバのDataSourceを使用できない場合に使用。自動テストでもWebアプリサーバ起動不要でテスト実行が可能。\n\n> **注意**: 接続方式の切り替えは設定ファイルで行えるため、アプリケーションコードに影響を与えない。\n\nWebアプリでは :ref:`NablarchServletContextListener` によりDB接続が初期化される。",
+    "s2": "本機能はJDBCのAPIをラップ（踏襲）。JDBCを拡張している機能: :ref:`db-feature-4-label`、:ref:`db-feature-5-label`、:ref:`db-feature-6-label`、:ref:`db-feature-7-label`",
+    "s3": "下記リソースの解放処理はアプリケーションで実装不要:\n- `java.sql.Connection`\n- `java.sql.Statement`\n- `java.sql.ResultSet`（Statement解放時に自動解放）\n\n> **重要**: BLOB型から取得した`InputStream`やバイナリファイルリソース等は自動解放対象外のため、アプリケーションで実装すること。",
+    "s4": "SQLログはロガー名「SQL」（SQLロガー）で出力。SQLログを出力する場合はSQLロガーをログ出力対象に含める必要がある。\n\nロガー設定方法: :doc:`./01_Log`、SQLログ詳細: :ref:`SQLログの出力<SqlLog>`\n\n| ログレベル | 出力内容 |\n|---|---|\n| DEBUG | 実行されたSQL、SELECT文の取得件数、実行時間、SQL ID（外部ファイル化した場合） |\n| TRACE | バインド変数に設定した値 |\n\n> **警告**: SQLログは本番環境では出力すべきでない。性能劣化（ディスクI/O起因）やディスクリソース圧迫の原因となる。",
+    "s5": "開始位置・取得件数を指定してデータを取得可能。ページ切り替え機能をもつ画面で、アプリケーションの表示データフィルタリングが不要になる。",
+    "s6": "オブジェクト自体を指定してDBへフィールド値を登録可能（1ステップで実行）。\n\n対応データ型:\n- 任意のオブジェクト（主に :doc:`../../determining_stereotypes` に定義されているFormオブジェクト）のフィールド値\n- Map実装クラスのvalue\n\n**自動設定**: ログインユーザIDとタイムスタンプはオブジェクトに設定されていなくても自動でDBに登録される。処理後に参照可能。\n\n> **注意**: 自動設定項目は開発プロジェクトで追加・変更可能。アノテーションを使用せずカラム名（フィールド名）で判断して値を設定することも可能。\n\n```java\nUserEntity entity = new UserEntity();\nentity.setName(\"名前\");\nentity.setAddress(\"住所\");\n// ログインユーザID、タイムスタンプはexecuteUpdateByObject内で自動設定\nstatement.executeUpdateByObject(entity);\n```\n\n詳細: :ref:`オブジェクトのフィールドの値のデータベースへの登録例 <db-object-store-label>`",
+    "s7": "LIKE部分一致検索の簡易実装機能。\n\nメリット:\n- エスケープ処理が不要（フレームワークが自動挿入）\n- Javaコードに「%」の付加が不要（SQL文に記述する）\n- オブジェクトのフィールド値を条件に設定可能（:ref:`db-feature-5-label` と同様）\n\n```java\nUserEntity entity = new UserEntity();\nentity.setUserName(\"ユーザ\");\nParameterizedSqlPStatement st = dbConnection.prepareParameterizedSqlStatement(\n    \"SELECT USER_ID, USER_NAME FROM USER_MTR WHERE USER_NAME LIKE :userName%\");\n// escape句はフレームワークが自動挿入、エスケープ処理は不要\nst.retrieve(entity);\n```",
+    "s8": "画面入力がある場合のみ検索条件に含める可変条件のSQL文を自動生成。Javaでの入力判定・SQL組み立てが不要。\n\n`$if(フィールド名) {条件式}` 構文でnull/空文字のフィールドをWHERE句から自動除外。\n\n```java\nEntity entity = new Entity();\nentity.setUserName(null);        // nullのため検索条件から除外\nentity.setUserKanaName(\"ユーザメイ\");\nParameterizedSqlPStatement sqlPStatement = dbConnection.prepareParameterizedSqlStatement(\n    \"SELECT USER_ID, USER_NAME, USER_KANA_NAME FROM USER_MST \"\n    + \"WHERE $if(userName) {user_name LIKE :userName%} \"\n    + \"AND $if(userKanaName) {user_kana_name LIKE :userKanaName%}\", entity);\nSqlResultSet resultSet = sqlPStatement.retrieve(entity);\n```",
+    "s9": "DBアクセス時にトランザクションが有効期限内かチェックする機能。\n\n処理遅延（DBのロック解放待ち、SQL応答待ちなど）でトランザクション有効期限を過ぎた場合、トランザクションタイムアウト例外を送出→処理遅延した業務処理を強制終了。大量の遅延処理の残存を防止できる。\n\n特に画面処理（Web）では、DB接続プールおよびリクエスト処理スレッドの枯渇防止に有効。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

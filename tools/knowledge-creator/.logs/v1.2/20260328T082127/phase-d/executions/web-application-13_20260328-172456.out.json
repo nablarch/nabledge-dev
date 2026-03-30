@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The line '**クラス**: `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie`' is presented as a standalone labeled entry before the XML block. The source does not have such a label; the class name appears only inside the XML `class=\"...\"` attribute.",
+      "source_evidence": "The source XML contains `class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\"` within the component element, but no standalone '**クラス**:' annotation exists."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The table `| プロパティ名 | 説明 | ... | cookieName | 言語を保持しているCookie名称 |` does not exist in the source. The source only has an XML comment `<!-- 言語を保持しているCookie名称 -->` inside the code block; no table was present.",
+      "source_evidence": "Source contains `<!-- 言語を保持しているCookie名称 -->` as an XML code comment. No Markdown or RST table appears in the source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Three property names present in the XML configuration example are missing from hints: `defaultLanguage`, `supportedLanguages`, `cookieMaxAge`. Per V4 rules, property names from configuration content should be included.",
+      "source_evidence": "Source XML: `<property name=\"defaultLanguage\" value=\"ja\" />`, `<property name=\"supportedLanguages\" value=\"ja,en\" />`, `<property name=\"cookieMaxAge\" value=\"7776000\" />`"
+    }
+  ]
+}

@@ -1,0 +1,365 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/CustomTag/screenTransition.rst`
+- Format: `rst`
+
+```
+複数ウィンドウを立ち上げたい場合
+------------------------------------------------------------------------------------------------
+ユーザの操作性を向上させるために、複数ウィンドウを立ち上げたい場合がある。\
+例えば、検索画面を別ウィンドウで立ち上げ入力補助を行う場合などが挙げられる。\
+複数ウィンドウを立ち上げたい場合は、下記のタグを使用すればよい。\
+これらのタグを使用すると、新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。
+
+* popupSubmit
+* popupButton
+* popupLink
+
+新しいウィンドウのスタイルは、下記のpopupOption属性に指定する。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+popupOption                            | ポップアップのオプション情報。
+                                       | 新しいウィンドウを開く際にwindow.open関数の第3引数(JavaScript)に指定する。
+====================================== ==========================================================================================
+
+オープンしたウィンドウに表示される画面の処理を行うアクションと、元画面のアクションでパラメータ名が異なる場合は、\
+changeParamNameタグを使用してパラメータ名を変更する。
+
+別ウィンドウにサブミットする場合のJSPの実装例
+==========================================================================================
+ここでは、郵便番号から住所を検索する別ウィンドウにサブミットする場合の実装例を示す。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】郵便番号の入力項目以外は省略 --%>
+     <tr>
+         <th>
+             <span class="essential">*</span>郵便番号<span class="instruct">(半角数字)</span>
+         </th>
+         <td>
+             <n:text name="W11AC01.postalCode" size="7" maxlength="9"/>
+             <%-- 【説明】
+                   popupButtonタグを指定する。
+                   name属性やuri属性の指定は、画面内のフォームをサブミットするbuttonタグと同じ。 --%>
+             <n:popupButton name="searchAddress" uri="/action/ss11AB/W11AB01Action/RW11AB0101">
+                 検索
+                 <%-- 【説明】
+                       郵便番号のパラメータ名"W11AC01.postalCode"を"W11AB01.postalCode"に変更する。
+                       別画面を表示するアクションで入力項目を使用する場合は、
+                       別画面を表示するアクションに合わせてパラメータ名を変更する。 --%>
+                 <n:changeParamName inputName="W11AC01.postalCode" paramName="W11AB01.postalCode" />
+                 <%-- 【説明】
+                       変更パラメータを追加する。
+                       別画面を表示するアクションに合わせてパラメータを追加する。 --%>
+                 <n:param paramName="W11AB01.max" value="10" />
+             </n:popupButton>
+         </td>
+     </tr>
+
+別ウィンドウから元画面に値を設定する場合のJSPの実装例
+==========================================================================================
+別ウィンドウから元画面に値を設定したい場合はJavaScriptにより実現する。\
+郵便番号の検索結果をリンクで選択させる場合とボタンで選択させる場合の実装例を下記に示す。
+
+* JavaScriptの実装例
+
+ | JavaScriptは動的な値(入力データなど)の埋め込みを防ぐために外部ファイルに記述する。\
+   下記の実装例では"/js/common.js"に配置したファイルに記述するものとする。
+
+ | JavaScriptのコメントは保守性を向上させるために記述することを推奨する。\
+   JavaScriptの記述ルールはプロジェクトの規約に従うこと。
+
+  .. code-block:: javascript
+
+     /**
+      * 親ウィンドウのinput要素のvalue属性に値を設定しウィンドウをクローズする。
+      *
+      * 親ウィンドウのinput要素は指定されたname属性から取得する。
+      * 本関数は単一入力項目への値設定のみサポートしており、
+      * 指定されたname属性が親ウィンドウ内で重複していないことを前提に処理する。
+      *
+      * 親ウィンドウに設定する値は、指定された要素の属性から取得する。
+      * デフォルトではname属性から値を取得する。
+      * 通常の属性値と区別するため、値にはプレフィックスを付けることとし、
+      * 指定されたプレフィックスを取り除いた結果を値とする。
+      *
+      * @param openerInputName 値を設定する親ウィンドウのinput要素のname属性
+      * @param element 値の取得先の要素
+      * @param prefix  値に付けたプレフィックス
+      * @param attributeName 値の取得先となる要素の属性名。指定がない場合はname属性を使用する。
+      */
+     function setInputValueToOpener(openerInputName, element, prefix, attributeName) {
+         if (attributeName == null) {
+             attributeName = "name";
+         }
+         var value = element[attributeName];
+         value = value.substring(prefix.length, value.length);
+         /* 【説明】
+             window.openerを使用して元画面を参照する。*/
+         var input = window.opener.document.getElementsByName(openerInputName)[0];
+         input.value = value;
+         window.close();
+     }
+
+ .. warning::
+
+  JavaScriptに対するエスケープ処理は、フレームワークで未実装のため、 scriptタグのボディやonclick属性など、\
+  JavaScriptを記述する部分には、動的な値(入力データなど)を埋め込まないこと。
+
+* JSPの実装例(郵便番号の検索結果をリンクで選択させる場合)
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           外部ファイルに記述したJavaScriptを読み込む。
+           n:scriptタグはhtmlのheadタグ内に記述する。 --%>
+     <n:script type="text/javascript" src="/js/common.js"  />
+
+     <%-- 【説明】
+           リクエストスコープに"resultSet"という名前で郵便番号の検索結果が設定されているものとする。
+           name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。--%>
+     <n:form>
+     <c:forEach var="row" items="${resultSet}">
+         <div>
+             <n:a href="#" name="val_${row.postalCode}"
+                  onclick="setInputValueToOpener('W11AC01.postalCode', this, 'val_')">
+                 <n:write name="row.postalCode" />
+             </n:a>
+         </div>
+     </c:forEach>
+     </n:form>
+
+* JSPの実装例(郵便番号の検索結果をボタンで選択させる場合)
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           外部ファイルに記述したJavaScriptを読み込む。
+           n:scriptタグはhtmlのheadタグ内に記述する。 --%>
+     <n:script type="text/javascript" src="/js/common.js"  />
+
+     <%-- 【説明】
+           リクエストスコープに"resultSet"という名前で郵便番号の検索結果が設定されているものとする。
+           name属性にプレフィックス＋郵便番号、onclick属性にJavaScript関数を指定する。--%>
+     <n:form>
+     <c:forEach var="row" items="${resultSet}">
+         <div>
+             <n:button uri="#" name="val_${row.postalCode}"
+                 onclick="setInputValueToOpener('W11AC01.postalCode', this, 'val_')">
+                 <n:write name="row.postalCode" />
+             </n:button>
+         </div>
+     </c:forEach>
+     </n:form>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`howto_prevent_double_submission`:
+
+--------------------
+二重サブミットの防止
+--------------------
+
+データベースへのコミットを伴う画面では、二重サブミットを防止する必要がある。
+
+防止法は、クライアント側での対策（以下、「リクエストの二重送信防止」）と
+サーバ側での対策（以下、「処理済リクエストの受信防止」）をそれぞれ行う必要がある。
+
+詳細については、 Application Framework解説書の `二重サブミットの防止 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.html#prevent-double-submission>`_ を参照。
+
+
+.. _`common_page_support`:
+
+----------------------------------------------------
+入力画面と確認画面の共通化をサポートするカスタムタグ
+----------------------------------------------------
+
+入力画面と確認画面が1対1に対応する場合、表示のためのJSPファイルを共通化できる。
+
+詳細については、 Application Framework解説書の `入力画面と確認画面の共通化をサポートするカスタムタグ <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-inputconfirmationcommon>`_ を参照。
+
+
+.. _`howto_prevent_history_back`:
+
+------------------------
+ブラウザのキャッシュ防止
+------------------------
+
+ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、noCacheタグを使用する。
+
+詳細については、 Application Framework解説書の `ブラウザのキャッシュ防止 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.html#prevent-history-back>`_ を参照。
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-screenTransition--s8`
+
+```json
+{
+  "id": "web-application-screenTransition--s8",
+  "title": "複数ウィンドウを立ち上げたい場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げたい場合",
+      "hints": [
+        "popupSubmit",
+        "popupButton",
+        "popupLink",
+        "popupOption",
+        "changeParamName",
+        "setInputValueToOpener",
+        "複数ウィンドウ",
+        "ポップアップ",
+        "別ウィンドウサブミット",
+        "window.opener"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "リクエストの二重送信防止",
+        "処理済リクエストの受信防止",
+        "クライアント側対策",
+        "サーバ側対策"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力画面と確認画面の共通化をサポートするカスタムタグ",
+      "hints": [
+        "入力画面共通化",
+        "確認画面共通化",
+        "JSPファイル共通化",
+        "カスタムタグ",
+        "入力確認画面"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "noCacheタグ",
+        "ブラウザキャッシュ防止",
+        "ブラウザの戻るボタン",
+        "履歴バック防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数ウィンドウを立ち上げたい場合は以下のタグを使用する。これらのタグは新しいウィンドウをオープンし、そのウィンドウへサブミットする。\n\n- `popupSubmit`\n- `popupButton`\n- `popupLink`\n\n新しいウィンドウのスタイルは `popupOption` 属性で指定する。\n\n| プロパティ名 | 説明 |\n|---|---|\n| popupOption | ポップアップのオプション情報。新しいウィンドウを開く際に `window.open` 関数の第3引数(JavaScript)に指定する。 |\n\n元画面と別ウィンドウのアクションでパラメータ名が異なる場合は `changeParamName` タグでパラメータ名を変更する。\n\n### 別ウィンドウにサブミットする場合のJSP実装例\n\n```jsp\n<n:popupButton name=\"searchAddress\" uri=\"/action/ss11AB/W11AB01Action/RW11AB0101\">\n    検索\n    <n:changeParamName inputName=\"W11AC01.postalCode\" paramName=\"W11AB01.postalCode\" />\n    <n:param paramName=\"W11AB01.max\" value=\"10\" />\n</n:popupButton>\n```\n\n### 別ウィンドウから元画面に値を設定する場合\n\n`window.opener` を使用して元画面を参照し、値を設定してウィンドウをクローズする。JavaScriptは動的な値の埋め込みを防ぐために外部ファイルに記述する。\n\n> **警告**: JavaScriptに対するエスケープ処理はフレームワークで未実装のため、scriptタグのボディやonclick属性など、JavaScriptを記述する部分には動的な値（入力データなど）を埋め込まないこと。\n\n```javascript\nfunction setInputValueToOpener(openerInputName, element, prefix, attributeName) {\n    if (attributeName == null) {\n        attributeName = \"name\";\n    }\n    var value = element[attributeName];\n    value = value.substring(prefix.length, value.length);\n    var input = window.opener.document.getElementsByName(openerInputName)[0];\n    input.value = value;\n    window.close();\n}\n```\n\nリンクで選択する場合:\n```jsp\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:a href=\"#\" name=\"val_${row.postalCode}\"\n             onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:a>\n    </div>\n</c:forEach>\n</n:form>\n```\n\nボタンで選択する場合:\n```jsp\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:button uri=\"#\" name=\"val_${row.postalCode}\"\n            onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:button>\n    </div>\n</c:forEach>\n</n:form>\n```",
+    "s2": "データベースへのコミットを伴う画面では二重サブミットを防止する必要がある。クライアント側（リクエストの二重送信防止）とサーバ側（処理済リクエストの受信防止）の両方の対策が必要。",
+    "s3": "入力画面と確認画面が1対1に対応する場合、表示のためのJSPファイルを共通化できる。",
+    "s4": "ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、`noCacheタグ` を使用する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 7
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

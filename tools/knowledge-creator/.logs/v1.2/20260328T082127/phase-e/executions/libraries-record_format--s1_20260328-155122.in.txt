@@ -1,0 +1,276 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-record_format--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — format definition file code example",
+      "description": "The code block in the knowledge file omits the structural comment headers `# ディレクティブ定義部` and `# データレコード定義部` that appear in the source. These terms define the two conceptual sections of a format definition file and may be referenced in user questions about format file structure.",
+      "source_evidence": "Source code block contains: `#\\n# ディレクティブ定義部\\n#` and `#\\n# データレコード定義部\\n#` as section markers within the format file example."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — write record example",
+      "description": "The source explicitly states the write example uses 'the same formatter' (同じフォーマッターを使用して) reused from the read example, and describes the operation as output/append (出力(追加)). The knowledge file's 'レコード書き込み' section loses both pieces of context: formatter reuse and the append semantics.",
+      "source_evidence": "Source: 「次の例では、同じフォーマッターを使用して、データファイルにレコードを出力(追加)している。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "S9 automated warning — section count",
+      "description": "The automated pre-check warning 'Section count 3 < source headings 5' is a false positive. The source RST file contains exactly 3 headings (main title 汎用データフォーマット機能, 基本構造, 使用例). The remaining `------` lines are horizontal rules (no preceding text), not section headings. The knowledge file's 3 sections correctly match the source structure.",
+      "source_evidence": "RST source contains only 3 lines with overline/underline heading patterns. The separator lines (e.g., `---------------`, `-------------------------------`) have no text above them and are horizontal rules, not headings."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+汎用データフォーマット機能
+================================================
+
+本機能は、EDI等で利用される多様なデータ形式に対応する汎用の入出力ライブラリである。
+本フレームワークの中で、システム間通信、バッチ処理におけるデータファイルの読み書き、ファイルアップロード処理など、
+様々な場面で使用される。
+
+..
+  以下に本機能の特徴を挙げる。
+  - 固定長および可変長データ形式をサポート
+  - マルチレイアウト対応
+  - EBCDICへの対応や、パックおよびゾーン10進数形式のサポートなど、ホスト環境での利用を想定した機能
+  - 形式精査、パディング/トリミング、寄せ字変換といった、精査・変換処理を実行
+  - カスタムのデータ形式や、変換処理を必要に応じて追加・拡張することが可能
+  
+---------------
+
+
+基本構造
+---------------------
+本機能では、データ形式の定義情報を **フォーマット定義ファイル** と呼ばれるファイルに記述する。
+フレームワークはそれをもとにデータソースに対するレコードの読み書きを行う。
+
+このファイルには、レコード内のフィールドのレイアウトやデータ型に関する情報だけでなく、
+パディング・トリミング、寄せ字処理など、入出力の際の事前処理の実行定義についても指定できる。
+これにより、データ入出力に係わるほとんどの処理をフレームワーク側で行うことができる。
+
+プログラム側では、パース/シリアライズ処理はじめとする定型処理の一切を記述する必要は無く、
+データソース上のレコードを単なるMapオブジェクトとして扱うことができる。
+
+  .. note::
+  
+    なお、別添のツールを使用することで、 データファイルや電文の形式を定義した各種仕様書から
+    **フォーマット定義ファイル** を生成することが可能である。
+
+以下は、本機能のおおまかな構造を表した図である。
+
+    .. figure::  ../_image/dataformat_concept.png
+       :align: center
+
+この図が示すように、本機能は3つの要素から成り立つ。
+
+  **1. フォーマット定義ファイル**
+    その名の通り、データのフォーマット定義を記述したファイルである。
+    アプリケーションプログラマが作成するのは基本的にこのファイルだけである。
+
+  **2. レコードフォーマッター**
+    フォーマット定義ファイルの内容に沿って、実際にデータの読み書きを行うオブジェクトである。
+    入力ストリームからのレコードの読み込みと、出力ストリームに対するレコードの出力が可能である。
+    読み込んだレコードは、各フィールド名をキーとするMapオブジェクトとして取得できる。
+    また逆に、Mapインターフェースを実装した任意のオブジェクトをレコードとして出力できる。
+
+  **3. レコードフォーマッターファクトリ**
+    フォーマット定義ファイルを解析し、その内容に従ってレコードフォーマッターを生成するクラス。
+    フレームワークによって提供される。
+    レコードフォーマッターの機能を拡張する場合は、このファクトリに対して拡張機能を実装したクラスを設定する。
+
+-------------------------------
+
+使用例
+-----------------------------
+本機能を利用するには、まずフォーマット定義ファイルを作成する (もしくは、定義書から自動生成する) 必要がある。
+以下は、フォーマット定義ファイルの例である。
+
+  .. code-block:: bash
+
+        #
+        # ディレクティブ定義部
+        #
+        file-type:     "Fixed"  # 固定長ファイル
+        text-encoding: "ms932"  # 文字列型フィールドの文字エンコーディング
+        record-length:  120     # 各レコードbyte長
+
+        #
+        # データレコード定義部
+        #
+        [Default]
+        1    dataKbn       X(1)  "2"      # 1. データ区分
+        2    FIcode        X(4)           # 2. 振込先金融機関コード
+        6    FIname        X(15)          # 3. 振込先金融機関名称
+        21   officeCode    X(3)           # 4. 振込先営業所コード
+        24   officeName    X(15)          # 5. 振込先営業所名
+        39  ?tegataNum     X(4)  "9999"   # (手形交換所番号)
+        43   syumoku       X(1)           # 6. 預金種目
+        44   accountNum    X(7)           # 7. 口座番号
+        51   recipientName X(30)          # 8. 受取人名
+        81   amount        X(10)          # 9. 振込金額
+        91   isNew         X(1)           # 10.新規コード
+        92   ediInfo       X(20)          # 11.EDI情報
+        112  transferType  X(1)           # 12.振込区分
+        113  withEdi       X(1)  "Y"      # 13.EDI情報使用フラグ
+        114 ?unused        X(7)  pad("0") # (未使用領域)
+
+
+この定義に沿って実際にデータの読み書きを行うには、
+レコードフォーマッター (`DataRecordFormatter`_) のインスタンスを作成する。
+
+  .. code-block:: java
+
+    // 上掲のフォーマットファイルがワーキングディレクトリ直下に、
+    // ファイル名 "test.fmt" で保存されているとする。
+    File formatFile = new File("./test.fmt");
+  
+    // フォーマットファイルをファクトリに設定し、レコードフォーマッターを作成する。
+    DataRecordFormatter formatter = FormatterFactory
+                                   .getInstance()
+                                   .createFormatter(formatFile);
+   
+以下では、作成したフォーマッターを利用し、データファイルの内容を読み込んでいる。
+
+  .. code-block:: java
+
+    // データソース(この場合はファイル) からの入力ストリームを取得する。
+    InputStream in = new FileInputStream("./data.dat");
+ 
+    // 入力ストリームをフォーマッターに接続する。
+    formatter.setInputStream(in)
+             .initialize();
+ 
+    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
+ 
+    while (formatter.hasNext()) {
+      // 入力ストリームから1レコード分を読み込む。
+      records.add(formatter.readRecord()); 
+    }
+
+
+次の例では、同じフォーマッターを使用して、データファイルにレコードを出力(追加)している。
+
+
+  .. code-block:: java
+
+    // データソース(この場合はファイル) に対する出力ストリームを取得する。
+    OutputStream out = new FileOutputStream("./data.dat");
+ 
+    // 出力ストリームをフォーマッターに接続する。 
+    formatter.setOutputStream(out)
+             .initialize();
+
+    // 新規レコードを出力ストリームに書き込む。
+    formatter.writeRecord(new HashMap() {{
+        put("FIcode",     "9999");
+        put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+        put("officeCode", "111");
+        /*
+         * (後略)
+         */
+    }});
+
+  .. **/
+
+--------------------------
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-record_format--s1",
+  "title": "汎用データフォーマット機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能",
+        "EDI",
+        "データ形式",
+        "入出力ライブラリ",
+        "データファイル読み書き",
+        "ファイルアップロード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本構造",
+      "hints": [
+        "DataRecordFormatter",
+        "フォーマット定義ファイル",
+        "レコードフォーマッター",
+        "レコードフォーマッターファクトリ",
+        "Mapオブジェクト",
+        "データフォーマット機能構造",
+        "パディング",
+        "トリミング",
+        "寄せ字処理",
+        "入出力事前処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用例",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "file-type",
+        "text-encoding",
+        "record-length",
+        "固定長ファイル",
+        "レコード読み込み",
+        "レコード書き込み",
+        "フォーマット定義ファイル作成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "EDI等で利用される多様なデータ形式に対応する汎用の入出力ライブラリ。システム間通信・バッチ処理のデータファイル読み書き・ファイルアップロード処理など様々な場面で使用される。",
+    "s2": "データ形式の定義を**フォーマット定義ファイル**に記述し、フレームワークがデータソースに対してレコードの読み書きを行う。このファイルには、レコード内のフィールドのレイアウトやデータ型に関する情報だけでなく、パディング・トリミング、寄せ字処理など、入出力の際の事前処理の実行定義についても指定できる。これにより、データ入出力に係わるほとんどの処理をフレームワーク側で行うことができる。プログラム側はレコードをMapオブジェクトとして扱うだけでよく、パース/シリアライズ等の定型処理の実装は不要。\n\n> **注意**: 別添のツールを使用することで、データファイルや電文の形式を定義した各種仕様書からフォーマット定義ファイルを生成可能。\n\n本機能は3つの要素から構成される:\n\n1. **フォーマット定義ファイル**: データのフォーマット定義を記述したファイル。アプリケーションプログラマが作成する。\n2. **レコードフォーマッター** (`DataRecordFormatter`): フォーマット定義ファイルに従いデータの読み書きを行うオブジェクト。入力ストリームからレコードを各フィールド名をキーとするMapで読み込み、MapインタフェースのオブジェクトをレコードとしてOutput可能。\n3. **レコードフォーマッターファクトリ**: フォーマット定義ファイルを解析しレコードフォーマッターを生成するクラス（フレームワーク提供）。フォーマッターの機能拡張時はこのファクトリに拡張クラスを設定する。\n\n![本機能の構造](assets/libraries-record_format--s1/dataformat_concept.png)",
+    "s3": "フォーマット定義ファイルを作成後、`FormatterFactory`でレコードフォーマッター(`DataRecordFormatter`)を作成してデータの読み書きを行う。\n\n**フォーマット定義ファイル例（固定長）:**\n\n```bash\nfile-type:     \"Fixed\"  # 固定長ファイル\ntext-encoding: \"ms932\"  # 文字列型フィールドの文字エンコーディング\nrecord-length:  120     # 各レコードbyte長\n\n[Default]\n1    dataKbn       X(1)  \"2\"      # 1. データ区分\n2    FIcode        X(4)           # 2. 振込先金融機関コード\n6    FIname        X(15)          # 3. 振込先金融機関名称\n21   officeCode    X(3)           # 4. 振込先営業所コード\n24   officeName    X(15)          # 5. 振込先営業所名\n39  ?tegataNum     X(4)  \"9999\"   # (手形交換所番号)\n43   syumoku       X(1)           # 6. 預金種目\n44   accountNum    X(7)           # 7. 口座番号\n51   recipientName X(30)          # 8. 受取人名\n81   amount        X(10)          # 9. 振込金額\n91   isNew         X(1)           # 10.新規コード\n92   ediInfo       X(20)          # 11.EDI情報\n112  transferType  X(1)           # 12.振込区分\n113  withEdi       X(1)  \"Y\"      # 13.EDI情報使用フラグ\n114 ?unused        X(7)  pad(\"0\") # (未使用領域)\n```\n\n**フォーマッター作成:**\n\n```java\nFile formatFile = new File(\"./test.fmt\");\nDataRecordFormatter formatter = FormatterFactory\n                               .getInstance()\n                               .createFormatter(formatFile);\n```\n\n**レコード読み込み:**\n\n```java\nInputStream in = new FileInputStream(\"./data.dat\");\nformatter.setInputStream(in).initialize();\nList<Map<String, Object>> records = new ArrayList<Map<String, Object>>();\nwhile (formatter.hasNext()) {\n  records.add(formatter.readRecord());\n}\n```\n\n**レコード書き込み:**\n\n```java\nOutputStream out = new FileOutputStream(\"./data.dat\");\nformatter.setOutputStream(out).initialize();\nformatter.writeRecord(new HashMap() {{\n    put(\"FIcode\",     \"9999\");\n    put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n    put(\"officeCode\", \"111\");\n}});\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

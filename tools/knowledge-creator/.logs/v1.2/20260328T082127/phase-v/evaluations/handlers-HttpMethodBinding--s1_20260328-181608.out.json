@@ -1,0 +1,26 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 (omission in s6) has medium user impact: the 3-argument HttpErrorResponse constructor is demonstrated in s4 (status 403, AuthenticationFailedException context), but s6 is the dedicated exception-control section and its prose explicitly describes the try/catch+HttpErrorResponse pattern without showing the code. An AI resolving an ApplicationException→HTTP 400 scenario from s6 alone would need to stitch together prose from s6 and an unrelated example from s4, increasing the risk of an incorrect or incomplete answer. The two hints_missing findings are low impact and do not independently require re-generation.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s6 — 例外制御",
+      "impact": "medium",
+      "justification": "s4 already shows `new HttpErrorResponse(403, \"forward://login.html\", e)` (AuthenticationFailedException), so the 3-argument constructor signature is not entirely absent from the file. However, s6 is the section that explicitly explains the try/catch exception-wrapping pattern and references ApplicationException + HTTP 400 — a common real-world combination. The prose says 'HttpErrorResponseでラップして再送出する' but provides no code, while immediately jumping to the @OnError simplification. An AI answering 'ApplicationExceptionをキャッチしてHTTP 400で内部フォーワードするには？' from s6 would have to infer the concrete constructor call from a different section's example, risking incorrect status codes or argument order. Impact is medium rather than high because the constructor pattern is at least partially inferrable from s4. Why it persisted: Phase E output is structurally identical to Phase D — the fix (inserting the try/catch block before the @OnError example) was not applied, likely due to an incomplete or aborted Phase E execution."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s5 — hints",
+      "impact": "low",
+      "justification": "WebFrontController is referenced only in a clarifying note within s5's prose. Queries specifically pairing 'WebFrontController' with 'ハンドラキュー' or 'servlet forward' would miss s5 via hint routing, but: (1) the term appears in the section text itself and can be matched by content-based retrieval, and (2) WebFrontController has its own dedicated knowledge file that would handle direct queries about it. The risk of a meaningful answer gap is low. Why it persisted: Phase E made no changes to the hints arrays."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s6 — hints",
+      "impact": "low",
+      "justification": "The short form `OnDoubleSubmission` hint is already present and covers the vast majority of queries. The FQCN `nablarch.common.web.token.OnDoubleSubmission` appears verbatim inside the interceptorsOrder XML code block in s6's text, so content-based retrieval would still surface it. Adding the FQCN hint would marginally improve routing for queries that include the package name, but the practical impact is negligible. Why it persisted: Phase E made no changes to the hints arrays."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 2 has medium impact: the three core interface names (SqlParameterParserFactory, SqlParameterParser, SqlConvertor) are absent from hints, creating a retrieval gap for developers seeking extension points. Finding 1 is low impact. Phase E failed to apply either fix — the hints array and VariableOrderBySyntaxConvertor section content are identical to the Phase D state.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — VariableOrderBySyntaxConvertor ケース部分の仕様",
+      "impact": "low",
+      "justification": "トリミング仕様はエッジケース（スペース混入）に関する耐性を示すものであり、通常の実装では影響しない。開発者は自然に `(1 USER_ID ASC)` のようにスペースなしで記述するため、この情報がなくても実装判断を誤るリスクは低い。テストで容易に発見可能。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[0].hints",
+      "impact": "medium",
+      "justification": "SqlParameterParser・SqlParameterParserFactory・SqlConvertorはカスタマイズのための拡張ポイントとなる親インタフェースであり、本セクションには「BasicSqlParameterParserの仕様では不十分な場合はSqlParameterParserの実装クラスを追加して置き換えて使用すること」という重要な記述がある。カスタマイズを検討する開発者がこれらのインタフェース名で検索した場合にセクションが取得されず、拡張方法を見落とす可能性がある。"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "file_id": "libraries-thread_context--s9",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — LanguageAttributeInHttpCookieのJSP実装例",
+      "description": "言語選択画面のJSP実装例が欠落している。ソースには `n:submitLink` + `n:param paramName=\"user.language\"` を使ったリンク実装パターンが示されており、Nablarch固有のタグ使用方法（言語切替の具体的な実装手順）が含まれている。",
+      "source_evidence": "**JSPの実装例** セクション: `<n:submitLink uri=\"/action/MenuAction/MENU00101\" name=\"switchToEnglish\">` / `<n:param paramName=\"user.language\" value=\"en\" />` など"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — LanguageAttributeInHttpCookieのJavaハンドラ実装例",
+      "description": "I18nHandlerのJava実装例が欠落している。ソースには `HttpRequestHandler` を実装したハンドラクラスの完全なコード例があり、`LanguageAttributeInHttpUtil.keepLanguage` の呼び出し方と、`getParamMap`/`getParam` を使った直接パラメータアクセスの理由（共通ハンドラとして使用するため）が示されている。",
+      "source_evidence": "`public class I18nHandler implements HttpRequestHandler` の実装例全体と、その後の `.. note::` に「I18nHandlerはアプリケーションの共通ハンドラとして使用することを想定しているため、HttpRequestのgetParamMapメソッドとgetParamメソッドを使用して直接リクエストパラメータにアクセスしている」という説明"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — LanguageAttributeInHttpSessionのJavaアクション実装例",
+      "description": "ログイン処理でユーザに紐づく言語をHTTPセッションに設定するアクション実装例が欠落している。`doLOGIN00101` でデータベースから取得した言語を `keepLanguage` で設定するパターンを示す具体的なコード例がない。",
+      "source_evidence": "`public HttpResponse doLOGIN00101(HttpRequest request, ExecutionContext context)` の実装例: `String language = // データベースからの取得処理は省略` → `LanguageAttributeInHttpUtil.keepLanguage(request, context, language);`"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — TimeZoneAttributeInHttpCookieのJSP実装例",
+      "description": "タイムゾーン選択画面のJSP実装例が欠落している。ソースには `n:submitLink` + `n:param paramName=\"user.timeZone\"` を使ったリンク実装パターンが示されており、Nablarch固有のタグ使用方法（タイムゾーン切替の具体的な実装手順）が含まれている。",
+      "source_evidence": "**JSPの実装例** セクション: `<n:submitLink uri=\"/action/MenuAction/MENU00101\" name=\"switchToNewYork\">` / `<n:param paramName=\"user.timeZone\" value=\"America/New_York\" />` など"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — TimeZoneAttributeInHttpCookieのJavaハンドラ実装例",
+      "description": "I18nHandlerのタイムゾーン版Java実装例が欠落している。ソースには `TimeZoneAttributeInHttpUtil.keepTimeZone` の呼び出し方と、直接パラメータアクセスの理由を示す完全なハンドラコード例がある。",
+      "source_evidence": "`public class I18nHandler implements HttpRequestHandler` の実装例（タイムゾーン版）と、その後の `.. note::` 全体"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — TimeZoneAttributeInHttpSessionのJavaアクション実装例",
+      "description": "ログイン処理でユーザに紐づくタイムゾーンをHTTPセッションに設定するアクション実装例が欠落している。`doLOGIN00101` でデータベースから取得したタイムゾーンを `keepTimeZone` で設定するパターンを示す具体的なコード例がない。",
+      "source_evidence": "`public HttpResponse doLOGIN00101(HttpRequest request, ExecutionContext context)` の実装例（タイムゾーン版）: `String timeZone = // データベースからの取得処理は省略` → `TimeZoneAttributeInHttpUtil.keepTimeZone(request, context, timeZone);`"
+    }
+  ]
+}

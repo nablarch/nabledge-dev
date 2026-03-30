@@ -1,0 +1,244 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-basic--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "Missing PascalCase class names that appear in the Java code example: `HttpResponse`, `HttpRequest`, `ExecutionContext`. Also missing JSP tags used in the code examples: `n:write`, `n:text`, `n:submit`.",
+      "source_evidence": "Source Java code: `public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx)`. Source JSP: `<n:write name=\"W11AC03.user.userId\"/>`, `<n:text name=\"W11AC03.user.kanjiName\" .../>`, `<n:submit ... />`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "Missing `c:if` tag which appears in the JSP code example for s3.",
+      "source_evidence": "Source JSP example: `<c:if test=\"${officeLocation == ''}\">` appears in the `set_value_on_jsp` section."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+アクションの実装方法
+====================
+
+ウィンドウスコープを使用する場合、以下のことに注意してActionクラスを実装すること。
+
+* 遷移先の画面に入力データを引き継ぐための処理を、Actionクラスで明示的に行わない。
+
+  データを引き継ぐためにセッションを利用する方式では、
+  入力画面から遷移したActionクラスで、入力データを明示的にセッションに設定する必要がある。
+  一方、ウィンドウスコープを使用する方式では、入力データを引き継ぐための処理をフレームワークが自動的に行う。
+
+* Actionクラスでウィンドウスコープのデータを使用する場合、バリデーションを行う。
+
+  リクエストから直接取得したデータはString型であり、データの型変換が必要となることがある。
+  しかし、バリデーションを実行し、フォームのプロパティの設定値としてデータを取得した場合、
+  そのプロパティのデータは自動で型変換が行われる。
+  
+  
+以下の遷移を例に、ウィンドウスコープを用いてデータを引き継ぐ際のActionクラスの実装例を示す。
+
+更新確認画面→更新完了画面
+
+
+* JSPの実装例
+
+  更新確認画面
+  
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           confirmationPageタグを指定すると、入力画面（更新画面）と同じ記述で確認項目の出力が出来る。 --%>
+     <n:confirmationPage />
+     <%-- 【説明】完了画面で表示するために、検索条件だけでなく、更新情報のプレフィックス（W11AC03）も指定 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01,W11AC03">
+         <%-- 【説明】更新対象データ --%>
+         <n:write name="W11AC03.user.userId"/>
+         <n:text name="W11AC03.user.kanjiName" size="65" maxlength="25" />
+         <%-- 【説明】完了画面へのサブミットボタン --%>
+         <n:submit cssClass="mainBtn" type="button" name="confirm" value="確定" uri="/action/ss11AC/W11AC03Action/RW11AC0304" />
+     </n:form>
+
+  更新完了画面
+  
+  .. code-block:: jsp
+  
+      <%-- 【説明】
+            ウィンドウスコープの説明箇所以外は省略。
+            一覧照会画面で検索条件を表示するために、11AC_W11AC01の値をウィンドウスコープに設定 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01">
+         <%-- 【説明】更新確認画面から渡されたウィンドウスコープの値出力は省略 --%>
+         <n:submit cssClass="mainBtn" type="submit" name="refer" uri="/action/ss11AC/W11AC01Action/RW11AC0102" value="一覧照会画面へ" />
+     </n:form>
+     
+     
+* Actionクラスの実装例
+
+  .. code-block:: java
+  
+     public class W11AC03Action {
+       /* 【説明】
+           更新処理を行うメソッド。
+           ウィンドウスコープの処理以外は省略 */
+       public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {
+         /* 【説明】
+             以下で検索条件(11AC_W11AC01)に関する処理を記述していないが、
+             検索条件の入力データは更新完了画面に引き継がれる。 */
+         
+         /* 【説明】更新情報のバリデーション */
+         ValidationContext<W11AC03Form> formCtx =
+             ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             
+         // 【説明】バリデーションエラーがあれば、例外を返す。
+         if (!formContext.isValid()) {
+             throw new ApplicationException(formContext.getMessages());
+         }
+         
+         /* 【説明】
+             Actionクラスで使用するW11AC03Formインスタンスの生成
+             自動で型変換された更新情報がプロパティに設定されている。 */
+         W11AC03Form form = formCtx.createObject();
+         
+         /* 【説明】以下、W11AC03Formインスタンスを使用した更新処理は省略 */
+       }
+     }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`set_value_on_jsp`:
+
+---------------------------------
+JSP上で変数に値を設定する方法
+---------------------------------
+
+画面タイトルや検索結果などの値を、JSP上で変数に設定して使用する方法を示す。
+
+
+* JSPの実装例
+
+  .. code-block:: html
+  
+     <%-- 【説明】変数の使用部分以外は省略 --%>
+     <head>
+         <%-- 【説明】
+               リクエストスコープ上の変数"title"に、value属性で値を直接設定。
+               値を直接設定する場合、value属性を使用する。 --%>
+         <n:set var="title" value="ユーザ情報登録" />
+         <jsp:include page="/html_header.jsp">
+             <%-- 【説明】
+                   ページの埋め込み時に変数を使ってパラメータを指定。
+                   値の出力ではないので、EL式を使用しても問題ない。 --%>
+             <jsp:param name="title" value="${title}"/>
+         </jsp:include>
+     </head>
+     <body>
+         <%-- 【説明】レイアウトやその他の入力項目は省略 --%>
+         <n:form>
+             <%-- 【説明】
+                   リクエストスコープ上の変数"officeLocation"に、name属性で指定したオブジェクトを参照して値を設定。
+                   スコープ上のオブジェクトを参照して値を設定する場合、name属性でスコープ上のキーを指定する。 --%>
+             <n:set var="officeLocation" name="W11AC02.systemUser.officeLocation"/>
+                 <c:if test="${officeLocation == ''}">
+                     <%-- 【説明】W11AC02.systemUser.officeLocationの値が空文字の場合の処理は省略 --%>
+                 </c:if>
+         </n:form>
+     </body>
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-basic--s10",
+  "title": "アクションの実装方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アクションの実装方法",
+      "hints": [
+        "ウィンドウスコープ",
+        "Actionクラス実装",
+        "データ引き継ぎ",
+        "バリデーション",
+        "型変換",
+        "フレームワーク自動処理",
+        "セッション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "W11AC03Action",
+        "windowScopePrefixes",
+        "ValidationUtil",
+        "ValidationContext",
+        "W11AC03Form",
+        "confirmationPage",
+        "n:form",
+        "validateAndConvertRequest",
+        "createObject",
+        "ApplicationException",
+        "更新確認画面",
+        "更新完了画面"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "JSP上で変数に値を設定する方法",
+      "hints": [
+        "n:set",
+        "変数設定",
+        "リクエストスコープ",
+        "value属性",
+        "name属性",
+        "EL式"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープを使用する場合のActionクラス実装ルール:\n\n- **遷移先へのデータ引き継ぎはフレームワークが自動処理** — Actionクラスで入力データをセッションに明示的に設定する処理は不要。セッション方式と異なり、フレームワークが自動的にデータを引き継ぐ。\n- **ウィンドウスコープのデータ使用時はバリデーション必須** — リクエストから直接取得したデータはString型のため型変換が必要。バリデーション実行後にフォームのプロパティからデータを取得すると、自動で型変換が行われる。",
+    "s2": "更新確認画面→更新完了画面のウィンドウスコープ引き継ぎ実装例。\n\n**JSP実装例（更新確認画面）**:\n\n```jsp\n<n:confirmationPage />\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write name=\"W11AC03.user.userId\"/>\n    <n:text name=\"W11AC03.user.kanjiName\" size=\"65\" maxlength=\"25\" />\n    <n:submit cssClass=\"mainBtn\" type=\"button\" name=\"confirm\" value=\"確定\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0304\" />\n</n:form>\n```\n\n- `<n:confirmationPage />`: 入力画面（更新画面）と同じ記述で確認項目を出力可能\n- `windowScopePrefixes=\"11AC_W11AC01,W11AC03\"`: 検索条件（11AC_W11AC01）と更新情報（W11AC03）の両方を完了画面に引き継ぐ\n\n**JSP実装例（更新完了画面）**:\n\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:submit cssClass=\"mainBtn\" type=\"submit\" name=\"refer\" uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\" value=\"一覧照会画面へ\" />\n</n:form>\n```\n\n**Actionクラス実装例**:\n\n```java\npublic class W11AC03Action {\n  public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    if (!formContext.isValid()) {\n        throw new ApplicationException(formContext.getMessages());\n    }\n    W11AC03Form form = formCtx.createObject();\n  }\n}\n```\n\n- `ValidationUtil.validateAndConvertRequest`: リクエストのバリデーションと型変換を一括処理\n- `formCtx.createObject()`: 型変換済みのプロパティが設定されたフォームインスタンスを生成\n- 検索条件（11AC_W11AC01）の処理をActionクラスに記述しなくても、フレームワークが完了画面に自動で引き継ぐ",
+    "s3": "`<n:set>` タグを使用してJSP上のリクエストスコープに変数を設定する方法。\n\n```html\n<%-- 値を直接設定 --%>\n<n:set var=\"title\" value=\"ユーザ情報登録\" />\n<jsp:include page=\"/html_header.jsp\">\n    <jsp:param name=\"title\" value=\"${title}\"/>\n</jsp:include>\n\n<%-- スコープ上のオブジェクトを参照して設定 --%>\n<n:set var=\"officeLocation\" name=\"W11AC02.systemUser.officeLocation\"/>\n<c:if test=\"${officeLocation == ''}\">\n</c:if>\n```\n\n- `var` 属性: 変数名\n- `value` 属性: 値を直接設定する場合に使用\n- `name` 属性: スコープ上のオブジェクトを参照して値を設定する場合に使用（スコープ上のキーを指定）\n- 変数参照時はEL式（`${title}`）を使用可能"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

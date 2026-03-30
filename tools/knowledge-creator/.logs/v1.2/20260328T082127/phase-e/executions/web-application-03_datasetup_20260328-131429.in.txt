@@ -1,0 +1,118 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-03_datasetup",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source's note block defining what 'master data' encompasses is omitted. It lists: コードテーブル・メッセージテーブル (common project data), 認可チェック機能に必要なデータ, 採番機能に必要なデータ, 個別アプリケーション毎のメッセージ, 個別アプリケーション毎のコード値. Crucially, the note also states that most of this data is provided as common project data so programmers do NOT need to add it individually — only 認可チェック機能 data may require programmer modification in some projects. This context helps an AI agent correctly answer questions like 'do I need to modify master data?' by explaining which types require action and which do not.",
+      "source_evidence": "「コードテーブル」や「メッセージテーブル」のようなプロジェクトで共通的に使用できるようなデータ / 上記データのほとんどは、プロジェクトの共通データとして提供されているため、プログラマが個別に追加する必要はない。/ しかし「認可チェック機能に必要なデータ」については、実装時に追加する運用のほうが容易な場合があるため、プログラマが修正する運用のプロジェクトもある。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+
+.. _process_data_setup:
+
+マスタデータのセットアップ
+============================================
+ サンプルアプリケーションにセットアップされているマスタデータに認可チェック機能に必要なデータを追加し、マスタデータセットアップツールを使用してローカル環境のデータベースへ反映する。
+  
+  .. note::
+   マスタデータとは以下のようなデータを意味する。
+  
+    * 「コードテーブル」や「メッセージテーブル」のようなプロジェクトで共通的に使用できるようなデータ
+    * 認可チェック機能に必要なデータ
+    * 採番機能に必要なデータ
+    * 個別アプリケーション毎のメッセージ
+    * 個別アプリケーション毎のコード値
+
+   上記データのほとんどは、プロジェクトの共通データとして提供されているため、プログラマが個別に追加する必要はない。
+   しかし「認可チェック機能に必要なデータ」については、実装時に追加する運用のほうが容易な場合があるため、プログラマが修正する
+   運用のプロジェクトもある。
+   開発時にマスタデータの編集が必要であるか否かは、プロジェクトのアーキテクトに確認すること。
+
+ 投入するデータはサンプルアプリケーションに含まれる、MASTER_DATA.xlsへ追加する。
+ ここでは、作業の簡略化のために事前に認可チェック機能に必要なデータを追加したファイル  :download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>`  を用意している。
+ 
+ マスタデータの記法を :download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>` で確認し  [#]_ 、
+ 下記の配置場所に MASTER_DATA.xls ファイルを配置し、 マスタデータのセットアップを実行する。
+ 
+ MASTER_DATA.xls
+  
+ **MASTER_DATAの配置フォルダ**
+ 
+   /Nablarch_sample/tool/db/data 配下
+
+ マスタデータセットアップツールの使用方法： :ref:`master_data_setup_tool` 
+
+ .. [#] 
+
+   ※追加する機能の認可チェックに必要なデータは、 MASTER_DATA.xls 内でセルを緑色にしている。
+   
+   MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること。
+
+ .. note:: 
+ 
+   ここでは作業の簡単化とマスタデータの説明のために、修正後のマスターデータを事前に用意している。
+   マスタデータの管理方法は、プロジェクト毎に様々であるため、実プロジェクトでのマスタデータの取り扱いについてはプロジェクトの規定に従うこと。
+ 
+ 
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-03_datasetup",
+  "title": "マスタデータのセットアップ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "マスタデータのセットアップ",
+      "hints": [
+        "マスタデータセットアップ",
+        "認可チェック",
+        "MASTER_DATA.xls",
+        "master_data_setup_tool",
+        "マスタデータセットアップツール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "認可チェック機能に必要なデータをMASTER_DATA.xlsに追加し、マスタデータセットアップツールを使用してローカル環境のDBへ反映する。\n\n> **注意**: 認可チェック機能に必要なデータの編集が必要か否かはプロジェクトのアーキテクトに確認すること。マスタデータの管理方法はプロジェクト毎に異なるため、実プロジェクトでの取り扱いはプロジェクトの規定に従うこと。\n\n**MASTER_DATA.xlsの配置フォルダ**: `/Nablarch_sample/tool/db/data` 配下\n\n:download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>`\n\nMASTER_DATA.xls内で緑色のセルが認可チェック機能に必要な追加データ。\n\nマスタデータセットアップツールの使用方法: :ref:`master_data_setup_tool`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

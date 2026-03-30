@@ -1,0 +1,68 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: フォーマット定義ファイル section",
+      "description": "The entire フォーマット定義ファイル section is absent from the knowledge file. This section contains the complete format definition file example with MS932 encoding, record-length: 420, record types (header/data/trailer/end), and all field definitions (loginId, kanjiName, kanaName, mailAddress, phone number fields, etc.). This is substantive implementation guidance needed to understand the input file structure.",
+      "source_evidence": "text-encoding: \"MS932\", record-length: 420, [Classifier], [header], [data], [trailer], [end] sections with full field definitions"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 初期化処理 section",
+      "description": "The entire 初期化処理 section is absent. This includes: (1) the initialize method implementation showing how to retrieve the allowZeroRecord command-line parameter, (2) conditions when to override initialize (command-line arg retrieval, instance variable initialization), and critically (3) a WARNING that batch actions using instance variables cannot run in multi-threaded mode, must be explicitly initialized in initializeメソッド, with the exception that read-only variables (assigned once in initialize, never updated) allow multithreading.",
+      "source_evidence": ".. warning:: バッチアクションでインスタンス変数を使用する場合、以下の制約が生じる。インスタンス変数を使用するバッチアクションはマルチスレッド実行できない。インスタンス変数は、初期化処理(initializeメソッド)で明示的に初期化しなければならない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: リーダ生成 section",
+      "description": "The entire リーダ生成 section is absent. This section explains that implementing getDataFileName() and getFormatFileName() causes the superclass to generate the reader, and provides the FILE_ID constant (\"N11AA002\") and the two method implementations. This is key API usage guidance.",
+      "source_evidence": "private static final String FILE_ID = \"N11AA002\"; getDataFileName() and getFormatFileName() returning FILE_ID"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: ファイルバリデータ生成 section",
+      "description": "The entire ファイルバリデータ生成 section is absent. This includes: (1) how to override getValidatorAction() to return a FileLayoutValidatorAction, (2) the FileLayoutValidator inner class structure with its constants (INVALID_FILE_LAYOUT_FAILURE_CODE, TRAILER_RECORD_ERROR_FAILURE_CODE, HEADER_RECORD_ERROR_FAILURE_CODE, etc.), and (3) the four-rule layout validation spec (header must be first, data records follow, trailer comes after data, end record is last) plus the trailer validation rule (totalCount must equal dataRecordCount).",
+      "source_evidence": "getValidatorAction() override, FileLayoutValidatorAction inner class, レイアウト精査 rules #1-4, トレーラレコードの精査 rule"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: ファイルバリデータ実装 section (intro and table)",
+      "description": "The intro paragraph and record-type-to-method mapping table of ファイルバリデータ実装 are absent. This explains that RecordTypeBindingハンドラ dispatches methods based on record type, and the table mapping each record type (header→doHeader, data→doData, trailer→doTrailer, end→doEnd) plus the footnote explaining the naming convention: `public Result \"do\" + [レコードタイプ名](DataRecord record, ExecutionContext ctx)`. This is essential for understanding how doXxx methods are invoked.",
+      "source_evidence": "RecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。Table: header/doHeader, data/doData, trailer/doTrailer, end/doEnd. Footnote: 接頭辞doにレコードタイプ名を付与したメソッドが起動される。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file index vs source structure",
+      "description": "The source file contains 5 h2-level sections (フォーマット定義ファイル, 初期化処理, リーダ生成, ファイルバリデータ生成, ファイルバリデータ実装) with 3 h3 subsections under the last one. The knowledge file covers only the 3 h3 subsections (s1–s3), omitting all 5 h2 sections entirely. If this is intentionally a split file covering only part of the source, the split boundary is not reflected in the knowledge file structure."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Missing hint: `ExecutionContext` (appears as parameter type in doHeader signature).",
+      "source_evidence": "public Result doHeader(DataRecord inputData, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Missing hint: `ExecutionContext` (appears as parameter type in doData signature).",
+      "source_evidence": "public Result doData(DataRecord inputData, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Missing hints: `ExecutionContext` (parameter type in doTrailer) and `getBigDecimal` (method used to read totalCount field).",
+      "source_evidence": "public Result doTrailer(DataRecord inputData, ExecutionContext ctx); inputData.getBigDecimal(\"totalCount\").intValue()"
+    }
+  ]
+}

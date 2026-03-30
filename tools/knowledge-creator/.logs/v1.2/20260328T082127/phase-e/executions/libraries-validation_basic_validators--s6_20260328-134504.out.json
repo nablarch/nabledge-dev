@@ -1,0 +1,114 @@
+{
+  "id": "libraries-validation_basic_validators--s6",
+  "title": "基本コンバータ、バリデータの設定値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "StringConvertor の設定値",
+      "hints": [
+        "StringConvertor",
+        "nablarch.core.validation.convertor.StringConvertor",
+        "conversionFailedMessageId",
+        "allowNullValue",
+        "trimPolicy",
+        "extendedStringConvertors",
+        "ExtendedStringConvertor",
+        "@YYYYMMDD",
+        "YYYYMMDDConvertor",
+        "nablarch.common.date.YYYYMMDDConvertor",
+        "文字列変換",
+        "nullバリュー許容",
+        "トリムポリシー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "StringArrayConvertor の設定値",
+      "hints": [
+        "StringArrayConvertor",
+        "nablarch.core.validation.convertor.StringArrayConvertor"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "BigDecimalConvertor の設定値",
+      "hints": [
+        "BigDecimalConvertor",
+        "nablarch.core.validation.convertor.BigDecimalConvertor",
+        "invalidDigitsIntegerMessageId",
+        "invalidDigitsFractionMessageId",
+        "multiInputMessageId"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "IntegerConvertor の設定値",
+      "hints": [
+        "IntegerConvertor",
+        "nablarch.core.validation.convertor.IntegerConvertor"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "LongConvertor の設定値",
+      "hints": [
+        "LongConvertor",
+        "nablarch.core.validation.convertor.LongConvertor"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "RequiredValidator の設定値",
+      "hints": [
+        "RequiredValidator",
+        "nablarch.core.validation.validator.RequiredValidator",
+        "messageId",
+        "バリデーション設定"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "LengthValidator の設定値",
+      "hints": [
+        "LengthValidator",
+        "nablarch.core.validation.validator.LengthValidator",
+        "maxMessageId",
+        "maxAndMinMessageId",
+        "fixLengthMessageId"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "NumberRangeValidator の設定値",
+      "hints": [
+        "NumberRangeValidator",
+        "nablarch.core.validation.validator.NumberRangeValidator",
+        "minMessageId"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "SystemCharValidator の設定値",
+      "hints": [
+        "SystemCharValidator",
+        "nablarch.core.validation.validator.unicode.SystemCharValidator",
+        "defaultCharsetDef",
+        "コンバータ設定",
+        "有効文字チェック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## nablarch.core.validation.convertor.StringConvertor\n\n**クラス**: `nablarch.core.validation.convertor.StringConvertor`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| conversionFailedMessageId(必須) | 変換失敗時のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}の値が不正です。\" |\n| allowNullValue | 変換対象の値にnullを許容するか否かを設定する。設定を省略した場合のデフォルト動作では、nullを許容しない。null値を許容するケースは、バッチアプリケーションのようにデータベースから取得したSqlRow(Mapインタフェースの実装クラス)をバリデーションする場合である。**画面処理ではnullを許可してはならない**（バリデーション対象のKEYがクライアントから送信されていない場合に精査エラーとして処理を停止できなくなるため）。 |\n| trimPolicy | トリムを行う際のポリシーを設定する。\"trimAll\"（全文字トリム）または\"noTrim\"（トリムなし）。設定を省略した場合は\"noTrim\"と同様の動作となる。 |\n| extendedStringConvertors | String型に変換後、追加の変換を行うExtendedStringConvertorインタフェースを実装したクラスのリストを設定する。省略時は追加変換を行わない。 |\n\n> **注意**: trimはJavaのString#trim()を使用。'\\u0020'以下のコード（半角スペース、タブ、改行、null文字など）を文字列前後から削除する。全角スペースなどのトリムが必要な場合はアクションで処理するか、全角スペーストリム機能を持つコンバータを独自作成すること。\n\n`extendedStringConvertors`使用例（YYYYMMDDConvertorを使用する場合）:\n\n設定ファイル:\n```xml\n<component class=\"nablarch.core.validation.convertor.StringConvertor\">\n  <property name=\"conversionFailedMessageId\" value=\"MSG90001\"/>\n  <property name=\"extendedStringConvertors\">\n    <list>\n      <component class=\"nablarch.common.date.YYYYMMDDConvertor\">\n        <property name=\"parseFailedMessageId\" value=\"MSG90001\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\nFormクラス（追加変換するプロパティのセッタに対応アノテーションを付与）:\n```java\n@PropertyName(\"日付\")\n@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")\npublic void setDate(String date) {\n    this.date = date;\n}\n```",
+    "s2": "## nablarch.core.validation.convertor.StringArrayConvertor\n\n**クラス**: `nablarch.core.validation.convertor.StringArrayConvertor`\n\n本クラスは特に設定値を持たない。",
+    "s3": "## nablarch.core.validation.convertor.BigDecimalConvertor\n\n**クラス**: `nablarch.core.validation.convertor.BigDecimalConvertor`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}には{1}桁の数値を入力してください。\" |\n| invalidDigitsFractionMessageId(必須) | 小数部を指定した場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}には整数部{1}桁、小数部{2}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は StringConvertor#allowNullValue を参照。 |",
+    "s4": "## nablarch.core.validation.convertor.IntegerConvertor\n\n**クラス**: `nablarch.core.validation.convertor.IntegerConvertor`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は StringConvertor#allowNullValue を参照。 |",
+    "s5": "## nablarch.core.validation.convertor.LongConvertor\n\n**クラス**: `nablarch.core.validation.convertor.LongConvertor`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| invalidDigitsIntegerMessageId(必須) | 小数部を指定しなかった場合の桁数不正時のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}には{1}桁の数値を入力してください。\" |\n| multiInputMessageId(必須) | 入力値に複数の文字列が設定された場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}の値が不正です。\" |\n| allowNullValue | 詳細は StringConvertor#allowNullValue を参照。 |",
+    "s6": "## nablarch.core.validation.validator.RequiredValidator\n\n**クラス**: `nablarch.core.validation.validator.RequiredValidator`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| messageId(必須) | デフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は必ず入力してください。\" |",
+    "s7": "## nablarch.core.validation.validator.LengthValidator\n\n**クラス**: `nablarch.core.validation.validator.LengthValidator`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| maxMessageId(必須) | 最大文字列長を越えるエラーが発生した際に、最小文字列長が指定されていなかった場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は{2}文字以下で入力してください。\" |\n| maxAndMinMessageId(必須) | 最大文字列長を越えるエラーが発生した際に、最小文字列長が指定されていた場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は{1}文字以上{2}文字以下で入力してください。\" |\n| fixLengthMessageId(必須) | 固定桁数の文字列チェック（maxとminに同じ値を設定した場合）でエラーが発生した際のデフォルトのメッセージIDを設定する。例: \"{0}は{1}文字で入力してください。\" |",
+    "s8": "## nablarch.core.validation.validator.NumberRangeValidator\n\n**クラス**: `nablarch.core.validation.validator.NumberRangeValidator`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| maxMessageId(必須) | バリデーションの条件に最大値のみが指定されていた場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は{2}以下で入力してください。\" |\n| maxAndMinMessageId(必須) | バリデーションの条件に最大値と最小値が指定されていた場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は{1}以上{2}以下で入力してください。\" |\n| minMessageId(必須) | バリデーションの条件に最小値のみが指定されていた場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}は{1}以上で入力してください。\" |",
+    "s9": "## nablarch.core.validation.validator.unicode.SystemCharValidator\n\n**クラス**: `nablarch.core.validation.validator.unicode.SystemCharValidator`\n\n| プロパティ名 | 設定内容 |\n|---|---|\n| messageId(必須) | 有効文字以外が入力された場合のデフォルトのエラーメッセージのメッセージIDを設定する。例: \"{0}に許容されない文字が含まれてています。\" |\n| defaultCharsetDef(必須) | バリデーションの条件に、許容文字集合定義の名称が指定されていない場合に使用するデフォルトの許容文字集合定義 |"
+  }
+}

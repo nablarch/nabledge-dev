@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s5 (code example)",
+      "description": "The class name `EmployeeDbAcess` in the source (a typo — missing 'c') is silently corrected to `EmployeeDbAccess` in the knowledge file.",
+      "source_evidence": "Source line: `EmployeeDbAcess target = new EmployeeDbAccess();` — the variable type is `EmployeeDbAcess` but the knowledge file writes `EmployeeDbAccess target = new EmployeeDbAccess();`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s8 (code example)",
+      "description": "The class extension `DbAccsessTestSupport` in the source (a typo — extra 's') is silently corrected to `DbAccessTestSupport` in the knowledge file.",
+      "source_evidence": "Source line: `public class DbAccessTestSample extends DbAccsessTestSupport {` — the knowledge file writes `extends DbAccessTestSupport`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[9] / sections.s10",
+      "description": "Section s10 has an empty title string `\"\"`. All other sections have descriptive titles.",
+      "source_evidence": "The content of s10 corresponds to the `.. warning::` and `.. note::` directives in the source under the 更新系のテスト section. A title such as \"更新系テストのトランザクション注意事項\" would reflect the source content."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s10 (ordering relative to s7–s9)",
+      "description": "In the source, the warning (commit required) and note (no commit for read tests) appear before the sequence diagram and code examples within the 更新系のテスト section. In the knowledge file, s10 is placed after the code example (s8) and test data example (s9), inverting the source order. An AI reading s7→s8→s9 may not encounter the commit warning before the code example.",
+      "source_evidence": "Source order within 更新系のテスト: steps 1–4 → warning block → note block → シーケンス (image) → テストソースコード実装例 → テストデータ記述例. Knowledge file order: s7 (sequence/steps) → s8 (code) → s9 (test data) → s10 (warning/note)."
+    }
+  ]
+}

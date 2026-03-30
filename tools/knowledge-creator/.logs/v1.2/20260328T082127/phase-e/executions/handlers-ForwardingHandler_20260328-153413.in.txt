@@ -1,0 +1,228 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-ForwardingHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "s2 のコンテンツ内で「フォーワード先リクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` に設定」と言及されているが、hints に `内部リクエストID` が含まれていない。s1 には含まれているが、s2 でも独立した検索対象として有用。",
+      "source_evidence": "ハンドラ処理フロー > 3b 内部フォーワード処理 step 2: 「フォーワード先リクエストパスから取得したリクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` に設定する。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+内部フォーワードハンドラ
+================================================
+**クラス名:** ``nablarch.fw.handler.ForwardingHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+このハンドラでは、後続ハンドラでの処理結果のHTTPレスポンスオブジェクト中のコンテンツパスが、
+**forward://** で始まる書式であった場合に、指定されたリクエストパスで後続ハンドラの処理を再実行する。
+
+これは、 **内部フォーワード** と呼ばれる処理で、遷移先の画面が単純な画面表示では無く、
+業務アクションでの処理を伴う場合などに用いられる。
+
+なお、内部フォーワード後は :ref:`リクエストオブジェクト<request_processing>` 中のリクエストパスの値は
+フォーワード先のパスに書き換えられる。
+一方、スレッドコンテキスト中のリクエストIDの値はフォーワード後も同じ値である。
+
+フォーワード先のリクエストパスに対するリクエストIDは、同じスレッドコンテキスト中の
+:ref:`内部リクエストID<internal_request_id>` から参照できる。
+
+
+**関連するハンドラ**
+
+  ======================================================================== ==========================================================
+  ハンドラ                                                                 内容
+  ======================================================================== ==========================================================
+  :doc:`ServiceAvailabilityCheckHandler` 、 :doc:`PermissionCheckHandler`  これらのハンドラが行う開閉局チェック、認可チェック処理は
+                                                                           フォーワード後のリクエストIDで実施する必要があるので、
+                                                                           本ハンドラはこれらのハンドラの上位に配置する必要がある。
+  ======================================================================== ==========================================================
+
+
+++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = [
+        "ForwardingHandler", "ServiceAvailabilityCheckHandler", "PermissionCheckHandler" 
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (ハンドラキュー構成のスナップショットを作成)**
+    このハンドラの処理開始時点でのハンドラキュー構成のシャローコピーを作成する。
+   
+  **2. (後続ハンドラの処理を実行)**
+    ハンドラキュー上の後続ハンドラに処理を委譲し、その結果オブジェクトとなるHTTPレスポンスオブジェクトを取得する。
+
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (コンテンツパスの取得)**
+    HTTPレスポンスオブジェクトに設定されたコンテンツパス文字列を取得する。
+
+  **3a. (正常終了)**
+    コンテンツパス文字列が **forward://** で始まる文字列で無い場合、本ハンドラでは何もせずに、
+    **2.** で取得した処理結果をリターンして終了する。
+
+  **3b. (内部フォーワード処理)**
+    コンテンツパス文字列が **forward://** で始まる場合、パス部分をフォーワード先パスとして取得する。
+
+    **(書式)**
+      **forward://(フォーワード先リクエストパス)**
+
+      * 相対パス指定の場合: 現在のリクエストURIを起点とするパス。
+      * 絶対パス指定の場合: サーブレットコンテキスト名を起点とするパス。
+             
+      .. code-block:: bash
+
+        # 現在のリクエストURIが "/app/user/success.html" とすると、以下はどちらも等価な表現となる。
+        forward://registerForm.html            # 相対パス指定
+        forward:///app/user/registerForm.html  # 絶対パス指定
+
+    以下の処理を行う。 
+
+      1. フォーワード先リクエストパスを **HttpRequest** オブジェクトのリクエストパスに設定する。
+      2. フォーワード先リクエストパスから取得したリクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>`
+         に設定する。
+      3. 実行コンテキスト上のハンドラキューの内容を **1.** で作成したコピーに差し替えたうえで、
+         後続のハンドラに対して再度処理を委譲し、その処理結果となるHTTPレスポンスオブジェクトを取得する。
+      4. 初回のレスポンスのステータスコードと、\ **2.**\ で得られたレスポンスのステータスコードを比較し、
+         前者の方が大きい場合は、\ **2.**\ で得られたレスポンスにその値を設定する。
+      5. **2.**\ で得られたレスポンスをリターンするして終了する。
+
+.. _error:
+
+**[例外処理]**
+  **2a. (後続ハンドラ処理中のエラー)** 
+    後続ハンドラ処理中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラに設定項目はなく、そのまま使用することができる。
+
+  .. code-block:: xml
+
+    <!-- 内部フォーワード制御ハンドラ -->
+    <component class="nablarch.fw.web.handler.ForwardingHandler" />
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-ForwardingHandler",
+  "title": "内部フォーワードハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ForwardingHandler",
+        "nablarch.fw.handler.ForwardingHandler",
+        "内部フォーワード",
+        "forward://",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler",
+        "内部リクエストID",
+        "コンテンツパス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ForwardingHandler",
+        "内部フォーワード処理",
+        "forward://",
+        "コンテンツパス",
+        "ハンドラキュー",
+        "HttpRequest",
+        "ステータスコード",
+        "往路処理",
+        "復路処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "ForwardingHandler",
+        "nablarch.fw.web.handler.ForwardingHandler",
+        "設定項目なし",
+        "コンポーネント設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ForwardingHandler`\n\nHTTPレスポンスのコンテンツパスが `forward://` で始まる場合、指定されたリクエストパスで後続ハンドラの処理を再実行する（内部フォーワード）。遷移先画面が業務アクション処理を伴う場合などに用いる。\n\n- フォーワード後: :ref:`リクエストオブジェクト<request_processing>` 中のリクエストパスはフォーワード先に書き換えられる\n- スレッドコンテキストのリクエストIDはフォーワード後も同じ値のまま変わらない\n- フォーワード先のリクエストIDは :ref:`内部リクエストID<internal_request_id>` から参照可能\n\n> **重要**: :doc:`ServiceAvailabilityCheckHandler`、:doc:`PermissionCheckHandler` の開閉局チェック・認可チェックはフォーワード後のリクエストIDで実施する必要があるため、本ハンドラはこれらの上位に配置すること。",
+    "s2": "**[往路処理]**\n\n1. ハンドラキュー構成のシャローコピーを作成する\n2. 後続ハンドラに処理を委譲し、HTTPレスポンスオブジェクトを取得する\n\n**[復路処理]**\n\n3. HTTPレスポンスオブジェクトのコンテンツパスを取得する\n   - `forward://` で始まらない場合: 処理結果をそのままリターンして終了\n   - `forward://` で始まる場合（内部フォーワード処理）:\n     - 書式: `forward://(フォーワード先リクエストパス)`\n       - 相対パス指定: 現在のリクエストURIを起点とするパス\n       - 絶対パス指定: サーブレットコンテキスト名を起点とするパス\n     ```bash\n     # 現在のリクエストURIが \"/app/user/success.html\" の場合、以下は等価\n     forward://registerForm.html            # 相対パス指定\n     forward:///app/user/registerForm.html  # 絶対パス指定\n     ```\n     - 処理手順:\n       1. フォーワード先リクエストパスを `HttpRequest` オブジェクトのリクエストパスに設定\n       2. フォーワード先リクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` に設定\n       3. ハンドラキューの内容を往路で作成したコピーに差し替えたうえで後続ハンドラを再実行し、HTTPレスポンスオブジェクトを取得\n       4. 初回レスポンスのステータスコードが再実行レスポンスのステータスコードより大きい場合、再実行レスポンスにその値を設定\n       5. 再実行レスポンスをリターンして終了\n\n**[例外処理]**\n\n後続ハンドラ処理中のエラーはそのまま再送出して終了する。",
+    "s3": "設定項目はなく、そのまま使用可能。\n\n```xml\n<component class=\"nablarch.fw.web.handler.ForwardingHandler\" />\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

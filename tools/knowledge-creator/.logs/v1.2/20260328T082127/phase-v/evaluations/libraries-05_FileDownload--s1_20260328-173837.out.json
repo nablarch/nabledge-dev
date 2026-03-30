@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-05_FileDownload--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a cosmetic omission of two duplicate data rows in a sample CSV code example. The code remains structurally correct and fully demonstrates the API usage pattern (setContentType → write → setContentDisposition → return). The missing lines (`res.write(\"0000002, arch\\n\")` and `res.write(\"0000003, arch\\n\")`) are redundant repetitions of the same write() call already present, conveying no additional technical information. A developer can correctly implement file download from the existing example.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — コード例（Shift_JIS文字シーケンスのダウンロード）",
+      "impact": "low",
+      "justification": "The two omitted lines are additional data rows in a sample CSV (`res.write(\"0000002, arch\\n\")` and `res.write(\"0000003, arch\\n\")`). They are structurally identical to the first data row already present and add no new API knowledge. The code example still correctly demonstrates: (1) setContentType before write, (2) multiple write() calls, (3) setContentDisposition after data rows, (4) return res. The fix did not persist through Phase E — the output JSON in Phase E logs shows the s2 section unchanged, indicating Phase E either evaluated this as below the fix threshold or failed to apply the edit. Since this is a cosmetic fidelity issue with no impact on developer understanding or correct implementation, the low severity assessment is appropriate and no further improvement is needed."
+    }
+  ]
+}

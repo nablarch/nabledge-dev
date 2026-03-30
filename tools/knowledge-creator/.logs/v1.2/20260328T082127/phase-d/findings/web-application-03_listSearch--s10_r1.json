@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-03_listSearch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "Section s2 has an empty title string in the index. The source h2 heading is「リクエストに対応するメソッドの作成」. An empty title makes the section undiscoverable via index lookup.",
+      "source_evidence": "RST heading: 'リクエストに対応するメソッドの作成\\n=================================='  (h2, equals-underline)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "Several PascalCase class names that appear prominently in the s2 Java code example are absent from s2 hints: ApplicationException (thrown in two places), ValidationUtil (used for validateAndConvertRequest), MessageUtil (used in TooManyResultException handler), MessageLevel (used in MessageUtil.createMessage), W11AC01SearchForm (used as type parameter and local variable).",
+      "source_evidence": "Source Java: 'throw new ApplicationException(...)', 'ValidationUtil.validateAndConvertRequest(\"11AC_W11AC01\", W11AC01SearchForm.class, req, \"search\")', 'MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount())'"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "web-application-06_initial_view",
+  "title": "更新画面初期表示の実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "更新画面初期表示の実装",
+      "hints": [
+        "W11ACXXActionRequestTest",
+        "BasicHttpRequestTestTemplate",
+        "BasicAdvice",
+        "TestCaseInfo",
+        "W11ACXXAction",
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "CM311ACXComponent",
+        "DbAccessSupport",
+        "SqlResultSet",
+        "SqlPStatement",
+        "W11ACXXForm",
+        "UsersEntity",
+        "ValidationUtil",
+        "ValidationContext",
+        "ApplicationException",
+        "更新画面初期表示",
+        "リクエスト単体テスト",
+        "ウィンドウスコープ",
+        "JSP実装",
+        "検索処理",
+        "windowScopePrefixes",
+        "setUpDb",
+        "XSS",
+        "SELECT_USER_INFO"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 更新画面初期表示の実装\n\n### 1)-1 Actionクラスの実装\n\n**テストクラス**: `W11ACXXActionRequestTest extends BasicHttpRequestTestTemplate`\n\n```java\npublic class W11ACXXActionRequestTest extends BasicHttpRequestTestTemplate {\n    @Override\n    protected String getBaseUri() {\n        return \"/action/ss11AC/W11ACXXAction/\";\n    }\n\n    @Test\n    public void testRW11ACXX01() {\n        execute(\"testRW11ACXX01\");\n    }\n}\n```\n\n**テストデータ**: ブック名 `W11ACXXActionRequestTest.xls`、シート名 `testRW11ACXX01`\n\n> **警告**: リクエスト単体テストでは、テスト共通データシート（シート名：setUpDb）が必須。不要な場合でもシートを作成すること（シート内は空でよい）。\n\n**c) テスト実施（Actionクラス作成前）**: Actionクラスを作成していない状態でテストを実施し、失敗することを確認する。ステータスコード404で処理がENDしていること。\n\n```none\nstatus_code = [404] content_path = [/PAGE_NOT_FOUND_ERROR.jsp]\n```\n\n**Actionクラス**: `W11ACXXAction`、メソッド: `doRW11ACXX01(HttpRequest req, ExecutionContext ctx)`\n\n```java\npublic HttpResponse doRW11ACXX01(HttpRequest req, ExecutionContext ctx) {\n    return new HttpResponse(\"/ss11AC/W11ACXX01.jsp\");\n}\n```\n\n**e) テスト実施（Actionクラス作成後）**: Actionクラスまで処理が到達していることを確認する。`@@@@ DISPATCHING CLASS @@@@` の次に `**** BEFORE ACTION ****` が出力されていれば到達している。また、JSPファイルが存在しないため `PWC6117: File ... not found` エラーが出力される。\n\n```none\n@@@@ DISPATCHING CLASS @@@@ class = [nablarch.sample.ss11AC.W11ACXXAction]\n**** BEFORE ACTION ****\nERROR: PWC6117: File \"...\\ss11AC\\W11ACXX01.jsp\" not found\n```\n\n### 1)-2 JSPの実装\n\nJSP修正ポイント:\n- `<n:text>` / `<n:error>` の `name` 属性を取引IDプレフィックス付き形式（例: `W11ACXX.users.kanjiName`）に修正する。\n- `<n:form>` タグに `windowScopePrefixes` 属性を設定する。値は取引IDから決定（例: `W11ACXX`）。\n\n```none\n<n:form windowScopePrefixes=\"W11ACXX\">\n```\n\n> **警告**: :ref:`jsp_static_analysis_tool` でエラーが出る実装はXSSの脆弱性を含む可能性があるため必ず対処すること。アプリケーションの機能制約から回避できない場合は、プロジェクトのアーキテクトに確認すること。\n\n### 2)-1 Componentクラスの実装（検索SQL）\n\n**a) リクエスト単体テストコード修正**: `testRW11ACXX01` メソッドに検索結果のアサートを追加する。`BasicAdvice` クラスを用いてリクエスト単体テストに固有の処理を追加する。\n\n```java\n@Test\npublic void testRW11ACXX01() {\n    execute(\"testRW11ACXX01\", new BasicAdvice() {\n        @Override\n        public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n            String message = testCaseInfo.getTestCaseName();\n            String sheetName = testCaseInfo.getSheetName();\n\n            // 更新画面に表示する内容をアサートする\n            W11ACXXForm actual = context.getRequestScopedVar(\"W11ACXX\");\n            assertObjectPropertyEquals(message, sheetName, \"expectedUsers\", actual.getUsers());\n        }\n    });\n}\n```\n\n**SQLファイル**: `CM311ACXComponent.sql`\n\n```sql\nSELECT_USER_INFO=\nSELECT\n    USER_ID,\n    KANJI_NAME,\n    KANA_NAME\nFROM\n    USERS\nWHERE\n    USER_ID = ?\n```\n\n**クラス**: `CM311ACXComponent extends DbAccessSupport`\n\n```java\npublic SqlResultSet selectUsers(String userId) {\n    SqlPStatement statement = getSqlPStatement(\"SELECT_USER_INFO\");\n    statement.setString(1, userId);\n    return statement.retrieve();\n}\n```\n\n### 2)-2 Actionクラスの実装（検索処理組み込み）\n\n```java\npublic HttpResponse doRW11ACXX01(HttpRequest req, ExecutionContext ctx) {\n    // バリデーション・ユーザID取得\n    ValidationContext<W11ACXXForm> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11ACXX\",\n                W11ACXXForm.class, req, \"selectUserInfo\");\n    if (!formCtx.isValid()) {\n        throw new ApplicationException(formCtx.getMessages());\n    }\n    String userId = formCtx.createObject().getOperationTargetUserId();\n\n    // 検索処理呼び出し\n    CM311ACXComponent comp = new CM311ACXComponent();\n    SqlResultSet userInfo = comp.selectUsers(userId);\n\n    // 更新画面表示内容をリクエストへセット\n    W11ACXXForm form = new W11ACXXForm();\n    UsersEntity users = new UsersEntity(userInfo.get(0));\n    form.setUsers(users);\n    ctx.setRequestScopedVar(\"W11ACXX\", form);\n\n    return new HttpResponse(\"/ss11AC/W11ACXX01.jsp\");\n}\n```"
+  }
+}

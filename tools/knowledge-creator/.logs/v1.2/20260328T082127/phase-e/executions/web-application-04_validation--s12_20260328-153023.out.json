@@ -1,0 +1,64 @@
+{
+  "id": "web-application-04_validation--s12",
+  "title": "View(JSP)の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メソッドの実装",
+      "hints": [
+        "W11AC02Action",
+        "W11AC02Form",
+        "@OnError",
+        "@ValidateFor",
+        "ApplicationException",
+        "ValidationUtil",
+        "ValidationContext",
+        "validateAndConvertRequest",
+        "isValid",
+        "createObject",
+        "getMessages",
+        "MessageUtil",
+        "MessageLevel",
+        "getStringResource",
+        "SystemAccountEntity",
+        "CM311AC1Component",
+        "バリデーション実施",
+        "エラーハンドリング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "View(JSP)の作成",
+      "hints": [
+        "n:errors",
+        "n:error",
+        "name属性",
+        "エラーメッセージ表示",
+        "JSP",
+        "カスタムタグ",
+        "プレフィックス",
+        "W11AC0201",
+        "W11AC02Form"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "バリデーション",
+        "Entityの生成",
+        "例外処理",
+        "カスタムタグ",
+        "HttpMethodBinding",
+        "WebView"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**アノテーション**: `@OnError`, `@ValidateFor`\n**クラス**: `ValidationUtil`, `ValidationContext`, `ApplicationException`, `W11AC02Form`, `SystemAccountEntity`, `CM311AC1Component`, `MessageUtil`, `MessageLevel`\n\n`@OnError`アノテーションで`ApplicationException`発生時の遷移先を指定する。`type`に例外クラス、`path`に遷移先（HttpResponseの引数と同じ記述方法）を指定する。\n\n```java\n@OnError(\n    type = ApplicationException.class,\n    path = \"forward://RW11AC0201\"\n)\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    validate(req);\n    // ...\n}\n\nprivate W11AC02Form validate(HttpRequest req) {\n    // 第4引数\"registerUser\"はW11AC02Formの@ValidateFor(\"registerUser\")アノテーションで\n    // 指定しているメソッドを実行する（グループ名でバリデーション対象メソッドを特定する）\n    ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(\n        \"W11AC02\", W11AC02Form.class, req, \"registerUser\");\n\n    if (!context.isValid()) {\n        throw new ApplicationException(context.getMessages());\n    }\n\n    W11AC02Form form = context.createObject();\n    SystemAccountEntity systemAccount = form.getSystemAccount();\n    CM311AC1Component function = new CM311AC1Component();\n\n    // ログインIDのチェック\n    checkLoginId(systemAccount.getLoginId());\n\n    // グループIDのチェック（null guardなし）\n    if (!function.existGroupId(form.getUgroupSystemAccount())) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,\n                \"MSG00002\", MessageUtil.getStringResource(\"S0020001\")));\n    }\n\n    // 認可単位IDのチェック（null guardあり）\n    if (systemAccount.getPermissionUnit() != null\n            && !function.existPermissionUnitId(systemAccount)) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,\n                \"MSG00002\", MessageUtil.getStringResource(\"S0030001\")));\n    }\n\n    return form;\n}\n```\n\nバリデーション処理の流れ:\n1. `ValidationUtil.validateAndConvertRequest()`でバリデーション（プレフィックス名、Formクラス、リクエスト、グループ名を引数に指定）\n   - 第4引数のグループ名（例: `\"registerUser\"`）は、Formクラスのメソッドに付与した`@ValidateFor(\"registerUser\")`アノテーションと対応する\n2. `context.isValid()`でエラー有無を確認\n3. バリデーションエラーがある場合は`context.getMessages()`を引数に`ApplicationException`をthrow\n4. エラーがない場合は`context.createObject()`で画面入力値が設定されたフォームオブジェクトを生成\n5. ビジネスロジックのエラーチェックでは`MessageUtil.createMessage(MessageLevel.ERROR, messageId, MessageUtil.getStringResource(resourceId))`でメッセージを生成し、`ApplicationException`をthrow\n   - null guardなしのパターン: `existGroupId`のように直接チェックする\n   - null guardありのパターン: `getPermissionUnit() != null`を先に確認してからチェックする（`existPermissionUnitId`の例）\n\n> **注意**: バリデーション処理をプライベートメソッドに切り出すことは必須ではない。\n\n> **注意**: `@OnError`の`path`の記述方法はHttpResponseの引数と同じ。詳細は:ref:`画面初期表示のActionの作成<makeActionClass>`参照。",
+    "s2": "**タグ**: `n:errors`, `n:error`\n\n- `n:errors`: 複数のエラーメッセージを一覧表示（各入力項目以外のエラーを画面上部に一覧表示する場合などに使用）\n- `n:error`: 各入力項目のエラーメッセージを表示（入力項目の下に表示する場合などに使用）\n\n> **注意**: `n:errors`タグの記述を外出しにすることは必須ではない。\n\n入力項目のカスタムタグのname属性（リクエストパラメータ名）の形式:\n\n- Formに追加したEntityのプロパティを指定する場合: `<バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>`\n- Formに直接追加したプロパティを指定する場合: `<バリデーションで指定するプレフィックス名>.<プロパティ名>`\n\nユーザ情報登録ではFormに対して`W11AC02`というプレフィックスを使用。",
+    "s3": "- [バリデーションとEntityの生成を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html)\n- [例外処理を詳しく知りたい時](../../../fw/reference/handler/HttpMethodBinding.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}

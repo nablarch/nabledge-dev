@@ -1,0 +1,83 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "Knowledge file states \"DIコンテナが `HelloComponent` の `setHelloMessageProvider(HelloMessageProvider)` セッタを検出し\" (setter detection). The source only says \"クラスの型を判定して自動的にインジェクションを実行する\" (type-based determination). The source never explicitly mentions setter detection as the mechanism.",
+      "source_evidence": "DIコンテナは、クラスの型を判定して自動的にインジェクションを実行する、自動インジェクションの機能を持つ。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s5 — first code example block",
+      "description": "Knowledge file adds inline comment `# 3つめ以降のトークンは無視` to the line `key = value = comment` in the code example. This comment does not appear in the source code block.",
+      "source_evidence": "Source shows: `key = value = commnet` with no inline comment on that line."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The use case of using directory-based loading to separate production and test configurations is omitted. Source explicitly describes: using reporitoy_config_override method, placing production and test configs in specific directories, and using this to absorb environment differences.",
+      "source_evidence": "また、:ref:`reporitoy_config_override` に記述した方法で、本番用とテスト用で異なる設定を特定のディレクトリに配置して、本番環境とテスト環境の差異を吸収するといった使い方もできる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "Java code definitions for the three classes involved in auto-injection are omitted: `HelloMessageProvider` interface (with `getHelloMessage()` method signature), `BasicHelloMessageProvider` implementation class, and `HelloComponent` class (with `setHelloMessageProvider(HelloMessageProvider helloProvider)` setter). These show the type structures that enable auto-injection.",
+      "source_evidence": "Source contains three separate == subsections with full Java class definitions for each class used in the autowire example."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "The component retrieval Java code example for the auto-injection section is omitted entirely. Source shows how to retrieve the auto-injected HelloComponent and verify that BasicHelloMessageProvider was injected.",
+      "source_evidence": "HelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\"); // 自動インジェクションされたBasicHelloMessageProviderが返す \"Hello autowire!!\"が表示される。 helloComponent.printHello();"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s4",
+      "description": "The first part of the Java retrieval example — getting `helloComponent` itself and calling `printHello()` — is omitted. Knowledge file only shows the nested component retrieval. Source includes both the parent and nested component retrieval with their respective outputs.",
+      "source_evidence": "HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\"); // HelloMessageProviderに設定した\"hello\"がコンソールに表示される\nhelloComponent.printHello();"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5 — エスケープ文字 row in table",
+      "description": "The エスケープ文字 row in the table omits information on how to include `\\` literally in keys or values. Source states: `'\\'をキーまたは値に含めたい場合は前に'\\' を付加する`.",
+      "source_evidence": "'\\'を記述すると次の１文字を特殊文字ではなく一般文字として扱う。\n'\\'をキーまたは値に含めたい場合は前に'\\' を付加する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5 — code examples",
+      "description": "The multi-line continuation form for `value1 \\= value2` (using `key = \\ value1 \\= value2`) is omitted. Also, the single-line form `key = value1,value2,value3 # comment` is omitted from the multi-value example. Source shows multiple equivalent forms for each case.",
+      "source_evidence": "key = \\\n    value1 \\= value2\n\nkey =   value1,value2,value3    # comment"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "PascalCase class names `HelloComponent`, `HelloMessageProvider`, and `SystemRepository` appear in s1 content (in the XML and Java code examples) but are absent from s1 hints.",
+      "source_evidence": "HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\"); and <component name=\"helloMessageProvider\" class=\"...hello.HelloMessageProvider\">"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2].hints (s3)",
+      "description": "`SystemRepository` appears in s3 content code example (`container.getComponentByName`) but is absent from s3 hints. Also `DIコンテナ` is a key concept for this section.",
+      "source_evidence": "HelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3].hints (s4)",
+      "description": "`SystemRepository` appears in s4 content code example (used to retrieve both helloComponent and helloComponent.helloMessageProvider) but is absent from s4 hints.",
+      "source_evidence": "HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\"); and HelloMessageProvider helloMessageProvider = (HelloMessageProvider) SystemRepository.getObject(\"helloComponent.helloMessageProvider\");"
+    }
+  ]
+}

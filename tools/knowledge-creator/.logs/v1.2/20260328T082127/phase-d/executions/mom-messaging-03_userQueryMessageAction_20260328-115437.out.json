@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_userQueryMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The Javadoc for `onReceive` states \"精査エラーとなった場合は、処理をロールバックしてエラー応答を送信する\" — the rollback-on-validation-error behavior is not captured anywhere in the knowledge file. This is decision-necessary for implementors who need to understand the transaction behavior.",
+      "source_evidence": "Source onReceive Javadoc: 「精査エラーとなった場合は、処理をロールバックしてエラー応答を送信する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "`RM11AC0101Action` — the concrete implementation class name — is absent from the hints of both sections. If a user or agent searches for this class, they will not be directed to this knowledge file.",
+      "source_evidence": "Source: `public class RM11AC0101Action extends MessagingAction {`"
+    }
+  ]
+}

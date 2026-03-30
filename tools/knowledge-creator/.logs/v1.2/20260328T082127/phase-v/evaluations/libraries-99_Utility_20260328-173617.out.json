@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-99_Utility",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "Two critical fabrications persist unchanged after the D→E fix cycle. Both would cause an AI agent to generate invalid Java code: one contradicts itself (same call, two different results), the other references a nonexistent method overload. Phase E output is byte-for-byte identical to Phase D — the fix agent made no corrections. The likely cause is that both errors originate in the source RST, and the fix agent treated faithful reproduction of source content as the safe default rather than applying judgment to correct inherited typos.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — code example for addMonth (月数加減算, 年月形式)",
+      "impact": "high",
+      "justification": "The knowledge file presents two consecutive lines with identical call signatures but contradictory results: `addMonth(\"201103\", 1) -> 201104` then `addMonth(\"201103\", 1) -> 201102`. An AI agent asked to implement month subtraction in yyyyMM format would encounter logically impossible guidance and is likely to either copy the wrong argument (`1` instead of `-1`) or become confused and hallucinate a fix. The method summary table correctly states 'negative value for subtraction', but the code block — which agents prioritize for copy-paste usage — directly contradicts this. The Phase E log confirms the content is unchanged from Phase D; the fix agent did not correct the source-inherited typo."
+    },
+    {
+      "category": "fabrication",
+      "location": "s1 — code example for getDays (日付間の日数取得, 同日の場合)",
+      "impact": "high",
+      "justification": "The same-day example calls `DateUtil.getDate(\"20110302\", \"20110302\")` — a two-argument form — but `getDate` is documented in the same section as accepting exactly one argument and returning `java.util.Date`. No two-argument overload exists. An AI agent following this example to calculate days between equal dates would produce code that fails to compile. The correct call is `getDays`. The source RST contains the same typo, and Phase E made no change — the fix agent reproduced it verbatim rather than correcting the invalid API call."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "file_id": "web-application-06_initial_view",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "1)-2 JSPの実装 a) JSPの自動生成",
+      "description": "JSP自動生成ステップ（a）が完全に欠落している。ソースには以下の情報が含まれる: JSP作成フォルダ（/Nablarch_sample/web/ss11AC 配下）、JSPファイル名（W11ACXX01.jsp）、JSP自動生成ツールを使用してHTMLからJSPを自動生成する手順（①HTMLをJSP作成フォルダに移動しファイル名をW11ACXX01.htmlに合わせる、②自動生成ツールでJSPを生成する、③不要なHTMLファイルを削除する）。これらは更新画面JSPの作成方法に関する実装決定に必要な情報。",
+      "source_evidence": "\\a) JSPの自動生成 — JSP作成フォルダ: /Nablarch_sample/web/ss11AC 配下、JSPファイル名: W11ACXX01.jsp、HTMLファイル名: W11ACXX01.html、①〜③の自動生成手順"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "2)-1 Componentクラスの実装 b) リクエスト単体テストデータシート修正",
+      "description": "リクエスト単体テストデータシート修正ステップ（b）が完全に欠落している。ソースには、1)-1で作成したW11ACXXActionRequestTest.xls の testRW11ACXX01シートに検索結果のアサート用データを追加する手順が記載されている。このテストデータ修正は検索処理実装の前提となる重要な実装ステップ。",
+      "source_evidence": "\\b) リクエスト単体テストデータシート修正 — ブック名：W11ACXXActionRequestTest.xls、シート名：testRW11ACXX01 に検索結果データを追加する（画像の赤枠部分）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "1)-2 JSPの実装 b) JSPの表示確認１",
+      "description": "JSP表示確認１ステップが欠落している。リクエスト単体テストを実行してHTML出力とHTTPステータスコード200を確認する手順、およびHTMLの出力先フォルダ（/Nablarch_sample/tmp/html_dump/W11ACXXActionRequestTest 配下）が記載されていない。",
+      "source_evidence": "\\b) JSPの表示確認１ — HTMLの出力先フォルダ: /Nablarch_sample/tmp/html_dump/W11ACXXActionRequestTest 配下、HTTPステータスコード：200が返却されることを確認する"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "1)-2 JSPの実装 c) JSPの修正 ③",
+      "description": "JSP修正手順の③（画面タイトル、JSPインクルードで共通化された部分の修正）がナレッジファイルに記載されていない。ソースでは①カスタムタグ修正、②windowScopePrefixes設定に加えて③タイトル・JSPインクルード修正の3ステップが明示されている。",
+      "source_evidence": "③その他、画面のタイトル、JSPインクルードで共通化された部分を修正する。（W11ACXX01_1.jspのliteralnincludeが示されている）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "1)-2 JSPの実装 d) JSPの表示確認２",
+      "description": "JSP表示確認２ステップが欠落している。ソースにはJSP修正後にリクエスト単体テストを実行してレイアウト崩れがないことを確認する手順と、HTMLの出力先フォルダ（/Nablarch_sample/tmp/html_dump/W11ACXXActionRequestTest 配下）が記載されている。",
+      "source_evidence": "\\d) JSPの表示確認２ — リクエスト単体テストを実行し、d)で行った修正により、レイアウトが崩れていないかを確認する。HTMLの出力先フォルダ: /Nablarch_sample/tmp/html_dump/W11ACXXActionRequestTest 配下"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "2)-1 Componentクラスの実装 c) リクエスト単体テスト実施",
+      "description": "検索処理実装前のリクエスト単体テスト実施ステップが欠落している。ソースには検索処理の実装前にテストを実施して失敗することを確認するよう記載されているが、ナレッジファイルにはこのステップが含まれていない。",
+      "source_evidence": "\\c) リクエスト単体テスト実施 — リクエスト単体テストを実行し、失敗することを確認する。この時点では、検索処理の実装をしていない為、失敗する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "2)-2 Actionクラスの実装 b) 更新画面の表示確認",
+      "description": "更新画面の最終表示確認ステップが欠落している。ソースには検索処理組み込み後にリクエスト単体テストを実行し、出力されたHTMLに更新対象の検索結果が表示されていることを確認する手順が記載されている。",
+      "source_evidence": "\\b) 更新画面の表示確認 — リクエスト単体テストを実行し、出力されたHTMLに更新対象の検索結果が表示されていることを確認する。"
+    }
+  ]
+}

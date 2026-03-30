@@ -1,0 +1,13 @@
+{
+  "file_id": "web-application-screenTransition--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source JSDoc for `setInputValueToOpener` explicitly states two constraints that are not captured in the knowledge file: (1) the function only supports setting values for a single input element (`本関数は単一入力項目への値設定のみサポートしており`), and (2) it assumes the specified name attribute is not duplicated in the parent window (`指定されたname属性が親ウィンドウ内で重複していないことを前提に処理する`). While the `[0]` index in the code makes the first constraint partially inferable, the no-duplicates assumption is silent and could cause incorrect behavior if violated.",
+      "source_evidence": "本関数は単一入力項目への値設定のみサポートしており、指定されたname属性が親ウィンドウ内で重複していないことを前提に処理する。"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_IdGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`SequenceIdGeneratorSupport` is referenced by name in the s4 TableIdGenerator warning text (\"抜け番が許容されるIDには`FastTableIdGenerator`や`SequenceIdGeneratorSupport`の使用を強く推奨\") but is absent from s4 hints.",
+      "source_evidence": "Source: TableIdGenerator warning — \"このため、業務的に抜け番が許容されるIDの場合には、抜け番の可能性がある採番(FastTableIdGeneratorやSequenceIdGeneratorSupport)を使用することを強く推奨する。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "`LpadFormatter` and `SystemRepository` are both PascalCase class names appearing in the s5 Java usage example, but neither is listed in s5 hints. `LpadFormatter` only appears in s4 hints.",
+      "source_evidence": "Source usage example: `return generator.generateId(\"1102\", new LpadFormatter(10, '0'));` and `IdGenerator generator = (IdGenerator) SystemRepository.getObject(\"tableIdGenerator\");`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The source section 「テーブルを使用した採番機能」 contains well over 2000 characters of plain text and has multiple h3 sub-sections (採番テーブルの構造, シーケンス図, 使用例) and h4 sub-sections (テーブルデータ例, プロジェクト毎の採番クラスの実装例, 設定ファイルの定義, 設定内容詳細). The knowledge file maps all of this into a single section s5 without splitting. All content is present, but the single section is very long.",
+      "source_evidence": "Source headings under 「テーブルを使用した採番機能」: 採番テーブルの構造 / シーケンス図 / 使用例 (with sub-headings: テーブルデータ例, プロジェクト毎の採番クラスの実装例, 設定ファイルの定義 → 設定内容詳細 → a) / b) sub-items). Automated pre-check: Section count 5 < source headings 12."
+    }
+  ]
+}

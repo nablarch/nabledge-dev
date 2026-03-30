@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_Message--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (テーブル定義)",
+      "description": "The source specifies a constraint on database column type selection: 「データベースの型は、Javaの型に変換可能な型を選択する」. This constraint is absent from s3. An AI assisting with message table schema design would need this information.",
+      "source_evidence": "構造 > テーブル定義: 「テーブル名、カラム名は任意。データベースの型は、Javaの型に変換可能な型を選択する。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 merges two distinct h2-level source sections — 「特徴」 and 「要求」 — into a single knowledge section. Both sections and all their subsection content are present, but the structural collapse conflates two separate source headings. The automated warning about section count (9 < 17) is partially explained by this merge.",
+      "source_evidence": "Source has two independent h2 sections: 「特徴」 (with 4 h3 subsections) and 「要求 > 実装済み」 (with 4 bullet points). Both are collapsed into s2."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 (例外によるメッセージの通知) — hints array",
+      "description": "The section content contains PascalCase class names `MessageUtil`, `MessageLevel`, and `Message` (all used directly in the code examples), but none of these appear in the s9 hints array. Per V4 rules, PascalCase class names from content should be included as hints.",
+      "source_evidence": "s9 code examples: `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\")`, `List<Message> messages = e.getMessages()`"
+    }
+  ]
+}

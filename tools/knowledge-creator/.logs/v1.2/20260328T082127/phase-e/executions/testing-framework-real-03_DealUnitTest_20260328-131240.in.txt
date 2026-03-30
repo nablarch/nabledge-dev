@@ -1,0 +1,107 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-real-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source contains a concrete Java code example showing the full class structure (package declaration, import statement, and class declaration extending MessagingRequestTestSupport) for a transaction with ID M21AA03. This code example illustrates the naming conventions in practice and is listed as decision-necessary information under 'code examples that demonstrate correct usage patterns'. The knowledge file captures the rules in text form but omits the example entirely.",
+      "source_evidence": "「例えば、テスト対象取引の取引IDがM21AA03だとすると、テストクラスは以下のようになる。」followed by:\n```java\npackage nablarch.sample.ss21AA03\nimport nablarch.test.core.messaging.MessagingRequestTestSupport;\npublic class M21AA03Test extends MessagingRequestTestSupport {\n```"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===============================================================
+取引単体テストの実施方法（同期応答メッセージ受信処理)
+===============================================================
+
+同期応答メッセージ受信処理では、リクエストと取引とでスコープが同じであることがほとんである。
+このように、１リクエスト＝１取引である場合は、取引単体テストを実施する必要はない。
+
+ただし、複数のメッセージにより取引が成立する場合は、\
+バッチ処理における取引単体テストと同様に、\
+リクエスト毎のテストを連続実行することにより取引単体テストが実施可能である。
+
+取引単体テストの実施方法は基本的にバッチと同様である。
+ただし、テストクラスが継承するスーパークラスが異なる（\ ``MessagingRequestTestSupport``\ を使用する）。
+また、テストクラスは以下の条件を満たすように作成する。
+
+* テストクラスのパッケージはテスト対象取引のパッケージとする。
+* <取引ID>Testというクラス名でテストクラスを作成する。
+
+例えば、テスト対象取引の取引IDがM21AA03だとすると、テストクラスは以下のようになる。
+
+.. code-block:: java
+
+ package nablarch.sample.ss21AA03
+
+ import nablarch.test.core.messaging.MessagingRequestTestSupport;
+
+ // 中略
+ 
+ public class M21AA03Test extends MessagingRequestTestSupport {
+
+
+実施方法については、バッチの実施方法を参照。
+
+:doc:`./batch`
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-real-03_DealUnitTest",
+  "title": "取引単体テストの実施方法（同期応答メッセージ受信処理)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "同期応答メッセージ受信処理における取引単体テスト",
+      "hints": [
+        "MessagingRequestTestSupport",
+        "取引単体テスト",
+        "同期応答メッセージ受信処理",
+        "テストクラス命名規則",
+        "取引ID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `MessagingRequestTestSupport`\n\n1リクエスト＝1取引の場合、取引単体テストは不要。\n\n複数のメッセージで1取引が成立する場合は、バッチ処理と同様にリクエスト毎のテストを連続実行することで取引単体テストを実施できる。\n\nテストクラス作成ルール（バッチとの差異あり）:\n- 継承クラス: `MessagingRequestTestSupport`（バッチとは異なる）\n- テストクラスのパッケージ: テスト対象取引のパッケージと同一\n- クラス名: `<取引ID>Test`\n\n:doc:`./batch`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

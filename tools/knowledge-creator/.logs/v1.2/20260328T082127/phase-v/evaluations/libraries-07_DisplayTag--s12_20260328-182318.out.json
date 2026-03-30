@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_DisplayTag--s12",
+  "needs_improvement": true,
+  "user_impact": "medium",
+  "reason": "Finding 1 (fabrication) has medium user impact: the SORT_ORDER note is factually accurate based on the data shown in the table, but it is an AI-generated inference not present in the source documentation. An agent relying on this file would present the inference as official Nablarch-documented behavior, potentially misleading developers about SORT_ORDER guarantees in multilingual environments. The note must be removed. Finding 2 is a false positive with no impact.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — CODE_NAME table note",
+      "impact": "medium",
+      "justification": "The fabricated note ('SORT_ORDERは言語ごとに異なる場合がある…') is factually inferable from the example data (ID=0001/VALUE=01 has SORT_ORDER=1 in ja and 2 in en), which is why the Phase E fix agent retained it — it did not appear to be an error when cross-checked against the data in the same section. However, the source RST contains no such commentary; the observation is an AI inference presented as documented behavior. An agent using this file could cite it as an official Nablarch design guarantee, misleading developers about SORT_ORDER semantics in production multilingual systems. The note must be removed. Persisted through D→E because the Phase E agent validated the note against the co-located table data and found it consistent, treating accuracy as sufficient justification for inclusion."
+    },
+    {
+      "category": "section_issue",
+      "location": "Automated warning S9 — section count",
+      "impact": "none",
+      "justification": "Confirmed false positive. The automated check miscounted RST horizontal rule dividers (----) as headings. The knowledge file's 4 sections (s1–s4) correctly map to the 4 actual content subsections of the source. No content is missing or misrepresented. No fix needed; the warning reflects a checker bug, not a knowledge file defect."
+    }
+  ]
+}

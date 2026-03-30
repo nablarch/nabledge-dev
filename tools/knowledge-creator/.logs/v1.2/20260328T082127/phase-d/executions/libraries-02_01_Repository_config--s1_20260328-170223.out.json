@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (overall structure)",
+      "description": "Knowledge file has 7 sections but the source has 9 `=====` level headings. Two merges occurred: s2 combines '読み込む環境設定ファイル(sample.config)の記述例' and '環境設定ファイルの読み込み (通常フレームワークの責務)'; s7 combines 'SystemRepository の初期化処理' and 'SystemRepository からのコンポーネント取得'. Neither merged group exceeds 2000 chars, so the merges are defensible, but the section count diverges from the source heading count.",
+      "source_evidence": "Source h2-level headings (=====): 読み込む環境設定ファイル(sample.config)の記述例 / 環境設定ファイルの読み込み (通常フレームワークの責務) / 環境設定の取得 / 登録するクラスのソースコード(HelloMessageProvider) / 登録するクラスのソースコード(HelloComponent) / コンポーネント設定ファイルの記述(hello.xml) / 値を取得する実装例 / SystemRepository の初期化処理 / SystemRepository からのコンポーネント取得 (9 total)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s2.hints",
+      "description": "s2 hints are missing 'XmlComponentDefinitionLoader', which is a PascalCase class name explicitly named in the s2 warning text.",
+      "source_evidence": "Source warning in 環境設定ファイルからの読み込み: 'ConfigFileLoader 、 XmlComponentDefinitionLoader 、 SystemRepository 等の使用形態を明確にするために'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s6.hints",
+      "description": "s6 hints are missing 'HelloComponent' and 'XmlComponentDefinitionLoader'. Both PascalCase class names appear in s6's code example and description.",
+      "source_evidence": "s6 code: 'XmlComponentDefinitionLoader loader = new XmlComponentDefinitionLoader(...)'; 'HelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\")'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s7.hints",
+      "description": "s7 hints are missing 'XmlComponentDefinitionLoader', 'HelloComponent', and 'HelloMessageProvider'. All three PascalCase class names appear in s7's code examples.",
+      "source_evidence": "s7 code: 'XmlComponentDefinitionLoader loader = new XmlComponentDefinitionLoader(...)'; 'HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(...)'; '// HelloMessageProviderに設定した\"hello\"がコンソールに表示される'"
+    }
+  ]
+}

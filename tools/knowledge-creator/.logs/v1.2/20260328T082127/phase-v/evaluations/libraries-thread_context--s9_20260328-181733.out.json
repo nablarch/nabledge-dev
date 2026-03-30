@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-thread_context--s9",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings concern `StringUtil` missing from hints in s1 and s2. `StringUtil` is a generic Nablarch utility class, not specific to language/timezone configuration. Its absence from hints does not prevent retrieval of these sections — users looking for language or timezone configuration would search using the many domain-specific hints already present (e.g., `keepLanguage`, `I18nHandler`, `言語切替`). Adding `StringUtil` as a hint could even cause false positives. The actual code examples in the section bodies already contain `StringUtil`, so the knowledge itself is complete. Phase E did not apply the fix because the change offers negligible retrieval benefit and would add noise to the hint index.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[0] (s1) hints",
+      "impact": "low",
+      "justification": "`StringUtil` is a general-purpose utility class unrelated to the core subject of s1 (LanguageAttribute configuration). Users querying about language switching would not use `StringUtil` as a search term. The full code example including `StringUtil.hasValue(language)` is already present in the section body, so the knowledge is accessible. Omitting it from hints has no practical retrieval impact. Phase E left it unchanged because adding a generic utility class name as a domain hint provides no meaningful benefit and risks polluting retrieval for unrelated `StringUtil` queries."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[1] (s2) hints",
+      "impact": "low",
+      "justification": "Identical reasoning to s1: `StringUtil` is a cross-cutting utility, not a TimeZoneAttribute-specific class. The code example `StringUtil.hasValue(timeZone)` is already visible in the section body. Retrieval for timezone configuration scenarios relies on purpose-specific hints already present (`keepTimeZone`, `タイムゾーン切替`, `I18nHandler`). Phase E did not apply the fix for the same reason as s1 — the hint adds noise without improving targeted retrieval."
+    }
+  ]
+}

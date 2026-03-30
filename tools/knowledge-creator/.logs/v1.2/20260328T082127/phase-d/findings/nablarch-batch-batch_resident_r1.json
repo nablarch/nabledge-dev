@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: Introduction (before 基本構造 heading)",
+      "description": "The introductory use-case description is absent from all sections. The source states that batch_resident is used when periodically batch-processing transaction data created by online processing (「オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される」). This is technology-selection guidance — it helps an AI answer when to choose batch_resident vs batch_single_shot.",
+      "source_evidence": "例えば、オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints array",
+      "description": "s3 content contains 10 PascalCase handler/exception class names that are absent from its hints: StatusCodeConvertHandler, ThreadContextClearHandler, GlobalErrorHandler, ThreadContextHandler_main, FileRecordWriterDisposeHandler, DbConnectionManagementHandler_main, TransactionManagementHandler_main, RequestPathJavaPackageMapping, DbConnectionManagementHandler, ProcessStop. All appear in the handler queue list and/or flow details within s3.",
+      "source_evidence": "HandlerQueue includes StatusCodeConvertHandler, ThreadContextClearHandler, GlobalErrorHandler, ThreadContextHandler_main, FileRecordWriterDisposeHandler, DbConnectionManagementHandler_main, TransactionManagementHandler_main, RequestPathJavaPackageMapping, DbConnectionManagementHandler; ProcessStop appears in termination flow description."
+    }
+  ]
+}

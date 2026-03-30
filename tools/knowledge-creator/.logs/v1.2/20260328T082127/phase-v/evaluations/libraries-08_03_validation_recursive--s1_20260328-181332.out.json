@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three findings are minor. The two omissions in s1 leave code examples slightly incomplete but do not obscure the core concepts (how @ValidationTarget / @ValidateFor work for nested Forms). The section-count warning is a confirmed false positive. No finding rises to medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — UserForm constructor",
+      "impact": "low",
+      "justification": "The constructor pattern (extracting child Forms from Map<String,Object> params) is already shown in the s2 Example2Form example, so users can infer it. The primary learning objective of s1 — understanding @ValidationTarget on setters, the three-level name attribute, and validateAndConvertRequest — is fully conveyed without the constructor. A developer following the s1 example will not be blocked. Phase E left this unfixed, likely because the pattern is redundant given s2/s3."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — INSERT_PARAMS definition in supplementary UserEntity example",
+      "impact": "low",
+      "justification": "INSERT_PARAMS is used in the secondary footnote-level example (mismatched validateFor names), not the primary pattern. The variable name is self-documenting (an array of property name strings for insert), and the identical pattern is shown with UPDATE_PARAMS defined inline in the main UserForm example. A reader can understand the concept without the definition. The omission causes no ambiguity about the mechanism being demonstrated. Phase E left this unfixed as the supplementary example remains coherent."
+    },
+    {
+      "category": "section_issue",
+      "location": "S9 automated warning — section count",
+      "impact": "none",
+      "justification": "Confirmed false positive. The source has exactly 3 h2-level sections mapped to s1/s2/s3. The 7-heading count includes h3 sub-headings (Form/JSP/Action実装) that are correctly merged into their parent sections. No content is missing."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-screenTransition--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5 — Action class code example",
+      "description": "The Action class code example in s5 omits two variable declaration lines that are present in the source: `W11AC01SearchForm searchCondition = formCtx.createObject();` and `CM311AC1Component component = new CM311AC1Component();`. The omission leaves the subsequent lines `component.selectByCondition(searchCondition)` referencing undeclared variables, making the code example technically incorrect and potentially misleading to an AI using it as an implementation reference.",
+      "source_evidence": "Source lines (in order): `W11AC01SearchForm searchCondition = formCtx.createObject();` then `CM311AC1Component component = new CM311AC1Component();` then `SqlResultSet searchResult = component.selectByCondition(searchCondition);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "PascalCase class names `CM311AC1Component` and `W11AC01SearchForm` appear in the s5 code examples but are absent from the hints. These are class names from the source content that satisfy the V4 inclusion criteria.",
+      "source_evidence": "`CM311AC1Component component = new CM311AC1Component();` and `ValidationContext<W11AC01SearchForm> formCtx = ValidationUtil.validateAndConvertRequest(\"11AC_W11AC01\", W11AC01SearchForm.class, req, \"search\");` in the Action class example"
+    }
+  ]
+}

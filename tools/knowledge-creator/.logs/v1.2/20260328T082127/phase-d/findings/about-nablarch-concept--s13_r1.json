@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-concept--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Result interface / isSuccess() method",
+      "description": "The source defines `@Published` on `isSuccess()` only, while `getStatusCode()` and `getMessage()` lack this annotation. This indicates only `isSuccess()` is part of Nablarch's stable public API. The knowledge file omits the `@Published` annotation entirely, which could lead an AI to incorrectly treat all three methods as equally stable across versions.",
+      "source_evidence": "@Published\nboolean isSuccess();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`DbConnectionManagementHandler` is mentioned in the source as a concrete example of a handler that uses thread-local variables instead of variable scopes. It is absent from s2's hints, which means queries about `DbConnectionManagementHandler` may not retrieve this section.",
+      "source_evidence": ":doc:`../handler/DbConnectionManagementHandler` など一部のハンドラでは、変数スコープではなく、スレッドローカル変数(java.lang.ThreadLocal)を経由してデータやオブジェクトの引き回しを行なっている。"
+    }
+  ]
+}

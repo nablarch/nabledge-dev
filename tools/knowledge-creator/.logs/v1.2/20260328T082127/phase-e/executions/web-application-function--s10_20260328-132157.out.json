@@ -1,0 +1,55 @@
+{
+  "id": "web-application-function--s10",
+  "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ページングを使用した一覧表示",
+      "hints": [
+        "ListSearchInfo",
+        "W11AC01SearchForm",
+        "listSearchResult",
+        "n:listSearchResult",
+        "DbAccessSupport",
+        "TooManyResultException",
+        "@Required",
+        "@NumberRange",
+        "@Digits",
+        "@PropertyName",
+        "@OnError",
+        "pageNumber",
+        "SqlResultSet",
+        "getSearchConditionProps",
+        "ページング",
+        "一覧表示",
+        "検索結果表示",
+        "bodyRowFragment",
+        "headerRowFragment",
+        "ApplicationException",
+        "MessageUtil",
+        "ValidationContext",
+        "MessageLevel"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特定の一覧表示で表示件数と検索結果件数(上限)を個別に設定する方法",
+      "hints": [
+        "ListSearchInfo",
+        "max",
+        "maxResultCount",
+        "setMax",
+        "setMaxResultCount",
+        "表示件数個別設定",
+        "検索結果件数上限",
+        "ページング個別設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: 表示項目（ページングの最初へリンクなど）を変更したい場合は、[ListSearchResultタグのリファレンス](../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_TagReference.html#listsearchresult) を参照。\n\nページングを実現するには以下の実装を行う。\n\n1. `ListSearchInfo`クラスを継承して検索条件を保持するクラスを実装する\n2. `listSearchResult`タグを使用して検索結果を表示するJSPを実装する\n3. 検索処理のアクションを実装する\n\n### 検索条件クラスの実装\n\n**クラス**: `ListSearchInfo`（継承）\n\n- コンストラクタで`params.get(\"pageNumber\")`を`setPageNumber()`に渡す\n- `setPageNumber()`をオーバーライドしてバリデーションアノテーション（`@Required`、`@NumberRange`、`@Digits`等）を付加する\n- `getSearchConditionProps()`をオーバーライドし、`\"pageNumber\"`を含む検索条件プロパティ名の配列を返す\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        setPageNumber((Integer) params.get(\"pageNumber\"));\n    }\n\n    @PropertyName(\"開始ページ\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) {\n        super.setPageNumber(pageNumber);\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"pageNumber\"};\n\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n### JSPの実装\n\n検索条件とページングを1つの`n:form`タグ内に実装する。\n\n- 検索ボタン（`n:submit`）に`n:param`で`pageNumber=1`を設定する（検索時は1ページ目から表示）\n- `n:listSearchResult`タグに以下の属性を設定する:\n\n| 属性名 | 説明 |\n|---|---|\n| `listSearchInfoName` | リクエストスコープに設定した`ListSearchInfo`継承クラスの変数名 |\n| `searchUri` | 検索パス（通常は検索ボタンと同じパス） |\n| `resultSetName` | リクエストスコープに設定した検索結果の変数名 |\n\n- `headerRowFragment`にヘッダ行のJSPフラグメントを指定する\n- `bodyRowFragment`にボディ行のJSPフラグメントを指定する\n\nボディ行で使用可能な変数:\n\n| 変数名 | 説明 |\n|---|---|\n| `row` | 行データ |\n| `oddEvenCss` | 奇数・偶数行ごとのCSSクラス名 |\n| `count` | ループ内カウント（1始まり） |\n| `rowCount` | 全検索結果内カウント（取得開始位置＋ループインデックス（0始まり）） |\n\n### アクションの実装\n\n**クラス**: `DbAccessSupport`（継承）\n\n1. 入力精査（`ValidationContext`）後、`ListSearchInfo`継承クラスをリクエストスコープに設定する（`ctx.setRequestScopedVar()`）\n2. 精査失敗時は`ApplicationException`をスローする（`@OnError`でエラー画面へ遷移）\n3. `search(\"SQL_ID\", condition)`で検索実行する\n4. `TooManyResultException`発生時は`e.getMaxResultCount()`で上限件数を取得し、`MessageUtil.createMessage(MessageLevel.ERROR, ...)`でエラーメッセージを生成して`ApplicationException`をスローする\n5. 検索結果（`SqlResultSet`）をリクエストスコープに設定する\n\n```java\npublic class W11AC01Action extends DbAccessSupport {\n    @OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\n    public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n        ValidationContext<W11AC01SearchForm> searchConditionCtx = ...;\n        if (!searchConditionCtx.isValid()) {\n            throw new ApplicationException(searchConditionCtx.getMessages());\n        }\n        W11AC01SearchForm condition = searchConditionCtx.createObject();\n        ctx.setRequestScopedVar(\"searchCondition\", condition);\n\n        SqlResultSet searchResult;\n        try {\n            searchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\n        } catch (TooManyResultException e) {\n            throw new ApplicationException(\n                MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount()));\n        }\n        ctx.setRequestScopedVar(\"11AC_W11AC01\", searchResult);\n        return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n    }\n}\n```",
+    "s2": "「ページングを使用した一覧表示」（s1）が実現されていることを前提として、デフォルト値とは異なる表示件数・検索結果件数（上限）を特定の一覧表示に設定するには、アクションのメソッドで`ListSearchInfo`継承クラスに以下のプロパティを設定する。\n\n| プロパティ名 | 説明 |\n|---|---|\n| `max` | 1ページの表示件数（デフォルト値と異なる場合に設定） |\n| `maxResultCount` | 検索結果件数の上限（デフォルト値と異なる場合に設定） |\n\n```java\nprivate static final int MAX_ROWS = 10;\nprivate static final int MAX_RESULT_COUNT = 100;\n\n// アクションのメソッド内\ncondition.setMax(MAX_ROWS);\ncondition.setMaxResultCount(MAX_RESULT_COUNT);\nctx.setRequestScopedVar(\"searchCondition\", condition);\n```"
+  }
+}

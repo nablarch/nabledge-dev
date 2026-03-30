@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sending_batch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "PascalCase class names `RequestPathJavaPackageMapping` and `BatchAction` appear in the s2 content (handler queue list and processing flows) but are absent from the s2 hints array.",
+      "source_evidence": "HandlerQueue includes `RequestPathJavaPackageMapping`; flow arrays reference `BatchAction` in callback/inbound/outbound/error roles throughout all flow scenarios."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 強制停止（ProcessAbnormalEnd）フロー",
+      "description": "The forcestop flow description omits the LoopHandler(error) and MultiThreadExecutionHandler(error) steps that are explicitly part of the forcestop flow in the source. LoopHandler(error) rolls back uncommitted records and callbacks business action; MultiThreadExecutionHandler(error) callbacks business action after abnormal end.",
+      "source_evidence": "forcestop flow: `[\"LoopHandler\", \"error\", \"複数件コミットを使用している場合は、未コミットの処理についてもロールバックされる。また業務アクションをコールバックする。\"]` and `[\"MultiThreadExecutionHandler\", \"error\", \"異常終了後に業務アクションへのコールバックを行う。\"]`"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-02_04_Repository_override--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1 (code block comments)",
+      "description": "The code comments inside the code block were paraphrased rather than reproduced verbatim. Source says `// システムプロパティに設定を記述した \"This is system property hello message!!\" がコンソールに表示される` but the knowledge file renders it as `// システムプロパティの \"This is system property hello message!!\" が使用される`. The phrase \"コンソールに表示される\" (displayed on the console) — which identifies the output channel — was replaced with the generic \"が使用される\" (is used). Similarly, `// 環境設定ファイルに設定した` was shortened to `// 環境設定ファイルの`, dropping \"に設定した\".",
+      "source_evidence": "// システムプロパティに設定を記述した \"This is system property hello message!!\" がコンソールに表示される"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+設定したコンポーネントを取得する実装例
+----------------------------------------------------
+
+
+.. code-block:: java
+
+
+        // DIコンテナで "helloComponent" と名付けたコンポーネントを取得
+        HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject("helloComponent");
+        // 環境設定ファイルに設定した "This is property file hello message!!" ではなく、
+        // システムプロパティに設定を記述した "This is system property hello message!!" がコンソールに表示される
+        helloComponent.printHello();
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-02_04_Repository_override--s17",
+  "title": "設定したコンポーネントを取得する実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定したコンポーネントを取得する実装例",
+      "hints": [
+        "SystemRepository",
+        "HelloComponent",
+        "getObject",
+        "コンポーネント取得",
+        "システムプロパティ上書き",
+        "DIコンテナ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`SystemRepository.getObject()` でDIコンテナからコンポーネントを取得する実装例。環境設定ファイルよりシステムプロパティの設定が優先される（環境設定ファイルの値は使われない）。\n\n```java\n// DIコンテナで \"helloComponent\" と名付けたコンポーネントを取得\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\n// 環境設定ファイルの \"This is property file hello message!!\" ではなく、\n// システムプロパティの \"This is system property hello message!!\" が使用される\nhelloComponent.printHello();\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

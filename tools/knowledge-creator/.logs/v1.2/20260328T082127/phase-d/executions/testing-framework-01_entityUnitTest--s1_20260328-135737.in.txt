@@ -1,0 +1,567 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/05_UnitTestGuide/01_ClassUnitTest/01_entityUnitTest.rst`
+- Format: `rst`
+
+```
+.. _entityUnitTest:
+
+=============================
+Form/Entityのクラス単体テスト
+=============================
+本項では、FormおよびFormの一種であるEntityのクラス単体テスト(以下Form単体テストまたはEntity単体テスト)について説明する。
+両者はほぼ同じように単体テストを行えるため、共通する内容についてはEntity単体テストをベースに説明し、特有の処理については個別に説明する。
+
+.. note::
+   Entityとは、テーブルのカラムと1対1に対応するプロパティを持つFormのことである。
+
+-----------------------------
+Form/Entity単体テストの書き方
+-----------------------------
+本項で例として使用したテストクラスとテストデータは以下のとおり(右クリック->保存でダウンロード)。
+
+* :download:`テストクラス(SystemAccountEntityTest.java)<./_download/SystemAccountEntityTest.java>`
+* :download:`テストデータ(SystemAccountEntityTest.xls)<./_download/SystemAccountEntityTest.xls>`
+* :download:`テスト対象クラス(SystemAccountEntity.java)<../../04_Explanation/_source/download/SystemAccountEntity.java>`  
+
+テストデータの作成
+==================
+テストデータを記載したExcelファイルそのものの作成方法を説明する。テストデータを記載したExcelファイルは、テストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。\
+なお、後述する\
+\ :ref:`精査のテストケース<entityUnitTest_ValidationCase>`\ 、\
+\ :ref:`コンストラクタのテストケース<entityUnitTest_ConstructorCase>`\ 、\
+\ :ref:`setter、getterに対するテストケース<entityUnitTest_SetterGetterCase>`\ 
+のそれぞれが、1シートずつ使用する前提である。
+
+テストデータの記述方法詳細については、\ :doc:`../../06_TestFWGuide/01_Abstract`\ 、\ :doc:`../../06_TestFWGuide/02_DbAccessTest`\ を参照。
+
+なお、メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている\
+(これらのデータを個別のテストデータとして作成しない)前提である。
+
+テストクラスの作成
+==================
+Form/Entity単体テストのテストクラスは、以下の条件を満たすように作成する。
+
+* テストクラスのパッケージは、テスト対象のForm/Entityと同じとする。
+* <Form/Entityクラス名>Testというクラス名でテストクラスを作成する。
+* nablarch.test.core.db.EntityTestSupportを継承する。
+
+.. code-block:: java
+
+   package nablarch.sample.management.user; // 【説明】パッケージはSystemAccountEntityと同じ
+
+   import java.util.HashMap;
+   import java.util.Map;
+
+   import org.junit.Test;
+
+   import nablarch.test.core.db.EntityTestSupport;
+
+   import static org.junit.Assert.assertArrayEquals;
+   import static org.junit.Assert.assertEquals;
+
+   /**
+    * SystemAccountEntityクラスに対するテストを実行するクラス。<br/>
+    * テスト内容はエクセルシート参照のこと。
+    *
+    * @author Miki Habu
+    * @since 1.0
+    */
+   public class SystemAccountEntityTest extends EntityTestSupport {
+   // 【説明】クラス名はSystemAccountEntityTestで、EntityTestSupportを継承する
+   
+
+   // ～後略～
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+テストメソッドの記述方法は本項以降に記載されているコード例を参照。
+
+.. _entityUnitTest_ValidationCase:
+
+文字種と文字列長の単項目精査テストケース
+========================================
+
+単項目精査に関するテストケースは、入力される文字種および文字列長に関するものがほとんどである。\
+例えば、以下のようなプロパティがあるとする。
+
+* プロパティ名「フリガナ」
+* 最大文字列長は50文字
+* 必須項目
+* 全角カタカナのみを許容する
+
+この場合、以下のようなテストケースを作成することになる。
+
+ =============================================== =========================
+ ケース                                           観点			 
+ =============================================== =========================
+ 全角カタカナ50文字を入力し精査が成功する。        最大文字列長、文字種の確認	 
+ 全角カタカナ51文字を入力し精査が失敗する。        最大文字列長の確認		 
+ 全角カタカナ1文字を入力し精査が成功する。         最小文字列長、文字種の確認	 
+ 空文字を入力し、精査が失敗する。                  必須精査の確認		 
+ 半角カタカナを入力し精査が失敗する。              文字種の確認\ [#]_\		 
+ =============================================== =========================
+
+\ 
+ 
+ .. [#] 同様に、半角英字、全角ひらがな、漢字...等が入力され精査が失敗するケースが必要である。
+
+このように、単項目精査のテストケースは、ケース数が多くなりデータ作成の労力がかかる。\
+そこで、単項目精査テスト専用のテスト方法を提供する。これにより以下の効果が見込まれる。
+
+* 単項目精査のテストケース作成を容易になる。
+* 保守性の高いテストデータが作成でき、レビューやメンテナンスが容易になる。
+
+
+.. note::
+   本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合、独自に精査処理のテストを実装すること。
+   プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。
+   
+   .. code-block:: none
+   
+      <親Form>.<子Form>.<子フォームのプロパティ名>
+
+
+テストケース表の作成方法
+------------------------
+
+以下のカラムを用意する。
+
++-----------------------------+--------------------------------------------------+
+| カラム名                    | 記載内容                                         |
++=============================+==================================================+
+|propertyName                 |テスト対象のプロパティ名                          |
++-----------------------------+--------------------------------------------------+
+|allowEmpty                   |そのプロパティが未入力を許容するか                |
++-----------------------------+--------------------------------------------------+
+|         min                 |そのプロパティが入力値として許容する最小文字列長（|
+|                             |省略可）                                          |
++-----------------------------+--------------------------------------------------+
+|         max                 |そのプロパティが入力値として許容する最大文字列長  |
++-----------------------------+--------------------------------------------------+
+|messageIdWhenNotApplicable   |文字種不適合時に期待するメッセージID              |
++-----------------------------+--------------------------------------------------+
+|半角英字                     |半角英字を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|半角数字                     |半角数字を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|半角記号                     |半角記号を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|半角カナ                     |半角カナを許容するか                              |
++-----------------------------+--------------------------------------------------+
+|全角英字                     |全角英字を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|全角数字                     |全角数字を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|全角ひらがな                 |全角ひらがなを許容するか                          |
++-----------------------------+--------------------------------------------------+
+|全角カタカナ                 |全角カタカナを許容するか                          |
++-----------------------------+--------------------------------------------------+
+|全角漢字                     |全角漢字を許容するか                              |
++-----------------------------+--------------------------------------------------+
+|全角記号その他               |全角記号その他を許容するか                        |
++-----------------------------+--------------------------------------------------+
+|外字                         |外字を許容するか                                  |
++-----------------------------+--------------------------------------------------+
+
+許容するかどうかを記入するカラムには、以下の値を設定する。
+
+ ========== ======= ========================
+ 設定内容    設定値    備考
+ ========== ======= ========================
+ 許容する     o      半角英小文字のオー
+ 許容しない   x      半角英小文字のエックス
+ ========== ======= ========================
+
+具体例を以下に示す。
+
+.. image:: ./_image/entityUnitTest_CharsetAndLengthExample.png
+
+
+
+テストメソッドの作成方法
+------------------------
+
+ 
+スーパクラスの以下のメソッドを起動する。
+
+.. code-block:: java
+
+   void testValidateCharsetAndLength(Class entityClass, String sheetName, String id)
+
+
+\ 
+
+.. code-block:: java
+
+   // 【説明】～前略～
+
+  public class SystemAccountEntityTest extends EntityTestSupport {
+    
+       /** テスト対象エンティティクラス */
+       private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
+
+
+       /**
+        * 文字種および文字列長のテストケース
+        */
+       @Test
+       public void testCharsetAndLength() {
+            // 【説明】テストデータを記載したシート名
+            String sheetName = "testCharsetAndLength";        
+
+            // 【説明】テストデータのID
+            String id = "charsetAndLength";
+
+            // 【説明】テスト実行
+            testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);
+       }
+
+
+       // 【説明】～後略～
+
+
+
+このメソッドを実行すると、テストデータの各行毎に以下の観点でテストが実行される。
+
++---------------+-----------------------------+---------------------------------------------------+
+| 観点          |入力値                       | 備考                                              |
++===============+=============================+===================================================+
+| 文字種        |半角英字                     | max(最大文字列長)欄に記載した長さの文字列で構成さ |
++---------------+-----------------------------+ れる。                                            |
+| 文字種        |半角数字                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |半角数字                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |半角記号                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |半角カナ                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角英字                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角数字                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角ひらがな                 |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角カタカナ                 |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角漢字                     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |全角記号その他               |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字種        |外字                         |                                                   |
++---------------+-----------------------------+---------------------------------------------------+
+| 未入力        |空文字                       |長さ0の文字列                                      |
++---------------+-----------------------------+---------------------------------------------------+
+| 最小文字列    |最小文字列長の文字列         |入力値は、o印を付けた文字種で構成される            |
++---------------+-----------------------------+                                                   |
+| 最長文字列    |最長文字列長の文字列         |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字列長不足  |最小文字列長－１の文字列     |                                                   |
++---------------+-----------------------------+                                                   |
+| 文字列長超過  |最大文字列長＋１の文字列     |                                                   |
++---------------+-----------------------------+---------------------------------------------------+
+
+
+
+その他の単項目精査のテストケース
+================================
+
+前述の、文字種と文字列長の単項目精査テストケースを使用すれば\
+大部分の単項目精査がテストできるが、一部の精査についてはカバーできないものもある。
+例えば、数値入力項目の範囲精査が挙げられる。
+
+
+このような単項目精査のテストについても、簡易にテストできる仕組みを用意している。
+各プロパティについて、１つの入力値と期待するメッセージIDのペアを記述することで、
+任意の値で単項目精査のテストができる。
+
+
+.. note::
+   本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合は、独自に精査処理のテストを実装すること。
+   プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。
+   
+   .. code-block:: none
+   
+      <親Form>.<子Form>.<子フォームのプロパティ名>
+
+
+テストケース表の作成方法
+------------------------
+
+以下のカラムを用意する。
+
++-----------------------------+--------------------------------------------------+
+| カラム名                    | 記載内容                                         |
++=============================+==================================================+
+|propertyName                 |テスト対象のプロパティ名                          |
++-----------------------------+--------------------------------------------------+
+|case                         |テストケースの簡単な説明                          |
++-----------------------------+--------------------------------------------------+
+|input1\ [#]_                 |入力値 [#]_                                       |
++-----------------------------+--------------------------------------------------+
+|messageId                    |上記入力値で単項目精査した場合に、発生すると期待す|
+|                             |るメッセージID（精査エラーにならないことを期待する|
+|                             |場合は空欄）                                      |
++-----------------------------+--------------------------------------------------+
+
+
+.. [#] ひとつのキーに対して複数のパラメータを指定する場合は、input2, input3 というようにカラムを増やす。
+
+\
+
+.. [#] \ :ref:`special_notation_in_cell`\ の記法を使用することで、効率的に入力値を作成できる。
+
+具体例を以下に示す。
+
+.. image:: ./_image/entityUnitTest_singleValidationDataExample.png
+
+
+テストメソッドの作成方法
+------------------------
+
+ 
+スーパクラスの以下のメソッドを起動する。
+
+.. code-block:: java
+
+   void testSingleValidation(Class entityClass, String sheetName, String id)
+
+
+
+
+.. code-block:: java
+
+ // 【説明】～前略～
+
+ public class SystemAccountEntityTest extends EntityTestSupport {
+    
+      /** テスト対象エンティティクラス */
+      private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;
+
+      /**
+       * 文字種および文字列長の単項目精査テストケース
+       */
+      // 【説明】～中略～
+
+      /**							  
+       * 単項目精査のテストケース（上記以外）		  
+       */							  
+      @Test						  
+      public void testSingleValidation() {		  
+          String sheetName = "testSingleValidation";	  
+          String id = "singleValidation";			  
+          testSingleValidation(ENTITY_CLASS, sheetName, id);
+      }                                                     
+
+
+       // 【説明】～後略～
+
+
+バリデーションメソッドのテストケース
+====================================
+
+上記までの単項目精査のテストでは、エンティティのセッターメソッドに付与されたアノテーションが\
+正しいかテストされ、エンティティに実装したバリデーションメソッド\ [#]_\ は実行されていない。
+
+その為、独自のバリデーションメソッドをエンティティに実装した場合は、
+別途テストを作成する必要がある。
+
+
+
+.. [#] ``@ValidateFor``\ アノテーションを付与したstaticメソッドのこと
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-01_entityUnitTest--s1`
+
+```json
+{
+  "id": "testing-framework-01_entityUnitTest--s1",
+  "title": "Form/Entityのクラス単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Form/Entityのクラス単体テスト",
+      "hints": [
+        "EntityTestSupport",
+        "Entity単体テスト",
+        "Form単体テスト",
+        "nablarch.test.core.db.EntityTestSupport",
+        "テスト方法概要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Form/Entity単体テストの書き方",
+      "hints": [
+        "EntityTestSupport",
+        "テストクラス作成",
+        "テストデータExcel",
+        "クラス命名規則",
+        "nablarch.test.core.db.EntityTestSupport",
+        "単項目精査テスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストケース表の作成方法（文字種・文字列長）",
+      "hints": [
+        "propertyName",
+        "allowEmpty",
+        "messageIdWhenNotApplicable",
+        "文字種テストケース表",
+        "文字列長テストケース",
+        "min",
+        "max"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テストメソッドの作成方法（文字種・文字列長）",
+      "hints": [
+        "testValidateCharsetAndLength",
+        "文字種精査",
+        "文字列長精査",
+        "単項目精査テスト",
+        "EntityTestSupport"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "テストケース表の作成方法（その他の単項目精査）",
+      "hints": [
+        "propertyName",
+        "messageId",
+        "input1",
+        "testSingleValidation",
+        "単項目精査テストケース表",
+        "case"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "テストメソッドの作成方法（その他の単項目精査）",
+      "hints": [
+        "testSingleValidation",
+        "testValidateCharsetAndLength",
+        "ValidateFor",
+        "バリデーションメソッドテスト",
+        "@ValidateFor",
+        "EntityTestSupport"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: Entityとはテーブルのカラムと1対1に対応するプロパティを持つFormのこと。Form/Entityの単体テストは `nablarch.test.core.db.EntityTestSupport` を使って同じ方法でテストする。",
+    "s2": "## テストデータの作成\n\n- テストデータExcelファイルはテストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）\n- 精査のテストケース・コンストラクタのテストケース・setter/getterのテストケースはそれぞれ1シートずつ使用する\n- メッセージデータ・コードマスタ等の静的マスタデータはプロジェクト管理データが投入済みの前提（個別テストデータとして作成しない）\n\n## テストクラスの作成\n\nテストクラス作成ルール:\n1. パッケージはテスト対象のForm/Entityと同じ\n2. クラス名は `<Form/Entityクラス名>Test`\n3. **クラス**: `nablarch.test.core.db.EntityTestSupport` を継承する\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n```\n\n## 文字種と文字列長の単項目精査テストケース\n\n> **注意**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする）には使用できない。その場合は独自に精査処理のテストを実装すること。",
+    "s3": "以下のカラムを用意する:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| allowEmpty | そのプロパティが未入力を許容するか |\n| min | 許容する最小文字列長（省略可） |\n| max | 許容する最大文字列長 |\n| messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージID |\n| 半角英字 | 半角英字を許容するか |\n| 半角数字 | 半角数字を許容するか |\n| 半角記号 | 半角記号を許容するか |\n| 半角カナ | 半角カナを許容するか |\n| 全角英字 | 全角英字を許容するか |\n| 全角数字 | 全角数字を許容するか |\n| 全角ひらがな | 全角ひらがなを許容するか |\n| 全角カタカナ | 全角カタカナを許容するか |\n| 全角漢字 | 全角漢字を許容するか |\n| 全角記号その他 | 全角記号その他を許容するか |\n| 外字 | 外字を許容するか |\n\n許容フラグ: `o`（半角英小文字のオー、許容する）/ `x`（半角英小文字のエックス、許容しない）\n\n![テストケース表の例](assets/testing-framework-01_entityUnitTest--s1/entityUnitTest_CharsetAndLengthExample.png)",
+    "s4": "スーパークラスの以下のメソッドを起動する:\n\n```java\nvoid testValidateCharsetAndLength(Class entityClass, String sheetName, String id)\n```\n\n使用例:\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n\n    /** テスト対象エンティティクラス */\n    private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;\n\n    /**\n     * 文字種および文字列長のテストケース\n     */\n    @Test\n    public void testCharsetAndLength() {\n        String sheetName = \"testCharsetAndLength\"; // テストデータを記載したシート名\n        String id = \"charsetAndLength\";            // テストデータのID\n        testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);\n    }\n}\n```\n\n各行で実行されるテスト観点:\n\n| 観点 | 入力値 | 備考 |\n|---|---|---|\n| 文字種（各種） | 半角英字/半角数字/半角記号/半角カナ/全角英字/全角数字/全角ひらがな/全角カタカナ/全角漢字/全角記号その他/外字 | maxの長さの文字列 |\n| 未入力 | 空文字 | 長さ0の文字列 |\n| 最小文字列 | 最小文字列長の文字列 | o印の文字種で構成 |\n| 最長文字列 | 最長文字列長の文字列 | o印の文字種で構成 |\n| 文字列長不足 | 最小文字列長－1の文字列 | o印の文字種で構成 |\n| 文字列長超過 | 最大文字列長＋1の文字列 | o印の文字種で構成 |\n\n**その他の単項目精査**\n\n`testValidateCharsetAndLength` でカバーできない精査（例：数値の範囲精査）については、各プロパティに1つの入力値と期待するメッセージIDのペアを記述することで任意の値で単項目精査テストができる。\n\n> **注意**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする）には使用できない。その場合は独自に精査処理のテストを実装すること。",
+    "s5": "以下のカラムを用意する:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| case | テストケースの簡単な説明 |\n| input1 | 入力値（複数パラメータの場合はinput2, input3と増やす） |\n| messageId | 期待するメッセージID（精査エラーにならない場合は空欄） |\n\nセルの特殊記法（テストフレームワークの `special_notation_in_cell` 参照）を使用することで、効率的に入力値を作成できる。\n\n![テストケース表の例](assets/testing-framework-01_entityUnitTest--s1/entityUnitTest_singleValidationDataExample.png)",
+    "s6": "スーパークラスの以下のメソッドを起動する:\n\n```java\nvoid testSingleValidation(Class entityClass, String sheetName, String id)\n```\n\n使用例:\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n\n    /** テスト対象エンティティクラス */\n    private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;\n\n    /**\n     * 単項目精査のテストケース（上記以外）\n     */\n    @Test\n    public void testSingleValidation() {\n        String sheetName = \"testSingleValidation\";\n        String id = \"singleValidation\";\n        testSingleValidation(ENTITY_CLASS, sheetName, id);\n    }\n}\n```\n\n**バリデーションメソッドのテスト**\n\n単項目精査テスト（`testValidateCharsetAndLength` / `testSingleValidation`）では、setterメソッドのアノテーションが正しいかテストされるが、`@ValidateFor` アノテーションを付与したstaticバリデーションメソッドは実行されない。エンティティに独自バリデーションメソッドを実装した場合は、別途テストを作成すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

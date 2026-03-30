@@ -1,0 +1,19 @@
+{
+  "file_id": "libraries-07_FacilitateTag--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (listSearchSortSubmitタグ)",
+      "description": "The mechanism by which sort submit elements preserve search conditions is not explained. The source states that the framework sets search conditions as change parameters on sort submit elements, and retrieves those conditions using `getSearchConditionProps()` return values. This explains the causal link between the requirement to include properties in `getSearchConditionProps()` (described in s2) and the sort submit behavior.",
+      "source_evidence": "並び替えのサブミット要素では、検索フォームから検索された時点の検索条件を使用して検索を実行する。検索条件の維持は、フレームワークが並び替えのサブミット要素に検索条件を変更パラメータとして設定することで実現する。変更パラメータに指定する検索条件は、ListSearchInfoクラス のgetSearchConditionPropsメソッドが返すプロパティ名を使用して、ListSearchInfoから取得する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated warning: Section count 5 < source headings 6",
+      "description": "The automated check flagged 6 source headings vs 5 knowledge sections. However, the 6th item (`.. _WebView_ListSearchResultCustomize:`) at the end of the source excerpt is only an RST anchor label — the heading text and content for that section are outside the provided source scope. The 5 sections in the knowledge file correctly cover all 5 visible source headings. This warning is a false positive and no section is missing."
+    }
+  ]
+}

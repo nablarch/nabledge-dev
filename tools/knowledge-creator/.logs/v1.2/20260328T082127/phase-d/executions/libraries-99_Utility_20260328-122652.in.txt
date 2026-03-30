@@ -1,0 +1,348 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/99_Utility.rst`
+- Format: `rst`
+
+```
+.. _date-util-spec:
+
+==================
+ユーティリティ
+==================
+本フレームワークが提供するユーティリティの仕様を解説する。
+
+--------------------
+日付ユーティリティ
+--------------------
+日付ユーティリティの仕様を解説する。
+
+
+クラス概要
+=============
+
+.. class:: nablarch.common.date.DateUtil
+
+  日付ユーティリティクラス。
+
+  業務アプリケーションからは、本クラスを使用して日付計算やフォーマット変換などを行う。
+
+  .. note::
+
+    本ユーティリティでは、パラメータで指定される日付の妥当性チェック(形式や実在日チェック)は行わない。
+    このため、呼び出し元で正しい日付形式であることを検証してから、本機能を使用すること。
+
+    これは、本機能は繰り返し呼び出される機能であるため都度実在日チェックなどを実施すると、
+    性能に与える影響が大きくなるためである。
+
+    不正な形式や非実在日が指定された場合の実行結果は保証しない。
+
+
+機能一覧
+============
+
+  =============================== =============================================================================================
+  機能名                          概要
+  =============================== =============================================================================================
+  日付オブジェクト変換            指定された日付(yyyyMMdd形式)をjava.util.Dateに変換する。
+
+                                   .. function:: java.util.Date getDate(String date)
+
+                                    :param date: 日付(yyyyMMdd形式)
+
+                                    :return: java.util.Dateに変換した日付
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      String updateDateStr = "20110302";
+                                      DateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト
+
+
+  日付フォーマット変換            指定された日付(yyyyMMdd形式)を指定されたフォーマットに変換する。
+                                  指定するフォーマットは、SimpleDateFormatの仕様に準拠すること。
+
+                                   .. function:: String formatDate(String date, String pattern)
+
+                                    :param date: 日付(yyyyMMdd形式)
+                                    :param pattern: フォーマット(SimpleDateFormatの仕様に準拠すること)
+
+                                    :return: 指定されたフォーマットに変換した値
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // スラッシュ(/)区切りにする場合
+                                      String updateDateStr = "20110302";
+                                      DateUtil.formatDate(updateDateStr, "yyyy/MM/dd"); // -> 2011/03/02
+
+                                      // ハイフン(-)区切りにする場合
+                                      String updateDateStr = "20110302";
+                                      DateUtil.formatDate(updateDateStr, "yyyy-MM-dd"); // -> 2011-03-02
+
+  日数の加減算                    指定された日付(yyyyMMdd形式)に、指定された日数を加算(負の値が指定された場合は減算)する。
+
+                                   .. function:: String addDay(String date, int days)
+
+                                    :param date: 日付(yyyyMMdd形式)
+                                    :param days: 加算する日付(負の値の場合は、減算が行われる。)
+
+                                    :return: 計算後の日付(yyyyMMdd形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                       // 10日加算する場合
+                                       String date = "20110302";
+                                       DateUtil.addDay(date, 10); // -> 20110312
+
+                                       // 10日減算する場合
+                                       String date = "20110302";
+                                       DateUtil.addDay(date, -10); // -> 20110220
+
+  月数の加減算                    指定された日付(yyyyMMdd or yyyyMM形式)に、指定された月数を加算(負の値が指定された場合は減算)する。
+
+                                   .. function:: String addMonth(String date, int month)
+
+                                    :param date: 日付(yyyyMMdd or yyyyMM形式)
+                                    :param month: 月数(負の値の場合は、減算が行われる。)
+
+                                    :return: 計算後の日付(yyyyMMdd or yyyyMM形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 1ヶ月加算する場合(年月日指定)
+                                      String date = "20110302";
+                                      DateUtil.addMonth(date, 1); // -> 20110402
+
+                                      // 1ヶ月加算する場合(年月指定)
+                                      String date = "201103";
+                                      DateUtil.addMonth(date, 1); // -> 201104
+
+                                      // 1ヶ月減算する場合(年月日指定)
+                                      String date = "20110302";
+                                      DateUtil.addMonth(date, -1); // -> 20110202
+
+                                      // 1ヶ月減算する場合(年月指定)
+                                      String date = "201103";
+                                      DateUtil.addMonth(date, 1); // -> 201102
+
+  日付間の日数取得                指定された日付(yyyyMMdd形式)間の日数を取得する。
+
+                                  ２つの日付が同日の場合は0を返却する。
+                                  １つ目の日付 > ２つ目の日付の場合には、返却値は負の値となる。
+
+                                   .. function:: long getDays(String dateFrom, String dateTo)
+
+                                    :param dateFrom: 被演算日付(yyyyMMdd形式)
+                                    :param dateTo: 演算日付(yyyyMMdd形式)
+
+                                    :return: ２つの日付間の日数
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 同日を指定した場合
+                                      DateUtil.getDate("20110302", "20110302"); // -> 0
+
+                                      // １つ目の引数 ＜ ２つ目の引数の場合
+                                      DateUtil.getDays("20120229", "20120331"); // -> 31
+
+                                      // １つ目の引数 ＞ ２つ目の引数の場合
+                                      DateUtil.getDays("20120401", "20120101"); // -> -91
+
+  日付間の月数取得                指定された日付間(yyyyMMdd or yyyyMM形式)の月数を取得する。
+
+                                  ２つの日付が同日(同月)の場合は、0を返却する。
+                                  １つ目の日付 > ２つ目の日付の場合には、返却値は負の値となる。
+
+                                   .. function:: int getMonths(String monthFrom, String monthTo)
+
+                                    :param dateFrom: 被演算日付(yyyyMMdd or yyyyMM形式)
+                                    :param dateTo: 演算日付(yyyyMMdd or yyyyMM形式)
+
+                                    :return: ２つの日付間の月数
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 同日を指定した場合
+                                      DateUtil.getMonths("20110302", "20110302"); // -> 0
+                                      DateUtil.getMonths("201103", "201103");     // -> 0
+
+                                      // １つ目の引数 ＜ ２つ目の引数の場合
+                                      DateUtil.getMonths("20120229", "20120331"); // -> 1
+                                      DateUtil.getMonths("201202", "201203");     // -> 1
+
+                                      // １つ目の引数 ＞ ２つ目の引数の場合
+                                      DateUtil.getMonths("20120401", "20120101"); // -> -3
+                                      DateUtil.getMonths("201204", "201201");     // -> -3
+
+                                      // １つ目の引数:yyyyMMdd,２つ目の引数:yyyyMMの場合
+                                      DateUtil.getMonths("20110331", "201104");   // -> 1
+                                      // １つ目の引数:yyyyMM,２つ目の引数:yyyyMMddの場合
+                                      DateUtil.getMonths("201103", "20100315")    // -> -12
+
+  月末日取得                      指定された日付(yyyyMMdd or yyyyMM形式)の月末日を取得する。
+
+                                   .. function:: String getMonthEndDate(String date)
+
+                                    :param date: 日付(yyyyMMdd or yyyyMM形式)
+
+                                    :return: 月末日(yyyyMMdd形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      DateUtil.getMonthEndDate("201103"); // -> 20110331
+                                      DateUtil.getMonthEndDate("201104"); // -> 20110431
+                                      DateUtil.getMonthEndDate("200802"); // -> 20080229
+
+  =============================== =============================================================================================
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-99_Utility`
+
+```json
+{
+  "id": "libraries-99_Utility",
+  "title": "ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "日付ユーティリティ",
+      "hints": [
+        "DateUtil",
+        "nablarch.common.date.DateUtil",
+        "getDate",
+        "formatDate",
+        "addDay",
+        "addMonth",
+        "getDays",
+        "getMonths",
+        "getMonthEndDate",
+        "日付ユーティリティ",
+        "日付計算",
+        "日付フォーマット変換",
+        "月末日取得",
+        "日数計算",
+        "月数計算"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.common.date.DateUtil`\n\n> **注意**: パラメータで指定される日付の妥当性チェック(形式や実在日チェック)は行わない。呼び出し元で正しい日付形式であることを検証してから使用すること。不正な形式や非実在日が指定された場合の実行結果は保証しない。\n\n| 機能 | メソッドシグネチャ | 説明 |\n|---|---|---|\n| 日付オブジェクト変換 | `java.util.Date getDate(String date)` | yyyyMMdd形式の文字列をjava.util.Dateに変換 |\n| 日付フォーマット変換 | `String formatDate(String date, String pattern)` | yyyyMMdd形式の日付を指定フォーマット(SimpleDateFormat仕様)に変換 |\n| 日数の加減算 | `String addDay(String date, int days)` | yyyyMMdd形式の日付に日数を加算(負の値で減算)。結果はyyyyMMdd形式 |\n| 月数の加減算 | `String addMonth(String date, int month)` | yyyyMMdd or yyyyMM形式の日付に月数を加算(負の値で減算) |\n| 日付間の日数取得 | `long getDays(String dateFrom, String dateTo)` | 2日付間の日数を取得。同日は0、dateFrom > dateToの場合は負の値 |\n| 日付間の月数取得 | `int getMonths(String monthFrom, String monthTo)` | 2日付間の月数を取得。同日/同月は0、dateFrom > dateToの場合は負の値 |\n| 月末日取得 | `String getMonthEndDate(String date)` | yyyyMMdd or yyyyMM形式の日付の月末日をyyyyMMdd形式で返す |\n\n```java\n// 日付フォーマット変換\nDateUtil.formatDate(\"20110302\", \"yyyy/MM/dd\"); // -> 2011/03/02\nDateUtil.formatDate(\"20110302\", \"yyyy-MM-dd\"); // -> 2011-03-02\n\n// 日数加減算\nDateUtil.addDay(\"20110302\", 10);  // -> 20110312\nDateUtil.addDay(\"20110302\", -10); // -> 20110220\n\n// 月数加減算（年月日形式）\nDateUtil.addMonth(\"20110302\", 1);  // -> 20110402\n// 月数加減算（年月形式）\nDateUtil.addMonth(\"201103\", 1);    // -> 201104\n\n// 日数取得\nDateUtil.getDays(\"20120229\", \"20120331\"); // -> 31\nDateUtil.getDays(\"20120401\", \"20120101\"); // -> -91\n\n// 月数取得\nDateUtil.getMonths(\"20120229\", \"20120331\"); // -> 1\nDateUtil.getMonths(\"20120401\", \"20120101\"); // -> -3\n\n// 月末日取得\nDateUtil.getMonthEndDate(\"201103\"); // -> 20110331\nDateUtil.getMonthEndDate(\"200802\"); // -> 20080229\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

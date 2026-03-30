@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s5",
+      "description": "知識ファイルは「未入力項目は `:カラム名 = null` となり評価されない」と記述しているが、ソースは「未入力の場合は「カラム名 = null」となり評価されない」であり、バインド変数記法の `:` プレフィックスは存在しない。`:` を付加することで、実行時SQLの条件式（`カラム名 = null`）をバインド変数定義（`:フィールド名`）と混同させる誤解を生じさせる。",
+      "source_evidence": "これにより、未入力の場合は「カラム名 = null」となり評価されないため、入力された項目のみを評価することが実現可能となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "ソースの SQL ファイル（CM211BB1Component.sql）には GET_ALL（SQL_ID:GET_ALL）が含まれているが、知識ファイルの s2 には記載されていない。GET_ALL は他の SQL と異なるテーブル（USER_MST）とカラム（USER_NAME_KANA, TEL, MAIL_ADDRESS）を使用しており、SQL ファイル内容の記述が不完全になる。",
+      "source_evidence": "GET_ALL =\nSELECT USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = :userId\nORDER BY\n    USER_ID"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "ソースの s3 コード例には、コンポーネントを呼び出す業務アクションメソッド `doRW11BB0101()` が含まれているが、知識ファイルには記載されていない。このメソッドは Form のインスタンス化・検索条件設定・コンポーネント呼び出しのパターンを示す実装例として機能している。",
+      "source_evidence": "public void doRW11BB0101() {\n    W11BB01Form form = new W11BB01Form();\n    form.setUserName(\"ユーザ\");\n    CM211BB1Component component = new CM211BB1Component();\n    component.get(form);\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3), index[3] (s4), index[4] (s5)",
+      "description": "`SqlResultSet` は s3・s4・s5 のコードに登場する PascalCase クラス名だが、いずれのセクションの hints にも含まれていない。",
+      "source_evidence": "s3: public SqlResultSet get(W11BB01Form form) / s4: SqlResultSet rs = select.retrieve(form); / s5: SqlResultSet rs = select.retrieve(user);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3)",
+      "description": "`CM211BB1Component` は s3 のコード例に登場する PascalCase クラス名だが、s3 の hints に含まれていない（s2 の hints にのみ含まれる）。",
+      "source_evidence": "public class CM211BB1Component {\n    public SqlResultSet get(W11BB01Form form) { ... }\n}"
+    }
+  ]
+}

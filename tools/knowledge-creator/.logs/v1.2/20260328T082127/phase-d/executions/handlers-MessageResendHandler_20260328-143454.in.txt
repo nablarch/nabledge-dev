@@ -1,0 +1,431 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/MessageResendHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===============================
+再送電文制御ハンドラ
+===============================
+
+
+**クラス名:** ``nablarch.fw.messaging.handler.MessageResendHandler``
+
+---------------------------
+概要
+---------------------------
+応答電文の再送処理制御を行うハンドラ。
+ 
+一般に、外部システムに対する要求電文がタイムアウトした場合、
+再送要求電文や、取消電文といった補償電文を送信することがある。
+
+本ハンドラではこのうち、再送要求に対する制御をフレームワークレベルで実装している。
+初回電文/再送要求電文の判定は :ref:`フレームワーク制御ヘッダ<fw_header>` 上の **再送要求フラグ** の値を用いて行う。
+
+++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread'
+    , HandlerQueue = [
+        "MessageReplyHandler"
+      , "DataReadHandler_messaging"
+      , "TransactionManagementHandler"
+      , "MessageResendHandler"
+      , "MessagingAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`MessageReplyHandler`            本ハンドラの作成した再送電文オブジェクトは、 :doc:`MessageReplyHandler`
+                                        によって送信される。
+  
+  :doc:`TransactionManagementHandler`   送信済み電文は、業務トランザクションと同じトランザクションでコミットするので、
+                                        :doc:`TransactionManagementHandler` の後続にこのハンドラを配置する。
+
+  :doc:`MessagingAction`                本ハンドラでは、業務アクションが応答した電文オブジェクトを応答済み電文テーブルに
+                                        保存する。
+  ====================================  ===================================================================================
+
+++++++++++++
+
+
+**再送制御**
+
+本システムに対する処理要求メッセージ(初回電文)が、転送経路上のネットワークエラーや
+遅延により外部システム側でタイムアウトし、その補償電文として再送要求電文が送信されたとする。
+この際、再送要求電文を受信した時点でのシステムの状態は、以下の4つに分類できる。
+ 
+1. ネットワークエラーもしくは遅延により、初回電文が未受信。
+
+2. 初回電文を処理中。
+
+3. 初回電文に対する業務処理は正常終了(トランザクションをコミット)したが、
+   ネットワークエラーもしくは遅延により応答電文が未達。
+4. 初回電文に対する業務処理が異常終了(トランザクションをロールバック)し、
+   ネットワークエラーもしくは遅延によりエラー応答電文が未達。
+ 
+それぞれのケースについて、本システムの挙動は以下のようになる。
+ 
+1. 初回電文が未受信
+   再送要求電文を初回電文として処理する。
+   この場合、再送要求電文を処理中に、遅延していた初回電文を並行実行する可能性があるが
+   先にコミットされたトランザクションのみ正常終了し、それ以外はロールバックする。
+   また、ロールバックされた要求の応答として、先に正常終了した電文の応答を再送する。
+     
+2. 本システムで初回電文を処理中
+   再送要求電文も初回電文として処理し、先に完了したトランザクションをコミットし、
+   もう一方をロールバックする。
+   (1.と同じ扱い。)
+    
+3. 業務処理は正常終了したが応答電文が未達
+   再送用電文テーブルから当該メッセージIDの電文データを取得し、応答電文として送信する。
+   業務処理は実行されない。
+    
+4. 業務処理が正常終了したがエラー応答電文が未達
+   再送要求電文を初回電文として処理する。
+ 
+本機能は大きく以下の2つの機能によって構成されている。
+ 
+**1. 再送応答機能**
+
+  接続先システムから再送要求電文が送信された場合に、
+  後述の送信済電文保存機能が保持する過去の応答電文の内容を再送信する機能。
+
+
+**2. 送信済電文保存機能**
+
+  送信に成功した(=ローカルキューに対するPUT命令が完了した)メッセージの内容をデータベース上の
+  送信済電文テーブルに保存する機能。
+  送信済電文の内容は業務トランザクションとともにコミットされる。
+  従って、業務処理がエラー終了した場合には再送用電文は残らない。
+  
+  再送電文管理テーブルのスキーマ構造として、以下のようなテーブル構造を想定している。
+
+  ================  =========================
+  論理名            データ型
+  ================  =========================
+  メッセージID      VARCHAR PK
+  リクエストID      VARCHAR PK
+  応答宛先キュー    VARCHAR
+  処理結果コード    VARCHAR 
+  電文データ部      BLOB
+  ================  =========================
+
+  下にデフォルト設定でのテーブル名、カラム名に沿ったテーブルスキーマのサンプルを示す。
+
+  .. code-block:: sql
+  
+     CREATE TABLE SENT_MESSAGE (
+       MESSAGE_ID  VARCHAR(64)
+     , REQUEST_ID  VARCHAR(64)
+     , REPLY_QUEUE VARCHAR(64)
+     , STATUS_CODE CHAR(4)
+     , BODY_DATA   BLOB
+     , CONSTRAINT pk_SENT_MESSAGE 
+         PRIMARY KEY(MESSAGE_ID, REQUEST_ID)
+     );
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (再送要求フラグの取得)**
+    要求電文のフレームワーク制御ヘッダ中の再送要求フラグ(resendFlag)を取得する。
+  
+  **1a. (再送要求フラグを使用しない電文のスキップ)**
+    要求電文のフレームワーク制御ヘッダに再送要求フラグが定義されていなかった場合、
+    本ハンドラではなにもせず、後続のハンドラに処理を移譲し、その結果を返して終了する。
+  
+  **2. (再送応答)**
+    要求電文中のメッセージIDとリクエストIDをキーとして送信済電文テーブルを検索し、
+    条件に合致する送信済電文が存在した場合は、その内容に沿って `ResponseMessage`_ を作成し、
+    それを返して終了する。この場合、後続ハンドラへの処理移譲は行なわずに折り返すため
+    業務処理は実行されない。
+
+  **2a. (初回電文の処理が未完→再送要求を初回電文として実行)**
+    条件に合致する送信済電文が存在しない場合は、後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (正常終了)**
+    後続のハンドラから返された応答電文を送信済電文テーブルに保存した後、応答電文を返す。
+
+.. _error:
+
+**[例外処理]**
+  **3a. (並行に処理された電文の応答を再送)**
+    応答電文を保存した際に、一意制約違反エラーが発生した場合は、並行するトランザクションによって
+    既に正常終了しているため、送信済電文テーブルから応答電文を取得して返す。
+
+  **3c. (エラー応答1)**
+    一意制約違反エラーが発生したにも関わらず、送信済み電文テーブルに送信電文が登録されていない場合は、
+    元例外を再送出する。(通常は発生しえない。)
+
+  **4. (エラー応答2)**
+    上記以外のケースで発生した実行時例外・エラーについては、このハンドラでは捕捉せず、
+    上位のハンドラに再送出される。
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+- **基本設定**
+
+  要求電文から再送要求フラグを取得する際にフレームワーク制御ヘッダー定義を使用するため、
+  必ず設定する必要がある。
+  下記の例では、フレームワーク標準のヘッダー定義を使用している。
+
+  .. code-block:: xml
+
+    <!-- フレームワーク制御ヘッダー定義 -->
+    <component name = "fwHeaderDefinition"
+               class = "nablarch.fw.messaging.StandardFwHeaderDefinition">
+      <property name  = "formatFileName"
+                value = "${headerFileName}" />
+    </component>
+
+    <!-- 再送制御ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessageResendHandler">
+        <property name="fwHeaderDefinition" ref="fwHeaderDefinition" />
+    </component>
+
+- **テーブル名、カラム名の変更**
+
+  命名規約や既存システムとの整合性の確保などの理由により、、
+  デフォルト設定とは異なるテーブル名、カラム名を利用する必要がある場合は以下のように設定する。
+
+  .. code-block:: xml
+
+    <!-- 再送制御ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessageResendHandler">
+        <property name="fwHeaderDefinition" ref="fwHeaderDefinition" />
+        <property name="sentMessageTableSchema">
+            <component class="nablarch.fw.messaging.tableschema.SentMessageTableSchema">
+                <property name="tableName"            value="TBL_SENT_MESSAGE" />
+                <property name="messageIdColumnName"  value="CLM_MESSAGE_ID" />
+                <property name="requestIdColumnName"  value="CLM_REQUEST_ID" />
+                <property name="replyQueueColumnName" value="CLM_REPLY_QUEUE" />
+                <property name="statusCodeColumnName" value="CLM_STATUS_CODE" />
+            </component>
+        </property>
+    </component>
+
+
+- **再送要求フラグ定義方法の変更**
+  
+  デフォルトの設定での再送要求フラグの仕様が、プロジェクトの要件に合致しない場合は、
+  フレームワーク制御ヘッダー定義を拡張する必要がある。
+
+  フレームワーク制御ヘッダー定義の拡張については、「フレームワーク制御ヘッダリーダ」の項を参照すること。
+    
+  .. code-block:: xml
+
+    <!-- フレームワーク制御ヘッダー定義(カスタム定義) -->
+    <component name = "customHeaderDefinition"
+               class = "example.CustomFwHeaderDefinition">
+      <property name  = "formatFileName"
+                value = "${headerFileName}" />
+    </component>
+
+    <!-- 再送制御ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessageResendHandler">
+        <property name="fwHeaderDefinition" ref="customHeaderDefinition" />
+    </component>
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-MessageResendHandler`
+
+```json
+{
+  "id": "handlers-MessageResendHandler",
+  "title": "再送電文制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessageResendHandler",
+        "nablarch.fw.messaging.handler.MessageResendHandler",
+        "SentMessageTableSchema",
+        "再送電文制御",
+        "応答電文再送",
+        "再送要求フラグ",
+        "送信済電文テーブル",
+        "SENT_MESSAGE",
+        "再送応答機能",
+        "送信済電文保存機能",
+        "MessageReplyHandler",
+        "TransactionManagementHandler",
+        "MessagingAction"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MessageResendHandler",
+        "ResponseMessage",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "再送要求フラグ",
+        "一意制約違反",
+        "resendFlag"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "MessageResendHandler",
+        "SentMessageTableSchema",
+        "StandardFwHeaderDefinition",
+        "fwHeaderDefinition",
+        "sentMessageTableSchema",
+        "tableName",
+        "messageIdColumnName",
+        "requestIdColumnName",
+        "replyQueueColumnName",
+        "statusCodeColumnName",
+        "テーブル名変更",
+        "再送要求フラグカスタム",
+        "CustomFwHeaderDefinition"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.handler.MessageResendHandler`\n\n応答電文の再送処理制御を行うハンドラ。初回電文/再送要求電文の判定は :ref:`フレームワーク制御ヘッダ<fw_header>` 上の再送要求フラグの値で行う。\n\n**関連ハンドラ**:\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`MessageReplyHandler` | 本ハンドラが作成した再送電文オブジェクトを送信する |\n| :doc:`TransactionManagementHandler` | 送信済み電文は業務トランザクションと同じトランザクションでコミットするため、このハンドラの後続に配置する |\n| :doc:`MessagingAction` | 業務アクションが応答した電文オブジェクトを応答済み電文テーブルに保存する |\n\n**再送制御**: 再送要求電文受信時のシステム状態に応じた挙動:\n\n1. **初回電文が未受信**: 再送要求電文を初回電文として処理する。並行して遅延初回電文が処理される可能性があるが、先にコミットされたトランザクションのみ正常終了し、その他はロールバック。また、ロールバックされた要求の応答として、先に正常終了した電文の応答を再送する。\n2. **初回電文を処理中**: 再送要求電文も初回電文として処理し、先に完了したトランザクションをコミット、もう一方をロールバック（1と同じ扱い）。\n3. **業務処理は正常終了したが応答電文が未達**: 送信済電文テーブルから当該メッセージIDの電文データを取得し応答電文として送信。業務処理は実行されない。\n4. **業務処理が正常終了したがエラー応答電文が未達**: 再送要求電文を初回電文として処理する。\n\n**再送応答機能**: 再送要求電文を受信した際に、送信済電文保存機能が保持する過去の応答電文を再送信する。\n\n**送信済電文保存機能**: 送信成功したメッセージの内容をDBの送信済電文テーブルに保存する。業務トランザクションとともにコミットされる。業務処理がエラー終了した場合には再送用電文は残らない。\n\n再送電文管理テーブルのスキーマ:\n\n| 論理名 | データ型 |\n|---|---|\n| メッセージID | VARCHAR PK |\n| リクエストID | VARCHAR PK |\n| 応答宛先キュー | VARCHAR |\n| 処理結果コード | VARCHAR |\n| 電文データ部 | BLOB |\n\n```sql\nCREATE TABLE SENT_MESSAGE (\n  MESSAGE_ID  VARCHAR(64)\n, REQUEST_ID  VARCHAR(64)\n, REPLY_QUEUE VARCHAR(64)\n, STATUS_CODE CHAR(4)\n, BODY_DATA   BLOB\n, CONSTRAINT pk_SENT_MESSAGE \n    PRIMARY KEY(MESSAGE_ID, REQUEST_ID)\n);\n```",
+    "s2": "**[往路処理]**\n\n1. 要求電文のフレームワーク制御ヘッダから再送要求フラグ（resendFlag）を取得する。\n2. (1a) フレームワーク制御ヘッダに再送要求フラグが定義されていない場合、後続ハンドラに処理を移譲し結果を返して終了（本ハンドラは何もしない）。\n3. (2) メッセージIDとリクエストIDをキーに送信済電文テーブルを検索し、一致する送信済電文が存在する場合は `ResponseMessage` を作成して返す（業務処理は実行されない）。\n4. (2a) 送信済電文が存在しない場合は後続ハンドラに処理を委譲し結果を取得する。\n\n**[復路処理]**\n\n5. (3) 後続ハンドラから返された応答電文を送信済電文テーブルに保存後、応答電文を返す。\n\n**[例外処理]**\n\n6. (3a) 応答電文保存時に一意制約違反エラーが発生した場合は、並行するトランザクションが既に正常終了しているため、送信済電文テーブルから応答電文を取得して返す。\n7. (3c) 一意制約違反エラーが発生したにも関わらず送信済電文テーブルに電文が未登録の場合は、元例外を再送出する（通常は発生しえない）。\n8. (4) 上記以外の実行時例外・エラーは捕捉せず上位ハンドラに再送出する。",
+    "s3": "**基本設定**: `fwHeaderDefinition` の設定は必須。\n\n```xml\n<!-- フレームワーク制御ヘッダー定義 -->\n<component name=\"fwHeaderDefinition\"\n           class=\"nablarch.fw.messaging.StandardFwHeaderDefinition\">\n  <property name=\"formatFileName\" value=\"${headerFileName}\" />\n</component>\n\n<!-- 再送制御ハンドラ -->\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n    <property name=\"fwHeaderDefinition\" ref=\"fwHeaderDefinition\" />\n</component>\n```\n\n**テーブル名・カラム名の変更**: デフォルトとは異なるテーブル名・カラム名を使用する場合は `sentMessageTableSchema` プロパティを設定する。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n    <property name=\"fwHeaderDefinition\" ref=\"fwHeaderDefinition\" />\n    <property name=\"sentMessageTableSchema\">\n        <component class=\"nablarch.fw.messaging.tableschema.SentMessageTableSchema\">\n            <property name=\"tableName\"            value=\"TBL_SENT_MESSAGE\" />\n            <property name=\"messageIdColumnName\"  value=\"CLM_MESSAGE_ID\" />\n            <property name=\"requestIdColumnName\"  value=\"CLM_REQUEST_ID\" />\n            <property name=\"replyQueueColumnName\" value=\"CLM_REPLY_QUEUE\" />\n            <property name=\"statusCodeColumnName\" value=\"CLM_STATUS_CODE\" />\n        </component>\n    </property>\n</component>\n```\n\n**再送要求フラグ定義の変更**: デフォルトの再送要求フラグ仕様がプロジェクト要件に合致しない場合はフレームワーク制御ヘッダー定義を拡張する。詳細は「フレームワーク制御ヘッダリーダ」の項を参照。\n\n```xml\n<component name=\"customHeaderDefinition\"\n           class=\"example.CustomFwHeaderDefinition\">\n  <property name=\"formatFileName\" value=\"${headerFileName}\" />\n</component>\n\n<component class=\"nablarch.fw.messaging.handler.MessageResendHandler\">\n    <property name=\"fwHeaderDefinition\" ref=\"customHeaderDefinition\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

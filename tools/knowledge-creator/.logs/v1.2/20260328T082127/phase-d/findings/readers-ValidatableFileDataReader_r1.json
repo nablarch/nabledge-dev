@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ValidatableFileDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2",
+      "description": "The knowledge file states the example uses \"header/data/trailer/endの4種類のレコードタイプの場合は doHeader(), doData(), doTrailer(), doEnd()の4メソッドが必要\" but the source text explicitly says \"入力ファイルがheader, data, trailerといった３種類のレコードタイプから構成される場合、ファイルバリデータアクションにdoHeader(), doData(), doTrailer()という３種類の精査メソッドを実装する必要がある\". The knowledge file changed the source's explicit 3-type example to a 4-type example (adding \"end\"). While the subsequent code block does implement doEnd(), the explanatory text specifically uses a 3-type scenario.",
+      "source_evidence": "「入力ファイルがheader, data, trailerといった３種類のレコードタイプから構成される場合、ファイルバリデータアクションにdoHeader(), doData(), doTrailer()という３種類の精査メソッドを実装する必要がある。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1.hints",
+      "description": "Section s1 content references `FileBatchAction` and `getValidatorAction` (\"FileBatchAction を継承したバッチ業務アクションの場合は、getValidatorAction() メソッドをオーバーライドして\"), but neither appears in s1's hints array. These are important entry points for users searching how to use this reader with FileBatchAction.",
+      "source_evidence": "「FileBatchAction を継承したバッチ業務アクションを作成する場合は、getValidatorAction()メソッドをオーバーライドし、ファイルバリデータアクションを返却するだけで事前精査を実現できる。」"
+    }
+  ]
+}

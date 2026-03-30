@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 (障害ログの出力項目)",
+      "description": "The note about ID structure conventions for large-scale systems is missing. The source contains a note stating that 起動プロセス and リクエストID systems should be defined per project according to system scale, and provides a concrete example structure for large systems (起動プロセス: サーバ名(8桁)＋識別文字列(4桁) with JOBID; リクエストID: システムID(1桁)＋サブシステムID(2桁)＋業務コード(3桁)＋画面ID(2桁)+イベントID(2桁)). This is decision-necessary information for developers designing their ID systems.",
+      "source_evidence": ".. note::\n\n 起動プロセスとリクエストIDは、システムの規模に応じてプロジェクト毎にID体系を規定する。\n 例えば、大規模なシステムでは、下記のようなID体系となる。\n \n     起動プロセス:\n         サーバ名(8桁)＋識別文字列(4桁)···識別文字列にはバッチ処理のJOBIDなどが入る。\n     リクエストID:\n         システムID(1桁)＋サブシステムID(2桁)＋業務コード(3桁)＋画面ID(2桁)+イベントID(2桁)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 index hints",
+      "description": "Several property names from the configuration table (first column) are missing from s5 hints: `failureLogFormatter.className`, `failureLogFormatter.language`, `failureLogFormatter.contactFilePath`, `failureLogFormatter.appFailureCodeFilePath`, `failureLogFormatter.fwFailureCodeFilePath`.",
+      "source_evidence": "Property table in 障害ログの設定方法 section lists all of these as first-column property names."
+    }
+  ]
+}

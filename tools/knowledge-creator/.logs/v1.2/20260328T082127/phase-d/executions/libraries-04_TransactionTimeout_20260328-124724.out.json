@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_TransactionTimeout",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — configuration table",
+      "description": "The knowledge file adds two columns 「必須」 and 「デフォルト値」 to the configuration property table that do not exist in the source. The source table has only two columns: プロパティ名 and 設定値. The fabricated columns are left empty, but their presence implies the source provided this information when it did not.",
+      "source_evidence": "Source table header: `プロパティ名 | 設定値`. Knowledge file table header: `プロパティ名 | 必須 | デフォルト値 | 説明`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "The source description of `transactionTimeoutErrorCodeList` explicitly references `SQLException#getErrorCode` as the API used to obtain the error code values configured in this property. This method name is absent from s2's hints. (It appears in s1's hints as `SQLException` but the specific method reference relevant to the s2 configuration property is not represented.)",
+      "source_evidence": "Source s2: 「タイムアウト対象とするベンダー依存の例外コード(SQLException#getErrorCodeから取得できる値)を設定する」"
+    }
+  ]
+}

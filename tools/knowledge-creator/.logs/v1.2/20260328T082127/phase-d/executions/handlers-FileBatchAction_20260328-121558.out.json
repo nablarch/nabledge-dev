@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-FileBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — template methods table, getFormatFileName() row",
+      "description": "The knowledge file describes `getFormatFileName()` as \"入力ファイルのファイル名またはレコードフォーマット定義ファイルのファイル名を返す\" — an \"either/or\" framing synthesized by merging two separate source entries. The source table lists two distinct required entries both named `getFormatFileName()`: the first returns the input file name (\"入力ファイルのファイル名を返す\"), the second returns the record format definition file name (\"レコードフォーマット定義ファイルのファイル名を返す\"). The merged \"または\" description fabricates a conditional relationship that does not appear in the source.",
+      "source_evidence": "Source template methods table has two consecutive rows both named `getFormatFileName()` with different descriptions, each marked 必須実装."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`getDataFileName` is absent from s2 hints. The method is explicitly named in the source's processing flow (step 2.1: \"getFormatFileName()、getFormatFileDirName()、getDataFileName()、getDataFileDirName() をそれぞれ実行し\") and is reproduced in the s2 knowledge text, but omitted from the hints array.",
+      "source_evidence": "Source ハンドラ処理フロー step 2: \"本クラスの getFormatFileName()、getFormatFileDirName()、getDataFileName()、getDataFileDirName() をそれぞれ実行し\""
+    }
+  ]
+}

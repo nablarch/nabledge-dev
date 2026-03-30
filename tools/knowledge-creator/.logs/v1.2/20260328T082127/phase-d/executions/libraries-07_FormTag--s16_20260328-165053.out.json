@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Knowledge file states 'デフォルトは `*`' as an explicit default value, but the source never states this in prose. The source only shows '*' inside an HTML code comment ('*'に置換して出力する). The source does not explicitly declare '*' as the default replacement character.",
+      "source_evidence": "Source comment: `<%-- '*'に置換して出力する。置換文字は変更可能。 --%>` — this is an inline code comment, not an explicit documentation of the default value"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Hints for section s3 (入力データの復元) are missing `リクエストパラメータ`, which is the third item in the scope search order and a distinct search target that writeタグ specifically excludes.",
+      "source_evidence": "Source: 'Servlet APIのリクエストパラメータ' listed as item 3 in scope search order; 'writeタグは出力専用のため、リクエストパラメータを検索対象に含めない'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Hints for section s2 (hiddenの復号処理) are missing `BASE64`, which appears as a named tamper-detection condition ('BASE64のデコードに失敗する').",
+      "source_evidence": "Source: '* BASE64のデコードに失敗する。' listed as one of the five tamper-detection conditions"
+    }
+  ]
+}

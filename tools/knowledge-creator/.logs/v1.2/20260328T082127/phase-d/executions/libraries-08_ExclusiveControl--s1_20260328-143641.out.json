@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source's 概要 table description for 悲観的ロック includes two additional decision-relevant use case scenarios not captured in s1: (1) '検索から更新までにかかる時間が短い処理' and (2) 'ロックを取得する時間が長くなるデメリットを差し置いても、更新処理を失敗させたくない処理'. The knowledge file's 採用場面 column only captures the batch/single-transaction scenario ('検索から更新が1トランザクションで行われる処理（バッチ処理など）'), missing these additional selection criteria.",
+      "source_evidence": "悲観的ロック説明欄: '検索から更新までにかかる時間が短い処理、またはロックを取得する時間が長くなるデメリットを差し置いても、更新処理を失敗させたくない処理で使用される。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 index hints",
+      "description": "`UsersExclusiveControl` is a PascalCase class name prominently used in the code example for 主キークラス but is not listed in s8 hints.",
+      "source_evidence": "Source code block: 'public class UsersExclusiveControl extends ExclusiveControlContext { ... }' and prose: 'UsersExclusiveControlクラスは、排他制御用テーブルに対応させて作成するクラス'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 index hints",
+      "description": "`UsersExclusiveControl` is used in the s9 悲観的ロック code example but is not listed in s9 hints.",
+      "source_evidence": "Source code: 'ExclusiveControlUtil.updateVersion(new UsersExclusiveControl(\"U00001\"));'"
+    }
+  ]
+}

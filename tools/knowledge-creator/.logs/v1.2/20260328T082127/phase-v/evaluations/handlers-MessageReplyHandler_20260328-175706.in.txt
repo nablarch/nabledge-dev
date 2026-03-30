@@ -1,0 +1,251 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `handlers-MessageReplyHandler`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s2 — [例外処理] 2c.",
+    "description": "The source specifies '実行時例外/エラー' (RuntimeException or Java Error), but the knowledge file generalizes this to '例外'. The distinction matters: this handler catches unchecked exceptions and Java Errors only, not checked exceptions. Losing this precision could mislead an AI into stating the handler intercepts all throwables.",
+    "source_evidence": "後続ハンドラの処理中に実行時例外/エラーが発生した場合、エラー内容をもとに応答電文を作成し"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+電文応答制御ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.messaging.handler.MessageReplyHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本ハンドラでは、後続ハンドラの処理結果である `ResponseMessage`_ オブジェクトの内容を
+もとに応答電文を構築し送信する。
+送信した応答電文オブジェクトをこのハンドラの戻り値として返す。
+
+
++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread'
+    , HandlerQueue = ["MessagingContextHandler"
+                     ,"MessageReplyHandler"
+                     ,"DataReadHandler_messaging"
+                     ,"TransactionManagementHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+  応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`MessagingContextHandler`        本ハンドラでは、スレッドローカル上のメッセージングコンテキストを用いて
+                                        応答電文の送信を行なうので、本ハンドラより上位に配置する必要がある。
+
+  :doc:`TransactionManagementHandler`   同ハンドラとの前後関係は、2相コミットを使用するか否かで変わる。
+                                          **a)** 2相コミットを使用する場合。
+                                            DBトランザクションとJMSトランザクションをトランザクションマネージャー側で
+                                            まとめてコミットするので、トランザクション制御ハンドラは、このハンドラより
+                                            先に実行されなければならない。
+                                          **b)** 2相コミットを使用しない場合。
+                                            このハンドラが応答を送信する前に、DBトランザクション終了させ、
+                                            業務処理の結果を確定させる必要がある。
+                                            このため、トランザクション制御ハンドラはこのハンドラの後に実行されなければならない。
+
+  :doc:`DataReadHandler`                要求電文のフォーマット不正に起因する例外はデータリーダ上で発生する可能性がある。
+                                        そのエラー応答電文をこのハンドラで送信するためには、
+                                        :doc:`DataReadHandler` を本ハンドラの後続に配置する必要がある。
+  ====================================  ===================================================================================
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラの実行)**
+    本ハンドラは往路において特段の処理を行なわずに後続のハンドラに処理を委譲し、
+    その処理結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **2. (応答電文オブジェクトの取得)**
+    **1.** での処理結果の型が応答電文オブジェクト(`ResponseMessage`_) であった場合は、
+    処理結果を応答電文オブジェクトにキャストして以降の処理で用いる。
+
+  **2a. (受信待機タイムアウト)**
+    キュー上に取得対象電文が存在しないまま、データリーダが一定時間待機し続けた場合、 `DataReader.NoMoreRecord`_ が返される。
+    **1.** の処理結果がこの型であった場合は、応答処理は行なわずに、処理結果をそのままリターンして終了する。
+
+  **2b. (処理結果タイプエラー)**
+    **1.** での処理結果の型が、応答電文オブジェクトでも `DataReader.NoMoreRecord`_ でも無かった場合は、
+    実行時例外 (java.lang.ClassCastException) を送出する。
+
+  **3. (処理結果コードの設定)**
+    フレームワーク制御ヘッダ中の処理結果コードが未設定であった場合は、処理結果オブジェクトのステータスコードを設定する。
+
+  **4. (メッセージ送信)**
+    スレッドローカル上のメッセージコンテキストを使用して、応答電文オブジェクトの送信(応答キューへのPUT)を行なう。
+
+  **5. (正常終了)**
+    応答電文オブジェクトをリターンする。
+
+  **5a. (エラー応答正常終了)**
+    ただし、後続ハンドラの処理で例外が送出されていた場合( **2c.** )は、その例外を再送出する。
+
+.. _error:
+
+**[例外処理]** 
+  **2c. (エラー応答電文作成)**
+    後続ハンドラの処理中に実行時例外/エラーが発生した場合、
+    エラー内容をもとに応答電文を作成し、それを **3.** 以降で使用する。
+    なお、元例外は本ハンドラの処理終了時に再送出する。
+
+  **4a. (応答電文送信エラー)**
+    送信処理中に例外が送出された場合は、送信元に対する応答を断念し、例外を再送出して終了する。
+
+  **4b. (エラー応答電文送信エラー)**
+    送信処理中に例外が送出され、それ以前に、後続ハンドラの処理でも例外が送出されていた( **2c.** )場合、
+    送信処理中に発生した例外についてはワーニングレベルのログとして出力した上で、
+    **2c.** で捕捉していた例外を再送出する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラに設定項目は設けられていない。
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <!-- 応答電文制御ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessageReplyHandler" />
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "handlers-MessageReplyHandler",
+  "title": "電文応答制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessageReplyHandler",
+        "nablarch.fw.messaging.handler.MessageReplyHandler",
+        "ResponseMessage",
+        "MessagingContextHandler",
+        "TransactionManagementHandler",
+        "DataReadHandler",
+        "電文応答制御",
+        "応答電文送信",
+        "メッセージング",
+        "2相コミット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ResponseMessage",
+        "DataReader.NoMoreRecord",
+        "java.lang.ClassCastException",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "ハンドラ処理フロー",
+        "応答キューPUT",
+        "受信待機タイムアウト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "MessageReplyHandler",
+        "nablarch.fw.messaging.handler.MessageReplyHandler",
+        "XML設定",
+        "設定項目なし",
+        "component"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.handler.MessageReplyHandler`\n\n後続ハンドラの処理結果である`ResponseMessage`オブジェクトの内容をもとに応答電文を構築し送信する。送信した応答電文オブジェクトを戻り値として返す。\n\n**関連するハンドラ**\n\n> **重要**: 応答電文の内容を編集する必要のあるハンドラは、すべてこのハンドラの後続に配置すること。\n\n| ハンドラ | 配置条件 |\n|---|---|\n| :doc:`MessagingContextHandler` | スレッドローカル上のメッセージングコンテキストを使用するため、本ハンドラより上位に配置すること |\n| :doc:`TransactionManagementHandler` | **2相コミット使用時**: DBトランザクションとJMSトランザクションをまとめてコミットするため、トランザクション制御ハンドラは本ハンドラより先に実行する。**2相コミット未使用時**: 応答送信前にDBトランザクションを終了させる必要があるため、トランザクション制御ハンドラは本ハンドラの後に実行する |\n| :doc:`DataReadHandler` | 要求電文フォーマット不正による例外のエラー応答電文を本ハンドラで送信するには、:doc:`DataReadHandler` を本ハンドラの後続に配置すること |",
+    "s2": "**[往路処理]**\n\n1. 特段の処理を行わず後続ハンドラに委譲し、処理結果を取得する。\n\n**[復路処理]**\n\n2. 処理結果の型が`ResponseMessage`の場合、応答電文オブジェクトにキャストして以降の処理で使用する。\n3. (受信待機タイムアウト) 処理結果が`DataReader.NoMoreRecord`の場合、応答処理を行わずそのままリターンして終了する。\n4. (処理結果タイプエラー) 処理結果が`ResponseMessage`でも`DataReader.NoMoreRecord`でもない場合、`java.lang.ClassCastException`を送出する。\n5. フレームワーク制御ヘッダの処理結果コードが未設定の場合、処理結果オブジェクトのステータスコードを設定する。\n6. スレッドローカル上のメッセージコンテキストを使用して応答電文オブジェクトを応答キュー（PUT）に送信する。\n7. 応答電文オブジェクトをリターンする。後続ハンドラ処理で例外が発生していた場合はその例外を再送出する。\n\n**[例外処理]**\n\n- 後続ハンドラ処理中に例外が発生した場合、エラー内容をもとに応答電文を作成し、送信処理に使用する。元例外はハンドラ処理終了時に再送出する。\n- 応答電文送信中に例外が発生した場合、応答を断念して例外を再送出する。\n- 送信中の例外発生前に後続ハンドラでも例外が発生していた場合、送信中に発生した例外はワーニングレベルのログとして出力し、後続ハンドラで捕捉していた例外を再送出する。",
+    "s3": "設定項目なし。\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageReplyHandler\" />\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "handlers-MessageReplyHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — [例外処理] 2c.",
+      "description": "The source specifies '実行時例外/エラー' (RuntimeException or Java Error), but the knowledge file generalizes this to '例外'. The distinction matters: this handler catches unchecked exceptions and Java Errors only, not checked exceptions. Losing this precision could mislead an AI into stating the handler intercepts all throwables.",
+      "source_evidence": "後続ハンドラの処理中に実行時例外/エラーが発生した場合、エラー内容をもとに応答電文を作成し"
+    }
+  ]
+}
+--- Phase E logs ---
+
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

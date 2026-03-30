@@ -1,0 +1,346 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `libraries-99_Utility`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "critical",
+    "location": "s1 — code example for addMonth (月数加減算)",
+    "description": "The knowledge file presents two identical method calls with the same arguments but different return values: `DateUtil.addMonth(\"201103\", 1) -> 201104` and `DateUtil.addMonth(\"201103\", 1) -> 201102`. The same call cannot produce different results. The source document contains a typo in the 減算 example (uses `1` instead of `-1`), but the knowledge file reproduces both lines side-by-side, making the contradiction visible and logically impossible.",
+    "source_evidence": "Source: `DateUtil.addMonth(date, 1); // -> 201102` under `// 1ヶ月減算する場合(年月指定)` — the argument should be `-1` for subtraction; source has a typo"
+  },
+  {
+    "category": "fabrication",
+    "severity": "critical",
+    "location": "s1 — code example for getDays (日付間の日数取得, 同日の場合)",
+    "description": "The knowledge file shows `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` as the example for the same-day case of `getDays`. However, `getDate(String date)` is defined in the same knowledge file as accepting exactly one parameter and returning `java.util.Date`. A two-argument call to `getDate` is invalid per the documented API. The correct method for this operation is `getDays`. The source document contains the same typo, but the knowledge file reproduces it as apparently correct usage.",
+    "source_evidence": "Source under 日付間の日数取得: `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` — should be `getDays`; contradicts the `getDate(String date)` signature defined earlier in the same source file"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _date-util-spec:
+
+==================
+ユーティリティ
+==================
+本フレームワークが提供するユーティリティの仕様を解説する。
+
+--------------------
+日付ユーティリティ
+--------------------
+日付ユーティリティの仕様を解説する。
+
+
+クラス概要
+=============
+
+.. class:: nablarch.common.date.DateUtil
+
+  日付ユーティリティクラス。
+
+  業務アプリケーションからは、本クラスを使用して日付計算やフォーマット変換などを行う。
+
+  .. note::
+
+    本ユーティリティでは、パラメータで指定される日付の妥当性チェック(形式や実在日チェック)は行わない。
+    このため、呼び出し元で正しい日付形式であることを検証してから、本機能を使用すること。
+
+    これは、本機能は繰り返し呼び出される機能であるため都度実在日チェックなどを実施すると、
+    性能に与える影響が大きくなるためである。
+
+    不正な形式や非実在日が指定された場合の実行結果は保証しない。
+
+
+機能一覧
+============
+
+  =============================== =============================================================================================
+  機能名                          概要
+  =============================== =============================================================================================
+  日付オブジェクト変換            指定された日付(yyyyMMdd形式)をjava.util.Dateに変換する。
+
+                                   .. function:: java.util.Date getDate(String date)
+
+                                    :param date: 日付(yyyyMMdd形式)
+
+                                    :return: java.util.Dateに変換した日付
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      String updateDateStr = "20110302";
+                                      DateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト
+
+
+  日付フォーマット変換            指定された日付(yyyyMMdd形式)を指定されたフォーマットに変換する。
+                                  指定するフォーマットは、SimpleDateFormatの仕様に準拠すること。
+
+                                   .. function:: String formatDate(String date, String pattern)
+
+                                    :param date: 日付(yyyyMMdd形式)
+                                    :param pattern: フォーマット(SimpleDateFormatの仕様に準拠すること)
+
+                                    :return: 指定されたフォーマットに変換した値
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // スラッシュ(/)区切りにする場合
+                                      String updateDateStr = "20110302";
+                                      DateUtil.formatDate(updateDateStr, "yyyy/MM/dd"); // -> 2011/03/02
+
+                                      // ハイフン(-)区切りにする場合
+                                      String updateDateStr = "20110302";
+                                      DateUtil.formatDate(updateDateStr, "yyyy-MM-dd"); // -> 2011-03-02
+
+  日数の加減算                    指定された日付(yyyyMMdd形式)に、指定された日数を加算(負の値が指定された場合は減算)する。
+
+                                   .. function:: String addDay(String date, int days)
+
+                                    :param date: 日付(yyyyMMdd形式)
+                                    :param days: 加算する日付(負の値の場合は、減算が行われる。)
+
+                                    :return: 計算後の日付(yyyyMMdd形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                       // 10日加算する場合
+                                       String date = "20110302";
+                                       DateUtil.addDay(date, 10); // -> 20110312
+
+                                       // 10日減算する場合
+                                       String date = "20110302";
+                                       DateUtil.addDay(date, -10); // -> 20110220
+
+  月数の加減算                    指定された日付(yyyyMMdd or yyyyMM形式)に、指定された月数を加算(負の値が指定された場合は減算)する。
+
+                                   .. function:: String addMonth(String date, int month)
+
+                                    :param date: 日付(yyyyMMdd or yyyyMM形式)
+                                    :param month: 月数(負の値の場合は、減算が行われる。)
+
+                                    :return: 計算後の日付(yyyyMMdd or yyyyMM形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 1ヶ月加算する場合(年月日指定)
+                                      String date = "20110302";
+                                      DateUtil.addMonth(date, 1); // -> 20110402
+
+                                      // 1ヶ月加算する場合(年月指定)
+                                      String date = "201103";
+                                      DateUtil.addMonth(date, 1); // -> 201104
+
+                                      // 1ヶ月減算する場合(年月日指定)
+                                      String date = "20110302";
+                                      DateUtil.addMonth(date, -1); // -> 20110202
+
+                                      // 1ヶ月減算する場合(年月指定)
+                                      String date = "201103";
+                                      DateUtil.addMonth(date, 1); // -> 201102
+
+  日付間の日数取得                指定された日付(yyyyMMdd形式)間の日数を取得する。
+
+                                  ２つの日付が同日の場合は0を返却する。
+                                  １つ目の日付 > ２つ目の日付の場合には、返却値は負の値となる。
+
+                                   .. function:: long getDays(String dateFrom, String dateTo)
+
+                                    :param dateFrom: 被演算日付(yyyyMMdd形式)
+                                    :param dateTo: 演算日付(yyyyMMdd形式)
+
+                                    :return: ２つの日付間の日数
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 同日を指定した場合
+                                      DateUtil.getDate("20110302", "20110302"); // -> 0
+
+                                      // １つ目の引数 ＜ ２つ目の引数の場合
+                                      DateUtil.getDays("20120229", "20120331"); // -> 31
+
+                                      // １つ目の引数 ＞ ２つ目の引数の場合
+                                      DateUtil.getDays("20120401", "20120101"); // -> -91
+
+  日付間の月数取得                指定された日付間(yyyyMMdd or yyyyMM形式)の月数を取得する。
+
+                                  ２つの日付が同日(同月)の場合は、0を返却する。
+                                  １つ目の日付 > ２つ目の日付の場合には、返却値は負の値となる。
+
+                                   .. function:: int getMonths(String monthFrom, String monthTo)
+
+                                    :param dateFrom: 被演算日付(yyyyMMdd or yyyyMM形式)
+                                    :param dateTo: 演算日付(yyyyMMdd or yyyyMM形式)
+
+                                    :return: ２つの日付間の月数
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      // 同日を指定した場合
+                                      DateUtil.getMonths("20110302", "20110302"); // -> 0
+                                      DateUtil.getMonths("201103", "201103");     // -> 0
+
+                                      // １つ目の引数 ＜ ２つ目の引数の場合
+                                      DateUtil.getMonths("20120229", "20120331"); // -> 1
+                                      DateUtil.getMonths("201202", "201203");     // -> 1
+
+                                      // １つ目の引数 ＞ ２つ目の引数の場合
+                                      DateUtil.getMonths("20120401", "20120101"); // -> -3
+                                      DateUtil.getMonths("201204", "201201");     // -> -3
+
+                                      // １つ目の引数:yyyyMMdd,２つ目の引数:yyyyMMの場合
+                                      DateUtil.getMonths("20110331", "201104");   // -> 1
+                                      // １つ目の引数:yyyyMM,２つ目の引数:yyyyMMddの場合
+                                      DateUtil.getMonths("201103", "20100315")    // -> -12
+
+  月末日取得                      指定された日付(yyyyMMdd or yyyyMM形式)の月末日を取得する。
+
+                                   .. function:: String getMonthEndDate(String date)
+
+                                    :param date: 日付(yyyyMMdd or yyyyMM形式)
+
+                                    :return: 月末日(yyyyMMdd形式)
+
+                                    例
+
+                                    .. code-block:: java
+
+                                      DateUtil.getMonthEndDate("201103"); // -> 20110331
+                                      DateUtil.getMonthEndDate("201104"); // -> 20110431
+                                      DateUtil.getMonthEndDate("200802"); // -> 20080229
+
+  =============================== =============================================================================================
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "libraries-99_Utility",
+  "title": "ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "日付ユーティリティ",
+      "hints": [
+        "DateUtil",
+        "nablarch.common.date.DateUtil",
+        "getDate",
+        "formatDate",
+        "addDay",
+        "addMonth",
+        "getDays",
+        "getMonths",
+        "getMonthEndDate",
+        "日付ユーティリティ",
+        "日付計算",
+        "日付フォーマット変換",
+        "月末日取得",
+        "日数計算",
+        "月数計算"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.common.date.DateUtil`\n\n> **注意**: パラメータで指定される日付の妥当性チェック(形式や実在日チェック)は行わない。呼び出し元で正しい日付形式であることを検証してから使用すること。不正な形式や非実在日が指定された場合の実行結果は保証しない。\n\n| 機能 | メソッドシグネチャ | 説明 |\n|---|---|---|\n| 日付オブジェクト変換 | `java.util.Date getDate(String date)` | yyyyMMdd形式の文字列をjava.util.Dateに変換 |\n| 日付フォーマット変換 | `String formatDate(String date, String pattern)` | yyyyMMdd形式の日付を指定フォーマット(SimpleDateFormat仕様)に変換 |\n| 日数の加減算 | `String addDay(String date, int days)` | yyyyMMdd形式の日付に日数を加算(負の値で減算)。結果はyyyyMMdd形式 |\n| 月数の加減算 | `String addMonth(String date, int month)` | yyyyMMdd or yyyyMM形式の日付に月数を加算(負の値で減算) |\n| 日付間の日数取得 | `long getDays(String dateFrom, String dateTo)` | 2日付間の日数を取得。同日は0、dateFrom > dateToの場合は負の値 |\n| 日付間の月数取得 | `int getMonths(String monthFrom, String monthTo)` | 2日付間の月数を取得。同日/同月は0、dateFrom > dateToの場合は負の値 |\n| 月末日取得 | `String getMonthEndDate(String date)` | yyyyMMdd or yyyyMM形式の日付の月末日をyyyyMMdd形式で返す |\n\n```java\n// 日付オブジェクト変換\nString updateDateStr = \"20110302\";\nDateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト\n\n// 日付フォーマット変換\nDateUtil.formatDate(\"20110302\", \"yyyy/MM/dd\"); // -> 2011/03/02\nDateUtil.formatDate(\"20110302\", \"yyyy-MM-dd\"); // -> 2011-03-02\n\n// 日数加減算\nDateUtil.addDay(\"20110302\", 10);  // -> 20110312\nDateUtil.addDay(\"20110302\", -10); // -> 20110220\n\n// 月数加減算（年月日形式）\nDateUtil.addMonth(\"20110302\", 1);  // -> 20110402\nDateUtil.addMonth(\"20110302\", -1); // -> 20110202\n// 月数加減算（年月形式）\nDateUtil.addMonth(\"201103\", 1);    // -> 201104\n// 1ヶ月減算する場合(年月指定)\nDateUtil.addMonth(\"201103\", 1);    // -> 201102\n\n// 日数取得（同日の場合）\nDateUtil.getDate(\"20110302\", \"20110302\"); // -> 0\n// 日数取得\nDateUtil.getDays(\"20120229\", \"20120331\"); // -> 31\nDateUtil.getDays(\"20120401\", \"20120101\"); // -> -91\n\n// 月数取得\nDateUtil.getMonths(\"20120229\", \"20120331\"); // -> 1\nDateUtil.getMonths(\"20120401\", \"20120101\"); // -> -3\n// 月数取得（混合形式）\nDateUtil.getMonths(\"20110331\", \"201104\");   // -> 1\nDateUtil.getMonths(\"201103\", \"20100315\");   // -> -12\n\n// 月末日取得\nDateUtil.getMonthEndDate(\"201103\"); // -> 20110331\nDateUtil.getMonthEndDate(\"201104\"); // -> 20110431\nDateUtil.getMonthEndDate(\"200802\"); // -> 20080229\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "libraries-99_Utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example for addMonth (月数加減算)",
+      "description": "The knowledge file presents two identical method calls with the same arguments but different return values: `DateUtil.addMonth(\"201103\", 1) -> 201104` and `DateUtil.addMonth(\"201103\", 1) -> 201102`. The same call cannot produce different results. The source document contains a typo in the 減算 example (uses `1` instead of `-1`), but the knowledge file reproduces both lines side-by-side, making the contradiction visible and logically impossible.",
+      "source_evidence": "Source: `DateUtil.addMonth(date, 1); // -> 201102` under `// 1ヶ月減算する場合(年月指定)` — the argument should be `-1` for subtraction; source has a typo"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example for getDays (日付間の日数取得, 同日の場合)",
+      "description": "The knowledge file shows `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` as the example for the same-day case of `getDays`. However, `getDate(String date)` is defined in the same knowledge file as accepting exactly one parameter and returning `java.util.Date`. A two-argument call to `getDate` is invalid per the documented API. The correct method for this operation is `getDays`. The source document contains the same typo, but the knowledge file reproduces it as apparently correct usage.",
+      "source_evidence": "Source under 日付間の日数取得: `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` — should be `getDays`; contradicts the `getDate(String date)` signature defined earlier in the same source file"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "libraries-99_Utility",
+  "title": "ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "日付ユーティリティ",
+      "hints": [
+        "DateUtil",
+        "nablarch.common.date.DateUtil",
+        "getDate",
+        "formatDate",
+        "addDay",
+        "addMonth",
+        "getDays",
+        "getMonths",
+        "getMonthEndDate",
+        "日付ユーティリティ",
+        "日付計算",
+        "日付フォーマット変換",
+        "月末日取得",
+        "日数計算",
+        "月数計算"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.common.date.DateUtil`\n\n> **注意**: パラメータで指定される日付の妥当性チェック(形式や実在日チェック)は行わない。呼び出し元で正しい日付形式であることを検証してから使用すること。不正な形式や非実在日が指定された場合の実行結果は保証しない。\n\n| 機能 | メソッドシグネチャ | 説明 |\n|---|---|---|\n| 日付オブジェクト変換 | `java.util.Date getDate(String date)` | yyyyMMdd形式の文字列をjava.util.Dateに変換 |\n| 日付フォーマット変換 | `String formatDate(String date, String pattern)` | yyyyMMdd形式の日付を指定フォーマット(SimpleDateFormat仕様)に変換 |\n| 日数の加減算 | `String addDay(String date, int days)` | yyyyMMdd形式の日付に日数を加算(負の値で減算)。結果はyyyyMMdd形式 |\n| 月数の加減算 | `String addMonth(String date, int month)` | yyyyMMdd or yyyyMM形式の日付に月数を加算(負の値で減算) |\n| 日付間の日数取得 | `long getDays(String dateFrom, String dateTo)` | 2日付間の日数を取得。同日は0、dateFrom > dateToの場合は負の値 |\n| 日付間の月数取得 | `int getMonths(String monthFrom, String monthTo)` | 2日付間の月数を取得。同日/同月は0、dateFrom > dateToの場合は負の値 |\n| 月末日取得 | `String getMonthEndDate(String date)` | yyyyMMdd or yyyyMM形式の日付の月末日をyyyyMMdd形式で返す |\n\n```java\n// 日付オブジェクト変換\nString updateDateStr = \"20110302\";\nDateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト\n\n// 日付フォーマット変換\nDateUtil.formatDate(\"20110302\", \"yyyy/MM/dd\"); // -> 2011/03/02\nDateUtil.formatDate(\"20110302\", \"yyyy-MM-dd\"); // -> 2011-03-02\n\n// 日数加減算\nDateUtil.addDay(\"20110302\", 10);  // -> 20110312\nDateUtil.addDay(\"20110302\", -10); // -> 20110220\n\n// 月数加減算（年月日形式）\nDateUtil.addMonth(\"20110302\", 1);  // -> 20110402\nDateUtil.addMonth(\"20110302\", -1); // -> 20110202\n// 月数加減算（年月形式）\nDateUtil.addMonth(\"201103\", 1);    // -> 201104\n// 1ヶ月減算する場合(年月指定)\nDateUtil.addMonth(\"201103\", 1);    // -> 201102\n\n// 日数取得（同日の場合）\nDateUtil.getDate(\"20110302\", \"20110302\"); // -> 0\n// 日数取得\nDateUtil.getDays(\"20120229\", \"20120331\"); // -> 31\nDateUtil.getDays(\"20120401\", \"20120101\"); // -> -91\n\n// 月数取得\nDateUtil.getMonths(\"20120229\", \"20120331\"); // -> 1\nDateUtil.getMonths(\"20120401\", \"20120101\"); // -> -3\n// 月数取得（混合形式）\nDateUtil.getMonths(\"20110331\", \"201104\");   // -> 1\nDateUtil.getMonths(\"201103\", \"20100315\");   // -> -12\n\n// 月末日取得\nDateUtil.getMonthEndDate(\"201103\"); // -> 20110331\nDateUtil.getMonthEndDate(\"201104\"); // -> 20110431\nDateUtil.getMonthEndDate(\"200802\"); // -> 20080229\n```"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

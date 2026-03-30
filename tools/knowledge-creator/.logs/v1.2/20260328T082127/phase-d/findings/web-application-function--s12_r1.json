@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The prerequisite that Section 1 only shows the incremental differences on top of an already-implemented paging feature is not mentioned. The source explicitly states: 「ここでは、custom_tag_paging_pagingが実現されているものとして、custom_tag_paging_pagingとの差分についてのみ実装例を示す。」 This is a prerequisite constraint — sorting cannot be implemented standalone; paging must first be in place. An AI using this knowledge file could incorrectly present the sorting implementation as self-contained.",
+      "source_evidence": "尚、ここでは、:ref:`custom_tag_paging_paging` が実現されているものとして、:ref:`custom_tag_paging_paging` との差分についてのみ実装例を示す。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index",
+      "description": "Automated pre-check warns 'Section count 2 < source headings 3'. On inspection, the third 'heading' in the source is a RST transition line (horizontal rule: `--...--`) preceded only by a cross-reference label `.. _using_composite_key:` with no heading text above the underline. This is not a content section — it is a section anchor/separator for a section whose content appears in the next file. The knowledge file correctly reflects 2 actual content sections. This automated warning is a false positive and requires no action.",
+      "source_evidence": ".. _`using_composite_key`:\n\n-------------------------------------------------------------------------------------------"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a minor explanatory omission. The knowledge file correctly conveys the actionable security behavior: the key is created at login and discarded at logout/timeout. The omitted detail (\"メモリ上に保持される\") explains the reasoning behind the security claim but does not change what a developer would implement or how they would use the API. No developer action depends on knowing the storage medium is memory rather than some other volatile store.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — セキュリティ上の考慮",
+      "impact": "low",
+      "justification": "The omitted phrase 'メモリ上に保持される' is the explanatory rationale for why the security is high (keys are volatile/non-persistent), not an instruction or constraint that affects implementation. The knowledge file already captures both the key creation trigger (user login) and the disposal trigger (logout/session timeout), which are the only actionable facts. A developer asking about window scope security or the encryption mechanism would receive a complete and correct answer without this detail. Phase E did not fix this because the fixer output is identical to the Phase D state — the fix was not applied, likely because the finding was assessed as too minor to require correction."
+    }
+  ]
+}

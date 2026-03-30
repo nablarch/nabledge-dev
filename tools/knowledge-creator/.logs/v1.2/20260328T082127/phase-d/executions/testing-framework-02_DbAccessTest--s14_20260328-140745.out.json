@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections ordering",
+      "description": "The section order in the knowledge file (s1→s2→s3→s4→s5) does not match the source document order. In the source, the 'デフォルト値' section (s4 in knowledge) appears immediately after '関係のあるカラムのみを記載した場合' and before '設定項目一覧' (s2) and 'コンポーネント設定ファイルの記述例' (s3). The correct order should be s1→s4→s2→s3→s5, since s4 establishes the default values and s2/s3 describe how to change them.",
+      "source_evidence": "Source order: 関係のあるカラムのみを記載した場合（良い例）→ デフォルト値（=====）→ デフォルト値の変更方法（=====）> 設定項目一覧（----）> コンポーネント設定ファイルの記述例（---）→ 注意点"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "RST cross-reference syntax `:ref:\\`using_ThreadContext\\`` and `:ref:\\`using_transactions\\`` is preserved verbatim in the knowledge file content. This RST-specific markup does not render meaningfully outside RST and will appear as raw text to AI agents. These should be replaced with plain-text references (e.g., 'using_ThreadContext セクション参照') or omitted.",
+      "source_evidence": "Source: 「ThreadContextの設定方法については、次の項を参照。（  :ref:`using_ThreadContext`  ）」および「トランザクション制御の設定方法については、次の項を参照。（  :ref:`using_transactions`  ）」"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-concept--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — サーブレットコンテナ上での実行",
+      "description": "The role description 'アプリケーションに対する全てのHTTPリクエストをハンドラキューに対する入力データとして処理する' is attributed to `RepositoryBasedWebFrontController` in the knowledge file, but the source explicitly attributes this role to `WebFrontController`: ':doc:`../handler/WebFrontController` は、アプリケーションに対する全てのHTTPリクエストをハンドラキューに対する入力データとして処理する。' The `RepositoryBasedWebFrontController` appears only as the filter-class value in the XML code example — the prose description belongs to `WebFrontController`.",
+      "source_evidence": "`:doc:`../handler/WebFrontController` は、アプリケーションに対する全てのHTTPリクエストをハンドラキューに対する入力データとして処理する。業務処理の実行や、処理結果画面の送信といった処理はハンドラキュー上の各ハンドラによって実行される。`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — サーブレットコンテナ上での実行",
+      "description": "The source's second sentence describing WebFrontController's role is omitted: '業務処理の実行や、処理結果画面の送信といった処理はハンドラキュー上の各ハンドラによって実行される。' This clarifies that business logic execution and response rendering are delegated to handlers in the queue, not handled by WebFrontController itself.",
+      "source_evidence": "`:doc:`../handler/WebFrontController` は、アプリケーションに対する全てのHTTPリクエストをハンドラキューに対する入力データとして処理する。業務処理の実行や、処理結果画面の送信といった処理はハンドラキュー上の各ハンドラによって実行される。`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 — 処理フローの番号",
+      "description": "The knowledge file labels the processing flow as '（①〜⑥の順）' (6 steps) — matching the source's figure caption — but then only enumerates 5 numbered items. The label and the content are inconsistent.",
+      "source_evidence": "次の図はこの内容を表した模式図である。(①～⑥の順)"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Section s5 consolidates the entire 業務日付機能 chapter (> 2000 chars) without splitting despite the source having 6 distinct h3/h4 subsections: テーブル定義, 複数の業務日付の設定, 設定ファイル (date_BusinessConfiguration), 日付の上書き機能, 業務日付のメンテナンス, BusinessDateUtilで不足する場合. Per V3 rule, when an h2-equivalent source section exceeds 2000 chars and contains h3 subsections, the knowledge file should split accordingly.",
+      "source_evidence": "Source h3 headings under 業務日付機能: テーブル定義, 複数の業務日付の設定, 設定ファイル (date_BusinessConfiguration), 日付の上書き機能, 業務日付のメンテナンス, BusinessDateUtilで提供される機能では不足している場合の対応方法"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — dbTransactionName property description",
+      "description": "The source includes a Java code example under the dbTransactionName property that provides decision guidance on whether to set the property: if `DbConnectionContext.getConnection()` (no-argument form) works, the property can be omitted; if `DbConnectionContext.getConnection(\"appTransactionName\")` is used, the argument value must be set here. This concrete code-based decision rule is omitted from the knowledge file, which only states 'デフォルトのトランザクション名使用時は省略可' without the diagnostic code.",
+      "source_evidence": "Source dbTransactionName description: `// 以下のコードでコネクションが取得できる場合は、本プロパティへの設定は省略可能\nAppDbConnection con = DbConnectionContext.getConnection();\n// 以下のコードでコネクションを取得する必要がある場合は、本プロパティには、getConnectionへ設定している引数(\"appTransactionName\")を設定する。\nAppDbConnection con = DbConnectionContext.getConnection(\"appTransactionName\");`"
+    }
+  ]
+}

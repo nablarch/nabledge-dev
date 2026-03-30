@@ -1,0 +1,27 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — レジューム処理概要 note",
+      "description": "The source note contains a second important behavioral clarification that is omitted: '物理レコード数とレジュームポイントが一致していなくても、レジューム機能は問題なく動作する。これは、同じファイルを何度読んでもデータリーダが返す値は変わらないため、レジュームポイントまで読み飛ばす処理は正常に機能するからである。' This explains WHY resume still works correctly when counts differ, which is useful for an AI to correctly answer troubleshooting questions about the feature.",
+      "source_evidence": ".. note:: block under レジューム処理概要: '物理レコード数とレジュームポイントが一致していなくても、レジューム機能は問題なく動作する。これは、同じファイルを何度読んでもデータリーダが返す値は変わらないため、レジュームポイントまで読み飛ばす処理は正常に機能するからである。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Hint `FileLayoutValidatorAction` is missing. This class appears directly in the code example for wrapping ValidatableFileDataReader.",
+      "source_evidence": "Code example: '.setValidatorAction(new FileLayoutValidatorAction())'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Full class name `nablarch.fw.reader.ResumePointManager` is missing from hints. Only the short form `ResumePointManager` is present. The XML configuration example explicitly uses the fully qualified class name.",
+      "source_evidence": "XML config: 'class=\"nablarch.fw.reader.ResumePointManager\"'"
+    }
+  ]
+}

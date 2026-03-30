@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 要求電文・応答電文フォーマット定義ファイル コードブロック",
+      "description": "Inline field comments are stripped from both format definition code examples. The source includes semantic annotations such as `# レコード区分(固定)`, `# 採番したユーザID`, `# 障害事由コード`, `# 問い合わせID`, `# データ区分(固定)` that explain the meaning and fixed-value constraints of each field. These are relevant for AI to explain field semantics or guide implementation.",
+      "source_evidence": "Source lines such as: `1   dataKbn  X(1)  \"2\"   # レコード区分(固定)`, `2   userId   X(10)       # 採番したユーザID`, `12  failureCode X(20)  # 障害事由コード`, `32  userInfoId  X(20)  # 問い合わせID`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Actionクラス コードブロック",
+      "description": "The method signature including `@OnError(type = ApplicationException.class, path = \"forward://RW11AC0201\")` and `@OnDoubleSubmission(path = \"forward://RW11AC0201\")` with their specific parameters is omitted from the code example. These annotation parameters (error type, forward paths) represent concrete configuration decisions for correct error handling and double-submission prevention in sync messaging actions.",
+      "source_evidence": "Source lines: `@OnError(type = ApplicationException.class, path = \"forward://RW11AC0201\")` and `@OnDoubleSubmission(path = \"forward://RW11AC0201\")` appear directly above the method `doRW11AC0205`"
+    }
+  ]
+}

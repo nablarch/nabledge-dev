@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-NoInputDataBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — step 6 note",
+      "description": "Knowledge file says「バッチがエラー終了した場合でも、5.の処理の後で呼ばれる。」but the source says「**6.**の処理の後で呼ばれる。」. The step number was changed from 6 to 5.",
+      "source_evidence": "(このコールバックは、バッチがエラー終了した場合でも、 **6.** の処理の後で呼ばれる。)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`BatchAction` is a PascalCase class name explicitly referenced in s1 content (「:doc:`BatchAction` とは異なり」) but is absent from s1 hints.",
+      "source_evidence": ":doc:`BatchAction` とは異なり、データリーダーを使用せず、常に1度だけ呼ばれる。"
+    }
+  ]
+}

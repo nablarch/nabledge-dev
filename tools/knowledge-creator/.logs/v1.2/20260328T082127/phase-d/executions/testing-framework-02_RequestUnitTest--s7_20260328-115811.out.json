@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — tempDirectory row",
+      "description": "The source contains a note inside the tempDirectory default-value cell explaining Jetty's actual behavior: `./work` is used as the JSP compile directory; if `./work` does not exist, the system Temp folder (on Windows: user home/Local Settings/Temp) is used instead. The knowledge file only records the default value as 「jettyのデフォルト動作に依存」 without this detail.",
+      "source_evidence": "tempDirectory セルのnote: 「jettyのデフォルト動作では、./workがコンパイル先ディレクトリとなる。./workが存在しない場合は、Tempフォルダ(Windowsの場合は、ユーザのホームディレクトリ/Local Settings/Temp)が出力先となる。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — JVMオプション `-Xverify:none`",
+      "description": "The source file contains `-Xverfiy:none` (a typo — 'fiy' instead of 'ify'). The knowledge file renders this as `-Xverify:none` (the correct spelling). While this is an obvious source typo, the knowledge file text does not match the source literally.",
+      "source_evidence": "Source text: `:strong:\\`-Xverfiy:none\\``"
+    }
+  ]
+}

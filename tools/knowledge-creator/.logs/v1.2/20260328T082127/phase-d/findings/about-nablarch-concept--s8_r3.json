@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — type variable table",
+      "description": "The handler examples column from the source's type variable table is omitted from the knowledge file content. The source lists concrete handler classes per type variable: Request type → RequestPathJavaPackageMapping, RequestHandlerEntry; HttpRequest type → HttpResponseHandler, HttpAccessLogHandler. The knowledge file replaces the 'ハンドラの例' column with 'applicable processing methods' but drops all specific class names except the two already in hints (TransactionManagementHandler, ServiceAvailabilityCheckHandler for Object type). This prevents AI from answering 'which type variable does RequestHandlerEntry/HttpResponseHandler use?'",
+      "source_evidence": "型変数テーブル: Request行の例「RequestPathJavaPackageMapping, RequestHandlerEntry」、HttpRequest行の例「HttpResponseHandler, HttpAccessLogHandler」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "Three PascalCase handler class names appear in the source's type variable table but are absent from all section hints: RequestHandlerEntry (Request type example), HttpResponseHandler (HttpRequest type example), HttpAccessLogHandler (HttpRequest type example).",
+      "source_evidence": "`Request`_行: RequestPathJavaPackageMapping, RequestHandlerEntry / `HttpRequest`_行: HttpResponseHandler, HttpAccessLogHandler"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "The source RST contains `.. _method_binding:` immediately before the `.. _request_processing:` label. In Sphinx RST, consecutive labels before a heading both anchor to that heading, so `method_binding` is a valid cross-reference target for the 'リクエストの識別と業務処理の実行' section (s2). The hint `method_binding` is absent from s2's hints, making the section unreachable via `:ref:`method_binding`` cross-references.",
+      "source_evidence": ".. _method_binding:\\n\\n+++++++++++++++++++++++++++\\n\\n\\n.. _request_processing:\\n\\n-----------------------------------------------------\\nリクエストの識別と業務処理の実行"
+    }
+  ]
+}

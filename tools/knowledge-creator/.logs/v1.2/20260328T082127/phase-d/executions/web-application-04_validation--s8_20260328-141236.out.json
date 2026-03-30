@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — validateForSearch code example",
+      "description": "The `isValidSearchCondition` private static method is called within `validateForSearch` in the code example, but its implementation body is not shown. The source defines the method with the logic: `return loginId.length() > 0 || kanjiName.length() > 0 || kanaName.length() > 0 || ugroupId.length() > 0 || userIdLocked.length() > 0;`. An AI reading the knowledge file code will see a call to an undefined method.",
+      "source_evidence": "private static boolean isValidSearchCondition(String loginId, String kanjiName, String kanaName, String ugroupId, String userIdLocked) { return loginId.length() > 0 || kanjiName.length() > 0 || kanaName.length() > 0 || ugroupId.length() > 0 || userIdLocked.length() > 0; }"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — UserEntity code example",
+      "description": "The order of setter methods in the UserEntity code example is reversed compared to the source. The knowledge file shows `setName` before `setId`, but the source defines `setId` before `setName`. The comment in the source (`// 【説明】元の表示名は\"ユーザ名\"`) is on `setName` to highlight it as the property being overridden, but the source's actual method order is `setId` → `setName` → `setRemarks`.",
+      "source_evidence": "Source UserEntity order: setId (with @PropertyName(\"ID\")), then setName (with @PropertyName(\"ユーザ名\")), then setRemarks. Knowledge file order: setName, then setId, then setRemarks."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_DisplayTag--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — CODE_NAME table note",
+      "description": "The knowledge file adds an interpretive note: 「SORT_ORDERは言語ごとに異なる場合がある（例: ID=0001/VALUE=01 は ja で SORT_ORDER=1、en で SORT_ORDER=2）。多言語環境では言語ごとに表示順が変わる。」 The source file contains no such note or statement. The source simply presents the CODE_NAME table data without any commentary about SORT_ORDER varying by language or its implications for display ordering.",
+      "source_evidence": "The source only shows a plain data table with no accompanying note or warning about SORT_ORDER behavior across languages."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning S9 — section count",
+      "description": "The automated check reported 'Section count 4 < source headings 8', but the source file contains only 5 headings (1 document title + 4 sub-sections: 共通属性, codeRadiobuttonsタグ/codeCheckboxesタグ, codeSelectタグ, codeタグ). The knowledge file's 4 sections (s1–s4) correctly map to the 4 sub-sections, with the document title captured as the top-level title. The automated check appears to have miscounted horizontal rule dividers (---) as headings. No actual section issue exists.",
+      "source_evidence": "Source headings: (1) document title with ----, (2) 共通属性 with ====, (3) codeRadiobuttonsタグ/codeCheckboxesタグ with ----, (4) codeSelectタグ with ----, (5) codeタグ with ----. Trailing ---- lines are horizontal dividers, not headings."
+    }
+  ]
+}

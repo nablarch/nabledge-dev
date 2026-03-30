@@ -1,0 +1,67 @@
+{
+  "id": "libraries-thread_context--s9",
+  "title": "LanguageAttributeの設定",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "LanguageAttributeの設定",
+      "hints": [
+        "HttpLanguageAttribute",
+        "LanguageAttributeInHttpCookie",
+        "LanguageAttributeInHttpSession",
+        "LanguageAttributeInHttpUtil",
+        "defaultLanguage",
+        "supportedLanguages",
+        "cookieName",
+        "cookiePath",
+        "cookieDomain",
+        "cookieMaxAge",
+        "cookieSecure",
+        "sessionKey",
+        "keepLanguage",
+        "言語設定",
+        "多言語対応",
+        "クッキーで言語保持",
+        "セッションで言語保持"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "TimeZoneAttributeの設定",
+      "hints": [
+        "TimeZoneAttributeInHttpCookie",
+        "TimeZoneAttributeInHttpSession",
+        "TimeZoneAttributeInHttpUtil",
+        "defaultTimeZone",
+        "supportedTimeZones",
+        "cookieName",
+        "cookiePath",
+        "cookieDomain",
+        "cookieMaxAge",
+        "cookieSecure",
+        "sessionKey",
+        "keepTimeZone",
+        "タイムゾーン設定",
+        "タイムゾーン切替",
+        "クッキーでタイムゾーン保持",
+        "セッションでタイムゾーン保持"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ExecutionIdAttributeの設定",
+      "hints": [
+        "ExecutionIdAttribute",
+        "実行IDアトリビュート",
+        "設定値なし"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.common.web.handler.threadcontext.HttpLanguageAttribute`, `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie`, `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSession`\n\n### LanguageAttribute（基底）プロパティ\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultLanguage | | システムのデフォルトロケール | デフォルトの言語（文字列） |\n\n### HttpLanguageAttribute\n\n```xml\n<component class=\"nablarch.common.web.handler.threadcontext.HttpLanguageAttribute\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultLanguage | | システムのデフォルトロケール | デフォルトの言語 |\n| supportedLanguages | ○ | | サポート対象の言語（文字列配列） |\n\n### LanguageAttributeInHttpCookie\n\n```xml\n<component class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n  <property name=\"cookieName\" value=\"app_language\" />\n  <property name=\"cookiePath\" value=\"/action/\" />\n  <property name=\"cookieDomain\" value=\"localhost\" />\n  <property name=\"cookieMaxAge\" value=\"300\" />\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultLanguage | | システムのデフォルトロケール | デフォルトの言語 |\n| supportedLanguages | ○ | | サポート対象の言語（文字列配列） |\n| cookieName | | nablarch_language | 言語を保持するクッキー名 |\n| cookiePath | | コンテキストパス | クッキーが送信されるURIパス階層 |\n| cookieDomain | | リクエストURLのドメイン名 | クッキーが送信されるドメイン階層 |\n| cookieMaxAge | | ブラウザ終了まで | クッキーの最長存続期間（秒） |\n| cookieSecure | | secure属性なし | クッキーのsecure属性有無 |\n\n`LanguageAttributeInHttpUtil`を使用するには、コンポーネント名を`languageAttribute`にする必要がある。\n\n```xml\n<component name=\"languageAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n</component>\n```\n\n`LanguageAttributeInHttpUtil.keepLanguage(request, context, language)`: クッキーとスレッドコンテキストに言語を設定する。指定言語がサポート対象外の場合は、クッキーとスレッドコンテキストへの設定を行わない。\n\n> **注意**: アクションでリクエストパラメータを取得する場合は、バリデーション機能を使用すること（ハンドラ内での直接`getParamMap`/`getParam`アクセスとは異なる）。\n\n### LanguageAttributeInHttpSession\n\n```xml\n<component class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSession\">\n  <property name=\"defaultLanguage\" value=\"ja\" />\n  <property name=\"supportedLanguages\" value=\"ja,en\" />\n  <property name=\"sessionKey\" value=\"app_language\" />\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultLanguage | | システムのデフォルトロケール | デフォルトの言語 |\n| supportedLanguages | ○ | | サポート対象の言語（文字列配列） |\n| sessionKey | | LanguageAttribute.getKey()の戻り値 | 言語が格納されるセッションキー名 |\n\n`LanguageAttributeInHttpUtil`を使用するには、コンポーネント名を`languageAttribute`にする必要がある。ログイン処理でユーザに紐づく言語をHTTPセッションに設定する場合も`keepLanguage`を使用する。",
+    "s2": "**クラス**: `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie`, `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSession`\n\n### TimeZoneAttribute（基底）プロパティ\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultTimeZone | | システムのデフォルトタイムゾーン | デフォルトのタイムゾーン（文字列） |\n\n### TimeZoneAttributeInHttpCookie\n\n```xml\n<component class=\"nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie\">\n  <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n  <property name=\"supportedTimeZones\" value=\"Asia/Tokyo,America/New_York\" />\n  <property name=\"cookieName\" value=\"app_timeZone\" />\n  <property name=\"cookiePath\" value=\"/action/\" />\n  <property name=\"cookieDomain\" value=\"localhost\" />\n  <property name=\"cookieMaxAge\" value=\"300\" />\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultTimeZone | | システムのデフォルトタイムゾーン | デフォルトのタイムゾーン |\n| supportedTimeZones | ○ | | サポート対象のタイムゾーン（文字列配列） |\n| cookieName | | nablarch_timeZone | タイムゾーンを保持するクッキー名 |\n| cookiePath | | コンテキストパス | クッキーが送信されるURIパス階層 |\n| cookieDomain | | リクエストURLのドメイン名 | クッキーが送信されるドメイン階層 |\n| cookieMaxAge | | ブラウザ終了まで | クッキーの最長存続期間（秒） |\n| cookieSecure | | secure属性なし | クッキーのsecure属性有無 |\n\n`TimeZoneAttributeInHttpUtil`を使用するには、コンポーネント名を`timeZoneAttribute`にする必要がある。\n\n```xml\n<component name=\"timeZoneAttribute\"\n           class=\"nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie\">\n  <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n  <property name=\"supportedTimeZones\" value=\"Asia/Tokyo,America/New_York\" />\n</component>\n```\n\n`TimeZoneAttributeInHttpUtil.keepTimeZone(request, context, timeZone)`: クッキーとスレッドコンテキストにタイムゾーンを設定する。指定タイムゾーンがサポート対象外の場合は、クッキーとスレッドコンテキストへの設定を行わない。\n\n> **注意**: アクションでリクエストパラメータを取得する場合は、バリデーション機能を使用すること。\n\n### TimeZoneAttributeInHttpSession\n\n```xml\n<component class=\"nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSession\">\n  <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n  <property name=\"supportedTimeZones\" value=\"Asia/Tokyo,America/New_York\" />\n  <property name=\"sessionKey\" value=\"app_timeZone\" />\n</component>\n```\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| defaultTimeZone | | システムのデフォルトタイムゾーン | デフォルトのタイムゾーン |\n| supportedTimeZones | ○ | | サポート対象のタイムゾーン（文字列配列） |\n| sessionKey | | TimeZoneAttribute.getKey()の戻り値 | タイムゾーンが格納されるセッションキー名 |\n\n`TimeZoneAttributeInHttpUtil`を使用するには、コンポーネント名を`timeZoneAttribute`にする必要がある。ログイン処理でユーザに紐づくタイムゾーンをHTTPセッションに設定する場合も`keepTimeZone`を使用する。",
+    "s3": "設定プロパティなし。"
+  }
+}

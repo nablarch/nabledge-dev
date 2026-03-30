@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — １件ごとの処理 intro paragraph",
+      "description": "The phrase 'ファイルバリデータクラスと同様に' is omitted from the RecordTypeBinding description in s3. The source reads 'ファイルバリデータクラスと同様に、RecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。' This architectural context — that the per-record processing uses the same RecordTypeBinding dispatch pattern as the file validator class — is useful for AI to answer questions about how the two components relate.",
+      "source_evidence": "Source: 'ファイルバリデータクラスと同様に、RecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — missing entry for '１件ごとの処理' section",
+      "description": "The source contains 9 distinct headings: エンドレコードの精査処理, バリデータクラスの終了処理, １件ごとの処理 (h2), ヘッダーレコードの処理, データレコードの処理, トレーラレコードの処理, エンドレコードの処理。, エラー発生時の処理, 終了処理. The knowledge file has only 8 sections (s1–s8). The '１件ごとの処理' section has its own introductory sentence and a note block, but these are merged into s3 (ヘッダーレコードの処理) without a dedicated index entry. The knowledge file title is '１件ごとの処理' but the section itself has no corresponding index entry.",
+      "source_evidence": "Source heading: '１件ごとの処理\\n==============' with intro sentence and note block before 'ヘッダーレコードの処理' subsection."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1, s3, s5, s6 — hints arrays",
+      "description": "`ExecutionContext` appears in the method signatures of doEnd (s1), doHeader (s3), doTrailer (s5), and doEnd (s6) in code examples, but is not listed in the hints for any of those sections. It is present in s2 and s4 hints only.",
+      "source_evidence": "Source code in all four sections: 'public Result doEnd(DataRecord inputData, ExecutionContext ctx)', 'public Result doHeader(DataRecord inputData, ExecutionContext ctx)', etc."
+    }
+  ]
+}

@@ -1,0 +1,478 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/03_DevelopmentStep/08_complete.rst`
+- Format: `rst`
+
+```
+
+.. _process_update_complete:
+
+完了画面の実装
+--------------------------------------------
+
+更新完了画面は、以下のステップで実装する。
+
+:ref:`1) 更新完了画面の表示<update_complete>`
+
+ :ref:`1)-1 Actionクラスの実装<update_complete_action>`
+
+ :ref:`1)-2 JSPの実装<update_complete_jsp>`
+ 
+:ref:`2) DB更新処理実装<update_db>`
+
+ :ref:`2)-1 Componentクラスの実装<update_db_service>`
+
+ :ref:`2)-2 Actionクラスの実装<update_db_action>`
+
+.. _update_complete:
+
+**1) 更新完了画面の表示**
+
+.. _update_complete_action:
+
+1)-1 Actionクラスの実装
+
+ \a) リクエスト単体テストコードの追加
+  更新画面初期表示の実装-1) 更新画面の表示- :ref:`1)-1 Actionクラスの作成<update_view_action>` で作成した以下のテストクラスに対して完了画面表示リクエストのテスト実行メソッドを追加する。
+
+  **テストクラス名**
+   W11ACXXActionRequestTest
+   
+  **メソッド名**
+   void testRW11ACXX04()
+   
+  .. code-block:: java 
+
+   // ～前略～
+
+   @Test
+   public void testRW11ACXX04() {
+       execute("testRW11ACXX04");
+   }
+
+   // ～後略～
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \b) リクエスト単体テストデータシートの作成
+  更新画面初期表示の実装-1) 更新画面の表示- :ref:`1)-1 Actionクラスの作成<update_view_action>` で作成したリクエスト単体テストデータシート(Excelファイル)に完了画面表示リクエスト用のシートを追加する。
+   
+  **ブック名**
+   W11ACXXActionRequestTest.xls
+   
+  **シート名**
+   testRW11ACXX04
+   
+  .. image:: ./_images/action_test_complete.png
+   :scale: 30
+
+
+ \c) リクエスト単体テスト実施
+  リクエスト単体テストを実施し、テストが失敗することを確認する。（Actionクラスにメソッドを追加していない為）
+
+
+ \d) Actionクラスの修正
+  更新画面初期表示の実装-1) 更新画面の表示- :ref:`1)-1 Actionクラスの作成<update_view_action>` で作成したActionクラスに完了画面表示のメソッドを追加する。
+  
+  **Actionクラス名**
+   W11ACXXAction
+   
+  **メソッド名**
+   "do" ＋ RW11ACXX04（完了画面表示のリクエストID）
+
+
+  .. code-block:: java 
+
+   // ～前略～
+
+   /**
+    * ユーザ情報更新完了画面の表示
+    * 
+    * @param req リクエストコンテキスト
+    * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+    * @return HTTPレスポンス
+    */
+   public HttpResponse doRW11ACXX04(HttpRequest req, ExecutionContext ctx) {
+       
+       // 【説明】最初は単純にJSPを返却する処理のみ実装
+       // ユーザ情報更新完了画面へ遷移
+       return new HttpResponse("/ss11AC/W11ACXX03.jsp");
+   }
+
+   // ～後略～
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \e) リクエスト単体テスト実施
+  リクエスト単体テストを実施し、Actionクラスまで処理が到達していることを確認する。
+  
+  コンソールログに以下の内容が出力されれば良い。
+
+    - Actionクラスまで処理到達
+
+    ログ中の「@@@@ DISPATCHING CLASS @@@@」の次に「BEFORE ACTION」が出力されていれば、Actionまで処理が到達している。
+     
+     ＜出力内容＞
+      .. code-block:: none
+      
+       2011-09-29 10:14:50.755 -INFO- root [201109291014507230001] boot_proc = [] proc_sys = [] req_id = [RW11ACXX04] usr_id = [0000000001] @@@@ DISPATCHING CLASS @@@@ class = [nablarch.sample.ss11AC.W11ACXXAction]
+       2011-09-29 10:14:50.755 -DEBUG- root [201109291014507230001] boot_proc = [] proc_sys = [] req_id = [RW11ACXX04] usr_id = [0000000001] **** BEFORE ACTION ****
+         request_parameter = [{
+             W11ACXX.users.kanjiName = [奈武羅三郎],
+             W11ACXX.users.userId = [0000000002],
+             W11ACXX.users.kanaName = [ナブラサブロウ]}]
+         request_scope = [{
+             org.mortbay.jetty.newSessionId = [1euandylq3rih1lrp5iycoehci]}]
+         session_scope = [{
+             user.id = [0000000001],
+             commonHeaderLoginDate = [20100914],
+             commonHeaderLoginUserName = [リクエスト単体テストユーザ]}]
+       2011-09-29 10:14:50.755 -DEBUG- root [201109291014507230001] boot_proc = [] proc_sys = [] req_id = [RW11ACXX04] usr_id = [0000000001] **** DISPATCHING METHOD **** method = [nablarch.sample.ss11AC.W11ACXXAction#dorw11acxx04]
+
+    - JSPファイルNOT FOUND
+     
+     ＜出力内容＞
+     
+      .. code-block:: none
+      
+       ERROR: PWC6117: File "C:\tisdev\workspace\Nablarch_sample\main\web\ss11AC\W11ACXX03.jsp" not found
+
+.. _update_complete_jsp:
+
+1)-2 JSPの実装
+
+ \a) JSPの作成
+  JSPの自動生成、JSPの修正については、更新画面初期表示の実装時と同じ手順のため、 :ref:`1)-2 JSPの実装<update_view_jsp>` を参照して行う。
+
+  **更新完了画面のHTML**
+  
+    \ :download:`ユーザ情報更新完了画面.html<./_download/ユーザ情報更新完了画面.html>`\
+
+  **更新完了画面のJSP**
+   W11ACXX03.jsp
+
+  ＜修正後JSP＞
+
+  .. literalinclude:: ./_download/W11ACXX03.jsp
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+ \b) 更新完了画面の表示確認
+  リクエスト単体テストを実行し、更新完了画面が出力されることを確認する。
+
+  ただし、この時点では更新処理を実装していない為、DBの更新は行われていない。
+
+ \c) JSP静的チェックツールの実行
+  :ref:`jsp_static_analysis_tool` を実行し、該当ファイルに静的チェックエラーがないことを確認する。
+
+
+.. _update_db:
+
+**2) DB更新処理実装**
+
+.. _update_db_service:
+
+2)-1 Componentクラスの実装
+
+ \a) リクエスト単体テストデータシートの作成
+
+  1) 更新完了画面の表示 :ref:`1)-1 Actionクラスの実装<update_complete_action>` で作成した以下のテストデータシートに対して、更新結果のデータを追加する。
+   
+   **ブック名**
+    W11ACXXActionRequestTest.xls
+   
+   **シート名**
+    testRW11ACXX04
+   
+  .. image:: ./_images/action_test_complete_update.png
+    :scale: 20
+
+
+  ※追加部分は画像の赤枠部分。
+
+  .. note::
+   更新結果の期待値では、漢字氏名、カナ氏名以外にも、更新ユーザID(UPDATE_USER_ID)と更新日付(UPDATE_DATE)も
+   更新対象としている。
+
+    **更新ユーザID**
+     事前準備データのUSER_ID欄に記載したユーザIDで更新される。
+
+    **更新日付**
+     コンポーネント設定ファイルに記載された固定の業務日付で更新される（実行タイミングによって日付が変わると検証ができない為、固定値を使用）。
+
+ \b) リクエスト単体テスト実施
+  リクエスト単体テストを実施し、テストが失敗することを確認する。（Componentクラスに更新処理を実装していない為）
+
+
+ \c) 更新処理の実装
+  更新確認画面に表示した内容のUsersテーブルに対する更新処理をComponentクラスに実装する。
+  
+  実装のポイントは以下の通り。
+   ①ユーザテーブル更新用のSQL文の追加
+    更新画面初期表示の実装-2)更新画面表示内容の検索処理実装 :ref:`2)-1 Componentクラスの実装<update_select_component>` で作成したSQLファイルに更新SQL文を追加する。
+    
+  **SQLファイル名**
+   CM311ACXComponent.sql
+ 
+  ＜更新SQL文＞
+
+  .. code-block:: sql 
+
+   -- ユーザテーブル更新SQL
+   UPDATE_USERS=
+   UPDATE USERS SET 
+        KANJI_NAME = :kanjiName, 
+        KANA_NAME = :kanaName, 
+        UPDATED_USER_ID = :updatedUserId, 
+        UPDATED_DATE = :updatedDate 
+   WHERE 
+        USER_ID = :userId 
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+   ②更新画面初期表示の実装-2)更新画面表示内容の検索処理実装 :ref:`2)-1 Componentクラスの実装<update_select_component>`
+   で作成したクラスに更新処理実行メソッドを実装する。また、必要なimport文を追加する。
+
+   追加するメソッド名は以下の通り。
+
+   **メソッド名**
+    void updateUsers(UsersEntity usersEntity)
+
+
+  .. code-block:: java 
+
+   // ～前略～
+
+   // 【説明】②ユーザテーブルの更新処理メソッド
+   /**
+    * ユーザテーブルに対して更新を行う。<br/>
+    *
+    * @param users 更新する情報を保持した{@link UsersEntity}
+    */
+   public void updateUsers(UsersEntity users) {
+       ParameterizedSqlPStatement updateUsers = 
+           super.getParameterizedSqlStatement("UPDATE_USERS");
+       updateUsers.executeUpdateByObject(users);
+   }
+
+   // ～後略～
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _update_db_action:
+
+2)-2 Actionクラスの実装
+
+ \a) 更新処理の呼び出し実装 
+  Actionクラスに2)-1で実装した更新処理の呼び出しを実装する。
+
+  更新画面初期表示の実装-1) 更新画面の表示- :ref:`1)-1 Actionクラスの作成<update_view_action>` で作成したActionクラスのメソッドに以下の処理を追加する。また、必要なimport文を追加する。
+  
+  **Actionクラス名**
+   W11ACXXAction
+   
+  **メソッド名**
+   "do" ＋ RW11ACXX04（完了画面表示のリクエストID）
+
+   
+   ①前画面より渡されるパラメータ(ユーザID、漢字氏名、カナ氏名）の単項目精査
+   
+   ②①のパラメータを保持するFormの生成
+   
+   ③更新処理の呼び出し
+   
+
+  .. code-block:: java 
+
+   // ～前略～
+
+   /**
+    * ユーザ情報更新完了画面の表示
+    * 
+    * @param req リクエストコンテキスト
+    * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+    * @return HTTPレスポンス
+    */
+   @OnError(type = ApplicationException.class, path = "forward:///action/ss11AC/W11AC01Action/RW11AC0102")
+   @OnDoubleSubmission(path = "forward:///action/ss11AC/W11AC01Action/RW11AC0102")
+   public HttpResponse doRW11ACXX04(HttpRequest req, ExecutionContext ctx) {
+       
+       // 【説明】①精査処理の呼び出し実装
+       ValidationContext<W11ACXXForm> formCtx = 
+           ValidationUtil.validateAndConvertRequest("W11ACXX", 
+                   W11ACXXForm.class, req, "simpleUpdate");
+       if (!formCtx.isValid()) {
+           throw new ApplicationException(formCtx.getMessages());
+       }
+       
+       // 【説明】②更新パラメータを持つFormを生成
+       W11ACXXForm form = formCtx.createObject();
+       
+       // 【説明】③更新実行
+       CM311ACXComponent component = new CM311ACXComponent();
+       component.updateUsers(form.getUsers());
+       
+       return new HttpResponse("/ss11AC/W11ACXX03.jsp");
+   }
+
+   // ～後略～
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+  
+  .. note::
+    @OnDoubleSubmissionを指定することで、
+    \ `二重サブミット <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.html#prevent-double-submission>`_ \ を防ぐことができる。
+
+
+ \b) リクエスト単体テスト実施
+  リクエスト単体テストを実行し、更新結果のアサートが成功することを確認する。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-08_complete`
+
+```json
+{
+  "id": "web-application-08_complete",
+  "title": "完了画面の実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "完了画面の実装",
+      "hints": [
+        "W11ACXXAction",
+        "W11ACXXActionRequestTest",
+        "CM311ACXComponent",
+        "W11ACXXForm",
+        "UsersEntity",
+        "ParameterizedSqlPStatement",
+        "ValidationContext",
+        "ValidationUtil",
+        "ApplicationException",
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "@OnDoubleSubmission",
+        "@OnError",
+        "updateUsers",
+        "doRW11ACXX04",
+        "executeUpdateByObject",
+        "UPDATE_USERS",
+        "更新完了画面",
+        "DB更新処理",
+        "二重サブミット防止",
+        "ユーザテーブル更新",
+        "リクエスト単体テスト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 完了画面の実装\n\n### 1) 更新完了画面の表示\n\n#### 1)-1 Actionクラスの実装\n\n- テストクラス: `W11ACXXActionRequestTest`、テストメソッド: `void testRW11ACXX04()`\n- テストデータブック: `W11ACXXActionRequestTest.xls`、シート: `testRW11ACXX04`\n\n![リクエスト単体テストデータシート](assets/web-application-08_complete/action_test_complete.png)\n\n**クラス名**: `W11ACXXAction`、**メソッド名**: `doRW11ACXX04`\n\n```java\npublic HttpResponse doRW11ACXX04(HttpRequest req, ExecutionContext ctx) {\n    // 【説明】最初は単純にJSPを返却する処理のみ実装\n    return new HttpResponse(\"/ss11AC/W11ACXX03.jsp\");\n}\n```\n\n#### 1)-2 JSPの実装\n\n- JSPファイル: `W11ACXX03.jsp`\n- HTMLテンプレート: :download:`ユーザ情報更新完了画面.html<./_download/ユーザ情報更新完了画面.html>`\n\n### 2) DB更新処理実装\n\n#### 2)-1 Componentクラスの実装\n\nテストデータシート（ブック: `W11ACXXActionRequestTest.xls`、シート: `testRW11ACXX04`）に更新結果データを追加する。\n\n![テストデータシート（更新結果追加）](assets/web-application-08_complete/action_test_complete_update.png)\n\n> **注意**: 更新結果の期待値では漢字氏名・カナ氏名以外に、`UPDATE_USER_ID`（事前準備データのUSER_IDで更新）と`UPDATE_DATE`（コンポーネント設定ファイルに記載された固定業務日付で更新）も更新対象とすること。実行タイミングで変わらない固定値を使用する。\n\nSQLファイル `CM311ACXComponent.sql` に更新SQLを追加:\n\n```sql\nUPDATE_USERS=\nUPDATE USERS SET \n     KANJI_NAME = :kanjiName, \n     KANA_NAME = :kanaName, \n     UPDATED_USER_ID = :updatedUserId, \n     UPDATED_DATE = :updatedDate \nWHERE \n     USER_ID = :userId\n```\n\n**クラス**: `CM311ACXComponent`、**メソッド**: `void updateUsers(UsersEntity users)`\n\n```java\npublic void updateUsers(UsersEntity users) {\n    ParameterizedSqlPStatement updateUsers =\n        super.getParameterizedSqlStatement(\"UPDATE_USERS\");\n    updateUsers.executeUpdateByObject(users);\n}\n```\n\n#### 2)-2 Actionクラスの実装\n\n**アノテーション**: `@OnError`, `@OnDoubleSubmission`\n\n> **注意**: `@OnDoubleSubmission`を指定することで二重サブミットを防ぐことができる。\n\n**クラス名**: `W11ACXXAction`、**メソッド名**: `doRW11ACXX04`\n\n```java\n@OnError(type = ApplicationException.class, path = \"forward:///action/ss11AC/W11AC01Action/RW11AC0102\")\n@OnDoubleSubmission(path = \"forward:///action/ss11AC/W11AC01Action/RW11AC0102\")\npublic HttpResponse doRW11ACXX04(HttpRequest req, ExecutionContext ctx) {\n    // 【説明】①精査処理の呼び出し実装\n    ValidationContext<W11ACXXForm> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11ACXX\",\n                W11ACXXForm.class, req, \"simpleUpdate\");\n    if (!formCtx.isValid()) {\n        throw new ApplicationException(formCtx.getMessages());\n    }\n    // 【説明】②更新パラメータを持つFormを生成\n    W11ACXXForm form = formCtx.createObject();\n    // 【説明】③更新実行\n    CM311ACXComponent component = new CM311ACXComponent();\n    component.updateUsers(form.getUsers());\n    return new HttpResponse(\"/ss11AC/W11ACXX03.jsp\");\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

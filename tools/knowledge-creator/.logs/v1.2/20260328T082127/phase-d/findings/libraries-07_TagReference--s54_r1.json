@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_TagReference--s54",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: setタグ section (.. _WebView_SetTag:)",
+      "description": "setタグ is entirely absent from the knowledge file. The source defines a complete tag with 5 attributes: var(必須)、name、value、scope(page/request、デフォルト:リクエストスコープ)、bySingleValue(デフォルト:true)。This includes behavior rules such as 'name属性とvalue属性のどちらか一方を指定する' and 'name属性に対応する値を単一値として取得するか否か'.",
+      "source_evidence": ".. _WebView_SetTag:\n\nsetタグ\n^^^^^^^^^^^^^^^^^^^^^\n\n| var(必須) | リクエストスコープに格納する際に使用する変数名。\n| name | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する。\n| value | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する。\n| scope | page: ページスコープ / request: リクエストスコープ。デフォルトはリクエストスコープ。\n| bySingleValue | name属性に対応する値を単一値として取得するか否か。デフォルトはtrue。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (writeタグ) — decimal format description",
+      "description": "The knowledge file omits the string-specific behavior of the decimal format: '文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる'. This is decision-necessary because it affects behavior when the input is a numeric string rather than a java.lang.Number.",
+      "source_evidence": "文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (writeタグ) — hints array",
+      "description": "The hints for s2 are missing class names `SimpleDateFormat` and `DecimalFormat`, which are explicitly referenced in the source as the pattern syntax authorities for yyyymmdd/dateTime and decimal formats respectively. Users searching for these class names would not find this section.",
+      "source_evidence": "パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。\nパターンにはjava.text.DecimalFormatが規定している構文を指定する。"
+    }
+  ]
+}

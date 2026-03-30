@@ -1,0 +1,13 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SQL example for kengenKbn=[\"01\",\"02\"]",
+      "description": "The source SQL comment explains that the example SQL is constructed because it combines variable conditions (可変条件と組み合わせているため), and that without variable conditions the SQL would be `USER_MTR.KENGEN_KBN IN (?, ?)` instead. The knowledge file presents the SQL without clarifying that it is the variable-condition variant, and omits the contrast with the non-variable-condition form. This distinction helps readers understand what the generated SQL means and why it has the `(0 = 1 OR (...))` wrapper.",
+      "source_evidence": "-- 本SQL文は、可変条件と組み合わせているため、下記のSQL文が構築される。\n-- 可変条件を使用しなかった場合、構築されるSQL文は「USER_MTR.KENGEN_KBN IN (?, ?)」となる。"
+    }
+  ]
+}

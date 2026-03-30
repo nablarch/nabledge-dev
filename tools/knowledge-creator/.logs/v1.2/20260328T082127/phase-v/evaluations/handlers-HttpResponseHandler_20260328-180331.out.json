@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-HttpResponseHandler",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a missing `InputStream` hint in s2. This has low user impact because: (1) `InputStream` is a standard Java library class, not a Nablarch-specific term, making it an unlikely query keyword for Nablarch handler documentation; (2) the relevant s2 section is already reachable through existing hints such as `HttpResponse`, `HttpResponse#write()`, `レスポンスボディ送信`, and `classpath://`; (3) users looking for file download / streaming response patterns would naturally use those existing hints. The finding does not block any realistic user query path.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s2 hints",
+      "impact": "low",
+      "justification": "`InputStream` is a standard Java class (java.io.InputStream), not a Nablarch-specific identifier. Users querying about streaming response bodies are far more likely to use terms like `HttpResponse`, `HttpResponse#write()`, or `レスポンスボディ送信`, all of which are already present in s2 hints. The Phase E output is byte-for-byte identical to the Phase D output, indicating the fix agent did not apply the correction — likely because the severity was assessed as too minor to act on. The omission causes no practical retrieval gap."
+    }
+  ]
+}

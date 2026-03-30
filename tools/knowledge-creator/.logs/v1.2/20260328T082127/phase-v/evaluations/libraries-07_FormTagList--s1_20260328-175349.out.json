@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_FormTagList--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 (omission in s5) has medium user impact. The knowledge file omits two explicit implementation constraints from the JSP source comments that are necessary for correct composite key implementation. While the code examples implicitly demonstrate the correct pattern, the absence of explicit rules increases the risk of silent data-binding failures — a developer using different property names or an arbitrary name attribute would get no error, just broken behavior. The section_issue finding (Finding 2) is a confirmed false positive with no impact.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s5 — compositeKeyRadioButtonタグ、compositeKeyCheckboxタグ",
+      "impact": "medium",
+      "justification": "Two explicit implementation constraints are missing: (1) Pattern 1 requires keyNames values to match the Form's composite key property names exactly — a mismatch causes silent data-binding failure with no compile-time or runtime error. (2) Pattern 2 requires the name attribute to represent the CompositeKey property name — using an arbitrary name breaks the binding. The knowledge file's existing warning only covers the general name/namePrefix+keyNames constraint, not these two pattern-specific rules. The code examples show correct usage implicitly, but an AI agent guiding users without the explicit constraints may produce plausible-looking but broken JSP. The fix was not applied in Phase E: the s5 section content in the Phase E output is identical to the Phase D output, indicating the fix agent either skipped or failed to update the section."
+    },
+    {
+      "category": "section_issue",
+      "location": "automated warning — Section count 6 < source headings 11",
+      "impact": "none",
+      "justification": "Confirmed false positive. The automated check mistakenly counted RST cross-reference anchor directives (.. _form_input:, .. _WebView_SingleCheckBoxTag:, .. _WebView_MultiSelectCustomTag:, .. _WebView_ListSelectCommon:) as headings. The source RST has exactly 6 real content headings, and the knowledge file's 6 sections map to them correctly. No knowledge content is missing. This finding requires no fix to the knowledge file; the issue is in the automated checker's heading-detection logic."
+    }
+  ]
+}

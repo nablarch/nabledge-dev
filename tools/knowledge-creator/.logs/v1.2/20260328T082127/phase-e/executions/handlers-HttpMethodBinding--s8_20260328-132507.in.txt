@@ -1,0 +1,207 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-HttpMethodBinding--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "The `@Published` annotation appears in the code example in section s2 but is not listed in the hints array for that section.",
+      "source_evidence": "Source code block in ウィンドウスコープ: `@Published public HttpRequest setParam(String name, String... params);`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+-----------------------------------
+
+
+**リクエストスコープ**
+  3つの変数スコープのうちで最も維持期間が短い。
+  各HTTPリクエストごとに作成され、レスポンス処理が完了するまで維持される。
+  単一のリクエスト間で完結し、次画面以降に引き継ぐ必要の無いデータはここに保存する。
+  
+  画面オンライン処理方式におけるリクエストスコープは基本的にServletAPIの
+  HTTPServletRequest#getAttribute()/setAttribute()メソッドのラッパーである。
+  
+  **リクエストスコープに保持するデータ**
+    - 画面に表示するデータオブジェクト（次画面以降に引き継がないもの）
+    - バリデーションエラー等のメッセージ
+    - JSP側で表示用に使用するフラグ
+
+-------------------------
+
+
+**ウィンドウスコープ**
+  ウィンドウスコープは、ブラウザのウィンドウ、タブ、フレームごとに作成される。
+  (以降この節では、これらをまとめて単に"ウィンドウ"と表現する。)
+  ウィンドウスコープは、各ウィンドウが閉じられるか、セッションが終了するまで維持される。
+  
+  例えば、ログインユーザIDや、ショッピングカート内の商品一覧などの
+  ウィンドウ間で同一の値を共有しなければならない一部のデータを除けば、
+  画面遷移を跨って使用する必要があるデータは、全てウィンドウスコープ上に保持する。
+  
+  これにより、アプリケーション側で特段の考慮をしなくとも
+  複数のウィンドウを用いた並行操作や、ブラウザのヒストリバックによる遷移が可能となる。
+  
+  **ウィンドウスコープに保持するデータ**
+    - 画面の入力項目(入力項目復帰が必要なもの)
+    - 他業務画面からの引き継ぎデータ
+    - 画面遷移履歴情報
+    - 楽観ロック用バージョン番号 [#]_
+  
+  **使用方法**
+    ウィンドウスコープ変数は hidden属性のinputタグとして各ウィンドウの画面内に維持される。
+    従って、ウィンドウスコープ上の変数は通常のリクエストパラメータと同等に扱われる。
+    ウィンドウスコープ変数を含めたリクエストパラメータにアクセスするには
+    :ref:`validation` 機能のAPIを使用する。
+  
+    リクエストパラメータはフレームワークによって自動的にhiddenタグとして画面に出力される。
+    従って、ウィンドウスコープに変数を追加するには、HttpRequestクラスに定義されているsetParam()メソッドを使用する。
+  
+    .. code-block:: java
+  
+      public class HttpRequest extends Request {
+          /**
+           * リクエストパラメータを設定する。
+           */
+          @Published
+          public HttpRequest setParam(String name, String... params);
+      }
+      
+  **セキュリティ上の考慮**
+    フレームワークが出力したhiddenタグの値はフレームワークによって
+    リクエストURIおよびname属性のハッシュ値とともに暗号化される。
+    暗号化処理に使用する共通鍵はユーザログイン時に作成しメモリ上に保持される。
+    この鍵はログアウトもしくはセッションタイムアウトの時点で廃棄されるので、
+    極めて安全性が高い。
+  
+  .. [#]
+  
+    あるデータに対する複数ユーザからの変更に対して、
+    複数のリクエスト(画面)を跨いだトランザクションを実装する場合に使用する制御情報のこと。
+
+--------------------------------------------
+
+
+**セッションスコープ**
+  ログインユーザごとに作成されるスコープであり、
+  本フレームワークでは複数のウィンドウで共有されるデータを保持する目的で使用する。
+  ユーザがログインした時点で作成され、ログアウトもしくはセッションタイムアウトが発生するまで維持される。
+  
+  セッションスコープ上のデータは複数のウィンドウから同時にアクセスされる可能性があり、
+  適切に同期化しなければならない。
+  
+  **セッションスコープに保持するデータ**
+    - ログインユーザに紐づくデータ（ログインユーザID、認証・認可情報）
+    - ウィンドウ間で同一のデータを参照・更新する必要があるデータ（ショッピングカート内の商品情報など）
+  
+  
+  **セッションスコープの実装方式**
+    セッションスコープの実装方式には、HTTPSessionオブジェクトを使用するものと、
+    データベースを使用した独自実装の2通りの方式が存在する。
+    この選択は、アプリケーションサーバのスケーリング方式に大きく影響する。
+  
+    HTTPSessionオブジェクトを使用する場合、同じログインユーザからのリクエストを
+    セッションスコープが存在するサーバインスタンスに必ず振り分けるようにするか、
+    (セッションアフィニティ方式)
+    サーバクラスタ内の全てのサーバインスタンスでセッションスコープを同期する必要がある。
+    (セッションパーシステント方式)
+  
+    データベースを使用した独自実装を使用した場合、アプリケーションサーバについては
+    ほぼ制約無くスケールアップさせることができるが、データベースへの負荷は増加する。
+    
+  .. note::
+  
+     データベースを使用したHTTPセッション実装は現時点では提供されていない。
+     
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-HttpMethodBinding--s8",
+  "title": "変数スコープ（リクエスト・ウィンドウ・セッション）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエストスコープ",
+      "hints": [
+        "リクエストスコープ",
+        "HTTPServletRequest",
+        "getAttribute",
+        "setAttribute",
+        "変数スコープ",
+        "リクエストスコープに保持するデータ",
+        "バリデーションエラー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ウィンドウスコープ",
+      "hints": [
+        "ウィンドウスコープ",
+        "HttpRequest",
+        "setParam",
+        "hiddenタグ",
+        "暗号化",
+        "セキュリティ",
+        "楽観ロック",
+        "ヒストリバック",
+        "ウィンドウスコープに保持するデータ",
+        "画面遷移"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "セッションスコープ",
+      "hints": [
+        "セッションスコープ",
+        "HTTPSession",
+        "セッションアフィニティ",
+        "セッションパーシステント",
+        "セッションスコープに保持するデータ",
+        "ログインユーザ",
+        "同期化",
+        "スケーリング"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**リクエストスコープ**\n\n3つの変数スコープのうち最も維持期間が短い。各HTTPリクエストごとに作成され、レスポンス処理が完了するまで維持される。次画面以降に引き継ぐ必要のないデータを保存する。\n\n画面オンライン処理方式におけるリクエストスコープは、ServletAPIの `HTTPServletRequest#getAttribute()/setAttribute()` メソッドのラッパー。\n\n**リクエストスコープに保持するデータ**\n- 画面に表示するデータオブジェクト（次画面以降に引き継がないもの）\n- バリデーションエラー等のメッセージ\n- JSP側で表示用に使用するフラグ",
+    "s2": "**ウィンドウスコープ**\n\nブラウザのウィンドウ・タブ・フレームごとに作成される。ウィンドウが閉じられるかセッションが終了するまで維持される。\n\nウィンドウ間で同一の値を共有しなければならない一部のデータ（ログインユーザIDなど）を除き、画面遷移を跨って使用するデータはすべてウィンドウスコープに保持する。これにより、複数ウィンドウを用いた並行操作やブラウザのヒストリバックによる遷移が可能となる。\n\n**ウィンドウスコープに保持するデータ**\n- 画面の入力項目（入力項目復帰が必要なもの）\n- 他業務画面からの引き継ぎデータ\n- 画面遷移履歴情報\n- 楽観ロック用バージョン番号\n\n**使用方法**\n\nウィンドウスコープ変数はhidden属性のinputタグとして各ウィンドウの画面内に維持され、通常のリクエストパラメータと同等に扱われる。\n\n- リクエストパラメータへのアクセス: :ref:`validation` 機能のAPIを使用\n- ウィンドウスコープへの変数追加: `HttpRequest#setParam()` を使用\n\n```java\npublic class HttpRequest extends Request {\n    @Published\n    public HttpRequest setParam(String name, String... params);\n}\n```\n\n**セキュリティ上の考慮**\n\nフレームワークが出力したhiddenタグの値は、リクエストURIおよびname属性のハッシュ値とともに暗号化される。暗号化に使用する共通鍵はユーザログイン時に作成され、ログアウトまたはセッションタイムアウト時に廃棄される。",
+    "s3": "**セッションスコープ**\n\nログインユーザごとに作成されるスコープ。複数のウィンドウで共有されるデータを保持する目的で使用する。ユーザログイン時に作成され、ログアウトまたはセッションタイムアウトまで維持される。\n\nセッションスコープ上のデータは複数のウィンドウから同時にアクセスされる可能性があり、適切に同期化しなければならない。\n\n**セッションスコープに保持するデータ**\n- ログインユーザに紐づくデータ（ログインユーザID、認証・認可情報）\n- ウィンドウ間で同一のデータを参照・更新する必要があるデータ（ショッピングカート内の商品情報など）\n\n**セッションスコープの実装方式**\n\n| 方式 | 説明 | スケーリング上の制約 |\n|---|---|---|\n| HTTPSession（セッションアフィニティ） | 同じログインユーザからのリクエストをセッションスコープが存在するサーバインスタンスに振り分ける | セッションが存在するサーバインスタンスへのルーティングが必要 |\n| HTTPSession（セッションパーシステント） | サーバクラスタ内の全インスタンスでセッションスコープを同期する | クラスタ全体での同期が必要 |\n| データベースを使用した独自実装 | アプリケーションサーバをほぼ制約なくスケールアップ可能 | データベースへの負荷が増加する |\n\n> **注意**: データベースを使用したHTTPセッション実装は現時点では提供されていない。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

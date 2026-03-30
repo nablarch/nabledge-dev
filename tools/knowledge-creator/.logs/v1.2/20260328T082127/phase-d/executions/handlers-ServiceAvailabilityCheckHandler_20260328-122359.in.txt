@@ -1,0 +1,284 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/ServiceAvailabilityCheckHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+開閉局制御ハンドラ
+==========================================
+**クラス名:** ``nablarch.common.handler.ServiceAvailabilityCheckHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+リクエストID単位での開閉局制御を行うハンドラ。
+
+開閉局機能の詳細については、
+:doc:`../02_FunctionDemandSpecifications/03_Common/05_ServiceAvailability`
+の章を参照すること。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = ["ThreadContextHandler_request", "ForwardingHandler", "ServiceAvailabilityCheckHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++
+
+**関連するハンドラ**
+  
+  ==================================== ===============================================================================================
+  ハンドラ                              内容
+  ==================================== ===============================================================================================
+  :doc:`ThreadContextHandler`           本ハンドラではスレッドコンテキスト上に設定された :ref:`内部リクエストID<internal_request_id>`
+                                        をもとに開閉局判定を行なうため、
+                                        :doc:`ThreadContextHandler` を本ハンドラの上位に配置する必要がある。
+
+  :doc:`ForwardingHandler`              :doc:`../architectural_pattern/web_gui` において内部フォーワードが行われた際に、
+                                        開閉局の制御をフォーワード先のリクエストID (:ref:`内部リクエストID<internal_request_id>`)
+                                        で行う必要がある場合は、本ハンドラを :doc:`ForwardingHandler` より下位に配置する必要がある。  
+
+  :doc:`DataReadHandler`                :doc:`../architectural_pattern/messaging` では、
+                                        受信電文中のフレームワークヘッダ内に定義された **requestId** ヘッダの値を使用して
+                                        開閉局制御を行う。
+                                        (この場合、 :doc:`../reader/FwHeaderReader` が **requestId** ヘッダの値を
+                                        スレッドコンテキストに設定するので、 :doc:`ThreadContextHandler` は使用しなくてもよい)
+
+  ==================================== ===============================================================================================
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストIDの取得)**
+    スレッドコンテキストから :ref:`リクエストID<request_processing>` もしくは
+    :ref:`内部リクエストID<internal_request_id>` を取得する。
+
+  **2. (開閉局判定)**
+    本ハンドラに設定された **サービス開閉局判定オブジェクト** を使用して、
+    **1.** で取得したリクエストIDに対するサービスが開局中であることを確認する。
+
+  **2a. (閉局エラー)**
+    サービスが閉局中であった場合は、後続のハンドラを実行せず、
+    実行時例外 `Result.ServiceUnavailable`_ (**ステータスコード:503**)を送出して終了する。
+
+  **3. (後続ハンドラの実行)**
+    当該サービスが開局状態であれば、後続のハンドラを実行し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **4. (正常終了)**
+    **3.** で取得した処理結果をリターンし終了する。
+
+.. _error:
+
+**[例外処理]** 
+  **3a. (後続ハンドラの処理でエラー)**
+    後続ハンドラの実行中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+なお、開閉局機能の設定内容の詳細については、
+:doc:`../02_FunctionDemandSpecifications/03_Common/05_ServiceAvailability`
+の章を参照すること。
+
+  ========================================== ======================== ============================ ==================================
+  設定項目                                   プロパティ名             データ型　                   備考
+  ========================================== ======================== ============================ ==================================
+  サービス開閉局判定コンポーネント           serviceAvailability      ServiceAvailability          必須指定
+  内部リクエストIDによる判定を行うかどうか   usesInternalRequestId    boolean                      任意指定 (デフォルト=false)
+  ========================================== ======================== ============================ ==================================
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <!-- サービス提供可否判定ハンドラ -->
+    <component
+      name="serviceAvailabilityCheckHandler"
+      class="nablarch.common.handler.ServiceAvailabilityCheckHandler">
+      <property name="serviceAvailability" ref="serviceAvailability" />
+      <property name="usesInternalRequestId" value="true" />
+    </component>
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-ServiceAvailabilityCheckHandler`
+
+```json
+{
+  "id": "handlers-ServiceAvailabilityCheckHandler",
+  "title": "開閉局制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ServiceAvailabilityCheckHandler",
+        "nablarch.common.handler.ServiceAvailabilityCheckHandler",
+        "ThreadContextHandler",
+        "ForwardingHandler",
+        "DataReadHandler",
+        "開閉局制御",
+        "リクエストID単位",
+        "ハンドラ配置順序",
+        "内部リクエストID"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "Result.ServiceUnavailable",
+        "開閉局判定",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "503エラー",
+        "serviceAvailability"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "serviceAvailability",
+        "usesInternalRequestId",
+        "ServiceAvailability",
+        "設定項目",
+        "内部リクエストID判定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.ServiceAvailabilityCheckHandler`\n\nリクエストID単位での開閉局制御を行うハンドラ。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ThreadContextHandler` | 本ハンドラはスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` をもとに開閉局判定を行うため、本ハンドラの上位に配置する必要がある。 |\n| :doc:`ForwardingHandler` | :doc:`../architectural_pattern/web_gui` で内部フォーワードが行われた際に、フォーワード先のリクエストID（:ref:`内部リクエストID<internal_request_id>`）で制御する必要がある場合は、本ハンドラを :doc:`ForwardingHandler` より下位に配置する必要がある。 |\n| :doc:`DataReadHandler` | :doc:`../architectural_pattern/messaging` では受信電文のフレームワークヘッダ内 **requestId** ヘッダ値で開閉局制御を行う。この場合 :doc:`../reader/FwHeaderReader` がスレッドコンテキストに設定するため、:doc:`ThreadContextHandler` は不要。 |",
+    "s2": "**[往路処理]**\n\n1. スレッドコンテキストから :ref:`リクエストID<request_processing>` または :ref:`内部リクエストID<internal_request_id>` を取得する。\n2. 設定された **serviceAvailability** オブジェクトを使用して、取得したリクエストIDのサービスが開局中かを確認する。\n   - 閉局中の場合: 後続ハンドラを実行せず、`Result.ServiceUnavailable` (ステータスコード: 503) を送出して終了する。\n3. 開局中の場合: 後続ハンドラを実行し、結果を取得する。\n\n**[復路処理]**\n\n4. 後続ハンドラの処理結果をリターンして終了する。\n\n**[例外処理]**\n\n後続ハンドラの実行中にエラーが発生した場合は、そのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| serviceAvailability | ServiceAvailability | ○ | | サービス開閉局判定コンポーネント |\n| usesInternalRequestId | boolean | | false | 内部リクエストIDによる判定を行うかどうか |\n\n```xml\n<component\n  name=\"serviceAvailabilityCheckHandler\"\n  class=\"nablarch.common.handler.ServiceAvailabilityCheckHandler\">\n  <property name=\"serviceAvailability\" ref=\"serviceAvailability\" />\n  <property name=\"usesInternalRequestId\" value=\"true\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

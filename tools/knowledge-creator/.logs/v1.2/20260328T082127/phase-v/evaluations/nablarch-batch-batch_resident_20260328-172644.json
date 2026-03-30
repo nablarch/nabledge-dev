@@ -1,0 +1,42 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "timestamp": "20260328-172644",
+  "subtype": "success",
+  "cc_metrics": {
+    "duration_ms": 36513,
+    "duration_api_ms": 36470,
+    "num_turns": 2,
+    "total_cost_usd": 0.17573565,
+    "usage": {
+      "input_tokens": 3,
+      "cache_creation_input_tokens": 32013,
+      "cache_read_input_tokens": 89593,
+      "output_tokens": 1920,
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 32013
+      },
+      "inference_geo": "",
+      "iterations": [],
+      "speed": "standard"
+    }
+  },
+  "stop_reason": "end_turn",
+  "tool_calls": [
+    {
+      "tool_name": "StructuredOutput",
+      "input_summary": {
+        "file_id": "nablarch-batch-batch_resident",
+        "user_impact": "medium",
+        "needs_improvement": "True",
+        "reason": "Finding 1 is a false positive — the RST table explicitly states 重複起動エラー ends in 異常終了, so the annotation is correct and no fix is warranted. Finding 2 is a genuine retrieval gap: BatchAction is absent ...",
+        "findings_assessment": "[{'category': 'fabrication', 'location': 's3 — 重複起動エラー flow, step 5', 'impact': 'none', 'justification': \"The RST source table explicitly describes 重複起動エラー as '異常終了する', confirming the knowledge file a..."
+      }
+    }
+  ]
+}

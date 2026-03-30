@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s6, line 1",
+      "description": "The knowledge file labels nablarch.fw.Request as a class (\"**クラス**: `nablarch.fw.Request`\"), but the source defines it as an interface: `public interface Request<TParam>`. Compare with s1 which correctly uses \"**インターフェース**: `nablarch.fw.Handler`\".",
+      "source_evidence": "public interface Request<TParam> { ... } (source, リクエストインターフェース section)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s1",
+      "description": "Missing hints for `HttpRequest` (type variable used in the handler type table in s1), `TransactionManagementHandler`, and `ServiceAvailabilityCheckHandler`. All three appear in the source's type variable table as concrete handler examples under s1.",
+      "source_evidence": "Object ハンドラの例: :doc:`../handler/TransactionManagementHandler`, :doc:`../handler/ServiceAvailabilityCheckHandler`; HttpRequest type variable row in the table"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s6",
+      "description": "Missing hints for `setRequestPath`, `getParam`, and `getParamMap` — all three are method names defined in the Request interface and presented in the knowledge file's own method table for s6.",
+      "source_evidence": "Request<TParam> setRequestPath(String requestPath); TParam getParam(String name); Map<String, TParam> getParamMap(); (source, リクエストインターフェース section)"
+    }
+  ]
+}

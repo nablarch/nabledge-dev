@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-ProcessResidentHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 関連するハンドラ / RetryHandler row",
+      "description": "The source explains that RetryHandler is needed because 'バッチプロセスの継続制御を RetryHandler で行う' (batch process continuation control is delegated to RetryHandler). The knowledge file only states the mechanism (wraps in RetryableException and re-throws) and the placement requirement, but omits the purpose: that batch process continuation control is handled by RetryHandler. This context helps an AI explain to users why the ordering matters.",
+      "source_evidence": "後続ハンドラの実行中に本ハンドラが実行時例外を捕捉した場合、リトライ可能例外でラップして再送出し、バッチプロセスの継続制御を:doc:`RetryHandler` で行う。そのため、このハンドラを本ハンドラの上位に配置する必要がある。"
+    }
+  ]
+}

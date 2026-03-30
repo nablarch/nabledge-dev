@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "s3 hints are missing `FailureLog_DerivedExecutionInfo`. This cross-reference is used in s3 content (in the note about 処理対象データ), so users asking about 派生元実行時情報 output may not find this section via hints.",
+      "source_evidence": "Source: `:ref:`FailureLog_DerivedExecutionInfo`` appears in the 処理対象データ note. Knowledge s3 content: \"詳細は :ref:`FailureLog_DerivedExecutionInfo` を参照。\" — but it is absent from the hints array."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "s4 hints are missing `FailureLog_AppMsgId` and `FailureLog_FwMsgId`. Both cross-references appear in the s4 section content describing how to change failure codes at runtime, so queries about failure code overrides may not route to s4.",
+      "source_evidence": "Source section 障害ログの出力方法: \"アプリケーションの障害コードの変更方法については、:ref:`FailureLog_AppMsgId` を参照\" and \"フレームワークで例外が発生した場合の障害コードの変更方法については、:ref:`FailureLog_FwMsgId` を参照\". Knowledge s4 content includes both references but they are absent from hints."
+    }
+  ]
+}

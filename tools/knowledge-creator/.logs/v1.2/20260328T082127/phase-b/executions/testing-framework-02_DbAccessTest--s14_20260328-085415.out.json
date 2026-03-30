@@ -1,0 +1,75 @@
+{
+  "id": "testing-framework-02_DbAccessTest--s14",
+  "title": "デフォルト値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "関係のあるカラムのみを記載した場合（良い例）",
+      "hints": [
+        "SETUP_TABLE",
+        "EXPECTED_COMPLETE_TABLE",
+        "EXPECTED_TABLE",
+        "関係カラムのみ記述",
+        "テーブルカラム省略",
+        "可読性"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定項目一覧",
+      "hints": [
+        "BasicDefaultValues",
+        "nablarch.test.core.db.BasicDefaultValues",
+        "charValue",
+        "numberValue",
+        "dateValue",
+        "デフォルト値設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "BasicTestDataParser",
+        "nablarch.test.core.reader.BasicTestDataParser",
+        "testDataParser",
+        "defaultValues",
+        "デフォルト値コンポーネント設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "デフォルト値",
+        "数値型デフォルト",
+        "文字列型デフォルト",
+        "日付型デフォルト",
+        "1970-01-01 00:00:00.0"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "注意点",
+      "hints": [
+        "setUpDb",
+        "assertTableEquals",
+        "assertSqlResultSetEquals",
+        "ThreadContext",
+        "java.sql.Timestamp",
+        "トランザクション制御",
+        "レコード順序",
+        "自動設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "準備データ(`SETUP_TABLE`)と期待値には、テストケースに関係するカラムのみ記述する:\n\n- 主キーカラム（レコードを一意に特定するため）\n- 更新条件となるカラム（例: 有効期限）\n- 更新対象となるカラム（例: 削除フラグ）\n\nテーブル定義変更時も、無関係なカラムは影響を受けない。\n\n> **重要**: 期待値記述時は `EXPECTED_TABLE` の代わりに `EXPECTED_COMPLETE_TABLE` を使用すること。",
+    "s2": "**クラス**: `nablarch.test.core.db.BasicDefaultValues`\n\n| 設定項目名 | 説明 | 設定値 |\n|---|---|---|\n| charValue | 文字列型のデフォルト値 | 1文字のASCII文字 |\n| numberValue | 数値型のデフォルト値 | 0または正の整数 |\n| dateValue | 日付型のデフォルト値 | JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff) |",
+    "s3": "```xml\n<!-- TestDataParser -->\n<component name=\"testDataParser\" class=\"nablarch.test.core.reader.BasicTestDataParser\">\n  <property name=\"defaultValues\">\n    <component class=\"nablarch.test.core.db.BasicDefaultValues\">\n      <property name=\"charValue\" value=\"a\"/>\n      <property name=\"dateValue\" value=\"2000-01-01 12:34:56.123456789\"/>\n      <property name=\"numberValue\" value=\"1\"/>\n    </component>\n  </property>\n</component>\n```",
+    "s4": "コンポーネント設定ファイルで明示的に指定しない場合のデフォルト値:\n\n| カラム型 | デフォルト値 |\n|---|---|\n| 数値型 | 0 |\n| 文字列型 | 半角スペース |\n| 日付型 | 1970-01-01 00:00:00.0 |",
+    "s5": "**setUpDbメソッドに関する注意点**\n\n- 全カラムを記述する必要はない。省略されたカラムにはデフォルト値が設定される。\n- 1シート内に複数テーブルを記述できる。`setUpDb(String sheetName)` 実行時、指定シート内のデータタイプ `SETUP_TABLE` がすべて登録対象となる。\n\n**assertTableEqualsメソッドに関する注意点**\n\n- 省略されたカラムは比較対象外。\n- 主キーを突合してレコードを比較するため、レコード順序が異なっていても正しく比較できる。\n- 1シート内に複数テーブルを記述できる。`assertTableEquals(String sheetName)` 実行時、指定シート内のデータタイプ `EXPECTED_TABLE` がすべて比較される。\n- `java.sql.Timestamp` 型フォーマットは `yyyy-mm-dd hh:mm:ss.fffffffff`（fffffffffはナノ秒）。ナノ秒が未設定の場合でも `0` が付与される（例: `2010-01-01 12:34:56.0`）。Excelシートの期待値には末尾の小数点＋ゼロを付与すること。\n\n**assertSqlResultSetEqualsメソッドに関する注意点**\n\n- SELECT文で指定された全カラム（別名含む）が比較対象。特定カラムを比較対象外にすることはできない。\n- レコード順序が異なる場合はアサート失敗。（SELECTにはORDER BY指定がなされる場合がほとんどであり、順序を厳密に比較するため）\n\n**クラス単体テストにおける登録・更新系テストの注意点**\n\n- 自動設定項目を使用するDB登録・更新時、`ThreadContext` にリクエストIDとユーザIDの設定が必要。（:ref:`using_ThreadContext` 参照）\n- デフォルト以外のトランザクションを使用する場合、本フレームワークにトランザクション制御を行わせる必要がある。（:ref:`using_transactions` 参照）"
+  }
+}

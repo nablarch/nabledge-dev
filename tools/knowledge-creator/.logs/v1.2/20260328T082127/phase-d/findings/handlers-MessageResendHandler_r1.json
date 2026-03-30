@@ -1,0 +1,41 @@
+{
+  "file_id": "handlers-MessageResendHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 再送制御 case 1",
+      "description": "The last sentence of case 1 behavior is missing: 「また、ロールバックされた要求の応答として、先に正常終了した電文の応答を再送する。」This describes a concrete system behavior (re-sending the successfully completed response to the rolled-back request), which is decision-necessary information.",
+      "source_evidence": "また、ロールバックされた要求の応答として、先に正常終了した電文の応答を再送する。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 再送制御 case 4",
+      "description": "The knowledge file labels case 4 as 「業務処理が異常終了しエラー応答電文が未達」but the source behavior section heading reads 「4. 業務処理が正常終了したがエラー応答電文が未達」. While the state classification list does say 異常終了, the behavior section heading explicitly uses 正常終了. The knowledge file does not faithfully reproduce the source behavior heading.",
+      "source_evidence": "4. 業務処理が正常終了したがエラー応答電文が未達\n   再送要求電文を初回電文として処理する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names `MessageReplyHandler`, `TransactionManagementHandler`, and `MessagingAction` appear in the related-handlers table in s1 content but are absent from s1 hints.",
+      "source_evidence": "関連するハンドラ表: MessageReplyHandler / TransactionManagementHandler / MessagingAction"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "The property name `resendFlag` is explicitly used in the handler flow (step 1: 再送要求フラグ(resendFlag)を取得する) but is absent from s2 hints.",
+      "source_evidence": "要求電文のフレームワーク制御ヘッダ中の再送要求フラグ(resendFlag)を取得する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "The PascalCase class name `CustomFwHeaderDefinition` appears in the XML configuration example for custom resend-flag definition but is absent from s3 hints.",
+      "source_evidence": "<component name=\"customHeaderDefinition\" class=\"example.CustomFwHeaderDefinition\">"
+    }
+  ]
+}

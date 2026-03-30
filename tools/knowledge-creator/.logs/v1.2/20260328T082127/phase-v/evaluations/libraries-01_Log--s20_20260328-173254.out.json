@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-01_Log--s20",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding concerns three simplified descriptions in the failure log table's \"障害の種類\" column. The missing qualifiers (\"生成した\", \"解放されない\", \"スレッドをスリープしている際に\") add semantic precision but do not affect the developer's ability to configure or use the feature: the property names, log levels, and default message text — the actionable information — are all preserved correctly. A developer troubleshooting a lock file failure can still correctly identify which property to configure and what the failure means. This is cosmetic text fidelity, not functional omission.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 障害ログ表の「障害の種類」列",
+      "impact": "low",
+      "justification": "Three row descriptions in the failure table drop qualifying phrases from the source RST. Missing: \"生成した\" (created) before \"ロックファイルを解放できない\"; \"解放されない\" (lingering) before \"ロックファイルを強制削除できない\"; \"スレッドをスリープしている際に\" (while sleeping) in the interrupt row. These qualifiers add precision about the specific conditions under which each failure occurs, but the property names (failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait), log levels (all FATAL), and default output messages are all faithfully reproduced. A developer using this table to configure failure codes or diagnose a reported failure will reach the same correct conclusion with or without the qualifiers. The D→E loop did not resolve this because Phase E's output shows the s1 table still contains the simplified descriptions — the fix was not applied to the table rows (Phase E appears to have been applied but the table content in the residual log remains unchanged, suggesting the edit did not target the table cell text)."
+    }
+  ]
+}

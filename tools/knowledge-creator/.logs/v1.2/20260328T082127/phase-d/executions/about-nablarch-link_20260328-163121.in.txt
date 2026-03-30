@@ -1,0 +1,303 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/api/link.rst`
+- Format: `rst`
+
+```
+.. image:: ../_image/handler_structure_bg.png
+   :class:  bg1
+   :height: 0
+   :width:  0
+
+.. image:: ../_image/handler_bg.png
+   :class:  bg2
+   :height: 0
+   :width:  0
+
+
+
+.. 解説書
+
+.. _ログ出力:                   ../02_FunctionDemandSpecifications/01_Core/01_Log.html
+.. _リポジトリ:                 ../02_FunctionDemandSpecifications/01_Core/02_Repository.html
+.. _データベースアクセス:       ../02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html
+.. _汎用データフォーマット:     ../core_library/record_format.html
+.. _ファイルアクセス:           ../core_library/file_access.html
+.. _システム間メッセージング:   ../core_library/enterprise_messaging.html
+.. _トランザクション管理:       ../02_FunctionDemandSpecifications/01_Core/03_TransactionManager.html
+.. _静的データのキャッシュ:     ../02_FunctionDemandSpecifications/01_Core/05_StaticDataCache.html
+.. _バリデーションとFormの生成: ../02_FunctionDemandSpecifications/01_Core/08_Validation.html
+.. _メッセージ管理:             ../02_FunctionDemandSpecifications/01_Core/07_Message.html
+
+
+
+.. NAF共通コンポーネント
+
+.. _採番:       ../02_FunctionDemandSpecifications/03_Common/06_IdGenerator.html
+.. _排他制御:   ../02_FunctionDemandSpecifications/03_Common/08_ExclusiveControl.html
+.. _コード管理: ../02_FunctionDemandSpecifications/03_Common/02_CodeManager.html
+.. _日付の管理: ../02_FunctionDemandSpecifications/01_Core/06_SystemTimeProvider.html
+.. _認可:       ../02_FunctionDemandSpecifications/03_Common/04_Permission.html
+.. _開閉局:     ../02_FunctionDemandSpecifications/03_Common/05_ServiceAvailability.html
+
+
+
+
+.. APIドキュメント
+
+.. _Javadoc:                ../../javadoc/index.html
+
+.. Web
+
+.. _HttpRequest:            ../../javadoc/nablarch/fw/web/HttpRequest.html
+.. _HttpRequest.getPart():  ../../javadoc/nablarch/fw/web/HttpRequest.html#getPart(java.lang.String)
+.. _HttpRequest.getParam(): ../../javadoc/nablarch/fw/web/HttpRequest.html#getParam(java.lang.String)
+.. _HttpResponse:           ../../javadoc/nablarch/fw/web/HttpResponse.html
+.. _HttpErrorResponse:      ../../javadoc/nablarch/fw/web/HttpErrorResponse.html
+
+.. _UploadSettings: ../../javadoc/nablarch/fw/web/upload/UploadSettings.html
+.. _CustomTagConfig: ../../javadoc/nablarch/common/web/tag/CustomTagConfig.html
+
+.. _@OnError:  ../../javadoc/nablarch/fw/web/interceptor/OnError.html
+.. _@OnErrors: ../../javadoc/nablarch/fw/web/interceptor/OnErrors.html
+
+
+
+.. メッセージング
+
+.. _MessagingContext:      ../../javadoc/nablarch/fw/messaging/MessagingContext.html
+.. _RequestMessage:        ../../javadoc/nablarch/fw/messaging/RequestMessage.html
+.. _ResponseMessage:       ../../javadoc/nablarch/fw/messaging/ResponseMessage.html
+.. _ErrorResponseMessage:  ../../javadoc/nablarch/fw/messaging/ErrorResponseMessage.html
+.. _SendingMessage:        ../../javadoc/nablarch/fw/messaging/SendingMessage.html
+.. _ReceivedMessage:       ../../javadoc/nablarch/fw/messaging/ReceivedMessage.html
+
+.. _AsyncMessageReceiveActionSettings: ../../javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveActionSettings.html
+.. _AsyncMessageSendActionSettings: ../../javadoc/nablarch/fw/messaging/action/AsyncMessageSendActionSettings.html
+
+.. _MessageSender:   ../../javadoc/nablarch/fw/messaging/MessageSender.html
+.. _SyncMessage:     ../../javadoc/nablarch/fw/messaging/SyncMessage.html
+.. _SyncMessageConvertor: ../../javadoc/nablarch/fw/messaging/SyncMessageConvertor.html
+
+
+.. ばっち。
+
+.. _CommandLine:        ../../javadoc/nablarch/fw/launcher/CommandLine.html
+.. _ProcessAbnormalEnd: ../../javadoc/nablarch/fw/launcher/ProcessAbnormalEnd.html
+
+
+.. データリーダ
+
+.. _DataReader.NoMoreRecord: ../../javadoc/nablarch/fw/DataReader.NoMoreRecord.html
+.. _DataReaderFactory:       ../../javadoc/nablarch/fw/DataReaderFactory.html
+.. _ValidatableFileDataReader.FileValidatorAction: ../../javadoc/nablarch/fw/reader/ValidatableFileDataReader.FileValidatorAction.html
+.. _ValidatableFileDataReader: ../../javadoc/nablarch/fw/reader/ValidatableFileDataReader.html
+.. _ResumeDataReader: ../../javadoc/nablarch/fw/reader/ResumeDataReader.html
+.. _ResumePointManager: ../../javadoc/nablarch/fw/reader/ResumePointManager.html
+
+.. アクション
+
+.. _FileBatchAction: ../../javadoc/nablarch/fw/action/FileBatchAction.html
+.. _BatchActionBase: ../../javadoc/nablarch/fw/action/BatchActionBase.html
+
+.. コアライブラリ
+
+.. _FormatterFactory:    ../../javadoc/nablarch/core/dataformat/FormatterFactory.html
+.. _DataRecordFormatter: ../../javadoc/nablarch/core/dataformat/DataRecordFormatter.html
+.. _InvalidDataFormatException: ../../javadoc/nablarch/core/dataformat/InvalidDataFormatException.html
+
+.. _SingleByteCharacterString: ../../javadoc/nablarch/core/dataformat/convertor/datatype/SingleByteCharacterString.html
+.. _DoubleByteCharacterString: ../../javadoc/nablarch/core/dataformat/convertor/datatype/DoubleByteCharacterString.html
+.. _ZonedDecimal:        ../../javadoc/nablarch/core/dataformat/convertor/datatype/ZonedDecimal.html
+.. _SignedZonedDecimal:  ../../javadoc/nablarch/core/dataformat/convertor/datatype/SignedZonedDecimal.html
+.. _PackedDecimal:       ../../javadoc/nablarch/core/dataformat/convertor/datatype/PackedDecimal.html
+.. _SignedPackedDecimal: ../../javadoc/nablarch/core/dataformat/convertor/datatype/SignedPackedDecimal.html
+.. _Bytes:               ../../javadoc/nablarch/core/dataformat/convertor/datatype/Bytes.html
+
+.. _CharacterStreamDataString:  ../../javadoc/nablarch/core/dataformat/convertor/datatype/CharacterStreamDataString.html
+
+.. _Padding:              ../../javadoc/nablarch/core/dataformat/convertor/value/Padding.html
+.. _UseEncoding:          ../../javadoc/nablarch/core/dataformat/convertor/value/UseEncoding.html
+.. _DefaultValue:         ../../javadoc/nablarch/core/dataformat/convertor/value/DefaultValue.html
+.. _NumberString:         ../../javadoc/nablarch/core/dataformat/convertor/value/NumberString.html
+.. _SignedNumberString:   ../../javadoc/nablarch/core/dataformat/convertor/value/SignedNumberString.html
+.. _CharacterReplacer:    ../../javadoc/nablarch/core/dataformat/convertor/value/CharacterReplacer.html
+
+.. _`VariableLengthConvertorSetting`:        ../../javadoc/nablarch/core/dataformat/convertor/VariableLengthConvertorSetting.html
+
+.. _FilePathSetting:        ../../javadoc/nablarch/core/util/FilePathSetting.html
+.. _FileRecordWriterHolder: ../../javadoc/nablarch/common/io/FileRecordWriterHolder.html
+.. _FileRecordReaderHolder: ../../javadoc/nablarch/common/io/FileRecordReaderHolder.html
+
+.. _`BigDecimalConvertor`:       ../../javadoc/nablarch/core/validation/convertor/BigDecimalConvertor.html
+.. _`LongConvertor`:       ../../javadoc/nablarch/core/validation/convertor/LongConvertor.html
+.. _`IntegerConvertor`:       ../../javadoc/nablarch/core/validation/convertor/IntegerConvertor.html
+ 
+.. _`YYYYMMDDConvertor`:       ../../javadoc/nablarch/common/date/YYYYMMDDConvertor.html
+
+
+
+
+.. フレームワークコア
+
+.. _Request:                   ../../javadoc/nablarch/fw/Request.html
+.. _ExecutionContext:          ../../javadoc/nablarch/fw/ExecutionContext.html
+.. _Result:                    ../../javadoc/nablarch/fw/Result.html
+.. _Result.Success:            ../../javadoc/nablarch/fw/Result.Success.html
+.. _Result.Error:              ../../javadoc/nablarch/fw/Result.Error.html
+.. _Result.BadRequest:         ../../javadoc/nablarch/fw/Result.BadRequest.html
+.. _Result.MultiStatus:        ../../javadoc/nablarch/fw/Result.MultiStatus.html
+.. _Result.Forbidden:          ../../javadoc/nablarch/fw/Result.Forbidden.html
+.. _Result.NotFound:           ../../javadoc/nablarch/fw/Result.NotFound.html
+.. _Result.ServiceUnavailable: ../../javadoc/nablarch/fw/Result.ServiceUnavailable.html
+.. _DataReader:                ../../javadoc/nablarch/fw/DataReader.html
+.. _DataReaderFactory:         ../../javadoc/nablarch/fw/DataReaderFactory.html
+.. _Handler:                   ../../javadoc/nablarch/fw/Handler.html
+
+
+.. はんどら
+
+.. _TransactionEventCallback: ../../javadoc/nablarch/fw/TransactionEventCallback.html
+.. _ResourceMapping:          ../../javadoc/nablarch/fw/web/handler/ResourceMapping.html
+.. _RewriteHandler:           ../../javadoc/nablarch/fw/handler/RewriteHandler.html
+.. _RewriteRule:              ../../javadoc/nablarch/fw/handler/RewriteRule.html
+.. _RecordTypeBinding:      ../../javadoc/nablarch/fw/handler/RecordTypeBinding.html
+.. _HttpRequestRewriteRule:   ../../javadoc/nablarch/fw/web/handler/HttpRequestRewriteRule.html
+.. _ContentPathRewriteRule:   ../../javadoc/nablarch/fw/web/handler/ContentPathRewriteRule.html
+.. _HttpRewriteHandler:       ../../javadoc/nablarch/fw/web/handler/HttpRewriteHandler.html
+.. _KeitaiAccessHandler:      ../../javadoc/nablarch/fw/web/handler/KeitaiAccessHandler.html
+.. _ExecutionHandlerCallback:  ../../javadoc/nablarch/fw/handler/ExecutionHandlerCallback.html
+
+.. リトライ
+
+.. _RetryContext:                ../../javadoc/nablarch/fw/handler/RetryHandler.RetryContext.html
+.. _RetryContextFactory:         ../../javadoc/nablarch/fw/handler/retry/RetryContextFactory.html
+.. _TimeRetryContextFactory:     ../../javadoc/nablarch/fw/handler/retry/TimeRetryContextFactory.html
+.. _CountingRetryContextFactory: ../../javadoc/nablarch/fw/handler/retry/CountingRetryContextFactory.html
+.. _TimeRetryContext:            ../../javadoc/nablarch/fw/handler/retry/TimeRetryContext.html
+.. _CountingRetryContext:        ../../javadoc/nablarch/fw/handler/retry/CountingRetryContext.html
+.. _Retryable:                   ../../javadoc/nablarch/fw/handler/retry/Retryable.html
+
+
+.. JDK
+
+.. _IllegalStateException: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/IllegalStateException.html
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-link`
+
+```json
+{
+  "id": "about-nablarch-link",
+  "title": "Nablarch リンク定義",
+  "no_knowledge_content": true,
+  "official_doc_urls": [],
+  "index": [],
+  "sections": {}
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

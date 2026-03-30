@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — バリデーションメソッドの実装",
+      "description": "The concrete password use-case example explaining when multiple validation methods are necessary is omitted. Source states: 「例えばパスワードは、登録時は自動で値を設定するため精査は不要だが、パスワード更新機能では画面から入力するため精査が必要なので、登録処理用のバリデーションメソッドと、更新処理用のバリデーションメソッドを実装する必要がある。」This illustrative example provides decision-necessary context for an AI answering \"when do I need multiple validation methods?\"",
+      "source_evidence": "処理に応じて精査対象のプロパティを切り替えたい場合は、処理ごとにバリデーションメソッドを用意すること。例えばパスワードは、登録時は自動で値を設定するため精査は不要だが、パスワード更新機能では画面から入力するため精査が必要なので、登録処理用のバリデーションメソッドと、更新処理用のバリデーションメソッドを実装する必要がある。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`isValid` (as `ValidationContext#isValid`) is explicitly named in the section content as the key method for checking validation results, but it is not listed in the s1 hints array. Only `ValidationContext` (the class name) is present.",
+      "source_evidence": "呼び出し後、ValidationContext#isValidメソッド(エラーなしの場合true)を使用してバリデーションの結果を確認し、エラー有無に応じた処理を行う。"
+    }
+  ]
+}

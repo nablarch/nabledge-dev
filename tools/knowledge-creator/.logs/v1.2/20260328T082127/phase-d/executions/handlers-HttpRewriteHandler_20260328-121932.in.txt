@@ -1,0 +1,551 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/HttpRewriteHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+HTTPリライトハンドラ
+================================================
+
+**クラス名:** ``nablarch.fw.web.handler.HttpRewriteHandler``
+
+---------------------------
+概要
+---------------------------
+このハンドラでは、HTTPリクエストオブジェクトおよび、HTTPレスポンスオブジェクトの内容を、
+事前に設定されたルール(リライトルール)に従って動的に書き換える機能を提供する。
+
+また、書換えが行われた際に、リクエストパスの部分文字列や、リクエストパラメータ、
+HTTPヘッダーのなどの内容を各スコープ上の変数として設定することができる。
+
+.. note:: 
+
+  本ハンドラは個別プロジェクトでの特殊要件に柔軟に対応する目的で作成されており、
+  標準ハンドラ構成には含まれない。
+
+.. _rewrite_rule:
+
+リライトルール
+---------------------
+本ハンドラの動作は、本節で解説する :ref:`rewrite_rule` 呼ばれる設定項目によって定義され、
+その内容に従って様々な処理を行うことができる。
+
+1つのリライトルールに関する情報は、 `RewriteRule`_ オブジェクトのプロパティとして保持される。
+
+本ハンドラでは、 HTTPリクエストオブジェクトのリクエストパスおよび、HTTPレスポンスオブジェクトの
+:ref:`コンテンツパス<content-path>` に対する書換えを行うことができる。
+設定は、それぞれ `RewriteRule`_ のサブクラスである  `HttpRequestRewriteRule`_ および `ContentPathRewriteRule`_ を用いて行うが、
+書換えの対象が異なるだけで、設定項目の内容は同じである。
+
+  ============================== ==================== ============= ==================================================== 
+  設定項目                       プロパティ名         データ型      備考
+  ============================== ==================== ============= ==================================================== 
+  処理対象パターン               pattern              String        | 必須指定
+                                                                    | 書き換え処理が行われるパスのパターンを
+                                                                      正規表現で指定する。
+
+  置換先パス                     rewriteTo            String        | 任意指定
+                                                                    | パスの書き換え処理の内容を表す文字列を
+                                                                      指定する。
+                                                                      省略した場合は置換処理は行わず、現在のパスを
+                                                                      そのまま使用する。
+
+  適用条件リスト                 conditions           List<String>  | 任意指定(デフォルトは空のList)
+                                                                    | 書き換え処理が行われるための追加条件を指定する。
+                                                                       
+  変数定義リスト                 exports              List<String>  | 任意指定(デフォルトは空のList)
+                                                                    | 書き換え処理が行われた際に、各種スコープ上
+                                                                      (リクエスト、セッション、スレッドコンテキスト等)
+                                                                      に定義する変数名とのその内容を指定する。
+
+  ============================== ==================== ============= ==================================================== 
+
+以下では、このリライトルールについて具体例を挙げて解説する。
+
+**例1) 単純置換**
+
+  この設定例では、サーブレットコンテキストルートに対するアクセスに対してログインJSP画面を表示させている。
+
+    .. code-block:: xml
+
+      <!-- サーブレットコンテキストルートへのアクセスに対して、ログインJSPを表示 -->
+      <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+        <property name="pattern"   value="^/$" />
+        <property name="rewriteTo" value="servlet:///login.jsp" />
+      </component>
+
+  処理対象パターンは上記例のようにサーブレットコンテキストを起点とする相対パスへの正規表現として指定する。
+  ( :doc:`RequestHandlerEntry` のようなGlob式によるパターン指定とは異なるので注意すること。)
+
+  また、置換先パスが **"servlet://** もしくは **redirect://** で始まる場合は、それぞれサーブレットフォーワード、
+  HTTPリダイレクトによるレスポンスが返されるので、後続のハンドラに処理は移譲されない。
+
+  一方、ログイン画面の表示処理が単純なJSPへのフォーワードでは無く、業務アクションでの処理を要する場合は、
+  以下の様に指定する。
+
+    .. code-block:: xml
+
+      <!-- サーブレットコンテキストルートへのアクセスに対して、ログインJSPを表示 -->
+      <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+        <property name="pattern"   value="^/$" />
+        <property name="rewriteTo" value="/action/LoginAction/authenticate" />
+      </component>
+
+  この場合は、リクエストパスを、 **"/"** から **/action/LoginAction/authenticate** に書き換えた上で
+  後続のハンドラに処理を移譲する。
+
+
+**例2) 適用条件の追加**
+
+  書き換えを行う条件は、リクエストパスのパターン以外の方法で判定することができる。
+  以下の設定例では、セッションスコープ上にユーザIDが設定されていれば、ログイン画面ではなく、
+  メニュー画面に直接遷移させている。
+
+    .. code-block:: xml
+
+      <!-- サーブレットコンテキストルートへのアクセスに対して、既にログインが成立していればメニュー画面へ遷移させる。 -->
+      <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+        <property name="pattern" value="^/$" />
+        <property name="conditions">
+          <list>
+            <value>%{session:user.id} ^\w+$</value>
+          </list>
+        </property>
+        <property name="rewriteTo" value="/action/MenuAction/show" />
+      </component>
+
+  上記例のように、条件の指定は以下の書式で行う。
+
+    .. code-block:: bash
+
+      %{(変数種別名):(変数名)} (パターン)
+
+  各リライトルールで使用可能な変数種別は以下の通り。
+
+    ============================ ============================== ===========================================================
+    変数種別                     書式                           対象
+    ============================ ============================== ===========================================================
+    セッションスコープ           %{session:(変数名)}            `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    リクエストスコープ           %{request:(変数名)}            `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    スレッドコンテキスト         %{thread:(変数名)}             `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    リクエストパラメータ         %{param:(変数名)}              `HttpRequestRewriteRule`_
+    HTTPヘッダ                   %{header:(ヘッダー名)}         `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    HTTPリクエストメソッド       %{httpMethod}                  `HttpRequestRewriteRule`_
+    HTTPバージョン               %{httpVersion}                 `HttpRequestRewriteRule`_
+    全リクエストパラメータ名     %{paramNames}                  `HttpRequestRewriteRule`_
+    ステータスコード             %{statusCode}                  `ContentPathRewriteRule`_
+    ============================ ============================== ===========================================================
+
+    
+
+
+**例3) 変数の設定**
+
+  パスの書き換えと同時に、各種スコープ上に変数を定義し、後続のハンドラやJSPから参照することが可能である。
+  以下の設定例では、HTTPリファラヘッダの値をリクエストスコープ変数 **prevUrl** に設定している。
+
+    .. code-block:: xml
+
+      <!--リファラヘッダが送信された場合は、リクエストスコープにその値を設定する。-->
+      <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+        <!-- 全リクエストを対象とする。 -->
+        <property name="pattern" value=".*" />
+        <!-- リファラヘッダが定義されていた場合のみ適用する。-->
+        <property name="conditions">
+          <list>
+            <value>%{header:Referer} ^\S+$</value>
+          </list>
+        </property>
+        <!-- リクエストスコープ上の変数 prevUrl に、リファラヘッダの値を設定する。-->
+        <property name="exports">
+          <list>
+            <value>%{request:prevUrl} ${header:Referer}</value>
+          </list>
+        </property>
+      </component>
+  
+  HTTPリクエストの書き換えでは、以下のスコープ上に変数を設定することができる。 
+
+    ============================ ======================= ========================================================
+    変数スコープ                 書式                    対象
+    ============================ ======================= ========================================================
+    セッションスコープ           %{session:(変数名)}     `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    リクエストスコープ           %{request:(変数名)}     `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    スレッドコンテキスト         %{thread:(変数名)}      `HttpRequestRewriteRule`_ / `ContentPathRewriteRule`_
+    ウィンドウスコープ           %{param:(変数名)}       `HttpRequestRewriteRule`_
+    ============================ ======================= ========================================================
+
+  また、 **rewriteTo** 属性で指定される置換先パス、および、 **exports** 属性で指定される変数値には、
+  以下の書式で埋め込みパラメータを使用することができる。
+
+    =============================================== ========================================================================
+    書式                                            意味                                
+    =============================================== ========================================================================
+    ${(バックトラック番号)}                         pattern属性に指定されたリクエストパス
+                                                    に対する部分マッチ(キャプチャ)の内容。
+                                                     
+                                                    | **${0}** : マッチ内容全体
+                                                    | **${1}** : 第1キャプチャの内容
+                                                    | **${n}** : 第nキャプチャの内容
+ 
+    ${(変数種別名):(変数名)}                        各変数の内容
+                                                     
+                                                    | **${session:user.id}** : セッションスコープ上のuser.id変数の値
+                                                    | **${httpMethod}** : HTTPリクエストメソッド名(GET/POST/PUT...)
+
+    ${(変数種別名):(変数名):バックトラック番号}     condition属性で指定された適用条件に対する部分マッチ
+                                                    (キャプチャ)の内容。
+                                                    
+                                                    | **${header:Referer:1}** : リファラヘッダに対する第1キャプチャの内容
+                                                    
+
+    =============================================== ========================================================================
+
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue = [
+        "HttpResponseHandler"
+      , "HttpRewriteHandler"
+      , "ThreadContextHandler_request"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | ハンドラ                           | 内容                                                                              |
+  +====================================+===================================================================================+
+  | :doc:`HttpResponseHandler`         | 本ハンドラで `HttpResponse`_ 内のコンテンツパスの書き換えを行う場合は、           |
+  |                                    | :doc:`HttpResponseHandler` を本ハンドラの上位に配置しないと、書き換え後のパスが   |
+  |                                    | レスポンスに反映されない。                                                        |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+  | :doc:`ThreadContextHandler`        | 本ハンドラで書換えたリクエストパスや各種スコープ変数の内容もとに、                |
+  |                                    | :doc:`スレッドコンテキスト<../core_library/thread_context>` 上の属性を導出している|
+  |                                    | 場合は、 :doc:`ThreadContextHandler` を本ハンドラの後続に配置し、本ハンドラで     |
+  |                                    | 書換えた内容を反映させる必要がある。                                              |
+  |                                    | 特に、リクエストパスから導出されるリクエストIDは後続ハンドラへの影響が            |
+  |                                    | 大きいので留意すること。                                                          |
+  +------------------------------------+-----------------------------------------------------------------------------------+
+
+++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストパスに対する書き換え処理)**
+    本ハンドラの **requestPathRewriteRules** に設定された `HttpRequestRewriteRule`_ の先頭要素から順に
+    条件が合致するかどうかを確認する。
+    合致したものがあれば、その内容に従ってリクエストパスの書き換えとスコープに対する変数定義を行う。
+    どれか1つでも条件に合致すれば、それ以降のルールについては評価されない。
+    
+  **1a. (サーブレットフォワード)**
+    **1.** での処理の結果、書き換え先のパスが "servlet://" で開始されるリライトルールが適合した場合、
+    当該のコンテンツパスによるHTTPレスポンスオブジェクトを生成し、リターンして終了する。
+    (後続ハンドラに対する処理の移譲は行われない。)
+
+  **1b. (リダイレクト)**
+    **1.** での処理の結果、書き換え先のパスが "redirect://" で開始されるリライトルールが適合した場合、
+    当該のコンテンツパスによるHTTPレスポンスオブジェクトを生成し、リターンして終了する。
+    (後続ハンドラに対する処理の移譲は行われない。)
+
+  **2. (後続ハンドラへの処理移譲)**
+    **1.** で書き換え処理を行ったHTTPリクエストオブジェクトを
+    後続ハンドラに渡して処理を委譲し、その結果となるHTTPレスポンスオブジェクトを取得する。
+
+.. _outbound:
+    
+**[復路での処理]**
+  **3. (コンテンツパスに対する書き換え処理)**
+    **2.** で取得したHTTPレスポンスオブジェクトに設定されたコンテンツパスに対して
+    本ハンドラに設定された `ContentPathRewriteRule`_ を順次適用し、
+    コンテンツパスの書き換えおよび、変数定義を行う。
+    リクエストパスの書き換えと同様、どれか1つでも条件に合致すれば、それ以降のルールについては評価されない。
+
+  **4. (正常終了)**
+    **3.** で書き換えを行ったHTTPレスポンスオブジェクトをリターンし、終了する。            
+  
+.. _error:
+
+**[例外処理]**
+  **2a. (後続ハンドラ処理中のエラー)**
+    後続ハンドラの処理中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの挙動は、HTTPリクエストに対する書き換え処理を定義する `HttpRequestRewriteRule`_
+および、HTTPレスポンスに使用するコンテンツパスの書き換え処理を定義する `ContentPathRewriteRule`_ によって
+決定される。
+
+本ハンドラにはそれらのリストを設定する。
+
+  ============================ ========================= ======================== ===================================== 
+  設定項目                     プロパティ名              データ型                 備考
+  ============================ ========================= ======================== ===================================== 
+  リクエストリライト定義       requestPathRewriteRules   List                     | 任意指定(デフォルトは空のリスト)
+                                                         <HttpRequestRewriteRule> | HTTPリクエストパスに対する書き換え
+                                                                                    処理定義のリストを設定する。
+
+  コンテンツパスリライト定義   contentsPathRewriteRules  List                     | 任意設定(デフォルトは空のリスト)
+                                                         <ContentPathRewriteRule> | HTTPレスポンスのコンテンツパスに
+                                                                                    対する書き換え処理定義のリストを
+                                                                                    設定する。
+
+  ============================ ========================= ======================== ===================================== 
+
+  以下は設定例である。
+  ( `HttpRequestRewriteRule`_ と、 `ContentPathRewriteRule`_ の設定内容については :ref:`rewrite_rule` を参照すること。)
+
+
+    .. code-block:: xml
+
+      <component class="nablarch.fw.web.handler.HttpRewriteHandler">
+        <!-- リクエストパスに対するリライトルール -->
+        <property name="requestPathRewriteRules">
+          <list>
+            <!-- サーブレットコンテキストルートへのアクセスに対して、
+                 既にログインが成立していればメニュー画面へ遷移させる。 -->
+            <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+              <property name="pattern" value="^/$" />
+              <property name="conditions">
+              <list>
+                <value>%{session:user.id} ^\S+$</value>
+              </list>
+              </property>
+              <property name="rewriteTo" value="/action/MenuAction/show" />
+            </component>
+
+            <!-- ログインが成立していない場合はログイン画面へ遷移させる。 -->
+            <component class="nablarch.fw.web.handler.HttpRequestRewriteRule">
+              <property name="pattern"   value="^/$" />
+              <property name="rewriteTo" value="/action/LoginAction/authenticate" />
+            </component>
+          </list>
+        </property>
+
+        <!-- レスポンスのコンテンツパスに対するリライトルール -->
+        <property name="contentPathRewriteRules">
+          <list>
+
+            <!-- ステータスコードが401であった場合はログイン画面に遷移させる -->
+            <component class="nablarch.fw.web.handler.ContentPathRewriteRule">
+              <property name="pattern"   value="^.*" />
+              <property name="rewriteTo" value="redirect:///action/LoginAction/authenticate" />
+              <property name="conditions">
+                <list>
+                <value>%{statusCode} ^401$</value>
+                </list>
+              </property>
+            </component>
+          </list>
+        </property>
+
+      </component>   
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-HttpRewriteHandler`
+
+```json
+{
+  "id": "handlers-HttpRewriteHandler",
+  "title": "HTTPリライトハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HttpRewriteHandler",
+        "nablarch.fw.web.handler.HttpRewriteHandler",
+        "HTTPリライト",
+        "HTTPリクエスト書き換え",
+        "HTTPレスポンス書き換え",
+        "標準ハンドラ構成外"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リライトルール",
+      "hints": [
+        "HttpRequestRewriteRule",
+        "ContentPathRewriteRule",
+        "RewriteRule",
+        "pattern",
+        "rewriteTo",
+        "conditions",
+        "exports",
+        "リライトルール",
+        "リクエストパス書き換え",
+        "変数スコープ設定",
+        "servlet://",
+        "redirect://",
+        "埋め込みパラメータ",
+        "バックトラック番号"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "HttpResponseHandler",
+        "ThreadContextHandler",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "コンテンツパス書き換え",
+        "サーブレットフォワード",
+        "リダイレクト"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "requestPathRewriteRules",
+        "contentsPathRewriteRules",
+        "HttpRequestRewriteRule",
+        "ContentPathRewriteRule",
+        "設定項目",
+        "ハンドラ設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.handler.HttpRewriteHandler`\n\nHTTPリクエスト・レスポンスオブジェクトの内容をリライトルール（事前設定）に従って動的に書き換える。書換え時に、リクエストパスの部分文字列・リクエストパラメータ・HTTPヘッダーなどを各スコープ上の変数として設定可能。\n\n> **注意**: 本ハンドラは個別プロジェクトの特殊要件対応を目的として作成されており、標準ハンドラ構成には含まれない。",
+    "s2": "リライトルールは `HttpRequestRewriteRule`（リクエストパス対象）および `ContentPathRewriteRule`（コンテンツパス対象）のサブクラスで設定する。書換え対象が異なるだけで設定項目の内容は同じ。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| pattern | String | ○ | | 書き換え処理が行われるパスのパターン（正規表現）。サーブレットコンテキストを起点とする相対パスへの正規表現で指定する（:doc:`RequestHandlerEntry` のGlob式とは異なる）。 |\n| rewriteTo | String | | | パスの書き換え先文字列。省略時は現在のパスをそのまま使用。`servlet://`で始まる場合はサーブレットフォワード、`redirect://`で始まる場合はHTTPリダイレクトでレスポンスを返し後続ハンドラへの移譲は行わない。 |\n| conditions | List\\<String\\> | | 空のList | 書き換えを行うための追加条件。書式: `%{(変数種別名):(変数名)} (パターン)` |\n| exports | List\\<String\\> | | 空のList | 書き換え時に各スコープ上に定義する変数名とその内容。 |\n\n**conditionsで使用可能な変数種別**:\n\n| 変数種別 | 書式 | 対象 |\n|---|---|---|\n| セッションスコープ | %{session:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| リクエストスコープ | %{request:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| スレッドコンテキスト | %{thread:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| リクエストパラメータ | %{param:(変数名)} | HttpRequestRewriteRule |\n| HTTPヘッダ | %{header:(ヘッダー名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| HTTPリクエストメソッド | %{httpMethod} | HttpRequestRewriteRule |\n| HTTPバージョン | %{httpVersion} | HttpRequestRewriteRule |\n| 全リクエストパラメータ名 | %{paramNames} | HttpRequestRewriteRule |\n| ステータスコード | %{statusCode} | ContentPathRewriteRule |\n\n**exportsで使用可能な変数スコープ**:\n\n| 変数スコープ | 書式 | 対象 |\n|---|---|---|\n| セッションスコープ | %{session:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| リクエストスコープ | %{request:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| スレッドコンテキスト | %{thread:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |\n| ウィンドウスコープ | %{param:(変数名)} | HttpRequestRewriteRule |\n\n**rewriteTo・exports内で使用可能な埋め込みパラメータ書式**:\n\n| 書式 | 意味 |\n|---|---|\n| ${(バックトラック番号)} | patternに指定されたリクエストパスへの部分マッチ（キャプチャ）の内容。${0}=マッチ全体、${1}=第1キャプチャ、${n}=第nキャプチャ |\n| ${(変数種別名):(変数名)} | 各変数の内容。例: ${session:user.id}、${httpMethod} |\n| ${(変数種別名):(変数名):バックトラック番号} | conditionの適用条件に対する部分マッチ（キャプチャ）の内容。例: ${header:Referer:1} |\n\n**設定例（単純置換 - servlet://でサーブレットフォワード）**:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n  <property name=\"pattern\"   value=\"^/$\" />\n  <property name=\"rewriteTo\" value=\"servlet:///login.jsp\" />\n</component>\n```\n\n**設定例（適用条件の追加 - セッション変数による条件判定）**:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n  <property name=\"pattern\" value=\"^/$\" />\n  <property name=\"conditions\">\n    <list>\n      <value>%{session:user.id} ^\\w+$</value>\n    </list>\n  </property>\n  <property name=\"rewriteTo\" value=\"/action/MenuAction/show\" />\n</component>\n```\n\n**設定例（変数の設定 - リファラヘッダをリクエストスコープ変数に設定）**:\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n  <property name=\"pattern\" value=\".*\" />\n  <property name=\"conditions\">\n    <list>\n      <value>%{header:Referer} ^\\S+$</value>\n    </list>\n  </property>\n  <property name=\"exports\">\n    <list>\n      <value>%{request:prevUrl} ${header:Referer}</value>\n    </list>\n  </property>\n</component>\n```",
+    "s3": "**関連するハンドラ**:\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`HttpResponseHandler` | コンテンツパスの書き換えを行う場合は、HttpResponseHandlerを本ハンドラの上位に配置すること。未配置の場合、書き換え後のパスがレスポンスに反映されない。 |\n| :doc:`ThreadContextHandler` | 書換えたリクエストパスや各種スコープ変数をもとにスレッドコンテキスト上の属性を導出している場合は、ThreadContextHandlerを本ハンドラの後続に配置すること。特に、リクエストパスから導出されるリクエストIDは後続ハンドラへの影響が大きい。 |\n\n**[往路処理]**\n\n1. requestPathRewriteRulesに設定されたHttpRequestRewriteRuleを先頭から順に評価し、条件合致時にリクエストパスの書き換えとスコープ変数定義を行う。1つでも合致すれば以降のルールは評価しない。\n   - 書き換え先が`servlet://`で始まる場合: HTTPレスポンスオブジェクトを生成してリターン（後続ハンドラへの移譲なし）\n   - 書き換え先が`redirect://`で始まる場合: HTTPレスポンスオブジェクトを生成してリターン（後続ハンドラへの移譲なし）\n2. 書き換えたHTTPリクエストオブジェクトを後続ハンドラに渡して処理を委譲し、HTTPレスポンスオブジェクトを取得する。\n\n**[復路処理]**\n\n3. 取得したHTTPレスポンスオブジェクトのコンテンツパスにContentPathRewriteRuleを順次適用し、コンテンツパスの書き換えと変数定義を行う。1つでも合致すれば以降のルールは評価しない。\n4. 書き換えたHTTPレスポンスオブジェクトをリターンして終了。\n\n**[例外処理]**\n\n2a. 後続ハンドラ処理中にエラーが発生した場合はそのまま再送出して終了する。",
+    "s4": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| requestPathRewriteRules | List\\<HttpRequestRewriteRule\\> | | 空のリスト | HTTPリクエストパスに対する書き換え処理定義のリスト |\n| contentsPathRewriteRules | List\\<ContentPathRewriteRule\\> | | 空のリスト | HTTPレスポンスのコンテンツパスに対する書き換え処理定義のリスト |\n\nHttpRequestRewriteRule・ContentPathRewriteRuleの設定内容は :ref:`rewrite_rule` 参照。\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRewriteHandler\">\n  <property name=\"requestPathRewriteRules\">\n    <list>\n      <!-- ログイン済みならメニュー画面へ -->\n      <component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n        <property name=\"pattern\" value=\"^/$\" />\n        <property name=\"conditions\">\n          <list>\n            <value>%{session:user.id} ^\\S+$</value>\n          </list>\n        </property>\n        <property name=\"rewriteTo\" value=\"/action/MenuAction/show\" />\n      </component>\n      <!-- 未ログインならログイン画面へ -->\n      <component class=\"nablarch.fw.web.handler.HttpRequestRewriteRule\">\n        <property name=\"pattern\"   value=\"^/$\" />\n        <property name=\"rewriteTo\" value=\"/action/LoginAction/authenticate\" />\n      </component>\n    </list>\n  </property>\n  <property name=\"contentPathRewriteRules\">\n    <list>\n      <!-- ステータスコード401の場合はログイン画面へリダイレクト -->\n      <component class=\"nablarch.fw.web.handler.ContentPathRewriteRule\">\n        <property name=\"pattern\"   value=\"^.*\" />\n        <property name=\"rewriteTo\" value=\"redirect:///action/LoginAction/authenticate\" />\n        <property name=\"conditions\">\n          <list>\n            <value>%{statusCode} ^401$</value>\n          </list>\n        </property>\n      </component>\n    </list>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — VariableOrderBySyntaxConvertor ケース部分の仕様",
+      "description": "ソートIDおよびケース本体はトリミングするという仕様が knowledge file に記載されていない。これはパーサーの動作仕様（例: `( 1  USER_ID ASC )` のようにスペースが入っても有効）であり、実装判断に影響する。",
+      "source_evidence": "* ソートIDおよびケース本体はトリミングする。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "セクション見出し a)〜c) に登場する親インタフェース名 `SqlParameterParserFactory`、`SqlParameterParser`、`SqlConvertor` が hints に含まれていない。ユーザーがこれらのインタフェース名で検索した場合にセクションが取得されない可能性がある。",
+      "source_evidence": "\\a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス / \\b) nablarch.core.db.statement.SqlParameterParserの実装クラス / \\c) nablarch.core.db.statement.SqlConvertorの実装クラス"
+    }
+  ]
+}

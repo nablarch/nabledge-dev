@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-MultipartHandler",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a minor omission of the failure-mode consequence for the HttpErrorHandler placement rule. The placement rule itself is clearly stated in the knowledge file (\"本ハンドラより上位に配置する\"), so a developer can configure the handler queue correctly without the missing consequence text. The omission reduces explanatory completeness but does not lead to incorrect configuration or missed requirements. No finding reaches medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 関連ハンドラ table, HttpErrorHandler row",
+      "impact": "low",
+      "justification": "The knowledge file states the placement rule correctly ('本ハンドラより上位に配置する') and gives the reason (exceptions may be thrown). What is missing is the downstream consequence: that without correct placement, appropriate error screens will not be displayed. This is supplementary 'why it matters' context, not the rule itself. A developer following the knowledge file will still configure the handler queue correctly. The omission does not cause misconfiguration or missing functionality. Phase E did not resolve this because the s1 section content in the Phase E output is byte-for-byte identical to the Phase D input — the fix was attempted but not actually applied to the JSON."
+    }
+  ]
+}

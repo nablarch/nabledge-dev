@@ -1,0 +1,492 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/CustomTag/inputAndOutput.rst`
+- Format: `rst`
+
+```
+コードIDに対応するコード値が2件の場合
+---------------------------------------------------------------------------------------------------------------
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】
+           codeCheckboxタグの説明以外は省略。
+
+           許可、不許可の入力をチェックボックスにより実現する。
+           許可と不許可に対応するコード値(2件)がテーブルに存在するものとする。
+
+           id属性は、以下の形式で自動で指定される。
+           id属性の形式：nablarch_checkbox<連番> -->
+     <input id="nablarch_checkbox1" type="checkbox" name="W11AF01.canUpdate" value="1" />
+         <label for="nablarch_checkbox1">許可</label>
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+
+|ID   |VALUE |
++=====+======+
+|0001 |1     |
++-----+------+
+|0001 |0     |
++-----+------+
+
+* 想定しているCODE_NAMEテーブル
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |1     |1          |ja   |許可                    |OK         |01:許可          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |0     |2          |ja   |不許可                  |NG         |02:不許可        |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeCheckboxesタグの説明箇所以外は省略。
+
+           value属性、labelPattern属性は、
+           デフォルトの値(value:1、labelPattern:$NAME$)を使用する。 --%>
+     <n:codeCheckbox name="W11AF01.canUpdate" codeId="0001" />
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+コードIDに対応するコード値が2件以上の場合
+---------------------------------------------------------------------------------------------------------------------------
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】
+           codeCheckboxタグの説明以外は省略。
+
+           YES、NOの入力をチェックボックスにより実現する。
+           YES、NOに加えて未設定に対応するコード値(3件)がテーブルに存在するものとする。 -->
+     <input id="nablarch_checkbox1" type="checkbox" name="W11AF01.join" value="Y" />
+         <label for="nablarch_checkbox1">YES(イエス)</label>
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+
+|ID   |VALUE |
++=====+======+
+|0002 |Y     |
++-----+------+
+|0002 |N     |
++-----+------+
+|0002 |Z     |
++-----+------+
+
+* 想定しているCODE_NAMEテーブル
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0002 |Y     |1          |ja   |はい                    |YES        |イエス           |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |N     |2          |ja   |いいえ                  |NO         |ノー             |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |Z     |3          |ja   |未設定                  |NOT SET    |ノットセット     |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeCheckboxタグの説明箇所以外は省略。
+
+           コード値が2件以上存在するため、
+           codeId属性から検索してもoffCodeValue属性が見つからない。
+           このため、明示的にoffCodeValue属性を指定する必要がある。
+           デフォルト値と異なるため、value属性も明示的に指定する。
+           今回は、説明のためlabelPattern属性も指定する。 --%>
+     <n:codeCheckbox name="W11AF01.join" codeId="0002"
+                     value="Y" offCodeValue="N"
+                     labelPattern="$SHORTNAME$($OPTIONALNAME$)"
+                     optionColumnName="OPTION01" />
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+codeタグ
+==============
+
+codeタグは、指定したフォーマットにあわせてコード値を出力する。
+詳細画面や一覧画面でコードの選択項目を表示する場合と、登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合の実装例を下記に示す。
+
+登録画面や更新画面で選択可能なコード値を表示する場合、通常codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeCheckboxタグのいずれかを使用する。
+しかし、選択可能なコード値を一覧表示し、テキストボックスに入力する仕様もありうる。
+そのような場合の実装方法を :ref:`list-of-codes-searched-by-codeId-and-pattern` で説明する。
+
+
+詳細画面や一覧画面でコードの選択項目を表示する場合
+--------------------------------------------------------
+
+出力するコード値を指定するために、Actionクラスでリクエストスコープにデータを設定する必要がある。
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】codeタグの説明以外は省略。 -->
+     <div>02:処理開始待ち-待ち-0002-02-ja</div>
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+---------+---------+---------+
+|ID   |VALUE |PATTERN1 |PATTERN2 |PATTERN3 |
++=====+======+=========+=========+=========+
+|0001 |01    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0001 |02    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0002 |01    |1        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |02    |0        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |03    |0        |0        |0        |
++-----+------+---------+---------+---------+
+
+
+
+* 想定しているCODE_NAMEテーブル
+
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |01    |1          |ja   |男性                    |男         |01:男性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |02    |2          |ja   |女性                    |女         |02:女性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |01    |1          |ja   |初期状態                |初期       |0002-01-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |02    |2          |ja   |処理開始待ち            |待ち       |0002-02-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |03    |3          |ja   |処理実行中              |実行       |0002-03-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+
+* Actionクラスの実装例
+
+  .. code-block:: java
+
+     public class W11AC02Action {
+         // 【説明】codeタグの説明箇所以外省略
+         public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {
+
+             /* 【説明】
+                 codeタグで出力したい値を設定
+                 定数Batch.WAITINGが"02"を表すとする。 */
+             W11AC02Form form = new W11AC02Form();
+             form.setBatchStatus(Batch.WAITING);
+             context.setRequestScopedVar("W11AC02", form);
+
+             return new HttpResponse("/ss11AC/W11AC0201.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  ファイル名：W11AC0201.jsp
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeタグの説明箇所以外は省略。
+           CODE_NAMEテーブルの中で、以下の条件を満たす行が、表示項目として選択される。
+               1. codeId属性で指定したID
+               2. CODE_PATTERNテーブルの中で、pattern属性で指定したカラム名の値が1
+               3. VALUEカラムの値=name属性の参照値
+           pattern属性には、使用するパターンのカラム名を指定する。
+           選択項目リストからラベルを出力するには、labelPattern属性を指定する。
+           実装例では、ラベルパターンの指定で、CODE_NAMEテーブルから以下の値を使用している。
+               $VALUE$：コード値（VALUE）
+               $NAME$：コード名称（NAME）
+               $SHORTNAME$：コード略称（SHORT_NAME）
+               $OPTIONALNAME$：コードのオプション名称（OPTION01）
+           $OPTIONALNAME$を使用するには、optionColumnName属性で、使用するカラム名を指定する必要がある。 --%>
+     <n:code name="W11AC02.batchStatus"
+                   codeId="0002" pattern="PATTERN2" optionColumnName="OPTION01"
+                   labelPattern="$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$"
+                   listFormat="div" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`list-of-codes-searched-by-codeId-and-pattern`:
+
+登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合
+----------------------------------------------------------------------------------------------------------------------
+
+JSPにて指定されたcodeId属性、pattern属性のみの情報を元に表示するコード値を取得する。
+そのため、Actionクラスでリクエストスコープにデータを設定する必要はない。
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】codeタグの説明以外は省略。 -->
+     <div>01:初期状態-初期-0002-01-ja</div>
+     <div>02:処理開始待ち-待ち-0002-02-ja</div>
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+---------+---------+---------+
+|ID   |VALUE |PATTERN1 |PATTERN2 |PATTERN3 |
++=====+======+=========+=========+=========+
+|0001 |01    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0001 |02    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0002 |01    |1        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |02    |0        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |03    |0        |0        |0        |
++-----+------+---------+---------+---------+
+
+
+
+* 想定しているCODE_NAMEテーブル
+
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |01    |1          |ja   |男性                    |男         |01:男性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |02    |2          |ja   |女性                    |女         |02:女性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |01    |1          |ja   |初期状態                |初期       |0002-01-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |02    |2          |ja   |処理開始待ち            |待ち       |0002-02-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |03    |3          |ja   |処理実行中              |実行       |0002-03-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeタグの説明箇所以外は省略。
+           CODE_NAMEテーブルの中で、以下の条件を満たす行が、表示項目として選択される。
+               1. codeId属性で指定したID
+               2. CODE_PATTERNテーブルの中で、pattern属性で指定したカラム名の値が1
+           name属性を記述しない。
+           選択項目リストからラベルを出力するには、labelPattern属性を指定する。
+           実装例では、ラベルパターンの指定で、CODE_NAMEテーブルから以下の値を使用している。
+               $VALUE$：コード値（VALUE）
+               $NAME$：コード名称（NAME）
+               $SHORTNAME$：コード略称（SHORT_NAME）
+               $OPTIONALNAME$：コードのオプション名称（OPTION01）
+           $OPTIONALNAME$を使用するには、optionColumnName属性で、使用するカラム名を指定する必要がある。
+     --%>
+     <n:code codeId="0002" pattern="PATTERN2" optionColumnName="OPTION01"
+             labelPattern="$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$"
+             listFormat="div" />
+
+
+.. _`default_value_setting`:
+
+---------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-inputAndOutput--s3`
+
+```json
+{
+  "id": "web-application-inputAndOutput--s3",
+  "title": "codeタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードIDに対応するコード値が2件の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "codeCheckboxタグ",
+        "codeId属性",
+        "value属性 デフォルト",
+        "labelPattern デフォルト",
+        "チェックボックス コード値2件",
+        "nablarch_checkbox"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コードIDに対応するコード値が2件以上の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "offCodeValue属性",
+        "コード値2件以上",
+        "value属性",
+        "labelPattern属性",
+        "optionColumnName属性",
+        "チェックボックス"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "詳細画面や一覧画面でコードの選択項目を表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "labelPattern属性",
+        "pattern属性",
+        "optionColumnName属性",
+        "$VALUE$ $NAME$ $SHORTNAME$ $OPTIONALNAME$",
+        "詳細画面 一覧画面 コード表示",
+        "リクエストスコープ",
+        "listFormat",
+        "W11AC02Action"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "codeId属性",
+        "pattern属性",
+        "登録画面 更新画面 コード値一覧",
+        "name属性なし",
+        "Actionクラス不要",
+        "listFormat"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`n:codeCheckbox`タグでコード値が2件の場合の実装。\n\n- `value`属性のデフォルト値: `1`\n- `labelPattern`属性のデフォルト値: `$NAME$`\n- `id`属性は自動指定（形式: `nablarch_checkbox<連番>`）\n\n**JSP実装例**（`value`・`labelPattern`はデフォルト使用）:\n```jsp\n<n:codeCheckbox name=\"W11AF01.canUpdate\" codeId=\"0001\" />\n```",
+    "s2": "`n:codeCheckbox`タグでコード値が2件以上の場合の実装。\n\n> **重要**: コード値が2件以上の場合、`codeId`属性からの検索で`offCodeValue`が見つからないため、`offCodeValue`属性を明示的に指定する必要がある。また、デフォルト値（`1`）と異なる場合は`value`属性も明示的に指定する。\n\n**JSP実装例**:\n```jsp\n<n:codeCheckbox name=\"W11AF01.join\" codeId=\"0002\"\n                value=\"Y\" offCodeValue=\"N\"\n                labelPattern=\"$SHORTNAME$($OPTIONALNAME$)\"\n                optionColumnName=\"OPTION01\" />\n```",
+    "s3": "`n:code`タグは、指定したフォーマットにあわせてコード値を出力する。登録画面や更新画面で選択可能なコード値を表示する場合、通常`codeSelect`タグ、`codeRadioButtons`タグ、`codeCheckboxes`タグ、`codeCheckbox`タグのいずれかを使用する。しかし、選択可能なコード値を一覧表示し、テキストボックスに入力する仕様の場合は`n:code`タグを使用する。\n\n`n:code`タグで詳細・一覧画面にコードの選択項目を表示する場合、Actionクラスでリクエストスコープにデータを設定する必要がある。\n\nCODE_NAMEテーブルの表示項目選択条件:\n1. `codeId`属性で指定したID\n2. CODE_PATTERNテーブルの`pattern`属性で指定したカラム名の値が`1`\n3. VALUEカラムの値 = `name`属性の参照値\n\n`labelPattern`属性の変数:\n- `$VALUE$`: コード値（VALUEカラム）\n- `$NAME$`: コード名称（NAMEカラム）\n- `$SHORTNAME$`: コード略称（SHORT_NAMEカラム）\n- `$OPTIONALNAME$`: コードのオプション名称（OPTION01）— 使用する場合は`optionColumnName`属性でカラム名を指定する必要がある\n\n**Actionクラス実装例**:\n```java\nW11AC02Form form = new W11AC02Form();\nform.setBatchStatus(Batch.WAITING);\ncontext.setRequestScopedVar(\"W11AC02\", form);\n```\n\n**JSP実装例**:\n```jsp\n<n:code name=\"W11AC02.batchStatus\"\n        codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```",
+    "s4": "`n:code`タグで登録・更新画面にコード値を一覧形式で表示する場合。`codeId`属性と`pattern`属性のみからコード値を取得するため、Actionクラスでのリクエストスコープ設定は不要。\n\nCODE_NAMEテーブルの表示項目選択条件:\n1. `codeId`属性で指定したID\n2. CODE_PATTERNテーブルの`pattern`属性で指定したカラム名の値が`1`\n\n- `name`属性は記述しない（特定の値への絞り込みなし）\n\n**JSP実装例**:\n```jsp\n<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 5
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

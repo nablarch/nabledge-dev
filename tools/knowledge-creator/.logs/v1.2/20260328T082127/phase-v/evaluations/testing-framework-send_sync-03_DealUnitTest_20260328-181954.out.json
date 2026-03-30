@@ -1,0 +1,14 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a minor omission of supplementary architectural context. The omitted sentence explains that the RequestID determines message formats and queue names in the production system — but this is background knowledge, not actionable test guidance. All information needed to correctly name Excel files, write message format definitions, and execute unit tests is fully preserved. The absence of this sentence does not cause incorrect agent behavior or mislead developers.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — Excelファイルの書き方 (footnote on リクエストID)",
+      "impact": "low",
+      "justification": "The omitted sentence ('このリクエストIDにもとづき、要求電文および応答電文のフォーマット、送信キュー名、受信キュー名が決定する。') provides architectural context about what the RequestID governs in production (message formats and queue names). The knowledge file already preserves the actionable distinction — that this RequestID differs from screen/batch RequestIDs — and the complete Excel file authoring rules. An agent answering questions about mock-based unit testing can guide developers correctly without this sentence. It persisted through Phase E because the fix agent likely assessed it as low-value supplementary context and did not apply the addition."
+    }
+  ]
+}

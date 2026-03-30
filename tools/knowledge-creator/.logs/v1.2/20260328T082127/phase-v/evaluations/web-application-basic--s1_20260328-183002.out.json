@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-basic--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Section s8 covers the JSP template pattern and the receiving Action (validation side), but omits the sending Action that prepares array data for JSP. This sending-side pattern is substantively different from the Map/Form case in s7: it requires converting SqlResultSet to an entity array via loop, explicitly setting array size on the Form, and registering the Form (not a raw SqlResultSet row) in request scope. An AI answering \"how to pass array data from Action to JSP\" would give an incomplete answer missing the critical preparation steps.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s8 (List型/配列の要素のプロパティを受け渡す場合)",
+      "impact": "medium",
+      "justification": "The sending-side Action code is the key differentiator of the array case vs. the Map/Form case: SqlResultSet must be converted to UserEmailAddressEntity[] via an explicit loop, the array and its size must be set on W11AC03Form separately, and the Form (not the raw SqlResultSet row) is registered via setRequestScopedVar. Without this, an AI can explain the JSP [index] pattern and the receive-side validation, but cannot guide a developer on how to prepare and register array data in the Action class. This is a practical gap that would yield incomplete implementation answers. Phase E did not resolve it — the Phase E log output is identical to the Phase D state (and is truncated mid-content), indicating the fix was either not applied or was aborted before completion."
+    }
+  ]
+}

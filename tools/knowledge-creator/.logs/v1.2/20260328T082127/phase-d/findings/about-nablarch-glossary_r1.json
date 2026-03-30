@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-glossary",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — コンポーネント",
+      "description": "The knowledge file omits the primary/typical meaning: \"通常、オブジェクト一つ一つのことをコンポーネントと称するが\" before the exception case. The knowledge file only presents the exception (概念や機能のまとまり) without the baseline meaning (通常は個々のオブジェクト), which changes how an AI agent would explain the term.",
+      "source_evidence": "コンポーネント: 「DIコンテナで管理されるオブジェクト。通常、オブジェクト一つ一つのことをコンポーネントと称するが、共通コンポーネント、業務コンポーネントのように、概念や機能のまとまりをコンポーネントと称する場合もある。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — リクエスト",
+      "description": "The knowledge file omits the clarification about web online processing mode: \"画面オンライン処理方式では基本的に 入力データ=リクエストであるが\". Without this, an AI agent only sees the batch exception case (multiple records per request) but not the contrasting baseline rule for web processing.",
+      "source_evidence": "リクエスト: 「画面オンライン処理方式では基本的に 入力データ=リクエストであるが、バッチ処理方式などでは、1リクエストに対して複数の入力データ(複数件のレコード)を処理することになる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — 五十音順",
+      "description": "The source 五十音順 h2 section contains 9 h3 subsections (あ行, か行, さ行, た行, な行, は行, ま行, ら行, わ行) and its plain text content significantly exceeds 2000 characters (27 terms with full descriptions). Per V3 rules, an h2 section with >= 2000 chars and existing h3 subsections should be split in the knowledge file, but all content is merged into a single section s2.",
+      "source_evidence": "Source h3 headings under 五十音順: あ行 (3 terms), か行 (8 terms), さ行 (5 terms), た行 (2 terms), な行 (1 term), は行 (4 terms), ら行 (4 terms) — totaling 27 terms, each with multi-sentence definitions."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — UserForm code example",
+      "description": "The UserForm constructor `public UserForm(Map<String, Object> params)` is omitted from the knowledge file's code example. The source shows `user = (UserEntity) params.get(\"user\"); address = (AddressEntity) params.get(\"address\");` inside this constructor, which illustrates how child Forms are extracted from request parameters — part of the complete implementation pattern.",
+      "source_evidence": "Source: `public UserForm(Map<String, Object> params) { user = (UserEntity) params.get(\"user\"); address = (AddressEntity) params.get(\"address\"); }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — UserEntity code example (footnote section)",
+      "description": "`INSERT_PARAMS` is referenced in the UserEntity code example (`ValidationUtil.validate(context, INSERT_PARAMS)`) but its definition is omitted. The source defines it as `private static final String[] INSERT_PARAMS = new String[] {\"name\", \"remarks\"};`, which is required for the code example to be self-contained and correct.",
+      "source_evidence": "Source: `private static final String[] INSERT_PARAMS = new String[] {\"name\", \"remarks\"};`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "S9 automated warning — section count",
+      "description": "The automated warning (section count 3 < source headings 7) is not a real issue. The source has 3 h2-level headings (複数のFormに対するバリデーション, Formの配列を入力する際のバリデーション, 可変配列長のForm配列を入力する際の実装例), which map directly to the 3 knowledge sections s1, s2, s3. The 7-heading count includes h3 sub-headings (Form/JSP/Action実装) that are appropriately merged into their parent sections."
+    }
+  ]
+}

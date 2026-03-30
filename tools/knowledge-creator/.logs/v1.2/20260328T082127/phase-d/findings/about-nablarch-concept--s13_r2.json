@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-concept--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 (変数スコープ)",
+      "description": "The source contains an h3 subsection 'ウィンドウスコープ' (underlined with ===) within the 変数スコープ h2 section. The total content of the combined h2+h3 is well over 2000 characters of plain text, but the knowledge file merges ウィンドウスコープ into s2 rather than creating a separate section s6.",
+      "source_evidence": "RST source has 'ウィンドウスコープ\\n======================' as a distinct h3 heading inside the 変数スコープ section, and the combined section content (four scope descriptions + full window scope content including note and links) exceeds 2000 characters."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`TransactionManagementHandler` is referenced in s1 content (methods 2 and 3 explicitly name it as the handler responsible for commit/rollback), but it is absent from the s1 hints array.",
+      "source_evidence": "Source text: '実行中のトランザクションは、TransactionManagementHandler によりコミットされる' and 'TransactionManagementHandler によりロールバックされる' appear in the 処理結果の識別 section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`MultiThreadExecutionHandler` and `ExecutionContext` are PascalCase class names referenced in the s4 section content but absent from the s4 hints array. `MultiThreadExecutionHandler` appears in the data reader creation table. `ExecutionContext` appears as a parameter type in all three `DataReader<TData>` method signatures (`read`, `hasNext`, `close`).",
+      "source_evidence": "DataReader interface methods all take `ExecutionContext ctx` as parameter. Data reader creation table row for batch states: 'MultiThreadExecutionHandler の初期処理内'."
+    }
+  ]
+}

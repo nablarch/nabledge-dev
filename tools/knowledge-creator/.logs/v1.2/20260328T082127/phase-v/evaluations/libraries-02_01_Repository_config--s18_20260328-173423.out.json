@@ -1,0 +1,74 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s18",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Two medium-impact omissions remain unfixed: s3 omits the Java class definitions that demonstrate the interface/implementation pattern required for auto-injection, leaving users unable to understand what class structure enables the feature; s4 omits the parent component retrieval code that makes the nested-component example incomplete. Both are core instructional content, not supplemental examples.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s3",
+      "impact": "low",
+      "justification": "Describing the mechanism as 'setter detection' rather than 'type-based determination' is technically consistent with how Nablarch DI actually works (type-matching via setter signatures), so a user following this guidance would not be misled. Phase E output is identical to Phase D for s3 — the fix agent made no changes to this section."
+    },
+    {
+      "category": "fabrication",
+      "location": "sections.s5 — first code example block",
+      "impact": "low",
+      "justification": "The added inline comment `# 3つめ以降のトークンは無視` correctly reflects the rule stated in the surrounding prose/table, so it does not mislead the user. The fabrication is an annotation of a true fact. Phase E output is identical to Phase D for s5 — no changes were applied."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s2",
+      "impact": "low",
+      "justification": "The prod/test config separation pattern (via reporitoy_config_override + directory placement) is a useful practical use case, but its omission does not prevent users from understanding or using the directory-loading feature itself. The link target (_reporitoy_config_override) would be covered in another knowledge file. Phase E left s2 unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s3 — Java class definitions",
+      "impact": "medium",
+      "justification": "The auto-injection feature's eligibility condition (interface + implementation separation, setter method signature) is demonstrated only through the XML config snippet. Without the three class definitions showing HelloMessageProvider interface, BasicHelloMessageProvider implementation, and HelloComponent's typed setter, users cannot understand WHAT makes a class eligible for auto-injection. This is core conceptual content, not supplemental. Phase E output for s3 is verbatim identical to Phase D — fix agent produced no changes."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s3 — component retrieval code example",
+      "impact": "low",
+      "justification": "The concept and XML configuration for auto-injection are complete. The missing retrieval example is a verification snippet only; users can infer retrieval from parallel examples in s1/s4. Phase E left s3 unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s4",
+      "impact": "medium",
+      "justification": "The code example shows only how to retrieve the nested component (helloComponent.helloMessageProvider) but omits the primary usage: retrieving helloComponent itself and calling printHello(). This makes the example appear to be about nested-component retrieval only, obscuring that the parent component is also fully usable from SystemRepository. A user implementing nested components would have an incomplete mental model of what they can access. Phase E output for s4 is identical to Phase D — fix agent made no changes."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s5 — エスケープ文字 row",
+      "impact": "low",
+      "justification": "How to include a literal backslash in keys/values (`\\\\`) is missing from the escape-character table row. This is an edge case; the surrounding table rows for `=`, `#`, and `\\` (line continuation) all document their literal-inclusion escape, creating an inconsistency. However, it only matters when a user needs a backslash in a config value — an uncommon case. Phase E left s5 unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s5 — code examples",
+      "impact": "low",
+      "justification": "The alternative forms (`key = \\\\ value1 \\= value2` multi-line and `key = value1,value2,value3 # comment` single-line) are omitted. The shown forms are sufficient for most users; the missing forms are equivalent alternatives. Phase E left s5 unchanged."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[0].hints (s1)",
+      "impact": "low",
+      "justification": "HelloComponent, HelloMessageProvider, and SystemRepository are present in s1 content, so section-level text search would surface s1 even without these hints. Hints absence only affects index-level pre-filtering. Phase E made no changes to any hints arrays."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[2].hints (s3)",
+      "impact": "low",
+      "justification": "SystemRepository and DIコンテナ are absent from s3 hints but appear in s3 content. A query for SystemRepository would still retrieve s3 via content match. Phase E made no changes to hints."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[3].hints (s4)",
+      "impact": "low",
+      "justification": "SystemRepository is absent from s4 hints but appears in the s4 code example content. Content-level retrieval compensates for the missing hint. Phase E made no changes to hints."
+    }
+  ]
+}

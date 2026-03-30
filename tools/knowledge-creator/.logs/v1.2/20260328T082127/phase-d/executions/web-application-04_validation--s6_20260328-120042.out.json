@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-04_validation--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — W11AC02Form code example comment",
+      "description": "The knowledge file adds the comment \"各EntityクラスのvalidateForRegisterUserが呼び出される\" which implies a fixed method name. The source states that the method annotated with @ValidateFor(\"registerUser\") is invoked — \"validateForRegisterUser\" is cited only as an example for UsersEntity. Other entities may use a different method name.",
+      "source_evidence": "「呼び出される精査メソッドは、各Entity内で@ValidateFor(\"registerUser\")が指定されている精査メソッドである。例えばUsersEntityの場合、validateForRegisterUserが呼び出される。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — W11AC02Form code example comment",
+      "description": "The source code comment explains a key detail for mixed Forms: direct properties (\"newPassword\", \"confirmPassword\") are validated via their setter annotations, while Entity-typed properties are validated via each Entity's @ValidateFor method. The knowledge file replaces this with \"Form内の全プロパティを精査対象とする\", dropping the distinction about how the two kinds of properties are handled differently.",
+      "source_evidence": "「Form内のプロパティは全て精査対象 / newPassword・confirmPasswordはsetterに直接設定したバリデーションを行う。 / それ以外の項目は、各Entityクラスの精査メソッドが呼び出される。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "SystemAccountEntity is the class name used in the @Digits/@NumberRange code example (setFailedCount) but is absent from the s1 hints. PascalCase class names appearing in content should be listed.",
+      "source_evidence": "「数値型のプロパティに対するバリデーションの設定例(SystemAccountEntity)を以下に示す。」"
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/11_exclusiveControl.rst`
+- Format: `rst`
+
+```
+.. _exclusiveControl:
+
+========
+排他制御
+========
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 排他制御
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸の部分である。
+
+.. image:: ./_image/11/screenTransition.png
+ :width: 800px
+ :height: 300
+ :scale: 100
+
+編集するソースコードは以下のとおり。
+
++----------------------------------------------------------------------------------------------------------------+----------------+-------------------------------------------------------------------------------+
+| 名称(右クリック->保存でダウンロード)                                                                           | ステレオタイプ | 処理内容                                                                      |
++================================================================================================================+================+===============================================================================+
+| :download:`ExclusiveCtrlSystemAccountContext.java<./_source/download/ExclusiveCtrlSystemAccountContext.java>`  | \-             | 排他制御用の補助クラス。排他制御の実行に必要な情報を保持する。                |
++----------------------------------------------------------------------------------------------------------------+----------------+-------------------------------------------------------------------------------+
+| :download:`W11AC03Action.java<./_source/download/W11AC03Action.java>`                                          | Action         | 作成した上記の排他制御補助クラスを使用し、更新処理時に排他制御を行う。        |
++----------------------------------------------------------------------------------------------------------------+----------------+-------------------------------------------------------------------------------+
+
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+
+--------
+作成手順
+--------
+
+.. _excelusiveControlOutline:
+
+概要
+====
+本書で作成する排他制御の仕様は以下のとおりである。
+
+* 楽観ロック
+* 排他制御のバージョン番号として、システムアカウントテーブルの **VERSION** 項目の値を使用する。
+
+
+.. _createPrimaryKeyClass:
+
+主キークラス(ExclusiveCtrlSystemAccountContext)の作成
+=====================================================
+主キークラスを作成する手順は以下のとおりである。
+
+ :a): Nablarchの提供するExclusiveControlContextクラスを継承
+ :b): 排他制御用テーブルの主キーを列挙型で定義
+ :c): 主キーの値を引数にとるコンストラクタを定義
+ :d): 排他制御に関するテーブルの情報を設定 
+
+上記を参照し、以下の内容で *ExclusiveCtrlSystemAccountContext.java* を作成する。
+
+* システムアカウントテーブルの定義
+
+.. code-block:: sql
+
+   CREATE TABLE SYSTEM_ACCOUNT
+   (
+       USER_ID                        CHAR(10) NOT NULL,
+       -- 主キー以外の業務データは省略。
+       VERSION                        NUMBER(10,0) DEFAULT 1 NOT NULL
+   );
+   ALTER TABLE SYSTEM_ACCOUNT
+       ADD(PRIMARY KEY (USER_ID) USING INDEX);
+
+* ExclusiveCtrlSystemAccountContext.java
+
+.. code-block:: java
+
+   /**
+    * システムアカウント排他制御の制御クラス。
+    */
+   // 【説明】ExclusiveControlContextを継承
+   public class ExclusiveCtrlSystemAccountContext extends ExclusiveControlContext {
+
+       /**
+        * 主キー定義。
+        */
+       // 【説明】排他制御用テーブルの主キーのカラム名は列挙型で定義
+       private enum PK {
+           USER_ID
+       }
+       
+       /**
+        * コンストラクタ。
+        * @param userId ユーザID
+        */
+       // 【説明】主キーの値を引数にとるコンストラクタを定義
+       public ExclusiveCtrlSystemAccountContext(String userId) {
+       
+           // 【説明】バージョン番号を保持するテーブル名を設定
+           setTableName("SYSTEM_ACCOUNT");
+           
+           // 【説明】バージョン番号のカラム名を設定
+           setVersionColumnName("VERSION");
+           
+           // 【説明】主キーのカラム名を全て設定
+           setPrimaryKeyColumnNames(PK.values());
+           
+           // 【説明】排他制御時に使用する行データの指定条件を追加
+           appendCondition(PK.USER_ID, userId);
+       }
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _createActionClass:
+
+Actionの作成
+============
+更新取引における排他処理では、次の処理を行う。
+
+ :a): 主キークラスのインスタンスを生成
+ :b): 生成した主キークラスを指定してバージョン番号を取得(更新画面初期表示時)
+ :c): バージョン番号のチェック(更新確認処理時)
+ :d): バージョン番号のチェックおよび更新(データベースへの更新処理時)
+
+上記の処理は、Nablarchで提供している *HttpExclusiveControlUtil* クラスを利用して行うことができる。
+以上を参考に、 *W11AC03Action.java* を以下のように作成する。
+
+
+* バージョン番号の取得
+
+.. code-block:: java
+
+    /**
+     * ユーザ情報更新画面を表示する。
+     * 
+     * @param req リクエストコンテキスト
+     * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+     * @return HTTPレスポンス
+     */
+    @OnError(type = ApplicationException.class,
+             path = "forward:///action/ss11AC/W11AC01Action/RW11AC0102")
+    public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+       
+        // 引継いだユーザIDの取得
+        ValidationContext<W11AC03Form> userSearchFormContext =
+            ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+           
+        // ～中略～
+       
+        String userId = userSearchFormContext.createObject().getSystemAccount().getUserId();
+
+       // バージョン番号の準備(楽観的ロック)
+       /* 【説明】
+            主キークラスのインスタンスを生成する。
+            生成した主キークラスを指定して、バージョン番号を取得する。
+            取得したバージョン番号は指定した主キークラスに設定される。 */
+        HttpExclusiveControlUtil.prepareVersion(ctx, new ExclusiveCtrlSystemAccountContext(userId));
+       
+        // ～中略～
+       
+        // 更新画面へ遷移
+        return new HttpResponse("/ss11AC/W11AC0301.jsp");
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* バージョン番号のチェック
+
+.. code-block:: java
+
+    /**
+     * ユーザ情報更新画面の「確認」イベントの処理を行う。
+     * 
+     * @param req リクエストコンテキスト
+     * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+     * @return HTTPレスポンス
+     */
+    @OnErrors({
+       // 【説明】排他制御エラー時の遷移先を指定
+        @OnError(type = OptimisticLockException.class,
+                 path = "forward:///action/ss11AC/W11AC01Action/RW11AC0102"),
+        @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0301.jsp")
+    })
+    public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+       
+        // バージョン番号のチェック(楽観的ロック)
+        /* 【説明】
+            バージョン番号のチェック
+            バージョン番号はHttpRequestから取得する。
+            バージョンが異なっている場合、OptimisticLockExceptionが送られる。 */
+        HttpExclusiveControlUtil.checkVersions(req, ctx);
+       
+       // ～中略～
+       
+       // 更新確認画面へ遷移
+        return new HttpResponse("/ss11AC/W11AC0302.jsp");
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* バージョン番号のチェックおよび更新
+
+.. code-block:: java
+
+    /**
+     * 更新確認画面の「確定」イベントの処理を行う。
+     * 
+     * @param req リクエストコンテキスト
+     * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+     * @return HTTPレスポンス
+     */
+    @OnErrors({
+       // 【説明】排他制御エラー時の遷移先を指定
+        @OnError(type = OptimisticLockException.class,
+                 path = "forward:///action/ss11AC/W11AC01Action/RW11AC0102"),
+        @OnError(type = ApplicationException.class, path = "forward://RW11AC0303")
+    })
+    @OnDoubleSubmission(path = "forward://RW11AC0303", statusCode = 400)
+    public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {
+       
+        // バージョン番号の更新(楽観的ロック)
+        /* 【説明】
+            バージョン番号のチェックおよび更新
+            バージョン番号はHttpRequestから取得する。
+            バージョンが同じ場合、バージョン番号を更新する。
+            バージョンが異なっている場合、OptimisticLockExceptionが送られる。 */
+        HttpExclusiveControlUtil.updateVersionsWithCheck(req);
+       
+       // ～中略～
+       
+       // 更新完了画面へ遷移
+        return new HttpResponse("/ss11AC/W11AC0303.jsp");
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+------------
+次に読むもの
+------------
+* `排他制御機能について詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/08_ExclusiveControl.html>`_
+
+```
+
+## Knowledge File
+
+- ID: `web-application-11_exclusiveControl`
+
+```json
+{
+  "id": "web-application-11_exclusiveControl",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "作成クラス一覧",
+      "hints": [
+        "ExclusiveCtrlSystemAccountContext",
+        "W11AC03Action",
+        "排他制御",
+        "楽観ロック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順: 概要",
+      "hints": [
+        "楽観ロック",
+        "排他制御",
+        "バージョン番号",
+        "SYSTEM_ACCOUNT",
+        "VERSION"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "主キークラス(ExclusiveCtrlSystemAccountContext)の作成",
+      "hints": [
+        "ExclusiveCtrlSystemAccountContext",
+        "ExclusiveControlContext",
+        "setTableName",
+        "setVersionColumnName",
+        "setPrimaryKeyColumnNames",
+        "appendCondition",
+        "排他制御",
+        "バージョン番号"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Actionの作成",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "OptimisticLockException",
+        "ApplicationException",
+        "@OnError",
+        "@OnErrors",
+        "@OnDoubleSubmission",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersionsWithCheck",
+        "W11AC03Action",
+        "楽観ロック",
+        "バージョン番号"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "楽観ロックを使用した排他制御で作成するクラス:\n\n| クラス | ステレオタイプ | 説明 |\n|---|---|---|\n| ExclusiveCtrlSystemAccountContext.java | — | 排他制御補助クラス。排他制御実行に必要な情報を保持する |\n| W11AC03Action.java | Action | 排他制御補助クラスを使用し、更新処理時に排他制御を行う |",
+    "s2": "本書で作成する排他制御の仕様:\n\n- 楽観ロック\n- 排他制御のバージョン番号として、SYSTEM_ACCOUNTテーブルの **VERSION** カラムの値を使用する",
+    "s3": "主キークラス作成手順:\n\n1. `ExclusiveControlContext` を継承\n2. 排他制御用テーブルの主キーを列挙型で定義\n3. 主キーの値を引数にとるコンストラクタを定義\n4. 排他制御に関するテーブルの情報を設定:\n   - `setTableName` — テーブル名\n   - `setVersionColumnName` — バージョン番号カラム名\n   - `setPrimaryKeyColumnNames` — 主キーカラム名一覧\n   - `appendCondition` — 行特定条件\n\nテーブル定義:\n```sql\nCREATE TABLE SYSTEM_ACCOUNT (\n    USER_ID CHAR(10) NOT NULL,\n    VERSION NUMBER(10,0) DEFAULT 1 NOT NULL\n);\nALTER TABLE SYSTEM_ACCOUNT ADD(PRIMARY KEY (USER_ID) USING INDEX);\n```\n\n実装例:\n```java\npublic class ExclusiveCtrlSystemAccountContext extends ExclusiveControlContext {\n    private enum PK { USER_ID }\n    public ExclusiveCtrlSystemAccountContext(String userId) {\n        setTableName(\"SYSTEM_ACCOUNT\");\n        setVersionColumnName(\"VERSION\");\n        setPrimaryKeyColumnNames(PK.values());\n        appendCondition(PK.USER_ID, userId);\n    }\n}\n```",
+    "s4": "更新取引の排他処理では `HttpExclusiveControlUtil` を使用する。各フェーズで以下のメソッドを呼び出す:\n\n| 呼び出しタイミング | メソッド | 動作 |\n|---|---|---|\n| 更新画面初期表示 | `prepareVersion(ctx, context)` | バージョン番号をDBから取得し主キークラスに設定 |\n| 更新確認処理 | `checkVersions(req, ctx)` | バージョンチェック（不一致→`OptimisticLockException`） |\n| DB更新処理 | `updateVersionsWithCheck(req)` | バージョンチェック＋更新（不一致→`OptimisticLockException`） |\n\n`OptimisticLockException` 発生時の遷移先は `@OnError` / `@OnErrors` で指定する。\n\n```java\n// 更新画面初期表示: バージョン番号取得\nHttpExclusiveControlUtil.prepareVersion(ctx, new ExclusiveCtrlSystemAccountContext(userId));\n```\n\n```java\n// 更新確認処理: バージョンチェック\n@OnErrors({\n    @OnError(type = OptimisticLockException.class,\n             path = \"forward:///action/ss11AC/W11AC01Action/RW11AC0102\"),\n    @OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0301.jsp\")\n})\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    HttpExclusiveControlUtil.checkVersions(req, ctx);\n    ...\n}\n```\n\n```java\n// DB更新処理: バージョンチェック＋更新\n@OnErrors({\n    @OnError(type = OptimisticLockException.class,\n             path = \"forward:///action/ss11AC/W11AC01Action/RW11AC0102\"),\n    @OnError(type = ApplicationException.class, path = \"forward://RW11AC0303\")\n})\n@OnDoubleSubmission(path = \"forward://RW11AC0303\", statusCode = 400)\npublic HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {\n    HttpExclusiveControlUtil.updateVersionsWithCheck(req);\n    ...\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-validation_basic_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 基本的な考え方",
+      "description": "The source's '基本的な考え方' subsection explains the fundamental design principle: (1) system permitted characters are defined using Unicode code points, and (2) the union of all defined charset sets constitutes the system permitted characters. This conceptual explanation is entirely absent from s2, which jumps directly to interface/class definitions. An AI answering questions about why multiple CharsetDef instances are combined would lack this context.",
+      "source_evidence": "Unicodeのコードポイントを用いて、システムで使用可能な文字集合を定義する。定義した文字集合の和集合をシステム許容文字として定義する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source's H2 section 'システム許容文字のバリデーション' contains 9 H3-level subsections (基本的な考え方, インタフェース定義, クラス定義, コードポイント範囲指定による許容文字集合定義, リテラル文字列指定による許容文字集合定義, 許容文字集合の組み合わせによる許容文字集合定義, 許容文字判定結果のキャッシュ, 許容文字集合の登録方法, 精査エラー時に使用するメッセージIDの指定方法) and well over 2000 characters of plain text. Per V3 rules, when an H2 has ≥ 2000 chars and H3 subsections exist but the knowledge file does not split, this should be reported.",
+      "source_evidence": "Source H2 'システム許容文字のバリデーション' contains 9 H3 headings spanning configuration details, code examples, and conceptual explanations, all consolidated into a single s2 section in the knowledge file."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-ProcessResidentHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 関連するハンドラ > ProcessStopHandler",
+      "description": "The source states two sentences about ProcessStopHandler: (1) once this handler is incorporated in the handler queue, the queue cannot be stopped externally except by signal ('本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で外部から停止させることができなくなる'), and (2) to allow normal termination via external command, ProcessStopHandler must be placed after this handler. The knowledge file omits the first sentence entirely — the key constraint that explains why ProcessStopHandler is required. Without this, a developer cannot understand the behavioral implication of using ProcessResidentHandler.",
+      "source_evidence": "本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で外部から停止させることができなくなる。外部コマンドなどによって正常終了させるには、:doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。"
+    }
+  ]
+}

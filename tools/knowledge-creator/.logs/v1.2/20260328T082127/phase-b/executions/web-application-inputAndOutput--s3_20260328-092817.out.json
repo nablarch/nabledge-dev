@@ -1,0 +1,67 @@
+{
+  "id": "web-application-inputAndOutput--s3",
+  "title": "codeタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コードIDに対応するコード値が2件の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "codeCheckboxタグ",
+        "codeId属性",
+        "value属性 デフォルト",
+        "labelPattern デフォルト",
+        "チェックボックス コード値2件",
+        "nablarch_checkbox"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コードIDに対応するコード値が2件以上の場合",
+      "hints": [
+        "n:codeCheckbox",
+        "offCodeValue属性",
+        "コード値2件以上",
+        "value属性",
+        "labelPattern属性",
+        "optionColumnName属性",
+        "チェックボックス"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "詳細画面や一覧画面でコードの選択項目を表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "labelPattern属性",
+        "pattern属性",
+        "optionColumnName属性",
+        "$VALUE$ $NAME$ $SHORTNAME$ $OPTIONALNAME$",
+        "詳細画面 一覧画面 コード表示",
+        "リクエストスコープ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "登録画面や更新画面で選択可能なコード値を一覧形式で表示する場合",
+      "hints": [
+        "n:code",
+        "codeタグ",
+        "codeId属性",
+        "pattern属性",
+        "登録画面 更新画面 コード値一覧",
+        "name属性なし",
+        "Actionクラス不要"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`n:codeCheckbox`タグでコード値が2件の場合の実装。\n\n- `value`属性のデフォルト値: `1`\n- `labelPattern`属性のデフォルト値: `$NAME$`\n- `id`属性は自動指定（形式: `nablarch_checkbox<連番>`）\n\n**JSP実装例**（`value`・`labelPattern`はデフォルト使用）:\n```jsp\n<n:codeCheckbox name=\"W11AF01.canUpdate\" codeId=\"0001\" />\n```",
+    "s2": "`n:codeCheckbox`タグでコード値が2件以上の場合の実装。\n\n> **重要**: コード値が2件以上の場合、`codeId`属性からの検索で`offCodeValue`が見つからないため、`offCodeValue`属性を明示的に指定する必要がある。また、デフォルト値（`1`）と異なる場合は`value`属性も明示的に指定する。\n\n**JSP実装例**:\n```jsp\n<n:codeCheckbox name=\"W11AF01.join\" codeId=\"0002\"\n                value=\"Y\" offCodeValue=\"N\"\n                labelPattern=\"$SHORTNAME$($OPTIONALNAME$)\"\n                optionColumnName=\"OPTION01\" />\n```",
+    "s3": "`n:code`タグで詳細・一覧画面にコードの選択項目を表示する場合、Actionクラスでリクエストスコープにデータを設定する必要がある。\n\nCODE_NAMEテーブルの表示項目選択条件:\n1. `codeId`属性で指定したID\n2. CODE_PATTERNテーブルの`pattern`属性で指定したカラム名の値が`1`\n3. VALUEカラムの値 = `name`属性の参照値\n\n`labelPattern`属性の変数:\n- `$VALUE$`: コード値（VALUEカラム）\n- `$NAME$`: コード名称（NAMEカラム）\n- `$SHORTNAME$`: コード略称（SHORT_NAMEカラム）\n- `$OPTIONALNAME$`: オプション名称（OPTIONカラム）— 使用する場合は`optionColumnName`属性でカラム名を指定する必要がある\n\n**Actionクラス実装例**:\n```java\nW11AC02Form form = new W11AC02Form();\nform.setBatchStatus(Batch.WAITING);\ncontext.setRequestScopedVar(\"W11AC02\", form);\n```\n\n**JSP実装例**:\n```jsp\n<n:code name=\"W11AC02.batchStatus\"\n        codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```",
+    "s4": "`n:code`タグで登録・更新画面にコード値を一覧形式で表示する場合。`codeId`属性と`pattern`属性のみからコード値を取得するため、Actionクラスでのリクエストスコープ設定は不要。\n\nCODE_NAMEテーブルの表示項目選択条件:\n1. `codeId`属性で指定したID\n2. CODE_PATTERNテーブルの`pattern`属性で指定したカラム名の値が`1`\n\n- `name`属性は記述しない（特定の値への絞り込みなし）\n\n**JSP実装例**:\n```jsp\n<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```"
+  }
+}

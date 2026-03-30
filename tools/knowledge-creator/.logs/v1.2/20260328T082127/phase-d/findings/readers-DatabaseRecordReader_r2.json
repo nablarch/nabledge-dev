@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-DatabaseRecordReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — property table",
+      "description": "The knowledge file introduces two columns — 「必須」(marked ○ for both rows) and 「デフォルト値」(empty) — that do not exist in the source table. The source table only has four columns: 設定項目, プロパティ名, データ型, 備考. Furthermore, marking both mutually exclusive `statement` entries with ○ in the fabricated 必須 column is misleading: the source states 「排他利用。いずれか必須」in the 備考 column, meaning the two variants are mutually exclusive (use one or the other), not that both must be specified simultaneously.",
+      "source_evidence": "Source table columns: 設定項目 | プロパティ名 | データ型 | 備考. 備考 cell (spanning both rows): 「排他利用。いずれか必須」. No 必須 column or デフォルト値 column exists in the source."
+    }
+  ]
+}

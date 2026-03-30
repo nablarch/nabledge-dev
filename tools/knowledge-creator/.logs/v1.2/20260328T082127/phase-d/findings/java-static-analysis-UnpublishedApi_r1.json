@@ -1,0 +1,27 @@
+{
+  "file_id": "java-static-analysis-UnpublishedApi",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s3",
+      "description": "Knowledge file states '(ClassCがClassBを継承し、ClassBがClassAを継承する場合)' to describe the inheritance structure, but the source only references an image (`.. image:: ./_image/InheritClasses.jpg`) with no textual description of the inheritance hierarchy. This structural description cannot be verified from source text alone.",
+      "source_evidence": "Source contains only: 'この時、使用可能か否かは次のとおりである。' followed by the code block showing `hoge.methodA()` → 使用可能 and `hoge.methodB()` → 使用不可, with no textual description of which class inherits from which."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The knowledge file contains RST-specific internal reference markup (`:ref:\\`01_customJavaAnalysisEclipse\\`` and `:ref:\\`01_customJavaAnalysisAnt\\``) that does not render properly in a markdown context. These appear as literal text rather than functional cross-references.",
+      "source_evidence": "Source RST: '各使用方法についての詳細は :ref:`01_customJavaAnalysisEclipse` 、 :ref:`01_customJavaAnalysisAnt` を参照のこと。' — these are RST directives that have no meaning outside of RST rendering."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s7",
+      "description": "Source notes that check result confirmation method is intentionally not described because the Ant task is intended for CI usage ('CI上で使用することを想定している'). Knowledge file s7 omits this context and the explanation for why result confirmation is not covered.",
+      "source_evidence": "Source: 'チェック結果の確認方法は、各プロジェクトでFindBugsをどう使用するかによって異なるためここでは述べない（CI上で使用することを想定している）。'"
+    }
+  ]
+}

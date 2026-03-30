@@ -1,0 +1,680 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_TagReference--s39",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2 codeCheckboxタグ)",
+      "description": "The hint \"offCodeValue\" appears twice in the hints array for s2.",
+      "source_evidence": "hints array: [..., \"offCodeValue\", ..., \"offCodeValue\"] — duplicate entry at positions 6 and 14"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s15 (検索結果 — varStatusName note)",
+      "description": "The code example in the varStatusName warning note is incomplete. The source shows a two-line example demonstrating both n:set and n:write usage, but the knowledge file omits the `<n:write name=\"rowCount\" />` line, leaving the usage pattern incomplete.",
+      "source_evidence": "Source: `<n:set var=\"rowCount\" value=\"${status.count}\" />` followed by `<n:write name=\"rowCount\" />`. Knowledge file note only contains the n:set line."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+codeCheckboxesタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | id属性は指定不可。
+:ref:`WebView_FocusAttributesTag`      | accesskey属性は指定不可。
+name(必須)                             | XHTMLのname属性。
+codeId(必須)                           | コードID。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+                                       | 選択肢のうち、先頭要素のみautofocus属性を出力する。
+pattern                                | 使用するパターンのカラム名。
+                                       | デフォルトは指定なし。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CodeCheckboxTag:
+
+codeCheckboxタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+value                                  | XHTMLのvalue属性。
+                                       | チェックありの場合に使用するコード値。
+                                       | デフォルトは"1"。
+autofocus                              | HTML5のautofocus属性。
+codeId(必須)                           | コードID。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+offCodeValue                           | チェックなしの場合に使用するコード値。
+                                       | offCodeValue属性が指定されない場合は、
+                                       | codeId属性の値からチェックなしの場合に使用するコード値を検索する。
+                                       | 検索結果が2件、かつ1件がvalue属性の値である場合は、
+                                       | 残りの1件をチェックなしのコード値として使用する。
+                                       | 検索で見つからない場合は、デフォルト値の"0"を使用する。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CodeTag:
+
+codeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name                                   | 表示対象のコード値を変数スコープから取得する際に使用する名前
+                                       | 省略した場合は、コードID属性とpattern属性にて絞り込んだコードの一覧を表示する。
+codeId(必須)                           | コードID。
+pattern                                | 使用するパターンのカラム名。
+                                       | デフォルトは指定なし。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+====================================== ==========================================================================================
+
+.. _WebView_MessageTag:
+
+messageタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+messageId(必須)                        | メッセージID。
+option0～option9                       | メッセージフォーマットに使用するインデックスが0～9のオプション引数。
+                                       | 最大10個までオプション引数が指定できる。
+language                               | メッセージの言語。
+                                       | デフォルトはスレッドコンテキストに設定された言語。
+var                                    | リクエストスコープに格納する際に使用する変数名。
+                                       | var属性が指定された場合はメッセージを出力せずにリクエストスコープに設定する。
+                                       | リクエストスコープに設定する場合はHTMLエスケープとHTMLフォーマットを行わない。
+htmlEscape                             | HTMLエスケープをするか否か。
+                                       | HTMLエスケープをする場合はtrue、しない場合はfalse。
+                                       | デフォルトはtrue。
+withHtmlFormat                         | HTMLフォーマット(改行と半角スペースの変換)をするか否か。
+                                       | HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+.. _WebView_ListSearchResultTag:
+
+listSearchResultタグ
+-------------------------
+listSearchResultタグでは、画面要素毎に属性を示す。
+
+|
+
+.. image:: ./_images/WebView_ListSearchResultPagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+全体
+---------------------------------------------------------------------------------------------------------------------------------
+listSearchInfoName                     | ListSearchInfoをリクエストスコープから取得する際に使用する名前。
+                                       | 指定がない場合は「検索結果件数」および「ページング」を表示しない。
+                                       | 一括削除確認画面など、一覧表示のみを行う場合は指定しない。
+listSearchResultWrapperCss             | ページング付きテーブル全体(検索結果件数、ページング、検索結果)をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_listSearchResultWrapper"。
+検索結果件数
+---------------------------------------------------------------------------------------------------------------------------------
+useResultCount                         | 検索結果件数を表示するか否か。
+                                       | デフォルトはtrue。
+resultCountCss                         | 検索結果件数をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_resultCount"。
+resultCountFragment                    | 検索結果件数を出力するJSPフラグメント。
+                                       | デフォルトは"検索結果 <PagingInfoのresultCountプロパティ>件"。
+ページング
+---------------------------------------------------------------------------------------------------------------------------------
+usePaging                              | ページングを表示するか否か。
+                                       | デフォルトはtrue。
+searchUri                              | ページングのサブミット要素に使用するURI。
+                                       | ページングを表示する場合は必ず指定すること。
+pagingPosition                         | ページングの表示位置。
+                                       | 下記のいずれかを指定する。
+                                       | top(上側のみ)
+                                       | bottom(下側のみ)
+                                       | both(両方)
+                                       | none(表示なし)
+                                       | デフォルトはtop。
+pagingCss                              | ページングのサブミット要素(前へ、次へなど)全体をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_paging"。
+====================================== ==========================================================================================
+
+|
+
+.. image:: ./_images/WebView_ListSearchResultPagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+現在のページ番号
+---------------------------------------------------------------------------------------------------------------------------------
+useCurrentPageNumber                   | 現在のページ番号を使用するか否か。
+                                       | デフォルトはtrue。
+currentPageNumberCss                   | 現在のページ番号をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_currentPageNumber"。
+currentPageNumberFragment              | 現在のページ番号を出力するJSPフラグメント。
+                                       | デフォルトは"[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]"。
+最初
+---------------------------------------------------------------------------------------------------------------------------------
+useFirstSubmit                         | 最初のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+firstSubmitTag                         | 最初のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+firstSubmitType                        | 最初のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+firstSubmitCss                         | 最初のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_firstSubmit"。
+firstSubmitLabel                       | 最初のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"最初"。
+firstSubmitName                        | 最初のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"firstSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"firstSubmit_top"となる。
+前へ
+---------------------------------------------------------------------------------------------------------------------------------
+usePrevSubmit                          | 前のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはtrue。
+prevSubmitTag                          | 前のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+prevSubmitType                         | 前のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+prevSubmitCss                          | 前のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_prevSubmit"。
+prevSubmitLabel                        | 前のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"前へ"。
+prevSubmitName                         | 前のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"prevSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"prevSubmit_top"となる。
+ページ番号(ページ番号をラベルとして使用するためラベル指定がない)
+---------------------------------------------------------------------------------------------------------------------------------
+usePageNumberSubmit                    | ページ番号のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+pageNumberSubmitTag                    | ページ番号のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+pageNumberSubmitType                   | ページ番号のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+pageNumberSubmitCss                    | ページ番号のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_pageNumberSubmit"。
+pageNumberSubmitName                   | ページ番号のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"pageNumberSubmit"。
+                                       | ページ番号とページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側でページ番号が3の場合は"pageNumberSubmit3_top"となる。
+次へ
+---------------------------------------------------------------------------------------------------------------------------------
+useNextSubmit                          | 次のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはtrue。
+nextSubmitTag                          | 次のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+nextSubmitType                         | 次のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+nextSubmitCss                          | 次のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_nextSubmit"。
+nextSubmitLabel                        | 次のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"次へ"。
+nextSubmitName                         | 次のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"nextSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"nextSubmit_top"となる。
+最後
+---------------------------------------------------------------------------------------------------------------------------------
+useLastSubmit                          | 最後のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+lastSubmitTag                          | 最後のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+lastSubmitType                         | 最後のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+lastSubmitCss                          | 最後のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_lastSubmit"。
+lastSubmitLabel                        | 最後のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"最後"。
+lastSubmitName                         | 最後のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"lastSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"lastSubmit_top"となる。
+====================================== ==========================================================================================
+
+|
+
+.. image:: ./_images/WebView_ListSearchResultPagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+検索結果
+---------------------------------------------------------------------------------------------------------------------------------
+resultSetName(必須)                    | 検索結果をリクエストスコープから取得する際に使用する名前。
+resultSetCss                           | 検索結果テーブルのclass属性。
+                                       | デフォルトは"nablarch_resultSet"。
+headerRowFragment(必須)                | ヘッダ行のJSPフラグメント。
+bodyRowFragment(必須)                  | ボディ行のJSPフラグメント。
+varRowName                             | ボディ行のフラグメントで行データ(c:forEachタグのvar属性)を参照する際に使用する変数名。
+                                       | デフォルトは"row"。
+varStatusName                          | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。
+                                       | デフォルトは"status"。
+                                       
+                                         .. note::
+                                         
+                                          n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\
+                                          エラーが発生し値を取得できない。\
+                                          n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\
+                                          下記に使用例を示す。
+                                          
+                                          .. code-block:: jsp
+                                          
+                                           <n:set var="rowCount" value="${status.count}" />
+                                           <n:write name="rowCount" />
+                                       
+varCountName                           | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。
+                                       | デフォルトは"count"。
+varRowCountName                        | 検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。
+                                       | デフォルトは"rowCount"。
+varOddEvenName                         | ボディ行のclass属性を参照する際に使用する変数名。
+                                       | この変数名は、1行おきにclass属性の値を変更したい場合に使用する。
+                                       | デフォルトは"oddEvenCss"。
+oddValue                               | ボディ行の奇数行に使用するclass属性。
+                                       | デフォルトは"nablarch_odd"。
+evenValue                              | ボディ行の偶数行に使用するclass属性。
+                                       | デフォルトは"nablarch_even"。
+====================================== ==========================================================================================
+
+.. _WebView_ListSearchSortSubmitTag:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_TagReference--s39",
+  "title": "codeCheckboxesタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "codeCheckboxesタグ",
+      "hints": [
+        "codeCheckboxes",
+        "name",
+        "codeId",
+        "pattern",
+        "optionColumnName",
+        "labelPattern",
+        "listFormat",
+        "errorCss",
+        "nameAlias",
+        "autofocus",
+        "disabled",
+        "onchange",
+        "コードチェックボックス複数",
+        "コードID",
+        "ラベルパターン",
+        "リストフォーマット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "codeCheckboxタグ",
+      "hints": [
+        "codeCheckbox",
+        "name",
+        "value",
+        "codeId",
+        "optionColumnName",
+        "labelPattern",
+        "offCodeValue",
+        "disabled",
+        "onchange",
+        "errorCss",
+        "nameAlias",
+        "autofocus",
+        "コードチェックボックス単体",
+        "チェックなしコード値",
+        "offCodeValue"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "codeタグ",
+      "hints": [
+        "code",
+        "name",
+        "codeId",
+        "pattern",
+        "optionColumnName",
+        "labelPattern",
+        "listFormat",
+        "コード値表示",
+        "コードID",
+        "ラベルパターン"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "messageタグ",
+      "hints": [
+        "message",
+        "messageId",
+        "option0",
+        "language",
+        "var",
+        "htmlEscape",
+        "withHtmlFormat",
+        "メッセージ表示",
+        "HTMLエスケープ",
+        "HTMLフォーマット"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "listSearchResultタグ",
+      "hints": [
+        "listSearchResult",
+        "検索結果一覧",
+        "ページング",
+        "件数表示",
+        "ページング付きテーブル"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "全体",
+      "hints": [
+        "listSearchInfoName",
+        "listSearchResultWrapperCss",
+        "ListSearchInfo",
+        "listSearchResult全体属性",
+        "検索結果件数非表示"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "resultCountCss",
+        "resultCountFragment",
+        "検索結果件数表示",
+        "PagingInfo",
+        "resultCount"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "pagingPosition",
+        "pagingCss",
+        "ページング表示",
+        "表示位置",
+        "top",
+        "bottom",
+        "both",
+        "none"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "現在のページ番号",
+      "hints": [
+        "useCurrentPageNumber",
+        "currentPageNumberCss",
+        "currentPageNumberFragment",
+        "現在ページ番号表示",
+        "PagingInfo",
+        "currentPageNumber",
+        "pageCount"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "最初",
+      "hints": [
+        "useFirstSubmit",
+        "firstSubmitTag",
+        "firstSubmitType",
+        "firstSubmitCss",
+        "firstSubmitLabel",
+        "firstSubmitName",
+        "最初のページ",
+        "ページナビゲーション",
+        "submitLink"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "前へ",
+      "hints": [
+        "usePrevSubmit",
+        "prevSubmitTag",
+        "prevSubmitType",
+        "prevSubmitCss",
+        "prevSubmitLabel",
+        "prevSubmitName",
+        "前のページ",
+        "ページナビゲーション"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "ページ番号(ページ番号をラベルとして使用するためラベル指定がない)",
+      "hints": [
+        "usePageNumberSubmit",
+        "pageNumberSubmitTag",
+        "pageNumberSubmitType",
+        "pageNumberSubmitCss",
+        "pageNumberSubmitName",
+        "ページ番号ナビゲーション",
+        "サフィックス"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "次へ",
+      "hints": [
+        "useNextSubmit",
+        "nextSubmitTag",
+        "nextSubmitType",
+        "nextSubmitCss",
+        "nextSubmitLabel",
+        "nextSubmitName",
+        "次のページ",
+        "ページナビゲーション"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "最後",
+      "hints": [
+        "useLastSubmit",
+        "lastSubmitTag",
+        "lastSubmitType",
+        "lastSubmitCss",
+        "lastSubmitLabel",
+        "lastSubmitName",
+        "最後のページ",
+        "ページナビゲーション"
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "検索結果",
+      "hints": [
+        "resultSetName",
+        "resultSetCss",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "検索結果テーブル",
+        "行データ変数",
+        "奇数偶数行CSS"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | id属性は指定不可 |\n| :ref:`WebView_FocusAttributesTag` | | | accesskey属性は指定不可 |\n| name | ○ | | XHTMLのname属性 |\n| codeId | ○ | | コードID |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性。選択肢のうち先頭要素のみautofocus属性を出力する |\n| pattern | | 指定なし | 使用するパターンのカラム名 |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称、使用時はoptionColumnName必須)、`$VALUE$`(コード値) |\n| listFormat | | `br` | リスト表示フォーマット: `br`/`div`/`span`/`ul`/`ol`/`sp`(スペース区切り) |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定はカンマ区切り |",
+    "s2": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | |\n| :ref:`WebView_FocusAttributesTag` | | | |\n| name | ○ | | XHTMLのname属性 |\n| value | | `1` | XHTMLのvalue属性。チェックありの場合に使用するコード値 |\n| autofocus | | | HTML5のautofocus属性 |\n| codeId | ○ | | コードID |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`/`$SHORTNAME$`/`$OPTIONALNAME$`(使用時はoptionColumnName必須)/`$VALUE$` |\n| offCodeValue | | | チェックなしの場合に使用するコード値。未指定時はcodeIdからチェックなしのコード値を検索。検索結果が2件かつ1件がvalue属性の値の場合は残りの1件を使用。見つからない場合はデフォルト値`0`を使用 |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定はカンマ区切り |",
+    "s3": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | 表示対象のコード値を変数スコープから取得する名前。省略した場合はcodeIdとpatternで絞り込んだコード一覧を表示 |\n| codeId | ○ | | コードID |\n| pattern | | 指定なし | 使用するパターンのカラム名 |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`/`$SHORTNAME$`/`$OPTIONALNAME$`(使用時はoptionColumnName必須)/`$VALUE$` |\n| listFormat | | `br` | リスト表示フォーマット: `br`/`div`/`span`/`ul`/`ol`/`sp`(スペース区切り) |",
+    "s4": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| messageId | ○ | | メッセージID |\n| option0～option9 | | | メッセージフォーマットに使用するオプション引数（インデックス0～9、最大10個） |\n| language | | スレッドコンテキストの言語 | メッセージの言語 |\n| var | | | リクエストスコープに格納する変数名。指定された場合はメッセージを出力せずリクエストスコープに設定。HTMLエスケープとHTMLフォーマットは行わない |\n| htmlEscape | | `true` | HTMLエスケープをするか否か |\n| withHtmlFormat | | `true` | HTMLフォーマット（改行と半角スペースの変換）をするか否か。htmlEscape=trueの場合のみ有効 |",
+    "s5": "listSearchResultタグでは、画面要素毎に属性を示す。\n\n![ページング付きテーブルのレイアウト](assets/libraries-07_TagReference--s39/WebView_ListSearchResultPagingTableFull.jpg)",
+    "s6": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| listSearchInfoName | | | ListSearchInfoをリクエストスコープから取得する名前。指定なしの場合は「検索結果件数」と「ページング」を表示しない。一覧表示のみの場合（一括削除確認画面など）は指定しない |\n| listSearchResultWrapperCss | | `nablarch_listSearchResultWrapper` | ページング付きテーブル全体（検索結果件数、ページング、検索結果）をラップするdivタグのclass属性 |",
+    "s7": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useResultCount | | `true` | 検索結果件数を表示するか否か |\n| resultCountCss | | `nablarch_resultCount` | 検索結果件数をラップするdivタグのclass属性 |\n| resultCountFragment | | `検索結果 <resultCount>件` | 検索結果件数を出力するJSPフラグメント（デフォルト: 「検索結果 <PagingInfoのresultCountプロパティ>件」） |",
+    "s8": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePaging | | `true` | ページングを表示するか否か |\n| searchUri | | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること |\n| pagingPosition | | `top` | ページングの表示位置: `top`(上側のみ)/`bottom`(下側のみ)/`both`(両方)/`none`(表示なし) |\n| pagingCss | | `nablarch_paging` | ページングのサブミット要素全体をラップするdivタグのclass属性 |",
+    "s9": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useCurrentPageNumber | | `true` | 現在のページ番号を使用するか否か |\n| currentPageNumberCss | | `nablarch_currentPageNumber` | 現在のページ番号をラップするdivタグのclass属性 |\n| currentPageNumberFragment | | `[currentPageNumber/pageCountページ]` | 現在のページ番号を出力するJSPフラグメント（デフォルト: 「[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]」） |",
+    "s10": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useFirstSubmit | | `false` | 最初のページに遷移するサブミットを使用するか否か |\n| firstSubmitTag | | `submitLink` | 使用するNablarchタグ: `submitLink`(aタグ)/`submit`(inputタグ)/`button`(buttonタグ) |\n| firstSubmitType | | | タグのtype属性 (`submit`/`button`)。firstSubmitTagがsubmitLinkの場合は使用しない |\n| firstSubmitCss | | `nablarch_firstSubmit` | ラップするdivタグのclass属性 |\n| firstSubmitLabel | | `最初` | ラベル |\n| firstSubmitName | | `firstSubmit` | name属性。表示位置のサフィックス(`_top`/`_bottom`)を付けて出力（例: `firstSubmit_top`） |",
+    "s11": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePrevSubmit | | `true` | 前のページに遷移するサブミットを使用するか否か |\n| prevSubmitTag | | `submitLink` | 使用するNablarchタグ: `submitLink`(aタグ)/`submit`(inputタグ)/`button`(buttonタグ) |\n| prevSubmitType | | | タグのtype属性 (`submit`/`button`)。prevSubmitTagがsubmitLinkの場合は使用しない |\n| prevSubmitCss | | `nablarch_prevSubmit` | ラップするdivタグのclass属性 |\n| prevSubmitLabel | | `前へ` | ラベル |\n| prevSubmitName | | `prevSubmit` | name属性。表示位置のサフィックス(`_top`/`_bottom`)を付けて出力（例: `prevSubmit_top`） |",
+    "s12": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePageNumberSubmit | | `false` | ページ番号のページに遷移するサブミットを使用するか否か |\n| pageNumberSubmitTag | | `submitLink` | 使用するNablarchタグ: `submitLink`(aタグ)/`submit`(inputタグ)/`button`(buttonタグ) |\n| pageNumberSubmitType | | | タグのtype属性 (`submit`/`button`)。pageNumberSubmitTagがsubmitLinkの場合は使用しない |\n| pageNumberSubmitCss | | `nablarch_pageNumberSubmit` | ラップするdivタグのclass属性 |\n| pageNumberSubmitName | | `pageNumberSubmit` | name属性。ページ番号と表示位置のサフィックスを付けて出力（例: `pageNumberSubmit3_top`） |",
+    "s13": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useNextSubmit | | `true` | 次のページに遷移するサブミットを使用するか否か |\n| nextSubmitTag | | `submitLink` | 使用するNablarchタグ: `submitLink`(aタグ)/`submit`(inputタグ)/`button`(buttonタグ) |\n| nextSubmitType | | | タグのtype属性 (`submit`/`button`)。nextSubmitTagがsubmitLinkの場合は使用しない |\n| nextSubmitCss | | `nablarch_nextSubmit` | ラップするdivタグのclass属性 |\n| nextSubmitLabel | | `次へ` | ラベル |\n| nextSubmitName | | `nextSubmit` | name属性。表示位置のサフィックス(`_top`/`_bottom`)を付けて出力（例: `nextSubmit_top`） |",
+    "s14": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useLastSubmit | | `false` | 最後のページに遷移するサブミットを使用するか否か |\n| lastSubmitTag | | `submitLink` | 使用するNablarchタグ: `submitLink`(aタグ)/`submit`(inputタグ)/`button`(buttonタグ) |\n| lastSubmitType | | | タグのtype属性 (`submit`/`button`)。lastSubmitTagがsubmitLinkの場合は使用しない |\n| lastSubmitCss | | `nablarch_lastSubmit` | ラップするdivタグのclass属性 |\n| lastSubmitLabel | | `最後` | ラベル |\n| lastSubmitName | | `lastSubmit` | name属性。表示位置のサフィックス(`_top`/`_bottom`)を付けて出力（例: `lastSubmit_top`） |",
+    "s15": "| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| resultSetName | ○ | | 検索結果をリクエストスコープから取得する名前 |\n| resultSetCss | | `nablarch_resultSet` | 検索結果テーブルのclass属性 |\n| headerRowFragment | ○ | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | ○ | | ボディ行のJSPフラグメント |\n| varRowName | | `row` | ボディ行のフラグメントで行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | | `status` | ボディ行のフラグメントでステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | | `count` | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | | `rowCount` | 検索結果のカウント（検索結果取得開始位置＋ステータスのカウント）を参照する変数名 |\n| varOddEvenName | | `oddEvenCss` | ボディ行のclass属性を参照する変数名。1行おきにclass属性を変更したい場合に使用 |\n| oddValue | | `nablarch_odd` | 奇数行のclass属性 |\n| evenValue | | `nablarch_even` | 偶数行のclass属性 |\n\n> **注意**: `varStatusName`で参照するステータスに`n:write`タグでアクセスするとエラーが発生する。`n:set`タグを使用してアクセスすること。例: `<n:set var=\"rowCount\" value=\"${status.count}\" />`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

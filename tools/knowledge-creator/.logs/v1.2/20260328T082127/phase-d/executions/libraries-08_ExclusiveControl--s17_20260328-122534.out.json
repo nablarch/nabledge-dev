@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーの場合）",
+      "description": "The `UsersExclusiveControl` class implementation example is entirely absent from the knowledge file. The source provides the complete code showing how to subclass `ExclusiveControlContext` for composite keys, which introduces four essential API methods that developers must call: `setTableName`, `setVersionColumnName`, `setPrimaryKeyColumnNames`, and `appendCondition`. Without this example, developers cannot implement composite-key exclusive control — they know to call `checkVersion`/`updateVersionWithCheck`, but not how to construct the required `ExclusiveControlContext` subclass.",
+      "source_evidence": "Source defines `UsersExclusiveControl` with: `setTableName(\"USERS\")`, `setVersionColumnName(\"VERSION\")`, `setPrimaryKeyColumnNames(PK.values())`, `appendCondition(PK.USER_ID, userId)`, etc. None of these methods appear anywhere in the knowledge file."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 一括更新処理における更新チェック（主キーが組み合わせキーの場合）",
+      "description": "The note about framework-provided classes for composite-key bulk update — `WebView_CompositeKeyCheckboxTag`, `WebView_CompositeKeyRadioButtonTag`, and `nablarch.common.web.compositekey.CompositeKey` — is not mentioned in the knowledge file. These are presented as relevant supporting infrastructure for this use case.",
+      "source_evidence": "Source note: 「本フレームワークでは、:ref:`WebView_CompositeKeyCheckboxTag` と :ref:`WebView_CompositeKeyRadioButtonTag` 、nablarch.common.web.compositekey.CompositeKeyクラスを提供している。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`CommonExclusiveControlUtil` and `ExclusiveUserCondition` are PascalCase class names present in the s1 section content but are missing from the s1 hints array.",
+      "source_evidence": "`CommonExclusiveControlUtil` appears in the wrapper class code example included in s1. `ExclusiveUserCondition` appears in the `updateVersionWithCheck` loop code example in s1."
+    }
+  ]
+}

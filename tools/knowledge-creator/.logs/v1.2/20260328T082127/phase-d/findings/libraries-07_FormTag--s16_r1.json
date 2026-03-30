@@ -1,0 +1,33 @@
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The note about 変更パラメータ behavior under encryption is missing. The source states: '変更パラメータは、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。' This is decision-necessary for developers using 変更パラメータ with encrypted forms.",
+      "source_evidence": "尚、:ref:`変更パラメータ<WebView_ChangeableParams>` は、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The context for input data recovery is missing: (1) recovery is needed specifically for input errors and returning from confirmation screen, and (2) the note that application programmers do not need to be aware of where to retrieve input data. These provide useful developer guidance.",
+      "source_evidence": "入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。 / カスタムタグにより、リクエストパラメータから入力データを復元するため、アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 is titled '入力データの復元' in the index (title field: 'textタグの出力例') but actually merges content from three distinct source sections: '入力データの復元', '入力項目の確認画面用の出力', and 'textタグの出力例'. The s3 title 'textタグの出力例' is misleading since the section opens with confirmation page output content. Source has 7 headings vs 5 knowledge sections; '入力データの復元' and '入力項目の確認画面用の出力' have no dedicated sections."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Hint 'WebView_ConfirmationPageTag' is missing. The source explicitly uses this cross-reference target (:ref:`WebView_ConfirmationPageTag`) when referencing the confirmation page tag, which users may search for.",
+      "source_evidence": "確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する。"
+    }
+  ]
+}

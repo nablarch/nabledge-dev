@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_FacilitateTag--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s2",
+      "description": "The statement \"`SEARCH_COND_PROPS`は検索条件プロパティのみとし、`sortId`は含めない\" is not present in the source. The source states \"検索処理や並び替えの処理もページングを使用する場合と同じ実装方法となる\" (sorting uses the same implementation as paging), which means sortId may still be included when sorting is used. The source code for the no-paging case uses `...` as a placeholder without explicitly excluding sortId.",
+      "source_evidence": "「並び替えの処理もページングを使用する場合と同じ実装方法となる」— the no-paging source code shows `SEARCH_COND_PROPS = new String[] { ... }` with `...` as a placeholder, never explicitly stating sortId is excluded."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "Section s1 merges the top-level section \"検索結果の並び替え\" with two h3 subsections \"検索処理の実装方法\" and \"listSearchSortSubmitタグ\". The combined content is well over 2000 characters and the source has distinct h3 headings, which per V3 rules warrants splitting into separate sections.",
+      "source_evidence": "Source contains h3-level headings \"検索処理の実装方法\" (===) and \"listSearchSortSubmitタグ\" (===) under the parent h2 \"検索結果の並び替え\"; the combined plain text is far beyond 2000 characters."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1)",
+      "description": "The hints for s1 are missing the annotation names `@PropertyName` and `@Required`, both of which appear explicitly in the code example within s1 (`@PropertyName(\"ソートID\")` and `@Required` on the `setSortId` override).",
+      "source_evidence": "Source and knowledge file s1 code block both contain: `@PropertyName(\"ソートID\")` and `@Required public void setSortId(String sortId)`."
+    }
+  ]
+}

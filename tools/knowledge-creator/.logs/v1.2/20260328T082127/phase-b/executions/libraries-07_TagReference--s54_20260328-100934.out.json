@@ -1,0 +1,127 @@
+{
+  "id": "libraries-07_TagReference--s54",
+  "title": "listSearchSortSubmitタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "listSearchSortSubmitタグ",
+      "hints": [
+        "listSearchSortSubmit",
+        "並び替えソート送信",
+        "sortCss",
+        "ascCss",
+        "descCss",
+        "ascSortId",
+        "descSortId",
+        "listSearchInfoName",
+        "ListSearchInfo",
+        "一覧検索ソート"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "writeタグ",
+      "hints": [
+        "write",
+        "valueFormat",
+        "withHtmlFormat",
+        "yyyymmdd",
+        "yyyymm",
+        "dateTime",
+        "decimal",
+        "日時フォーマット",
+        "10進数フォーマット",
+        "値の出力"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "prettyPrintタグ",
+      "hints": [
+        "prettyPrint",
+        "整形出力",
+        "値の表示"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "rawWriteタグ",
+      "hints": [
+        "rawWrite",
+        "生値出力",
+        "HTMLエスケープなし出力"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "includeタグ",
+      "hints": [
+        "include",
+        "ファイルインクルード",
+        "path",
+        "インクルード"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "includeParamタグ",
+      "hints": [
+        "includeParam",
+        "インクルードパラメータ",
+        "paramName",
+        "インクルード時パラメータ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "confirmationPageタグ",
+      "hints": [
+        "confirmationPage",
+        "確認画面",
+        "フォワード",
+        "入力画面フォワード"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ignoreConfirmationタグ",
+      "hints": [
+        "ignoreConfirmation",
+        "確認画面スキップ",
+        "確認ページ無視"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "forInputPageタグ",
+      "hints": [
+        "forInputPage",
+        "入力画面",
+        "入力ページ条件"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "forConfirmationPageタグ",
+      "hints": [
+        "forConfirmationPage",
+        "確認画面",
+        "確認ページ条件"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## listSearchSortSubmitタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| tag | | submitLink | 並び替えサブミット用Nablarchタグ。`submitLink`(aタグ) / `submit`(inputタグ) / `button`(buttonタグ) |\n| type | | | タグのtype属性。`submit` / `button`のみサポート。`submitLink`使用時は無効 |\n| sortCss | | \"nablarch_sort\" | 並び替えサブミットのclass属性（常に出力） |\n| ascCss | | \"nablarch_asc\" | 昇順時のclass属性。sortCssに付加して出力。例: `class=\"nablarch_sort nablarch_asc\"` |\n| descCss | | \"nablarch_desc\" | 降順時のclass属性。sortCssに付加して出力。例: `class=\"nablarch_sort nablarch_desc\"` |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトソート。`asc`（昇順）/ `desc`（降順） |\n| label | ○ | | サブミット用ラベル |\n| name | ○ | | タグのname属性。画面内で一意にすること |\n| listSearchInfoName | ○ | | ListSearchInfoをリクエストスコープから取得する際の名前 |",
+    "s2": "## writeタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |\n| withHtmlFormat | | true | HTMLフォーマット（改行と半角スペースの変換）をするか否か。HTMLエスケープする場合のみ有効 |\n| valueFormat | | | 出力時フォーマット。`\"データタイプ{パターン}\"`形式で指定 |\n\n`valueFormat`の対応フォーマット:\n\n| データタイプ | 対象型 | 説明 |\n|---|---|---|\n| yyyymmdd | 文字列(yyyyMMdd形式またはパターン形式) | 年月日フォーマット。パターン文字はy(年)・M(月)・d(日)のみ指定可能。:ref:`WebView_CustomTagConfig` でデフォルトパターン設定可 |\n| yyyymm | 文字列(yyyyMM形式またはパターン形式) | 年月フォーマット。使用方法はyyyymmddと同様 |\n| dateTime | java.util.Date | 日時フォーマット（**writeタグのみ使用可**）。ThreadContextのタイムゾーンを使用。区切り文字`\\|`でパターンにタイムゾーンを直接指定可。:ref:`WebView_CustomTagConfig` でデフォルトパターンと区切り文字変更可 |\n| decimal | java.lang.Number または数字文字列 | 10進数フォーマット。ThreadContextの言語を使用。区切り文字`\\|`でパターンに言語を直接指定可。:ref:`WebView_CustomTagConfig` で区切り文字変更可 |\n\n`valueFormat`指定例:\n\n```bash\n# yyyymmdd: デフォルトパターン\nvalueFormat=\"yyyymmdd\"\n# yyyymmdd: パターン指定\nvalueFormat=\"yyyymmdd{yyyy/MM/dd}\"\n\n# datetime: デフォルトパターン+ThreadContextタイムゾーン\nvalueFormat=\"datetime\"\n# datetime: タイムゾーンのみ指定\nvalueFormat=\"datetime{|Asia/Tokyo}\"\n# datetime: パターンのみ指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss}\"\n# datetime: パターン+タイムゾーン指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss|Asia/Tokyo}\"\n\n# decimal: パターンのみ指定\nvalueFormat=\"decimal{###,###,###.000}\"\n# decimal: パターン+言語指定\nvalueFormat=\"decimal{###,###,###.000|ja}\"\n```",
+    "s3": "## prettyPrintタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |",
+    "s4": "## rawWriteタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |",
+    "s5": "## includeタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | ○ | | インクルード先のパス |",
+    "s6": "## includeParamタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| paramName | ○ | | インクルード時に使用するパラメータの名前 |\n| name | | | 値を取得する名前。name属性とvalue属性のどちらか一方を指定 |\n| value | | | 値を直接指定する場合に使用。name属性とvalue属性のどちらか一方を指定 |",
+    "s7": "## confirmationPageタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | | | フォワード先（入力画面）のパス |",
+    "s8": "## ignoreConfirmationタグ\n\n属性なし。",
+    "s9": "## forInputPageタグ\n\n属性なし。",
+    "s10": "## forConfirmationPageタグ\n\n属性なし。"
+  }
+}

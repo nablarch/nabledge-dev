@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 has an empty title and 'なし' content, with only 'map-search-label' as a hint. In the RST source, `.. _map-search-label:` is an anchor/label directive for the following section heading, not a section heading itself. It should not be represented as a standalone knowledge section. The actual section is captured in s5.",
+      "source_evidence": ".. _map-search-label:\n\n--------------------------------------------------------------\nオブジェクトのフィールドの値の検索機能(Mapのサブクラス編)\n--------------------------------------------------------------"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ORDER BY警告",
+      "description": "The ORDER BY warning in s2 omits the recommendation 'バッチ処理では、不要な並び替えを行わず、必要最小限の並び替えのみ使用すること'. This is a distinct implementation guideline: even when fixed ORDER BY is used in batch, sorting itself should be minimized. The knowledge file only captures 'バッチ処理では固定のORDER BY句を使用すること', missing this additional best-practice constraint.",
+      "source_evidence": "バッチ処理では、不要な並び替えを行わず、必要最小限の並び替えのみ使用すること。また、バッチ処理で並び替えを使用する場合は、インプットデータであるファイルやデータベースのレイアウトが明確であるため、必ずORDER BY句が固定となるSQLを使用すること。"
+    }
+  ]
+}

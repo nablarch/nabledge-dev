@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-01_UnitTestOutline--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "index s4 hints",
+      "description": "Hint \"BatchRequestTestSupport\" is a fabricated class name. The source file never names this class — it only states \"このような典型的な定型処理を実装したスーパークラスが提供されており\" without identifying the class.",
+      "source_evidence": "「このような典型的な定型処理を実装したスーパークラスが提供されており、これを利用することで、テスト準備、テスト対象の実行、テスト結果確認が可能である。」(バッチ処理におけるリクエスト単体テスト, 特色 3)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s6, step 3",
+      "description": "\"ActionがメッセージコンポーネントにパラメータをGETし要求電文に変換\" inverts the data-flow direction from the source. The source states Action *executes* the message-send component (メッセージ送信コンポーネントを実行する) and the component *receives parameters from Action* (Actionから受け取ったパラメータを変換する). The knowledge file also drops \"送信\" from \"メッセージ送信コンポーネント\".",
+      "source_evidence": "「③Actionはメッセージ送信コンポーネントを実行する。メッセージ送信コンポーネントはActionから受け取ったパラメータを要求電文に変換する。」(同期応答メッセージ送信処理・応答不要メッセージ送信処理におけるリクエスト単体テスト, テストフロー③)"
+    }
+  ]
+}

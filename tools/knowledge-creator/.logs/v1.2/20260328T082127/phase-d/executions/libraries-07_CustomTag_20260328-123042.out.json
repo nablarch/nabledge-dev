@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_CustomTag",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — ディスパッチャの設定",
+      "description": "Source contains a second bash code block showing MenuAction's URI and method patterns, but the knowledge file only includes the UserAction example. The source explicitly states 'UserActionクラスとMenuActionクラスの例を示す' and provides both. MenuAction's URI pattern (`<コンテキストパス>/action/MenuAction/<リクエストID>`) and method pattern (`nablarch.sample.MenuAction#do<リクエストID>(HttpRequest req, ExecutionContext ctx)`) are omitted. This is a distinct example: MenuAction's class is at the top-level of basePackage (no sub-package), contrasting with UserAction's `management/user/UserAction` sub-package path — important for understanding URI mapping with different package depths.",
+      "source_evidence": "# URI(baseUri＋basePackageを除いたクラス名＋リクエストID)\n<コンテキストパス>/action/MenuAction/<リクエストID>\n\n# メソッド\nnablarch.sample.MenuAction#do<リクエストID>(HttpRequest req, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Three items referenced in s3 section content are absent from the hints array: `07_FormTagList` (タグ一覧として :doc:`./07_FormTagList` が参照される), `07_OtherTag` (その他のカスタムタグの詳細リンク :doc:`./07_OtherTag`), and `web_view_format` (:ref:`web_view_format` 参照として明記される).",
+      "source_evidence": "値をフォーマットして出力する機能については、:ref:`web_view_format` を参照。 / ./07_FormTagList / ./07_OtherTag"
+    }
+  ]
+}

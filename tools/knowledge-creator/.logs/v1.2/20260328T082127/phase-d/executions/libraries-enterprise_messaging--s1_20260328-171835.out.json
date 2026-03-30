@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / overall structure",
+      "description": "Knowledge file has 3 sections (s1, s2, s3), but the source TOC lists 4 internal anchored sections: 全体構成, 基本概念, メッセージング基盤API, メッセージングプロバイダ. The `.. _messaging_api:` label appears at the very end of the provided source with no following content, indicating the source file was truncated. Sections for メッセージング基盤API and メッセージングプロバイダ are entirely absent from the knowledge file. The automated check S9 (count 3 < 6) corroborates this.",
+      "source_evidence": "Source TOC: `- メッセージング基盤API_` and `- メッセージングプロバイダ_` (internal anchors in same file). Source ends with `.. _messaging_api:` label but no heading or content follows."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "s2 hints include 応答不要メッセージ送信 and 同期応答メッセージ送信 but are missing 応答不要メッセージ受信 and 同期応答メッセージ受信. All four appear explicitly in the s2 section content as the complete list of message types handled by メッセージング基盤API.",
+      "source_evidence": "Source 全体構成 section lists under メッセージング基盤API: 応答不要メッセージ送信, 同期応答メッセージ送信, 応答不要メッセージ受信, 同期応答メッセージ受信."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s3 — code example",
+      "description": "The code example in s3 omits the comment `# フレームワーク制御ヘッダ部 (50byte)` present in the source. This comment specifies the total byte size (50 bytes) of the framework control header section, which is relevant for defining message physical layouts.",
+      "source_evidence": "Source code block begins with: `#===================================================================\\n# フレームワーク制御ヘッダ部 (50byte)\\n#===================================================================`. Knowledge file code block starts directly with `[NablarchHeader]`."
+    }
+  ]
+}

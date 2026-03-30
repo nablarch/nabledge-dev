@@ -1,0 +1,496 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/01_NablarchOutline/01_NablarchOutline.rst`
+- Format: `rst`
+
+```
+.. _nablarchOutline:
+
+=================================================
+Nablarch Application Framework 概要
+=================================================
+
+この節では、業務アプリケーションを実装するために最低限必要となる
+Nablarch Application Framework (NAF) の基本的な概念について解説する。
+
+NAFは、オンライン画面入力、バッチ入力、メッセージング処理など、
+基幹システムで必要とされる広範な形態の処理をサポートする一方で、
+アプリケーション側の処理に関しては、非常に簡潔かつ単一のモデルに沿った制御を行う。
+
+本節ではまず、この処理モデルについて解説した後、業務処理実装の概要について述べる。
+
+NAFのアプリケーション処理モデル
+=============================================
+まず、アプリケーションに対して入力データが与えられる。
+例えば、画面オンライン処理であればブラウザから送信されるHTTPリクエストが入力となり、
+バッチ処理であればファイルもしくはDB上のデータレコードが入力となる。
+
+次にアプリケーションは与えられた入力データに対して処理を行い、その処理結果を返す。
+画面オンライン処理であれば、HTTPレスポンスの内容が返され、
+バッチ処理では入力レコードに対する処理結果ステータスが返される。
+
+ここまでの処理を最小の単位とし、それを繰り返すことによってアプリケーションの機能が実現される。
+
+
+**アプリケーションの基本構造**
+
+NAFにおけるアプリケーションの処理は、「トランザクション制御」や「応答電文の送信」といったステップごとに
+細かく分割され、それぞれ **ハンドラ** と呼ばれるモジュールによって実装される。
+
+これらのハンドラは、あらかじめ定められた順序に従って実行される。
+この際、各ハンドラを実行順に並べたキューを内部的に作成する。これを **ハンドラキュー** とよぶ。
+
+各ハンドラは、入力データを処理した後、同じ入力データを引数としてハンドラキュー上の次のハンドラを呼び出す。
+こうして、ハンドラキュー上のハンドラは先頭から順々に実行され、
+最終的に業務ロジックを実装したハンドラが呼び出される。
+このハンドラを **業務アクションハンドラ** と呼ぶ。
+業務アクションハンドラは業務処理を実行し、その結果をリターンする。
+各ハンドラはリターンされた処理結果に対して(必要であれば)処理を行い、再びリターンする。
+これにより、処理結果オブジェクトはハンドラキューを入力データとは逆の方向に遡り、
+先頭のハンドラまで処理結果が戻された時点で処理が完了する。
+
+次の図はこの内容を表した模式図である。
+(①～⑥の順)
+
+
+.. figure:: _image/handler_queue.png
+   :scale: 75
+   :align: center
+
+   **NAFにおけるアプリケーションの基本構造**
+
+
+標準ハンドラ構成
+=========================================
+フレームワークが提供するハンドラには、以下に挙げるように、様々な機能を実装したものが存在している。
+基本的に、NAFの機能はこれらのハンドラの組み合わせによって実現されている。
+
++ **汎用的に利用できるハンドラ**
+
+  - トランザクション制御ハンドラ
+  - リクエストディスパッチハンドラ
+  - 認可制御ハンドラ
+  - 開閉局制御ハンドラ   ... など
+
++ **画面オンライン処理に固有のハンドラ**
+
+  - HTTPレスポンスハンドラ
+  - HTTPアクセスログハンドラ
+  - Nablarchカスタムタグ制御ハンドラ  ... など
+
++ **バッチ処理に固有のハンドラ**
+
+  - プロセス常駐化ハンドラ
+  - マルチスレッド実行制御ハンドラ
+  - プロセス多重起動防止ハンドラ   ... など
+
++ **メッセージング処理に固有のハンドラ**
+
+  - 電文応答制御ハンドラ
+  - 再送電文制御ハンドラ          ... など
+
+
+NAFでは、標準的なハンドラキューの構成を用途ごとに定義しており、それらを **標準ハンドラ構成** と呼んでいる。
+
+以下の図は、オンライン画面処理で使用される標準ハンドラ構成を表した概念図である。
+
+.. figure:: _image/handler_structure_online_minify.png
+   :scale: 90
+   :align: center
+
+   **画面オンライン処理ハンドラ構成(簡易版)**
+
+バッチ処理では以下のようになる。
+
+入出力データの型や、使用しているハンドラの一部が異なっているものの、
+基本的な処理フローは同じだということがわかる。
+
+
+.. figure:: _image/handler_structure_batch_minify.png
+   :scale: 80
+   :align: center
+
+   **バッチ処理ハンドラ構成(簡易版)**
+
+.. note::
+
+  ここであげた標準ハンドラ構成は、主要なハンドラの一部のみをピックアップしたものであり、
+  実際の構成とは異なる。
+  標準ハンドラ構成の詳細については、「アーキテクチャ解説書」を参照すること。
+
+業務アプリケーションの実装
+=============================================
+業務アプリケーションの開発者が実装するハンドラは **業務アクションハンドラ** のみである。
+それ以外のハンドラについては、フレームワークで提供しているものをそのまま使用することができる。
+
+業務アクションハンドラが行う業務処理のおおまかな流れは下図のようになる。
+
+.. figure:: _image/action_handler.png
+   :scale: 80
+   :align: center
+
+図中の番号は処理の順番を示している。以下は上図の説明である。
+
+1. **入力データの取得**
+
+  入力データの内容は、基本的にMap形式で取得できるようになっている。(図中①)
+
+  (以降で使用する入力精査やDBアクセスといったライブラリも、基本的にMapを引数や戻り値として使用する。)
+
+2. **入力精査**
+
+  前段で取得した入力データのMapに対して精査処理を行う。(図中②)
+  精査ロジックはフォーム定義に沿って行なう。
+
+  **フォーム定義に沿った入力精査**
+
+    フォームとは「システムへの入力項目」の精査と値の保持を行うクラスであり、画面項目定義や
+    電文フォーマット定義などに沿って作成される。
+    フォームクラスの各項目には宣言的に精査仕様を設定できるようになっており、
+    精査ロジックを簡便に実装できる。
+
+    なお、DB内容との比較などの処理を含む精査については、ビジネスロジックの一部として実装する。
+
+  .. note::
+    フォームのうち、下記の特徴を持つクラスを特にエンティティと呼称する。
+    エンティティはテーブル定義に沿って作成される。
+
+    * フォームクラスがRDBMS上のテーブルと1対1にひもづく。
+    * フォームクラスのプロパティとテーブルのカラムが1対1にひもづく。
+
+
+3. **ビジネスロジックの実行**
+
+  精査が完了した入力データはフォームもしくはエンティティオブジェクトとして取得できる。
+  この内容をもとに、ビジネスロジックを実行する。
+  また、フレームワークが提供するライブラリを利用することで、
+  DB、データファイル、メッセージキューを通じた入出力を行うことができる。 (図中③)
+  これらのライブラリについても、Mapインターフェースを通じて利用できるようになっている。
+
+  **業務共通コンポーネントの利用**
+
+    複数の業務アクションから共用しうるロジックについては、業務アクションハンドラに直接実装するのではなく
+    個別のクラス(業務共通コンポーネント)として実装することを推奨する。(図中④)
+    また、既存の業務共通コンポーネントが適用可能であれば、積極的に利用すること。
+
+4. **処理結果の返却**
+
+  ビジネスロジックの処理結果を表すオブジェクトを返却する。(図中⑤)
+  バッチ処理など応答を伴わない場合は、
+  単に正常終了をあらわすマーカとなるオブジェクトをリターンすればよい。
+
+  また、業務アクションハンドラから実行時例外が送出された場合は、
+  ハンドラキュー上のハンドラによって、自動的にトランザクションがロールバックされる。
+
+  **レスポンス処理**
+
+  画面オンライン処理や同期応答を行うメッセージング処理では
+  応答の内容を指定するオブジェクトを処理結果として返却する必要がある。
+  例えば、画面オンライン処理であれば、遷移先画面となるJSPのパスを指定したオブジェクト(HttpResponse)
+  返す必要がある。
+  メッセージング処理では応答電文の内容や宛先キュー名を指定したオブジェクト(ResponseMessage) を返す。
+
+  これらのオブジェクトは、ハンドラキュー上の特定のハンドラによって処理され、送信元にレスポンスとして返される。
+  この処理を行うハンドラをレスポンスハンドラと呼ぶ。(下図参照)
+
+  .. figure:: _image/response_handler.png
+     :scale: 90
+     :align: left
+
+
+
+.. _stereoType:
+
+業務コンポーネントの責務配置
+===============================================
+前節で述べたように、業務機能は業務アクションハンドラ、フォーム/エンティティ、業務共通コンポーネントに実装される。
+しかし、業務処理の責務を各クラスにどのように責務配置するかについては様々な考え方があり、特定の方法に絞ることはできない。
+ここでは、典型的なプロジェクトで採用される責務配置の1例を示す。
+以降のガイドに示される実装例は、全てここで挙げた指針に沿って実装されている。
+
+=================================== ==========================================================================================================================
+名称 (クラス接尾辞)                 責務
+=================================== ==========================================================================================================================
+業務アクションハンドラ (Action)     フレームワークから直接コールバックされ、業務処理のエントリーポイントとなるモジュール。
+                                    Actionは、ユーザ一覧照会、ユーザ情報登録といった取引ごとに、1つずつ作成し、
+                                    比較的単純な業務処理であれば、このクラスに直接実装する。
+
+                                    一方、複雑な業務処理や、複数の業務および処理形態(バッチと画面オンラインなど)から共用される
+                                    業務処理については、業務共通コンポーネントを作成し、そこに実装する。
+
+                                    .. note::
+
+                                      業務アクションハンドラは、HTTPリクエストオブジェクトや実行コンテキストなどの、
+                                      フレームワークが作成するオブジェクトに依存するため、自動テストは後述するリクエスト単体テストによって行う必要がある。
+                                      このため、複雑な内部条件をもつ業務ロジックを実装した場合、
+                                      テストデータのセットアップ作業が煩雑となり、作業効率が低下する。
+                                      このような場合は、業務処理部分を業務共通コンポーネントとして切り出した上で、
+                                      クラス単体テストを行うこと。
+
+業務共通コンポーネント (Component)  業務ロジックを実装するクラス。
+                                    このクラスでは、HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤に属するオブジェクトに
+                                    直接依存することは避けること。
+
+業務フォーム (Form)                 アプリケーションで使用するデータの保持と、外部入力値の精査を実行するモジュール。
+                                    業務処理のうち、単項目入力精査および、項目間入力精査を実装する。
+                                    ただし、データベース等へのアクセスが必要となる精査処理については、業務アクションハンドラにて実装する。
+
+業務画面 (View)                     画面オンライン処理において、ユーザが使用するインタフェースを提供する。(通常はJSPを使用する。)
+                                    業務処理は実装せず、業務アクションハンドラから渡される処理結果を表示する。
+=================================== ==========================================================================================================================
+
+
+各構成要素間の処理の流れは以下のようになる。(図は画面オンライン処理での例)
+
+  .. image:: ./_image/fw_app_flow.png
+
+  :a): View(を表示している、Webクライアント)からリクエストが送られる。
+  :b): アプリケーションフレームワークが、リクエストを受信し、Actionを呼び出す。
+  :c): Actionはバリデーションを実行し、画面入力値が格納されたオブジェクト(Form)を生成して、Componentを呼び出す。
+  :d): Componentはビジネスロジックを実行し、結果をActionに返す。
+  :e): Actionは必要に応じて、Componentの戻り値を処理(リクエストスコープへの値の格納など)し、アプリケーションフレームワークに処理を返す。
+  :f): アプリケーションフレームワークはViewを処理(JSPをHTMLに変換など)し、クライアントにレスポンスを返す。
+
+
+実行コンテキストとスコープ
+===============================================
+
+    データベースへの検索処理の結果を業務アクションハンドラから業務画面にデータを渡したり、業務アクションハンドラ間でデータを
+    保持する際は、入力データ、処理結果とは別に実行コンテキストと呼ばれるオブジェクトにデータを保持できる。
+    
+    実行コンテキストに保持できるデータは、リクエストスコープとセッションスコープと呼ぶ2つのスコープに分けられる。
+    また、さらにWebアプリケーションでは、画面間でデータをやり取りする際に使用するウィンドウスコープと呼ぶスコープも提供している。
+    
+    これら3種類のスコープについて、以下に概要を示す。
+
+    ===============================================  ==================================================================================================================
+    名称                                              説明
+    ===============================================  ==================================================================================================================
+    リクエストスコープ                                | 1リクエストの処理の間データを保持するスコープ。
+                                                      | 画面オンライン処理とメッセージング処理の場合はユーザからの1リクエストの処理、
+                                                        バッチ処理の場合は1データの処理の間で、同じデータを保持できる。
+    セッションスコープ                                | 複数のリクエストの処理の間を保持するスコープ。
+                                                      | 画面オンライン処理ではログアウトするまでの間、メッセージング処理では1リクエスト
+                                                        処理する間、バッチ処理ではバッチ処理開始から終了までの間で、同じデータを保持できる。
+    ウィンドウスコープ                                | 画面オンライン処理のみで使用できる、セッションスコープと同様に複数のリクエストの処理の間を保持するスコープ。
+                                                      | セッションスコープと異なり、複数画面を同時に使用した際、それぞれの画面毎に別々の
+                                                        データが保持できる特徴がある。
+                                                      | 使用方法は他の2種類のスコープと異なり、単純に実行コンテキストに保持するわけではない。
+                                                      | ウィンドウスコープの動作イメージについては :ref:`guide_appendix_windowScope` を参照のこと。
+                                                      | 詳細な使用方法については後述する。
+    ===============================================  ==================================================================================================================
+
+.. note::
+
+   ここでは、バッチ、オンラインといった処理の形態に依存しない、共通的な概念についてのみ述べた。
+   より具体的なアプリケーションの実装方法については、以下の各ドキュメントを参照すること。
+
+   .. toctree::
+      :maxdepth: 1
+
+      ../04_Explanation/index
+      ../04_Explanation_batch/index
+      ../04_Explanation_messaging/index
+      ../04_Explanation_messaging/04_Explanation_real/index
+      ../04_Explanation_messaging/04_Explanation_delayed_receive/index
+      ../04_Explanation_messaging/04_Explanation_delayed_send/index
+      ../04_Explanation_messaging/04_Explanation_send_sync/index
+      ../04_Explanation_other/04_Explanation_mail/index
+
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-01_NablarchOutline`
+
+```json
+{
+  "id": "about-nablarch-01_NablarchOutline",
+  "title": "Nablarch Application Framework 概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "NAFのアプリケーション処理モデル",
+      "hints": [
+        "ハンドラ",
+        "ハンドラキュー",
+        "業務アクションハンドラ",
+        "アプリケーション処理モデル",
+        "処理フロー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "標準ハンドラ構成",
+      "hints": [
+        "標準ハンドラ構成",
+        "トランザクション制御ハンドラ",
+        "リクエストディスパッチハンドラ",
+        "認可制御ハンドラ",
+        "HTTPレスポンスハンドラ",
+        "マルチスレッド実行制御ハンドラ",
+        "電文応答制御ハンドラ",
+        "プロセス常駐化ハンドラ",
+        "画面オンライン処理",
+        "バッチ処理",
+        "メッセージング処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "業務アプリケーションの実装",
+      "hints": [
+        "HttpResponse",
+        "ResponseMessage",
+        "フォーム",
+        "エンティティ",
+        "業務アクションハンドラ",
+        "入力精査",
+        "ビジネスロジック",
+        "レスポンスハンドラ",
+        "トランザクションロールバック",
+        "業務共通コンポーネント"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "業務コンポーネントの責務配置",
+      "hints": [
+        "Action",
+        "Component",
+        "Form",
+        "View",
+        "責務配置",
+        "業務共通コンポーネント",
+        "リクエスト単体テスト",
+        "ステレオタイプ",
+        "stereoType"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "実行コンテキストとスコープ",
+      "hints": [
+        "リクエストスコープ",
+        "セッションスコープ",
+        "ウィンドウスコープ",
+        "実行コンテキスト",
+        "スコープ",
+        "guide_appendix_windowScope"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**ハンドラ**: 「トランザクション制御」「応答電文の送信」などの処理ステップを実装するモジュール。\n\n**ハンドラキュー**: ハンドラを実行順に並べた内部キュー。\n\n処理フロー:\n1. ハンドラキューの先頭から順にハンドラが実行される\n2. 各ハンドラは入力データを処理し、同じ入力データを引数として次のハンドラを呼び出す\n3. 最終的に**業務アクションハンドラ**（業務ロジックを実装したハンドラ）が呼び出される\n4. 業務アクションハンドラは処理を実行し、結果をリターンする\n5. 各ハンドラはリターンされた処理結果に対して処理を行い、再びリターンする\n6. 処理結果はハンドラキューを逆方向に遡り、先頭ハンドラまで戻った時点で処理完了\n\n![NAFにおけるアプリケーションの基本構造](assets/about-nablarch-01_NablarchOutline/handler_queue.png)",
+    "s2": "フレームワークが提供する主なハンドラ:\n\n**汎用ハンドラ**: トランザクション制御ハンドラ、リクエストディスパッチハンドラ、認可制御ハンドラ、開閉局制御ハンドラ\n\n**画面オンライン処理固有ハンドラ**: HTTPレスポンスハンドラ、HTTPアクセスログハンドラ、Nablarchカスタムタグ制御ハンドラ\n\n**バッチ処理固有ハンドラ**: プロセス常駐化ハンドラ、マルチスレッド実行制御ハンドラ、プロセス多重起動防止ハンドラ\n\n**メッセージング処理固有ハンドラ**: 電文応答制御ハンドラ、再送電文制御ハンドラ\n\n標準ハンドラ構成（用途ごとの標準的なハンドラキュー構成）:\n\n![画面オンライン処理ハンドラ構成(簡易版)](assets/about-nablarch-01_NablarchOutline/handler_structure_online_minify.png)\n\n![バッチ処理ハンドラ構成(簡易版)](assets/about-nablarch-01_NablarchOutline/handler_structure_batch_minify.png)",
+    "s3": "業務開発者が実装するのは**業務アクションハンドラのみ**。その他はフレームワーク提供のハンドラを使用する。\n\n業務アクションハンドラの処理ステップ:\n\n1. **入力データの取得**: 入力データはMap形式で取得する\n2. **入力精査**: フォーム定義に沿って精査処理を実行する\n   - **フォーム**: システムへの入力項目の精査と値の保持を行うクラス。各項目に宣言的に精査仕様を設定可能\n   - **エンティティ**: テーブル定義に沿って作成されるフォームの特定サブタイプ。フォームクラスとRDBMSテーブルが1対1、フォームクラスのプロパティとテーブルのカラムが1対1にひもづく\n   - DB内容との比較などを含む精査はビジネスロジックの一部として実装する\n3. **ビジネスロジックの実行**: DB・データファイル・メッセージキューへの入出力はフレームワーク提供ライブラリ（Mapインターフェース）を使用。複数業務アクションから共用するロジックは業務共通コンポーネント（個別クラス）として実装することを推奨\n4. **処理結果の返却**: 処理結果オブジェクトをリターンする\n   - 実行時例外が送出された場合、ハンドラキュー上のハンドラが自動的にトランザクションをロールバックする\n   - 画面オンライン処理: `HttpResponse`（遷移先JSPパス指定）を返却\n   - メッセージング処理: `ResponseMessage`（応答電文内容と宛先キュー名指定）を返却\n   - これらのオブジェクトはレスポンスハンドラによって処理され、送信元にレスポンスとして返される",
+    "s4": "業務機能を実装するクラスの責務配置:\n\n| 名称（クラス接尾辞） | 責務 |\n|---|---|\n| 業務アクションハンドラ（Action） | フレームワークから直接コールバックされる業務処理のエントリーポイント。取引ごとに1つ作成する。単純な業務処理はこのクラスに直接実装し、複雑な処理や複数業務・処理形態から共用される処理は業務共通コンポーネントに委譲する |\n| 業務共通コンポーネント（Component） | 業務ロジックを実装するクラス。HTTPリクエストオブジェクトや実行コンテキストなど実行制御基盤のオブジェクトに直接依存しないこと |\n| 業務フォーム（Form） | アプリケーションで使用するデータの保持と外部入力値の精査を実装するモジュール。単項目入力精査および項目間入力精査を実装する。DBアクセスが必要な精査処理は業務アクションハンドラで実装する |\n| 業務画面（View） | 画面オンライン処理のユーザインタフェース（通常はJSP）。業務処理は実装せず、業務アクションハンドラから渡される処理結果を表示する |\n\n> **注意**: 業務アクションハンドラはHTTPリクエストオブジェクトや実行コンテキストなどのフレームワーク作成オブジェクトに依存するため、自動テストはリクエスト単体テストで実施する必要がある。複雑な内部条件を持つ業務ロジックは、業務処理部分を業務共通コンポーネントとして切り出してクラス単体テストを行うこと\n\n各構成要素間の処理フロー（画面オンライン処理の例）:\n1. View（Webクライアント）からリクエストが送られる\n2. アプリケーションフレームワークがリクエストを受信し、Actionを呼び出す\n3. ActionはバリデーションしてFormを生成し、Componentを呼び出す\n4. Componentはビジネスロジックを実行し、結果をActionに返す\n5. Actionは必要に応じてComponentの戻り値を処理（リクエストスコープへの値の格納など）し、フレームワークに返す\n6. アプリケーションフレームワークはViewを処理（JSP→HTML変換など）し、クライアントにレスポンスを返す",
+    "s5": "実行コンテキストに保持できるデータのスコープ:\n\n| 名称 | 説明 |\n|---|---|\n| リクエストスコープ | 1リクエストの処理の間データを保持する。画面オンライン・メッセージング処理は1ユーザリクエスト処理、バッチ処理は1データの処理の間 |\n| セッションスコープ | 複数のリクエストにわたってデータを保持する。画面オンライン処理はログアウトまで、メッセージング処理は1リクエスト処理の間、バッチ処理はバッチ開始から終了まで |\n| ウィンドウスコープ | 画面オンライン処理のみで使用可能。セッションスコープと同様に複数リクエストにわたるが、複数画面を同時使用した際に画面ごとに別々のデータを保持できる。使用方法は他の2種類のスコープと異なる（:ref:`guide_appendix_windowScope` 参照） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

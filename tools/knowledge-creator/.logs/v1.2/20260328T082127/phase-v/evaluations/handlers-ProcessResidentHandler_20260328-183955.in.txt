@@ -1,0 +1,320 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `handlers-ProcessResidentHandler`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s1 — 関連するハンドラ / RetryHandler row",
+    "description": "The source explains that RetryHandler is needed because 'バッチプロセスの継続制御を RetryHandler で行う' (batch process continuation control is delegated to RetryHandler). The knowledge file only states the mechanism (wraps in RetryableException and re-throws) and the placement requirement, but omits the purpose: that batch process continuation control is handled by RetryHandler. This context helps an AI explain to users why the ordering matters.",
+    "source_evidence": "後続ハンドラの実行中に本ハンドラが実行時例外を捕捉した場合、リトライ可能例外でラップして再送出し、バッチプロセスの継続制御を:doc:`RetryHandler` で行う。そのため、このハンドラを本ハンドラの上位に配置する必要がある。"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+プロセス常駐化ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.handler.ProcessResidentHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+
+後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。
+本ハンドラは、特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、
+いわゆる常駐起動型のバッチ処理で用いられる。
+
+  .. note::
+
+    本ハンドラと :doc:`RequestThreadLoopHandler` の責務は似通っているが、
+    :doc:`ProcessResidentHandler` ではメインスレッド上でのループ制御を行い、
+    :doc:`RequestThreadLoopHandler` は各サブスレッド上でのループ制御を行うという違いから
+    例外制御のポリシーなどの面で挙動が大きく異なっており、共用はできない。
+
++++++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "RetryHandler"
+      , "ProcessResidentHandler"
+      , "ProcessStopHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**関連するハンドラ**
+
+  ====================================  ======================================================================
+  ハンドラ                              内容
+  ====================================  ======================================================================
+  :doc:`ProcessStopHandler`             本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で
+                                        外部から停止させることができなくなる。
+                                        外部コマンドなどによって正常終了させるには、 
+                                        :doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。
+
+  :doc:`RetryHandler`                   後続ハンドラの実行中に本ハンドラが実行時例外を捕捉した場合、 
+                                        リトライ可能例外でラップして再送出し、バッチプロセスの継続制御を
+                                        :doc:`RetryHandler` で行う。そのため、このハンドラを本ハンドラの
+                                        上位に配置する必要がある。
+                                     
+  ====================================  ======================================================================
+
+++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路での処理]**
+  **1. (ハンドラキューのコピー)**
+    本ハンドラ開始時点でのハンドラキューのスナップショット(シャローコピー)を作成する。
+
+  **2. (ループ開始)**
+    実行コンテキスト上のハンドラキューの内容を、 **1.** で作成したスナップショットの状態に復旧する。
+
+  **3. (後続ハンドラの実行)**
+    後続のハンドラを実行し、その結果を取得する。
+
+.. _outbound:
+
+**[復路での処理]**
+  **4. (実行待機)**
+    本ハンドラに設定されたデータ監視時間から、後続ハンドラの実行時間を差し引いた時間を待機する。
+
+  **5. (正常終了->ループ継続)**
+    **2.** 以降の処理を繰り返す。
+
+.. _error:
+
+**[例外処理]**
+  **3a. (閉局エラー→ループ継続)**
+    後続ハンドラ実行中に、サービス閉局エラー(nablarch.fw.Result.ServiceUnavailable)が送出された場合は、
+    何もせずに、 **4.** **5.** の往路処理を行なう。
+
+  **3b. (プロセス正常停止)**
+    後続ハンドラ実行中に、プロセス停止要求(nablarch.fw.handler.ProcessStopHandler.ProcessStop) が送出された場合は、
+    ループを中断し、後続ハンドラによる直近の処理結果オブジェクトをリターンして終了する。
+
+  **3c. (プロセス異常停止)**
+    後続ハンドラ実行中に、プロセス異常停止要求(nablarch.fw.ProcessAbnormalEnd)が送出された場合は、
+    ループを中断し、捕捉した例外を再送出して終了する。
+
+  **3d. (実行時例外→リトライ)**
+    後続ハンドラ実行中にその他の実行時例外が送出された場合は、その内容を障害ログに出力した上で、
+    リトライ可能例外(RetryableException)でラップして送出し終了する。 
+
+  **3e. (エラー終了)**
+    後続ハンドラ実行中にエラー(java.lang.Error)が送出された場合は、捕捉したエラーをそのまま再送出して終了する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  ============================== ======================== ============= =================================================
+  設定項目                       プロパティ名             データ型　    備考
+  ============================== ======================== ============= =================================================
+  データ監視間隔 (単位:msec)     dataWatchInterval        int           任意指定 (デフォルト=1000)
+  プロセスを正常停止させる例外   normalEndExceptions      List<Class>   任意指定 (デフォルト=[ProcessStop.class])
+  プロセスを異常終了させる例外   abnormalEndExceptions    List<Class>   任意指定 (デフォルト=[ProcessAbnormalEnd.class])
+  ============================== ======================== ============= =================================================
+
+**標準設定**
+  データ監視間隔は、常駐プロセスごとに異なる値を設定したり、また、運用状況に応じて変更することが想定されるため、
+  下記例のように埋め込みパラメータとして定義することを強く推奨する。
+ 
+  .. code-block:: xml
+
+    <!-- 常駐化ハンドラ -->
+    <component class="nablarch.fw.handler.ProcessResidentHandler">
+      <property name="dataWatchInterval" value="${data-watch-interval}" />
+    </component>
+
+  .. note::
+
+    プロセス正常停止、プロセス異常停止の対象となる例外クラスについては、本ハンドラの設定により
+    追加・変更することが可能だが、特段の理由が無い限りはデフォルト設定を使用すること。
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "handlers-ProcessResidentHandler",
+  "title": "プロセス常駐化ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ProcessResidentHandler",
+        "nablarch.fw.handler.ProcessResidentHandler",
+        "RequestThreadLoopHandler",
+        "ProcessStopHandler",
+        "RetryHandler",
+        "常駐起動型バッチ処理",
+        "ループ制御",
+        "定期実行"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ProcessResidentHandler",
+        "ServiceUnavailable",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "RetryableException",
+        "nablarch.fw.Result.ServiceUnavailable",
+        "nablarch.fw.handler.ProcessStopHandler.ProcessStop",
+        "nablarch.fw.ProcessAbnormalEnd",
+        "ループ継続",
+        "プロセス停止"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "dataWatchInterval",
+        "normalEndExceptions",
+        "abnormalEndExceptions",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "データ監視間隔",
+        "埋め込みパラメータ",
+        "設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ProcessResidentHandler`\n\n後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、常駐起動型のバッチ処理で用いられる。\n\n> **注意**: :doc:`ProcessResidentHandler` はメインスレッド上でのループ制御、:doc:`RequestThreadLoopHandler` は各サブスレッド上でのループ制御を行う。例外制御のポリシーなどの面で挙動が大きく異なるため、共用はできない。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ProcessStopHandler` | 本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で外部から停止させることができなくなる。外部コマンドなどによって正常終了させるには、:doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。 |\n| :doc:`RetryHandler` | 後続ハンドラの実行時例外をリトライ可能例外でラップして再送出するため、:doc:`RetryHandler` を本ハンドラの上位に配置する必要がある。 |",
+    "s2": "**往路での処理**\n\n1. ハンドラキューのスナップショット（シャローコピー）を作成する。\n2. 実行コンテキスト上のハンドラキューを1.で作成したスナップショットの状態に復旧する。\n3. 後続のハンドラを実行し、結果を取得する。\n\n**復路での処理**\n\n4. データ監視時間から後続ハンドラの実行時間を差し引いた時間を待機する。\n5. 正常終了→2.以降を繰り返す（ループ継続）。\n\n**例外処理**\n\n- **3a. 閉局エラー（ServiceUnavailable）**: 何もせずに4.・5.の処理を行う（ループ継続）。\n- **3b. プロセス正常停止（ProcessStop）**: ループを中断し、直近の処理結果オブジェクトをリターンして終了する。\n- **3c. プロセス異常停止（ProcessAbnormalEnd）**: ループを中断し、捕捉した例外を再送出して終了する。\n- **3d. 実行時例外**: 障害ログに出力した上で、RetryableExceptionでラップして送出する。\n- **3e. エラー（java.lang.Error）**: 捕捉したエラーをそのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dataWatchInterval | int | | 1000 | データ監視間隔（msec） |\n| normalEndExceptions | List\\<Class\\> | | [ProcessStop.class] | プロセスを正常停止させる例外 |\n| abnormalEndExceptions | List\\<Class\\> | | [ProcessAbnormalEnd.class] | プロセスを異常終了させる例外 |\n\n> **注意**: データ監視間隔は常駐プロセスごとに異なる値を設定・変更することが想定されるため、埋め込みパラメータとして定義することを強く推奨する。\n\n```xml\n<component class=\"nablarch.fw.handler.ProcessResidentHandler\">\n  <property name=\"dataWatchInterval\" value=\"${data-watch-interval}\" />\n</component>\n```\n\n> **注意**: プロセス正常停止・異常停止の対象例外クラスは設定により変更可能だが、特段の理由がない限りはデフォルト設定を使用すること。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "handlers-ProcessResidentHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 関連するハンドラ / RetryHandler row",
+      "description": "The source explains that RetryHandler is needed because 'バッチプロセスの継続制御を RetryHandler で行う' (batch process continuation control is delegated to RetryHandler). The knowledge file only states the mechanism (wraps in RetryableException and re-throws) and the placement requirement, but omits the purpose: that batch process continuation control is handled by RetryHandler. This context helps an AI explain to users why the ordering matters.",
+      "source_evidence": "後続ハンドラの実行中に本ハンドラが実行時例外を捕捉した場合、リトライ可能例外でラップして再送出し、バッチプロセスの継続制御を:doc:`RetryHandler` で行う。そのため、このハンドラを本ハンドラの上位に配置する必要がある。"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "handlers-ProcessResidentHandler",
+  "title": "プロセス常駐化ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ProcessResidentHandler",
+        "nablarch.fw.handler.ProcessResidentHandler",
+        "RequestThreadLoopHandler",
+        "ProcessStopHandler",
+        "RetryHandler",
+        "常駐起動型バッチ処理",
+        "ループ制御",
+        "定期実行"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ProcessResidentHandler",
+        "ServiceUnavailable",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "RetryableException",
+        "nablarch.fw.Result.ServiceUnavailable",
+        "nablarch.fw.handler.ProcessStopHandler.ProcessStop",
+        "nablarch.fw.ProcessAbnormalEnd",
+        "ループ継続",
+        "プロセス停止"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "dataWatchInterval",
+        "normalEndExceptions",
+        "abnormalEndExceptions",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "データ監視間隔",
+        "埋め込みパラメータ",
+        "設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ProcessResidentHandler`\n\n後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、常駐起動型のバッチ処理で用いられる。\n\n> **注意**: :doc:`ProcessResidentHandler` はメインスレッド上でのループ制御、:doc:`RequestThreadLoopHandler` は各サブスレッド上でのループ制御を行う。例外制御のポリシーなどの面で挙動が大きく異なるため、共用はできない。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ProcessStopHandler` | 本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で外部から停止させることができなくなる。外部コマンドなどによって正常終了させるには、:doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。 |\n| :doc:`RetryHandler` | 後続ハンドラの実行時例外をリトライ可能例外でラップして再送出するため、:doc:`RetryHandler` を本ハンドラの上位に配置する必要がある。 |",
+    "s2": "**往路での処理**\n\n1. ハンドラキューのスナップショット（シャローコピー）を作成する。\n2. 実行コンテキスト上のハンドラキューを1.で作成したスナップショットの状態に復旧する。\n3. 後続のハンドラを実行し、結果を取得する。\n\n**復路での処理**\n\n4. データ監視時間から後続ハンドラの実行時間を差し引いた時間を待機する。\n5. 正常終了→2.以降を繰り返す（ループ継続）。\n\n**例外処理**\n\n- **3a. 閉局エラー（ServiceUnavailable）**: 何もせずに4.・5.の処理を行う（ループ継続）。\n- **3b. プロセス正常停止（ProcessStop）**: ループを中断し、直近の処理結果オブジェクトをリターンして終了する。\n- **3c. プロセス異常停止（ProcessAbnormalEnd）**: ループを中断し、捕捉した例外を再送出して終了する。\n- **3d. 実行時例外**: 障害ログに出力した上で、RetryableExceptionでラップして送出する。\n- **3e. エラー（java.lang.Error）**: 捕捉したエラーをそのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dataWatchInterval | int | | 1000 | データ監視間隔（msec） |\n| normalEndExceptions | List\\<Class\\> | | [ProcessStop.class] | プロセスを正常停止させる例外 |\n| abnormalEndExceptions | List\\<Class\\> | | [ProcessAbnormalEnd.class] | プロセスを異常終了させる例外 |\n\n> **注意**: データ監視間隔は常駐プロセスごとに異なる値を設定・変更することが想定されるため、埋め込みパラメータとして定義することを強く推奨する。\n\n```xml\n<component class=\"nablarch.fw.handler.ProcessResidentHandler\">\n  <property name=\"dataWatchInterval\" value=\"${data-watch-interval}\" />\n</component>\n```\n\n> **注意**: プロセス正常停止・異常停止の対象例外クラスは設定により変更可能だが、特段の理由がない限りはデフォルト設定を使用すること。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

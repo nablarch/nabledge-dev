@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 複数の Form に対するバリデーション",
+      "description": "The HTML form code example from the source is not included in the knowledge file. The source provides a concrete `<form method=\"POST\">` block showing name attributes like `form.user.name`, `form.user.remarks`, `form.user.id`, `form.address.zipCode`, `form.address.address1`, etc. While the 3-level naming convention is explained conceptually in s1, the actual HTML code example demonstrates the correct pattern for both user fields and address fields together, which is a concrete usage pattern an AI would need to reproduce correct HTML.",
+      "source_evidence": "Source section '複数の Form に対するバリデーション' contains a `.. code-block:: html` block showing `<form method=\"POST\">` with inputs named `form.user.name`, `form.user.remarks`, `form.user.id`, `form.address.zipCode`, `form.address.address1`, `form.address.address2`, `form.address.building`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ApplicationException` is a PascalCase class used in the s1 code example (`throw new ApplicationException(result.getMessages())`) but is absent from the s1 hints array.",
+      "source_evidence": "Source code block: `throw new ApplicationException(result.getMessages());` in the validateAndConvertRequest usage example."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`ApplicationException` is a PascalCase class used in the s2 Action implementation code example but is absent from the s2 hints array.",
+      "source_evidence": "Source Action implementation: `throw new ApplicationException(validationResult.getMessages());`"
+    }
+  ]
+}

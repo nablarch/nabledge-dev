@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The image reference for the exclusive control table example (ExclusiveControl_ExclusiveControlTableExample.jpg) is missing. The source explicitly includes this diagram under '排他制御用テーブルの例' to illustrate the table structure.",
+      "source_evidence": ".. image:: _images/08/ExclusiveControl_ExclusiveControlTableExample.jpg\n  :scale: 60\n(under '排他制御用テーブルの例' heading)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The contextual note explaining the pessimistic lock diagram is missing: the source states that the batch in the figure uses pessimistic lock and the user uses optimistic lock. This clarifies the scenario depicted in ExclusiveControl_PessimisticLockImage.jpg.",
+      "source_evidence": "図中のバッチは悲観的ロック、ユーザは楽観的ロックを使用して更新処理を行うものとする。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 merges the '排他制御の実現方法' h2 section (well over 2000 chars of plain text) together with its h3 subsections '排他制御用テーブル' and '悲観的ロックと楽観的ロックの動作イメージ' without splitting into separate knowledge sections. Per V3 rules, when an h2 section has >= 2000 chars and contains h3 subsections, these should be split.",
+      "source_evidence": "Source h2: '排他制御の実現方法' contains h3 subsections '排他制御用テーブル' (====) and '悲観的ロックと楽観的ロックの動作イメージ' (====), both with substantial content."
+    }
+  ]
+}

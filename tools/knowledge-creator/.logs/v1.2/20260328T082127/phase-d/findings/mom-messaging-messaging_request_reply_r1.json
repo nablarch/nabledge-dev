@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Introduction paragraph (before 基本構造)",
+      "description": "The source introduction states the use case: 「オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。」 This when-to-use guidance (synchronous/immediate response scenarios like authorization processing) is absent from the knowledge file. It is technology selection guidance that helps distinguish this from other messaging patterns.",
+      "source_evidence": "オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 content references several PascalCase class/exception names that are absent from the hints array: ThreadContextClearHandler (present in the standard handler queue), ProcessStop (referenced as 「プロセス停止要求(ProcessStop)」 in プロセス正常停止 flow), ProcessAbnormalEnd (referenced in プロセス異常停止 flow), Result.Forbidden (referenced in 認可エラー flow), Result.ServiceUnavailable (referenced in 開閉局エラー flow).",
+      "source_evidence": "HandlerQueue contains ThreadContextClearHandler; flow descriptions reference ProcessStop, ProcessAbnormalEnd, Result.Forbidden (ステータスコード:403), Result.ServiceUnavailable (ステータスコード:503)"
+    }
+  ]
+}

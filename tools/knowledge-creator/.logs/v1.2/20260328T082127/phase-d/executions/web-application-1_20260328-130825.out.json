@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — code example",
+      "description": "The `do1` method is omitted from the code example. Its inclusion in the source is significant because it shows that `setViewDataToRequestScope()` is called both on initial display AND on error recovery — demonstrating the shared-method extraction pattern. Without `do1`, an AI assistant cannot fully reconstruct why the method is private and shared.",
+      "source_evidence": "Source includes `do1` calling `setViewDataToRequestScope()` before returning the input screen, establishing the pattern that the same helper is reused in both normal and error flows."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names `HttpResponse`, `HttpRequest`, and `ExecutionContext` appear in the code example but are absent from the hints array.",
+      "source_evidence": "Source code declares `public HttpResponse do1(HttpRequest req, ExecutionContext ctx)` and `public HttpResponse do2(HttpRequest req, ExecutionContext ctx)` — all three are PascalCase class names present in the content."
+    }
+  ]
+}

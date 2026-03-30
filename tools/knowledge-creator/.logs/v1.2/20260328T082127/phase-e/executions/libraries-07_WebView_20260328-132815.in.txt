@@ -1,0 +1,270 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_WebView",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 (要求)",
+      "description": "The '未検討' subsection is entirely absent from s3. The source lists 14 features not yet considered for implementation (e.g., client-side validation, radio button clear, keyboard customization, focus control, layout of headers/footers, etc.). This is substantive information for developers assessing what the framework does and does not support.",
+      "source_evidence": "未検討 section: 'システム利用ユーザ間で共有したい情報を表示できる', 'クライアントサイドのバリデーションができる', 'ラジオボタンをクリア(未選択な状態)できる', 'キーバインドをカスタマイズできる' など14項目"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The phrase '（リダイレクト不可）' is added after 'フォワードを使用', implying redirect is impossible/prohibited. The source only recommends using forward instead of redirect; it does not state that redirect is not allowed.",
+      "source_evidence": "Source: 'アクションから別アクションを直接呼び出す場合は、リダイレクトではなく、フォワードを使用する。' — this is a recommendation, not a hard prohibition."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+.. _`custom_tag_index`:
+
+====================================
+JSPカスタムタグライブラリ
+====================================
+
+------------
+概要
+------------
+Webアプリケーションの画面作成を助けるカスタムタグを提供する。
+
+本機能を使用するには、下記の制約がある。
+
+* JSP2.1以降をサポートしているWebコンテナで動作する。
+* カスタムタグはXHTML 1.0 Transitionalに対応した属性をサポートする。
+* クライアントのJavaScriptが必須である。
+
+本機能のカスタムタグは、以下のような画面処理方式において最も効果的に機能するように設計されている。
+
+* 画面遷移は全てPOST(リンク含む)を使用する。
+* アクションはPOSTを受けてJSPにフォワードする。JSPへはアクション経由でのみアクセス可とする。
+* アクションから別アクションを直接呼び出す場合は、リダイレクトではなく、フォワードを使用する。
+* JSPはカスタムタグを使用して作成する。
+* 入力データは、バリデーション機能を使用してエンティティ(又は独自クラス)に設定して使用する。
+* 入力データのリクエストパラメータ名には、オブジェクトとMap型はドット区切り、List型は角括弧と括弧内にインデックスを使用する。
+* 画面を跨いで使用するデータは、クライアントで保持する。(セッションを使用するのではなく、hiddenを使用する)
+* データベースにコミットを伴う処理を要求する画面(確認画面など)は、二重サブミットを防止する。
+
+本機能は、入力画面→確認画面→完了画面といった画面遷移により機能を提供するWebアプリケーションを対象にしており、\
+画面遷移せずに機能を提供するリッチクライアント(Ajax、Flashなど)には対応していない。
+
+アプリケーションプログラマは、JSP、JSTL及び本機能を使用してWebアプリケーションの画面を作成する。
+
+.. note::
+
+ HTML5で追加されたタグと属性については、次の属性のみ対応する。\
+ 属性が追加されたHTMLのタグ名を ( ) に記載する。
+ 
+ * autocomplete(input、password、form)
+ * autofocus(input、textarea、select、button)
+ * placeholder(text、password、textarea)
+ * maxlength(textarea)
+ * multiple(input)
+ 
+ HTML5の属性のうち、頻繁に使用されるものを先行して取り込んでいる。
+
+------------
+特徴
+------------
+
+生産性の向上
+====================================
+本機能のカスタムタグでは、入力画面と確認画面が1対1に対応するような画面を作成する場合に、JSPを共通化する機能を提供する。\
+JSPを共通化することで、入力画面と確認画面で重複する記述を最小化できるので、画面作成の生産性が向上する。\
+
+画面設計の柔軟性
+================================================
+本機能では、入力データを画面間で持ち回る際はクライアント側(ブラウザ)に保持する機構を採用しているため、\
+ブラウザに予め備わっている「戻るボタン」や「複数ウィンドウ」といった機能をアプリケーションで使用できる。\
+また、ユーザの誤操作による「二重サブミット」については、JavaScriptを使用したクライアント側と、\
+一意なトークンを使用したサーバ側のそれぞれで二重サブミットを防止する機能を提供する。\
+このため、個別アプリケーションでは、ブラウザの操作性やユーザの誤操作について予め考慮している本機能を前提にすることで、\
+画面設計を柔軟に行うことができる。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* フォームに含まれる複数のボタン又はリンクから、それぞれ異なるURIにサブミットできる。
+* フォームに含まれる複数のボタン又はリンク毎にパラメータを変更できる。
+* ボタンの二度押しによるエラー発生やデータ不整合を防止できる。
+* 入力画面の再表示時(精査エラーや確認画面から戻る場合など)に、入力データを復元した状態で表示できる。
+* ブラウザの戻るボタンが使用された場合に、キャッシュの使用を抑制できる。
+* HTMLエスケープ処理ができる。
+* エラーが発生した際に、全てのエラー内容を伝えるメッセージを画面に表示できる。
+* 入力値のチェックでエラーが発生した際に、エラーの原因となった入力項目をハイライト表示できる。
+* エラーが発生した際に、エラーメッセージをレベル毎に色分け(Error:赤、Warning:青、Info:緑など)して表示できる。
+* リストボックス表示を作りこみせずに実現できる。
+* コード値をリストボックス表示できる。(コード値については、 :doc:`../03_Common/02_CodeManager` を参照)
+* 入力画面と確認画面のJSPを共通化することで、重複する記述を抑制できる。
+* クライアント側(hidden)で保持するデータの改ざんを防止できる。
+* リストデータ表示のページングを作りこみせずに実現できる。
+* 認可判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。
+* 開閉局判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。
+
+未実装
+==================
+* 確認画面で、変更箇所を色付け表示できる。
+* JavaScriptに埋め込む動的な値に対してエスケープ処理ができる。
+
+未検討
+==================
+* システム利用ユーザ間で共有したい情報を表示できる。例えば、「今日は早帰り日です」のようなもの。
+* 実行環境がわかる状態で表示できる。例えば、単体テスト環境なのかST環境なのかが画面表示できる。
+* 表示項目の内容に応じて表示形式の制御ができる。例えば、金額項目であれば、右寄せ折り返し表示など。
+* ヘッダーやフッターなどの全画面で共通的に表示する部分のレイアウトを定義できる。
+* 精査エラーが発生した際に先頭のエラー項目にフォーカスできる。
+* エンターキーで入力項目間を移動できる。
+* エンターキーによるサブミットの許可・不許可を制御できる。
+* キーバインドをカスタマイズできる。例えば、F1(ファンクションキー)でサブミットするなど。
+* クライアントサイドのバリデーションができる。
+* ラジオボタンをクリア(未選択な状態)できる。
+* 画面全体の背景色の指定ができる。
+* 入力画面の場合、各業務で指定がない場合は初期フォーカスをデフォルト(例えば、一番上の入力ボックス)で指定する。
+* 項目名や見出し、入力ボックスなどの背景色、文字(サイズ、色、パディング)の指定ができる。
+* ボタンのサイズ、色などの指定ができる(標準ボタンの提供)。
+
+取り下げ
+========================
+* 複数のエラーが発生した場合、レイアウトを崩さずに全てのエラー内容を伝えるメッセージを画面に表示できる。
+
+  全てのエラー内容をリスト表示する機能は提供している。ただし、「レイアウトを崩さずに」という部分については、\
+  アプリケーション開発時にレイアウトが決定するため、フレームワークとしてレイアウト崩れを防ぐ方法が提供できない。
+
+
+------------------------------------
+カスタムタグライブラリの使用方法
+------------------------------------
+
+機能の詳細や使用方法については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_CustomTag/
+
+- :doc:`./07/07_CustomTag`
+
+------------------------------------
+タグリファレンス
+------------------------------------
+
+本機能で提供するカスタムタグの一覧については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_TagReference/
+
+- :doc:`./07/07_TagReference`
+
+------------------------------------
+カスタムタグライブラリに関する設定
+------------------------------------
+
+本機能を使用するために必要な設定については、以下を参照すること。
+
+.. toctree::
+  :hidden:
+
+  ./07/07_HowToSettingCustomTag/
+
+- :doc:`./07/07_HowToSettingCustomTag`
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_WebView",
+  "title": "JSPカスタムタグライブラリ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "JSPカスタムタグ",
+        "XHTML 1.0 Transitional",
+        "JavaScript必須",
+        "POST画面遷移",
+        "hiddenデータ保持",
+        "二重サブミット防止",
+        "リッチクライアント非対応",
+        "セッション不使用",
+        "HTML5属性対応"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "JSP共通化",
+        "入力画面 確認画面",
+        "二重サブミット防止",
+        "トークン",
+        "戻るボタン",
+        "複数ウィンドウ",
+        "生産性向上",
+        "画面設計柔軟性"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "実装済み機能一覧",
+        "HTMLエスケープ",
+        "バリデーションエラーハイライト",
+        "ページング",
+        "コード値 リストボックス",
+        "認可判定 表示切替",
+        "hidden 改ざん防止",
+        "未実装",
+        "取り下げ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**制約**:\n- JSP2.1以降をサポートしているWebコンテナが必要\n- カスタムタグはXHTML 1.0 Transitional対応属性のみサポート\n- クライアントのJavaScriptが必須\n\n**推奨画面処理方式（本機能が最も効果的に機能する前提）**:\n- 画面遷移は全てPOST（リンク含む）\n- アクションはPOSTを受けてJSPにフォワード。JSPへはアクション経由でのみアクセス可\n- アクションから別アクションへの直接呼び出しはフォワードを使用（リダイレクト不可）\n- JSPはカスタムタグを使用して作成\n- 入力データはバリデーション機能でエンティティ（又は独自クラス）に設定\n- リクエストパラメータ名: オブジェクト・Map型はドット区切り、List型は角括弧＋インデックス\n- 画面跨ぎデータはクライアント側（hidden）で保持（セッション不使用）\n- コミットを伴う画面（確認画面など）は二重サブミットを防止\n\n**非対応**: リッチクライアント（Ajax、Flash等）には対応していない。入力画面→確認画面→完了画面の画面遷移型Webアプリケーションが対象。\n\n> **注意**: HTML5で追加されたタグと属性については、以下の属性のみ対応する。\n> - autocomplete (input、password、form)\n> - autofocus (input、textarea、select、button)\n> - placeholder (text、password、textarea)\n> - maxlength (textarea)\n> - multiple (input)",
+    "s2": "**生産性の向上**: 入力画面と確認画面が1対1対応する場合にJSPを共通化する機能を提供。重複記述を最小化可能。\n\n**画面設計の柔軟性**:\n- 入力データをクライアント側（ブラウザ）に保持するため、ブラウザの戻るボタンや複数ウィンドウが使用可能\n- 二重サブミット防止: JavaScriptによるクライアント側 + 一意なトークンによるサーバ側の両方で防止",
+    "s3": "**実装済み**:\n- 複数ボタン/リンクからそれぞれ異なるURIへのサブミット\n- 複数ボタン/リンク毎のパラメータ変更\n- ボタン二度押しによるエラー・データ不整合防止\n- 入力画面再表示時の入力データ復元（精査エラー・確認画面から戻る場合など）\n- ブラウザの戻るボタン使用時のキャッシュ使用抑制\n- HTMLエスケープ処理\n- エラーメッセージの全件表示\n- バリデーションエラー発生時の入力項目ハイライト表示\n- エラーメッセージのレベル毎の色分け表示（Error:赤、Warning:青、Info:緑など）\n- リストボックス表示（作りこみ不要）\n- コード値のリストボックス表示\n- 入力画面と確認画面のJSP共通化（重複記述抑制）\n- クライアント側（hidden）保持データの改ざん防止\n- リストデータ表示のページング（作りこみ不要）\n- 認可判定結果に応じた画面項目の表示・非表示切り替え\n- 開閉局判定結果に応じた画面項目の表示・非表示切り替え\n\n**未実装**:\n- 確認画面での変更箇所の色付け表示\n- JavaScriptに埋め込む動的な値へのエスケープ処理\n\n**取り下げ**:\n- 複数エラー発生時のレイアウト崩れ防止表示（フレームワークとしてレイアウト崩れを防ぐ方法を提供できないため取り下げ）"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

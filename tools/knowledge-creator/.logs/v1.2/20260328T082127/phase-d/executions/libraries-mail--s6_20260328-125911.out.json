@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s10 (MailSessionConfigの設定) — note内の第2文",
+      "description": "注意書きの第2文でソースの `mail.host` を `mailHost` に変更している。ソースは「mail.hostプロパティの設定を省略した場合」と一貫して JavaMail プロパティ名 `mail.host` を使用しているが、知識ファイルでは第2文のみ Nablarch 設定プロパティ名 `mailHost` に置き換えている。第1文は正しく `mail.host` を使用しており、第2文だけ異なるプロパティ名になっている。",
+      "source_evidence": "ソース: 「mail.hostプロパティの設定を省略した場合、メール送信自体は可能であるが、RFCに則った正しいMessage-Idヘッダを生成できない。」→ 知識ファイル: 「`mailHost`プロパティを省略した場合、メール送信自体は可能だが…」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 (共通設定項目) — hints配列",
+      "description": "s1のXMLコード例にMailConfigのプロパティとして `mailRequestCountMessageId`、`sendSuccessMessageId`、`sendFailureCode`、`abnormalEndExitCode` が含まれているが、s1のhintsにこれらが含まれていない。これらはs8のhintsには含まれているが、s1のコード例からも検索可能であるべきプロパティ名である。",
+      "source_evidence": "ソースのMailConfig設定例: `<property name=\"mailRequestCountMessageId\" value=\"MREQCOUNT0\" />`、`<property name=\"sendSuccessMessageId\" value=\"MSENDOK000\" />`、`<property name=\"sendFailureCode\" value=\"MSENDFAIL0\" />`、`<property name=\"abnormalEndExitCode\" value=\"199\" />`"
+    }
+  ]
+}

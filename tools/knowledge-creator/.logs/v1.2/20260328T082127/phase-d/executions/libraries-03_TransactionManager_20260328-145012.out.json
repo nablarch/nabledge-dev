@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-03_TransactionManager",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — インタフェース subsection",
+      "description": "TransactionFactory and Transaction are labeled with '**クラス**:' bullets under the **インタフェース** heading, misidentifying them as classes. The source explicitly categorizes them under 'インタフェース名' (interface names). The other three subsections (JdbcTransactionFactory, JdbcTransaction, TransactionContext) correctly list classes, so the label is accurate there, but not for the interface entries.",
+      "source_evidence": "Source: 'インタフェース定義' table with column header 'インタフェース名' for both nablarch.core.transaction.TransactionFactory and nablarch.core.transaction.Transaction."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Missing hint for 'SQLState'. The source describes that retry target errors can be configured by SQLState or vendor-specific SQL error codes, which is a distinct technical term a user might search for when looking up retry configuration.",
+      "source_evidence": "Source: 'リトライ対象のエラーは、SQLStateまたはベンダー依存のSQLエラーコードで設定が可能である。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Missing hint for arbitrary SQL execution at transaction start (e.g., 'トランザクション開始時SQL実行'). This is one of the four implemented requirements listed in the source and is not represented in the hints.",
+      "source_evidence": "Source: '* トランザクション開始時に任意のSQL文を実行できる。' listed under 実装済み requirements."
+    }
+  ]
+}

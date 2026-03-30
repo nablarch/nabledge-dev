@@ -1,0 +1,50 @@
+{
+  "id": "libraries-04_Statement--s7",
+  "title": "設定ファイル例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Javaの実装例(SQL文指定の場合)",
+      "hints": [
+        "AppDbConnection",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "DbConnectionContext",
+        "SQL文直接指定",
+        "プリペアドステートメント",
+        "retrieve",
+        "setObject"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicStatementFactory",
+        "BasicSqlStatementExceptionFactory",
+        "BasicSqlLoader",
+        "StaticDataLoader",
+        "sqlStatementExceptionFactory",
+        "fetchSize",
+        "queryTimeout",
+        "sqlLoader",
+        "duplicateErrorSqlState",
+        "duplicateErrorErrCode",
+        "fileEncoding",
+        "extension",
+        "StatementFactory設定",
+        "一意制約違反",
+        "SQLファイル読み込み",
+        "setFetchSize",
+        "setQueryTimeout"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: この実装はフレームワーク内部でテーブルスキーマ情報から動的にSQL文を組み立てる必要がある場合にのみ使用する。通常、SQLインジェクション対策のためSQL文は外部ファイル化するため、各アプリケーション開発者はこの実装を行わない。\n\n**クラス**: `AppDbConnection`, `SqlPStatement`, `SqlResultSet`, `SqlRow`, `DbConnectionContext`\n\n```java\nAppDbConnection connection = DbConnectionContext.getConnection(transaction.getDbTransactionName());\nSqlPStatement statement = connection.prepareStatement(\n        \"SELECT USER_ID, NAME, TEL, AGE FROM USER_MTR WHERE USER_ID = ?\");\n\nstatement.setObject(1, \"00001\");\nSqlResultSet resultSet = statement.retrieve();\n\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"user_id\");\n    String name = row.getString(\"name\");\n    String tel = row.getString(\"tel\");\n    String age = row.getString(\"age\");\n}\n```",
+    "s2": "**a) StatementFactory設定**\n\n**クラス**: `nablarch.core.db.statement.BasicStatementFactory`\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n    <property name=\"sqlStatementExceptionFactory\">\n        <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n            <property name=\"duplicateErrorSqlState\" value=\"\"/>\n            <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n        </component>\n    </property>\n    <property name=\"fetchSize\" value=\"500\"/>\n    <property name=\"queryTimeout\" value=\"600\" />\n    <property name=\"sqlLoader\">\n        <component class=\"nablarch.core.db.statement.BasicSqlLoader\">\n            <property name=\"fileEncoding\" value=\"utf-8\"/>\n            <property name=\"extension\" value=\"sql\"/>\n        </component>\n    </property>\n</component>\n```\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| sqlStatementExceptionFactory | SqlStatementExceptionFactory | ○ | | `nablarch.core.db.statement.SqlStatementExceptionFactory`を実装したクラスを設定する |\n| resultSetConvertor | ResultSetConvertor | | | `nablarch.core.db.statement.ResultSetConvertor`を実装したクラスを設定する。SELECT結果のカラムデータを変換する場合に設定する |\n| fetchSize | int | | 10 | プリフェッチサイズ。`SqlPStatement#setFetchSize`でStatement単位での変更も可能 |\n| queryTimeout | int | | 0（無制限） | クエリータイムアウトの秒数。`SqlPStatement#setQueryTimeout`でStatement単位での変更も可能 |\n| sqlLoader | StaticDataLoader | | | `nablarch.core.cache.StaticDataLoader`を実装したクラスを設定する。デフォルト実装は`BasicSqlLoader` |\n\n> **注意**: `SqlPStatement#setFetchSize`および`SqlPStatement#setQueryTimeout`で変更した値は、そのインスタンスでのみ有効。新たに`AppDbConnection#prepareStatement`を呼び出した場合は設定ファイルの値に戻る（:ref:`statementReuse<db-dataSourceConnectionFactory-label>`の設定に関わらず同一の振る舞い）。\n\n**b) BasicSqlStatementExceptionFactory設定**\n\n**クラス**: `nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| duplicateErrorSqlState | String | ※ | | 一意制約違反を示すSqlState（`SQLException#getSqlState`で返却される値） |\n| duplicateErrorErrCode | int | ※ | | 一意制約違反を示すErrCode（`SQLException#getErrorCode`で返却される値） |\n\n※ `duplicateErrorSqlState`または`duplicateErrorErrCode`のどちらか一方を必ず設定すること。\n\n**c) BasicSqlLoader設定**\n\n**クラス**: `nablarch.core.db.statement.BasicSqlLoader`（`nablarch.core.cache.StaticDataLoader<Map<String, String>>`を実装）\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| fileEncoding | String | | JVMデフォルト | SQLファイルのエンコーディング |\n| extension | String | | sql | SQLファイルの拡張子 |\n\n`BasicSqlLoader`以外の実装クラスに差し替える場合の仕様:\n- `StaticDataLoader`のgenerics型は`Map<String, String>`とすること（例: `implements StaticDataLoader<Map<String, String>>`）\n- `getValue`メソッドでSQLの読み込み処理を行い、その他のメソッドはnullを返す実装とすること\n- `getValue`が返すMapのKEY=SQL_ID、VALUE=SQL文"
+  }
+}

@@ -1,0 +1,113 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "toolbox-01_EntityGenerator--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "The hints include INSERT_USER_ID and UPDATE_USER_ID but omit INSERT_DATE_TIME and UPDATE_DATE_TIME, which are the other two entry keys defined in the annotationMapping in the source XML.",
+      "source_evidence": "<entry key=\"INSERT_DATE_TIME\" value=\"@CurrentDateTime\"/> and <entry key=\"UPDATE_DATE_TIME\" value=\"@CurrentDateTime\"/> appear in the source code block"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+共通項目自動設定機能で使用するアノテーションの出力
+--------------------------------------------------
+本ツールは、特定のプロパティ名に合致するプロパティに対して、
+共通項目自動設定機能で使用するアノテーションを自動生成時に付与できる。
+
+※共通項目自動設定機能の詳細については、アーキテクチャ解説書を参照のこと。
+
+これは、例えばアノテーションを全テーブルの共通項目 UPDATE_USER_ID カラムに対応するフォームのプロパティ updateUser に
+対して  @UserId を全て設定するような用途を想定した機能である。
+
+
+@UserId アノテーションを全てのフォームの updateUserId および insertUserId プロパティに設定し、
+@CurrentDateTime アノテーションを全てのフォーム の insertDateTime および updatedDateTime プロパティに設定する場合、
+以下のように設定する。
+
+.. code-block:: xml
+
+  <!-- フィールド部 -->
+  <component name="fieldBlock"
+             class="nablarch.tool.formgenerator.helper.FieldBlock">
+    <property name="templatePath" value="classpath:nablarch/tool/formgenerator/field_template.txt"/>
+    <property name="fieldAnnotation">
+      <component name="fieldAnnotationBlock"
+                 class="nablarch.tool.formgenerator.helper.FieldAnnotation">
+        <property name="annotationMapping">
+          <map>
+            <entry key="INSERT_USER_ID" value="@UserId"/>
+            <entry key="INSERT_DATE_TIME" value="@CurrentDateTime"/>
+            <entry key="UPDATE_USER_ID" value="@UserId"/>
+            <entry key="UPDATE_DATE_TIME" value="@CurrentDateTime"/>
+          </map>
+        </property>
+      </component>
+    </property>
+  </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "toolbox-01_EntityGenerator--s16",
+  "title": "共通項目自動設定機能で使用するアノテーションの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "共通項目自動設定機能で使用するアノテーションの出力",
+      "hints": [
+        "FieldBlock",
+        "FieldAnnotation",
+        "fieldAnnotation",
+        "annotationMapping",
+        "共通項目自動設定",
+        "アノテーション自動付与",
+        "フォームジェネレータ",
+        "@UserId",
+        "@CurrentDateTime",
+        "INSERT_USER_ID",
+        "UPDATE_USER_ID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "特定のプロパティ名に合致するプロパティに対して、共通項目自動設定機能で使用するアノテーションを自動生成時に付与できる。\n\n例: 全フォームの `updateUserId`・`insertUserId` に `@UserId`、`insertDateTime`・`updatedDateTime` に `@CurrentDateTime` を付与する場合、`FieldBlock` に `FieldAnnotation` を設定し、`annotationMapping` でカラム名とアノテーションのマッピングを定義する。\n\n**クラス**: `nablarch.tool.formgenerator.helper.FieldBlock`, `nablarch.tool.formgenerator.helper.FieldAnnotation`\n\n```xml\n<component name=\"fieldBlock\"\n           class=\"nablarch.tool.formgenerator.helper.FieldBlock\">\n  <property name=\"templatePath\" value=\"classpath:nablarch/tool/formgenerator/field_template.txt\"/>\n  <property name=\"fieldAnnotation\">\n    <component name=\"fieldAnnotationBlock\"\n               class=\"nablarch.tool.formgenerator.helper.FieldAnnotation\">\n      <property name=\"annotationMapping\">\n        <map>\n          <entry key=\"INSERT_USER_ID\" value=\"@UserId\"/>\n          <entry key=\"INSERT_DATE_TIME\" value=\"@CurrentDateTime\"/>\n          <entry key=\"UPDATE_USER_ID\" value=\"@UserId\"/>\n          <entry key=\"UPDATE_DATE_TIME\" value=\"@CurrentDateTime\"/>\n        </map>\n      </property>\n    </component>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

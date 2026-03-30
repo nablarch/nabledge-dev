@@ -1,0 +1,207 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation_messaging/04_Explanation_delayed_receive/02_basic.rst`
+- Format: `rst`
+
+```
+.. _messageDelayedReceiveDesign:
+
+========================================================================
+応答不要型メッセージ受信処理のアプリケーション構造
+========================================================================
+
+本項では、応答不要型メッセージ受信処理における基本的なクラス構造について説明する。
+
+----
+概要
+----
+
+Nablarch Application Frameworkでは、複雑になりがちなメッセージング処理を簡潔かつ堅牢に作成できるように以下のような機能を備えている。
+
+* 電文をデータベースの一時テーブルに保存するための共通的なアクションクラスを提供する。
+
+  Nablarchでは、受信した電文をデータベースの一時テーブル(電文受信テーブル)に保存するための共通的なアクションを提供している。
+  このアクションを使用することにより、アプリケーション開発者は電文をデータベースに保存するための幾つかの成果物(下記参照)のみを作成すればよく、
+  非常に簡易的に電文をテーブルに保存することが可能となっている。
+
+  * 電文のレイアウトを表すフォーマット定義ファイル
+  * データベースへ電文を登録するためのINSERT文(SQLファイル)
+  * データベースへ電文を登録する際に使用するFormクラス
+  * 電文を登録するための一時テーブル
+
+  それぞれの成果物の実装方法及び実装例は、\ :ref:`応答不要型メッセージ受信処理の実装方法<mqDelayedReceiveTitle>`\ にて解説を行なっているため、参照すること。
+
+  .. note::
+    共通のアクションで保存した電文は、後続処理（常駐バッチ）で処理を行うこと。
+    バッチ処理の実装方法は、\ :doc:`../../04_Explanation_batch/index`\ を参照。
+
+----------
+クラス構造
+----------
+.. image:: _image/class.png
+
+----------
+処理の流れ
+----------
+| ① Nablarch Application Frameworkは受信した電文毎に応答不要型共通受信アクションを起動する。
+| ② 応答不要型共通受信アクションは、電文のレイアウトを表すフォーマット定義ファイルを元に電文の解析を行う。
+| ③ ②で解析を行った電文を元にFormクラスを生成する。
+| ④ SQLファイルから一時テーブルへ電文を登録するためのINSERT文を取得する。
+| ⑤ Formクラス及びINSERT文を使用して一時テーブルへ電文を保存する。
+
+.. image:: _image/sequence.png
+    :scale: 80
+
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-02_basic-04_Explanation_delayed_receive`
+
+```json
+{
+  "id": "mom-messaging-02_basic-04_Explanation_delayed_receive",
+  "title": "応答不要型メッセージ受信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要型メッセージ受信処理",
+        "電文受信テーブル",
+        "フォーマット定義ファイル",
+        "INSERT文",
+        "Formクラス",
+        "常駐バッチ",
+        "共通受信アクション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "クラス構造",
+      "hints": [
+        "クラス構造",
+        "応答不要型メッセージ受信",
+        "クラス図"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "処理の流れ",
+      "hints": [
+        "処理の流れ",
+        "電文解析",
+        "Formクラス生成",
+        "一時テーブル登録",
+        "シーケンス図",
+        "応答不要型共通受信アクション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "受信した電文をデータベースの一時テーブル（電文受信テーブル）に保存するための共通アクションクラスが提供されている。このアクションを使用する場合、アプリケーション開発者が作成する必要がある成果物は以下のみ：\n\n1. 電文のレイアウトを表すフォーマット定義ファイル\n2. データベースへ電文を登録するためのINSERT文（SQLファイル）\n3. データベースへ電文を登録する際に使用するFormクラス\n4. 電文を登録するための一時テーブル\n\n各成果物の実装方法は :ref:`mqDelayedReceiveTitle` を参照。\n\n> **注意**: 共通のアクションで保存した電文は、後続処理（常駐バッチ）で処理を行うこと。バッチ処理の実装方法は :doc:`../../04_Explanation_batch/index` を参照。",
+    "s2": "![クラス構造](assets/mom-messaging-02_basic-04_Explanation_delayed_receive/class.png)",
+    "s3": "1. Nablarch Application Frameworkは受信した電文毎に応答不要型共通受信アクションを起動する。\n2. 応答不要型共通受信アクションは、フォーマット定義ファイルを元に電文の解析を行う。\n3. 解析した電文を元にFormクラスを生成する。\n4. SQLファイルから一時テーブルへ電文を登録するためのINSERT文を取得する。\n5. FormクラスおよびINSERT文を使用して一時テーブルへ電文を保存する。\n\n![処理の流れ](assets/mom-messaging-02_basic-04_Explanation_delayed_receive/sequence.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,148 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_06_direct_call_of_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — first annotation equivalent code block",
+      "description": "The annotation equivalent for the first ValidationUtil example omits `@PropertyName(\"昼間連絡先電話番号\")`. The source shows this annotation as part of the equivalent, but the knowledge file only shows `@Required` and `@JapaneseTelNumber`. Since the knowledge file explicitly claims the code block is equivalent to the annotation usage, the incomplete equivalent is misleading.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\")\n@Required\n@JapaneseTelNumber\npublic void setDaytimePhoneNumber(String value) { ... }"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — second annotation equivalent code block",
+      "description": "The annotation equivalent for the second ValidationUtil example (prefectureCode / CodeValue) omits both `@PropertyName(\"都道府県\")` and `@Required`. The source shows all three annotations as the equivalent, but the knowledge file only shows `@CodeValue(...)`. This makes the shown equivalent materially incomplete.",
+      "source_evidence": "@PropertyName(\"都道府県\")\n@Required\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`@PropertyName` (as `PropertyName`) is absent from the hints array. It appears in both annotation-equivalent code blocks in the source and is a PascalCase class/annotation name that should be included.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\") ... @PropertyName(\"都道府県\")"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _direct_call_of_validators:
+
+--------------------------------------
+バリデータの明示的な呼び出し
+--------------------------------------
+ここまで述べてきたアノテーションによる精査処理の実装方法は、ソースコードの記述がほとんど不要である一方、
+遷移元画面やフラグの有無によって精査対象が変わるような場合に対応することができない。
+
+そのようなケースでは、アクション側で精査処理を実装する必要がある。
+以下は、画面から送信された条件フラグに従って、精査処理の有無を判断している例である。
+
+.. code-block:: java
+
+  // 連絡先情報が更新されている場合、昼間連絡先電話番号が入力されていることを確認する。
+  if (contactInfoUpdated) {
+    ValidationUtil.validate(context, "daytimePhoneNumber", Required.class);
+    ValidationUtil.validate(context, "daytimePhoneNumber", JapaneseTelNumber.class);                        
+  }
+
+if文の条件に合致した場合に行われる精査処理は、下記のアノテーションと同等のものとなる。
+
+.. code-block:: java
+
+  @PropertyName("昼間連絡先電話番号")
+  @Required
+  @JapaneseTelNumber
+  public void setDaytimePhoneNumber(String value) {
+      this.value = value;
+  }
+
+アノテーションのプロパティは、以下のように **Map** を引数に渡すことで指定することが可能である。
+
+.. code-block:: java
+ 
+  // 入力値が都道府県コードに含まれていることを検証する。
+  Map<String, Object> params = new HashMap<String, Object>();
+  params.put("codeId", "1052");     // 都道府県コード
+  params.put("pattern", "A");       // 使用するコードパターン名
+  params.put("messageId", "M4865"); // 精査エラーメッセージのID
+  ValidationUtil.validate(context, "prefectureCode", CodeValue.class, params);
+
+この精査処理は、下記のアノテーションによる処理と同じものとなる。
+
+.. code-block:: java
+
+  @PropertyName("都道府県")
+  @Required
+  @CodeValue(codeId="1052", pattern="A", messageId="M4865")
+  public void setPrefectureCode(String value) {
+      this.value = value;
+  }
+
+
+.. note::
+
+  ここで述べている方法でバリデータを利用するためには、バリデータ側の対応も必要となる。
+  詳細については、下記の項を参照すること。
+
+    :ref:`implementing_DirectCallable`
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_06_direct_call_of_validators",
+  "title": "バリデータの明示的な呼び出し",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデータの明示的な呼び出し",
+      "hints": [
+        "ValidationUtil",
+        "ValidationUtil.validate",
+        "Required",
+        "JapaneseTelNumber",
+        "CodeValue",
+        "バリデータの明示的呼び出し",
+        "条件付きバリデーション",
+        "Mapによるアノテーションプロパティ指定",
+        "implementing_DirectCallable"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "アノテーションによる精査では、遷移元画面やフラグの有無によって精査対象が変わるケースに対応できない。そのようなケースではアクション側で `ValidationUtil.validate()` を直接呼び出して精査処理を実装する。\n\n**基本的な使い方（バリデータクラスを引数に指定）**:\n\n```java\nValidationUtil.validate(context, \"daytimePhoneNumber\", Required.class);\nValidationUtil.validate(context, \"daytimePhoneNumber\", JapaneseTelNumber.class);\n```\n\n上記は以下のアノテーションと同等:\n\n```java\n@Required\n@JapaneseTelNumber\npublic void setDaytimePhoneNumber(String value) { ... }\n```\n\n**アノテーションプロパティの指定（Mapを使用）**:\n\n```java\nMap<String, Object> params = new HashMap<String, Object>();\nparams.put(\"codeId\", \"1052\");\nparams.put(\"pattern\", \"A\");\nparams.put(\"messageId\", \"M4865\");\nValidationUtil.validate(context, \"prefectureCode\", CodeValue.class, params);\n```\n\n上記は以下のアノテーションと同等:\n\n```java\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) { ... }\n```\n\n> **注意**: この方法でバリデータを利用するには、バリデータ側の対応も必要。詳細は :ref:`implementing_DirectCallable` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

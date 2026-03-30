@@ -1,0 +1,140 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1 (末尾)",
+      "description": "セクション s1 の末尾に RST ナビゲーションマークアップ `:doc:`6`` が文字列としてそのまま含まれている。これは「related information」admonition 内のナビゲーション専用コンテンツであり、知識ファイルのセクションテキストとして残すべきではない。AI がこのセクションを読んだ際に意味不明なマークアップとして扱われる。",
+      "source_evidence": ".. admonition:: related information\n\n    * :doc:`6`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "コード例の `handle` メソッドシグネチャおよび戻り値に登場する PascalCase クラス名 `ExecutionContext` と `Success` がヒントに含まれていない。",
+      "source_evidence": "public Result handle(SqlRow inputData, ExecutionContext ctx) { ... return new Success(); }"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？
+========================================================================================================================
+
+.. admonition:: question
+
+    データベースをインプットとして処理を行う場合で、インプットデータが処理済みの場合の処理の流れは以下のようになると思います。
+
+     #. 入力データを受け取る。
+     #. データを出力する。(テーブルへのINSERTやUPDATE)
+
+    このようなケースの場合、INSERTやUPDATE時にEntityは使用せずに1項目ずつsetStringやsetObjectを呼び出す想定でいます。
+    イメージ的には、以下のような実装を想定しています。
+    
+    これは、実装方法として正しいのでしょうか？
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityは使用せずに1項目ずつ値をバインドする。
+            SqlPStatement statement = getSqlPStatement("INSERT_SQL");
+            statement.setString(1, inputData.getString("id"));
+            statement.setString(2, inputData.getString("name"));
+            statement.setString(3, inputData.getString("kana_name"));
+            statement.setString(4, inputData.getString("tel"));
+            statement.executeUpdate();
+
+            return new Success();
+        }
+
+.. admonition:: answer
+
+    精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERTやUPDATE処理を行うようにしてください。
+
+    なぜなら、保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きいからです。
+    また、1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能も使用することができなくなってしまいます。
+
+    上記の **question** にある実装を、Entityを使用した実装に置き換えると以下のようになります。
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityを生成して、データベースの更新を行う。
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SQL");
+            statement.executeUpdateByObject(new SampleEntity(inputData));
+
+            return new Success();
+        }
+
+.. admonition:: related information
+
+    * :doc:`6`
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-2",
+  "title": "データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースをインプットとするバッチ処理でのEntity使用方針",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "SqlPStatement",
+        "SqlRow",
+        "executeUpdateByObject",
+        "getParameterizedSqlStatement",
+        "Entity",
+        "バッチ処理",
+        "データベース更新",
+        "INSERT",
+        "UPDATE",
+        "共通項目設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査が不要な場合でも、データベースへのINSERT/UPDATE処理は基本的にEntityを生成して行うこと。\n\n**理由**:\n- 1項目ずつ `setString` / `setObject` で値を設定するより保守性・生産性が高い\n- 1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能が使用できない\n\n**推奨実装**（Entityを使用したINSERT）:\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SQL\");\n    statement.executeUpdateByObject(new SampleEntity(inputData));\n    return new Success();\n}\n```\n\n**クラス**: `ParameterizedSqlPStatement`\n\n:doc:`6`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

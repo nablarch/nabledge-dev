@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-05_fileOutputBatch",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is the absence of `DataReader` from s2's hints. This has low user impact because: (1) `DataReader` is a generic return-type interface, not a class developers directly instantiate or search for; (2) the concrete implementation class `DatabaseRecordReader` is already present in the hints; (3) the method name `createReader` is already in the hints, providing adequate routing for queries about reader creation; (4) the section body contains `DataReader<SqlRow>` in the code example, so semantic/vector search would still surface this section. The finding persisted because Phase E produced no changes to s2's hints — the fix agent output is byte-for-byte identical to the Phase D snapshot, indicating the agent either judged the change unnecessary or silently failed to apply it.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s2 hints",
+      "impact": "low",
+      "justification": "`DataReader` is the return-type interface of `createReader`, not a class developers instantiate directly. The section is already discoverable via `createReader` and `DatabaseRecordReader` hints. The code example in s2's body contains `DataReader<SqlRow>`, so semantic retrieval covers the gap. A query specifically about the `DataReader` interface is an edge case unlikely to reflect real user questions about file-output batch implementation. Phase E left s2 hints unchanged (output identical to Phase D input), so the finding was never fixed."
+    }
+  ]
+}

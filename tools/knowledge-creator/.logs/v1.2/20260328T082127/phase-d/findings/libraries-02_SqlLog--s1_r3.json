@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s22",
+      "description": "The placeholder table for SqlPStatement#executeBatchメソッドの更新終了時 labels the batch count field as「更新件数」, but the source's output items section for the same method (and knowledge file s12) consistently uses「バッチ件数」. The label「更新件数」has no basis in the source for the executeBatch method.",
+      "source_evidence": "Source output items section for SqlPStatement#executeBatchメソッドの更新終了時: バッチ件数 | バッチ件数. Knowledge file s12 correctly reflects this as「バッチ件数」. The placeholder table in s22 incorrectly uses「更新件数」instead."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[id=s2].hints",
+      "description": "PascalCase class names FileLogWriter and BasicLogFormatter appear in the configuration code examples in s2 content but are absent from s2 hints.",
+      "source_evidence": "Source log.properties example contains: writer.appFile.className=nablarch.core.log.basic.FileLogWriter and writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

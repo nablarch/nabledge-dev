@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — note about Caused by",
+      "description": "The knowledge file adds the statement \"Caused byが存在しない場合はスタックトレース先頭のクラス\" as a clarification of what the \"root element\" means. The source only says \"スタックトレースのルート要素を指している\" without explicitly addressing the no-Caused-by case. This is an inference not present in the source.",
+      "source_evidence": "「例外が送出されたクラス」とは、スタックトレースのルート要素を指している。— source provides no explicit statement about the no-Caused-by case"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 障害ログ出力クラスの列挙",
+      "description": "The source states that failure logs can be output using TransactionAbnormalEnd(ProcessAbnormalEnd) OR FailureLogUtil. The knowledge file omits FailureLogUtil entirely. An AI answering questions about failure log output methods would not know this class exists.",
+      "source_evidence": "アプリケーションでは、TransactionAbnormalEnd(ProcessAbnormalEnd)やFailureLogUtilを使用して障害ログの出力を行う。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ProcessAbnormalEnd Javaコード例",
+      "description": "The source includes a Java code example showing the ProcessAbnormalEnd constructor signature: `throw new ProcessAbnormalEnd(100, \"UM900003\")`. This reveals the constructor takes (int exitCode, String failureCode) — the first argument is an exit code (100) and the second is the failure code. This constructor usage pattern is omitted from the knowledge file.",
+      "source_evidence": "if (userId == null) {\n    throw new ProcessAbnormalEnd(100, \"UM900003\");\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — index hints",
+      "description": "Section s3 discusses framework failure codes and includes output examples for specific Nablarch classes. The class names BasicBusinessDateProvider, StringResourceHolder, PasswordAuthenticator, and MessageNotFoundException appear in source examples but are absent from the hints array. A user asking \"BasicBusinessDateProviderで例外が発生した場合の障害コードは？\" would not be routed to this section.",
+      "source_evidence": "Source contains output examples for nablarch.core.date.BasicBusinessDateProvider, nablarch.core.message.StringResourceHolder, nablarch.common.authentication.PasswordAuthenticator, and Caused by: nablarch.core.message.MessageNotFoundException"
+    }
+  ]
+}

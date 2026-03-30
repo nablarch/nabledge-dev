@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-05_FileDownload--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — setContentType description in HttpResponse method table",
+      "description": "The knowledge file omits the important distinction that charset encoding only applies to CharSequence data. The source explicitly states that for byte arrays, streams, and file paths, the charset set in Content-Type has no effect — the data is output as-is. This is decision-necessary for developers to know whether charset configuration matters for their specific data type.",
+      "source_evidence": "「バイト配列、ストリーム、ファイルパスのデータをダウンロードする場合は、Content-Typeヘッダに設定した文字コードでエンコードは行われずそのままデータがレスポンスに出力される。」"
+    }
+  ]
+}

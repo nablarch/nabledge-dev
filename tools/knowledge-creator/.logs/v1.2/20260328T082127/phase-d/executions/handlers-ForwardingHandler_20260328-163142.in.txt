@@ -1,0 +1,293 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/ForwardingHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+内部フォーワードハンドラ
+================================================
+**クラス名:** ``nablarch.fw.handler.ForwardingHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+このハンドラでは、後続ハンドラでの処理結果のHTTPレスポンスオブジェクト中のコンテンツパスが、
+**forward://** で始まる書式であった場合に、指定されたリクエストパスで後続ハンドラの処理を再実行する。
+
+これは、 **内部フォーワード** と呼ばれる処理で、遷移先の画面が単純な画面表示では無く、
+業務アクションでの処理を伴う場合などに用いられる。
+
+なお、内部フォーワード後は :ref:`リクエストオブジェクト<request_processing>` 中のリクエストパスの値は
+フォーワード先のパスに書き換えられる。
+一方、スレッドコンテキスト中のリクエストIDの値はフォーワード後も同じ値である。
+
+フォーワード先のリクエストパスに対するリクエストIDは、同じスレッドコンテキスト中の
+:ref:`内部リクエストID<internal_request_id>` から参照できる。
+
+
+**関連するハンドラ**
+
+  ======================================================================== ==========================================================
+  ハンドラ                                                                 内容
+  ======================================================================== ==========================================================
+  :doc:`ServiceAvailabilityCheckHandler` 、 :doc:`PermissionCheckHandler`  これらのハンドラが行う開閉局チェック、認可チェック処理は
+                                                                           フォーワード後のリクエストIDで実施する必要があるので、
+                                                                           本ハンドラはこれらのハンドラの上位に配置する必要がある。
+  ======================================================================== ==========================================================
+
+
+++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = [
+        "ForwardingHandler", "ServiceAvailabilityCheckHandler", "PermissionCheckHandler" 
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (ハンドラキュー構成のスナップショットを作成)**
+    このハンドラの処理開始時点でのハンドラキュー構成のシャローコピーを作成する。
+   
+  **2. (後続ハンドラの処理を実行)**
+    ハンドラキュー上の後続ハンドラに処理を委譲し、その結果オブジェクトとなるHTTPレスポンスオブジェクトを取得する。
+
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (コンテンツパスの取得)**
+    HTTPレスポンスオブジェクトに設定されたコンテンツパス文字列を取得する。
+
+  **3a. (正常終了)**
+    コンテンツパス文字列が **forward://** で始まる文字列で無い場合、本ハンドラでは何もせずに、
+    **2.** で取得した処理結果をリターンして終了する。
+
+  **3b. (内部フォーワード処理)**
+    コンテンツパス文字列が **forward://** で始まる場合、パス部分をフォーワード先パスとして取得する。
+
+    **(書式)**
+      **forward://(フォーワード先リクエストパス)**
+
+      * 相対パス指定の場合: 現在のリクエストURIを起点とするパス。
+      * 絶対パス指定の場合: サーブレットコンテキスト名を起点とするパス。
+             
+      .. code-block:: bash
+
+        # 現在のリクエストURIが "/app/user/success.html" とすると、以下はどちらも等価な表現となる。
+        forward://registerForm.html            # 相対パス指定
+        forward:///app/user/registerForm.html  # 絶対パス指定
+
+    以下の処理を行う。 
+
+      1. フォーワード先リクエストパスを **HttpRequest** オブジェクトのリクエストパスに設定する。
+      2. フォーワード先リクエストパスから取得したリクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>`
+         に設定する。
+      3. 実行コンテキスト上のハンドラキューの内容を **1.** で作成したコピーに差し替えたうえで、
+         後続のハンドラに対して再度処理を委譲し、その処理結果となるHTTPレスポンスオブジェクトを取得する。
+      4. 初回のレスポンスのステータスコードと、\ **2.**\ で得られたレスポンスのステータスコードを比較し、
+         前者の方が大きい場合は、\ **2.**\ で得られたレスポンスにその値を設定する。
+      5. **2.**\ で得られたレスポンスをリターンするして終了する。
+
+.. _error:
+
+**[例外処理]**
+  **2a. (後続ハンドラ処理中のエラー)** 
+    後続ハンドラ処理中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラに設定項目はなく、そのまま使用することができる。
+
+  .. code-block:: xml
+
+    <!-- 内部フォーワード制御ハンドラ -->
+    <component class="nablarch.fw.web.handler.ForwardingHandler" />
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-ForwardingHandler`
+
+```json
+{
+  "id": "handlers-ForwardingHandler",
+  "title": "内部フォーワードハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ForwardingHandler",
+        "nablarch.fw.handler.ForwardingHandler",
+        "内部フォーワード",
+        "forward://",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler",
+        "内部リクエストID",
+        "コンテンツパス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ForwardingHandler",
+        "内部フォーワード処理",
+        "forward://",
+        "コンテンツパス",
+        "ハンドラキュー",
+        "HttpRequest",
+        "ステータスコード",
+        "往路処理",
+        "復路処理",
+        "内部リクエストID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "ForwardingHandler",
+        "nablarch.fw.web.handler.ForwardingHandler",
+        "設定項目なし",
+        "コンポーネント設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ForwardingHandler`\n\nHTTPレスポンスのコンテンツパスが `forward://` で始まる場合、指定されたリクエストパスで後続ハンドラの処理を再実行する（内部フォーワード）。遷移先画面が業務アクション処理を伴う場合などに用いる。\n\n- フォーワード後: :ref:`リクエストオブジェクト<request_processing>` 中のリクエストパスはフォーワード先に書き換えられる\n- スレッドコンテキストのリクエストIDはフォーワード後も同じ値のまま変わらない\n- フォーワード先のリクエストIDは :ref:`内部リクエストID<internal_request_id>` から参照可能\n\n> **重要**: :doc:`ServiceAvailabilityCheckHandler`、:doc:`PermissionCheckHandler` の開閉局チェック・認可チェックはフォーワード後のリクエストIDで実施する必要があるため、本ハンドラはこれらの上位に配置すること。",
+    "s2": "**[往路処理]**\n\n1. ハンドラキュー構成のシャローコピーを作成する\n2. 後続ハンドラに処理を委譲し、HTTPレスポンスオブジェクトを取得する\n\n**[復路処理]**\n\n3. HTTPレスポンスオブジェクトのコンテンツパスを取得する\n   - `forward://` で始まらない場合: 処理結果をそのままリターンして終了\n   - `forward://` で始まる場合（内部フォーワード処理）:\n     - 書式: `forward://(フォーワード先リクエストパス)`\n       - 相対パス指定: 現在のリクエストURIを起点とするパス\n       - 絶対パス指定: サーブレットコンテキスト名を起点とするパス\n     ```bash\n     # 現在のリクエストURIが \"/app/user/success.html\" の場合、以下は等価\n     forward://registerForm.html            # 相対パス指定\n     forward:///app/user/registerForm.html  # 絶対パス指定\n     ```\n     - 処理手順:\n       1. フォーワード先リクエストパスを `HttpRequest` オブジェクトのリクエストパスに設定\n       2. フォーワード先リクエストIDをスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` に設定\n       3. ハンドラキューの内容を往路で作成したコピーに差し替えたうえで後続ハンドラを再実行し、HTTPレスポンスオブジェクトを取得\n       4. 初回レスポンスのステータスコードが再実行レスポンスのステータスコードより大きい場合、再実行レスポンスにその値を設定\n       5. 再実行レスポンスをリターンして終了\n\n**[例外処理]**\n\n後続ハンドラ処理中のエラーはそのまま再送出して終了する。",
+    "s3": "設定項目はなく、そのまま使用可能。\n\n```xml\n<component class=\"nablarch.fw.web.handler.ForwardingHandler\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

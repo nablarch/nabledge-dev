@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-99_Utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — getDays code example (same-day case)",
+      "description": "Knowledge file shows `DateUtil.getDays(\"20110302\", \"20110302\")` but the source shows `DateUtil.getDate(\"20110302\", \"20110302\")` for this example. The knowledge file changed the method name in the code snippet.",
+      "source_evidence": "// 同日を指定した場合\nDateUtil.getDate(\"20110302\", \"20110302\"); // -> 0"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — addMonth code examples",
+      "description": "The source includes a 'yyyyMM形式で1ヶ月減算する場合' example (`DateUtil.addMonth(date, 1); // -> 201102`) that is omitted from the knowledge file. Even though this example appears to contain a bug in the source (positive 1 with decremented result), it is present in the source and should be represented.",
+      "source_evidence": "// 1ヶ月減算する場合(年月指定)\nString date = \"201103\";\nDateUtil.addMonth(date, 1); // -> 201102"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — getMonthEndDate code examples",
+      "description": "The source includes a third getMonthEndDate example (`DateUtil.getMonthEndDate(\"201104\"); // -> 20110431`) that is omitted from the knowledge file.",
+      "source_evidence": "DateUtil.getMonthEndDate(\"201104\"); // -> 20110431"
+    }
+  ]
+}

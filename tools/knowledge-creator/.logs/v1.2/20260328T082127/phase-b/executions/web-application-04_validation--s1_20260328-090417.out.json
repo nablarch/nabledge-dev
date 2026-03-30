@@ -1,0 +1,57 @@
+{
+  "id": "web-application-04_validation--s1",
+  "title": "入力内容の精査",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "W11AC02Form",
+        "W11AC02Action",
+        "UsersEntity",
+        "SystemAccountEntity",
+        "UgroupSystemAccountEntity",
+        "バリデーション",
+        "入力値精査",
+        "Formクラス",
+        "Actionクラス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "Formの生成",
+        "単項目精査",
+        "項目間精査",
+        "Formクラス作成",
+        "バリデーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "プロパティの追加",
+      "hints": [
+        "W11AC02Form",
+        "UsersEntity",
+        "SystemAccountEntity",
+        "UgroupSystemAccountEntity",
+        "@ValidationTarget",
+        "@PropertyName",
+        "@Required",
+        "@SystemChar",
+        "@Length",
+        "プロパティ追加",
+        "Entityクラス",
+        "バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "| 名称 | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`UsersEntity.java<./_source/download/UsersEntity.java>` など | Form | テーブルに対応したクラス。精査ロジックを保持する。 |\n| :download:`W11AC02Form.java<./_source/download/W11AC02Form.java>` | Form | 画面/取引に対応したクラス。外部入力値の精査を実行するクラス。 |\n| :download:`W11AC02Action.java<./_source/download/W11AC02Action.java>` | Action | バリデーションの実行、画面入力値が設定されたオブジェクトの取得、例外処理を行う。 |\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` | View | ユーザ情報登録画面でエラーメッセージを表示する。 |",
+    "s2": "Formクラスを新規に作成する。Formクラスには、画面から入力する値や取引で必要となる精査処理（単項目精査や項目間精査）を実装する。",
+    "s3": "- テーブルの項目に対応するプロパティ → そのテーブルに対応するEntityクラスをFormクラスのプロパティとして追加する\n- テーブルの項目に対応しないプロパティ → 直接Formクラスに追加する\n\n> **注意**: テーブルと1対1に対応付けられたFormをEntityと呼ぶ。\n\n1. Formにプロパティ（メンバ変数、setter、getter）を追加する。\n2. FormのMapを引数にとるコンストラクタに、追加したプロパティの値を設定する処理を追加する。\n\nsetterには精査用のアノテーションを付加する。Entityクラスのプロパティのsetterには `@ValidationTarget` を指定し、Entityクラス内で実装された精査処理の呼び出し対象であることを示す。\n\n```java\npublic class W11AC02Form {\n\n    private UsersEntity users;\n    private SystemAccountEntity systemAccount;\n    private UgroupSystemAccountEntity ugroupSystemAccount;\n    private String newPassword;\n    private String confirmPassword;\n\n    public W11AC02Form(Map<String, Object> params) {\n        users = (UsersEntity) params.get(\"users\");\n        systemAccount = (SystemAccountEntity) params.get(\"systemAccount\");\n        ugroupSystemAccount = (UgroupSystemAccountEntity) params.get(\"ugroupSystemAccount\");\n        newPassword = (String) params.get(\"newPassword\");\n        confirmPassword = (String) params.get(\"confirmPassword\");\n    }\n\n    @PropertyName(\"パスワード\")\n    @Required\n    @SystemChar(charsetDef=\"asciiCharset\")\n    @Length(max = 20)\n    public void setNewPassword(String newPassword) { this.newPassword = newPassword; }\n\n    @PropertyName(\"パスワード\")\n    @Required\n    @SystemChar(charsetDef=\"asciiCharset\")\n    @Length(max = 20)\n    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }\n\n    @ValidationTarget\n    public void setUsers(UsersEntity users) { this.users = users; }\n\n    @ValidationTarget\n    public void setSystemAccount(SystemAccountEntity systemAccount) { this.systemAccount = systemAccount; }\n\n    @ValidationTarget\n    public void setUgroupSystemAccount(UgroupSystemAccountEntity ugroupSystemAccountEntity) {\n        this.ugroupSystemAccount = ugroupSystemAccountEntity;\n    }\n}\n```"
+  }
+}

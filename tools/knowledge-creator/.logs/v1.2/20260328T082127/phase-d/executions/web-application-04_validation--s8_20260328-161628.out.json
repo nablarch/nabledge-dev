@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-04_validation--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "title field",
+      "description": "The knowledge file title is 'Actionの作成', but sections s1 and s2 contain content from source sections 'バリデーションメソッドを複数作成したい場合' and 'プロパティの表示名をカスタマイズしたい場合', which appear before the 'Actionの作成' (===) heading in the source. The title only accurately describes the content of s3 and s4.",
+      "source_evidence": "Source structure: 'バリデーションメソッドを複数作成したい場合' (---) → 'プロパティの表示名をカスタマイズしたい場合' (---) → 'Actionの作成' (===) → 'バリデーションの実行と画面入力値が設定されたオブジェクトの取得' (---) → '例外発生時の処理' (---)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1 — note block",
+      "description": "The note states 'その場合、`ListSearchInfo`（...）を継承する', implying that inheriting ListSearchInfo is the recommended/required approach when creating a Form-like Bean with no table-related properties. The source does not make this recommendation; it only notes that the example class W11AC01SearchForm happens to inherit ListSearchInfo and provides a cross-reference to paging documentation.",
+      "source_evidence": "Source note: '下記クラスが継承しているListSearchInfoについては、:ref:`ページングを使用した一覧表示<custom_tag_paging_paging>`を参照。' — this is a reference note about the example, not a pattern requirement."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The source note 'サンプルアプリケーションでは本機能は用いていない。このため、記載したコード例はサンプルアプリケーションには含まれない。' is omitted. This informs users that the @PropertyName customization pattern does not appear in the sample application.",
+      "source_evidence": "Source (immediately before `.. _04_action:` anchor): '.. note:: サンプルアプリケーションでは本機能は用いていない。このため、記載したコード例はサンプルアプリケーションには含まれない。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) — hints array",
+      "description": "The hint `Validatable` is missing from s3. The interface `Validatable<?>` appears in the method signature explicitly provided in s3: `validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)`.",
+      "source_evidence": "Source footnote [#]: 'validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)'"
+    }
+  ]
+}

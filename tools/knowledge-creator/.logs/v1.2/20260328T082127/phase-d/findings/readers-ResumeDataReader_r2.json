@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — レジューム処理概要 > warning about patching records",
+      "description": "The warning about patching records omits the first clause that states patching the record AT the failure point itself is permitted. The source says '障害発生ポイントのレコードにパッチを当てることは問題ないが、発生ポイント以前のデータ…にパッチを当てた場合は、レジュームポイントを0クリアして…'. The knowledge file only states what is NOT allowed (patching before the failure point), omitting that patching at the failure point itself is fine. This distinction is decision-necessary: a developer might incorrectly reset the resume point when patching the failure record, or might misunderstand the full scope of the constraint.",
+      "source_evidence": "障害発生ポイントのレコードにパッチを当てることは問題ないが、発生ポイント以前のデータ（既に正常に処理が終わっているデータ）に対してパッチを当てた場合は、レジュームポイントを0クリアして1レコード目から再度処理する必要があるため注意すること。"
+    }
+  ]
+}

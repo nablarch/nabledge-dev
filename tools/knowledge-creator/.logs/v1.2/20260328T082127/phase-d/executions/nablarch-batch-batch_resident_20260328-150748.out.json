@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — 主要処理フロー一覧テーブル「常駐処理業務エラー」行",
+      "description": "エラーレコードの再実行可否についての重要な条件が欠落している。ソースでは「データメンテを行なわない限り再実行の対象とならない」と明記されており、データメンテナンスによって再実行が可能であることが示されている。ナレッジファイルでは「エラーレコードはエラーステータスとなり再実行対象外」とだけ記載されており、永続的に再実行不可であるかのように読める。",
+      "source_evidence": "「ただし、エラーが発生したレコードはエラーステータスとなり、データメンテを行なわない限り再実行の対象とならない。」（flow-tableの常駐処理業務エラー行）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 常駐処理業務エラーの脚注 [#log]",
+      "description": "リトライ可能例外の具体的な原因種別（DBやMQなどへの接続エラー）および障害ログではなくワーニングログを使用する理由が省略されている。これらはリトライ可能例外の判定基準を理解する上で役立つ情報。",
+      "source_evidence": "「なぜなら、リトライ可能例外は障害原因(DBやMQなどへの接続エラー)が復旧することで正常に処理を継続できるため、即障害通知を行う必要がないためである。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "`DataReader` クラス名がhintsに含まれていない。s3の処理フロー詳細（処理対象データ待機）にて `DataReader.NoMoreRecord` として参照されており、PascalCaseクラス名として追加すべき。",
+      "source_evidence": "waitdataフロー: LoopHandlerステップのコメント「要求管理テーブル上の処理対象データが0件であった場合は、後続処理は行わず、DataReader.NoMoreRecord をリターンする。」"
+    }
+  ]
+}

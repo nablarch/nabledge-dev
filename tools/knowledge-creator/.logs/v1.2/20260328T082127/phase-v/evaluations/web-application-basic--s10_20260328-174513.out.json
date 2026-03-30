@@ -1,0 +1,32 @@
+{
+  "file_id": "web-application-basic--s10",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "2件のmedium影響のfindingが残存しており、エージェントが実装判断を誤るリスクがある。EL式の使用制限（値出力コンテキスト禁止）はNablarchでセキュリティ・動作に関わるルールであり、windowScopePrefixesの設計意図欠落は複数画面にまたがる状態引き継ぎの実装パターンを誤って適用するリスクにつながる。Phase Eの出力JSONが入力と完全に一致していることから、fixエージェントが変更を適用せずに終了したと判断される（minorとして棄却したか、書き込みに失敗した可能性がある）。",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — 更新完了画面 JSP説明",
+      "impact": "medium",
+      "justification": "更新完了画面で `windowScopePrefixes=\"11AC_W11AC01\"` を指定する目的（一覧照会画面へ戻った際に検索条件を復元するため）が欠落している。この設計意図がないと、エージェントは「完了画面にはウィンドウスコープ不要」と誤認し、検索条件の引き継ぎが必要な類似実装で同パターンを適用しない可能性がある。ソースには明示的にコメントで記載されており、意図的な設計情報として反映すべきだった。Phase Eでは出力JSONが入力と同一であり、修正が適用されていない。"
+    },
+    {
+      "category": "omission",
+      "location": "s3 — EL式使用条件",
+      "impact": "medium",
+      "justification": "「値の出力ではない場合にのみEL式が使用可能」という制限条件が欠落している。Nablarch JSPでは値出力コンテキストでEL式を使うと意図しない動作やセキュリティ問題が生じる可能性がある。現状の記述「変数参照時はEL式を使用可能」は制限なく使えると誤解させる。ソースの「値の出力ではないので、EL式を使用しても問題ない。」という条件付き表現は判断基準として重要。Phase Eで未修正。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 — hints",
+      "impact": "low",
+      "justification": "hintsの `confirmationPage` は正しくは `n:confirmationPage`（名前空間プレフィックス付き）。ただしセクション本文のコードブロックには `<n:confirmationPage />` が正しく記載されており、エージェントがこのセクションを参照した場合は正しいタグ名を得られる。ヒントベースの検索精度に若干の影響はあるが、実装ミスに直結する可能性は低い。Phase Eで未修正。"
+    },
+    {
+      "category": "section_issue",
+      "location": "s2 — title",
+      "impact": "low",
+      "justification": "s2のタイトルが空文字列。ソース側にも対応するRST見出しがなく、内容的には「更新確認画面→更新完了画面の実装例」というサブトピックに相当する。空タイトルはインデックスナビゲーションの利便性を下げるが、セクション内容・hintsは存在し検索・参照には支障がない。実装品質への実害は限定的。Phase Eで未修正。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_componentUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 consolidates 5+ source subsections (テストデータの作成, テストクラスの作成, 事前準備データの作成処理, 処理終了後のDB確認, メッセージID確認) into a single large section exceeding 2000 characters of plain text. The source has H3/H4 headings (テストデータの作成 / テストクラスの作成 / 事前準備データの作成処理 / 処理終了後のデータベースの状況を確認 / メッセージIDを確認しなければならないもの) that are not reflected as separate knowledge sections.",
+      "source_evidence": "Source headings: テストデータとテストクラスの作成 (H3) → テストデータの作成 (H4) → テストクラスの作成 (H4) → 事前準備データの作成処理 (H4) → 処理終了後のデータベースの状況を確認しなければならないもの (H4) → メッセージIDを確認しなければならないもの (H4)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "PascalCase class names SystemAccountEntity, UsersEntity, UgroupSystemAccountEntity appear in the source code examples but are absent from s2 hints.",
+      "source_evidence": "Source code in DB verification section: `sysAcct = new SystemAccountEntity(work);`, `users = new UsersEntity(work);`, `grpSysAcct = new UgroupSystemAccountEntity(work);` — these are concrete entity classes used in Component unit test setup."
+    }
+  ]
+}

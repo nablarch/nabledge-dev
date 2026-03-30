@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpResponseHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2.hints",
+      "description": "`HttpResponse` class name is not listed as a standalone hint in s2. The section extensively discusses HttpResponse object operations (getting content path, setting InputStream, HttpResponse#write() buffering, returning the object), but only `HttpResponse#write()` appears in hints. A standalone `HttpResponse` entry would allow retrieval when users query the HttpResponse class directly.",
+      "source_evidence": "Source references `HttpResponse` as a named class throughout the outbound/exception processing steps: 'HTTPレスポンスオブジェクトをリターンして終了する', 'HttpResponse#write()メソッドによってレスポンス内容をHTTPレスポンスオブジェクト内にバッファリング', and the related-handlers table links to 'HttpResponse_'."
+    }
+  ]
+}

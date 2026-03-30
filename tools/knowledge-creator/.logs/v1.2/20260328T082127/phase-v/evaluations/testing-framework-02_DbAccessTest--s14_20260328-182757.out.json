@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s14",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "Both residual findings are minor fabrications that add editorial decoration (an emphasis marker and an interpretive parenthetical) not present in the source. In both cases the underlying instruction and factual content are correct and accurately represent the source meaning. An AI agent guided by this knowledge file would arrive at correct behavior: using EXPECTED_COMPLETE_TABLE appropriately, and understanding why assertSqlResultSetEquals enforces record order. Neither addition misleads the agent or causes incorrect implementation choices.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s1",
+      "impact": "low",
+      "justification": "Adding \"**重要**\" emphasis to the EXPECTED_COMPLETE_TABLE instruction does not change its meaning or correctness. The agent receives the correct instruction regardless of emphasis level. No incorrect behavior results from the added marker. The fix agent (Phase E) left the content unchanged, indicating it judged the editorial addition too minor to warrant a correction — the information conveyed is accurate."
+    },
+    {
+      "category": "fabrication",
+      "location": "sections.s5",
+      "impact": "low",
+      "justification": "The parenthetical \"（主キー突合による順序無視ができない）\" accurately restates the reason given in the source (primary key columns may not be included in the SELECT result, so order-based matching via primary key is not possible). It is a faithful interpretive summary, not a distortion. The agent reading this would correctly understand why record order is enforced in assertSqlResultSetEquals. Phase E left it unchanged because the interpretation adds no misinformation."
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `about-nablarch-concept`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "index[s3].hints",
+    "description": "s3のhintsに「設計書フォーマット」と「開発手順」が欠けている。これらはソースおよびsections.s3の本文に明示されている具体的な再利用可能コンテンツの種類であり、ユーザーがこれらのキーワードで検索した際にこのセクションがヒットすべき。",
+    "source_evidence": "ソース: 「ソフトウェア部品はもちろん、設計標準、設計書フォーマット、開発手順など、再利用可能なコンテンツを『すぐに使える』状態で用意しています。」"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+==================================================
+Nablarchのコンセプト
+==================================================
+
+--------------------------------------------------
+Robustness
+--------------------------------------------------
+
+Robustness(ロバストネス：堅牢性)とは、環境の変化、外部からの攻撃、内部のエラーといった様々な変動に対し、ダメー
+ジや損失を最小限にとどめ、機能を維持し続けることができる能力のことです。Nablarchでは、このロバストネスという言葉
+に、障害に強いという意味やセキュリティ的に強固であるという意味の他に、長期間使い続けられるという意味も込めてい
+ます。Nablarchはこのロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、
+システムの維持にかかる工数を削減します。
+
+--------------------------------------------------
+Testability
+--------------------------------------------------
+
+基幹システムをはじめとする企業情報システムには高い信頼性が要求され、その開発ではテストに多くの工数が割かれ
+ます。特に保守開発においては、テストにかかる工数は膨大になります。Nablarchはテスタビリティ（テスト容易性）を重視
+して設計されており、テスト工数を抑制しつつ、テストのクオリティを上げることを可能にしています。これにより、アプリケー
+ション開発や保守の品質と生産性を向上することができます。
+
+--------------------------------------------------
+Ready-to-Use
+--------------------------------------------------
+
+企業情報システムには多くの機能が必要とされるため、一から開発を行うと多大なコストが必要になり、システム構築に
+かかる期間も長くなります。しかし、変化の激しいビジネス環境に対応するには、なるべく短期間でかつ高い品質を維持し
+てシステム構築を行う必要があります。高品質なシステムを迅速に構築するためには、実績のある部品を再利用し、新た
+に作成するプログラムをなるべく少なくすることが重要です。
+Nablarchはこうしたニーズに応えるため、ソフトウェア部品はもちろん、設計標準、設計書フォーマット、開発手順など、再
+利用可能なコンテンツを「すぐに使える」状態で用意しています。これにより、高品質なアプリケーションをスピーディーに
+開発することができます。
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "about-nablarch-concept",
+  "title": "Nablarchのコンセプト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Robustness",
+      "hints": [
+        "ロバストネス",
+        "堅牢性",
+        "障害耐性",
+        "セキュリティ",
+        "長期運用",
+        "高品質",
+        "保守工数削減"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Testability",
+      "hints": [
+        "テスタビリティ",
+        "テスト容易性",
+        "テスト工数削減",
+        "品質向上",
+        "保守開発"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Ready-to-Use",
+      "hints": [
+        "すぐに使える",
+        "再利用可能",
+        "設計標準",
+        "ソフトウェア部品",
+        "開発生産性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Robustness\n\nNablarchにおけるRobustness（堅牢性）は、障害耐性・セキュリティ強固性に加え、「長期間使い続けられる」ことも意味する。このロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、システムの維持にかかる工数を削減する。",
+    "s2": "## Testability\n\nNablarchはテスタビリティ（テスト容易性）を重視して設計されており、テスト工数を抑制しつつテストのクオリティを向上できる。",
+    "s3": "## Ready-to-Use\n\nNablarchはソフトウェア部品・設計標準・設計書フォーマット・開発手順など、再利用可能なコンテンツを「すぐに使える」状態で提供する。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "about-nablarch-concept",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "s3のhintsに「設計書フォーマット」と「開発手順」が欠けている。これらはソースおよびsections.s3の本文に明示されている具体的な再利用可能コンテンツの種類であり、ユーザーがこれらのキーワードで検索した際にこのセクションがヒットすべき。",
+      "source_evidence": "ソース: 「ソフトウェア部品はもちろん、設計標準、設計書フォーマット、開発手順など、再利用可能なコンテンツを『すぐに使える』状態で用意しています。」"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "about-nablarch-concept",
+  "title": "Nablarchのコンセプト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Robustness",
+      "hints": [
+        "ロバストネス",
+        "堅牢性",
+        "障害耐性",
+        "セキュリティ",
+        "長期運用",
+        "高品質",
+        "保守工数削減"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Testability",
+      "hints": [
+        "テスタビリティ",
+        "テスト容易性",
+        "テスト工数削減",
+        "品質向上",
+        "保守開発"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Ready-to-Use",
+      "hints": [
+        "すぐに使える",
+        "再利用可能",
+        "設計標準",
+        "ソフトウェア部品",
+        "開発生産性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Robustness\n\nNablarchにおけるRobustness（堅牢性）は、障害耐性・セキュリティ強固性に加え、「長期間使い続けられる」ことも意味する。このロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、システムの維持にかかる工数を削減する。",
+    "s2": "## Testability\n\nNablarchはテスタビリティ（テスト容易性）を重視して設計されており、テスト工数を抑制しつつテストのクオリティを向上できる。",
+    "s3": "## Ready-to-Use\n\nNablarchはソフトウェア部品・設計標準・設計書フォーマット・開発手順など、再利用可能なコンテンツを「すぐに使える」状態で提供する。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

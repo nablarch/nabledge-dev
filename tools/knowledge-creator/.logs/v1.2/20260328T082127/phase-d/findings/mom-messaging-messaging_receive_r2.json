@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-messaging_receive",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — 2相コミットの説明",
+      "description": "知識ファイルは「規定回数に達するまでリトライする」と記述しているが、ソースは「既定回数に達するまでリトライする」と記述している。「規定」（規則で定める）と「既定」（あらかじめ定められた）は意味が異なる語であり、ソースの表現とは異なる。",
+      "source_evidence": "取得した電文を一旦キューに戻した後で既定回数に達するまでリトライする。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "s3のコンテンツ（ハンドラキュー・処理フロー詳細）に登場するPascalCaseクラス名のうち、以下4つがhintsに含まれていない: ThreadContextClearHandler（ハンドラキュー4番・13番）、ThreadContextHandler_main（ハンドラキュー5番）、ThreadContextHandler_request（ハンドラキュー14番）、RequestPathJavaPackageMapping（ハンドラキュー7番）。",
+      "source_evidence": "HandlerQueue に ThreadContextClearHandler, ThreadContextHandler_main, RequestPathJavaPackageMapping が含まれ、各フロー詳細にも ThreadContextHandler_request が登場する。"
+    }
+  ]
+}

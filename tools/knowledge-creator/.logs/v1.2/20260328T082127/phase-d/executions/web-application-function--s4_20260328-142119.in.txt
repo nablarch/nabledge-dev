@@ -1,0 +1,479 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/CustomTag/function.rst`
+- Format: `rst`
+
+```
+ファイルアップロードの実現方法
+------------------------------------------------------------------------------------------------
+
+ファイルアップロードを行うには下記のタグとクラスを使用する。
+
+**タグ**
+
+* file
+
+**クラス**
+
+* PartInfo
+* UploadHelper
+
+
+ファイルアップロード画面の作成方法（JSP）
+==========================================================================================
+ユーザが指定したファイルをアップロードする画面の実装例を示す。
+
+* JSPの実装例
+
+.. code-block:: jsp
+
+   <n:form enctype="multipart/form-data">
+
+     登録対象ユーザ情報ファイル
+     <n:file name="userList" cssClass="input" size="50"/>
+     <n:submit name="submit" type="submit" value="アップロード" uri="RW11AC0602"/>
+   </n:form>
+
+.. warning::
+ ファイルアップロードを行う場合、<n:form>タグに\ ``enctype``\ 属性に\ ``"multipart/form-data"`` \を必ず指定すること。
+ （通常のHTMLでのformタグと同様）
+
+
+アップロードファイルの取得方法（サーバサイド）
+==========================================================================================
+サーバ側では、HttpRequestオブジェクトからアップロードファイルを取得することができる。
+
+* アクションの実装例
+
+.. code-block:: java
+
+    public HttpResponse doMoveFile(HttpRequest req, ExecutionContext ctx) {
+
+        // n:fileタグで指定したname属性を指定して、アップロードファイルを取得
+        List<PartInfo> partInfoList = req.getPart("userList");
+
+        // ファイルがアップロードされていることを確認
+        if (partInfoList.isEmpty()) {
+            // ファイルがアップロードされていない
+            throw new ApplicationException(
+                    MessageUtil.createMessage(MessageLevel.ERROR, "MSG00039"));
+        }
+        // アップロードファイル１つ分の情報を取得
+        PartInfo partInfo = partInfoList.get(0);
+
+
+.. note::
+ 同一のn:formタグ内に、同一name属性のn:fileタグが複数ある場合
+ 上記ソースコードのpartInfoListには複数のPartInfoが含まれる。
+
+取得したPartInfoオブジェクトをどのように使用するかは、
+以下の項を参照。
+
+
+アップロードファイルの保存方法
+==========================================================================================
+
+アップロードされたファイルを、所定のディレクトリに移動する実装例を以下に示す。
+
+* アクションの実装例
+
+.. code-block:: java
+
+        UploadHelper helper = new UploadHelper(partInfo);
+
+        // 【説明】ユニークなファイル名を生成
+        String fileName = generateUniqueFileName();      
+
+        // 【説明】ユーティリティクラスを使用しファイルを移動する。
+        helper.moveFileTo("uploadFileSaveDir",      // 【説明】移動先ディレクトリを論理パス名で指定
+                          fileName);                // 【説明】移動後のファイル名を指定           
+
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+アップロードファイルを読み込む方法
+==========================================================================================
+
+画像ファイルなどのバイナリファイルをアップロードする場合、
+アップロードファイルを入力ストリームとして扱う必要がある。
+その場合の実装例を以下に示す。
+
+.. code-block:: java
+
+        public HttpResponse doHandleImageFile(HttpRequest req, ExecutionContext ctx) {
+
+            PartInfo partInfo = req.getPart("imageFile").get(0);
+
+            // 【説明】アップロードファイルの入力ストリームを取得
+            InputStream in = partInfo.getInputStream();
+        
+            // 【説明】以下、入力ストリームを使用した処理
+            //                  :
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+アップロードファイルをDBに登録する方法
+==========================================================================================
+
+データを一括登録する用途でファイルアップロードを行う場合、
+アップロードファイルを一時テーブルに登録することが多い。
+
+このような処理を行う場合、UploadHelperクラスを使用してファイル精査および登録を簡易的に行うことができる。
+
+.. note::
+ 本機能を使用する際、以下の前提事項がある。
+
+ * 単一レイアウトであること（全レコードが同じレイアウトである）
+ * 登録先テーブルがひとつであること（１レコードから複数テーブルへの登録は不可）
+
+.. note::
+ UploadHelperクラスの詳細使用については、
+ :doc:`../../../../fw/reference/common_library/file_upload_utility` を参照。
+
+本処理の概要は以下のようになる。
+
+ +--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+ | 処理                           | 説明                                                           | 業務処理側で必要な実装内容                    |
+ +================================+================================================================+===============================================+
+ | フォーマット定義のロード       | アップロードされるファイルのデータフォーマットを定義した       | `フォーマット定義ファイルパスの指定`_\        |
+ |                                | ファイルを決定し読み込む。                                     |                                               |
+ +--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+ | レコード内容チェック           | アップロードされたファイル中の各レコードに対して以下の検査を   | | `エラー発生時のメッセージID指定`_\          |
+ |                                | 行う。                                                         | | `精査処理を実装したクラス、メソッドの指定`_\|
+ |                                |                                                                |                                               |
+ |                                | **形式チェック**                                               |                                               | 
+ |                                |   アップロードされたファイル中の各レコードを                   |                                               |
+ |                                |   フレームワークが読み込む際に、自動的に行う検証。             |                                               |
+ |                                |   ファイル内のデータが、                                       |                                               |
+ |                                |   フォーマット定義ファイルに記述されている                     |                                               |
+ |                                |   1レコードあたりの項目数、各項目のデータ形式などの定義に合致  |                                               |
+ |                                |   していることを検証する。                                     |                                               |
+ |                                |   形式チェックを通過したレコードはMap型のオブジェクトに        |                                               |
+ |                                |   変換される。                                                 |                                               |
+ |                                |                                                                |                                               |
+ |                                | **精査処理**                                                   |                                               |
+ |                                |   形式チェックを通過した各レコードに対して行われる検証。       |                                               |
+ |                                |   通常の業務Actionと同様の実装を行うことができるので、         |                                               |
+ |                                |   ドメインベースの単項目精査やDB精査、ビジネスロジックを伴う   |                                               |
+ |                                |   複雑な精査処理を実装することができる。                       |                                               |
+ |                                |                                                                |                                               |
+ |                                | **空ファイルチェック**                                         |                                               |
+ |                                |   アップロードされたファイルが空でないこと                     |                                               |
+ |                                |   （ レコードが１件以上存在すること）をチェックする。          |                                               |
+ |                                |                                                                |                                               |
+ +--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+ | レコードの登録                 | アップロードされたファイル中の全てのレコードが上記の検査を     | `データベース一括登録`_\                      |
+ |                                | 通過したした場合は、それらをDBに登録する。                     |                                               |
+ +--------------------------------+----------------------------------------------------------------+-----------------------------------------------+
+ 
+実装例を以下に示す。 
+
+
+.. code-block:: java
+
+    // 【説明】ファイルをDBに投入する
+    @OnError(type = ApplicationException.class, path = "forward://RW11AC0601")
+    public HttpResponse doRW11AC0602(HttpRequest req, ExecutionContext ctx) {
+
+        PartInfo partInfo = req.getPart("fileToSave").get(0);
+
+       // 全件一括登録
+        UploadHelper helper = new UploadHelper(partInfo);
+        int cnt = helper.applyFormat("N11AC002")                     // 【説明】フォーマットを適用する               
+                        .setUpMessageIdOnError("MSG00037",           // 【説明】形式エラー時のメッセージIDを指定する 
+                                               "MSG00038",           // 【説明】精査エラー時のメッセージIDを指定する 
+                                               "MSG00040")           // 【説明】ファイルが空の場合のメッセージIDを指定する 
+                        .validateWith(UserInfoTempEntity.class,      // 【説明】精査メソッドを指定する               
+                                      "validateRegister")
+                        .importWith(this, "INSERT_SQL");             // 【説明】INSERT文のSQLIDを指定する
+
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+フォーマット定義ファイルパスの指定
+------------------------------------------
+
+以下のメソッドを使用し、アップロードファイルに適用するフォーマットを指定する。
+
+* applyFormat(String layoutFileName) 
+
+
+フォーマット定義ファイルの読み込み先をデフォルト値から変更したい場合、
+論理パス名を指定することもできる。この場合は、以下のメソッドを使用する。
+
+* applyFormat(String basePathName, String layoutFileName)
+
+エラー発生時のメッセージID指定
+------------------------------
+
+以下のメソッドを使用し、エラー発生時のメッセージIDを指定する。
+
+* setUpMessageIdOnError(String messageIdOnFormatError, String messageIdOnValidationError, String messageIdOnEmptyFile) 
+
+引数には以下の値を設定する。
+
+ ======== =================================
+ 引数     設定内容
+ ======== =================================
+ 第１引数 形式エラー時のメッセージID
+ 第２引数 精査エラー時のメッセージID
+ 第３引数 ファイルが空の場合のメッセージID
+ ======== =================================
+
+
+
+形式エラーが発生した場合、第１引数で指定したメッセージが生成され蓄積される。
+その際、メッセージには以下の値が渡される。
+
+ 0. 形式エラーが発生したレコード行数
+
+例えば、以下のメッセージを指定した場合、
+
+.. code-block:: text
+
+ {0}行目に形式エラーがあります。
+
+実際には、以下のようなメッセージ文言となる。(12行目がエラーの場合)
+
+.. code-block:: text
+
+ 12行目に形式エラーがあります。
+
+精査エラーが発生した場合、第２引数で指定したメッセージが生成され蓄積される。
+その際、メッセージには以下の値が渡される。
+
+ 0. 精査エラーが発生したレコード行数
+ 1. 精査エラーメッセージ文言
+
+例えば、以下のメッセージを指定した場合、
+
+.. code-block:: text
+
+ {0}行目に精査エラーがあります。 [1]
+
+実際には、以下のようなメッセージ文言となる。(8行目で精査エラーが発生した場合)
+
+.. code-block:: text
+
+ 8行目に精査エラーがあります。 [カナ氏名は全角カナで入力してください。]
+
+
+精査処理を実装したクラス、メソッドの指定
+---------------------------------------------
+
+以下のメソッドを起動し、精査に使用するフォームクラスと精査メソッド名を指定する。
+
+* validateWith(Class<F> formClass, String validateFor) 
+
+指定された精査メソッドで精査が実行される。
+そのエラーメッセージは蓄積され、\ `データベース一括登録`_\ まで例外は送出されない。
+
+
+データベース一括登録
+--------------------------------
+
+以下のメソッドを起動し、精査済みのフォームを一括登録する。
+
+* importWith(DbAccessSupport dbAccessSupport, String insertSqlId)
+
+第１引数にはDbAccessSupportクラスのインスタンスを指定する。
+通常ActionクラスはDbAccessSupportクラスを継承しているので、自分自身の参照(this参照)を使用すれば良い。
+第２引数には、レコード１件を登録するINSERT文のSQLIDを指定する。
+
+形式エラー、精査エラーが１件でも存在する場合には、ApplicationExceptionが送出される。
+エラーが発生した場合、\ `エラー発生時のメッセージID指定`_\ で指定した精査エラー時のメッセージが生成される。
+この例外には、これまでに蓄積されたメッセージ（形式エラー、精査エラー）が全て設定される。
+
+
+.. _`custom_tag_paging`:
+
+------------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-function--s4`
+
+```json
+{
+  "id": "web-application-function--s4",
+  "title": "ファイルアップロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルアップロードの実現方法",
+      "hints": [
+        "PartInfo",
+        "UploadHelper",
+        "ファイルアップロード",
+        "multipart/form-data",
+        "n:file",
+        "getPart",
+        "moveFileTo",
+        "getInputStream",
+        "DB一括登録",
+        "ApplicationException",
+        "isEmpty",
+        "MessageUtil",
+        "空ファイルチェック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット定義ファイルパスの指定",
+      "hints": [
+        "applyFormat",
+        "フォーマット定義",
+        "layoutFileName",
+        "basePathName",
+        "論理パス名"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "エラー発生時のメッセージID指定",
+      "hints": [
+        "setUpMessageIdOnError",
+        "形式エラー",
+        "精査エラー",
+        "空ファイル",
+        "メッセージID",
+        "エラーメッセージ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "精査処理を実装したクラス、メソッドの指定",
+      "hints": [
+        "validateWith",
+        "精査処理",
+        "フォームクラス",
+        "精査メソッド",
+        "バリデーション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データベース一括登録",
+      "hints": [
+        "importWith",
+        "DbAccessSupport",
+        "一括登録",
+        "ApplicationException",
+        "INSERT SQL",
+        "SQLID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルアップロードに使用するタグとクラス:\n- **タグ**: `file`\n- **クラス**: `PartInfo`, `UploadHelper`\n\n## JSP実装\n\n> **警告**: `<n:form>` タグに `enctype=\"multipart/form-data\"` を必ず指定すること。\n\n```jsp\n<n:form enctype=\"multipart/form-data\">\n  <n:file name=\"userList\" cssClass=\"input\" size=\"50\"/>\n  <n:submit name=\"submit\" type=\"submit\" value=\"アップロード\" uri=\"RW11AC0602\"/>\n</n:form>\n```\n\n## アップロードファイルの取得\n\n```java\nList<PartInfo> partInfoList = req.getPart(\"userList\");\n\n// ファイルがアップロードされていることを確認\nif (partInfoList.isEmpty()) {\n    throw new ApplicationException(\n            MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\"));\n}\nPartInfo partInfo = partInfoList.get(0);\n```\n\n> **注意**: 同一 `n:form` タグ内に同一 `name` 属性の `n:file` タグが複数ある場合、`partInfoList` には複数の `PartInfo` が含まれる。\n\n## ファイルの保存\n\n```java\nUploadHelper helper = new UploadHelper(partInfo);\nhelper.moveFileTo(\"uploadFileSaveDir\", fileName);  // 第1引数: 移動先論理パス名, 第2引数: 移動後ファイル名\n```\n\n## バイナリファイルの読み込み\n\n```java\nInputStream in = partInfo.getInputStream();\n```\n\n## DBへの一括登録\n\n**前提条件**:\n- 単一レイアウト（全レコードが同じレイアウト）\n- 登録先テーブルが1つ（1レコードから複数テーブルへの登録は不可）\n\n処理: `applyFormat()` → `setUpMessageIdOnError()` → `validateWith()` → `importWith()` をメソッドチェーンで呼び出す。\n\n```java\nUploadHelper helper = new UploadHelper(partInfo);\nint cnt = helper.applyFormat(\"N11AC002\")\n                .setUpMessageIdOnError(\"MSG00037\", \"MSG00038\", \"MSG00040\")\n                .validateWith(UserInfoTempEntity.class, \"validateRegister\")\n                .importWith(this, \"INSERT_SQL\");\n```",
+    "s2": "`applyFormat()` でアップロードファイルに適用するフォーマット定義を指定する。\n\n- `applyFormat(String layoutFileName)` — デフォルトパスからフォーマット定義ファイルを読み込む\n- `applyFormat(String basePathName, String layoutFileName)` — フォーマット定義ファイルの読み込み先をデフォルトから変更する場合、第1引数に論理パス名を指定する",
+    "s3": "`setUpMessageIdOnError(String messageIdOnFormatError, String messageIdOnValidationError, String messageIdOnEmptyFile)` でエラー発生時のメッセージIDを指定する。\n\n| 引数 | 設定内容 |\n|---|---|\n| 第1引数 | 形式エラー時のメッセージID |\n| 第2引数 | 精査エラー時のメッセージID |\n| 第3引数 | ファイルが空の場合のメッセージID |\n\n形式エラー時のメッセージに渡される値:\n- `{0}`: 形式エラーが発生したレコード行数\n\n精査エラー時のメッセージに渡される値:\n- `{0}`: 精査エラーが発生したレコード行数\n- `{1}`: 精査エラーメッセージ文言",
+    "s4": "`validateWith(Class<F> formClass, String validateFor)` で精査に使用するフォームクラスと精査メソッド名を指定する。\n\n精査エラーのメッセージは蓄積され、`importWith()` 呼び出しまで例外は送出されない。",
+    "s5": "`importWith(DbAccessSupport dbAccessSupport, String insertSqlId)` で精査済みのレコードをDBに一括登録する。\n\n- 第1引数: `DbAccessSupport` のインスタンス（ActionクラスはDbAccessSupportを継承しているので `this` を指定）\n- 第2引数: レコード1件を登録するINSERT文のSQLID\n\n形式エラーまたは精査エラーが1件でも存在する場合は `ApplicationException` が送出される。この例外には、これまでに蓄積されたすべてのエラーメッセージ（形式エラー・精査エラー）が含まれる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 6
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

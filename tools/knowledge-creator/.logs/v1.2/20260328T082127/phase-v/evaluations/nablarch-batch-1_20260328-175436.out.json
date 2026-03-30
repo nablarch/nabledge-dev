@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a missing hint for `SystemAccountEntity`, which is an application-specific example entity class, not a Nablarch framework API. All key Nablarch framework identifiers (`DbAccessSupport`, `countByParameterizedSql`, `createReader`, `DataReader`, `SqlRow`, `ExecutionContext`, `writeLog`) are already present in the hints. Users searching for batch record-count logging guidance would query on framework terms, not on a sample domain entity. Retrieval quality is not meaningfully degraded by the absence of this hint.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "`SystemAccountEntity` is an application-defined example entity used solely to illustrate how to bind SQL parameters. It is not a Nablarch framework class and is not a term users would search with. All framework-level identifiers that drive retrieval are already present. Omitting this class name from hints has negligible effect on whether the knowledge file is surfaced for relevant queries. Phase E did not add it — the fix agent appears to have silently skipped the change, likely judging the class as outside the Nablarch API scope — but the outcome is acceptable given the low impact."
+    }
+  ]
+}

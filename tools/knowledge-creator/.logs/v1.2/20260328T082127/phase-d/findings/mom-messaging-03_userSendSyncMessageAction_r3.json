@@ -1,0 +1,27 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (Java code example)",
+      "description": "Step ① of the 4-step process is entirely missing from the code example: `W11AC02Form form = validateForSendUser(req)`, `SystemAccountEntity systemAccount = form.getSystemAccount()`, and `UsersEntity users = form.getUsers()`. The source explicitly labels this as step ①「精査とエンティティ生成」. Without this, the code sample uses `systemAccount` and `users` variables that appear from nowhere, and the classes W11AC02Form, SystemAccountEntity, and UsersEntity are absent.",
+      "source_evidence": "// ①精査とエンティティ生成\nW11AC02Form form = validateForSendUser(req);\n// エンティティ取得\nSystemAccountEntity systemAccount = form.getSystemAccount();\nUsersEntity users = form.getUsers();"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (Java code example)",
+      "description": "The succession data storage block is omitted from the code example: creating `W11AC01SearchForm`, calling `successionForm.setSystemAccount(systemAccount)`, and storing it via `ctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm)`. This pattern demonstrates how to pass data to the next action and is part of the complete sample implementation.",
+      "source_evidence": "// 引き継ぎ項目を格納\nW11AC01SearchForm successionForm = new W11AC01SearchForm();\nsuccessionForm.setSystemAccount(systemAccount);\nctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`ApplicationException` is a PascalCase class referenced in the code (`@OnError(type = ApplicationException.class, ...)`) but is absent from the s2 hints array.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"forward://RW11AC0201\")"
+    }
+  ]
+}

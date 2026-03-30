@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 is a confirmed fabrication in s22: the placeholder table labels the batch count field as「更新件数」with `$updateCount$`, but the source RST clearly specifies「バッチ件数」with `$batchCount$`. This directly misleads developers who consult s22 to configure or interpret executeBatch log format. The Phase E fix agent did not apply corrections — the s22 content in the Phase E output is identical to Phase D (the label and placeholder remain wrong). Finding 2 is low impact (missing hints only reduce discoverability, not correctness).",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s22",
+      "impact": "medium",
+      "justification": "The placeholder table in s22 labels the batch count field as「更新件数」with placeholder `$updateCount$`, but the source RST placeholder table for SqlPStatement#executeBatchメソッドの更新終了時 clearly specifies「バッチ件数」with `$batchCount$`. A developer using s22 to customize or verify executeBatch log format would use the wrong item name and wrong placeholder token, producing incorrect log output or misconfigured format strings. The fix did not persist: the Phase E output index and sections are identical to Phase D — the fix agent failed to overwrite s22."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[id=s2].hints",
+      "impact": "low",
+      "justification": "FileLogWriter and BasicLogFormatter are general-purpose log infrastructure classes, not SQL-log-specific. Their absence from s2 hints reduces discoverability when a developer searches for those class names, but they would likely find the relevant content through other knowledge files covering the basic logging configuration. The content itself in s2 is correct and complete. The fix agent also did not add these hints in Phase E."
+    }
+  ]
+}

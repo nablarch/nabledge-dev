@@ -1,0 +1,161 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-01_UnitTestOutline--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — メッセージング処理における取引単体テスト",
+      "description": "The footnote [#] providing a concrete example of 'multiple messages forming a transaction' is omitted. Source states: '例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合。' This clarifies the specific scenario under which messaging transaction unit tests are needed.",
+      "source_evidence": ".. [#]\n 例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+画面オンライン処理における取引単体テスト
+--------------------------------------------
+
+TomcatやWeblogic等のアプリケーションサーバ上に、Webアプリケーションをデプロイして打鍵テストを行う。
+
+
+
+.. image:: _images/screenTransition.png
+   :scale: 80
+
+またリクエスト単体テストでは確認できないテスト項目についてもここでテストする。
+
+* ブラウザに入力した内容が、正しくサーバアプリケーションに受け渡しできているか（formタグ（およびその内部のタグ）の属性が正しいか）
+* 画面遷移が正しいか（anchorタグのリンク先が正しいか）
+* JavaScriptが正しく動作するか
+
+
+
+
+.. image:: _images/DealUnitTestRange.png
+   :scale: 80
+
+
+
+* テスト実施の詳細については、\ :doc:`../05_UnitTestGuide/03_DealUnitTest/index` を参照。
+
+.. * テスト標準については、\ :doc:`../07_TestStandard/03_DealUnitTestStandard`\ を参照。
+
+.. .. note::
+..  取引単体テストは、オンラインアプリケーションの場合に実施する。バッチアプリケーションの場合は取引単体テストは必要ない。
+ 
+..  オンラインアプリケーションの場合は、Webアプリケーションの制約により、ひとつの取引が複数画面で実現されることになる。
+..  その為、取引という業務的に意味のあるまとまりでテストをしないと、設計書に記載された内容が正しく実装されているかどうか
+..  ブラックボックステストの観点でテストをすることができない。
+..  一方、バッチアプリケーションの場合、１つのバッチリクエストで実現される処理が、単体でも業務的な意味を持っており
+..  設計書に記載された内容をブラックボックステストの観点でテストすることができる。
+..  よって、オンラインアプリケーションのように取引という考え方をする必要がない。
+
+..  なお、複数のバッチリクエストを束ねる形式のテスト（例えば複数のバッチアプリケーションプログラムを起動するシェルスクリプトのテスト）は結合テストで実施することとする。
+
+.. .. note::
+..  バッチアプリケーションでの単体テストについては現在検討中。
+
+
+バッチ処理における取引単体テスト
+------------------------------------
+
+取引が一連のバッチ処理により構成される場合、取引単体テストにてその組み合わせを確認する。
+バッチ処理の場合は、自動テストフレームワークを用いて、各バッチを連続してテストすることで\
+取引単体テストが実施可能である。
+
+.. image:: ./_images/dealUnitTestOnBatch.png
+.. image:: ./_images/hanrei.png
+
+
+
+メッセージング処理における取引単体テスト
+--------------------------------------------
+
+メッセージング処理では、リクエストと取引とでスコープが同じであることがほとんである。
+このように、１リクエスト＝１取引である場合は、取引単体テストを実施する必要はない。
+
+ただし、複数のメッセージにより取引が成立する場合\ [#]_\ は、\ `バッチ処理における取引単体テスト`_\ 
+と同様に、リクエスト毎のテストを連続実行することにより取引単体テストが実施可能である。
+
+.. [#]
+ 例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-01_UnitTestOutline--s7",
+  "title": "画面オンライン処理における取引単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面オンライン処理における取引単体テスト",
+      "hints": [
+        "画面オンライン処理",
+        "取引単体テスト",
+        "打鍵テスト",
+        "formタグ",
+        "画面遷移テスト",
+        "JavaScriptテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バッチ処理における取引単体テスト",
+      "hints": [
+        "バッチ処理",
+        "取引単体テスト",
+        "自動テストフレームワーク",
+        "連続実行"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メッセージング処理における取引単体テスト",
+      "hints": [
+        "メッセージング処理",
+        "取引単体テスト",
+        "1リクエスト1取引",
+        "複数メッセージ",
+        "連続実行"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "TomcatやWeblogic等のアプリケーションサーバにWebアプリケーションをデプロイして打鍵テストを行う。\n\n![画面遷移図](assets/testing-framework-01_UnitTestOutline--s7/screenTransition.png)\n\nリクエスト単体テストでは確認できない以下の項目をテストする:\n- ブラウザ入力がサーバアプリケーションに正しく受け渡しされているか（formタグおよびその内部タグの属性が正しいか）\n- 画面遷移が正しいか（anchorタグのリンク先が正しいか）\n- JavaScriptが正しく動作するか\n\n![取引単体テスト範囲](assets/testing-framework-01_UnitTestOutline--s7/DealUnitTestRange.png)",
+    "s2": "取引が一連のバッチ処理により構成される場合、取引単体テストにてその組み合わせを確認する。自動テストフレームワークを用いて各バッチを連続してテストすることで取引単体テストが実施可能。\n\n![バッチ取引単体テスト](assets/testing-framework-01_UnitTestOutline--s7/dealUnitTestOnBatch.png)\n![凡例](assets/testing-framework-01_UnitTestOutline--s7/hanrei.png)",
+    "s3": "メッセージング処理ではリクエストと取引のスコープが同じであることがほとんどのため、1リクエスト＝1取引の場合は取引単体テストを実施する必要はない。\n\n複数のメッセージにより取引が成立する場合は、バッチ処理における取引単体テストと同様に、リクエスト毎のテストを連続実行することで取引単体テストが実施可能。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

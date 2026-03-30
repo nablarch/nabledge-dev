@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-01_userResisterMessageSpec",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are hints_missing with minor severity. The missing hints reduce some retrieval paths but do not block access to the content, since alternative hints in the same or related sections cover the practical query patterns. Neither finding causes information loss or retrieval failure for realistic developer queries.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s2].hints",
+      "impact": "low",
+      "justification": "「ステータスコード」が s2 ヒントに欠落しているが、要求電文における同項目は常に空白（応答電文用の予約領域）であり、開発者が参照する実質的な意味を持たない。ステータスコードの重要な仕様（処理結果コード・障害コード）は s3・s4 のヒントで既にカバーされており、エージェントはこれらのセクションで必要な情報を取得できる。Phase E の出力が Phase D 発見時点のファイルと完全に同一であることから、修正が実際には適用されなかった（フィックスフェーズの未実行）ことが持続理由と判断される。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s5].hints",
+      "impact": "low",
+      "justification": "エンティティカラム名（ログインID等）が s5 ヒントに欠落しているが、s5 には「カラム定義」「エンティティ情報」「ユーザ情報テンポラリ」という代替ヒントが存在し、エンティティ・カラム定義を明示的に問うクエリでは s5 がヒットする。また問題のカラム名は s2 ヒントにも含まれており、s2 のセクションコンテンツにはメッセージ項目→エンティティの対応が記述されているため、情報欠損には至らない。s5 が取りこぼされる可能性があるのは、エンティティ文脈を含まない単純なカラム名クエリに限定される。Phase E のファイルが Phase D 発見後も変更されていないことが持続理由。"
+    }
+  ]
+}

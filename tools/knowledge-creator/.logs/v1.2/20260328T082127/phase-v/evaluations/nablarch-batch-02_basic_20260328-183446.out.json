@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-02_basic",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "The single residual finding omits the qualifier \"通常\" from the description of what Throwable type is passed to the error() method. The practical impact is low: the knowledge file still correctly describes getCause() usage, and in virtually all real Nablarch batch executions the argument is indeed ExecutionException. An AI agent armed with the current (absolute) wording would give advice that is correct for the overwhelming majority of cases, and even in edge cases the prescribed usage pattern (getCause()) remains valid. The risk of a developer writing concretely wrong code due to this omission is minimal.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s9 — エラーが発生したリクエストに対するエラー処理",
+      "impact": "low",
+      "justification": "Omitting '通常' turns a typical-case statement into an absolute one. However, the practical consequence is negligible: (1) ExecutionException is indeed the argument in virtually all Nablarch batch scenarios, so AI-generated advice will be correct almost always; (2) the critical follow-up guidance — use ExecutionException#getCause() to retrieve the actual exception — is still present and correct regardless of the qualifier; (3) even on the rare occasion where a different Throwable subtype is passed, no structural code change would be needed. The finding persisted through Phase E because the severity was classified as 'minor' and the fix agent apparently judged the change too marginal to apply, or the patch was lost during JSON serialization of the large file."
+    }
+  ]
+}

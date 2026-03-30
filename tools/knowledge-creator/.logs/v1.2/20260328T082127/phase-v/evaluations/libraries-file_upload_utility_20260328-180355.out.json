@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor. Finding 1 is effectively a non-issue: the RST source appears to contain a typo (\"InsertionValidationStrategy\" does not exist in the codebase; the code example confirms the interface is \"InsertionStrategy\"), so the knowledge file is actually more accurate than the source. Finding 2 involves missing hints that reduce discoverability marginally, but the section is already reachable via existing hints (BulkValidator, ApplicationException, etc.) and all relevant content is present in the section body.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s4 — BasicInsertionStrategy row description",
+      "impact": "low",
+      "justification": "The RST source says 'InsertionValidationStrategy実装クラス' for BasicInsertionStrategy, but this class name does not exist anywhere else in the source. The code example explicitly shows 'implements InsertionStrategy<UserInfoTempEntity>', confirming the correct interface name is InsertionStrategy. The knowledge file's wording ('InsertionStrategy実装クラス') is factually correct. Phase E retained it intentionally. No user harm results from this — agents will get the correct class name."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s7 hints",
+      "impact": "low",
+      "justification": "Missing hints MessageUtil, @OnError, and BulkValidator.MsgIdHolder reduce discoverability slightly, but s7 is still reachable via existing hints (BulkValidator, ApplicationException, validateWith, setUpMessageIdOnError). The section content already references all three in code examples and prose, so agents that retrieve s7 will have the full information. Phase E did not apply the fix — the hint list in the Phase E output is identical to Phase D, indicating the fix was dropped during execution."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-RequestUnitTest_batch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s8 (code example, second <map> block)",
+      "description": "The knowledge file uses `<map name=\"fixedLengthDirectives\">` for the fixed-length directive block, but the source file literally contains `<map name=\"variableLengthDirectives\">` for that same block (the source comment says '固定長' but the name attribute is `variableLengthDirectives`). The knowledge file silently corrects what appears to be a typo in the source, but this change has no basis in the source text as written.",
+      "source_evidence": "Source: `<!-- ディレクティブ（固定長） -->\n<map name=\"variableLengthDirectives\">\n  <entry key=\"record-separator\" value=\"NONE\"/>\n</map>` — knowledge file renders this as `<map name=\"fixedLengthDirectives\">`"
+    }
+  ]
+}

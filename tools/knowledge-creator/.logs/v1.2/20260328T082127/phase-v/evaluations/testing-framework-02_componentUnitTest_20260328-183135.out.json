@@ -1,0 +1,14 @@
+{
+  "file_id": "testing-framework-02_componentUnitTest",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "The missing row-correspondence rule is a structural constraint that directly governs how developers must lay out multi-entity test data in Excel. Without it, a developer has no basis to know that row N of sysAcctEntity, row N of usersEntity, and row N of grpSysAcctEntity must all correspond to the same test case. Incorrect data alignment would silently produce wrong test inputs, leading to either false-passing or misleading-failing tests with no obvious diagnostic trail.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s5 — テストデータ(入力値)の作成",
+      "impact": "high",
+      "justification": "The row-correspondence rule ('各データの同じ行で1組のテストデータとなる') is the only rule that tells developers how to align rows across multiple entity sheets into a single test case. Without it, a developer writing a test for a method that takes multiple entity arguments (e.g. registerUser(sysAcct, users, grpSysAcct)) has no guidance on Excel data structure. They could easily place case-2 data for usersEntity on row 1 while case-1 data for sysAcctEntity is also on row 1, producing silently incorrect test inputs. This is not recoverable from the code samples alone because the loop index `i` is used uniformly across all three `getListMap` calls — the row-alignment contract is implied but never stated. Phase E did not resolve this: the s5 content in the Phase E output is identical to Phase D (the output is truncated mid-sentence, indicating the fix attempt produced incomplete output and the change was never applied)."
+    }
+  ]
+}

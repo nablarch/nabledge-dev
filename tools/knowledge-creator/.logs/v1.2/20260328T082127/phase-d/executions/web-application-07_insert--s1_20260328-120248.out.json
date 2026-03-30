@@ -1,0 +1,48 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section: 自動設定項目の指定(Entityの編集)",
+      "description": "The entire section on auto-setting items (Entity editing) is missing from the knowledge file. This section contains: (1) @UserId annotation — auto-sets login user ID on the annotated member variable; (2) @CurrentDateTime annotation — auto-sets timestamp on the annotated member variable; (3) code example showing both annotations on insertUserId, insertDate, updatedUserId, updatedDate fields of SystemAccountEntity. These annotations are essential API specs for DB insert implementation — developers need to know they exist to avoid manually setting these values.",
+      "source_evidence": "アノテーション @UserId: ログインユーザIDを自動設定したいメンバ変数に付与する。@CurrentDateTime: タイムスタンプを自動設定したいメンバ変数に付与する。コード例: @UserId private String insertUserId; @CurrentDateTime private Timestamp insertDate; ..."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section: ビジネスロジック(Component)の作成",
+      "description": "The entire Component creation section is missing. This section contains: (1) DB insert flow — a) create Entity instance, b) get DB connection, c) create ParameterizedSqlPStatement via getParameterizedSqlStatement(SQL_ID), d) call executeUpdateByObject(entity); (2) batch insert flow using addBatchObject + executeBatch; (3) critical warning that large-volume batch processing requires periodic executeBatch calls to prevent OOM and GC degradation; (4) note that business logic is externalized for multi-transaction reuse (if single-use, put in Action); (5) DuplicateStatementException handling with ApplicationException; (6) complete SQL (INSERT_SYSTEM_ACCOUNT, INSERT_SYSTEM_ACCOUNT_AUTHORITY) and Java code for CM311AC1Component.",
+      "source_evidence": "ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SYSTEM_ACCOUNT\"); statement.executeUpdateByObject(systemAccount); / statement.addBatchObject(systemAccountAuthority); statement.executeBatch(); / WARNING: 大量のデータを一括処理する場合は、適宜ParameterizedSqlPStatement#executeBatchを実行すること。この処理を行わないと、メモリ不足、gc頻発による性能劣化の原因となることがある。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section: Actionの作成 (_07_actionClassCreate)",
+      "description": "The entire Action creation section is missing. This section contains: (1) @OnDoubleSubmission annotation usage with path parameter (path = \"forward://RW11AC0201\"); (2) @OnError annotation (type = ApplicationException.class, path = \"forward://RW11AC0201\"); (3) critical constraint — input data is held client-side in hidden tags, so re-validation (validate(req)) is mandatory even when transitioning from the confirmation screen because data may have been tampered with; (4) complete code example for doRW11AC0204 method.",
+      "source_evidence": "@OnDoubleSubmission(path = \"forward://RW11AC0201\") public HttpResponse doRW11AC0204(...) { W11AC02Form form = validate(req); /* 入力データを取得する場合は、毎回バリデーションを行う */ / 入力データは...hiddenタグに保持しているため...確認画面から遷移した場合でも入力データは改竄される恐れがあるため、本メソッドにおいて再度バリデーションを行う必要がある。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source section: JSPの作成 (_07_jsp)",
+      "description": "The entire JSP creation section is missing. This section documents: (1) W11AC0201.jsp uses both allowDoubleSubmission (JavaScript method) and useToken (token method); (2) important note that when using the shared input/confirmation JSP feature (06_sharingInputAndConfirmationJsp), the useToken attribute does NOT need to be specified — the sample application uses this pattern. This is a key configuration decision point for developers.",
+      "source_evidence": "サンプルアプリケーションでは、入力画面と確認画面のJSPを共通化する機能を使用しているので、useToken属性を指定しなくてよい。/ :ref:`double_submit_use_JavaScript` と :ref:`double_submit_use_Token` を参照し、以下の内容でW11AC0201.jspを作成する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (section count)",
+      "description": "The knowledge file has 5 sections but the source contains at least 9 meaningful content sections (本項で説明する内容, 作成手順, JavaScriptを使用した二重サブミットの防止, トークンを使用した二重サブミットの防止, まとめ, 自動設定項目の指定, ビジネスロジック(Component)の作成, Actionの作成, JSPの作成). The automated pre-check warning S9 is valid — 4 sections are entirely absent.",
+      "source_evidence": "Source h3+ headings: 自動設定項目の指定(Entityの編集), ビジネスロジック(Component)の作成, Actionの作成 (_07_actionClassCreate), JSPの作成 (_07_jsp) — all present in source but absent from knowledge file index and sections."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index (all sections)",
+      "description": "Hints are missing for key classes, methods, and annotations that appear in the source: @UserId, @CurrentDateTime (from 自動設定項目 section); ParameterizedSqlPStatement, DbAccessSupport, executeUpdateByObject, addBatchObject, executeBatch, getParameterizedSqlStatement, DuplicateStatementException, CM311AC1Component (from Component section); @OnError (from Action section). These would be needed for AI to retrieve the correct section when asked about these APIs.",
+      "source_evidence": "@UserId, @CurrentDateTime annotations defined in 自動設定項目 section; ParameterizedSqlPStatement#executeUpdateByObject, addBatchObject, executeBatch used in Component section; @OnError(type = ApplicationException.class, path = ...) in Action section."
+    }
+  ]
+}

@@ -1,0 +1,375 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-web_gui",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (intro section)",
+      "description": "The source intro explicitly lists dispatch processing (ディスパッチ処理) as one of the two core functions of the framework alongside response processing. The knowledge file's s1 captures response processing and content path rules but omits any mention of dispatch processing.",
+      "source_evidence": "この実行制御基盤では、HTTPリクエスト・レスポンスに関連した以下の処理を行う。\n- 各HTTPリクエストに対して処理対象の業務機能を呼び出す処理。(ディスパッチ処理)\n- 業務機能の結果を元に、HTTPリクエストに対するレスポンスを構成し送信する処理。(レスポンス処理)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`HttpErrorResponse` is a PascalCase class name explicitly referenced in the ユーザエラーフロー description in s2 content but is absent from s2 hints.",
+      "source_evidence": "[\"HttpResponseHandler\", \"outbound\", \"HttpErrorResponse に指定されたパスを用いてレスポンス処理を行う。(デフォルトステータスコード:400)\"]"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`NullPointerException` is an exception name explicitly mentioned in the システムエラーフロー within s2 content but is absent from s2 hints.",
+      "source_evidence": "[\"HttpMethodBinding\", \"inbound\", \"ここでNullPointerException等の実行時例外が送出されたとする。\"]"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _web_gui:
+
+====================================================
+画面オンライン実行制御基盤
+====================================================
+:doc:`web_gui` では、HTMLをベースとしたUIを伴う標準的なWebアプリケーションを実装するための実行制御基盤を提供する。
+HTMLのテンプレートエンジンとしてJSPを採用しているため、Webコンテナ上での動作を前提とする。
+
+この実行制御基盤では、HTTPリクエスト・レスポンスに関連した以下の処理を行う。
+  
+ - 各HTTPリクエストに対して処理対象の業務機能を呼び出す処理。(ディスパッチ処理)
+ - 業務機能の結果を元に、HTTPリクエストに対するレスポンスを構成し送信する処理。(レスポンス処理)
+
+レスポンス処理は、 :ref:`コンテンツパス<content-path>` と呼ばれる業務アクション側で指定する文字列に従って行われる。
+コンテンツパスが **servlet://** で開始される場合は、当該パスに対するサーブレットフォーワード処理を行なう。
+**file://** もしくは **classpath://** の場合は、当該リソースを取得し、その内容をレスポンスする。
+
+++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+:doc:`web_gui` における業務アクションハンドラの標準的な実装方法については、 :doc:`../handler/HttpMethodBinding` を参照すること。
+また、必要に応じて、以下の各項を参照すること。
+
+  **レスポンス時にファイル等のダウンロードを行う場合**
+    - :doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/05_FileDownload`
+
+  **ファイルアップロードを伴う業務処理を実装する場合**
+    - :doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/06_FileUpload`
+
+++++++++++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`web_gui` における主要な処理フローと標準ハンドラ構成である。
+
+.. _flow-table:
+  
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  | 区分                   | 種別       | 処理フロー名           | 概要                                      | 機能                 |
+  +========================+============+========================+===========================================+======================+
+  | アプリケーション初期化 | 正常フロー | 正常起動               | アプリケーションデプロイ時に、            | .. _launch:          |
+  |                        |            |                        | リポジトリ、ハンドラキュー等の初期化を    |                      |
+  |                        |            |                        | 行う。                                    | `フローを表示`_      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  | リクエストスレッド内   | 正常フロー | 業務処理正常終了       | 業務処理が正常に完了し、                  | .. _normalend:       |
+  | 制御                   |            |                        | 処理結果に応じた遷移先画面を表示する。    |                      |
+  |                        |            |                        |                                           | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | ユーザエラー           | 入力精査処理等で、利用者起因と思われる    | .. _usererror:       |
+  |                        |            |                        | エラーが発生した場合は、                  |                      |
+  |                        |            |                        | 業務トランザクションをロールバックし、    |                      |
+  |                        |            |                        | エラー時の遷移先画面を表示する。          | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | システムエラー         | 業務ロジック内で不具合等による            | .. _systemerror:     |
+  |                        |            |                        | エラーが発生した場合は、                  |                      |
+  |                        |            |                        | 業務トランザクションをロールバックし、    |                      |
+  |                        |            |                        | 障害ログを出力した上で、                  |                      |
+  |                        |            |                        | システムエラー画面に遷移する。            | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 正常フロー | 直接画面遷移           | 検索画面の初回表示のように、業務処理の無い| .. _directaccess:    |
+  |                        |            |                        | 画面の単純表示や、静的なコンテンツへの    |                      |
+  |                        |            |                        | アクセスでは、業務アクションを介さずに    |                      |
+  |                        |            |                        | レスポンスを行う。                        | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | 内部フォーワード       | 遷移先の画面が単純な画面表示では無く、    | .. _forward:         |
+  |                        |            |                        | 業務アクションでの処理を伴う場合は、      |                      |
+  |                        |            |                        | 遷移先JSPパスを指定するかわりに、         |                      |
+  |                        |            |                        | 実行したいリクエストパスを指定する。      | `フローを表示`_      |
+  |                        |            |                        | (内部フォーワード処理)                    |                      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 認可エラー             | リクエストされた機能に対して、            | .. _unauthorized:    |
+  |                        |            |                        | ログインユーザが権限を持っていなかった    |                      |
+  |                        |            |                        | 場合は、エラー画面に遷移させる。          | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 開閉局エラー           | リクエストされた業務機能                  | .. _notonservice:    |
+  |                        |            |                        | が閉局中であった場合は、                  |                      |
+  |                        |            |                        | エラー画面に遷移させる。                  | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 代替フロー | アップロードファイル   | アップロードされたファイルが              | .. _exceededlimit:   |
+  |                        |            | 容量超過               | 限界容量を超過した場合は、エラー画面に    |                      |
+  |                        |            |                        | 遷移させる。                              | `フローを表示`_      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. _フローを表示:
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = [
+        "NablarchServletContextListener"
+      , "WebFrontController"
+      , "ThreadContextClearHandler"
+      , "GlobalErrorHandler"
+      , "HttpCharacterEncodingHandler"
+      , "FileRecordWriterDisposeHandler"
+      , "SessionConcurrentAccessHandler"
+      , "HttpResponseHandler"
+      , "ThreadContextHandler_request"
+      , "HttpAccessLogHandler"
+      , "ForwardingHandler"
+      , "HttpErrorHandler"
+      , "MultipartHandler"
+      , "NablarchTagHandler"
+      , "DbConnectionManagementHandler"
+      , "TransactionManagementHandler"
+      , "ServiceAvailabilityCheckHandler"
+      , "PermissionCheckHandler"
+      , "ResourceMapping"
+      , "HttpRequestJavaPackageMapping"
+      , "HttpMethodBinding"
+      ]
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["NablarchServletContextListener", "inbound"]
+        , ["WebFrontController",             "inbound", "全リクエストを対象とするサーブレットフィルタとしてデプロイされる。"]
+        ],
+
+        // 業務処理正常終了
+        normalend: [
+          ["WebFrontController",               "inbound"]
+        , ["SessionConcurrentAccessHandler",   "inbound"]
+        , ["ThreadContextHandler_request",     "inbound"]
+        , ["HttpAccessLogHandler",             "inbound"]
+        , ["NablarchTagHandler",               "inbound"]
+        , ["DbConnectionManagementHandler",    "inbound"]
+        , ["TransactionManagementHandler",     "inbound"]
+        , ["HttpRequestJavaPackageMapping",    "inbound"]
+        , ["HttpMethodBinding",                "inbound"]
+        , ["HttpMethodBinding",                "outbound"]
+        , ["TransactionManagementHandler",     "outbound"]
+        , ["DbConnectionManagementHandler",    "outbound"]
+        , ["HttpAccessLogHandler",             "outbound"]
+        , ["HttpResponseHandler",              "outbound", "(デフォルトステータスコード:200)"]
+        , ["SessionConcurrentAccessHandler",   "outbound"]
+        , ["WebFrontController",               "outbound"]
+        ],
+
+
+        // 業務処理異常終了
+        usererror: [
+          ["WebFrontController",               "inbound"]
+        , ["SessionConcurrentAccessHandler",   "inbound"]
+        , ["ThreadContextHandler_request",     "inbound"]
+        , ["HttpAccessLogHandler",             "inbound"]
+        , ["NablarchTagHandler",               "inbound"]
+        , ["DbConnectionManagementHandler",    "inbound"]
+        , ["TransactionManagementHandler",     "inbound"]
+        , ["HttpRequestJavaPackageMapping",    "inbound"]
+        , ["HttpMethodBinding",                "inbound"]
+        , ["HttpMethodBinding",                "error", "業務精査エラー等のユーザエラーが発生した場合は、エラー時遷移先を指定した"
+                                                      + "HTTPエラーレスポンスオブジェクトを送出する。"]
+        , ["TransactionManagementHandler",     "error"]
+        , ["DbConnectionManagementHandler",    "error"]
+        , ["HttpErrorHandler",                 "error"]
+        , ["HttpAccessLogHandler",             "outbound"]
+        , ["HttpResponseHandler",              "outbound", "HttpErrorResponse に指定されたパスを用いてレスポンス処理を行う。"
+                                                         + "(デフォルトステータスコード:400)"]
+        , ["SessionConcurrentAccessHandler",   "outbound"]
+        , ["WebFrontController",               "outbound"]
+        ],
+
+        // 業務処理異常終了
+        systemerror: [
+          ["WebFrontController",               "inbound"]
+        , ["SessionConcurrentAccessHandler",   "inbound"]
+        , ["ThreadContextHandler_request",     "inbound"]
+        , ["HttpAccessLogHandler",             "inbound"]
+        , ["NablarchTagHandler",               "inbound"]
+        , ["DbConnectionManagementHandler",    "inbound"]
+        , ["TransactionManagementHandler",     "inbound"]
+        , ["HttpRequestJavaPackageMapping",    "inbound"]
+        , ["HttpMethodBinding",                "inbound", "ここでNullPointerException等の実行時例外が送出されたとする。"]
+        , ["TransactionManagementHandler",     "error"]
+        , ["DbConnectionManagementHandler",    "error"]
+        , ["HttpErrorHandler",                 "error", "一般の実行時例外を捕捉した場合は、ここで障害ログが出力される。"]
+        , ["HttpAccessLogHandler",             "outbound"]
+        , ["HttpResponseHandler",              "outbound", "システムエラー画面に遷移。(デフォルトステータスコード:500)"]
+        , ["SessionConcurrentAccessHandler",   "outbound"]
+        , ["WebFrontController",               "outbound"]
+        ],
+
+        // 業務処理異常終了
+        directaccess: [
+          ["WebFrontController",               "inbound"]
+        , ["SessionConcurrentAccessHandler",   "inbound"]
+        , ["ThreadContextHandler_request",     "inbound"]
+        , ["HttpAccessLogHandler",             "inbound"]
+        , ["ResourceMapping",                  "inbound", '"//*.jsp" "/static/image/*.png" などリクエストパスのパターンによって処理対象を絞る。']
+        , ["HttpAccessLogHandler",             "outbound"]
+        , ["HttpResponseHandler",              "outbound"]
+        , ["SessionConcurrentAccessHandler",   "outbound"]
+        , ["WebFrontController",               "outbound"]
+        ],
+
+        // 業務処理正常終了
+        forward: [
+          ["WebFrontController",               "inbound"]
+        , ["SessionConcurrentAccessHandler",   "inbound"]
+        , ["ThreadContextHandler_request",     "inbound"]
+        , ["HttpAccessLogHandler",             "inbound"]
+        , ["NablarchTagHandler",               "inbound"]
+        , ["DbConnectionManagementHandler",    "inbound"]
+        , ["TransactionManagementHandler",     "inbound"]
+        , ["HttpRequestJavaPackageMapping",    "inbound"]
+        , ["HttpMethodBinding",                "inbound"]
+        , ["HttpMethodBinding",                "outbound", "レスポンスオブジェクトのコンテンツパスを"
+                                                        + '"forward://(再実行したいリクエストパス)" のように指定する。' ]
+        , ["TransactionManagementHandler",     "outbound"]
+        , ["DbConnectionManagementHandler",    "outbound"]
+        , ["ForwardingHandler",                "outbound", "レスポンス、アクセスログの出力は、フォーワード先で行われる。"]
+        ],
+
+        // アップロードファイル容量超過
+        exceededlimit: [
+          ["WebFrontController",  "inbound" ]
+        , ["MultipartHandler",    "inbound", "各パートのデータサイズの合計が上限を越えた場合、"
+                                            +"実行時例外(ステータスコード:400)を送出する。" ]
+        , ["HttpErrorHandler",    "error"]
+        , ["HttpResponseHandler", "outbound"]
+        , ["WebFrontController",  "outbound"]
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+      
+.. toctree::
+   :hidden:
+ 
+   ../02_FunctionDemandSpecifications/02_Fw/01_Web/05_FileDownload
+   ../02_FunctionDemandSpecifications/02_Fw/01_Web/06_FileUpload
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-web_gui",
+  "title": "画面オンライン実行制御基盤",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "コンテンツパス",
+        "servlet://",
+        "file://",
+        "classpath://",
+        "HttpMethodBinding",
+        "ファイルダウンロード",
+        "ファイルアップロード",
+        "業務アクションハンドラ",
+        "レスポンス処理",
+        "JSP",
+        "Webコンテナ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "NablarchServletContextListener",
+        "WebFrontController",
+        "ThreadContextClearHandler",
+        "GlobalErrorHandler",
+        "HttpCharacterEncodingHandler",
+        "FileRecordWriterDisposeHandler",
+        "SessionConcurrentAccessHandler",
+        "ThreadContextHandler",
+        "HttpAccessLogHandler",
+        "NablarchTagHandler",
+        "DbConnectionManagementHandler",
+        "TransactionManagementHandler",
+        "HttpRequestJavaPackageMapping",
+        "HttpMethodBinding",
+        "HttpResponseHandler",
+        "HttpErrorHandler",
+        "ForwardingHandler",
+        "MultipartHandler",
+        "ResourceMapping",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler",
+        "ハンドラキュー",
+        "処理フロー",
+        "システムエラー",
+        "ユーザエラー",
+        "内部フォーワード",
+        "直接画面遷移",
+        "認可エラー",
+        "開閉局エラー",
+        "アップロードファイル容量超過"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**前提条件**: HTMLのテンプレートエンジンとしてJSPを採用しているため、**Webコンテナ上での動作を前提とする**。\n\n**コンテンツパス**のプレフィックスによってレスポンス処理が決まる:\n- `servlet://` → サーブレットフォワード処理\n- `file://` または `classpath://` → リソース取得してレスポンス\n\n業務アクションハンドラの標準実装: :doc:`../handler/HttpMethodBinding` を参照。\n\n| ケース | 参照先 |\n|---|---|\n| ファイルダウンロード | :doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/05_FileDownload` |\n| ファイルアップロード | :doc:`../02_FunctionDemandSpecifications/02_Fw/01_Web/06_FileUpload` |",
+    "s2": "## 処理フロー一覧\n\n| 区分 | 種別 | 処理フロー名 | 概要 |\n|---|---|---|---|\n| アプリケーション初期化 | 正常フロー | 正常起動 | アプリデプロイ時にリポジトリ・ハンドラキュー等を初期化 |\n| リクエストスレッド内制御 | 正常フロー | 業務処理正常終了 | 業務処理正常完了時に遷移先画面を表示 |\n| リクエストスレッド内制御 | 代替フロー | ユーザエラー | ユーザ起因エラー時にトランザクションロールバック・エラー画面表示 (HTTP 400) |\n| リクエストスレッド内制御 | 異常フロー | システムエラー | 業務ロジックのエラー時にトランザクションロールバック・障害ログ出力・システムエラー画面表示 (HTTP 500) |\n| リクエストスレッド内制御 | 正常フロー | 直接画面遷移 | 業務アクションを介さず直接レスポンス（検索画面初回表示、静的コンテンツ等） |\n| リクエストスレッド内制御 | 代替フロー | 内部フォーワード | 遷移先が業務アクション処理を伴う場合、`forward://` コンテンツパスで内部フォーワード |\n| リクエストスレッド内制御 | 異常フロー | 認可エラー | ログインユーザに権限がない場合エラー画面に遷移 |\n| リクエストスレッド内制御 | 異常フロー | 開閉局エラー | リクエストされた業務機能が閉局中の場合エラー画面に遷移 |\n| リクエストスレッド内制御 | 代替フロー | アップロードファイル容量超過 | アップロードファイルが上限容量超過の場合エラー画面に遷移 (HTTP 400) |\n\n## 標準ハンドラ構成\n\n標準ハンドラキュー（登録順）:\n1. NablarchServletContextListener\n2. WebFrontController\n3. ThreadContextClearHandler\n4. GlobalErrorHandler\n5. HttpCharacterEncodingHandler\n6. FileRecordWriterDisposeHandler\n7. SessionConcurrentAccessHandler\n8. HttpResponseHandler\n9. ThreadContextHandler（リクエストスコープ）\n10. HttpAccessLogHandler\n11. ForwardingHandler\n12. HttpErrorHandler\n13. MultipartHandler\n14. NablarchTagHandler\n15. DbConnectionManagementHandler\n16. TransactionManagementHandler\n17. ServiceAvailabilityCheckHandler\n18. PermissionCheckHandler\n19. ResourceMapping\n20. HttpRequestJavaPackageMapping\n21. HttpMethodBinding\n\n## 処理フロー詳細\n\n### 正常起動フロー\n1. NablarchServletContextListener（往路）\n2. WebFrontController（往路）- 全リクエストを対象とするサーブレットフィルタとしてデプロイされる\n\n### 業務処理正常終了フロー (HTTP 200)\n1. WebFrontController（往路）\n2. SessionConcurrentAccessHandler（往路）\n3. ThreadContextHandler（往路）\n4. HttpAccessLogHandler（往路）\n5. NablarchTagHandler（往路）\n6. DbConnectionManagementHandler（往路）\n7. TransactionManagementHandler（往路）\n8. HttpRequestJavaPackageMapping（往路）\n9. HttpMethodBinding（往路→復路）\n10. TransactionManagementHandler（復路）\n11. DbConnectionManagementHandler（復路）\n12. HttpAccessLogHandler（復路）\n13. HttpResponseHandler（復路）- デフォルトステータスコード: 200\n14. SessionConcurrentAccessHandler（復路）\n15. WebFrontController（復路）\n\n### ユーザエラーフロー (HTTP 400)\n1. WebFrontController（往路）\n2. SessionConcurrentAccessHandler（往路）\n3. ThreadContextHandler（往路）\n4. HttpAccessLogHandler（往路）\n5. NablarchTagHandler（往路）\n6. DbConnectionManagementHandler（往路）\n7. TransactionManagementHandler（往路）\n8. HttpRequestJavaPackageMapping（往路）\n9. HttpMethodBinding（往路）→ エラー: 業務精査エラー等のユーザエラーが発生した場合はエラー時遷移先を指定したHTTPエラーレスポンスオブジェクトを送出する\n10. TransactionManagementHandler（例外処理）\n11. DbConnectionManagementHandler（例外処理）\n12. HttpErrorHandler（例外処理）\n13. HttpAccessLogHandler（復路）\n14. HttpResponseHandler（復路）- HttpErrorResponseに指定されたパスを用いてレスポンス処理 (デフォルトステータスコード: 400)\n15. SessionConcurrentAccessHandler（復路）\n16. WebFrontController（復路）\n\n### システムエラーフロー (HTTP 500)\n1. WebFrontController（往路）\n2. SessionConcurrentAccessHandler（往路）\n3. ThreadContextHandler（往路）\n4. HttpAccessLogHandler（往路）\n5. NablarchTagHandler（往路）\n6. DbConnectionManagementHandler（往路）\n7. TransactionManagementHandler（往路）\n8. HttpRequestJavaPackageMapping（往路）\n9. HttpMethodBinding（往路）→ エラー: NullPointerException等の実行時例外が送出される\n10. TransactionManagementHandler（例外処理）\n11. DbConnectionManagementHandler（例外処理）\n12. HttpErrorHandler（例外処理）- 一般の実行時例外を捕捉した場合は障害ログが出力される\n13. HttpAccessLogHandler（復路）\n14. HttpResponseHandler（復路）- システムエラー画面に遷移 (デフォルトステータスコード: 500)\n15. SessionConcurrentAccessHandler（復路）\n16. WebFrontController（復路）\n\n### 直接画面遷移フロー\n1. WebFrontController（往路）\n2. SessionConcurrentAccessHandler（往路）\n3. ThreadContextHandler（往路）\n4. HttpAccessLogHandler（往路）\n5. ResourceMapping（往路）- `\"//*.jsp\"` `\"/static/image/*.png\"` などリクエストパスのパターンによって処理対象を絞る\n6. HttpAccessLogHandler（復路）\n7. HttpResponseHandler（復路）\n8. SessionConcurrentAccessHandler（復路）\n9. WebFrontController（復路）\n\n### 内部フォーワードフロー\n1. WebFrontController（往路）\n2. SessionConcurrentAccessHandler（往路）\n3. ThreadContextHandler（往路）\n4. HttpAccessLogHandler（往路）\n5. NablarchTagHandler（往路）\n6. DbConnectionManagementHandler（往路）\n7. TransactionManagementHandler（往路）\n8. HttpRequestJavaPackageMapping（往路）\n9. HttpMethodBinding（往路→復路）- レスポンスオブジェクトのコンテンツパスを `forward://(再実行したいリクエストパス)` のように指定する\n10. TransactionManagementHandler（復路）\n11. DbConnectionManagementHandler（復路）\n12. ForwardingHandler（復路）- レスポンス・アクセスログの出力はフォーワード先で行われる\n\n### アップロードファイル容量超過フロー\n1. WebFrontController（往路）\n2. MultipartHandler（往路）→ エラー: 各パートのデータサイズの合計が上限を越えた場合、実行時例外(ステータスコード: 400)を送出する\n3. HttpErrorHandler（例外処理）\n4. HttpResponseHandler（復路）\n5. WebFrontController（復路）"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

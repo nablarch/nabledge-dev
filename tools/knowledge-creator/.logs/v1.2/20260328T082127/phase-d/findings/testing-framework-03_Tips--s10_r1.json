@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-03_Tips--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Excelファイル記述例 (SETUP_TABLE note)",
+      "description": "The source note under the SETUP_TABLE preparation data is omitted: \"採番用テーブルに準備データを設定する。準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。\" This provides a concrete constraint — only set up records for the specific numbering targets exercised in the test — which is useful guidance for writing test data.",
+      "source_evidence": "Source note block immediately after the SETUP_TABLE=TEST_SBN_TBL table: 「採番用テーブルに準備データを設定する。準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The FastTableIdGenerator XML configuration contains three property names — `tableName`, `idColumnName`, `noColumnName` — that are not listed as hints. These are the concrete XML property names a developer would look up when configuring the test-side ID generator.",
+      "source_evidence": "Source XML: <property name=\"tableName\" value=\"TEST_SBN_TBL\"/>, <property name=\"idColumnName\" value=\"ID_COL\"/>, <property name=\"noColumnName\" value=\"NO_COL\"/>"
+    }
+  ]
+}

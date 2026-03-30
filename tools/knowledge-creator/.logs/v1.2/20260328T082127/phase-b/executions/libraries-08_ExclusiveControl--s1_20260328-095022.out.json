@@ -1,0 +1,119 @@
+{
+  "id": "libraries-08_ExclusiveControl--s1",
+  "title": "排他制御機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "排他制御",
+        "悲観的ロック",
+        "楽観的ロック",
+        "バッチ処理での排他制御",
+        "画面処理での排他制御",
+        "同時更新防止"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "排他制御実装負荷軽減",
+        "バージョン番号引き継ぎ",
+        "フレームワーク排他制御API"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "排他制御要件",
+        "複数ユーザ同時更新防止",
+        "複数バッチ同時更新防止"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "排他制御の実現方法",
+      "hints": [
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "デッドロック防止",
+        "更新順序",
+        "悲観的ロック動作イメージ",
+        "楽観的ロック動作イメージ",
+        "ExclusiveControlUtil"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "構造",
+      "hints": [
+        "クラス図",
+        "排他制御機能構造",
+        "ExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "HttpExclusiveControlUtil"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "インタフェース定義",
+      "hints": [
+        "ExclusiveControlManager",
+        "排他制御インタフェース",
+        "独自実装",
+        "SQL文変更"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "クラス定義",
+      "hints": [
+        "BasicExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "OptimisticLockException",
+        "Version",
+        "ExclusiveControlTable",
+        "HttpExclusiveControlUtil",
+        "主キークラス"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "悲観的ロック",
+      "hints": [
+        "ExclusiveControlUtil",
+        "updateVersion",
+        "悲観的ロック実装",
+        "バッチ処理ロック"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "楽観的ロック",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersions",
+        "楽観的ロック実装",
+        "バージョン番号引き継ぎ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベースに格納したデータに対する排他制御機能を提供する。複数ユーザ（または複数バッチ）が同一データを同時に更新することを防止できる。\n\n排他制御の手法として悲観的ロックと楽観的ロックの2種類を提供する。\n\n| 手法 | 説明 | 採用場面 |\n|---|---|---|\n| 悲観的ロック | データ検索から更新までロックを取得し続ける。更新処理は確実に成功する | 検索から更新が1トランザクションで行われる処理（バッチ処理など） |\n| 楽観的ロック | 検索時にロックを取得せず、更新時に他処理による更新を確認。更新されていれば中止する | 検索時にロックを取得したくない画面処理 |",
+    "s2": "排他制御に必要なDBアクセスや、楽観的ロックで使用するバージョン番号の画面間引き継ぎ処理をフレームワークが担当するため、実装はフレームワークAPIの呼び出しのみに集約される。",
+    "s3": "- 複数ユーザ（画面）が同一データを同時に更新することを防止できる\n- 複数バッチが同一データを同時に更新することを防止できる\n- バッチとユーザ（画面）が同一データを同時に更新することを防止できる",
+    "s4": "## 排他制御用テーブル\n\n排他制御対象テーブルにバージョン番号カラムを定義することで実現する。悲観的ロックと楽観的ロックは同じ排他制御用テーブルを使用するため、並行使用でも同一データの同時更新を防止できる。\n\n**テーブル設計の指針**:\n- 競合が許容される最大の単位で排他制御用テーブルを定義することを推奨\n- ロック範囲を広くすると更新処理の競合が高まり、処理遅延や更新失敗（楽観的ロックの場合）を招く\n- 明確な親子関係があるテーブルは親の単位で定義する\n- 業務的な観点とテーブル設計の観点の両方から単位を決める\n\n**実装例**:\n```sql\nCREATE TABLE USERS (\n    USER_ID CHAR(6) NOT NULL,\n    VERSION NUMBER(10) NOT NULL,  -- カラム名・データ型は任意\n    PRIMARY KEY (USER_ID)\n)\n```\n\n> **注意**: 排他制御専用テーブルを別途作成する場合、対象業務データの追加・物理削除時に排他制御専用テーブルへも同様の操作が必要となる。この操作にはExclusiveControlUtilクラスのAPIを使用する。\n\n## 更新順序の設計\n\n各テーブルのロック順序を定めることでデッドロックを防止し、データ整合性を保証する。RDBMSはレコード更新時に自動的にロックするため、更新順序が未定義だとデッドロックが発生しやすい。\n\n- 個別テーブルと排他制御テーブル両方について更新順序を決める\n- 複数の排他制御を行う場合は順序を決める（例: ユーザ排他制御→残高排他制御）\n- 一括削除など複数件を順次更新する場合は主キーのソート順を決める（コミット間隔が1件保証でソート性能影響が大きい場合は省略可）\n\n## 悲観的ロックの動作\n\n更新対象データ取得前にバージョン番号を更新することで、トランザクションのコミット/ロールバックまで排他制御用テーブルの対象行がロックされる。\n\n![悲観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_PessimisticLockImage.jpg)\n\n## 楽観的ロックの動作\n\nデータ取得時にバージョン番号を保存し、更新時にバージョン番号が変更されていないかチェックする。変更されていれば更新を中止する。\n\n![楽観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockImage.jpg)\n\n悲観的ロックと楽観的ロックの並行使用時の動作:\n\n![悲観的ロック→楽観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case1Image.jpg)\n\n![楽観的ロック（バージョン番号取得）→悲観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case2Image.jpg)\n\n![楽観的ロック（バージョン番号更新）→悲観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case3Image.jpg)",
+    "s5": "**クラス図**:\n\n![クラス図](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_ClassDiagram.jpg)",
+    "s6": "**インタフェース**: `nablarch.common.exclusivecontrol.ExclusiveControlManager`\n\n排他制御（悲観的ロック、楽観的ロック）を管理するインタフェース。排他制御用テーブルに対する行データの追加・削除機能も提供する。プロジェクト独自の実装（SQL文の変更など）が必要な場合は、このインタフェースを実装する。",
+    "s7": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.exclusivecontrol.BasicExclusiveControlManager` | ExclusiveControlManagerの基本実装クラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlUtil` | バッチ処理での悲観的ロック、排他制御用テーブルへのデータ追加・物理削除に使用。操作はExclusiveControlManagerに委譲 |\n| `nablarch.common.exclusivecontrol.ExclusiveControlContext` | 排他制御用テーブルのスキーマ情報と主キー条件を保持するクラス |\n| `nablarch.common.exclusivecontrol.OptimisticLockException` | 楽観的ロックでバージョン番号が更新されている場合に発生する例外 |\n| `nablarch.common.exclusivecontrol.Version` | バージョン番号を保持するクラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlTable` | スキーマ情報とSQL文をメモリにキャッシュするクラス |\n| `nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil` | 画面処理（楽観的ロック）のユーティリティクラス |\n\n排他制御用テーブルごとに`ExclusiveControlContext`を継承する主キークラスを作成する（設計書から自動生成を想定）。\n\n**主キークラスの実装例**:\n```java\npublic class UsersExclusiveControl extends ExclusiveControlContext {\n    private enum PK { USER_ID }\n    public UsersExclusiveControl(String userId) {\n        setTableName(\"USERS\");\n        setVersionColumnName(\"VERSION\");\n        setPrimaryKeyColumnNames(PK.values());\n        appendCondition(PK.USER_ID, userId);\n    }\n}\n```",
+    "s8": "`ExclusiveControlUtil.updateVersion()` を更新対象データ取得前に呼び出すことで悲観的ロックを実現する。\n\n```java\nExclusiveControlUtil.updateVersion(new UsersExclusiveControl(\"U00001\"));\n```\n\n> **注意**: バッチで複数件更新する場合、ロック時間を最短にするため、前処理で主キーのみを取得し、本処理では1件ずつロックを取得してからデータ取得と更新を行うこと。",
+    "s9": "楽観的ロックは以下の3つのメソッドで実現する。\n\n1. **バージョン番号の準備**: `HttpExclusiveControlUtil.prepareVersion()` — 検索時にバージョン番号を取得・保存する\n2. **バージョン番号の更新チェック**: `HttpExclusiveControlUtil.checkVersions()` — 画面間でバージョン番号を引き継ぐ。このメソッドを呼ばないとバージョン番号が画面間で引き継がれない\n3. **バージョン番号の更新チェックと更新**: `HttpExclusiveControlUtil.updateVersions()` — 更新時にバージョン番号をチェックして更新する\n\nシーケンス図:\n- バージョン番号の準備: ![prepareVersionシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence1.jpg)\n- バージョン番号の更新チェック: ![checkVersionsシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence2.jpg)\n- バージョン番号の更新チェックと更新: ![updateVersionsシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence3.jpg)"
+  }
+}

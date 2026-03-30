@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_access",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (ファイルアクセスAPI)",
+      "description": "The source introduction for ファイルアクセスAPI states that data files are parsed using record_format (`:doc:record_format`) and that each record is accessible as a simple Map. This conceptual context — that the API relies on record_format for parsing and exposes records as Map — is absent from s2.",
+      "source_evidence": "「この機能では、データファイルの内容を :doc:`record_format` を用いて解析する。これによって、ファイル内の各レコードを単なるMapとしてアクセスできるようになっている。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ファイルデータリーダ subsection",
+      "description": "The source states that all data input in the framework is abstracted through the data_reader interface (`:ref:data_reader`), and that FileDataReader is the dedicated reader for files. The knowledge file only says to use FileDataReader, omitting the broader architectural context that data input is uniformly abstracted by the data_reader interface.",
+      "source_evidence": "「本フレームワークでは、アプリケーションに対するデータ入力は全て :ref:`data_reader` インターフェースによって抽象化されている。ファイルの読込みについても、専用のデータリーダ :doc:`../reader/FileDataReader` が用意されているのでそれを使用すること。」"
+    }
+  ]
+}

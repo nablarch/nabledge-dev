@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ValidatableFileDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`DataRecord` is missing from s2 hints, despite being used in every dispatch method signature (doHeader, doData, doTrailer, doEnd). Users asking about DataRecord-related dispatch methods would benefit from s2 being surfaced.",
+      "source_evidence": "Source shows: `public Result doHeader(DataRecord inputData, ExecutionContext ctx)` and similar for all dispatch methods in FileLayoutValidatorAction."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`RecordTypeBinding` is missing from s2 hints. The source explicitly references it for the dispatch method naming convention: \"規約についての詳細は `RecordTypeBinding_` を参照すること\".",
+      "source_evidence": "Source: 「精査メソッド名の規約は以下のとおりである。規約についての詳細は `RecordTypeBinding_` を参照すること。」"
+    }
+  ]
+}

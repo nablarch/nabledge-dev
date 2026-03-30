@@ -1,0 +1,45 @@
+{
+  "id": "libraries-04_ObjectSave--s1",
+  "title": "オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "名前付きバインド変数",
+        "SQL文バインド変数",
+        "可変条件",
+        "$if",
+        "名前付き変数"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "オブジェクトのフィールドの値のデータベースへの登録機能(オブジェクトのフィールド値を使用した検索機能)",
+      "hints": [
+        "クラス図",
+        "DbAccessSpec_ObjectStatementClassDesign",
+        "オブジェクトステートメントクラス設計"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "インタフェース定義",
+      "hints": [
+        "SqlParameterParserFactory",
+        "SqlParameterParser",
+        "SqlConvertor",
+        "AutoPropertyHandler",
+        "名前付きバインド変数解析",
+        "インタフェース定義"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQL文のバインド変数には「?」ではなく、名前付きの変数名を記述する必要がある。\n\n```sql\n-- 本機能を使用した場合\nINSERT INTO USER_MTR\nVALUES (:userId, :userName, :userNameKana, :tel)\n\n-- 部分一致検索の「%」を使用した場合\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE USER_NAME LIKE :userName%\n\n-- 可変条件を定義できる。\nSELECT USER_NAME\n  FROM USER_MTR\n WHERE $if(userName) {USER_NAME LIKE :userName%}\n```",
+    "s2": "![クラス図](assets/libraries-04_ObjectSave--s1/DbAccessSpec_ObjectStatementClassDesign.jpg)",
+    "s3": "`nablarch.core.db.statement` パッケージのインタフェース:\n\n| インタフェース名 | 概要 |\n|---|---|\n| `SqlParameterParserFactory` | 名前付きバインド変数をもつSQL文を解析するためのSqlParameterParserを取得するインタフェース |\n| `SqlParameterParser` | 名前付きバインド変数をもつSQL文を解析するインタフェース。PreparedStatement実行形式のSQL（「?」置換後）と名前付きバインド変数のListを取得する |\n| `SqlConvertor` | SQL文の変換を行うインタフェース |\n| `AutoPropertyHandler` | オブジェクトの自動設定項目のフィールドに値を設定するインタフェース。フィールドのアノテーションやフィールド名等を元に値を自動設定する |"
+  }
+}

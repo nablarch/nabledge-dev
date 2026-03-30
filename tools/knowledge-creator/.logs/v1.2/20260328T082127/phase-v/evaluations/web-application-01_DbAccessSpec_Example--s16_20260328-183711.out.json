@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor hints omissions for methods that are either already covered by adjacent sections or findable through other discriminating hints present in the same section. Neither omission would cause an agent to miss the relevant section entirely.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1].hints",
+      "impact": "low",
+      "justification": "`getParameterizedSqlStatement` is the standard entry-point method shared across all ParameterizedSqlPStatement usage. Its absence from s1 is unlikely to cause misses because (a) s1 already contains `ParameterizedSqlPStatement`, `executeUpdateByMap`, and `Map更新` as strong discriminating hints, and (b) a user searching by method name would reach s5 which covers the same method in context. Phase E output retained the original s1 hints unchanged — the fix was identified but not applied."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s4].hints",
+      "impact": "low",
+      "justification": "`retrieve` is a generic method shared across s3 and s4; s4's unique value is the automatic LIKE/escape handling, already captured by `LIKE検索` and `escape自動付加`. A user searching specifically for `retrieve` would land on s3 first and find s4 nearby. Omitting it from s4 does not meaningfully reduce discoverability of the LIKE-specific content. Phase E output retained the original s4 hints unchanged — the fix was identified but not applied."
+    }
+  ]
+}

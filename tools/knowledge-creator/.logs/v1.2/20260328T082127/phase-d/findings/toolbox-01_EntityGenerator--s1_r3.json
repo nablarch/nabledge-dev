@@ -1,0 +1,27 @@
+{
+  "file_id": "toolbox-01_EntityGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "s4 groups `formgeneratorFromIFDesign.config` as an 環境設定ファイル, but the source's summary table (and the knowledge file's own s2) classifies it as a コンポーネント定義ファイル. For the IF-design case the source table clearly states: `.config` = コンポーネント定義ファイル（設計書のレイアウト等）, `.xml` = 環境設定ファイル（出力ファイルのパス等）. This creates an internal contradiction between s2 and s4 that could mislead an AI when answering questions about which file serves which role.",
+      "source_evidence": "Source table row: `formgeneratorFromIFDesign.config` → コンポーネント定義ファイル。設計書のレイアウト等。 / `formgeneratorFromIFDesign.xml` → 環境設定ファイル。出力ファイルのパス等。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "`interfaceFileNamePattern` is described only as a regex pattern with the single example `.*.xls`. The source also shows that the field accepts an exact filename (complete match), illustrated by the example `外部インターフェース設計書_サンプル1.xls`. The exact-match usage is not mentioned in the knowledge file.",
+      "source_evidence": "Source: 例:: .*.xls # 全EXCELが対象 / 外部インターフェース設計書_サンプル1.xls # ファイル名を完全一致で指定"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "index / sections (no section covers 概要)",
+      "description": "The source's 概要 section explains what the tool produces (Form templates with all DB columns and domain-definition-based validation annotations) and which three input documents it requires (テーブル定義書 or 外部インタフェース設計書, ドメイン定義書, コード設計書). None of the knowledge sections captures this purpose or the list of required input documents. An AI asked 'what does this tool generate?' or 'what input documents are needed?' would lack a direct answer.",
+      "source_evidence": "Source 概要: 「本ツールは、下記のファイルからアプリケーションで使用するFormのひな形を作成する。テーブル定義書または外部インタフェース設計書 / ドメイン定義書 / コード設計書」「データベース上で設計されたカラムを全て持つFormのひな形が生成できる。また、ドメイン定義書に従ってForm の単項目精査に必要なアノテーションが設定される。」"
+    }
+  ]
+}

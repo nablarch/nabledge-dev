@@ -1,0 +1,379 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/Other/index.rst`
+- Format: `rst`
+
+```
+コード名称と値の取得方法
+------------------------------------------------------------------------
+コード管理機能を用いたコード名称と値の取得方法を示す。
+
+コードパターンテーブルとコード名称テーブルは、下記のとおりデータ設定されているものとして実装例を示す。
+
+* コードパターンテーブルのデータ例
+
+  ============ =========== ================= ================= =================
+  ID           VALUE       PATTERN1          PATTERN2          PATTERN3
+  ============ =========== ================= ================= =================
+  0001         1           1                 0                 0
+  0001         2           1                 0                 0
+  0001         9           0                 0                 0
+  ============ =========== ================= ================= =================
+
+* コード名称テーブルのデータ例
+
+  ============ =========== =================== =================== ================================ ================= =====================
+  ID           VALUE       SORT_ORDER          LANG                NAME                             SHORT_NAME        NAME_WITH_VALUE
+  ============ =========== =================== =================== ================================ ================= =====================
+  0001         1           1                   ja                  男性                             男                1:男性
+  0001         2           2                   ja                  女性                             女                2:女性
+  0001         9           3                   ja                  不明                             不                9:不明
+  0001         1           2                   en                  Male                             M                 1:Male
+  0001         2           1                   en                  Female                           F                 2:Female
+  0001         9           3                   en                  Unknown                          U                 9:Unknown
+  ============ =========== =================== =================== ================================ ================= =====================
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード名称の取得方法。
+
+        CodeUtilのgetNameメソッドを使用する。
+        name変数はThreadContextに保持した言語に合わせた名称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定される名称
+        en -> "Male"
+        ja -> "男性" */
+    String name = CodeUtil.getName("0001", "1");
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード略称の取得方法。
+
+        CodeUtilのgetShortNameメソッドを使用する。
+        name変数はThreadContextに保持した言語に合わせた略称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定される略称
+        en -> "男"
+        ja -> "M" */
+    String name = CodeUtil.getShortName("0001", "1");
+
+  .. code-block:: java
+
+    /* 【説明】
+        オプション名称の取得方法。
+
+        コード名称テーブルのNAME_WITH_VALUEカラムは、
+        任意のカラム名を指定したオプション名称用のカラムである。
+
+        CodeUtilのgetOptionalNameメソッドを使用し、オプション名称用カラムの名前を指定する。
+        name変数はThreadContextに保持した言語に合わせたオプション名称となる。
+
+        ThreadContextに保持した言語 -> name変数に設定されるオプション名称
+        en -> "1:Male"
+        ja -> "1:男性" */
+    String name = CodeUtil.getOptionalName("0001", "1", "NAME_WITH_VALUE");
+
+  .. code-block:: java
+
+    /* 【説明】
+        コード値の取得方法。
+
+        CodeUtilのgetValuesメソッドを使用する。
+        value変数はThreadContextに保持した言語に合わせた値となる。
+
+        ThreadContextに保持した言語 -> values変数に設定される値
+        en -> {"2", "1", "9"}
+        ja -> {"1", "2", "9" }
+        コードパターンテーブルのSORT_ORDERカラムの昇順にソートされた順序で
+        コード値が取得される。
+        */
+    List<String> values = CodeUtil.getValues("0001");
+
+
+  .. code-block:: java
+
+    /* 【説明】
+        パターンごとのコード値の取得方法。
+
+        コードパターンテーブルのPATTERN1からPATTERN3カラムは、
+        任意のカラム名を指定したパターン用のカラムである。
+        各カラムが表すパターンに含める行には"1"を指定する。
+
+        CodeUtilのgetValuesメソッドを使用し、パターン用カラムの名前を指定する。
+        value変数はThreadContextに保持した言語に合わせた値となる。
+
+        ThreadContextに保持した言語 -> values変数に設定される値
+        en -> {"2" , "1"}
+        ja -> {"1" , "2"}
+        コードパターンテーブルのSORT_ORDERカラムの昇順にソートされた順序で
+        コード値が取得される。
+        */
+    List<String> values = CodeUtil.getValues("0001", "PATTERN1");
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`other_example_code_validate`:
+
+------------------------------------------------------------------------------------
+コード値のバリデーション方法
+------------------------------------------------------------------------------------
+コード値のバリデーション方法を示す。\
+ここでは、 :ref:`other_example_code_get` に示したコード管理用のデータがデータベースに設定されているものとする。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】CustomerEntityクラスのJavaDocは省略。 */
+    public class CustomerEntity {
+
+        /* 【説明】その他のプロパティおよびメソッドは省略。 */
+
+        /** 性別 */
+        private String gender;
+
+        /* 【説明】
+            コード値のバリデーションはCodeValueバリデータを使用する。
+            genderプロパティに対する値が"1"、"2"以外の場合は、
+            バリデーション結果がエラーとなる。
+            pattern属性には、使用するパターンのカラム名を指定する。*/
+        @PropertyName("性別")
+        @CodeValue(codeId="0001", pattern="PATTERN1")
+        public String setGender(String gender) {
+            this.gender = gender;
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`other_example_warn_message`:
+
+------------------------------------------------------------------------------------
+正常な画面遷移においてメッセージを表示する方法
+------------------------------------------------------------------------------------
+ここでは正常な画面遷移においてメッセージを表示する方法を示す。
+
+精査エラーの場合と異なり、何らかの業務仕様上のチェックを行い、チェック結果によって警告メッセージを次画面に表示したい場合がある。\
+このように正常な画面遷移においてメッセージを表示したい場合は、ActionでWebUtilのnotifyMessagesメソッドを使用してメッセージを設定し、\
+n:errorsタグを使用して画面表示を行う。\
+ユーザ情報更新確認画面に警告メッセージ(MSG00022)を表示する実装例を示す。
+
+* 実装例
+
+  .. code-block:: java
+
+    /* 【説明】Actionのメソッド実装例。
+               JavaDocは省略。*/
+    public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+
+        /* 【説明】入力精査および業務処理は省略。 */
+
+        /* 【説明】
+            Actionでメッセージを設定する。
+            WebUtilのnotifyMessagesメソッドを使用してメッセージを設定する。
+            指定したメッセージは n:errors タグを使用して出力する。 */
+        Message message = MessageUtil.createMessage(MessageLevel.WARN, "MSG00022");
+        WebUtil.notifyMessages(ctx, message);
+
+        return new HttpResponse("/ss11AC/W11AC0302.jsp");
+    }
+
+  .. code-block:: jsp
+
+    <%-- 【説明】JSPの実装例。
+          WebUtilのnotifyMessagesメソッドで設定したメッセージを出力する。 --%>
+    <n:errors />
+
+  .. code-block:: css
+
+    /* 【説明】CSSの実装例。
+        CSS定義により警告メッセージを装飾する。
+        n:errors タグはメッセージレベル(MessageLevel)に応じたCSSクラス名が出力される。
+        デフォルトでは下記の対応でクラス名が出力される。
+
+            情報レベル(MessageLevel.INFO): "nablarch_info"
+            警告レベル(MessageLevel.WARN): "nablarch_warn"
+            エラーレベル(MessageLevel.ERROR): "nablarch_error"
+    */
+    li.nablarch_warn {
+        color: #0000FF;
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-Other--s16`
+
+```json
+{
+  "id": "web-application-Other--s16",
+  "title": "コード名称と値の取得方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード名称と値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "getValues",
+        "コード名称取得",
+        "コード略称取得",
+        "オプション名称取得",
+        "コード値取得",
+        "ThreadContext言語依存",
+        "ThreadContext",
+        "PATTERN1",
+        "NAME_WITH_VALUE"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コード値のバリデーション方法",
+      "hints": [
+        "@CodeValue",
+        "CodeValue",
+        "codeId",
+        "pattern",
+        "@PropertyName",
+        "コード値バリデーション",
+        "パターンバリデーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "正常な画面遷移においてメッセージを表示する方法",
+      "hints": [
+        "WebUtil",
+        "notifyMessages",
+        "n:errors",
+        "MessageUtil",
+        "MessageLevel",
+        "nablarch_warn",
+        "nablarch_info",
+        "nablarch_error",
+        "警告メッセージ表示",
+        "正常画面遷移メッセージ",
+        "Message",
+        "HttpResponse"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コード管理機能でコード名称・値を取得するには`CodeUtil`クラスを使用する。取得結果はThreadContextに保持した言語に依存する。\n\n| メソッド | 説明 |\n|---|---|\n| `CodeUtil.getName(codeId, value)` | ThreadContextの言語に応じたコード名称を返す |\n| `CodeUtil.getShortName(codeId, value)` | ThreadContextの言語に応じたコード略称を返す |\n| `CodeUtil.getOptionalName(codeId, value, columnName)` | コード名称テーブルの任意カラム（オプション名称用）の値を取得 |\n| `CodeUtil.getValues(codeId)` | コードパターンテーブルのSORT_ORDER昇順でコード値リストを返す |\n| `CodeUtil.getValues(codeId, patternColumn)` | パターン用カラム（PATTERN1等）に\"1\"が設定された行のコード値を返す |\n\n```java\n// コード名称取得 (ja: \"男性\", en: \"Male\")\nString name = CodeUtil.getName(\"0001\", \"1\");\n\n// コード略称取得 (en -> \"男\", ja -> \"M\")\nString name = CodeUtil.getShortName(\"0001\", \"1\");\n\n// オプション名称取得 (NAME_WITH_VALUEカラム指定時: ja -> \"1:男性\", en -> \"1:Male\")\nString name = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n\n// コード値一覧取得 (ja: {\"1\",\"2\",\"9\"}, en: {\"2\",\"1\",\"9\"})\nList<String> values = CodeUtil.getValues(\"0001\");\n\n// パターンでフィルタしたコード値取得 (ja: {\"1\",\"2\"}, en: {\"2\",\"1\"})\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n```\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)",
+    "s2": "`@CodeValue`アノテーションを使用してコード値のバリデーションを行う。`pattern`属性にパターン用カラム名を指定する。指定パターンに含まれない値はバリデーションエラーとなる。\n\n```java\n@PropertyName(\"性別\")\n@CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\npublic String setGender(String gender) {\n    this.gender = gender;\n}\n```\n\n上記例ではPATTERN1カラムが\"1\"の値（\"1\",\"2\"）以外はバリデーションエラー。\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)",
+    "s3": "精査エラーとは異なり、業務チェックによる警告メッセージを次画面に表示するには、ActionでWebUtil.notifyMessages()でメッセージを設定し、JSPでn:errorsタグを使用する。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG00022\");\nWebUtil.notifyMessages(ctx, message);\nreturn new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n```\n\n```jsp\n<n:errors />\n```\n\n`n:errors`タグはMessageLevelに応じたCSSクラス名を出力する：\n\n| MessageLevel | CSSクラス名 |\n|---|---|\n| `INFO` | `nablarch_info` |\n| `WARN` | `nablarch_warn` |\n| `ERROR` | `nablarch_error` |\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 5
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

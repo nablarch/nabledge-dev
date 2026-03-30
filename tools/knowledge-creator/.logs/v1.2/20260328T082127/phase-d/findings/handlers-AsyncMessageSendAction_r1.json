@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageSendAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — [往路処理（復路）] section label",
+      "description": "The knowledge file labels the outbound/return section as \"[往路処理（復路）]\" — adding \"（復路）\" which does not exist in the source. The source uses \"**[往路処理]**\" for that section (same label as the inbound section, which appears to be a typo in the source, but the knowledge file should not add an interpretation).",
+      "source_evidence": "Source: `**[往路処理]**` (under `.. _outbound:`) — no \"（復路）\" qualifier present anywhere in the source file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "MultiThreadExecutionHandler is a PascalCase class name prominently referenced in s1 (both in the handler queue list and in the related handlers table describing callbacks), but it is absent from s1's hints.",
+      "source_evidence": "Source s1 related handlers table: \"MultiThreadExecutionHandler\" appears as a key component in the handler queue and is listed as a related handler for callback coordination."
+    }
+  ]
+}

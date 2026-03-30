@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-04_validation--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The source code comment explains that the 'registerUser' string argument in `validateAndConvertRequest()` refers to methods on `W11AC02Form` annotated with `@ValidateFor(\"registerUser\")`. This connection between the group name string and the `@ValidateFor` annotation is absent from the knowledge file, leaving the meaning of the fourth argument to `validateAndConvertRequest()` unexplained.",
+      "source_evidence": "// 【説明】W11AC02Formの@ValidateForアノテーションで\"registerUser\"を指定しているメソッドを実行する"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The `validate()` method in the source demonstrates a second, distinct pattern for throwing `ApplicationException` for non-validation business logic errors using `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00002\", MessageUtil.getStringResource(...))`. This pattern—along with `MessageUtil`, `MessageLevel`, and `MessageUtil.getStringResource()`—is entirely omitted by the `// ...` truncation in the knowledge file. Only the validation-error pattern (`context.getMessages()`) is covered.",
+      "source_evidence": "throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00002\", MessageUtil.getStringResource(\"S0020001\")));"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`W11AC02Form` is a PascalCase class name explicitly listed in s1 content (`**クラス**: \\`ValidationUtil\\`, \\`ValidationContext\\`, \\`ApplicationException\\`, \\`W11AC02Form\\``) but is absent from s1 hints. It is only present in s2 hints.",
+      "source_evidence": "private W11AC02Form validate(HttpRequest req) { ... W11AC02Form form = context.createObject();"
+    }
+  ]
+}

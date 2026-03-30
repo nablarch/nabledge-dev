@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-04_TransactionConnectionName",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a variable rename (`tran` → `tran2`) in a code example. The source RST declares `Transaction tran` twice in the same scope — a duplicate local variable that would not compile in Java. The knowledge file's change to `tran2` actually corrects this defect, producing valid, compilable example code. The API usage pattern being demonstrated (`TransactionContext.getTransaction(\"user-schema\")`) is faithfully preserved, so users are not misled about Nablarch behavior. The variable name itself carries no semantic meaning beyond the example scope.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s2 — トランザクション名の使用例コード",
+      "impact": "low",
+      "justification": "The source RST declares `Transaction tran` twice in the same Java code block, which is a duplicate variable declaration and would not compile. The knowledge file renamed the second occurrence to `tran2` to produce valid Java. This is a necessary correction, not a misleading change — the demonstrated API call (`TransactionContext.getTransaction(\"user-schema\")`) and its context are fully preserved. The fix phase (Phase E) retained `tran2` because reverting to the source's `tran` would introduce invalid code into the knowledge file."
+    }
+  ]
+}

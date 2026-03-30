@@ -1,0 +1,263 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/01_Core/08/08_03_validation_recursive.rst`
+- Format: `rst`
+
+```
+画面入力用プロパティとデータベースアクセス用プロパティの変換
+---------------------------------------------------------------------
+電話番号などの項目は、データベース上では1つのカラムとなるデータを、画面入力時は複数の入力
+として取り扱うことがある。
+このような場合、 Form にデータベース用のプロパティとは別に画面用のプロパティを保持する
+ことでバリデーションの機構をそのまま使用できる。
+
+
+下記に示すユーザの電話番号変更のHTMLフォームを例に取って使用方法を説明する。
+
+.. code-block:: html
+
+  <form method="POST">
+  <input type="hidden" name="userForm.user.id" value="00000001"/>
+  電話番号: <input type="text" name="userForm.phoneNo1"/> - <input type="text" name="userForm.phoneNo2"/> - <input type="text" name="userForm.phoneNo3"/> <br/>
+  <input type="submit" value="変更" />
+  </form>
+
+
+上記のphoneNo1、phoneNo2、phoneNo3の入力をバリデーションし、バリデーションした結果を
+1つのプロパティとする場合、 Form で3つの入力値のバリデーションを実施する。
+
+.. code-block:: java
+
+    public class UserForm {
+
+        private UserEntity user;
+    
+        // 画面表示用の電話番号プロパティ
+        private String phoneNo1;
+        private String phoneNo2;
+        private String phoneNo3;
+    
+        public UserForm(Map<String, Object> params) {
+            this.user = (UserEntity) params.get("user");
+    
+            this.phoneNo1 = (String) params.get("phoneNo1");
+            this.phoneNo2 = (String) params.get("phoneNo2");
+            this.phoneNo3 = (String) params.get("phoneNo3");
+    
+        }
+    
+        // 再帰的にバリデーションするプロパティ
+        
+        @ValidationTarget
+        public void setUser(UserEntity user) {
+            this.user = user;
+        }
+    
+        @PropertyName("電話番号1")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo1(String phoneNo1) {
+            this.phoneNo1 = phoneNo1;
+        }
+    
+        @PropertyName("電話番号2")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo2(String phoneNo2) {
+            this.phoneNo2 = phoneNo2;
+        }
+    
+        @PropertyName("電話番号3")
+        @Required
+        @Length(max=4)
+        public void setPhoneNo3(String phoneNo3) {
+            this.phoneNo3 = phoneNo3;
+        }
+    
+        // 各プロパティの getter メソッドは省略
+    
+        private static final String[] VALIDATE_PROPS = new String[] {"user", "phoneNo1", "phoneNo2", "phoneNo3"};
+    
+        @ValidateFor("updateUser")
+        public static void validateForUpdateUser(ValidationContext<UserForm> context) {
+    
+            // UserEntity と phoneNo1 ～ phoneNo3 の単項目精査を実行
+            ValidationUtil.validate(context, VALIDATE_PROPS);
+    
+            // 単項目精査でエラーの場合は、共通項目チェックを行わない。
+            if (!context.isValid()) {
+                return;
+            }
+    
+            String phoneNo1 = (String) context.getConvertedValue("phoneNo1");
+            String phoneNo2 = (String) context.getConvertedValue("phoneNo2");
+            String phoneNo3 = (String) context.getConvertedValue("phoneNo3");
+            if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {
+                // 合わせて11文字以上なら精査エラー
+                context.addResultMessage("phoneNo1", "MSG00001");
+            }
+        }
+        
+    }
+    
+
+なお、文字列連結は Action で実施する。
+以下に Action の例を示す。
+
+
+.. code-block:: java
+    
+        // 入力値の精査を実施
+        ValidationContext<UserForm> result
+            = ValidationUtil.validateAndConvertRequest(
+                "userForm", UserForm.class, req, "updateUser");
+
+        if (!result.isValid()) {
+            throw new ApplicationException(result.getMessages());
+        }
+
+        // Formの生成
+        UserForm userForm = result.createObject();
+        UserEntity userEntity = userForm.getUser();
+
+        // Entity 文字列連結した値をに設定する。
+        userEntity.setPhoneNo(userForm.getPhoneNo1() + "-"
+            + userForm.getPhoneNo2() + "-" + userForm.getPhoneNo3());
+        
+        // ・・・DBへの登録、画面遷移の処理は省略・・・
+     
+```
+
+## Knowledge File
+
+- ID: `libraries-08_03_validation_recursive--s8`
+
+```json
+{
+  "id": "libraries-08_03_validation_recursive--s8",
+  "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面入力用プロパティとデータベースアクセス用プロパティの変換",
+      "hints": [
+        "@ValidationTarget",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@ValidateFor",
+        "ValidationContext",
+        "ValidationUtil",
+        "画面入力用プロパティ",
+        "データベース用プロパティ変換",
+        "複数入力を1カラムにマッピング",
+        "電話番号分割入力",
+        "バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "DBでは1カラムだが画面では複数入力となる項目（電話番号など）は、FormにDB用プロパティとは別に画面用プロパティを保持することで、バリデーション機構をそのまま利用できる。文字列連結はActionで実施する。\n\n**アノテーション**: `@ValidationTarget`, `@PropertyName`, `@Required`, `@Length`, `@ValidateFor`\n\n各プロパティへのバリデーション設定例（UserForm）:\n\n```java\npublic class UserForm {\n\n    private UserEntity user;\n    private String phoneNo1;\n    private String phoneNo2;\n    private String phoneNo3;\n\n    @ValidationTarget\n    public void setUser(UserEntity user) {\n        this.user = user;\n    }\n\n    @PropertyName(\"電話番号1\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo1(String phoneNo1) {\n        this.phoneNo1 = phoneNo1;\n    }\n\n    @PropertyName(\"電話番号2\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo2(String phoneNo2) {\n        this.phoneNo2 = phoneNo2;\n    }\n\n    @PropertyName(\"電話番号3\")\n    @Required\n    @Length(max=4)\n    public void setPhoneNo3(String phoneNo3) {\n        this.phoneNo3 = phoneNo3;\n    }\n\n    private static final String[] VALIDATE_PROPS = new String[] {\"user\", \"phoneNo1\", \"phoneNo2\", \"phoneNo3\"};\n\n    @ValidateFor(\"updateUser\")\n    public static void validateForUpdateUser(ValidationContext<UserForm> context) {\n        ValidationUtil.validate(context, VALIDATE_PROPS);\n        if (!context.isValid()) {\n            return;\n        }\n        String phoneNo1 = (String) context.getConvertedValue(\"phoneNo1\");\n        String phoneNo2 = (String) context.getConvertedValue(\"phoneNo2\");\n        String phoneNo3 = (String) context.getConvertedValue(\"phoneNo3\");\n        if (phoneNo1.length() + phoneNo2.length() + phoneNo3.length() > 11) {\n            context.addResultMessage(\"phoneNo1\", \"MSG00001\");\n        }\n    }\n}\n```\n\nActionでの文字列連結例:\n\n```java\nValidationContext<UserForm> result\n    = ValidationUtil.validateAndConvertRequest(\n        \"userForm\", UserForm.class, req, \"updateUser\");\n\nif (!result.isValid()) {\n    throw new ApplicationException(result.getMessages());\n}\n\nUserForm userForm = result.createObject();\nUserEntity userEntity = userForm.getUser();\n\nuserEntity.setPhoneNo(userForm.getPhoneNo1() + \"-\"\n    + userForm.getPhoneNo2() + \"-\" + userForm.getPhoneNo3());\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

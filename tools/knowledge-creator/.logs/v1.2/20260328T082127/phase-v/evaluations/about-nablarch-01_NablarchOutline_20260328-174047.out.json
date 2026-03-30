@@ -1,0 +1,26 @@
+{
+  "file_id": "about-nablarch-01_NablarchOutline",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "Both findings are minor terminological/completeness issues that do not mislead developers about how to implement anything. The fabricated \"サブタイプ\" term conveys approximately the same meaning as the source. The omitted window scope constraint is partially compensated by the existing \"使用方法は他の2種類のスコープと異なる\" warning plus the appendix reference. Neither finding would cause a developer to write incorrect code.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s3 — エンティティの説明",
+      "impact": "low",
+      "justification": "The term 'サブタイプ' implies OOP subtyping/inheritance, while the source merely names a category within forms. However, the practical description remains accurate: entity is table-mapped, with 1:1 field-column correspondence. A developer reading this would still implement entities correctly. The terminological inaccuracy does not change how the feature is used."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s5 — ウィンドウスコープの説明",
+      "impact": "low",
+      "justification": "The knowledge file does preserve '使用方法は他の2種類のスコープと異なる' and the reference to guide_appendix_windowScope. The omitted phrase '単純に実行コンテキストに保持するわけではない' adds explicitness to the warning, but the warning itself is present. A developer is already signaled to consult the appendix before using window scope. The risk of a developer blindly treating window scope like request/session scope is low given the 'usage is different' note."
+    },
+    {
+      "category": "persistence",
+      "location": "Phase E output",
+      "impact": "none",
+      "justification": "Phase E returned the knowledge file unchanged — the JSON in the E log is byte-for-byte identical to the D finding input. The fix agent either assessed both issues as below the threshold for correction, or failed to apply edits silently. Since both findings are low-severity fabrication/omission items with no misleading practical guidance, non-action by Phase E is defensible and not a pipeline failure."
+    }
+  ]
+}

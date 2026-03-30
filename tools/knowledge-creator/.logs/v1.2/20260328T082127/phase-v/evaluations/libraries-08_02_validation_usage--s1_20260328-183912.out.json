@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 (s2 omission) has medium impact: the missing warning could lead an AI agent to guide developers into copying the raw HTML form pattern into production code instead of using custom_tag. The first sentence of the note partially mitigates this, but the explicit \"あくまで理解のための実装例\" warning carries distinct safety value that is not implied by the custom_tag recommendation alone.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — note about HTML form being a learning example only",
+      "impact": "medium",
+      "justification": "The knowledge file retains the first note sentence (use custom_tag in normal development) but drops the explicit warning that the HTML form implementation is solely for understanding validation and must not be copied into production. An AI agent answering 'how to call validation from Action' will present the HTML form code block with only the custom_tag hint, without the explicit caution. Developers following that answer may implement raw HTML forms in production, bypassing the recommended custom_tag approach. The first sentence reduces but does not eliminate this risk because it does not say the shown code is wrong—only that something else is normally used. Why D→E did not resolve: the Phase E output is structurally identical to Phase D for s2; the fix was not applied."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s5 — hints array (ApplicationException, createObject, getMessages)",
+      "impact": "low",
+      "justification": "All three missing terms (ApplicationException, createObject, getMessages) already appear in s2's hints, which covers the same error-handling pattern in the Action context. A query targeting any of these identifiers will retrieve s2, which provides complete and correct guidance. The Entity+DB registration combo in s5 is already reachable via s5's existing distinctive hints (UserEntity, executeUpdateByObject, ParameterizedSqlPStatement). Failure to retrieve s5 via these terms is unlikely to cause an incorrect answer. Why D→E did not resolve: hints array in Phase E output is unchanged from Phase D; the fix was not applied."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s6 — hints array (User class name)",
+      "impact": "low",
+      "justification": "'User' already exists in s1's hints, and s1 is the canonical section for the User Form implementation. Queries about the User class will reach s1. s6 is distinguished by its own specific vocabulary (validateWithout, INSERT_SKIP_PROPS, validateForInsert, バリデーション対象プロパティ) that correctly routes property-exclusion queries to s6. Adding 'User' to s6 would create a redundant retrieval path but its absence causes no meaningful retrieval gap. Why D→E did not resolve: hints array in Phase E output is unchanged from Phase D; the fix was not applied."
+    }
+  ]
+}

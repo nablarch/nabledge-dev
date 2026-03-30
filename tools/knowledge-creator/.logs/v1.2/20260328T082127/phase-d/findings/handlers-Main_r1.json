@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-Main",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The complete bash command-line invocation example is missing. The source provides a concrete working example showing the full invocation of `nablarch.fw.launcher.Main` with all three argument categories (JavaVM params `-server`/`-Xmx128m`, system properties `-DcommitInterval=100`/`-DmaxExecutionCount=100000`, and class args including `-diConfig`, `-requestPath`, `-userId`, named param, and unnamed params). This is the primary usage example for the entire class and qualifies as a code example demonstrating correct usage patterns.",
+      "source_evidence": "Source section '起動引数の処理': `java -server -Xmx128m -DcommitInterval=100 -DmaxExecutionCount=100000 nablarch.fw.launcher.Main -diConfig file:./batch-config.xml -requestPath admin.DataUnloadBatchAction/BC0012 -userId testUser -namedParam value value1 value2 value3`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The concrete return value examples for `getParamMap()` and `getArgs()` are omitted. The source shows the exact data structure returned: `getParamMap()` returns `{ diConfig: \"file:./batch-config.xml\", requestPath: \"...\", userId: \"testUser\", namedParam: \"value\" }` and `getArgs()` returns `[ \"value1\", \"value2\", \"value3\" ]`. These illustrate the actual output format developers can expect from these API calls.",
+      "source_evidence": "Source section 'a) 名前付きパラメータ' and 'b) 無名パラメータ' each include a `.. code-block:: javascript` block showing the concrete return values."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The explanation that JavaVM parameters (e.g., `-server`, `-Xmx`) are not directly used by the framework is absent. The source explicitly states '本フレームワークでこれらの値を直接使用することは無い.' This is useful context to prevent misunderstanding about which arguments the framework processes.",
+      "source_evidence": "Source section '1. JavaVMパラメータ': '上記例中の **-server** や **-Xmx** はJavaVM自体の挙動に関するパラメータである。本フレームワークでこれらの値を直接使用することは無い。'"
+    }
+  ]
+}

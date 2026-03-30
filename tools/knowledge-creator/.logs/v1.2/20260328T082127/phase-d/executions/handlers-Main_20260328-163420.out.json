@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-Main",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — [例外処理] 5a",
+      "description": "Knowledge file says「実行時例外またはエラーが送出された場合」but source uses「実行時例外およびエラーが送出された場合」. Source uses「および」(and), meaning both runtime exceptions AND errors. Knowledge file changed it to「または」(or), which is a different logical conjunction.",
+      "source_evidence": "後続ハンドラの実行中に実行時例外およびエラーが送出された場合、それらを捕捉し、異常終了させる。(ステータスコード=127)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Section s3 covers the three argument categories in detail, including Javaシステムプロパティ (how to pass DI repository embedded parameters via -D flags). This is a decision-necessary concept (users may ask 'how do I pass system properties to the framework?'), but「Javaシステムプロパティ」is absent from hints. Similarly「JavaVMパラメータ」is missing.",
+      "source_evidence": "DIリポジトリ設定ファイル中の埋め込みパラメータの値は、Javaシステムプロパティを用いて指定することができる。"
+    }
+  ]
+}

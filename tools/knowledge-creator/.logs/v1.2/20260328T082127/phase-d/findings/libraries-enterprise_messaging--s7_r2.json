@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — protocol header tables for patterns 1, 2, and 4",
+      "description": "The text '（必須）' is appended to required header descriptions in multiple tables, but this text does not appear in the source. The source uses bold formatting (** **) to visually indicate required headers and surrounding prose to explain which are required, but the literal string '（必須）' is absent from every table cell in the source.",
+      "source_evidence": "Pattern 1 source: `**送信宛先** | **送信先論理名を設定**` — knowledge file adds '（必須）'. Pattern 2 source: `**送信宛先** | **送信宛先の論理名を設定**` and `**応答宛先** | **応答宛先の論理名を設定**` — knowledge file adds '（必須）' to both. Pattern 4 source: `**関連メッセージID** | 受信電文の **メッセージIDヘッダ** の値を設定する。` and `**送信宛先** | 受信電文の **応答宛先ヘッダ** の値を設定する。` — knowledge file adds '（必須）' to both."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "The parent class `JmsMessagingProvider` is not included in s3 hints. The source references it explicitly in an XML comment: 'その他のプロパティは親クラス(JmsMessagingProvider)と同じ'. A user asking about the class hierarchy of the JMS provider would benefit from this being a searchable hint.",
+      "source_evidence": "Source XML snippet: `<!-- その他のプロパティは親クラス(JmsMessagingProvider)と同じ -->`"
+    }
+  ]
+}

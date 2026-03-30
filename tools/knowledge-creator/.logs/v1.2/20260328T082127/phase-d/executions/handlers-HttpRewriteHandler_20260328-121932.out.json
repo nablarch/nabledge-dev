@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpRewriteHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — opening sentence",
+      "description": "The sentence 「リライトルールは `HttpRequestRewriteRule`（リクエストパス対象）および `ContentPathRewriteRule`（コンテンツパス対象）のサブクラスで設定する」 grammatically reads as 'configured using subclasses of HttpRequestRewriteRule and ContentPathRewriteRule', which is incorrect. The source states that HttpRequestRewriteRule and ContentPathRewriteRule are themselves the classes used for configuration (they are subclasses of RewriteRule, not classes to be subclassed). The `のサブクラスで` attaches to the preceding class names rather than to an unnamed parent, inverting the inheritance direction relative to the source.",
+      "source_evidence": "設定は、それぞれ `RewriteRule` のサブクラスである `HttpRequestRewriteRule` および `ContentPathRewriteRule` を用いて行うが — meaning HttpRequestRewriteRule and ContentPathRewriteRule are used directly; they are themselves subclasses of RewriteRule."
+    }
+  ]
+}

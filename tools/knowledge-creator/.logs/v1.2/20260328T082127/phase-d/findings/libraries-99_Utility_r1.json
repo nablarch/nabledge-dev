@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-99_Utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 日付オブジェクト変換 コード例",
+      "description": "The source includes a usage example for `getDate` (`DateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト`), but no code example for `getDate` appears in the knowledge file's code block. All other methods have at least one code example.",
+      "source_evidence": "DateUtil.getDate(updateDateStr); // -> java.util.Dateオブジェクト"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 日数の加減算 コード例 / getDays",
+      "description": "The source's `getDays` examples include a same-day case demonstrating the return value of 0 (`DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0`). The knowledge file omits this case, even though the table description mentions it.",
+      "source_evidence": "// 同日を指定した場合\nDateUtil.getDate(\"20110302\", \"20110302\"); // -> 0"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 月数の加減算 コード例 / addMonth",
+      "description": "The source shows subtraction examples for `addMonth` (both yyyyMMdd and yyyyMM forms), but the knowledge file's code block only shows addition examples. The subtraction behavior for month-only format (`addMonth(\"20110302\", -1) // -> 20110202`) is not shown.",
+      "source_evidence": "// 1ヶ月減算する場合(年月日指定)\nString date = \"20110302\";\nDateUtil.addMonth(date, -1); // -> 20110202"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 日付間の月数取得 コード例 / getMonths",
+      "description": "The source provides extensive `getMonths` examples covering: (1) same-day/same-month returning 0, (2) yyyyMM format pairs, and (3) mixed yyyyMMdd/yyyyMM format across the two parameters. The knowledge file only includes yyyyMMdd examples. The mixed-format examples in particular demonstrate explicit cross-format compatibility (`DateUtil.getMonths(\"20110331\", \"201104\") // -> 1` and `DateUtil.getMonths(\"201103\", \"20100315\") // -> -12`).",
+      "source_evidence": "// １つ目の引数:yyyyMMdd,２つ目の引数:yyyyMMの場合\nDateUtil.getMonths(\"20110331\", \"201104\");   // -> 1\n// １つ目の引数:yyyyMM,２つ目の引数:yyyyMMddの場合\nDateUtil.getMonths(\"201103\", \"20100315\")    // -> -12"
+    }
+  ]
+}

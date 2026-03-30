@@ -1,0 +1,655 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/01_Core/05_StaticDataCache.rst`
+- Format: `rst`
+
+```
+.. _`static_data_cache`:
+
+================================
+静的データのキャッシュ
+================================
+
+-----
+概要
+-----
+| 頻繁にアクセスする静的データをRDBMSやXMLファイル等の媒体に永続化している場合、媒体へのアクセス速度がアプリケーションの
+  パフォーマンスを大きく劣化させることがある。
+
+| 本機能はこのようなデータアクセスによるパフォーマンスの劣化を抑えるために、静的データをよりアクセス速度が早い媒体にキャッシュ
+  することで、アクセスを高速化する機構を提供する。
+
+| 
+| 本機能は、リポジトリに登録して使用する。
+| このため、本機能に必要な初期化処理は :ref:`repository` が実行する。
+| 
+| また、本機能は他の機能の一部として使用されることを想定しており、単体で使用することはない。
+| このため、アプリケーションプログラマは、本機能を直接使用することはない。
+
+
+-----
+特徴
+-----
+
+
+静的データキャッシュの実装負荷軽減
+=====================================
+本機能では、キャッシュしたデータの保持や、
+キャッシュにデータが存在しなかった場合にロードする処理を本機能が提供するクラスが行う。
+
+このため、キャッシュを使用する機能を実装する際に必要な実装が、静的データをRDBMSやXMLファイル等の媒体から
+ロードする処理と、キャッシュした静的データを使用する処理の2つのみに集約され、実装負荷を軽減できる。
+
+インデックス機能
+=====================================
+本機能は、キャッシュに保持した静的データの中から特定の値を持つ複数のデータを効率よく取得する機能を持つ。 
+この機能をインデックス機能と呼ぶ。
+インデックス機能では、キャッシュから静的データを取得する際、ID以外の特定のキー(インデックスキー)を指定する。
+インデックス機能を使用することで、ID以外のキーで頻繁にアクセスする静的データにも高速なアクセスが可能となる。
+
+-----
+要求
+-----
+
+実装済み
+========
+
+ * 任意のクラスの静的データをキャッシュできる。
+ * IDを指定してキャッシュから静的データを取得できる。
+ * 任意のインデックスキーを指定して、キャッシュから複数の静的データを取得できる。
+ * アプリケーション起動時に永続化した媒体から静的データをロードできる。
+ * 静的データが必要になったタイミングで永続化した媒体からロードできる。
+ * プロセスを再起動することなく再ロードできる。
+
+未検討
+========
+ * 頻繁に参照されない静的データをキャッシュから削除することでメモリを節約できる。
+ * 複数のJavaプロセスでキャッシュした静的データを共有できる。
+ * ファイルから静的データをロードできる。
+ * SQL文を記述するだけで、データベース上にある静的データをキャッシュできる。
+
+-----
+構成
+-----
+
+クラス図
+========
+
+|
+
+.. image:: ./_images/05/05_StaticDataCache_Class.jpg
+   :scale: 100
+
+
+インタフェース定義
+--------------------------------
+
+===================================================================== ===========================================================================================
+インタフェース名                                                      概要
+===================================================================== ===========================================================================================
+nablarch.core.cache.StaticDataCache                                   | 静的データのキャッシュを保持するインタフェース。
+nablarch.core.cache.StaticDataLoader                                  | 静的データをロードするインタフェース。
+                                                                      | RDBMSやXMLファイル等の媒体から静的データをクラスはこのインタフェースを実装する。
+===================================================================== ===========================================================================================
+
+
+クラス定義
+--------------------------------
+
+===================================================================== ===========================================================================================
+クラス名                                                              概要
+===================================================================== ===========================================================================================
+nablarch.core.cache.StaticDataCache                                   | StaticDataCacheインタフェースの基本実装クラス。
+                                                                      | 静的データをHashMapに保持する。
+===================================================================== ===========================================================================================
+
+
+------------------------------------------
+キャッシュした静的データの取得
+------------------------------------------
+概要で述べた通り、静的データキャッシュは、静的データキャッシュを使用する必要のあるクラスの一部として使用することを想定している。
+
+キャッシュする必要のあるクラスは、データのキャッシュを行う StaticDataCache インタフェースをフィールドに持ち、
+StaticDataCache インタフェースのメソッドを使用して静的データを取得する。
+
+この際、StaticDataCache インタフェースを実装したフィールドには、本機能が提供している StaticDataCache インタフェースの実装クラスを
+リポジトリの :ref:`di-container` の機能で設定する。
+
+以下に静的データを取得する実装方法について記述する。
+
+
+.. _`static_data_cache_get_example`:
+
+IDを指定した静的データの取得
+================================================
+
+静的データは、 StaticDataCache インタフェースの getValue メソッドまたは getValues メソッドで取得する。
+StaticDataCache インタフェースを実装したクラスは、キャッシュにデータが存在しない場合には必要に応じてデータを取得する。
+このため、呼び出し元は静的データがキャッシュに存在するか否かを意識する必要がない。
+
+以下にキャッシュされるデータを保持する ExampleData クラスと、キャッシュに保持した ExampleData クラスを使用するクラスの実装例を示す。
+
+キャッシュされるデータを保持するクラス(ExampleData)
+------------------------------------------------------------
+
+.. code-block:: java
+
+  public class ExampleData {
+      private String id;
+      private String name;
+  
+      // setter, getterは省略
+  }
+
+
+キャッシュしたデータを使用するクラス
+----------------------------------------------
+
+.. code-block:: java
+
+    public class StaticDataUseExample {
+        // DIによりStaticDataを設定
+        private StaticDataCache<ExampleData> cache;
+
+        public void setCache(StaticDataCache<ExampleData> cache) {
+            this.cache = cache;
+        }
+
+        public void getById(String id) {
+            // キャッシュからデータを取得する
+            // 利用者は、キャッシュにデータがあるかを意識する必要はない
+            ExampleData obj = cache.getValue(id);
+            System.out.println("id = " + obj.getId());
+            System.out.println("name = " + obj.getName());
+        }
+    }
+
+.. warning:: 
+       StaticDataCache#getValue メソッドまたは StaticDataCache#getValues メソッドで取得した静的データは、
+       クラスおよびインスタンスのフィールドに保持しないこと。
+       これは、クラスおよびインスタンスのフィールドに保持された静的データが、後述する StaticDataCache
+       のリロード機能が呼ばれた際に更新されない問題があるためである。
+
+
+
+インデックスを使用した静的データの取得
+=======================================
+本機能は、ID以外のキーを指定して静的データを取得できるインデックス機能を持つ。
+インデックス機能では、IDのように1つのキーに1つの静的データを紐付けるだけでなく、
+1つのキーに複数の静的データを紐付けられる。
+
+インデックスを StaticDataCache インタフェースに定義された getValues メソッドを使用する。
+
+:ref:`static_data_cache_get_example` で示した ExampleData クラスを "name" というインデックスを使用して静的データを取得する実装例を以下に示す。
+
+.. code-block:: java
+
+    public class StaticDataUseExample {
+        // DIによりStaticDataを設定
+        private StaticDataCache<ExampleData> cache;
+
+        public void setCache(StaticDataCache<ExampleData> cache) {
+            this.cache = cache;
+        }
+
+        public void getByName(String name) {
+            // キャッシュからデータを取得する
+            // 利用者は、キャッシュにデータがあるかを意識する必要はない
+            List<ExampleData> objs = cache.getValues("name", name);
+            for (ExampleData obj : objs) {
+                System.out.println("id = " + obj.getId());
+                System.out.println("name = " + obj.getName());
+            }
+        }
+    }
+
+  
+  
+
+------------------------------------------
+キャッシュにデータをロードする方法
+------------------------------------------
+本機能では、キャッシュにデータをロードする方法にオンデマンドロードと一括ロードの2種類の方法を提供している。
+
+以下にそれぞれの方法の特徴と、処理順序の概要を記述する。
+
+オンデマンドロード
+====================
+オンデマンドロードでは、キャッシュにデータがなかった際に、自動的にデータをロードする。
+これに対して一括ロードでは、アプリケーション起動時に全てのデータをキャッシュにロードする。
+
+オンデマンドロードは、一括ロードに対してアプリケーションの起動が速い利点がある。
+このため、使用するデータがキャッシュに保持するデータの一部に偏る場面で有利なロード方法となる。
+このような場面には、バッチやテスト時に使用するメッセージなどが想定される。
+
+オンデマンドロード時の処理順序は下記シーケンス図のようになる。
+
+.. image:: ./_images/05/05_StaticDataCache_LoadOnDemandSequence.jpg
+    :scale: 80
+
+一括ロード
+====================
+一括ロードは、起動してしまえば全てのデータがキャッシュに存在するため、
+オンデマンドロードがキャッシュにデータが存在しなかった際(キャッシュミスヒット時)に若干処理が遅くなる問題を回避できる。
+このため、使用するデータがキャッシュに保持するデータのほぼ全てとなる場面で有利なロード方法となる。
+このような場面には、Webアプリケーションで使用するメッセージなどが想定される。
+
+一括ロード時の処理順序は下記シーケンス図のようになる。
+
+.. image:: ./_images/05/05_StaticDataCache_LoadOnStartupSequence.jpg
+    :scale: 80
+
+いずれの方法でも、 :ref:`static_data_cache_get_example` で示した通り、
+キャッシュを使用する実装にはデータがどのようにロードされているか意識する必要がない。
+
+それぞれのロードの使用方法について、以下に記述する。
+
+------------------------------------------------------------
+オンデマンドロードの使用方法
+------------------------------------------------------------
+
+オンデマンドロードを使用する際データロードの実装方法について、IDを指定してデータを取得する際に必要なデータロードの実装方法と、
+インデックスを指定してデータを取得する際に必要なデータロードの実装方法について以下に記述する。
+
+IDを指定してデータを取得する際に必要なデータロードの実装方法
+======================================================================
+
+データをロードする処理は、 StaticDataLoader インタフェースを実装したクラスに実装する。
+
+StaticDataLoader インタフェースには、IDを使用するキャッシュへのアクセスと、インデックスを使用したキャッシュへのアクセスに必要なメソッドが定義されている。
+
+:ref:`static_data_cache_get_example` で示した、IDを指定してデータを取得する機能のみをオンデマンドロードで使用する場合、
+StaticDataLoaderインタフェースに定義されたgetValueメソッドのみを実装すればよい。
+
+以下に :ref:`static_data_cache_get_example` で例に出した ExampleData をロードするクラスと、 StaticDataCache を使用するための設定ファイルの例を示す。
+
+.. _`data-load`:
+
+ExampleDataをロードするクラス
+--------------------------------
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。
+    // 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。
+    
+    public class ExampleDataLoader implements StaticDataLoader<ExampleData> {
+        /**
+         * データロードに使用するSimpleDbTransactionManagerのインスタンス。
+         */
+        private SimpleDbTransactionManager dbManager;
+
+        public ExampleData getValue(final Object id) {
+
+            return new SimpleDbTransactionExecutor<ExampleData>(dbManager) {
+                @Override
+                public ExampleData execute(AppDbConnection connection) {
+                    // 永続化したオブジェクトをロード
+                    SqlPStatement stmt = connection
+                            .prepareStatement("select id, name from example_data where id = ? order by id");
+                    stmt.setString(1, (String) id);
+                    SqlResultSet results = stmt.retrieve();
+                    if (results.size() > 0) {
+                        SqlRow row = results.get(0);
+                        ExampleData obj = createData(row);
+                        return obj;
+                    } else {
+                        return null;
+                    }
+                }
+            }.doTransaction();
+        }
+
+        // ...getValues以外のメソッドは省略...
+    }
+
+設定ファイル
+--------------------------------
+
+.. code-block:: xml
+
+
+	<!-- cashLoaderの定義 -->
+	<component name="exampleDataCache" class="nablarch.core.cache.BasicStaticDataCache">
+		<property name="loader">
+			<component class="nablarch.core.cache.example.ExampleDataLoader" />
+		</property>
+	</component>
+
+	<!-- cacheを使用するコンポーネントの定義 -->
+	<component name="staticDataUseExample" class="nablarch.core.cache.example.StaticDataUseExample">
+		<property name="cache" ref="exampleDataCache" />
+	</component>
+	<component name="initializer" class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+	    <property name="initializeList">
+	        <list>
+	            <!-- 他のコンポーネントは省略 -->
+	            <component-ref name="exampleDataCache"/>
+	        </list>
+	    </property>
+	</component>
+
+
+インデックスを指定してデータを取得する際に必要なデータロードの実装方法
+========================================================================================
+
+オンデマンドロード時に、インデックスを使用して静的データを取得するには、 StaticDataLoader の getValues メソッドと
+ロードしたデータに対するIDを取得する getId メソッドを実装する必要がある。
+
+getValues メソッドはデータをロードする目的、 getId メソッドは、同一の静的データを2重に保持しない目的でそれぞれ
+フレームワークから呼び出される。
+
+このため、getIdメソッドは静的データを一意に決定する値を返すように実装されている必要がある。
+
+以下に:ref:`static_data_cache_get_example` で例に出した ExampleData クラスの name をインデックスキーとして、インデックスを使用する場合の getValues の実装例を示す。
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。
+    // 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。
+    
+    public class ExampleDataLoader implements StaticDataLoader<ExampleData> {
+
+
+        public List<ExampleData> getValues(final String indexName, final Object key) {
+
+            return new SimpleDbTransactionExecutor<List<ExampleData>>(dbManager) {
+                @Override
+                public List<ExampleData> execute(AppDbConnection connection) {
+                    if (indexName.equals("name")) {
+                        String name = (String) key;
+                        // 永続化したオブジェクトをロード
+                        SqlPStatement stmt = connection.prepareStatement("select id, name from example_data where name = ? order by id");
+                        stmt.setString(1, (String) name);
+                        SqlResultSet results = stmt.retrieve();
+                        List<ExampleData> objs = new ArrayList<ExampleData>();
+                        for (SqlRow row : results) {
+                            objs.add(createData(row));
+                        }
+                        return objs;
+                    } else {
+                        throw new IllegalArgumentException("invalid indexName: indexName = " + indexName);
+                    }        
+        
+                }
+            }.doTransaction();
+        }
+
+        public Object getId(ExampleData value) {
+            // オブジェクトの持つidを取得する。
+            return value.getId();
+        }
+        // ...getValues以外のメソッドは省略...
+    }
+
+
+
+--------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-05_StaticDataCache--s1`
+
+```json
+{
+  "id": "libraries-05_StaticDataCache--s1",
+  "title": "静的データのキャッシュ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "StaticDataCache",
+        "静的データキャッシュ",
+        "キャッシュ初期化",
+        "repository"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "インデックス機能",
+        "実装負荷軽減",
+        "インデックスキー",
+        "キャッシュ機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "オンデマンドロード",
+        "一括ロード",
+        "再ロード",
+        "キャッシュ機能要件"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構成",
+      "hints": [
+        "StaticDataCache",
+        "StaticDataLoader",
+        "BasicStaticDataCache",
+        "クラス図"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "インタフェース定義",
+      "hints": [
+        "nablarch.core.cache.StaticDataCache",
+        "nablarch.core.cache.StaticDataLoader",
+        "インタフェース定義",
+        "静的データロード"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "クラス定義",
+      "hints": [
+        "nablarch.core.cache.StaticDataCache",
+        "BasicStaticDataCache",
+        "HashMap",
+        "キャッシュ実装クラス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "キャッシュした静的データの取得",
+      "hints": [
+        "StaticDataCache",
+        "getValue",
+        "getValues",
+        "インデックス取得",
+        "di-container",
+        "DIコンテナ設定"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "キャッシュされるデータを保持するクラス(ExampleData)",
+      "hints": [
+        "ExampleData",
+        "キャッシュデータクラス",
+        "静的データ保持"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "キャッシュしたデータを使用するクラス",
+      "hints": [
+        "StaticDataUseExample",
+        "StaticDataCache",
+        "getValue",
+        "フィールド保持禁止",
+        "リロード"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "キャッシュにデータをロードする方法",
+      "hints": [
+        "オンデマンドロード",
+        "一括ロード",
+        "キャッシュロード",
+        "ロード方法比較"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "オンデマンドロードの使用方法",
+      "hints": [
+        "StaticDataLoader",
+        "getValues",
+        "getId",
+        "オンデマンドロード実装",
+        "インデックスロード",
+        "ExampleDataLoader"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "ExampleDataをロードするクラス",
+      "hints": [
+        "ExampleDataLoader",
+        "StaticDataLoader",
+        "getValue",
+        "SimpleDbTransactionExecutor",
+        "SimpleDbTransactionManager"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "設定ファイル",
+      "hints": [
+        "BasicStaticDataCache",
+        "nablarch.core.cache.BasicStaticDataCache",
+        "ExampleDataLoader",
+        "BasicApplicationInitializer",
+        "XML設定",
+        "loader"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "静的データをより速い媒体にキャッシュしてアクセスを高速化する機構。\n\n- :ref:`repository` に登録して使用する。初期化処理は :ref:`repository` が実行する。\n- 本機能は他の機能の一部として使用されることを想定しており、アプリケーションプログラマが直接使用することはない。",
+    "s2": "### 実装負荷軽減\nキャッシュデータの保持とキャッシュミス時のロード処理はフレームワーク提供クラスが行う。実装者が用意する処理は「媒体からのロード処理」と「キャッシュした静的データの使用処理」の2つのみ。\n\n### インデックス機能\nID以外のキー（インデックスキー）を指定して、複数の静的データを効率よく取得できる機能。1つのインデックスキーに複数の静的データを紐付けられる。",
+    "s3": "**実装済み:**\n- 任意のクラスの静的データをキャッシュできる\n- IDを指定してキャッシュから静的データを取得できる\n- 任意のインデックスキーを指定してキャッシュから複数の静的データを取得できる\n- アプリケーション起動時に静的データをロードできる\n- 静的データが必要なタイミングでオンデマンドロードできる\n- プロセス再起動なしで再ロードできる\n\n**未検討（未実装）:**\n- 頻繁に参照されない静的データをキャッシュから削除してメモリを節約\n- 複数Javaプロセスでのキャッシュ共有\n- ファイルからの静的データロード\n- SQL記述のみでDBの静的データをキャッシュ",
+    "s4": "![静的データキャッシュ クラス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_Class.jpg)",
+    "s5": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.core.cache.StaticDataCache` | 静的データのキャッシュを保持するインタフェース |\n| `nablarch.core.cache.StaticDataLoader` | 静的データをロードするインタフェース。RDBMSやXMLファイル等の媒体から静的データをロードするクラスはこのインタフェースを実装する |",
+    "s6": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.core.cache.StaticDataCache` | StaticDataCacheインタフェースの基本実装クラス。静的データをHashMapに保持する |",
+    "s7": "キャッシュを使用するクラスは `StaticDataCache` インタフェースをフィールドに持ち、:ref:`di-container` の機能で実装クラスを設定する。\n\n**IDによるデータ取得:** `StaticDataCache#getValue(id)` または `StaticDataCache#getValues(id)` を使用。キャッシュにデータがない場合は自動ロードされるため、呼び出し元はキャッシュの存在を意識しなくてよい。\n\n**インデックスによるデータ取得:** `StaticDataCache#getValues(indexName, key)` を使用。1つのキーに複数の静的データを紐付けられる。\n\n```java\npublic void getByName(String name) {\n    List<ExampleData> objs = cache.getValues(\"name\", name);\n    for (ExampleData obj : objs) {\n        System.out.println(\"id = \" + obj.getId());\n        System.out.println(\"name = \" + obj.getName());\n    }\n}\n```",
+    "s8": "```java\npublic class ExampleData {\n    private String id;\n    private String name;\n    // setter, getter省略\n}\n```",
+    "s9": "```java\npublic class StaticDataUseExample {\n    // DIによりStaticDataを設定\n    private StaticDataCache<ExampleData> cache;\n\n    public void setCache(StaticDataCache<ExampleData> cache) {\n        this.cache = cache;\n    }\n\n    public void getById(String id) {\n        ExampleData obj = cache.getValue(id);\n        System.out.println(\"id = \" + obj.getId());\n        System.out.println(\"name = \" + obj.getName());\n    }\n}\n```\n\n> **警告**: `StaticDataCache#getValue` または `StaticDataCache#getValues` で取得した静的データをクラス/インスタンスのフィールドに保持してはならない。`StaticDataCache` のリロード機能呼び出し時に当該フィールドが更新されない問題があるためである。",
+    "s10": "**オンデマンドロード**: キャッシュにデータがないときに自動ロード。アプリ起動が速い。バッチやテストなど、使用データがキャッシュの一部に偏る場面に有利。\n\n**一括ロード**: アプリケーション起動時に全データをロード。起動後はキャッシュミスが発生しないため、Webアプリのメッセージなどほぼすべてのデータを使う場面に有利。\n\nいずれのロード方法でもキャッシュを使う実装にはロード方法を意識させない。\n\nオンデマンドロード時の処理順序:\n![オンデマンドロード シーケンス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_LoadOnDemandSequence.jpg)\n\n一括ロード時の処理順序:\n![一括ロード シーケンス図](assets/libraries-05_StaticDataCache--s1/05_StaticDataCache_LoadOnStartupSequence.jpg)",
+    "s11": "データをロードする処理は `StaticDataLoader` インタフェースを実装したクラスに実装する。\n\n**IDを指定してデータを取得する場合**: `StaticDataLoader#getValue` メソッドのみ実装すればよい。\n\n**インデックスを指定してデータを取得する場合**: 以下2メソッドを実装する:\n- `getValues(String indexName, Object key)`: インデックスキーでデータをロードする目的で呼び出される\n- `getId(T value)`: 同一静的データの2重保持を防ぐ目的でフレームワークから呼び出される。静的データを一意に決定する値を返すよう実装すること。\n\n> **注意**: 下記コードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。\n\n```java\npublic class ExampleDataLoader implements StaticDataLoader<ExampleData> {\n    public List<ExampleData> getValues(final String indexName, final Object key) {\n        return new SimpleDbTransactionExecutor<List<ExampleData>>(dbManager) {\n            @Override\n            public List<ExampleData> execute(AppDbConnection connection) {\n                if (indexName.equals(\"name\")) {\n                    SqlPStatement stmt = connection.prepareStatement(\n                        \"select id, name from example_data where name = ? order by id\");\n                    stmt.setString(1, (String) key);\n                    SqlResultSet results = stmt.retrieve();\n                    List<ExampleData> objs = new ArrayList<ExampleData>();\n                    for (SqlRow row : results) {\n                        objs.add(createData(row));\n                    }\n                    return objs;\n                } else {\n                    throw new IllegalArgumentException(\"invalid indexName: indexName = \" + indexName);\n                }\n            }\n        }.doTransaction();\n    }\n\n    public Object getId(ExampleData value) {\n        return value.getId();\n    }\n}\n```",
+    "s12": "> **注意**: 下記コードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。\n\n```java\npublic class ExampleDataLoader implements StaticDataLoader<ExampleData> {\n    private SimpleDbTransactionManager dbManager;\n\n    public ExampleData getValue(final Object id) {\n        return new SimpleDbTransactionExecutor<ExampleData>(dbManager) {\n            @Override\n            public ExampleData execute(AppDbConnection connection) {\n                SqlPStatement stmt = connection.prepareStatement(\n                    \"select id, name from example_data where id = ? order by id\");\n                stmt.setString(1, (String) id);\n                SqlResultSet results = stmt.retrieve();\n                if (results.size() > 0) {\n                    return createData(results.get(0));\n                } else {\n                    return null;\n                }\n            }\n        }.doTransaction();\n    }\n}\n```",
+    "s13": "```xml\n<!-- cashLoaderの定義 -->\n<component name=\"exampleDataCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\">\n        <component class=\"nablarch.core.cache.example.ExampleDataLoader\" />\n    </property>\n</component>\n\n<!-- cacheを使用するコンポーネントの定義 -->\n<component name=\"staticDataUseExample\" class=\"nablarch.core.cache.example.StaticDataUseExample\">\n    <property name=\"cache\" ref=\"exampleDataCache\" />\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <!-- 他のコンポーネントは省略 -->\n            <component-ref name=\"exampleDataCache\"/>\n        </list>\n    </property>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 13 < source headings 21
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

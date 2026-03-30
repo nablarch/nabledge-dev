@@ -1,0 +1,150 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `libraries-1`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "sections.s1 — code example",
+    "description": "The code example omits the outer RuntimeException and the SingleValidationTester call stack lines present in the source. The source shows the full trace starting with `java.lang.RuntimeException: unexpected exception occurred. target entity=[...] property=[failedCount]` and the `SingleValidationTester.invokeValidation` / `SingleValidationTester.testSingleValidation` frames. Only the `Caused by: IllegalArgumentException` portion is included in the knowledge file.",
+    "source_evidence": "java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]\n    at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)\n    at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)"
+  }
+]
+```
+
+### Source (RST)
+
+```
+数値型項目の場合の桁数精査の方法を教えて下さい
+===========================================================================
+.. admonition:: question
+
+    数値型のプロパティに桁数精査を表す *Lengthアノテーション* を付加しましたが、桁数精査が行われていないようです。
+    数値型の場合、桁数精査はどのように実施するのでしょうか？
+
+.. admonition:: answer
+
+    数値型項目の桁数精査は、 *Lengthアノテーション* ではなく、 *Digitsアノテーション* を使用する必要があります。
+    *Digitsアノテーション* では、数値型特有の整数部桁数と小数部桁数それぞれの桁数精査が行える仕様となっています。
+
+    なお、数値型項目に *Digitsアノテーション* を付加しなかった場合、クラス単体テストで下記のようなエラーが発生します。
+
+    .. code-block:: java
+
+        java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]
+            at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)
+            at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)
+            ～ 省略 ～
+        Caused by: java.lang.IllegalArgumentException: Must specify @Digits annotation.property = failedCount
+            at nablarch.core.validation.convertor.NumberConvertorSupport.isConvertible(NumberConvertorSupport.java:127)
+            at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)
+            ～ 省略 ～
+
+    詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch Application Framework解説書]** -> **[NAF基盤ライブラリ]** -> **[入力値のバリデーション]** -> **[基本バリデータ・コンバータ]** -> **[コンバータ]**
+    * **[Nablarch Application Framework解説書]** -> **[NAF基盤ライブラリ]** -> **[入力値のバリデーション]** -> **[バリデーション機能の基本的な使用方法]** -> **[値の変換]**
+    * DigitsアノテーションのJavadoc
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "libraries-1",
+  "title": "数値型項目の場合の桁数精査の方法を教えて下さい",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "数値型項目の桁数精査方法",
+      "hints": [
+        "@Digits",
+        "@Length",
+        "NumberConvertorSupport",
+        "ValidationManager",
+        "SingleValidationTester",
+        "IllegalArgumentException",
+        "数値型バリデーション",
+        "桁数精査",
+        "整数部桁数",
+        "小数部桁数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "数値型項目の桁数精査は `@Length` アノテーションではなく **`@Digits` アノテーション**を使用する。`@Digits` は整数部桁数と小数部桁数それぞれの桁数精査が可能。\n\n> **重要**: 数値型項目に `@Digits` を付加しない場合、クラス単体テストで以下のエラーが発生する。\n\n```java\nCaused by: java.lang.IllegalArgumentException: Must specify @Digits annotation.property = failedCount\n    at nablarch.core.validation.convertor.NumberConvertorSupport.isConvertible(NumberConvertorSupport.java:127)\n    at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "libraries-1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — code example",
+      "description": "The code example omits the outer RuntimeException and the SingleValidationTester call stack lines present in the source. The source shows the full trace starting with `java.lang.RuntimeException: unexpected exception occurred. target entity=[...] property=[failedCount]` and the `SingleValidationTester.invokeValidation` / `SingleValidationTester.testSingleValidation` frames. Only the `Caused by: IllegalArgumentException` portion is included in the knowledge file.",
+      "source_evidence": "java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]\n    at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)\n    at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "libraries-1",
+  "title": "数値型項目の場合の桁数精査の方法を教えて下さい",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "数値型項目の桁数精査方法",
+      "hints": [
+        "@Digits",
+        "@Length",
+        "NumberConvertorSupport",
+        "ValidationManager",
+        "SingleValidationTester",
+        "IllegalArgumentException",
+        "数値型バリデーション",
+        "桁数精査",
+        "整数部桁数",
+        "小数部桁数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "数値型項目の桁数精査は `@Length` アノテーションではなく **`@Digits` アノテーション**を使用する。`@Digits` は整数部桁数と小数部桁数それぞれの桁数精査が可能。\n\n> **重要**: 数値型項目に `@Digits` を付加しない場合、クラス単体テストで以下のエラーが発生する。\n\n```java\nCaused by: java.lang.IllegalArgumentException: Must specify @Digits annotation.property = failedCount\n    at nablarch.core.validation.convertor.NumberConvertorSupport.isConvertible(NumberConvertorSupport.java:127)\n    at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)\n```"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

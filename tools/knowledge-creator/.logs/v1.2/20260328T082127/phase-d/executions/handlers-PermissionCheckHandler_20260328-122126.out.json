@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-PermissionCheckHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Knowledge file labels the outbound/return processing section as '**[復路処理]**', but the source file reads '**[往路での処理]**'. The source label appears to be a typo (the RST anchor is `_outbound`), but the knowledge file silently corrects it to different text not present in the source.",
+      "source_evidence": "Source: `**[往路での処理]**` (with RST anchor `.. _outbound:`)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The type column for `permissionFactory` is listed as `PermissionFactory` in the knowledge file, but the source table has the typo `PermissionFactorry` (double 'r'). The knowledge file silently corrects this, introducing text not present verbatim in the source.",
+      "source_evidence": "Source table column: `PermissionFactorry`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "`FwHeaderReader` is referenced in the s1 section content (in the DataReadHandler row) but is absent from the s1 hints array.",
+      "source_evidence": "Source: `:doc:`../reader/FwHeaderReader`` appears in the DataReadHandler description within the 関連するハンドラ table"
+    }
+  ]
+}

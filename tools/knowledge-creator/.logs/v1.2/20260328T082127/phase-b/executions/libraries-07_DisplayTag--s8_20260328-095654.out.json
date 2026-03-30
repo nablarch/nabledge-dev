@@ -1,0 +1,67 @@
+{
+  "id": "libraries-07_DisplayTag--s8",
+  "title": "errorタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "errorタグ",
+      "hints": [
+        "n:error",
+        "name",
+        "errorCss",
+        "messageFormat",
+        "nablarch_error",
+        "エラーメッセージ表示",
+        "入力項目エラー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "errorタグのHTML出力",
+      "hints": [
+        "n:error",
+        "nablarch_error",
+        "divタグ",
+        "エラーメッセージ出力",
+        "バリデーション",
+        "validation-message-creation"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "エラーの原因となった入力項目のハイライト表示",
+      "hints": [
+        "nablarch_error",
+        "errorCss",
+        "nameAlias",
+        "CSSクラス",
+        "ハイライト表示",
+        "項目間バリデーション",
+        "addResultMessage"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "コード値の表示",
+      "hints": [
+        "WebView_CodeSelectTag",
+        "WebView_CodeRadiobuttonsTag",
+        "WebView_CodeCheckboxesTag",
+        "WebView_CodeCheckboxTag",
+        "WebView_CodeTag",
+        "コード値表示",
+        "コード管理",
+        "codeCheckbox",
+        "selectタグ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`n:error` タグの属性:\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | エラーメッセージを表示する入力項目のname属性 |\n| errorCss | | nablarch_error | エラーレベルのメッセージに使用するCSSクラス名 |\n| messageFormat | | div | メッセージ表示フォーマット（`div`（divタグ）または `span`（spanタグ）） |\n\nJSP使用例:\n```jsp\n<n:text name=\"systemAccount.loginId\" size=\"22\" maxlength=\"20\" />\n<n:error name=\"systemAccount.loginId\" />\n```",
+    "s2": "`n:error` タグのデフォルト出力はdivタグ。エラーがない項目は何も出力されない。\n\nHTML出力例:\n```html\n<input class=\"nablarch_error\" name=\"users.kanjiName\" value=\"\" type=\"text\">\n<div class=\"nablarch_error\">漢字氏名を入力してください。</div>\n```\n\n> **注意**: errorタグで表示するエラーメッセージは、通常 :ref:`バリデーションの機能<validation>` で自動設定される。バリデーション機能以外から任意のメッセージを表示する場合は :ref:`validation-message-creation` に記載した方法でエラーメッセージを作成すること。",
+    "s3": "エラーがあった入力項目のカスタムタグは、class属性にCSSクラス名（デフォルト: `nablarch_error`）を追記する。`errorCss`属性でクラス名を変更可能。\n\nCSS指定例（エラー項目の背景を黄色に）:\n```css\ninput.nablarch_error, select.nablarch_error { background-color: #FFFF00; }\n```\n\n## nameAlias属性の使用方法\n\n複数の入力項目が関連するエラー（例: 項目間バリデーション）で複数項目をハイライト表示するには、各入力項目の `nameAlias` 属性に共通のエイリアス名を指定する。エラーメッセージはそのエイリアス名のプロパティで登録する。\n\nJSP（nameAlias指定）:\n```jsp\n<n:text name=\"users.mobilePhoneNumberAreaCode\" nameAlias=\"users.mobilePhoneNumber\" size=\"5\" maxlength=\"3\" />\n<n:text name=\"users.mobilePhoneNumberCityCode\" nameAlias=\"users.mobilePhoneNumber\" size=\"6\" maxlength=\"4\" />\n<n:text name=\"users.mobilePhoneNumberSbscrCode\" nameAlias=\"users.mobilePhoneNumber\" size=\"6\" maxlength=\"4\" />\n```\n\nJava（エイリアス名でメッセージ登録）:\n```java\ncontext.addResultMessage(\"mobilePhoneNumber\", \"MSG00004\");\n```",
+    "s4": "コード管理機能から取得したコード値の選択項目・表示項目を出力するカスタムタグ。コード管理機能は :doc:`../../03_Common/02_CodeManager` を参照。\n\n| カスタムタグ | 出力するHTMLタグ |\n|---|---|\n| :ref:`WebView_CodeSelectTag` | selectタグ |\n| :ref:`WebView_CodeRadiobuttonsTag` | 複数のinputタグ（type=radio） |\n| :ref:`WebView_CodeCheckboxesTag` | 複数のinputタグ（type=checkbox） |\n| :ref:`WebView_CodeCheckboxTag` | 単一のinputタグ（type=checkbox） |\n| :ref:`WebView_CodeTag` | 指定されたフォーマットに対応するタグ |\n\n- `code`タグ以外は選択項目を出力。`code`タグは表示項目を出力（:ref:`WebView_WriteTag` と同様、一覧・参照画面でのコード値表示用途）。\n- `codeCheckbox`タグ: DB上でフラグ（1or0）で表されるデータ項目に対し、コード管理機能でチェック有無のラベルを管理したい場合に使用。単一のinputタグ（type=checkbox）を出力し、チェックなしに対応する値をリクエストパラメータに設定する（:ref:`WebView_SingleCheckBoxTag` と同様）。"
+  }
+}

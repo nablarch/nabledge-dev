@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s6 (property table, 型 column)",
+      "description": "The knowledge file adds a \"型\" (Type) column with values \"String\" for tableName, idColumnName, and valueColumnName properties. The source property table for CodePatternSchema does not specify Java types for these properties — only their descriptions (\"テーブル名\", \"コードIDカラムの名前\", \"コード値カラムの名前\"). \"String[]\" for patternColumnNames is justified (source says \"文字列を配列で設定する\"), but \"String\" for the single-value properties has no explicit basis in the source.",
+      "source_evidence": "tableName(必須) | テーブル名。 / idColumnName(必須) | コードIDカラムの名前。 / valueColumnName(必須) | コード値カラムの名前。 — no type specified in source"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s7 (property table, 型 column)",
+      "description": "The knowledge file adds \"String\" type to seven properties (tableName, idColumnName, valueColumnName, langColumnName, sortOrderColumnName, nameColumnName, shortNameColumnName) in the CodeNameSchema property table. The source table for these properties contains only descriptions with no explicit Java type declarations. \"String[]\" for optionNameColumnNames is justified (source says \"カラム名の文字列を配列で設定する\"), but \"String\" for the others has no explicit basis.",
+      "source_evidence": "tableName(必須) | テーブル名。 / langColumnName(必須) | 言語カラムの名前。 / sortOrderColumnName(必須) | ソート順カラムの名前。 — no type specified in source"
+    }
+  ]
+}

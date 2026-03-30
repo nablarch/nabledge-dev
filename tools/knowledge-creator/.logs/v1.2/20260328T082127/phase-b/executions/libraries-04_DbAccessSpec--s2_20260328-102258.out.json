@@ -1,0 +1,87 @@
+{
+  "id": "libraries-04_DbAccessSpec--s2",
+  "title": "データベース接続のプール機能について",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "注意点",
+      "hints": [
+        "データベース接続プール",
+        "プール機能の有効化",
+        "JNDI接続",
+        "DataSource接続",
+        "oracle.jdbc.pool.OracleDataSource",
+        "oracle.ucp.jdbc.PoolDataSourceImpl",
+        "SQLインジェクション対策",
+        "SQL外部化",
+        "prepareStatementBySqlId",
+        "AppDbConnection",
+        "DbConnectionContext",
+        "sql-gaibuka-label"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "実装済み機能",
+        "未実装機能",
+        "LOB",
+        "BYTE型",
+        "バイナリ型",
+        "プリフェッチ",
+        "バッチ更新",
+        "SQLStatement",
+        "setFetchSize",
+        "addBatch",
+        "LIKE検索エスケープ",
+        "トランザクションタイムアウト",
+        "共通項目自動設定",
+        "PL/SQL",
+        "パスワード暗号化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構造",
+      "hints": [
+        "全体構造",
+        "クラス図",
+        "DbAccess"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "クラス図",
+      "hints": [
+        "クラス図",
+        "DbAccessSpec_AllClassDesign",
+        "全体構造図",
+        "アーキテクチャ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "各機能単位の構造",
+      "hints": [
+        "04_Connection",
+        "04_Statement",
+        "04_ObjectSave",
+        "04_TransactionTimeout",
+        "接続",
+        "ステートメント",
+        "オブジェクト保存",
+        "トランザクションタイムアウト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## データベース接続のプール機能について\n\n本機能はDB接続プール機能を提供しない。プール機能を使用する場合は以下の方法で有効化すること。\n\n**JNDI接続の場合**: WebアプリケーションサーバのDB接続プール機能を有効化する（設定方法はサーバのマニュアル参照）。\n\n**DataSource接続の場合**: プール機能を持つDataSource実装クラスを使用する。\n\n> **注意**: Oracleの場合、`oracle.jdbc.pool.OracleDataSource` や `oracle.ucp.jdbc.PoolDataSourceImpl` にプール用プロパティを設定することでプール機能を使用できる。DBベンダーによってはプール機能を持つDataSourceが提供されていない場合がある（各ベンダーのJDBCマニュアル参照）。\n\n## SQLインジェクション対策について\n\nSQL文を外部ファイルに記述することで、業務ロジックからSQL文を直接参照・文字連結することを完全に防止でき、SQLインジェクション対策として最も有効な手段となる。業務ロジックでSQL実行時に使用する値はSQL文ではなく、SQL文を一意に識別するIDを指定する。\n\n詳細は :ref:`sql-gaibuka-label` を参照。\n\n**安全な実装例（SQL外部化）**:\n```java\nprivate final String sqlResource = this.getClass().getName() + \"#\";\n\npublic List getUserName(String userId) {\n    // SQL文ではなくSQLを識別するIDを指定。SQL文の直接編集（文字連結）ができないためSQLインジェクション対策になる\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatementBySqlId(sqlResource + \"SQL_ID\");\n    // 以下省略\n}\n```\n\n> **警告**: 入力値をSQL文に文字列連結する実装はSQLインジェクションの脆弱性があるため行うべきでない。\n```java\npublic List getUserName(String userId) {\n    // 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。\n    String sql =\n         \"SELECT \"\n           + \"USER_NAME\"\n       + \"FROM \"\n           + \"USER_MTR \"\n       + \"WHERE \"\n           + \"ID = \" + userId;\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatement(sql);\n    // 以下省略\n}\n```",
+    "s2": "## 実装済み\n\n- データベースへの接続\n- SQL文の実行\n- SQL文の実行ログの出力\n- 各種リソース（Connection、Statement、ResultSet）の解放\n- バイナリ（LOBやBYTE型）型の検索・更新\n- プリフェッチ（`SQLStatement#setFetchSize`）\n- バッチ更新（`SQLStatement#addBatch`）\n- 重複エラー等のアプリケーションハンドリング\n- 共通項目（最終更新者、最終更新日時など）の値の自動設定\n- 条件が可変の場合のSQL文生成（IN句の項目数可変含む）\n- LIKE検索時のエスケープ処理\n- SQL文の外部ファイル定義・Javaコードとの分離\n- データベースアクセス時のトランザクションタイムアウトチェック\n\n## 未実装\n\n- PL/SQLの実行\n- 1トランザクション内でのSQL文の実行回数チェック\n- テーブル更新順序チェック\n- テーブル更新順序違反時の振る舞い指定（警告または例外）\n- SQL文の実行ログを指定機能（リクエストID）のみ出力\n- データベース接続パスワードの暗号化管理",
+    "s3": "なし",
+    "s4": "![本機能の全体構造クラス図](assets/libraries-04_DbAccessSpec--s2/DbAccessSpec_AllClassDesign.jpg)",
+    "s5": "- 04/04_Connection\n- 04/04_Statement\n- 04/04_ObjectSave\n- 04/04_TransactionTimeout"
+  }
+}

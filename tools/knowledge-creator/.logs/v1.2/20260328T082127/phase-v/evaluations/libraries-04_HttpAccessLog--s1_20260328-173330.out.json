@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is a minor omission of the qualifier \"コンテンツパスに\" in the servlet:// forwarding note. The core behavioral warning is fully preserved: when servlet:// is used in forwarding, the access log records 200 even if the target servlet returns a non-200 code. The missing qualifier does not prevent an agent from understanding or correctly conveying this behavior. Furthermore, \"コンテンツパス\" is already listed as a log output item in the table directly above this note, providing sufficient contextual grounding for a reader to infer that servlet:// is a content path value.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — ステータスコード(内部) note (servlet:// forwarding behavior)",
+      "impact": "low",
+      "justification": "The omitted phrase 'コンテンツパスに' is a contextual qualifier specifying that servlet:// appears as a content path value. The knowledge file still conveys the essential behavioral warning: forwarding with servlet:// causes the access log to record 200 regardless of the actual servlet response code. An agent relying solely on this file would still give correct guidance about this edge case. The 'コンテンツパス' item is listed in the output-items table immediately above, so the relationship between servlet:// and content paths is inferrable. Impact is low rather than none only because the qualifier adds precision that could matter in rare debugging scenarios. Phase E did not resolve this because the output in the Phase E log is byte-for-byte identical to Phase D — the fix agent either evaluated the finding as below its fix threshold or failed silently to apply the edit."
+    }
+  ]
+}

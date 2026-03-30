@@ -1,0 +1,398 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/04_validation.rst`
+- Format: `rst`
+
+```
+バリデーションの実装
+-----------------------------------
+各プロパティに対するバリデーションを行う場合、下記の実装が必要となる。
+
+* setterにアノテーションを付与する。
+* バリデーションメソッドを実装する。
+
+
+アノテーションの付与
+~~~~~~~~~~~~~~~~~~~~~~
+
+W11AC02Formの確認用パスワードのsetterに対してアノテーションを付与する場合の実装例を以下に示す。
+
+.. code-block:: java
+
+  /**
+   * 確認用パスワードを設定する。
+   *
+   * @param confirmPassword 設定する確認用パスワード
+   */
+  @PropertyName("パスワード")                                  // 【説明】プロパティ名称の指定(エラー発生時に表示される項目名に使われる)
+  @Required                                                    // 【説明】必須入力チェック
+  @SystemChar(charsetDef="asciiCharset")                       // 【説明】ASCII文字のみからなる文字列であるかをチェック
+  @Length(max = 20)                                            // 【説明】文字列長チェック(最大20文字)
+  public void setConfirmPassword(String confirmPassword) {
+      this.confirmPassword = confirmPassword;
+  }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+アプリケーションフレームワークが提供しているバリデータについては、 `基本バリデータ・コンバータ <../../../fw/reference/core_library/validation_basic_validators.html>`_ および `拡張バリデータ <../../../fw/reference/core_library/validation_advanced_validators.html>`_ を参照。
+
+.. note::
+
+    Integer、Long、BigDecimal といった数値型のプロパティには、@Digits アノテーションを設定する。
+
+    Webアプリケーションでは、システム外部からの入力は基本的に文字列のみからなるため、数値型のプロパティに値を設定するためにはデータ型を変換する必要がある。
+    数値型のプロパティに @Digits アノテーションを設定することで、数値精査とデータ型の変換が実行される。
+
+    数値型のプロパティに対するバリデーションの設定例(SystemAccountEntity)を以下に示す。
+
+    .. code-block:: java
+
+      /**
+       * 認証失敗回数を設定する。
+       *
+       * @param failedCount 設定する認証失敗回数。
+       */
+      @PropertyName("認証失敗回数")
+      @Required
+      @Digits(integer = 1, fraction = 0)  // 【説明】数値フォーマット指定を表す。integerには整数部桁数、fractionには小数部桁数を設定する。
+      @NumberRange(min = 0, max = 9)      // 【説明】数値範囲チェック。桁数以外に最大値や最小値を指定したい場合に使用する。
+      public void setFailedCount(Integer failedCount) {
+          this.failedCount = failedCount;
+      }
+
+    (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _validation_specifyProperty:
+
+バリデーションメソッドの実装
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Formにバリデーションメソッドを追加し、``@ValidateFor`` アノテーションを付与する。このアノテーションの値はバリデーションを実施する際に使用する(\ :ref:`04_action`\ 参照)。
+
+処理に応じて精査対象のプロパティを切り替えたい場合は、処理ごとにバリデーションメソッドを用意すること。\
+例えばパスワードは、登録時は自動で値を設定するため精査は不要だが、パスワード更新機能では画面から入力するため精査が必要なので、
+登録処理用のバリデーションメソッドと、更新処理用のバリデーションメソッドを実装する必要がある。\
+詳細は  :ref:`multiple_validation_method` を参照すること。
+
+具体的な実装としては、バリデーション対象としたいプロパティ名の配列、もしくは、バリデーション対象\ **外**\ としたいプロパティ名の配列を用意し、
+追加したバリデーションメソッド内でValidationUtilクラスのメソッドを呼び出す。
+
+どちらの場合にどのメソッドを呼び出すかは以下のとおり。
+
+============================================================ ==============================
+用意する配列                                                 呼び出すメソッド
+============================================================ ==============================
+バリデーション対象としたいプロパティ名の配列を用意した場合   ValidationUtil#validate
+バリデーション対象外としたいプロパティ名の配列を用意した場合 ValidationUtil#validateWithout
+============================================================ ==============================
+
+呼び出し後、ValidationContext#isValidメソッド(エラーなしの場合true)を使用してバリデーションの結果を確認し、エラー有無に応じた処理を行う。
+
+
+バリデーション対象としたいプロパティ名の配列を用意した場合の例(UgroupSystemAccountEntity)を以下に示す。
+
+.. code-block:: java
+
+   // 【説明】バリデーション対象としたいプロパティの配列
+   /** ユーザ登録時にバリデーションを行うプロパティ。 */
+   private static final String[] REGISTER_USER_VALIDATE_PROPS = new String[]{
+       "ugroupId"};
+
+  /**
+   * ユーザ登録時に実施するバリデーション。
+   *
+   * @param context バリデーションの実行に必要なコンテキスト
+   */
+  @ValidateFor("registerUser")
+  public static void validateForRegisterUser(
+          ValidationContext<UgroupSystemAccountEntity> context) {
+      // ugroupIdのみバリデーションを実行
+      ValidationUtil.validate(context, REGISTER_USER_VALIDATE_PROPS);  /* 【説明】
+                                                                           バリデーション対象としたいプロパティ
+                                                                           名の配列を用意したので、
+                                                                           ValidationUtil#validateを呼び出し */
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+バリデーション対象外としたいプロパティ名の配列を用意した場合の例(UsersEntity)を以下に示す。
+
+.. code-block:: java
+
+  /**
+   * ユーザ登録時にバリデーションを省略するプロパティ。
+   */
+  private static final String[] REGISTER_USER_SKIP_PROPS = new String[]{"userId", "insertUserId",
+          "insertDate", "updatedUserId", "updatedDate"}; // 【説明】バリデーション対象外としたいプロパティの配列
+
+  /**
+   * ユーザ登録時に実施するバリデーション。
+   *
+   * @param context バリデーションの実行に必要なコンテキスト
+   */
+  @ValidateFor("registerUser")
+  public static void validateForRegisterUser(ValidationContext<UsersEntity> context) {
+
+      // userIdを無視してバリデーションを実行
+      ValidationUtil.validateWithout(context, REGISTER_USER_SKIP_PROPS);  /* 【説明】
+                                                                              バリデーション対象外としたい
+                                                                              プロパティ名の配列を用意したので、
+                                                                              ValidationUtil#validateWithoutを
+                                                                              呼び出し */
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+上で示した例は、両方ともクラス内に直接プロパティを保持しているFormの例である。\
+Entityクラスをプロパティとして持つ場合のFormも同様にして精査対象を指定できる。\
+この場合、Formクラスの精査メソッドに@ValidateForで指定した名称と同じ名称の精査メソッドが呼び出される。
+
+この場合の例(W11AC02Form)を以下に示す。
+
+.. code-block:: java
+
+  /**
+   * ユーザ登録時に実施するバリデーション
+   *
+   * @param context バリデーションの実行に必要なコンテキスト
+   */
+  @ValidateFor("registerUser")
+  public static void validateForRegister(ValidationContext<W11AC02Form> context) {
+
+      /* 【説明】
+          Form内のプロパティは全て精査対象
+          "newPassword"、"confirmPassword"はsetterに直接設定したバリデーションを行う。
+          それ以外の項目は、各Entityクラスの精査メソッドが呼び出される。
+          呼び出される精査メソッドは、各Entity内で@ValidateFor("registerUser")が指定されている精査メソッドである。
+          例えばUsersEntityの場合、validateForRegisterUserが呼び出される。 */
+      ValidationUtil.validateWithout(context, new String[0]);
+
+      if (!context.isValid()) {
+          return;
+      }
+
+      // 後略
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _validation_relational_validation:
+
+
+独自の精査処理(項目間精査)を行いたい場合
+----------------------------------------
+
+独自の精査処理(項目間精査)を行いたい場合も、バリデーションメソッド内で実装を行う。
+
+精査エラーの場合、ValidationContextにエラーメッセージを格納し処理を終了する。使用するメソッドは下表を参照。エラーがなかった場合は特に何もしない。
+
++--------------------------------------------------------------------------+-------------------+--------------------------------+
+|メソッド                                                                  |用途               |例                              |
++==========================================================================+===================+================================+
+|addResultMessage(String propertyName, String messageId, Object... params) |特定の項目に対する |新パスワードと確認用パスワードが|
+|                                                                          |精査エラー         |異なる場合                      |
++--------------------------------------------------------------------------+-------------------+--------------------------------+
+|addMessage(String messageId, Object... params) [#]_                       |全体に跨るエラー   |検索条件が１つ以上必要な場合に、|
+|                                                                          |                   |１つも条件指定がされなかった場合|
+|                                                                          |                   |                                |
++--------------------------------------------------------------------------+-------------------+--------------------------------+
+
+  .. rubric:: 脚注
+
+  .. [#] 具体的な使用例については、\ :ref:`入力内容を保持するBean(検索条件など)<validation_searchCondition>`\ を参照
+
+
+W11AC02Formの例を以下に示す(後半部分が項目間精査処理)。ここでは、入力した新パスワードと、確認のために入力した確認用パスワードが一致するかどうか(一致しなければ\
+エラー)を精査している。
+
+.. code-block:: java
+
+  /**
+   * ユーザ登録時に実施するバリデーション
+   *
+   * @param context バリデーションの実行に必要なコンテキスト
+   */
+  @ValidateFor("registerUser")
+  public static void validateForRegister(ValidationContext<W11AC02Form> context) {
+      ValidationUtil.validateWithout(context, new String[0]);
+
+      // 単項目精査でエラーの場合はここで戻る
+      if (!context.isValid()) {
+          return;
+      }
+
+      W11AC02Form form = context.createObject();
+      // 新パスワードと確認用パスワードのチェック
+      if (!form.newPassword.equals(form.confirmPassword)) {
+          // 【説明】精査エラーが発生した場合は、エラーメッセージを設定して処理を終わる
+          context.addResultMessage("newPassword", "MSG00003");
+      }
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. warning::
+  独自の精査処理を実装し使用する場合、その処理内でValidationUtil#validateやValidationUtil#validateWithoutを呼び出さないと、アプリケーションフレームワークが提供するバリデータによる\
+  精査は行われないので、注意すること。
+
+
+
+.. _multiple_validation_method:
+
+```
+
+## Knowledge File
+
+- ID: `web-application-04_validation--s6`
+
+```json
+{
+  "id": "web-application-04_validation--s6",
+  "title": "バリデーションの実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーションの実装",
+      "hints": [
+        "@PropertyName",
+        "@Required",
+        "@SystemChar",
+        "@Length",
+        "@Digits",
+        "@NumberRange",
+        "@ValidateFor",
+        "ValidationUtil",
+        "ValidationContext",
+        "バリデーション実装",
+        "アノテーション付与",
+        "数値型バリデーション",
+        "バリデーションメソッド",
+        "UgroupSystemAccountEntity",
+        "UsersEntity",
+        "W11AC02Form"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "独自の精査処理(項目間精査)を行いたい場合",
+      "hints": [
+        "ValidationContext",
+        "addResultMessage",
+        "addMessage",
+        "項目間精査",
+        "カスタムバリデーション",
+        "精査エラー設定",
+        "@ValidateFor",
+        "ValidationUtil",
+        "W11AC02Form"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "バリデーション実装には以下の2つが必要:\n1. setterにアノテーションを付与する\n2. バリデーションメソッドを実装する\n\n## アノテーションの付与\n\nsetterへのアノテーション付与例:\n\n```java\n@PropertyName(\"パスワード\")                    // エラー発生時に表示される項目名\n@Required                                      // 必須入力チェック\n@SystemChar(charsetDef=\"asciiCharset\")         // ASCII文字チェック\n@Length(max = 20)                              // 最大20文字チェック\npublic void setConfirmPassword(String confirmPassword) {\n    this.confirmPassword = confirmPassword;\n}\n```\n\nバリデータの詳細は[基本バリデータ・コンバータ](../../../fw/reference/core_library/validation_basic_validators.html)および[拡張バリデータ](../../../fw/reference/core_library/validation_advanced_validators.html)を参照。\n\n> **注意**: Integer、Long、BigDecimalといった数値型プロパティには`@Digits`アノテーションを設定する。Webアプリケーションでは外部入力は文字列のみのため、数値型プロパティへの値設定にはデータ型変換が必要。`@Digits`を設定することで数値精査とデータ型変換が実行される。\n\n数値型プロパティのバリデーション例:\n\n```java\n@PropertyName(\"認証失敗回数\")\n@Required\n@Digits(integer = 1, fraction = 0)  // 整数部桁数・小数部桁数を指定\n@NumberRange(min = 0, max = 9)      // 桁数以外に最大値・最小値を指定\npublic void setFailedCount(Integer failedCount) {\n    this.failedCount = failedCount;\n}\n```\n\n## バリデーションメソッドの実装\n\n`@ValidateFor`アノテーションを付与したバリデーションメソッドをFormに追加する。このアノテーションの値はバリデーション実施時に使用する（:ref:`04_action` 参照）。\n\n処理に応じて精査対象プロパティを切り替えたい場合は、処理ごとにバリデーションメソッドを用意すること（詳細は :ref:`multiple_validation_method` 参照）。\n\n| 用意する配列 | 呼び出すメソッド |\n|---|---|\n| バリデーション対象プロパティ名の配列 | `ValidationUtil#validate` |\n| バリデーション対象外プロパティ名の配列 | `ValidationUtil#validateWithout` |\n\n呼び出し後、`ValidationContext#isValid`（エラーなしの場合true）でバリデーション結果を確認する。\n\nバリデーション対象プロパティ配列を使用した例:\n\n```java\nprivate static final String[] REGISTER_USER_VALIDATE_PROPS = new String[]{\"ugroupId\"};\n\n@ValidateFor(\"registerUser\")\npublic static void validateForRegisterUser(\n        ValidationContext<UgroupSystemAccountEntity> context) {\n    ValidationUtil.validate(context, REGISTER_USER_VALIDATE_PROPS);\n}\n```\n\nバリデーション対象外プロパティ配列を使用した例:\n\n```java\nprivate static final String[] REGISTER_USER_SKIP_PROPS = new String[]{\"userId\", \"insertUserId\",\n        \"insertDate\", \"updatedUserId\", \"updatedDate\"};\n\n@ValidateFor(\"registerUser\")\npublic static void validateForRegisterUser(ValidationContext<UsersEntity> context) {\n    ValidationUtil.validateWithout(context, REGISTER_USER_SKIP_PROPS);\n}\n```\n\nEntityクラスをプロパティとしてもつFormも同様に精査対象を指定できる。FormクラスのバリデーションメソッドからEntityクラスの`@ValidateFor`に一致する精査メソッドが呼び出される。\n\nEntityクラスをプロパティとしてもつFormの例（W11AC02Form）:\n\n```java\n@ValidateFor(\"registerUser\")\npublic static void validateForRegister(ValidationContext<W11AC02Form> context) {\n    // Form内の全プロパティを精査対象とする\n    // 各EntityクラスのvalidateForRegisterUserが呼び出される\n    ValidationUtil.validateWithout(context, new String[0]);\n\n    if (!context.isValid()) {\n        return;\n    }\n    // 後略\n}\n```",
+    "s2": "独自精査（項目間精査）もバリデーションメソッド内で実装する。精査エラーの場合はValidationContextにエラーメッセージを格納し処理を終了する。エラーがない場合は特に何もしない。\n\n| メソッド | 用途 |\n|---|---|\n| `addResultMessage(String propertyName, String messageId, Object... params)` | 特定項目に対する精査エラー（例: 新パスワードと確認用パスワードが異なる場合） |\n| `addMessage(String messageId, Object... params)` | 全体に跨るエラー（例: 検索条件が1つも指定されなかった場合。詳細は :ref:`入力内容を保持するBean(検索条件など)<validation_searchCondition>` 参照） |\n\n項目間精査の実装例（新パスワードと確認用パスワードの一致チェック）:\n\n```java\n@ValidateFor(\"registerUser\")\npublic static void validateForRegister(ValidationContext<W11AC02Form> context) {\n    ValidationUtil.validateWithout(context, new String[0]);\n\n    // 単項目精査でエラーの場合はここで戻る\n    if (!context.isValid()) {\n        return;\n    }\n\n    W11AC02Form form = context.createObject();\n    // 新パスワードと確認用パスワードのチェック\n    if (!form.newPassword.equals(form.confirmPassword)) {\n        context.addResultMessage(\"newPassword\", \"MSG00003\");\n    }\n}\n```\n\n> **警告**: 独自精査処理内で`ValidationUtil#validate`または`ValidationUtil#validateWithout`を呼び出さないと、フレームワークが提供するバリデータによる精査は行われない。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-06_initial_view",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 2)-1 Componentクラスの実装 / a) リクエスト単体テストコード修正",
+      "description": "The modified `testRW11ACXX01` method in step 2)-1a is shown only as bare assertion lines, omitting the complete `execute()` call with the `BasicAdvice` anonymous class wrapper. The knowledge file shows:\n```java\nW11ACXXForm actual = context.getRequestScopedVar(\"W11ACXX\");\nassertObjectPropertyEquals(message, sheetName, \"expectedUsers\", actual.getUsers());\n```\nbut the source provides the full structure:\n```java\nexecute(\"testRW11ACXX01\", new BasicAdvice() {\n    @Override\n    public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        String message = testCaseInfo.getTestCaseName();\n        String sheetName = testCaseInfo.getSheetName();\n        W11ACXXForm actual = context.getRequestScopedVar(\"W11ACXX\");\n        assertObjectPropertyEquals(message, sheetName, \"expectedUsers\", actual.getUsers());\n    }\n});\n```\nThe `BasicAdvice`, `TestCaseInfo`, `afterExecute`, `getTestCaseName()`, and `getSheetName()` are entirely absent. An AI providing implementation guidance from this knowledge file would generate incomplete/incorrect code.",
+      "source_evidence": "Source step 2)-1 a) ＜修正後＞ shows the full `execute(\"testRW11ACXX01\", new BasicAdvice() { ... })` structure including the note: 「上記ソースコードでは、BasicAdviceクラスを用いてリクエスト単体テストに固有の処理を追加している」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "PascalCase class names `BasicAdvice` and `TestCaseInfo` appear in the source code and are referenced in the implementation notes, but are absent from the hints array.",
+      "source_evidence": "Source step 2)-1 a): `new BasicAdvice() { @Override public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {...} }` and the note explicitly calls out `BasicAdviceクラス`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 1)-1 Actionクラスの実装 steps c) and e)",
+      "description": "The two intermediate test execution verification steps are omitted: (c) confirms a 404 status code when the Action class does not yet exist, and (e) confirms the Action class is reached via the specific log patterns `@@@@ DISPATCHING CLASS @@@@` followed by `**** BEFORE ACTION ****`, and the JSP NOT FOUND error. These log patterns are useful for an AI assisting with TDD-based implementation verification of an update screen.",
+      "source_evidence": "Source step 1)-1 c): console output showing `status_code = [404]`; step 1)-1 e): console outputs showing `@@@@ DISPATCHING CLASS @@@@` and `**** BEFORE ACTION ****`, and `ERROR: PWC6117: File ... not found`."
+    }
+  ]
+}

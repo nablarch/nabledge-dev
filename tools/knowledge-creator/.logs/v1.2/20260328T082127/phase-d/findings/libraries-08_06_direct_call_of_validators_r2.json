@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-08_06_direct_call_of_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — first code example",
+      "description": "The code example omits the `if (contactInfoUpdated)` conditional wrapper and its explanatory comment. The source demonstrates ValidationUtil.validate() being called inside a conditional block, which is the primary motivation for this feature. The knowledge file strips out the if-statement and shows only the inner calls, losing the concrete pattern of flag-based conditional invocation.",
+      "source_evidence": "if (contactInfoUpdated) {\n    ValidationUtil.validate(context, \"daytimePhoneNumber\", Required.class);\n    ValidationUtil.validate(context, \"daytimePhoneNumber\", JapaneseTelNumber.class);\n}"
+    }
+  ]
+}

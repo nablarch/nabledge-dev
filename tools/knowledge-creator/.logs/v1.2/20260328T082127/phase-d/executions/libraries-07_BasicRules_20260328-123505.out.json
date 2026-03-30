@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_BasicRules",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — HTMLエスケープ section, first sentence",
+      "description": "The qualifier '原則として' (as a rule / in principle) was dropped from the HTML escape statement. The source says '原則として出力する際に全てのHTMLの属性についてHTMLエスケープを行う', which implies exceptions may exist. The knowledge file states '出力時にすべてのHTML属性についてHTMLエスケープを行う' as an absolute rule, which misrepresents the source.",
+      "source_evidence": "本フレームワークが提供する全てのカスタムタグでは、原則として出力する際に全てのHTMLの属性についてHTMLエスケープを行う。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — HTMLエスケープせずに値を出力する方法 subsection",
+      "description": "The context sentence establishing Webview_WriteTag as the primary recommended tag for outputting values on pages was omitted. The source explicitly states 'use :ref:`Webview_WriteTag`' for normal value output, then introduces escape-free tags as the exception. Without this, an AI lacks the decision context that escape-free tags are exceptions to the Webview_WriteTag default.",
+      "source_evidence": "業務アクションなどで設定された値をページ上に出力する場合は、:ref:`Webview_WriteTag` を使用するが、HTMLエスケープを行わず、変数内のHTMLタグを直接出力したい場合は、以下のタグを使用する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints array",
+      "description": "Webview_WriteTag (PascalCase class name) is referenced in the source as the primary recommended output tag for this section, but is absent from s4 hints.",
+      "source_evidence": ":ref:`Webview_WriteTag` referenced in the output_without_html_escape subsection as the standard tag to use for outputting values."
+    }
+  ]
+}

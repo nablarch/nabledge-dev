@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-inputAndOutput--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole finding is a minor fabrication in hints only. The terms \"XSS\" and \"セキュリティ\" are not in the source text, but they are semantically correct inferences: bypassing HTML escaping is the direct mechanism by which XSS vulnerabilities arise. An agent matching on these hints would be directed to s6, where the content and warning are accurate. There is no risk of misleading users about how to implement anything; the worst outcome is slightly over-broad discoverability. The section body itself (s6) is correct and unaffected. The fix was attempted in Phase E but the agent retained the terms, likely judging them as valid semantic expansions—a defensible call given the low fabrication risk.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s6 hints",
+      "impact": "low",
+      "justification": "XSS and セキュリティ are absent from the source but are accurate conceptual labels for the risk that HTML-escape bypass introduces. Agents matching on these hints reach s6, whose content and warning are correct. No incorrect implementation guidance is produced. The fabrication affects hint discoverability only, not knowledge correctness, and the semantic inference is sound. Phase E retained the terms because they improve retrieval without introducing inaccuracy—a defensible trade-off."
+    }
+  ]
+}

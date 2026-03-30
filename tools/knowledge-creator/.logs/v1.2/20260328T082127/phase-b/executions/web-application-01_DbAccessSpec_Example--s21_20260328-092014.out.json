@@ -1,0 +1,69 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s21",
+  "title": "IN句の条件が動的に変わる場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "IN句の条件が動的に変わる場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "IN句 動的生成",
+        "java.util.Collection",
+        "SqlResultSet",
+        "kengenKbn",
+        "可変条件との組み合わせ",
+        "IN句上限値",
+        "Webアプリケーション限定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ORDER BY句を動的に変更する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "ORDER BY句 動的変更",
+        "sortId",
+        "$sort",
+        "SqlResultSet",
+        "Webアプリケーション限定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "大量データを検索する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "executeQueryByObject",
+        "ResultSetIterator",
+        "SqlRow",
+        "大量データ検索"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "map-search-label"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "オブジェクトのフィールドの値の検索機能(Mapのサブクラス編)",
+      "hints": [
+        "Map",
+        "Mapサブクラス",
+        "データベース検索",
+        "オブジェクト検索"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "IN句の条件が動的に変わる場合は、`ParameterizedSqlPStatement` を使用する。\n\n**フィールドのデータ型制約**: IN句に対応するフィールドのデータ型は、配列または `java.util.Collection` とすること。\n\n```java\npublic class W11BB03SearchForm {\n    private String loginId;\n    private List kengenKbn; // 配列またはjava.util.Collection\n}\n\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST3\", user);\nSqlResultSet rs = select.retrieve(user);\n```\n\nkengenKbnが `[\"01\", \"02\"]` の場合のSQL（要素数2でIN句の項目数が2として構築）:\n\n```sql\nSELECT USER_MTR.LOGIN_ID, USER_MTR.USER_KANJI_NAME, USER_MTR.USER_KANA_NAME,\n       USER_MTR.GROUP_ID, USER_GROUP.GROUP_NAME\n  FROM USER_MTR, USER_GROUP\n WHERE (0 = 0 OR (USER_MTR.LOGIN_ID = ?))\n   AND (0 = 1 OR (USER_MTR.KENGEN_KBN IN (?, ?)))\n   AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\n ORDER BY LOGIN_ID\n```\n\n> **注意**: IN句の条件に設定できる値には上限がある。各アプリケーションでは上限値を超えないよう精査すること。上限値はDBベンダーによって異なる（例：Oracleは1000）。\n\n> **注意**: IN句の条件を :ref:`variable-condition-sql-label` と組み合わせることも可能。可変条件との組み合わせでは、配列(Collection)がnullまたはサイズ0の場合は条件から除外され、サイズが1以上の場合は条件に含まれる。\n\n可変条件との組み合わせ例:\n```java\n\"WHERE $if(kengenKbn) {KENGEN_KBN IN (:kengenKbn[])}\"\n```\n\n配列(Collection)の各要素を可変条件の組み立て条件には使用できない（`$if(kengenKbn[0])` のような定義は不可）。\n\n> **警告**: IN句を動的に生成する実装はWebアプリケーションでのみ使用すること。バッチ処理では固定条件のSQLを使用すること（動的IN句はSQL構築コストによる性能劣化の原因となる）。\n\n> **警告**: IN句を動的に生成する場合、条件オブジェクトにMapインタフェースの実装クラスは指定できない。Mapのvalue値は静的な型情報を持たないため、実行時に配列(Collection)であることが保証できず、予期せぬ不具合の原因となる可能性があるため機能制限している。",
+    "s2": "ORDER BY句を動的に変更する場合は、`ParameterizedSqlPStatement` を使用する。\n\nSQL文の `$sort(フィールド名)` で指定したフィールド名に合わせてプロパティを用意し、そのプロパティの値によりORDER BY句を動的に変更する。\n\n```java\npublic class W11BB03SearchForm {\n    private String userName;\n    private String sortId; // $sort(フィールド名)に対応するプロパティ。この値でORDER BY句を動的変更\n}\n\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST4\", user);\nSqlResultSet rs = select.retrieve(user);\n```\n\nsortIdが `\"3\"` の場合のSQL（sortIdの値に対応するケースでORDER BY句が構築）:\n\n```sql\nSELECT USER_ID, USER_NAME\n  FROM USER_MTR\n WHERE USER_NAME = ?\n ORDER BY USER_NAME\n```\n\n> **警告**: ORDER BY句を動的に変更する実装はWebアプリケーションでのみ使用すること。バッチ処理では固定のORDER BY句を使用すること（動的ORDER BY句はSQL構築コストによる性能劣化の原因となる）。",
+    "s3": "大量データ検索では `executeQueryByObject` を使用し、`ResultSetIterator` で結果を取得する。\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_ALL\");\n\n// executeQueryByObjectを呼び出すとResultSetIteratorが返却される\nResultSetIterator rs = statement.executeQueryByObject(user);\n\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```",
+    "s4": "なし",
+    "s5": "なし"
+  }
+}

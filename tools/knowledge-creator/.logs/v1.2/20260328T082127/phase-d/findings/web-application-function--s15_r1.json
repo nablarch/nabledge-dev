@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-function--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[1].title / sections.s2",
+      "description": "s2のtitleが空文字列になっている。ソースの対応する見出しは「複合キーを用いた排他制御の実装」であり、この値がtitleに設定されるべき。",
+      "source_evidence": "ソースのRSTセクション見出し: `複合キーを用いた排他制御の実装` (===== 下線付き)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1].hints (s2)",
+      "description": "s2のコード例に繰り返し登場するPascalCaseクラス名 `ExclusiveUserCondition` がhintsに含まれていない。確認画面・完了画面の両Actionコード例で使用されており、検索キーとして重要。",
+      "source_evidence": "ソースコード(確認画面Action): `new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3())` — 完了画面ActionおよびprepareVersions呼び出しでも同様に使用"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "s1のコード例に登場するPascalCaseクラス名 `UsersBulkDeleteForm` がhintsに含まれていない。FormクラスはUI実装の主体であり、この名称で検索されうる。",
+      "source_evidence": "ソースのForm実装例: `public class UsersBulkDeleteForm { private CompositeKey[] userCompositeKeys; }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "s1で明示的に説明されているJSP属性名 `keyNames` がhintsに含まれていない。ソースでは「keyNames属性には、n:listSearchResultの各行(row)のプロパティにあるキー属性をカンマ区切りで指定する」と説明されており、実装判断に必要な属性名。",
+      "source_evidence": "ソースJSPコード例のコメント: `keyNames 属性には、 n:listSearchResult の各行 (row) のプロパティにあるキー属性をカンマ区切りで指定する。`"
+    }
+  ]
+}

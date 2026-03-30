@@ -1,0 +1,448 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-03_Tips--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections (top-level)",
+      "description": "The source file contains 15 main sections as listed in its table of contents (from `how_to_get_data_from_excel` through `how_to_change_test_data_dir`). This knowledge file covers only 4 of them (s1–s4). The remaining 11 sections beginning with `how_to_numbering_sequence` are absent. The `--s1` file ID suffix suggests intentional splitting into multiple knowledge files, but the coverage scope should be verified to confirm a sibling `--s2` file (or more) covers sections 5–15.",
+      "source_evidence": "RST table of contents lists 15 entries: how_to_get_data_from_excel, how_to_run_the_same_test, tips_groupId, how_to_fix_date, how_to_numbering_sequence, using_ThreadContext, using_TestDataParser, using_junit_annotation, using_transactions, using_ohter_class, how_to_assert_property_from_excel, tips_test_data, how_to_express_empty_line, how_to_change_master_data, how_to_change_test_data_dir"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+===================
+ 目的別API使用方法
+===================
+
+目的別のAPIの使用方法について説明する。
+
+
+* :ref:`how_to_get_data_from_excel`
+* :ref:`how_to_run_the_same_test`
+* :ref:`tips_groupId`
+* :ref:`how_to_fix_date`
+* :ref:`how_to_numbering_sequence`
+* :ref:`using_ThreadContext`
+* :ref:`using_TestDataParser`
+* :ref:`using_junit_annotation`
+* :ref:`using_transactions`
+* :ref:`using_ohter_class`
+* :ref:`how_to_assert_property_from_excel`
+* :ref:`tips_test_data`
+* :ref:`how_to_express_empty_line`
+* :ref:`how_to_change_master_data`
+* :ref:`how_to_change_test_data_dir`
+
+.. _how_to_get_data_from_excel:
+
+-----------------------------------------------------------------------
+Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい
+-----------------------------------------------------------------------
+
+
+テスト対象クラスのメソッドを呼び出す際の引数や、メソッドの戻り値をExcelファイルに記載しておくことができる。
+記載したデータは、List-Map形式（List<Map<String, String>>の形式）で取得できる。
+
+この形式でデータを取得する場合は、データタイプLIST_MAPを使用する。
+ LIST_MAP=<シート内で一意になるID（任意の文字列）>
+
+データの2行目はMapのKeyと解釈される。
+データの3行目以降はMapのValueと解釈される。
+
+以下のメソッドにより、Map形式またはList-Map形式で、Excelファイルよりデータを取得できる。
+第1引数にはシート名、第2引数にはIDを指定する。
+
+ * ``TestSupport#getListMap(String sheetName, String id)``
+ * ``DbAccessTestSupport#getListMap(String sheetName, String id)``
+
+テストソースコード実装例
+========================
+
+ .. code-block:: java
+
+    public class EmployeeComponentTest extends DbAccessTestSupport {
+        
+        @Test
+        public void testGetName() {
+           // Excelファイルからデータ取得
+           List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
+           Map<String, String>> param = parameters.get(0);
+
+           // 引数および期待値を取得
+           String empNo = parameter.get("empNo");
+           String expected = parameter.get("expected");
+
+           // テスト対象メソッド起動
+           EmployeeComponent target = new EmployeeComponent();
+           String actual = target.getName(empNo);           
+           
+           // 結果確認          
+           assertEquals(expected, actual);
+
+           // ＜後略＞
+        }
+
+
+Excelファイル記述例
+===================
+
+LIST_MAP=parameters
+
+=========== ==============
+empNo        expected
+=========== ==============
+00001         山田太郎
+00002         鈴木一郎
+=========== ==============
+
+上記の表で取得可能なオブジェクトは、以下のコードで取得できるListと等価である。
+
+ .. code-block:: java
+
+  List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+  Map<String, String> first = new HashMap<String, String>();
+  first.put("empNo","00001");
+  first.put("expected", "山田太郎");
+  list.add(first);
+  Map<String, String> second = new HashMap<String, String>();
+  second.put("empNo","00002");
+  map.put("expected", "鈴木一郎");
+  list.add(second);
+
+
+
+.. _how_to_run_the_same_test:
+
+--------------------------------------------------
+同じテストメソッドをテストデータを変えて実行したい
+--------------------------------------------------
+
+同じテストメソッドをテストデータを変えて実行したい場合、前述のList-Map取得メソッドを使用して
+テストをループさせる。これにより、Excelデータを追加するだけで、データバリエーションを増やすことができる。
+
+以下の例では、前述のList-Map形式を使用して複数のテストを１つのメソッドで実行している。
+
+テストソースコード実装例
+============================
+
+ .. code-block:: java
+
+    public class EmployeeComponentTest extends DbAccessTestSupport {
+        
+        @Test
+        public void testSelectByPk() {
+           // 準備データ投入
+           setUpDb("testSelectByPk");
+
+           // Excelファイルからデータ取得
+           List<Map<String, String>> parameters = getListMap("testGetName", "parameters");
+
+           for (Map<String, String> param : parameters) {
+               // 引数および期待値を取得
+               String empNo = parameter.get("empNo");
+               String expectedDataId = parameter.get("expectedDataId");
+
+               // テスト対象メソッド起動
+               EmployeeComponent target = new EmployeeComponent();
+               SqlResultSet actual = target.selectByPk(empNo);           
+           
+               // 結果確認
+               assertSqlResultSetEquals("testSelectByPk", expectedDataId, actual);
+            }
+        }
+
+
+Excelファイル記述例
+===================
+
+
+// ループさせるデータ
+
+LIST_MAP=parameters
+
+=========== ================= 
+empNo         expectedDataId
+=========== =================
+00001         expected01
+00002         expected02
+=========== =================
+
+
+// データベースの準備データ
+
+SETUP_TABLE=EMPLOYEE
+
+=========== ==============
+NO            NAME
+=========== ==============
+00001         山田太郎
+00002         鈴木一郎
+=========== ==============
+
+
+// 期待するデータその１
+
+LIST_MAP=expected01
+
+=========== ==============
+NO            NAME
+=========== ==============
+00001         山田太郎
+=========== ==============
+
+
+// 期待するデータその２
+
+LIST_MAP=expected02
+
+=========== ==============
+NO            NAME
+=========== ==============
+00001         山田太郎
+=========== ==============
+
+
+
+.. warning::
+  更新系のテストを行う場合は、ループ内でsetUpDbメソッドの呼び出しを行うこと。
+  そうでないと、テストの成否がデータの順番に依存してしまうからである。
+
+.. _tips_groupId:
+
+--------------------------------------------------
+一つのシートに複数テストケースのデータを記載したい
+--------------------------------------------------
+
+一つのテスト対象メソッドに対して多くのテストケースが存在する場合、
+１シート１テストケースという書き方をすると、シート数が増加して保守容易性が落ちることが懸念される。
+
+テーブルデータをグルーピングするための情報（グループID）を付与することで、複数テストケースのデータをひとつのシートに混在させることができる。
+
+サポートされるデータタイプは以下の通り。
+
+* EXPECTED_TABLE
+* SETUP_TABLE
+
+
+書式は以下の通り。
+
+ データタイプ[グループID]=テーブル名
+
+
+例えば、2種類のテストケースのデータ(case_001,case_002)を混在させる場合は、以下のように記載する。
+
+テストクラス側では、前述のAPIと同名のオーバーロードメソッドに引数グループIDを渡す。
+これにより、指定したグループIDのデータのみを処理対象とすることができる。
+
+
+
+テストソースコード実装例
+============================
+
+ .. code-block:: java
+
+
+    // DBにデータ登録（グループIDが"case_001"のものだけ登録対象になる）
+    setUpDb("testUpdate", "case_001");
+
+
+    // 結果確認（グループIDが"case_001"のものだけassert対象になる）
+    assertTableEquals("データベース更新結果確認", "testUpdate", "case_001");
+
+
+Excelファイル記述例
+============================
+
+// ケース001:従業員の所属を変更する。
+
+SETUP_TABLE[case_001]=EMPLOYEE_TABLE
+
+=========== ============ ===========
+ID          EMP_NAME     DEPT_CODE 
+=========== ============ ===========
+ // CHAR(5)  VARCHAR(64)   CHAR(4)  
+      00001  山田太郎          0001 
+      00002  田中一郎          0002 
+=========== ============ ===========
+                    
+                    
+EXPECTED_TABLE[case_001]=EMPLOYEE_TABLE
+
+=========== ============ =========== =======
+ID          EMP_NAME     DEPT_CODE 
+=========== ============ =========== =======
+ // CHAR(5)  VARCHAR(64)   CHAR(4)  
+      00001  山田太郎          0001 
+      00002  田中一郎          0010  //更新
+=========== ============ =========== =======
+
+
+// ケース002:従業員の氏名を変更する。
+                    
+SETUP_TABLE[case_002]=EMPLOYEE_TABLE
+
+=========== ============ ===========
+ID          EMP_NAME     DEPT_CODE 
+=========== ============ ===========
+ // CHAR(5)  VARCHAR(64)   CHAR(4)  
+      00001  山田太郎          0001 
+      00002  田中一郎          0002 
+=========== ============ ===========
+
+                    
+EXPECTED_TABLE[case_002]=EMPLOYEE_TABLE 
+
+=========== ============ =========== =======
+ID          EMP_NAME     DEPT_CODE          
+=========== ============ =========== =======
+ // CHAR(5)  VARCHAR(64)   CHAR(4)          
+      00001  佐藤太郎          0001  //更新        
+      00002  田中一郎          0002  
+=========== ============ =========== =======
+
+
+.. _how_to_fix_date:
+
+----------------------------------
+システム日時を任意の値に固定したい
+----------------------------------
+登録日時や更新日時などのシステム日付を設定する項目の場合、普通にテストを実行すると日によって想定結果が変わるため、自動テストで設定値が正しいことを確認できない。
+そこで、本フレームワークではシステム日付に固定値を設定する機能を提供する。この機能を使用することにより、システム日付を設定する項目も自動テストで設定値が正しいことを確認することができる。
+
+Nablarch Application Frameworkでは、SystemTimeProviderインタフェースの実装クラスがシステム日時を提供する。この実装クラスを、固定値を返却するテスト用クラスに差し替えることにより、任意のシステム日時を返却させることができる。
+
+
+設定ファイル例
+==================
+
+コンポーネント定義ファイルにて、SystemTimeProviderインタフェースの実装クラスを指定する箇所に
+FixedSystemTimeProviderを指定し、そのプロパティに任意の日時を設定する。
+例えば、システム日時を2010年9月14日12時34分56秒とする場合は以下のように設定する。
+
+.. code-block:: xml
+
+  <component name="systemTimeProvider"
+      class="nablarch.test.FixedSystemTimeProvider">
+    <property name="fixedDate" value="20100913123456" />
+  </component>
+
+    
+
++-----------------------+------------------------------------------------------------------------+
+|property名             |設定内容                                                                |
++=======================+========================================================================+
+|fixedDate              |指定したい日時を以下のフォーマットいずれかに合致する文字列で指定する。  |
+|                       | * yyyyMMddHHmmss (12桁)                                                |
+|                       | * yyyyMMddHHmmssSSS (15桁)                                             |
++-----------------------+------------------------------------------------------------------------+
+  
+.. code-block:: java 
+     
+     // システム日時を取得
+     SystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject("systemTimeProvider");      
+     Date now = provider.getDate();
+
+
+.. _how_to_numbering_sequence:
+
+--------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-03_Tips--s1",
+  "title": "目的別API使用方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Excelファイルから、入力パラメータや戻り値に対する期待値などを取得したい",
+      "hints": [
+        "TestSupport",
+        "DbAccessTestSupport",
+        "getListMap",
+        "LIST_MAP",
+        "List<Map<String, String>>",
+        "ExcelデータをList-Map形式で取得",
+        "テストデータ取得"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "同じテストメソッドをテストデータを変えて実行したい",
+      "hints": [
+        "getListMap",
+        "setUpDb",
+        "assertSqlResultSetEquals",
+        "ループテスト",
+        "同一テストメソッドの複数データ実行",
+        "データバリエーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "一つのシートに複数テストケースのデータを記載したい",
+      "hints": [
+        "グループID",
+        "SETUP_TABLE",
+        "EXPECTED_TABLE",
+        "setUpDb",
+        "assertTableEquals",
+        "複数テストケース1シート管理",
+        "テーブルデータグルーピング"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "システム日時を任意の値に固定したい",
+      "hints": [
+        "FixedSystemTimeProvider",
+        "SystemTimeProvider",
+        "fixedDate",
+        "システム日時固定",
+        "テスト用日時設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`LIST_MAP=<ID>` データタイプを使用して、ExcelファイルのデータをList-Map形式（`List<Map<String, String>>`）で取得できる。データの2行目はMapのKey、3行目以降はMapのValueと解釈される。第1引数にシート名、第2引数にIDを指定する。\n\n**クラス**: `TestSupport`, `DbAccessTestSupport`\n\n**メソッド**:\n- `TestSupport#getListMap(String sheetName, String id)`\n- `DbAccessTestSupport#getListMap(String sheetName, String id)`\n\n```java\nList<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\nMap<String, String> param = parameters.get(0);\nString empNo = param.get(\"empNo\");\nString expected = param.get(\"expected\");\nEmployeeComponent target = new EmployeeComponent();\nString actual = target.getName(empNo);\nassertEquals(expected, actual);\n```\n\nExcelファイル記述形式:\n```\nLIST_MAP=parameters\n\n| empNo | expected |\n|-------|----------|\n| 00001 | 山田太郎 |\n| 00002 | 鈴木一郎 |\n```",
+    "s2": "List-Map取得メソッドでデータをループ処理することで、同一テストメソッドを複数データで実行できる。Excelデータを追加するだけでデータバリエーションを増やせる。\n\n```java\n@Test\npublic void testSelectByPk() {\n    setUpDb(\"testSelectByPk\");\n    List<Map<String, String>> parameters = getListMap(\"testGetName\", \"parameters\");\n    for (Map<String, String> param : parameters) {\n        String empNo = param.get(\"empNo\");\n        String expectedDataId = param.get(\"expectedDataId\");\n        EmployeeComponent target = new EmployeeComponent();\n        SqlResultSet actual = target.selectByPk(empNo);\n        assertSqlResultSetEquals(\"testSelectByPk\", expectedDataId, actual);\n    }\n}\n```\n\n> **警告**: 更新系のテストを行う場合は、ループ内で`setUpDb`メソッドを呼び出すこと。そうでないと、テストの成否がデータの順番に依存してしまう。",
+    "s3": "グループIDを付与することで、複数テストケースのデータを1シートに混在させることができる。\n\nサポートされるデータタイプ: `EXPECTED_TABLE`, `SETUP_TABLE`\n\n書式: `データタイプ[グループID]=テーブル名`\n\n例: `SETUP_TABLE[case_001]=EMPLOYEE_TABLE`, `EXPECTED_TABLE[case_001]=EMPLOYEE_TABLE`\n\nテストクラス側では、グループIDを引数に持つオーバーロードメソッドを使用することで、指定したグループIDのデータのみを処理対象とする。\n\n```java\n// DBにデータ登録（グループIDが\"case_001\"のものだけ登録対象になる）\nsetUpDb(\"testUpdate\", \"case_001\");\n\n// 結果確認（グループIDが\"case_001\"のものだけassert対象になる）\nassertTableEquals(\"データベース更新結果確認\", \"testUpdate\", \"case_001\");\n```",
+    "s4": "`FixedSystemTimeProvider` を使用してコンポーネント定義で `SystemTimeProvider` 実装を差し替えることで、システム日時を任意の固定値に設定できる。\n\n**クラス**: `nablarch.test.FixedSystemTimeProvider`\n\n```xml\n<component name=\"systemTimeProvider\"\n    class=\"nablarch.test.FixedSystemTimeProvider\">\n  <property name=\"fixedDate\" value=\"20100913123456\" />\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| fixedDate | 固定する日時。フォーマット: `yyyyMMddHHmmss`（12桁）または `yyyyMMddHHmmssSSS`（15桁） |\n\n```java\nSystemTimeProvider provider = (SystemTimeProvider) SystemRepository.getObject(\"systemTimeProvider\");\nDate now = provider.getDate();\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

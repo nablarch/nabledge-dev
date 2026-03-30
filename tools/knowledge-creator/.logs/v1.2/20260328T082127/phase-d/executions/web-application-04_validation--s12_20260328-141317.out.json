@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — code example",
+      "description": "The simplified code example omits the `checkLoginId(systemAccount.getLoginId())` call and the `existPermissionUnitId` check with its null guard (`systemAccount.getPermissionUnit() != null && !function.existPermissionUnitId(systemAccount)`). The source shows two distinct business validation patterns: one without a null guard (`existGroupId`) and one with a null guard before the check (`existPermissionUnitId`). The knowledge file only shows the `existGroupId` pattern, so the null-guarded validation pattern is not represented.",
+      "source_evidence": "// 認可単位IDのチェック\nif (systemAccount.getPermissionUnit() != null\n        && !function.existPermissionUnitId(systemAccount)) {\n    throw new ApplicationException(...);\n}\n// ログインIDのチェック\ncheckLoginId(systemAccount.getLoginId());"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names `SystemAccountEntity` and `CM311AC1Component` appear in the source code for s1 but are absent from the s1 hints array.",
+      "source_evidence": "SystemAccountEntity systemAccount = form.getSystemAccount();\nCM311AC1Component function = new CM311AC1Component();"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-02_flow`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "s2",
+    "description": "The knowledge file presents the six :ref: items as an explicitly numbered list (1–6), but the source file uses a plain unnumbered list. Adding explicit sequence numbers is not supported by the source.",
+    "source_evidence": "Source lists items as bare `:ref:` entries without any numbering markers."
+  }
+]
+```
+
+### Source (RST)
+
+```
+
+------------------
+開発フロー
+------------------
+
+本開発手順の開発フローを以下に示す。
+    
+テストケースから機能をボトムアップに作ることを想定している。
+    
+
+
+.. image:: ./_images/development_flow.png
+ :scale: 70
+
+
+
+
+開発手順詳細
+------------------
+サンプルアプリケーションのパッケージにユーザ情報更新機能を追加実装する場合の開発手順を開発フローの順で以下に説明する。
+
+
+ :ref:`process_data_setup`
+
+ :ref:`process_update_validate_entity`
+ 
+ :ref:`process_update_validate_form`
+
+ :ref:`process_update_view`
+ 
+ :ref:`process_update_confirm`
+
+ :ref:`process_update_complete`
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-02_flow",
+  "title": "開発フロー",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "開発フロー",
+      "hints": [
+        "開発フロー",
+        "ボトムアップ開発",
+        "テストケース"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "開発手順詳細",
+      "hints": [
+        "開発手順",
+        "ユーザ情報更新",
+        "process_data_setup",
+        "process_update_validate_entity",
+        "process_update_validate_form",
+        "process_update_view",
+        "process_update_confirm",
+        "process_update_complete"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストケースから機能をボトムアップに作ることを想定している。\n\n![開発フロー](assets/web-application-02_flow/development_flow.png)",
+    "s2": "1. :ref:`process_data_setup`\n2. :ref:`process_update_validate_entity`\n3. :ref:`process_update_validate_form`\n4. :ref:`process_update_view`\n5. :ref:`process_update_confirm`\n6. :ref:`process_update_complete`"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-02_flow",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The knowledge file presents the six :ref: items as an explicitly numbered list (1–6), but the source file uses a plain unnumbered list. Adding explicit sequence numbers is not supported by the source.",
+      "source_evidence": "Source lists items as bare `:ref:` entries without any numbering markers."
+    }
+  ]
+}
+--- Phase E logs ---
+
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

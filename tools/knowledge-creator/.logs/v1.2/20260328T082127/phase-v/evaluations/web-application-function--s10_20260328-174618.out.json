@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s10",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "Both residual findings are missing hints for classes that are either generic framework infrastructure (HttpResponse, HttpRequest, ExecutionContext) or project-specific example names (W11AC01SearchForm). In both cases, functionally relevant hints already present in the index are sufficient to route retrieval queries to the correct section. No high or medium impact findings remain.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[0] (s1) hints",
+      "impact": "low",
+      "justification": "HttpResponse, HttpRequest, and ExecutionContext are ubiquitous Nablarch action classes present in virtually every action handler. A user querying by these class names is unlikely to be specifically seeking paging/list-search guidance. The section is already reachable via strongly specific hints (W11AC01Action, ページング, 一覧表示, listSearchResult, DbAccessSupport, etc.). Omitting these generic infrastructure types from this section's hints does not meaningfully reduce retrieval accuracy. Why it persisted: The Phase E output is truncated mid-JSON (ends at 'condition.se'), suggesting the fix agent may have been generating a corrected file but the execution log was cut off before completion. The hints array visible in the Phase E output is identical to Phase D, confirming no change was committed."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[1] (s2) hints",
+      "impact": "low",
+      "justification": "W11AC01SearchForm is a project-specific example class name, not a Nablarch framework type. Users seeking the s2 feature (per-screen display count / result cap override) would naturally query by functional terms such as setMax, setMaxResultCount, max, maxResultCount, or 表示件数個別設定 — all of which are already present in s2's hints. W11AC01SearchForm is also already listed in s1's hints, so any query using that class name would still surface the broader paging section. Its absence from s2 hints creates no meaningful retrieval gap. Why it persisted: Same reason as Finding 1 — the Phase E fix log is truncated and the hints arrays appear unchanged from Phase D, indicating the fix was not applied."
+    }
+  ]
+}

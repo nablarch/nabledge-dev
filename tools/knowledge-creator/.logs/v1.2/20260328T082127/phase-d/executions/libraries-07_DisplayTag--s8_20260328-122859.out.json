@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_DisplayTag--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Source has `nameAlias属性の使用方法` as a top-level heading (using `======` separator — the same level as `コード値の表示`), but it is merged into s3 along with the ハイライト表示 content. A heading at the same structural level as s4's source heading is not reflected as a separate knowledge section.",
+      "source_evidence": "Source lines: `nameAlias属性の使用方法` with `======` underline — same marker as `コード値の表示` section header."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The full Java validation method (`validateForRegisterUser`) demonstrating the cross-field validation scenario that motivates nameAlias usage is omitted. The source first shows the initial scenario where the error is registered under `mobilePhoneNumberAreaCode` (highlighting only one field), then explains why all three fields should highlight, then introduces nameAlias as the solution. This before/after context and the complete Java code (ValidationUtil.validateWithout, context.isValid(), getConvertedValue, length checks, addResultMessage with original property name) are absent from the knowledge file.",
+      "source_evidence": "Source Java block: `public static void validateForRegisterUser(ValidationContext<UsersEntity> context) { ... context.addResultMessage(\"mobilePhoneNumberAreaCode\", \"MSG00004\"); }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 text references `WebView_WriteTag` and `WebView_SingleCheckBoxTag` as similar tags (PascalCase names appearing in the section content), but neither is included in the hints array.",
+      "source_evidence": "Source: `codeタグは :ref:`WebView_WriteTag` と同様の使い方で...` and `codeCheckboxタグは、:ref:`WebView_SingleCheckBoxTag` と同様に...`"
+    }
+  ]
+}

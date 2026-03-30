@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5 — BusinessDateUtilで不足している場合の対応方法",
+      "description": "The source includes a full SampleBusinessDateUtil code example (with getDate() delegating to BusinessDateUtil and a project-specific getBeforeDate() method), but the knowledge file only describes the pattern in prose without the code. The equivalent SampleSystemTimeUtil code IS included in s4, creating an inconsistency. The code demonstrates the delegation pattern and extension point for BusinessDateUtil.",
+      "source_evidence": "Source section 'BusinessDateUtilで提供される機能では不足している場合の対応方法' contains a Java class SampleBusinessDateUtil with getDate() delegating to BusinessDateUtil.getDate() and a custom getBeforeDate() stub, preceded by 注意 comments explaining architect responsibility."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "SampleSystemTimeUtil is a PascalCase class name that appears in the source section for システム日時機能 (and its code is reproduced in s4) but is absent from s4's hints array.",
+      "source_evidence": "Source declares 'public class SampleSystemTimeUtil' in the SystemTimeUtil不足時 subsection."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "SampleBusinessDateUtil is a PascalCase class name that appears in the source section for 業務日付機能 but is absent from s5's hints array.",
+      "source_evidence": "Source declares 'public class SampleBusinessDateUtil' in the BusinessDateUtil不足時 subsection."
+    }
+  ]
+}

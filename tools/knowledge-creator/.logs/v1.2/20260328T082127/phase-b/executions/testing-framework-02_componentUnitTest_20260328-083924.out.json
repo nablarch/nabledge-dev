@@ -1,0 +1,44 @@
+{
+  "id": "testing-framework-02_componentUnitTest",
+  "title": "Componentのクラス単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストケース実行のパターン分け",
+      "hints": [
+        "Component単体テスト",
+        "テストケースパターン",
+        "検索処理テスト",
+        "更新処理テスト",
+        "エラー処理テスト",
+        "メッセージID検証",
+        "戻り値検証"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストデータとテストクラスの作成",
+      "hints": [
+        "DbAccessTestSupport",
+        "setThreadContextValues",
+        "setUpDb",
+        "commitTransactions",
+        "getListMap",
+        "assertTableEquals",
+        "ApplicationException",
+        "テストデータ作成",
+        "テストクラス作成",
+        "事前データ投入",
+        "トランザクションコミット",
+        "メッセージID検証",
+        "Excel形式"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Component単体テストのテストケースは以下4パターンに分類される。パターンによりテストクラス・データの作成方法が異なる。\n\n| パターン | 当てはまる処理の例 |\n|---|---|\n| 戻り値(データベースの検索結果)を確認しなければならないもの | 検索処理 |\n| 戻り値(データベースの検索結果以外)を確認しなければならないもの | 計算、判定処理 |\n| 処理終了後のデータベースの状況を確認しなければならないもの | 更新(挿入、削除含む)処理 |\n| メッセージIDを確認しなければならないもの | エラー処理 |",
+    "s2": "## テストデータの作成\n\nテストデータ(Excelファイル)はテストソースコードと同じディレクトリに同じ名前で格納(拡張子のみ異なる)。全テストデータは同じExcelシートに記載する。\n\nメッセージデータやコードマスタなどのDBに格納する静的マスタデータは、プロジェクト管理データがあらかじめ投入されている前提(個別のテストデータとして作成不要)。\n\n## テストクラスの作成\n\nテストクラス作成ルール:\n1. テスト対象のComponentと同じパッケージ\n2. クラス名は`<Componentクラス名>Test`\n3. `nablarch.test.core.db.DbAccessTestSupport`を継承\n\n```java\npublic class UserComponentTest extends DbAccessTestSupport {\n```\n\n## 事前準備データの作成処理\n\n- `setThreadContextValues(sheetName, \"threadContext\")`: スレッドコンテキスト(USER_ID、REQUEST_IDなど)をExcelから読み込んで設定\n- `setUpDb(sheetName)`: 事前データ投入。各ケースごとに初期化するためループ中で実行する\n\n採番テーブル(ID_GENERATE等)は事前初期化が必須。初期化しないとテスト実行時の採番結果が不定になり挿入結果の検証ができなくなる。\n\n![事前準備データのExcel設定例](assets/testing-framework-02_componentUnitTest/componentUnitTest_Setup.png)\n\n## 処理終了後のデータベースの状況を確認\n\nクラス単体テストではフレームワークによるトランザクション制御は行われない。処理終了後のDB状況確認には、テストクラスでトランザクションをコミットする必要がある。\n\n- `commitTransactions()`: スーパクラスのメソッド。全トランザクションをコミットする。コミットしない場合、テスト結果確認が正常に行われない\n- 参照系テストはコミット不要\n\n**テストデータ(入力値)**:\n- `getListMap(sheetName, id)`: ExcelシートからList<Map<String, String>>形式でデータ取得\n- 配列型プロパティ(例: useCaseId)は別表のデータをキーで参照して配列を組み立ててセットする\n\n![入力値テストデータのExcel設定例](assets/testing-framework-02_componentUnitTest/componentUnitTest_inputData.png)\n\n**テストデータ(想定結果)**:\n- 自動設定項目(:ref:`insert_auto_setting_item`参照)も想定結果を用意すること\n- `assertTableEquals(expectedGroupId, sheetName, expectedGroupId)`: グループID(:ref:`tips_groupId`参照)を引数に複数テーブルの内容を一括検証。グループIDにより複数想定結果に対応可能\n\n![想定結果(正常系)テストデータのExcel設定例](assets/testing-framework-02_componentUnitTest/componentUnitTest_expectedDataNormal.png)\n\n## メッセージIDを確認しなければならないもの\n\n> **警告**: キャッチする例外は発生を想定する例外とし、RuntimeExceptionなどの上位例外クラスは用いないこと。メッセージIDが正しくても例外クラスが間違っているバグを検出できなくなる。\n\n- `ApplicationException`をキャッチし`ae.getMessages().get(0).getMessageId()`でメッセージIDを取得して検証\n- 例外が発生しなかった場合は`fail()`でテスト失敗にする\n\n```java\ntry {\n    target.registerUser(sysAcct, users, grpSysAcct);\n    fail();\n} catch (ApplicationException ae) {\n    assertEquals(expected.get(i).get(\"messageId\"), ae.getMessages().get(0).getMessageId());\n}\n```\n\n![想定結果(異常系)テストデータのExcel設定例](assets/testing-framework-02_componentUnitTest/componentUnitTest_expectedDataAbnormal.png)"
+  }
+}

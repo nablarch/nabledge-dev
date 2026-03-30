@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source explicitly states that calling `ValidationUtil.validateAndConvertRequest` automatically invokes the matching `validateFor` method (the one whose `@ValidateFor` annotation value matches the 4th argument). The knowledge file s2 only lists the 4th argument as 'バリデーション名' without explaining that this causes automatic invocation of the matching validateFor method. This mechanism is explained in s5 but is missing from s2, which is the section specifically about 'Actionからのバリデーションメソッドの呼び出し'.",
+      "source_evidence": "上記の実装で使用している ValidationUtil.validateAndConvertRequest メソッドを呼び出すことで、Form に追加した validateFor メソッド(この例では User#validateForUpdate メソッド)が呼び出され、精査処理が本機能により自動的に行われる。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The RST h2 'Entity の使用' contains a large amount of content (table definition + UserEntity class code + DB access code, well over 2000 chars) and has an h3 subsection 'テーブル構造とEntity', but the knowledge file merges all of this into a single section s4 without splitting. While no content is lost, the lack of split reduces search granularity for Entity-related queries vs. table/DB-access queries.",
+      "source_evidence": "Source h2: 'Entity の使用' (-----) with h3: 'テーブル構造とEntity' (=====) containing the USER table definition, UserEntity implementation, and database registration code example."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The PascalCase class name `User` appears prominently in the s1 code example (the Form implementation example) but is absent from s1's hints array.",
+      "source_evidence": "Source code block under 'Formの実装': `public class User { ... }`"
+    }
+  ]
+}

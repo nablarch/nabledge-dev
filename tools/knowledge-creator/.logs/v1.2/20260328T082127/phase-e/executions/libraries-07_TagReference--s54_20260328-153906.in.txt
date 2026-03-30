@@ -1,0 +1,418 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_TagReference--s54",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s1.hints",
+      "description": "The `defaultSort` attribute name is missing from hints. The source table's first column lists: tag, type, sortCss, ascCss, descCss, ascSortId, descSortId, defaultSort, label, name, listSearchInfoName. The hints capture sortCss, ascCss, descCss, ascSortId, descSortId, and listSearchInfoName, but omit `defaultSort`, which is a specific enough term to be useful for search.",
+      "source_evidence": "| defaultSort | | デフォルトのソート。下記のいずれかを指定する。asc(昇順) / desc(降順) | デフォルトは\"asc\"。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+listSearchSortSubmitタグ
+------------------------------
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+tag                                    | 並び替えを行うサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+type                                   | 並び替えを行うサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+sortCss                                | 並び替えを行うサブミットのclass属性。
+                                       | 常にサブミットのclass属性に出力される。
+                                       | デフォルトは"nablarch_sort"。
+ascCss                                 | 昇順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_asc"。(出力例: class="nablarch_sort nablarch_asc")
+descCss                                | 降順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_desc"。(出力例: class="nablarch_sort nablarch_desc")
+ascSortId(必須)                        | 昇順に並び替える場合のソートID。
+descSortId(必須)                       | 降順に並び替える場合のソートID。
+defaultSort                            | デフォルトのソート。
+                                       | 下記のいずれかを指定する。
+                                       | asc(昇順)
+                                       | desc(降順)
+                                       | デフォルトは"asc"。
+label(必須)                            | 並び替えを行うサブミットに使用するラベル。
+name(必須)                             | 並び替えを行うサブミットに使用するタグのname属性。
+                                       | name属性は、画面内で一意にすること。
+listSearchInfoName(必須)               | ListSearchInfoをリクエストスコープから取得する際に使用する名前。
+====================================== ==========================================================================================
+
+.. _WebView_WriteTag:
+
+writeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+withHtmlFormat                         | HTMLフォーマット(改行と半角スペースの変換)をするか否か。
+                                       | HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。
+                                       | デフォルトはtrue。
+valueFormat                            | 出力時のフォーマット。
+                                       | 
+                                       | フォーマットは、"データタイプ{パターン}"形式で指定する。
+                                       | フレームワークがデフォルトでサポートしているフォーマットを下記に示す。
+                                       | **dateTimeはwriteタグのみで使用できる。**
+                                       | 
+                                       | yyyymmdd:
+                                       
+                                        | 年月日のフォーマット。
+                                        | 値はyyyyMMdd形式またはパターン形式の文字列を指定する。
+                                        | パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。
+                                        | **パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。**
+                                        |  :ref:`WebView_CustomTagConfig` を使用してパターンのデフォルト値を設定することができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # デフォルトのパターンを使用する場合。
+                                         valueFormat="yyyymmdd"
+                                         
+                                         # パターンを指定する場合。
+                                         valueFormat="yyyymmdd{yyyy/MM/dd}"
+
+                                       |
+                                       | yyyymm:
+                                       
+                                        | 年月のフォーマット。
+                                        | 値はyyyyMM形式またはパターン形式の文字列を指定する。使用方法は、yyyymmddと同様。
+
+                                       | dateTime:
+                                       
+                                        | 日時のフォーマット。
+                                        | 値はjava.util.Date型を指定する。
+                                        | パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。
+                                        | ThreadContextに設定されたタイムゾーンを使用して、タイムゾーンに応じた日時が出力される。
+                                        | 区切り文字"|"を使用してパターンに直接タイムゾーンを指定することができる。
+                                        | タイムゾーンはパターンの末尾に付加する。
+                                        |  :ref:`WebView_CustomTagConfig` を使用して、パターンのデフォルト値の設定と、区切り文字"|"の変更を行うことができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # デフォルトのパターンとThreadContextに設定されたタイムゾーンを使用する場合。
+                                         valueFormat="datetime"
+                                         
+                                         # デフォルトのパターンを使用し、タイムゾーンのみ指定する場合。
+                                         valueFormat="datetime{|Asia/Tokyo}"
+                                         
+                                         # ThreadContextに設定されたタイムゾーンを使用し、パターンのみ指定する場合。
+                                         valueFormat="datetime{yy/MM/dd HH:mm:ss}"
+                                         
+                                         # パターンとタイムゾーンを指定する場合。
+                                         valueFormat="datetime{yy/MM/dd HH:mm:ss|Asia/Tokyo}"
+                                       
+                                       | decimal:
+                                       
+                                        | 10進数のフォーマット。
+                                        | 値はjava.lang.Number型又は数字の文字列を指定する。
+                                        | 文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。
+                                        | パターンにはjava.text.DecimalFormatが規定している構文を指定する。
+                                        | ThreadContextに設定された言語が使用して、言語に応じた形式で値が出力される。
+                                        | 区切り文字"|"を使用してパターンに直接言語を指定することができる。
+                                        | 言語はパターンの末尾に付加する。
+                                        |  :ref:`WebView_CustomTagConfig` を使用して、区切り文字"|"の変更を行うことができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # ThreadContextに設定された言語を使用し、パターンのみ指定する場合。
+                                         valueFormat="decimal{###,###,###.000}"
+                                         
+                                         # パターンと言語を指定する場合。
+                                         valueFormat="decimal{###,###,###.000|ja}"
+                                       
+====================================== ==========================================================================================
+
+
+.. _WebView_PrettyPrintTag:
+
+prettyPrintタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+====================================== ==========================================================================================
+
+
+
+.. _WebView_RawWriteTag:
+
+rawWriteタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+====================================== ==========================================================================================
+
+
+.. _WebView_SetTag:
+
+setタグ
+^^^^^^^^^^^^^^^^^^^^^
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+var(必須)                              | リクエストスコープに格納する際に使用する変数名。
+name                                   | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する。
+value                                  | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する。
+scope                                  | 変数を格納するスコープを設定する。
+                                       | 指定できるスコープを下記に示す。
+                                       | page: ページスコープ
+                                       | request: リクエストスコープ
+                                       | デフォルトはリクエストスコープ。
+bySingleValue                          | name属性に対応する値を単一値として取得するか否か。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+.. _WebView_IncludeTag:
+
+includeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+path(必須)                             | インクルード先のパス。
+====================================== ==========================================================================================
+
+.. _WebView_IncludeParamTag:
+
+includeParamタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+paramName(必須)                        | インクルード時に使用するパラメータの名前。
+name                                   | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する。
+value                                  | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する。
+====================================== ==========================================================================================
+
+.. _WebView_ConfirmationPageTag:
+
+confirmationPageタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+path                                   | フォワード先(入力画面)のパス。
+====================================== ==========================================================================================
+
+.. _WebView_IgnoreConfirmationTag:
+
+ignoreConfirmationタグ
+-------------------------
+| 属性なし。
+
+.. _WebView_ForInputPageTag:
+
+forInputPageタグ
+-------------------------
+| 属性なし。
+
+.. _WebView_ForConfirmationPageTag:
+
+forConfirmationPageタグ
+-------------------------
+| 属性なし。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_TagReference--s54",
+  "title": "listSearchSortSubmitタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "listSearchSortSubmitタグ",
+      "hints": [
+        "listSearchSortSubmit",
+        "並び替えソート送信",
+        "sortCss",
+        "ascCss",
+        "descCss",
+        "ascSortId",
+        "descSortId",
+        "listSearchInfoName",
+        "ListSearchInfo",
+        "一覧検索ソート"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "writeタグ",
+      "hints": [
+        "write",
+        "valueFormat",
+        "withHtmlFormat",
+        "yyyymmdd",
+        "yyyymm",
+        "dateTime",
+        "decimal",
+        "日時フォーマット",
+        "10進数フォーマット",
+        "値の出力",
+        "SimpleDateFormat",
+        "DecimalFormat"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "prettyPrintタグ",
+      "hints": [
+        "prettyPrint",
+        "整形出力",
+        "値の表示"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "rawWriteタグ",
+      "hints": [
+        "rawWrite",
+        "生値出力",
+        "HTMLエスケープなし出力"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "setタグ",
+      "hints": [
+        "set",
+        "var",
+        "scope",
+        "bySingleValue",
+        "リクエストスコープ格納",
+        "ページスコープ",
+        "変数スコープ設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "includeタグ",
+      "hints": [
+        "include",
+        "ファイルインクルード",
+        "path",
+        "インクルード"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "includeParamタグ",
+      "hints": [
+        "includeParam",
+        "インクルードパラメータ",
+        "paramName",
+        "インクルード時パラメータ"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "confirmationPageタグ",
+      "hints": [
+        "confirmationPage",
+        "確認画面",
+        "フォワード",
+        "入力画面フォワード"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "ignoreConfirmationタグ",
+      "hints": [
+        "ignoreConfirmation",
+        "確認画面スキップ",
+        "確認ページ無視"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "forInputPageタグ",
+      "hints": [
+        "forInputPage",
+        "入力画面",
+        "入力ページ条件"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "forConfirmationPageタグ",
+      "hints": [
+        "forConfirmationPage",
+        "確認画面",
+        "確認ページ条件"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## listSearchSortSubmitタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| tag | | submitLink | 並び替えサブミット用Nablarchタグ。`submitLink`(aタグ) / `submit`(inputタグ) / `button`(buttonタグ) |\n| type | | | タグのtype属性。`submit` / `button`のみサポート。`submitLink`使用時は無効 |\n| sortCss | | \"nablarch_sort\" | 並び替えサブミットのclass属性（常に出力） |\n| ascCss | | \"nablarch_asc\" | 昇順時のclass属性。sortCssに付加して出力。例: `class=\"nablarch_sort nablarch_asc\"` |\n| descCss | | \"nablarch_desc\" | 降順時のclass属性。sortCssに付加して出力。例: `class=\"nablarch_sort nablarch_desc\"` |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトソート。`asc`（昇順）/ `desc`（降順） |\n| label | ○ | | サブミット用ラベル |\n| name | ○ | | タグのname属性。画面内で一意にすること |\n| listSearchInfoName | ○ | | ListSearchInfoをリクエストスコープから取得する際の名前 |",
+    "s2": "## writeタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |\n| withHtmlFormat | | true | HTMLフォーマット（改行と半角スペースの変換）をするか否か。HTMLエスケープする場合のみ有効 |\n| valueFormat | | | 出力時フォーマット。`\"データタイプ{パターン}\"`形式で指定 |\n\n`valueFormat`の対応フォーマット:\n\n| データタイプ | 対象型 | 説明 |\n|---|---|---|\n| yyyymmdd | 文字列(yyyyMMdd形式またはパターン形式) | 年月日フォーマット。パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。パターン文字はy(年)・M(月)・d(日)のみ指定可能。:ref:`WebView_CustomTagConfig` でデフォルトパターン設定可 |\n| yyyymm | 文字列(yyyyMM形式またはパターン形式) | 年月フォーマット。使用方法はyyyymmddと同様 |\n| dateTime | java.util.Date | 日時フォーマット（**writeタグのみ使用可**）。ThreadContextのタイムゾーンを使用。区切り文字`\\|`でパターンにタイムゾーンを直接指定可。:ref:`WebView_CustomTagConfig` でデフォルトパターンと区切り文字変更可 |\n| decimal | java.lang.Number または数字文字列 | 10進数フォーマット。文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。パターンにはjava.text.DecimalFormatが規定している構文を指定する。ThreadContextの言語を使用。区切り文字`\\|`でパターンに言語を直接指定可。:ref:`WebView_CustomTagConfig` で区切り文字変更可 |\n\n`valueFormat`指定例:\n\n```bash\n# yyyymmdd: デフォルトパターン\nvalueFormat=\"yyyymmdd\"\n# yyyymmdd: パターン指定\nvalueFormat=\"yyyymmdd{yyyy/MM/dd}\"\n\n# datetime: デフォルトパターン+ThreadContextタイムゾーン\nvalueFormat=\"datetime\"\n# datetime: タイムゾーンのみ指定\nvalueFormat=\"datetime{|Asia/Tokyo}\"\n# datetime: パターンのみ指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss}\"\n# datetime: パターン+タイムゾーン指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss|Asia/Tokyo}\"\n\n# decimal: パターンのみ指定\nvalueFormat=\"decimal{###,###,###.000}\"\n# decimal: パターン+言語指定\nvalueFormat=\"decimal{###,###,###.000|ja}\"\n```",
+    "s3": "## prettyPrintタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |",
+    "s4": "## rawWriteタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する際の名前 |",
+    "s5": "## setタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| var | ○ | | リクエストスコープに格納する際に使用する変数名 |\n| name | | | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する |\n| value | | | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する |\n| scope | | リクエストスコープ | 変数を格納するスコープ。`page`（ページスコープ）/ `request`（リクエストスコープ） |\n| bySingleValue | | true | name属性に対応する値を単一値として取得するか否か |",
+    "s6": "## includeタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | ○ | | インクルード先のパス |",
+    "s7": "## includeParamタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| paramName | ○ | | インクルード時に使用するパラメータの名前 |\n| name | | | 値を取得する名前。name属性とvalue属性のどちらか一方を指定 |\n| value | | | 値を直接指定する場合に使用。name属性とvalue属性のどちらか一方を指定 |",
+    "s8": "## confirmationPageタグ\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | | | フォワード先（入力画面）のパス |",
+    "s9": "## ignoreConfirmationタグ\n\n属性なし。",
+    "s10": "## forInputPageタグ\n\n属性なし。",
+    "s11": "## forConfirmationPageタグ\n\n属性なし。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

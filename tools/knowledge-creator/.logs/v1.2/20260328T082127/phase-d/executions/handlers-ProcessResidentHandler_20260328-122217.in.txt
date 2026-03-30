@@ -1,0 +1,311 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/ProcessResidentHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+プロセス常駐化ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.handler.ProcessResidentHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+
+後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。
+本ハンドラは、特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、
+いわゆる常駐起動型のバッチ処理で用いられる。
+
+  .. note::
+
+    本ハンドラと :doc:`RequestThreadLoopHandler` の責務は似通っているが、
+    :doc:`ProcessResidentHandler` ではメインスレッド上でのループ制御を行い、
+    :doc:`RequestThreadLoopHandler` は各サブスレッド上でのループ制御を行うという違いから
+    例外制御のポリシーなどの面で挙動が大きく異なっており、共用はできない。
+
++++++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "RetryHandler"
+      , "ProcessResidentHandler"
+      , "ProcessStopHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**関連するハンドラ**
+
+  ====================================  ======================================================================
+  ハンドラ                              内容
+  ====================================  ======================================================================
+  :doc:`ProcessStopHandler`             本ハンドラを組み込んだハンドラキューは、シグナル送信以外の手段で
+                                        外部から停止させることができなくなる。
+                                        外部コマンドなどによって正常終了させるには、 
+                                        :doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。
+
+  :doc:`RetryHandler`                   後続ハンドラの実行中に本ハンドラが実行時例外を捕捉した場合、 
+                                        リトライ可能例外でラップして再送出し、バッチプロセスの継続制御を
+                                        :doc:`RetryHandler` で行う。そのため、このハンドラを本ハンドラの
+                                        上位に配置する必要がある。
+                                     
+  ====================================  ======================================================================
+
+++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路での処理]**
+  **1. (ハンドラキューのコピー)**
+    本ハンドラ開始時点でのハンドラキューのスナップショット(シャローコピー)を作成する。
+
+  **2. (ループ開始)**
+    実行コンテキスト上のハンドラキューの内容を、 **1.** で作成したスナップショットの状態に復旧する。
+
+  **3. (後続ハンドラの実行)**
+    後続のハンドラを実行し、その結果を取得する。
+
+.. _outbound:
+
+**[復路での処理]**
+  **4. (実行待機)**
+    本ハンドラに設定されたデータ監視時間から、後続ハンドラの実行時間を差し引いた時間を待機する。
+
+  **5. (正常終了->ループ継続)**
+    **2.** 以降の処理を繰り返す。
+
+.. _error:
+
+**[例外処理]**
+  **3a. (閉局エラー→ループ継続)**
+    後続ハンドラ実行中に、サービス閉局エラー(nablarch.fw.Result.ServiceUnavailable)が送出された場合は、
+    何もせずに、 **4.** **5.** の往路処理を行なう。
+
+  **3b. (プロセス正常停止)**
+    後続ハンドラ実行中に、プロセス停止要求(nablarch.fw.handler.ProcessStopHandler.ProcessStop) が送出された場合は、
+    ループを中断し、後続ハンドラによる直近の処理結果オブジェクトをリターンして終了する。
+
+  **3c. (プロセス異常停止)**
+    後続ハンドラ実行中に、プロセス異常停止要求(nablarch.fw.ProcessAbnormalEnd)が送出された場合は、
+    ループを中断し、捕捉した例外を再送出して終了する。
+
+  **3d. (実行時例外→リトライ)**
+    後続ハンドラ実行中にその他の実行時例外が送出された場合は、その内容を障害ログに出力した上で、
+    リトライ可能例外(RetryableException)でラップして送出し終了する。 
+
+  **3e. (エラー終了)**
+    後続ハンドラ実行中にエラー(java.lang.Error)が送出された場合は、捕捉したエラーをそのまま再送出して終了する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  ============================== ======================== ============= =================================================
+  設定項目                       プロパティ名             データ型　    備考
+  ============================== ======================== ============= =================================================
+  データ監視間隔 (単位:msec)     dataWatchInterval        int           任意指定 (デフォルト=1000)
+  プロセスを正常停止させる例外   normalEndExceptions      List<Class>   任意指定 (デフォルト=[ProcessStop.class])
+  プロセスを異常終了させる例外   abnormalEndExceptions    List<Class>   任意指定 (デフォルト=[ProcessAbnormalEnd.class])
+  ============================== ======================== ============= =================================================
+
+**標準設定**
+  データ監視間隔は、常駐プロセスごとに異なる値を設定したり、また、運用状況に応じて変更することが想定されるため、
+  下記例のように埋め込みパラメータとして定義することを強く推奨する。
+ 
+  .. code-block:: xml
+
+    <!-- 常駐化ハンドラ -->
+    <component class="nablarch.fw.handler.ProcessResidentHandler">
+      <property name="dataWatchInterval" value="${data-watch-interval}" />
+    </component>
+
+  .. note::
+
+    プロセス正常停止、プロセス異常停止の対象となる例外クラスについては、本ハンドラの設定により
+    追加・変更することが可能だが、特段の理由が無い限りはデフォルト設定を使用すること。
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-ProcessResidentHandler`
+
+```json
+{
+  "id": "handlers-ProcessResidentHandler",
+  "title": "プロセス常駐化ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ProcessResidentHandler",
+        "nablarch.fw.handler.ProcessResidentHandler",
+        "RequestThreadLoopHandler",
+        "ProcessStopHandler",
+        "RetryHandler",
+        "常駐起動型バッチ処理",
+        "ループ制御",
+        "定期実行"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ProcessResidentHandler",
+        "ServiceUnavailable",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "RetryableException",
+        "nablarch.fw.Result.ServiceUnavailable",
+        "nablarch.fw.handler.ProcessStopHandler.ProcessStop",
+        "nablarch.fw.ProcessAbnormalEnd",
+        "ループ継続",
+        "プロセス停止"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "dataWatchInterval",
+        "normalEndExceptions",
+        "abnormalEndExceptions",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "データ監視間隔",
+        "埋め込みパラメータ",
+        "設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ProcessResidentHandler`\n\n後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、常駐起動型のバッチ処理で用いられる。\n\n> **注意**: :doc:`ProcessResidentHandler` はメインスレッド上でのループ制御、:doc:`RequestThreadLoopHandler` は各サブスレッド上でのループ制御を行う。例外制御のポリシーなどの面で挙動が大きく異なるため、共用はできない。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ProcessStopHandler` | 外部コマンドなどによって正常終了させるには、:doc:`ProcessStopHandler` を本ハンドラの後続に設定する必要がある。 |\n| :doc:`RetryHandler` | 後続ハンドラの実行時例外をリトライ可能例外でラップして再送出するため、:doc:`RetryHandler` を本ハンドラの上位に配置する必要がある。 |",
+    "s2": "**往路での処理**\n\n1. ハンドラキューのスナップショット（シャローコピー）を作成する。\n2. 実行コンテキスト上のハンドラキューを1.で作成したスナップショットの状態に復旧する。\n3. 後続のハンドラを実行し、結果を取得する。\n\n**復路での処理**\n\n4. データ監視時間から後続ハンドラの実行時間を差し引いた時間を待機する。\n5. 正常終了→2.以降を繰り返す（ループ継続）。\n\n**例外処理**\n\n- **3a. 閉局エラー（ServiceUnavailable）**: 何もせずに4.・5.の処理を行う（ループ継続）。\n- **3b. プロセス正常停止（ProcessStop）**: ループを中断し、直近の処理結果オブジェクトをリターンして終了する。\n- **3c. プロセス異常停止（ProcessAbnormalEnd）**: ループを中断し、捕捉した例外を再送出して終了する。\n- **3d. 実行時例外**: 障害ログに出力した上で、RetryableExceptionでラップして送出する。\n- **3e. エラー（java.lang.Error）**: 捕捉したエラーをそのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dataWatchInterval | int | | 1000 | データ監視間隔（msec） |\n| normalEndExceptions | List\\<Class\\> | | [ProcessStop.class] | プロセスを正常停止させる例外 |\n| abnormalEndExceptions | List\\<Class\\> | | [ProcessAbnormalEnd.class] | プロセスを異常終了させる例外 |\n\n> **注意**: データ監視間隔は常駐プロセスごとに異なる値を設定・変更することが想定されるため、埋め込みパラメータとして定義することを強く推奨する。\n\n```xml\n<component class=\"nablarch.fw.handler.ProcessResidentHandler\">\n  <property name=\"dataWatchInterval\" value=\"${data-watch-interval}\" />\n</component>\n```\n\n> **注意**: プロセス正常停止・異常停止の対象例外クラスは設定により変更可能だが、特段の理由がない限りはデフォルト設定を使用すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

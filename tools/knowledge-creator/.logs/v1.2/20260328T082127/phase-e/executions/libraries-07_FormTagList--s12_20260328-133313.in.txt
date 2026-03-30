@@ -1,0 +1,188 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_FormTagList--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — attribute table",
+      "description": "The knowledge file table adds two columns not present in the source: 「型」(with values \"boolean\" and \"String\") and 「必須」(empty, implying not required). The source table has only two columns: 属性 and 説明. Neither the data types nor an explicit required/optional designation are stated anywhere in the source.",
+      "source_evidence": "Source table columns: 属性 / 説明 only. No type or required columns exist."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — content",
+      "description": "Section s2 has content \"なし\" (2 characters), which is below the 50-character threshold. The section also has an empty title string. No corresponding heading or content in the provided source excerpt maps to this section.",
+      "source_evidence": "Source excerpt contains only two h2 sections (radioButtonsタグ、checkboxesタグ and selectタグ) with no intermediate section between them."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+radioButtonsタグ、checkboxesタグ
+------------------------------------------------
+radioButtonsタグとcheckboxesタグの追加属性は、上記の :ref:`WebView_ListSelectCommon` のみである。
+
+radioButtonsタグとcheckboxesタグでは、radiobButtonタグとcheckboxタグと同様に、ラベルを出力する際にlabelタグを出力する。\
+フレームワークで「nablarch_<radio|checkbox><連番>」形式でid属性の値を生成して使用する。\
+<連番>部分には、画面内でradioタグ(又はcheckboxタグ)の出現順に1から番号を振る。
+
+また、tabindex属性で指定された値はそのまますべてのinputタグに出力する。
+
+radioButtonsタグおよびcheckboxesタグの使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <tr>
+    <td>
+      <n:radioButtons name="team.color" tabindex="3" 
+                listName="allColors" elementLabelProperty="label" elementValueProperty="value" elementLabelPattern="$VALUE$:$LABEL$" />
+    </td>
+    <td>
+      <n:checkboxes name="team.titles" tabindex="5" 
+                listName="allTitles" elementLabelProperty="label" elementValueProperty="value" elementLabelPattern="$VALUE$:$LABEL$" />
+    </td>
+  </tr>
+
+
+入力画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <tr>
+    <td>
+      <input id="nablarch_radio1" tabindex="3" type="radio" name="team.color" value="001"><label for="nablarch_radio1">001:red</label><br>
+      <input id="nablarch_radio2" tabindex="3" type="radio" name="team.color" value="002"><label for="nablarch_radio2">002:blue</label><br>
+      <input id="nablarch_radio3" tabindex="3" type="radio" name="team.color" value="003"><label for="nablarch_radio3">003:green</label><br>
+      <input id="nablarch_radio4" tabindex="3" type="radio" name="team.color" value="004"><label for="nablarch_radio4">004:yellow</label><br>
+      <input id="nablarch_radio5" tabindex="3" type="radio" name="team.color" value="005"><label for="nablarch_radio5">005:pink</label><br>
+    </td>
+    <td>
+      <input id="nablarch_checkbox1" tabindex="5" type="checkbox" name="team.titles" value="01"><label for="nablarch_checkbox1">01:地区優勝</label><br>
+      <input id="nablarch_checkbox2" tabindex="5" type="checkbox" name="team.titles" value="02"><label for="nablarch_checkbox2">02:リーグ優勝</label><br>
+      <input id="nablarch_checkbox3" tabindex="5" type="checkbox" name="team.titles" value="03"><label for="nablarch_checkbox3">03:ファイナル優勝</label><br>
+    </td>
+  </tr>
+
+----------------
+selectタグ
+----------------
+selectタグは、 :ref:`WebView_ListSelectCommon` に加えて、下記の属性を追加している。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+withNoneOption                         | リスト先頭に選択なしのオプションを追加するか否か。
+                                       | 追加する場合はtrue、追加しない場合はfalse。
+                                       | デフォルトはfalse。
+noneOptionLabel                        | リスト先頭に選択なしのオプションを追加する場合に使用するラベル。
+                                       | この属性は、withNoneOptionにtrueを指定した場合のみ有効となる。
+                                       | デフォルトは""。
+====================================== ==========================================================================================
+
+共通属性の例と同じ選択項目リストを使用して、属性の使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <n:select name="user.groupIds"
+            listName="allGroups" elementLabelProperty="name" elementValueProperty="id"
+            elementLabelPattern="$VALUE$ - $LABEL$" listFormat="ul"
+            withNoneOption="true" noneOptionLabel="選択なし" />
+
+「選択なし」オプションのvalue属性は、常に空文字となる。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <%-- リクエストスコープにuser.groupIds = "G002" が設定されている場合。--%>
+  <select name="user.groupIds">
+    <option value="">選択なし</option>
+    <option value="G001">G001 - グループA</option>
+    <option value="G002" selected="selected">G002 - グループB</option>
+    <option value="G003">G003 - グループC</option>
+    <option value="G004">G004 - グループD</option>
+    <option value="G005">G005 - グループE</option>
+  </select>
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_FormTagList--s12",
+  "title": "フォームタグ一覧",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "radioButtonsタグ、checkboxesタグ",
+      "hints": [
+        "radioButtonsタグ",
+        "checkboxesタグ",
+        "nablarch_radio連番",
+        "nablarch_checkbox連番",
+        "tabindex",
+        "ラジオボタン一括出力",
+        "チェックボックス一括出力",
+        "id属性自動生成",
+        "labelタグ出力"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "フォームタグ",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "selectタグ",
+      "hints": [
+        "selectタグ",
+        "withNoneOption",
+        "noneOptionLabel",
+        "選択なしオプション",
+        "プルダウン選択",
+        "ドロップダウン",
+        "選択なし追加"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "radioButtonsタグとcheckboxesタグの追加属性は :ref:`WebView_ListSelectCommon` のみ。\n\nラベル出力時はlabelタグを出力し、id属性値は「nablarch_<radio|checkbox><連番>」形式でフレームワークが生成する。連番は画面内でのradio/checkboxタグ出現順に1から採番。\n\ntabindex属性で指定された値はすべてのinputタグに同じ値が出力される。\n\n```jsp\n<n:radioButtons name=\"team.color\" tabindex=\"3\"\n          listName=\"allColors\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n<n:checkboxes name=\"team.titles\" tabindex=\"5\"\n          listName=\"allTitles\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n```\n\n出力HTML例（入力画面）:\n\n```html\n<input id=\"nablarch_radio1\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"001\"><label for=\"nablarch_radio1\">001:red</label><br>\n<input id=\"nablarch_radio2\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"002\"><label for=\"nablarch_radio2\">002:blue</label><br>\n<input id=\"nablarch_radio3\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"003\"><label for=\"nablarch_radio3\">003:green</label><br>\n<input id=\"nablarch_checkbox1\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"01\"><label for=\"nablarch_checkbox1\">01:地区優勝</label><br>\n<input id=\"nablarch_checkbox2\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"02\"><label for=\"nablarch_checkbox2\">02:リーグ優勝</label><br>\n<input id=\"nablarch_checkbox3\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"03\"><label for=\"nablarch_checkbox3\">03:ファイナル優勝</label><br>\n```",
+    "s2": "なし",
+    "s3": ":ref:`WebView_ListSelectCommon` に加えて以下の追加属性がある。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| withNoneOption | boolean | | false | リスト先頭に選択なしのオプションを追加するか。true=追加、false=追加しない |\n| noneOptionLabel | String | | \"\" | 選択なしオプションのラベル。withNoneOption=trueの場合のみ有効 |\n\n「選択なし」オプションのvalue属性は常に空文字。\n\n```jsp\n<n:select name=\"user.groupIds\"\n          listName=\"allGroups\" elementLabelProperty=\"name\" elementValueProperty=\"id\"\n          elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\"\n          withNoneOption=\"true\" noneOptionLabel=\"選択なし\" />\n```\n\n出力HTML例（入力画面、user.groupIds = \"G002\" の場合）:\n\n```html\n<select name=\"user.groupIds\">\n  <option value=\"\">選択なし</option>\n  <option value=\"G001\">G001 - グループA</option>\n  <option value=\"G002\" selected=\"selected\">G002 - グループB</option>\n  <option value=\"G003\">G003 - グループC</option>\n  <option value=\"G004\">G004 - グループD</option>\n  <option value=\"G005\">G005 - グループE</option>\n</select>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,474 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-05_create_form",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Formクラスのプロパティの実装 コード例",
+      "description": "The W11ACXXForm code example omits the default constructor `public W11ACXXForm() {}`. The source explicitly includes it in the constructor implementation step (②コンストラクタを実装) alongside the Map constructor.",
+      "source_evidence": "public W11ACXXForm() {\n}\n\npublic W11ACXXForm(Map<String, Object> data) { ... }"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _process_update_validate_form:
+
+Formクラスの実装
+============================================
+
+Formクラスは、以下のステップで実装する。
+
+:ref:`1) Formクラスのプロパティの実装<set_property>`
+
+:ref:`2) Formクラスの精査処理実装<form_validation>`
+
+
+Formクラスのプロパティの実装、Formクラスの精査処理実装は、共に以下に示すFormクラスの精査処理実装の流れに沿って実施する。
+
+ .. image:: ./_images/development_flow_form.png
+      :scale: 70
+
+.. _set_property:
+
+\1) Formクラスのプロパティの実装
+ 本機能で使用するFormクラスを作成し、プロパティを実装する。
+ プロパティの実装では、単純にクラスにプロパティを追加するだけではなく、プロパティに対する精査で使用するアノテーション
+ を setter に追加する実装も行う。
+
+ \a) Formクラスの作成
+  本機能で使用するFormクラスを新規に追加し、プロパティ、コンストラクタ、ゲッター/セッターをそれぞれ実装する。
+  
+  **ソース格納フォルダ**
+   /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+  
+  **クラス名**
+   W11ACXXForm
+  
+  ①FormのプロパティとしてoperationTargetUserId（型：String）、users（型：UsersEntity）を実装
+
+  ②コンストラクタを実装
+
+  ③ゲッター/セッターを実装
+
+  ④精査仕様をアノテーションで設定
+
+  .. code-block:: java
+  
+   /**
+    * 更新機能（開発手順用）で使用するユーザ情報を保持するフォーム。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXForm {
+       
+       // 【説明】①プロパティのセット
+       
+       /** 更新対象のユーザID */
+       private String operationTargetUserId;
+       
+       /** ユーザエンティティ */
+       private UsersEntity users;
+
+       // 【説明】②コンストラクタの実装
+       /**
+        * デフォルトコンストラクタ。
+        */
+       public W11ACXXForm() {
+       }
+       
+       /**
+        * Mapを引数に取るコンストラクタ。
+        * @param data 各プロパティのデータを保持したMap
+        */
+       public W11ACXXForm(Map<String, Object> data) {
+           operationTargetUserId = (String) data.get("operationTargetUserId");
+           users = (UsersEntity) data.get("users");
+       }
+
+       // 【説明】③ゲッター/セッターの実装
+       // 【説明】④精査仕様をアノテーションで設定
+       
+       /**
+        * 更新対象のユーザIDを取得する。
+        * @return 更新対象のユーザID
+        */
+       public String getOperationTargetUserId() {
+           return operationTargetUserId;
+       }
+       
+       /**
+        * 更新対象のユーザIDを設定する。
+        * @param operationTargetuserId 更新対象のユーザID
+        */
+       @PropertyName("ユーザID")
+       @Required
+       @Length(max = 10)
+       @SystemChar(charsetDef="numericCharset")
+       public void setOperationTargetUserId(String operationTargetuserId) {
+           this.operationTargetUserId = operationTargetuserId;
+       }
+       
+       /**
+        * 更新対象のユーザ情報を取得する。
+        * @return 更新対象のユーザ情報
+        */
+       public UsersEntity getUsers() {
+           return users;
+       }
+
+       /**
+        * 更新対象のユーザ情報を設定する。
+        * @param users 更新対象のユーザ情報
+        */
+       @ValidationTarget
+       public void setUsers(UsersEntity users) {
+           this.users = users;
+       }
+   }
+   
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \b) クラス単体テストデータの作成
+  Formクラスのクラス単体テストデータシートを作成し、
+  プロパティの単項目精査用のテストデータシート(testCharsetAndLength)を追加する。
+  
+  **データシート格納フォルダ**
+   /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+  **データシートファイル名**
+   W11ACXXFormTest.xls [#]_\
+
+  **シート名**
+   testCharsetAndLength [#]_\
+  
+
+   .. [#] Formクラスのクラス単体テストデータシートの書き方は、Entityクラスのクラス単体テストデータシートと同じである。
+    データシートの書き方については、 :ref:`entityUnitTest` を参照。\
+
+   .. [#] シート名は任意で良いが、説明の為、上記の名称で作成することにする。\
+
+  .. image:: ./_images/form_test_property.png
+   :scale: 70
+
+  .. note::
+   Formクラスのアクセッサのテストはリクエスト単体テストでカバーできる。
+   
+   そのため、Formクラスの単体テストでアクセッサのテストを行う必要はない。
+
+ \c) クラス単体テストコードの作成
+  本機能で使用するテストクラスを作成し、単項目精査用のメソッド(testCharsetAndLength)を追加する。
+  
+  **テストクラス作成フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+   
+  **テストソースファイル名**
+    W11ACXXFormTest.java [#]_
+
+  **メソッド名（単項目精査用）**
+    testCharsetAndLength
+
+  .. [#] Formクラスのクラス単体テストコードの書き方は、Entityクラスのクラス単体テストコードと同じである。
+   テストコードの書き方については、 :ref:`entityUnitTest` を参照。
+
+  .. code-block:: java
+  
+   /**
+    * {@link W11ACXXForm}のテスト。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXFormTest extends EntityTestSupport {
+
+       /** テスト対象フォームクラス */
+       private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;
+       
+       /**
+        * 文字種と文字列長のテスト
+        */
+       @Test
+       public void testCharsetAndLength() {
+           String sheetName = "testCharsetAndLength";
+           String id = "charsetAndLength";
+           testValidateCharsetAndLength(FORM, sheetName, id);
+       }
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \d) クラス単体テスト実施
+  クラス単体テストを実施し、単項目精査が行われていることを確認する。
+
+
+.. _form_validation:
+
+\2) Formクラスの精査処理実装
+
+ .. _form_validation_make_testdata:
+ 
+ \a) クラス単体テストデータの作成
+  Formクラスのクラス単体テストデータシートを作成し、更新機能用のテストデータシート(testValidateForSimpleUpdate)を追加する。
+
+  **データシート格納フォルダ**
+   /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+  **データシートファイル名**
+   W11ACXXFormTest.xls [#]_\
+
+  **シート名**
+   testValidateForSimpleUpdate [#]_\
+  
+
+   .. [#] Formクラスのクラス単体テストデータシートの書き方については、 :ref:`entityUnitTest` を参照。\
+
+   .. [#] シート名は任意で良いが、説明の為、上記の名称で作成することにする。\
+
+  .. image:: ./_images/form_test_validation_01.png
+   :scale: 40
+
+
+ \b) クラス単体テストコードの作成
+  本機能で使用するテストクラスを作成し、更新機能用のメソッド(testValidateForSimpleUpdate)を追加する。
+  
+  **テストクラス作成フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+   
+  **テストソースファイル名**
+    W11ACXXFormTest.java [#]_
+
+  **メソッド名（更新機能用）**
+    testValidateForSimpleUpdate
+
+  .. [#] Formクラスのクラス単体テストコードの書き方については、 :ref:`entityUnitTest` を参照。
+
+  .. code-block:: java
+  
+   /**
+    * {@link W11ACXXForm}のテスト。
+    * @author Nablarch Taro
+    * @since 1.0
+    */
+   public class W11ACXXFormTest extends EntityTestSupport {
+
+       /** テスト対象フォームクラス */
+       private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;
+       
+       /**
+        * {@link W11ACXXForm#validateForSimpleUpdate(nablarch.core.validation.ValidationContext)} のテスト。
+        */
+       @Test
+       public void testValidateForSimpleUpdate() {
+           // 精査実行
+           String sheetName = "testValidateForSimpleUpdate";
+           String validateFor = "simpleUpdate";
+           
+           testValidateAndConvert(FORM, sheetName, validateFor);
+       }
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ \c) クラス単体テスト実施
+  クラス単体テストを実施し、更新機能用のテストが失敗することを確認する。（精査メソッドを実装していない為）
+
+   .. note::
+    クラス単体テストの実行方法は、テスト対象のクラス(～Test.java)を右クリックし、[実行]→[Junitテスト]を選択する。
+  
+
+
+ \d) Formクラスの修正
+  Formクラスに単項目精査の呼び出し処理を実装する。
+
+  **ソース格納フォルダ**
+   /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+
+  **ソースファイル名**
+   W11ACXXForm.java
+ 
+  
+  ①単項目精査を実施するプロパティとして「users」をセット
+   
+  ②単項目精査を実行するメソッドの引数として上記プロパティをセット
+
+
+  .. code-block:: java 
+
+   // 【説明】①単項目精査を実施するプロパティ「users」をセット
+   /** 
+    * ユーザ情報更新時に単項目精査を実施するプロパティ（開発手順用） 
+    */
+   private static final String[] SIMPLE_UPDATE_PROPS = 
+       new String[] {"users"};
+   
+   /**
+    * ユーザ情報更新時に実施するバリデーション（開発手順用）
+    * @param context バリデーションの実行に必要なコンテキスト
+    */
+   @ValidateFor("simpleUpdate")
+   public static void validateForSimpleUpdate(ValidationContext<W11ACXXForm> context) {
+       
+       // 【説明】②単項目精査対象項目変数のセット
+       // プロパティとして設定したエンティティ内の単項目精査を実行する。
+       ValidationUtil.validate(context, SIMPLE_UPDATE_PROPS);
+   }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+ .. _form_validation_execute_test:
+ 
+ \e) クラス単体テスト実施
+  クラス単体テストを実施し、UsersEntityの単項目精査呼び出しが行われていることを確認する。
+
+ \f) 精査処理の追加
+  本機能に必要な精査処理を追加する。
+  実装時の手順は :ref:`a) クラス単体テストデータの作成<form_validation_make_testdata>` 
+  ～ :ref:`e) クラス単体テスト実施<form_validation_execute_test>` と同じなので、必要なデータのみ以下に記載する。
+
+  f)-1 クラス単体テストデータ
+
+   **データシート格納フォルダ**
+    /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+  
+   **データシートファイル名**
+    W11ACXXFormTest.xls
+
+   **シート名**
+    testValidateForSelectUserInfo
+
+   .. image:: ./_images/form_test_validation_02.png
+    :scale: 40
+
+  f)-2 クラス単体テストコード
+
+   **テストクラス作成フォルダ**
+     /Nablarch_sample/test/java/nablarch/sample/ss11AC 配下
+    
+   **テストソースファイル名**
+     W11ACXXFormTest.java
+
+   **メソッド名（更新機能用）**
+     testValidateForSelectUserInfo
+
+   .. code-block:: java
+  
+    // ～前略～
+  
+    /**
+     * {@link W11ACXXForm#validateForSelectUserInfo(nablarch.core.validation.ValidationContext)} のテスト。
+     */
+    @Test
+    public void testValidateForSelectUserInfo() {
+        // 精査実行
+        String sheetName = "testValidateForSelectUserInfo";
+        String validateFor = "selectUserInfo";
+        
+        testValidateAndConvert(FORM, sheetName, validateFor);
+    }
+    
+    // ～後略～
+
+   (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+  f)-3 Formクラスのソースコード
+
+   **ソース格納フォルダ**
+    /Nablarch_sample/main/java/nablarch/sample/ss11AC 配下
+
+   **ソースファイル名**
+    W11ACXXForm.java
+ 
+  
+   ①単項目精査を実施するプロパティとして「operationTargetUserId」をセット
+    
+   ②単項目精査を実行するメソッドの引数として上記プロパティをセット
+
+
+   .. code-block:: java 
+
+    // 【説明】①単項目精査を実施するプロパティ「operationTargetUserId」をセット
+    /** ユーザID取得時に精査を実施するプロパティ */
+    private static final String[] SELECT_USERINFO_PROPS =
+        new String[] {"operationTargetUserId"};
+    
+    /**
+     * ユーザID取得時に実施するバリデーション
+     * @param context バリデーションの実行に必要なコンテキスト
+     */
+    @ValidateFor("selectUserInfo")
+    public static void validateForSelectUserInfo(ValidationContext<W11ACXXForm> context) {
+        
+        // 【説明】②単項目精査対象項目変数のセット
+        // プロパティとして設定したエンティティ内の単項目精査を実行する。
+        ValidationUtil.validate(context, SELECT_USERINFO_PROPS);
+    }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-05_create_form",
+  "title": "Formクラスの実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Formクラスの実装",
+      "hints": [
+        "W11ACXXForm",
+        "W11ACXXFormTest",
+        "UsersEntity",
+        "EntityTestSupport",
+        "ValidationUtil",
+        "ValidationContext",
+        "@PropertyName",
+        "@Required",
+        "@Length",
+        "@SystemChar",
+        "@ValidationTarget",
+        "@ValidateFor",
+        "Formクラス実装",
+        "バリデーション",
+        "精査処理",
+        "単項目精査",
+        "アノテーション設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Formクラスのプロパティの実装\n\n**アノテーション**: `@PropertyName`, `@Required`, `@Length`, `@SystemChar`, `@ValidationTarget`\n\nFormクラスのsetterにアノテーションで精査仕様を設定する。\n\n```java\npublic class W11ACXXForm {\n    private String operationTargetUserId;\n    private UsersEntity users;\n\n    public W11ACXXForm(Map<String, Object> data) {\n        operationTargetUserId = (String) data.get(\"operationTargetUserId\");\n        users = (UsersEntity) data.get(\"users\");\n    }\n\n    @PropertyName(\"ユーザID\")\n    @Required\n    @Length(max = 10)\n    @SystemChar(charsetDef=\"numericCharset\")\n    public void setOperationTargetUserId(String operationTargetuserId) {\n        this.operationTargetUserId = operationTargetuserId;\n    }\n\n    @ValidationTarget\n    public void setUsers(UsersEntity users) {\n        this.users = users;\n    }\n}\n```\n\n> **注意**: Formクラスのアクセッサのテストはリクエスト単体テストでカバーできる。そのため、Formクラスの単体テストでアクセッサのテストを行う必要はない。\n\n単項目精査テスト（`EntityTestSupport`継承、`testValidateCharsetAndLength`使用）:\n\n```java\npublic class W11ACXXFormTest extends EntityTestSupport {\n    private static final Class<W11ACXXForm> FORM = W11ACXXForm.class;\n\n    @Test\n    public void testCharsetAndLength() {\n        testValidateCharsetAndLength(FORM, \"testCharsetAndLength\", \"charsetAndLength\");\n    }\n}\n```\n\n## Formクラスの精査処理実装\n\n**アノテーション**: `@ValidateFor`\n**クラス**: `ValidationUtil`\n\n精査対象プロパティを定数配列で定義し、`@ValidateFor`アノテーション付きの静的メソッドで `ValidationUtil.validate()` を呼び出す。\n\n```java\nprivate static final String[] SIMPLE_UPDATE_PROPS = new String[] {\"users\"};\n\n@ValidateFor(\"simpleUpdate\")\npublic static void validateForSimpleUpdate(ValidationContext<W11ACXXForm> context) {\n    ValidationUtil.validate(context, SIMPLE_UPDATE_PROPS);\n}\n\nprivate static final String[] SELECT_USERINFO_PROPS = new String[] {\"operationTargetUserId\"};\n\n@ValidateFor(\"selectUserInfo\")\npublic static void validateForSelectUserInfo(ValidationContext<W11ACXXForm> context) {\n    ValidationUtil.validate(context, SELECT_USERINFO_PROPS);\n}\n```\n\n精査処理テスト（`testValidateAndConvert`使用）:\n\n```java\n@Test\npublic void testValidateForSimpleUpdate() {\n    testValidateAndConvert(FORM, \"testValidateForSimpleUpdate\", \"simpleUpdate\");\n}\n\n@Test\npublic void testValidateForSelectUserInfo() {\n    testValidateAndConvert(FORM, \"testValidateForSelectUserInfo\", \"selectUserInfo\");\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

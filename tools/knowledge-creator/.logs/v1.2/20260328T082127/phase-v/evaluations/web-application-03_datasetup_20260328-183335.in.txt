@@ -1,0 +1,170 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-03_datasetup`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s1",
+    "description": "The source explicitly states that the downloadable MASTER_DATA.xls is a pre-prepared file with authorization check data already added (「事前に認可チェック機能に必要なデータを追加したファイル」), provided to simplify the work. The knowledge file omits this distinction, which could cause an AI assistant to give incorrect guidance — telling users to manually add data when a pre-prepared download already contains it.",
+    "source_evidence": "「ここでは、作業の簡略化のために事前に認可チェック機能に必要なデータを追加したファイル MASTER_DATA.xls を用意している。」"
+  },
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s1",
+    "description": "The source's footnote [#] instructs users to check both the green cells AND the file notation (記法) of MASTER_DATA.xls (「MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること」). The knowledge file mentions only the green cells and omits the instruction to also confirm the file notation.",
+    "source_evidence": "「MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること。」"
+  }
+]
+```
+
+### Source (RST)
+
+```
+
+
+.. _process_data_setup:
+
+マスタデータのセットアップ
+============================================
+ サンプルアプリケーションにセットアップされているマスタデータに認可チェック機能に必要なデータを追加し、マスタデータセットアップツールを使用してローカル環境のデータベースへ反映する。
+  
+  .. note::
+   マスタデータとは以下のようなデータを意味する。
+  
+    * 「コードテーブル」や「メッセージテーブル」のようなプロジェクトで共通的に使用できるようなデータ
+    * 認可チェック機能に必要なデータ
+    * 採番機能に必要なデータ
+    * 個別アプリケーション毎のメッセージ
+    * 個別アプリケーション毎のコード値
+
+   上記データのほとんどは、プロジェクトの共通データとして提供されているため、プログラマが個別に追加する必要はない。
+   しかし「認可チェック機能に必要なデータ」については、実装時に追加する運用のほうが容易な場合があるため、プログラマが修正する
+   運用のプロジェクトもある。
+   開発時にマスタデータの編集が必要であるか否かは、プロジェクトのアーキテクトに確認すること。
+
+ 投入するデータはサンプルアプリケーションに含まれる、MASTER_DATA.xlsへ追加する。
+ ここでは、作業の簡略化のために事前に認可チェック機能に必要なデータを追加したファイル  :download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>`  を用意している。
+ 
+ マスタデータの記法を :download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>` で確認し  [#]_ 、
+ 下記の配置場所に MASTER_DATA.xls ファイルを配置し、 マスタデータのセットアップを実行する。
+ 
+ MASTER_DATA.xls
+  
+ **MASTER_DATAの配置フォルダ**
+ 
+   /Nablarch_sample/tool/db/data 配下
+
+ マスタデータセットアップツールの使用方法： :ref:`master_data_setup_tool` 
+
+ .. [#] 
+
+   ※追加する機能の認可チェックに必要なデータは、 MASTER_DATA.xls 内でセルを緑色にしている。
+   
+   MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること。
+
+ .. note:: 
+ 
+   ここでは作業の簡単化とマスタデータの説明のために、修正後のマスターデータを事前に用意している。
+   マスタデータの管理方法は、プロジェクト毎に様々であるため、実プロジェクトでのマスタデータの取り扱いについてはプロジェクトの規定に従うこと。
+ 
+ 
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-03_datasetup",
+  "title": "マスタデータのセットアップ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "マスタデータのセットアップ",
+      "hints": [
+        "マスタデータセットアップ",
+        "認可チェック",
+        "MASTER_DATA.xls",
+        "master_data_setup_tool",
+        "マスタデータセットアップツール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "認可チェック機能に必要なデータをMASTER_DATA.xlsに追加し、マスタデータセットアップツールを使用してローカル環境のDBへ反映する。\n\n**マスタデータとは**以下のようなデータを指す:\n- 「コードテーブル」や「メッセージテーブル」のようなプロジェクトで共通的に使用できるデータ\n- 認可チェック機能に必要なデータ\n- 採番機能に必要なデータ\n- 個別アプリケーション毎のメッセージ\n- 個別アプリケーション毎のコード値\n\n上記データのほとんどは、プロジェクトの共通データとして提供されているため、プログラマが個別に追加する必要はない。ただし「認可チェック機能に必要なデータ」については、実装時に追加する運用のほうが容易な場合があるため、プログラマが修正する運用のプロジェクトもある。開発時にマスタデータの編集が必要であるか否かは、プロジェクトのアーキテクトに確認すること。\n\n**MASTER_DATA.xlsの配置フォルダ**: `/Nablarch_sample/tool/db/data` 配下\n\n:download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>`\n\nMASTER_DATA.xls内で緑色のセルが認可チェック機能に必要な追加データ。\n\nマスタデータセットアップツールの使用方法: :ref:`master_data_setup_tool`\n\n> **注意**: マスタデータの管理方法はプロジェクト毎に異なるため、実プロジェクトでの取り扱いはプロジェクトの規定に従うこと。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-03_datasetup",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source explicitly states that the downloadable MASTER_DATA.xls is a pre-prepared file with authorization check data already added (「事前に認可チェック機能に必要なデータを追加したファイル」), provided to simplify the work. The knowledge file omits this distinction, which could cause an AI assistant to give incorrect guidance — telling users to manually add data when a pre-prepared download already contains it.",
+      "source_evidence": "「ここでは、作業の簡略化のために事前に認可チェック機能に必要なデータを追加したファイル MASTER_DATA.xls を用意している。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source's footnote [#] instructs users to check both the green cells AND the file notation (記法) of MASTER_DATA.xls (「MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること」). The knowledge file mentions only the green cells and omits the instruction to also confirm the file notation.",
+      "source_evidence": "「MASTER_DATA.xls 内の緑色部分と、MASTER_DATA.xls ファイルの記法について確認すること。」"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "web-application-03_datasetup",
+  "title": "マスタデータのセットアップ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "マスタデータのセットアップ",
+      "hints": [
+        "マスタデータセットアップ",
+        "認可チェック",
+        "MASTER_DATA.xls",
+        "master_data_setup_tool",
+        "マスタデータセットアップツール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "認可チェック機能に必要なデータをMASTER_DATA.xlsに追加し、マスタデータセットアップツールを使用してローカル環境のDBへ反映する。\n\n**マスタデータとは**以下のようなデータを指す:\n- 「コードテーブル」や「メッセージテーブル」のようなプロジェクトで共通的に使用できるデータ\n- 認可チェック機能に必要なデータ\n- 採番機能に必要なデータ\n- 個別アプリケーション毎のメッセージ\n- 個別アプリケーション毎のコード値\n\n上記データのほとんどは、プロジェクトの共通データとして提供されているため、プログラマが個別に追加する必要はない。ただし「認可チェック機能に必要なデータ」については、実装時に追加する運用のほうが容易な場合があるため、プログラマが修正する運用のプロジェクトもある。開発時にマスタデータの編集が必要であるか否かは、プロジェクトのアーキテクトに確認すること。\n\n**MASTER_DATA.xlsの配置フォルダ**: `/Nablarch_sample/tool/db/data` 配下\n\n:download:`MASTER_DATA.xls<./_download/MASTER_DATA.xls>`\n\nMASTER_DATA.xls内で緑色のセルが認可チェック機能に必要な追加データ。\n\nマスタデータセットアップツールの使用方法: :ref:`master_data_setup_tool`\n\n> **注意**: マスタデータの管理方法はプロジェクト毎に異なるため、実プロジェクトでの取り扱いはプロジェクトの規定に従うこと。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

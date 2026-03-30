@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-basic--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 更新完了画面 JSP説明",
+      "description": "更新完了画面のJSPで `windowScopePrefixes=\"11AC_W11AC01\"` を設定する目的が欠落している。",
+      "source_evidence": "ソース: 「一覧照会画面で検索条件を表示するために、11AC_W11AC01の値をウィンドウスコープに設定」— 完了画面から一覧画面に遷移した際に検索条件を表示するためにこのプレフィックスが必要であるという設計意図が記載されているが、知識ファイルには反映されていない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — EL式使用条件",
+      "description": "EL式が使用可能な理由として「値の出力ではないから」という重要な限定条件が欠落している。",
+      "source_evidence": "ソース: 「値の出力ではないので、EL式を使用しても問題ない。」— この記述は EL式が適切な文脈（値出力ではなくパラメータ指定）を区別するための判断基準であるが、知識ファイルでは単に「変数参照時はEL式（${title}）を使用可能」とのみ記述されている。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "タグ名が `confirmationPage` と記載されているが、ソースの実際のタグ名は `n:confirmationPage` である。",
+      "source_evidence": "ソースコード: `<n:confirmationPage />` — Nablarch カスタムタグの名前空間プレフィックス `n:` が欠落している。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — title",
+      "description": "セクション s2 のタイトルが空文字列 (`\"\"`) になっている。ソースには対応する明示的な見出しはないが、空のタイトルはナビゲーション上の意味を持たない。",
+      "source_evidence": "ソース: 「以下の遷移を例に、ウィンドウスコープを用いてデータを引き継ぐ際のActionクラスの実装例を示す。更新確認画面→更新完了画面」という導入文はあるが、RST見出しとしては設定されていない。"
+    }
+  ]
+}

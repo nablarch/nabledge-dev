@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-real-02_RequestUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — データベースの準備",
+      "description": "The condition for skipping DB preparation is incomplete. Source states two conditions: 'setUpTableの欄がない場合、または空欄の場合' (column absent OR empty), but the knowledge file only captures the 'empty' case: 'setUpTable欄が空欄の場合'.",
+      "source_evidence": "`テストショット一覧`_にて、setUpTableの欄がない場合、または空欄の場合、データベース準備は行われない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — テストショット一覧 (footnote [2])",
+      "description": "Footnote [2] defines '常駐プロセス' as 'メッセージ送受信を行うプロセス'. This definition provides context for the diConfig/requestPath/userId columns and is not captured in the knowledge file.",
+      "source_evidence": "ここで言う「常駐プロセス」とは、メッセージ送受信を行うプロセスのことである。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 consolidates the entire 'テストデータの書き方' H2 block, which contains at least 4 H3 subsections (テストクラスで共通のデータベース初期値, テストショット一覧, 各種準備データ, 各種期待値) with the source content well exceeding 2000 characters. Per V3 rules, an H2 section with ≥2000 chars of plain text and existing H3 subsections should be split into separate knowledge sections.",
+      "source_evidence": "Source H3 headings under テストデータの書き方: テストクラスで共通のデータベース初期値, テストショット一覧, 各種準備データ, 各種期待値 (with further H4 subsections)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Section s5 content is approximately 31 characters, below the 50-character threshold.",
+      "source_evidence": "s5 content: 'クラス単体テストと同様。通常のJUnitテストと同じように実行する。'"
+    }
+  ]
+}

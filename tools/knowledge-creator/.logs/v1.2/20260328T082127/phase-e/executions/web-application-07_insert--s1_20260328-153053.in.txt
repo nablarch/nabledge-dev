@@ -1,0 +1,605 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "PascalCase class names appearing in the s7 code examples are missing from hints: `SystemAccountAuthorityEntity` (used in registerSystemAccountAuthority), `StringUtil` (used in null check condition), `MessageUtil` (used in error handling).",
+      "source_evidence": "Source code in s7 contains: `new SystemAccountAuthorityEntity()`, `StringUtil.isNullOrEmpty(...)`, `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\")`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 hints",
+      "description": "PascalCase class names appearing in the s8 code example are missing from hints: `HttpResponse`, `HttpRequest`, `ExecutionContext`, `W11AC02Form`.",
+      "source_evidence": "Source code in s8 contains: `public HttpResponse doRW11AC0204(HttpRequest req, ExecutionContext ctx)`, `W11AC02Form form = validate(req);`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _insert:
+
+========
+登録処理
+========
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 二重サブミットの防止
+* データベースに対する挿入処理
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸の部分である。
+
+.. image:: ./_image/07/screenTransition.png
+ :width: 800px
+ :height: 300
+ :scale: 100
+
+編集するソースコードは以下のとおり。
+
++----------------------------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| 名称(右クリック->保存でダウンロード)                                             | ステレオタイプ | 処理内容                                                                                                                                      |
++==================================================================================+================+===============================================================================================================================================+
+| :download:`CM311AC1Component.java<./_source/download/CM311AC1Component.java>`    | Component      | ユーザ情報登録確認画面に表示されている情報を、データベースに登録する。                                                                        |
+|                                                                                  |                |                                                                                                                                               |
+|                                                                                  |                | 本クラスから使用するSQLファイルは、下記リンク先のファイルを参照すること。                                                                     |
+|                                                                                  |                | (右クリック->保存でダウンロード)                                                                                                              |
+|                                                                                  |                |                                                                                                                                               |
+|                                                                                  |                | :download:`CM311AC1Component.sql<./_source/download/CM311AC1Component.sql>`                                                                   |
+|                                                                                  |                |                                                                                                                                               |
++----------------------------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| :download:`W11AC02Action.java<./_source/download/W11AC02Action.java>`            | Action         |作成した上記Componentのメソッドを呼び出し、結果をリクエストスコープに格納、セッションをクリアしJSPに遷移させる。                               |
++----------------------------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`                      | View           | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|
+| :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`                      |                |                                                                                                                                               |
++----------------------------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+まず、\ :ref:`二重サブミットの防止 <double_submit>`\ について説明する。次に各ステレオタイプごとの作成手順を説明する(この中の\ :ref:`07_actionClassCreate`\ 
+と\ :ref:`07_jsp`\ で\ :ref:`二重サブミット防止 <double_submit>`\ の具体例を説明する)。
+
+.. _double_submit:
+
+二重サブミットの防止
+====================
+
+.. _double_submit_use_JavaScript:
+
+JavaScriptを使用した二重サブミットの防止
+----------------------------------------
+JavaScriptを使用した二重サブミットの防止とは、ユーザが誤ってボタンをダブルクリックした場合やサーバ側からのレスポンスが返ってこないので何度も同じボタンをクリックした場合に、\
+リクエストを2回以上サーバ側に送信するのを防止する機能である。DBの登録や更新処理を行う際、二重サブミットが起こると、登録や更新処理が2度実行されてしまうため、\
+二重サブミットを防止する必要がある。アプリケーションフレームワークでは、n:submitタグのallowDoubleSubmission属性にfalseを指定することで二重サブミットを\
+防止することができる。具体例は\ :ref:`07_jsp`\ を参照。
+
+.. _double_submit_use_Token:
+
+トークンを使用した二重サブミットの防止
+--------------------------------------
+トークンを使用した二重サブミットの防止とは、サーバ側で発行した一意なトークンをサーバ側(セッション)とクライアント側(hiddenタグ)に保持し、サーバ側で突合することで、二重サブミットを防止する機能である。\
+例えば、以下のような画面遷移で2回目のサブミットを検知し、入力画面にエラーメッセージを表示したい場合などに使用する。
+
+  :a): 登録確認画面で登録ボタン押下
+  :b): 登録処理実行
+  :c): 登録完了画面表示
+  :d): ブラウザの戻るボタンで戻る
+  :e): 再度登録ボタン押下(2回目のサブミット)
+
+トークンを使用した二重サブミットの防止では、JSP(トークンの設定)とアクション(トークンのチェック)の両方に実装する。
+
+JSP
+~~~
+二重サブミットを防止したいn:formタグのuseToken属性にtrueを設定する。具体例は\ :ref:`07_jsp`\ を参照。\
+ただし、 :doc:`./06_sharingInputAndConfirmationJsp` を使用している場合は、確認画面ではuseToken属性にtrueを設定しなくてもトークンを設定する。
+
+
+ 
+
+Action
+~~~~~~
+トークンをチェックしたいメソッドにOnDoubleSubmissionアノテーションを付与する。具体例は\ :ref:`07_actionClassCreate`\ を参照。
+
+.. note::
+  トークンを使用して二重サブミットを防止する場合にアプリケーションプログラマが記述する内容を整理すると、以下のようになる。
+
+    ========================== ====================================== ================================
+    入力画面と確認画面の共通化 formタグのuseToken属性の設定           メソッドへのアノテーションの付与
+    ========================== ====================================== ================================
+    共有化している             設定不要(自動的にトークンが設定される) 必要
+    共有化していない           trueを設定する                         必要
+    ========================== ====================================== ================================
+    
+  例えば、パスワード変更画面のように、DBの更新は発生する(二重サブミットを防止したい)が、入力画面しかない(確認画面がない)場合は、入力画面のformタグのuseToken属性にtrueを設定し、\
+  submitされたときに実行されるActionのメソッドに、OnDoubleSubmissionアノテーションを付与すればよい。
+
+まとめ
+------
+アプリケーションフレームワークが提供する二重サブミット防止機能を下図にまとめる。
+
+.. image:: ./_image/07/doubleSubmit.png
+ :width: 800px
+ :scale: 100
+
+.. _insert_auto_setting_item:
+
+自動設定項目の指定(Entityの編集)
+======================================
+
+ログインユーザIDとタイムスタンプは、Entityの対応するメンバ変数にアノテーションを付与することで、値を設定しなくてもデータベースへ登録することができる。
+
+================ ======================================================
+アノテーション   説明
+================ ======================================================
+@UserId          ログインユーザIDを自動設定したいメンバ変数に付与する。
+@CurrentDateTime タイムスタンプを自動設定したいメンバ変数に付与する。
+================ ======================================================
+
+例として、SystemAccountEntityの記述を以下に示す。
+
+.. code-block:: java
+
+  /**
+   * 登録者ユーザID。
+   */
+  @UserId           // 【説明】ログインユーザIDを設定するメンバ変数には"@UserIdアノテーション"を付与する
+  private String insertUserId;
+
+  /**
+   * 登録日時。
+   */
+  @CurrentDateTime  // 【説明】タイムスタンプを設定するメンバ変数には"@CurrentDateTimeアノテーション"を付与する
+  private Timestamp insertDate;
+
+  /**
+   * 更新者ユーザID。
+   */
+  @UserId           // 【説明】ログインユーザIDを設定するメンバ変数には"@UserIdアノテーション"を付与する
+  private String updatedUserId;
+
+  /**
+   * 更新日時。
+   */
+  @CurrentDateTime  // 【説明】タイムスタンプを設定するメンバ変数には"@CurrentDateTimeアノテーション"を付与する
+  private Timestamp updatedDate;
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+ビジネスロジック(Component)の作成
+=====================================
+
+\ *CM311AC1Componentクラス*\ に以下のメソッドを追加する。このメソッドの目的は、入力された情報をデータベースに格納することである。データベースへの挿入処理は以下のような流れになる。
+
+  :a): データベースに登録する値を設定したEntityのインスタンスを生成する。
+  :b): データベースコネクションの取得。
+  :c): ParameterizedSqlPStatementを作成する(\ :ref:`03_field`\ 参照)。
+  :d): ParameterizedSqlPStatement#executeUpdateByObjectを使用して挿入実行。
+  
+.. note::
+  本処理を外出ししているのは、複数の取引から利用されることを想定しているためである。\
+  そのため、取引単位で作成するFormを引数としていない。\
+  
+  他の取引での使用を想定しないのであれば、ビジネスロジックは基本的にAction内に実装する。
+
+特定のエンティティに繰り返し挿入する場合(バッチ挿入)は、addBatchObjectを使用して一括実行する。
+
+  :a): データベースに登録する値を設定したEntityのインスタンスを生成する。
+  :b): データベースコネクションの取得。
+  :c): ParameterizedSqlPStatementの作成。
+  :d): ParameterizedSqlPStatement#addBatchObjectを使用してエンティティを登録。挿入対象のエンティティ分だけ繰り返し実行する。
+  :e): ParameterizedSqlPStatement#executeBatchを使用して一括実行。
+
+.. warning::
+  大量のデータを一括処理する場合は、適宜ParameterizedSqlPStatement#executeBatchを実行すること。この処理を行わないと、メモリ不足、gc頻発による性能劣化の原因となることがある。\
+  なお、この実施間隔は方式設計にて設計されるものである。アプリケーションプログラマがバッチ挿入処理を行う場合は、ParameterizedSqlPStatement#executeBatchの実施間隔について必ず\
+  方式設計書を確認すること。
+
+* CM311AC1Component.sqlの内容
+
+ .. code-block:: sql
+
+    -- システムアカウント挿入用SQL
+    INSERT_SYSTEM_ACCOUNT=
+    INSERT INTO
+      SYSTEM_ACCOUNT
+      (
+      USER_ID,
+      LOGIN_ID,
+      PASSWORD,
+      USER_ID_LOCKED,
+      PASSWORD_EXPIRATION_DATE,
+      FAILED_COUNT,
+      EFFECTIVE_DATE_FROM,
+      EFFECTIVE_DATE_TO,
+      INSERT_USER_ID,           -- 【説明】自動設定されるのは値なので、項目の指定は必要
+      INSERT_DATE,              -- 【説明】自動設定されるのは値なので、項目の指定は必要
+      UPDATED_USER_ID,          -- 【説明】自動設定されるのは値なので、項目の指定は必要
+      UPDATED_DATE              -- 【説明】自動設定されるのは値なので、項目の指定は必要
+      )
+    VALUES                      -- 【説明】VALUESに挿入する値を持つEntityのフィールド名を ":フィールド名" として記述
+        (
+        :userId,
+        :loginId,
+        :password,
+        :userIdLocked,
+        :passwordExpirationDate,
+        :failedCount,
+        :effectiveDateFrom,
+        :effectiveDateTo,
+        :insertUserId,          -- 【説明】自動設定されるのは値なので、項目の指定は必要
+        :insertDate,            -- 【説明】自動設定されるのは値なので、項目の指定は必要
+        :updatedUserId,         -- 【説明】自動設定されるのは値なので、項目の指定は必要
+        :updatedDate            -- 【説明】自動設定されるのは値なので、項目の指定は必要
+        )
+
+    -- システムアカウント権限挿入用SQL
+    INSERT_SYSTEM_ACCOUNT_AUTHORITY=
+    INSERT INTO
+      SYSTEM_ACCOUNT_AUTHORITY
+      (
+      USER_ID,
+      PERMISSION_UNIT_ID,
+      INSERT_USER_ID,
+      INSERT_DATE,
+      UPDATED_USER_ID,
+      UPDATED_DATE
+      )
+    VALUES
+        (
+        :userId,
+        :permissionUnitId,
+        :insertUserId,
+        :insertDate,
+        :updatedUserId,
+        :updatedDate
+        )
+
+* CM311AC1Component.javaの内容
+
+ .. code-block:: java
+
+    // 【説明】
+    // DbAccessSupportクラスを継承する。
+    class CM311AC1Component extends DbAccessSupport {
+
+        /**
+         * ユーザを登録する。
+         * 
+         * @param systemAccount 画面入力された情報を持つ{@link SystemAccountEntity}
+         * @param plainPassword 暗号化されていないパスワード
+         * @param users 画面入力された情報を持つ{@link UsersEntity}
+         * @param ugroupSystemAccount 画面入力された情報を持つ{@link UgroupSystemAccountEntity}
+         */
+        // 【説明】異なる取引で共用するため、Formを引数としていない。
+        void registerUser(SystemAccountEntity systemAccount, String plainPassword, UsersEntity users,
+                UgroupSystemAccountEntity ugroupSystemAccount) {
+
+            // ～中略～
+
+            // システムアカウントの登録
+            registerSystemAccount(systemAccount);
+
+            // ～中略～
+
+            // システムアカウント権限の登録
+            if (!StringUtil.isNullOrEmpty(systemAccount.getPermissionUnit())) {
+                CM311AC1Component function = new CM311AC1Component();
+                function.registerSystemAccountAuthority(systemAccount);
+            }
+        }
+
+        /**
+         * システムアカウントテーブルに1件登録する。<br>
+         * 
+         * @param sysAcctEntity 登録する情報を保持した{@link SystemAccountEntity}
+         */
+        private void registerSystemAccount(SystemAccountEntity systemAccount) {
+
+            // SQL文の作成
+            // 【説明】
+            // Prepare Parameterizedステートメントの作成。挿入実行時に1項目ずつ値を指定しなくても、オブジェクトを
+            // 指定してその値をデータベースにデータを登録できる。
+            // SQL_IDには、上記のCM311AC1Component.sqlで定義している「INSERT_SYSTEM_ACCOUNT」を指定する。
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SYSTEM_ACCOUNT");
+
+            // システムアカウントに同じログインIDで既に登録されていたら例外を返す。
+            try {
+                /* 【説明】
+                    挿入の実行。Prepare Parameterizedステートメントに指定した項目名をフィールドとして持つEntityの
+                    インスタンスを渡す */
+                statement.executeUpdateByObject(systemAccount);
+            } catch (DuplicateStatementException de) {
+                throw new ApplicationException(
+                        MessageUtil.createMessage(MessageLevel.ERROR, "MSG00001"));
+            }
+        }
+
+        // ～中略～
+
+        /**
+         * システムアカウント権限に登録する。
+         * 
+         * @param systemAccount システムアカウント
+         */
+        void registerSystemAccountAuthority(SystemAccountEntity systemAccount) {
+    
+            SystemAccountAuthorityEntity systemAccountAuthority = new SystemAccountAuthorityEntity();
+            systemAccountAuthority.setUserId(systemAccount.getUserId());
+    
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SYSTEM_ACCOUNT_AUTHORITY");
+    
+            for (String permissionUnit : systemAccount.getPermissionUnit()) {
+                /* 【説明】 
+                    特定のエンティティに繰り返し挿入する場合(バッチ挿入)はaddBatchObjectを使用して一括実行する。
+                    引数にEntityのインスタンスを渡すところは通常のexecuteUpdateByObjectと同じ */
+                systemAccountAuthority.setPermissionUnitId(permissionUnit);
+                statement.addBatchObject(systemAccountAuthority);
+
+                /* 【説明】
+                    大量のデータを一括処理する場合は適宜executeBatchが必要。メモリ不足、gc頻発による性能劣化の原因と
+                    なることがある */
+
+            }
+            statement.executeBatch();
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _07_actionClassCreate:
+
+Actionの作成
+==================
+
+\ :ref:`double_submit_use_Token`\ を参照し、\ *W11AC02Actionクラス*\ に以下のメソッドを追加する。
+
+入力データは、カスタムタグを使用することでクライアント側(hiddenタグ)に保持しているため、リクエストパラメータから取得する。\
+このため、確認画面から遷移した場合でも入力データは改竄される恐れがあるため、本メソッドにおいて再度バリデーションを行う必要がある。
+
+トークンのチェックでは、二重サブミットと判定した場合、RW11AC0201にフォワードする(path = "forward://RW11AC0201")。
+
+.. code-block:: java
+
+  /**
+   * ユーザ情報登録確認画面の「確定」イベントの処理を行う。
+   *
+   * @param req リクエストコンテキスト
+   * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+   * @return HTTPレスポンス
+   */
+  @OnError(type = ApplicationException.class, path = "forward://RW11AC0201")
+  /* 【説明】
+      二重サブミットと判定した場合の画面遷移を指定するアノテーション
+      このメソッドが呼ばれる前にトークンをチェックし、二重サブミットかを判定する */
+  @OnDoubleSubmission(
+      path = "forward://RW11AC0201"  // 【説明】二重サブミットと判定した場合の遷移先のリソースパス
+  )
+  public HttpResponse doRW11AC0204(HttpRequest req, ExecutionContext ctx) {
+  
+      // 精査とフォーム生成
+      W11AC02Form form = validate(req);  /* 【説明】 入力データを取得する場合は、毎回バリデーションを行う */
+      
+      // ～中略～
+      
+      CM311AC1Component component = new CM311AC1Component();
+      
+      // ～中略～
+      
+      return new HttpResponse("/ss11AC/W11AC0203.jsp");
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _07_jsp:
+
+JSPの作成
+=========
+\ :ref:`double_submit_use_JavaScript`\ と\ :ref:`double_submit_use_Token`\ を参照し、以下の内容で\ *W11AC0201.jsp*\ を作成する。\
+サンプルアプリケーションでは、入力画面と確認画面のJSPを共通化する機能を使用しているので、useToken属性を指定しなくてよい。
+
+* W11AC0201.jsp
+
+.. literalinclude:: ./_source/07/W11AC0201.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-07_insert--s1",
+  "title": "登録処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "登録処理",
+        "二重サブミット防止",
+        "DB挿入処理",
+        "CM311AC1Component",
+        "W11AC02Action",
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "Component",
+        "Action",
+        "View"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "作成手順",
+        "ステレオタイプ",
+        "二重サブミット防止",
+        "JavaScript方式",
+        "トークン方式"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "JavaScriptを使用した二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "allowDoubleSubmission",
+        "n:submit",
+        "JavaScript方式"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "トークンを使用した二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "トークン",
+        "useToken",
+        "OnDoubleSubmission",
+        "@OnDoubleSubmission",
+        "n:form",
+        "セッション",
+        "hiddenタグ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "まとめ",
+      "hints": [
+        "二重サブミット防止",
+        "allowDoubleSubmission",
+        "useToken",
+        "OnDoubleSubmission",
+        "JavaScript方式",
+        "トークン方式"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "自動設定項目の指定(Entityの編集)",
+      "hints": [
+        "@UserId",
+        "@CurrentDateTime",
+        "自動設定",
+        "ログインユーザID",
+        "タイムスタンプ",
+        "SystemAccountEntity",
+        "insertUserId",
+        "insertDate",
+        "updatedUserId",
+        "updatedDate",
+        "Entity編集"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "ビジネスロジック(Component)の作成",
+      "hints": [
+        "CM311AC1Component",
+        "DbAccessSupport",
+        "ParameterizedSqlPStatement",
+        "getParameterizedSqlStatement",
+        "executeUpdateByObject",
+        "addBatchObject",
+        "executeBatch",
+        "DuplicateStatementException",
+        "ApplicationException",
+        "バッチ挿入",
+        "INSERT_SYSTEM_ACCOUNT",
+        "INSERT_SYSTEM_ACCOUNT_AUTHORITY",
+        "DB挿入処理",
+        "Component作成"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "Actionの作成",
+      "hints": [
+        "@OnDoubleSubmission",
+        "@OnError",
+        "ApplicationException",
+        "doRW11AC0204",
+        "W11AC02Action",
+        "validate",
+        "バリデーション",
+        "hiddenタグ",
+        "改竄",
+        "forward://RW11AC0201",
+        "Action作成"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "JSPの作成",
+      "hints": [
+        "W11AC0201.jsp",
+        "allowDoubleSubmission",
+        "useToken",
+        "JSP作成",
+        "入力画面",
+        "確認画面",
+        "共通化",
+        "06_sharingInputAndConfirmationJsp"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "作成するファイル：\n\n| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`CM311AC1Component.java<./_source/download/CM311AC1Component.java>` | Component | ユーザ情報登録確認画面の情報をDBに登録する。使用SQLファイル: :download:`CM311AC1Component.sql<./_source/download/CM311AC1Component.sql>` |\n| :download:`W11AC02Action.java<./_source/download/W11AC02Action.java>` | Action | Componentのメソッドを呼び出し、リクエストスコープに結果を格納、セッションをクリアしJSPに遷移する。 |\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` / :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>` | View | 入力内容と登録ボタン/戻るボタンを表示する。W11AC0202.jspがW11AC0201.jspを取り込む。 |",
+    "s2": "登録処理の作成手順。二重サブミット防止にはJavaScript方式とトークン方式の2種類がある。Actionの作成（:ref:`07_actionClassCreate`）とJSPの作成（:ref:`07_jsp`）で二重サブミット防止の具体的な実装例を示す。\n\nステレオタイプについては :ref:`stereoType` を参照。",
+    "s3": "ユーザがボタンをダブルクリックまたはサーバのレスポンス待ちに繰り返しクリックした場合に、リクエストを2回以上サーバ側に送信するのを防止する機能。DBの登録・更新処理を行う際に二重サブミットが発生すると登録・更新が2度実行されるため防止が必要。\n\n`n:submit`タグの`allowDoubleSubmission`属性に`false`を指定することで実装する。具体的な実装例は :ref:`07_jsp` を参照。",
+    "s4": "サーバ側(セッション)とクライアント側(hiddenタグ)に一意なトークンを保持し、サーバ側で突合することで二重サブミットを防止する機能。JSP(トークン設定)とAction(トークンチェック)の両方に実装が必要。\n\n**JSP側:** 二重サブミットを防止したい`n:form`タグの`useToken`属性に`true`を設定する。ただし :doc:`./06_sharingInputAndConfirmationJsp` を使用している場合は、確認画面では`useToken`属性を設定しなくても自動的にトークンが設定される。\n\n**Action側:** トークンをチェックしたいメソッドに`@OnDoubleSubmission`アノテーションを付与する。具体例は :ref:`07_actionClassCreate` を参照。\n\n> **注意**: 入力画面と確認画面の共通化状況によるuseToken設定の要否：\n\n| 入力画面と確認画面の共通化 | formタグのuseToken属性の設定 | メソッドへのアノテーションの付与 |\n|---|---|---|\n| 共有化している | 設定不要（自動的にトークンが設定される） | 必要 |\n| 共有化していない | trueを設定する | 必要 |\n\n例: パスワード変更画面のようにDBの更新は発生するが確認画面がない場合は、入力画面の`n:form`の`useToken`属性に`true`を設定し、submitされたときのActionメソッドに`@OnDoubleSubmission`アノテーションを付与する。",
+    "s5": "アプリケーションフレームワークが提供する二重サブミット防止機能のまとめ：\n\n![二重サブミット防止機能の概要](assets/web-application-07_insert--s1/doubleSubmit.png)\n\n- **JavaScript方式**: `n:submit`の`allowDoubleSubmission=false`でボタン連打を防止\n- **トークン方式**: `n:form`の`useToken=true` + `@OnDoubleSubmission`アノテーションでサーバ側でトークン突合",
+    "s6": "ログインユーザIDとタイムスタンプは、Entityの対応するメンバ変数にアノテーションを付与することで、値を手動設定しなくてもデータベースへ登録できる。\n\n| アノテーション | 説明 |\n|---|---|\n| `@UserId` | ログインユーザIDを自動設定したいメンバ変数に付与する。 |\n| `@CurrentDateTime` | タイムスタンプを自動設定したいメンバ変数に付与する。 |\n\nSystemAccountEntityの記述例：\n\n```java\n// 登録者ユーザID\n@UserId  // ログインユーザIDを設定するメンバ変数には @UserId アノテーションを付与する\nprivate String insertUserId;\n\n// 登録日時\n@CurrentDateTime  // タイムスタンプを設定するメンバ変数には @CurrentDateTime アノテーションを付与する\nprivate Timestamp insertDate;\n\n// 更新者ユーザID\n@UserId\nprivate String updatedUserId;\n\n// 更新日時\n@CurrentDateTime\nprivate Timestamp updatedDate;\n```",
+    "s7": "CM311AC1ComponentクラスにDbAccessSupportを継承させ、DB挿入メソッドを実装する。\n\n**通常の挿入処理フロー:**\n\na) DBに登録する値を設定したEntityのインスタンスを生成する。  \nb) データベースコネクションを取得する。  \nc) `getParameterizedSqlStatement(SQL_ID)` でParameterizedSqlPStatementを作成する。  \nd) `ParameterizedSqlPStatement#executeUpdateByObject(entity)` で挿入を実行する。\n\n**バッチ挿入処理フロー:**\n\na) Entityのインスタンスを生成する。  \nb) データベースコネクションを取得する。  \nc) ParameterizedSqlPStatementを作成する。  \nd) `ParameterizedSqlPStatement#addBatchObject(entity)` を挿入対象エンティティ分だけ繰り返し実行する。  \ne) `ParameterizedSqlPStatement#executeBatch()` で一括実行する。\n\n> **警告:** 大量のデータを一括処理する場合は、適宜`ParameterizedSqlPStatement#executeBatch`を実行すること。この処理を行わないと、メモリ不足、gc頻発による性能劣化の原因となることがある。実施間隔は方式設計書を確認すること。\n\n> **注意:** 本処理を外出ししているのは、複数の取引から利用されることを想定しているためである。他の取引での使用を想定しないのであれば、ビジネスロジックは基本的にAction内に実装する。\n\n**SQL (CM311AC1Component.sql):**\n\n```sql\n-- システムアカウント挿入用SQL\nINSERT_SYSTEM_ACCOUNT=\nINSERT INTO\n  SYSTEM_ACCOUNT\n  (\n  USER_ID, LOGIN_ID, PASSWORD, USER_ID_LOCKED,\n  PASSWORD_EXPIRATION_DATE, FAILED_COUNT,\n  EFFECTIVE_DATE_FROM, EFFECTIVE_DATE_TO,\n  INSERT_USER_ID,   -- 自動設定されるのは値なので、項目の指定は必要\n  INSERT_DATE,\n  UPDATED_USER_ID,\n  UPDATED_DATE\n  )\nVALUES  -- VALUESに挿入する値を持つEntityのフィールド名を \":フィールド名\" として記述\n    (\n    :userId, :loginId, :password, :userIdLocked,\n    :passwordExpirationDate, :failedCount,\n    :effectiveDateFrom, :effectiveDateTo,\n    :insertUserId, :insertDate, :updatedUserId, :updatedDate\n    )\n\n-- システムアカウント権限挿入用SQL\nINSERT_SYSTEM_ACCOUNT_AUTHORITY=\nINSERT INTO\n  SYSTEM_ACCOUNT_AUTHORITY\n  (USER_ID, PERMISSION_UNIT_ID, INSERT_USER_ID, INSERT_DATE, UPDATED_USER_ID, UPDATED_DATE)\nVALUES\n    (:userId, :permissionUnitId, :insertUserId, :insertDate, :updatedUserId, :updatedDate)\n```\n\n**Java (CM311AC1Component.java):**\n\n```java\nclass CM311AC1Component extends DbAccessSupport {\n\n    void registerUser(SystemAccountEntity systemAccount, String plainPassword,\n            UsersEntity users, UgroupSystemAccountEntity ugroupSystemAccount) {\n        // システムアカウントの登録\n        registerSystemAccount(systemAccount);\n\n        // システムアカウント権限の登録\n        if (!StringUtil.isNullOrEmpty(systemAccount.getPermissionUnit())) {\n            CM311AC1Component function = new CM311AC1Component();\n            function.registerSystemAccountAuthority(systemAccount);\n        }\n    }\n\n    private void registerSystemAccount(SystemAccountEntity systemAccount) {\n        // Prepare Parameterizedステートメントの作成。SQL_IDにはCM311AC1Component.sqlで定義したIDを指定する\n        ParameterizedSqlPStatement statement =\n            getParameterizedSqlStatement(\"INSERT_SYSTEM_ACCOUNT\");\n\n        try {\n            // 挿入の実行。Entityのインスタンスを渡すことで項目ごとに値を指定せずに登録できる\n            statement.executeUpdateByObject(systemAccount);\n        } catch (DuplicateStatementException de) {\n            throw new ApplicationException(\n                MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"));\n        }\n    }\n\n    void registerSystemAccountAuthority(SystemAccountEntity systemAccount) {\n        SystemAccountAuthorityEntity systemAccountAuthority = new SystemAccountAuthorityEntity();\n        systemAccountAuthority.setUserId(systemAccount.getUserId());\n\n        ParameterizedSqlPStatement statement =\n            getParameterizedSqlStatement(\"INSERT_SYSTEM_ACCOUNT_AUTHORITY\");\n\n        for (String permissionUnit : systemAccount.getPermissionUnit()) {\n            // バッチ挿入: addBatchObjectでエンティティを登録し、最後にexecuteBatchで一括実行する\n            systemAccountAuthority.setPermissionUnitId(permissionUnit);\n            statement.addBatchObject(systemAccountAuthority);\n        }\n        statement.executeBatch();\n    }\n}\n```",
+    "s8": "W11AC02Actionクラスに登録確定メソッドを追加する。\n\n**重要な制約:** 入力データはカスタムタグによりクライアント側(hiddenタグ)に保持しているため、確認画面から遷移した場合でも入力データは改竄される恐れがある。そのため、本メソッドにおいて**毎回`validate(req)`でバリデーションを行う**必要がある。\n\nトークンのチェックで二重サブミットと判定した場合は`RW11AC0201`にフォワードする。\n\n```java\n@OnError(type = ApplicationException.class, path = \"forward://RW11AC0201\")\n// 二重サブミットと判定した場合の画面遷移を指定するアノテーション。\n// このメソッドが呼ばれる前にトークンをチェックし二重サブミットかを判定する。\n@OnDoubleSubmission(\n    path = \"forward://RW11AC0201\"  // 二重サブミットと判定した場合の遷移先リソースパス\n)\npublic HttpResponse doRW11AC0204(HttpRequest req, ExecutionContext ctx) {\n\n    // 入力データを取得する場合は、毎回バリデーションを行う\n    W11AC02Form form = validate(req);\n\n    // ...\n\n    CM311AC1Component component = new CM311AC1Component();\n\n    // ...\n\n    return new HttpResponse(\"/ss11AC/W11AC0203.jsp\");\n}\n```",
+    "s9": "`:ref:`double_submit_use_JavaScript`` と `:ref:`double_submit_use_Token`` を参照し、W11AC0201.jspを作成する。\n\n**重要:** サンプルアプリケーションでは、入力画面と確認画面のJSPを共通化する機能（:doc:`./06_sharingInputAndConfirmationJsp`）を使用しているため、`useToken`属性を指定しなくてよい。共通化機能を使用している場合は自動的にトークンが設定されるためである。\n\nW11AC0201.jspには`allowDoubleSubmission`（JavaScript方式）と`useToken`（トークン方式）の両方の設定が含まれる。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

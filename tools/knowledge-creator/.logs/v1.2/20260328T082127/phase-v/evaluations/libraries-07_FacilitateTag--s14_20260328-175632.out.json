@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_FacilitateTag--s14",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "Both findings concern missing example class names (UserSearchAction, DbAccessSupport, @OnError) in hints for s4 and s5. These are illustrative identifiers used in code samples, not primary search terms users would query. The existing hints already cover the conceptually critical terms for each section (setMax, getMaxResultCount, usePaging, ページングなし for s4; nablarch.listSearch.maxResultCount, setMax, setMaxResultCount, デフォルト値 for s5). An agent would correctly retrieve these sections from typical user questions without these missing hints. DbAccessSupport is a framework class but is already covered in other sections' hints and is not the focal concept of s4 or s5.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "sections.s4 / index[3].hints",
+      "impact": "low",
+      "justification": "UserSearchAction is an example class name, not a framework identifier users would search for. DbAccessSupport is a framework class but already appears in other sections and is not the focal concept of s4 (which is about the no-paging pattern). @OnError is an annotation used in the example but is not specific to this section's concept. The existing hints (setMax, getMaxResultCount, usePaging, ページングなし, 全件表示) sufficiently cover the retrieval surface for this section. The agent would still find s4 correctly for relevant queries."
+    },
+    {
+      "category": "hints_missing",
+      "location": "sections.s5 / index[4].hints",
+      "impact": "low",
+      "justification": "UserSearchAction and DbAccessSupport appear only as example scaffolding in s5's code sample; the section is about default value configuration, not Action class implementation. Users looking for default value settings would use terms like nablarch.listSearch.maxResultCount, setMax, setMaxResultCount, デフォルト値 — all of which are already in the hints. Adding example class names would not meaningfully improve retrieval accuracy for this section's use case. The D→E fix agent left hints unchanged, likely treating these as low-priority since the section content and core hints were already complete."
+    }
+  ]
+}

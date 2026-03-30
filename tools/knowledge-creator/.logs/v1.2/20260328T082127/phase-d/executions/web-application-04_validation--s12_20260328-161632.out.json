@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-04_validation--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s1 (code block, グループIDのチェック and 認可単位IDのチェック comments)",
+      "description": "The knowledge file modifies existing source code comments by appending labels not present in the source. Source has `// グループIDのチェック` and `// 認可単位IDのチェック`, but the knowledge file renders them as `// グループIDのチェック（null guardなし）` and `// 認可単位IDのチェック（null guardあり）`. These parenthetical labels do not exist in the source.",
+      "source_evidence": "Source code shows: `// グループIDのチェック` and `// 認可単位IDのチェック` — no null guard annotations are present in the original comments."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The source contains a `.. note::` stating `doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。` This explains why `@OnError` redirects to `doRW11AC0201` (it displays the user registration screen), providing context for understanding the error handling configuration. This note is absent from the knowledge file.",
+      "source_evidence": "Source note: `doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "`W11AC02Action` is a PascalCase class name explicitly referenced in the source section heading and body (`W11AC02Actionクラス`) but is absent from s1's hints array.",
+      "source_evidence": "Source heading: `*W11AC02Actionクラス*\\ を作成し以下のメソッドを追加する`"
+    }
+  ]
+}

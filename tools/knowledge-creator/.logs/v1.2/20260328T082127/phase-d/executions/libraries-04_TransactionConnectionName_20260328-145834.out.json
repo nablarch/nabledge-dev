@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_TransactionConnectionName",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — データベースコネクション名の使用例 code block",
+      "description": "The source explicitly shows three equivalent forms for registering an unnamed connection, but the knowledge file code block omits the third form `DbConnectionContext.setConnection(\"transaction\", connection1)`. The source comment says 'DbConnectionContext.setConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, connection1)' and 'DbConnectionContext.setConnection(\"transaction\", connection1)' are both equivalent to the unnamed registration.",
+      "source_evidence": "// 下記ロジックは、無名のデータベース接続を登録する事と同義である。\nDbConnectionContext.setConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, connection1);\nDbConnectionContext.setConnection(\"transaction\", connection1);"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — トランザクション名の使用例 code block",
+      "description": "The source includes an important comment explaining when application code (as opposed to framework code) needs to call getTransaction: specifically when processing must be committed even on abnormal termination (exception). This guidance on the application-level use case for the API is absent from the knowledge file.",
+      "source_evidence": "// アプリケーションで、トランザクションが必要となるケースは、\n// 例外発生時(異常終了)であっても処理を確定する必要がある場合である。"
+    }
+  ]
+}

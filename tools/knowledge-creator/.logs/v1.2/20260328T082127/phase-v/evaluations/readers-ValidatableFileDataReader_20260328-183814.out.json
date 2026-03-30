@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ValidatableFileDataReader",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor hints omissions in s2. DataRecord is already present in s1 hints, so retrieval for DataRecord-related queries already surfaces the file. RecordTypeBinding is only a cross-reference pointer in the source (\"規約についての詳細は RecordTypeBinding_ を参照すること\") and is not a concept explained in this file — users seeking RecordTypeBinding documentation would find a dedicated file, not this one. Neither omission causes a user to miss actionable knowledge.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s2 hints",
+      "impact": "low",
+      "justification": "DataRecord is already present in s1 hints. A query involving DataRecord would already retrieve this knowledge file via s1. Adding DataRecord to s2 hints would improve ranking precision marginally, but the content is not lost to the user. Phase E did not apply the fix — the s2 hints array in the Phase E output is identical to Phase D, indicating the fix agent skipped or failed to modify the index without surfacing an error."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 hints",
+      "impact": "low",
+      "justification": "RecordTypeBinding appears in the source only as a 'see also' reference for the dispatch method naming convention, not as a concept this file explains. The naming convention rule itself (public Result do[RecordType](DataRecord, ExecutionContext)) is fully documented in s2 content. A user searching for RecordTypeBinding would expect a dedicated RecordTypeBinding knowledge file, not this one. Missing this hint does not hide any knowledge that only this file provides. Phase E output shows unchanged s2 hints, confirming the fix was not applied."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "testing-framework-01_Abstract--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The three missing hints (setUpMessages, expectedMessages, SystemTimeProvider) have low user impact because proxy hints already cover the search paths. \"MESSAGE\" is present in s2's hints and covers queries about メッセージング処理 data type setup — the context in which setUpMessages/expectedMessages would be searched. \"${systemTime}\" is present and covers the primary search path for SystemTimeProvider. The section content itself contains all three strings, so full-content retrieval would find them. No real-world query pattern is left uncovered.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[1] (s2) hints",
+      "impact": "low",
+      "justification": "setUpMessages and expectedMessages are fixed values for the MESSAGE data type. Since 'MESSAGE' is already in the hints array, any query about MESSAGEデータタイプ setup will reach s2 and find these values in the content. Standalone searches for these strings are unlikely in practice. SystemTimeProvider is the implementation class behind ${systemTime}, which IS in the hints; developers configuring or querying about ${systemTime} will already land on this section. The Phase E output is byte-for-byte identical to Phase D — the fix loop ran but made no change to the hints array, leaving the finding unresolved. Given that all three terms are reachable via existing proxy hints and are present in the section body, the retrieval gap is negligible."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s2 — StatementFactory, BasicSqlStatementExceptionFactory, BasicSqlLoader property tables",
+      "description": "The property tables in s2 include a '型' (Type) column that does not exist in the source tables. The source tables have only two columns: 'property名' and '設定内容'. Type values such as 'int' for fetchSize/queryTimeout, 'String' for fileEncoding/extension/duplicateErrorSqlState, and 'int' for duplicateErrorErrCode are inferred from surrounding text (e.g., getErrorCode returns int) but are not explicitly stated in the source property tables.",
+      "source_evidence": "Source property tables use columns '====================================== ========================================================================================================================' (property名 / 設定内容 only). No type column exists."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "The hints for s2 are missing three names present in the source: (1) 'resultSetConvertor' — a property listed in the StatementFactory configuration table; (2) 'SqlStatementExceptionFactory' — the interface name explicitly cited in the source ('nablarch.core.db.statement.SqlStatementExceptionFactory'); (3) 'ResultSetConvertor' — the interface name explicitly cited in the source ('nablarch.core.db.statement.ResultSetConvertor'). Only the 'Basic*' implementation class names are currently in hints.",
+      "source_evidence": "Source table row: 'resultSetConvertor — nablarch.core.db.statement.ResultSetConvertorを実装したクラスの設定を行う'; 'sqlStatementExceptionFactory(必須) — nablarch.core.db.statement.SqlStatementExceptionFactoryを実装したクラスの設定を行う'."
+    }
+  ]
+}

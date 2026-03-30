@@ -1,0 +1,673 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/02_CodeManager.rst`
+- Format: `rst`
+
+```
+.. _`code_manager`:
+
+============================
+コード管理
+============================
+
+.. _`code_manager_abstract`:
+
+------------
+概要
+------------
+
+アプリケーションで使用するコード値、コード名称を管理する機能を提供する。
+
+| 本機能では、例えば性別区分(1:男性、2:女性)や年代区分(01:10歳未満、02:10代、03:20代、04:30代、05:40代以上)のようなコードの値(コード値)とその意味を表わす文字列(コード名称)を容易に扱うための機能を提供する。
+| 性別区分や年代区分といったコードの種別は、コードIDと呼ぶIDを設定し、コードID毎に別々に定義する。
+|
+| なお、一般にコードという名称には「商品コード」や「企業コード」といった、コード値に紐付く値が動的に変化する数多くのデータのキー値も含まれる。
+| しかし本機能では、これらのコードは対象としない。これらのコードはアプリケーションでマスタ用のテーブルを作成し、対処する。
+| また、本機能を使用する場合、コードの名称を持つテーブルとコード値を持つテーブルにRDBMSの参照整合性制約を設定できない。
+| このような制約のチェックには :ref:`code_manager_validation` を使用すること。
+| 
+| 本機能は、あくまで先に示した性別区分や年代区分など、コードに含まれるコード値とコード名称の関係が静的なコードのみに使用すること。
+| 
+
+| 本機能は、リポジトリに登録して使用する。
+| このため、本機能に必要な初期化処理は :ref:`repository` が実行する。
+| 
+| アプリケーションプログラマは、本機能を画面表示に使用するコード名称の取得と、コード値の取得に使用する。
+
+
+------------
+特徴
+------------
+
+
+国際化
+=====================================
+
+  国際化対応が必要なアプリケーションでは、言語ごとに異なる名称が取得できる。
+
+パターン指定によるコード値の取得
+=====================================
+
+  | アプリケーションで使用するコード値のうち、一部のコード値のみを取得するパターン指定によるコード値の取得ができる。
+  | この機能によって、コード値の入力チェックや特定のコード値のみを表示するコンボボックスを容易に作成できる。
+  
+
+高速なコードへのアクセス
+=====================================
+
+  | 本機能では、コード値とコード名称を :ref:`static_data_cache` の機能を使用してキャッシュする。
+  | このため、データベース上に保持しているコード値のデータを何度もロードすることがなく、アプリケーションの動作を高速化できる。
+  | 
+  | また、 :ref:`static_data_cache` の機能を使用しているため、\
+    キャッシュにデータをロードするタイミングを設定変更のみで変更できる。
+  | この機能により、下記例のようにアプリケーションの特性に合わせてキャッシュにデータをロードするタイミングを選択できる。
+  
+    キャッシュをロードするタイミングの選択例
+  
+    =======================  =============================================================================================
+    アプリケーションの種類   キャッシュにデータをロードするタイミング
+    =======================  =============================================================================================
+    Web アプリケーション     | 一括ロードを使用
+                             |  ※アプリケーション起動中にほぼ全てのコードが使用されるため
+    バッチアプリケーション   | オンデマンドロードを使用
+                             |  ※処理過程で全てのコードを使用しないため
+    =======================  =============================================================================================
+  
+        .. note::
+            :ref:`code_manager_abstract` で述べた通り、本機能は「コード値とコード名称の関係が静的なコード」を前提として設計、実装している。
+            
+            この前提では、コード値の意味が変更された際には、アプリケーションにもなんらかの修正が必要となると想定されるため、\
+            本機能ではアプリケーションを再起動せずにコードのキャッシュをリロードすることが想定されていない。
+            
+            しかし、 :ref:`static_data_cache` にはキャッシュをリロードする機能が実装されており、実際にはキャッシュのリロードが可能である。
+            このリロードの使用は、プロジェクトの責任で行うこと。
+            
+
+----
+要求
+----
+
+実装済み
+========
+* 国際化ができる。
+* コード値に対応するコード名称が取得できる。
+* 1つのコード値に対して、複数のコード名称が取得できる。
+* コードIDに対応するコード値を全て取得できる。
+* 文字列がコード値として妥当であるかチェックできる。
+* コードが使われるパターンに応じて、そのパターンで使用できるコードを取得する、パターン指定によるコード値の取得ができる。
+* コード値がパターンに含まれるかチェックできる。
+
+未検討
+========
+* 外部システム用にコード変換できる。(自システムのコード値⇔外部システムのコード値ができる機能)
+* コード値の有効期限を管理できる。
+
+----
+構造
+----
+
+クラス図
+========
+
+.. image:: ./_images/02/02_CodeManager_ClassDiagram.jpg
+   :scale: 75
+
+
+インタフェース定義
+---------------------------------------
+
+=========================================================== ===========================================================================================
+インタフェース名                                             概要
+=========================================================== ===========================================================================================
+nablarch.common.code.CodeManager                            | コードの値と名称を取り扱うインタフェース。
+                                                            | コード値、コード名称を取得するメソッドとコード値の存在チェックを行うメソッドを持つ。
+nablarch.common.code.Code                                   | 単一のコードデータ(コードIDに紐づくデータ)にアクセスするインタフェース。
+=========================================================== ===========================================================================================
+
+クラス定義
+---------------------------------------
+
+=========================================================== ===========================================================================================
+クラス名                                                    概要
+=========================================================== ===========================================================================================
+nablarch.common.code.BasicCodeManager                       | コードの値と名称を取り扱うクラス。
+nablarch.common.code.BasicCodeLoader                        | データベースからコードをロードするクラス。
+nablarch.common.code.BasicCode                              | Codeの基本実装クラス。
+                                                            | BasicCodeLoaderの内部クラスとして実現する。
+nablarch.common.code.CodeUtil                               | コードの値と名称の取り扱いに使用するユーティリティクラス。
+=========================================================== ===========================================================================================
+
+
+テーブル定義
+=================================
+
+| 本機能では、コード値と名称のマスタはデータベースのテーブル上に持つ。
+| データベースのテーブルは、コードの値とパターンを持つコードパターンテーブルとコード名称を持つコード名称テーブルから成る。
+| これらテーブルのテーブル名およびカラム名には制約はなく、設定により任意の名称が使用できる。
+
+
+コードパターンテーブルの定義
+----------------------------------
+
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+コードID                  | java.lang.String   | ユニークキー
+コード値                  | java.lang.String   | ユニークキー
+パターン  [#pattern_no]_  | java.lang.String   | パターンに含める場合 "1" 、含めない場合 "0" を設定する。
+========================= ==================== =====================================
+
+  .. [#pattern_no]
+      | パターンに使用するカラム名は任意に設定可能であり、プロジェクトで必要な数だけパターンを定義できる。
+      | 複数のパターンを使用する場合、パターンの数だけ別々のカラム名でパターンカラムをテーブルに持たせることになる。
+
+
+コード名称テーブルの定義
+----------------------------------
+
+=========================== ==================== =====================================
+定義                        Javaの型             制約
+=========================== ==================== =====================================
+コードID                    | java.lang.String   | ユニークキー
+コード値                    | java.lang.String   | ユニークキー
+言語                        | java.lang.String   | ユニークキー
+ソート順                    | java.lang.String   | 
+名称                        | java.lang.String   | コードの名称
+略称                        | java.lang.String   | コードの略称
+オプション名称  [#name_no]_ | java.lang.String   | コードのオプション名称
+=========================== ==================== =====================================
+
+  .. [#name_no]
+      コードのオプション名称は、1つのコード値に対して複数持つことができる。
+      1つのコード値に対して持つことのできるオプション名称の数は、任意に設定できる。
+      また、オプション名称を設定するカラムの名称も任意のカラム名が使用できる。
+
+
+
+.. _CodeManager_TableDefinitionExample:
+
+テーブル定義の例
+----------------------------------
+| 以下にテーブル定義の例を示す。
+
+| この例では、1つのコードIDごとに取得できるパターンの数を3種類設定している。
+| コード名称には、名称を NAME 、略称 を SHORT_NAME のカラムに持ち、さらにコード名称にコード値を含めた NAME_WITH_VALUE というオプション名称のカラムを持つ。
+
+.. image:: ./_images/02/02_CodeManager_DatabaseDiagram.jpg
+   :scale: 75
+
+
+
+
+.. _CodeManager_TableDataExample:
+
+------------------------------------
+コード値とコード名称のデータ
+------------------------------------
+
+以下にコード値とコード名称のデータ保持の例を示す。
+
+例えば、性別の区分(性別区分)を表すコードID "0001" のコードと、バッチの処理状態を表すコードID "0002" のコードを考える。
+
+これら2つのコードを :ref:`CodeManager_TableDefinitionExample` で示したテーブルで保持する場合、下記のようにデータを作成する。
+
+CODE_PATTERN テーブルのデータ例
+
+  ============ =========== ================= ================= ================= 
+  ID           VALUE       PATTERN1          PATTERN2          PATTERN3
+  ============ =========== ================= ================= ================= 
+  0001         1           1                 0                 0
+  0001         2           1                 0                 0
+  0001         9           0                 0                 0
+  0002         01          1                 0                 0
+  0002         02          1                 0                 0
+  0002         03          0                 1                 0
+  0002         04          0                 1                 0
+  0002         05          1                 0                 0
+  ============ =========== ================= ================= ================= 
+
+
+
+CODE_NAME テーブルのデータ例
+
+  ============ =========== =================== =================== ================================ ================= =====================
+  ID           VALUE       SORT_ORDER          LANG                NAME                             SHORT_NAME        NAME_WITH_VALUE
+  ============ =========== =================== =================== ================================ ================= ===================== 
+  0001         1           1                   ja                  男性                             男                1:男性
+  0001         2           2                   ja                  女性                             女                2:女性
+  0001         9           3                   ja                  不明                             不                9:不明
+  0002         01          1                   ja                  初期状態                         初期              
+  0002         02          2                   ja                  処理開始待ち                     待ち              
+  0002         03          3                   ja                  処理実行中                       実行              
+  0002         04          4                   ja                  処理実行完了                     完了              
+  0002         05          5                   ja                  処理結果確認完了                 確認              
+  0001         1           2                   en                  Male                             M                 1:Male
+  0001         2           1                   en                  Female                           F                 2:Female
+  0001         9           3                   en                  Unknown                          U                 9:Unknown
+  0002         01          1                   en                  Initial State                    Initial               
+  0002         02          2                   en                  Waiting For Batch Start          Waiting              
+  0002         03          3                   en                  Batch Running                    Running           
+  0002         04          4                   en                  Batch Execute Completed Checked  Completed              
+  0002         05          5                   en                  Batch Result Checked             Checked              
+  ============ =========== =================== =================== ================================ ================= ===================== 
+
+
+以降の実装例では、上記データがテーブルに入っていることを前提にして説明する。
+
+
+
+------------------
+コード名称の取得
+------------------
+コード名称は、CodeUtilのgetNameメソッドで取得できる。
+
+例えば :ref:`CodeManager_TableDataExample` で設定した性別区分に対応するコード名称を取得する場合、下記のように実装する。
+
+.. code-block:: java
+
+    // 性別区分(コードID:0001)、コード値 "1"に対応する文字列を取得する。
+    // ThreadContextに持つ言語によって、 "男性" または "Male" が取得できる。
+    String maleDisplayName = CodeUtil.getName("0001", "1");
+
+    // 言語を指定して 性別区分(コードID:0001)のコード値 "1"に対応する文字列を取得する。
+    // "男性" が取得できる。
+    String japaneseMaleDisplayName = CodeUtil.getName("0001", "1", Locale.JAPANESE);
+
+
+コード名称を画面表示する際は、詳細画面では完全な名称、一覧画面では略称で表示することがある。
+
+このように使用する箇所に応じてコード値の表示を変更するために、本機能では1つのコード値に対して複数のコード名称を持たせることができる。
+これらのコード名称の別名を取得するため、 CodeUtil には getName 以外にコードの略称を取得するメソッドとコードのオプション名称を取得するメソッドを持つ。
+これらメソッドの使用例を下記に示す。
+
+.. code-block:: java
+
+    // コード略称を取得する。
+    // ThreadContextに持つ言語によって、 "男" または "M" が取得できる。
+    String shortMaleDisplayName = CodeUtil.getShortName("0001", "1");
+
+    // コードのオプション名称を取得する。
+    // ThreadContextに持つ言語によって、 "1:男性" または "1:Male" が取得できる。
+    String shortMaleDisplayName = CodeUtil.getOptionalName("0001", "1", "NAME_WITH_VALUE");
+
+名称を取得するメソッドの一覧は下記の通り。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - メソッド名
+     - 説明
+   * - getName
+     - コード名称を取得する。
+   * - getShortName
+     - コードの略称を取得する。
+   * - getOptionalName
+     - | コードのオプション名称を取得する。
+       | 取得するオプション名称のカラムは、このメソッドの第3引数で指定する。
+
+------------------
+コード値の取得
+------------------
+
+コードが取り得る全てのコード値は、CodeUtilの下記メソッドで取得できる。
+   * getValues(String codeId)
+   * getValues(String codeId, Locale locale)
+
+上記メソッドで取得したコード値の配列は、コード名称テーブルのソート順カラムとして設定したカラム(この例では SORT_ORDER カラム)\
+の昇順でソートされた順序で取得できる。
+ソート順をコード名称テーブルに持つため、例えば言語ごとのコード名称の表示名にあわせてソートを行うことができる。
+この機能を使用することで、例えば国名を選択する場面で、日本語では「アメリカ」「カナダ」「日本」とアイウエオ順で表示し、
+英語では「Canada」「Japan」「United States」のようにアルファベット順に表示するという表示の変更ができる。
+
+
+例えば :ref:`CodeManager_TableDataExample` で設定した性別区分とバッチの処理状態を意味するコード値を取得する場合、下記のように実装する。
+
+.. code-block:: java
+
+    // 性別区分(コードID:0001) に対応するコード値を全て取得する。
+    // ThreadContextに持つ言語によって、{"1", "2", "9" } または {"2", "1", "9"} の文字列のリストが取得できる。
+    List<String> genderCodeValues = CodeUtil.getValues("0001");
+
+    // バッチの処理状態(コードID:0002) に対応するコード値を全て取得する。
+    // "01" 、 "02" 、 "03" 、 "04" 、 "05" の文字列のリストが取得できる。
+    List<String> executionStateCodeValues = CodeUtil.getValues("0002");
+
+
+
+------------------------------------
+コード値の有効性チェック
+------------------------------------
+
+画面やバッチ処理におけるファイルからの入力では、コード値として有効であるかチェックする必要がある。
+このようなチェックは CodeUtil の contains メソッドで行える。
+
+例えば :ref:`CodeManager_TableDataExample` で設定した性別区分として有効であるかチェックする場合、下記のようにコードが有効であるかチェックできる。
+
+.. code-block:: java
+
+    // 性別区分(コードID:0001) のコード値として有効であるかどうかチェックする
+    
+    // 性別区分として、 "1" は有効であるため、true
+    CodeUtil.contains("0001", "1");
+
+    // 性別区分として、 "3" は有効でないため、false
+    CodeUtil.contains("0001", "3");
+
+------------------------------------
+コード値のパターン
+------------------------------------
+:ref:`CodeManager_TableDataExample` のデータの例で示した、コードID 0001 の性別区分のうち、コード値 "9" \
+(不明)は外部システムから入力したデータに性別区分がなかった場合に使用する特殊なコード値を表わしている。
+このコード値は、画面から入力してほしくない。
+
+本機能では、このようなケースのために、コード値の集合に「パターン」を設定し、パターンに含まれるコード値の集合のみを取得する機能を持つ。
+例えば上記の性別区分の例では、全てのコード値（1:男性、2:女性、9:不明） のうち、画面入力に使用するコード値のみを集めたパターン1(1:男性、2:女性) を用意している。
+
+パターンに含まれるコード値のみを取得するには、 CodeUtilの下記メソッドを使用する。\
+pattern引数には、使用するパターンのカラム名を指定する。
+
+   * getValues(String codeId, String pattern)
+   * getValues(String codeId, String pattern, Locale locale)
+
+下記に実装例を示す。
+
+.. code-block:: java
+
+    // 性別区分(コードID:0001) のコード値のうち、 "PATTERN1" に対応するコード値を取得する。
+    // ThreadContextに持つ言語によって、 {"1" , "2"} または {"2" , "1"} の文字列のリストが取得できる。
+    List<String> executionStateCodeValues = CodeUtil.getValues("0001", "PATTERN1");
+
+
+また、パターンに対して有効であるかチェックするために、containsメソッドにもパターンが指定できる。
+下記に例を示す。
+
+.. code-block:: java
+
+    // 性別区分(コードID:0001) のコード値として有効であるかどうかチェックする
+    
+    // 性別区分のうち、 "1" は "PATTERN1" で有効であるため、 true が取得できる。
+    CodeUtil.contains("0001", "1", "PATTERN1");
+
+    // 性別区分として、 "3" は "PATTERN1" で有効でないため、 false が取得できる。
+    CodeUtil.contains("0001", "3", "PATTERN1");
+
+
+
+------------------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-02_CodeManager--s1`
+
+```json
+{
+  "id": "libraries-02_CodeManager--s1",
+  "title": "コード管理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "コード管理",
+        "コード値",
+        "コード名称",
+        "CodeManager",
+        "静的コード",
+        "リポジトリ登録",
+        "code_manager_validation",
+        "参照整合性制約"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "国際化",
+        "パターン指定",
+        "キャッシュ",
+        "static_data_cache",
+        "一括ロード",
+        "オンデマンドロード",
+        "高速アクセス",
+        "キャッシュリロード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "インタフェース定義",
+      "hints": [
+        "CodeManager",
+        "Code",
+        "nablarch.common.code.CodeManager",
+        "nablarch.common.code.Code",
+        "インタフェース定義"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "クラス定義",
+      "hints": [
+        "BasicCodeManager",
+        "BasicCodeLoader",
+        "BasicCode",
+        "CodeUtil",
+        "nablarch.common.code.BasicCodeManager",
+        "nablarch.common.code.BasicCodeLoader",
+        "nablarch.common.code.BasicCode",
+        "nablarch.common.code.CodeUtil"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "コードパターンテーブルの定義",
+      "hints": [
+        "コードパターンテーブル",
+        "パターン",
+        "コードID",
+        "コード値",
+        "テーブル定義"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "コード名称テーブルの定義",
+      "hints": [
+        "コード名称テーブル",
+        "言語",
+        "ソート順",
+        "略称",
+        "オプション名称",
+        "テーブル定義"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "テーブル定義の例",
+      "hints": [
+        "NAME",
+        "SHORT_NAME",
+        "NAME_WITH_VALUE",
+        "テーブル定義例",
+        "CODE_PATTERN",
+        "CODE_NAME",
+        "パターン数"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "コード値とコード名称のデータ",
+      "hints": [
+        "CODE_PATTERN",
+        "CODE_NAME",
+        "データ例",
+        "性別区分",
+        "バッチ処理状態",
+        "コードデータ"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "コード名称の取得",
+      "hints": [
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "コード名称取得",
+        "CodeUtil",
+        "言語指定",
+        "Locale"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "コード値の取得",
+      "hints": [
+        "getValues",
+        "コード値取得",
+        "ソート順",
+        "CodeUtil",
+        "Locale"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "コード値の有効性チェック",
+      "hints": [
+        "contains",
+        "コード値チェック",
+        "有効性チェック",
+        "CodeUtil"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "コード値のパターン",
+      "hints": [
+        "getValues",
+        "contains",
+        "パターン指定",
+        "PATTERN1",
+        "コード値のパターン",
+        "CodeUtil"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コード値とコード名称を管理する機能。性別区分・年代区分など「コード値とコード名称の関係が静的なコード」のみが対象。\n\n> **重要**: 商品コードや企業コードのような動的なデータのキー値は対象外。これらはマスタテーブルで対処すること。\n\n> **重要**: コード名称テーブルとコード値テーブルにRDBMSの参照整合性制約は設定できない。このようなチェックには :ref:`code_manager_validation` を使用すること。\n\nリポジトリに登録して使用する。初期化処理は :ref:`repository` が実行する。",
+    "s2": "- **国際化**: 言語ごとに異なるコード名称を取得できる。\n- **パターン指定**: コード値の一部のみをパターン指定で取得できる。入力チェックや特定コード値のみのコンボボックス作成に活用。\n- **高速アクセス**: :ref:`static_data_cache` でコード値・名称をキャッシュ。DBへの繰り返しアクセスを防ぐ。\n\nキャッシュロードタイミングの推奨:\n\n| アプリケーション種類 | キャッシュロードタイミング |\n|---|---|\n| Webアプリケーション | 一括ロード（起動中にほぼ全コードが使用されるため） |\n| バッチアプリケーション | オンデマンドロード（全コードを使用しないため） |\n\n> **注意**: 本機能はアプリケーション再起動なしのキャッシュリロードを想定していない（静的コードを前提とした設計のため）。ただし :ref:`static_data_cache` にはリロード機能が実装されており技術的には可能。使用はプロジェクトの責任で行うこと。",
+    "s3": "| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.common.code.CodeManager` | コード値・名称取得と存在チェックメソッドを持つインタフェース |\n| `nablarch.common.code.Code` | 単一コードデータ（コードIDに紐づく）へのアクセスインタフェース |",
+    "s4": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.code.BasicCodeManager` | コード値・名称を取り扱うクラス |\n| `nablarch.common.code.BasicCodeLoader` | DBからコードをロードするクラス |\n| `nablarch.common.code.BasicCode` | Codeの基本実装。BasicCodeLoaderの内部クラス |\n| `nablarch.common.code.CodeUtil` | コード値・名称取り扱いのユーティリティクラス |",
+    "s5": "コードの値とパターンを持つテーブル。テーブル名・カラム名は設定で任意に指定可能。\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| コードID | java.lang.String | ユニークキー |\n| コード値 | java.lang.String | ユニークキー |\n| パターン（複数可） | java.lang.String | パターンに含める場合 \"1\"、含めない場合 \"0\" |\n\n複数パターンを使用する場合、パターン数分の別カラムをテーブルに定義する。パターンカラム名は任意に設定可能。",
+    "s6": "コード名称を持つテーブル。テーブル名・カラム名は設定で任意に指定可能。\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| コードID | java.lang.String | ユニークキー |\n| コード値 | java.lang.String | ユニークキー |\n| 言語 | java.lang.String | ユニークキー |\n| ソート順 | java.lang.String | |\n| 名称 | java.lang.String | コードの名称 |\n| 略称 | java.lang.String | コードの略称 |\n| オプション名称（複数可） | java.lang.String | 1コード値に複数持てる。数・カラム名は任意 |",
+    "s7": "![テーブル定義例](assets/libraries-02_CodeManager--s1/02_CodeManager_DatabaseDiagram.jpg)\n\nこの例では、1コードIDにつき3パターン（PATTERN1〜PATTERN3）を設定。コード名称テーブルには名称（NAME）、略称（SHORT_NAME）、オプション名称（NAME_WITH_VALUE）のカラムを持つ。",
+    "s8": "CODE_PATTERNテーブルデータ例（コードID 0001: 性別区分, 0002: バッチ処理状態）:\n\n| ID | VALUE | PATTERN1 | PATTERN2 | PATTERN3 |\n|---|---|---|---|---|\n| 0001 | 1 | 1 | 0 | 0 |\n| 0001 | 2 | 1 | 0 | 0 |\n| 0001 | 9 | 0 | 0 | 0 |\n| 0002 | 01 | 1 | 0 | 0 |\n| 0002 | 02 | 1 | 0 | 0 |\n| 0002 | 03 | 0 | 1 | 0 |\n| 0002 | 04 | 0 | 1 | 0 |\n| 0002 | 05 | 1 | 0 | 0 |\n\nCODE_NAMEテーブルデータ例:\n\n| ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | NAME_WITH_VALUE |\n|---|---|---|---|---|---|---|\n| 0001 | 1 | 1 | ja | 男性 | 男 | 1:男性 |\n| 0001 | 2 | 2 | ja | 女性 | 女 | 2:女性 |\n| 0001 | 9 | 3 | ja | 不明 | 不 | 9:不明 |\n| 0002 | 01 | 1 | ja | 初期状態 | 初期 | |\n| 0002 | 02 | 2 | ja | 処理開始待ち | 待ち | |\n| 0002 | 03 | 3 | ja | 処理実行中 | 実行 | |\n| 0002 | 04 | 4 | ja | 処理実行完了 | 完了 | |\n| 0002 | 05 | 5 | ja | 処理結果確認完了 | 確認 | |\n| 0001 | 1 | 2 | en | Male | M | 1:Male |\n| 0001 | 2 | 1 | en | Female | F | 2:Female |\n| 0001 | 9 | 3 | en | Unknown | U | 9:Unknown |\n| 0002 | 01 | 1 | en | Initial State | Initial | |\n| 0002 | 02 | 2 | en | Waiting For Batch Start | Waiting | |\n| 0002 | 03 | 3 | en | Batch Running | Running | |\n| 0002 | 04 | 4 | en | Batch Execute Completed Checked | Completed | |\n| 0002 | 05 | 5 | en | Batch Result Checked | Checked | |",
+    "s9": "`CodeUtil`でコード名称を取得する。\n\n```java\n// ThreadContextの言語により \"男性\" または \"Male\" を取得\nString name = CodeUtil.getName(\"0001\", \"1\");\n\n// 言語を明示して取得（\"男性\"）\nString jaName = CodeUtil.getName(\"0001\", \"1\", Locale.JAPANESE);\n\n// 略称取得（\"男\" または \"M\"）\nString shortName = CodeUtil.getShortName(\"0001\", \"1\");\n\n// オプション名称取得（\"1:男性\" または \"1:Male\"）\nString optName = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n```\n\n名称取得メソッド一覧:\n\n| メソッド名 | 説明 |\n|---|---|\n| getName | コード名称を取得 |\n| getShortName | コードの略称を取得 |\n| getOptionalName | オプション名称を取得（第3引数でカラム名指定） |",
+    "s10": "コードID配下の全コード値を取得するメソッド:\n- `getValues(String codeId)`\n- `getValues(String codeId, Locale locale)`\n\n取得結果はコード名称テーブルのソート順カラムの昇順でソートされる。言語ごとにソート順を変えることができる。\n\n```java\n// 性別区分の全コード値（言語により {\"1\",\"2\",\"9\"} または {\"2\",\"1\",\"9\"}）\nList<String> genderValues = CodeUtil.getValues(\"0001\");\n\n// バッチ処理状態の全コード値（{\"01\",\"02\",\"03\",\"04\",\"05\"}）\nList<String> stateValues = CodeUtil.getValues(\"0002\");\n```",
+    "s11": "`CodeUtil.contains`メソッドでコード値の有効性をチェックする。\n\n```java\n// \"1\" は有効 → true\nCodeUtil.contains(\"0001\", \"1\");\n\n// \"3\" は有効でない → false\nCodeUtil.contains(\"0001\", \"3\");\n```",
+    "s12": "パターンに含まれるコード値のみを取得・チェックするメソッド:\n- `getValues(String codeId, String pattern)`\n- `getValues(String codeId, String pattern, Locale locale)`\n- `contains(String codeId, String value, String pattern)`\n\n`pattern`引数にはパターンのカラム名を指定する。\n\n```java\n// \"PATTERN1\" に含まれるコード値を取得（{\"1\",\"2\"} または {\"2\",\"1\"}）\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n\n// \"1\" は PATTERN1 で有効 → true\nCodeUtil.contains(\"0001\", \"1\", \"PATTERN1\");\n\n// \"3\" は PATTERN1 で有効でない → false\nCodeUtil.contains(\"0001\", \"3\", \"PATTERN1\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 12 < source headings 20
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

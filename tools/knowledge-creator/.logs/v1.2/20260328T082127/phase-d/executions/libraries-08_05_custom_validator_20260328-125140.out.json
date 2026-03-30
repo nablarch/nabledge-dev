@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_05_custom_validator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`getAnnotationClass` is a required method of the `Validator` interface (shown in the code example returning `SampleCheck.class`) but is absent from s2 hints. Users asking how to implement or what `getAnnotationClass` does would not be routed to this section via hint matching.",
+      "source_evidence": "public Class<? extends Annotation> getAnnotationClass() { return SampleCheck.class; } — present in the SampleCheckValidator code block in source"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 title and content",
+      "description": "s1 is titled \"アノテーションの作成\" but its content begins with the top-level introduction (3-step process overview, note about modifying existing validators needing only steps 2–3, and the sample requirements). This introductory content belongs to the page-level \"バリデータの追加・変更\" section in the source (before any h2 heading), not to the \"アノテーションの作成\" subsection. The mismatch may cause the overview/process content to be unreachable when a user asks about the overall addition procedure.",
+      "source_evidence": "Source RST: introductory paragraphs (「バリデーションに使用するアノテーションとバリデータは…」through「2と3を実施すればよい」and the sample requirements list) appear before the first h2 heading 「アノテーションの作成」. Knowledge file s1 merges all of this under the \"アノテーションの作成\" title."
+    }
+  ]
+}

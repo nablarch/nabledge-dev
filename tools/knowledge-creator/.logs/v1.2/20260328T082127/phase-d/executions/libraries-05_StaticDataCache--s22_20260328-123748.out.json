@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s22",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "s2のコード例に登場するNablarch固有のPascalCaseクラス名が hints に含まれていない。`SqlResultSet`（`stmt.retrieve()` の戻り値型）、`SqlRow`（ループ変数の型）、`AppDbConnection`（`execute` メソッドの引数型）が欠落している。",
+      "source_evidence": "loadAll() メソッド内: `SqlPStatement stmt = ...`, `SqlResultSet results = stmt.retrieve()`, `for (SqlRow row : results)`, `public List<ExampleData> execute(AppDbConnection connection)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "s3のXML設定例に登場するクラス名 `ExampleDataLoader` と `StaticDataUseExample` が hints に含まれていない。これらのクラスの設定方法を検索するユーザーがs3にたどり着けない。",
+      "source_evidence": "設定例XML内: `<component class=\"nablarch.core.cache.example.ExampleDataLoader\" />` および `<component name=\"staticDataUseExample\" class=\"nablarch.core.cache.example.StaticDataUseExample\">`"
+    }
+  ]
+}

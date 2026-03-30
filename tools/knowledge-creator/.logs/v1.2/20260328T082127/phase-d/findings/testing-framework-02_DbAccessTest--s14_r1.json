@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s4 / index[3]",
+      "description": "s4のtitleが空文字列になっているが、ソースの対応セクション見出しは「デフォルト値」(「======」アンダーライン付き)であり、タイトルを持つ正式なセクション。空タイトルは不正。",
+      "source_evidence": ".. _`default_values_when_column_omitted`:\n\nデフォルト値\n============"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5 — assertSqlResultSetEqualsメソッドに関する注意点",
+      "description": "assertSqlResultSetEqualsでレコード順序が異なる場合にアサート失敗となる理由として、ソースは2つ列挙しているが、知識ファイルには2番目の理由（ORDER BY）しか記載されていない。1番目の理由「SELECTで指定されたカラムに主キーが含まれているとは限らない」が欠落している。この理由はAIが「なぜこのメソッドは主キー突合で順序無視できないのか」を説明する際に必要な情報。",
+      "source_evidence": "これは以下の理由による。\n* SELECTで指定されたカラムに主キーが含まれているとは限らない為。\n* SELECT実行時はORDER BY指定がなされる場合がほとんどであり、順序についても厳密に比較する必要がある為。"
+    }
+  ]
+}

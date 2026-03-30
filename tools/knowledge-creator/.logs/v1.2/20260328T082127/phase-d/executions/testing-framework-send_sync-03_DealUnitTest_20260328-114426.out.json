@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s4",
+      "description": "障害系テストの設定値が源泉と異なる。知識ファイルは `errorMode:msgException` と記載しているが、ソースの表では `errorMode:errorMode:msgException` と記載されている。ソースの typo を無断で修正した形になっており、実際の設定値と異なる値を提示している。",
+      "source_evidence": "| errorMode:errorMode:msgException | メッセージ送受信エラーが発生する場合のテスト | MessagingExceptionをスローする。 |"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s7",
+      "description": "FilePathSetting の XML 設定コードブロックで、`<component name=\"filePathSetting\" ...>` の閉じタグが `</component>` になっているが、ソースでは `</property>` と記載されている。ソースの typo を無断で修正しており、コードがソースと一致しない。",
+      "source_evidence": "    </property>\n（ソースコードブロック末尾。<component> タグを </property> で閉じている）"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-04_Permission--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "The hints for s7 (テーブル定義) are missing two of the seven defined table names: グループテーブル and 認可単位テーブル. The current hints include グループシステムアカウント, システムアカウント権限, 認可単位リクエスト, システムアカウントテーブル, and グループ権限テーブル — but not the group table or authorization unit table. A user querying specifically about these two tables may not be routed to s7.",
+      "source_evidence": "Source defines グループ table (グループID / java.lang.String / ユニークキー) and 認可単位 table (認可単位ID / java.lang.String / ユニークキー) in the テーブル定義 section, but neither グループテーブル nor 認可単位テーブル appears in s7 hints."
+    }
+  ]
+}

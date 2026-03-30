@@ -1,0 +1,242 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-MessagingAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ExecutionContext` is a PascalCase class name referenced in the code example in s1 but is absent from s1's hints array.",
+      "source_evidence": "ExecutionContext ctx; appears in the code block in the 概要 section of the source file"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+同期応答電文送信処理用業務アクションハンドラのテンプレートクラス
+===========================================================================================
+
+
+**クラス名:** ``nablarch.fw.action.MessagingAction``
+
+---------------------------
+概要
+---------------------------
+本クラスは、 :doc:`../architectural_pattern/messaging_request_reply` における
+業務アクションハンドラを実装する際に使用するテンプレートクラスである。
+
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "MessagingAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++++
+
+本クラスを継承してアクションハンドラを実装するには、以下のテンプレートメソッドを必要に応じて実装する。
+
+  ====================  =============================================================================================
+  メソッド名            内容
+  ====================  =============================================================================================
+  onReceive()           | (必須実装)
+                        | 本ハンドラの往路処理の中で呼ばれる。
+                          要求電文オブジェクト( `RequestMessage`_ )の内容をもとに業務処理を実行し、
+                          応答電文オブジェクト( `ResponseMessage`_ )に応答電文の内容を格納してリターンする。
+  
+  
+  onError()             | (任意実装)
+                        | 業務トランザクションがロールバックされた時点で、 :doc:`TransactionManagementHandler`
+                          からコールバックされる。
+                          エラー応答電文を作成してリターンする。
+                          オーバーライドしなかった場合は、FW制御ヘッダのみが設定された電文がエラー応答として
+                          送信される。
+  
+  usesAutoRead()        | (任意実装)
+                        | 要求電文のデータ部の読込みを自動で行うか否かを指定する。
+                          要求電文のデータ部がマルチレコード/マルチフォーマット構成である場合は、
+                          このメソッドをオーバーライドしてfalseをリターンすることで、
+                          データ部の解析を手動で行うことができる。
+  
+  ====================  =============================================================================================
+
+以下のソースコードは、フレームワークが本クラスの各テンプレートメソッドを
+どのタイミングで呼び出すかを表したものである。
+
+  .. code-block:: java
+   
+    RequestMessage   req;
+    ResponseMessage  res; 
+    ExecutionContext ctx;
+
+
+    req = receive();                // (フレームワークが要求電文を受信)
+
+    try {
+        if ( usesAutoRead() ) {
+            req.readRecord();       // 要求電文のデータ部からデータレコードを自動的に読み込む。
+                                    // (主にシングルレコード形式の電文で使用する。)
+        }
+    
+        res = onReceive(req, ctx);  // 要求電文毎に呼ばれる。
+        commit();                   // (フレームワークが業務トランザクションをコミットする。)
+  
+    } catch(e) {
+        rollback();                 // (業務トランザクションをロールバックする。)
+        res = onError(e, req, ctx); // 業務処理で例外が発生し、業務トランザクションが
+                                    // ロールバックされた直後に呼ばれる。
+                                    // エラー応答電文をリターンして返す。
+    } finally {
+        send(res);                  // (フレームワークが応答電文を送信)
+    }
+
+  .. note::
+
+    このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、
+    ハンドラ構成によって制御されており、全く別物である。
+
+
+++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (業務データ部の自動読み込み)**
+    **usesAutoRead()** を実行し、その結果が **true** であった場合は、
+    `RequestMessage`_ の **readRecord()** メソッドを呼び出し、
+    要求電文内の業務データレコードの読み込みを行なう。
+
+    ここで読み込まれたデータレコードの内容は、 **getParamMap()** 等のメソッドにより、
+    レコードのフィールド名をキーとするMapとしてアクセスすることができる。
+
+  **2. (業務ロジックの実行)**
+    要求電文オブジェクトと実行コンテキストを引数として、 **onReceive()** メソッドを実行し、
+    その結果(応答電文オブジェクト)を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (正常終了)**
+   **2.** で作成した応答電文オブジェクトをリターンし終了する。 
+
+
+.. _error:
+
+**[例外処理]**
+  **1a. (データ終端エラー)**
+    要求電文内のデータレコードを読み込んだ時点で、データ部の終端に達しなかった場合は、
+    実行時例外( `InvalidDataFormatException`_ )を送出する。
+    
+    .. note::
+      
+      電文内に複数のレコードが格納されうる場合は、 **usesAutoRead()** をオーバライドし、falseを返すこと。
+
+.. _callback:
+
+**[コールバック]**
+  **4. (エラー応答電文の制御)**
+    本ハンドラでの処理終了後、 :doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合、
+    **onError()** メソッドを実行し、その結果(エラー応答電文オブジェクト)を返す。
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-MessagingAction",
+  "title": "同期応答電文送信処理用業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessagingAction",
+        "nablarch.fw.action.MessagingAction",
+        "onReceive",
+        "onError",
+        "usesAutoRead",
+        "RequestMessage",
+        "ResponseMessage",
+        "TransactionManagementHandler",
+        "同期応答電文送信",
+        "業務アクションハンドラ",
+        "テンプレートクラス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "usesAutoRead",
+        "readRecord",
+        "onReceive",
+        "onError",
+        "getParamMap",
+        "InvalidDataFormatException",
+        "TransactionManagementHandler",
+        "往路処理",
+        "復路処理",
+        "データ終端エラー",
+        "コールバック"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.MessagingAction`\n\n:doc:`../architectural_pattern/messaging_request_reply` における業務アクションハンドラ実装用テンプレートクラス。\n\n以下のテンプレートメソッドを必要に応じて実装する:\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| `onReceive()` | 必須 | 往路処理で呼ばれる。`RequestMessage` の内容をもとに業務処理を実行し、`ResponseMessage` に応答内容を格納してリターン |\n| `onError()` | 任意 | 業務トランザクションがロールバックされた時点で :doc:`TransactionManagementHandler` からコールバック。エラー応答電文を作成してリターン。オーバーライドしない場合はFW制御ヘッダのみ設定された電文がエラー応答として送信される |\n| `usesAutoRead()` | 任意 | 要求電文データ部の自動読み込みを行うか指定。マルチレコード/マルチフォーマット構成の場合はオーバーライドしてfalseをリターンし、手動でデータ部を解析する |\n\n以下のコードは、フレームワークが各テンプレートメソッドをどのタイミングで呼び出すかを示す:\n\n```java\nRequestMessage   req;\nResponseMessage  res;\nExecutionContext ctx;\n\nreq = receive();                // (フレームワークが要求電文を受信)\n\ntry {\n    if ( usesAutoRead() ) {\n        req.readRecord();       // 要求電文のデータ部からデータレコードを自動的に読み込む。\n                                // (主にシングルレコード形式の電文で使用する。)\n    }\n\n    res = onReceive(req, ctx);  // 要求電文毎に呼ばれる。\n    commit();                   // (フレームワークが業務トランザクションをコミットする。)\n\n} catch(e) {\n    rollback();                 // (業務トランザクションをロールバックする。)\n    res = onError(e, req, ctx); // 業務処理で例外が発生し、業務トランザクションが\n                                // ロールバックされた直後に呼ばれる。\n                                // エラー応答電文をリターンして返す。\n} finally {\n    send(res);                  // (フレームワークが応答電文を送信)\n}\n```\n\n> **注意**: このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。",
+    "s2": "**[往路処理]**\n\n1. **(業務データ部の自動読み込み)**: `usesAutoRead()` を実行し、結果が `true` の場合は `RequestMessage` の `readRecord()` を呼び出して業務データレコードを読み込む。読み込んだデータレコードは `getParamMap()` 等でフィールド名をキーとするMapとしてアクセス可能。\n2. **(業務ロジックの実行)**: 要求電文オブジェクトと実行コンテキストを引数として `onReceive()` を実行し、応答電文オブジェクトを取得する。\n\n**[復路処理]**\n\n3. **(正常終了)**: 2. で作成した応答電文オブジェクトをリターンして終了。\n\n**[例外処理]**\n\n1a. **(データ終端エラー)**: データレコード読み込み時にデータ部の終端に達しなかった場合、`InvalidDataFormatException` を送出する。\n\n> **注意**: 電文内に複数のレコードが格納されうる場合は、`usesAutoRead()` をオーバーライドしてfalseを返すこと。\n\n**[コールバック]**\n\n4. **(エラー応答電文の制御)**: 本ハンドラ処理終了後、:doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合、`onError()` を実行し、その結果（エラー応答電文オブジェクト）を返す。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

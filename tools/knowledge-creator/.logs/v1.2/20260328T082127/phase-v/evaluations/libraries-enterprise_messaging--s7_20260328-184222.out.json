@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor hints_missing items for supporting/utility classes (DataRecordFormatter, JndiHelper) that appear only in code/config examples, not as primary API classes. The core search terms for each section are well covered. Users seeking messaging functionality would search by messaging-related terms already present in hints; neither omission would cause retrieval failure in typical use cases.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1].hints",
+      "impact": "low",
+      "justification": "DataRecordFormatter is a formatting utility used as a parameter in messaging API calls, not a messaging concept itself. It is documented in the record_format module. Users searching for messaging send/receive patterns would use terms like MessagingContext, sendSync, receiveSync, or pattern names — all already present. Missing this hint creates no meaningful retrieval gap for messaging-related queries."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s3].hints",
+      "impact": "low",
+      "justification": "JndiHelper is a general-purpose JNDI utility class referenced only inside the jndiHelper property of JndiLookingUpJmsMessagingProvider's XML config. Users configuring JMS messaging would search by the provider class name (already in hints) or JMS/JNDI terms, not JndiHelper directly. Its absence does not prevent retrieval of the JMS provider configuration section."
+    },
+    {
+      "category": "why_persisted",
+      "location": "Phase E output",
+      "impact": "none",
+      "justification": "The Phase E fix agent produced output identical to the original knowledge file — neither DataRecordFormatter nor JndiHelper was added to the respective hints arrays. The fix was not applied, likely due to a no-op or silent failure in the patch step. Since both items are low-impact, the unresolved state does not degrade knowledge file quality meaningfully."
+    }
+  ]
+}

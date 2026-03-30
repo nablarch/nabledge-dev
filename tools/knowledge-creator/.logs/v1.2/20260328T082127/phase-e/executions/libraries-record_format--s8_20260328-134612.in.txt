@@ -1,0 +1,427 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-record_format--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "Field type identifiers from the first column of the fixed-length and variable-length field type tables are absent from hints. Users asking about specific types (e.g. 「X9タイプの使い方」「SX9フィールドとは」) may not route to this section. Missing identifiers include at minimum the multi-character ones: XN, X9, SX9, SZ, SP, and also Z, P, B.",
+      "source_evidence": "Fixed-length field type table first-column values: X, N, XN, Z, SZ, P, SP, B, X9, SX9. Variable-length table first-column value: 'X、N、XN、X9、SX9'. None of these appear in the s1 hints array."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+フィールドタイプ・フィールドコンバータ定義一覧
+--------------------------------------------------------------------
+
+**(固定長データ形式での設定)**
+  **フィールドタイプ**
+
+    ==============  ===========  ===================================================================================================================================================
+    タイプ識別子    Java型       内容
+    ==============  ===========  ===================================================================================================================================================
+    X               String       | シングルバイト文字列 (バイト長=文字数)
+                                 | デフォルトでは、半角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString
+                                 | **引数:** バイト長(数値, 必須指定)
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    N               String       | ダブルバイト文字列 (バイト長 = 文字数 ÷ 2)
+                                 | デフォルトでは、全角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString
+                                 | **引数:** バイト長(数値、必須指定)
+                                 |           ※  バイト長が2の倍数でない場合は構文エラーとなる。
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    XN              String       | マルチバイト文字列
+                                 | UTF-8のようにバイト長の異なる文字が混在するフィールドを扱う場合に、このフィールドタイプを指定する。
+                                 | また、全角文字列（ダブルバイト文字列）のパディングに半角スペースを使用する場合にも本フィールドタイプを使用する。
+                                 | デフォルトでは、半角空白による右トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.ByteStreamDataString
+                                 | **引数:** バイト長(数値、必須指定)
+                                 | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+
+    Z               BigDecimal   | ゾーン10進数値 (バイト長 = 桁数)
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.ZonedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SZ              BigDecimal   | 符号付ゾーン10進数値 (バイト長 = 桁数)
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | **引数3:** 正数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | **引数4:** 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    P               BigDecimal   | パック10進数値 (バイト長 = 桁数 ÷ 2 [端数切り上げ]) 
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.PackedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SP              BigDecimal   | 符号付パック10進数値 (バイト長 = (桁数 + 1) ÷ 2 [端数切り上げ])
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** 少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | **引数3:** 正数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | **引数4:** 負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    B               byte[]       | バイナリ列
+                                 | パディングは行わない。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.Bytes
+                                 | **引数:** バイト長(数値、必須指定)
+                                 | 出力対象の値が ``null`` の場合の変換仕様はアプリケーションごとに様々である。
+                                 | そのため、本フィールドタイプではその場合でも値の変換は行わず、
+                                 | InvalidDataFormatExceptionを送出する。
+                                 | 本フィールドタイプを使用する場合、要件に合わせてアプリケーション側で明示的に値を設定すること。
+
+    X9              BigDecimal   | 符号無し数値文字列 (バイト長 = 文字数) 
+                                 | フィールド中のシングルバイト文字列(X)を数値として扱う。
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | 文字列中に小数点記号(".")を含めることできる。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.NumberStringDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** フィールド中に小数点記号が含まれなかった場合の少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+    SX9             BigDecimal   | 符号付き数値文字列 (バイト長 = 文字数)
+                                 | フィールド中のシングルバイト文字列(X)を符号付き数値として扱う。
+                                 | デフォルトでは、'0'による左トリム・パディングを行う。
+                                 | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.datatype.NumberStringDecimal
+                                 | **引数1:** バイト長(数値、必須指定)
+                                 | **引数2:** フィールド中に小数点記号が含まれなかった場合の少数点以下桁数(数値、任意指定、デフォルト=0)
+                                 | 出力対象の値が ``null`` の場合、値を ``0`` に変換してから処理を行う。
+
+
+    ==============  ===========  ===================================================================================================================================================
+
+
+  **フィールドコンバータ**
+    
+    ==================  =====================  =============================================================================================================================
+    コンバータ名        Java型(変換前後)       内容
+    ==================  =====================  =============================================================================================================================
+    pad                 N/A                    | データコンバータが使用するパディング・トリムの対象とする値を設定する。
+                                               | パディング・トリムの向きはフィールドタイプ毎に以下のように決定される。
+                                               |
+                                               |   **X、N、XN :** 右トリム・パディング
+                                               |   **Z、SZ、P、SP、X9、SX9 :** 左トリム・パディング
+                                               |   **B :** (トリム・パディングは行わないため、無効)
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.Padding
+                                               | **引数:** パディング・トリムの対象となる値 (必須指定)
+
+    encoding            N/A                    | データコンバータが使用する文字エンコーディングを指定する。
+                                               | X、N、XN 以外のフィールドに設定した場合は単に無視される。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.UseEncoding
+                                               | **引数:** エンコーディング名(文字列、必須指定)
+
+    リテラル値          Object <-> Object      | **入力時:** (なにもしない)
+                                               | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+                                               | **引数:** なし
+
+    replacement         String <-> String      | 入出力とも、寄せ字対象文字を変換先の文字に置換して返す。
+                                               | **引数:** 寄せ字タイプ名(文字列、任意指定)
+    ==================  =====================  =============================================================================================================================
+
+
+
+**(可変長データ形式での設定)**
+  **フィールドタイプ**
+
+    ====================  ===========  =====================================================================================================================
+    タイプ識別子          Java型       内容
+    ====================  ===========  =====================================================================================================================
+    X、N、XN、X9、SX9     String       | 可変長データ形式では、すべてのフィールドを文字列（String）として読み書きする。
+                                       | よって、どのタイプ識別子を指定しても動作は変わらない。
+                                       | また、フィールド長の概念が無いので、引数は不要である。
+                                       | もしNumber型（BigDecimalなど）のデータを読み書きしたい場合は、後述のnumber/signed_numberコンバータを使用すること。
+                                       | 出力対象の値が ``null`` の場合、値を空文字に変換してから処理を行う。
+    ====================  ===========  =====================================================================================================================
+
+  **フィールドコンバータ**
+
+    ==================  =====================  ================================================================================================================================
+    コンバータ名        Java型(変換前後)       内容
+    ==================  =====================  ================================================================================================================================
+    encoding            N/A                    | データコンバータが使用する文字エンコーディングを指定する。
+                                               | X、N 以外のフィールドに設定した場合は単に無視される。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.UseEncoding
+                                               | **引数:** エンコーディング名(文字列、必須指定)
+
+    リテラル値          Object <-> Object      | **入力時:** (なにもしない)
+                                               | **出力時:** 出力する値が未設定であった場合に指定されたリテラル値を出力する。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.DefaultValue
+                                               | **引数:** なし
+
+    number              String <-> BigDecimal  | **入力時:** 入力された値が符号なし数値であることを形式チェックした上でBigDecimal型に変換して、返却する。
+                                               |         もし入力された値がnullまたは空文字の場合、nullを返却する。
+                                               | **出力時:** 出力する値を文字列に変換し、符号なし数値であることを形式チェックした上で出力する。
+                                               |         もし出力する値がnullの場合、空文字を出力する。
+                                               |
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.NumberString
+                                               | **引数:** なし
+
+    signed_number       String <-> BigDecimal  | 符号が許可される点以外は **number** コンバータと同じ仕様。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.SignedNumberString
+                                               | **引数:** なし
+
+    replacement         String <-> String      | 入出力とも、寄せ字対象文字を変換先の文字に置換して返す。
+                                               | **デフォルト実装クラス:** nablarch.core.dataformat.convertor.value.CharacterReplacer
+                                               | **引数:** 寄せ字タイプ名(文字列、任意指定)
+    ==================  =====================  ================================================================================================================================
+
+
+可変長ファイルにおけるタイトル行の読み書き
+--------------------------------------------------------------------
+この節では、可変長ファイルにおける最初の行をタイトル行として、通常のレコードタイプとは別に取り扱う機能について解説する。
+
+タイトル行とは例えば以下のようなファイルのことを示す。
+
+.. image:: ../_image/record_format_csv_sample.png
+
+requires-titleディレクティブにtrueを設定することで、タイトル行を読み書きする機能が有効となり、最初の行をタイトル行として通常のレコードタイプとは別に取り扱うことができるようになる。
+この場合、最初の行はタイトル固定のレコードタイプ名[Title]で読み書きできるようになる。
+
+通常、タイトル行・データ行のような2つのレコードタイプが存在するファイルを読み込むためには以下のようにマルチフォーマットの定義を行う必要がある。
+
+  .. code-block:: bash
+    
+    [Classifier]
+    1  Kubun X               # レコードタイプ識別フィールド
+    
+    [TitleRecord]            # タイトル固有のレコードタイプ
+      Kubun = "データ区分"   # タイトルのフォーマットの適用条件
+    1   Kubun      N  
+    2   Name       N  
+    3   Publisher  N  
+    4   Authors    N  
+    5   Price      N  
+            
+    [DataRecord]             # データのレコードタイプ
+      Kubun = "1"            # データのフォーマットの適用条件
+    1   Kubun      X  
+    2   Name       N  
+    3   Publisher  N  
+    4   Authors    N  
+    5   Price      N  
+
+タイトル行とデータ行に対してフォーマットの適用条件となるフィールドが存在する場合は、上記のようなマルチフォーマットの定義で読み込むことができるが、そのようなフィールドが存在しない場合は読み込むことができない。
+
+しかし、本機能を使用すれば、最初の行はタイトル固有のレコードタイプが、最初の行以降はそれ以外のレコードタイプが適用されるので、
+タイトル行とデータ行を識別するためのフィールドが存在しなくても、以下のとおりシングルフォーマットの定義で読み込むことができる。
+   
+  .. code-block:: bash
+    
+   requires-title: true  # requires-titleがtrueの場合、最初の行をタイトルとして読み書きできる。
+
+   [Title]               # タイトル固有のレコードタイプ。最初の行はこのレコードタイプで読み書きされる。
+   1   Kubun      N  
+   2   Name       N  
+   3   Publisher  N  
+   4   Authors    N  
+   5   Price      N  
+        
+   [DataRecord]          # データのレコードタイプ。最初の行以降の行はこのレコードタイプで読み書きされる。
+   1   Kubun      X  
+   2   Name       N  
+   3   Publisher  N  
+   4   Authors    N  
+   5   Price      N  
+
+また、本機能を使用する場合、最初の行がタイトル行であることが保証されるので、ファイルレイアウトの精査を省略できるといったメリットもある。
+
+以上の点より、最初の行にタイトルが存在するファイルを読み込む場合は、本機能を使用することを推奨する。
+
+
+本機能を使用する場合、以下の制約が発生する。
+
+* レコードタイプ [Title] を必ずフォーマット定義しなければならない。
+* 最初の行を書き込む際に指定するレコードタイプは [Title] でなければならない。
+* 最初の行以降を書き込む際に指定するレコードタイプは  [Title] 以外でなければならない。
+* レコードタイプ  [Title] にフォーマットの適用条件が定義されている場合、読み書きする最初の行は必ずその適用条件を満たさなければならない。また、最初の行以降の行はその適用条件を満たしてはいけない。
+
+
+以下に、最初の行をタイトルとして読み書きする場合のシングルフォーマット・マルチフォーマット定義の例を示す。
+
+
+**シングルフォーマット定義の例**
+
+  .. code-block:: bash
+  
+    #-------------------------------------------------------------------------------
+    # 書籍一覧の可変長ファイルフォーマット（シングルフォーマット）
+    #-------------------------------------------------------------------------------
+
+    file-type:    "Variable"     # 可変長
+    text-encoding:     "ms932"   # ファイルエンコーディング
+    record-separator:  "\r\n"    # CRLFで改行
+    field-separator:   ","       # フィールド区切り文字
+    quoting-delimiter: "\""      # 囲み文字
+    requires-title: true         # 最初の行をタイトルとして読み書きする
+    
+    [Title]                      # タイトル固有のレコードタイプ
+    1   Name       N  "書籍名" 
+    2   Publisher  N  "出版社"   
+    3   Authors    N  "著者"     
+    4   Price      N  "価格"     
+    
+    [Books]                      # データのレコードタイプ
+    1   Name       X             # 書籍名
+    2   Publisher  X             # 出版社
+    3   Authors    X             # 著者
+    4   Price      X  Number     # 価格
+
+
+**マルチフォーマット定義の例**
+
+  .. code-block:: bash
+  
+    #-------------------------------------------------------------------------------
+    # 書籍一覧の可変長ファイルフォーマット（マルチフォーマット）
+    #-------------------------------------------------------------------------------
+
+    file-type:    "Variable"     # 可変長
+    text-encoding:     "ms932"   # ファイルエンコーディング
+    record-separator:  "\r\n"    # CRLFで改行
+    field-separator:   ","       # フィールド区切り文字
+    quoting-delimiter: "\""      # 囲み文字
+    requires-title: true         # 最初の行をタイトルとして読み書きする
+    
+    
+    [Classifier]
+    1  Kubun X                   # レコードタイプ識別フィールド（データ区分）
+                                 # 1: データ、2: トレイラ
+    
+    [Title]                      # タイトル固有のレコードタイプ。マルチフォーマットでもフォーマットの適用条件は不要。
+    1   Kubun      N  "データ区分" 
+    2   Name       N  "書籍名"
+    3   Publisher  N  "出版社"   
+    4   Authors    N  "著者"     
+    5   Price      N  "価格"     
+            
+    [DataRecord]                 # データのレコードタイプ
+      Kubun = "1"                # データのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   Name       N             # 書籍名
+    3   Publisher  N             # 出版社   
+    4   Authors    N             # 著者     
+    5   Price      N             # 価格     
+    
+    [TrailerRecord]              # トレイラのレコードタイプ
+      Kubun = "2"                # トレイラのフォーマットの適用条件
+    1   Kubun      X             # データ区分
+    2   RecordNum  X             # 総件数
+
+
+
+タイトル固有のレコードタイプ名はデフォルトでは [Title] だが、title-record-type-nameディレクティブでタイトル固有のレコードタイプ名を個別に指定することも可能である。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-record_format--s8",
+  "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フィールドタイプ・フィールドコンバータ定義一覧",
+      "hints": [
+        "SingleByteCharacterString",
+        "DoubleByteCharacterString",
+        "ByteStreamDataString",
+        "ZonedDecimal",
+        "SignedZonedDecimal",
+        "PackedDecimal",
+        "SignedPackedDecimal",
+        "Bytes",
+        "NumberStringDecimal",
+        "NumberString",
+        "SignedNumberString",
+        "Padding",
+        "UseEncoding",
+        "DefaultValue",
+        "CharacterReplacer",
+        "InvalidDataFormatException",
+        "フィールドタイプ",
+        "フィールドコンバータ",
+        "固定長データ形式",
+        "可変長データ形式",
+        "パディング",
+        "トリム",
+        "ゾーン10進数値",
+        "パック10進数値",
+        "number",
+        "signed_number",
+        "replacement",
+        "encoding",
+        "pad"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "可変長ファイルにおけるタイトル行の読み書き",
+      "hints": [
+        "requires-title",
+        "title-record-type-name",
+        "タイトル行",
+        "可変長ファイル",
+        "シングルフォーマット",
+        "マルチフォーマット",
+        "[Title]",
+        "Classifier",
+        "Title"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 固定長データ形式\n\n### フィールドタイプ\n\n| タイプ識別子 | Java型 | 内容 | デフォルト実装クラス | 引数 |\n|---|---|---|---|---|\n| X | String | シングルバイト文字列 (バイト長=文字数)。デフォルト: 半角空白による右トリム・パディング。null→空文字変換 | `nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString` | バイト長(数値, 必須) |\n| N | String | ダブルバイト文字列 (バイト長=文字数÷2)。デフォルト: 全角空白による右トリム・パディング。バイト長が2の倍数でない場合は構文エラー。null→空文字変換 | `nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString` | バイト長(数値, 必須) |\n| XN | String | マルチバイト文字列。UTF-8のようにバイト長の異なる文字が混在するフィールドや全角文字列のパディングに半角スペースを使用する場合に使用。デフォルト: 半角空白による右トリム・パディング。null→空文字変換 | `nablarch.core.dataformat.convertor.datatype.ByteStreamDataString` | バイト長(数値, 必須) |\n| Z | BigDecimal | ゾーン10進数値 (バイト長=桁数)。デフォルト: '0'による左トリム・パディング。null→0変換 | `nablarch.core.dataformat.convertor.datatype.ZonedDecimal` | 引数1: バイト長(必須), 引数2: 少数点以下桁数(任意, デフォルト=0) |\n| SZ | BigDecimal | 符号付ゾーン10進数値 (バイト長=桁数)。デフォルト: '0'による左トリム・パディング。null→0変換 | `nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal` | 引数1: バイト長(必須), 引数2: 少数点以下桁数(任意, デフォルト=0), 引数3: 正数時の最小桁バイト上位4ビットパターン(16進, 任意), 引数4: 負数時の最小桁バイト上位4ビットパターン(16進, 任意) |\n| P | BigDecimal | パック10進数値 (バイト長=桁数÷2[端数切り上げ])。デフォルト: '0'による左トリム・パディング。null→0変換 | `nablarch.core.dataformat.convertor.datatype.PackedDecimal` | 引数1: バイト長(必須), 引数2: 少数点以下桁数(任意, デフォルト=0) |\n| SP | BigDecimal | 符号付パック10進数値 (バイト長=(桁数+1)÷2[端数切り上げ])。デフォルト: '0'による左トリム・パディング。null→0変換 | `nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal` | 引数1: バイト長(必須), 引数2: 少数点以下桁数(任意, デフォルト=0), 引数3: 正数時の最下位4ビットパターン(16進, 任意), 引数4: 負数時の最下位4ビットパターン(16進, 任意) |\n| B | byte[] | バイナリ列。パディングなし。null時は値変換せずInvalidDataFormatExceptionを送出。アプリケーション側で明示的に値を設定すること。 | `nablarch.core.dataformat.convertor.datatype.Bytes` | バイト長(数値, 必須) |\n| X9 | BigDecimal | 符号無し数値文字列 (バイト長=文字数)。シングルバイト文字列を数値として扱う。デフォルト: '0'による左トリム・パディング。文字列中に小数点記号(\".\")を含めることできる。null→0変換 | `nablarch.core.dataformat.convertor.datatype.NumberStringDecimal` | 引数1: バイト長(必須), 引数2: 小数点記号がない場合の少数点以下桁数(任意, デフォルト=0) |\n| SX9 | BigDecimal | 符号付き数値文字列 (バイト長=文字数)。シングルバイト文字列を符号付き数値として扱う。デフォルト: '0'による左トリム・パディング。null→0変換 | `nablarch.core.dataformat.convertor.datatype.NumberStringDecimal` | 引数1: バイト長(必須), 引数2: 小数点記号がない場合の少数点以下桁数(任意, デフォルト=0) |\n\n### フィールドコンバータ\n\n| コンバータ名 | Java型(変換前後) | 内容 | デフォルト実装クラス | 引数 |\n|---|---|---|---|---|\n| pad | N/A | パディング・トリムの対象値を設定。X/N/XN: 右トリム・パディング、Z/SZ/P/SP/X9/SX9: 左トリム・パディング、B: 無効 | `nablarch.core.dataformat.convertor.value.Padding` | パディング・トリムの対象となる値(必須) |\n| encoding | N/A | 文字エンコーディングを指定。X/N/XN以外では無視される | `nablarch.core.dataformat.convertor.value.UseEncoding` | エンコーディング名(文字列, 必須) |\n| リテラル値 | Object <-> Object | 入力時: なにもしない。出力時: 値が未設定の場合に指定されたリテラル値を出力 | `nablarch.core.dataformat.convertor.value.DefaultValue` | なし |\n| replacement | String <-> String | 入出力とも、寄せ字対象文字を変換先の文字に置換して返す | — | 寄せ字タイプ名(文字列, 任意) |\n\n## 可変長データ形式\n\n### フィールドタイプ\n\n| タイプ識別子 | Java型 | 内容 |\n|---|---|---|\n| X、N、XN、X9、SX9 | String | すべてのフィールドを文字列として読み書き。どのタイプ識別子を指定しても動作は変わらない。フィールド長の概念がないので引数不要。Number型(BigDecimalなど)を読み書きしたい場合はnumber/signed_numberコンバータを使用。null→空文字変換 |\n\n### フィールドコンバータ\n\n| コンバータ名 | Java型(変換前後) | 内容 | デフォルト実装クラス | 引数 |\n|---|---|---|---|---|\n| encoding | N/A | 文字エンコーディングを指定。X/N以外では無視される | `nablarch.core.dataformat.convertor.value.UseEncoding` | エンコーディング名(文字列, 必須) |\n| リテラル値 | Object <-> Object | 入力時: なにもしない。出力時: 値が未設定の場合に指定されたリテラル値を出力 | `nablarch.core.dataformat.convertor.value.DefaultValue` | なし |\n| number | String <-> BigDecimal | 入力時: 符号なし数値であることをチェックしBigDecimalに変換（null/空文字→null）。出力時: 文字列に変換し符号なし数値であることをチェック（null→空文字） | `nablarch.core.dataformat.convertor.value.NumberString` | なし |\n| signed_number | String <-> BigDecimal | 符号が許可される点以外はnumberコンバータと同じ仕様 | `nablarch.core.dataformat.convertor.value.SignedNumberString` | なし |\n| replacement | String <-> String | 入出力とも、寄せ字対象文字を変換先の文字に置換して返す | `nablarch.core.dataformat.convertor.value.CharacterReplacer` | 寄せ字タイプ名(文字列, 任意) |",
+    "s2": "`requires-title: true` を設定することで、最初の行をタイトル行として通常のレコードタイプとは別に取り扱う機能が有効となる。最初の行はタイトル固有のレコードタイプ名 `[Title]` で読み書きされる。\n\nタイトル行とデータ行を識別するフィールドが存在しない場合でも、本機能を使用することでシングルフォーマットの定義で読み込むことができる。\n\n> **補足**: タイトル行が存在するファイルを読み込む場合、本機能の使用を推奨する。最初の行がタイトル行であることが保証されるため、ファイルレイアウトの精査を省略できる。\n\n**制約:**\n- レコードタイプ `[Title]` を必ずフォーマット定義しなければならない\n- 最初の行を書き込む際に指定するレコードタイプは `[Title]` でなければならない\n- 最初の行以降を書き込む際に指定するレコードタイプは `[Title]` 以外でなければならない\n- レコードタイプ `[Title]` にフォーマットの適用条件が定義されている場合、最初の行は必ずその適用条件を満たさなければならない。また、最初の行以降の行はその適用条件を満たしてはいけない\n\nタイトル固有のレコードタイプ名はデフォルトでは `[Title]` だが、`title-record-type-name` ディレクティブで個別に指定することも可能。\n\n**シングルフォーマット定義の例:**\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true\n\n[Title]\n1   Name       N  \"書籍名\"\n2   Publisher  N  \"出版社\"\n3   Authors    N  \"著者\"\n4   Price      N  \"価格\"\n\n[Books]\n1   Name       X\n2   Publisher  X\n3   Authors    X\n4   Price      X  Number\n```\n\n**マルチフォーマット定義の例:**\n\n```\nfile-type:    \"Variable\"\ntext-encoding:     \"ms932\"\nrecord-separator:  \"\\r\\n\"\nfield-separator:   \",\"\nquoting-delimiter: \"\\\"\"\nrequires-title: true\n\n[Classifier]\n1  Kubun X\n\n[Title]\n1   Kubun      N  \"データ区分\"\n2   Name       N  \"書籍名\"\n3   Publisher  N  \"出版社\"\n4   Authors    N  \"著者\"\n5   Price      N  \"価格\"\n\n[DataRecord]\n  Kubun = \"1\"\n1   Kubun      X\n2   Name       N\n3   Publisher  N\n4   Authors    N\n5   Price      N\n\n[TrailerRecord]\n  Kubun = \"2\"\n1   Kubun      X\n2   RecordNum  X\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

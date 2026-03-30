@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — UserForm Java code example",
+      "description": "The UserForm constructor is omitted from the Java code example in the knowledge file. The source includes the constructor `public UserForm(Map<String, Object> params)` which shows how form properties are initialized from request parameters using `params.get(\"phoneNo1\")` etc. This demonstrates the Nablarch form initialization pattern.",
+      "source_evidence": "public UserForm(Map<String, Object> params) { this.user = (UserEntity) params.get(\"user\"); this.phoneNo1 = (String) params.get(\"phoneNo1\"); ... }"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — HTML form example",
+      "description": "The HTML form example is omitted. It shows the naming convention for form fields (`userForm.phoneNo1`, `userForm.phoneNo2`, `userForm.phoneNo3` and the hidden field `userForm.user.id`), which demonstrates how the HTML name attribute prefix `userForm` corresponds to the first argument of `validateAndConvertRequest(\"userForm\", ...)` in the Action.",
+      "source_evidence": "<input type=\"text\" name=\"userForm.phoneNo1\"/> - <input type=\"text\" name=\"userForm.phoneNo2\"/> - <input type=\"text\" name=\"userForm.phoneNo3\"/>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "PascalCase class names present in the source are missing from hints: `UserForm` (primary class being illustrated), `UserEntity` (used as a nested form property with `@ValidationTarget`), and `ApplicationException` (thrown in the Action code example when validation fails).",
+      "source_evidence": "public class UserForm { ... private UserEntity user; ... throw new ApplicationException(result.getMessages());"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-Main",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 hints — \"nablarch.fw.launcher.CommandLine\"",
+      "description": "The hint uses uppercase 'L' in CommandLine, but the source explicitly states the full class name as `nablarch.fw.launcher.Commandline` (lowercase 'l'). The source API methods also consistently use `Commandline#getParamMap()` and `Commandline#getArgs()` with lowercase 'l'. The uppercase form is not the fully-qualified name given in the source for this class.",
+      "source_evidence": "Source s3: \"後述するコマンドラインオブジェクト(nablarch.fw.launcher.Commandline)\" and \"Commandline#getParamMap() : Map<String, String>\", \"Commandline#getArgs() : List<String>\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 content is 41 characters, which is below the 50-character threshold. The source section is also a single sentence with no additional content, so the brevity is justified, but the check flags it.",
+      "source_evidence": "Source 設定項目・拡張ポイント: \"本クラスはJavaコマンドラインから直接実行するため、固有の設定項目は存在しない。\""
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "One finding (s3 hints_missing) has medium impact because the missing `リクエストパラメータ` hint creates a concrete retrieval gap: if a user asks about writeタグ's behavior with request parameters, s3 may not be retrieved, causing the agent to omit the writeタグ-specific exclusion rule — which can lead to incorrect implementation guidance. The other two findings are low impact.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s5",
+      "impact": "low",
+      "justification": "The knowledge file states 'デフォルトは `*`' based on an inline JSP comment and rendered output (`********`). While the source does not state this in explicit prose, the meaning is unambiguous: the comment says '*'に置換して出力する and the rendered output confirms it. An agent using this knowledge would give users correct information. The fabrication risk is theoretical, not practical."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3",
+      "impact": "medium",
+      "justification": "The missing `リクエストパラメータ` hint creates a retrieval gap for queries about writeタグ and request parameter handling. writeタグ's exclusion of request parameters from its search scope is a behavioral difference from other tags that matters for implementation correctness. If s3 is not retrieved, the agent cannot surface this distinction, potentially causing users to incorrectly assume writeタグ behaves identically to textタグ in scope search."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2",
+      "impact": "low",
+      "justification": "The missing `BASE64` hint reduces discoverability when users search specifically about BASE64 decoding failure in tamper detection. However, the content is already present in s2's body text, and users are more likely to search by concepts like '改竄検知' or 'NablarchTagHandler' (both present as hints) than by the specific encoding mechanism. The section would typically be retrieved through other hints."
+    }
+  ]
+}

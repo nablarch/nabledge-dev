@@ -1,0 +1,513 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_ExclusiveControl--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The image reference for the exclusive control table example (ExclusiveControl_ExclusiveControlTableExample.jpg) is missing. The source explicitly includes this diagram under '排他制御用テーブルの例' to illustrate the table structure.",
+      "source_evidence": ".. image:: _images/08/ExclusiveControl_ExclusiveControlTableExample.jpg\n  :scale: 60\n(under '排他制御用テーブルの例' heading)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The contextual note explaining the pessimistic lock diagram is missing: the source states that the batch in the figure uses pessimistic lock and the user uses optimistic lock. This clarifies the scenario depicted in ExclusiveControl_PessimisticLockImage.jpg.",
+      "source_evidence": "図中のバッチは悲観的ロック、ユーザは楽観的ロックを使用して更新処理を行うものとする。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 merges the '排他制御の実現方法' h2 section (well over 2000 chars of plain text) together with its h3 subsections '排他制御用テーブル' and '悲観的ロックと楽観的ロックの動作イメージ' without splitting into separate knowledge sections. Per V3 rules, when an h2 section has >= 2000 chars and contains h3 subsections, these should be split.",
+      "source_evidence": "Source h2: '排他制御の実現方法' contains h3 subsections '排他制御用テーブル' (====) and '悲観的ロックと楽観的ロックの動作イメージ' (====), both with substantial content."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+====================================
+排他制御機能
+====================================
+
+------------
+概要
+------------
+データベースに格納したデータに対する排他制御機能を提供する。\
+本機能を使用することで、複数ユーザ(又は複数バッチなど)がデータベース上の同一データを更新するシステムにおいて、\
+同一データが同時に更新されることを防止できる。
+
+本機能では、排他制御の手法として、悲観的ロックと楽観的ロックの2種類を提供する。\
+下記にそれぞれの手法の説明を示す。
+
+ ================ ==================================================================================================================
+ 手法             説明
+ ================ ==================================================================================================================
+ 悲観的ロック     悲観的ロックは、データ検索から更新までの間、更新対象データのロックを取得し続け、\
+                  更新が完了したタイミングでロックを解除する。ロックを取得する時間は長くなるが、\
+                  更新処理は確実に成功する手法である。検索から更新までにかかる時間が短い処理、\
+                  またはロックを取得する時間が長くなるデメリットを差し置いても、\
+                  更新処理を失敗させたくない処理で使用される。\
+                  検索から更新までが1トランザクションで行われる処理(バッチ処理など)では、悲観的ロックを採用する。
+ 楽観的ロック     楽観的ロックは、データ検索時にはロックを取得せず、\
+                  更新時に更新対象データが他の処理によって更新されたかをチェックし、\
+                  更新が行われていた場合は、更新を中止する。\
+                  データ検索から更新までロックし続ける悲観的ロックのデメリットが許容されない場面で楽観的ロックを使用する。\
+                  ユーザの操作待ち時間を少なくしたい(検索時にロックを取得したくない)画面処理では、楽観的ロックを採用する。
+ ================ ==================================================================================================================
+
+------------
+特徴
+------------
+
+排他制御の実装負荷軽減
+==================================================================
+本機能では、排他制御に必要なデータベースアクセスや、楽観的ロックに使用するバージョン番号の画面間の引き継ぎ処理をフレームワークが行う。\
+このため、排他制御を使用する機能の実装は、フレームワークのAPI呼び出しのみに集約され、実装負荷を軽減できる。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* 複数ユーザ(画面)が、同一データを同時に更新することを防ぐことができる。
+* 複数バッチが、同一データを同時に更新することを防ぐことができる。
+* バッチとユーザ（画面）が、同一データを同時に更新することを防ぐことができる。
+
+------------------------------------------------------
+排他制御の実現方法
+------------------------------------------------------
+
+排他制御用テーブル
+==========================================
+本機能は、排他制御対象のデータにバージョン番号を付与することで実現する。\
+バージョン番号は、排他制御対象のデータが格納されるテーブルにバージョン番号カラムを定義することで保持する。\
+本フレームワークではバージョン番号カラムが定義されたテーブルを排他制御用テーブルと呼ぶ。
+
+本機能で提供する悲観的ロックと楽観的ロックは、同じ排他制御用テーブルを使用して実現するため、\
+悲観的ロックと楽観的ロックを並行して使用しても、同一データが同時に更新されることを防止できる。\
+たとえば、楽観的ロックを使用する画面処理と、悲観的ロックを使用するバッチ処理を並行稼働させても、排他制御が実現できる。
+
+排他制御用テーブルは排他制御を行う単位ごとに定義する。
+
+排他制御用テーブルは、競合が許容される最大の単位で定義することを推奨する。\
+たとえば、「ユーザ」という大きな単位でロックすることが業務的に許容されるならば、\
+その単位で排他制御用テーブルを定義する。\
+ただし、ロック範囲を広くすると、更新処理が競合する可能性が高くなる点に注意すること。\
+更新処理の競合は、処理遅延や更新失敗(楽観的ロックの場合)を招く。
+
+通常、業務的な観点で排他制御用テーブルの単位を定義する。\
+たとえば、売上処理と入金処理による更新が同時に行われる場合は、\
+それらの処理に関連するテーブルをまとめた単位で排他制御用テーブルを定義する。\
+また、テーブル設計の観点からも排他制御用テーブルの単位を定義できる。\
+たとえば、ヘッダ部(親)と明細部(子)など、テーブルの親子関係が明確であれば、\
+親の単位で排他制御用テーブルを定義する。\
+親子関係が明確でない場合は、どちらを親にするのが良いかを判断し、排他制御用テーブルを定義する。
+
+排他制御用テーブルの例を下記に示す。
+
+**排他制御用テーブルの例**
+
+.. image:: _images/08/ExclusiveControl_ExclusiveControlTableExample.jpg
+  :scale: 60
+
+|
+
+排他制御用テーブルの実装例を下記に示す。
+
+**親となるテーブル**
+
+.. code-block:: sql
+
+ -- 親となるテーブルにバージョン番号カラムを定義する。
+ CREATE TABLE USERS (
+
+     USER_ID CHAR(6) NOT NULL,
+
+     -- 主キー以外のカラムは省略。
+
+     -- バージョン番号カラムを定義する。
+     -- カラム名、データ型は任意。
+     VERSION NUMBER(10) NOT NULL,
+
+     PRIMARY KEY (USER_ID)
+ )
+
+.. note ::
+
+ 排他制御用テーブルは、業務のデータを格納するテーブルとは別に、排他制御専用のテーブルとして定義することもできる。\
+ 排他制御専用テーブルを作成した場合は、排他制御の対象となる業務データ(上記例ではUSERSテーブルのデータ)を追加、物理削除する場合は、\
+ 排他制御専用テーブルにもデータの追加、物理削除が必要となる。\
+ 本機能では、排他制御専用テーブルへのデータ追加、物理削除を行うAPI(ExclusiveControlUtilクラス)を提供している。
+
+**排他制御用テーブルの更新順序**
+
+排他制御用テーブルの設計が終わったら、更新順序の設計を行う。\
+各テーブルのロック順序を定めることで、デッドロックの防止、及び更新時のデータ整合性の保証を実現する。\
+(RDBMSの仕様では、レコードを更新するとそのレコードに対して自動的にロックがかかるので、\
+更新順序を定めておかなければデッドロックが発生する可能性が非常に高くなる。)
+
+.. note ::
+
+ 排他制御用テーブルに限らず、個別のテーブルに関しても更新順序を決める。
+ また、複数の排他制御を行うことも考えられるため、排他制御を行う順序も決めること。
+ (ユーザ排他制御→残高排他制御→ＸＸ排他制御)
+
+また、一括削除など、複数件を順次更新する場合の主キーのソート順を決めておくこと。
+これはデッドロック防止を目的としたルールであるため、コミット間隔が1件であることが保証されている処理で、\
+かつソート処理が性能に与える影響が大きい場合は、ソートを行わなくともよい。
+
+悲観的ロックと楽観的ロックの動作イメージ
+========================================================================================================================
+悲観的ロックは、更新対象データを取得する前に、排他制御用テーブルのバージョン番号を更新することで実現する。\
+更新対象データを取得する前に、排他制御用テーブルのバージョン番号を更新することで、\
+更新処理のトランザクションがコミット又はロールバックされるまで、排他制御用テーブルの対象行がロックされる。\
+このため、他のユーザ(又はバッチ)の更新処理はロックが解除されるまで待たされる。\
+排他制御用テーブルを使用した悲観的ロックの動作イメージを下記に示す。
+
+図中のバッチは悲観的ロック、ユーザは楽観的ロックを使用して更新処理を行うものとする。
+
+**悲観的ロックの動作イメージ**
+
+.. image:: _images/08/ExclusiveControl_PessimisticLockImage.jpg
+  :scale: 60
+
+|
+
+楽観的ロックは、更新対象データを取得する時点で、排他制御用テーブルのバージョン番号を取得しておき、\
+更新を行う時点で、事前に取得した排他制御用テーブルのバージョン番号が更新されていないかをチェックすることで実現する。\
+排他制御用テーブルを使用した楽観的ロックの動作イメージを下記に示す。
+
+**楽観的ロックの動作イメージ**
+
+.. image:: _images/08/ExclusiveControl_OptimisticLockImage.jpg
+  :scale: 60
+
+|
+
+悲観的ロックと楽観的ロックを並行して使用する場合の動作イメージを下記に示す。
+
+**悲観的ロック→楽観的ロックの動作イメージ**
+
+.. image:: _images/08/ExclusiveControl_Case1Image.jpg
+  :scale: 60
+
+|
+
+**楽観的ロック(バージョン番号の取得)→悲観的ロックの動作イメージ**
+
+.. image:: _images/08/ExclusiveControl_Case2Image.jpg
+  :scale: 60
+
+|
+
+**楽観的ロック(バージョン番号の更新)→悲観的ロックの動作イメージ**
+
+.. image:: _images/08/ExclusiveControl_Case3Image.jpg
+  :scale: 60
+
+------------
+構造
+------------
+
+クラス図
+========================
+
+.. image:: _images/08/ExclusiveControl_ClassDiagram.jpg
+  :scale: 60
+
+各クラスの責務
+==========================================
+
+インタフェース定義
+------------------------------------------------------
+
+================================================================== =======================================================================================================
+インタフェース名                                                   概要
+================================================================== =======================================================================================================
+nablarch.common.exclusivecontrol.ExclusiveControlManager           排他制御(悲観的ロック、楽観的ロック)を管理するインタフェース。
+
+                                                                   排他制御用テーブルを使用した排他制御(悲観的ロック、楽観的ロック)を行うための機能、
+                                                                   及び排他制御用テーブルに対する行データの追加と削除を行う機能を提供する。
+                                                                   各プロジェクトで独自の実装が必要になった場合(SQL文を変更するなど)には、
+                                                                   本インタフェースを実装することにより実現可能となっている。
+================================================================== =======================================================================================================
+
+.. _ExclusiveControl_Classes:
+
+クラス定義
+------------------------------
+
+================================================================== =======================================================================================================
+クラス名                                                           概要
+================================================================== =======================================================================================================
+nablarch.common.exclusivecontrol.BasicExclusiveControlManager      ExclusiveControlManagerの基本実装クラス。
+nablarch.common.exclusivecontrol.ExclusiveControlUtil              排他制御機能のユーティリティクラス。
+
+                                                                   バッチ処理などで悲観的ロックを行いたい場合、及び排他制御用テーブルへのデータ追加と物理削除を行いたい場合は、
+                                                                   このクラスを使用する。
+                                                                   排他制御用テーブルの操作は、ExclusiveControlManagerに委譲する。
+
+nablarch.common.exclusivecontrol.ExclusiveControlContext           排他制御の実行に必要な情報を保持するクラス。
+
+                                                                   排他制御用テーブルのスキーマ情報と排他制御対象のデータを指定する主キー条件を保持する。
+nablarch.common.exclusivecontrol.OptimisticLockException           楽観的ロックでバージョン番号が更新されている場合に発生する例外クラス。
+nablarch.common.exclusivecontrol.Version                           排他制御用テーブルのバージョン番号を保持するクラス。
+nablarch.common.exclusivecontrol.ExclusiveControlTable             排他制御用テーブルのスキーマ情報とSQL文を保持するクラス。
+
+                                                                   アクセスした排他制御用テーブルのスキーマ情報とSQL文をメモリ上にキャッシュする際に使用する。
+nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil      画面処理における排他制御機能(楽観的ロック)のユーティリティクラス。
+================================================================== =======================================================================================================
+
+UsersExclusiveControlクラスは、排他制御用テーブルに対応させて作成するクラス(以降は主キークラスと称す)である。\
+主キークラスの責務は、バージョン番号を検索する際に必要な情報を提供することである。\
+主キークラスは、設計書から自動生成することを想定している。
+
+下記に排他制御用テーブルの定義と、排他制御用テーブルに対応する主キークラスの例を下記に示す。
+
+.. code-block:: sql
+
+ CREATE TABLE USERS (
+     USER_ID CHAR(6) NOT NULL,
+     -- 主キー以外の業務データは省略。
+     VERSION NUMBER(10) NOT NULL,
+     PRIMARY KEY (USER_ID)
+ )
+
+.. code-block:: java
+
+ // ExclusiveControlContextを継承する。
+ public class UsersExclusiveControl extends ExclusiveControlContext {
+
+     // 排他制御用テーブルの主キーは列挙型で定義する。
+     private enum PK { USER_ID }
+
+     // 主キーの値をとるコンストラクタを定義する。
+     public UsersExclusiveControl(String userId) {
+
+         // 親クラスのsetTableNameメソッドでテーブル名を設定する。
+         setTableName("USERS");
+
+         // 親クラスのsetVersionColumnNameメソッドでバージョン番号カラム名を設定する。
+         setVersionColumnName("VERSION");
+
+         // 親クラスのsetPrimaryKeyColumnNamesメソッドで
+         // Enumのvaluesメソッドを使用して、主キーの列挙型を全て設定する。
+         setPrimaryKeyColumnNames(PK.values());
+
+         // 親クラスのappendConditionメソッドで主キーの値を追加する。
+         appendCondition(PK.USER_ID, userId);
+     }
+ }
+
+------------------------------------
+悲観的ロック
+------------------------------------
+悲観的ロックは、ExclusiveControlUtilのupdateVersionメソッドを呼び出すことで実現する。\
+:ref:`ExclusiveControl_Classes` で説明したUsersExclusiveControlクラスを使用した実装例を示す。
+
+.. code-block:: java
+
+ // 更新対象データの取得前に下記メソッドを呼び出し、排他制御用テーブルの対象データをロックする。
+ ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));
+
+.. note ::
+
+ バッチ処理で複数件の更新処理を行う場合は、ロックしている時間をできるだけ短くし、並列処理に与える影響を極小化すること。\
+ 具体的には、ロックを行うための主キーのみを取得する前処理を設け、本処理では、前処理で取得した主キーを使用して、
+ 1件ずつロックを取得してからデータ取得と更新を行うように実装する。
+
+------------------------------------
+楽観的ロック
+------------------------------------
+
+シーケンス図
+====================================
+ここでは、ユーザ情報の更新処理を行う場合を想定し、楽観的ロックのシーケンスについて解説する。
+
+楽観的ロックは、下記の処理を行うことで実現する。
+
+* バージョン番号の準備(HttpExclusiveControlUtilのprepareVersionメソッド)
+* バージョン番号の更新チェック(HttpExclusiveControlUtilのcheckVersionsメソッド)
+* バージョン番号の更新チェックと更新(HttpExclusiveControlUtilのupdateVersionsメソッド)
+
+以下、上記処理のシーケンスを示す。
+
+**バージョン番号の準備(HttpExclusiveControlUtilのprepareVersionメソッド)**
+
+.. image:: _images/08/ExclusiveControl_OptimisticLockSequence1.jpg
+  :scale: 60
+
+**バージョン番号の更新チェック(HttpExclusiveControlUtilのcheckVersionsメソッド)**
+
+.. image:: _images/08/ExclusiveControl_OptimisticLockSequence2.jpg
+  :scale: 60
+
+.. note ::
+
+ バージョン番号の更新チェック(HttpExclusiveControlUtilのcheckVersionsメソッド)を行わなければ、\
+ 画面間でバージョン番号が引き継がれない。
+
+**バージョン番号の更新チェックと更新(HttpExclusiveControlUtilのupdateVersionsメソッド)**
+
+.. image:: _images/08/ExclusiveControl_OptimisticLockSequence3.jpg
+  :scale: 60
+
+使用例
+==================
+ここでは、 :ref:`ExclusiveControl_Classes` で説明したUsersExclusiveControlクラスを使用した実装例を示す。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_ExclusiveControl--s1",
+  "title": "排他制御機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "排他制御",
+        "悲観的ロック",
+        "楽観的ロック",
+        "バッチ処理での排他制御",
+        "画面処理での排他制御",
+        "同時更新防止"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "排他制御実装負荷軽減",
+        "バージョン番号引き継ぎ",
+        "フレームワーク排他制御API"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "排他制御要件",
+        "複数ユーザ同時更新防止",
+        "複数バッチ同時更新防止"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "排他制御の実現方法",
+      "hints": [
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "デッドロック防止",
+        "更新順序",
+        "悲観的ロック動作イメージ",
+        "楽観的ロック動作イメージ",
+        "ExclusiveControlUtil"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "構造",
+      "hints": [
+        "クラス図",
+        "排他制御機能構造",
+        "ExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "HttpExclusiveControlUtil"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "インタフェース定義",
+      "hints": [
+        "ExclusiveControlManager",
+        "排他制御インタフェース",
+        "独自実装",
+        "SQL文変更"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "クラス定義",
+      "hints": [
+        "BasicExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "OptimisticLockException",
+        "Version",
+        "ExclusiveControlTable",
+        "HttpExclusiveControlUtil",
+        "主キークラス"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "悲観的ロック",
+      "hints": [
+        "ExclusiveControlUtil",
+        "updateVersion",
+        "悲観的ロック実装",
+        "バッチ処理ロック"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "楽観的ロック",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersions",
+        "楽観的ロック実装",
+        "バージョン番号引き継ぎ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベースに格納したデータに対する排他制御機能を提供する。複数ユーザ（または複数バッチ）が同一データを同時に更新することを防止できる。\n\n排他制御の手法として悲観的ロックと楽観的ロックの2種類を提供する。\n\n| 手法 | 説明 | 採用場面 |\n|---|---|---|\n| 悲観的ロック | データ検索から更新までロックを取得し続ける。更新処理は確実に成功する | 検索から更新が1トランザクションで行われる処理（バッチ処理など） |\n| 楽観的ロック | 検索時にロックを取得せず、更新時に他処理による更新を確認。更新されていれば中止する | 検索時にロックを取得したくない画面処理 |",
+    "s2": "排他制御に必要なDBアクセスや、楽観的ロックで使用するバージョン番号の画面間引き継ぎ処理をフレームワークが担当するため、実装はフレームワークAPIの呼び出しのみに集約される。",
+    "s3": "- 複数ユーザ（画面）が同一データを同時に更新することを防止できる\n- 複数バッチが同一データを同時に更新することを防止できる\n- バッチとユーザ（画面）が同一データを同時に更新することを防止できる",
+    "s4": "## 排他制御用テーブル\n\n排他制御対象テーブルにバージョン番号カラムを定義することで実現する。悲観的ロックと楽観的ロックは同じ排他制御用テーブルを使用するため、並行使用でも同一データの同時更新を防止できる。\n\n**テーブル設計の指針**:\n- 競合が許容される最大の単位で排他制御用テーブルを定義することを推奨\n- ロック範囲を広くすると更新処理の競合が高まり、処理遅延や更新失敗（楽観的ロックの場合）を招く\n- 明確な親子関係があるテーブルは親の単位で定義する\n- 業務的な観点とテーブル設計の観点の両方から単位を決める\n\n**実装例**:\n```sql\nCREATE TABLE USERS (\n    USER_ID CHAR(6) NOT NULL,\n    VERSION NUMBER(10) NOT NULL,  -- カラム名・データ型は任意\n    PRIMARY KEY (USER_ID)\n)\n```\n\n> **注意**: 排他制御専用テーブルを別途作成する場合、対象業務データの追加・物理削除時に排他制御専用テーブルへも同様の操作が必要となる。この操作にはExclusiveControlUtilクラスのAPIを使用する。\n\n## 更新順序の設計\n\n各テーブルのロック順序を定めることでデッドロックを防止し、データ整合性を保証する。RDBMSはレコード更新時に自動的にロックするため、更新順序が未定義だとデッドロックが発生しやすい。\n\n- 個別テーブルと排他制御テーブル両方について更新順序を決める\n- 複数の排他制御を行う場合は順序を決める（例: ユーザ排他制御→残高排他制御）\n- 一括削除など複数件を順次更新する場合は主キーのソート順を決める（コミット間隔が1件保証でソート性能影響が大きい場合は省略可）\n\n## 悲観的ロックの動作\n\n更新対象データ取得前にバージョン番号を更新することで、トランザクションのコミット/ロールバックまで排他制御用テーブルの対象行がロックされる。\n\n![悲観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_PessimisticLockImage.jpg)\n\n## 楽観的ロックの動作\n\nデータ取得時にバージョン番号を保存し、更新時にバージョン番号が変更されていないかチェックする。変更されていれば更新を中止する。\n\n![楽観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockImage.jpg)\n\n悲観的ロックと楽観的ロックの並行使用時の動作:\n\n![悲観的ロック→楽観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case1Image.jpg)\n\n![楽観的ロック（バージョン番号取得）→悲観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case2Image.jpg)\n\n![楽観的ロック（バージョン番号更新）→悲観的ロックの動作](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case3Image.jpg)",
+    "s5": "**クラス図**:\n\n![クラス図](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_ClassDiagram.jpg)",
+    "s6": "**インタフェース**: `nablarch.common.exclusivecontrol.ExclusiveControlManager`\n\n排他制御（悲観的ロック、楽観的ロック）を管理するインタフェース。排他制御用テーブルに対する行データの追加・削除機能も提供する。プロジェクト独自の実装（SQL文の変更など）が必要な場合は、このインタフェースを実装する。",
+    "s7": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.exclusivecontrol.BasicExclusiveControlManager` | ExclusiveControlManagerの基本実装クラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlUtil` | バッチ処理での悲観的ロック、排他制御用テーブルへのデータ追加・物理削除に使用。操作はExclusiveControlManagerに委譲 |\n| `nablarch.common.exclusivecontrol.ExclusiveControlContext` | 排他制御用テーブルのスキーマ情報と主キー条件を保持するクラス |\n| `nablarch.common.exclusivecontrol.OptimisticLockException` | 楽観的ロックでバージョン番号が更新されている場合に発生する例外 |\n| `nablarch.common.exclusivecontrol.Version` | バージョン番号を保持するクラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlTable` | スキーマ情報とSQL文をメモリにキャッシュするクラス |\n| `nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil` | 画面処理（楽観的ロック）のユーティリティクラス |\n\n排他制御用テーブルごとに`ExclusiveControlContext`を継承する主キークラスを作成する（設計書から自動生成を想定）。\n\n**主キークラスの実装例**:\n```java\npublic class UsersExclusiveControl extends ExclusiveControlContext {\n    private enum PK { USER_ID }\n    public UsersExclusiveControl(String userId) {\n        setTableName(\"USERS\");\n        setVersionColumnName(\"VERSION\");\n        setPrimaryKeyColumnNames(PK.values());\n        appendCondition(PK.USER_ID, userId);\n    }\n}\n```",
+    "s8": "`ExclusiveControlUtil.updateVersion()` を更新対象データ取得前に呼び出すことで悲観的ロックを実現する。\n\n```java\nExclusiveControlUtil.updateVersion(new UsersExclusiveControl(\"U00001\"));\n```\n\n> **注意**: バッチで複数件更新する場合、ロック時間を最短にするため、前処理で主キーのみを取得し、本処理では1件ずつロックを取得してからデータ取得と更新を行うこと。",
+    "s9": "楽観的ロックは以下の3つのメソッドで実現する。\n\n1. **バージョン番号の準備**: `HttpExclusiveControlUtil.prepareVersion()` — 検索時にバージョン番号を取得・保存する\n2. **バージョン番号の更新チェック**: `HttpExclusiveControlUtil.checkVersions()` — 画面間でバージョン番号を引き継ぐ。このメソッドを呼ばないとバージョン番号が画面間で引き継がれない\n3. **バージョン番号の更新チェックと更新**: `HttpExclusiveControlUtil.updateVersions()` — 更新時にバージョン番号をチェックして更新する\n\nシーケンス図:\n- バージョン番号の準備: ![prepareVersionシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence1.jpg)\n- バージョン番号の更新チェック: ![checkVersionsシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence2.jpg)\n- バージョン番号の更新チェックと更新: ![updateVersionsシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence3.jpg)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,103 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "toolbox-ShellGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The knowledge file describes the input files as \"Excelファイル\" (Excel files), but the source only says \"下記のファイル\" (the following files) without explicitly using the word \"Excel\". The .xls extension implies Excel, but the source text itself does not state this.",
+      "source_evidence": "Source: 「本ツールは、下記のファイルからShellスクリプト及びShell実行用の環境依存値を持つ設定ファイルを自動生成する。」— no mention of \"Excel\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _shell_generator:
+
+==================================
+Shell Script自動生成ツール
+==================================
+
+概要
+====
+
+本ツールは、下記のファイルからShellスクリプト及びShell実行用の環境依存値を持つ設定ファイルを自動生成する。
+
+* :download:`シェル共通設定<../tools/ShellGenerator/シェル共通設定.xls>`
+* :download:`ジョブ実行シェルスクリプト自動生成設定<../tools/ShellGenerator/ジョブ実行シェルスクリプト自動生成設定.xls>`
+
+使用方法
+========
+本ツールの使用方法は、以下のシェルスクリプト自動生成ツールの「説明」シートを参照。
+
+* :download:`シェルスクリプト自動生成ツール<../tools/ShellGenerator/シェルスクリプト自動生成ツール.xls>`
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "toolbox-ShellGenerator",
+  "title": "Shell Script自動生成ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "Shell Script自動生成ツール",
+        "シェルスクリプト自動生成",
+        "シェル共通設定",
+        "ジョブ実行シェルスクリプト",
+        "環境依存値",
+        "設定ファイル自動生成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "使用方法",
+        "シェルスクリプト自動生成ツール",
+        "説明シート",
+        "ツール利用手順"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ShellスクリプトおよびShell実行用の環境依存値を持つ設定ファイルを以下のExcelファイルから自動生成するツール。\n\n入力ファイル:\n- :download:`シェル共通設定<../tools/ShellGenerator/シェル共通設定.xls>`\n- :download:`ジョブ実行シェルスクリプト自動生成設定<../tools/ShellGenerator/ジョブ実行シェルスクリプト自動生成設定.xls>`",
+    "s2": "使用方法は :download:`シェルスクリプト自動生成ツール<../tools/ShellGenerator/シェルスクリプト自動生成ツール.xls>` の「説明」シートを参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

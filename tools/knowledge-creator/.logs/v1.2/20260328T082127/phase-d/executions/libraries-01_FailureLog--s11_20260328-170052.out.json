@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s11",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — CustomDataItem code example",
+      "description": "The source code comment `// FailureLogFormatterの拡張クラスにインナークラスとして定義している。` is omitted. The knowledge file presents CustomDataItem and CustomDataFailureLogFormatter as two independent code blocks, losing the guidance that CustomDataItem is intended to be defined as a private static inner class of the FailureLogFormatter extension. The source's second code block explicitly shows `private static final class CustomDataItem extends DataItem { // 省略。 }` nested inside `CustomDataFailureLogFormatter`, but the knowledge file's two code blocks do not convey this structural relationship.",
+      "source_evidence": "// FailureLogFormatterの拡張クラスにインナークラスとして定義している。 (first code block comment) and private static final class CustomDataItem extends DataItem { // 省略。 } shown nested inside CustomDataFailureLogFormatter (second code block)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — CustomDataItem.get() method",
+      "description": "The `@SuppressWarnings(\"unchecked\")` annotation on the `get(FailureLogContext context)` method is omitted from the code example.",
+      "source_evidence": "@Override\n@SuppressWarnings(\"unchecked\")\npublic String get(FailureLogContext context) {"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 障害解析ログの出力例",
+      "description": "The stack trace portion of the output example is omitted. The source includes `Stack Trace Information :` followed by exception class, message, and stack frames. While this does not demonstrate masking behavior, it is part of the official output example showing the complete log format.",
+      "source_evidence": "Stack Trace Information : \n[100 TransactionAbnormalEnd] ユーザ情報の登録に失敗しました。\n    at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:73)\n    at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:1)\n    at nablarch.fw.action.BatchAction.handle(BatchAction.java:1)\n    # 以降のスタックトレースは省略。"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "libraries-02_04_Repository_override--s17",
+  "title": "設定したコンポーネントを取得する実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定したコンポーネントを取得する実装例",
+      "hints": [
+        "SystemRepository",
+        "HelloComponent",
+        "getObject",
+        "コンポーネント取得",
+        "システムプロパティ上書き",
+        "DIコンテナ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`SystemRepository.getObject()` でDIコンテナからコンポーネントを取得する実装例。環境設定ファイルよりシステムプロパティの設定が優先される（環境設定ファイルの値は使われない）。\n\n```java\n// DIコンテナで \"helloComponent\" と名付けたコンポーネントを取得\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\n// 環境設定ファイルの \"This is property file hello message!!\" ではなく、\n// システムプロパティの \"This is system property hello message!!\" が使用される\nhelloComponent.printHello();\n```"
+  }
+}

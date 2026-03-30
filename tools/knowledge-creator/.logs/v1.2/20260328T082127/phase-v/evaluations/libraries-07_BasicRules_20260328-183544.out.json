@@ -1,0 +1,32 @@
+{
+  "file_id": "libraries-07_BasicRules",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Two findings (s4 and s5) have medium impact because the missing hints are canonical ref-label names that are the primary identifiers for the tags documented in those sections. Users searching by WebView_PrettyPrintTag / WebView_RawWriteTag (the exact form used in cross-references throughout the source) will not be routed to s4, and users asking about WebView_IncludeTag / WebView_IncludeParamTag (the primary subjects of s5) may miss that section. The Phase E fix agent did not resolve any of the four findings — the index/hints arrays in the Phase E output are byte-for-byte identical to the Phase D input, indicating the fix agent regenerated section content but left the index untouched.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index s3 hints",
+      "impact": "low",
+      "justification": "WebView_ATag, WebView_ImgTag, WebView_ScriptTag, WebView_LinkTag are mentioned at the end of s3 as supplementary cross-references ('対応するカスタムタグ'), not as the primary subject. Their canonical documentation resides in dedicated sections. A user asking about these tags will still reach the authoritative content; they would only miss s3 if their query is specifically about URI specification combined with these tags. Section content itself contains the tag names, so semantic retrieval partially compensates."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index s4 hints",
+      "impact": "medium",
+      "justification": "The canonical ref-label forms WebView_PrettyPrintTag and WebView_RawWriteTag are the exact identifiers used in cross-references throughout the RST source and other documents. The existing hints use only the shortened forms PrettyPrintTag and RawWriteTag. An agent resolving a cross-reference ':ref:`WebView_PrettyPrintTag`' will search by the full canonical name and fail to match s4 hints, potentially missing the XSS-safety warnings that are critical for correct implementation. The inconsistency with Webview_WriteTag (which does use the full form) makes this a systematic gap."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index s5 hints",
+      "impact": "medium",
+      "justification": "WebView_IncludeTag, WebView_IncludeParamTag, and WebView_ConfirmationPageTag are the primary tags documented in s5 — the section exists specifically to explain how these tags support i18n resource path switching. Without these hints, a user asking 'how to use WebView_IncludeTag for multilingual support' will not be routed to s5. Unlike s3/s6 where tags appear in a supplementary list, these are the core subjects of the section."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index s6 hints",
+      "impact": "low",
+      "justification": "WebView_SubmitTag, WebView_PopupSubmitTag, and WebView_DownloadSubmitTag appear in s6 only as items in a list of 'affected src attributes' for the cache-versioning feature. Their primary documentation is in dedicated sections. A user asking about cache control for static content will find s6 via existing hints (static_content_version, StaticResourceReload, キャッシュ). A user asking about WebView_SubmitTag specifically is unlikely to need s6 unless they already know about the src/cache relationship, in which case the section content itself provides the answer."
+    }
+  ]
+}

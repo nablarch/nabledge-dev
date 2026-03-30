@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (DBへの一括登録 subsection)",
+      "description": "The source table describing the DB registration processing flow includes two details not present in the knowledge file: (1) 形式チェック is performed automatically by the framework when reading records (developer does not implement it), and (2) records that pass the format check are converted to Map-type objects. These details explain what happens internally during the applyFormat → validateWith pipeline.",
+      "source_evidence": "「形式チェック: フレームワークが読み込む際に、自動的に行う検証。...形式チェックを通過したレコードはMap型のオブジェクトに変換される。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "s1 hints are missing two PascalCase class names that appear in the section content: `HttpRequest` (explicitly named in the source as the object from which uploaded files are retrieved) and `InputStream` (used in the binary file reading code example).",
+      "source_evidence": "「サーバ側では、HttpRequestオブジェクトからアップロードファイルを取得することができる。」 and `InputStream in = partInfo.getInputStream();`"
+    }
+  ]
+}

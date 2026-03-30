@@ -1,0 +1,14 @@
+{
+  "file_id": "java-static-analysis-05_JavaStaticAnalysis",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The leaked RST directive `:doc:`./UnpublishedApi`` appears only in the final sentence and does not distort any factual content. An AI agent reading the sentence \"仕様および使用方法は :doc:`./UnpublishedApi` を参照。\" will encounter unexpected punctuation/syntax but can still infer that a reference document for UnpublishedApi exists. All substantive information (tool names, purposes, warnings, configuration guidance) is intact and correctly represented. The defect is cosmetic noise, not a factual error or omission that would cause the agent to give wrong guidance.",
+  "findings_assessment": [
+    {
+      "category": "section_issue",
+      "location": "sections.s1 — last sentence",
+      "impact": "low",
+      "justification": "The RST directive `:doc:`./UnpublishedApi`` is rendered as literal punctuation/text, which is syntactically odd but does not mislead the agent. The sentence still communicates that a specification/usage document for UnpublishedApi exists. No factual information is lost or corrupted. The fix did not apply in Phase E: the Phase E output is byte-for-byte identical to the Phase D finding — the fix agent ran but made no change to the file, leaving the directive in place."
+    }
+  ]
+}

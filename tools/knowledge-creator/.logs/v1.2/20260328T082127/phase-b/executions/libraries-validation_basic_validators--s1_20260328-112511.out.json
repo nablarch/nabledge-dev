@@ -1,0 +1,63 @@
+{
+  "id": "libraries-validation_basic_validators--s1",
+  "title": "基本バリデータ・コンバータ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "基本バリデータ・コンバータ一覧",
+      "hints": [
+        "RequiredValidator",
+        "LengthValidator",
+        "NumberRangeValidator",
+        "SystemCharValidator",
+        "@Required",
+        "@Length",
+        "@NumberRange",
+        "@SystemChar",
+        "StringConvertor",
+        "StringArrayConvertor",
+        "BigDecimalConvertor",
+        "IntegerConvertor",
+        "LongConvertor",
+        "@Digits",
+        "バリデータ一覧",
+        "コンバータ一覧",
+        "必須入力チェック",
+        "文字列長チェック",
+        "数値範囲チェック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システム許容文字のバリデーション",
+      "hints": [
+        "CharsetDef",
+        "CharsetDefSupport",
+        "RangedCharsetDef",
+        "LiteralCharsetDef",
+        "CompositeCharsetDef",
+        "CachingCharsetDef",
+        "SystemChar",
+        "SystemCharValidator",
+        "@SystemChar",
+        "startCodePoint",
+        "endCodePoint",
+        "messageId",
+        "defaultCharsetDef",
+        "allowedCharacters",
+        "charsetDefList",
+        "charsetDef",
+        "システム許容文字",
+        "文字集合定義",
+        "Unicodeコードポイント",
+        "許容文字バリデーション"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## バリデータ一覧\n\n| バリデータクラス名 | アノテーション | 説明 |\n|---|---|---|\n| `nablarch.core.validation.validator.RequiredValidator` | `@Required` | 必須入力チェック |\n| `nablarch.core.validation.validator.LengthValidator` | `@Length` | 文字列長チェック（String#length()による）。長さ0の文字列は常に受け付ける（長さ0のチェックは`@Required`で実施する想定） |\n| `nablarch.core.validation.validator.NumberRangeValidator` | `@NumberRange` | 数値型プロパティが指定範囲内かチェック |\n| `nablarch.core.validation.validator.unicode.SystemCharValidator` | `@SystemChar` | システム許容文字からなる文字列かチェック |\n\n## コンバータ一覧（nablarch.core.validation.convertorパッケージ）\n\n| コンバータクラス名 | 変換後の型 | 変換可能な入力型 | 説明 |\n|---|---|---|---|\n| `StringConvertor` | `java.lang.String` | `String`, `String[]`（要素数1のみ） | 文字列型プロパティへのデータ変換。設定によって前後スペースをtrimできる |\n| `StringArrayConvertor` | `java.lang.String[]` | `String[]` | String配列プロパティへのデータ変換 |\n| `BigDecimalConvertor` | `java.math.BigDecimal` | `Number`サブクラス, `String`, `String[]`（要素数1のみ） | BigDecimal型プロパティへのデータ変換。`@Digits`アノテーション設定が必須 |\n| `IntegerConvertor` | `java.lang.Integer` | `Number`サブクラス, `String`, `String[]`（要素数1のみ） | Integer型プロパティへのデータ変換。9桁まで変換可能。9桁超は`LongConvertor`または`BigDecimalConvertor`を使用。`@Digits`アノテーション設定が必須 |\n| `LongConvertor` | `java.lang.Long` | `Number`サブクラス, `String`, `String[]`（要素数1のみ） | Long型プロパティへのデータ変換。18桁まで変換可能。18桁超は`BigDecimalConvertor`を使用。`@Digits`アノテーション設定が必須 |\n\n> **注意**: `BigDecimalConvertor`、`IntegerConvertor`、`LongConvertor`には`@Digits`アノテーションの設定が必須。セッタに設定すること。詳細は :ref:`convert_property` を参照。\n\n```java\n@PropertyName(\"認証失敗回数\")\n@Required\n@NumberRange(min = 0, max = 9)\n@Digits(integer = 1, fraction = 0)\npublic void setFailedCount(Integer failedCount) {\n    this.failedCount = failedCount;\n}\n```",
+    "s2": "> **注意**: サロゲートペアを許容する場合はchar値の数と実際の文字数が合わなくなる問題が発生する。JVMが扱える範囲（U+0000～U+10FFFF）は全て扱えるが注意すること。\n\n## インタフェース\n\n| インタフェース名 | 説明 |\n|---|---|\n| `nablarch.core.validation.validator.unicode.CharsetDef` | 許容する文字の集合を定義するインタフェース |\n\n## クラス\n\n| クラス名 | 説明 |\n|---|---|\n| `nablarch.core.validation.validator.unicode.CharsetDefSupport` | CharsetDef実装クラスのサポートクラス。CharsetDef毎のメッセージIDの保持のみを行う |\n| `nablarch.core.validation.validator.unicode.RangedCharsetDef` | コードポイント範囲指定による許容文字集合定義クラス |\n| `nablarch.core.validation.validator.unicode.LiteralCharsetDef` | リテラル文字列指定による許容文字集合定義クラス |\n| `nablarch.core.validation.validator.unicode.CompositeCharsetDef` | 許容文字集合の組み合わせによる許容文字集合定義クラス |\n| `nablarch.core.validation.validator.unicode.CachingCharsetDef` | 許容文字判定結果のキャッシュを行うクラス |\n| `nablarch.core.validation.validator.unicode.SystemChar` | システム許容文字で構成された文字列であることを表すアノテーション |\n| `nablarch.core.validation.validator.unicode.SystemCharValidator` | システム許容文字のみからなる文字列かチェックするクラス |\n\n## コードポイント範囲指定による許容文字集合定義（RangedCharsetDef）\n\nUnicodeコードポイントで開始・終了位置を定義し、その範囲内の文字を許容文字とする。コードポイント記載にはU+n表記を使用する。\n\n```xml\n<!-- 制御コードを除いたASCII文字 -->\n<component name=\"asciiWithoutControlCode\" class=\"nablarch.core.validation.validator.unicode.RangedCharsetDef\">\n  <property name=\"startCodePoint\" value=\"U+0020\" />\n  <property name=\"endCodePoint\" value=\"U+007F\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n\n## リテラル文字列指定による許容文字集合定義（LiteralCharsetDef）\n\nコードポイント上に散在する文字集合の定義に使用する。\n\n```xml\n<!-- \"A\"と\"1\"と\"あ\"を許容 -->\n<component name=\"literal\" class=\"nablarch.core.validation.validator.unicode.LiteralCharsetDef\">\n  <property name=\"allowedCharacters\" value=\"A1あ\" />\n  <property name=\"messageId\" value=\"MSG00092\" />\n</component>\n```\n\n> **注意**: `allowedCharacters`のvalue属性への直接記入より、config-file要素を利用した外部化を推奨（:ref:`repository_import_override_priority` を参照）。\n\n## 許容文字集合の組み合わせによる定義（CompositeCharsetDef）\n\n複数の許容文字集合を組み合わせて定義する。判定処理はリストの設定順に行われるため、出現頻度の高い文字集合を先頭に配置すると性能が向上する。\n\n```xml\n<component name=\"composite\" class=\"nablarch.core.validation.validator.unicode.CompositeCharsetDef\">\n  <property name=\"charsetDefList\">\n    <list>\n      <component-ref name=\"asciiWithoutControlCode\"/>\n      <component-ref name=\"kana\"/>\n    </list>\n  </property>\n</component>\n```\n\n## 許容文字判定結果のキャッシュ（CachingCharsetDef）\n\n多数のCharsetDefを組み合わせる場合や処理時間のばらつきを抑えたい場合にキャッシュが有効。\n\n```xml\n<component name=\"charsetDefCache\" class=\"nablarch.core.validation.validator.unicode.CachingCharsetDef\">\n  <property name=\"charsetDef\" ref=\"composite\"/>\n</component>\n```\n\n## SystemCharValidatorへの許容文字集合登録\n\n定義した許容文字集合を`SystemCharValidator`に設定することで、`@SystemChar`アノテーションによるチェックが実施できる。\n\n```xml\n<component class=\"nablarch.core.validation.validator.unicode.SystemCharValidator\">\n  <property name=\"defaultCharsetDef\" ref=\"systemPermittedCharset\"/>\n  <property name=\"messageId\" value=\"MSG90001\"/>\n</component>\n```\n\n## 精査エラー時のメッセージID指定\n\nメッセージIDの優先順位（高い順）:\n1. `@SystemChar`アノテーションに指定（個別機能でメッセージを切り替える場合）\n2. `CharsetDef`に指定（文字集合の種別ごとにメッセージを切り替える場合）\n3. `SystemCharValidator`に指定（デフォルト。必ず設定すること）\n\n> **注意**: `SystemCharValidator`のmessageIdは、`@SystemChar`および`CharsetDef`にメッセージID指定がない場合のデフォルトとして使用されるため、必ず設定すること。\n\n`@SystemChar`アノテーションのメッセージID指定例:\n\n```java\n@PropertyName(\"パスワード\")\n@Required\n@SystemChar(charsetDef = \"alphaCharacter\", messageId = \"PASSWORD\")\n@Length(max = 20)\npublic void setConfirmPassword(String confirmPassword) {\n    this.confirmPassword = confirmPassword;\n}\n```\n\n`CharsetDef`のメッセージID指定例:\n\n```xml\n<component name=\"alphaCharacter\" class=\"nablarch.core.validation.validator.unicode.RangedCharsetDef\">\n  <property name=\"startCodePoint\" value=\"U+0061\" />\n  <property name=\"endCodePoint\" value=\"U+007A\" />\n  <property name=\"messageId\" value=\"MSG00002\" />\n</component>\n```"
+  }
+}

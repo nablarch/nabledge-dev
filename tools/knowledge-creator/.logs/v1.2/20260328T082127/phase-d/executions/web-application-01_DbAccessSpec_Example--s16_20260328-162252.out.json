@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`getParameterizedSqlStatement` is used in both code examples in s1 (`statement = getParameterizedSqlStatement(\"UPDATE_SALES\")`) but is absent from s1's hints. It is present in s5's hints but not s1's.",
+      "source_evidence": "ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`retrieve` is the key method called in the s4 code example (`SqlResultSet rs = select.retrieve(form)`) but is absent from s4's hints. It is listed in s3's hints but users may search specifically within the LIKE/escape context.",
+      "source_evidence": "ParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST1\");\nSqlResultSet rs = select.retrieve(form);"
+    }
+  ]
+}

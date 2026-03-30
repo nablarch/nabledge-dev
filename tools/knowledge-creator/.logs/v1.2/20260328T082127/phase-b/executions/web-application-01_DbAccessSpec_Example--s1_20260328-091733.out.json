@@ -1,0 +1,49 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s1",
+  "title": "データベースアクセス実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "データベースアクセス実装例",
+        "基本的な実装",
+        "簡易検索機能",
+        "バイナリデータアクセス",
+        "オブジェクト保存",
+        "マップ保存"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本的な実装",
+      "hints": [
+        "DbAccessSupport",
+        "データベースアクセスクラス継承",
+        "インスタンス化",
+        "継承モデル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "簡易検索機能",
+      "hints": [
+        "SqlResultSet",
+        "SqlPStatement",
+        "SqlRow",
+        "retrieve",
+        "全件検索",
+        "範囲指定検索",
+        "大量データ",
+        "OutOfMemoryError"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本ページで説明するデータベースアクセス実装例の一覧:\n\n- :ref:`basic_implementation`\n- :ref:`simple_search`（:ref:`retrieve-variable-label`、:ref:`range_search`、:ref:`how_to_use_sql_result_set`）\n- :ref:`executeQuery-label`\n- :ref:`insert_update_delete`（:ref:`update_single_data`、:ref:`executeBatch-label`）\n- :ref:`access_to_binary_data`（:ref:`searching_binary_data`、:ref:`insert_binary_data`、:ref:`insert_file_data_as_binary_data`、:ref:`generate_binary_file`）\n- :ref:`db-object-save-samole`（:ref:`update_single_data_by_object`、:ref:`update_multiple_data_by_object`）\n- :ref:`map-save-label`（:ref:`update_single_data_by_map`、:ref:`update_multiple_data_by_map`）\n- :ref:`object-select-label`（:ref:`using_simple_search`、:ref:`using_simple_search_having_like_conditions`、:ref:`variable-condition-sql-label`、:ref:`changing_dynamically_in`、:ref:`changing_dynamically_order_by`、:ref:`serching_for_mass_data`）\n- :ref:`map-search-label`",
+    "s2": "**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\nデータベースアクセスクラスは `DbAccessSupport` を継承して作成する。\n\n```java\nimport nablarch.core.db.support.DbAccessSupport;\npublic class CM311AC1Component extends DbAccessSupport {\n}\n```\n\n> **注意**: 継承モデルを使用しない場合（別のスーパークラスを継承するため `DbAccessSupport` を継承できない場合）は、`new DbAccessSupport(getClass())` でインスタンス化して使用する。\n\n> **警告**: 継承モデルを使用しない場合にデフォルトコンストラクタを使用すると、SQLファイルを特定できず実行時エラーとなる。",
+    "s3": "**クラス**: `SqlResultSet`, `SqlPStatement`, `SqlRow`\n\n検索処理では基本的に簡易検索機能を使用する。結果は `SqlResultSet` に格納されて返却される。\n\n`SqlResultSet` の特長：\n- リソース解放（close処理）の実装不要\n- 取得レコード数が把握可能\n\n![SqlResultSetのイメージ](assets/web-application-01_DbAccessSpec_Example--s1/DbAccessSpec_SampleSqlResultSet.jpg)\n\n> **警告**: 大量データを簡易検索機能で取得するとOutOfMemoryErrorが発生する可能性がある。大量データを取得する場合は :ref:`executeQuery-label` を使用すること。大量データとは、SELECT文の結果として取得されるデータ件数が大量な場合を指す（テーブルの総件数ではなく実際に取得される件数が基準）。\n\n## 条件に紐付くデータの全件検索処理\n\n`SqlPStatement#retrieve()` で条件に紐付くデータを全件取得する。\n\nSQLファイル記述ルール：\n- SQL_IDとSQL文は空行で区切る（SQL文内に空行不可）\n- SQL文の最初の「=」までがSQL_ID\n- コメントは「--」で開始\n- SQL文は途中改行可\n\nSQLファイル（`nablarch/sample/ss11AC/CM311AC1Component.sql`）：\n```sql\nGET_USER_INFO =\nSELECT\n    USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = ?\nORDER BY\n    USER_ID\n```\n\nJava実装：\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_INFO\");\nstatement.setString(1, \"00001\");  // インデックスは1から開始（PreparedStatementと同様）\nSqlResultSet resultSet = statement.retrieve();\n```\n\n## 範囲指定での検索処理\n\n`SqlPStatement#retrieve(int startPos, int max)` で対象範囲のデータを取得する。\n\nSQLファイル：\n```sql\nGET_USER_LIST =\nSELECT\n    USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS\nFROM\n    USER_MST\nORDER BY\n    USER_ID\n```\n\nJava実装：\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_LIST\");\nreturn statement.retrieve(startPos, 20);  // 開始位置と取得最大件数を指定\n```\n\n## 取得したSqlResultSetの使用方法\n\n```java\nSqlResultSet resultSet = statement.retrieve();\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\n`SqlRow` からカラム値を取り出す際は、カラム名またはJavaBeansのプロパティ命名規約に準じた名称を指定可能。例：`USER_ID` カラムは `USER_ID` でも `userId` でも取得できる。\n\nJSPでDB検索結果行（`SqlRow`）とJavaオブジェクトを透過的に扱える（変数が `SqlResultSet` でもJavaオブジェクトリストでも同様に動作）：\n```jsp\n<c:forEach var=\"row\" items=\"${searchResult}\">\n    <td><n:write name=\"row.userId\" /></td>\n    <td><n:write name=\"row.userName\" /></td>\n</c:forEach>\n```"
+  }
+}

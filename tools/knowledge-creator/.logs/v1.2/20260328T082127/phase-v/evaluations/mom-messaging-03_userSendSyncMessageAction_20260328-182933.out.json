@@ -1,0 +1,26 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "The critical omission of step ① causes the code example to reference `systemAccount` and `users` as undeclared variables, making it non-compilable. An AI agent presenting this code to a developer would produce broken, misleading guidance. Phase E returned the file unchanged — no fixes were applied to any of the three findings.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 (Java code example)",
+      "impact": "high",
+      "justification": "The code uses `systemAccount.getLoginId()`, `users.getKanjiName()`, etc. but neither variable is declared anywhere in the example. `W11AC02Form`, `SystemAccountEntity`, and `UsersEntity` are also absent. The result is non-compilable code that omits the mandatory first step of the documented 4-step process. A developer following this example would get a compile error with no indication of what is missing. Why it persisted: Phase E output is byte-for-byte identical to the Phase D input — the fix agent did not modify the file at all."
+    },
+    {
+      "category": "omission",
+      "location": "s2 (Java code example)",
+      "impact": "medium",
+      "justification": "The `ctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm)` block is the only place in this document that shows how to pass state to the next action via request scope. Omitting it means a developer implementing this flow has no guidance on inter-action data handoff, a pattern specific to this Nablarch idiom. Why it persisted: same as above — Phase E made no changes to the file."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 hints",
+      "impact": "low",
+      "justification": "`ApplicationException` appears in the code block itself, so a developer who has already retrieved s2 will see it. The missing hint only reduces discoverability when the user queries specifically for `ApplicationException` — a narrower failure mode. Why it persisted: same as above — Phase E made no changes to the file."
+    }
+  ]
+}

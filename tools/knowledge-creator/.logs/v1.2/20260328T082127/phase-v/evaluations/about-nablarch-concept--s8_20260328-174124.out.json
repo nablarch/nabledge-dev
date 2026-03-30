@@ -1,0 +1,26 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 has medium user impact: the type variable table in s1 omits concrete handler class examples (RequestHandlerEntry, HttpResponseHandler, HttpAccessLogHandler), preventing AI from answering class-to-type-variable mapping questions. Finding 2 compounds this — without those class names in hints, the section is unreachable even after content is fixed. Finding 3 has no impact since s2 is empty.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — type variable table",
+      "impact": "medium",
+      "justification": "The knowledge file drops the 'ハンドラの例' column entries for Request and HttpRequest rows, losing the concrete handler-to-type-variable mapping. A developer asking 'which type variable does RequestHandlerEntry or HttpResponseHandler use?' cannot be answered from this file. While these handlers may have their own knowledge files, the type variable classification is unique to this section and is practically useful for understanding handler scope and reusability across processing modes."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints array",
+      "impact": "low",
+      "justification": "RequestHandlerEntry, HttpResponseHandler, and HttpAccessLogHandler are absent from s1 hints. This is secondary to finding 1: even if hints were present, the content does not currently contain these class names, so retrieval would not yield the classification information. The impact is low in isolation but becomes medium once finding 1 is resolved — without the hints, the fixed content would still be unreachable via class-name queries. Rated low as a standalone finding since content is the binding constraint."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 — hints array",
+      "impact": "none",
+      "justification": "s2 has content 'なし' — the section is intentionally empty. Adding 'method_binding' to s2 hints would make the section reachable via :ref:`method_binding` cross-references, but since there is no content to surface, the practical impact on AI answers is zero. This is a structural correctness issue only."
+    }
+  ]
+}

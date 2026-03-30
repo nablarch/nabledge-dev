@@ -1,0 +1,245 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_FormTagList.rst`
+- Format: `rst`
+
+```
+radioButtonsタグ、checkboxesタグ
+------------------------------------------------
+radioButtonsタグとcheckboxesタグの追加属性は、上記の :ref:`WebView_ListSelectCommon` のみである。
+
+radioButtonsタグとcheckboxesタグでは、radiobButtonタグとcheckboxタグと同様に、ラベルを出力する際にlabelタグを出力する。\
+フレームワークで「nablarch_<radio|checkbox><連番>」形式でid属性の値を生成して使用する。\
+<連番>部分には、画面内でradioタグ(又はcheckboxタグ)の出現順に1から番号を振る。
+
+また、tabindex属性で指定された値はそのまますべてのinputタグに出力する。
+
+radioButtonsタグおよびcheckboxesタグの使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <tr>
+    <td>
+      <n:radioButtons name="team.color" tabindex="3" 
+                listName="allColors" elementLabelProperty="label" elementValueProperty="value" elementLabelPattern="$VALUE$:$LABEL$" />
+    </td>
+    <td>
+      <n:checkboxes name="team.titles" tabindex="5" 
+                listName="allTitles" elementLabelProperty="label" elementValueProperty="value" elementLabelPattern="$VALUE$:$LABEL$" />
+    </td>
+  </tr>
+
+
+入力画面の出力例を下記に示す。
+
+.. code-block:: html
+
+  <tr>
+    <td>
+      <input id="nablarch_radio1" tabindex="3" type="radio" name="team.color" value="001"><label for="nablarch_radio1">001:red</label><br>
+      <input id="nablarch_radio2" tabindex="3" type="radio" name="team.color" value="002"><label for="nablarch_radio2">002:blue</label><br>
+      <input id="nablarch_radio3" tabindex="3" type="radio" name="team.color" value="003"><label for="nablarch_radio3">003:green</label><br>
+      <input id="nablarch_radio4" tabindex="3" type="radio" name="team.color" value="004"><label for="nablarch_radio4">004:yellow</label><br>
+      <input id="nablarch_radio5" tabindex="3" type="radio" name="team.color" value="005"><label for="nablarch_radio5">005:pink</label><br>
+    </td>
+    <td>
+      <input id="nablarch_checkbox1" tabindex="5" type="checkbox" name="team.titles" value="01"><label for="nablarch_checkbox1">01:地区優勝</label><br>
+      <input id="nablarch_checkbox2" tabindex="5" type="checkbox" name="team.titles" value="02"><label for="nablarch_checkbox2">02:リーグ優勝</label><br>
+      <input id="nablarch_checkbox3" tabindex="5" type="checkbox" name="team.titles" value="03"><label for="nablarch_checkbox3">03:ファイナル優勝</label><br>
+    </td>
+  </tr>
+
+----------------
+selectタグ
+----------------
+selectタグは、 :ref:`WebView_ListSelectCommon` に加えて、下記の属性を追加している。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+withNoneOption                         | リスト先頭に選択なしのオプションを追加するか否か。
+                                       | 追加する場合はtrue、追加しない場合はfalse。
+                                       | デフォルトはfalse。
+noneOptionLabel                        | リスト先頭に選択なしのオプションを追加する場合に使用するラベル。
+                                       | この属性は、withNoneOptionにtrueを指定した場合のみ有効となる。
+                                       | デフォルトは""。
+====================================== ==========================================================================================
+
+共通属性の例と同じ選択項目リストを使用して、属性の使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <n:select name="user.groupIds"
+            listName="allGroups" elementLabelProperty="name" elementValueProperty="id"
+            elementLabelPattern="$VALUE$ - $LABEL$" listFormat="ul"
+            withNoneOption="true" noneOptionLabel="選択なし" />
+
+「選択なし」オプションのvalue属性は、常に空文字となる。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <%-- リクエストスコープにuser.groupIds = "G002" が設定されている場合。--%>
+  <select name="user.groupIds">
+    <option value="">選択なし</option>
+    <option value="G001">G001 - グループA</option>
+    <option value="G002" selected="selected">G002 - グループB</option>
+    <option value="G003">G003 - グループC</option>
+    <option value="G004">G004 - グループD</option>
+    <option value="G005">G005 - グループE</option>
+  </select>
+```
+
+## Knowledge File
+
+- ID: `libraries-07_FormTagList--s12`
+
+```json
+{
+  "id": "libraries-07_FormTagList--s12",
+  "title": "フォームタグ一覧",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "radioButtonsタグ、checkboxesタグ",
+      "hints": [
+        "radioButtonsタグ",
+        "checkboxesタグ",
+        "nablarch_radio連番",
+        "nablarch_checkbox連番",
+        "tabindex",
+        "ラジオボタン一括出力",
+        "チェックボックス一括出力",
+        "id属性自動生成",
+        "labelタグ出力"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "フォームタグ",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "selectタグ",
+      "hints": [
+        "selectタグ",
+        "withNoneOption",
+        "noneOptionLabel",
+        "選択なしオプション",
+        "プルダウン選択",
+        "ドロップダウン",
+        "選択なし追加"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "radioButtonsタグとcheckboxesタグの追加属性は :ref:`WebView_ListSelectCommon` のみ。\n\nラベル出力時はlabelタグを出力し、id属性値は「nablarch_<radio|checkbox><連番>」形式でフレームワークが生成する。連番は画面内でのradio/checkboxタグ出現順に1から採番。\n\ntabindex属性で指定された値はすべてのinputタグに同じ値が出力される。\n\n```jsp\n<n:radioButtons name=\"team.color\" tabindex=\"3\"\n          listName=\"allColors\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n<n:checkboxes name=\"team.titles\" tabindex=\"5\"\n          listName=\"allTitles\" elementLabelProperty=\"label\" elementValueProperty=\"value\" elementLabelPattern=\"$VALUE$:$LABEL$\" />\n```\n\n出力HTML例（入力画面）:\n\n```html\n<input id=\"nablarch_radio1\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"001\"><label for=\"nablarch_radio1\">001:red</label><br>\n<input id=\"nablarch_radio2\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"002\"><label for=\"nablarch_radio2\">002:blue</label><br>\n<input id=\"nablarch_radio3\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"003\"><label for=\"nablarch_radio3\">003:green</label><br>\n<input id=\"nablarch_checkbox1\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"01\"><label for=\"nablarch_checkbox1\">01:地区優勝</label><br>\n<input id=\"nablarch_checkbox2\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"02\"><label for=\"nablarch_checkbox2\">02:リーグ優勝</label><br>\n<input id=\"nablarch_checkbox3\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"03\"><label for=\"nablarch_checkbox3\">03:ファイナル優勝</label><br>\n```",
+    "s2": "なし",
+    "s3": ":ref:`WebView_ListSelectCommon` に加えて以下の追加属性がある。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| withNoneOption | boolean | | false | リスト先頭に選択なしのオプションを追加するか。true=追加、false=追加しない |\n| noneOptionLabel | String | | \"\" | 選択なしオプションのラベル。withNoneOption=trueの場合のみ有効 |\n\n「選択なし」オプションのvalue属性は常に空文字。\n\n```jsp\n<n:select name=\"user.groupIds\"\n          listName=\"allGroups\" elementLabelProperty=\"name\" elementValueProperty=\"id\"\n          elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\"\n          withNoneOption=\"true\" noneOptionLabel=\"選択なし\" />\n```\n\n出力HTML例（入力画面、user.groupIds = \"G002\" の場合）:\n\n```html\n<select name=\"user.groupIds\">\n  <option value=\"\">選択なし</option>\n  <option value=\"G001\">G001 - グループA</option>\n  <option value=\"G002\" selected=\"selected\">G002 - グループB</option>\n  <option value=\"G003\">G003 - グループC</option>\n  <option value=\"G004\">G004 - グループD</option>\n  <option value=\"G005\">G005 - グループE</option>\n</select>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

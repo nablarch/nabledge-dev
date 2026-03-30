@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-SessionConcurrentAccessHandler",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor. The omission in s1 is background motivation that aids understanding but is not required for correct implementation — the knowledge file already conveys what the handler does and when to use it. The missing hint in s2 has no practical impact because CopyOnReadMap is already covered by s1 hints and would be found via s1. Phase E logs are empty, indicating no fix attempt was made, likely because the issues were assessed as too minor to address.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 (概要)",
+      "impact": "low",
+      "justification": "The omitted sentence explains that individual session variable reads/writes are thread-safe but overall session integrity is not — this is the motivating rationale for the handler. However, the knowledge file already clearly states the handler provides framework-level concurrent access control, describes the CONCURRENT policy mechanism (snapshots, optimistic locking, CopyOnReadMap), and includes the @ErrorOnSessionWriteConflict behavior. A developer can correctly implement and configure the handler without this background sentence. It would improve conceptual clarity but its absence does not cause misuse or incorrect implementation."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 (ハンドラ処理フロー) hints",
+      "impact": "none",
+      "justification": "CopyOnReadMap (nablarch.core.util.map.CopyOnReadMap) is already present in the s1 hints array. An agent querying for CopyOnReadMap will retrieve s1, which contains the full context about the class. The absence from s2 hints means s2 is not independently surfaced for CopyOnReadMap queries, but since s1 covers it and s1 is the conceptual overview section, retrieval quality is unaffected in practice."
+    }
+  ]
+}

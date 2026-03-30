@@ -1,0 +1,42 @@
+{
+  "id": "mom-messaging-03_userSendSyncMessageAction",
+  "title": "同期応答メッセージ送信処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーマット定義ファイル",
+      "hints": [
+        "FilePathSetting",
+        "フォーマット定義ファイル",
+        "命名規約",
+        "_SEND",
+        "_RECEIVE",
+        "同期応答メッセージ送信処理",
+        "レコードタイプ名",
+        "RM11AC0201_SEND.fmt",
+        "RM11AC0201_RECEIVE.fmt"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "同期応答メッセージ送信処理を行うActionクラス",
+      "hints": [
+        "SyncMessage",
+        "MessageSender",
+        "sendSync",
+        "@OnError",
+        "@OnDoubleSubmission",
+        "MessageSendSyncTimeoutException",
+        "同期応答メッセージ送信",
+        "addDataRecord",
+        "getDataRecord"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "フォーマット定義ファイルの配置場所と拡張子は `FilePathSetting` クラスのコンポーネント定義により設定される。通常はアーキテクトが設定するため、アプリケーションプログラマは設定不要。\n\n**クラス**: `nablarch.core.util.FilePathSetting`\n\n```xml\n<component name=\"filePathSetting\"\n         class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"format\" value=\"classpath:web/format\" />\n    </map>\n  </property>\n  <property name=\"fileExtensions\">\n    <map>\n      <entry key=\"format\" value=\"fmt\" />\n    </map>\n  </property>\n</property>\n```\n\nフォーマット定義ファイルの命名規約:\n- 要求電文: リクエストID + `_SEND`（例: `RM11AC0201_SEND.fmt`）\n- 応答電文: リクエストID + `_RECEIVE`（例: `RM11AC0201_RECEIVE.fmt`）\n\n> **警告**: 同期応答送信処理に使用するフォーマット定義ファイル（`～_SEND.fmt`）のレコードタイプ名は `data` 固定である。\n\n### 要求電文フォーマット定義ファイル例\n\nファイルパス: `web/format/RM11AC0201_SEND.fmt`\n\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    420\nrecord-separator: \"\\r\\n\"\n\n[data]\n1   dataKbn                     X(1)  \"2\"\n2   loginId                     X(20)\n22  kanjiName                   N(100)\n122 kanaName                    N(100)\n222 ?filler1                    X(50)\n272 mailAddress                 X(100)\n372 extensionNumberBuilding     X(2)\n374 extensionNumberPersonal     X(4)\n378 mobilePhoneNumberAreaCode   X(3)\n381 mobilePhoneNumberCityCode   X(4)\n385 mobilePhoneNumberSbscrCode  X(4)\n389 ?filler2                    X(32)\n```\n\n### 応答電文フォーマット定義ファイル例\n\nファイルパス: `web/format/RM11AC0201_RECEIVE.fmt`\n\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    420\nrecord-separator: \"\\r\\n\"\n\n[data]\n1   dataKbn                     X(1)  \"0\"\n2   userId                      X(10)\n12  failureCode                 X(20)\n32  userInfoId                  X(20)\n52  ?filler                     X(369)\n```",
+    "s2": "同期応答メッセージ送信処理の実装手順:\n1. リクエストを精査しEntityへ変換する\n2. EntityからSyncMessageオブジェクトを生成する\n3. MessageSenderでメッセージを送信する\n4. 応答電文のSyncMessageオブジェクトからデータを取得する\n\n**クラス**: `SyncMessage`, `MessageSender`\n**アノテーション**: `@OnError`, `@OnDoubleSubmission`\n\n```java\n// 要求電文データレコード作成\nMap<String, Object> dataRecord = new HashMap<String, Object>();\ndataRecord.put(\"dataKbn\", REQUEST_MESSAGE_DATA_KBN);\ndataRecord.put(\"loginId\", systemAccount.getLoginId());\ndataRecord.put(\"kanjiName\", users.getKanjiName());\ndataRecord.put(\"kanaName\", users.getKanaName());\ndataRecord.put(\"mailAddress\", users.getMailAddress());\ndataRecord.put(\"extensionNumberBuilding\", users.getExtensionNumberBuilding());\ndataRecord.put(\"extensionNumberPersonal\", users.getExtensionNumberPersonal());\ndataRecord.put(\"mobilePhoneNumberAreaCode\", users.getMobilePhoneNumberAreaCode());\ndataRecord.put(\"mobilePhoneNumberCityCode\", users.getMobilePhoneNumberCityCode());\ndataRecord.put(\"mobilePhoneNumberSbscrCode\", users.getMobilePhoneNumberSbscrCode());\n\n// メッセージ送信\nSyncMessage responseMessage\n    = MessageSender.sendSync(new SyncMessage(\"RM11AC0201\").addDataRecord(dataRecord));\n\n// 応答電文からデータ取得\nString userId = (String) responseMessage.getDataRecord().get(\"userId\");\nsystemAccount.setUserId(userId);\n```\n\nタイムアウト時は `MessageSendSyncTimeoutException` 例外がスローされるため、必要に応じてキャッチしエラー画面への遷移を行うこと。"
+  }
+}

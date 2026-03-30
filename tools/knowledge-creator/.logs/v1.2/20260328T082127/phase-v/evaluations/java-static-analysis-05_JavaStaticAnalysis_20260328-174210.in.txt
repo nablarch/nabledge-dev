@@ -1,0 +1,156 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `java-static-analysis-05_JavaStaticAnalysis`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "section_issue",
+    "severity": "minor",
+    "location": "sections.s1 — last sentence",
+    "description": "RST markup directive `:doc:`./UnpublishedApi`` leaked into the knowledge file content. The source only has a toctree entry and the prose 'このツールの仕様および使用方法は下記を参照のこと。' — neither contains the `:doc:` syntax. The raw RST directive would appear as literal punctuation/text to an AI agent and is not valid Markdown or natural prose.",
+    "source_evidence": "Source: '.. toctree::' block with './UnpublishedApi'. Knowledge file s1 ends with: '仕様および使用方法は :doc:`./UnpublishedApi` を参照。'"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _java_check_tool:
+
+======================
+Java静的解析ツール
+======================
+
+Javaの静的解析に使用するツールを説明する。
+
+次のことを目的として、NablarchではJavaの静的解析ツールをNablarch開発環境構築ガイドに従って構築した環境（以後、デフォルトの環境）に設定して提供する。
+
+* Nablarchが定めるJavaコーディング規約に沿ったコーディングをアプリケーションプログラマに要求する。
+* 業務アプリケーション作成過程に埋め込んでしまった潜在的な不具合を検出する。
+
+  .. warning::
+    デフォルトの環境に設定したJava静的解析ツールでは上記の目的をすべて保証することはできない。
+
+    * アプリケーションプログラマに、「Nablarch アプリケーション開発標準」に沿ったコーディングを行うことを求める。
+    * ソースコードレビューのレビュアーに、「Nablarch アプリケーション開発標準」に沿ったコーディングが行われていることを観点に入れレビューすることを求める。
+
+デフォルトの環境に設定したJava静的解析ツールは次の2つである。
+
+  ===============  ===========================================
+  ツール名          公式サイト
+  ===============  ===========================================
+  FindBugs         http://findbugs.sourceforge.net/
+  Checkstyle       http://checkstyle.sourceforge.net/
+  ===============  ===========================================
+
+これらのツールの詳細な設定方法、使用方法は公式サイトを参照のこと。
+
+  .. note::
+    デフォルトの環境とは異なる環境を構築する場合、「Nablarch アプリケーション開発標準 => コーディング規約チェックツール設定ファイル」にあるFindBugsとCheckstyleの設定ファイルを使用すること。
+    これらの設定ファイルにより、デフォルトの環境と同一のチェックを行える。
+
+Nablarchが定める使用許可API以外のAPI使用を検知する方法として、NablarchはFindbugsのカスタムルールを提供する。このツールの仕様および使用方法は下記を参照のこと。
+
+.. toctree::
+   :maxdepth: 1
+   
+   ./UnpublishedApi
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "java-static-analysis-05_JavaStaticAnalysis",
+  "title": "Java静的解析ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Java静的解析ツール",
+      "hints": [
+        "FindBugs",
+        "Checkstyle",
+        "Java静的解析",
+        "コーディング規約チェック",
+        "潜在的な不具合検出",
+        "未公開APIチェック",
+        "FindBugsカスタムルール",
+        "UnpublishedApi"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchでは以下の目的でJava静的解析ツールをデフォルト環境に設定して提供する：\n- Nablarchが定めるJavaコーディング規約への準拠をアプリケーションプログラマに要求する\n- 業務アプリケーション作成過程に埋め込まれた潜在的な不具合を検出する\n\n> **警告**: デフォルトの環境に設定したJava静的解析ツールでは上記の目的をすべて保証することはできない。\n> - アプリケーションプログラマに、「Nablarch アプリケーション開発標準」に沿ったコーディングを行うことを求める。\n> - ソースコードレビュアーに、「Nablarch アプリケーション開発標準」に沿ったコーディングが行われていることを観点に入れレビューすることを求める。\n\nデフォルトの環境に設定されているツール：\n\n| ツール名 | 公式サイト |\n|---|---|\n| FindBugs | [http://findbugs.sourceforge.net/](http://findbugs.sourceforge.net/) |\n| Checkstyle | [http://checkstyle.sourceforge.net/](http://checkstyle.sourceforge.net/) |\n\n> **注意**: デフォルトの環境とは異なる環境を構築する場合、「Nablarch アプリケーション開発標準 => コーディング規約チェックツール設定ファイル」にあるFindBugsとCheckstyleの設定ファイルを使用すること。これらの設定ファイルによりデフォルトの環境と同一のチェックを行える。\n\nNablarchが定める使用許可API以外のAPI使用を検知するため、NablarchはFindBugsのカスタムルールを提供する。仕様および使用方法は :doc:`./UnpublishedApi` を参照。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "java-static-analysis-05_JavaStaticAnalysis",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1 — last sentence",
+      "description": "RST markup directive `:doc:`./UnpublishedApi`` leaked into the knowledge file content. The source only has a toctree entry and the prose 'このツールの仕様および使用方法は下記を参照のこと。' — neither contains the `:doc:` syntax. The raw RST directive would appear as literal punctuation/text to an AI agent and is not valid Markdown or natural prose.",
+      "source_evidence": "Source: '.. toctree::' block with './UnpublishedApi'. Knowledge file s1 ends with: '仕様および使用方法は :doc:`./UnpublishedApi` を参照。'"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "java-static-analysis-05_JavaStaticAnalysis",
+  "title": "Java静的解析ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Java静的解析ツール",
+      "hints": [
+        "FindBugs",
+        "Checkstyle",
+        "Java静的解析",
+        "コーディング規約チェック",
+        "潜在的な不具合検出",
+        "未公開APIチェック",
+        "FindBugsカスタムルール",
+        "UnpublishedApi"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchでは以下の目的でJava静的解析ツールをデフォルト環境に設定して提供する：\n- Nablarchが定めるJavaコーディング規約への準拠をアプリケーションプログラマに要求する\n- 業務アプリケーション作成過程に埋め込まれた潜在的な不具合を検出する\n\n> **警告**: デフォルトの環境に設定したJava静的解析ツールでは上記の目的をすべて保証することはできない。\n> - アプリケーションプログラマに、「Nablarch アプリケーション開発標準」に沿ったコーディングを行うことを求める。\n> - ソースコードレビュアーに、「Nablarch アプリケーション開発標準」に沿ったコーディングが行われていることを観点に入れレビューすることを求める。\n\nデフォルトの環境に設定されているツール：\n\n| ツール名 | 公式サイト |\n|---|---|\n| FindBugs | [http://findbugs.sourceforge.net/](http://findbugs.sourceforge.net/) |\n| Checkstyle | [http://checkstyle.sourceforge.net/](http://checkstyle.sourceforge.net/) |\n\n> **注意**: デフォルトの環境とは異なる環境を構築する場合、「Nablarch アプリケーション開発標準 => コーディング規約チェックツール設定ファイル」にあるFindBugsとCheckstyleの設定ファイルを使用すること。これらの設定ファイルによりデフォルトの環境と同一のチェックを行える。\n\nNablarchが定める使用許可API以外のAPI使用を検知するため、NablarchはFindBugsのカスタムルールを提供する。仕様および使用方法は :doc:`./UnpublishedApi` を参照。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

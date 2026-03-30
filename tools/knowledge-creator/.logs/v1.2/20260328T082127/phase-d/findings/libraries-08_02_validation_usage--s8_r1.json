@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s4, s5",
+      "description": "s4 and s5 are in reverse order relative to the source document. In the source, '入力値のトリム' appears before '様々なMapオブジェクトの精査と変換', but in the knowledge file s4 contains '様々なMapオブジェクトの精査と変換' content and s5 contains '入力値のトリム' content.",
+      "source_evidence": "Source order: 値の変換 → 入力値のトリム → 様々なMapオブジェクトの精査と変換 → SqlRowをインプットとして精査を行う例. Knowledge file order: s3=値の変換, s4=様々なMapオブジェクトの精査と変換, s5=入力値のトリム, s6=SqlRowをインプットとして精査を行う例."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s4 title",
+      "description": "s4 has an empty title string, but the source section it covers has the heading '様々なMapオブジェクトの精査と変換'. Unlike s2 and s7 which represent RST anchors with no heading content, s4 maps to an actual section heading.",
+      "source_evidence": "Source: '様々なMapオブジェクトの精査と変換\\n=================================' is a real section heading, not merely an anchor."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s3 hints",
+      "description": "s3 content uses the PascalCase class `Order` (the Form class demonstrated in the value-conversion example) and the `@PropertyName` annotation, but neither appears in the hints array.",
+      "source_evidence": "Source: 'public class Order { ... @PropertyName(\"合計金額\") ... }' and knowledge file s3 code: 'ValidationContext<Order> result = ValidationUtil.validateAndConvertRequest(\"form\", Order.class, req, \"insert\")'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s6 hints",
+      "description": "s6 content uses the PascalCase class `UserEntity` as the target entity for SqlRow validation, but it is absent from the hints array.",
+      "source_evidence": "Source code: 'ValidationContext<UserEntity> context = ValidationUtil.validateAndConvertRequest(null, UserEntity.class, row, \"validateUserData\");'"
+    }
+  ]
+}

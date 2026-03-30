@@ -1,0 +1,26 @@
+{
+  "file_id": "web-application-Other--s1",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "All three findings contain real errors against the actual source, which is NOT truncated. The source provides full content for s8, s9, and s10. Phase D received truncated source and could not identify specific API mismatches; Phase E had no concrete source content to fix against, so the knowledge file was left unchanged. s8 has a fabricated return type and non-existent JSP tags. s9 has a fabricated CodeUtil.contains method. s10 uses a wrong JSP tag name. All three would cause developer errors at compile or runtime.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s8",
+      "impact": "high",
+      "justification": "The source IS present and complete. The knowledge file contains two real errors: (1) CodeUtil.getValues returns List<String>, not List<CodeItem> as stated — this wrong type would cause compilation errors if followed. (2) The JSP tags n:codeSelect and n:select with listId attribute do not appear anywhere in the source — these are fabricated. Developers using this guidance would write broken code. Why it persisted: Phase D checker received a truncated source excerpt ending before this section, so it diagnosed the problem as 'source truncated' rather than identifying specific API mismatches. Phase E had no correct source content to fix against and left the file unchanged."
+    },
+    {
+      "category": "fabrication",
+      "location": "s9",
+      "impact": "high",
+      "justification": "The source IS present. The @CodeValue annotation is real and present in source, but the knowledge file omits its required pattern attribute (@CodeValue(codeId='0001', pattern='PATTERN1') in source vs @CodeValue(codeId='codeId') with no pattern in knowledge file). More critically, CodeUtil.contains is entirely fabricated — this method does not appear anywhere in the source. Developers who call this non-existent method will get compilation errors. Why it persisted: Same root cause as s8 — Phase D saw truncated source and could not verify what was actually present vs fabricated."
+    },
+    {
+      "category": "fabrication",
+      "location": "s10",
+      "impact": "high",
+      "justification": "The source IS present. MessageLevel.WARN is correctly referenced. However the knowledge file states the JSP tag is n:message, while the source clearly uses n:errors. Additionally, the source's key API WebUtil.notifyMessages(ctx, message) is absent from the knowledge file entirely — without this call, warning messages are never queued for display. Using n:message (non-existent in this context) instead of n:errors would result in no message being displayed on screen. Why it persisted: Phase D could not see the actual source content and diagnosed fabrication at the section level without identifying the specific tag name error. Phase E could not correct a specific tag name it had no source evidence for."
+    }
+  ]
+}

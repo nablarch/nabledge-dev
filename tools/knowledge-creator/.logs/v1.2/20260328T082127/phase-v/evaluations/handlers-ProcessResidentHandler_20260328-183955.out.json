@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-ProcessResidentHandler",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is low impact. The knowledge file correctly conveys both the mechanism (wraps in RetryableException and re-throws) and the actionable placement requirement (RetryHandler must be placed above ProcessResidentHandler). The omitted phrase — that batch process continuation control is delegated to RetryHandler — is architectural rationale that enriches explanation depth but does not change what a developer must do. A user asking how to configure the handler chain receives correct and sufficient guidance from the current text.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 関連するハンドラ / RetryHandler row",
+      "impact": "low",
+      "justification": "The actionable fact — RetryHandler must be placed above ProcessResidentHandler — is present in the knowledge file. What is missing is the architectural purpose: that batch process continuation control itself is delegated to RetryHandler. This context would allow the AI to give a richer explanation of why the ordering matters, but its absence does not cause incorrect or incomplete implementation guidance. A developer following the knowledge file would configure the handler chain correctly. The omission affects explanation quality only, not correctness. Why D→E did not resolve this: the Phase E output is byte-for-byte identical to the Phase D input for s1, indicating the fix agent evaluated the finding as insufficiently impactful to warrant a change and left the section unmodified."
+    }
+  ]
+}

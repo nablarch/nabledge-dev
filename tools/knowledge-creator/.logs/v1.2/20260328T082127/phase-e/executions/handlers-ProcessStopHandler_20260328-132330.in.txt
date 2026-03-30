@@ -1,0 +1,284 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-ProcessStopHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — プロセス停止 (2a)",
+      "description": "Knowledge file states \"未コミットの変更はすべてロールバックされ\" but source says \"未コミットの例外は全てロールバックされる\". The word \"変更\" (changes) was substituted for \"例外\" (exceptions), which, while arguably more natural, does not match the source text.",
+      "source_evidence": "また、未コミットの例外は全てロールバックされる。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — 任意の設定項目も含めた例 (section title/label)",
+      "description": "Knowledge file labels the second XML example \"任意の設定項目も含めた例（exitCodeのカスタマイズ）\", appending \"（exitCodeのカスタマイズ）\" which does not appear in the source.",
+      "source_evidence": "**任意の設定項目も含めた例**"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===============================
+プロセス停止制御ハンドラ
+===============================
+
+
+**クラス名:** ``nablarch.fw.handler.ProcessStopHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本ハンドラは、 :doc:`ProcessResidentHandler` のような、ループ制御を行なうハンドラの後続に配置することで、
+DB上のフラグ変更によってループを中断させ、プロセスを正常終了させることを可能とするハンドラである。
+
+  .. warning::
+  
+    本ハンドラでは、処理停止フラグの初期化は行なわない。
+    停止フラグを立ててプロセスを停止させた後、再度同じプロセスを実行する際には、
+    停止フラグをクリアする必要がある。
+
++++++++++++
+
+**ハンドラ処理概要** ( :doc:`../architectural_pattern/batch_resident` での例)
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "ThreadContextHandler_main"
+      , "ProcessResidentHandler"
+      , "ProcessStopHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**関連するハンドラ**
+
+  ====================================  ======================================================================
+  ハンドラ                              内容
+  ====================================  ======================================================================
+  :doc:`ThreadContextHandler`           本ハンドラではスレッドコンテキスト上のリクエストID属性を使用するので、
+                                        :doc:`ThreadContextHandler` を本ハンドラより前に配置する必要がある。
+
+  :doc:`LoopHandler`                    :doc:`../architectural_pattern/batch_single_shot`
+                                        を実行中に停止させる場合は、
+                                        :doc:`LoopHandler` の後続にこのハンドラを配置する。
+
+  :doc:`ProcessResidentHandler`         :doc:`../architectural_pattern/batch_resident` では、
+                                        :doc:`ProcessResidentHandler` の後続にこのハンドラを配置する。
+                                        なお、停止時の終了コードは(0:正常終了)となる。
+
+  :doc:`RequestThreadLoopHandler`       :doc:`../architectural_pattern/messaging_request_reply` では、
+                                        :doc:`RequestThreadLoopHandler` の後続にこのハンドラを配置する。
+                                        なお、停止時の終了コードは(0:正常終了)となる。
+  ====================================  ======================================================================
+
+**テーブル構成**
+
+  以下は、本ハンドラが参照するリクエスト管理テーブルの構造である。
+
+  ===================  =============  ==============================
+  論理名               データ型　　   備考
+  ===================  =============  ==============================
+  リクエストID         VARCHAR PK     プロセスを特定するためのID
+  処理停止フラグ       CHAR(1)        "0": 通常、"1": 停止
+  ===================  =============  ==============================
+
+++++++++++++
+
+
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (停止フラグ確認処理のスキップ)**
+    本ハンドラの総実行回数が、停止フラグ確認間隔の値の倍数でない場合、
+    このハンドラでは何もせずに、後続のハンドラに処理を委譲し、その処理結果をリターンして終了する。
+
+  **2. (停止フラグ確認)**
+    本ハンドラの総実行回数が、停止フラグ確認間隔の値の倍数に一致する場合、
+    リクエストテーブルに以下のクエリを発行し、停止フラグの状態を確認する。
+     
+    **抽出条件**::
+    
+        リクエストID = (スレッドコンテキストのリクエストID属性値) AND 処理停止フラグ = '1'
+               
+  **2a. (プロセス停止)**
+    **2.** の結果セットが空ではない場合、後続ハンドラの実行は行なわず、 ``ProcessStopHandler.ProcessStop`` を送出し終了する。
+    これにより、ループは中断され、運用ログを出力したのち、プロセスが停止する。また、未コミットの例外は全てロールバックされる。
+
+  **3.  (後続ハンドラへの処理移譲)**
+    **2.** の結果セットが空であった場合、後続のハンドラに処理を委譲し、その結果を取得する。
+   
+.. _outbound:
+
+**[復路処理]**
+  **4. (正常終了)**
+    **3.** で取得した処理結果をリターンして終了する。
+
+.. _error:
+
+**[例外処理]** 
+  **3a. (後続ハンドラ処理中のエラー)**
+    後続ハンドラの処理中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  ============================== ============================ ============================ ==============================
+  設定項目                       プロパティ名                 データ型　                   備考
+  ============================== ============================ ============================ ==============================
+  停止フラグ確認間隔             checkInterval                int                          任意指定(デフォルト = 1:毎回)
+  リクエストテーブル名           tableName                    String                       必須指定
+  リクエストIDカラム名           requestIdColumnName          String                       必須指定
+  処理停止フラグカラム名         processHaltColumnName        String                       必須指定
+  DBトランザクションマネージャ   dbTransactionManager         SimpleDbTransactionManager   必須指定
+  プロセス停止時終了コード       exitCode                     Integer                      任意指定(デフォルト = 1)
+  ============================== ============================ ============================ ==============================
+
+**基本設定**
+  
+  .. code-block:: xml
+  
+    <component 
+      name="processStopHandler" 
+      class="nablarch.fw.handler.ProcessStopHandler">
+      <!-- リクエストテーブル名 -->
+      <property name="tableName" value="BATCH_REQUEST" />
+      <!-- リクエストIDカラム名 -->
+      <property name="requestIdColumnName" value="REQUEST_ID" />
+      <!-- 処理停止フラグカラム名 -->
+      <property name="processHaltColumnName" value="PROCESS_HALT_FLG" />
+      <!-- DBトランザクションマネージャ -->
+      <property name="dbTransactionManager" ref="simpleDbTransactionManager" />
+    </component>
+
+**任意の設定項目も含めた例**
+  
+  .. code-block:: xml
+  
+    <component 
+      name="processStopHandler" 
+      class="nablarch.fw.handler.ProcessStopHandler">
+        
+      <!-- 停止フラグ確認間隔 -->
+      <property name="checkInterval" value="1" />
+      <property name="tableName" value="BATCH_REQUEST" />
+      <property name="requestIdColumnName" value="REQUEST_ID" />
+      <property name="processHaltColumnName" value="PROCESS_HALT_FLG" />
+      <property name="dbTransactionManager" ref="simpleDbTransactionManager" />
+      
+      <!-- プロセス停止時終了コード -->
+      <property name="exitCode" value="50" />
+    </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-ProcessStopHandler",
+  "title": "プロセス停止制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ProcessStopHandler",
+        "ProcessResidentHandler",
+        "ThreadContextHandler",
+        "LoopHandler",
+        "RequestThreadLoopHandler",
+        "プロセス停止制御",
+        "ループ制御",
+        "停止フラグ",
+        "バッチ常駐処理",
+        "リクエスト管理テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ProcessStopHandler.ProcessStop",
+        "停止フラグ確認",
+        "ハンドラ処理フロー",
+        "プロセス停止",
+        "ロールバック",
+        "checkInterval"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "checkInterval",
+        "tableName",
+        "requestIdColumnName",
+        "processHaltColumnName",
+        "dbTransactionManager",
+        "exitCode",
+        "SimpleDbTransactionManager",
+        "設定項目",
+        "停止フラグ確認間隔"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.ProcessStopHandler`\n\n:doc:`ProcessResidentHandler` などのループ制御ハンドラの後続に配置することで、DBのフラグ変更によりループを中断しプロセスを正常終了させる。\n\n> **警告**: 本ハンドラは処理停止フラグの初期化を行わない。停止フラグでプロセスを停止した後、再度同じプロセスを実行する場合は停止フラグをクリアする必要がある。\n\n**関連するハンドラ**\n\n| ハンドラ | 配置要件 |\n|---|---|\n| :doc:`ThreadContextHandler` | 本ハンドラより前に配置必須（スレッドコンテキストのリクエストID属性を使用するため） |\n| :doc:`LoopHandler` | :doc:`../architectural_pattern/batch_single_shot` 実行中に停止させる場合、:doc:`LoopHandler` の後続に配置 |\n| :doc:`ProcessResidentHandler` | :doc:`../architectural_pattern/batch_resident` では :doc:`ProcessResidentHandler` の後続に配置。停止時終了コード: 0（正常終了） |\n| :doc:`RequestThreadLoopHandler` | :doc:`../architectural_pattern/messaging_request_reply` では :doc:`RequestThreadLoopHandler` の後続に配置。停止時終了コード: 0（正常終了） |\n\n**テーブル構成（リクエスト管理テーブル）**\n\n| 論理名 | データ型 | 備考 |\n|---|---|---|\n| リクエストID | VARCHAR PK | プロセスを特定するためのID |\n| 処理停止フラグ | CHAR(1) | \"0\": 通常、\"1\": 停止 |",
+    "s2": "**[往路処理]**\n\n1. **(停止フラグ確認処理のスキップ)** 総実行回数が停止フラグ確認間隔の倍数でない場合、後続ハンドラに処理を委譲して終了。\n2. **(停止フラグ確認)** 総実行回数が停止フラグ確認間隔の倍数の場合、リクエストテーブルにクエリを発行: `リクエストID = (スレッドコンテキストのリクエストID属性値) AND 処理停止フラグ = '1'`\n   - **2a. (プロセス停止)** 結果セットが空でない場合、`ProcessStopHandler.ProcessStop` を送出してループを中断。未コミットの変更はすべてロールバックされ、運用ログ出力後プロセス停止。\n3. **(後続ハンドラへの処理移譲)** 結果セットが空の場合、後続ハンドラに処理を委譲。\n\n**[復路処理]**\n\n4. **(正常終了)** 3. で取得した処理結果をリターンして終了。\n\n**[例外処理]**\n\n- **3a. (後続ハンドラ処理中のエラー)** 後続ハンドラ処理中にエラーが発生した場合はそのまま再送出して終了。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| checkInterval | int | | 1（毎回） | 停止フラグ確認間隔 |\n| tableName | String | ○ | | リクエストテーブル名 |\n| requestIdColumnName | String | ○ | | リクエストIDカラム名 |\n| processHaltColumnName | String | ○ | | 処理停止フラグカラム名 |\n| dbTransactionManager | SimpleDbTransactionManager | ○ | | DBトランザクションマネージャ |\n| exitCode | Integer | | 1 | プロセス停止時終了コード |\n\n**基本設定**\n\n```xml\n<component name=\"processStopHandler\" class=\"nablarch.fw.handler.ProcessStopHandler\">\n  <property name=\"tableName\" value=\"BATCH_REQUEST\" />\n  <property name=\"requestIdColumnName\" value=\"REQUEST_ID\" />\n  <property name=\"processHaltColumnName\" value=\"PROCESS_HALT_FLG\" />\n  <property name=\"dbTransactionManager\" ref=\"simpleDbTransactionManager\" />\n</component>\n```\n\n**任意の設定項目も含めた例（exitCodeのカスタマイズ）**\n\n```xml\n<component name=\"processStopHandler\" class=\"nablarch.fw.handler.ProcessStopHandler\">\n  <property name=\"checkInterval\" value=\"1\" />\n  <property name=\"tableName\" value=\"BATCH_REQUEST\" />\n  <property name=\"requestIdColumnName\" value=\"REQUEST_ID\" />\n  <property name=\"processHaltColumnName\" value=\"PROCESS_HALT_FLG\" />\n  <property name=\"dbTransactionManager\" ref=\"simpleDbTransactionManager\" />\n  <property name=\"exitCode\" value=\"50\" />\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

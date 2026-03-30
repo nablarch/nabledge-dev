@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-MessagingAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 概要 section (code example block)",
+      "description": "The source contains a Java code example showing the framework's calling sequence for all template methods. This example provides decision-necessary API specification: method signatures `onReceive(req, ctx)` and `onError(e, req, ctx)` (including argument types RequestMessage, ExecutionContext, and the exception), plus the overall flow (receive → usesAutoRead → readRecord → onReceive → commit / rollback → onError → send). The accompanying note — 'このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。' — is also absent. This note is an important warning that developers must not rely on the simplified logic and that the real flow is controlled by handler configuration.",
+      "source_evidence": "Source code-block under '本クラスを継承してアクションハンドラを実装するには' and the note directly following it."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints, s2 hints",
+      "description": "TransactionManagementHandler is a PascalCase class name referenced in both the s1 content (onError row: ':doc:`TransactionManagementHandler` からコールバック') and the s2 content (コールバック section: ':doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合') but is absent from the hints of both sections.",
+      "source_evidence": "Source onError() row: 'TransactionManagementHandler からコールバックされる'; source コールバック section: 'TransactionManagementHandler で業務トランザクションがロールバックされた場合'."
+    }
+  ]
+}

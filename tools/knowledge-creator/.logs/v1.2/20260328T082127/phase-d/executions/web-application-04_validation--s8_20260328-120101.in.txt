@@ -1,0 +1,569 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/04_validation.rst`
+- Format: `rst`
+
+```
+バリデーションメソッドを複数作成したい場合
+-------------------------------------------
+
+登録処理時と更新処理時で精査内容が異なる場合など、独自の精査処理が複数必要になる場合がある。
+この場合、それぞれ処理に応じた精査メソッドを追加する。\
+各メソッドに付与する\ ``@ValidateFor``\ アノテーションの値は異なるものにしておき、\
+バリデーションを実施する際(\ :ref:`04_action`\ 参照)に呼び分ける。
+
+例えば、更新用に精査メソッドを追加する場合は以下のようになる。
+
+
+  .. code-block:: java
+
+   // 【説明】アノテーションの値を他の精査メソッドと別のものにしておく
+   @ValidateFor("updateUser")
+   public static void validateForUpdate(ValidationContext<SearchCondition> context) {
+      // 中略
+   }
+
+
+.. _validation_searchCondition:
+
+.. note::
+  本項で説明したFormはテーブルの項目に対応したプロパティがあったので、FormのプロパティとしてEntityを追加した。\
+  しかし、テーブルの項目に対応するプロパティが一つもない場合がある。\
+  例えば検索画面で、入力された検索条件を保持するBeanを作成することがある。このとき、このBeanが保持する入力値に対するバリデーションや画面入力値の取得処理を記述しなければ\
+  ならない。ここで、このBeanをFormと同様な作りとすれば、バリデーションなどのアプリケーションフレームワーク提供機能を使用することができ、個別に処理を記述する必要はなくなる。\
+  このようなBeanの例を以下に示す。
+
+  下記クラスが継承しているListSearchInfoについては、\ :ref:`ページングを使用した一覧表示<custom_tag_paging_paging>`\ を参照。
+
+  .. code-block:: java
+
+    public class W11AC01SearchForm extends ListSearchInfo {
+
+        /** ログインID */
+        private String loginId;
+        
+        /** 漢字氏名 */
+        private String kanjiName;
+        
+        /** カナ氏名 */
+        private String kanaName;
+        
+        /** グループID */
+        private String ugroupId;
+        
+        /** ユーザIDロック */
+        private String userIdLocked;
+        
+        /** システムアカウントテーブルの情報 */
+        private SystemAccountEntity systemAccount;
+        
+        /**
+         * コンストラクタ
+         * @param params パラメータ
+         */
+        public W11AC01SearchForm(Map<String, Object> params) {
+            loginId = (String) params.get("loginId");
+            kanjiName = (String) params.get("kanjiName");
+            kanaName = (String) params.get("kanaName");
+            ugroupId = (String) params.get("ugroupId");
+            userIdLocked = (String) params.get("userIdLocked");
+            setPageNumber((Integer) params.get("pageNumber"));
+            setSortId((String) params.get("sortId"));
+            systemAccount = (SystemAccountEntity) params.get("systemAccount");
+        }
+        
+        /**
+         * デフォルトコンストラクタ
+         */
+        public W11AC01SearchForm() {
+            
+        }
+
+        /**
+         * ログインIDを取得する。
+         * @return ログインID
+         */
+        public String getLoginId() {
+            return loginId;
+        }
+
+        /**
+         * ログインIDを設定する。
+         * @param loginId ログインID
+         */
+        @PropertyName("ログインID")
+        @Length(max = 20)
+        @SystemChar(charsetDef="asciiCharset")
+        public void setLoginId(String loginId) {
+            this.loginId = loginId;
+        }
+
+        /**
+         * 漢字氏名を取得する。
+         * @return 漢字氏名
+         */
+        public String getKanjiName() {
+            return kanjiName;
+        }
+        
+        /**
+         * 漢字氏名を設定する。
+         * @param kanjiName 漢字氏名
+         */
+        @PropertyName("漢字氏名")
+        @Length(max = 50)
+        @SystemChar(charsetDef="zenkakuCharset")
+        public void setKanjiName(String kanjiName) {
+            this.kanjiName = kanjiName;
+        }
+
+        /**
+         * カナ氏名を取得する。
+         * @return カナ氏名
+         */
+        public String getKanaName() {
+            return kanaName;
+        }
+
+        /**
+         * カナ氏名を設定する。
+         * @param kanaName カナ氏名
+         */
+        @PropertyName("カナ氏名")
+        @Length(max = 50)
+        @SystemChar(charsetDef="zenkakuKatakanaCharset")
+        public void setKanaName(String kanaName) {
+            this.kanaName = kanaName;
+        }
+
+        /**
+         * グループIDを取得する。
+         * @return グループID
+         */
+        public String getUgroupId() {
+            return ugroupId;
+        }
+
+        /**
+         * グループIDを設定する。
+         * @param ugroupId グループID
+         */
+        @PropertyName("グループID")
+        @Length(min = 10, max = 10)
+        @SystemChar(charsetDef="numericCharset")
+        public void setUgroupId(String ugroupId) {
+            this.ugroupId = ugroupId;
+        }
+        
+        /**
+         * ユーザIDロックを取得する。
+         * @return ユーザIDロック
+         */
+        public String getUserIdLocked() {
+            return userIdLocked;
+        }
+        
+        /**
+         * ユーザIDロックを設定する。
+         * @param userIdLocked ユーザIDロック
+         */
+        @PropertyName("ユーザIDロック")
+        @CodeValue(codeId = "C0000001")
+        public void setUserIdLocked(String userIdLocked) {
+            this.userIdLocked = userIdLocked;
+        }
+        
+        /**
+         * ページ番号を設定する。
+         * @param pageNumber ページ番号
+         */
+        @PropertyName("開始ページ")
+        @Required
+        @NumberRange(max = 10, min = 1)
+        @Digits(integer = 2)
+        public void setPageNumber(Integer pageNumber) {
+            super.setPageNumber(pageNumber);
+        }
+        
+        /**
+         * ソートIDを設定する。
+         * @param sortId ソートID
+         */
+        @PropertyName("ソートID")
+        @Required
+        public void setSortId(String sortId) {
+            super.setSortId(sortId);
+        }
+
+        /**
+         * システムアカウントテーブルの情報を取得する。
+         * 
+         * @return システムアカウントテーブルの情報
+         */
+        public SystemAccountEntity getSystemAccount() {
+            return systemAccount;
+        }
+
+        /**
+         * システムアカウントテーブルの情報を設定する。
+         * 
+         * @param systemAccount システムアカウントテーブルの情報
+         */
+        @ValidationTarget
+        public void setSystemAccount(SystemAccountEntity systemAccount) {
+            this.systemAccount = systemAccount;
+        }
+
+        /** 精査対象プロパティ */
+        private static final String[] SEARCH_COND_PROPS = 
+            new String[] {"loginId", "kanjiName", "kanaName", "ugroupId", "userIdLocked", "pageNumber", "sortId"};
+
+        /**
+         * 検索条件の精査対象プロパティを返す。
+         * @return 検索条件の精査対象プロパティ
+         */
+        public String[] getSearchConditionProps() {
+            return SEARCH_COND_PROPS;
+        }
+        
+        /**
+         * 検索条件を精査する。
+         * @param context ValidationContext
+         */
+        @ValidateFor("search")
+        public static void validateForSearch(ValidationContext<W11AC01SearchForm> context) {
+            // 単項目精査
+            ValidationUtil.validate(context, SEARCH_COND_PROPS);
+            if (!context.isValid()) {
+                return;
+            }
+            
+            // 項目間精査
+            String loginId = (String) context.getConvertedValue("loginId");        // ログインID 
+            String kanjiName = (String) context.getConvertedValue("kanjiName");    // 漢字氏名
+            String kanaName = (String) context.getConvertedValue("kanaName");      // カナ氏名
+            String ugroupId = (String) context.getConvertedValue("ugroupId");      // グループID
+            String userIdLocked = (String) context.getConvertedValue("userIdLocked");   // ユーザIDロック
+            if (!isValidSearchCondition(loginId, kanjiName, kanaName, ugroupId, userIdLocked)) {
+                context.addMessage("MSG00006");
+            }
+        }
+
+        /** ユーザ選択時の精査対象プロパティ */
+        private static final String[] SELECT_USER_PROPS = 
+            new String[] {"systemAccount"};
+
+        /**
+         * ユーザ選択時のパラメータを精査する。
+         * @param context ValidationContext
+         */
+        @ValidateFor("selectUserInfo")
+        public static void validateForSelectUser(ValidationContext<W11AC01SearchForm> context) {
+            // 単項目精査
+            ValidationUtil.validate(context, SELECT_USER_PROPS);
+        }
+        
+        /**
+         * 検索条件が妥当かどうか確認する。<br/>
+         * 検索条件のうち、少なくとも１つは指定されていることを確認する。
+         * 
+         * @param loginId ログインID
+         * @param kanjiName 漢字氏名
+         * @param kanaName カナ氏名
+         * @param ugroupId グループID
+         * @param userIdLocked ユーザIDロック
+         * @return 妥当な場合は真、そうでない場合は偽
+         */
+        private static boolean isValidSearchCondition(String loginId, String kanjiName,
+                String kanaName, String ugroupId, String userIdLocked) {
+            return loginId.length() > 0 || kanjiName.length() > 0 || kanaName.length() > 0
+                    || ugroupId.length() > 0 || userIdLocked.length() > 0;
+        }
+    }
+
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+プロパティの表示名をカスタマイズしたい場合
+------------------------------------------
+例えば、"ユーザ名"(バリデーションエラー時などで画面に出力される表示名も"ユーザ名")というプロパティの表示名を"氏名"としたい場合は、Formの対応するプロパティのsetterをオーバーライドし、\
+@PropertyNameアノテーションを付与すればよい。このとき、バリデーションは元の指定(△△△.javaで指定されているもの)が、そのまま継承される。
+
+下記の例では、Nameプロパティの表示名(元は(UserEntityの@PropertyNameアノテーションの値)は"ユーザ名")を"氏名"に変更している。
+
+.. code-block:: java
+
+   public class UserRegisterForm extends UserEntity {
+       @PropertyName("氏名")  /* 【説明】
+                                  setterをオーバーライドし、@PropertyNameアノテーションで変更したい表示名を指定する。
+                                  バリデーションは元のものがそのまま継承される */
+       public void setName(String name) {
+           super.setName(name);
+       }
+   }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* 継承元のクラス
+
+  .. code-block:: java
+
+     public class UserEntity {
+
+         private String id;
+
+         private String name;
+
+         private String remarks;
+
+         public User(Map<String, Object> params) {
+             id = (String) params.get("id");
+             name = (String) params.get("name");
+             remarks = (String) params.get("remarks");
+         }
+
+         @PropertyName("ID")
+         @Required
+         @Length(min=6, max=10)
+         public void setId(String id) {
+             this.id = id;
+         }
+
+         @PropertyName("ユーザ名")  // 【説明】元の表示名は"ユーザ名"
+         @Required
+         @Length(min=6, max=10)
+         public void setName(String name) {
+             this.name = name;
+         }
+
+         @PropertyName("備考")
+         @Length(max=100)
+         public void setRemarks(String remarks) {
+             this.remarks = remarks;
+         }
+
+         // 【説明】getterは省略
+     }
+
+  (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+
+  サンプルアプリケーションでは本機能は用いていない。このため、記載したコード例はサンプルアプリケーションには含まれない。
+
+.. _04_action:
+
+Actionの作成
+============
+
+.. _04_validation:
+
+バリデーションの実行と画面入力値が設定されたオブジェクトの取得
+--------------------------------------------------------------
+
+バリデーションの実行と、画面入力値が設定されたオブジェクトの取得方法は次のとおり。
+
+  :a): ValidationUtil#validateAndConvertRequestを使用してバリデーションを実行する。独自に実装したバリデーション用のメソッドを実行するには、引数に「バリデーション対象メソッド」を用意したvalidateAndConvertRequestメソッドを使用する\ [#]_\ 。この引数の値に\ ``@ValidateFor``\ アノテーションを付与する際に設定した値とすることで、独自に実装したバリデーション用のメソッドが実行される。
+
+
+
+  :b): ValidationContext#isValidメソッドにてバリデーションでエラーが発生したか確認し、エラーがあった場合には、エラーメッセージが設定されたアプリケーション例外をthrowする。
+  :c): ValidationContext#createObjectメソッドを使用して、画面入力値が設定されたオブジェクトを取得する。このとき取得できるクラスはValidationUtil#validateAndConvertRequestの第2引数に設定したクラスとなる。
+
+具体例は\ :ref:`04_actionClassCreate`\ を参照。
+
+
+.. [#] ここでは以下のシグネチャのメソッドを使用している。\
+     ``validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)``
+
+
+.. _04_errHandling:
+
+例外発生時の処理
+----------------
+
+ComponentやActionで例外が発生した場合、デフォルトではHTTPステータス500のレスポンスがブラウザに返される。この応答を変更したい場合は、例外処理が必要なメソッドに、\
+@OnErrorアノテーションを付与し、例外発生時の処理(例外発生時の遷移先の指定)を行う。
+
+具体例は\ :ref:`04_actionClassCreate`\ を参照。
+
+.. _04_actionClassCreate:
+
+```
+
+## Knowledge File
+
+- ID: `web-application-04_validation--s8`
+
+```json
+{
+  "id": "web-application-04_validation--s8",
+  "title": "Actionの作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バリデーションメソッドを複数作成したい場合",
+      "hints": [
+        "@ValidateFor",
+        "ValidationUtil",
+        "ValidationContext",
+        "@ValidationTarget",
+        "ListSearchInfo",
+        "W11AC01SearchForm",
+        "@PropertyName",
+        "@Length",
+        "@SystemChar",
+        "@CodeValue",
+        "@Required",
+        "@NumberRange",
+        "@Digits",
+        "複数バリデーションメソッド",
+        "処理ごとのバリデーション",
+        "検索条件フォーム"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "プロパティの表示名をカスタマイズしたい場合",
+      "hints": [
+        "@PropertyName",
+        "UserRegisterForm",
+        "UserEntity",
+        "プロパティ表示名カスタマイズ",
+        "setterオーバーライド",
+        "表示名変更"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "バリデーションの実行と画面入力値が設定されたオブジェクトの取得",
+      "hints": [
+        "ValidationUtil",
+        "ValidationContext",
+        "validateAndConvertRequest",
+        "isValid",
+        "createObject",
+        "バリデーション実行",
+        "画面入力値取得",
+        "@ValidateFor"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "例外発生時の処理",
+      "hints": [
+        "@OnError",
+        "例外処理",
+        "HTTP 500",
+        "例外発生時の遷移先"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "処理ごとに異なる精査が必要な場合（登録処理と更新処理で精査内容が異なる場合など）、処理に応じた精査メソッドを追加する。各メソッドの`@ValidateFor`アノテーションの値は互いに異なる値にし、バリデーション実行時（:ref:`04_action`参照）に呼び分ける。\n\n**アノテーション**: `@ValidateFor`\n\n更新用精査メソッドの追加例：\n\n```java\n@ValidateFor(\"updateUser\")\npublic static void validateForUpdate(ValidationContext<SearchCondition> context) {\n    // ...\n}\n```\n\n> **注意**: テーブルの項目に対応するプロパティが一つもないBeanも、Formと同様な作りにすることでバリデーション等のフレームワーク機能を使用できる。その場合、`ListSearchInfo`（:ref:`ページングを使用した一覧表示<custom_tag_paging_paging>`参照）を継承する。\n\n複数の`@ValidateFor`メソッドを持つFormの実装例（`W11AC01SearchForm extends ListSearchInfo`）：\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    private String loginId;\n    private String kanjiName;\n    private String kanaName;\n    private String ugroupId;\n    private String userIdLocked;\n    private SystemAccountEntity systemAccount;\n\n    @PropertyName(\"ログインID\")\n    @Length(max = 20)\n    @SystemChar(charsetDef=\"asciiCharset\")\n    public void setLoginId(String loginId) { this.loginId = loginId; }\n\n    @PropertyName(\"ユーザIDロック\")\n    @CodeValue(codeId = \"C0000001\")\n    public void setUserIdLocked(String userIdLocked) { this.userIdLocked = userIdLocked; }\n\n    @PropertyName(\"開始ページ\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) { super.setPageNumber(pageNumber); }\n\n    @ValidationTarget\n    public void setSystemAccount(SystemAccountEntity systemAccount) { this.systemAccount = systemAccount; }\n\n    private static final String[] SEARCH_COND_PROPS =\n        new String[] {\"loginId\", \"kanjiName\", \"kanaName\", \"ugroupId\", \"userIdLocked\", \"pageNumber\", \"sortId\"};\n\n    @ValidateFor(\"search\")\n    public static void validateForSearch(ValidationContext<W11AC01SearchForm> context) {\n        ValidationUtil.validate(context, SEARCH_COND_PROPS);\n        if (!context.isValid()) return;\n        // 項目間精査: getConvertedValueで変換済み値を取得して確認\n        String loginId = (String) context.getConvertedValue(\"loginId\");\n        String kanjiName = (String) context.getConvertedValue(\"kanjiName\");\n        String kanaName = (String) context.getConvertedValue(\"kanaName\");\n        String ugroupId = (String) context.getConvertedValue(\"ugroupId\");\n        String userIdLocked = (String) context.getConvertedValue(\"userIdLocked\");\n        // 検索条件のうち少なくとも1つが指定されているか確認\n        if (!isValidSearchCondition(loginId, kanjiName, kanaName, ugroupId, userIdLocked)) {\n            context.addMessage(\"MSG00006\");\n        }\n    }\n\n    @ValidateFor(\"selectUserInfo\")\n    public static void validateForSelectUser(ValidationContext<W11AC01SearchForm> context) {\n        ValidationUtil.validate(context, new String[]{\"systemAccount\"});\n    }\n}\n```",
+    "s2": "Formのプロパティの表示名を変更したい場合（例：継承元Entityの\"ユーザ名\"を\"氏名\"として表示）、Formで対応するプロパティのsetterをオーバーライドし、`@PropertyName`アノテーションに変更後の表示名を指定する。バリデーションは継承元の指定がそのまま引き継がれる。\n\n**アノテーション**: `@PropertyName`\n\n```java\npublic class UserRegisterForm extends UserEntity {\n    @PropertyName(\"氏名\")\n    // setterをオーバーライドして@PropertyNameで表示名を変更。バリデーションは継承元のものが継承される\n    public void setName(String name) {\n        super.setName(name);\n    }\n}\n```\n\n継承元クラス（`UserEntity`）：\n\n```java\npublic class UserEntity {\n    @PropertyName(\"ユーザ名\")  // 元の表示名\n    @Required\n    @Length(min=6, max=10)\n    public void setName(String name) { this.name = name; }\n\n    @PropertyName(\"ID\")\n    @Required\n    @Length(min=6, max=10)\n    public void setId(String id) { this.id = id; }\n\n    @PropertyName(\"備考\")\n    @Length(max=100)\n    public void setRemarks(String remarks) { this.remarks = remarks; }\n}\n```",
+    "s3": "バリデーション実行と画面入力値が設定されたオブジェクトの取得手順：\n\na. `ValidationUtil#validateAndConvertRequest`を使用してバリデーションを実行する。独自実装のバリデーションメソッドを実行するには、「バリデーション対象メソッド」引数付きの`validateAndConvertRequest`を使用する。この引数の値を`@ValidateFor`アノテーションで設定した値と一致させることで、対応する独自バリデーションメソッドが実行される。\nb. `ValidationContext#isValid`でバリデーションエラーの発生を確認し、エラーがあった場合はエラーメッセージが設定されたアプリケーション例外をthrowする。\nc. `ValidationContext#createObject`を使用して画面入力値が設定されたオブジェクトを取得する。取得できるクラスは`validateAndConvertRequest`の第2引数に設定したクラスとなる。\n\n使用するメソッドシグネチャ：\n`validateAndConvertRequest(String prefix, Class<T> targetClass, Validatable<?> request, String validateFor)`\n\n具体例は:ref:`04_actionClassCreate`を参照。",
+    "s4": "ComponentやActionで例外が発生した場合、デフォルトではHTTPステータス500のレスポンスがブラウザに返される。この応答を変更する場合は、例外処理が必要なメソッドに`@OnError`アノテーションを付与し、例外発生時の遷移先を指定する。\n\n**アノテーション**: `@OnError`\n\n具体例は:ref:`04_actionClassCreate`を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,37 @@
+{
+  "id": "libraries-02_01_Repository_config--s28",
+  "title": "コンポーネント設定ファイル 要素 リファレンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コンポーネント設定ファイル 要素 リファレンス",
+      "hints": [
+        "component-configuration",
+        "import",
+        "config-file",
+        "component",
+        "property",
+        "list",
+        "component-ref",
+        "value",
+        "map",
+        "entry",
+        "key-component",
+        "value-component",
+        "autowireType",
+        "ByType",
+        "ByName",
+        "コンポーネント設定ファイル",
+        "自動インジェクション",
+        "環境設定ファイル",
+        "コンポーネント定義",
+        "XMLリファレンス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## component-configuration 要素\nルート要素。属性なし。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| import | 0..* | 他のコンポーネント設定ファイルの読み込みを指定する |\n| config-file | 0..* | 環境設定ファイルの読み込みを指定する |\n| component | 0..* | Java Beans 形式のクラスをコンポーネントとして定義する |\n| list | 0..* | List をコンポーネントとして定義する。エントリには他のコンポーネントや文字列を含めることができる |\n| map | 0..* | Map をコンポーネントとして定義する。エントリのキーと値には他のコンポーネントや文字列を含めることができる |\n\n## import 要素\n他のコンポーネント設定ファイルの読み込みを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| file | ○ | インポートするファイル名。クラスパス上のファイル、または `file://` プレフィックスでローカルファイルシステム上のファイルを指定。`dir` と組み合わせてワイルドカード(`*`)による複数ファイルのインポートが可能 |\n| dir | | インポート対象のディレクトリを、コンポーネント設定ファイルからの相対パスで指定。指定したディレクトリ直下のファイルがインポートされる |\n\n## config-file 要素\n環境設定ファイルの読み込みを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| file | ○ | 読み込むファイル名。クラスパス上のファイル、または `file://` プレフィックスでローカルファイルシステム上のファイルを指定。`dir` と組み合わせてワイルドカード(`*`)による複数ファイルの読み込みが可能 |\n| dir | | 読み込むファイルのディレクトリを、コンポーネント設定ファイルからの相対パスで指定。指定したディレクトリ直下のファイルが読み込まれる |\n| encoding | | 環境設定ファイルの文字エンコーディング。省略時はUTF-8 |\n\n## component 要素\nコンポーネントを定義する。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| property | 0..* | コンポーネントのプロパティに設定する値を指定する |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | コンポーネント名 |\n| class | ○ | コンポーネントのクラス名 |\n| autowireType | | 自動インジェクションの方法。`ByType`（型による）、`ByName`（名前による）、`None`（行わない）。省略時は `ByType` |\n\n## property 要素\nコンポーネントのプロパティを設定する。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| component | 0..1 | プロパティに設定するコンポーネントを指定する |\n| list | 0..1 | プロパティに設定する List を指定する |\n| map | 0..1 | プロパティに設定する Map を指定する |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | プロパティ名 |\n| value | | プロパティに設定する値を直接指定する |\n| ref | | プロパティに設定するコンポーネントのコンポーネント名 |\n\n## list 要素\nList をコンポーネントとして定義する。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| component | 0..* | List の要素とするコンポーネントを直接記述する |\n| component-ref | 0..* | List の要素とする、外部で定義したコンポーネントを指定する |\n| value | 0..* | List の要素とする文字列を指定する |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | 登録する List のコンポーネント名 |\n\n## component-ref 要素\nList の要素となる、他に定義したコンポーネントを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | List の要素とする、外部で定義したコンポーネントのコンポーネント名 |\n\n## value 要素\nList の要素となる文字列を指定する。この要素に指定した内容がそのまま List の要素となる。文字列には環境設定ファイルの値の埋め込み機能が使用できる（:ref:`repository_use_env_value_at_component_setting` 参照）。属性なし。\n\n## map 要素\nMap をコンポーネントとして定義する。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| entry | 0..* | Map に含まれる Entry を定義する |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | 登録する Map のコンポーネント名 |\n\n## entry 要素\nMap の Entry を定義する。`key`/`key-name`/`key-component` のいずれか1つと、`value`/`value-name`/`value-component` のいずれか1つを必ず指定する。\n\n| 子要素 | 出現回数 | 説明 |\n|---|---|---|\n| key-component | 0..1 | Entry のキーとなるコンポーネントを直接記述する |\n| value-component | 0..1 | Entry の値となるコンポーネントを直接記述する |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| key | | Entry のキーとなる文字列。環境設定ファイルの値の埋め込み機能が使用可能（:ref:`repository_use_env_value_at_component_setting` 参照） |\n| key-name | | 外部で定義したコンポーネントのコンポーネント名を設定し、そのコンポーネントを Entry のキーとして指定する |\n| value | | Entry の値となる文字列。環境設定ファイルの値の埋め込み機能が使用可能（:ref:`repository_use_env_value_at_component_setting` 参照） |\n| value-name | | 外部で定義したコンポーネントのコンポーネント名を設定し、そのコンポーネントを Entry の値として指定する |\n\n## key-component 要素\nMap の Entry のキーとなるコンポーネントを定義する。:ref:`component <repository_elements_component>` と同じ子要素、属性を持つ。\n\n## value-component 要素\nMap の Entry の値となるコンポーネントを定義する。:ref:`component <repository_elements_component>` と同じ子要素、属性を持つ。"
+  }
+}

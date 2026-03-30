@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_DisplayTag--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "The hints_missing finding has medium impact because ThreadContext governs the locale/timezone/language fallback behavior for all three format types (yyyymmdd, dateTime, decimal). Its absence from hints means queries like \"ThreadContextのロケールとフォーマットの関係\" or \"タイムゾーンのデフォルト動作\" may fail to retrieve s1, causing the agent to miss the primary specification section. The omission finding is low impact — the core constraint (only y/M/d allowed) is preserved in the content; losing the \"月における\" qualifier slightly weakens clarity but is unlikely to cause incorrect implementations.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — yyyymmdd pattern character description",
+      "impact": "low",
+      "justification": "The knowledge file retains the critical constraint ('y・M・dのみ指定可能') so the agent will still correctly advise against using other pattern characters. The missing qualifier '月における' (day-of-month vs day-of-year) slightly weakens the explanation of *why* 'D' is disallowed, but the restriction itself is unambiguous. In practice this is unlikely to cause a developer to misuse the API. Phase E did not apply this fix — the section content is unchanged between D and E logs, suggesting the fix agent skipped or rejected the minor wording change."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints array",
+      "impact": "medium",
+      "justification": "ThreadContext controls the default locale, timezone, and language for all three format types (yyyymmdd, dateTime, decimal). A user asking about locale/timezone fallback behavior in valueFormat would naturally phrase the query using 'ThreadContext', and without it in hints the retrieval system may not surface s1. The section body mentions ThreadContext multiple times but hints drive initial candidate selection. Phase E did not add 'ThreadContext' to the hints array — the Phase E output log shows the hints array is byte-for-byte identical to Phase D, indicating the fix was silently dropped."
+    }
+  ]
+}

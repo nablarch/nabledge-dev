@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_HowToSettingCustomTag",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor omissions of contextual \"why/when\" information. The actionable content (NablarchTagHandler must be configured; displayMethod values/defaults) is fully present. Missing context does not prevent correct implementation.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1",
+      "impact": "low",
+      "justification": "The knowledge file correctly states that NablarchTagHandler is required when using custom tags and lists its processing content via reference links. The omitted description ('前処理を行うハンドラ') is supplementary context. Notably, the index hints already include 'リクエスト前処理ハンドラ', so retrieval is unaffected. A developer following this file will still configure the handler correctly. Why it persisted: Phase E output shows no change to s1 — the fix agent did not modify the section, likely treating the hint-level coverage as sufficient."
+    },
+    {
+      "category": "omission",
+      "location": "s2 — displayMethodプロパティの説明",
+      "impact": "low",
+      "justification": "The knowledge file documents all three valid values (NODISPLAY/DISABLED/NORMAL) and the default (NORMAL), which is the information needed to configure the property correctly. The omitted phrase ('認可判定と開閉局判定の結果に応じて表示制御を行う場合に使用される') describes a specific intended use case but does not block correct usage. Developers using displayControlCheckers alongside displayMethod will find the behavior self-evident. Why it persisted: Phase E output shows s2 is unchanged from Phase D — the fix agent left the displayMethod row as-is, likely judging that value/default documentation is sufficient for a configuration reference file."
+    }
+  ]
+}

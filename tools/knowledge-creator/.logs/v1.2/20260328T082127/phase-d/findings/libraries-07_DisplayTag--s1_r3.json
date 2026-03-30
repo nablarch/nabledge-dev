@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_DisplayTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — yyyymmdd pattern character description",
+      "description": "The source explicitly states \"d(月における日)\" (day of month) to distinguish it from 'D' (day of year) in java.text.SimpleDateFormat. The knowledge file simplifies this to \"d(日)\", losing the qualifier that clarifies only day-of-month is allowed, not day-of-year.",
+      "source_evidence": "**パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。**"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`ThreadContext` is missing from hints despite being referenced repeatedly in the format specifications for yyyymmdd, dateTime, and decimal (ThreadContextのロケール設定値、ThreadContextに設定された言語、ThreadContextのタイムゾーン, etc.). It is a key concept for understanding locale/timezone/language fallback behavior.",
+      "source_evidence": "ロケールを明示的に指定しない場合は、ThreadContextのロケール設定値を使用する。 / デフォルトでは、スレッドコンテキストに設定されたロケールとタイムゾーンに応じた日時が出力される。 / デフォルトでは、ThreadContextに設定された言語を使用して..."
+    }
+  ]
+}

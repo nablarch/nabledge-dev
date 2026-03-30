@@ -1,0 +1,102 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for `-classpath %CLASSPATH%`",
+      "description": "The source specifies that `%CLASSPATH%` is the classpath configured in Eclipse for production code (\"Eclipseでプロダクションコードに設定しているクラスパスを設定します\"). The knowledge file omits the Eclipse-specific context, writing only \"プロダクションコードのクラスパス\". This guidance helps users know where to find the correct classpath value.",
+      "source_evidence": "# %CLASSPATH% -> Eclipseでプロダクションコードに設定しているクラスパスを設定します。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バッチアプリケーションを自動テスト以外の方法で起動する方法を教えてください
+====================================================================================================
+
+.. admonition:: question
+
+    バッチアプリケーションを自動テスト以外の方法で起動する方法を教えてください。
+    起動時に必要なJava起動オプションやプログラム引数などもあわせて教えてください。
+
+.. admonition:: answer
+
+    コマンドプロンプトやターミナル等のコンソールから起動する場合には、Javaコマンドを使用して以下のように起動します。
+
+    .. code-block:: sh
+
+        java -classpath %CLASSPATH% nablarch.fw.launcher.Main -diConfig %diConfig% -requestPath %requestPath% -userId %userId% %batchArgs%
+
+        # %CLASSPATH% -> Eclipseでプロダクションコードに設定しているクラスパスを設定します。
+        # %diConfig% -> コンポーネント定義ファイルのルートファイル名を設定します。
+        #               Nablarch Samapleプロジェクトの場合には、以下の構成となっています。
+        #               都度起動バッチ:batch-component-configuration.xml
+        #               常駐バッチ:resident-batch-component-configuration.xml
+        # %requestPath% -> リクエストパスを設定します。(自動テストの「LIST_MAP=testShots」の「requestPath」カラムに設定した文字列となります)
+        # %userId% -> ユーザIDを設定します。(「LIST_MAP=testShots」の「userId」カラムに設定した文字列となります)
+        # %batchArgs% -> バッチアプリケーションで必要となる引数やオプションを設定してください。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-5",
+  "title": "バッチアプリケーションを自動テスト以外の方法で起動する方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチアプリケーションを自動テスト以外の方法で起動する方法を教えてください",
+      "hints": [
+        "nablarch.fw.launcher.Main",
+        "-diConfig",
+        "-requestPath",
+        "-userId",
+        "バッチ起動",
+        "コマンドライン起動",
+        "Javaコマンド",
+        "都度起動バッチ",
+        "常駐バッチ",
+        "batch-component-configuration.xml",
+        "resident-batch-component-configuration.xml"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.fw.launcher.Main`\n\n```sh\njava -classpath %CLASSPATH% nablarch.fw.launcher.Main -diConfig %diConfig% -requestPath %requestPath% -userId %userId% %batchArgs%\n```\n\n| 引数 | 説明 |\n|---|---|\n| `-classpath %CLASSPATH%` | プロダクションコードのクラスパス |\n| `-diConfig %diConfig%` | コンポーネント定義ファイルのルートファイル名。都度起動バッチ: `batch-component-configuration.xml`、常駐バッチ: `resident-batch-component-configuration.xml` |\n| `-requestPath %requestPath%` | リクエストパス（自動テストの `LIST_MAP=testShots` の `requestPath` カラムの値） |\n| `-userId %userId%` | ユーザID（`LIST_MAP=testShots` の `userId` カラムの値） |\n| `%batchArgs%` | バッチアプリケーションで必要な引数やオプション |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

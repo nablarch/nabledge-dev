@@ -1,0 +1,548 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/06_TestFWGuide/02_RequestUnitTest.rst`
+- Format: `rst`
+
+```
+.. _request-util-test-online:
+
+============================================================
+リクエスト単体テスト（画面オンライン処理）
+============================================================
+
+----
+概要
+----
+
+リクエスト単体テスト(画面オンライン処理)では、内蔵サーバを使用してテストを行う。\
+ここでは、リクエスト単体テストのテスト補助クラスと内蔵サーバの使用方法を記載する。
+
+
+.. note:: 
+
+ リクエスト単体テストそのものの概要については、
+ :ref:`request_unit_test`
+ を参照。
+
+
+全体像
+======
+
+.. image:: _images/request_unit_test_structure.png
+   :scale: 100
+
+
+ 
+主なクラス, リソース
+====================
+
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|名称                            |役割                                                  | 作成単位                             |
++================================+======================================================+======================================+
+|テストクラス                    |テストロジックを実装する。                            |テスト対象クラス(Action)につき１つ作成|
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テストデータ（Excelファイル）   |テーブルに格納する準備データや期待する結果、\         |テストクラスにつき１つ作成            |
+|                                |HTTPパラメータなど、テストデータを記載する。          |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テスト対象クラス(Action)        |テスト対象のクラス                                    | 取引につき1クラス作成                |
+|                                |(Action以降の業務ロジックを実装する各クラスを含む)    |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|DbAccessTestSupport             |準備データ投入などデータベースを使用するテストに\     | \－                                  |
+|                                |必要な機能を提供する。                                |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpServer                      |内蔵サーバ。サーブレットコンテナとして動作し、\       | \－                                  |
+|                                |HTTPレスポンスをファイル出力する機能を持つ。          |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpRequestTestSupport          |内蔵サーバの起動やリクエスト単体テストで必要とな\     | \－                                  |
+|                                |る各種アサートを提供する。                            |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|| AbstractHttpReqestTestSupport |リクエスト単体テストをテンプレート化するクラス。リ    | \－                                  |
+|| BasicHttpReqestTestSupport    |クエスト単体テストのテストソース、テストデータを定    |                                      |
+|                                |型化する                                              |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|TestCaseInfo                    |データシートに定義されたテストケース情報を格納するクラ|                                      |
+|                                |ス。                                                  |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+
+
+上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\
+このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。\
+
+
+
+前提事項
+========
+
+内蔵サーバを利用してHTMLダンプを出力するというリクエスト単体テストは、\
+１リクエスト１画面遷移のシンクライアント型Webアプリケーションを対象としている。\
+Ajaxやリッチクライアントを利用したアプリケーションの場合、\
+HTMLダンプによるレイアウト確認は使用できない。
+
+.. note::
+
+ 本書ではViewテクノロジにJSPを用いているが、\
+ サーブレットコンテナ上で画面全体をレンダリングする方式であれば、\
+ JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。
+
+
+----
+構造
+----
+
+BasicHttpRequestTestTemplate
+=========================================
+
+各テストクラスのスーパクラス。\
+本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\
+テストソース記述量を大きく削減できる。
+
+具体的な使用方法は、\ :doc:`../05_UnitTestGuide/02_RequestUnitTest/index`\ を参照。
+
+AbstractHttpRequestTestTemplate
+======================================
+
+アプリケーションプログラマが直接使用することはない。\
+テストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。\
+
+TestCaseInfo
+============
+
+データシートに定義されたテストケース情報を格納するクラス。\
+テストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。
+
+
+HttpRequestTestSupport
+======================
+
+リクエスト単体テスト用に用意されたスーパクラス。リクエスト単体テスト用のメソッドを用意している。
+
+
+データベース関連機能
+--------------------
+
+データベースに関する機能は、DbAccessTestSupportクラスに委譲することで実現している。
+詳細は、\ :doc:`02_DbAccessTest`\ を参照。
+
+ただし、DbAccessTestSupportのうち以下のメソッドは、\
+リクエスト単体テストでは不要であり、アプリケーションプログラマに誤解を与えないよう、\
+意図的に委譲を行っていない。
+
+* public void beginTransactions()
+* public void commitTransactions()
+* public void endTransactions()
+* public void setThreadContextValues(String sheetName, String id)
+
+
+事前準備補助機能
+----------------
+
+内蔵サーバへのリクエスト送信には、HttpRequestとExecutionContextのインスタンスが必要となる。\
+HttpRequestTestSupportクラスでは、これらのオブジェクトを簡単に作成できるようメソッドを用意している。\
+
+
+HttpRequest
+~~~~~~~~~~~
+
+.. code-block:: java
+
+  HttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)
+
+
+引数には、以下の値を引き渡す。
+
+* テスト対象となるリクエストURI
+* 上記で取得したリクエストパラメータ
+
+本メソッドでは、受け取ったたリクエストURIとリクエストパラメータを元に\
+HttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定した上で返却する。\
+HttpRequestにリクエストパラメータやURI以外のデータを設定したい場合は、\
+本メソッド呼び出しにより取得したインスタンスに対してデータの設定を行うとよい。
+
+
+ExecutionContext
+~~~~~~~~~~~~~~~~
+
+ExecutionContextインスタンスを生成する。
+
+
+.. code-block:: java
+
+  ExecutionContext createExecutionContext(String userId)
+
+
+引数にはユーザIDを指定する。指定したユーザIDはセッションに格納される。\
+これにより、そのユーザIDでログインしている状態となる。\
+
+
+
+
+.. _how_to_set_token_in_request_unit_test:
+
+
+トークン発行
+~~~~~~~~~~~~
+
+2重サブミット防止を施しているURIに対するテストを行うには、\
+テスト実行前にトークンを発行しセッションに設定しておく必要がある。\
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+トークンの発行およびセッションへの格納が行われる。
+
+.. code-block:: java
+
+ void setValidToken(HttpRequest request, ExecutionContext context)
+
+
+リクエスト単体実行時に、テストデータ上でトークンを設定するか否かを制御したい場合は、
+以下のメソッドを使用する。
+
+.. code-block:: java
+
+ void setToken(HttpRequest request, ExecutionContext context, boolean valid)
+
+
+第3引数がbooleanになっており、真の場合は前述のsetValidTokenと同じ動作となる。
+偽の場合は、セッションからトークン情報が除去される。以下のように使用することで、
+テストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。
+
+ 
+.. code-block:: java
+
+     // 【説明】テストデータから取得したものとする。
+     String isTokenValid; 
+
+     // 【説明】"true"の場合はトークンが設定される。
+     setToken(req, ctx, Boolean.parseBoolean(isTokenValid)));
+
+
+
+実行
+====
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+内蔵サーバが起動されリクエストが送信される。
+
+.. code-block:: java
+
+ HttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx) 
+
+
+引数には以下の値を引き渡す。
+
+* テストケース名
+* HttpRequest
+* ExectionContext
+
+テストケース名は、HTMLダンプ出力時のファイル名に使用される。
+詳細は
+:ref:`dump-dir-label`
+を参照。
+
+
+
+リポジトリの初期化
+------------------
+
+executeメソッド内部では、リポジトリの再初期化を行っている。\
+これにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。
+
+* 現在のリポジトリの状態をバックアップ
+* テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化
+* executeメソッド終了時に、バックアップしたリポジトリを復元する。
+
+
+テスト対象のWebアプリケーションに関する設定については、\
+:ref:`howToConfigureRequestUnitTestEnv`\
+を参照。
+
+
+結果確認
+========
+
+
+メッセージ
+----------
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+アプリケーション例外に格納されたメッセージが想定通りであることを確認する。
+
+.. code-block:: java
+
+   
+  void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual);
+
+
+引数には、以下の値を引き渡す。
+
+* テストケース名
+* 期待するメッセージ（複数ある場合はカンマ区切りで指定する。）
+* 先に作成したExectionContext
+
+
+例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合は、\
+アサート失敗となる。
+
+
+.. note::
+ メッセージIDの比較はIDをソートした状態で行うので、テストデータを記載する際に
+ 順序を気にする必要はない。
+
+
+
+HTMLダンプ出力
+==============
+
+.. _dump-dir-label:
+
+HTMLダンプ出力ディレクトリ
+--------------------------
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成される。
+その配下にテストクラス毎に同名のディレクトリが作成され、
+そのテストクラスで実行されたテストケースと同名のHTMLダンプファイルが出力される。
+
+また、HTMLダンプファイルが参照するHTMLリソース（スタイルシートや画像などのリソース）についても
+このディレクトリに出力されるので、このディレクトリを保存することで、どの環境でもHTMLを同じように参照できる。
+
+* html_dumpディレクトリが既に存在する場合は、html_dump_bkという名前でバックアップされる。
+
+
+.. image:: ./_images/htmlDumpDir.png
+
+
+.. _howToConfigureRequestUnitTestEnv:
+
+----------
+```
+
+## Knowledge File
+
+- ID: `testing-framework-02_RequestUnitTest-06_TestFWGuide--s1`
+
+```json
+{
+  "id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "title": "リクエスト単体テスト（画面オンライン処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提事項とクラス概要",
+      "hints": [
+        "前提事項",
+        "シンクライアント",
+        "1リクエスト1画面遷移",
+        "Ajax",
+        "リッチクライアント",
+        "HTMLダンプ制約",
+        "HttpServer",
+        "内蔵サーバ",
+        "同一JVM",
+        "BasicHttpRequestTestTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "TestCaseInfo",
+        "DbAccessTestSupport",
+        "HttpRequestTestSupport"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "BasicHttpRequestTestTemplate",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "スーパクラス",
+        "テストソース定型化",
+        "テストデータ定型化",
+        "記述量削減"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "AbstractHttpRequestTestTemplateとTestCaseInfo",
+      "hints": [
+        "AbstractHttpRequestTestTemplate",
+        "TestCaseInfo",
+        "フレームワーク拡張",
+        "テストデータ書き方変更",
+        "継承",
+        "データシート"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データベース関連機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "beginTransactions",
+        "commitTransactions",
+        "endTransactions",
+        "setThreadContextValues",
+        "データベース関連機能",
+        "委譲除外メソッド"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "事前準備補助機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "createHttpRequest",
+        "createExecutionContext",
+        "setValidToken",
+        "setToken",
+        "HttpRequest",
+        "ExecutionContext",
+        "トークン発行",
+        "2重サブミット防止",
+        "事前準備"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "実行とリポジトリの初期化",
+      "hints": [
+        "HttpRequestTestSupport",
+        "execute",
+        "HttpResponse",
+        "リポジトリ初期化",
+        "バックアップと復元",
+        "クラス単体テスト連続実行"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "メッセージ",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertApplicationMessageId",
+        "アプリケーション例外",
+        "メッセージID確認",
+        "ExecutionContext"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "HTMLダンプ出力ディレクトリ",
+      "hints": [
+        "HTMLダンプ",
+        "html_dump",
+        "html_dump_bk",
+        "tmp/html_dump",
+        "HTMLダンプ出力ディレクトリ",
+        "テストケース名"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**前提事項**\n\nリクエスト単体テスト（内蔵サーバを利用してHTMLダンプを出力する方式）は、**1リクエスト1画面遷移のシンクライアント型Webアプリケーション**を対象としている。\n\n- Ajaxやリッチクライアントを利用したアプリケーションでは、**HTMLダンプによるレイアウト確認は使用できない**\n- JSP以外のViewテクノロジでも、サーブレットコンテナ上で画面全体をレンダリングする方式であればHTMLダンプの出力が可能\n\n**主なクラスとリソース**\n\n| 名称 | 役割 |\n|------|------|\n| テストクラス | テストロジックを実装する（テスト対象クラス(Action)につき1つ作成） |\n| テストデータ（Excelファイル） | 準備データ・期待結果・HTTPパラメータなどのテストデータを記載（テストクラスにつき1つ作成） |\n| テスト対象クラス(Action) | テスト対象のクラス（Action以降の業務ロジックを実装する各クラスを含む） |\n| `DbAccessTestSupport` | 準備データ投入などデータベースを使用するテストに必要な機能を提供 |\n| `HttpServer` | 内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する |\n| `HttpRequestTestSupport` | 内蔵サーバの起動やリクエスト単体テストで必要となる各種アサートを提供 |\n| `AbstractHttpRequestTestTemplate` / `BasicHttpRequestTestTemplate` | リクエスト単体テストをテンプレート化するクラス。テストソース・テストデータを定型化する |\n| `TestCaseInfo` | データシートに定義されたテストケース情報を格納するクラス |\n\n上記のクラス群は、内蔵サーバも含め**全て同一のJVM上で動作する**。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。",
+    "s2": "**クラス**: `BasicHttpRequestTestTemplate`\n\n各テストクラスのスーパクラス。本クラスを使用することで、リクエスト単体テストのテストソース・テストデータを定型化でき、**テストソース記述量を大きく削減できる**。\n\nアプリケーションプログラマがリクエスト単体テストを記述する際に直接使用するクラス。\n\n具体的な使用方法は :doc:`../05_UnitTestGuide/02_RequestUnitTest/index` を参照。",
+    "s3": "**AbstractHttpRequestTestTemplate**\n\nアプリケーションプログラマが直接使用することはない。テストデータの書き方を変えたい場合など、**自動テストフレームワークを拡張する際**に用いる。\n\n**TestCaseInfo**\n\nデータシートに定義されたテストケース情報を格納するクラス。テストデータの書き方を変えたい場合は、本クラスおよび`AbstractHttpRequestTestTemplate`を継承する。",
+    "s4": "**クラス**: `HttpRequestTestSupport`, `DbAccessTestSupport`\n\n`HttpRequestTestSupport`のデータベース機能は`DbAccessTestSupport`クラスに委譲して実現。\n\nリクエスト単体テストでは不要なため、以下のメソッドは意図的に委譲されていない（誤用防止）:\n- `public void beginTransactions()`\n- `public void commitTransactions()`\n- `public void endTransactions()`\n- `public void setThreadContextValues(String sheetName, String id)`\n\n詳細は :doc:`02_DbAccessTest` を参照。",
+    "s5": "**クラス**: `HttpRequestTestSupport`\n\n**HttpRequest生成**:\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\nリクエストURIとリクエストパラメータからHttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定して返却。\n\n**ExecutionContext生成**:\n```java\nExecutionContext createExecutionContext(String userId)\n```\n引数のユーザIDはセッションに格納され、そのユーザIDでログイン状態となる。\n\n**トークン発行** (:ref:`how_to_set_token_in_request_unit_test`):\n2重サブミット防止を施しているURIのテストには、事前にトークンを発行してセッションに設定する必要がある。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nトークンを発行してセッションに格納する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n- `true`: `setValidToken`と同じ動作（トークン発行・格納）\n- `false`: セッションからトークン情報を除去\n\n使用例（テストデータからトークン設定を制御）:\n```java\nString isTokenValid; // テストデータから取得\nsetToken(req, ctx, Boolean.parseBoolean(isTokenValid));\n```",
+    "s6": "**クラス**: `HttpRequestTestSupport`\n\n**実行メソッド**:\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)\n```\nテストケース名（HTMLダンプ出力ファイル名に使用）、HttpRequest、ExecutionContextを引数に取り、内蔵サーバを起動してリクエストを送信する。\n\n**executeメソッド内部のリポジトリ再初期化処理**:\n1. 現在のリポジトリの状態をバックアップ\n2. テスト対象Webアプリのコンポーネント設定ファイルを用いてリポジトリを再初期化\n3. executeメソッド終了時にバックアップしたリポジトリを復元\n\nこれにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\nテスト対象Webアプリに関する設定については :ref:`howToConfigureRequestUnitTestEnv` を参照。",
+    "s7": "**クラス**: `HttpRequestTestSupport`\n\nアプリケーション例外のメッセージ確認メソッド:\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual)\n```\n- 第1引数: 期待するメッセージID（複数の場合はカンマ区切り）\n- 第2引数: ExecutionContext\n\n例外が発生しなかった場合、またはアプリケーション例外以外の例外が発生した場合はアサート失敗。\n\n> **注意**: メッセージIDの比較はIDをソートした状態で行うため、テストデータの記載順序は問わない。",
+    "s8": "テスト実行時、プロジェクトルートディレクトリに`tmp/html_dump`ディレクトリが作成される。\n\n- `tmp/html_dump/{テストクラス名}/`: テストクラス毎に同名ディレクトリを作成\n- そのディレクトリ配下にテストケース名と同名のHTMLダンプファイルが出力\n- HTMLリソース（スタイルシート、画像等）も同ディレクトリに出力（別環境でも同じ表示が可能）\n\n`html_dump`ディレクトリが既に存在する場合は`html_dump_bk`という名前でバックアップされる。\n\n![HTMLダンプディレクトリ構造](assets/testing-framework-02_RequestUnitTest-06_TestFWGuide--s1/htmlDumpDir.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

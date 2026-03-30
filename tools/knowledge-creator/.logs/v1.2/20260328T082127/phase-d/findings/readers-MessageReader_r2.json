@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-MessageReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 設定項目テーブル: formatFileDirName の備考",
+      "description": "ソースRSTテーブルでは「備考」列が `formatFileName` と `formatFileDirName` の2行にわたってセル結合されており、「任意設定（受信メッセージにデフォルトフォーマットを設定したい場合のみ使用）」の注記は両プロパティに適用される。ナレッジファイルでは `formatFileName` の説明にはこの条件が含まれているが、`formatFileDirName` の説明には含まれていない。",
+      "source_evidence": "RST table last column: `+-------------------------------------+-------------------+--------------+                                                           |` — セパレータ行で最終列が `+...+` ではなくスペース＋`|` となっており、上行とのセル結合を示す。備考テキスト「任意設定 (受信メッセージにデフォルトフォーマット を設定したい場合のみ使用)」は formatFileName/formatFileDirName 両行にまたがる。"
+    }
+  ]
+}

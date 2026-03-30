@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-function--s12",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is a missing `SqlResultSet` hint in s2. This is a minor discoverability gap: users seeking no-paging list display functionality will reliably reach s2 via the many specific hints already present (`usePaging`, `ページングなし`, `全件表示`, `setMax`, `getMaxResultCount`). `SqlResultSet` is a general-purpose class that appears across many knowledge files and is not uniquely associated with the no-paging use case; its absence here does not meaningfully reduce retrieval accuracy.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "sections.s2 / index[1].hints",
+      "impact": "low",
+      "justification": "SqlResultSet is a ubiquitous Nablarch class, not specific to the no-paging pattern. The s2 section is already reachable via targeted hints (`usePaging`, `ページングなし`, `全件表示`, `setMax`, `getMaxResultCount`). A user asking about SqlResultSet in a search context would not expect the no-paging section specifically. The fix was not applied in Phase E — the Phase E output's s2 hints array is byte-for-byte identical to the Phase D input, indicating the fix agent silently skipped the change, likely treating it as below the threshold of meaningful impact."
+    }
+  ]
+}

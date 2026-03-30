@@ -1,0 +1,32 @@
+{
+  "file_id": "web-application-08_complete",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All four residual findings are missing procedural verification steps (when to run unit tests, what outcome to expect, and a QA tool invocation). The core implementation content is fully present: class names, method signatures, SQL, annotations, code samples, and architectural notes like @OnDoubleSubmission. An AI agent can guide a developer through complete, correct implementation using the current knowledge file. The missing items are incremental TDD checkpoints and a static-analysis tool reference—process steps that do not block or misdirect implementation.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 1)-2 JSPの実装 b) 更新完了画面の表示確認",
+      "impact": "low",
+      "justification": "The missing step instructs developers to run a unit test after JSP creation and notes that DB updates are not yet implemented at this point. The knowledge file already communicates the incremental implementation approach (DB update comes in step 2), so a developer reading the file in sequence understands the same limitation from context. The omitted note adds clarity but its absence does not cause incorrect implementation or mislead the agent."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — 1)-2 JSPの実装 c) JSP静的チェックツールの実行",
+      "impact": "low",
+      "justification": "Running jsp_static_analysis_tool is a quality-gate step, not part of the implementation logic. Its absence means the agent will not prompt the developer to run the static check after JSP creation, potentially allowing JSP syntax issues to go undetected until later. However, this is a known standard step in Nablarch JSP development covered by its own knowledge topic; missing it here is an incremental quality gap rather than a functional or correctness failure."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — 2)-1 Componentクラスの実装 b) リクエスト単体テスト実施",
+      "impact": "low",
+      "justification": "This is a TDD red-phase checkpoint: run the test and confirm it fails before writing the Component update logic. The analogous step is present for 1)-1 c), creating a minor inconsistency, but the Component implementation itself (SQL, updateUsers method, class/method names) is complete. An agent can guide correct implementation without this procedural verification step."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — 2)-2 Actionクラスの実装 b) リクエスト単体テスト実施",
+      "impact": "low",
+      "justification": "The final 'run tests and confirm assertions pass' step is missing. This is the green-phase TDD checkpoint after the full Action implementation. The complete implementation code, annotations, and validation logic are all present. Developers would naturally run tests after implementation; the omission reduces explicit guidance but does not cause incorrect output from the agent."
+    }
+  ]
+}

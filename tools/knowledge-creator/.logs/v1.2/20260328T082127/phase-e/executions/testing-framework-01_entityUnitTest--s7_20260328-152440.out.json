@@ -1,0 +1,110 @@
+{
+  "id": "testing-framework-01_entityUnitTest--s7",
+  "title": "Entity単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストケース表の作成",
+      "hints": [
+        "testShots",
+        "params",
+        "expectedMessageId",
+        "propertyName",
+        "テストケース表",
+        "入力パラメータ表",
+        "バリデーションテストデータ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストケース、テストデータの作成",
+      "hints": [
+        "精査対象確認",
+        "項目間精査",
+        "単項目精査",
+        "validation_specifyProperty",
+        "entityUnitTest_ValidationMethodSpecifyNormal",
+        "Form配列",
+        "バリデーションメソッド",
+        "SampleForm",
+        "SystemUserEntity",
+        "UserTelEntity"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストメソッドの作成方法",
+      "hints": [
+        "testValidateAndConvert",
+        "EntityTestSupport",
+        "SystemAccountEntity",
+        "validateFor",
+        "テストメソッド",
+        "testValidateForRegisterUser"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Excelへの定義（コンストラクタテスト）",
+      "hints": [
+        "testConstructorAndGetter",
+        "EntityTestSupport",
+        "SystemAccountEntity",
+        "testConstructor",
+        "コンストラクタテスト",
+        "valueOf",
+        "BigDecimal",
+        "getParamMap",
+        "getListParamMap",
+        "entityUnitTest_ConstructorOther"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Excelへの定義（setter・getterテスト）",
+      "hints": [
+        "testSetterAndGetter",
+        "testGetterAndSetter",
+        "EntityTestSupport",
+        "SystemAccountEntity",
+        "setter/getterテスト",
+        "entityUnitTest_ConstructorCase"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "プロパティ名の一覧を簡易的に取得する手順",
+      "hints": [
+        "property-name-copy-label",
+        "Eclipse",
+        "Outline",
+        "アウトライン",
+        "Copy Qualified Name",
+        "修飾名のコピー",
+        "完全修飾名",
+        "プロパティ名取得",
+        "Excel置き換え"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "自動テストフレームワーク設定値",
+      "hints": [
+        "entityUnitTest_ValidationCase",
+        "自動テストフレームワーク設定値",
+        "初期値設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**テストケース表** (ID: `testShots` 固定):\n\n| カラム名 | 記載内容 |\n|---|---|\n| title | テストケースのタイトル |\n| description | テストケースの簡単な説明 |\n| expectedMessageId*n* | 期待するメッセージ（*n*は1からの連番） |\n| propertyName*n* | 期待するプロパティ（*n*は1からの連番） |\n\n複数メッセージを期待する場合、`expectedMessageId2`, `propertyName2` のように数値を増やして右側に追加する。\n\n**入力パラメータ表** (ID: `params` 固定): テストケース表に対応する入力パラメータを1行ずつ記載する。\n\n![バリデーションテストデータ例](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_validationTestData.png)",
+    "s2": "### 精査対象確認\n\n:ref:`validation_specifyProperty` で精査対象プロパティを指定した場合の確認ケース。全プロパティに対して単項目精査エラーとなるデータを用意する。期待値として全精査対象プロパティ名と各プロパティ単項目精査エラー時のメッセージIDを記載する。\n\n> **注意**: 精査対象プロパティが漏れていた場合、期待メッセージが出力されずアサートが失敗する。精査対象でないプロパティが誤って含まれた場合、入力値不正で予期しないメッセージが出力される。これにより精査対象の誤りを検知できる。\n\n![精査対象テストケース](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_ValidationPropTestCases.png)\n\n![精査対象入力パラメータ](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_ValidationPropParams.png)\n\n> **注意**: Form単体テストで別FormのプロパティをExcelに指定する場合:\n> - 保持Formのプロパティ（例: `SystemUserEntity.userId`）: `sampleForm.systemUser.userId`\n> - Form配列の要素（配列先頭）: `sampleForm.userTelArray[0].telNoArea`\n>\n> Formコード例:\n> ```java\n> public class SampleForm {\n>     private SystemUserEntity systemUser;\n>     private UserTelEntity[] userTelArray;\n> }\n> ```\n\n### 項目間精査など\n\n:ref:`entityUnitTest_ValidationMethodSpecifyNormal` で行った精査対象指定以外の動作確認（項目間精査など）ケースを作成する。\n\n![項目間精査テストケース例](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_RelationalValidation.png)",
+    "s3": "テスト対象エンティティクラス・シート名・`validateFor` 値を変数で指定し `testValidateAndConvert` を呼び出す。変数内容を変更するだけで異なるEntityの精査テストに対応できる。\n\n```java\nprivate static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;\n\n@Test\npublic void testValidateForRegisterUser() {\n    String sheetName = \"testValidateForRegisterUser\";\n    String validateFor = \"registerUser\";\n    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);\n}\n```",
+    "s4": "コンストラクタテストでは、引数に指定した値が全プロパティに正しく設定されているかを確認する（全プロパティ対象）。テストデータにはプロパティ名、設定する値、期待値（getterで取得した値）を用意する。\n\n> **注意**: Entityは自動生成のためアプリで使用されないコンストラクタが生成される可能性がある。その場合リクエスト単体テストではテストできないため、Entity単体テストでコンストラクタのテストを必ず行うこと。一般的なFormはリクエスト単体テストでコンストラクタテスト可能なため、クラス単体テストでのテストは不要。\n\nExcelへの定義:\n![コンストラクタテストデータ](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_Constructor.png)\n\nテストコード (`testConstructorAndGetter` を使用):\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n    @Test\n    public void testConstructor() {\n        Class<?> entityClass = SystemAccountEntity.class;\n        String sheetName = \"testAccessor\";\n        String id = \"testConstructor\";\n        testConstructorAndGetter(entityClass, sheetName, id);\n    }\n}\n```\n\n> **注意**: `testConstructorAndGetter` でテスト可能な型には制限がある。以下以外の型は個別にコンストラクタとgetterを明示的に呼び出してテストする:\n> - `String` および `String[]`\n> - `BigDecimal` および `BigDecimal[]`\n> - `valueOf(String)` メソッドを持つクラスおよびその配列（`Integer`, `Long`, `java.sql.Date`, `java.sql.Timestamp` など）\n\n制限外の型の個別テスト（`getParamMap` でテストデータ取得後、コンストラクタを呼び出してgetterで検証）。テスト対象プロパティが複数ある場合は `getListParamMap` を使用する。\n\nExcelへのデータ記述例:\n![制限外の型コンストラクタテストデータ](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_ConstructorOther.png)\n\nテストコード例:\n\n```java\n@Test\npublic void testConstructor() {\n    Class<?> entityClass = SystemAccountEntity.class;\n    String sheetName = \"testAccessor\";\n    String id = \"testConstructor\";\n    testConstructorAndGetter(entityClass, sheetName, id);\n\n    // (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)\n    Map<String, String[]> data = getParamMap(sheetName, \"testConstructorOther\");\n    Map<String, Object> params = new HashMap<String, Object>();\n    params.put(\"users\", Arrays.asList(data.get(\"set\")));\n    SystemAccountEntity entity = new SystemAccountEntity(params);\n    assertEquals(entity.getUsers(), Arrays.asList(data.get(\"get\")));\n}\n```",
+    "s5": "setter/getterテストでは、setterで設定した値とgetterで取得した値が期待通りかを全プロパティに対して確認する。各プロパティにsetterに渡すデータと期待値を用意する。\n\n> **注意**: Entityは自動生成のためアプリで使用されないsetter/getterが生成される可能性がある。その場合リクエスト単体テストではテストできないため、Entity単体テストでsetter/getterのテストを必ず行うこと。一般的なFormはリクエスト単体テストでテスト可能なため、クラス単体テストでのテストは不要。\n\nExcelへの定義:\n![setter/getterテストデータ](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_SetterAndGetter.png)\n\nテストコード:\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n    @Test\n    public void testSetterAndGetter() {\n        Class<?> entityClass = SystemAccountEntity.class;\n        String sheetName = \"testAccessor\";\n        String id = \"testGetterAndSetter\";\n        testSetterAndGetter(entityClass, sheetName, id);\n    }\n}\n```\n\n> **注意**: `testGetterAndSetter` でテスト可能な型には制限がある（:ref:`entityUnitTest_ConstructorCase` 参照）。\n\n> **注意**: setter/getterにロジックを記述した場合（例: setterは上3桁・下4桁で受け取り、getterは7桁で返すなど）は、そのロジックを確認するテストケースを作成すること。\n\n![setter/getterロジックテスト例（郵便番号）](assets/testing-framework-01_entityUnitTest--s7/entityUnitTest_SetterAndGetter_PostNo.png)",
+    "s6": "EclipseのOutline（アウトライン）ビューを使用してEntityクラスのプロパティ名一覧を取得し、Excelに貼り付ける手順。コンストラクタテスト・setter/getterテストのExcelデータ作成時に活用する。\n\n1. Eclipseでテスト対象のEntityクラスをオープンし、Outline（アウトライン）を表示する。\n2. コピーしたいプロパティを選択する。\n3. マウスの右クリックで表示されるメニューから「Copy Qualified Name（修飾名のコピー）」を選択する。\n4. コピーしたプロパティ名のリストをExcelに貼り付ける。貼り付けた値は「クラス名 + プロパティ名」の完全修飾名の形式になっているため、Excelの置き換え機能を使用して不要なクラス名を削除する。\n\n置き換え例（Entityクラスが `nablarch.sample.management.user.SystemAccountEntity` の場合）:\n- 検索する文字列: `nablarch.sample.management.user.SystemAccountEntity.`\n- 置き換え後の文字列: （空のまま）",
+    "s7": ":ref:`entityUnitTest_ValidationCase` を実施する際に必要な初期値設定について説明する。"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s3 / index[2].hints",
+      "description": "`AuthenticationFailedException` is a PascalCase exception class name that appears explicitly in the source (PasswordAuthenticator example stack trace: `nablarch.common.authentication.AuthenticationFailedException`) but is absent from the s3 hints array.",
+      "source_evidence": "nablarch.common.authentication.AuthenticationFailedException\n    at nablarch.common.authentication.PasswordAuthenticator.authenticate(PasswordAuthenticator.java:302)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s4 / index[3].hints",
+      "description": "`UPDATED_USER_ID` is one of the three data-linkage column names listed in the source table (カラム名 column: INSERT_REQUEST_ID, INSERT_EXECUTION_ID, UPDATED_USER_ID). The first two are included in hints but UPDATED_USER_ID is omitted, creating an inconsistency.",
+      "source_evidence": "ユーザID | UPDATED_USER_ID  (source table row, also present in the example log output: UPDATED_USER_ID=batch_user)"
+    }
+  ]
+}

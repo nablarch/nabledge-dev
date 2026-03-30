@@ -1,0 +1,14 @@
+{
+  "file_id": "mom-messaging-messaging_receive",
+  "user_impact": "none",
+  "needs_improvement": false,
+  "reason": "The residual finding has no user impact. The source document itself contains an authoring error — it says \"以下の3点である\" but enumerates 4 items. The knowledge file's \"以下4点が異なる\" is factually correct and more accurate than the source text. An AI agent using this knowledge file will correctly convey to developers that there are 4 differences, which matches the actual enumerated content. Using \"3\" would mislead developers by making them expect 3 items when 4 are present.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1",
+      "impact": "none",
+      "justification": "The source RST contains an internal inconsistency: the lead sentence says '以下の3点である' but the document body enumerates 4 distinct items (1. 応答電文を送信しない, 2. 業務アクションハンドラは作成不要, 3. 2相コミットを使用する, 4. 閉局時の挙動が異なる). The knowledge file uses '以下4点が異なる', which correctly reflects the actual enumerated content. This makes the knowledge file more accurate than the source text, not less. No developer using the AI agent will be misled — they will see 4 differences, which is what the knowledge file states. Phase E did not change this because the fix agent correctly identified the source as having an authoring error and preserved the accurate representation."
+    }
+  ]
+}

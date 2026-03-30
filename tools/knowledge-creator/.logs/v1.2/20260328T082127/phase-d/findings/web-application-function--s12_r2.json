@@ -1,0 +1,26 @@
+{
+  "file_id": "web-application-function--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s1 — 前提ブロック末尾",
+      "description": "Knowledge file states '並び替えはページング機能なしに単独では実装できない' (sorting cannot be implemented independently without paging), but the source never makes this claim. The source only says this example assumes paging is already implemented and shows only the differences from that implementation — a documentation scope limitation, not a technical constraint.",
+      "source_evidence": "「ここでは、:ref:`custom_tag_paging_paging` が実現されているものとして、:ref:`custom_tag_paging_paging` との差分についてのみ実装例を示す。」— the source limits the example scope, it does not assert that sorting requires paging."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "Section s2 is missing several PascalCase class names that appear in its action implementation example: W11AC01Action, HttpResponse, HttpRequest, ExecutionContext, ValidationContext.",
+      "source_evidence": "Source s2 action code: 'public class W11AC01Action extends DbAccessSupport { ... public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) { ... ValidationContext<W11AC01SearchForm> searchConditionCtx = ...'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning: Section count 2 < source headings 3",
+      "description": "The automated pre-check flagged a third heading, but inspection shows the source contains only 2 content headings (検索結果の並び替え and ページングを使用しない一覧表示). The third item is the `.. _using_composite_key:` anchor followed by a `---` separator line marking the start of the next (out-of-scope) section, not a heading with content. The 2-section knowledge file correctly covers both content headings; this warning is a false alarm."
+    }
+  ]
+}

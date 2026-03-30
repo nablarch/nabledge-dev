@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "Several PascalCase class names and an XxxException name present in the action code example are missing from s1 hints: `ApplicationException` (XxxException, used in @OnError and catch block), `MessageUtil` (used in error message creation), `ValidationContext` (used for input validation), `MessageLevel` (used as MessageLevel.ERROR).",
+      "source_evidence": "Source action code: `ValidationContext<W11AC01SearchForm> searchConditionCtx = ...`, `throw new ApplicationException(...)`, `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount())`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s2 (opening sentence)",
+      "description": "The section content contains unconverted RST cross-reference markup (`:ref:`custom_tag_paging_paging``) that was copied verbatim from the source. This renders as opaque RST syntax in the Markdown knowledge file, which would confuse an AI reading it. It should be converted to plain text such as「ページングを使用した一覧表示」or a reference to section s1.",
+      "source_evidence": "Source text: `ここでは、:ref:`custom_tag_paging_paging` が実現されているものとして`. Knowledge file: `:ref:`custom_tag_paging_paging` を前提として`"
+    }
+  ]
+}

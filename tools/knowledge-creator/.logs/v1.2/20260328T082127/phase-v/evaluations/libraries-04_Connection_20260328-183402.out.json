@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-04_Connection",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is a minor omission of the classpath location constraint for jndi.properties. The affected scenario is narrow (JNDI connection on a non-web-server environment), and developers working in this context would typically consult vendor documentation for JNDI initialization details. The XML configuration example in s5 also provides concrete guidance. The inaccuracy (\"JNDIプロパティファイルが存在する場合は省略可\" vs. the correct \"クラスパス配下に「jndi.properties」を配置している場合\") could cause minor confusion but is unlikely to block development or cause silent misconfiguration in practice.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s5 — BasicDbConnectionFactoryForJndiの設定, jndiProperties",
+      "impact": "low",
+      "justification": "The missing 'クラスパス配下に' constraint narrows when jndiProperties can be omitted, but the practical blast radius is small: (1) this only matters in non-web-server JNDI setups, a narrow deployment scenario; (2) the existing XML example in s5 shows the full property in use, giving developers a concrete reference; (3) JNDI classpath conventions are well-known to Java EE developers who would be configuring this. Phase E did not resolve it — the output JSON still reads 'JNDIプロパティファイルが存在する場合は省略可' without the classpath qualifier, indicating the fix agent either missed the specific token to replace or the edit was not applied to the correct cell."
+    }
+  ]
+}

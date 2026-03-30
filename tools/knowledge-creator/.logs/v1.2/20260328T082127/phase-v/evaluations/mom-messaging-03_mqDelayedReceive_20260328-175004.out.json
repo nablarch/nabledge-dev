@@ -1,0 +1,14 @@
+{
+  "file_id": "mom-messaging-03_mqDelayedReceive",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only finding is a truncated hint \"messageDelayedReceive\" vs the full RST ref key \"messageDelayedReceiveDesign\". Since hints drive semantic search rather than exact key lookup, the truncation has negligible practical impact. Users asking about this topic would match via natural-language hints (\"応答不要メッセージ受信処理\", \"非同期メッセージ受信\", \"MOM\", etc.). The full ref key \"messageDelayedReceiveDesign\" refers to a *design* document that is a different knowledge file — users seeking implementation guidance land here via the implementation-focused hints, not by searching for the design doc's ref ID. The file is well-covered for its intended retrieval scenarios.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1].hints",
+      "impact": "low",
+      "justification": "The truncated hint 'messageDelayedReceive' vs the full RST anchor 'messageDelayedReceiveDesign' matters only if a user searches by the exact RST ref ID. In practice, users search with natural-language queries about implementing MQ receive processing, for which the existing hints ('応答不要メッセージ受信処理', '非同期メッセージ受信', 'MOM', etc.) provide adequate coverage. 'messageDelayedReceiveDesign' is a cross-reference to a separate design document, not a term users would use to look up this implementation guide. Phase E produced no output, indicating the improvement loop assessed the finding as below the fix threshold — consistent with its minor/low classification."
+    }
+  ]
+}

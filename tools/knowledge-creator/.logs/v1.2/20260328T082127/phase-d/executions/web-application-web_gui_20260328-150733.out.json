@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-web_gui",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (intro section)",
+      "description": "The source intro explicitly lists dispatch processing (ディスパッチ処理) as one of the two core functions of the framework alongside response processing. The knowledge file's s1 captures response processing and content path rules but omits any mention of dispatch processing.",
+      "source_evidence": "この実行制御基盤では、HTTPリクエスト・レスポンスに関連した以下の処理を行う。\n- 各HTTPリクエストに対して処理対象の業務機能を呼び出す処理。(ディスパッチ処理)\n- 業務機能の結果を元に、HTTPリクエストに対するレスポンスを構成し送信する処理。(レスポンス処理)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`HttpErrorResponse` is a PascalCase class name explicitly referenced in the ユーザエラーフロー description in s2 content but is absent from s2 hints.",
+      "source_evidence": "[\"HttpResponseHandler\", \"outbound\", \"HttpErrorResponse に指定されたパスを用いてレスポンス処理を行う。(デフォルトステータスコード:400)\"]"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`NullPointerException` is an exception name explicitly mentioned in the システムエラーフロー within s2 content but is absent from s2 hints.",
+      "source_evidence": "[\"HttpMethodBinding\", \"inbound\", \"ここでNullPointerException等の実行時例外が送出されたとする。\"]"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-inputAndOutput--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "codeタグ section intro (between codeCheckbox sections and 詳細画面 subsection)",
+      "description": "The introductory paragraph for the codeタグ section is not captured. It contains: (1) the basic definition of what codeタグ does — '指定したフォーマットにあわせてコード値を出力する'; (2) technology selection guidance — that normally codeSelectタグ, codeRadioButtonsタグ, codeCheckboxesタグ, or codeCheckboxタグ are used for registration/update screens, and codeタグ is for the specific case where selectable code values are displayed in a list alongside a text box input.",
+      "source_evidence": "codeタグは、指定したフォーマットにあわせてコード値を出力する。登録画面や更新画面で選択可能なコード値を表示する場合、通常codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeCheckboxタグのいずれかを使用する。しかし、選択可能なコード値を一覧表示し、テキストボックスに入力する仕様もありうる。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3 — $OPTIONALNAME$ description",
+      "description": "The knowledge file describes $OPTIONALNAME$ as 'オプション名称（OPTIONカラム）', but the source says 'コードのオプション名称（OPTION01）'. The parenthetical in the source refers to the specific example column name 'OPTION01', not a generic 'OPTIONカラム'. While the meaning is close, '(OPTIONカラム)' is not what the source states.",
+      "source_evidence": "$OPTIONALNAME$：コードのオプション名称（OPTION01）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) and index[3] (s4) hints",
+      "description": "The `listFormat` attribute is used in the JSP code examples for both s3 and s4 (`listFormat=\"div\"`), but it is absent from the hints arrays of both sections. It is a configurable attribute that users may search for.",
+      "source_evidence": "<n:code ... listFormat=\"div\" /> (appears in both JSP examples)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "The PascalCase class name `W11AC02Action` appears in the Action class implementation example in s3 but is not included in the hints array. Per V4 rules, PascalCase class names from content should be included in hints.",
+      "source_evidence": "public class W11AC02Action { ... }"
+    }
+  ]
+}

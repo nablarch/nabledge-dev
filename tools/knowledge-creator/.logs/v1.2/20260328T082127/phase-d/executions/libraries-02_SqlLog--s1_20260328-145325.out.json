@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections s13-s16 / source: フォーマットに指定可能なプレースホルダの一覧",
+      "description": "The knowledge file only includes placeholder/default-format sections for SqlPStatement#retrieve (s13, s14) and SqlPStatement#execute (s15, s16). The source property table explicitly lists six additional format properties — startExecuteQueryFormat, endExecuteQueryFormat, startExecuteUpdateFormat, endExecuteUpdateFormat, startExecuteBatchFormat, endExecuteBatchFormat — implying the source contains corresponding placeholder tables and default format strings for those three methods. The knowledge file has no sections covering these placeholders or default formats, meaning a developer customizing log formats for executeQuery, executeUpdate, or executeBatch has no reference for available placeholder names or default format strings.",
+      "source_evidence": "Property table in source lists: sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat — each with a description indicating a corresponding format section exists in the source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "Section s2 covers the app-log.properties configuration file and references AppLog_Config, but neither 'app-log.properties' nor 'AppLog_Config' appear in the hints. These are important lookup keys: a developer searching for how to configure SqlLogFormatter or change the property file path would use these terms.",
+      "source_evidence": "Source: 'SqlLogUtilは、プロパティファイル(app-log.properties)を読み込み' and 'プロパティファイルのパス指定や実行時の変更方法は、:ref:`AppLog_Config` を参照。'"
+    }
+  ]
+}

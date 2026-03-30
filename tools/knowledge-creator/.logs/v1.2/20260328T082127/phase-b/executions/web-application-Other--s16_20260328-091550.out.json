@@ -1,0 +1,58 @@
+{
+  "id": "web-application-Other--s16",
+  "title": "コード名称と値の取得方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード名称と値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "getValues",
+        "コード名称取得",
+        "コード略称取得",
+        "オプション名称取得",
+        "コード値取得",
+        "ThreadContext言語依存"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コード値のバリデーション方法",
+      "hints": [
+        "@CodeValue",
+        "CodeValue",
+        "codeId",
+        "pattern",
+        "@PropertyName",
+        "コード値バリデーション",
+        "パターンバリデーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "正常な画面遷移においてメッセージを表示する方法",
+      "hints": [
+        "WebUtil",
+        "notifyMessages",
+        "n:errors",
+        "MessageUtil",
+        "MessageLevel",
+        "nablarch_warn",
+        "nablarch_info",
+        "nablarch_error",
+        "警告メッセージ表示",
+        "正常画面遷移メッセージ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コード管理機能でコード名称・値を取得するには`CodeUtil`クラスを使用する。取得結果はThreadContextに保持した言語に依存する。\n\n| メソッド | 説明 |\n|---|---|\n| `CodeUtil.getName(codeId, value)` | ThreadContextの言語に応じたコード名称を返す |\n| `CodeUtil.getShortName(codeId, value)` | ThreadContextの言語に応じたコード略称を返す |\n| `CodeUtil.getOptionalName(codeId, value, columnName)` | コード名称テーブルの任意カラム（オプション名称用）の値を取得 |\n| `CodeUtil.getValues(codeId)` | コードパターンテーブルのSORT_ORDER昇順でコード値リストを返す |\n| `CodeUtil.getValues(codeId, patternColumn)` | パターン用カラム（PATTERN1等）に\"1\"が設定された行のコード値を返す |\n\n```java\n// コード名称取得 (ja: \"男性\", en: \"Male\")\nString name = CodeUtil.getName(\"0001\", \"1\");\n\n// コード略称取得 (en -> \"男\", ja -> \"M\")\nString name = CodeUtil.getShortName(\"0001\", \"1\");\n\n// オプション名称取得 (NAME_WITH_VALUEカラム指定時: ja -> \"1:男性\", en -> \"1:Male\")\nString name = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n\n// コード値一覧取得 (ja: {\"1\",\"2\",\"9\"}, en: {\"2\",\"1\",\"9\"})\nList<String> values = CodeUtil.getValues(\"0001\");\n\n// パターンでフィルタしたコード値取得 (ja: {\"1\",\"2\"}, en: {\"2\",\"1\"})\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n```\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)",
+    "s2": "`@CodeValue`アノテーションを使用してコード値のバリデーションを行う。`pattern`属性にパターン用カラム名を指定する。指定パターンに含まれない値はバリデーションエラーとなる。\n\n```java\n@PropertyName(\"性別\")\n@CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\npublic String setGender(String gender) {\n    this.gender = gender;\n}\n```\n\n上記例ではPATTERN1カラムが\"1\"の値（\"1\",\"2\"）以外はバリデーションエラー。\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)",
+    "s3": "精査エラーとは異なり、業務チェックによる警告メッセージを次画面に表示するには、ActionでWebUtil.notifyMessages()でメッセージを設定し、JSPでn:errorsタグを使用する。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG00022\");\nWebUtil.notifyMessages(ctx, message);\nreturn new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n```\n\n```jsp\n<n:errors />\n```\n\n`n:errors`タグはMessageLevelに応じたCSSクラス名を出力する：\n\n| MessageLevel | CSSクラス名 |\n|---|---|\n| `INFO` | `nablarch_info` |\n| `WARN` | `nablarch_warn` |\n| `ERROR` | `nablarch_error` |\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)"
+  }
+}

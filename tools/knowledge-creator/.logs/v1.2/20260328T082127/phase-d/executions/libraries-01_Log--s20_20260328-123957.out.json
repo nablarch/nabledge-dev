@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_Log--s20",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 障害ログの詳細テーブル",
+      "description": "The failure log details table in s1 is missing two columns that appear in the source: (1) message template examples for failure codes (e.g., 「ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。」), and (2) the framework's default log output when no failure code is configured (e.g., 'failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].'). These help developers understand what failure messages to configure and what the framework outputs by default.",
+      "source_evidence": "Source table has 5 columns: 障害の種類 / ログレベル / 障害コードを設定するプロパティの名前 / 障害コードに対応するメッセージの設定例（{0}にはロックファイルのパスが設定される） / 本フレームワークがデフォルトで出力するログ. Knowledge file table has only 3 columns: 障害の種類 / ログレベル / プロパティ名."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s9 — BasicLogFormatterのフォーマット指定 (改行コード説明部分)",
+      "description": "The source specifies that the newline code is obtained from the Java standard system property `line.separator`, and that if `line.separator` is not changed, the OS newline code is used. This cross-platform behavior detail is absent from the knowledge file.",
+      "source_evidence": "Source: 「改行コードは、Java標準のシステムプロパティに含まれる\"line.separator\"から取得する。このため、システムプロパティの\"line.separator\"を変更しなければOSの改行コードが使用される。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "The hint list for s2 (ログライタにおけるレベルに応じた出力制御) is missing `FileLogWriter`, which appears in the section's configuration example as one of the two writer classes illustrating level-based output control.",
+      "source_evidence": "Source configuration example in the level-control section: `writer.appFile.className=nablarch.core.log.basic.FileLogWriter`"
+    }
+  ]
+}

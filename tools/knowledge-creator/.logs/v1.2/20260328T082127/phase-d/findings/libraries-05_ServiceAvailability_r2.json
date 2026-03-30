@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_ServiceAvailability",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — BasicServiceAvailabilityクラスの設定プロパティ表",
+      "description": "The property table in s5 adds a '型' (Type) column with 'String' for tableName, requestTableRequestIdColumnName, requestTableServiceAvailableColumnName, and requestTableServiceAvailableOkStatus. The source property table has only 'property名' and '設定内容' columns and never specifies Java types for these properties. Only the dbManager type (SimpleDbTransactionManager) is mentioned in the source description text.",
+      "source_evidence": "Source property table columns are '=================================================' / '======================================================================================================='; no type column exists. String types for string-valued properties are not stated anywhere in the source."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 取り下げ",
+      "description": "The knowledge file omits the note that a workaround exists for the withdrawn per-function check: using the future bulk service availability setting per function as an alternative.",
+      "source_evidence": "Source: 「今後提供する各機能単位でサービス提供可否状態を一括設定する機能を使用することで、代替が可能である。」"
+    }
+  ]
+}

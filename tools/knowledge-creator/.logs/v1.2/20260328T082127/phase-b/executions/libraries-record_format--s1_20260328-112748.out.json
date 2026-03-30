@@ -1,0 +1,68 @@
+{
+  "id": "libraries-record_format--s1",
+  "title": "汎用データフォーマット機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能",
+        "EDI",
+        "データ形式",
+        "入出力ライブラリ",
+        "データファイル読み書き",
+        "ファイルアップロード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本構造",
+      "hints": [
+        "DataRecordFormatter",
+        "フォーマット定義ファイル",
+        "レコードフォーマッター",
+        "レコードフォーマッターファクトリ",
+        "Mapオブジェクト",
+        "データフォーマット機能構造"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用例",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "file-type",
+        "text-encoding",
+        "record-length",
+        "固定長ファイル",
+        "レコード読み込み",
+        "レコード書き込み",
+        "フォーマット定義ファイル作成"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "EDI等で利用される多様なデータ形式に対応する汎用の入出力ライブラリ。システム間通信・バッチ処理のデータファイル読み書き・ファイルアップロード処理など様々な場面で使用される。",
+    "s2": "データ形式の定義を**フォーマット定義ファイル**に記述し、フレームワークがデータソースに対してレコードの読み書きを行う。プログラム側はレコードをMapオブジェクトとして扱うだけでよく、パース/シリアライズ等の定型処理の実装は不要。\n\n> **注意**: 別添のツールを使用することで、データファイルや電文の形式を定義した各種仕様書からフォーマット定義ファイルを生成可能。\n\n本機能は3つの要素から構成される:\n\n1. **フォーマット定義ファイル**: データのフォーマット定義を記述したファイル。アプリケーションプログラマが作成する。\n2. **レコードフォーマッター** (`DataRecordFormatter`): フォーマット定義ファイルに従いデータの読み書きを行うオブジェクト。入力ストリームからレコードを各フィールド名をキーとするMapで読み込み、MapインタフェースのオブジェクトをレコードとしてOutput可能。\n3. **レコードフォーマッターファクトリ**: フォーマット定義ファイルを解析しレコードフォーマッターを生成するクラス（フレームワーク提供）。フォーマッターの機能拡張時はこのファクトリに拡張クラスを設定する。\n\n![本機能の構造](assets/libraries-record_format--s1/dataformat_concept.png)",
+    "s3": "なし",
+    "s4": "フォーマット定義ファイルを作成後、`FormatterFactory`でレコードフォーマッター(`DataRecordFormatter`)を作成してデータの読み書きを行う。\n\n**フォーマット定義ファイル例（固定長）:**\n\n```bash\nfile-type:     \"Fixed\"  # 固定長ファイル\ntext-encoding: \"ms932\"  # 文字列型フィールドの文字エンコーディング\nrecord-length:  120     # 各レコードbyte長\n\n[Default]\n1    dataKbn       X(1)  \"2\"      # 1. データ区分\n2    FIcode        X(4)           # 2. 振込先金融機関コード\n6    FIname        X(15)          # 3. 振込先金融機関名称\n21   officeCode    X(3)           # 4. 振込先営業所コード\n24   officeName    X(15)          # 5. 振込先営業所名\n39  ?tegataNum     X(4)  \"9999\"   # (手形交換所番号)\n43   syumoku       X(1)           # 6. 預金種目\n44   accountNum    X(7)           # 7. 口座番号\n51   recipientName X(30)          # 8. 受取人名\n81   amount        X(10)          # 9. 振込金額\n91   isNew         X(1)           # 10.新規コード\n92   ediInfo       X(20)          # 11.EDI情報\n112  transferType  X(1)           # 12.振込区分\n113  withEdi       X(1)  \"Y\"      # 13.EDI情報使用フラグ\n114 ?unused        X(7)  pad(\"0\") # (未使用領域)\n```\n\n**フォーマッター作成:**\n\n```java\nFile formatFile = new File(\"./test.fmt\");\nDataRecordFormatter formatter = FormatterFactory\n                               .getInstance()\n                               .createFormatter(formatFile);\n```\n\n**レコード読み込み:**\n\n```java\nInputStream in = new FileInputStream(\"./data.dat\");\nformatter.setInputStream(in).initialize();\nList<Map<String, Object>> records = new ArrayList<Map<String, Object>>();\nwhile (formatter.hasNext()) {\n  records.add(formatter.readRecord());\n}\n```\n\n**レコード書き込み:**\n\n```java\nOutputStream out = new FileOutputStream(\"./data.dat\");\nformatter.setOutputStream(out).initialize();\nformatter.writeRecord(new HashMap() {{\n    put(\"FIcode\",     \"9999\");\n    put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n    put(\"officeCode\", \"111\");\n}});\n```",
+    "s5": "なし"
+  }
+}

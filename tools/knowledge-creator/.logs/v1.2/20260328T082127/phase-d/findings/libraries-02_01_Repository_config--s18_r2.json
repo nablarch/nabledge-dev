@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Missing the behavioral rule that `#` comment removal is processed BEFORE line continuation processing. The source explicitly states: \"#によるコメントを除去する処理は行連結の前に行われるので、継続行中でも使用可能\"。This means `\\  # comment` (backslash before `#`) on a continuation line IS valid. The valid multi-line-with-comment example from the source is also omitted:\n```bash\nkey =   value1,\\    # comment\n        value2,\\    # comment\n        value3      # comment\n```\nWithout this, an AI may incorrectly advise that comments cannot be used anywhere in multi-line values.",
+      "source_evidence": "コメント文字（'#'）節: \"'#'によるコメントを除去する処理は行連結の前に行われるので、継続行中でも使用可能（下記「使用例」参照）。\" and corresponding valid code example."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Missing that trailing spaces before the `\\` continuation character are preserved. The source states: \"'\\'を除いた文字列の後方の空白は維持する\" — i.e., spaces between the last value token and the `\\` are kept. The knowledge file table entry for `\\`（行継続）only mentions that leading whitespace of the next line is stripped, not that trailing whitespace of the current line is preserved.",
+      "source_evidence": "改行文字（'\\\\'）節: \"その場合'\\\\'を除いた文字列と次の行の先頭の空白（タブを含む）を除いた文字列を連結する。（'\\\\'を除いた文字列の後方の空白は維持する。）\""
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Missing the Java implementation example (「設定した値を取得する実装例」section) which shows that at runtime the `${hello.message}` expression is resolved to the actual config-file value \"This is Hello Message!!\". The source comment explicitly contrasts this: \"XMLファイルに書いた\"${hello.message}\"ではなく、環境設定ファイルに設定した\"This is Hello Message!!\"が出力される。\" This runtime-resolution behaviour is decision-relevant for understanding when substitution occurs.",
+      "source_evidence": "「設定した値を取得する実装例」Java code block and its inline comment."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Missing the rationale for using directory-based loading over per-file loading: (1) multiple deployment locations can place files in one directory for bulk loading; (2) per-file `import`/`config-file` tags must be rewritten whenever files are added, removed, or renamed, whereas directory loading avoids this maintenance overhead. This \"when to use\" guidance helps an AI advise correctly.",
+      "source_evidence": "Source paragraph: \"例えば、個別のファイル名を指定して読み込む際、ファイル名を直接指定する設定方法を用いると、設定ファイルの増減やファイル名の変更が発生した際に都度 import タグや config-file タグを書き直す必要が出てきてしまう。\" and preceding paragraph about 複数拠点からのリリース."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Missing the ※ note that the loose-coupling (疎結合) benefit of DI containers is available even when NOT using auto-injection. The source explicitly clarifies this to prevent a misconception that auto-injection is required to achieve decoupling. Source: \"互いに疎結合な状態のまま結合できるという利点は、DIコンテナの持つ特性であり、自動インジェクションを使用しない場合でもDIコンテナを使用することでこのメリットは享受できる。\"",
+      "source_evidence": "※ note paragraph following the class descriptions in the 自動インジェクション section."
+    }
+  ]
+}

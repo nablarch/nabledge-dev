@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — BasicSqlLoader SQLファイル記述ルール rule (a)",
+      "description": "Rule (a) for BasicSqlLoader SQL file format is missing the constraint 'コメント行は、空行とはならない'. This matters because a developer placing a comment between two SQL statement groups might incorrectly assume it acts as a blank-line separator, causing incorrect SQL grouping.",
+      "source_evidence": "a) SQL_IDとSQL文の1グループは、空行で区切られて記述されている。…コメント行は、空行とはならない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 describes DbAccessSupport including the getSqlPStatement method in its method table, but 'getSqlPStatement' is absent from s3 hints. This is the primary method users would search for in the context of the class definitions section.",
+      "source_evidence": "f) サポートクラス: SqlPStatement getSqlPStatement(String sqlId) — SQL_IDを元に、SQL文実行用のSqlPStatementを生成する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "'retrieve' is used in the s5 code example as the method that executes the SQL query (statement.retrieve()), but it is absent from s5 hints.",
+      "source_evidence": "statement.setObject(1, \"00001\"); return statement.retrieve();"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s12",
+  "title": "バイナリデータへのアクセス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バイナリデータへのアクセス",
+      "hints": [
+        "DbAccessSupport",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "getBytes",
+        "バイナリデータ検索",
+        "BLOB取得",
+        "バイナリデータアクセス",
+        "CM311AC1Component"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バイナリデータの登録・ファイル出力",
+      "hints": [
+        "SqlPStatement",
+        "setBytes",
+        "setBinaryStream",
+        "Blob",
+        "getBinaryStream",
+        "FileInputStream",
+        "FileOutputStream",
+        "バイナリデータ登録",
+        "ファイルデータ登録",
+        "バイナリデータファイル出力"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "DbAccessSupport",
+        "executeUpdateByObject",
+        "@CurrentDateTime",
+        "@UserId",
+        "@RequestId",
+        "オブジェクト登録",
+        "Form登録",
+        "バインド変数フィールド名",
+        "CM211AE1Component"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "複数件をオブジェクトで更新する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "addBatchObject",
+        "executeBatch",
+        "getBatchSize",
+        "複数件更新",
+        "バッチ更新"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## バイナリデータへのアクセス\n\nSQLファイル: `nablarch/sample/ss11AC/CM311AC1Component.sql`\n\n```sql\n-- SQL_ID:GET_PASSWORD (パスワード取得用)\nGET_PASSWORD =\nSELECT PWD FROM USER_MST WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PASSWORD (パスワード更新用)\nUPDATE_PASSWORD =\nUPDATE USER_MST SET PWD = ? WHERE USER_ID = ?\n\n-- SQL_ID:UPDATE_PDF (PDF更新用)\nUPDATE_PDF =\nUPDATE PDF_LIST SET PDF_DATA = ? WHERE USER_ID = ?\n\n-- SQL_ID:GET_PDF (PDF取得用)\nGET_PDF =\nSELECT PDF_DATA FROM PDF_LIST WHERE USER_ID = ?\n```\n\n## バイナリデータの検索方法\n\n**クラス**: `DbAccessSupport`, `SqlPStatement`, `SqlResultSet`, `SqlRow`\n\nバイナリデータは `SqlRow#getBytes(columnName)` で取得する。\n\n```java\nSqlPStatement select = getSqlPStatement(\"GET_PASSWORD\");\nselect.setString(1, userId);\nSqlResultSet rs = select.retrieve();\nSqlRow row = rs.get(0);\n// バイナリデータはSqlRow#getBytesで取得する\nreturn row.getBytes(\"pwd\");\n```\n\n> **警告**: getBytesメソッドでバイナリデータを一括取得しているが、ファイルデータのようにデータ量が大きい場合には、:ref:`generate_binary_file` の実装例に従うこと。",
+    "s2": "## バイナリデータの登録方法\n\nバイナリデータは `SqlPStatement#setBytes(int, byte[])` で設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PASSWORD\");\nstatement.setBytes(1, pwd);\nstatement.setString(2, \"00001\");\nint updNo = statement.executeUpdate();\n```\n\n> **警告**: `setBytes` はデータベースベンダーによってはサポートされない場合がある。どのsetメソッドを使用するかはデータベースベンダーのJDBCマニュアルを参照すること。\n\n## ファイルの内容をバイナリデータとして登録する方法\n\nファイルのストリームを `setBinaryStream(int, InputStream, int)` でバインド変数に設定する。\n\n```java\nSqlPStatement statement = getSqlPStatement(\"UPDATE_PDF\");\nFile file = new File(\"hoge.pdf\");\nFileInputStream fis = new FileInputStream(file);\ntry {\n    // setBinaryStream(int, InputStream, int)でファイルのストリームをバインド変数に設定\n    statement.setBinaryStream(1, fis, (int) file.length());\n    statement.setString(2, \"00001\");\n    statement.executeUpdate();\n} finally {\n    fis.close();\n}\n```\n\n> **警告**: java.ioパッケージを使用したこの実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合にはアーキテクトがコンポーネントを作成して対処すること。\n\n## バイナリデータをファイルとして出力する方法\n\nDBからBlobとしてデータを取得し、`Blob#getBinaryStream()` でストリームを取得してファイルに書き出す。\n\n```java\nSqlPStatement select = getSqlPStatement(\"GET_PDF\");\nselect.setString(1, \"00001\");\nSqlResultSet rs = select.retrieve();\n// データベースからBlobとしてデータを取得する\nBlob fileData = (Blob) rs.get(0).get(\"PDF_DATA\");\n\nInputStream pdfData = null;\nFileOutputStream output = null;\ntry {\n    // Blobデータからストリームを取得し、バイナリデータを読み込む\n    pdfData = fileData.getBinaryStream();\n    // 出力ファイルを開く\n    output = new FileOutputStream(\"hoge.pdf\");\n    byte[] b = new byte[1024];\n    int size = 0;\n    while ((size = pdfData.read(b)) != -1) {\n        output.write(b, 0, size);\n        output.flush();\n    }\n} finally {\n    try {\n        if (pdfData != null) pdfData.close();\n    } finally {\n        if (output != null) output.close();\n    }\n}\n```\n\n> **警告**: java.ioパッケージを使用したこの実装はリソース開放漏れが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。必要な場合にはアーキテクトがコンポーネントを作成して対処すること。",
+    "s3": "## オブジェクトのフィールドの値の登録機能（オブジェクト(Form)編）\n\n画面処理で精査済みリクエストパラメータの値をJavaBeansで保持している場合、本機能を使用することで実装ステップ数を削減できる。\n\nSQLファイル: `nablarch/sample/ss11AE/CM211AE1Component.sql`\n\nバインド変数には `?` ではなく `:フィールド名`（オブジェクトのフィールド名）または `:キー名`（Mapのキー名）を使用すること。\n\n```sql\n-- SQL_ID:REGISTER_SALES\nREGISTER_SALES =\nINSERT INTO SALES\n  (CST_ID, KINGAKU, INS_DATE_TIME, INS_USER_ID, UPD_DATE_TIME, UPD_USER_ID, EXECUTION_ID, REQUEST_ID)\nVALUES\n  (:cstId, :kingaku, :insDateTime, :insUserId, :updDateTime, :updUserId, :executionId, :requestId)\n\n-- SQL_ID:UPDATE_SALES\nUPDATE_SALES =\nUPDATE SALES SET KINGAKU = :KINGAKU WHERE CST_ID = :CST_ID\n```\n\n## 1件のデータを更新する場合\n\n**クラス**: `ParameterizedSqlPStatement`, `DbAccessSupport`\n**アノテーション**: `@CurrentDateTime`, `@UserId`, `@RequestId`\n\n`getParameterizedSqlStatement(\"SQL_ID\")` でParameterizedSqlPStatementを取得し、`executeUpdateByObject(form)` でオブジェクトのフィールドの値を登録する。\n\n```java\n// Formクラス例\npublic class W11AE01Form {\n    private String cstId;\n    private long kingaku;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String insDateTime;\n    @UserId\n    private String insUserId;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String updDateTime;\n    @UserId\n    private String updUserId;\n    @RequestId\n    private String requestId;\n    // 各フィールドのアクセスメソッド省略\n}\n\n// 呼び出し側\nW11AE01Form form = new W11AE01Form();\nform.setCstId(\"0001\");\nform.setKingaku(100);\ncomponent.registerSales(form);\n\n// コンポーネント側\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\ninsert.executeUpdateByObject(form);\n```",
+    "s4": "## 複数件を更新する場合\n\n複数件を一括で更新する場合の注意点は :ref:`JDBC標準機能<executeBatch-label>` と同じ。\n\n`addBatchObject(form)` でオブジェクトをバッチに追加し、最大件数に達したら `executeBatch()` を実行する。\n\n```java\n// 1回のexecuteBatchで更新する最大の件数\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement insert = getParameterizedSqlStatement(\"REGISTER_SALES\");\n\nfor (W11AE02Form form : forms) {\n    statement.addBatchObject(form);\n    if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        insert.executeBatch();\n    }\n}\nif (insert.getBatchSize() != 0) {\n    insert.executeBatch();\n}\n```"
+  }
+}

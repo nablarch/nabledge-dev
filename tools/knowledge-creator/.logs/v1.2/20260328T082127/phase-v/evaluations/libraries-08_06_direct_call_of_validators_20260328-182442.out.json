@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-08_06_direct_call_of_validators",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is the omission of inline comments on Map parameter values. The knowledge file already includes the equivalent annotation form (`@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")`), which makes the semantics of each parameter explicit. The parameter names themselves (codeId, pattern, messageId) are self-documenting. An AI agent can correctly guide users to implement Map-based validator calls without the supplementary comments. No medium or high impact findings remain.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — Map parameter code example",
+      "impact": "low",
+      "justification": "The omitted comments (// 都道府県コード, // 使用するコードパターン名, // 精査エラーメッセージのID) add contextual color about what the literal values mean, but this information is redundant given (1) the parameter names codeId/pattern/messageId are self-descriptive, and (2) the immediately-following equivalent annotation @CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\") makes the role of each key unambiguous. An AI agent reading this file retains sufficient information to guide correct usage. Phase E did not apply the fix — the output JSON in the Phase E log is byte-for-byte identical to the Phase D input — indicating the fix agent left the content unchanged, treating the omission as below the threshold warranting a code edit."
+    }
+  ]
+}

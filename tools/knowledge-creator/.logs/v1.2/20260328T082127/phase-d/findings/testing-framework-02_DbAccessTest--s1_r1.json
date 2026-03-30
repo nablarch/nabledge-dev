@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s8",
+      "description": "The code example adds an inline comment `// 更新後は必ずコミットしてからDB確認` on the `commitTransactions()` line that does not exist in the source. The source has `// トランザクションをコミット` as a separate preceding comment line, which was replaced with this fabricated inline comment.",
+      "source_evidence": "Source code shows: `// トランザクションをコミット` on its own line before `commitTransactions();`, with no inline comment on that line. The knowledge file instead shows: `commitTransactions(); // 更新後は必ずコミットしてからDB確認`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s6",
+      "description": "The warning `DB検索結果の期待値は検索対象カラム全てを記述しなければならない。主キーのみ確認するような省略は不可。` appears in s6 (参照系テスト テストデータ記述例), but in the source this warning exists only under the `データベーステストデータの省略記述方法` section. The 参照系テスト テストデータ記述例 section in the source contains no such warning.",
+      "source_evidence": "Source `参照系のテスト` > `テストデータ記述例` contains only SETUP_TABLE and LIST_MAP format descriptions with no warning. The cited warning (`.. warning:: データベース検索結果の期待値を記述する際は、検索対象カラム全てを記述しなければならない`) appears exclusively under `データベーステストデータの省略記述方法`."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index.s2.title",
+      "description": "Section s2 has an empty title string in the index. The section covers 参照系テストのAPI (setUpDb and assertSqlResultSetEquals), which warrants a meaningful title for retrieval.",
+      "source_evidence": "index entry for s2: `\"title\": \"\"`"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — note block about repository design for framework classes only",
+      "description": "The source note explicitly states that the repository does not have lazy loading unlike Spring Framework or Seasar2 (「リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない」). The knowledge file preserves the consequence (slow startup, poor test efficiency) but omits the technical reason (no lazy loading) and the comparison to Spring/Seasar2. This is a decision-relevant architectural constraint explaining why the repository cannot be used for business logic objects.",
+      "source_evidence": "この前提により、リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない。\nこのため、DIコンテナにビジネスロジックやデータアクセスを行うオブジェクトを登録する使用方法を行うと、アプリケーションの起動が遅くなり..."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — opening class header line",
+      "description": "The s3 section begins with \"**クラス**: `DiContainer`, `XmlComponentDefinitionLoader`\" but `XmlComponentDefinitionLoader` does not appear anywhere in the s3 source content (the DIコンテナ intro section covering responsibilities and the HelloMessageProvider/HelloComponent examples). `XmlComponentDefinitionLoader` is first introduced in the separate \"値を取得する実装例\" subsection, which maps to s5.",
+      "source_evidence": "XmlComponentDefinitionLoader appears only in the 値を取得する実装例 and DIコンテナをObjectLoaderとして使用する sections (s5/s6 territory). The DIコンテナ intro section (s3 territory) uses only DiContainer implicitly."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — 環境設定ファイルからの読み込み",
+      "description": "The automated pre-check flags section count 6 < source headings 9. The 環境設定ファイルからの読み込み h2 section in the source contains 3 distinct h3 subsections (読み込む環境設定ファイル(sample.config)の記述例 / 環境設定ファイルの読み込み / 環境設定の取得), all merged into a single s2. The combined plain-text length of this h2 section is borderline ≥2000 characters.",
+      "source_evidence": "Source h3 headings under 環境設定ファイルからの読み込み: (1) 読み込む環境設定ファイル(sample.config)の記述例, (2) 環境設定ファイルの読み込み (通常フレームワークの責務), (3) 環境設定の取得 — all merged into KF s2."
+    }
+  ]
+}

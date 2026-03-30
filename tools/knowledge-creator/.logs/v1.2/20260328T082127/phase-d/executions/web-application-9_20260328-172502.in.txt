@@ -1,0 +1,185 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/FAQ/web/9.rst`
+- Format: `rst`
+
+```
+ユーザに権限があるかを簡単に確認する方法はありますか？
+====================================================================
+
+.. admonition:: question
+
+    画面打鍵時に403エラー(権限なしエラー)が返却されます。
+    ユーザに対して権限がないために、403となっていることはわかるのですが、
+    権限関連のテーブルが多く、そのユーザに与えられている権限を調べるのが大変です。
+
+    ユーザに与えられている権限を簡単に調べる方法はありますか？
+
+.. admonition:: answer
+
+    以下のSQLで権限有無の確認ができます。
+    各プロジェクトのテーブル定義に合わせてテーブル名及びカラム名を変更して実行してください。
+    また、必要に応じてユーザ名を条件に付加してください。
+
+    .. code-block:: sql
+
+        SELECT
+            SA.USER_ID                    USER_ID ,
+            SA.LOGIN_ID                   LOGIN_ID,
+            G.UGROUP_ID                   UGROUP_ID,
+            G.UGROUP_NAME                 UGROUP_NAME,
+            PU.PERMISSION_UNIT_ID         PERMISSION_UNIT_ID,
+            PU.PERMISSION_UNIT_NAME       PERMISSION_UNIT_NAME,
+            PUR.REQUEST_ID                REQUEST_ID
+        FROM
+            SYSTEM_ACCOUNT SA                       -- システムアカウント
+            INNER JOIN UGROUP_SYSTEM_ACCOUNT GSA    -- グループシステムアカウント
+                ON SA.USER_ID = GSA.USER_ID
+            INNER JOIN UGROUP G                     -- ユーザグループ
+                ON GSA.UGROUP_ID = G.UGROUP_ID
+            INNER JOIN UGROUP_AUTHORITY GA          -- グループ権限
+                ON G.UGROUP_ID = GA.UGROUP_ID
+            INNER JOIN PERMISSION_UNIT PU           -- 認可単位
+                ON GA.PERMISSION_UNIT_ID = PU.PERMISSION_UNIT_ID
+            INNER JOIN PERMISSION_UNIT_REQUEST PUR  -- 認可単位リクエスト
+                ON PU.PERMISSION_UNIT_ID = PUR.PERMISSION_UNIT_ID
+
+    権限関連のテーブル詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch Application Framework解説書]** -> **[NAF共通コンポーネント]** -> **[認可]** -> **[テーブル定義]**
+
+```
+
+## Knowledge File
+
+- ID: `web-application-9`
+
+```json
+{
+  "id": "web-application-9",
+  "title": "ユーザに権限があるかを簡単に確認する方法はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ユーザ権限確認SQL",
+      "hints": [
+        "権限確認",
+        "403エラー",
+        "認可",
+        "権限なしエラー",
+        "SYSTEM_ACCOUNT",
+        "UGROUP",
+        "PERMISSION_UNIT",
+        "UGROUP_AUTHORITY",
+        "PERMISSION_UNIT_REQUEST",
+        "UGROUP_SYSTEM_ACCOUNT",
+        "ユーザ権限照会",
+        "認可単位"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ユーザに与えられている権限（認可）は以下のSQLで確認できる。各プロジェクトのテーブル定義に合わせてテーブル名・カラム名を変更し、必要に応じてユーザ名を条件に追加して実行すること。\n\n```sql\nSELECT\n    SA.USER_ID                    USER_ID ,\n    SA.LOGIN_ID                   LOGIN_ID,\n    G.UGROUP_ID                   UGROUP_ID,\n    G.UGROUP_NAME                 UGROUP_NAME,\n    PU.PERMISSION_UNIT_ID         PERMISSION_UNIT_ID,\n    PU.PERMISSION_UNIT_NAME       PERMISSION_UNIT_NAME,\n    PUR.REQUEST_ID                REQUEST_ID\nFROM\n    SYSTEM_ACCOUNT SA                       -- システムアカウント\n    INNER JOIN UGROUP_SYSTEM_ACCOUNT GSA    -- グループシステムアカウント\n        ON SA.USER_ID = GSA.USER_ID\n    INNER JOIN UGROUP G                     -- ユーザグループ\n        ON GSA.UGROUP_ID = G.UGROUP_ID\n    INNER JOIN UGROUP_AUTHORITY GA          -- グループ権限\n        ON G.UGROUP_ID = GA.UGROUP_ID\n    INNER JOIN PERMISSION_UNIT PU           -- 認可単位\n        ON GA.PERMISSION_UNIT_ID = PU.PERMISSION_UNIT_ID\n    INNER JOIN PERMISSION_UNIT_REQUEST PUR  -- 認可単位リクエスト\n        ON PU.PERMISSION_UNIT_ID = PUR.PERMISSION_UNIT_ID\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

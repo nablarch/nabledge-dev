@@ -1,0 +1,32 @@
+{
+  "file_id": "web-application-04_validation--s8",
+  "needs_improvement": true,
+  "user_impact": "medium",
+  "reason": "One finding (fabrication in s1) has medium impact: the note implies that inheriting ListSearchInfo is the required approach for non-table Beans, which could cause developers to add unnecessary inheritance in production code. The other three findings are low impact and do not affect correctness or retrievability materially.",
+  "findings_assessment": [
+    {
+      "category": "section_issue",
+      "location": "title field",
+      "impact": "low",
+      "justification": "The file-level title 'Actionの作成' is metadata used for human orientation, not for agent section retrieval. The index entries (s1–s4) carry their own accurate titles, so agents searching by topic will find the correct sections regardless. A misleading title causes minor confusion but no incorrect guidance."
+    },
+    {
+      "category": "fabrication",
+      "location": "sections.s1 — note block",
+      "impact": "medium",
+      "justification": "The note 'その場合、`ListSearchInfo`（...）を継承する' reads as a prescriptive pattern requirement. The source only mentions ListSearchInfo as incidental to the example class W11AC01SearchForm and provides it as a cross-reference, not a rule. A developer following the knowledge file could incorrectly inherit ListSearchInfo for any non-table search Bean, introducing unnecessary coupling to the paging infrastructure in production code. The fix agent's Phase E output was truncated before this note was corrected, leaving the fabrication intact."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s2",
+      "impact": "low",
+      "justification": "The omitted note ('サンプルアプリケーションでは本機能は用いていない...') is purely informational and does not affect how @PropertyName customization is implemented. A developer who cannot find the example in the sample app may be briefly confused, but the code example in s2 is self-contained and fully sufficient for implementation."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[2] (s3) — hints array",
+      "impact": "low",
+      "justification": "The missing hint 'Validatable' is one of several query terms that could lead to s3. The existing hints 'validateAndConvertRequest', 'ValidationUtil', and 'ValidationContext' are highly specific to s3's content and will reliably surface the section for any realistic query about validation execution. The Validatable interface is a type parameter detail rather than a primary search term."
+    }
+  ]
+}

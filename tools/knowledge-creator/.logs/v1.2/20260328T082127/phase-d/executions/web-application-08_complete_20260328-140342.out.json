@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-08_complete",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 1)-1 Actionクラスの実装 a) テストコード",
+      "description": "The source includes the test method body `execute(\"testRW11ACXX04\")` as a code block. The knowledge file lists the method name but omits the implementation.",
+      "source_evidence": "source a): `@Test public void testRW11ACXX04() { execute(\"testRW11ACXX04\"); }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 1)-1 Actionクラスの実装 e) リクエスト単体テスト実施",
+      "description": "Step e) is entirely omitted. The source describes how to verify the Action class was reached via console log patterns: look for `@@@@ DISPATCHING CLASS @@@@` followed by `**** BEFORE ACTION ****`, and a `JSP NOT FOUND` error as the expected outcome at this stage. These verification patterns help developers confirm correct implementation during TDD.",
+      "source_evidence": "source e): 「ログ中の「@@@@ DISPATCHING CLASS @@@@」の次に「BEFORE ACTION」が出力されていれば、Actionまで処理が到達している」および JSP NOT FOUND エラーのログ例"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 — 1)-2 JSPの実装",
+      "description": "The RST-specific `:download:` directive syntax is copied verbatim into the Markdown knowledge file: `HTMLテンプレート: :download:`ユーザ情報更新完了画面.html<./_download/ユーザ情報更新完了画面.html>``。This RST markup will not render as a link in the knowledge file's Markdown context.",
+      "source_evidence": "source: `\\ :download:`ユーザ情報更新完了画面.html<./_download/ユーザ情報更新完了画面.html>`\\`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`simpleUpdate` (the validation group name passed to `ValidationUtil.validateAndConvertRequest`) is present in the code example but absent from the hints array. It is a named constant relevant to validation configuration.",
+      "source_evidence": "source 2)-2 a): `ValidationUtil.validateAndConvertRequest(\"W11ACXX\", W11ACXXForm.class, req, \"simpleUpdate\")`"
+    }
+  ]
+}

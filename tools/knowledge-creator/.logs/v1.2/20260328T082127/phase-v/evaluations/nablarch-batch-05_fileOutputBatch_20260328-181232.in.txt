@@ -1,0 +1,384 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `nablarch-batch-05_fileOutputBatch`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "s2 hints",
+    "description": "`DataReader` is a PascalCase class name that appears in the `createReader` method signature (`public DataReader<SqlRow> createReader(...)`) in the code example for s2, but is absent from s2's hints array.",
+    "source_evidence": "Source code: `public DataReader<SqlRow> createReader(ExecutionContext ctx)`"
+  }
+]
+```
+
+### Source (RST)
+
+```
+==========================
+ ファイルを出力するバッチ
+==========================
+
+:doc:`ユーザ情報削除バッチ<01_userDeleteBatchSpec>`\
+の「削除ユーザレポート出力バッチ」を例に、ファイルを出力するバッチ処理の実装方法を説明する。
+
+.. image:: ./_image/userDeleteBatch.jpg
+
+
+初期化処理
+==========
+
+初期化処理では、 ``FileRecordWriterHolder`` の ``open`` メソッドを使用して、出力先のファイルをオープンする。
+第1引数にベースパス名称、第2引数に出力先ファイル名、第3引数には、フォーマット定義ファイルのベースパス、第4引数にデータフォーマット定義ファイル名を指定している。
+ベースパス名称はリポジトリ設定ファイルに設定した、書き込むデータファイルのベースパス論理名を指定を指定している。
+フォーマット定義ファイルのベースパスはリポジトリ設定ファイルに設定した、フォーマット定義ファイルの格納ディレクトリの論理名を指定している。
+
+また、 ヘッダーレコードの出力を行う。ヘッダレコードのように、ファイル１レコード目に必ず出力するようなレコードはinitializeメソッドでファイル出力を行う。
+
+ファイル出力処理には ``FileRecordWriterHolder`` の ``write`` メソッドを使用している。
+``FileRecordWriterHolder`` の ``write`` メソッドの第1引数にレコードタイプ、第2引数に出力する1レコード情報、第3引数に出力先ファイル名を指定している。
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * ヘッダーレコードを出力する。
+     */
+    @Override
+    protected void initialize(CommandLine command, ExecutionContext context) {
+        
+        // 【説明】 出力先のファイルをオープンする。
+        FileRecordWriterHolder.open(BASE_PATH_NAME, FILE_ID, "format", FILE_ID);
+        
+        
+        // 【説明】 ヘッダー行の出力を行う。
+        Map<String, Object> header = new HashMap<String, Object>();
+        header.put("sysDate", SystemTimeUtil.getDateString());
+        writeRecord("header", header);
+
+        dataRecordCount = 0;
+    }
+    
+    /**
+     * ファイル出力処理。
+     * 指定されたMapを1レコードとしてファイル出力を行う。
+     *
+     * @param recordType レコードタイプを表す文字列
+     * @param record 1レコードの情報を格納したMap
+     */
+    private static void writeRecord(String recordType, Map<String, ?> record) {
+    
+        // 【説明】ファイル出力処理を行う。
+        FileRecordWriterHolder.write(recordType, record, BASE_PATH_NAME, FILE_ID);
+    }
+
+
+リーダ作成
+==========
+
+削除ユーザ一覧を読み込むリーダを生成する。\
+
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * ファイル出力対象のデータを読み込む{@link DatabaseRecordReader}を生成する。
+     */
+    @Override
+    public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+        int count = countByStatementSql("GET_OUTPUT_FILE_DATA");
+        writeLog("M000000001", count);
+
+        // 【説明】 データベースからファイル出力対象のデータを読み込むリーダを作成する。
+        DatabaseRecordReader reader = new DatabaseRecordReader();
+        SqlPStatement statement = getSqlPStatement("GET_OUTPUT_FILE_DATA");
+        reader.setStatement(statement);
+        return reader;
+
+    }
+
+
+
+１件ごとの処理
+==============
+
+
+削除ユーザ1件ごとの処理を行う。\
+この処理は、削除ユーザの件数分だけ繰り返し起動される。
+
+引数で渡された、1件ごとのデータが格納されたSqlRowをそのままファイル出力している。
+``SqlRow`` のカラム名と出力ファイルのフィールド名がマッピングされる為、\
+単純に ``FileRecordWriterHolder`` の ``write`` メソッドを呼び出すだけで1行分のデータがファイル出力される。
+ここでは、上記で定義したファイル出力処理を行う ``writeRecord`` に処理を委譲している。
+
+.. code-block:: java
+
+
+   /**
+     * {@inheritDoc}
+     * <p/>
+     * 削除ユーザレポートテンポラリから取得したレコードをデータレコードに出力する。
+     */
+    @Override
+    public Result handle(SqlRow inputData, ExecutionContext context) {
+
+        // 【説明】 データレコードの出力を行う。
+        writeRecord("data", inputData);
+
+        // 【説明】 総件数のインクリメントを行う。
+        dataRecordCount++;
+
+        return new Success();
+    }
+
+
+
+
+エラー処理
+==========
+
+特別な処理は必要ないため、実装しない。
+
+終了処理
+========
+
+トレーラレコードとエンドレコードをファイルに出力する。\
+
+.. note::
+ ``FileRecordWriterHolder`` を使用して書き込みを行った出力ファイルはフレームワークによって自動的に開放（クローズ）されるため、アプリケーション側で開放処理を実装する必要はない。
+
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * トレーラレコードと、エンドレコードを出力する。
+     */
+    @Override
+    protected void terminate(Result result, ExecutionContext context) {
+    
+        if (result.isSuccess()) {
+            // 【説明】 トレーラレコードの出力を行う。
+            writeTrailerRecord();
+            // 【説明】 エンドレコードの出力を行う。
+            writeEndRecord();
+        }
+    }
+
+    /** トレーラレコードを出力する。 */
+    private void writeTrailerRecord() {
+        Map<String, Object> trailer = new HashMap<String, Object>();
+        trailer.put("totalCount", dataRecordCount);
+        writeRecord("trailer", trailer);
+    }
+
+    /** エンドレコードを出力する。 */
+    private void writeEndRecord() {
+        writeRecord("end", new HashMap<String, Object>(0));
+    }
+
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "nablarch-batch-05_fileOutputBatch",
+  "title": "ファイルを出力するバッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "初期化処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "open",
+        "write",
+        "initialize",
+        "SystemTimeUtil",
+        "ファイルオープン",
+        "ヘッダーレコード出力",
+        "初期化処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リーダ作成",
+      "hints": [
+        "DatabaseRecordReader",
+        "createReader",
+        "SqlPStatement",
+        "SqlRow",
+        "リーダ作成",
+        "DBからデータ読み込み"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "１件ごとの処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "SqlRow",
+        "handle",
+        "Success",
+        "データレコード出力",
+        "1件ごとの処理",
+        "ファイル出力"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "エラー処理",
+      "hints": [
+        "エラー処理",
+        "バッチエラー処理",
+        "エラーハンドリング"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "終了処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "terminate",
+        "Result",
+        "自動クローズ",
+        "トレーラレコード",
+        "エンドレコード",
+        "終了処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `FileRecordWriterHolder`\n\n`FileRecordWriterHolder.open(ベースパス名称, 出力先ファイル名, フォーマット定義ファイルのベースパス, データフォーマット定義ファイル名)` で出力先ファイルをオープンする。ベースパス名称・フォーマット定義ファイルのベースパスはリポジトリ設定ファイルに設定した論理名を指定する。\n\nファイル先頭に必ず出力するレコード（ヘッダーレコード等）は `initialize` メソッドでファイル出力を行う。\n\n`FileRecordWriterHolder.write(レコードタイプ, 1レコード情報, ベースパス名称, ファイルID)` でレコードを出力する。\n\n```java\n@Override\nprotected void initialize(CommandLine command, ExecutionContext context) {\n    FileRecordWriterHolder.open(BASE_PATH_NAME, FILE_ID, \"format\", FILE_ID);\n\n    Map<String, Object> header = new HashMap<String, Object>();\n    header.put(\"sysDate\", SystemTimeUtil.getDateString());\n    FileRecordWriterHolder.write(\"header\", header, BASE_PATH_NAME, FILE_ID);\n\n    dataRecordCount = 0;\n}\n```",
+    "s2": "**クラス**: `DatabaseRecordReader`, `SqlPStatement`\n\nDBからファイル出力対象データを読み込む `DatabaseRecordReader` を生成する。\n\n```java\n@Override\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    int count = countByStatementSql(\"GET_OUTPUT_FILE_DATA\");\n    writeLog(\"M000000001\", count);\n    DatabaseRecordReader reader = new DatabaseRecordReader();\n    SqlPStatement statement = getSqlPStatement(\"GET_OUTPUT_FILE_DATA\");\n    reader.setStatement(statement);\n    return reader;\n}\n```",
+    "s3": "`SqlRow` のカラム名と出力ファイルのフィールド名がマッピングされるため、`FileRecordWriterHolder.write()` を呼び出すだけで1行分のデータがファイル出力される。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext context) {\n    FileRecordWriterHolder.write(\"data\", inputData, BASE_PATH_NAME, FILE_ID);\n    dataRecordCount++;\n    return new Success();\n}\n```",
+    "s4": "特別な処理は必要ないため、実装しない。",
+    "s5": "> **注意**: `FileRecordWriterHolder` を使用して書き込んだ出力ファイルはフレームワークによって自動的にクローズされる。アプリケーション側でクローズ処理を実装する必要はない。\n\n`terminate` メソッドで処理成功時にトレーラレコードとエンドレコードを出力する。\n\n```java\n@Override\nprotected void terminate(Result result, ExecutionContext context) {\n    if (result.isSuccess()) {\n        Map<String, Object> trailer = new HashMap<String, Object>();\n        trailer.put(\"totalCount\", dataRecordCount);\n        FileRecordWriterHolder.write(\"trailer\", trailer, BASE_PATH_NAME, FILE_ID);\n        FileRecordWriterHolder.write(\"end\", new HashMap<String, Object>(0), BASE_PATH_NAME, FILE_ID);\n    }\n}\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "nablarch-batch-05_fileOutputBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`DataReader` is a PascalCase class name that appears in the `createReader` method signature (`public DataReader<SqlRow> createReader(...)`) in the code example for s2, but is absent from s2's hints array.",
+      "source_evidence": "Source code: `public DataReader<SqlRow> createReader(ExecutionContext ctx)`"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "nablarch-batch-05_fileOutputBatch",
+  "title": "ファイルを出力するバッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "初期化処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "open",
+        "write",
+        "initialize",
+        "SystemTimeUtil",
+        "ファイルオープン",
+        "ヘッダーレコード出力",
+        "初期化処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リーダ作成",
+      "hints": [
+        "DatabaseRecordReader",
+        "createReader",
+        "SqlPStatement",
+        "SqlRow",
+        "リーダ作成",
+        "DBからデータ読み込み"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "１件ごとの処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "SqlRow",
+        "handle",
+        "Success",
+        "データレコード出力",
+        "1件ごとの処理",
+        "ファイル出力"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "エラー処理",
+      "hints": [
+        "エラー処理",
+        "バッチエラー処理",
+        "エラーハンドリング"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "終了処理",
+      "hints": [
+        "FileRecordWriterHolder",
+        "terminate",
+        "Result",
+        "自動クローズ",
+        "トレーラレコード",
+        "エンドレコード",
+        "終了処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `FileRecordWriterHolder`\n\n`FileRecordWriterHolder.open(ベースパス名称, 出力先ファイル名, フォーマット定義ファイルのベースパス, データフォーマット定義ファイル名)` で出力先ファイルをオープンする。ベースパス名称・フォーマット定義ファイルのベースパスはリポジトリ設定ファイルに設定した論理名を指定する。\n\nファイル先頭に必ず出力するレコード（ヘッダーレコード等）は `initialize` メソッドでファイル出力を行う。\n\n`FileRecordWriterHolder.write(レコードタイプ, 1レコード情報, ベースパス名称, ファイルID)` でレコードを出力する。\n\n```java\n@Override\nprotected void initialize(CommandLine command, ExecutionContext context) {\n    FileRecordWriterHolder.open(BASE_PATH_NAME, FILE_ID, \"format\", FILE_ID);\n\n    Map<String, Object> header = new HashMap<String, Object>();\n    header.put(\"sysDate\", SystemTimeUtil.getDateString());\n    FileRecordWriterHolder.write(\"header\", header, BASE_PATH_NAME, FILE_ID);\n\n    dataRecordCount = 0;\n}\n```",
+    "s2": "**クラス**: `DatabaseRecordReader`, `SqlPStatement`\n\nDBからファイル出力対象データを読み込む `DatabaseRecordReader` を生成する。\n\n```java\n@Override\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    int count = countByStatementSql(\"GET_OUTPUT_FILE_DATA\");\n    writeLog(\"M000000001\", count);\n    DatabaseRecordReader reader = new DatabaseRecordReader();\n    SqlPStatement statement = getSqlPStatement(\"GET_OUTPUT_FILE_DATA\");\n    reader.setStatement(statement);\n    return reader;\n}\n```",
+    "s3": "`SqlRow` のカラム名と出力ファイルのフィールド名がマッピングされるため、`FileRecordWriterHolder.write()` を呼び出すだけで1行分のデータがファイル出力される。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext context) {\n    FileRecordWriterHolder.write(\"data\", inputData, BASE_PATH_NAME, FILE_ID);\n    dataRecordCount++;\n    return new Success();\n}\n```",
+    "s4": "特別な処理は必要ないため、実装しない。",
+    "s5": "> **注意**: `FileRecordWriterHolder` を使用して書き込んだ出力ファイルはフレームワークによって自動的にクローズされる。アプリケーション側でクローズ処理を実装する必要はない。\n\n`terminate` メソッドで処理成功時にトレーラレコードとエンドレコードを出力する。\n\n```java\n@Override\nprotected void terminate(Result result, ExecutionContext context) {\n    if (result.isSuccess()) {\n        Map<String, Object> trailer = new HashMap<String, Object>();\n        trailer.put(\"totalCount\", dataRecordCount);\n        FileRecordWriterHolder.write(\"trailer\", trailer, BASE_PATH_NAME, FILE_ID);\n        FileRecordWriterHolder.write(\"end\", new HashMap<String, Object>(0), BASE_PATH_NAME, FILE_ID);\n    }\n}\n```"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

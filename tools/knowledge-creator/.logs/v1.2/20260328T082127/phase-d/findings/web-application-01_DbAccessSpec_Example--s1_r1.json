@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "s3 merges three h3 sub-sections (条件に紐付くデータの全件検索処理, 範囲指定での検索処理, 取得したSqlResultSetの使用方法) into a single knowledge section. The source h2 section 簡易検索機能 is well over 2000 chars and has three distinct h3 headings; per V3 rules this warrants splitting into separate sections.",
+      "source_evidence": "RST h3 headings: 条件に紐付くデータの全件検索処理 (==), 範囲指定での検索処理 (==), 取得したSqlResultSetの使用方法 (==)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — SQLファイルの記述ルール",
+      "description": "The SQL file rule 'コメント行は、空行とはならない' (comment lines do not count as blank-line separators between SQL groups) is omitted. This is a correctness constraint: a comment line placed between two SQL statements does not satisfy the required blank-line separation, which could cause runtime errors if misunderstood.",
+      "source_evidence": "Source footnote a): 'コメント行は、空行とはならない。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 大量データの定義",
+      "description": "The illustrative code examples from the footnote that clarify what constitutes 'large data' are omitted. Specifically, the counterintuitive case `statement.retrieve(10000000, 20)` being NOT large data (start position is irrelevant; only max-count matters) is only hinted at in prose but the concrete examples are absent.",
+      "source_evidence": "Source footnote: 'statement.retrieve(10000000, 20); // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`getSqlPStatement` is a key API method used in every retrieval example but is absent from s3's hints array.",
+      "source_evidence": "Java examples: `SqlPStatement statement = getSqlPStatement(\"GET_USER_INFO\");` and `getSqlPStatement(\"GET_USER_LIST\")`"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — 共通プロトコルヘッダー table, ReplyTo row",
+      "description": "The receive-time behavior for ReplyTo in synchronous response reception (同期応答受信) is omitted. The source states that for 同期応答受信, the ReplyTo field contains the logical name of the response destination queue (応答宛先キューの論理名が設定されている). The knowledge file only says '受信時・応答不要受信では通常設定なし', which implies that receiving in general results in nothing being set. This is incorrect and would cause an AI to give wrong implementation guidance for synchronous response patterns.",
+      "source_evidence": "受信時: 同期応答受信の場合は、応答宛先キューの論理名が設定されている。応答不要受信の場合は、通常は何も設定されていない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 共通プロトコルヘッダー table, JMS implementation column",
+      "description": "The knowledge file omits the JMS implementation details (4th column) for MessageId, CorrelationId, Destination, and ReplyTo. Only the TimeToLive JMS mapping is preserved. The omitted JMS field mappings are: MessageId→MessageID JMSヘッダー, CorrelationId→CorrelationID JMSヘッダー, Destination→送信キューのDestinationオブジェクト論理名, ReplyTo→応答受信キューのDestinationオブジェクト論理名. These are substantive technical details useful for developers implementing JMS-based messaging.",
+      "source_evidence": "共通プロトコルヘッダー table, column 4 (JMSメッセージングプロバイダでの実装): MessageId→MessageID JMSヘッダーの値を設定; CorrelationId→CorrelationID JMSヘッダーの値を設定; Destination→送信キューのDestinationオブジェクトに紐付けられた論理名を設定; ReplyTo→応答受信キューのDestinationオブジェクトに紐付けられた論理名を設定"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Seven handler class names referenced in the s3 content (フレームワーク制御ヘッダー table) are absent from the hints array: RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader, MessageResendHandler, MessageReplyHandler.",
+      "source_evidence": "フレームワーク制御ヘッダ table: リクエストID uses RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader; 再送要求フラグ uses MessageResendHandler; ステータスコード uses MessageReplyHandler"
+    }
+  ]
+}

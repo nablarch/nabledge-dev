@@ -1,0 +1,65 @@
+{
+  "id": "libraries-02_01_Repository_config--s1",
+  "title": "設定ファイルの種類とフレームワークが行うリポジトリの初期化",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定ファイルの種類とフレームワークが行うリポジトリの初期化",
+      "hints": [
+        "環境設定ファイル",
+        "コンポーネント設定ファイル",
+        "リポジトリ初期化",
+        "SystemRepository",
+        "ConfigFileLoader",
+        "設定ファイルの種類"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "環境設定ファイルからの読み込み",
+      "hints": [
+        "ConfigFileLoader",
+        "SystemRepository",
+        "getString",
+        "getBoolean",
+        "環境設定値取得",
+        "設定値取得",
+        "repository_config_loader_setting"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リポジトリに保持するインスタンスの生成(DIコンテナ)",
+      "hints": [
+        "DIコンテナ",
+        "DiContainer",
+        "XmlComponentDefinitionLoader",
+        "component要素",
+        "property要素",
+        "コンポーネント設定ファイル",
+        "コンポーネント登録",
+        "repository_elements"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "DIコンテナを ObjectLoader として使用する",
+      "hints": [
+        "ObjectLoader",
+        "DiContainer",
+        "SystemRepository",
+        "getObject",
+        "コンポーネント取得",
+        "SystemRepository初期化"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リポジトリの設定は2種類の設定ファイルで行う。\n\n- **環境設定ファイル**: 文字列による設定値をプロパティファイルに似た形式で記述\n- **コンポーネント設定ファイル**: リポジトリに保持するインスタンスを設定（他の章では単に「設定ファイル」と記述）\n\n> **注意**: Webフレームワークやバッチフレームワークはフレームワーク起動時にリポジトリを自動初期化するため、通常のアプリケーションでは初期化処理の実装は不要。",
+    "s2": "**クラス**: `ConfigFileLoader`, `SystemRepository`\n\n> **警告**: ConfigFileLoader、XmlComponentDefinitionLoader、SystemRepositoryを使用した初期化処理はWebおよびバッチフレームワークのBootstrap内で行われる。通常のアプリケーション開発者はこれらの実装を行わない。\n\n環境設定ファイル(sample.config)の記述例:\n\n```bash\nsample.value1=example-setting\nsample.value2=true\n```\n\n環境設定ファイルの読み込み:\n\n```java\nConfigFileLoader loader = new ConfigFileLoader(\"sample.config\");\nSystemRepository.load(loader);\n```\n\n環境設定ファイルの記述ルールの詳細は :ref:`repository_config_loader_setting` を参照。\n\n### 環境設定の取得\n\n`SystemRepository.getString` または `SystemRepository.getBoolean` で設定値を取得する。\n\n```java\nString value1 = SystemRepository.getString(\"sample.value1\");\nboolean value2 = SystemRepository.getBoolean(\"sample.value2\");\n```\n\n> **警告**: 環境設定値取得のキー値にユーザ入力値やDBから取得した値を使用しないこと。キー値は常に固定値とすること。可変キーを使用した場合、設定値が取得できない障害が発生しやすく、障害解析の難易度も上がる。",
+    "s3": "**クラス**: `DiContainer`, `XmlComponentDefinitionLoader`\n\nDIコンテナの責務:\n1. コンポーネントをインスタンス化する\n2. インスタンスのプロパティにコンポーネント設定ファイルに記述した値を設定する\n3. コンポーネント間を関連付ける\n\nコンポーネントとして登録できるクラスの条件:\n- デフォルトコンストラクタを持つこと\n- プロパティに対応したセッタメソッドを持つこと\n\n### コンポーネント設定ファイルの記述\n\nコンポーネント設定ファイルは `component` 要素でコンポーネントを、`property` 要素でプロパティ設定を記述する。\n\n- `component` 要素: `name` 属性にコンポーネント名、`class` 属性にクラスの完全修飾名\n- `property` 要素: `name` 属性にプロパティ名、`value` 属性に値または `ref` 属性に参照コンポーネント名\n\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n    <component name=\"helloComponent\" class=\"nablarch.core.repository.di.example.hello.HelloComponent\">\n        <property name=\"helloMessageProvider\" ref=\"helloMessageProvider\"/>\n    </component>\n    <component name=\"helloMessageProvider\"\n       class=\"nablarch.core.repository.di.example.hello.HelloMessageProvider\">\n        <property name=\"helloMessage\" value=\"hello!\" />\n    </component>\n</component-configuration>\n```\n\nコンポーネント設定ファイルの要素・属性の詳細は :ref:`repository_elements` を参照。\n\nIDEでの編集: :download:`component-configuration.xsd <./component-configuration.xsd>` をコンポーネント設定ファイルと同一ディレクトリに配置し、`xsi:schemaLocation` を適切に設定するとXMLバリデーション・入力補完が利用できる（推奨）。\n\n> **注意**: リポジトリはフレームワーク提供クラスのみをコンポーネントとして保持することを前提に設計されており、ビジネスロジックやデータアクセスオブジェクトの登録は想定していない。これらを登録するとアプリケーション起動が遅くなり、ユニットテストやローカル画面テストの効率が悪化する。このような使用方法を行う際は、デメリットが許容範囲にあるか十分に検討すること。\n\n### 値を取得する実装例\n\n1. コンポーネント設定ファイル名を指定して `XmlComponentDefinitionLoader` のインスタンスを生成\n2. 生成した `XmlComponentDefinitionLoader` を引数に `DiContainer` のインスタンスを生成\n3. 生成した `DiContainer` からコンポーネントを取得\n\n```java\nXmlComponentDefinitionLoader loader\n    = new XmlComponentDefinitionLoader(\"nablarch/core/repository/di/example/hello/hello.xml\");\nDiContainer container = new DiContainer(loader);\nHelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");\nhelloComponent.printHello();\n```\n\n> **警告**: 通常、コンポーネントの取得はSystemRepositoryから行う。DIコンテナを直接使用する方法は説明目的であり、通常のアプリケーションでは実装しない。",
+    "s4": "**クラス**: `DiContainer`, `SystemRepository`\n\n`DiContainer` は `ObjectLoader` として使用することで、登録したコンポーネントを `SystemRepository` に登録できる。\n\n> **警告**: 以下の初期化処理はBootstrap処理で行うべき処理であり、通常のアプリケーションでは実装不要。\n\nSystemRepository の初期化:\n\n```java\nXmlComponentDefinitionLoader loader\n    = new XmlComponentDefinitionLoader(\"nablarch/core/repository/di/example/hello/hello.xml\");\nDiContainer container = new DiContainer(loader);\nSystemRepository.load(container);\n```\n\nSystemRepository からのコンポーネント取得:\n\n```java\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\nhelloComponent.printHello();\n```"
+  }
+}

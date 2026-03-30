@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ステータスコード(内部) note (servlet:// forwarding behavior)",
+      "description": "The note omits \"コンテンツパスに\" (in the content path), which specifies WHERE servlet:// must be configured for the behavior to apply. The source reads \"フォワード処理でコンテンツパスに \\\"servlet://\\\" が指定された場合\" but the knowledge file reads \"フォワード処理で `servlet://` が指定された場合\". Without this qualifier, it is unclear that servlet:// is a content path value.",
+      "source_evidence": "コンテンツパスに \"servlet://\" が指定された場合、フォワード先のサーブレットで200以外のステータスコードを返却した際も、アクセスログには 200 が出力される。これは、 JavaEE 5 の仕様上フォワードした先のサーブレットの処理結果を取得できない制約により発生したアクセスログの仕様である。"
+    }
+  ]
+}

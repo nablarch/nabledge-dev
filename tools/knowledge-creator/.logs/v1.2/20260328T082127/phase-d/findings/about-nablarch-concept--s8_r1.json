@@ -1,0 +1,27 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The 'リクエストの識別と業務処理の実行' H2 section is very long (well over 2000 chars) and contains four H3 subsections in the source (リクエストIDと実行時ID / リクエストに対する業務処理のディスパッチ / 特殊なリクエスト処理 / リクエストインターフェース), but all are merged into a single knowledge section s3 without splitting.",
+      "source_evidence": "RST H3 headings under 'リクエストの識別と業務処理の実行': 'リクエストIDと実行時ID ====', 'リクエストに対する業務処理のディスパッチ ====', '特殊なリクエスト処理 ====', 'リクエストインターフェース ===='."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "The class name 'TransactionHandler' appears as the primary sample code class in section s1 but is absent from its hints array.",
+      "source_evidence": "Source: 'public class TransactionHandler implements Handler<Request, Result>'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "Three PascalCase names referenced in the source are missing from s3 hints: 'メソッドレベルバインディング' (the key mechanism concept, used as a bold heading in the source), 'MethodBinder' (the term used for standard implementations: 'フレームワーク標準の MethodBinder として'), and 'FileBatchAction' (referenced in the standard MethodBinder table for RecordTypeBinding).",
+      "source_evidence": "Source: 'フレームワーク標準の **MethodBinder** として', 'nablarch.fw.handler.RecordTypeBinding … :doc:`../handler/FileBatchAction`', '**メソッドレベルバインディング**' bold heading."
+    }
+  ]
+}

@@ -1,0 +1,394 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_FormTag.rst`
+- Format: `rst`
+
+```
+hiddenの暗号化処理
+------------------------------------------------------
+暗号化は、Encryptorインタフェースを実装したクラスが行う。\
+フレームワークでは、デフォルトの暗号化アルゴリズムとしてAES(128bit)を使用する。\
+暗号化アルゴリズムを変更したい場合は、Encryptorを実装したクラスをリポジトリに"hiddenEncryptor"という名前で登録する。
+
+暗号化は、formタグ毎に行う。暗号化では、formタグに含まれる下記のデータをまとめて暗号化し、1つのhiddenタグで出力する。
+このため、hiddenのパラメータ名も含めて暗号化するため、改竄すること自体を難しくしている。
+
+ * カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ
+ * ウィンドウスコープの値
+ * サブミットを行うタグ(submit、submitLink、button)で指定したリクエストID
+ * サブミットを行うタグで指定した :ref:`変更パラメータ<WebView_ChangeableParams>`
+
+さらに、暗号化では、改竄を検知するために、上記のデータから生成したハッシュ値を含める。\
+リクエストIDは、異なる画面間での値の置き換えによる改ざんを検知するために、\
+ハッシュ値は、値の書き換えによる改竄を検知するために使用する。\
+暗号化した結果は、BASE64でエンコードしhiddenタグに出力する。
+
+尚、 :ref:`変更パラメータ<WebView_ChangeableParams>` は、暗号化する場合と暗号化しない場合で、\
+nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。
+
+.. note::
+
+ カスタムタグのhiddenタグで明示的に指定したhiddenパラメータは、暗号化に含まれるため、クライアント側でJavaScriptを使用して値を操作することができない。\
+ クライアント側のJavaScriptでhiddenパラメータを操作する必要がある場合は、 :ref:`WebView_PlainHiddenTag` を使用して出力する必要がある。\
+ 下記に :ref:`WebView_PlainHiddenTag` の使用例を示す。
+ 
+ :ref:`WebView_PlainHiddenTag` に指定された値はhidden暗号化対象とならず、常にHTMLのinput(type="hidden")タグとして出力される。
+
+  .. code-block:: html
+
+   <%-- JSPの実装例 --%>
+   <n:plainHidden name="user.id" />
+
+   <%-- HTMLの出力例 --%>
+   <input type="hidden" name="user.id" value="U0000000001" />
+
+.. note::
+
+ 入力画面などの入力データを暗号化して出力したhiddenタグのデータ量は、暗号化せずに平文で出力した場合に比べて約1.2倍に増量する(1Mバイトのデータ量で比較した結果)。\
+ このデータ量の増加は、特に問題ない範囲である。
+
+**暗号化に使用する鍵の説明**
+
+暗号化に使用する鍵は、鍵の有効期間をできるだけ短くするため、セッション毎に生成する。\
+このため、同じユーザであってもログインをやり直すと、ログイン前に使用していた画面から処理を継続することはできない。
+
+.. note::
+
+ hiddenの暗号化処理では、本フレームワークが出力したHTML以外からアクセスするリクエストを暗号化できない。\
+ 業務アプリケーションのログイン画面やショッピングサイトの商品ページが暗号化できないリクエストに該当する。\
+ ショッピングサイトのように、暗号化できないリクエストが多数を占めるアプリケーションでは、\
+ 別途パラメータの改竄と情報漏洩への対策が必要となる。
+
+.. _WebView_HiddenEncryption_Handler:
+
+------------------------------------------------
+hiddenの復号処理
+------------------------------------------------
+hiddenの復号処理は、NablarchTagHandlerが行う。\
+NablarchTagHandlerの設定方法については、 :ref:`WebView_NablarchTagHandler` を参照。
+
+NablarchTagHandlerの設定では、改竄を検知した場合に送信する画面のリソースパスとレスポンスステータスを指定する。\
+NablarchTagHandlerは、下記の場合に改竄と判定し、指定された画面に遷移させる。\
+
+* 暗号化したhiddenパラメータ(nablarch_hidden)が存在しない。
+* BASE64のデコードに失敗する。
+* 復号に失敗する。
+* 暗号化時に生成したハッシュ値と復号した値で生成したハッシュ値が一致しない。
+* 暗号化時に追加したリクエストIDと受け付けたリクエストのリクエストIDが一致しない。
+
+=========================
+入力データの復元
+=========================
+入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。\
+下図に画面遷移を示す。\
+USER00202{入力エラーあり}とUSER00301のリクエストIDが該当する。
+
+.. image:: ./_images/WebView_InputRecovering.jpg
+   :scale: 60
+
+カスタムタグにより、リクエストパラメータから入力データを復元するため、\
+アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。\
+
+カスタムタグでは、name属性に対応する値を下記の順に検索し、最初に見つかった値を出力する。\
+ただし、writeタグは出力専用のため、リクエストパラメータを検索対象に含めない。
+
+* Servlet APIのページスコープ
+* Servlet APIのリクエストスコープ
+* Servlet APIのリクエストパラメータ
+* Servlet APIのセッションスコープ
+
+
+.. _`output_for_confirmation_page`:
+
+===============================
+入力項目の確認画面用の出力
+===============================
+入力項目のカスタムタグは、入力画面と全く同じ記述のまま、確認画面用の出力を行うことができる。\
+確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する。
+
+.. code-block:: java
+
+  <n:confirmationPage />
+
+ユーザ登録画面とユーザ登録確認画面の例を示す。\
+はじめにそれぞれの画面イメージを示す。
+
+.. image:: ./_images/WebView_InputScreen.jpg
+   :scale: 60
+
+.. image:: ./_images/WebView_ConfirmScreen.jpg
+   :scale: 60
+
+------------------------------------------------
+textタグの出力例
+------------------------------------------------
+上記画面イメージのユーザIDについてHTML出力例を示す。\
+:ref:`WebView_TextTag` は、確認画面でそのまま出力する。
+
+.. code-block:: jsp
+
+  <n:text name="systemAccount.loginId" size="22" maxlength="20" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <input type="text" name="systemAccount.loginId" value="nablarch2" size="22" maxlength="20" />
+
+  <%-- 確認画面 --%>
+  <%-- そのまま出力する。 --%>
+  nablarch2
+
+------------------------------------------------
+passwordタグの出力例
+------------------------------------------------
+上記画面イメージのパスワードについてHTML出力例を示す。\
+:ref:`WebView_PasswordTag` は、確認画面では文字を置き換えて出力する。\
+置換文字はpasswordタグの属性で変更できる。
+
+.. code-block:: jsp
+
+  <n:password name="systemAccount.newPassword" size="22" maxlength="20" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <input type="password" name="systemAccount.newPassword" value="password" size="22" maxlength="20" />
+
+  <%-- 確認画面 --%>
+  <%-- '*'に置換して出力する。置換文字は変更可能。 --%>
+  ********
+
+------------------------------------------------
+selectタグの出力例
+------------------------------------------------
+上記画面イメージのユースケースについてHTML出力例を示す。\
+:ref:`WebView_SelectTag` は、確認画面では指定されたフォーマットで出力する。\
+デフォルトのフォーマットはbrタグである。
+
+.. code-block:: jsp
+
+  <n:select name="systemAccount.useCase" multiple="true" size="5"
+            listName="allUseCase" elementLabelProperty="useCaseName" elementValueProperty="useCaseId"
+            elementLabelPattern="${VALUE}:${LABEL}" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+確認画面では、選択されたオプションのみが出力される。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <select name="systemAccount.useCase" size="5" multiple="multiple">
+    <option value="UC00000000" selected="selected">UC00000000:ログイン</option>
+    <option value="UC00000001">UC00000001:ユーザ一覧照会</option>
+    <option value="UC00000002" selected="selected">UC00000002:ユーザ情報登録</option>
+  </select>
+
+  <%-- 確認画面 --%>
+  <%-- brタグ区切りに出力する。divタグ、ulタグ、olタグ、スペース区切りに変更可能。 --%>
+  UC00000000:ログイン<br />UC00000002:ユーザ情報登録<br />
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_FormTag--s16`
+
+```json
+{
+  "id": "libraries-07_FormTag--s16",
+  "title": "入力データの復元",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "hiddenの暗号化処理",
+      "hints": [
+        "Encryptor",
+        "hiddenEncryptor",
+        "AES 128bit",
+        "n:plainHidden",
+        "WebView_PlainHiddenTag",
+        "hidden暗号化",
+        "改竄検知",
+        "BASE64エンコード",
+        "hiddenパラメータ暗号化",
+        "セッション毎に鍵生成",
+        "変更パラメータ",
+        "WebView_ChangeableParams"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "hiddenの復号処理",
+      "hints": [
+        "NablarchTagHandler",
+        "nablarch_hidden",
+        "WebView_NablarchTagHandler",
+        "改竄検知",
+        "hiddenパラメータ復号",
+        "ハッシュ値検証"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力データの復元",
+      "hints": [
+        "入力データ復元",
+        "スコープ検索順序",
+        "ページスコープ",
+        "リクエストスコープ",
+        "セッションスコープ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "入力項目の確認画面用の出力",
+      "hints": [
+        "n:confirmationPage",
+        "confirmationPage",
+        "確認画面出力",
+        "WebView_ConfirmationPageTag",
+        "n:text",
+        "WebView_TextTag",
+        "textタグ確認画面"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "passwordタグの出力例",
+      "hints": [
+        "n:password",
+        "WebView_PasswordTag",
+        "確認画面",
+        "パスワードマスク",
+        "置換文字"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "selectタグの出力例",
+      "hints": [
+        "n:select",
+        "WebView_SelectTag",
+        "確認画面",
+        "選択項目出力",
+        "brタグ区切り",
+        "elementLabelPattern",
+        "elementLabelProperty",
+        "elementValueProperty"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "暗号化は `Encryptor` インタフェースを実装したクラスが行う。デフォルトはAES(128bit)。アルゴリズムを変更する場合は、Encryptorを実装したクラスをリポジトリに `\"hiddenEncryptor\"` という名前で登録する。\n\n暗号化はformタグ毎に行い、以下のデータをまとめて暗号化し1つのhiddenタグで出力する（パラメータ名も含めて暗号化するため改竄自体を難しくしている）:\n\n- カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ\n- ウィンドウスコープの値\n- submit/submitLink/buttonで指定したリクエストID\n- 変更パラメータ (:ref:`WebView_ChangeableParams`)\n\n改竄検知のためハッシュ値を含める。リクエストIDは異なる画面間の値置き換えによる改竄検知に、ハッシュ値は値の書き換えによる改竄検知に使用する。暗号化した結果はBASE64でエンコードしてhiddenタグに出力する。\n\nなお、変更パラメータ (:ref:`WebView_ChangeableParams`) は、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。\n\n> **注意**: カスタムタグのhiddenタグで指定したhiddenパラメータはクライアント側のJavaScriptで操作できない。JavaScriptでhiddenパラメータを操作する場合は :ref:`WebView_PlainHiddenTag` を使用する。`n:plainHidden` に指定された値はhidden暗号化対象とならず、常に `<input type=\"hidden\">` として出力される。\n\n```html\n<%-- JSPの実装例 --%>\n<n:plainHidden name=\"user.id\" />\n\n<%-- HTMLの出力例 --%>\n<input type=\"hidden\" name=\"user.id\" value=\"U0000000001\" />\n```\n\n> **注意**: 入力データを暗号化して出力したhiddenタグのデータ量は平文の約1.2倍に増量する（1Mバイトで比較）。\n\n**暗号化キー**: セッション毎に生成するため、同じユーザでもログインし直すとログイン前の画面から処理を継続できない。\n\n> **注意**: フレームワークが出力したHTML以外からのリクエストは暗号化できない（ログイン画面、ショッピングサイトの商品ページ等が該当）。暗号化できないリクエストが多数を占めるアプリケーションでは、別途パラメータの改竄と情報漏洩への対策が必要。",
+    "s2": "**クラス**: `NablarchTagHandler`（設定方法は :ref:`WebView_NablarchTagHandler` 参照）\n\n設定では、改竄を検知した場合に遷移させる画面のリソースパスとレスポンスステータスを指定する。\n\n以下のいずれかの場合に改竄と判定し、指定された画面に遷移させる:\n\n1. 暗号化したhiddenパラメータ（nablarch_hidden）が存在しない\n2. BASE64のデコードに失敗\n3. 復号に失敗\n4. 暗号化時に生成したハッシュ値と復号した値のハッシュ値が一致しない\n5. 暗号化時のリクエストIDと受け付けたリクエストのリクエストIDが一致しない",
+    "s3": "入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。カスタムタグによりリクエストパラメータから入力データを復元するため、アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。\n\nカスタムタグはname属性に対応する値を以下の順に検索して出力する（writeタグはリクエストパラメータを検索対象に含めない）:\n\n1. Servlet APIのページスコープ\n2. Servlet APIのリクエストスコープ\n3. Servlet APIのリクエストパラメータ\n4. Servlet APIのセッションスコープ",
+    "s4": "入力項目のカスタムタグは、入力画面と全く同じ記述のまま、確認画面用の出力を行うことができる。確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する:\n\n```java\n<n:confirmationPage />\n```\n\n:ref:`WebView_TextTag` は確認画面でそのまま出力する。\n\n```jsp\n<n:text name=\"systemAccount.loginId\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"text\" name=\"systemAccount.loginId\" value=\"nablarch2\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面 --%>\nnablarch2\n```",
+    "s5": ":ref:`WebView_PasswordTag` は確認画面では文字を置き換えて出力する。置換文字はpasswordタグの属性で変更できる（デフォルトは `*`）。\n\n```jsp\n<n:password name=\"systemAccount.newPassword\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"password\" name=\"systemAccount.newPassword\" value=\"password\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面（'*'に置換して出力、置換文字は変更可能） --%>\n********\n```",
+    "s6": ":ref:`WebView_SelectTag` は確認画面では指定されたフォーマットで出力する。デフォルトはbrタグ区切り（div/ul/ol/スペース区切りに変更可能）。確認画面では選択されたオプションのみが出力される。\n\n```jsp\n<n:select name=\"systemAccount.useCase\" multiple=\"true\" size=\"5\"\n          listName=\"allUseCase\" elementLabelProperty=\"useCaseName\" elementValueProperty=\"useCaseId\"\n          elementLabelPattern=\"${VALUE}:${LABEL}\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<select name=\"systemAccount.useCase\" size=\"5\" multiple=\"multiple\">\n  <option value=\"UC00000000\" selected=\"selected\">UC00000000:ログイン</option>\n  <option value=\"UC00000001\">UC00000001:ユーザ一覧照会</option>\n  <option value=\"UC00000002\" selected=\"selected\">UC00000002:ユーザ情報登録</option>\n</select>\n\n<%-- 確認画面 --%>\nUC00000000:ログイン<br />UC00000002:ユーザ情報登録<br />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

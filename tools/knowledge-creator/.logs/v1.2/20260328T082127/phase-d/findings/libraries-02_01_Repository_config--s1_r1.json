@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 登録するクラスのソースコード(HelloMessageProvider) / 登録するクラスのソースコード(HelloComponent)",
+      "description": "The Java source code for HelloMessageProvider and HelloComponent is omitted from the knowledge file. These examples concretely demonstrate how to implement a DI-compatible component class — specifically, how to declare fields, write setter methods (matching property names), and write getter methods. Without them, an AI has only the prose requirements (default constructor + setter methods) but no concrete pattern to reference.",
+      "source_evidence": "Source contains two full Java class listings: HelloMessageProvider (with `setHelloMessage`, `getHelloMessage`, `private String helloMessage` field) and HelloComponent (with `setHelloMessageProvider`, `printHello`, `private HelloMessageProvider helloMessageProvider` field)."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — リポジトリに保持するインスタンスの生成(DIコンテナ)",
+      "description": "Section s3 maps to a large source h2 that contains at least 5 h3-level subsections (登録するクラスのソースコード×2, コンポーネント設定ファイルの記述, 値を取得する実装例, and implicitly the DI container intro). The knowledge section s3 is well over 2000 characters of content but does not split on any of these h3 boundaries.",
+      "source_evidence": "Source h3 headings under the DI container section: '登録するクラスのソースコード(HelloMessageProvider)', '登録するクラスのソースコード(HelloComponent)', 'コンポーネント設定ファイルの記述(hello.xml)', '値を取得する実装例'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "The hint `ObjectLoader` is missing from s2. The section opens with the statement that objects held in the repository must be loaded via ObjectLoader, and the load call is described as 'calling SystemRepository.load from an ObjectLoader'. This interface name is a key concept for understanding the s2 loading mechanism.",
+      "source_evidence": "Source: 'リポジトリの内部に保持するオブジェクトはObjectLoaderで読み込む必要がある。ObjectLoaderからリポジトリにオブジェクトを読み込む処理には、SystemRepositoryのloadメソッドを呼び出す。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — index hints",
+      "description": "The hint `getComponentByName` is missing from s3. This method is the primary API for retrieving a component by name directly from DiContainer, and its usage is demonstrated in the code example included in s3.",
+      "source_evidence": "Source code example: `HelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");`"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-FileDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — code example context",
+      "description": "The source labels the code example as 'データリーダファクトリ内でデータリーダを作成する例' (example of creating a data reader inside a data reader factory). The knowledge file includes the code block but omits this context about the intended usage location. Knowing this code belongs inside a data reader factory is decision-necessary for correct implementation.",
+      "source_evidence": "使用例\n  - データリーダファクトリ内でデータリーダを作成する例"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — properties table",
+      "description": "The knowledge file table includes a '必須' (required) column that does not exist in the source. The source table has four columns: 設定項目, プロパティ名, データ型, 備考. The added empty '必須' column introduces structural information not present in the source. The source only marks bufferSize as optional via '(任意指定)' in 備考; the required/optional status of layoutFile and dataFile is not stated.",
+      "source_evidence": "Source table columns: 設定項目 / プロパティ名 / データ型 / 備考 — no '必須' column exists"
+    }
+  ]
+}

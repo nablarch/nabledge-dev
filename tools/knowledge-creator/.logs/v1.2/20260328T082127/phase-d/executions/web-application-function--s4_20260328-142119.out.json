@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "s1 merges 5 distinct h2 source sections (ファイルアップロード画面の作成方法（JSP）, アップロードファイルの取得方法（サーバサイド）, アップロードファイルの保存方法, アップロードファイルを読み込む方法, アップロードファイルをDBに登録する方法) into a single section, resulting in a long mixed-content section covering JSP setup, server-side retrieval, file saving, binary reading, and DB registration overview. Source has 5 h2 headings (===) but knowledge has only 1 section covering them all.",
+      "source_evidence": "5 separate h2 sections in source, each marked with '=========================================================================================='."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The description of what types of validations are supported by the 精査処理 step is missing. The source explains that it can perform domain-based single-item validation, DB checks, and complex validations involving business logic (ドメインベースの単項目精査やDB精査、ビジネスロジックを伴う複雑な精査処理). This is decision-necessary guidance for developers choosing how to implement their validateWith method.",
+      "source_evidence": "Source table row for 精査処理: '通常の業務Actionと同様の実装を行うことができるので、ドメインベースの単項目精査やDB精査、ビジネスロジックを伴う複雑な精査処理を実装することができる。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 index hints",
+      "description": "The PascalCase class `MessageLevel` is used in the code example in s1 (`MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\")`) but is absent from s1's hints array.",
+      "source_evidence": "Source code block: 'MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\")'"
+    }
+  ]
+}

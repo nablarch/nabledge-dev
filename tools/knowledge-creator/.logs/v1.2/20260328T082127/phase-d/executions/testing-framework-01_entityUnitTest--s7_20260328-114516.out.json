@@ -1,0 +1,41 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: プロパティ名の一覧を簡易的に取得する手順 section (anchor: property-name-copy-label)",
+      "description": "The entire 'プロパティ名の一覧を簡易的に取得する手順' section is absent from the knowledge file. It describes a 4-step procedure for extracting property names from Eclipse's Outline view using Copy Qualified Name, then stripping the class-name prefix via Excel's replace function. This section is cross-referenced from both the constructor test section and the setter/getter test section in the source (※Entityの保有するプロパティ名のExcelへの記述手順は、:ref:`property-name-copy-label` を参照), making it decision-necessary for developers creating test data.",
+      "source_evidence": "①Eclipseでテスト対象のEntityクラスをオープンし、Outline(アウトライン)を表示する。 ②コピーしたいプロパティを選択する。 ③マウスの右クリックで表示されるメニューからCopy Qualified Name(修飾名のコピー)を選択する。 ④コピーしたプロパティ名のリストをエクセルに貼り付ける。貼りつけた値には「クラス名 + プロパティ名」の完全修飾名の形式になっている。Excelの置き換え機能を使用して不要なクラス名を削除する。検索する文字列：nablarch.sample.management.user.SystemAccountEntity."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file index — missing s6",
+      "description": "The source contains two h2-level sections not represented in the knowledge file index: 'プロパティ名の一覧を簡易的に取得する手順' (======) and '自動テストフレームワーク設定値' (======). The knowledge file ends at s5, covering only 5 of the source's 7 distinct heading blocks. The 'プロパティ名の一覧を簡易的に取得する手順' section has substantive procedural content; '自動テストフレームワーク設定値' appears to introduce configuration required for entityUnitTest_ValidationCase.",
+      "source_evidence": "プロパティ名の一覧を簡易的に取得する手順\n========================================\n...\n自動テストフレームワーク設定値\n==============================\n:ref:`entityUnitTest_ValidationCase` を実施する際に必要な初期値設定について説明する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "The code example in the 精査対象確認 note introduces three PascalCase class names — SampleForm, SystemUserEntity, UserTelEntity — none of which appear in the s2 hints array.",
+      "source_evidence": "public class SampleForm {\n    private SystemUserEntity systemUser;\n    private UserTelEntity[] userTelArray;\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "The method name testValidateForRegisterUser appears in the s3 code example but is absent from the s3 hints array.",
+      "source_evidence": "@Test\npublic void testValidateForRegisterUser() {\n    String sheetName = \"testValidateForRegisterUser\";\n    String validateFor = \"registerUser\";\n    testValidateAndConvert(ENTITY_CLASS, sheetName, validateFor);\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "The method getListParamMap is mentioned in the s4 code comment as the alternative to use when multiple properties are under test, but it is not included in the s4 hints array.",
+      "source_evidence": "// (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)"
+    }
+  ]
+}

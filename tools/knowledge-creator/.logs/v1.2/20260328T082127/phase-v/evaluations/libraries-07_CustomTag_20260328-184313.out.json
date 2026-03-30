@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-07_CustomTag",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a missing hint (`WebView_TagReference`) in s3. The impact is low because: s3 already has 14 other hints that cover the section's core topics (入力カスタムタグ, 07_FormTagList, 07_FormTag, etc.), and `WebView_TagReference` points to a cross-reference for a tag list document external to this file — not substantive content. An agent would still reliably route to s3 via the existing hints. The finding persisted because Phase E produced output identical to input (no-op fix), indicating the fix agent failed to apply the addition.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s3].hints",
+      "impact": "low",
+      "justification": "`WebView_TagReference` is a cross-reference label pointing to an external tag reference list, not substantive content within s3. The section is already discoverable through 14 existing hints (入力カスタムタグ, 07_FormTagList, 07_FormTag, 07_SubmitTag, etc.). A user asking about custom tag lists would reach s3 via these hints. Phase E did not resolve the finding — the output JSON is byte-for-byte identical to the Phase D input, indicating the fix agent produced a no-op rather than adding the hint."
+    }
+  ]
+}

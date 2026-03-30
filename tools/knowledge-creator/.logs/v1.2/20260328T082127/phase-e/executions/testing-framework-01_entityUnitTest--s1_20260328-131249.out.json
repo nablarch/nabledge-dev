@@ -1,0 +1,87 @@
+{
+  "id": "testing-framework-01_entityUnitTest--s1",
+  "title": "Form/Entityのクラス単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Form/Entityのクラス単体テスト",
+      "hints": [
+        "EntityTestSupport",
+        "Entity単体テスト",
+        "Form単体テスト",
+        "nablarch.test.core.db.EntityTestSupport",
+        "テスト方法概要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Form/Entity単体テストの書き方",
+      "hints": [
+        "EntityTestSupport",
+        "テストクラス作成",
+        "テストデータExcel",
+        "クラス命名規則",
+        "nablarch.test.core.db.EntityTestSupport",
+        "単項目精査テスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストケース表の作成方法（文字種・文字列長）",
+      "hints": [
+        "propertyName",
+        "allowEmpty",
+        "messageIdWhenNotApplicable",
+        "文字種テストケース表",
+        "文字列長テストケース",
+        "min",
+        "max"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テストメソッドの作成方法（文字種・文字列長）",
+      "hints": [
+        "testValidateCharsetAndLength",
+        "文字種精査",
+        "文字列長精査",
+        "単項目精査テスト",
+        "EntityTestSupport"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "テストケース表の作成方法（その他の単項目精査）",
+      "hints": [
+        "propertyName",
+        "messageId",
+        "input1",
+        "testSingleValidation",
+        "単項目精査テストケース表",
+        "case"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "テストメソッドの作成方法（その他の単項目精査）",
+      "hints": [
+        "testSingleValidation",
+        "testValidateCharsetAndLength",
+        "ValidateFor",
+        "バリデーションメソッドテスト",
+        "@ValidateFor",
+        "EntityTestSupport"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: Entityとはテーブルのカラムと1対1に対応するプロパティを持つFormのこと。Form/Entityの単体テストは `nablarch.test.core.db.EntityTestSupport` を使って同じ方法でテストする。",
+    "s2": "## テストデータの作成\n\n- テストデータExcelファイルはテストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）\n- 精査のテストケース・コンストラクタのテストケース・setter/getterのテストケースはそれぞれ1シートずつ使用する\n- メッセージデータ・コードマスタ等の静的マスタデータはプロジェクト管理データが投入済みの前提（個別テストデータとして作成しない）\n\n## テストクラスの作成\n\nテストクラス作成ルール:\n1. パッケージはテスト対象のForm/Entityと同じ\n2. クラス名は `<Form/Entityクラス名>Test`\n3. **クラス**: `nablarch.test.core.db.EntityTestSupport` を継承する\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n```\n\n## 文字種と文字列長の単項目精査テストケース\n\n> **注意**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする）には使用できない。その場合は独自に精査処理のテストを実装すること。",
+    "s3": "以下のカラムを用意する:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| allowEmpty | そのプロパティが未入力を許容するか |\n| min | 許容する最小文字列長（省略可） |\n| max | 許容する最大文字列長 |\n| messageIdWhenNotApplicable | 文字種不適合時に期待するメッセージID |\n| 半角英字 | 半角英字を許容するか |\n| 半角数字 | 半角数字を許容するか |\n| 半角記号 | 半角記号を許容するか |\n| 半角カナ | 半角カナを許容するか |\n| 全角英字 | 全角英字を許容するか |\n| 全角数字 | 全角数字を許容するか |\n| 全角ひらがな | 全角ひらがなを許容するか |\n| 全角カタカナ | 全角カタカナを許容するか |\n| 全角漢字 | 全角漢字を許容するか |\n| 全角記号その他 | 全角記号その他を許容するか |\n| 外字 | 外字を許容するか |\n\n許容フラグ: `o`（半角英小文字のオー、許容する）/ `x`（半角英小文字のエックス、許容しない）\n\n![テストケース表の例](assets/testing-framework-01_entityUnitTest--s1/entityUnitTest_CharsetAndLengthExample.png)",
+    "s4": "スーパークラスの以下のメソッドを起動する:\n\n```java\nvoid testValidateCharsetAndLength(Class entityClass, String sheetName, String id)\n```\n\n使用例:\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n\n    /** テスト対象エンティティクラス */\n    private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;\n\n    /**\n     * 文字種および文字列長のテストケース\n     */\n    @Test\n    public void testCharsetAndLength() {\n        String sheetName = \"testCharsetAndLength\"; // テストデータを記載したシート名\n        String id = \"charsetAndLength\";            // テストデータのID\n        testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);\n    }\n}\n```\n\n各行で実行されるテスト観点:\n\n| 観点 | 入力値 | 備考 |\n|---|---|---|\n| 文字種（各種） | 半角英字/半角数字/半角記号/半角カナ/全角英字/全角数字/全角ひらがな/全角カタカナ/全角漢字/全角記号その他/外字 | maxの長さの文字列 |\n| 未入力 | 空文字 | 長さ0の文字列 |\n| 最小文字列 | 最小文字列長の文字列 | o印の文字種で構成 |\n| 最長文字列 | 最長文字列長の文字列 | o印の文字種で構成 |\n| 文字列長不足 | 最小文字列長－1の文字列 | o印の文字種で構成 |\n| 文字列長超過 | 最大文字列長＋1の文字列 | o印の文字種で構成 |\n\n**その他の単項目精査**\n\n`testValidateCharsetAndLength` でカバーできない精査（例：数値の範囲精査）については、各プロパティに1つの入力値と期待するメッセージIDのペアを記述することで任意の値で単項目精査テストができる。\n\n> **注意**: プロパティとして別のFormを保持するForm（`<親Form>.<子Form>.<子フォームのプロパティ名>` 形式でアクセスする）には使用できない。その場合は独自に精査処理のテストを実装すること。",
+    "s5": "以下のカラムを用意する:\n\n| カラム名 | 記載内容 |\n|---|---|\n| propertyName | テスト対象のプロパティ名 |\n| case | テストケースの簡単な説明 |\n| input1 | 入力値（複数パラメータの場合はinput2, input3と増やす） |\n| messageId | 期待するメッセージID（精査エラーにならない場合は空欄） |\n\nセルの特殊記法（テストフレームワークの `special_notation_in_cell` 参照）を使用することで、効率的に入力値を作成できる。\n\n![テストケース表の例](assets/testing-framework-01_entityUnitTest--s1/entityUnitTest_singleValidationDataExample.png)",
+    "s6": "スーパークラスの以下のメソッドを起動する:\n\n```java\nvoid testSingleValidation(Class entityClass, String sheetName, String id)\n```\n\n使用例:\n\n```java\npublic class SystemAccountEntityTest extends EntityTestSupport {\n\n    /** テスト対象エンティティクラス */\n    private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;\n\n    /**\n     * 単項目精査のテストケース（上記以外）\n     */\n    @Test\n    public void testSingleValidation() {\n        String sheetName = \"testSingleValidation\";\n        String id = \"singleValidation\";\n        testSingleValidation(ENTITY_CLASS, sheetName, id);\n    }\n}\n```\n\n**バリデーションメソッドのテスト**\n\n単項目精査テスト（`testValidateCharsetAndLength` / `testSingleValidation`）では、setterメソッドのアノテーションが正しいかテストされるが、`@ValidateFor` アノテーションを付与したstaticバリデーションメソッドは実行されない。エンティティに独自バリデーションメソッドを実装した場合は、別途テストを作成すること。"
+  }
+}

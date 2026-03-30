@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s1 / sections.s1",
+      "description": "s1 のインデックスタイトルは「固有の処理を追加する場合」だが、セクション本文には「ダウンロードファイルのテスト」の内容（==== レベルのトップレベル見出し）が含まれている。ソースでは「ダウンロードファイルのテスト」は独立した主要セクションであり、s1 に統合されたことでタイトルと内容が不一致になっている。ダウンロードファイルテストに関する質問が「固有の処理を追加する場合」というタイトルのセクションにマッピングされにくい。",
+      "source_evidence": "ソースには `ダウンロードファイルのテスト` が `====` 記号による独立したトップレベル見出しとして存在する。ナレッジファイルの s1 index title は「固有の処理を追加する場合」のまま。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "ソースの note に記載されているベストプラクティス「記述が長くなったり、テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと」が知識ファイルに含まれていない。知識ファイルは「両メソッドをオーバーライドする必要はない」のみを保持し、この推奨事項を省略している。",
+      "source_evidence": "ソース note: 「また、これらのメソッド内に全ての処理を記述する必要はない。記述が長くなったり、テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s1 hints",
+      "description": "s1 の本文中で `getHttpRequest()` の戻り値として `HttpRequest` クラスが参照されているが、s1 の hints に `HttpRequest` が含まれていない。",
+      "source_evidence": "ソース: `HttpRequest request = testCaseInfo.getHttpRequest();` — 知識ファイル s1 の TestCaseInfo メソッド表にも `getHttpRequest()` — `テスト実行後の HttpRequest` として記載されているが、hints に `HttpRequest` のクラス名がない。"
+    }
+  ]
+}

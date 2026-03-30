@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor. The knowledge file correctly covers all core exclusive control APIs and implementation patterns. Missing hints are for supplementary framework tags already mentioned in section body text, and the omitted SQL example is a clarifying parenthetical rather than actionable guidance.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[0] (s1) hints",
+      "impact": "low",
+      "justification": "The three missing hint terms (WebView_CompositeKeyCheckboxTag, WebView_CompositeKeyRadioButtonTag, CompositeKey) already appear verbatim in the s1 section body text, so a developer reading this section will encounter them. The existing hint '組み合わせキー排他制御' covers the concept for retrieval. These tags are supplementary framework utilities for composite-key UI rendering, not the primary exclusive control API — their absence from hints does not prevent developers from implementing exclusive control correctly. They persisted because Phase E did not modify the hints array; the output is identical to Phase D input, suggesting the fix agent treated the existing '組み合わせキー排他制御' hint as sufficient coverage and left the array unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "s2 — ExclusiveControlManagerの設定 table, class row",
+      "impact": "low",
+      "justification": "The s2 table already conveys that a custom ExclusiveControlManager implementation is used when the project requires its own implementation. The omitted parenthetical '(SQL文を変更するなど)' is a clarifying example of a common customization trigger, not a required instruction. Developers who need to customize the manager would consult the interface Javadoc for specifics; the knowledge file gives sufficient guidance to recognize when customization applies. This persisted because Phase E did not update the s2 section text — the output matches Phase D, indicating the fix agent assessed the existing description as adequate."
+    }
+  ]
+}

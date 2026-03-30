@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — SQLログの出力方法 section: ログの出力例",
+      "description": "The concrete log output example (ログの出力例) is entirely missing from the knowledge file. The source shows actual DEBUG and TRACE output lines demonstrating the real output format, including how SQL parameters are logged in TRACE level with numbered format (e.g., `01 = [00]`).",
+      "source_evidence": "2011-02-08 23:07:25.182 -DEBUG- ... nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    SQL = [SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?]\n    start_position = [1] size = [0] ...\n2011-02-08 23:07:25.182 -TRACE- ... nablarch.core.db.statement.BasicSqlPStatement#Parameters\n    01 = [00]\n2011-02-08 23:07:25.182 -DEBUG- ... execute_time(ms) = [0] retrieve_time(ms) = [0] count = [1]"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 / s2 — SQLログの出力方法 section: complete log.properties example",
+      "description": "The `availableLoggersNamesOrder=SQL` property from the complete log.properties configuration example in the 出力方法 section is not captured in the knowledge file. This property is required for the SQL logger to be active in the logging framework.",
+      "source_evidence": "availableLoggersNamesOrder=SQL\n\n# SQL\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appFile"
+    }
+  ]
+}

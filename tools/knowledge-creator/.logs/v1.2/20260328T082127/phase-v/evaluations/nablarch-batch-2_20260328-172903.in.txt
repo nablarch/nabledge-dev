@@ -1,0 +1,181 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `nablarch-batch-2`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "sections.s1 / index[0].hints",
+    "description": "The class name `SampleEntity` appears in the source code example (`new SampleEntity(inputData)`) but is absent from the hints array.",
+    "source_evidence": "statement.executeUpdateByObject(new SampleEntity(inputData));"
+  }
+]
+```
+
+### Source (RST)
+
+```
+データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？
+========================================================================================================================
+
+.. admonition:: question
+
+    データベースをインプットとして処理を行う場合で、インプットデータが処理済みの場合の処理の流れは以下のようになると思います。
+
+     #. 入力データを受け取る。
+     #. データを出力する。(テーブルへのINSERTやUPDATE)
+
+    このようなケースの場合、INSERTやUPDATE時にEntityは使用せずに1項目ずつsetStringやsetObjectを呼び出す想定でいます。
+    イメージ的には、以下のような実装を想定しています。
+    
+    これは、実装方法として正しいのでしょうか？
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityは使用せずに1項目ずつ値をバインドする。
+            SqlPStatement statement = getSqlPStatement("INSERT_SQL");
+            statement.setString(1, inputData.getString("id"));
+            statement.setString(2, inputData.getString("name"));
+            statement.setString(3, inputData.getString("kana_name"));
+            statement.setString(4, inputData.getString("tel"));
+            statement.executeUpdate();
+
+            return new Success();
+        }
+
+.. admonition:: answer
+
+    精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERTやUPDATE処理を行うようにしてください。
+
+    なぜなら、保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きいからです。
+    また、1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能も使用することができなくなってしまいます。
+
+    上記の **question** にある実装を、Entityを使用した実装に置き換えると以下のようになります。
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityを生成して、データベースの更新を行う。
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SQL");
+            statement.executeUpdateByObject(new SampleEntity(inputData));
+
+            return new Success();
+        }
+
+.. admonition:: related information
+
+    * :doc:`6`
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "nablarch-batch-2",
+  "title": "データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースをインプットとするバッチ処理でのEntity使用方針",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "SqlPStatement",
+        "SqlRow",
+        "ExecutionContext",
+        "Success",
+        "executeUpdateByObject",
+        "getParameterizedSqlStatement",
+        "Entity",
+        "バッチ処理",
+        "データベース更新",
+        "INSERT",
+        "UPDATE",
+        "共通項目設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査が不要な場合でも、データベースへのINSERT/UPDATE処理は基本的にEntityを生成して行うこと。\n\n**理由**:\n- 1項目ずつ `setString` / `setObject` で値を設定するより保守性・生産性が高い\n- 1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能が使用できない\n\n**推奨実装**（Entityを使用したINSERT）:\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SQL\");\n    statement.executeUpdateByObject(new SampleEntity(inputData));\n    return new Success();\n}\n```\n\n**クラス**: `ParameterizedSqlPStatement`"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "nablarch-batch-2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 / index[0].hints",
+      "description": "The class name `SampleEntity` appears in the source code example (`new SampleEntity(inputData)`) but is absent from the hints array.",
+      "source_evidence": "statement.executeUpdateByObject(new SampleEntity(inputData));"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "nablarch-batch-2",
+  "title": "データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースをインプットとするバッチ処理でのEntity使用方針",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "SqlPStatement",
+        "SqlRow",
+        "ExecutionContext",
+        "Success",
+        "executeUpdateByObject",
+        "getParameterizedSqlStatement",
+        "Entity",
+        "バッチ処理",
+        "データベース更新",
+        "INSERT",
+        "UPDATE",
+        "共通項目設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査が不要な場合でも、データベースへのINSERT/UPDATE処理は基本的にEntityを生成して行うこと。\n\n**理由**:\n- 1項目ずつ `setString` / `setObject` で値を設定するより保守性・生産性が高い\n- 1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能が使用できない\n\n**推奨実装**（Entityを使用したINSERT）:\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SQL\");\n    statement.executeUpdateByObject(new SampleEntity(inputData));\n    return new Success();\n}\n```\n\n**クラス**: `ParameterizedSqlPStatement`"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

@@ -1,0 +1,110 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The general recommendation to add sequential numbers (連番) to name attributes when using these tags in any list screen is missing. The knowledge file only covers the n:listSearchResult-specific case (use count variable), but the source also states a broader best practice: \"特に一覧画面などで、これらのタグを使用する場合にはname属性には連番を付加して、重複しないように注意してください。\" This guidance applies to list screens that do not use n:listSearchResult.",
+      "source_evidence": "特に一覧画面などで、これらのタグを使用する場合にはname属性には連番を付加して、重複しないように注意してください。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+子画面を開くタグのname属性には、何を指定したらいいのでしょうか?
+============================================================================
+.. admonition:: question
+
+    以下のタグに必須属性としてname属性がありますが、何を設定したらいいのでしょうか?
+    
+        * popupSubmit
+        * popupButton
+        * popupLink
+
+    また、一覧表示時(\ *n:listSearchResult*\ を使用した場合)に上記タグを使用した場合に固定の名称を設定したところ、以下の例外が発生してしまいました。
+    name属性が重複しているためエラーが発生していることは分かりますが、name属性を一意にする方法が分かりません。
+    どのように実装したらいいのでしょうか？
+
+    .. code-block:: java
+
+        java.lang.IllegalArgumentException: name attribute of submission tag has duplicated. formName = [xxxx] submissionName = [yyyy]
+
+        // xxxx -> フォーム名称
+        // yyyy -> name属性に設定した値
+
+
+.. admonition:: answer
+
+    フォーム内で一意となる名前を設定してください。特に一覧画面などで、これらのタグを使用する場合にはname属性には連番を付加して、重複しないように注意してください。
+
+
+    一覧画面の場合(\ *n:listSearchResult*\ を使用した場合)は、行番号が取得出来る\ *count*\ 変数をname属性に付加することにより一意の名称が設定できるようになります。
+
+    詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch プログラミング・単体テストガイド]** -> **[アプリケーション実装例集]** -> **[画面オンライン処理の実装例集]** -> **[ボタン又はリンクによるサブミット]**
+    * **[Nablarch プログラミング・単体テストガイド]** -> **[アプリケーション実装例集]** -> **[画面オンライン処理の実装例集]** -> **[ページングを使用した一覧表示]**
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-3",
+  "title": "子画面を開くタグのname属性には、何を指定したらいいのでしょうか?",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "popupSubmit / popupButton / popupLink の name 属性指定方法",
+      "hints": [
+        "popupSubmit",
+        "popupButton",
+        "popupLink",
+        "n:listSearchResult",
+        "count変数",
+        "name属性重複",
+        "IllegalArgumentException",
+        "サブミットタグ一意性",
+        "一覧画面サブミット"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## popupSubmit / popupButton / popupLink の name 属性指定方法\n\n`popupSubmit`、`popupButton`、`popupLink` タグの `name` 属性にはフォーム内で一意となる名前を設定すること。重複した場合、以下の例外が発生する。\n\n```java\njava.lang.IllegalArgumentException: name attribute of submission tag has duplicated. formName = [xxxx] submissionName = [yyyy]\n// xxxx -> フォーム名称\n// yyyy -> name属性に設定した値\n```\n\n一覧画面（`n:listSearchResult` 使用時）でこれらのタグを使用する場合は、行番号を取得できる `count` 変数を name 属性に付加することで一意の名称を設定できる。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

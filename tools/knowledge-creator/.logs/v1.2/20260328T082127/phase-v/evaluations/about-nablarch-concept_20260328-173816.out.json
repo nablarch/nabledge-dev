@@ -1,0 +1,14 @@
+{
+  "file_id": "about-nablarch-concept",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a minor hints omission in a conceptual overview file. Users searching for \"設計書フォーマット\" or \"開発手順\" are typically looking for concrete artifacts (actual templates, procedure docs), not a philosophical overview of Nablarch's design principles. The existing hints (設計標準, すぐに使える, 再利用可能, ソフトウェア部品) already capture the Ready-to-Use concept well enough for retrieval purposes. Missing these two keywords has low practical impact on the agent's ability to answer user questions.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s3].hints",
+      "impact": "low",
+      "justification": "「設計書フォーマット」「開発手順」はs3の本文に記載されているが、このファイルはNablarchのコンセプト概要であり、ユーザーがこれらのキーワードで検索する場合は具体的なテンプレートや手順書を求めているケースが大半。このファイルにはその実体がなく、ヒットしてもユーザーの需要を満たせない可能性が高い。既存ヒント（設計標準・すぐに使える・再利用可能）でReady-to-Use概念の検索カバレッジは十分確保されている。Why it persisted: Phase Eのログを見るとs3のhintsが変更されておらず、フィックスが実際に適用されなかった（Phase DとEで同一のJSON出力）。フィックスステップがno-opで終了した。"
+    }
+  ]
+}

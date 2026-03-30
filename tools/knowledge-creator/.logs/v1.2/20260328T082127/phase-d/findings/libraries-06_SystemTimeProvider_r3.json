@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8 (設定ファイル)",
+      "description": "The `class` attribute of the `component` element is not described in the knowledge file prose. The source explicitly lists `class(必須): 使用するBusinessDateProviderの実装クラスを設定する` in the component configuration table alongside `name(必須)`. The knowledge file only mentions the `name` attribute explicitly: \"`component`の`name`属性には`\"businessDateProvider\"`を設定する（必須）。\"",
+      "source_evidence": "* componentの設定\n    name(必須)       | \"businessDateProvider\"と設定する。\n    class(必須)      | 使用するBusinessDateProviderの実装クラスを設定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 hints",
+      "description": "`ThreadContextHandler` is referenced in the s8 section content (in the cacheEnabled description: \"ThreadContextHandlerによってクリアされる\") but is absent from the s8 hints array. This PascalCase class name should be included so hint-based retrieval can find s8 when users ask about ThreadContextHandler's role in cache clearing.",
+      "source_evidence": "キャッシュされた値は、ハンドラキューに設定された :ref:`Threadcontexthandler` によってクリアされる。"
+    }
+  ]
+}

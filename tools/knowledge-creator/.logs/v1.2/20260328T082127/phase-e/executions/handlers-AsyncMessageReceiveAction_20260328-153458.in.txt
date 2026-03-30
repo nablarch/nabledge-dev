@@ -1,0 +1,236 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-AsyncMessageReceiveAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — receivedSequenceGenerator row",
+      "description": "The knowledge file describes the property as 「デバッグや障害解析用に無効化可能」 (can be disabled), but the source says 「デバッグや障害解析用に無効化する」 (disable for debugging/fault analysis). The source phrasing describes the intended use of the property, not a capability assertion. Changing to 「可能」 adds nuance not present in the source.",
+      "source_evidence": "備考列: 「任意指定。デバッグや障害解析用に無効化する。デフォルトはtrue(自動削除を実施)」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+応答不要電文受信処理用アクションハンドラ
+===========================================================================================
+
+**クラス名:** ``nablarch.fw.messaging.action.AsyncMessageReceiveAction``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本クラスは、 :doc:`../architectural_pattern/messaging_receive` における典型的な業務アクションハンドラの実装であり、
+受信電文内のデータレコードを指定されたテーブルに保存する。
+
+保存されたデータは後続のバッチによって処理されることを想定している。
+
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "AsyncMessageReceiveAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**受信電文保存テーブルの構造**
+  受信電文の内容を保存するテーブルは、以下の内容に従って定義されている必要がある。
+
+  ================= =====================================================
+  項目              内容
+  ================= =====================================================
+  受信電文連番      | 主キー
+                    | 受信した電文を一意に識別するためのIDを格納するカラム。
+                      本カラムに設定する値は、{@link #generateReceivedSequence()}にて採番を行う。
+                      カラムの桁数は、任意の桁数を設定可能となっている。
+  
+  業務電文部        業務電文を格納するカラムを定義する。
+                    電文の種類に応じて、業務電文の各項目に対するカラムを定義すれば良い。
+  
+  共通項目部        各プロジェクトの方式に応じて必要なカラムを定義する。
+                    たとえば、下記のカラムを定義することが想定される。
+                    ・登録情報(ユーザID、タイムスタンプ、リクエストID、実行時ID)
+                    ・更新情報(ユーザID、タイムスタンプ)
+  ================= =====================================================
+  
+  本クラスは1電文を1レコードとして受信テーブルに保存することを前提としている。
+  1電文を複数レコードとして登録する場合や、複数テーブルに保存する場合は
+  本クラスを継承した業務アクションハンドラクラスを別途作成する必要がある。
+
++++++++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (業務データ領域の解析)**
+    要求電文の業務データ領域全体をデフォルトのフォーマッタを用いて解析し、データレコードを取得する。
+
+  **2. (電文データ登録用のフォームクラスのロード)**
+    以下で定義されるクラスをロードする。
+
+      .. code-block:: bash
+
+        [フォームクラス配置パッケージ設定値] + "." + [受信電文のリクエストIDヘッダ値] + "Form"
+
+  **3. (受信電文連番の採番)**
+    本ハンドラに設定された採番モジュールを使用して、受信電文に対する登録用の通番を取得する。
+
+  **3. (フォームインスタンスの生成)**
+    **2.** で取得したクラスのインスタンスを、以下のコンストラクタを使用して生成する。
+    コンストラクタの引数として、本ハンドラの引数である受信電文オブジェクト、および、
+    **3.** で採番した受信電文通番を使用する。
+
+      .. code-block:: java
+      
+        public フォームクラス名(String 受信電文通番, RequestMessage 受信電文オブジェクト)
+   
+  **4. (電文データ登録処理)**
+    以下のリソースファイルに記載されたSQL定義からプリペアードステートメントを作成し、
+    **3.** で作成したフォームインスタンスを埋め込みパラメータとして実行する。 
+
+      .. code-block:: bash
+
+        [SQLファイル配置パッケージ設定値] + "." + [受信電文のリクエストIDヘッダ値] + "#INSERD_MESSAGE"
+
+.. _outbound:
+
+**[往路処理]**
+  **5. (正常終了)**
+    正常終了のマーカオブジェクト(`Result.Success`_)をリターンして終了する。
+    (このハンドラでは後続ハンドラに対する処理移譲は行わない。)
+
+
+.. _error:
+
+**[例外処理]**
+  **2a. (フォームクラスロードエラー)**
+    当該のフォームクラスがクラスパス上に存在しなかった場合は、実行時例外を送出する。
+
+  **3a. (フォームインスタンス生成エラー)**
+    **3.** で呼び出したコンストラクタが存在しなかった場合、もしくは、コンストラクタ実行中に何らかのエラーが発生した場合は、
+    実行時例外を送出する。
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定値は、 `AsyncMessageReceiveActionSettings`_ に集約されている。
+以下はその設定項目の一覧である。
+
+  ================================ ============================ =========== ======================================================
+  設定項目                         プロパティ名                 データ型　  備考
+  ================================ ============================ =========== ======================================================
+  フォームクラス配置パッケージ     formClassPackage             String      | 必須指定
+                                                                            | 電文データ登録の際に使用するフォームクラスの
+                                                                              パッケージ名を設定する。
+
+  受信電文連番発番用オブジェクト   receivedSequenceGenerator    IdGenerator 任意指定。デバッグや障害解析用に無効化する。
+                                                                            デフォルトはtrue(自動削除を実施)
+  ================================ ============================ =========== ======================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-AsyncMessageReceiveAction",
+  "title": "応答不要電文受信処理用アクションハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "AsyncMessageReceiveAction",
+        "nablarch.fw.messaging.action.AsyncMessageReceiveAction",
+        "generateReceivedSequence",
+        "応答不要電文受信",
+        "受信電文保存テーブル",
+        "メッセージング",
+        "受信テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "Result.Success",
+        "RequestMessage",
+        "ハンドラ処理フロー",
+        "フォームクラスロード",
+        "受信電文連番採番",
+        "SQL実行",
+        "往路処理",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "AsyncMessageReceiveActionSettings",
+        "IdGenerator",
+        "formClassPackage",
+        "receivedSequenceGenerator",
+        "設定項目",
+        "フォームクラスパッケージ",
+        "採番モジュール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.action.AsyncMessageReceiveAction`\n\n:doc:`../architectural_pattern/messaging_receive` における典型的な業務アクションハンドラの実装。受信電文内のデータレコードを指定されたテーブルに保存する。保存されたデータは後続のバッチによって処理される。\n\n**受信電文保存テーブルの構造**\n\n| 項目 | 内容 |\n|---|---|\n| 受信電文連番 | 主キー。受信電文を一意に識別するID。値は `generateReceivedSequence()` で採番。カラムの桁数は任意。 |\n| 業務電文部 | 電文の種類に応じた業務電文の各項目に対するカラム |\n| 共通項目部 | プロジェクトの方式に応じたカラム（登録情報・更新情報など） |\n\n> **重要**: 本クラスは1電文を1レコードとして受信テーブルに保存することを前提とする。1電文を複数レコードとして登録する場合や複数テーブルに保存する場合は、本クラスを継承した業務アクションハンドラクラスを別途作成すること。",
+    "s2": "**[往路処理]**\n\n1. 要求電文の業務データ領域全体をデフォルトのフォーマッタで解析し、データレコードを取得\n2. フォームクラスのロード: `[formClassPackage].[リクエストIDヘッダ値]Form`\n3. 設定された採番モジュールを使用して受信電文連番を採番\n4. フォームインスタンスを以下のコンストラクタで生成: `public フォームクラス名(String 受信電文通番, RequestMessage 受信電文オブジェクト)`\n5. SQLファイルからプリペアードステートメントを作成してフォームインスタンスを埋め込みパラメータとして実行: `[SQLファイル配置パッケージ].[リクエストIDヘッダ値]#INSERD_MESSAGE`\n6. `Result.Success` を返して終了（後続ハンドラへの処理移譲は行わない）\n\n**[例外処理]**\n\n- **2a（フォームクラスロードエラー）**: フォームクラスがクラスパス上に存在しない場合 → 実行時例外を送出\n- **3a（フォームインスタンス生成エラー）**: コンストラクタが存在しない、またはコンストラクタ実行中にエラーが発生した場合 → 実行時例外を送出",
+    "s3": "設定値は `AsyncMessageReceiveActionSettings` に集約されている。\n\n| プロパティ名 | 型 | 必須 | 説明 |\n|---|---|---|---|\n| formClassPackage | String | ○ | 電文データ登録の際に使用するフォームクラスのパッケージ名 |\n| receivedSequenceGenerator | IdGenerator | | 受信電文連番発番用オブジェクト（任意指定）。デバッグや障害解析用に無効化可能。デフォルトはtrue（自動削除を実施） |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

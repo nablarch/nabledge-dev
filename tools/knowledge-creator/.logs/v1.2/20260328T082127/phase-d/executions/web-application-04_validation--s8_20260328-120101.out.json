@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — W11AC01SearchForm code example",
+      "description": "The knowledge file omits four setters from the W11AC01SearchForm code: setKanjiName (@Length(max=50), @SystemChar(charsetDef=\"zenkakuCharset\")), setKanaName (@Length(max=50), @SystemChar(charsetDef=\"zenkakuKatakanaCharset\")), setUgroupId (@Length(min=10, max=10), @SystemChar(charsetDef=\"numericCharset\")), and setSortId (@PropertyName(\"ソートID\"), @Required). These setters demonstrate three charsetDef values not shown elsewhere in the knowledge file (zenkakuCharset, zenkakuKatakanaCharset, numericCharset) and the exact-length pattern @Length(min=10, max=10).",
+      "source_evidence": "Source contains full setter implementations: setKanjiName with @SystemChar(charsetDef=\"zenkakuCharset\"), setKanaName with @SystemChar(charsetDef=\"zenkakuKatakanaCharset\"), setUgroupId with @Length(min = 10, max = 10) @SystemChar(charsetDef=\"numericCharset\"), setSortId with @PropertyName(\"ソートID\") @Required"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "SystemAccountEntity is a PascalCase class name used directly in the W11AC01SearchForm code (as field type and setter parameter), but is absent from s1's hints.",
+      "source_evidence": "Source: `private SystemAccountEntity systemAccount;` and `public void setSystemAccount(SystemAccountEntity systemAccount)` with @ValidationTarget"
+    }
+  ]
+}

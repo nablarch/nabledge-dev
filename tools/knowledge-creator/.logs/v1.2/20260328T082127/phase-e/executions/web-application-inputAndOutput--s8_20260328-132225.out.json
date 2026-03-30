@@ -1,0 +1,104 @@
+{
+  "id": "web-application-inputAndOutput--s8",
+  "title": "入力と出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力/選択項目での初期値設定",
+      "hints": [
+        "初期値設定",
+        "リクエストスコープ",
+        "Map",
+        "HashMap",
+        "SqlRow",
+        "SqlResultSet",
+        "setRequestScopedVar",
+        "n:text",
+        "n:select",
+        "登録画面",
+        "更新画面",
+        "複数選択項目"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入力項目の確認画面用の出力",
+      "hints": [
+        "confirmationPage",
+        "確認画面用出力",
+        "入力項目",
+        "フォワード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "エラーメッセージの表示、エラー項目のハイライト",
+      "hints": [
+        "errors タグ",
+        "error タグ",
+        "エラーメッセージ表示",
+        "エラー項目ハイライト",
+        "バリデーションエラー"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージの表示",
+      "hints": [
+        "n:message",
+        "messageId",
+        "language属性",
+        "var属性",
+        "option0",
+        "国際化",
+        "多言語対応",
+        "メッセージ表示"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "出力フォーマットの変更方法",
+      "hints": [
+        "valueFormat属性",
+        "write タグ",
+        "text タグ",
+        "日付フォーマット",
+        "金額フォーマット",
+        "出力フォーマット"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "HTMLエスケープせずに値を出力する方法",
+      "hints": [
+        "prettyPrint タグ",
+        "rawWrite タグ",
+        "HTMLエスケープ無効化",
+        "XSS",
+        "セキュリティ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "hiddenタグの暗号化機能の解除",
+      "hints": [
+        "CustomTagConfig",
+        "useHiddenEncryption",
+        "hidden タグ暗号化",
+        "暗号化解除",
+        "カスタムタグ設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPへ遷移する前にActionクラスでリクエストスコープにデータを設定する。カスタムタグの`name`属性の値とリクエストスコープの名前を一致させる必要がある。JSP側での特別な実装は不要（初期値なしの場合と同じコード）。\n\n対象タグ: :ref:`howto_single_input`, :ref:`code_select`\n\n**登録画面: Mapを使用する場合**\n\nMapのキーにプロパティ名を明示的に指定する必要がある。\n\n```java\nMap<String, String> map = new HashMap<String, String>();\nmap.put(\"effectiveDateFrom\", new Date());\nctx.setRequestScopedVar(\"W11AC02\", map);\n```\n\nJSP:\n```jsp\n<n:text name=\"W11AC02.effectiveDateFrom\" size=\"22\" maxlength=\"20\" />\n```\n\n**更新画面: SqlRow/フォーム/エンティティを使用する場合**\n\nSqlRowやフォーム/エンティティを使用するとMapを使わずに初期値設定が可能。SqlRowはプロパティ名を含むため明示的なキー指定が不要。\n\n```java\nSqlResultSet userInfo = component.selectUserInfo(form);\nctx.setRequestScopedVar(\"W11AC03\", userInfo.get(0));\n```\n\nJSP:\n```jsp\n<n:text name=\"W11AC03.name\" size=\"22\" maxlength=\"20\" />\n```\n\n**複数選択項目**\n\n初期値だけでなく、選択候補リストもリクエストスコープに設定する必要がある。\n\n```java\nctx.setRequestScopedVar(\"allGroups\", ugroupList);  // 選択候補リスト\n\nString[] defaultGroups = {\"group2\", \"group3\"};\nform.put(\"groupIds\", defaultGroups);\nctx.setRequestScopedVar(\"W11AC02\", form);  // 初期値（複数）\n```\n\nJSP:\n```jsp\n<n:select name=\"W11AC02.groupIds\" multiple=\"true\"\n       listName=\"allGroups\" elementLabelProperty=\"name\" elementValueProperty=\"id\"\n       elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\" />\n```",
+    "s2": "入力項目のカスタムタグを使用して確認画面用の出力が可能。確認画面では`confirmationPage`タグを使い、入力画面にフォワードする。\n\n対象タグ: :ref:`howto_single_input`, :ref:`code_select`",
+    "s3": "単項目精査エラーや業務エラー発生時のエラーメッセージ表示のために以下のタグが提供されている:\n\n- `errors`タグ\n- `error`タグ\n\nエラーの原因となった入力項目のハイライト表示機能も提供されている。",
+    "s4": "国際化対応アプリケーションで言語に応じた画面文言切り替えを行うための`message`タグ。メッセージ機能のテーブルで言語毎に管理された文言を表示する。\n\n**スレッドコンテキストの言語に応じたメッセージ表示**\n\n```jsp\n<n:message messageId=\"M7770001\" />\n```\n\n**指定した言語のメッセージ表示**\n\n`language`属性に言語を指定すると、スレッドコンテキストの設定に関わらず常に指定言語のメッセージが出力される。\n\n```jsp\n<n:message messageId=\"M7770001\" language=\"ja\" />\n```\n\n**埋め込み文字のフォーマット**\n\n`var`属性でmessageタグの結果を変数に格納し、`option0`～`option9`属性に埋め込み文字として指定する。埋め込み文字もメッセージ機能で管理する場合は、まず`var`属性で取得してから`option`属性に指定する。\n\n```jsp\n<n:message var=\"title\" messageId=\"M7770001\" />\n<n:message var=\"appName\" messageId=\"M7770099\" />\n<n:message messageId=\"M7770008\" option0=\"${title}\" option1=\"${appName}\" />\n```",
+    "s5": "日付や金額などの値をフォーマットして出力する場合、`write`タグや`text`タグの`valueFormat`属性を指定する。",
+    "s6": "`prettyPrint`タグまたは`rawWrite`タグを使用する。\n\n> **警告**: HTMLのソースコードを表示する場合など、HTMLエスケープをどうしても避けられない場合にのみ使用すること。それ以外の場合は必ずHTMLエスケープを行うこと。",
+    "s7": "hiddenタグの値の改ざん・参照を防ぐためにhiddenタグの暗号化機能が提供されている。デフォルトで有効。使用しない場合はカスタムタグのデフォルト値を変更する必要がある。\n\n**クラス**: `nablarch.common.web.tag.CustomTagConfig`\n\n| プロパティ名 | 型 | デフォルト値 | 説明 |\n|---|---|---|---|\n| useHiddenEncryption | boolean | true | `true`で暗号化有効、`false`で無効 |\n\n```xml\n<component name=\"customTagConfig\"\n           class=\"nablarch.common.web.tag.CustomTagConfig\">\n    <property name=\"useHiddenEncryption\" value=\"false\" />\n</component>\n```"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "mom-messaging-01_userRegisterMessageReceiveSpec",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "RST cross-reference directive `:doc:`../../04_Explanation_batch/index`` is left unconverted in the markdown knowledge file. Knowledge files should be AI-ready markdown; RST-specific markup should be replaced with plain text (e.g., 「バッチ処理の解説」) or omitted entirely.",
+      "source_evidence": "常駐バッチの実装方法は、\\ :doc:`../../04_Explanation_batch/index`\\ を参照すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Several field names from the data record table (first column) are absent from s2 hints: 漢字氏名, カナ氏名, FILLER1, FILLER2, 内線番号(ビル番号), 内線番号(個人番号). These are needed for discoverability when a user asks about a specific field's byte layout.",
+      "source_evidence": "データレコード table first column: ログインID, 漢字氏名, カナ氏名, FILLER1, メールアドレス, 内線番号(ビル番号), 内線番号(個人番号), 携帯電話番号(市外), 携帯電話番号(市内), 携帯電話番号(加入), FILLER2"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Most column names from the entity table (first column) are absent from s3 hints: ログインID, 漢字名称, カナ名称, メールアドレス, 内線番号(ビル番号), 内線番号(個人番号), 携帯電話番号(市外), 携帯電話番号(市内), 携帯電話番号(加入). Only 受信電文連番 and ステータス are present.",
+      "source_evidence": "エンティティ情報 table columns: 受信電文連番, ログインID, 漢字名称, カナ名称, メールアドレス, 内線番号(ビル番号), 内線番号(個人番号), 携帯電話番号(市外), 携帯電話番号(市内), 携帯電話番号(加入), ステータス"
+    }
+  ]
+}

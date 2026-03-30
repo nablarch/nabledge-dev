@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — アップロードファイルの取得方法（サーバサイド）",
+      "description": "The empty-file check pattern is omitted. The source shows that after calling `req.getPart(\"userList\")`, the implementation should check `if (partInfoList.isEmpty())` and throw `ApplicationException` (with `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\")`) when no file was uploaded. Without this check, calling `partInfoList.get(0)` on an empty list causes an IndexOutOfBoundsException. This is a decision-necessary implementation pattern for correct error handling.",
+      "source_evidence": "Source section アップロードファイルの取得方法（サーバサイド）: `if (partInfoList.isEmpty()) { throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\")); }` with comment `// ファイルがアップロードされていことを確認`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s6",
+      "description": "Section s6 has an empty title (`\"title\": \"\"`) and content `\"なし\"` (2 characters, well below the 50-character minimum). The corresponding source element is only an RST anchor (`.. _`custom_tag_paging`:`) followed by a horizontal rule — a page boundary marker with no substantive content. Representing this as a knowledge section with paging-related hints (`\"ページング\"`, `\"custom_tag_paging\"`) could mislead an AI agent into expecting paging content in this file.",
+      "source_evidence": "End of source file: `.. _`custom_tag_paging`:\\n\\n----...` — this is solely an anchor/boundary marker with no explanatory content."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-07_DisplayTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s6 (errorsタグ attributes table)",
+      "description": "The knowledge file adds '型' (with value 'String' for all rows) and '必須' columns that do not exist in the source table. The source table has only two columns: '属性' and '説明'. Additionally, the column header was changed from '属性' (tag attribute) to 'プロパティ名' (property name), which is a different term. None of these type annotations or the required-flag column have any basis in the source.",
+      "source_evidence": "Source table header: `属性 | 説明` with no type or required columns."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — decimal section note (桁区切り/小数点ルール)",
+      "description": "The knowledge file omits (1) the explanation that Spanish (es) formats thousands separator as dot and decimal point as comma, and (2) the correct Spanish pattern example `valueFormat=\"decimal{###,###,###.000|es}\"`. This context is important for understanding why the pattern must always use comma/dot regardless of language.",
+      "source_evidence": "Source note: `# es(スペイン語)の場合は、桁区切りがドット、小数点がカンマにフォーマットされる。` and code example `valueFormat=\"decimal{###,###,###.000|es}\"`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Missing hints for `ExtendedValidation_yyyymmddConvertor` and `ExtendedValidation_yyyymmConvertor`. Both are referenced in the yyyymmdd and yyyymm notes within s1 as the required convertor classes when using text tags with valueFormat, making them key lookup terms.",
+      "source_evidence": "Source: `:ref:\\`ExtendedValidation_yyyymmddConvertor\\`` in yyyymmdd note; `:ref:\\`ExtendedValidation_yyyymmConvertor\\`` in yyyymm note."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "Missing hints `nablarch_info` and `nablarch_warn`, which are the default CSS class name values for infoCss and warnCss attributes respectively. These appear as default values in the source and are likely search terms.",
+      "source_evidence": "Source: `infoCss | 情報レベルのメッセージに使用するCSSクラス名。デフォルトは\"nablarch_info\"。` and `warnCss | 警告レベルのメッセージに使用するCSSクラス名。デフォルトは\"nablarch_warn\"。`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7 (errorタグ)",
+      "description": "Section content is 'なし' (2 characters), well below the 50-character threshold. The source file ends at the `.. _WebView_ErrorViewErrorTag:` anchor label with no content shown, so the actual errorタグ content may have been omitted from the source fragment provided for generation.",
+      "source_evidence": "Source ends at: `.. _WebView_ErrorViewErrorTag:\\n\\n\\n------------------`"
+    }
+  ]
+}

@@ -1,0 +1,755 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_TagReference.rst`
+- Format: `rst`
+
+```
+.. _WebView_TagReference:
+
+================================================
+タグリファレンス
+================================================
+
+---------------------------
+カスタムタグ一覧
+---------------------------
+
+========================================== ==========================================================================================
+タグ                                       | 機能
+========================================== ==========================================================================================
+:ref:`WebView_FormTag`                     | HTMLのformタグ出力
+                                           | サブミット制御(ボタンとアクションの紐付け、二重サブミット防止)
+                                           | 不正画面遷移チェック
+:ref:`WebView_TextTag`                     | HTMLのinputタグ(type=text)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_TextareaTag`                 | HTMLのtextareaタグ出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_PasswordTag`                 | HTMLのinputタグ(type=password)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_RadioButtonTag`              | HTMLのinputタグ(type=radio)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+                                           | radiobuttonsタグで表示できないレイアウト時に使用する。
+:ref:`WebView_CheckboxTag`                 | HTMLのinputタグ(type=checkbox)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+                                           | checkboxesタグで表示できないレイアウト時に使用する。
+:ref:`WebView_CompositeKeyRadioButtonTag`  | 複数のHTMLのinputタグ(type=radio)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+                                           | radioButtonタグで実現できない複合キーを使用する際に使用する。
+:ref:`WebView_CompositeKeyCheckboxTag`     | 複数のHTMLのinputタグ(type=checkbox)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+                                           | checkboxesタグで実現できない複合キーを使用する際に使用する。
+:ref:`WebView_FileTag`                     | HTMLのinputタグ(type=file)出力
+                                           | HTMLエスケープ
+:ref:`WebView_HiddenTag`                   | HTMLタグの出力を行わず、ウィンドウスコープに値を出力する。
+:ref:`WebView_PlainHiddenTag`              | HTMLのinputタグ(type=hidden)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_SelectTag`                   | HTMLのselectタグとoptionタグ出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_RadioButtonsTag`             | 複数のHTMLのinputタグ(type=radio)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_CheckboxesTag`               | 複数のHTMLのinputタグ(type=checkbox)出力
+                                           | 入力データ復元
+                                           | HTMLエスケープ
+:ref:`WebView_SubmitTag`                   | HTMLのinputタグ(type=submit,image,button)出力
+                                           | サブミット制御(ボタンとアクションの紐付け、二重サブミット防止)
+:ref:`WebView_ButtonTag`                   | HTMLのbuttonタグ出力
+                                           | サブミット制御(ボタンとアクションの紐付け、二重サブミット防止)
+:ref:`WebView_SubmitLinkTag`               | HTMLのaタグ出力
+                                           | サブミット制御(リンクとアクションの紐付け、二重サブミット防止)
+:ref:`WebView_PopupSubmitTag`              | HTMLのinputタグ(type=submit,image,button)出力
+                                           | 新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。
+                                           | ユーザの操作性向上のために、複数ウィンドウ立ち上げたい場合に使用する。
+:ref:`WebView_PopupButtonTag`              | HTMLのbuttonタグ出力
+                                           | 新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。
+                                           | ユーザの操作性向上のために、複数ウィンドウ立ち上げたい場合に使用する。
+:ref:`WebView_PopupLinkTag`                | HTMLのaタグ出力
+                                           | 新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。
+                                           | ユーザの操作性向上のために、複数ウィンドウ立ち上げたい場合に使用する。
+:ref:`WebView_DownloadSubmitTag`           | HTMLのinputタグ(type=submit,image,button)出力
+                                           | ダウンロード用のサブミットを行う。
+:ref:`WebView_DownloadButtonTag`           | HTMLのbuttonタグ出力
+                                           | ダウンロード用のサブミットを行う。
+:ref:`WebView_DownloadLinkTag`             | HTMLのaタグ出力
+                                           | ダウンロード用のサブミットを行う。
+:ref:`WebView_ParamTag`                    | サブミット時に追加するパラメータを指定する。
+:ref:`WebView_ChangeParamNameTag`          | ポップアップ用のサブミット時にパラメータ名を変更する。
+:ref:`WebView_ATag`                        | HTMLのaタグ出力
+                                           | コンテキストパスの付加とURLリライト
+:ref:`WebView_ImgTag`                      | HTMLのimgタグ出力
+                                           | コンテキストパスの付加とURLリライト
+:ref:`WebView_LinkTag`                     | HTMLのlinkタグ出力
+                                           | コンテキストパスの付加とURLリライト
+:ref:`WebView_ScriptTag`                   | HTMLのscriptタグ出力
+                                           | コンテキストパスの付加とURLリライト
+:ref:`WebView_ErrorsTag`                   | エラーメッセージの複数件表示
+                                           | 画面上部に一覧でエラーメッセージを表示する場合に使用する。
+:ref:`WebView_ErrorTag`                    | エラーメッセージの表示
+                                           | エラーの原因となった入力項目の近くにエラーメッセージを個別に表示する場合に使用する。
+:ref:`WebView_NoCacheTag`                  | ブラウザのキャッシュを防止するmetaタグの出力及びレスポンスヘッダの設定
+:ref:`WebView_CodeSelectTag`               | コード値の選択表示。selectタグを使用する。
+:ref:`WebView_CodeRadioButtonsTag`         | コード値の選択表示。inputタグ(type=radio)を使用する。
+:ref:`WebView_CodeCheckboxesTag`           | コード値の選択表示。inputタグ(type=checkbox)を使用する。
+:ref:`WebView_CodeCheckboxTag`             | コード値の単一入力項目表示。inputタグ(type=checkbox)を使用する。
+:ref:`WebView_CodeTag`                     | 一覧表示や参照画面などで、コード値を出力する。
+:ref:`WebView_MessageTag`                  | 言語に応じたメッセージを出力する。
+:ref:`WebView_ListSearchResultTag`         | 検索結果の一覧表示を行う。
+:ref:`WebView_ListSearchSortSubmitTag`     | 検索結果の一覧表示で並び替え対応の列見出しを出力する。
+:ref:`WebView_WriteTag`                    | 一覧表示や参照画面などで、オブジェクトから値を出力する。
+:ref:`WebView_PrettyPrintTag`              | 修飾系のHTML(<b>タグなど) をエスケープせずに、オブジェクトの値を出力する。
+:ref:`WebView_RawWriteTag`                 | HTMLエスケープをせずにオブジェクトの値を直接出力する。
+:ref:`WebView_SetTag`                      | リクエストスコープの変数に値を設定する。
+:ref:`WebView_IncludeTag`                  | インクルード先のパスを言語対応のパスに変換してからインクルードを行う。
+:ref:`WebView_IncludeParamTag`             | インクルード時に追加するパラメータを指定する。
+:ref:`WebView_ConfirmationPageTag`         | JSPが確認画面であることを示す。
+                                           | このタグに入力画面へのパスを指定することで、入力画面と確認画面を共通化する。
+:ref:`WebView_IgnoreConfirmationTag`       | JSPの画面状態が確認画面である場合に、部分的に確認画面の画面状態を無効化する。
+                                           | このタグにより囲まれた範囲にある入力項目のカスタムタグは、常に入力画面用の出力を行う。
+:ref:`WebView_ForInputPageTag`             | 入力画面と確認画面を共通化したJSPにおいて、入力画面のみこのタグのボディを評価する。
+:ref:`WebView_ForConfirmationPageTag`      | 入力画面と確認画面を共通化したJSPにおいて、確認画面のみこのタグのボディを評価する。
+========================================== ==========================================================================================
+
+共通属性
+========================
+各カスタムタグの定義でここで定義した共通属性を参照する。
+
+.. _WebView_GenericAttributesTag:
+
+全てのHTMLタグ
+-------------------------
+
+============================= ==========================================================================================
+属性                          | 説明
+============================= ==========================================================================================
+id                            | XHTMLのid属性。
+cssClass                      | XHTMLのclass属性。
+style                         | XHTMLのstyle属性。
+title                         | XHTMLのtitle属性。
+lang                          | XHTMLのlang属性。
+xmlLang                       | XHTMLのxml:lang属性。
+dir                           | XHTMLのdir属性。
+onclick                       | XHTMLのonclick属性。
+ondblclick                    | XHTMLのondblclick属性。
+onmousedown                   | XHTMLのonmousedown属性。
+onmouseup                     | XHTMLのonmouseup属性。
+onmouseover                   | XHTMLのonmouseover属性。
+onmousemove                   | XHTMLのonmousemove属性。
+onmouseout                    | XHTMLのonmouseout属性。
+onkeypress                    | XHTMLのonkeypress属性。
+onkeydown                     | XHTMLのonkeydown属性。
+onkeyup                       | XHTMLのonkeyup属性。
+============================= ==========================================================================================
+
+.. _WebView_FocusAttributesTag:
+
+フォーカスを取得可能なHTMLタグ
+--------------------------------------------------
+
+============================= ==========================================================================================
+属性                          | 説明
+============================= ==========================================================================================
+accesskey                     | XHTMLのaccesskey属性。
+tabindex                      | XHTMLのtabindex属性。
+onfocus                       | XHTMLのonfocus属性。
+onblur                        | XHTMLのonblur属性。
+============================= ==========================================================================================
+
+個別属性
+======================================================
+
+.. _WebView_FormTag:
+
+formタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+name                                   | XHTMLのname属性。
+action                                 | XHTMLのaction属性。
+method                                 | XHTMLのmethod属性。
+                                       | デフォルトはpost。
+enctype                                | XHTMLのenctype属性。
+onsubmit                               | XHTMLのonsubmit属性。
+onreset                                | XHTMLのonreset属性。
+accept                                 | XHTMLのaccept属性。
+acceptCharset                          | XHTMLのaccept-charset属性。
+target                                 | XHTMLのtarget属性。
+autocomplete                           | HTML5のautocomplete属性。
+windowScopePrefixes                    | ウィンドウスコープ変数のプレフィックス。
+                                       | 複数指定する場合はカンマ区切り。
+                                       | 指定されたプレフィックスがマッチするリクエストパラメータをhiddenタグとして出力する。
+useToken                               | トークンを設定するか否か。
+                                       | トークンを設定する場合はtrue、設定しない場合はfalse。
+                                       | デフォルトはfalse。
+                                       | confirmationPageタグが指定された場合は、デフォルトがtrueとなる。
+secure                                 | URIをhttpsにするか否か。
+                                       | httpsにする場合はtrue、しない場合はfalse。
+====================================== ==========================================================================================
+
+.. _WebView_TextTag:
+
+textタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+disabled                               | XHTMLのdisabled属性。
+readonly                               | XHTMLのreadonly属性。
+size                                   | XHTMLのsize属性。
+maxlength                              | XHTMLのmaxlength属性。
+onselect                               | XHTMLのonselect属性。
+onchange                               | XHTMLのonchange属性。
+autocomplete                           | HTML5のautocomplete属性。
+autofocus                              | HTML5のautofocus属性。
+placeholder                            | HTML5のplaceholder属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+valueFormat                            | 出力時のフォーマット。
+                                       | 
+                                       | フォーマットは、"データタイプ{パターン}"形式で指定する。
+                                       | フレームワークがデフォルトでサポートしているフォーマットを下記に示す。
+                                       | 
+                                       | yyyymmdd:
+                                       
+                                        | 年月日のフォーマット。
+                                        | 値はyyyyMMdd形式またはパターン形式の文字列を指定する。
+                                        | パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。
+                                        | **パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。**
+                                        |  :ref:`WebView_CustomTagConfig` を使用してパターンのデフォルト値を設定することができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # デフォルトのパターンを使用する場合。
+                                         valueFormat="yyyymmdd"
+                                         
+                                         # パターンを指定する場合。
+                                         valueFormat="yyyymmdd{yyyy/MM/dd}"
+                                       
+                                        .. note::
+                                        
+                                         textタグのvalueFormat属性を指定した場合、\
+                                         入力画面にもフォーマットした値が出力される。\
+                                         入力された年月日をアクションで取得する場合は\
+                                         :ref:`ExtendedValidation_yyyymmddConvertor` を使用する。\
+                                         textタグとコンバータが連携し、\
+                                         valueFormat属性に指定されたパターンを使用した値変換と入力精査を行う。
+
+                                       | yyyymm:
+                                       
+                                        | 年月のフォーマット。
+                                        | 値はyyyyMM形式またはパターン形式の文字列を指定する。使用方法は、yyyymmddと同様。
+
+                                        .. note::
+                                        
+                                         yyyyMMの場合、コンバータには、\
+                                         :ref:`ExtendedValidation_yyyymmConvertor` を使用する。\
+                                        
+                                       | decimal:
+                                       
+                                        | 10進数のフォーマット。
+                                        | 値はjava.lang.Number型又は数字の文字列を指定する。
+                                        | 文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。
+                                        | パターンにはjava.text.DecimalFormatが規定している構文を指定する。
+                                        | ThreadContextに設定された言語が使用して、言語に応じた形式で値が出力される。
+                                        | 区切り文字"|"を使用してパターンに直接言語を指定することができる。
+                                        | 言語はパターンの末尾に付加する。
+                                        |  :ref:`WebView_CustomTagConfig` を使用して、区切り文字"|"の変更を行うことができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # ThreadContextに設定された言語を使用し、パターンのみ指定する場合。
+                                         valueFormat="decimal{###,###,###.000}"
+                                         
+                                         # パターンと言語を指定する場合。
+                                         valueFormat="decimal{###,###,###.000|ja}"
+                                       
+                                        .. note::
+                                        
+                                         textタグのvalueFormat属性を指定した場合、\
+                                         入力画面にもフォーマットした値が出力される。\
+                                         入力された数値をアクションで取得する場合は\
+                                         :ref:`数値コンバータ(BigDecimalConvertor、IntegerConvertor、LongConvertor)<validator_and_convertor>` を使用する。
+                                         textタグと数値コンバータが連携し、\
+                                         valueFormat属性に指定された言語に対応する値変換と入力精査を行う。
+                                       
+====================================== ==========================================================================================
+
+.. _WebView_TextareaTag:
+
+textareaタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+rows(必須)                             | XHTMLのrows属性。
+cols(必須)                             | XHTMLのcols属性。
+disabled                               | XHTMLのdisabled属性。
+readonly                               | XHTMLのreadonly属性。
+onselect                               | XHTMLのonselect属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+placeholder                            | HTML5のplaceholder属性。
+maxlength                              | HTML5のmaxlength属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_PasswordTag:
+
+passwordタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+disabled                               | XHTMLのdisabled属性。
+readonly                               | XHTMLのreadonly属性。
+size                                   | XHTMLのsize属性。
+maxlength                              | XHTMLのmaxlength属性。
+onselect                               | XHTMLのonselect属性。
+onchange                               | XHTMLのonchange属性。
+autocomplete                           | HTML5のautocomplete属性。
+autofocus                              | HTML5のautofocus属性。
+placeholder                            | HTML5のplaceholder属性。
+restoreValue                           | 入力画面の再表示時に入力データを復元するか否か。
+                                       | 復元する場合はtrue、復元しない場合はfalse。
+                                       | デフォルトはfalse。
+replacement                            | 確認画面用の出力時に使用する置換文字。
+                                       | デフォルトは'*'。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_RadioButtonTag:
+
+radioButtonタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+value(必須)                            | XHTMLのvalue属性。
+label(必須)                            | ラベル。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CheckboxTag:
+
+checkboxタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+value                                  | XHTMLのvalue属性。
+                                       | チェックありの場合に使用する値。
+                                       | デフォルトは"1"。
+autofocus                              | HTML5のautofocus属性。
+label                                  | チェックありの場合に使用するラベル。
+                                       | 入力画面では、このラベルが表示される。
+useOffValue                            | チェックなしの値設定を使用するか否か。
+                                       | デフォルトはtrue。
+offLabel                               | チェックなしの場合に使用するラベル。
+offValue                               | チェックなしの場合に使用する値。
+                                       | デフォルトは"0"。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+ 
+.. _WebView_CompositeKeyCheckboxTag:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_TagReference--s1`
+
+```json
+{
+  "id": "libraries-07_TagReference--s1",
+  "title": "タグリファレンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "WebViewカスタムタグ",
+        "タグリファレンス",
+        "共通属性",
+        "個別属性",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "カスタムタグ一覧",
+      "hints": [
+        "formタグ",
+        "textタグ",
+        "textareaタグ",
+        "passwordタグ",
+        "radioButtonタグ",
+        "checkboxタグ",
+        "fileタグ",
+        "hiddenタグ",
+        "selectタグ",
+        "buttonタグ",
+        "errorsタグ",
+        "writeタグ",
+        "submitタグ",
+        "codeSelectタグ",
+        "listSearchResultタグ",
+        "confirmationPageタグ",
+        "WebView_FormTag",
+        "WebView_TextTag",
+        "WebView_TextareaTag",
+        "WebView_PasswordTag",
+        "WebView_RadioButtonTag",
+        "WebView_CheckboxTag",
+        "WebView_CompositeKeyRadioButtonTag",
+        "WebView_CompositeKeyCheckboxTag",
+        "WebView_FileTag",
+        "WebView_HiddenTag",
+        "WebView_PlainHiddenTag",
+        "WebView_SelectTag",
+        "WebView_RadioButtonsTag",
+        "WebView_CheckboxesTag",
+        "WebView_SubmitTag",
+        "WebView_ButtonTag",
+        "WebView_SubmitLinkTag",
+        "WebView_PopupSubmitTag",
+        "WebView_PopupButtonTag",
+        "WebView_PopupLinkTag",
+        "WebView_DownloadSubmitTag",
+        "WebView_DownloadButtonTag",
+        "WebView_DownloadLinkTag",
+        "WebView_ParamTag",
+        "WebView_ChangeParamNameTag",
+        "WebView_ATag",
+        "WebView_ImgTag",
+        "WebView_LinkTag",
+        "WebView_ScriptTag",
+        "WebView_ErrorsTag",
+        "WebView_ErrorTag",
+        "WebView_NoCacheTag",
+        "WebView_CodeSelectTag",
+        "WebView_CodeRadioButtonsTag",
+        "WebView_CodeCheckboxesTag",
+        "WebView_CodeCheckboxTag",
+        "WebView_CodeTag",
+        "WebView_MessageTag",
+        "WebView_ListSearchResultTag",
+        "WebView_ListSearchSortSubmitTag",
+        "WebView_WriteTag",
+        "WebView_PrettyPrintTag",
+        "WebView_RawWriteTag",
+        "WebView_SetTag",
+        "WebView_IncludeTag",
+        "WebView_IncludeParamTag",
+        "WebView_ConfirmationPageTag",
+        "WebView_IgnoreConfirmationTag",
+        "WebView_ForInputPageTag",
+        "WebView_ForConfirmationPageTag",
+        "二重サブミット防止",
+        "入力データ復元",
+        "HTMLエスケープ",
+        "サブミット制御",
+        "コード値選択",
+        "popupSubmit",
+        "downloadSubmit",
+        "ウィンドウスコープ",
+        "URLリライト",
+        "エラーメッセージ表示",
+        "キャッシュ防止",
+        "並び替え",
+        "インクルード",
+        "確認画面"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全てのHTMLタグ",
+      "hints": [
+        "全HTMLタグ共通属性",
+        "id",
+        "cssClass",
+        "style",
+        "title",
+        "lang",
+        "xmlLang",
+        "dir",
+        "onclick",
+        "ondblclick",
+        "onmousedown",
+        "onmouseup",
+        "onmouseover",
+        "onmousemove",
+        "onmouseout",
+        "onkeypress",
+        "onkeydown",
+        "onkeyup",
+        "WebView共通属性",
+        "WebView_GenericAttributesTag"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "フォーカスを取得可能なHTMLタグ",
+      "hints": [
+        "フォーカス属性",
+        "accesskey",
+        "tabindex",
+        "onfocus",
+        "onblur",
+        "WebView_FocusAttributesTag"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "formタグ",
+      "hints": [
+        "formタグ",
+        "useToken",
+        "windowScopePrefixes",
+        "secure",
+        "二重サブミット防止",
+        "トークン",
+        "ウィンドウスコープ",
+        "confirmationPage",
+        "autocomplete"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "textタグ",
+      "hints": [
+        "textタグ",
+        "valueFormat",
+        "yyyymmdd",
+        "yyyymm",
+        "decimal",
+        "errorCss",
+        "nameAlias",
+        "ExtendedValidation_yyyymmddConvertor",
+        "ExtendedValidation_yyyymmConvertor",
+        "DecimalFormat",
+        "SimpleDateFormat",
+        "WebView_CustomTagConfig"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "textareaタグ",
+      "hints": [
+        "textareaタグ",
+        "rows",
+        "cols",
+        "maxlength",
+        "placeholder",
+        "errorCss",
+        "nameAlias",
+        "autofocus"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "passwordタグ",
+      "hints": [
+        "passwordタグ",
+        "restoreValue",
+        "replacement",
+        "確認画面",
+        "errorCss",
+        "nameAlias",
+        "autocomplete"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "radioButtonタグ",
+      "hints": [
+        "radioButtonタグ",
+        "radioButton",
+        "label",
+        "nameAlias",
+        "errorCss",
+        "autofocus",
+        "value"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "checkboxタグ",
+      "hints": [
+        "checkboxタグ",
+        "useOffValue",
+        "offValue",
+        "offLabel",
+        "value",
+        "label",
+        "nameAlias",
+        "errorCss",
+        "autofocus"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "WebViewカスタムタグのリファレンス。各カスタムタグの定義でここで定義した共通属性を参照する。共通属性には全てのHTMLタグ共通の属性（:ref:`WebView_GenericAttributesTag`）とフォーカスを取得可能なHTMLタグ共通の属性（:ref:`WebView_FocusAttributesTag`）が定義されている。",
+    "s2": "| タグ | 機能 |\n|---|---|\n| :ref:`WebView_FormTag` | HTMLのformタグ出力、サブミット制御（ボタンとアクションの紐付け、二重サブミット防止）、不正画面遷移チェック |\n| :ref:`WebView_TextTag` | HTMLのinputタグ(type=text)出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_TextareaTag` | HTMLのtextareaタグ出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_PasswordTag` | HTMLのinputタグ(type=password)出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_RadioButtonTag` | HTMLのinputタグ(type=radio)出力、入力データ復元、HTMLエスケープ。radiobuttonsタグで表示できないレイアウト時に使用 |\n| :ref:`WebView_CheckboxTag` | HTMLのinputタグ(type=checkbox)出力、入力データ復元、HTMLエスケープ。checkboxesタグで表示できないレイアウト時に使用 |\n| :ref:`WebView_CompositeKeyRadioButtonTag` | 複数のHTMLのinputタグ(type=radio)出力、入力データ復元、HTMLエスケープ。radioButtonタグで実現できない複合キーを使用する際に使用 |\n| :ref:`WebView_CompositeKeyCheckboxTag` | 複数のHTMLのinputタグ(type=checkbox)出力、入力データ復元、HTMLエスケープ。checkboxesタグで実現できない複合キーを使用する際に使用 |\n| :ref:`WebView_FileTag` | HTMLのinputタグ(type=file)出力、HTMLエスケープ |\n| :ref:`WebView_HiddenTag` | HTMLタグの出力を行わず、ウィンドウスコープに値を出力する |\n| :ref:`WebView_PlainHiddenTag` | HTMLのinputタグ(type=hidden)出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_SelectTag` | HTMLのselectタグとoptionタグ出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_RadioButtonsTag` | 複数のHTMLのinputタグ(type=radio)出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_CheckboxesTag` | 複数のHTMLのinputタグ(type=checkbox)出力、入力データ復元、HTMLエスケープ |\n| :ref:`WebView_SubmitTag` | HTMLのinputタグ(type=submit,image,button)出力、サブミット制御（ボタンとアクションの紐付け、二重サブミット防止） |\n| :ref:`WebView_ButtonTag` | HTMLのbuttonタグ出力、サブミット制御（ボタンとアクションの紐付け、二重サブミット防止） |\n| :ref:`WebView_SubmitLinkTag` | HTMLのaタグ出力、サブミット制御（リンクとアクションの紐付け、二重サブミット防止） |\n| :ref:`WebView_PopupSubmitTag` | HTMLのinputタグ(type=submit,image,button)出力、新しいウィンドウをオープンしてサブミット。複数ウィンドウを立ち上げたい場合に使用 |\n| :ref:`WebView_PopupButtonTag` | HTMLのbuttonタグ出力、新しいウィンドウをオープンしてサブミット。複数ウィンドウを立ち上げたい場合に使用 |\n| :ref:`WebView_PopupLinkTag` | HTMLのaタグ出力、新しいウィンドウをオープンしてサブミット。複数ウィンドウを立ち上げたい場合に使用 |\n| :ref:`WebView_DownloadSubmitTag` | HTMLのinputタグ(type=submit,image,button)出力、ダウンロード用サブミット |\n| :ref:`WebView_DownloadButtonTag` | HTMLのbuttonタグ出力、ダウンロード用サブミット |\n| :ref:`WebView_DownloadLinkTag` | HTMLのaタグ出力、ダウンロード用サブミット |\n| :ref:`WebView_ParamTag` | サブミット時に追加するパラメータを指定 |\n| :ref:`WebView_ChangeParamNameTag` | ポップアップ用サブミット時にパラメータ名を変更 |\n| :ref:`WebView_ATag` | HTMLのaタグ出力、コンテキストパスの付加とURLリライト |\n| :ref:`WebView_ImgTag` | HTMLのimgタグ出力、コンテキストパスの付加とURLリライト |\n| :ref:`WebView_LinkTag` | HTMLのlinkタグ出力、コンテキストパスの付加とURLリライト |\n| :ref:`WebView_ScriptTag` | HTMLのscriptタグ出力、コンテキストパスの付加とURLリライト |\n| :ref:`WebView_ErrorsTag` | エラーメッセージの複数件表示。画面上部に一覧でエラーメッセージを表示する場合に使用 |\n| :ref:`WebView_ErrorTag` | エラーメッセージの表示。エラーの原因となった入力項目の近くに個別表示する場合に使用 |\n| :ref:`WebView_NoCacheTag` | ブラウザのキャッシュを防止するmetaタグ出力とレスポンスヘッダ設定 |\n| :ref:`WebView_CodeSelectTag` | コード値の選択表示（selectタグ使用） |\n| :ref:`WebView_CodeRadioButtonsTag` | コード値の選択表示（inputタグ(type=radio)使用） |\n| :ref:`WebView_CodeCheckboxesTag` | コード値の選択表示（inputタグ(type=checkbox)使用） |\n| :ref:`WebView_CodeCheckboxTag` | コード値の単一入力項目表示（inputタグ(type=checkbox)使用） |\n| :ref:`WebView_CodeTag` | 一覧表示や参照画面でコード値を出力 |\n| :ref:`WebView_MessageTag` | 言語に応じたメッセージを出力 |\n| :ref:`WebView_ListSearchResultTag` | 検索結果の一覧表示 |\n| :ref:`WebView_ListSearchSortSubmitTag` | 検索結果の一覧表示で並び替え対応の列見出しを出力 |\n| :ref:`WebView_WriteTag` | 一覧表示や参照画面でオブジェクトから値を出力 |\n| :ref:`WebView_PrettyPrintTag` | 修飾系のHTML（\\<b\\>タグなど）をエスケープせずにオブジェクトの値を出力 |\n| :ref:`WebView_RawWriteTag` | HTMLエスケープをせずにオブジェクトの値を直接出力 |\n| :ref:`WebView_SetTag` | リクエストスコープの変数に値を設定 |\n| :ref:`WebView_IncludeTag` | インクルード先のパスを言語対応のパスに変換してからインクルード |\n| :ref:`WebView_IncludeParamTag` | インクルード時に追加するパラメータを指定 |\n| :ref:`WebView_ConfirmationPageTag` | JSPが確認画面であることを示す。入力画面へのパスを指定することで入力画面と確認画面を共通化 |\n| :ref:`WebView_IgnoreConfirmationTag` | 確認画面である場合に部分的に確認画面の状態を無効化。囲まれた範囲の入力項目は常に入力画面用の出力を行う |\n| :ref:`WebView_ForInputPageTag` | 入力画面と確認画面を共通化したJSPで、入力画面のみボディを評価 |\n| :ref:`WebView_ForConfirmationPageTag` | 入力画面と確認画面を共通化したJSPで、確認画面のみボディを評価 |",
+    "s3": "全てのHTMLタグに共通する属性（:ref:`WebView_GenericAttributesTag`）。\n\n| 属性 | 説明 |\n|---|---|\n| id | XHTMLのid属性 |\n| cssClass | XHTMLのclass属性 |\n| style | XHTMLのstyle属性 |\n| title | XHTMLのtitle属性 |\n| lang | XHTMLのlang属性 |\n| xmlLang | XHTMLのxml:lang属性 |\n| dir | XHTMLのdir属性 |\n| onclick | XHTMLのonclick属性 |\n| ondblclick | XHTMLのondblclick属性 |\n| onmousedown | XHTMLのonmousedown属性 |\n| onmouseup | XHTMLのonmouseup属性 |\n| onmouseover | XHTMLのonmouseover属性 |\n| onmousemove | XHTMLのonmousemove属性 |\n| onmouseout | XHTMLのonmouseout属性 |\n| onkeypress | XHTMLのonkeypress属性 |\n| onkeydown | XHTMLのonkeydown属性 |\n| onkeyup | XHTMLのonkeyup属性 |",
+    "s4": "フォーカスを取得可能なHTMLタグに共通する属性（:ref:`WebView_FocusAttributesTag`）。\n\n| 属性 | 説明 |\n|---|---|\n| accesskey | XHTMLのaccesskey属性 |\n| tabindex | XHTMLのtabindex属性 |\n| onfocus | XHTMLのonfocus属性 |\n| onblur | XHTMLのonblur属性 |",
+    "s5": "**formタグ**（:ref:`WebView_FormTag`）の属性。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| name | | | XHTMLのname属性 |\n| action | | | XHTMLのaction属性 |\n| method | | post | XHTMLのmethod属性 |\n| enctype | | | XHTMLのenctype属性 |\n| onsubmit | | | XHTMLのonsubmit属性 |\n| onreset | | | XHTMLのonreset属性 |\n| accept | | | XHTMLのaccept属性 |\n| acceptCharset | | | XHTMLのaccept-charset属性 |\n| target | | | XHTMLのtarget属性 |\n| autocomplete | | | HTML5のautocomplete属性 |\n| windowScopePrefixes | | | ウィンドウスコープ変数のプレフィックス（複数指定はカンマ区切り）。指定されたプレフィックスがマッチするリクエストパラメータをhiddenタグとして出力する |\n| useToken | | false | トークンを設定するか否か。trueの場合設定、falseの場合設定しない。confirmationPageタグが指定された場合はデフォルトがtrueとなる |\n| secure | | | URIをhttpsにするか否か。httpsにする場合はtrue、しない場合はfalse |",
+    "s6": "**textタグ**（:ref:`WebView_TextTag`）の属性。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| :ref:`WebView_FocusAttributesTag` | | | フォーカス属性 |\n| name | ○ | | XHTMLのname属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| readonly | | | XHTMLのreadonly属性 |\n| size | | | XHTMLのsize属性 |\n| maxlength | | | XHTMLのmaxlength属性 |\n| onselect | | | XHTMLのonselect属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autocomplete | | | HTML5のautocomplete属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| placeholder | | | HTML5のplaceholder属性 |\n| errorCss | | \"nablarch_error\" | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス（複数指定はカンマ区切り） |\n| valueFormat | | | 出力時のフォーマット。\"データタイプ{パターン}\"形式で指定 |\n\n**valueFormat の詳細**:\n\n- `yyyymmdd`: 年月日のフォーマット。値はyyyyMMdd形式またはパターン形式の文字列を指定する。パターンにはjava.text.SimpleDateFormatの構文を指定。**パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。** :ref:`WebView_CustomTagConfig` を使用してパターンのデフォルト値を設定可能。\n  - 指定例: `valueFormat=\"yyyymmdd\"` / `valueFormat=\"yyyymmdd{yyyy/MM/dd}\"`\n  - > **注意**: valueFormat属性を指定した場合、入力画面にもフォーマットした値が出力される。入力された年月日をアクションで取得する場合は :ref:`ExtendedValidation_yyyymmddConvertor` を使用する。textタグとコンバータが連携し、valueFormat属性に指定されたパターンを使用した値変換と入力精査を行う。\n\n- `yyyymm`: 年月のフォーマット。値はyyyyMM形式またはパターン形式の文字列を指定する。使用方法はyyyymmddと同様。\n  - > **注意**: コンバータには :ref:`ExtendedValidation_yyyymmConvertor` を使用する。\n\n- `decimal`: 10進数のフォーマット。値はjava.lang.Number型または数字の文字列を指定する。文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。パターンにはjava.text.DecimalFormatの構文を指定。ThreadContextに設定された言語を使用して言語に応じた形式で値が出力される。区切り文字\"|\"を使用してパターンに直接言語を指定可能。:ref:`WebView_CustomTagConfig` を使用して区切り文字\"|\"の変更可。\n  - 指定例: `valueFormat=\"decimal{###,###,###.000}\"` / `valueFormat=\"decimal{###,###,###.000|ja}\"`\n  - > **注意**: valueFormat属性を指定した場合、入力画面にもフォーマットした値が出力される。入力された数値をアクションで取得する場合は :ref:`数値コンバータ(BigDecimalConvertor、IntegerConvertor、LongConvertor)<validator_and_convertor>` を使用する。textタグと数値コンバータが連携し、valueFormat属性に指定された言語に対応する値変換と入力精査を行う。",
+    "s7": "**textareaタグ**（:ref:`WebView_TextareaTag`）の属性。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| :ref:`WebView_FocusAttributesTag` | | | フォーカス属性 |\n| name | ○ | | XHTMLのname属性 |\n| rows | ○ | | XHTMLのrows属性 |\n| cols | ○ | | XHTMLのcols属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| readonly | | | XHTMLのreadonly属性 |\n| onselect | | | XHTMLのonselect属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| placeholder | | | HTML5のplaceholder属性 |\n| maxlength | | | HTML5のmaxlength属性 |\n| errorCss | | \"nablarch_error\" | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス（複数指定はカンマ区切り） |",
+    "s8": "**passwordタグ**（:ref:`WebView_PasswordTag`）の属性。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| :ref:`WebView_FocusAttributesTag` | | | フォーカス属性 |\n| name | ○ | | XHTMLのname属性 |\n| disabled | | | XHTMLのdisabled属性 |\n| readonly | | | XHTMLのreadonly属性 |\n| size | | | XHTMLのsize属性 |\n| maxlength | | | XHTMLのmaxlength属性 |\n| onselect | | | XHTMLのonselect属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autocomplete | | | HTML5のautocomplete属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| placeholder | | | HTML5のplaceholder属性 |\n| restoreValue | | false | 入力画面の再表示時に入力データを復元するか否か。復元する場合はtrue、復元しない場合はfalse |\n| replacement | | '*' | 確認画面用の出力時に使用する置換文字 |\n| errorCss | | \"nablarch_error\" | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス（複数指定はカンマ区切り） |",
+    "s9": "**radioButtonタグ**（:ref:`WebView_RadioButtonTag`）の属性。radiobuttonsタグで表示できないレイアウト時に使用する。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| :ref:`WebView_FocusAttributesTag` | | | フォーカス属性 |\n| name | ○ | | XHTMLのname属性 |\n| value | ○ | | XHTMLのvalue属性 |\n| label | ○ | | ラベル |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性 |\n| errorCss | | \"nablarch_error\" | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス（複数指定はカンマ区切り） |",
+    "s10": "**checkboxタグ**（:ref:`WebView_CheckboxTag`）の属性。checkboxesタグで表示できないレイアウト時に使用する。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| :ref:`WebView_GenericAttributesTag` | | | 全HTMLタグ共通属性 |\n| :ref:`WebView_FocusAttributesTag` | | | フォーカス属性 |\n| name | ○ | | XHTMLのname属性 |\n| value | | \"1\" | XHTMLのvalue属性。チェックありの場合に使用する値 |\n| autofocus | | | HTML5のautofocus属性 |\n| label | | | チェックありの場合に使用するラベル。入力画面ではこのラベルが表示される |\n| useOffValue | | true | チェックなしの値設定を使用するか否か |\n| offLabel | | | チェックなしの場合に使用するラベル |\n| offValue | | \"0\" | チェックなしの場合に使用する値 |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| errorCss | | \"nablarch_error\" | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス（複数指定はカンマ区切り） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

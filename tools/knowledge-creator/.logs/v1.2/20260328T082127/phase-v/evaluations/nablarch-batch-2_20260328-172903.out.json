@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-2",
+  "user_impact": "none",
+  "needs_improvement": false,
+  "reason": "The only residual finding concerns the absence of `SampleEntity` from the hints array. `SampleEntity` is a generic placeholder name used only in the code example to illustrate the pattern — it is not a real Nablarch framework class. No developer would search for `SampleEntity` when seeking guidance on batch processing with Nablarch. All meaningful API identifiers (`ParameterizedSqlPStatement`, `executeUpdateByObject`, `getParameterizedSqlStatement`, `Entity`, `INSERT`, `UPDATE`, etc.) are already present in the hints array, providing sufficient coverage for retrieval. The omission has no practical effect on the agent's ability to find or use this knowledge file.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "sections.s1 / index[0].hints",
+      "impact": "none",
+      "justification": "`SampleEntity` is a sample-specific placeholder class name chosen only to illustrate the Entity usage pattern in the code example. It carries no retrieval value because users searching for Nablarch batch DB-update guidance would never query this name. The hints array already covers every real API element involved (`ParameterizedSqlPStatement`, `executeUpdateByObject`, `Entity`, `INSERT`, `UPDATE`, `バッチ処理`, etc.). Phase E did not apply a fix — the output JSON is byte-for-byte identical to Phase D — most likely because the fix agent correctly judged this example-specific name as not worth adding to hints, or the edit was silently dropped. Either way, the missing hint causes zero degradation in agent retrieval or answer quality."
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "about-nablarch-top",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Table first-column property names '配布元' and 'リリース内容' are absent from s3 hints.",
+      "source_evidence": "Source list-table first column contains: 配布元, バージョン番号, リリース日, リリース内容, 既知不具合, リリース履歴. Knowledge file s3 hints include バージョン番号, リリース日, 既知不具合, リリース履歴 but omit 配布元 and リリース内容."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+===================================================
+Nablarch 1.2.8版
+===================================================
+
+----------------------------
+Nablarchについて
+----------------------------
+
+Nablarch(ナブラーク)は、TISの豊富な基幹システム構築経験から得られたナレッジを集約したJavaアプリケーション開発/実行基盤です。
+
+.. toctree::
+  :maxdepth: 1
+
+  about_nablarch/concept
+  about_nablarch/development_policy
+  about_nablarch/contents
+  about_nablarch/support_service
+  about_nablarch/versionup_policy
+
+----------------------------
+Nablarchのコンテンツ
+----------------------------
+
+
+Nablarchのコンテンツは nablarchフォルダに格納されています。下記リンクから参照してください。 
+
+* `Nablarchのコンテンツ <./nablarch/index.html>`_ 
+
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  nablarch/index
+
+
+また、Nablarchを使用したアプリケーション開発に関する質問については、FAQを参照してください。
+
+* `FAQ <./FAQ/index.html>`_ 
+
+----------------------------
+リリース情報
+----------------------------
+
+本リリースのリリース情報は下記のとおりです。
+
+.. list-table:: 
+   :widths: 10, 30
+
+   * - 配布元
+     - | TIS株式会社 テクノロジー開発部
+   * - バージョン番号
+     - 1.2.8
+   * - リリース日
+     - 2024年05月30日
+   * - リリース内容
+     - | `リリースノート <./nablarch/release_note/nablarch-releasenote.xlsx>`_ 
+   * - 既知不具合
+     -   `既知不具合 <./nablarch/release_note/既知不具合.xls>`_ 
+   * - リリース履歴
+     - | 2013年05月13日 1.1.9 リリース
+       | 2021年06月30日 1.2.7 リリース
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "about-nablarch-top",
+  "title": "Nablarch 1.2.8版",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchについて",
+      "hints": [
+        "Nablarch",
+        "Java開発基盤",
+        "TIS",
+        "アプリケーション開発実行基盤",
+        "about_nablarch/concept",
+        "about_nablarch/development_policy",
+        "about_nablarch/contents",
+        "about_nablarch/support_service",
+        "about_nablarch/versionup_policy"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Nablarchのコンテンツ",
+      "hints": [
+        "Nablarchコンテンツ",
+        "FAQ",
+        "nablarch/index",
+        "コンテンツ一覧"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リリース情報",
+      "hints": [
+        "リリース情報",
+        "バージョン番号",
+        "1.2.8",
+        "リリース日",
+        "リリースノート",
+        "既知不具合",
+        "リリース履歴"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch(ナブラーク)はTISの豊富な基幹システム構築経験から得られたナレッジを集約したJavaアプリケーション開発/実行基盤。\n\n関連ドキュメント（toctree）:\n- about_nablarch/concept\n- about_nablarch/development_policy\n- about_nablarch/contents\n- about_nablarch/support_service\n- about_nablarch/versionup_policy",
+    "s2": "- [Nablarchのコンテンツ](./nablarch/index.html)\n- [FAQ](./FAQ/index.html)",
+    "s3": "| 項目 | 内容 |\n|---|---|\n| 配布元 | TIS株式会社 テクノロジー開発部 |\n| バージョン番号 | 1.2.8 |\n| リリース日 | 2024年05月30日 |\n| リリース内容 | [リリースノート](./nablarch/release_note/nablarch-releasenote.xlsx) |\n| 既知不具合 | [既知不具合](./nablarch/release_note/既知不具合.xls) |\n| リリース履歴 | 2013年05月13日 1.1.9リリース、2021年06月30日 1.2.7リリース |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

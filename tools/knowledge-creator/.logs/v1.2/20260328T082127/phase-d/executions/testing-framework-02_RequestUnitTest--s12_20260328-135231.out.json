@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — リクエストパラメータの値を検証したい場合 subsection",
+      "description": "The source contains a dedicated subsection explaining how to verify request parameters that the test target has rewritten (e.g., for ウィンドウスコープ reset). The knowledge file lists `getHttpRequest()` in the TestCaseInfo methods table but omits: (1) the specific use case context (test target rewrites request parameters to reset window scope values), (2) the verification pattern using `request.getParam(paramName)`, and (3) the `assertEquals` assertion pattern against the rewritten parameter value. This is a distinct verification scenario not covered by the request-scope object table.",
+      "source_evidence": "「ウィンドウスコープの値をリセットするために、テスト対象機能にてリクエストパラメータを書き換える場合がある。」and code: `HttpRequest request = testCaseInfo.getHttpRequest(); assertEquals(\"\", request.getParam(\"resetparameter\"));`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — テスト起動方法",
+      "description": "Section content is only ~27 characters ('クラス単体テストと同様。通常のJUnitテストと同じように実行する。'), which is below the 50-character minimum threshold.",
+      "source_evidence": "Source section 'テスト起動方法': 「クラス単体テストと同様。通常のJUnitテストと同じように実行する。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Missing `getRequestScopedVar` and `execute` from hints. `getRequestScopedVar` is the primary method used in every code example to retrieve values from the request scope, making it a key search term. `execute` is the core API of the entire Advice pattern described in this section.",
+      "source_evidence": "`context.getRequestScopedVar(\"allGroup\")`, `context.getRequestScopedVar(\"allUseCase\")`, `context.getRequestScopedVar(\"systemAccount\")`, `context.getRequestScopedVar(\"user\")`, `context.getRequestScopedVar(\"pageData\")` appear in multiple code examples; `execute(\"testMenus00102Normal\", new BasicAdvice() {...})` is the primary API pattern."
+    }
+  ]
+}

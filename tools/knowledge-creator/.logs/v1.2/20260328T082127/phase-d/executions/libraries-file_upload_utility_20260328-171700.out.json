@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — BasicInsertionStrategy row description",
+      "description": "Knowledge file describes BasicInsertionStrategy as '典型的なINSERT処理を提供する `InsertionStrategy` 実装クラス', but the source table says '典型的なINSERT処理を提供するInsertionValidationStrategy実装クラス。'. The source text says InsertionValidationStrategy, not InsertionStrategy.",
+      "source_evidence": "BasicInsertionStrategy  典型的なINSERT処理を提供するInsertionValidationStrategy実装クラス。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "Missing PascalCase class names that appear in source content: `MessageUtil` (used in MessageUtil.createMessage calls for error handling), `@OnError` (annotation on the main doSaveFile code example), and `BulkValidator.MsgIdHolder` (inner class referenced in the validateWith method signature: BulkValidator.MsgIdHolder#validateWith).",
+      "source_evidence": "MessageUtil.createMessage(...) in 形式エラー/精査エラー sections; @OnError(type = ApplicationException.class, path = \"/path/to/forward\") in doSaveFile example; BulkValidator.MsgIdHolder#validateWith(Class<F> formClass, String validateFor)"
+    }
+  ]
+}

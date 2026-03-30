@@ -1,0 +1,61 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s8",
+  "title": "大量データの検索機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "大量データの検索機能",
+      "hints": [
+        "ResultSetIterator",
+        "SqlPStatement",
+        "DbAccessSupport",
+        "executeQuery",
+        "大量データ検索",
+        "SqlRow",
+        "ResultSetIterator複数回呼び出し禁止"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "更新処理",
+        "insert",
+        "update",
+        "delete"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "更新(insert、update、delete)",
+      "hints": [
+        "SqlPStatement",
+        "DbAccessSupport",
+        "executeUpdate",
+        "executeBatch",
+        "addBatch",
+        "getBatchSize",
+        "INSERT実装",
+        "UPDATE実装",
+        "バッチ更新",
+        "OutOfMemoryError"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "バイナリデータアクセス",
+        "access_to_binary_data"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "大量データを取得する場合は、簡易検索機能ではなく `executeQuery` を使用すること。`executeQuery` を使用した場合もデータベースからの検索結果を簡易的に扱えるオブジェクト（`ResultSetIterator`）が返却されるため、JDBCの機能を直接使用せずにデータ取得できる。\n\n> **補足**: 大量データとは、SELECT文の結果として取得されるデータ件数（検索対象テーブルの件数ではない）が大量であることをさす。`retrieve()` の結果 `SqlResultSet` が大量の場合、または `retrieve(1, 10000000)` のように取得最大件数を大量に指定した場合が該当する。取得開始位置が大きくても最大件数が少なければ（例: `retrieve(10000000, 20)` は最大20件のため）該当しない。\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nGET_ALL_USER =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nORDER BY\n    USER_ID\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    public ResultSetIterator getAllUser() {\n        SqlPStatement statement = getSqlPStatement(\"GET_ALL_USER\");\n        statement.setString(1, \"00001\");\n        return statement.executeQuery();\n    }\n}\n\n// ResultSetIterator は Iterable を実装しているため for-each が使用可能\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。\n\n> **警告**: `ResultSetIterator#iterator` の呼び出しは複数回行うことができない。以下はNGパターン:\n```java\n// NG1: iteratorメソッドを2回呼び出し\nResultSetIterator rs = statement.executeQuery();\nrs.iterator();\nrs.iterator();\n\n// NG2: 2回目のfor文で2回目のiterator呼び出しが発生\nResultSetIterator rs = statement.executeQuery();\nfor (SqlRow row : rs) { /* 処理 */ }\nfor (SqlRow row : rs) { /* 処理 */ }  // NG\n```",
+    "s2": "なし",
+    "s3": "### 1件のデータを更新する場合\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nREGISTER_USER =\nINSERT INTO\n    USER_MST\n    (USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS)\nVALUES\n    (?, ?, ?, ?, ?)\n\nUPDATE_USER_NAME =\nUPDATE\n    USER_MST\nSET\n    USER_NAME = ?\nWHERE\n    USER_ID = ?\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    public void registerUser(String userId, String userName, String userNameKana,\n            String tel, String mailAddress) {\n        SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\");\n        statement.setString(1, userId);\n        statement.setString(2, userName);\n        statement.setString(3, userNameKana);\n        statement.setString(4, tel);\n        statement.setString(5, mailAddress);\n        statement.executeUpdate();\n    }\n\n    public void updateUserName(String userId, String userName) {\n        SqlPStatement updateStatement = getSqlPStatement(\"UPDATE_USER_NAME\");\n        updateStatement.setString(1, userName);\n        updateStatement.setString(2, userId);\n        int updCnt = updateStatement.executeUpdate();\n        if (updCnt != 1) {\n            // 更新対象が存在しない場合は対象なしエラーを表示する\n        }\n    }\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。\n\n### 複数件を一括で更新する場合\n\n同一テーブルへの insert/update/delete を繰り返し行う場合は、`executeBatch` によるバッチ更新を使用すること。ラウンドトリップ回数を削減でき、性能改善が期待できる。\n\n> **警告**: 大量データを一括更新する場合は適宜 `executeBatch` を呼び出すこと。実行しないとメモリ不足（OutOfMemoryError）やGC頻発による性能劣化の原因となる。\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nREGSITER_ALL_USER =\nINSERT INTO\n    USER\n    (ID, NAME)\nVALUES\n    (?, ?)\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    private static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\n    public void registerAllUser(List<Map<String, ?>> users) {\n        SqlPStatement batch = getSqlPStatement(\"REGSITER_ALL_USER\");\n        for (Map<String, ?> user : users) {\n            batch.setObject(1, user.get(\"ID\"));\n            batch.setObject(2, user.get(\"NAME\"));\n            batch.addBatch();\n            if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n                batch.executeBatch();\n            }\n        }\n        if (batch.getBatchSize() != 0) {\n            batch.executeBatch();\n        }\n    }\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。",
+    "s4": "なし"
+  }
+}

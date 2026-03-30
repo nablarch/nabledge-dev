@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — 例外制御",
+      "description": "The basic try/catch exception handling code example (before @OnError simplification) is absent from the knowledge file. The source shows `throw new HttpErrorResponse(400, \"forward://registerForm.html\", ae)` — this is the only place in the source that demonstrates the 3-argument HttpErrorResponse constructor signature (statusCode, forwardPath, cause). The knowledge file prose mentions the pattern but omits the code, so an AI has no example of how to construct HttpErrorResponse with an explicit HTTP status code.",
+      "source_evidence": "catch(ApplicationException ae) { throw new HttpErrorResponse(400, \"forward://registerForm.html\", ae); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints",
+      "description": "Missing `WebFrontController` hint. The class is cited in an important note explaining why servlet forward (`servlet://`) does NOT re-execute the handler queue (WebFrontController is a servlet filter — re-execution would cause an infinite loop). Users asking about WebFrontController + handler queue interaction would benefit from this section being retrievable.",
+      "source_evidence": ":doc:`WebFrontController` が全リクエストを対象としたサーブレットフィルタとして実装されており、サーブレットフォーワードで再度処理した場合、無限ループしてしまうためである。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints",
+      "description": "Missing full FQCN `nablarch.common.web.token.OnDoubleSubmission` as a hint. Only the short form `OnDoubleSubmission` is present. The fully-qualified class name appears explicitly in the interceptorsOrder XML configuration example and would help route queries that include the package name.",
+      "source_evidence": "<value>nablarch.common.web.token.OnDoubleSubmission</value>"
+    }
+  ]
+}

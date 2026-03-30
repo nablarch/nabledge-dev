@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-RequestThreadLoopHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — ハンドラ処理フロー [例外処理] step 3a",
+      "description": "Source step 3a (プロセス停止コマンド投入による正常停止) is entirely absent from the knowledge file. The source states: ProcessStopHandler によりプロセス停止例外が送出された場合は、ループを中断し Result.Success を返却して終了コード0で正常終了させる。This describes the normal process stop path — a distinct behavior from the exception table rows — and is decision-necessary information for implementers integrating ProcessStopHandler.",
+      "source_evidence": "**3a. (プロセス停止コマンド投入による正常停止)** :doc:`ProcessStopHandler` によりプロセス停止例外が送出された場合は、ループを中断し `Result.Success`_ を返却して終了コード0で正常終了させる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`Result.Success` is referenced in source step 3a (the normal process stop path) but is absent from s2 hints. It is also absent from s1 hints.",
+      "source_evidence": "ループを中断し `Result.Success`_ を返却して終了コード0で正常終了させる。"
+    }
+  ]
+}

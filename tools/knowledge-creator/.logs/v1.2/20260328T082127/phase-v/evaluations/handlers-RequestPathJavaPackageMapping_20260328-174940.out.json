@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-RequestPathJavaPackageMapping",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is a minor hints_missing issue: `Main` is absent from s1 hints. The content referencing `Main` is already present in s1's related-handlers table. Because `Main` is an extremely generic PascalCase name, its presence as a hint adds negligible retrieval value — users seeking batch dispatch behavior will query via `--requestPath`, `batch`, or `RequestPathJavaPackageMapping`, not via `Main`. The section is retrievable through all other existing hints. No functional knowledge is lost.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "`Main` is a generic class name with minimal discriminative power as a search hint. The related-handlers content describing `Main`'s role (batch --requestPath dispatch) is fully present in s1's body text, so the section is retrievable via other meaningful hints (RequestPathJavaPackageMapping, batch-related terms, --requestPath in the section text). Adding `Main` to hints would marginally improve recall only if a user queries solely on that generic name, which is an unlikely search pattern. The finding persisted through Phase E because the fix agent produced identical JSON output — the change was either silently skipped or the agent judged the minor severity finding not worth altering."
+    }
+  ]
+}

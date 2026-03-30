@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-MessageReplyHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — [例外処理] 2c.",
+      "description": "The source specifies '実行時例外/エラー' (RuntimeException or Java Error), but the knowledge file generalizes this to '例外'. The distinction matters: this handler catches unchecked exceptions and Java Errors only, not checked exceptions. Losing this precision could mislead an AI into stating the handler intercepts all throwables.",
+      "source_evidence": "後続ハンドラの処理中に実行時例外/エラーが発生した場合、エラー内容をもとに応答電文を作成し"
+    }
+  ]
+}

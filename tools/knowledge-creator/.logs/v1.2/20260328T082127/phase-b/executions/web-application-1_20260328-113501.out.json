@@ -1,0 +1,23 @@
+{
+  "id": "web-application-1",
+  "title": "入力値で精査エラーが発生した場合に戻り先画面の情報はどのように取得したらよいですか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "精査エラー時の戻り先画面データ取得方法",
+      "hints": [
+        "@OnError",
+        "ApplicationException",
+        "精査エラー",
+        "リクエストスコープ",
+        "画面表示データ取得",
+        "入力画面への戻り"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査エラー（`ApplicationException`）発生時は、画面表示データをDBから取得してリクエストスコープに設定してから入力画面に戻す。\n\n**アノテーション**: `@OnError`\n\n```java\n@OnError(type = ApplicationException.class, path = \"入力画面.jsp\")\npublic HttpResponse do2(HttpRequest req, ExecutionContext ctx) {\n    if (!context.isValid()) {\n        // 精査エラーの場合、初期表示データを取得してリクエストスコープに設定する\n        setViewDataToRequestScope();\n        throw new ApplicationException(context.getMessages());\n    }\n    return new HttpResponse(\"確認画面.jsp\");\n}\n\nprivate void setViewDataToRequestScope() {\n    // DBから画面表示データを取得してリクエストスコープに設定する\n}\n```"
+  }
+}

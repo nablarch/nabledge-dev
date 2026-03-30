@@ -1,0 +1,332 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation_messaging/04_Explanation_real/02_basic.rst`
+- Format: `rst`
+
+```
+======================================================
+同期応答型メッセージ受信処理のアプリケーション構造
+======================================================
+
+本項では、同期応答型メッセージ受信処理で共通の基本的なクラス構造について説明する。
+
+概要
+====
+
+Nablarch Application Frameworkでは、複雑になりがちなメッセージング処理を簡潔かつ堅牢に作成できるように以下のような機能を備えている。
+
+* Nablarch共通の実装方法
+
+ 通常、メッセージング処理の実装を行う場合、MessageDrivenBeanに代表されるように、バッチやオンライン処理とは全く異なる業務実装を要求されることが多い。
+ Nablarchではこのような差異が抽象化されていて、バッチやオンライン処理と同様に「要求を受け取って応答を返却する」という同一のスタイルでコーディングができる。
+ 
+* 開始時、エラー発生時、終了時の各イベント時のコールバック
+
+ 各イベント発生時に、フレームワーク側からに対応するメソッドが起動される。
+ これにより、業務アプリケーションでのエラー処理漏れやリソース解放漏れを抑止できる。
+
+* 電文読み取り、書き込みの簡易化
+
+ 設計書から自動生成されたフォーマット定義ファイルを使用することにより、
+ 物理的なレイアウトを意識したプログラミングをしなくてよい。
+ 
+ 例えば、「レコード先頭xバイト目からxバイト分を半角数字として取得」するというような処理を
+ プログラム上でする必要が無く、単に引数で与えられた入力データからそのフィールド名を
+ 指定して取得するだけでよい。また、Entityに変換することで型安全なプログラミングが可能となる。
+ 
+* 障害発生時の処理
+
+ 障害発生時の考慮がフレームワーク側で行われいるため、業務処理ではビジネスロジックに注力できる。
+
+
+電文フォーマット定義ファイル
+=========================================
+標準的なアプリケーションでは、以下の3つのフォーマット定義ファイルを使用する。
+
+1. **ヘッダーフォーマット定義**
+
+  アプリケーション制御情報を含む共通データ領域のデータフォーマットを定義する。
+  リポジトリ定義ファイルにファイル名を指定する。
+  なお、ヘッダーフォーマット定義ファイルは要求・応答双方で同じものを使用する。
+
+
+2. **要求電文フォーマット定義**
+  
+  要求電文中の業務データ領域のデータフォーマットを定義する。
+  定義ファイルの名称は、
+
+    **(リクエストID) + "_RECEIVE.fmt"**
+
+  となる。
+
+3. **応答電文フォーマット定義**
+  
+  応答電文中の業務データ領域のデータフォーマットを定義する。
+  定義ファイルの名称は、
+
+    **(リクエストID) + "_SEND.fmt"**
+
+  となる。
+
+
+
+クラス構造
+==========
+
+
+.. image:: ./_image/class_diagram.png
+
+MessagingAction\ [#]_\ を継承し以下のメソッドを実装する。
+
+\
+
+==================================================================================================== ================================= ================================= ======
+メソッド                                                                                             概要                               起動タイミング                   要否 
+==================================================================================================== ================================= ================================= ======
+.. function:: ResponseMessage onReceive(RequestMessage request, ExecutionContext context)            電文受信時の処理を行う。           電文受信時                        必須
+.. function:: ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context) エラー発生時の処理を行う。\ [#]_   onReceiveメソッドでエラー発生時   必須
+==================================================================================================== ================================= ================================= ======
+
+
+\
+
+.. [#]  MessagingActionはDbAccessSupportを継承しているため、サブクラスでも
+ DbAccessSupportの機能を用いてデータベースアクセスを行うことができる。
+
+\
+
+.. [#] 
+ エラー発生時の処理は、メイン処理とは別のトランザクションで実行される。
+ これは、メイン処理でエラーが発生した場合、そのトランザクションはロールバックされて終了するからである。
+
+
+メソッド詳細
+============
+
+電文受信時のコールバック
+------------------------
+
+
+``onReceive``\ メソッドを実装する（必須）。
+
+処理対象リクエストIDの要求電文受信時にフレームワークにより起動される。\
+本メソッドでは、要求電文を引数として受け取り、処理結果の応答電文を戻り値として返却する。
+
+
+
+エラー発生時のコールバック
+--------------------------
+
+\ ``onError``\ メソッドを実装する（必須）。
+
+本メソッドは、メイン処理でエラー発生時のみ呼び出される。エラーが発生しなかった場合は起動されない。\
+メイン処理で発生した例外またはエラーは、本メソッドの引数で渡される。
+
+.. note::
+ 実装すべき処理の例を以下に示す。
+ 
+ * エラーが発生したレコードのステータスを異常終了に更新する。
+ * 相手先システムにエラーを通知する為、エラー電文を作成する。
+
+
+
+処理の流れ
+==========
+
+Nablarch Application Frameworkは、常駐して受信キューを監視する。
+要求電文が到達する毎に、以下の処理が実行される。
+
+ 
+#. Nablarch Application Frameworkはフレームワーク制御ヘッダのリクエストIDをもとに、業務アクションクラスを起動する。
+#. 業務アクションは、要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する。
+#. Nablarch Application Frameworkは、返却された応答電文を送信キューにPUTする。
+
+
+.. image:: ./_image/sequence.png
+
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-02_basic-04_Explanation_real`
+
+```json
+{
+  "id": "mom-messaging-02_basic-04_Explanation_real",
+  "title": "同期応答型メッセージ受信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessagingAction",
+        "DbAccessSupport",
+        "同期応答型メッセージ受信処理",
+        "イベントコールバック",
+        "電文受信",
+        "型安全なプログラミング",
+        "Entity"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "電文フォーマット定義ファイル",
+      "hints": [
+        "_RECEIVE.fmt",
+        "_SEND.fmt",
+        "ヘッダーフォーマット定義",
+        "要求電文フォーマット定義",
+        "応答電文フォーマット定義",
+        "リクエストID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "クラス構造",
+      "hints": [
+        "MessagingAction",
+        "DbAccessSupport",
+        "onReceive",
+        "onError",
+        "RequestMessage",
+        "ExecutionContext",
+        "ResponseMessage",
+        "Throwable",
+        "クラス構造"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メソッド詳細",
+      "hints": [
+        "onReceive",
+        "onError",
+        "RequestMessage",
+        "ResponseMessage",
+        "ExecutionContext",
+        "Throwable",
+        "電文受信コールバック",
+        "エラーコールバック"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "処理の流れ",
+      "hints": [
+        "受信キュー監視",
+        "送信キュー",
+        "リクエストID",
+        "業務アクション",
+        "メッセージング処理フロー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "同期応答型メッセージ受信処理の主な特徴：\n\n- **実装スタイルの統一**: バッチ・オンライン処理と同じ「要求を受け取って応答を返却する」スタイルでコーディング可能\n- **イベントコールバック**: 開始時・エラー発生時・終了時の各イベントで対応メソッドが起動される。業務アプリケーションでのエラー処理漏れやリソース解放漏れを抑止できる\n- **電文読み取り/書き込みの簡易化**: フォーマット定義ファイルにより物理的なレイアウトを意識したプログラミング不要。フィールド名指定で取得可能。Entityに変換することで型安全なプログラミングが可能\n- **障害発生時の処理**: フレームワーク側で対処するため、業務処理はビジネスロジックに注力できる",
+    "s2": "標準的なアプリケーションでは以下の3つのフォーマット定義ファイルを使用する。\n\n1. **ヘッダーフォーマット定義**: アプリケーション制御情報を含む共通データ領域のフォーマット。リポジトリ定義ファイルにファイル名を指定。要求・応答双方で同じファイルを使用。\n\n2. **要求電文フォーマット定義**: 要求電文中の業務データ領域のフォーマット。ファイル名: `(リクエストID)_RECEIVE.fmt`\n\n3. **応答電文フォーマット定義**: 応答電文中の業務データ領域のフォーマット。ファイル名: `(リクエストID)_SEND.fmt`",
+    "s3": "**クラス**: `MessagingAction`を継承し、以下のメソッドを実装する。\n\n> **補足**: `MessagingAction`は`DbAccessSupport`を継承しているため、サブクラスでも`DbAccessSupport`の機能を使ってデータベースアクセスが可能。\n\n| メソッド | 概要 | 起動タイミング | 要否 |\n|---|---|---|---|\n| `ResponseMessage onReceive(RequestMessage request, ExecutionContext context)` | 電文受信時の処理 | 電文受信時 | 必須 |\n| `ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context)` | エラー発生時の処理 | `onReceive`メソッドでエラー発生時 | 必須 |\n\n> **注意**: エラー発生時の処理はメイン処理とは別のトランザクションで実行される。メイン処理でエラーが発生した場合、そのトランザクションはロールバックされて終了するため。",
+    "s4": "### 電文受信時のコールバック (`onReceive`)\n\n`onReceive`メソッドを実装する（必須）。処理対象リクエストIDの要求電文受信時にフレームワークにより起動される。要求電文を引数として受け取り、処理結果の応答電文を戻り値として返却する。\n\n### エラー発生時のコールバック (`onError`)\n\n`onError`メソッドを実装する（必須）。メイン処理でエラー発生時のみ呼び出される。エラーが発生しなかった場合は起動されない。メイン処理で発生した例外またはエラー（`Throwable`）は本メソッドの引数で渡される。\n\n> **注意**: `onError`の実装例:\n> - エラーが発生したレコードのステータスを異常終了に更新する\n> - 相手先システムにエラーを通知するためエラー電文を作成する",
+    "s5": "Nablarch Application Frameworkは常駐して受信キューを監視する。要求電文が到達するたびに以下の処理が実行される：\n\n1. フレームワーク制御ヘッダのリクエストIDをもとに業務アクションクラスを起動する\n2. 業務アクションは要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する\n3. Nablarch Application Frameworkは返却された応答電文を送信キューにPUTする"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

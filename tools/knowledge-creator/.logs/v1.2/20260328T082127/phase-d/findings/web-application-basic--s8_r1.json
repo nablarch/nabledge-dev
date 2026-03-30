@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-basic--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — 更新確認画面から更新完了画面への遷移 Actionクラス (doRW11AC0304)",
+      "description": "The Action class for the 更新確認画面→更新完了画面 transition (doRW11AC0304) is entirely absent from s2. The source contains a concrete implementation showing: (1) validation via ValidationUtil.validateAndConvertRequest with 'updateUser' group, (2) createObject() call to materialize the form, (3) forward to /ss11AC/W11AC0303.jsp. This is the only place in the source that shows the completion-side action pattern for this multi-screen flow.",
+      "source_evidence": "public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) { ValidationContext<W11AC03Form> formContext = ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\"); W11AC03Form form = formContext.createObject(); return new HttpResponse(\"/ss11AC/W11AC0303.jsp\"); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "PascalCase class names `ValidationContext` and `W11AC03Form` appear prominently in the s2 code examples (both Action classes use them) but are absent from the s2 hints. These are the key types involved in the validation-and-convert pattern illustrated in this section.",
+      "source_evidence": "ValidationContext<W11AC03Form> userSearchFormContext = ValidationUtil.validateAndConvertRequest(...); ValidationContext<W11AC03Form> formContext = ValidationUtil.validateAndConvertRequest(...);"
+    }
+  ]
+}

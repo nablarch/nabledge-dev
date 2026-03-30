@@ -1,0 +1,131 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "about-nablarch-concept",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The stated outcome of achieving Robustness is omitted: source explicitly says \"Nablarchはこのロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、システムの維持にかかる工数を削減します\" — i.e., it achieves high enterprise-grade quality AND reduces maintenance man-hours. This benefit is absent from the knowledge file.",
+      "source_evidence": "Nablarchはこのロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、システムの維持にかかる工数を削減します。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+==================================================
+Nablarchのコンセプト
+==================================================
+
+--------------------------------------------------
+Robustness
+--------------------------------------------------
+
+Robustness(ロバストネス：堅牢性)とは、環境の変化、外部からの攻撃、内部のエラーといった様々な変動に対し、ダメー
+ジや損失を最小限にとどめ、機能を維持し続けることができる能力のことです。Nablarchでは、このロバストネスという言葉
+に、障害に強いという意味やセキュリティ的に強固であるという意味の他に、長期間使い続けられるという意味も込めてい
+ます。Nablarchはこのロバストネスを達成することにより、企業情報システムに求められる高度な品質を実現するとともに、
+システムの維持にかかる工数を削減します。
+
+--------------------------------------------------
+Testability
+--------------------------------------------------
+
+基幹システムをはじめとする企業情報システムには高い信頼性が要求され、その開発ではテストに多くの工数が割かれ
+ます。特に保守開発においては、テストにかかる工数は膨大になります。Nablarchはテスタビリティ（テスト容易性）を重視
+して設計されており、テスト工数を抑制しつつ、テストのクオリティを上げることを可能にしています。これにより、アプリケー
+ション開発や保守の品質と生産性を向上することができます。
+
+--------------------------------------------------
+Ready-to-Use
+--------------------------------------------------
+
+企業情報システムには多くの機能が必要とされるため、一から開発を行うと多大なコストが必要になり、システム構築に
+かかる期間も長くなります。しかし、変化の激しいビジネス環境に対応するには、なるべく短期間でかつ高い品質を維持し
+てシステム構築を行う必要があります。高品質なシステムを迅速に構築するためには、実績のある部品を再利用し、新た
+に作成するプログラムをなるべく少なくすることが重要です。
+Nablarchはこうしたニーズに応えるため、ソフトウェア部品はもちろん、設計標準、設計書フォーマット、開発手順など、再
+利用可能なコンテンツを「すぐに使える」状態で用意しています。これにより、高品質なアプリケーションをスピーディーに
+開発することができます。
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "about-nablarch-concept",
+  "title": "Nablarchのコンセプト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Robustness",
+      "hints": [
+        "ロバストネス",
+        "堅牢性",
+        "障害耐性",
+        "セキュリティ",
+        "長期運用"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Testability",
+      "hints": [
+        "テスタビリティ",
+        "テスト容易性",
+        "テスト工数削減",
+        "品質向上",
+        "保守開発"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Ready-to-Use",
+      "hints": [
+        "すぐに使える",
+        "再利用可能",
+        "設計標準",
+        "ソフトウェア部品",
+        "開発生産性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Robustness\n\nNablarchにおけるRobustness（堅牢性）は、障害耐性・セキュリティ強固性に加え、「長期間使い続けられる」ことも意味する。",
+    "s2": "## Testability\n\nNablarchはテスタビリティ（テスト容易性）を重視して設計されており、テスト工数を抑制しつつテストのクオリティを向上できる。",
+    "s3": "## Ready-to-Use\n\nNablarchはソフトウェア部品・設計標準・設計書フォーマット・開発手順など、再利用可能なコンテンツを「すぐに使える」状態で提供する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

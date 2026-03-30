@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-FileBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "s2 describes the detailed processing flow including callbacks and file reader creation steps, but its hints array is missing method names explicitly referenced in s2's content: `initialize` (step 1), `getFormatFileName` / `getFormatFileDirName` / `getDataFileDirName` / `getValidatorAction` (step 2), `transactionSuccess` (step 6), `transactionFailure` (step 6a), `error` (step 7), `terminate` (step 8). These are all present in s1 hints but absent from s2, so a search targeting the processing-flow context of these methods would not retrieve s2.",
+      "source_evidence": "Source ハンドラ処理フロー section explicitly names initialize(), getFormatFileName(), getFormatFileDirName(), getDataFileDirName(), getValidatorAction(), transactionSuccess(), transactionFailure(), error(), terminate() as called at specific steps."
+    }
+  ]
+}

@@ -1,0 +1,378 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `handlers-FileBatchAction`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "index[s1].hints",
+    "description": "`BatchAction` is mentioned in the source as the class with the same basic structure as FileBatchAction (\"基本的な構造は、:doc:`BatchAction` と同じであるが\"). As a PascalCase class name appearing in the content, it should be included in hints.",
+    "source_evidence": "基本的な構造は、 :doc:`BatchAction` と同じであるが、業務処理は **handler()** メソッドに実装するのでは無く"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+ファイル入力のバッチ業務アクションハンドラのテンプレートクラス
+===========================================================================================
+
+**クラス名:** ``nablarch.fw.action.FileBatchAction``
+
+---------------------------
+概要
+---------------------------
+本クラスは、ファイルを入力とした :doc:`../architectural_pattern/batch` における
+業務アクションハンドラを実装する際に使用できるテンプレートクラスである。
+
+基本的な構造は、 :doc:`BatchAction` と同じであるが、業務処理は **handler()** メソッドに実装するのでは無く、
+ヘッダー、データ、トレーラーなどのレコード種別ごとに、以下のシグニチャをもつ個別のメソッドに実装することができる。
+
+  .. code-block:: java
+
+      public Result do[レコード種別名](DataRecord record, ExecutionContext context);
+
+また、本クラスでは、ファイル入力のバッチ実装に特化した以下の機能を簡便に実装することができる。
+
+  - ファイル内容の事前検証の実行
+
+  - バッチ処理がエラー等の理由で中断した場合の再開機能
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "FileBatchAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
++++++++++++++
+
+本クラスを継承してアクションハンドラを実装するには、以下のテンプレートメソッドを必要に応じて実装する。
+
+  ======================  =============================================================================================
+  メソッド名              内容
+  ======================  =============================================================================================
+  do[レコード種別名]()    | (必須実装)
+                          | 各レコード種別ごとの業務処理を実行する。
+
+                          正常に終了した場合は、ハンドラの処理が正常終了したことを表す
+                          マーカーオブジェクト(`Result.Success`_)をリターンすればよい。
+
+  getFormatFileName()     | (必須実装)
+                          | 入力ファイルのファイル名を返す。
+
+  getFormatFileName()     | (必須実装)
+                          | レコードフォーマット定義ファイルのファイル名を返す。
+
+
+  getDataFileDirName()    | (任意実装)
+                          | 入力ファイルが格納されたディレクトリの論理パス名を指定する。
+                            デフォルトでは、論理パス名 **"input"** を使用する。
+
+  getFormatFileDirName()  | (任意実装)
+                          | フォーマット定義ファイルが格納されたディレクトリの論理パス名を指定する。
+                            デフォルトでは、論理パス名 **"format"** を使用する。
+
+  getValidatorAction()    | (任意実装)
+                          | 入力ファイルの事前検証処理を実装したオブジェクト
+                            ( `ValidatableFileDataReader.FileValidatorAction`_ )を返す。
+        
+                          デフォルトでは事前検証処理は行われない。
+                          事前検証が必要な場合にオーバーライドすること。
+
+  transactionSuccess()    | (任意実装)
+                          | 業務トランザクションのコミットが完了した後でコールバックされる。
+                          | デフォルトでは何もしない。
+
+  transactionFailure()    | (任意実装)
+                          | 業務トランザクションのロールバック後にコールバックされる。
+                          | デフォルトでは何もしない。
+  
+  initialize()            | (任意実装)
+                          | バッチ処理の開始前に一度だけ呼ばれる。
+                          | デフォルトでは何もしない。
+
+  error()                 | (任意実装)
+                          | 実行時例外/エラーの発生によってバッチがエラー終了した場合に
+                            一度だけコールバックされる。
+                            デフォルトでは何もしない。
+
+  terminate()             | (任意実装)
+                          | バッチ処理が全件終了もしくはエラーにより終了した後で
+                            一度だけコールバックされる。
+                            デフォルトでは何もしない。
+  ======================  =============================================================================================
+
+
+++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _callback:
+
+**[コールバック]**
+  **1. (バッチ処理開始前初期処理)**
+    :doc:`MultiThreadExecutionHandler` での処理開始時に本クラスの **initialize()** を実行する。
+
+  **2. (ファイルデータリーダ生成)**
+    続いて、 :doc:`MultiThreadExecutionHandler` での処理開始時に、以下の手順に沿って作成されたデータリーダを返す。
+
+    1. 本クラスの **getFormatFileName()** 、 **getFormatFileDirName()** 、 **getDataFileName()** 、 **getDataFileDirName()**
+       をそれぞれ実行し、その結果をもとに :doc:`../reader/FileDataReader` を作成する。
+
+    2. 本クラスの **getValidatorAction()** を実行し、その結果がnullでなければ、
+       `ValidatableFileDataReader`_  を作成し、 **getValidatorAction()** の結果と前段で作成したファイルリーダを設定する。
+
+　　3. `ResumeDataReader`_ を作成し、前段までで作成したデータリーダを設定する。
+    
+    
+.. _inbound:
+
+**[往路処理]**
+  **3. (入力レコードのレコード種別を取得)**
+     入力レコードの getRecordType() メソッドを実行し、レコード種別名を取得する。
+
+  **4. (業務処理の実行)**
+    本クラスに実装された、以下のシグニチャのメソッドを呼び出し、その結果を取得する。
+
+      .. code-block:: java
+
+        public Result do[レコード種別名](DataRecord record, ExecutionContext context);
+
+.. _outbound:
+
+**[復路処理]**
+  **5. (正常終了)**
+    **4.** の結果をリターンし、終了する。
+
+.. _error:
+
+**[例外処理]**
+  **4a. (ディスパッチエラー)**
+    本クラスに、該当するメソッドが定義されていなかった場合は、実行時例外( `Result.NotFound`_ :ステータスコード404)
+    を送出する。
+    
+  **4b. (エラー終了)**
+    業務処理実行中に例外が送出された場合は、そのまま再送出する。
+    
+
+
+**[コールバック]**
+  **6. (業務トランザクション正常終了時の処理)**
+    本ハンドラでの処理終了後、 :doc:`TransactionManagementHandler` で業務トランザクションが正常にコミットされた場合、
+    本ハンドラの **transactionSuccess()** を実行する。
+
+  **6a. (業務トランザクションロールバック時の処理)**
+    本ハンドラでの処理終了後、 :doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合、
+    本ハンドラの **transactionFailure()** を実行する。
+
+  **7. (バッチエラー終了時)**
+    :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドがエラーにより停止した場合、
+    本ハンドラの **error()** を実行する。
+
+  **8. (バッチ終了時)**
+    :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドが終了した場合、
+    本ハンドラの **terminate()** を実行する。
+    (このコールバックは、バッチがエラー終了した場合でも、 **7.** の処理の後で呼ばれる。)
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "handlers-FileBatchAction",
+  "title": "ファイル入力のバッチ業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "FileBatchAction",
+        "nablarch.fw.action.FileBatchAction",
+        "DataRecord",
+        "ExecutionContext",
+        "ValidatableFileDataReader",
+        "ValidatableFileDataReader.FileValidatorAction",
+        "ResumeDataReader",
+        "Result.Success",
+        "getFormatFileName",
+        "getDataFileDirName",
+        "getFormatFileDirName",
+        "getValidatorAction",
+        "transactionSuccess",
+        "transactionFailure",
+        "initialize",
+        "error",
+        "terminate",
+        "ファイル入力バッチ",
+        "テンプレートクラス",
+        "レコード種別",
+        "事前検証",
+        "再開機能"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "TransactionManagementHandler",
+        "FileDataReader",
+        "ResumeDataReader",
+        "ValidatableFileDataReader",
+        "Result.NotFound",
+        "getRecordType",
+        "getDataFileName",
+        "initialize",
+        "getFormatFileName",
+        "getFormatFileDirName",
+        "getDataFileDirName",
+        "getValidatorAction",
+        "transactionSuccess",
+        "transactionFailure",
+        "error",
+        "terminate",
+        "ハンドラ処理フロー",
+        "コールバック",
+        "ファイルデータリーダ生成",
+        "トランザクション制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.FileBatchAction`\n\nファイルを入力とした :doc:`../architectural_pattern/batch` におけるバッチ業務アクションハンドラのテンプレートクラス。:doc:`BatchAction` と同じ基本構造だが、業務処理は `handler()` メソッドではなく、レコード種別ごとの個別メソッドに実装する:\n\n```java\npublic Result do[レコード種別名](DataRecord record, ExecutionContext context);\n```\n\n以下の機能を簡便に実装できる:\n- ファイル内容の事前検証\n- バッチ処理中断時の再開機能\n\n**テンプレートメソッド**:\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| `do[レコード種別名]()` | 必須 | 各レコード種別ごとの業務処理。正常終了時は `Result.Success` を返す |\n| `getFormatFileName()` | 必須 | 入力ファイルのファイル名を返す |\n| `getFormatFileName()` | 必須 | レコードフォーマット定義ファイルのファイル名を返す |\n| `getDataFileDirName()` | 任意 | 入力ファイルのディレクトリ論理パス名。デフォルト: `\"input\"` |\n| `getFormatFileDirName()` | 任意 | フォーマット定義ファイルのディレクトリ論理パス名。デフォルト: `\"format\"` |\n| `getValidatorAction()` | 任意 | 事前検証処理オブジェクト(`ValidatableFileDataReader.FileValidatorAction`)を返す。デフォルトは事前検証なし |\n| `transactionSuccess()` | 任意 | 業務トランザクションのコミット完了後のコールバック。デフォルトは何もしない |\n| `transactionFailure()` | 任意 | 業務トランザクションのロールバック後のコールバック。デフォルトは何もしない |\n| `initialize()` | 任意 | バッチ処理開始前に一度だけ呼ばれる。デフォルトは何もしない |\n| `error()` | 任意 | 実行時例外/エラーでバッチがエラー終了した場合に一度だけコールバック。デフォルトは何もしない |\n| `terminate()` | 任意 | バッチ処理が全件終了またはエラー終了後に一度だけコールバック（エラー終了時も呼ばれる）。デフォルトは何もしない |",
+    "s2": "**[コールバック]**\n\n1. **バッチ処理開始前初期処理**: :doc:`MultiThreadExecutionHandler` 処理開始時に `initialize()` を実行\n2. **ファイルデータリーダ生成**: :doc:`MultiThreadExecutionHandler` 処理開始時、以下の手順でデータリーダを生成:\n   1. `getFormatFileName()`、`getFormatFileDirName()`、`getDataFileName()`、`getDataFileDirName()` を実行し :doc:`../reader/FileDataReader` を作成\n   2. `getValidatorAction()` の結果がnullでなければ `ValidatableFileDataReader` を作成し、`getValidatorAction()` の結果と前段のファイルリーダを設定\n   3. `ResumeDataReader` を作成し前段のデータリーダを設定\n\n**[往路処理]**\n\n3. **入力レコードのレコード種別取得**: `getRecordType()` でレコード種別名を取得\n4. **業務処理の実行**: `do[レコード種別名](DataRecord record, ExecutionContext context)` を呼び出し\n\n**[復路処理]**\n\n5. **正常終了**: 手順4の結果をリターン\n\n**[例外処理]**\n\n- 4a. **ディスパッチエラー**: 該当するメソッドが未定義の場合、`Result.NotFound`（ステータスコード404）を送出\n- 4b. **エラー終了**: 業務処理中に例外が発生した場合、そのまま再送出\n\n**[コールバック]**\n\n6. **業務トランザクション正常終了時**: :doc:`TransactionManagementHandler` でコミット後、`transactionSuccess()` を実行\n\n   6a. **業務トランザクションロールバック時**: :doc:`TransactionManagementHandler` でロールバック後、`transactionFailure()` を実行\n\n7. **バッチエラー終了時**: :doc:`MultiThreadExecutionHandler` のサブスレッドがエラー停止した場合、`error()` を実行\n8. **バッチ終了時**: :doc:`MultiThreadExecutionHandler` のサブスレッドが終了した場合、`terminate()` を実行（エラー終了時も手順7の後で呼ばれる）"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "handlers-FileBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`BatchAction` is mentioned in the source as the class with the same basic structure as FileBatchAction (\"基本的な構造は、:doc:`BatchAction` と同じであるが\"). As a PascalCase class name appearing in the content, it should be included in hints.",
+      "source_evidence": "基本的な構造は、 :doc:`BatchAction` と同じであるが、業務処理は **handler()** メソッドに実装するのでは無く"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "handlers-FileBatchAction",
+  "title": "ファイル入力のバッチ業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "FileBatchAction",
+        "nablarch.fw.action.FileBatchAction",
+        "DataRecord",
+        "ExecutionContext",
+        "ValidatableFileDataReader",
+        "ValidatableFileDataReader.FileValidatorAction",
+        "ResumeDataReader",
+        "Result.Success",
+        "getFormatFileName",
+        "getDataFileDirName",
+        "getFormatFileDirName",
+        "getValidatorAction",
+        "transactionSuccess",
+        "transactionFailure",
+        "initialize",
+        "error",
+        "terminate",
+        "ファイル入力バッチ",
+        "テンプレートクラス",
+        "レコード種別",
+        "事前検証",
+        "再開機能"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "TransactionManagementHandler",
+        "FileDataReader",
+        "ResumeDataReader",
+        "ValidatableFileDataReader",
+        "Result.NotFound",
+        "getRecordType",
+        "getDataFileName",
+        "initialize",
+        "getFormatFileName",
+        "getFormatFileDirName",
+        "getDataFileDirName",
+        "getValidatorAction",
+        "transactionSuccess",
+        "transactionFailure",
+        "error",
+        "terminate",
+        "ハンドラ処理フロー",
+        "コールバック",
+        "ファイルデータリーダ生成",
+        "トランザクション制御"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.FileBatchAction`\n\nファイルを入力とした :doc:`../architectural_pattern/batch` におけるバッチ業務アクションハンドラのテンプレートクラス。:doc:`BatchAction` と同じ基本構造だが、業務処理は `handler()` メソッドではなく、レコード種別ごとの個別メソッドに実装する:\n\n```java\npublic Result do[レコード種別名](DataRecord record, ExecutionContext context);\n```\n\n以下の機能を簡便に実装できる:\n- ファイル内容の事前検証\n- バッチ処理中断時の再開機能\n\n**テンプレートメソッド**:\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| `do[レコード種別名]()` | 必須 | 各レコード種別ごとの業務処理。正常終了時は `Result.Success` を返す |\n| `getFormatFileName()` | 必須 | 入力ファイルのファイル名を返す |\n| `getFormatFileName()` | 必須 | レコードフォーマット定義ファイルのファイル名を返す |\n| `getDataFileDirName()` | 任意 | 入力ファイルのディレクトリ論理パス名。デフォルト: `\"input\"` |\n| `getFormatFileDirName()` | 任意 | フォーマット定義ファイルのディレクトリ論理パス名。デフォルト: `\"format\"` |\n| `getValidatorAction()` | 任意 | 事前検証処理オブジェクト(`ValidatableFileDataReader.FileValidatorAction`)を返す。デフォルトは事前検証なし |\n| `transactionSuccess()` | 任意 | 業務トランザクションのコミット完了後のコールバック。デフォルトは何もしない |\n| `transactionFailure()` | 任意 | 業務トランザクションのロールバック後のコールバック。デフォルトは何もしない |\n| `initialize()` | 任意 | バッチ処理開始前に一度だけ呼ばれる。デフォルトは何もしない |\n| `error()` | 任意 | 実行時例外/エラーでバッチがエラー終了した場合に一度だけコールバック。デフォルトは何もしない |\n| `terminate()` | 任意 | バッチ処理が全件終了またはエラー終了後に一度だけコールバック（エラー終了時も呼ばれる）。デフォルトは何もしない |",
+    "s2": "**[コールバック]**\n\n1. **バッチ処理開始前初期処理**: :doc:`MultiThreadExecutionHandler` 処理開始時に `initialize()` を実行\n2. **ファイルデータリーダ生成**: :doc:`MultiThreadExecutionHandler` 処理開始時、以下の手順でデータリーダを生成:\n   1. `getFormatFileName()`、`getFormatFileDirName()`、`getDataFileName()`、`getDataFileDirName()` を実行し :doc:`../reader/FileDataReader` を作成\n   2. `getValidatorAction()` の結果がnullでなければ `ValidatableFileDataReader` を作成し、`getValidatorAction()` の結果と前段のファイルリーダを設定\n   3. `ResumeDataReader` を作成し前段のデータリーダを設定\n\n**[往路処理]**\n\n3. **入力レコードのレコード種別取得**: `getRecordType()` でレコード種別名を取得\n4. **業務処理の実行**: `do[レコード種別名](DataRecord record, ExecutionContext context)` を呼び出し\n\n**[復路処理]**\n\n5. **正常終了**: 手順4の結果をリターン\n\n**[例外処理]**\n\n- 4a. **ディスパッチエラー**: 該当するメソッドが未定義の場合、`Result.NotFound`（ステータスコード404）を送出\n- 4b. **エラー終了**: 業務処理中に例外が発生した場合、そのまま再送出\n\n**[コールバック]**\n\n6. **業務トランザクション正常終了時**: :doc:`TransactionManagementHandler` でコミット後、`transactionSuccess()` を実行\n\n   6a. **業務トランザクションロールバック時**: :doc:`TransactionManagementHandler` でロールバック後、`transactionFailure()` を実行\n\n7. **バッチエラー終了時**: :doc:`MultiThreadExecutionHandler` のサブスレッドがエラー停止した場合、`error()` を実行\n8. **バッチ終了時**: :doc:`MultiThreadExecutionHandler` のサブスレッドが終了した場合、`terminate()` を実行（エラー終了時も手順7の後で呼ばれる）"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

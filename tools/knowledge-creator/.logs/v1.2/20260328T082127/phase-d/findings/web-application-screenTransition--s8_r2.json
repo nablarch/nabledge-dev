@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-screenTransition--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 consolidates the h2 heading '複数ウィンドウを立ち上げたい場合' together with its two h3 subsections ('別ウィンドウにサブミットする場合のJSPの実装例' and '別ウィンドウから元画面に値を設定する場合のJSPの実装例'). The combined content in s1 is well above 2000 characters (includes multiple code blocks: popupButton JSP, setInputValueToOpener JS function, two more JSP examples, plus the warning). Per V3 rules, when an h2 section has >= 2000 chars of plain text AND h3 subsections exist, the knowledge file should split them into separate sections.",
+      "source_evidence": "Source has 3 distinct headings under this topic: the main h2 with `------` underline, and two h3s with `======` underline ('別ウィンドウにサブミットする場合のJSPの実装例', '別ウィンドウから元画面に値を設定する場合のJSPの実装例'). Knowledge file merges all into s1."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 別ウィンドウにサブミットする場合のJSPの実装例",
+      "description": "The JSP comment in the source code example explicitly states that for popupButton, the `name` and `uri` attribute specification follows the same rules as a regular button tag within a form: 「name属性やuri属性の指定は、画面内のフォームをサブミットするbuttonタグと同じ」。This is decision-necessary guidance for developers implementing popupButton (they can rely on their existing knowledge of button tag attribute usage). It is absent from the knowledge file.",
+      "source_evidence": "Source JSP code comment: `<%-- 【説明】popupButtonタグを指定する。name属性やuri属性の指定は、画面内のフォームをサブミットするbuttonタグと同じ。 --%>`"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-03_dbInputBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (１件ごとの処理) — SqlRowからFormへの値設定 note block",
+      "description": "The source contains a `note` admonition with a concrete code example demonstrating how to handle items requiring editing (e.g., date calculation) when constructing from SqlRow. The pattern — create from SqlRow first, then call setters for edited fields — is described in prose but the illustrative code example is missing.",
+      "source_evidence": "Source note block: `DeleteUserReportTempEntity entity = new DeleteUserReportTempEntity(userInfo)` / `entity.setSampleItem(DateUtil.addDay(userInfo.getString(\"SampleItem\"), 100));` — demonstrates the correct sequence of SqlRow-based construction followed by explicit setter calls for computed fields."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`Success` (the return type in `return new Success()` inside the `handle` method) is a PascalCase class name present in the code example but absent from s3 hints.",
+      "source_evidence": "Source handle method ends with `return new Success();` — `Success` is a concrete class reference used in the implementation."
+    }
+  ]
+}

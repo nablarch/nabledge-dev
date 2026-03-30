@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-record_format--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — format definition file code example",
+      "description": "The code block in the knowledge file omits the structural comment headers `# ディレクティブ定義部` and `# データレコード定義部` that appear in the source. These terms define the two conceptual sections of a format definition file and may be referenced in user questions about format file structure.",
+      "source_evidence": "Source code block contains: `#\\n# ディレクティブ定義部\\n#` and `#\\n# データレコード定義部\\n#` as section markers within the format file example."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — write record example",
+      "description": "The source explicitly states the write example uses 'the same formatter' (同じフォーマッターを使用して) reused from the read example, and describes the operation as output/append (出力(追加)). The knowledge file's 'レコード書き込み' section loses both pieces of context: formatter reuse and the append semantics.",
+      "source_evidence": "Source: 「次の例では、同じフォーマッターを使用して、データファイルにレコードを出力(追加)している。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "S9 automated warning — section count",
+      "description": "The automated pre-check warning 'Section count 3 < source headings 5' is a false positive. The source RST file contains exactly 3 headings (main title 汎用データフォーマット機能, 基本構造, 使用例). The remaining `------` lines are horizontal rules (no preceding text), not section headings. The knowledge file's 3 sections correctly match the source structure.",
+      "source_evidence": "RST source contains only 3 lines with overline/underline heading patterns. The separator lines (e.g., `---------------`, `-------------------------------`) have no text above them and are horizontal rules, not headings."
+    }
+  ]
+}

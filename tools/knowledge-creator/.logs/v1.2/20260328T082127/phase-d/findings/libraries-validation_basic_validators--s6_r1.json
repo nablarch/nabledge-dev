@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-validation_basic_validators--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — all property tables",
+      "description": "The knowledge file adds a '型' (type) column to every property table with Java types such as String, boolean, List, and -. The source RST tables have only two columns: 'property名' and '設定内容'. No type information appears anywhere in the source. These types are inferred/fabricated and not present in the original documentation.",
+      "source_evidence": "Source tables: columns are only 'property名' and '設定内容'. Example row: '| conversionFailedMessageId(必須) | 変換失敗時のデフォルトのエラーメッセージのメッセージIDを設定する。|'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — allowNullValue default value column",
+      "description": "The knowledge file states a default value of 'false' for allowNullValue in the 'デフォルト値' column. The source describes the default behavior in prose ('設定を省略した場合のデフォルト動作では、nullを許容しない') but never explicitly provides a default value in any table entry. The 'デフォルト値' column itself is not present in the source tables.",
+      "source_evidence": "Source: '設定を省略した場合のデフォルト動作では、nullを許容しない。' — no tabular default value field exists."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source h2 ('基本コンバータ、バリデータの設定値') contains 9 distinct h3-level subsections (one per class), with total content well exceeding 2000 characters including tables and code examples. The knowledge file places all content in a single section s1 without splitting by class.",
+      "source_evidence": "9 h3 sections: StringConvertor, StringArrayConvertor, BigDecimalConvertor, IntegerConvertor, LongConvertor, RequiredValidator, LengthValidator, NumberRangeValidator, SystemCharValidator — each with '============' underline."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The PascalCase interface name 'ExtendedStringConvertor' is referenced substantively in the StringConvertor description ('ExtendedStringConvertorインタフェースを実装したクラスのリストを設定する') but is absent from the hints. Only 'extendedStringConvertors' (the property name) is present.",
+      "source_evidence": "Source: 'String型に変換後、追加の変換を行うExtendedStringConvertorインタフェースを実装したクラスのリストを設定する。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The annotation '@YYYYMMDD' appears in the Formクラス code example ('@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")') but is absent from the hints. V4 requires @Annotation names from content to be included.",
+      "source_evidence": "Source Formクラス example: '@YYYYMMDD(allowFomat = \"yyyy/MM/dd\") public void setDate(String date)'"
+    }
+  ]
+}

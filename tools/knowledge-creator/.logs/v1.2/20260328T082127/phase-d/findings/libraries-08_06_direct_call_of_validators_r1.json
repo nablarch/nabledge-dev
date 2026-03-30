@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_06_direct_call_of_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — first annotation equivalent code block",
+      "description": "The annotation equivalent for the first ValidationUtil example omits `@PropertyName(\"昼間連絡先電話番号\")`. The source shows this annotation as part of the equivalent, but the knowledge file only shows `@Required` and `@JapaneseTelNumber`. Since the knowledge file explicitly claims the code block is equivalent to the annotation usage, the incomplete equivalent is misleading.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\")\n@Required\n@JapaneseTelNumber\npublic void setDaytimePhoneNumber(String value) { ... }"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — second annotation equivalent code block",
+      "description": "The annotation equivalent for the second ValidationUtil example (prefectureCode / CodeValue) omits both `@PropertyName(\"都道府県\")` and `@Required`. The source shows all three annotations as the equivalent, but the knowledge file only shows `@CodeValue(...)`. This makes the shown equivalent materially incomplete.",
+      "source_evidence": "@PropertyName(\"都道府県\")\n@Required\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`@PropertyName` (as `PropertyName`) is absent from the hints array. It appears in both annotation-equivalent code blocks in the source and is a PascalCase class/annotation name that should be included.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\") ... @PropertyName(\"都道府県\")"
+    }
+  ]
+}

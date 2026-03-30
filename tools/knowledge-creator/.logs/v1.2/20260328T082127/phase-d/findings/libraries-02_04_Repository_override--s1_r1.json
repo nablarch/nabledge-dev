@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_04_Repository_override--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s12",
+      "description": "s12のインデックスタイトルは「onefile-example.xml(import-example1.xml、import-example2.xmlと等価)」のみだが、セクション本文はソースの独立したh2セクション「dir属性を使用した読み込み時の優先順位」の全内容（説明文・2つのXMLコード例）を含んでいる。タイトルがセクション内容のスコープを正確に反映していない。",
+      "source_evidence": "ソースに「dir属性を使用した読み込み時の優先順位」という独立したh2見出し（====区切り）が存在し、ファイル名ソート順の説明と2つのXML設定例を含む。knowledge fileのs12はこれをonefile-example.xmlと同一セクションに統合しているが、インデックスタイトルにはdir属性セクションの内容が反映されていない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s13 hints",
+      "description": "s13のコード例に`DiContainer`クラスが使用されているが、s13のhintsに含まれていない。",
+      "source_evidence": "ソースのs13相当コード例: `DiContainer container = new DiContainer(loader);` — DiContainerはXmlComponentDefinitionLoaderと共に使用されるクラスだが、s13 hintsには「XmlComponentDefinitionLoader」「DuplicateDefinitionPolicy」「ConfigurationLoadException」「OVERRIDE」「DENY」「重複検出」「ブートストラップ」のみ含まれ、DiContainerが欠落している。"
+    }
+  ]
+}

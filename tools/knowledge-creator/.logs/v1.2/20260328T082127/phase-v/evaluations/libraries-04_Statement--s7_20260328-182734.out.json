@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-04_Statement--s7",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is a missing hint (`AppDbConnection`) in s2's hints array. Since `AppDbConnection` already appears in s1's hints, cross-section retrieval is not blocked. More importantly, users investigating the specific behavior described in s2 (i.e., that `setFetchSize`/`setQueryTimeout` changes reset when `prepareStatement` is called again) would naturally search by `setFetchSize`, `setQueryTimeout`, `fetchSize`, or `queryTimeout` — all of which are present in s2's hints. The `AppDbConnection` reference in s2 is supplementary context within a note, not a primary topic of that section. The omission is unlikely to cause a retrieval miss in realistic usage.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[id=s2].hints",
+      "impact": "low",
+      "justification": "`AppDbConnection` appears in s2's section body only as part of an explanatory note illustrating that calling `AppDbConnection#prepareStatement` resets fetchSize/queryTimeout to config-file defaults. It is not a primary subject of s2. Users seeking this behavior information would search by `setFetchSize`, `setQueryTimeout`, `fetchSize`, or `queryTimeout`, all of which are already in s2's hints. Additionally, `AppDbConnection` is covered in s1's hints, so it is not absent from the file's retrieval surface entirely. Phase E did not resolve this finding — the output JSON in the E logs is byte-for-byte identical to the D-phase input, indicating the fix was not applied (likely a silent no-op in the Phase E agent)."
+    }
+  ]
+}

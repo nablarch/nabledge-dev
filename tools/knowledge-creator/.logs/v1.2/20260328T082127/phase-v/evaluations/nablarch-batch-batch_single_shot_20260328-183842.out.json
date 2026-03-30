@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-batch_single_shot",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "`Main` is already present verbatim throughout the s3 section content (handler queue line and all four numbered flow steps), so content-based retrieval will surface this section regardless of the hints gap. Additionally, `Main` is the framework-level entry point documented in its own dedicated file (`../handler/Main`); queries specifically about `Main` would naturally route to that file, not this batch_single_shot page. The missing hint causes no practical retrieval failure for the document's intended purpose.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s3 hints",
+      "impact": "low",
+      "justification": "`Main` is already embedded in the s3 section text multiple times (handler queue and all four flow diagrams), so content-based matching will find it. Users querying about `Main` as a class are more likely to be routed to the dedicated `../handler/Main` document. No realistic query scenario is blocked by this omission. Phase E did not add the hint — likely because the agent judged that in-content presence was sufficient and that `Main` belongs to a separate handler reference document rather than being a semantic entry point for this batch control topic."
+    }
+  ]
+}

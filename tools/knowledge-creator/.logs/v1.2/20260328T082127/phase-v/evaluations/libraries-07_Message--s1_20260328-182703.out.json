@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-07_Message--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 (omission in s3) has medium user impact: the missing DB column type constraint is actionable guidance an AI would need when assisting with message table schema design. The other two findings are low impact. Overall: needs_improvement = true.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s3 (テーブル定義)",
+      "impact": "medium",
+      "justification": "The constraint 「データベースの型は、Javaの型に変換可能な型を選択する」 is actionable schema design guidance. Without it, an AI assisting with table creation would omit a correctness constraint that affects runtime behavior. All three message columns happen to use java.lang.String (so VARCHAR works universally), but the rule matters for custom schemas where a developer might choose a numeric or binary type. Missing this creates a gap in schema design assistance. Why it persisted: Phase E produced an output JSON identical to the pre-fix knowledge file — no changes were applied. The improvement loop terminated without modifying s3."
+    },
+    {
+      "category": "section_issue",
+      "location": "s2",
+      "impact": "low",
+      "justification": "All content from both 「特徴」 and 「要求 > 実装済み」 is present in s2; only the structural separation of two h2 headings is lost. Retrieval by topic is unaffected since s2 hints cover both areas. An AI reading s2 gets complete information. The section-count warning is a tooling artifact, not a content gap. Why it persisted: Phase E made no changes to the file. This structural issue may also have been deprioritized because content completeness was not impaired."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s9 (例外によるメッセージの通知) — hints array",
+      "impact": "low",
+      "justification": "`MessageUtil`, `MessageLevel`, and `Message` already appear in s3 and s5 hints, so retrieval queries using those class names will surface relevant sections. The s9-specific retrieval terms (ApplicationException, getMessages, 例外, 業務エラー) are present. A user querying about exception-based message notification will reach s9 via its existing hints; the missing class names in s9 hints create only a marginal retrieval gap. Why it persisted: Phase E made no changes to the file — the hints array in s9 was left unmodified."
+    }
+  ]
+}

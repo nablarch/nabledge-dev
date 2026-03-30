@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-11_exclusiveControl",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor and do not affect an agent's ability to implement optimistic locking correctly. The omission leaves a minimal code snippet incomplete in a way that causes no confusion (the @OnError pattern is fully demonstrated by the other two methods). The fabrication adds \"DBから\" which is a correct and obvious inference from the surrounding context (VERSION column in SYSTEM_ACCOUNT, ExclusiveControlContext configuration), so it does not mislead.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s4 — 更新画面初期表示フェーズのコード例",
+      "impact": "low",
+      "justification": "The first code block is intentionally a minimal snippet showing only the prepareVersion call, not a full method body. The @OnError annotation on doRW11AC0301 is for ApplicationException (not OptimisticLockException), and the pattern for @OnError/@OnErrors is already fully demonstrated in the two subsequent code blocks. An agent can implement correctly without this detail. Persisted because Phase E judged the omission too minor to warrant adding a full method signature to what is meant to be a focused API usage snippet."
+    },
+    {
+      "category": "fabrication",
+      "location": "s4 — HttpExclusiveControlUtil メソッド一覧テーブル",
+      "impact": "low",
+      "justification": "The addition of 'DBから' is a correct and unambiguous inference: the entire mechanism configures a DB table (SYSTEM_ACCOUNT) and VERSION column, making it self-evident that prepareVersion reads from the database. The description does not mislead the developer and accurately reflects the actual runtime behavior. Persisted because Phase E determined that 'DBから' is a harmless, accurate elaboration rather than a misleading fabrication, and removing it would make the description less informative without improving accuracy."
+    }
+  ]
+}

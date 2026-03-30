@@ -1,0 +1,65 @@
+{
+  "id": "libraries-07_FacilitateTag--s14",
+  "title": "検索結果の並び替え",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の並び替え",
+      "hints": [
+        "ListSearchInfo",
+        "UserSearchCondition",
+        "listSearchSortSubmit",
+        "sortId",
+        "ascSortId",
+        "descSortId",
+        "sortCss",
+        "ascCss",
+        "descCss",
+        "defaultSort",
+        "listSearchInfoName",
+        "getSearchConditionProps",
+        "検索結果並び替え",
+        "可変ORDER BY",
+        "ソートID",
+        "昇順",
+        "降順"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1画面にすべての検索結果を一覧表示する場合の実装方法",
+      "hints": [
+        "ListSearchInfo",
+        "UserSearchCondition",
+        "setMax",
+        "getMaxResultCount",
+        "usePaging",
+        "listSearchResult",
+        "ページングなし",
+        "全件表示",
+        "pageNumber"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "検索結果の一覧表示機能のデフォルト値設定",
+      "hints": [
+        "nablarch.listSearch.maxResultCount",
+        "nablarch.listSearch.max",
+        "setMax",
+        "setMaxResultCount",
+        "ListSearchInfo",
+        "デフォルト値",
+        "最大件数",
+        "表示件数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索結果の並び替えは、:ref:`WebView_ListSearchSortSubmitTag` と可変ORDER BY構文を組み合わせて実装する。詳細は :ref:`VariableOrderBySyntaxConvertorクラス<variable_order_by_syntax_convertor-label>` 参照。\n\n**可変ORDER BY構文**\n\nSQL文で`$sort (sortId)`構文を使い、`sortId`フィールド値に応じたORDER BY句に動的変換する。例えば`sortId`=3の場合、`ORDER BY USR.MAIL_ADDRESS`に変換される。\n\n```sql\n$sort (sortId) {\n   (1 SA.LOGIN_ID)\n   (2 SA.LOGIN_ID DESC)\n   (3 USR.MAIL_ADDRESS)\n   (4 USR.MAIL_ADDRESS DESC) }\n```\n\n**ListSearchInfo継承クラスの実装**\n\n並び替えを使う場合、`sortId`プロパティを入力精査に含め、`getSearchConditionProps()`の返す配列に`\"sortId\"`を含める。\n\n```java\npublic class UserSearchCondition extends ListSearchInfo {\n    @PropertyName(\"ソートID\")\n    @Required\n    public void setSortId(String sortId) {\n        super.setSortId(sortId);\n    }\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"sortId\"};\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n**listSearchSortSubmitタグの属性**\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| sortCss | | nablarch_sort | 並び替えサブミットのclass属性（常に出力） |\n| ascCss | | nablarch_asc | 昇順時に付加するclass属性（例: `class=\"nablarch_sort nablarch_asc\"`） |\n| descCss | | nablarch_desc | 降順時に付加するclass属性（例: `class=\"nablarch_sort nablarch_desc\"`） |\n| ascSortId | ○ | | 昇順のソートID |\n| descSortId | ○ | | 降順のソートID |\n| defaultSort | | asc | デフォルトのソート方向（asc/desc） |\n| label | ○ | | サブミットのラベル |\n| name | ○ | | name属性（画面内で一意にすること） |\n| listSearchInfoName | ○ | | リクエストスコープからListSearchInfoを取得する名前 |\n\n```jsp\n<n:listSearchSortSubmit ascSortId=\"1\" descSortId=\"2\"\n                        label=\"ログインID\" uri=\"./USERS00101\"\n                        name=\"loginIdSort\" listSearchInfoName=\"searchCondition\" />\n```\n\n並び替えのサブミット要素は常に先頭ページ（ページ番号:1）を検索する。\n\n**現在の並び替え状態に応じた動作**（`ascSortId=\"1\" descSortId=\"2\"`の場合）:\n\n| 検索に使用されたソートID | リクエスト送信するソートID | 使用されるCSSクラス |\n|---|---|---|\n| 1 (= ascSortId) | descSortId(=2) | ascCss (nablarch_asc) |\n| 2 (= descSortId) | ascSortId(=1) | descCss (nablarch_desc) |\n| その他 | defaultSort(=asc)に応じてascSortId(=1) | なし |\n\n**CSS実装例**（昇順/降順の視覚表示）:\n\n```css\na.nablarch_sort { padding-right: 15px; background-position: 100% 0%; background-repeat: no-repeat; }\na.nablarch_asc { background-image: url(\"../img/asc.jpg\"); }\na.nablarch_desc { background-image: url(\"../img/desc.jpg\"); }\n```",
+    "s2": "1画面にすべての検索結果を一覧表示する（ページングなし）場合の実装方法。\n\n> **重要**: ページングを使用しない場合、`condition.setMax(condition.getMaxResultCount())`の設定が必須。検索結果の取得件数に最大件数（上限）を設定しないと正しく動作しない。\n\n`listSearchResult`タグでは`usePaging=\"false\"`を指定する。`searchUri`属性の指定は不要。\n\n```jsp\n<n:listSearchResult listSearchInfoName=\"searchCondition\"\n                    usePaging=\"false\"\n                    resultSetName=\"searchResult\">\n</n:listSearchResult>\n```\n\nActionクラスでの必須設定:\n\n```java\ncondition.setMax(condition.getMaxResultCount());\n```\n\n`ListSearchInfo`継承クラスでは`pageNumber`プロパティの設定は不要（初期値が1のため）。`SEARCH_COND_PROPS`は検索条件プロパティのみとし、`sortId`は含めない。",
+    "s3": "検索処理のデフォルト値は:ref:`環境設定ファイル<repository_config_load>`で設定する。`ListSearchInfo`生成時にリポジトリから取得される。設定値が存在しない場合は以下のデフォルト値が使用される。\n\n| プロパティ名 | 説明 | デフォルト値 |\n|---|---|---|\n| nablarch.listSearch.maxResultCount | 検索結果の最大件数（上限） | 200 |\n| nablarch.listSearch.max | 検索結果の取得最大件数（1ページの表示件数） | 20 |\n\n個別機能のみ設定値を変更する場合:\n- 画面表示設定: JSP上で:ref:`WebView_ListSearchResultTag`の属性を指定\n- 検索処理設定: ActionメソッドでListSearchInfo継承クラスに値を設定\n\n```java\ncondition.setMax(MAX_ROWS);              // 最大表示件数の変更例\ncondition.setMaxResultCount(MAX_RESULT_COUNT);  // 検索結果上限の変更例\n```"
+  }
+}

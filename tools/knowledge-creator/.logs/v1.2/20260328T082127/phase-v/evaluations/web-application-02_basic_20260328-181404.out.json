@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-02_basic",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "`SqlResultSet` is already present in s2 hints, so agent searches for this term will retrieve the section with substantive content (Component class, `getUserGroups()` method, DB access pattern). The s5 mention is supplementary — it names two column values (`ugroupName`, `ugroupId`) and immediately defers to another document (`DB/01_DbAccessSpec_Example` / `how_to_use_sql_result_set`) for details. A developer asking about `SqlResultSet` usage will find s2; missing s5 in that result set causes no meaningful information loss. The fix did not persist because the Phase E agent returned the JSON unchanged — the s5 hints array was not modified.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s5 hints",
+      "impact": "low",
+      "justification": "`SqlResultSet` already appears in s2 hints, providing full coverage of the term for agent retrieval. The s5 body mentions `SqlResultSet` only in passing (naming two result columns) and immediately redirects to `DB/01_DbAccessSpec_Example` for detail. Omitting `SqlResultSet` from s5 hints means the agent retrieves s2 instead of s5 when this term is queried, but s2 contains the substantive usage. No actionable information is lost. Phase E did not resolve this: comparing the Phase D input and Phase E output JSON, the s5 hints array is byte-for-byte identical — the fix agent made no change."
+    }
+  ]
+}

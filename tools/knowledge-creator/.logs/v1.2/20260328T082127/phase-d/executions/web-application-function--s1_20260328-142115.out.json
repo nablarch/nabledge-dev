@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source states \"フォーマット定義ファイルの配置場所はプロジェクトの実装方針に従う\" (format definition file placement location follows the project's implementation policy). This is decision-necessary guidance — an AI answering \"where do I place the format file?\" would give incorrect/incomplete guidance without it. The knowledge file only says \"フォーマット定義ファイルの作成が必要\" without this constraint.",
+      "source_evidence": "データレコードのダウンロードでは、データレコードをフォーマットした上でダウンロードを行うため、フォーマットに使用するフォーマット定義ファイルを作成する必要がある。フォーマット定義ファイルの配置場所はプロジェクトの実装方針に従う。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The `Blob` type (java.sql.Blob) is used in the action code via `StreamResponse((Blob) record.get(\"FILE_DATA\"))`, making it a key class name for this section. It is absent from the s2 hints array.",
+      "source_evidence": "StreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));"
+    }
+  ]
+}

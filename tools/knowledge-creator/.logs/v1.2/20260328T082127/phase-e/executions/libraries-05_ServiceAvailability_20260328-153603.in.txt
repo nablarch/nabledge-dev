@@ -1,0 +1,402 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-05_ServiceAvailability",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — BasicServiceAvailabilityクラスの設定プロパティ表",
+      "description": "The property table in s5 adds a '型' (Type) column with 'String' for tableName, requestTableRequestIdColumnName, requestTableServiceAvailableColumnName, and requestTableServiceAvailableOkStatus. The source property table has only 'property名' and '設定内容' columns and never specifies Java types for these properties. Only the dbManager type (SimpleDbTransactionManager) is mentioned in the source description text.",
+      "source_evidence": "Source property table columns are '=================================================' / '======================================================================================================='; no type column exists. String types for string-valued properties are not stated anywhere in the source."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 取り下げ",
+      "description": "The knowledge file omits the note that a workaround exists for the withdrawn per-function check: using the future bulk service availability setting per function as an alternative.",
+      "source_evidence": "Source: 「今後提供する各機能単位でサービス提供可否状態を一括設定する機能を使用することで、代替が可能である。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _serviceAvailable:
+
+====================================================
+開閉局
+====================================================
+
+------------
+概要
+------------
+| サービスの提供可否状態をチェックおよび設定する（切り替える）機能を提供する。
+
+* サービス提供可否状態のチェックは、本機能が提供する共通ハンドラおよびユーティリティを使用する。
+* サービス提供可否状態の設定は、本機能が提供するユーティリティを使用する。
+
+11| 共通ハンドラ及びユーティリティは特定の実行制御基盤には依存しない。本機能をハンドラ構成に組み込むだけで、画面オンライン実行制御基盤でもバッチ実行制御基盤でも開閉局を実現できる。
+| ユーティリティは、業務アクションなどの任意のロジックからサービス提供可否状態を取得する際に使用されることを想定している。
+
+.. note::
+
+ | 「サービス提供可否状態の設定」とはサービス提供可否状態のON/OFFを切り替えることを示す。
+ | サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造については、  :ref:`tableDefinition` を参照すること。
+
+概要図
+========================
+
+.. image:: ./_images/05/ServiceAvailability_ServiceImage.jpg
+    :scale: 90
+
+
+------------
+特徴
+------------
+リクエスト、各機能（複数のリクエストの集合）、システム全体の単位で、サービス提供可否状態を設定することが可能。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* アクション(リクエスト)単位でサービス提供可否状態をチェックすることができる。
+ 
+.. note::
+
+     | サービス提供可否状態をチェックする方式としては、フレームワーク側で指定時間にサービス提供可否を切り替えるパターンと、運用JOBスケジューラ側で指定時間にサービス提供可否を切り替えるパターンの２種類が考えられる。
+     | 前者の方式では、フレームワークがデータベースに格納されたリクエストごとの開局時間、閉局時間、曜日などの日時情報をもとにサービス提供可否を判定し、後者の方式では、フレームワークがデータベースに格納されたリクエストごとのサービス提供可否フラグをもとにサービス提供可否を判定する。
+     | 前者の方式では、 フレームワークが日時情報を管理するため、機能は豊富だがアーキテクチャが複雑になり、データベースのテーブルの構造にも制約が生まれ、柔軟性・カスタマイズ性が若干低下する。
+     | 後者の方式では、 フレームワークが日時情報を管理しないため、運用JOBスケジュールや常駐バッチで日時情報の管理を行う必要があるが、フレームワークのアーキテクチャはシンプルになり、要件に対して柔軟に対応できる。
+     | 本フレームワークでは、まず、シンプルで柔軟性の高い後者の方式に対応した機能を提供し、前者のパターンに関しては未検討の項目に追加し、別途、取り込み検討を行う。なお、前者の方式にも対応できるインタフェースにしているので、前者を取り込む際にもインタフェースの変更等は発生しない。
+
+* 開閉局が必要なすべての実行制御基盤でサービス提供可否状態のチェックができる。
+
+未実装
+==================
+* アクション(リクエスト)単位でサービス提供可否状態の設定を行うことができる。
+* 各機能（複数のリクエストの集合）単位でサービス提供可否状態の設定を行うことができる。
+* システム全体でサービス提供可否状態の設定を行うことができる。
+* 特定のイベントをトリガとしてサービス提供可否状態の設定を行うことができる。
+
+未検討
+==================
+* 指定時間にサービス提供可否を切り替えることができる。
+* サービスの提供可否判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる（カスタムタグ等を提供する）。
+* サービス提供不可の場合に、個別画面へ遷移できる。
+      
+.. note::
+ | 現時点での設計判断では、サービス提供不可の場合に個別画面へ遷移する要件はないと想定している。
+  
+ 
+取り下げ
+========================
+* 各機能（複数のリクエストの集合）単位でサービス提供可否状態をチェックする機能。
+
+  | 柔軟性確保の観点より、各機能単位でのチェック機能は提供せず、リクエスト単位でのチェック機能のみ提供する。
+  | また、今後提供する各機能単位でサービス提供可否状態を一括設定する機能を使用することで、代替が可能である。
+
+
+------------
+構成
+------------
+
+.. _conceptualModel:
+
+クラス図
+========================
+.. image:: ./_images/05/ServiceAvailability_ClassDiagram.jpg
+
+各クラスの責務
+==============
+
+インタフェース定義
+------------------
+
+.. _default-interface-label:
+
+=========================================================== =======================================================================================================
+インタフェース名                                            概要
+=========================================================== =======================================================================================================
+nablarch.common.availability.ServiceAvailability            | リクエストIDをもとに、サービス提供可否状態を判定するインタフェース。
+                                                            | 独自のサービス提供可否状態判定の実装が必要となった場合には、本インタフェースを実装することにより実現可能。
+=========================================================== =======================================================================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\a) nablarch.common.availability.ServiceAvailabilityの実装クラス
+
+=========================================================== ============================================================================================
+クラス名                                                    概要
+=========================================================== ============================================================================================
+nablarch.common.availability.BasicServiceAvailability       | リクエストIDをもとに、サービス提供可否状態を判定するクラス。
+                                                            | サービス提供可否状態の判定には、リクエストテーブルを参照する。
+                                                            | リクエストテーブルのテーブル名、カラム名は、設定ファイルにより設定が可能。
+=========================================================== ============================================================================================
+
+\b) その他のクラス
+
+=========================================================== ============================================================================================
+クラス名                                                    概要
+=========================================================== ============================================================================================
+nablarch.common.handler.ServiceAvailabilityCheckHandler     | サービス提供可否状態の判定をするハンドラ。
+nablarch.common.availability.ServiceAvailabilityUtil        | サービス提供可否状態判定用ユーティリティ。
+                                                            | アプリケーションプログラマは本クラスを使用することで、容易にサービス提供可否状態を判定できる。
+=========================================================== ============================================================================================
+
+シーケンス図
+=================================
+
+全処理方式共通
+---------------------------------
+
+| ユーティリティ使用時におけるシーケンス図を下記に示す。
+
+.. image:: ./_images/05/ServiceAvailability_SequenceDiagramUtil.jpg
+   :scale: 80
+
+
+画面オンライン
+----------------------------------------------------------------
+
+| 画面オンライン時におけるシーケンス図を下記に示す。
+
+* ServiceAvailabilityCheckHandlerは、リクエストIDをもとにサービス提供可否状態を判定する。
+* リクエストIDは、ServiceAvailabilityCheckHandlerよりも先に処理を行うハンドラにより、ThreadContextに設定しておく必要がある。ThreadContextへの設定は、 :ref:`ThreadContextHandler` が行う。
+* サービス提供不可の場合、一律サービス提供不可エラー画面へ遷移する。
+
+.. image:: ./_images/05/ServiceAvailability_SequenceDiagram.jpg
+   :scale: 80
+
+
+.. _tableDefinition:
+
+テーブル定義の例
+=================================
+* テーブル名、カラム名は任意。
+* データベースの型は、Javaの型に変換可能な型を選択する。
+
+.. image:: ./_images/05/ServiceAvailability_ERDiagram.jpg
+
+
+リクエスト
+---------------------------------------------
+| リクエストテーブルには、リクエストごとのサービス提供可否状態を格納する。
+
++------------------------+--------------------+--------------------------------+
+| 定義                   | Javaの型           | 制約                           |
++========================+====================+================================+
+| リクエストID           | java.lang.String   | PK                             |
++------------------------+--------------------+--------------------------------+
+| リクエスト名           | java.lang.String   |                                |
++------------------------+--------------------+--------------------------------+
+| サービス提供可否状態   | java.lang.String   |                                |
++------------------------+--------------------+--------------------------------+
+
+
+ | 「リクエスト名」カラムは、保守の際など業務的に使用する項目であり、本機能では使用しない。
+ | 「サービス提供可否状態」カラムには、サービス提供可能状態を表す値を設定する。
+ | 標準ではサービス提供可否状態の値として"1"が設定されている場合に、サービス提供可能だと判定するが、
+ | 設定ファイルを修正することでこの値を変更できる。
+ | 詳細は :ref:`basicServiceAvailabilityDetail` を参照すること。
+
+------------------------------
+設定の記述
+------------------------------
+開閉局機能は、リポジトリ機能を利用して設定を行う。
+
+全処理方式共通
+=====================
+
+.. code-block:: xml
+
+
+    <!-- 開閉局機能を提供するフレームワーク基本実装。 -->
+    <component name="serviceAvailability" class="nablarch.common.availability.BasicServiceAvailability">
+        <!-- 開閉局機能で使用するテーブル名／カラム名／サービス提供可能状態の文字列。 -->
+        <property name="tableName" value="REQUEST"/>
+        <property name="requestTableRequestIdColumnName" value="REQUEST_ID"/>
+        <property name="requestTableServiceAvailableColumnName" value="SERVICE_AVAILABLE"/>
+        <property name="requestTableServiceAvailableOkStatus" value="1"/>
+        <property name="dbManager" ref="serviceAvailabilityDbManager"/>
+    </component>
+
+    <!-- DbManagerの設定 -->
+    <component name="dbManager" class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+        <property name="dbTransactionName" value="serviceAvailability" />
+        <property name="transactionFactory" ref="transactionFactory" />
+        <property name="connectionFactory" ref="connectionFactory" />
+    </component>
+
+    <!-- サービス提供可否状態を判定するハンドラ -->
+    <component name="serviceAvailabilityCheckHandler" class="nablarch.common.handler.ServiceAvailabilityCheckHandler">
+        <property name="serviceAvailability" ref="serviceAvailability"/>
+    </component>
+
+
+BasicServiceAvailabilityクラスは初期化が必要なため、  :ref:`repository_initialize`  に記述したInitializableインタフェースを実装している。
+:ref:`repository_initialize` を参考にして、下記のように serviceAvailabilityCheckHandler.serviceAvailability が初期化されるよう設定すること。
+
+
+.. code-block:: xml
+
+    <component name="initializer" class="nablarch.core.repository.initialization.BasicApplicationInitializer">
+        <property name="initializeList">
+            <list>
+                <!-- 他のコンポーネントは省略 -->
+                <component-ref name="serviceAvailability"/>
+            </list>
+        </property>
+    </component>
+
+
+
+
+設定内容詳細
+----------------------------------
+
+.. _basicServiceAvailabilityDetail:
+
+nablarch.core.web.service.BasicServiceAvailabilityクラスの設定 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ ================================================= =======================================================================================================
+ property名                                        設定内容
+ ================================================= =======================================================================================================
+ dbManager(必須)                                   | データベースへのトランザクション制御を行うSimpleDbTransactionManager。
+                                                   | nablarch.core.db.transaction.SimpleDbTransactionManagerクラスのインスタンスを指定する。
+                                                   | SimpleDbTransactionManagerについては、 :doc:`../01_Core/04_DbAccessSpec` を参照すること。
+ tableName(必須)                                   | リクエストテーブルの名前。
+ requestTableRequestIdColumnName(必須)             | リクエストテーブルのリクエストIDカラムの名前。
+ requestTableServiceAvailableColumnName(必須)      | リクエストテーブルのサービス提供可否状態カラムの名前。
+ requestTableServiceAvailableOkStatus              | リクエストテーブルのサービス提供可否状態カラムに設定されるサービス提供可能な状態の値。本プロパティを省略した場合、「1」が設定される。
+ ================================================= =======================================================================================================
+
+
+nablarch.common.handler.ServiceAvailabilityCheckHandlerの設定 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ ============================ ========================================================================================================================
+ property名                   設定内容
+ ============================ ========================================================================================================================
+ serviceAvailability(必須)    | ServiceAvailabilityインタフェースを実装したクラスを設定する。
+ ============================ ========================================================================================================================
+ 
+ 
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-05_ServiceAvailability",
+  "title": "開閉局",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ServiceAvailabilityCheckHandler",
+        "ServiceAvailabilityUtil",
+        "開閉局",
+        "サービス提供可否状態",
+        "画面オンライン",
+        "バッチ実行制御基盤"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "開閉局",
+        "サービス提供可否",
+        "リクエスト単位",
+        "機能単位",
+        "システム全体"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "開閉局",
+        "実装済み機能",
+        "未実装機能",
+        "リクエスト単位チェック",
+        "サービス提供可否フラグ",
+        "未検討",
+        "取り下げ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構成",
+      "hints": [
+        "ServiceAvailability",
+        "BasicServiceAvailability",
+        "ServiceAvailabilityCheckHandler",
+        "ServiceAvailabilityUtil",
+        "ThreadContextHandler",
+        "クラス図",
+        "シーケンス図",
+        "テーブル定義",
+        "リクエストテーブル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "設定の記述",
+      "hints": [
+        "BasicServiceAvailability",
+        "ServiceAvailabilityCheckHandler",
+        "tableName",
+        "requestTableRequestIdColumnName",
+        "requestTableServiceAvailableColumnName",
+        "requestTableServiceAvailableOkStatus",
+        "dbManager",
+        "serviceAvailability",
+        "初期化設定",
+        "BasicApplicationInitializer",
+        "SimpleDbTransactionManager"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "開閉局機能はサービスの提供可否状態をチェックおよび設定（ON/OFF切り替え）する機能を提供する。\n\n- チェック: 共通ハンドラ（`ServiceAvailabilityCheckHandler`）およびユーティリティ（`ServiceAvailabilityUtil`）を使用\n- 設定: ユーティリティを使用\n\n特定の実行制御基盤に依存せず、画面オンライン実行制御基盤でもバッチ実行制御基盤でも使用可能。\n\n> **注意**: サービス提供可否状態はデータベースのテーブルに格納されている。テーブル構造は :ref:`tableDefinition` を参照。\n\n![サービス概要](assets/libraries-05_ServiceAvailability/ServiceAvailability_ServiceImage.jpg)",
+    "s2": "リクエスト、各機能（複数のリクエストの集合）、システム全体の単位でサービス提供可否状態を設定可能。",
+    "s3": "## 実装済み\n\n- アクション(リクエスト)単位でサービス提供可否状態をチェックできる\n- 開閉局が必要なすべての実行制御基盤でサービス提供可否状態をチェックできる\n\n> **注意**: 本フレームワークでは、運用JOBスケジューラ側でサービス提供可否フラグを切り替える方式を採用（フレームワークが日時情報を管理しないシンプルな方式）。将来的には指定時間での自動切り替え方式も取り込み検討予定（インタフェースの変更は不要な設計）。\n\n## 未実装\n\n- アクション(リクエスト)単位でサービス提供可否状態の設定\n- 各機能（複数のリクエストの集合）単位での設定\n- システム全体での設定\n- 特定のイベントをトリガとした設定\n\n## 未検討\n\n- 指定時間にサービス提供可否を切り替える機能\n- 判定結果に応じた画面項目（メニューやボタン等）の表示・非表示切り替え\n- サービス提供不可時の個別画面遷移\n\n## 取り下げ\n\n各機能（複数のリクエストの集合）単位でのチェック機能は提供しない。リクエスト単位のチェック機能のみ提供する。",
+    "s4": "![クラス図](assets/libraries-05_ServiceAvailability/ServiceAvailability_ClassDiagram.jpg)\n\n## インタフェース\n\n**インタフェース**: `nablarch.common.availability.ServiceAvailability`\n\nリクエストIDをもとにサービス提供可否状態を判定するインタフェース。独自の判定実装が必要な場合はこのインタフェースを実装する。\n\n## クラス\n\n**クラス**: `nablarch.common.availability.BasicServiceAvailability`\n\n`ServiceAvailability`の実装クラス。リクエストテーブルを参照してサービス提供可否を判定する。テーブル名・カラム名は設定ファイルで変更可能。\n\n**クラス**: `nablarch.common.handler.ServiceAvailabilityCheckHandler`\n\nサービス提供可否状態の判定を行うハンドラ。\n\n**クラス**: `nablarch.common.availability.ServiceAvailabilityUtil`\n\nサービス提供可否状態判定用ユーティリティ。業務アクション等からサービス提供可否状態を取得する際に使用。\n\n## シーケンス（画面オンライン）\n\n1. `ServiceAvailabilityCheckHandler`がリクエストIDをもとにサービス提供可否状態を判定する\n2. リクエストIDは、`ServiceAvailabilityCheckHandler`より先に処理を行うハンドラ（:ref:`ThreadContextHandler`）によりThreadContextに設定されている必要がある\n3. サービス提供不可の場合、一律サービス提供不可エラー画面へ遷移する\n\n## テーブル定義（リクエストテーブル）\n\nテーブル名・カラム名は任意。データベースの型はJavaの型に変換可能な型を選択する。\n\n| カラム | Javaの型 | 制約 | 備考 |\n|---|---|---|---|\n| リクエストID | java.lang.String | PK | |\n| リクエスト名 | java.lang.String | | 業務用カラム（本機能では不使用） |\n| サービス提供可否状態 | java.lang.String | | 「1」でサービス提供可能（デフォルト、設定で変更可） |\n\n> **注意**: 「サービス提供可否状態」カラムの判定値はデフォルト「1」。設定ファイルで変更可能（:ref:`basicServiceAvailabilityDetail` 参照）。",
+    "s5": "開閉局機能はリポジトリ機能を利用して設定する。\n\n## 全処理方式共通\n\n```xml\n<!-- 開閉局機能を提供するフレームワーク基本実装 -->\n<component name=\"serviceAvailability\" class=\"nablarch.common.availability.BasicServiceAvailability\">\n    <property name=\"tableName\" value=\"REQUEST\"/>\n    <property name=\"requestTableRequestIdColumnName\" value=\"REQUEST_ID\"/>\n    <property name=\"requestTableServiceAvailableColumnName\" value=\"SERVICE_AVAILABLE\"/>\n    <property name=\"requestTableServiceAvailableOkStatus\" value=\"1\"/>\n    <property name=\"dbManager\" ref=\"serviceAvailabilityDbManager\"/>\n</component>\n\n<component name=\"dbManager\" class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n    <property name=\"dbTransactionName\" value=\"serviceAvailability\" />\n    <property name=\"transactionFactory\" ref=\"transactionFactory\" />\n    <property name=\"connectionFactory\" ref=\"connectionFactory\" />\n</component>\n\n<component name=\"serviceAvailabilityCheckHandler\" class=\"nablarch.common.handler.ServiceAvailabilityCheckHandler\">\n    <property name=\"serviceAvailability\" ref=\"serviceAvailability\"/>\n</component>\n```\n\n`BasicServiceAvailability`は初期化が必要（`Initializable`インタフェースを実装）。:ref:`repository_initialize` を参考に、`BasicApplicationInitializer`の`initializeList`に`serviceAvailability`を追加すること。\n\n```xml\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"serviceAvailability\"/>\n        </list>\n    </property>\n</component>\n```\n\n## BasicServiceAvailabilityクラスの設定\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| dbManager | SimpleDbTransactionManager | ○ | | データベースのトランザクション制御。:doc:`../01_Core/04_DbAccessSpec` 参照 |\n| tableName | String | ○ | | リクエストテーブルの名前 |\n| requestTableRequestIdColumnName | String | ○ | | リクエストIDカラムの名前 |\n| requestTableServiceAvailableColumnName | String | ○ | | サービス提供可否状態カラムの名前 |\n| requestTableServiceAvailableOkStatus | String | | 1 | サービス提供可能な状態の値（省略時は「1」） |\n\n## ServiceAvailabilityCheckHandlerの設定\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| serviceAvailability | ServiceAvailability | ○ | | ServiceAvailabilityインタフェースの実装クラス |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

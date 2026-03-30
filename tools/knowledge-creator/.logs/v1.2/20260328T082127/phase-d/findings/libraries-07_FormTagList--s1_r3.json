@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_FormTagList--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — compositeKeyRadioButtonタグ、compositeKeyCheckboxタグ",
+      "description": "The source JSP code examples include important implementation constraints in comments that are omitted from the knowledge file: (1) In pattern 1: '※name の名称は任意だが、keyNames の名称と選択された複合キーのプロパティ名は一致させる必要がある。' — keyNames values must match the composite key property names. (2) In pattern 2: '※name は必ず CompositeKey を表す名称とする。' — the name attribute must use a name representing CompositeKey. These constraints are necessary for correct implementation.",
+      "source_evidence": "Pattern 1 JSP comment: '※name の名称は任意だが、 keyNames の名称と選択された複合キーのプロパティ名は一致させる必要がある。' Pattern 2 JSP comment: '※name は必ず CompositeKey を表す名称とする。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated warning — Section count 6 < source headings 11",
+      "description": "The automated pre-check warning about section count (6 < 11) is a false positive. The source RST file contains exactly 6 actual headings: the top-level heading plus 5 subsection headings (passwordタグ, radioButtonタグ, checkboxタグ, compositeKeyRadioButtonタグ/compositeKeyCheckboxタグ, List型変数に対応するカスタムタグの共通属性). The inflated count of 11 in the automated check appears to include RST anchor labels (e.g., '.. _form_input:', '.. _WebView_SingleCheckBoxTag:', '.. _WebView_MultiSelectCustomTag:', '.. _WebView_ListSelectCommon:') which are not headings. The knowledge file's 6 sections correctly map to the 6 actual source headings.",
+      "source_evidence": "Source contains RST anchor directives (.. _form_input:, .. _WebView_SingleCheckBoxTag:, .. _WebView_MultiSelectCustomTag:, .. _WebView_ListSelectCommon:) which are cross-reference targets, not content headings."
+    }
+  ]
+}

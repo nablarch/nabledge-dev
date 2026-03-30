@@ -1,0 +1,325 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/04_validation.rst`
+- Format: `rst`
+
+```
+メソッドの実装
+--------------
+
+\ :ref:`04_validation`\ と\ :ref:`04_errHandling`\ に従い\ *W11AC02Actionクラス*\ を作成し以下のメソッドを追加する。このメソッドでは、次の処理を行っている。
+
+  :a): @OnErrorアノテーションを使用して、ApplicationException例外発生時の処理を記述。
+  :b): バリデーションの実施。
+  :c): バリデーション結果の確認。エラーが発生している場合は、エラーメッセージが設定されたApplicationExceptionをthrow。
+  :d): 画面入力値が設定されているオブジェクトの取得。
+  :e): ビジネスロジックの実行
+
+.. code-block:: java
+
+  /**
+   * ユーザ情報登録画面の「確認」イベントの処理を行う。
+   *
+   * @param req リクエストコンテキスト
+   * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+   * @return HTTPレスポンス
+   */
+  @OnError(                              // 【説明】例外処理用アノテーション
+      type = ApplicationException.class, // 【説明】例外処理の対象とする例外クラス
+
+      /* 【説明】
+          例外発生時の処理。ここではリクエストID"RW11AC0201"の処理を行うよう(doRW11AC0201メソッドを実行するよう)
+          指定している。 */
+      path = "forward://RW11AC0201"
+  )
+  public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {
+
+      // 精査
+      validate(req);
+
+      // ～中略～
+
+  }
+
+  /**
+   * 入力データの精査と生成を行う。<br>
+   * <br>
+   * 精査エラーの場合はApplicationExceptionを送出する。
+   *
+   * @param req リクエスト
+   * @return 精査済みの入力データから生成したエンティティ
+   */
+  private W11AC02Form validate(HttpRequest req) {
+
+      // 精査
+      // 【説明】W11AC02Formの@ValidateForアノテーションで"registerUser"を指定しているメソッドを実行する
+      ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(
+          "W11AC02", W11AC02Form.class, req, "registerUser");
+
+      // 【説明】バリデーション結果の確認
+      if (!context.isValid()) {
+          // 【説明】エラーがあった場合
+          throw new ApplicationException(context.getMessages()); // 【説明】ApplicationExceptionにエラーメッセージを設定してthrowする
+      }
+
+      // 生成
+      // 【説明】画面入力値が設定されたオブジェクトの生成
+      W11AC02Form form = context.createObject();
+      SystemAccountEntity systemAccount = form.getSystemAccount();
+      CM311AC1Component function = new CM311AC1Component();
+
+      // ログインIDのチェック
+      checkLoginId(systemAccount.getLoginId());
+
+      // グループIDのチェック
+      if (!function.existGroupId(form.getUgroupSystemAccount())) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0020001")));
+      }
+
+      // 認可単位IDのチェック
+      if (systemAccount.getPermissionUnit() != null
+              && !function.existPermissionUnitId(systemAccount)) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0030001")));
+      }
+
+      return form;
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+サンプルアプリケーションでは、バリデーションの処理をプライベートメソッドに切り出しているが、必ずプライベートメソッドに切り出す必要は\ **ない**\ 。
+
+.. note::
+  doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。
+
+.. note::
+  @OnErrorのpathの記述方法はHttpResponseの引数と同じである。詳細は\ :ref:`画面初期表示のActionの作成<makeActionClass>`\ 参照。
+
+View(JSP)の作成
+==================================================
+
+以下の内容で *W11AC0201.jsp* を作成する。
+
+エラーメッセージを表示する場所に、アプリケーションフレームワーク提供のn:errorsタグとn:errorタグを記述する。\
+n:errorsタグは複数のエラーメッセージの一覧表示、n:errorタグは各入力項目のエラーメッセージ表示に使用する。\
+サンプルでは、各入力項目以外のエラーメッセージを画面上部に一覧表示するためにn:errorsタグを使用し、\
+各入力項目に関するエラーメッセージを入力項目の下に表示するためにn:errorタグを使用する。
+
+* app_error.jsp
+
+.. literalinclude:: ./_source/04/app_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(一覧表示)
+
+.. literalinclude:: ./_source/04/W11AC0201_errors.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(ログインIDの入力項目を抜粋)
+
+.. literalinclude:: ./_source/04/W11AC0201_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+  サンプルプログラムでは同じ記述を複数のソースファイルで使用するため、n:errorsタグの記述を外出しにしているが、外出しが必須では\ **ない**\ 。
+
+.. _04_JSPNameAttribute:
+
+画面の入力項目には、フレームワーク提供のカスタムタグを使用する。\
+入力項目のカスタムタグは、リクエストパラメータの名前となるname属性を、以下の形式で指定する。
+
+* Formに追加したEntityのプロパティを指定する場合、 **<バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>**
+* Formに直接追加したプロパティを指定する場合、 **<バリデーションで指定するプレフィックス名>.<プロパティ名>**
+
+ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している。
+
+* W11AC0201.jsp(入力フォーム)
+
+.. literalinclude:: ./_source/04/W11AC0201_form.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+------------
+次に読むもの
+------------
+* `バリデーションとEntityの生成を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html>`_
+* `例外処理を詳しく知りたい時 <../../../fw/reference/handler/HttpMethodBinding.html>`_
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+
+```
+
+## Knowledge File
+
+- ID: `web-application-04_validation--s12`
+
+```json
+{
+  "id": "web-application-04_validation--s12",
+  "title": "View(JSP)の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メソッドの実装",
+      "hints": [
+        "W11AC02Action",
+        "W11AC02Form",
+        "@OnError",
+        "@ValidateFor",
+        "ApplicationException",
+        "ValidationUtil",
+        "ValidationContext",
+        "validateAndConvertRequest",
+        "isValid",
+        "createObject",
+        "getMessages",
+        "MessageUtil",
+        "MessageLevel",
+        "getStringResource",
+        "バリデーション実施",
+        "エラーハンドリング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "View(JSP)の作成",
+      "hints": [
+        "n:errors",
+        "n:error",
+        "name属性",
+        "エラーメッセージ表示",
+        "JSP",
+        "カスタムタグ",
+        "プレフィックス",
+        "W11AC0201",
+        "W11AC02Form"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "バリデーション",
+        "Entityの生成",
+        "例外処理",
+        "カスタムタグ",
+        "HttpMethodBinding",
+        "WebView"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**アノテーション**: `@OnError`, `@ValidateFor`\n**クラス**: `ValidationUtil`, `ValidationContext`, `ApplicationException`, `W11AC02Form`, `MessageUtil`, `MessageLevel`\n\n`@OnError`アノテーションで`ApplicationException`発生時の遷移先を指定する。`type`に例外クラス、`path`に遷移先（HttpResponseの引数と同じ記述方法）を指定する。\n\n```java\n@OnError(\n    type = ApplicationException.class,\n    path = \"forward://RW11AC0201\"\n)\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    validate(req);\n    // ...\n}\n\nprivate W11AC02Form validate(HttpRequest req) {\n    // 第4引数\"registerUser\"はW11AC02Formの@ValidateFor(\"registerUser\")アノテーションで\n    // 指定しているメソッドを実行する（グループ名でバリデーション対象メソッドを特定する）\n    ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(\n        \"W11AC02\", W11AC02Form.class, req, \"registerUser\");\n\n    if (!context.isValid()) {\n        throw new ApplicationException(context.getMessages());\n    }\n\n    W11AC02Form form = context.createObject();\n\n    // ビジネスロジックのエラーチェック（バリデーション以外のエラー）\n    if (!function.existGroupId(form.getUgroupSystemAccount())) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,\n                \"MSG00002\", MessageUtil.getStringResource(\"S0020001\")));\n    }\n\n    return form;\n}\n```\n\nバリデーション処理の流れ:\n1. `ValidationUtil.validateAndConvertRequest()`でバリデーション（プレフィックス名、Formクラス、リクエスト、グループ名を引数に指定）\n   - 第4引数のグループ名（例: `\"registerUser\"`）は、Formクラスのメソッドに付与した`@ValidateFor(\"registerUser\")`アノテーションと対応する\n2. `context.isValid()`でエラー有無を確認\n3. バリデーションエラーがある場合は`context.getMessages()`を引数に`ApplicationException`をthrow\n4. エラーがない場合は`context.createObject()`で画面入力値が設定されたフォームオブジェクトを生成\n5. ビジネスロジックのエラーチェックでは`MessageUtil.createMessage(MessageLevel.ERROR, messageId, MessageUtil.getStringResource(resourceId))`でメッセージを生成し、`ApplicationException`をthrow\n\n> **注意**: バリデーション処理をプライベートメソッドに切り出すことは必須ではない。\n\n> **注意**: `@OnError`の`path`の記述方法はHttpResponseの引数と同じ。詳細は:ref:`画面初期表示のActionの作成<makeActionClass>`参照。",
+    "s2": "**タグ**: `n:errors`, `n:error`\n\n- `n:errors`: 複数のエラーメッセージを一覧表示（各入力項目以外のエラーを画面上部に一覧表示する場合などに使用）\n- `n:error`: 各入力項目のエラーメッセージを表示（入力項目の下に表示する場合などに使用）\n\n> **注意**: `n:errors`タグの記述を外出しにすることは必須ではない。\n\n入力項目のカスタムタグのname属性（リクエストパラメータ名）の形式:\n\n- Formに追加したEntityのプロパティを指定する場合: `<バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>`\n- Formに直接追加したプロパティを指定する場合: `<バリデーションで指定するプレフィックス名>.<プロパティ名>`\n\nユーザ情報登録ではFormに対して`W11AC02`というプレフィックスを使用。",
+    "s3": "- [バリデーションとEntityの生成を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html)\n- [例外処理を詳しく知りたい時](../../../fw/reference/handler/HttpMethodBinding.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,766 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `libraries-07_SubmitTag--s1`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `libraries`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+============================================================
+ボタン又はリンクによるフォームのサブミット
+============================================================
+フォームのサブミットは、ボタン及びリンクに対応しており、下記のカスタムタグを提供している。\
+これらのカスタムタグでは、ボタン又はリンクとURIを関連付けるためにname属性とuri属性を指定する。\
+name属性は、フォーム内で一意な名前を指定する。\
+uri属性の指定方法については、 :ref:`WebView_SpecifyUri` を参照。
+
+タグ名が「popup」から始まるタグは、新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。\
+タグ名が「download」から始まるタグは、ダウンロード用のサブミットを行う。
+
+================================ ================================================================================================
+カスタムタグ                     | 出力するHTMLタグ
+================================ ================================================================================================
+:ref:`WebView_SubmitTag`         | inputタグ(type=submit,button,image)
+:ref:`WebView_ButtonTag`         | buttonタグ
+:ref:`WebView_SubmitLinkTag`     | aタグ
+:ref:`WebView_PopupSubmitTag`    | inputタグ(type=submit,button,image)
+:ref:`WebView_PopupButtonTag`    | buttonタグ
+:ref:`WebView_PopupLinkTag`      | aタグ
+:ref:`WebView_DownloadSubmitTag` | inputタグ(type=submit,button,image)
+:ref:`WebView_DownloadButtonTag` | buttonタグ
+:ref:`WebView_DownloadLinkTag`   | aタグ
+================================ ================================================================================================
+
+--------------------------------
+サブミット先の指定方法
+--------------------------------
+ボタン又はリンクによるフォームのサブミットでURIを指定する場合、uri属性にコンテキストからの相対パスを指定する。
+ユーザ登録機能の例であれば、入力画面と確認画面はUserActionにより表示されるため、これらの画面が表示される際のパスはUserActionにサブミットしたパスとなる。\
+このため、入力画面の確認ボタン、確認画面の戻るボタンと登録ボタンのuri属性には、コンテキストからUserActionへの相対パスを指定する。\
+ユーザ登録確認画面の戻るボタンと登録ボタンの使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <n:submit cssClass="buttons" type="button" name="back" value="戻る"
+            uri="/action/management/user/UserAction/USERS00301" />
+  <n:submit cssClass="buttons" type="button" name="register" value="登録"
+            uri="/action/management/user/UserAction/USERS00302" />
+
+ボタンを押した場合のサブミット先のURIを下記に示す。\
+サブミット先のURIはコンテキストパスを付加したパスとなる。
+
+.. code-block:: bash
+
+  # ユーザ登録確認画面を表示したURI
+  <コンテキストパス>/action/management/user/UserAction/USER00202
+  
+  # 戻るボタンを押した場合のサブミット先のURI
+  <コンテキストパス>/action/management/user/UserAction/USER00301
+  
+  # 登録ボタンを押した場合のサブミット先のURI
+  <コンテキストパス>/action/management/user/UserAction/USER00302
+
+.. warning::
+  サブミット先は現在のURIからの相対パスでも指定することができるが、現在のURIからの相対パスを指定した場合、
+  想定していない画面遷移により不正なURIを組み立ててしまうことがある。\
+  そのため、ボタン又はリンクによるフォームのサブミットでURIを指定する場合は、コンテキストからの相対パスを指定すること。
+
+
+------------------------------------------------------------------------------------------------------------------------
+サブミットを制御するJavaScript関数
+------------------------------------------------------------------------------------------------------------------------
+フォームのサブミットは、JavaScriptを使用してURIを組み立てることで実現する。\
+カスタムタグは、画面内で1回だけ、サブミットを制御するJavaScript関数を出力する。
+フレームワークが出力するサブミットを制御するJavaScript関数のシグネチャを下記に示す。
+
+.. code-block:: javascript
+
+  // フレームワークが出力するJavaScript関数
+  
+  /**
+   * @param event イベントオブジェクト
+   * @param element イベント元の要素(ボタン又はリンク)
+   * @return イベントを伝搬させないため常にfalse
+   */
+  function nablarch_submit(event, element)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+アプリケーションでonclick属性を指定する場合の制約
+---------------------------------------------------------------------------------------------------------------------------------------------------
+カスタムタグは、アプリケーションによるonclick属性の指定有無により処理内容が異なる。\
+アプリケーションによりonclick属性が指定されなかった場合、カスタムタグは、出力するタグのonclick属性に上記のJavaScript関数を自動で設定する。\
+アプリケーションによりonclick属性が指定された場合、カスタムタグは、JavaScript関数を設定しない。\
+アプリケーションは、onclick属性を指定する場合、アプリケーションで作成するJavaScript内で、フレームワークが出力するJavaScript関数を明示的に呼び出す必要がある。
+
+アプリケーションがonclick属性を指定する場合の実装例を下記に示す。\
+下記の実装例では、サブミット前に確認ダイアログを表示する。
+
+.. code-block:: javascript
+
+  // アプリケーションで作成するJavaScript関数
+  function popUpConfirmation(event, element) {
+      if (window.confirm("登録します。よろしいですか？")) {
+          // OK
+          // フレームワークが出力するJavaScript関数を明示的に呼び出す。
+          return nablarch_submit(event, element);
+      } else {
+          // キャンセル
+          return false;
+      }
+  }
+
+.. code-block:: jsp
+
+  // onclick属性にアプリケーションで作成したJavaScript関数を設定する。
+  <n:submit cssClass="buttons" type="button" name="register" value="登録"
+            uri="./USERS00302" onclick="return popUpConfirmation(event, this);" />
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+アプリケーションでformタグのname属性を指定する場合の制約
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+カスタムタグが出力するJavaScript関数は、サブミット対象のフォームを特定するために、formタグのname属性を使用する。\
+このため、アプリケーションでformタグのname属性を指定する場合は、画面内で一意な名前をname属性に指定する必要がある。\
+アプリケーションでformタグのname属性を指定しなかった場合、カスタムタグは「nablarch_form<連番>」形式でname属性の値を生成してformタグのname属性に設定する。\
+<連番>部分には、画面内でformタグの出現順に1から番号を振る。
+
+.. warning::
+
+ サブミット制御を行うJavaScriptにおいてformタグのname属性を使用するため、\
+ formタグのname属性にはJavaScriptの変数名の構文に則った値を指定すること。\
+ 下記に変数名の構文を示す。
+ 
+ * 値の先頭は英字始まり
+ * 先頭以降の値は英数字またはアンダーバー
+
+.. _WebView_ChangeableParams:
+
+------------------------------------------------------------------------------------------------------------------------------------
+ボタン又はリンク毎にパラメータを変更する方法
+------------------------------------------------------------------------------------------------------------------------------------
+更新機能などにおいて、一覧画面から詳細画面に遷移するケースでは、1つのフォームに複数のリンクで異なるパラメータを送信したい場合がある。\
+本機能では、フォームのボタンやリンク毎にパラメータを変更するために :ref:`WebView_ParamTag` を提供する。\
+尚、以降では、フォームのボタンやリンク毎に変更するパラメータを変更パラメータと呼ぶ。
+
+paramタグでは、リクエストで送信する際に使用するパラメータ名を指定するparamName属性と、\
+直接値を指定する場合はvalue属性、リクエストスコープなどスコープ上のオブジェクトを参照する場合はname属性を指定する。
+
+paramタグの使用例を下記に示す。検索結果から一覧画面でリンク毎に変更パラメータを指定している。
+
+.. code-block:: jsp
+
+ <n:form>
+     <table>
+         <%-- テーブルのヘッダ行は省略 --%>
+         <c:forEach var="user" items="${searchResult}" varStatus="status">
+         <tr>
+             <td>
+                 <%--
+                   リンク毎にsampleIdパラメータを変更している。
+                   検索結果には、id(プライマリキー)とname(名前)が含まれているものとする。
+                 --%>
+                 <n:submitLink uri="./R0001" name="R0001_${status.index}">
+                     <n:write name="user.id"/><%-- リンクのラベル指定 --%>
+                     <n:param paramName="sampleId" name="user.id" /><%-- 変更パラメータの指定 --%>
+                 </n:submitLink>
+             </td>
+             <td><n:write name="user.name"/></td>
+         </tr>
+         </c:forEach>
+     </table>
+ </n:form>
+
+HTMLの出力イメージを下記に示す。\
+「nablarch_hidden」というパラメータに必要な情報を入れておき、\
+変更パラメータをリクエストパラメータとして使用できるようにNablarchTagHandlerクラスが設定を行う。
+このため、変更パラメータを使用する場合は、NablarchTagHandlerの設定が必須となる。\
+NablarchTagHandlerの設定方法については、 :ref:`WebView_NablarchTagHandler` を参照。
+
+ユーザ2のリンクが選択された場合は、リクエストパラメータとして「sampleId=U0002」が使用できる状態となる。
+
+.. code-block:: html
+
+ <a name="R0001_0" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ1
+ </a>
+ <a name="R0001_1" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ2
+ </a>
+ <a name="R0001_2" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ3
+ </a>
+ <%-- nablarch_hiddenパラメータ --%>
+ <input type="hidden" name="nablarch_hidden" value="・・・省略・・・" />
+
+.. warning::
+
+ 変更パラメータを使用する場合は、その数に応じてリクエストのデータ量は増大する。\
+ このため、一覧画面で詳細画面へのリンク毎に変更パラメータを指定する場合は、\
+ 変更パラメータをプライマリキーだけにするなど、必要最小限のパラメータのみ指定するよう考慮すること。
+ 
+
+------------------------------------------------------------------------------------------
+認可判定と開閉局判定の結果に応じた表示切り替え
+------------------------------------------------------------------------------------------
+
+認可判定と開閉局判定の結果に応じて、フォームのサブミットを行うボタン又はリンクの表示を切り替えたい場合がある。
+例えば、閉局状態の機能へサブミットを行うボタンやリンクを画面表示時点で非活性にしておきたい場合が挙げられる。
+これにより、ユーザーが実際にボタン又はリンクを押下する前に該当の機能が使用可能かどうかが分かるため、ユーザビリティの向上につながる。
+
+本機能では、フォームのサブミットを行うボタン又はリンクに対して、下記機能に対応した表示切り替えを提供する。それぞれ、下記機能に対応するハンドラがハンドラ構成に含まれている場合のみ本機能は有効となる。
+
+* :ref:`認可<permission>`
+* :ref:`開閉局<serviceAvailable>`
+
+本機能は次の仕様に基づき表示切り替えを行う。
+
+* サブミットを行うタグに指定されたリクエストIDに対して認可判定と開閉局判定を行う。
+* 認可判定で認可失敗となるか、または開閉局判定で閉局となった場合に表示切り替えを行う。
+* 切り替え時の表示方法には次の3パターンがある。
+
+   =================================== ====================================================================================
+   表示方法                            説明
+   =================================== ====================================================================================
+   非表示                              | タグを表示しない。
+   非活性                              | タグを非活性にする。
+                                       | ボタンの場合は、disabled属性を有効にする。
+                                       | リンクの場合は、以下の2種類のうち、いずれかの動作となる。
+                                       | 1. ラベルのみ表示する（デフォルトの動作。aタグを出力しない）。
+                                       | 2. 非活性リンク描画用JSPをインクルードする（\ :ref:`WebView_CustomTagConfig`\ で指定した場合\ [#]_\ ）。
+   通常表示                            | 表示方法の切り替えを行わない。
+   =================================== ====================================================================================
+
+* デフォルトでは、 :ref:`WebView_CustomTagConfig` で指定された表示方法を使用する。設定方法は :ref:`WebView_CustomTagConfig` を参照。
+* 個別に表示方法を変更したい場合は、各タグのdisplayMethod属性に指定する。下記に属性の説明と設定例を示す。
+
+   ====================================== ==========================================================================================
+   属性                                   説明
+   ====================================== ==========================================================================================
+   displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                          | 下記のいずれかを指定する。
+                                          | NODISPLAY (非表示)
+                                          | DISABLED (非活性)
+                                          | NORMAL (通常表示)
+   ====================================== ==========================================================================================
+
+   .. code-block:: jsp
+
+     <%-- このタグは常に表示する。 --%>
+     <n:submit displayMethod="NORMAL" type="button" name="login" 
+               value="ログイン" uri="/LoginAction/LOGIN001" />
+
+   .. note::
+
+     :ref:`WebView_CustomTagConfig` でアプリケーション全体の切り替え時の表示方法を非活性や非表示にした場合は、
+     ログイン画面のログインボタンなど認可されていない状態で使用するボタン又はリンクも表示制御され使用できなくなる。
+     このため、常に表示したいボタン又はリンクには、個別にdisplayMethod属性にNORMALを指定する。
+  
+
+本機能は、デフォルトで認可判定と開閉局判定を行う。これらの判定処理は、nablarch.common.web.tag.DisplayControlCheckerインタフェースを実装したクラスが行う。
+実装したクラスを :ref:`WebView_CustomTagConfig` でdisplayControlCheckersプロパティに指定することで、判定処理を変更することができる。
+フレームワークがデフォルトでサポートしている判定処理に対する設定例を下記に示す。
+displayControlCheckersプロパティが指定されていない場合は、フレームワークがデフォルトでサポートしている判定処理を使用する。
+
+ .. code-block:: xml
+
+   <list name="displayControlCheckers" >
+       <component class="nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker" />
+       <component class="nablarch.common.web.tag.PermissionDisplayControlChecker" />
+   </list>
+   
+   <component name="customTagConfig"
+              class="nablarch.common.web.tag.CustomTagConfig">
+
+       <!-- 判定条件を設定する。 -->
+       <property name="displayControlCheckers" ref="displayControlCheckers" />
+   </component>
+   
+
+
+.. [#]
+ 非活性リンクの描画に任意のJSPを使用することができる。
+ これによりプロジェクト毎に表示方法を容易にカスタマイズできる。
+ \ :ref:`WebView_CustomTagConfig`\ の\ `submitLinkDisabledJsp`\ の項を参照。
+ 
+------------------------------------------------------------------------
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 
+- サブミット先の指定方法
+- 
+- サブミットを制御するJavaScript関数
+- 
+- アプリケーションでonclick属性を指定する場合の制約
+- 
+- アプリケーションでformタグのname属性を指定する場合の制約
+- 
+- ボタン又はリンク毎にパラメータを変更する方法
+- 
+- 認可判定と開閉局判定の結果に応じた表示切り替え
+- 
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/libraries-07_SubmitTag--s1/filename.png)` |
+
+Office attachments → reference in `assets/libraries-07_SubmitTag--s1/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `libraries-07_SubmitTag--s1`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

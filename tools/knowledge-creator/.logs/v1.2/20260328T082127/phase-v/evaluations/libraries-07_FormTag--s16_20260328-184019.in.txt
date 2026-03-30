@@ -1,0 +1,847 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `libraries-07_FormTag--s16`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "s5",
+    "description": "Knowledge file states 'デフォルトは `*`' as an explicit default value, but the source never states this in prose. The source only shows '*' inside an HTML code comment ('*'に置換して出力する). The source does not explicitly declare '*' as the default replacement character.",
+    "source_evidence": "Source comment: `<%-- '*'に置換して出力する。置換文字は変更可能。 --%>` — this is an inline code comment, not an explicit documentation of the default value"
+  },
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "s3",
+    "description": "Hints for section s3 (入力データの復元) are missing `リクエストパラメータ`, which is the third item in the scope search order and a distinct search target that writeタグ specifically excludes.",
+    "source_evidence": "Source: 'Servlet APIのリクエストパラメータ' listed as item 3 in scope search order; 'writeタグは出力専用のため、リクエストパラメータを検索対象に含めない'"
+  },
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "s2",
+    "description": "Hints for section s2 (hiddenの復号処理) are missing `BASE64`, which appears as a named tamper-detection condition ('BASE64のデコードに失敗する').",
+    "source_evidence": "Source: '* BASE64のデコードに失敗する。' listed as one of the five tamper-detection conditions"
+  }
+]
+```
+
+### Source (RST)
+
+```
+============================
+入力フォームのname属性
+============================
+カスタムタグでは、入力データを取り扱うために、リクエストパラメータやリクエストスコープに設定された値にアクセスする必要がある。\
+このため、カスタムタグでは、リクエストパラメータやリクエストスコープに設定されたオブジェクト構造に透過的にアクセスできるように、\
+入力フォームのname属性の指定方法を規定する。\
+入力フォームの作成時は、下記の指定方法で入力フォームのname属性を指定する。
+
+* Map型又はオブジェクトのプロパティにアクセスする場合は、ドット区切りを指定する。
+* List型又は配列の要素にアクセスする場合は、角括弧(括弧内にはインデックス)を指定する。
+
+以降では、下記のUserクラスを使用してname属性の指定例を示す。\
+
+.. code-block:: java
+
+  public class UserEntity {
+      private String name;
+      private String remarks;
+      // アクセッサは省略。
+  }
+
+
+.. _`custom_tag_entity_property_access_example`:
+
+----------------------------------------------------------
+エンティティのプロパティにアクセスする場合の実装例
+----------------------------------------------------------
+エンティティのプロパティにアクセスする場合の例を下記に示す。\
+例ではレイアウトを行うタグは省略する。
+
+.. code-block:: jsp
+
+  <n:text name="user.name" />
+  <n:text name="user.remarks" />
+
+上記のname属性の指定に対応するアクションの実装例を下記に示す。
+
+.. code-block:: java
+
+  // "user"をプレフィックスに指定してバリデーションを行う。
+  ValidationContext<UserEntity> userCtx =
+      ValidationUtil.validateAndConvertRequest("user", UserEntity.class, req, "insert");
+
+  // 入力エラーの場合はApplicationExceptionを送出する。
+  if (!userCtx.isValid()) {
+      throw new ApplicationException(userCtx.getMessages());
+  }
+
+  // エンティティを取得して使用する。
+  UserEntity user = userCtx.createObject();
+
+
+-------------------------------------------------------------------
+Listのプロパティにアクセスする場合の実装例
+-------------------------------------------------------------------
+Listのプロパティにアクセスする場合の例を下記に示す。
+
+.. code-block:: jsp
+
+  <%-- JSTLのforEachタグを使用する。 --%>
+  <%-- アクション側でリクエストスコープにuserSizeという変数名でサイズを指定しているものとする。 --%>
+  <c:forEach begin="0" end="${userSize}" var="userIndex">
+    <n:text name="user[${userIndex}].name" />
+    <n:text name="user[${userIndex}].remarks" />
+  </c:forEach>
+
+上記のname属性の指定に対応するアクションの実装例を下記に示す。
+
+.. code-block:: java
+
+  int userSize = 3;
+  List<UserEntity> users = new ArrayList<UserEntity>(userSize);
+  List<Message> errors = new ArrayList<Message>();
+  boolean isValid = true;
+  for (int i = 0; i < userSize; i++) {
+
+      // "user[n]"をプレフィックスに指定してバリデーションを行う。
+      ValidationContext<UserEntity> userCtx =
+          ValidationUtil.validateAndConvertRequest("user[" + i + "]", UserEntity.class, req, "insert");
+
+      // 入力エラーの判定。
+      if (userCtx.isValid()) {
+          users.add(userCtx.createObject());
+      } else {
+          errors.addAll(userCtx.getMessages());
+          isValid = false;
+      }
+  }
+
+  // 入力エラーの場合はApplicationExceptionを送出する。
+  if (!isValid) {
+      throw new ApplicationException(errors);
+  }
+
+  // 以降でエンティティ(users)を使用する。
+
+
+
+.. note::
+
+  **n:text**\ 等、\ **name**\ 属性を使用したカスタムタグは、画面出力する値(\ **n:text**\ の場合\ **input**\ タグの\ **value**\ 属性の値)は、下記順序で取得する。
+  
+   1. **Page**\ スコープから\ **name**\ 属性に指定した値を保持するオブジェクトが取得できた場合、この値を使用する。( [#pageScopeSet]_ 、 [#objectGet]_ )
+   2. リクエストスコープから\ **name**\ 属性に指定した値を保持するオブジェクトが取得できた場合、この値を使用する。([#objectGet]_)
+   3. リクエストパラメータから\ **name**\ 属性に指定した値が取得できた場合、この値を使用する。
+      リクエストパラメータからの値の取得は、入力エラー発生時に同一画面表示した場合と、 :ref:`windowscope` の値の表示に使用する。
+   4. セッションスコープから\ **name**\ 属性に指定した値が取得できた場合、この値を使用する。
+  
+  上記順序で値が取得できなかった場合は、空文字列を画面出力する。
+  
+.. [#pageScopeSet]
+   Nablarch では Page スコープのオブジェクトは :ref:`WebView_SetTag` を使用して設定できる。
+
+.. [#objectGet]
+    Page スコープ、リクエストスコープでは、値の取得条件が
+    「name 属性に指定した値を保持するオブジェクトが取得できた場合」
+    という条件となっている。
+    
+    これは、例えば :ref:`custom_tag_entity_property_access_example` の例で UserEntity クラスのプロパティ remarks が
+    null であれば、リクエストパラメータ "user.remarks" に "備考" が入っていても "" (空文字列)が出力されるという意味である。
+    
+    この仕様は前画面で入力した値を null の値に上書きするための仕様である。
+    
+    この仕様は、 :ref:`WebView_CustomTagConfig` に記載した設定値 useValueAsNullIfObjectExists により変更可能である。
+    詳細は useValueAsNullIfObjectExists の説明を参照のこと。
+      
+  
+
+========================
+入力データの保持
+========================
+画面から入力されるデータは、クライアント側にhiddenタグとして保持される。\
+クライアント側に保持することで、サーバ側(セッション)に保持する場合に比べて、複数ウィンドウの使用やブラウザの戻るボタンの使用など、
+ブラウザの使用制限を減らし、柔軟な画面設計が可能となる。\
+また、クライアント側に保持するデータは、単純に入力データだけではなく、サーバ側でDBに登録されているデータをhiddenタグで出力し保持する場合もある。\
+例えば、更新対象データのプライマリキーや楽観ロックのための更新対象データのバージョン番号(又は更新日時)をクライアント側に保持することが考えられる。\
+本フレームワークでは、これらクライアント側に保持するデータをウィンドウスコープと呼ぶ変数スコープに保持する。\
+変数スコープについては、 :ref:`scope` および :ref:`web_scope` を参照。\
+尚、ログイン情報など、全ての業務に渡って必要になる情報は、サーバ側(セッション)に保持するので、クライアント側に保持するデータと混同しないこと。
+
+.. note::
+
+  データベースのデータについては、上記記載のある対象データを特定する主キーや楽観ロック用のデータなど必要最低限に留めること。
+  特に入力画面と確認画面で表示するデータ(入力項目ではなく、表示するだけの項目)等は、hiddenで引き回すのではなくデータが必要となる度にデータベースから値を取得するようにすること。
+
+---------------------------------------------------------------------------------------------------
+windowScopePrefixes属性の使用方法
+---------------------------------------------------------------------------------------------------
+ウィンドウスコープにデータを設定するには、 :ref:`WebView_FormTag` のwindowScopePrefixes属性を指定することで行う。\
+ユーザ登録確認画面の使用例と属性の説明を下記に示す。
+
+.. code-block:: jsp
+
+  <n:form windowScopePrefixes="systemAccount,users,ugroupSystemAccount">
+
+      <%-- ボタン以外は省略 --%>
+
+      <n:submit cssClass="buttons" type="button" name="back" value="戻る"
+                uri="./USERS00301" />
+      <n:submit cssClass="buttons" type="button" name="register" value="登録"
+                uri="./USERS00302" allowDoubleSubmission="false" />
+  </n:form>
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+windowScopePrefixes                    | ウィンドウスコープ変数のプレフィックス。
+                                       | 複数指定する場合はカンマ区切り。
+                                       | 指定されたプレフィックスがマッチするリクエストパラメータをhiddenタグとして出力する。
+====================================== ==========================================================================================
+
+windowScopePrefixes属性には、ウィンドウスコープのデータとしてサーバ側に送信する必要があるリクエストパラメータの名前をプレフィックスで指定する。\
+上記例の場合は、3つのプレフィックス(systemAccount,users,ugroupSystemAccount)を指定している。\
+windowScopePrefixes属性の指定がない場合は、ウィンドウスコープのデータがサーバ側に送信されない。
+
+---------------------------------------------------------------------------------------------------
+複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法
+---------------------------------------------------------------------------------------------------
+windowScopePrefixes属性の指定により、更新機能において更新対象を検索した際の検索条件だけを持ち回ることができる。\
+windowScopePrefixes属性の設定例を下記に示す。\
+検索条件のリクエストパラメータは"searchCondition.*"、更新対象のリクエストパラメータは"user.*"とする。
+
+.. code-block:: jsp
+
+  <%--
+    検索画面
+    ウィンドウスコープのデータを送信しない。
+  --%>
+  <n:form>
+
+  <%--
+    更新画面
+    検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="searchCondition">
+
+  <%--
+    更新確認画面
+    更新対象と検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="user,searchCondition">
+
+  <%--
+    更新完了画面
+    検索条件を送信する。
+  --%>
+  <n:form windowScopePrefixes="searchCondition">
+
+formタグでは、一律リクエストパラメータを全てhiddenタグに出力するのではなく、
+既に入力項目として出力したリクエストパラメータはhiddenタグの出力から除外する。
+この動作により、formタグは、ウィザード形式の画面のように、
+画面の入力項目と他画面で入力された入力データをhiddenタグとして同時に出力することに対応する。
+
+.. warning::
+
+ パスワード入力についてもhiddenタグに出力されるため、パスワードがブラウザのキャッシュに残ることになる。\
+ インターネット越しに利用するアプリケーション等でキャッシュに残ると困る場合は、設計時に確認画面を出さなくする、\
+ またはパスワード変更画面のみサーバ側(セッション)を利用する等の方法で hidden にパスワードが出力されないよう考慮する必要がある。
+
+------------------------------------------------------------
+アクションの実装方法
+------------------------------------------------------------
+一般的な開発では、入力データをサーバ側(セッション)に保持することが多いため、ここでアクションの実装方法について補足する。\
+入力データをサーバ側(セッション)に保持する場合とクライアント側(hiddenタグ)に保持する場合で、アクションの実装方法が異なる。\
+
+以降では、サーバ側(セッション)に保持する方式をサーバ方式、クライアント側(hiddenタグ)に保持する方式をクライアント方式と呼ぶ。
+
+実装が異なる点を下記に示す。
+
+| a) クライアント方式ではアクションで入力データの設定を実装しない。
+|
+|   サーバ方式では、アクションでセッションに対して入力データの設定を明示的に実装する必要がある。クライアント方式では、formタグの指定に従いフレームワークが入力データを維持する。
+|
+| b) クライアント方式ではアクションで入力データを取得する場合に毎回バリデーションを行う必要がある。
+|
+|   クライアント方式では、入力データを書き換えられる可能性があるため、入力データを使用する場合は毎回バリデーションを行う必要がある。
+
+クライアント方式の実装例としてユーザ登録のシーケンス図を下記に示す。
+
+.. image:: ./_images/WebView_SampleUserRegistration.jpg
+   :scale: 60
+
+.. _WebView_HiddenEncryption:
+
+======================
+hiddenタグの暗号化
+======================
+ウィンドウスコープやhiddenタグの値は、クライアント側で改竄されてリクエストされたり、\
+HTMLソースを参照することで容易に値を参照することが可能である。\
+本機能では、hiddenタグの改竄を防ぐこと、及びHTMLソース上でhiddenタグを参照させないことを目的に、hiddenタグの暗号化機能を提供する。
+
+本フレームワークでは、アプリケーション内の全ての画面遷移でウィンドウスコープを使用することを想定しているため、\
+デフォルトでは全てのformタグで暗号化を行い、全てのリクエストで復号(及び改竄チェック)を行う。\
+このため、アプリケーションプログラマは、hiddenタグの暗号化機能に関して実装する必要がない。
+
+------------------------------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の処理イメージ
+------------------------------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の処理イメージを下記に示す。
+
+.. image:: ./_images/WebView_HiddenEncryptionImage.jpg
+   :scale: 60
+
+暗号化はformタグ、復号(改竄チェック)はハンドラが行う。\
+ここでは、上図のJSP→HTML→ハンドラの順に例を示し、formタグとハンドラの処理イメージを説明する。
+
+まず、説明に使用するJSPを下記に示す。ユーザ情報の編集確認画面を想定している。
+
+.. code-block:: jsp
+
+ <%-- JSPの実装例 --%>
+ <n:form windowScopePrefixes="user">
+     <%-- hiddenタグでユーザIDの出力 --%>
+     <n:hidden name="user.id" />
+     <%-- ユーザ名の入力 --%>
+     <n:text name="user.name" />
+     <%-- パスワードの入力 --%>
+     <n:password name="user.password" />
+     <%-- ボタンは省略 --%>
+ </n:form>
+
+先に、暗号化しない場合のHTML出力例を示す。
+formタグは、確認画面のため、ウィンドウスコープの値として入力値もhiddenタグで出力する。
+
+.. code-block:: html
+
+ <%-- 暗号化しない場合のHTMLの出力例 --%>
+ <form>
+     <%-- 表示内容は省略 --%>
+     <input type="hidden" name="user.id" value="U0001" />
+     <input type="hidden" name="user.name" value="山田太郎" />
+     <input type="hidden" name="user.password" value="pass1234" />
+     <%-- ボタンは省略 --%>
+ </form>
+
+次に、暗号化した場合のHTML出力例を示す。\
+出力例の"XXX･･･"は、暗号化した値を示している。\
+formタグでは、暗号化対象の値を全てまとめて暗号化を行い、BASE64でエンコードした結果を1つのhiddenタグで出力する。
+暗号化した値は、"nablarch_hidden"という名前で常に出力する。
+暗号化処理の詳細については、 :ref:`WebView_HiddenEncryption_Encrypt` を参照。
+
+.. code-block:: html
+
+ <%-- 暗号化する場合のHTMLの出力例 --%>
+ <form>
+     <%-- 表示内容は省略 --%>
+     <input type="hidden" name="nablarch_hidden" value="XXXXXXXXXXXXXXXXXXXXXXXXXXXX" />
+     <%-- ボタンは省略 --%>
+ </form>
+
+リクエストを受けたハンドラは、"nablarch_hidden"パラメータの値をBASE64でデコードした結果に対して復号し、リクエストパラメータに設定する。\
+ハンドラの処理前後でのリクエストパラメータの状態を下記に示す。\
+ハンドラの復号処理では、改竄チェックも行っており、改竄を検知した場合は設定で指定された画面に遷移させる。\
+復号処理の詳細については、 :ref:`WebView_HiddenEncryption_Handler` を参照。
+
+.. code-block:: bash
+
+ # ハンドラの復号例
+
+ # 復号前
+ nablarch_hidden=XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+ # 復号後
+ user.id=U0001
+ user.name=山田太郎
+ user.password=pass1234
+
+.. _WebView_HiddenEncryption_Settings:
+
+------------------------------------------------------------------------------------
+hiddenタグの暗号化機能の設定
+------------------------------------------------------------------------------------
+hiddenタグの暗号化機能は、 :ref:`WebView_CustomTagConfig` により、下記の設定が可能である。\
+設定方法については、 :ref:`WebView_CustomTagConfig` を参照。
+
+* アプリケーション全体でhiddenタグの暗号化機能を使用するか否か(useHiddenEncryptionプロパティ)
+* 暗号化を行わないリクエストID(noHiddenEncryptionRequestIdsプロパティ)
+
+useHiddenEncryptionプロパティは、開発時にHTMLソース上でhiddenタグの内容を確認する場合に指定する。
+
+以降では、noHiddenEncryptionRequestIdsプロパティを指定した場合の動作について解説する。
+
+**noHiddenEncryptionRequestIdsプロパティを指定した場合の動作イメージ**
+
+noHiddenEncryptionRequestIdsプロパティを指定した場合の動作イメージを下記に示す。
+
+.. image:: ./_images/WebView_HiddenEncryptionNoRequestIdsImage.jpg
+   :scale: 60
+
+noHiddenEncryptionRequestIdsプロパティは、暗号化を行うformタグと復号を行うハンドラの両者から参照し、\
+それぞれ暗号化と復号を行うリクエストIDの同期を取る。\
+noHiddenEncryptionRequestIdsプロパティを指定した場合の動作結果を下記に示す。
+
+noHiddenEncryptionRequestIdsプロパティに下記のリクエストIDが指定されているものとする。
+
+.. code-block:: bash
+
+ ROO1, ROO2, ROO3
+
+下記に状況別の動作結果を示す。\
+n:formタグが出力したHTMLからリクエストしている状況を想定している。\
+n:formタグに含まれるリクエストID列の()内に、n:formタグに含まれるリクエストIDと指定されたnoHiddenEncryptionRequestIdsプロパティの関係を示す。
+
+===== ====================================== =================== ========================== ==================
+No    n:formタグに含まれるリクエストID       n:formタグの処理    リクエスト                 ハンドラの処理
+===== ====================================== =================== ========================== ==================
+1     R111, R222(全て一致しない)             暗号化される。      R111                       復号される。
+2     R001, R002(全て一致する)               暗号化されない。    R001                       復号されない。
+3     R003, R004(一部だけ一致する)           暗号化される。      R003                       復号される。
+4     R003, R004(一部だけ一致する)           暗号化される。      R004                       復号される。
+===== ====================================== =================== ========================== ==================
+
+上記の通り、n:formに含まれるリクエストIDが一部だけ一致する場合は暗号化する。\
+これは、誤設定による暗号化漏れを防ぐためである。\
+そのため、 **No.3** の状況では、本来は暗号化の対象外とすべきリクエストに対しても暗号化が行われる。
+
+.. _WebView_HiddenEncryption_Encrypt:
+
+------------------------------------------------------
+hiddenの暗号化処理
+------------------------------------------------------
+暗号化は、Encryptorインタフェースを実装したクラスが行う。\
+フレームワークでは、デフォルトの暗号化アルゴリズムとしてAES(128bit)を使用する。\
+暗号化アルゴリズムを変更したい場合は、Encryptorを実装したクラスをリポジトリに"hiddenEncryptor"という名前で登録する。
+
+暗号化は、formタグ毎に行う。暗号化では、formタグに含まれる下記のデータをまとめて暗号化し、1つのhiddenタグで出力する。
+このため、hiddenのパラメータ名も含めて暗号化するため、改竄すること自体を難しくしている。
+
+ * カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ
+ * ウィンドウスコープの値
+ * サブミットを行うタグ(submit、submitLink、button)で指定したリクエストID
+ * サブミットを行うタグで指定した :ref:`変更パラメータ<WebView_ChangeableParams>`
+
+さらに、暗号化では、改竄を検知するために、上記のデータから生成したハッシュ値を含める。\
+リクエストIDは、異なる画面間での値の置き換えによる改ざんを検知するために、\
+ハッシュ値は、値の書き換えによる改竄を検知するために使用する。\
+暗号化した結果は、BASE64でエンコードしhiddenタグに出力する。
+
+尚、 :ref:`変更パラメータ<WebView_ChangeableParams>` は、暗号化する場合と暗号化しない場合で、\
+nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。
+
+.. note::
+
+ カスタムタグのhiddenタグで明示的に指定したhiddenパラメータは、暗号化に含まれるため、クライアント側でJavaScriptを使用して値を操作することができない。\
+ クライアント側のJavaScriptでhiddenパラメータを操作する必要がある場合は、 :ref:`WebView_PlainHiddenTag` を使用して出力する必要がある。\
+ 下記に :ref:`WebView_PlainHiddenTag` の使用例を示す。
+ 
+ :ref:`WebView_PlainHiddenTag` に指定された値はhidden暗号化対象とならず、常にHTMLのinput(type="hidden")タグとして出力される。
+
+  .. code-block:: html
+
+   <%-- JSPの実装例 --%>
+   <n:plainHidden name="user.id" />
+
+   <%-- HTMLの出力例 --%>
+   <input type="hidden" name="user.id" value="U0000000001" />
+
+.. note::
+
+ 入力画面などの入力データを暗号化して出力したhiddenタグのデータ量は、暗号化せずに平文で出力した場合に比べて約1.2倍に増量する(1Mバイトのデータ量で比較した結果)。\
+ このデータ量の増加は、特に問題ない範囲である。
+
+**暗号化に使用する鍵の説明**
+
+暗号化に使用する鍵は、鍵の有効期間をできるだけ短くするため、セッション毎に生成する。\
+このため、同じユーザであってもログインをやり直すと、ログイン前に使用していた画面から処理を継続することはできない。
+
+.. note::
+
+ hiddenの暗号化処理では、本フレームワークが出力したHTML以外からアクセスするリクエストを暗号化できない。\
+ 業務アプリケーションのログイン画面やショッピングサイトの商品ページが暗号化できないリクエストに該当する。\
+ ショッピングサイトのように、暗号化できないリクエストが多数を占めるアプリケーションでは、\
+ 別途パラメータの改竄と情報漏洩への対策が必要となる。
+
+.. _WebView_HiddenEncryption_Handler:
+
+------------------------------------------------
+hiddenの復号処理
+------------------------------------------------
+hiddenの復号処理は、NablarchTagHandlerが行う。\
+NablarchTagHandlerの設定方法については、 :ref:`WebView_NablarchTagHandler` を参照。
+
+NablarchTagHandlerの設定では、改竄を検知した場合に送信する画面のリソースパスとレスポンスステータスを指定する。\
+NablarchTagHandlerは、下記の場合に改竄と判定し、指定された画面に遷移させる。\
+
+* 暗号化したhiddenパラメータ(nablarch_hidden)が存在しない。
+* BASE64のデコードに失敗する。
+* 復号に失敗する。
+* 暗号化時に生成したハッシュ値と復号した値で生成したハッシュ値が一致しない。
+* 暗号化時に追加したリクエストIDと受け付けたリクエストのリクエストIDが一致しない。
+
+=========================
+入力データの復元
+=========================
+入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。\
+下図に画面遷移を示す。\
+USER00202{入力エラーあり}とUSER00301のリクエストIDが該当する。
+
+.. image:: ./_images/WebView_InputRecovering.jpg
+   :scale: 60
+
+カスタムタグにより、リクエストパラメータから入力データを復元するため、\
+アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。\
+
+カスタムタグでは、name属性に対応する値を下記の順に検索し、最初に見つかった値を出力する。\
+ただし、writeタグは出力専用のため、リクエストパラメータを検索対象に含めない。
+
+* Servlet APIのページスコープ
+* Servlet APIのリクエストスコープ
+* Servlet APIのリクエストパラメータ
+* Servlet APIのセッションスコープ
+
+
+.. _`output_for_confirmation_page`:
+
+===============================
+入力項目の確認画面用の出力
+===============================
+入力項目のカスタムタグは、入力画面と全く同じ記述のまま、確認画面用の出力を行うことができる。\
+確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する。
+
+.. code-block:: java
+
+  <n:confirmationPage />
+
+ユーザ登録画面とユーザ登録確認画面の例を示す。\
+はじめにそれぞれの画面イメージを示す。
+
+.. image:: ./_images/WebView_InputScreen.jpg
+   :scale: 60
+
+.. image:: ./_images/WebView_ConfirmScreen.jpg
+   :scale: 60
+
+------------------------------------------------
+textタグの出力例
+------------------------------------------------
+上記画面イメージのユーザIDについてHTML出力例を示す。\
+:ref:`WebView_TextTag` は、確認画面でそのまま出力する。
+
+.. code-block:: jsp
+
+  <n:text name="systemAccount.loginId" size="22" maxlength="20" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <input type="text" name="systemAccount.loginId" value="nablarch2" size="22" maxlength="20" />
+
+  <%-- 確認画面 --%>
+  <%-- そのまま出力する。 --%>
+  nablarch2
+
+------------------------------------------------
+passwordタグの出力例
+------------------------------------------------
+上記画面イメージのパスワードについてHTML出力例を示す。\
+:ref:`WebView_PasswordTag` は、確認画面では文字を置き換えて出力する。\
+置換文字はpasswordタグの属性で変更できる。
+
+.. code-block:: jsp
+
+  <n:password name="systemAccount.newPassword" size="22" maxlength="20" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <input type="password" name="systemAccount.newPassword" value="password" size="22" maxlength="20" />
+
+  <%-- 確認画面 --%>
+  <%-- '*'に置換して出力する。置換文字は変更可能。 --%>
+  ********
+
+------------------------------------------------
+selectタグの出力例
+------------------------------------------------
+上記画面イメージのユースケースについてHTML出力例を示す。\
+:ref:`WebView_SelectTag` は、確認画面では指定されたフォーマットで出力する。\
+デフォルトのフォーマットはbrタグである。
+
+.. code-block:: jsp
+
+  <n:select name="systemAccount.useCase" multiple="true" size="5"
+            listName="allUseCase" elementLabelProperty="useCaseName" elementValueProperty="useCaseId"
+            elementLabelPattern="${VALUE}:${LABEL}" />
+
+入力画面と確認画面のHTML出力例を下記に示す。
+確認画面では、選択されたオプションのみが出力される。
+
+.. code-block:: html
+
+  <%-- 入力画面 --%>
+  <select name="systemAccount.useCase" size="5" multiple="multiple">
+    <option value="UC00000000" selected="selected">UC00000000:ログイン</option>
+    <option value="UC00000001">UC00000001:ユーザ一覧照会</option>
+    <option value="UC00000002" selected="selected">UC00000002:ユーザ情報登録</option>
+  </select>
+
+  <%-- 確認画面 --%>
+  <%-- brタグ区切りに出力する。divタグ、ulタグ、olタグ、スペース区切りに変更可能。 --%>
+  UC00000000:ログイン<br />UC00000002:ユーザ情報登録<br />
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "libraries-07_FormTag--s16",
+  "title": "入力データの復元",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "hiddenの暗号化処理",
+      "hints": [
+        "Encryptor",
+        "hiddenEncryptor",
+        "AES 128bit",
+        "n:plainHidden",
+        "WebView_PlainHiddenTag",
+        "hidden暗号化",
+        "改竄検知",
+        "BASE64エンコード",
+        "hiddenパラメータ暗号化",
+        "セッション毎に鍵生成",
+        "変更パラメータ",
+        "WebView_ChangeableParams"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "hiddenの復号処理",
+      "hints": [
+        "NablarchTagHandler",
+        "nablarch_hidden",
+        "WebView_NablarchTagHandler",
+        "改竄検知",
+        "hiddenパラメータ復号",
+        "ハッシュ値検証"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力データの復元",
+      "hints": [
+        "入力データ復元",
+        "スコープ検索順序",
+        "ページスコープ",
+        "リクエストスコープ",
+        "セッションスコープ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "入力項目の確認画面用の出力",
+      "hints": [
+        "n:confirmationPage",
+        "confirmationPage",
+        "確認画面出力",
+        "WebView_ConfirmationPageTag",
+        "n:text",
+        "WebView_TextTag",
+        "textタグ確認画面"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "passwordタグの出力例",
+      "hints": [
+        "n:password",
+        "WebView_PasswordTag",
+        "確認画面",
+        "パスワードマスク",
+        "置換文字"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "selectタグの出力例",
+      "hints": [
+        "n:select",
+        "WebView_SelectTag",
+        "確認画面",
+        "選択項目出力",
+        "brタグ区切り",
+        "elementLabelPattern",
+        "elementLabelProperty",
+        "elementValueProperty"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "暗号化は `Encryptor` インタフェースを実装したクラスが行う。デフォルトはAES(128bit)。アルゴリズムを変更する場合は、Encryptorを実装したクラスをリポジトリに `\"hiddenEncryptor\"` という名前で登録する。\n\n暗号化はformタグ毎に行い、以下のデータをまとめて暗号化し1つのhiddenタグで出力する（パラメータ名も含めて暗号化するため改竄自体を難しくしている）:\n\n- カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ\n- ウィンドウスコープの値\n- submit/submitLink/buttonで指定したリクエストID\n- 変更パラメータ (:ref:`WebView_ChangeableParams`)\n\n改竄検知のためハッシュ値を含める。リクエストIDは異なる画面間の値置き換えによる改竄検知に、ハッシュ値は値の書き換えによる改竄検知に使用する。暗号化した結果はBASE64でエンコードしてhiddenタグに出力する。\n\nなお、変更パラメータ (:ref:`WebView_ChangeableParams`) は、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。\n\n> **注意**: カスタムタグのhiddenタグで指定したhiddenパラメータはクライアント側のJavaScriptで操作できない。JavaScriptでhiddenパラメータを操作する場合は :ref:`WebView_PlainHiddenTag` を使用する。`n:plainHidden` に指定された値はhidden暗号化対象とならず、常に `<input type=\"hidden\">` として出力される。\n\n```html\n<%-- JSPの実装例 --%>\n<n:plainHidden name=\"user.id\" />\n\n<%-- HTMLの出力例 --%>\n<input type=\"hidden\" name=\"user.id\" value=\"U0000000001\" />\n```\n\n> **注意**: 入力データを暗号化して出力したhiddenタグのデータ量は平文の約1.2倍に増量する（1Mバイトで比較）。\n\n**暗号化キー**: セッション毎に生成するため、同じユーザでもログインし直すとログイン前の画面から処理を継続できない。\n\n> **注意**: フレームワークが出力したHTML以外からのリクエストは暗号化できない（ログイン画面、ショッピングサイトの商品ページ等が該当）。暗号化できないリクエストが多数を占めるアプリケーションでは、別途パラメータの改竄と情報漏洩への対策が必要。",
+    "s2": "**クラス**: `NablarchTagHandler`（設定方法は :ref:`WebView_NablarchTagHandler` 参照）\n\n設定では、改竄を検知した場合に遷移させる画面のリソースパスとレスポンスステータスを指定する。\n\n以下のいずれかの場合に改竄と判定し、指定された画面に遷移させる:\n\n1. 暗号化したhiddenパラメータ（nablarch_hidden）が存在しない\n2. BASE64のデコードに失敗\n3. 復号に失敗\n4. 暗号化時に生成したハッシュ値と復号した値のハッシュ値が一致しない\n5. 暗号化時のリクエストIDと受け付けたリクエストのリクエストIDが一致しない",
+    "s3": "入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。カスタムタグによりリクエストパラメータから入力データを復元するため、アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。\n\nカスタムタグはname属性に対応する値を以下の順に検索して出力する（writeタグはリクエストパラメータを検索対象に含めない）:\n\n1. Servlet APIのページスコープ\n2. Servlet APIのリクエストスコープ\n3. Servlet APIのリクエストパラメータ\n4. Servlet APIのセッションスコープ",
+    "s4": "入力項目のカスタムタグは、入力画面と全く同じ記述のまま、確認画面用の出力を行うことができる。確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する:\n\n```java\n<n:confirmationPage />\n```\n\n:ref:`WebView_TextTag` は確認画面でそのまま出力する。\n\n```jsp\n<n:text name=\"systemAccount.loginId\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"text\" name=\"systemAccount.loginId\" value=\"nablarch2\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面 --%>\nnablarch2\n```",
+    "s5": ":ref:`WebView_PasswordTag` は確認画面では文字を置き換えて出力する。置換文字はpasswordタグの属性で変更できる（デフォルトは `*`）。\n\n```jsp\n<n:password name=\"systemAccount.newPassword\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"password\" name=\"systemAccount.newPassword\" value=\"password\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面（'*'に置換して出力、置換文字は変更可能） --%>\n********\n```",
+    "s6": ":ref:`WebView_SelectTag` は確認画面では指定されたフォーマットで出力する。デフォルトはbrタグ区切り（div/ul/ol/スペース区切りに変更可能）。確認画面では選択されたオプションのみが出力される。\n\n```jsp\n<n:select name=\"systemAccount.useCase\" multiple=\"true\" size=\"5\"\n          listName=\"allUseCase\" elementLabelProperty=\"useCaseName\" elementValueProperty=\"useCaseId\"\n          elementLabelPattern=\"${VALUE}:${LABEL}\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<select name=\"systemAccount.useCase\" size=\"5\" multiple=\"multiple\">\n  <option value=\"UC00000000\" selected=\"selected\">UC00000000:ログイン</option>\n  <option value=\"UC00000001\">UC00000001:ユーザ一覧照会</option>\n  <option value=\"UC00000002\" selected=\"selected\">UC00000002:ユーザ情報登録</option>\n</select>\n\n<%-- 確認画面 --%>\nUC00000000:ログイン<br />UC00000002:ユーザ情報登録<br />\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Knowledge file states 'デフォルトは `*`' as an explicit default value, but the source never states this in prose. The source only shows '*' inside an HTML code comment ('*'に置換して出力する). The source does not explicitly declare '*' as the default replacement character.",
+      "source_evidence": "Source comment: `<%-- '*'に置換して出力する。置換文字は変更可能。 --%>` — this is an inline code comment, not an explicit documentation of the default value"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Hints for section s3 (入力データの復元) are missing `リクエストパラメータ`, which is the third item in the scope search order and a distinct search target that writeタグ specifically excludes.",
+      "source_evidence": "Source: 'Servlet APIのリクエストパラメータ' listed as item 3 in scope search order; 'writeタグは出力専用のため、リクエストパラメータを検索対象に含めない'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Hints for section s2 (hiddenの復号処理) are missing `BASE64`, which appears as a named tamper-detection condition ('BASE64のデコードに失敗する').",
+      "source_evidence": "Source: '* BASE64のデコードに失敗する。' listed as one of the five tamper-detection conditions"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "libraries-07_FormTag--s16",
+  "title": "入力データの復元",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "hiddenの暗号化処理",
+      "hints": [
+        "Encryptor",
+        "hiddenEncryptor",
+        "AES 128bit",
+        "n:plainHidden",
+        "WebView_PlainHiddenTag",
+        "hidden暗号化",
+        "改竄検知",
+        "BASE64エンコード",
+        "hiddenパラメータ暗号化",
+        "セッション毎に鍵生成",
+        "変更パラメータ",
+        "WebView_ChangeableParams"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "hiddenの復号処理",
+      "hints": [
+        "NablarchTagHandler",
+        "nablarch_hidden",
+        "WebView_NablarchTagHandler",
+        "改竄検知",
+        "hiddenパラメータ復号",
+        "ハッシュ値検証"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力データの復元",
+      "hints": [
+        "入力データ復元",
+        "スコープ検索順序",
+        "ページスコープ",
+        "リクエストスコープ",
+        "セッションスコープ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "入力項目の確認画面用の出力",
+      "hints": [
+        "n:confirmationPage",
+        "confirmationPage",
+        "確認画面出力",
+        "WebView_ConfirmationPageTag",
+        "n:text",
+        "WebView_TextTag",
+        "textタグ確認画面"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "passwordタグの出力例",
+      "hints": [
+        "n:password",
+        "WebView_PasswordTag",
+        "確認画面",
+        "パスワードマスク",
+        "置換文字"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "selectタグの出力例",
+      "hints": [
+        "n:select",
+        "WebView_SelectTag",
+        "確認画面",
+        "選択項目出力",
+        "brタグ区切り",
+        "elementLabelPattern",
+        "elementLabelProperty",
+        "elementValueProperty"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "暗号化は `Encryptor` インタフェースを実装したクラスが行う。デフォルトはAES(128bit)。アルゴリズムを変更する場合は、Encryptorを実装したクラスをリポジトリに `\"hiddenEncryptor\"` という名前で登録する。\n\n暗号化はformタグ毎に行い、以下のデータをまとめて暗号化し1つのhiddenタグで出力する（パラメータ名も含めて暗号化するため改竄自体を難しくしている）:\n\n- カスタムタグのhiddenタグで明示的に指定したhiddenパラメータ\n- ウィンドウスコープの値\n- submit/submitLink/buttonで指定したリクエストID\n- 変更パラメータ (:ref:`WebView_ChangeableParams`)\n\n改竄検知のためハッシュ値を含める。リクエストIDは異なる画面間の値置き換えによる改竄検知に、ハッシュ値は値の書き換えによる改竄検知に使用する。暗号化した結果はBASE64でエンコードしてhiddenタグに出力する。\n\nなお、変更パラメータ (:ref:`WebView_ChangeableParams`) は、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。\n\n> **注意**: カスタムタグのhiddenタグで指定したhiddenパラメータはクライアント側のJavaScriptで操作できない。JavaScriptでhiddenパラメータを操作する場合は :ref:`WebView_PlainHiddenTag` を使用する。`n:plainHidden` に指定された値はhidden暗号化対象とならず、常に `<input type=\"hidden\">` として出力される。\n\n```html\n<%-- JSPの実装例 --%>\n<n:plainHidden name=\"user.id\" />\n\n<%-- HTMLの出力例 --%>\n<input type=\"hidden\" name=\"user.id\" value=\"U0000000001\" />\n```\n\n> **注意**: 入力データを暗号化して出力したhiddenタグのデータ量は平文の約1.2倍に増量する（1Mバイトで比較）。\n\n**暗号化キー**: セッション毎に生成するため、同じユーザでもログインし直すとログイン前の画面から処理を継続できない。\n\n> **注意**: フレームワークが出力したHTML以外からのリクエストは暗号化できない（ログイン画面、ショッピングサイトの商品ページ等が該当）。暗号化できないリクエストが多数を占めるアプリケーションでは、別途パラメータの改竄と情報漏洩への対策が必要。",
+    "s2": "**クラス**: `NablarchTagHandler`（設定方法は :ref:`WebView_NablarchTagHandler` 参照）\n\n設定では、改竄を検知した場合に遷移させる画面のリソースパスとレスポンスステータスを指定する。\n\n以下のいずれかの場合に改竄と判定し、指定された画面に遷移させる:\n\n1. 暗号化したhiddenパラメータ（nablarch_hidden）が存在しない\n2. BASE64のデコードに失敗\n3. 復号に失敗\n4. 暗号化時に生成したハッシュ値と復号した値のハッシュ値が一致しない\n5. 暗号化時のリクエストIDと受け付けたリクエストのリクエストIDが一致しない",
+    "s3": "入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。カスタムタグによりリクエストパラメータから入力データを復元するため、アプリケーションプログラマは入力データの取得先を意識した実装を行う必要がない。\n\nカスタムタグはname属性に対応する値を以下の順に検索して出力する（writeタグはリクエストパラメータを検索対象に含めない）:\n\n1. Servlet APIのページスコープ\n2. Servlet APIのリクエストスコープ\n3. Servlet APIのリクエストパラメータ\n4. Servlet APIのセッションスコープ",
+    "s4": "入力項目のカスタムタグは、入力画面と全く同じ記述のまま、確認画面用の出力を行うことができる。確認画面のJSPに :ref:`WebView_ConfirmationPageTag` を追加する:\n\n```java\n<n:confirmationPage />\n```\n\n:ref:`WebView_TextTag` は確認画面でそのまま出力する。\n\n```jsp\n<n:text name=\"systemAccount.loginId\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"text\" name=\"systemAccount.loginId\" value=\"nablarch2\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面 --%>\nnablarch2\n```",
+    "s5": ":ref:`WebView_PasswordTag` は確認画面では文字を置き換えて出力する。置換文字はpasswordタグの属性で変更できる（デフォルトは `*`）。\n\n```jsp\n<n:password name=\"systemAccount.newPassword\" size=\"22\" maxlength=\"20\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<input type=\"password\" name=\"systemAccount.newPassword\" value=\"password\" size=\"22\" maxlength=\"20\" />\n\n<%-- 確認画面（'*'に置換して出力、置換文字は変更可能） --%>\n********\n```",
+    "s6": ":ref:`WebView_SelectTag` は確認画面では指定されたフォーマットで出力する。デフォルトはbrタグ区切り（div/ul/ol/スペース区切りに変更可能）。確認画面では選択されたオプションのみが出力される。\n\n```jsp\n<n:select name=\"systemAccount.useCase\" multiple=\"true\" size=\"5\"\n          listName=\"allUseCase\" elementLabelProperty=\"useCaseName\" elementValueProperty=\"useCaseId\"\n          elementLabelPattern=\"${VALUE}:${LABEL}\" />\n```\n\n```html\n<%-- 入力画面 --%>\n<select name=\"systemAccount.useCase\" size=\"5\" multiple=\"multiple\">\n  <option value=\"UC00000000\" selected=\"selected\">UC00000000:ログイン</option>\n  <option value=\"UC00000001\">UC00000001:
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 1 is a false positive — the RST table explicitly states 重複起動エラー ends in 異常終了, so the annotation is correct and no fix is warranted. Finding 2 is a genuine retrieval gap: BatchAction is absent from s3 hints, so AI agents querying on BatchAction retrieve only s2 (a one-liner deferring to another doc) and miss all flow-level callback details in s3. This produces incomplete answers on BatchAction callback events.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s3 — 重複起動エラー flow, step 5",
+      "impact": "none",
+      "justification": "The RST source table explicitly describes 重複起動エラー as '異常終了する', confirming the knowledge file annotation is correct. The JS flow definition omits the annotation as a display-level detail, not a behavioral difference. Phase E correctly retained it. This finding is a false positive and requires no change."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 — hints array",
+      "impact": "medium",
+      "justification": "BatchAction is the primary business logic class in resident batch and appears at position 19 in the handler queue and in every detailed flow (inbound, outbound, callback, error roles). Its absence from s3 hints means AI agents querying 'BatchAction' retrieve only s2, which says nothing beyond 'inherit from template class'. All callback event details (処理開始前, データリーダ作成, 業務コミット後, 全件終了後, エラー終了後) are exclusive to s3. Phase E did not add BatchAction to s3 hints despite this being a low-risk, one-token fix — likely an oversight in the improvement step."
+    }
+  ]
+}

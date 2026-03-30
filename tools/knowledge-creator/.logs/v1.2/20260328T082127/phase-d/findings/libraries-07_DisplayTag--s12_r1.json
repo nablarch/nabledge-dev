@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-07_DisplayTag--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (共通属性)",
+      "description": "Java action implementation example is omitted. The source shows how `BatchEntity` is set up and stored in request scope via `context.setRequestScopedVar(\"batch\", batch)`, which illustrates how the `name` attribute (e.g., `name=\"batch.status\"`) maps to a Java entity field. Without this, the JSP and HTML examples lack the setup context showing the complete usage pattern.",
+      "source_evidence": "// アクションの実装例\nBatchEntity batch = new BatchEntity();\nbatch.setStatus(\"03\"); // \"03\"を設定\ncontext.setRequestScopedVar(\"batch\", batch);"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (共通属性)",
+      "description": "Example data tables (CODE_PATTERN and CODE_NAME) are omitted. These tables explain the data context that produces the HTML output values shown in the examples (e.g., why `03:処理実行中-実行-0002-03-ja` appears). They also demonstrate the relationship between `codeId`, `pattern`, `optionColumnName`, and `labelPattern` attributes by showing the underlying table structure.",
+      "source_evidence": "CODE_PATTERN テーブルのデータ例 (ID/VALUE/PATTERN1/PATTERN2/PATTERN3 columns with 7 rows) and CODE_NAME テーブルのデータ例 (ID/VALUE/SORT_ORDER/LANG/NAME/SHORT_NAME/OPTION01 columns with 14 rows)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (codeRadiobuttonsタグ、codeCheckboxesタグ)",
+      "description": "The HTML output example is truncated. The source shows 5 radio button inputs (values 001–005: red, blue, green, yellow, pink) and 3 checkbox inputs (values 01–03: 地区優勝, リーグ優勝, ファイナル優勝), but the knowledge file only shows 2 radio buttons and 2 checkboxes. The third checkbox entry `01:ファイナル優勝` and radio entries 003–005 are missing.",
+      "source_evidence": "<input id=\"nablarch_radio3\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"003\"><label for=\"nablarch_radio3\">003:green</label><br>\n<input id=\"nablarch_radio4\" ...>004:yellow</label><br>\n<input id=\"nablarch_radio5\" ...>005:pink</label><br>\n<input id=\"nablarch_checkbox3\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"03\"><label for=\"nablarch_checkbox3\">03:ファイナル優勝</label><br>"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (codeタグ)",
+      "description": "Java action implementation example is omitted from the codeタグ section. The source repeats the BatchEntity setup example to demonstrate codeタグ usage in context, showing how the tag reads from a request-scoped variable set in the action.",
+      "source_evidence": "// アクションの実装例\nBatchEntity batch = new BatchEntity();\nbatch.setStatus(\"03\"); // \"03\"を設定\ncontext.setRequestScopedVar(\"batch\", batch);"
+    }
+  ]
+}

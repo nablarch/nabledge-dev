@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3, s7",
+      "description": "Section count 7 is less than source headings 11. Multiple H3 subsections are merged into s3 (setUpDb, testShots, ユーザ情報, Cookie情報, リクエストパラメータ) and s7 (スーパクラスについて, テストメソッド作成, スーパクラスのメソッド呼び出し). The テストデータの書き方 H2 section has significantly more than 2000 chars of content and contains H3 children that were not split into separate sections.",
+      "source_evidence": "Source H3 headings under テストデータの書き方: テストクラスで共通のデータベース初期値 (====), テストケース一覧 (====), ユーザ情報 (====), Cookie情報 (====), リクエストパラメータ (====). Source H3 headings under テストメソッドの書き方: スーパクラスについて (====), テストメソッド作成 (====), スーパクラスのメソッド呼び出し (====)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints are missing several column names from the testShots LIST_MAP table: isValidToken, setUpTable, context, cookie, expectedContentLength, expectedContentType, expectedContentFileName, expectedMessage, responseMessage. Per V4 rules, property names from table first columns should be included in hints.",
+      "source_evidence": "Source testShots table columns (first column): no, description, context, cookie, isValidToken, setUpTable, expectedStatusCode, expectedMessageId, expectedSearch, expectedTable, forwardUri, expectedContentLength, expectedContentType, expectedContentFileName, expectedMessage, responseMessage. Of these, s3 hints only include: expectedStatusCode, expectedMessageId, expectedSearch, expectedTable, forwardUri."
+    }
+  ]
+}

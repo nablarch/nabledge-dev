@@ -1,0 +1,658 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/06_TestFWGuide/02_DbAccessTest.rst`
+- Format: `rst`
+
+```
+====================================
+データベースを使用するクラスのテスト
+====================================
+
+----
+概要
+----
+
+データベースアクセスクラスなど、データベースを使用するクラスをテストする方法を記載する。
+
+
+データベースを使用するクラスをテストする場合、本フレームワークで用意されたクラスを使用することでデータベースに関する操作（テストデータ投入、データ確認）を行うことができる。
+
+
+
+全体像
+======
+
+.. image:: _images/class_structure.png
+   :scale: 100
+
+
+主なクラス, リソース
+--------------------
+
+
++---------------------------+-----------------------------------------------+--------------------------------+
+|名称                       |役割                                           | 作成単位                       |
++===========================+===============================================+================================+
+|テストクラス               |テストロジックを実装する。\                    |テスト対象クラスにつき１つ作成  |
+|                           |DbAccessTestSupportを継承すること。            |                                |
++---------------------------+-----------------------------------------------+--------------------------------+
+|テストデータ（Excelファイル|テーブルに格納する準備データや期待する結果\    |テストクラスにつき１つ作成      |
+|）                         |など、テストデータを記載する。                 |                                |
++---------------------------+-----------------------------------------------+--------------------------------+
+|テスト対象クラス           |テストされるクラス。                           | \－                            |
++---------------------------+-----------------------------------------------+--------------------------------+
+|DbAccessTestSupport        |準備データ投入などデータベースを使用するテスト\| \－                            |
+|                           |に必要な機能を提供する。また、テスト実行前後に\|                                |
+|                           |データベーストランザクションの開始・終了処理を\|                                |
+|                           |行う（ :ref:`using_transactions` ）。          |                                |
++---------------------------+-----------------------------------------------+--------------------------------+
+
+
+------------------
+基本的なテスト方法
+------------------
+
+
+目的に応じた、本フレームワークのAPIの使用方法を以下に記載する。
+
+
+参照系のテスト
+==============
+
+参照系のテストにおいて、テスト対象クラスが期待通りにデータを取得していることを確認する場合、以下の手順でデータベースからの参照結果を確認できる。
+
+ #. データベースに準備データを登録する。
+ #. テスト対象クラスのメソッドを起動する。
+ #. 戻り値として受け取った検索結果が期待した値であるか確認する。
+
+
+シーケンス
+----------
+
+.. image:: _images/select_sequence.png
+   :scale: 100
+
+
+テストソースコード実装例
+------------------------
+
+ .. code-block:: java 
+
+    public class DbAccessTestSample extends DbAccessTestSupport {
+
+        /**
+         * 全件検索のテスト。<br/>
+         * 従業員テーブルに登録されたレコードを
+         * 全件取得できることを確認する。
+         */ 
+        @Test
+        public void testSelectAll() {
+
+            // データベースに準備データを登録する。
+            //引数にはシート名を記載する。
+            setUpDb("testSelectAll");
+                        
+            // テスト対象メソッドを起動する。
+            EmployeeDbAcess target = new EmployeeDbAccess(); 
+            SqlResultSet actual = target.selectAll();
+            
+            // 結果確認
+            // Excelに記載した期待値と実際の値が等しいことを確認する
+            // 引数には期待値を格納したシート名, 期待値のID, 実際の値を指定
+            assertSqlResultSetEquals("testSelectAll", "expected", actual);
+        }
+    }
+
+
+テストデータ記述例
+------------------
+
+.. _how_to_write_setup_table:
+
+データベースに事前登録する準備データ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+以下のようにデータを記載する。
+
+* 1行目　：　SETUP_TABLE=<登録対象のテーブル名>
+
+* 2行目　：　そのテーブルのカラム名
+
+* 3行目～　：　登録するレコード（2行目のカラム名と対応）
+
+
+
+SETUP_TABLE=EMPLOYEE
+
+=========== ============ ===========
+ID          EMP_NAME     DEPT_CODE 
+=========== ============ ===========
+      00001  山田太郎          0001 
+      00002  田中一郎          0002 
+=========== ============ ===========
+
+SETUP_TABLE=DEPT
+
+============ =================
+         ID  DEPT_NAME       
+============ =================
+       0001  人事部          
+       0002  総務部          
+============ =================
+
+
+
+
+テスト実行後に期待する値
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+以下のようにデータを記載する。
+
+* 1行目　：　LIST_MAP=<シート内で一意になる期待値のID(任意の文字列)>
+
+* 2行目　：　SELECT文で指定したカラム名または別名
+
+* 3行目～　：　検索結果（2行目のカラム名と対応）
+
+
+
+LIST_MAP=expected
+
+=========== ============ ===========
+ID          EMP_NAME     DEPT_NAME
+=========== ============ ===========
+      00001  山田太郎      人事部
+      00002  田中一郎      総務部
+=========== ============ ===========
+
+.. _how_to_test_update_method:
+
+更新系のテスト
+==============
+
+テスト対象クラスが期待通りにデータを更新していることを確認する場合、以下の手順でデータベースの更新結果を確認できる。
+
+
+ #. データベースに準備データを登録する。
+ #. テスト対象クラスのメソッドを起動する。
+ #. トランザクションをコミットする。
+ #. データベースの値が期待通り更新されていることを確認する。
+
+.. warning::
+  Nablarch Application Frameworkでは複数種類のトランザクションを併用することが前提となっている。
+  そのため、テスト対象クラス実行後にデータベースの内容を確認する際には、
+  トランザクションをコミットしなければならない。トランザクションをコミットしない場合、
+  テスト結果の確認が正常に行われない。
+
+.. note::
+  参照系のテストの場合はコミットを行う必要はない。
+
+
+シーケンス
+----------
+
+.. image:: _images/update_sequence.png
+   :scale: 100
+
+
+テストソースコード実装例
+------------------------
+
+ .. code-block:: java
+
+    public class DbAccessTestSample extends DbAccsessTestSupport {
+        @Test
+        public void testDeleteExpired() {
+
+            // データベースに準備データを登録する。
+            // 引数にはシート名を記載する。
+            setUpDb("testDeleteExpired");
+                        
+            // テスト対象メソッドを起動する。
+            EmployeeDbAcess target = new EmployeeDbAccess(); 
+            SqlResultSet actual = target.deleteExpired();  // 期限切れデータを削除
+            
+            // トランザクションをコミット
+            commitTransactions();
+
+            // 結果確認
+            // Excelに記載した期待値と実際の値が等しいことを確認する
+            // 引数には期待値を格納したシート名, 実際の値を指定
+            assertTableEquals("testDeleteExpired", actual);
+        }
+
+
+テストデータ記述例
+------------------
+
+データベースに事前登録する準備データ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+以下のようにデータを記載する。
+
+* 1行目　：　SETUP_TABLE=<登録対象のテーブル名>
+
+* 2行目　：　そのテーブルのカラム名
+
+* 3行目～　：　登録するレコード（2行目のカラム名と対応）
+
+
+SETUP_TABLE=EMPLOYEE
+
+=========== ============ =============
+ID          EMP_NAME      EXPIRED
+=========== ============ =============
+      00001  山田太郎      TRUE
+      00002  田中一郎      FALSE
+=========== ============ =============
+
+
+テスト実行後に期待する値
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+以下のようにデータを記載する。
+
+* 1行目　：　EXPECTED_TABLE=<確認対象のテーブル名>
+
+* 2行目　：　確認対象テーブルのカラム名
+
+* 3行目～　：　期待する値
+
+EXPECTED_TABLE=EMPLOYEE
+
+=========== ============ =============
+ID          EMP_NAME      EXPIRED
+=========== ============ =============
+ // CHAR(5)  VARCHAR(64)   BOOLEAN  
+      00002  田中一郎      FALSE
+=========== ============ =============
+
+
+--------------------------------------
+データベーステストデータの省略記述方法
+--------------------------------------
+
+データベースの準備データおよび期待値を記述する際、\
+テストに関係の無いカラムについては記述を省略できる。
+省略したカラムには、自動テストフレームワークにより\ :ref:`default_values_when_column_omitted`\ が設定される。
+この機能を利用することにより、テストデータの可読性が向上する。\
+また、テーブル定義が変更された場合でも、関係無いカラムであればテストデータ修正作業は発生しなくなる為、\
+保守性が向上する。
+
+この機能は特に更新系テストケースに有効である。多くのカラムのうち１カラムだけが更新される場合、\
+不要なカラムを記述する必要がなくなる。
+
+.. warning::
+ データベース\ **検索結果**\ の期待値を記述する際は、\
+ 検索対象カラム全てを記述しなければならない\
+ （レコードの主キーだけを確認する、というような確認方法は不可）。
+ 
+ また、\ **登録系**\ テストの場合も、新規に登録されたレコードの全カラムを確認する必要があるので、\
+ 本機能を用いてカラムを省略することはできない。
+
+
+DBに準備データのカラムを省略する場合
+====================================
+
+データベース準備データを記述する際にカラムを省略すると、省略されたカラムには\
+\ :ref:`default_values_when_column_omitted`\ が設定されているものとして扱われる。
+
+ただし、\ **主キーカラムを省略することはできない**\ 。
+
+
+DB期待値のカラムを省略する場合
+==============================
+
+DB期待値から単純に無関係なカラムを省略すると、省略されたカラムは比較対象外となる。\
+更新系テストの場合には、「無関係なカラムが更新されていないことを確認する」という観点も必要である。
+この場合、データタイプに\ `EXPECTED_TABLE`\ ではなく、\ `EXPECTED_COMPLETE_TABLE`\ を使用する。
+\ `EXPECTED_TABLE`\ を使用した場合、省略されたカラムは比較対象外となるが、\
+`EXPECTED_COMPLETE_TABLE`\ を使用した場合は、省略されたカラムには\
+:ref:`デフォルト値<default_values_when_column_omitted>`\ が格納されているものとして\
+比較が行われる。
+
+
+具体例
+======
+
+全カラムを記載した場合と、関係のあるカラムのみを記載した場合の記述例を以下に示す。
+
+テストケース例
+--------------
+
+以下のテストケースを例として使用する。
+
+
+**「有効期限」を過ぎたレコードは「削除フラグ」が1に更新されること。**\ [#]_
+
+.. [#] 本テスト実施時の日付は2011/01/01とする。
+
+使用するテーブル（SAMPLE_TABLE）には、以下のカラムがあるものとする。
+
+=========== ==================================================
+ カラム名    説明                                         
+=========== ==================================================
+ PK1         主キー                                      
+ PK2         主キー                                      
+ COL_A       テスト対象の機能では使用しないカラム        
+ COL_B       テスト対象の機能では使用しないカラム        
+ COL_C       テスト対象の機能では使用しないカラム        
+ COL_D       テスト対象の機能では使用しないカラム        
+ 有効期限    有効期限を過ぎたデータが処理対象となる            
+ 削除フラグ  有効期限を過ぎたレコードの値を'1'に変更する 
+=========== ==================================================
+
+
+省略せずに全カラムを記載した場合（悪い例）
+------------------------------------------
+
+全カラムが記載されており可読性に劣る\ [#]_\ 。
+また、テーブル定義に変更があった場合、無関係なカラムであっても修正しなければならない。
+
+.. [#] カラムCOL_A, COL_B, COL_C, COL_Dは本テストケースに無関係である。
+
+**準備データ**
+
+SETUP_TABLE=SAMPLE_TABLE
+
++-----+-----+-----+-----+-----+-----+--------+----------+
+|PK_1 |PK_2 |COL_A|COL_B|COL_C|COL_D|有効期限|削除フラグ|
++=====+=====+=====+=====+=====+=====+========+==========+
+| 01  |0001 |1a   |1b   |1c   |1d   |20101231|0         |
++-----+-----+-----+-----+-----+-----+--------+----------+
+| 02  |0002 |2a   |2b   |2c   |2d   |20110101|0         |
++-----+-----+-----+-----+-----+-----+--------+----------+
+
+
+
+**期待値**
+
+EXPECTED_TABLE=SAMPLE_TABLE
+
++-----+-----+-----+-----+-----+-----+--------+----------+
+|PK_1 |PK_2 |COL_A|COL_B|COL_C|COL_D|有効期限|削除フラグ|
++=====+=====+=====+=====+=====+=====+========+==========+
+| 01  |0001 |1a   |1b   |1c   |1d   |20101231|1         |
++-----+-----+-----+-----+-----+-----+--------+----------+
+| 02  |0002 |2a   |2b   |2c   |2d   |20110101|0         |
++-----+-----+-----+-----+-----+-----+--------+----------+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-02_DbAccessTest--s1`
+
+```json
+{
+  "id": "testing-framework-02_DbAccessTest--s1",
+  "title": "データベースを使用するクラスのテスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "主なクラス, リソース",
+      "hints": [
+        "DbAccessTestSupport",
+        "テストクラス",
+        "テストデータ",
+        "データベーステスト",
+        "クラス構成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "参照系テストのAPI",
+      "hints": [
+        "setUpDb",
+        "assertSqlResultSetEquals",
+        "参照系テスト",
+        "SqlResultSet",
+        "LIST_MAP"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "基本的なテスト方法",
+      "hints": [
+        "DbAccessTestSupport",
+        "参照系テスト",
+        "更新系テスト",
+        "commitTransactions",
+        "テストクラス継承"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "シーケンス",
+      "hints": [
+        "参照系テスト",
+        "setUpDb",
+        "assertSqlResultSetEquals",
+        "シーケンス"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "テストソースコード実装例",
+      "hints": [
+        "DbAccessTestSupport",
+        "setUpDb",
+        "assertSqlResultSetEquals",
+        "SqlResultSet",
+        "selectAll"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "テストデータ記述例",
+      "hints": [
+        "SETUP_TABLE",
+        "LIST_MAP",
+        "準備データ",
+        "期待値",
+        "参照系テスト",
+        "Excelフォーマット"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "シーケンス",
+      "hints": [
+        "更新系テスト",
+        "commitTransactions",
+        "assertTableEquals",
+        "シーケンス"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "テストソースコード実装例",
+      "hints": [
+        "DbAccessTestSupport",
+        "setUpDb",
+        "commitTransactions",
+        "assertTableEquals",
+        "deleteExpired"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "テストデータ記述例",
+      "hints": [
+        "SETUP_TABLE",
+        "EXPECTED_TABLE",
+        "準備データ",
+        "期待値",
+        "更新系テスト",
+        "Excelフォーマット"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "",
+      "hints": [
+        "commitTransactions",
+        "更新系テスト",
+        "トランザクション",
+        "コミット",
+        "警告"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "データベーステストデータの省略記述方法",
+      "hints": [
+        "EXPECTED_TABLE",
+        "EXPECTED_COMPLETE_TABLE",
+        "カラム省略",
+        "デフォルト値",
+        "主キー省略不可",
+        "default_values_when_column_omitted"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "テストケース例",
+      "hints": [
+        "SAMPLE_TABLE",
+        "削除フラグ",
+        "有効期限",
+        "テストケース"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "省略せずに全カラムを記載した場合（悪い例）",
+      "hints": [
+        "SETUP_TABLE",
+        "EXPECTED_TABLE",
+        "全カラム記載",
+        "悪い例",
+        "可読性",
+        "カラム省略"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "| 名称 | 役割 | 作成単位 |\n|---|---|---|\n| テストクラス | テストロジックを実装する。`DbAccessTestSupport`を継承すること。 | テスト対象クラスにつき1つ |\n| テストデータ（Excelファイル） | 準備データや期待する結果などのテストデータを記載する。 | テストクラスにつき1つ |\n| テスト対象クラス | テストされるクラス。 | — |\n| **クラス**: `DbAccessTestSupport` | 準備データ投入などDB使用テストに必要な機能を提供する。テスト実行前後にDBトランザクションの開始・終了処理を行う（:ref:`using_transactions`）。 | — |",
+    "s2": "参照系テストのAPI:\n\n- `setUpDb(sheetName)`: 指定シートの準備データをDBに登録する\n- `assertSqlResultSetEquals(sheetName, expectedId, actual)`: ExcelシートのLIST_MAP=<expectedId>と実際の`SqlResultSet`の内容を比較する",
+    "s3": "テストクラスは`DbAccessTestSupport`を継承して作成する。参照系テスト（コミット不要）と更新系テスト（`commitTransactions()`でコミット後にDB確認）の2種類をサポートする。",
+    "s4": "参照系テストの処理フロー:\n\n1. `setUpDb(sheetName)` でExcelの準備データをDBに登録する\n2. テスト対象メソッドを起動する\n3. `assertSqlResultSetEquals(sheetName, expectedId, actual)` でExcelの期待値と検索結果を比較する",
+    "s5": "```java\npublic class DbAccessTestSample extends DbAccessTestSupport {\n    @Test\n    public void testSelectAll() {\n        setUpDb(\"testSelectAll\"); // シート名で準備データを登録\n        EmployeeDbAccess target = new EmployeeDbAccess();\n        SqlResultSet actual = target.selectAll();\n        // assertSqlResultSetEquals(シート名, 期待値ID, 実際の値)\n        assertSqlResultSetEquals(\"testSelectAll\", \"expected\", actual);\n    }\n}\n```",
+    "s6": "**SETUP_TABLE（準備データ）**:\n\n- 1行目: `SETUP_TABLE=<テーブル名>`\n- 2行目: カラム名\n- 3行目〜: 登録レコード\n\n**LIST_MAP（期待値）**:\n\n- 1行目: `LIST_MAP=<シート内で一意な期待値ID（任意文字列）>`\n- 2行目: SELECT文のカラム名または別名\n- 3行目〜: 検索結果",
+    "s7": "更新系テストの処理フロー:\n\n1. `setUpDb(sheetName)` でExcelの準備データをDBに登録する\n2. テスト対象メソッドを起動する\n3. `commitTransactions()` でトランザクションをコミットする\n4. `assertTableEquals(sheetName, actual)` でDBの更新結果を確認する",
+    "s8": "```java\npublic class DbAccessTestSample extends DbAccessTestSupport {\n    @Test\n    public void testDeleteExpired() {\n        setUpDb(\"testDeleteExpired\");\n        EmployeeDbAccess target = new EmployeeDbAccess();\n        SqlResultSet actual = target.deleteExpired(); // 期限切れデータを削除\n        // トランザクションをコミット\n        commitTransactions();\n        assertTableEquals(\"testDeleteExpired\", actual);\n    }\n}\n```",
+    "s9": "**SETUP_TABLE（準備データ）**:\n\n- 1行目: `SETUP_TABLE=<テーブル名>`\n- 2行目: カラム名\n- 3行目〜: 登録レコード\n\n**EXPECTED_TABLE（期待値）**:\n\n- 1行目: `EXPECTED_TABLE=<確認対象テーブル名>`\n- 2行目: 確認対象カラム名（型コメント例: `// CHAR(5)`, `// VARCHAR(64)`, `// BOOLEAN`）\n- 3行目〜: 期待する値",
+    "s10": "> **警告**: Nablarch Application Frameworkでは複数種類のトランザクションを併用するため、テスト対象クラス実行後にDBの内容を確認する際にはトランザクションをコミットしなければならない。コミットしない場合、テスト結果の確認が正常に行われない。\n\n> **注意**: 参照系のテストの場合はコミットを行う必要はない。",
+    "s11": "テストデータ記述で無関係なカラムを省略できる。省略されたカラムには:ref:`default_values_when_column_omitted`が設定される。\n\n**省略ルール**:\n- 主キーカラムは省略不可\n- DB検索結果（`LIST_MAP`）の期待値は全カラム記述必須\n- 登録系テストの新規レコード期待値も全カラム記述必須\n\n**EXPECTED_TABLE vs EXPECTED_COMPLETE_TABLE**:\n- `EXPECTED_TABLE`: 省略カラムは比較対象外\n- `EXPECTED_COMPLETE_TABLE`: 省略カラムには:ref:`デフォルト値<default_values_when_column_omitted>`が設定されているものとして比較する。更新系テストで「無関係なカラムが更新されていないこと」も確認する場合に使用する。",
+    "s12": "テストケース例: 「有効期限を過ぎたレコードは削除フラグが1に更新されること」（テスト実施日: 2011/01/01）\n\n使用テーブル（SAMPLE_TABLE）のカラム構成:\n\n| カラム名 | 説明 |\n|---|---|\n| PK1, PK2 | 主キー |\n| COL_A〜COL_D | テスト対象機能では使用しないカラム |\n| 有効期限 | 有効期限を過ぎたデータが処理対象 |\n| 削除フラグ | 有効期限を過ぎたレコードの値を'1'に変更 |",
+    "s13": "全カラムを記載した場合（テスト対象と無関係なCOL_A〜COL_Dも記述）は可読性に劣る。テーブル定義変更時に無関係なカラムでも修正が必要になる。\n\n**準備データ（SETUP_TABLE=SAMPLE_TABLE）**:\n\n| PK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限 | 削除フラグ |\n|---|---|---|---|---|---|---|---|\n| 01 | 0001 | 1a | 1b | 1c | 1d | 20101231 | 0 |\n| 02 | 0002 | 2a | 2b | 2c | 2d | 20110101 | 0 |\n\n**期待値（EXPECTED_TABLE=SAMPLE_TABLE）**:\n\n| PK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限 | 削除フラグ |\n|---|---|---|---|---|---|---|---|\n| 01 | 0001 | 1a | 1b | 1c | 1d | 20101231 | 1 |\n| 02 | 0002 | 2a | 2b | 2c | 2d | 20110101 | 0 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

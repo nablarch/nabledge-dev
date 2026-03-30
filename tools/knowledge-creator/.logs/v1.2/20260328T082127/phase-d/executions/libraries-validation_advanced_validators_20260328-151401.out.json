@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-validation_advanced_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 年月日コンバータ (変換仕様)",
+      "description": "Source states that after validation, the converted date string is set into the corresponding property of the generated Form object (\"精査後に生成するFormオブジェクトの該当プロパティには変換後の年月日文字列が設定される\"). This is substantive information about where the converted value ends up and is absent from the knowledge file.",
+      "source_evidence": "本機能では精査を行うと同時に、入力値をシステムが内部で使用する年月日文字列へ変換を行う。\n精査後に生成するFormオブジェクトの該当プロパティには変換後の年月日文字列が設定される。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — 年月日コンバータ (hints)",
+      "description": "Annotation attribute `messageId` is listed in the annotation attributes table in s2 content but is absent from the s2 hints array.",
+      "source_evidence": "| messageId | | 日付の精査に失敗した際のメッセージID。未指定時はYYYYMMDDConvertorに設定されたメッセージIDを使用。 |"
+    }
+  ]
+}

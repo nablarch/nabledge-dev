@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-validation_advanced_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction paragraph (before s1)",
+      "description": "The source states an important constraint: '拡張バリデータ・コンバータの精査仕様は変更できない。' and directs users to :ref:`add-validation-method` for custom validators and :ref:`StringConvertor<stringconvertor-setting>` extendedStringConvertors for custom converters when different validation behavior is needed. This constraint — that specs are immutable and custom additions require separate registration — is decision-necessary for implementers and is entirely absent from the knowledge file.",
+      "source_evidence": "拡張バリデータ・コンバータの精査仕様は変更できない。バリデータについて下記に示す精査仕様とは異なる精査を行う場合は、バリデータの場合は :ref:`add-validation-method` 、コンバータの場合は :ref:`StringConvertor<stringconvertor-setting>` のextendedStringConvertors欄をそれぞれ参照して個別にバリデータまたはコンバータを追加すること。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — 精査仕様例 table, row for input \"2011/13\"",
+      "description": "The knowledge file describes the validation failure reason as \"存在しない月\" (non-existent month), but the source says \"存在しない日付\" (non-existent date). While \"存在しない月\" may be more precise, it is not the wording used in the source.",
+      "source_evidence": "Source row: \"2011/13\" → \"NG。存在しない日付。\" Knowledge file: \"NG（存在しない月）\""
+    }
+  ]
+}

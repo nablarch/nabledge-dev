@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — SQLインジェクション対策について",
+      "description": "The source explains that PreparedStatement-based parameterization (バインド変数化) is commonly considered sufficient for SQL injection prevention, but is actually insufficient because it relies on every programmer following rules — and violations are extremely difficult to detect. This rationale is entirely absent from the knowledge file. An AI agent asked 'Why is SQL externalization preferred over PreparedStatement?' or 'Is PreparedStatement enough for SQL injection protection in this framework?' cannot answer correctly without this context.",
+      "source_evidence": "「一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値をバインド変数化することと言われている。ただし、この対策は各アプリケーションプログラマにルールを徹底させるものであり、対策としては不十分である。例えば、SQLインジェクションの脆弱性を含んだ実装を業務ロジック内で行われた場合、問題を検出することが非常に困難である。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — 全体構造",
+      "description": "Section s3 has content 'なし' (2 characters), which is well below the 50-character minimum threshold.",
+      "source_evidence": "Source section '全体構造' contains the introductory sentence '本機能の全体構造図。各クラスの責務については、以降の章で解説を行う。' before the クラス図 subsection."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`PreparedStatement` is a key PascalCase class name central to the SQL injection discussion in the source (the approach considered common but deemed insufficient) but is absent from s1's hints.",
+      "source_evidence": "「PreparedStatementを使用して入力値をバインド変数化することと言われている」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "PascalCase class names `Connection`, `Statement`, and `ResultSet` are explicitly listed in the s2 section content (各種リソースの解放) but are absent from the hints array.",
+      "source_evidence": "「各種リソース(Connection、Statement、ResultSet)の解放ができる。」"
+    }
+  ]
+}

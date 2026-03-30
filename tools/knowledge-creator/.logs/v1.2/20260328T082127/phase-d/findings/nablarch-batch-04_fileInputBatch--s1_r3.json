@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4 (FileLayoutValidator code block)",
+      "description": "The field declaration order in FileLayoutValidator differs from the source. In the source, `recordCount` appears before `END_RECORD`; in the knowledge file they are swapped (END_RECORD appears before recordCount).",
+      "source_evidence": "Source order: TRAILER_RECORD=\"8\", recordCount (int), END_RECORD=\"9\", dataRecordCount (int). Knowledge file order: TRAILER_RECORD=\"8\", END_RECORD=\"9\", recordCount (int), dataRecordCount (int)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`record-separator` is a configuration property defined in the format definition file but is absent from s1 hints.",
+      "source_evidence": "Source: `record-separator: \"\\r\\n\"  # 改行コード(crlf)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints, index[s7].hints, index[s8].hints",
+      "description": "`FILE_LAYOUT_ERROR_EXIT_CODE` is referenced in the code examples of s6, s7, and s8 but is not included in any of their hints arrays.",
+      "source_evidence": "Appears in doHeader, doData, and doTrailer code: `throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE, ...)`"
+    }
+  ]
+}

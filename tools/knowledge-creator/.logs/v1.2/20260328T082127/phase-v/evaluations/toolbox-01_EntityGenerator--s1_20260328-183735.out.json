@@ -1,0 +1,26 @@
+{
+  "file_id": "toolbox-01_EntityGenerator--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Two findings have medium impact: a fabrication in s4 that creates an internal contradiction about file roles for the IF-design case, and a missing 概要 section that leaves the tool's purpose and required input documents unrepresented. An AI relying solely on this knowledge file would either give contradictory answers about which config file serves which role, or be unable to answer basic questions about what the tool produces and what inputs it requires.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s4",
+      "impact": "medium",
+      "justification": "s4 lists `formgeneratorFromIFDesign.config` under the 環境設定ファイル umbrella, directly contradicting s2 (which correctly labels it コンポーネント定義ファイル) and the source table. For IF design, the roles are swapped relative to table design: `.config` = コンポーネント定義, `.xml` = 環境設定. An AI asked 'which file controls the design sheet layout for IF-design generation?' would retrieve conflicting answers from s2 and s4, potentially directing users to edit the wrong file. Phase E left s4 content identical to Phase D — no fix was applied."
+    },
+    {
+      "category": "omission",
+      "location": "s5",
+      "impact": "low",
+      "justification": "`interfaceFileNamePattern` is described as a regex-only field with example `.*.xls`, omitting the explicit exact-filename usage (`外部インターフェース設計書_サンプル1.xls`). In practice, an exact filename is a valid regex (it matches literally), so the omission does not cause incorrect behavior — users can still achieve exact matching with the documented syntax. This is a completeness gap, not a misleading one. Phase E left s5 unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "index / sections (no section covers 概要)",
+      "impact": "medium",
+      "justification": "No section captures the tool's purpose (generating Form skeletons with all DB columns + domain-based validation annotations) or the three required input documents (テーブル定義書 or 外部インタフェース設計書, ドメイン定義書, コード設計書). Questions like 'what does this tool produce?' or 'what files do I need to prepare before running Form自動生成?' have no direct answer in the knowledge file. ドメイン定義書 and コード設計書 appear only as config key values in s5, not as required prerequisites. Phase E added no new section to cover this gap."
+    }
+  ]
+}

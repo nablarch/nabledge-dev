@@ -1,0 +1,30 @@
+{
+  "id": "web-application-07_confirm_view",
+  "title": "確認画面の実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "確認画面の実装",
+      "hints": [
+        "W11ACXXAction",
+        "W11ACXXForm",
+        "ValidationContext",
+        "ApplicationException",
+        "@OnError",
+        "validateAndConvertRequest",
+        "確認画面実装",
+        "入力画面と確認画面の共通化",
+        "精査処理呼び出し",
+        "バリデーションエラー遷移先指定",
+        "n:confirmationPage",
+        "n:forInputPage",
+        "n:forConfirmationPage"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 確認画面の実装\n\n### 確認画面表示 Action の実装\n\n**クラス**: `W11ACXXAction`  \n**メソッド名**: `doRW11ACXX02`（\"do\" + リクエストID `RW11ACXX02`）\n\n精査エラー時の遷移先を `@OnError` アノテーションで指定し、`ValidationUtil.validateAndConvertRequest()` で精査処理（:ref:`process_update_validate_entity` と :ref:`process_update_validate_form` で作成）を呼び出す。精査NGの場合は `ApplicationException` をスローする。\n\n```java\n@OnError(type = ApplicationException.class, path = \"/ss11AC/W11ACXX01.jsp\")\npublic HttpResponse doRW11ACXX02(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11ACXXForm> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11ACXX\",\n                W11ACXXForm.class, req, \"simpleUpdate\");\n    if (!formCtx.isValid()) {\n        throw new ApplicationException(formCtx.getMessages());\n    }\n    return new HttpResponse(\"/ss11AC/W11ACXX02.jsp\");\n}\n```\n\n**アノテーション**: `@OnError`\n\n### 確認画面JSPの実装\n\n確認画面のJSP（`W11ACXX02.jsp`）は、Nablarchの入力画面と確認画面の共通化機能を利用するため、`<n:confirmationPage>` タグのみ記述する。\n\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n<n:confirmationPage path=\"./W11ACXX01.jsp\" />\n```\n\n> **注意**: `【説明】` で始まるコメント行が含まれる場合は、ファイル保存前に必ず削除すること（文字コードエラーが発生する）。\n\n入力画面JSP（`W11ACXX01.jsp`）に確認画面用のタイトル・ボタンを追加する際：\n- 入力画面用要素は `<n:forInputPage>` タグで囲む\n- 確認画面用要素は `<n:forConfirmationPage>` タグで囲む"
+  }
+}

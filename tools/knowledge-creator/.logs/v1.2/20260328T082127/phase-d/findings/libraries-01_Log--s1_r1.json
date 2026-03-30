@@ -1,0 +1,62 @@
+{
+  "file_id": "libraries-01_Log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: ログレベルの定義 (_Log_LevelDefinition_)",
+      "description": "The entire ログレベルの定義 section is missing from the knowledge file. This section contains decision-necessary information: (1) the six-level hierarchy FATAL>ERROR>WARN>INFO>DEBUG>TRACE with exact semantics for each level; (2) a warning that FATAL/ERROR/WARN/INFO are normally output by the framework, not the application (exception: batch record counts, etc.); (3) a warning that DEBUG/TRACE must NOT be enabled in production due to performance degradation and log file bloat; (4) a note that INFO is the standard production log level.",
+      "source_evidence": "ログレベルは、FATAL>ERROR>WARN>INFO>DEBUG>TRACEの6段階 / FATALレベルからTRACEに向かって順にレベルが低くなる / DEBUGレベル・TRACEレベル:: 通常の本番運用時には出力してはならない"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: ログ出力 (_loggerUses_)",
+      "description": "The entire ログ出力 (how to use the logger in application code) section is missing. This section contains critical usage patterns: (1) how to obtain a logger via LoggerManager.get(ClassName.class) and store it as a static final field; (2) code examples showing the isDebugEnabled() pre-check pattern before building log messages; (3) logger naming conventions (FQCN for general use, named loggers like 'SQL' or 'MONITOR' for specific purposes); (4) the guideline that pre-check is unnecessary for log levels always enabled in production.",
+      "source_evidence": "private static final Logger LOGGER = LoggerManager.get(UserManager.class); / if (LOGGER.isDebugEnabled()) { ... LOGGER.logDebug(message); } / メッセージの組み立て処理が必要な場合は、Logger#is<ログレベル>Enabledメソッドを使用して、事前に出力有無をチェックすること"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: 初期処理と終了処理 (_log_initialize_terminate_)",
+      "description": "The entire 初期処理と終了処理 section is missing. This section contains a mandatory requirement and a failure-mode warning: (1) initialization happens automatically on the first logger acquisition; (2) termination (LoggerManager#terminate) must be explicitly called at application shutdown by the individual application; (3) a WARNING that failing to call terminate can cause a memory leak after application shutdown.",
+      "source_evidence": "個別アプリケーション毎にアプリケーションの終了時にLoggerManager#terminateメソッドを呼び出すこと / 本機能を使用する場合は、ロガーマネージャの終了処理の呼び出しをしないと、アプリケーション終了後にメモリリークが発生する可能性があるため、必ず終了処理を呼び出すこと"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: ロガーファクトリの設定方法 (_loggerFactorySetting_)",
+      "description": "The entire ロガーファクトリの設定方法 section is missing. This section defines how to configure the logging implementation, which is essential for setup: (1) property file key loggerFactory.className must be set to a LoggerFactory implementation class; (2) code examples for BasicLoggerFactory and Log4JLoggerFactory; (3) the system property nablarch.log.filePath for specifying the property file path (classpath or filesystem); (4) default behavior: log.properties at classpath root is used when the system property is not set; (5) a note that LoggerManager throws an exception if the property file does not exist.",
+      "source_evidence": "loggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory / システムプロパティを使用して、\"nablarch.log.filePath\"をキーにファイルパスを指定する / システムプロパティを指定しなかった場合は、クラスパス直下のlog.propertiesが使用される / プロパティファイルが存在しない場合は、ロガーマネージャが例外を送出する"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source: 書き込み処理とフォーマット処理",
+      "description": "The entire 書き込み処理とフォーマット処理 section is missing, including its class diagram and all class definitions. Missing class information: LogWriter interface, LogFormatter interface, LogWriterSupport (base log writer with level control), FileLogWriter (single-process file output), SynchronousFileLogWriter (multi-process single-file output using lock files — with a note that it is unsuitable for high-frequency logs like access logs due to lock contention), StandardOutputLogWriter, BasicLogFormatter (formats datetime/userId/requestId/object fields/stack traces), LogContext (holds message, error, datetime, userId, requestId from ThreadContext), LogLevelLabelProvider.",
+      "source_evidence": "nablarch.core.log.basic.SynchronousFileLogWriter: 頻繁にログの出力が行われる場面で本クラスを使用するとロック取得待ちによって性能が著しく劣化するので、アプリケーションログやアクセスログのように出力頻度の高いログ出力での使用は推奨しない"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: 要求 > 未検討; Knowledge file: s3",
+      "description": "The 未検討 subsection of 要求 is entirely absent from s3. It lists features not yet designed or considered (e.g., controlling log output per request ID, live config reload without stopping the application, log file tamper prevention, path substitution characters, independent log output thread, partial replacement of log implementation, external file switching, masking stack trace messages, measuring framework execution time, alerting on execution time/SQL count thresholds). This is useful for AI to correctly answer whether certain capabilities are available.",
+      "source_evidence": "未検討: リクエストID単位でログの出力有無を制御できる / アプリケーションを停止することなく、設定の変更を反映できる / ..."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Knowledge file: sections s1–s8 vs source",
+      "description": "The knowledge file has 8 sections but the source contains approximately 13 distinct informational headings (概要, 特徴×2, 要求×3, ログ出力要求受付処理+sub×4, ログレベルの定義, ログ出力, 初期処理と終了処理, ロガーファクトリの設定方法, 書き込み処理とフォーマット処理+sub). Five major top-level sections (ログレベルの定義, ログ出力, 初期処理と終了処理, ロガーファクトリの設定方法, 書き込み処理とフォーマット処理) are absent, which accounts for the section count discrepancy reported by the automated pre-check.",
+      "source_evidence": "Source sections after s8 content: ログレベルの定義, ログ出力(loggerUses), 初期処理と終了処理, ロガーファクトリの設定方法, 書き込み処理とフォーマット処理 — none appear in knowledge file sections"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "Knowledge file: s3 hints",
+      "description": "s3 hints do not include '未検討' as a searchable term. Users asking which features are not yet considered would not route to s3.",
+      "source_evidence": "Source 要求 section has 未検討 as a named subsection with multiple not-yet-considered features listed"
+    }
+  ]
+}

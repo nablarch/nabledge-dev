@@ -1,0 +1,13 @@
+{
+  "file_id": "nablarch-batch-01_userInputBatchSpec",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The knowledge file states the file layout order as「ヘッダレコード → データレコード（0件以上）→ トレーラレコード → エンドレコード」, but the source says「ヘッダレコード→データレコード(データレコードは、存在していなくても良い)→データレコード→エンドレコード」. The knowledge file substituted「トレーラレコード」for the second「データレコード」in the sequence. Although the source text appears to contain an error (likely a typo where「トレーラレコード」was intended), the knowledge file must not alter source content by replacing one term with another.",
+      "source_evidence": "ファイルのレイアウトは、ヘッダレコード→データレコード(データレコードは、存在していなくても良い)→データレコード→エンドレコードの順であること。"
+    }
+  ]
+}

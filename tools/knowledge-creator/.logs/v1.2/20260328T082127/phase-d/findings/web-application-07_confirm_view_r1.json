@@ -1,0 +1,48 @@
+{
+  "file_id": "web-application-07_confirm_view",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: section 1)-1 steps a–e",
+      "description": "The TDD workflow for implementing the Action method is entirely absent. Source specifies: (a) add test method testRW11ACXX02() to W11ACXXActionRequestTest; (b) create data sheet W11ACXXActionRequestTest.xls with sheet testRW11ACXX02; (c) run unit test and confirm it FAILS; (d) add initial method returning JSP only; (e) re-run and confirm log shows @@@@ DISPATCHING CLASS @@@@ and **** BEFORE ACTION ****. None of these steps, artifact names, or log-verification patterns appear in the knowledge file.",
+      "source_evidence": "Steps a–e under 1)-1 Actionクラスの実装, including testRW11ACXX02() code block, class W11ACXXActionRequestTest, Excel sheet testRW11ACXX02, and console log excerpts."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: section 1)-3 (first occurrence) — JSPの表示確認",
+      "description": "The intermediate display-confirmation step and its footnote are missing. The source explains that at this point data from the request unit test data sheet is shown as-is without validation, and the footnote notes that normally validation would precede the confirmation screen display. This is important architectural context for the development sequence.",
+      "source_evidence": "1)-3 JSPの表示確認: この時点ではリクエスト単体でデータシートにセットしたリクエスト内容がそのまま表示される [#]_. Footnote: 本来であれば精査処理を行い、精査OKの場合に確認画面が表示される。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: section 1)-3 (second occurrence) — JSP静的チェックツールの実行",
+      "description": "The instruction to run the JSP static check tool and confirm no static check errors on the relevant JSP files is not present in the knowledge file.",
+      "source_evidence": "1)-3 JSP静的チェックツールの実行: :ref:`jsp_static_analysis_tool` を実行し、該当ファイルに静的チェックエラーがないことを確認する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: section 2)-1 step a — リクエスト単体データシートの修正",
+      "description": "The requirement to modify the request unit test data sheet by adding test data where ALL items produce validation errors (needed to verify the validation call) is not mentioned.",
+      "source_evidence": "a) リクエスト単体データシートの修正: 精査呼び出しの確認用データの追加する。精査呼び出しの確認は全ての項目が精査エラーとなるようなデータで実施する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source: section 2)-1 step c — リクエスト単体実施",
+      "description": "The expected test verification outcomes are not captured: (1) validation OK produces confirmation screen HTML; (2) validation NG produces update screen HTML with error messages.",
+      "source_evidence": "c) リクエスト単体実施: 精査OKの場合に更新確認画面が出力される。⇒実行結果が成功であり、更新確認画面のHTMLが出力されること。精査NGの場合に更新画面が出力される。⇒実行結果が成功であり、更新画面のHTMLが出力され、エラーメッセージも出力されていること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 / index[0].hints",
+      "description": "ValidationUtil is referenced by name in the s1 code example (ValidationUtil.validateAndConvertRequest(...)) but is absent from the hints array.",
+      "source_evidence": "Code block in step 2)-1-b: ValidationUtil.validateAndConvertRequest(\"W11ACXX\", W11ACXXForm.class, req, \"simpleUpdate\")"
+    }
+  ]
+}

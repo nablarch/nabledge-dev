@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — Cookieに言語を設定する方法（テストデータシート）",
+      "description": "The source explains that Cookie values can be prepared in the request unit test data sheet, and instructs the developer to use this feature to set the language Cookie when running tests. This is the core answer to the question — how to actually change the language per test case. The knowledge file only explains the handler configuration XML but omits the test data sheet mechanism entirely.",
+      "source_evidence": "「リクエスト単体テスト用のテストデータシートに、Cookieに設定する値を準備することができます。この機能を使用して、Cookieに言語を設定してテストを実施してください。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — アーキテクト注記",
+      "description": "The source notes that the handler configuration is performed by each project's architect, not by individual developers. This is decision-relevant context that helps a developer understand they do not need to perform this configuration themselves.",
+      "source_evidence": "「本設定は、各プロジェクトのアーキテクトが実施するものなので、個々の開発者が実施する必要はありません。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — property table: defaultLanguage, supportedLanguages, cookieMaxAge",
+      "description": "The property table provides descriptions for defaultLanguage ('デフォルト言語'), supportedLanguages ('サポートする言語（カンマ区切り）'), and cookieMaxAge ('Cookieの有効期限（秒）'). None of these descriptions appear in the source. Only cookieName has an explicit description in the source XML comment ('言語を保持しているCookie名称'). The remaining three descriptions are inferred from property names and have no basis in the source.",
+      "source_evidence": "Source XML contains only one comment: `<!-- 言語を保持しているCookie名称 -->` for cookieName. No descriptions are provided for defaultLanguage, supportedLanguages, or cookieMaxAge."
+    }
+  ]
+}

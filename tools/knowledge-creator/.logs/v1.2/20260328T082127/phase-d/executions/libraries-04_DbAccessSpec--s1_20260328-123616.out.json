@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 (概要)",
+      "description": "Source states that connection methods beyond the two defaults can be realized by adding a custom component (e.g., one that obtains a connection from java.sql.DriverManager). This extensibility information is absent from the knowledge file.",
+      "source_evidence": "下記以外の接続方法を使用したい場合には、データベース接続を取得する部品(例えば、java.sql.DriverManagerから取得する部品)を追加することにより実現可能である。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 (LIKE検索を簡易的に実装出来る機能)",
+      "description": "The source section includes a comparison code example using `SqlPStatement` (the conventional JDBC approach), but `SqlPStatement` is absent from the s7 hints array.",
+      "source_evidence": "SqlPStatement st = dbConnection.prepareStatement(...) in the '従来のJDBC標準機能の実装' comparison block"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 (条件が可変のSQL文を組み立てる機能)",
+      "description": "The source section includes a comparison code example using `SqlPStatement` (the conventional JDBC approach), but `SqlPStatement` is absent from the s8 hints array.",
+      "source_evidence": "SqlPStatement statement = dbConnection.prepareStatement(sql.toString()) in the '従来のJDBC標準機能の実装' comparison block"
+    }
+  ]
+}

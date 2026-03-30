@@ -1,0 +1,452 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation/DB/01_DbAccessSpec_Example.rst`
+- Format: `rst`
+
+```
+大量データの検索機能
+--------------------
+大量データを取得 [#]_ する場合は、簡易検索機能ではなく本機能を使用してデータの検索処理を行う。
+
+大量データ取得用メソッド(\ *executeQuery*\ )を使用した場合であっても、簡易検索と同じようにデータベースからの検索結果を簡易的に扱えるオブジェクトを返却する。
+このため、アプリケーションではJDBCで提供される機能を使用することなく、データの取得を行うことができる。
+
+詳細は、下記の実装例を参照すること。
+
+
+.. [#]
+  大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。
+  
+  .. admonition:: 例
+
+   .. code-block:: java
+
+     // 大量データの取得に該当する例
+     statement.retrieve();                // この結果返却されるSqlResultSetのサイズが多い場合は、大量データとなる。
+     statement.retrieve(1, 10000000);     // 取得件数に1千万件を指定しているため、SqlResultSetのサイズが最大で1千万件となるため、大量データとなる。
+  
+     // 大量データに該当しない例
+     statement.retrieve(10000000, 20);    // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。
+
+
+* SQLファイルの内容
+
+  ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+  .. code-block:: sql
+
+    --------------------------
+    -- ユーザ一覧を取得用
+    -- SQL_ID:GET_ALL_USER
+    --------------------------
+    GET_ALL_USER =
+    SELECT
+        USER_ID,
+        USER_NAME,
+        USER_NAME_KANA,
+        TEL,
+        MAIL_ADDRESS
+    FROM
+        USER_MST
+    ORDER BY
+        USER_ID
+
+* Javaの実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public ResultSetIterator getAllUser() {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement statement = getSqlPStatement("GET_ALL_USER");
+
+            statement.setString(1, "00001");
+
+            // 【説明】executeQueryを呼びだすと、ResultSetIteratorが返却される
+            return statement.executeQuery();
+
+        }
+    }
+
+    // 【説明】ResultSetIteratorの使用例
+    //  ResultSetIteratorは、Iterableを実装しているため、簡易for文(for-each)を使用することが可能
+    for (SqlRow row : rs) {
+        String userId = row.getString("USER_ID");
+        String userName = row.getString("USER_NAME");
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. warning::
+  ResultSetIterator#iteratorの呼び出しは、複数回行うことができないため注意すること。
+
+  【NGとなる実装パターン】
+
+    .. code-block:: java
+
+      // 【説明】iteratorメソッドを2回呼び出しているためNG
+      ResultSetIterator rs = statement.executeQuery();
+      rs.iterator();
+      rs.iterator();
+
+      // 【説明】2回目のfor文で、2回目のiterator呼び出しが行われるため、NG
+      ResultSetIterator rs = statement.executeQuery();
+      for (SqlRow row : rs) {
+          // 【説明】処理
+      }
+
+      for (SqlRow row : rs) {
+          // 【説明】処理
+      }
+
+    (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _insert_update_delete:
+
+----------------------------
+更新(insert、update、delete)
+----------------------------
+
+.. _update_single_data:
+
+1件のデータを更新する場合
+=========================
+
+* SQLファイルの内容
+
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- ユーザ一登録用
+   -- SQL_ID:REGISTER_USER
+   --------------------------
+   REGISTER_USER =
+   INSERT INTO
+       USER_MST
+       (
+       USER_ID,
+       USER_NAME,
+       USER_NAME_KANA,
+       TEL,
+       MAIL_ADDRESS
+       )
+   VALUES
+       (
+       ?,
+       ?,
+       ?,
+       ?,
+       ?
+       )
+
+   --------------------------
+   -- ユーザ一更新用
+   -- SQL_ID:UPDATE_USER_NAME
+   --------------------------
+   UPDATE_USER_NAME =
+   UPDATE
+       USER_MST
+   SET
+       USER_NAME = ?
+   WHERE
+       USER_ID = ?
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        // 【説明】登録処理の例
+        public void registerUser(String userId, String userName, String userNameKana,
+                String tel, String mailAddress) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement statement = getSqlPStatement("REGISTER_USER");
+
+            statement.setString(1, userId);
+            statement.setString(2, userName);
+            statement.setString(3, userNameKana);
+            statement.setString(4, tel);
+            statement.setString(5, mailAddress);
+            statement.executeUpdate();
+        }
+
+        // 【説明】更新処理の例
+        public void updateUserName(String userId, String userName) {
+
+            SqlPStatement updateStatement = getSqlPStatement("UPDATE_USER_NAME");
+            updateStatement.setString(1, userName);
+            updateStatement.setString(2, userId);
+
+            int updCnt = updateStatement.executeUpdate();
+
+            if (updCnt != 1) {
+                // 更新対象が存在しない場合は、対象なしエラーを表示する
+            }
+        }
+    }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _executeBatch-label:
+
+複数件を一括で更新する場合
+==========================
+JDBCで提供されるバッチ実行機能(\ *executeBatch*\ )と同等の機能を使用した一括更新の実装例。
+
+同一テーブルへの更新(insert、update、delete)を繰り返し行う場合には、バッチ更新機能を使用すること。
+この機能を使用すると、データベースサーバとのラウンドトリップ回数を削減でき、性能改善が期待できる。
+
+.. warning::
+ | 下記実装例にあるように、大量のデータを一括で更新する場合には、適宜executeBatchを呼び出すこと。
+ | この処理を行わないと、メモリ不足が原因でOutOfMemoryErrorが発生したり、gcが頻発し逆に性能劣化の原因となることがある。
+
+* SQLファイルの内容
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- ユーザ一括登録用
+   -- SQL_ID:REGSITER_ALL_USER
+   --------------------------
+   REGSITER_ALL_USER =
+   INSERT INTO
+       USER
+       (
+       ID,
+       NAME
+       )
+   VALUES
+       (
+       ?,
+       ?
+       )
+
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        // 1回のexecuteBatchで更新する最大の件数
+        private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+        // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+        public void registerAllUser(List<Map<String, ?>> users) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement batch = getSqlPStatement("REGSITER_ALL_USER");
+
+            // バッチ更新による一括登録
+            for (Map<String, ?> user : users) {
+                batch.setObject(1, user.get("ID"));
+                batch.setObject(2, user.get("NAME"));
+                batch.addBatch();
+
+                // 1000件単位で実行
+                if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+                    batch.executeBatch();
+                }
+            }
+
+            // 残りのデータがある場合には、実行
+            if (batch.getBatchSize() != 0) {
+                batch.executeBatch();
+            }
+
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _access_to_binary_data:
+
+--------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-01_DbAccessSpec_Example--s8`
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s8",
+  "title": "大量データの検索機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "大量データの検索機能",
+      "hints": [
+        "ResultSetIterator",
+        "SqlPStatement",
+        "DbAccessSupport",
+        "executeQuery",
+        "大量データ検索",
+        "SqlRow",
+        "ResultSetIterator複数回呼び出し禁止",
+        "SqlResultSet"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "更新(insert、update、delete)",
+      "hints": [
+        "SqlPStatement",
+        "DbAccessSupport",
+        "executeUpdate",
+        "executeBatch",
+        "addBatch",
+        "getBatchSize",
+        "INSERT実装",
+        "UPDATE実装",
+        "バッチ更新",
+        "OutOfMemoryError",
+        "更新処理",
+        "insert",
+        "update",
+        "delete"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "バイナリデータアクセス",
+        "access_to_binary_data"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "大量データを取得する場合は、簡易検索機能ではなく `executeQuery` を使用すること。`executeQuery` を使用した場合もデータベースからの検索結果を簡易的に扱えるオブジェクト（`ResultSetIterator`）が返却されるため、JDBCの機能を直接使用せずにデータ取得できる。\n\n> **補足**: 大量データとは、SELECT文の結果として取得されるデータ件数（検索対象テーブルの件数ではない）が大量であることをさす。`retrieve()` の結果 `SqlResultSet` が大量の場合、または `retrieve(1, 10000000)` のように取得最大件数を大量に指定した場合が該当する。取得開始位置が大きくても最大件数が少なければ（例: `retrieve(10000000, 20)` は最大20件のため）該当しない。\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nGET_ALL_USER =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nORDER BY\n    USER_ID\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    public ResultSetIterator getAllUser() {\n        SqlPStatement statement = getSqlPStatement(\"GET_ALL_USER\");\n        statement.setString(1, \"00001\");\n        return statement.executeQuery();\n    }\n}\n\n// ResultSetIterator は Iterable を実装しているため for-each が使用可能\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。\n\n> **警告**: `ResultSetIterator#iterator` の呼び出しは複数回行うことができない。以下はNGパターン:\n```java\n// NG1: iteratorメソッドを2回呼び出し\nResultSetIterator rs = statement.executeQuery();\nrs.iterator();\nrs.iterator();\n\n// NG2: 2回目のfor文で2回目のiterator呼び出しが発生\nResultSetIterator rs = statement.executeQuery();\nfor (SqlRow row : rs) { /* 処理 */ }\nfor (SqlRow row : rs) { /* 処理 */ }  // NG\n```",
+    "s2": "### 1件のデータを更新する場合\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nREGISTER_USER =\nINSERT INTO\n    USER_MST\n    (USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS)\nVALUES\n    (?, ?, ?, ?, ?)\n\nUPDATE_USER_NAME =\nUPDATE\n    USER_MST\nSET\n    USER_NAME = ?\nWHERE\n    USER_ID = ?\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    public void registerUser(String userId, String userName, String userNameKana,\n            String tel, String mailAddress) {\n        SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\");\n        statement.setString(1, userId);\n        statement.setString(2, userName);\n        statement.setString(3, userNameKana);\n        statement.setString(4, tel);\n        statement.setString(5, mailAddress);\n        statement.executeUpdate();\n    }\n\n    public void updateUserName(String userId, String userName) {\n        SqlPStatement updateStatement = getSqlPStatement(\"UPDATE_USER_NAME\");\n        updateStatement.setString(1, userName);\n        updateStatement.setString(2, userId);\n        int updCnt = updateStatement.executeUpdate();\n        if (updCnt != 1) {\n            // 更新対象が存在しない場合は対象なしエラーを表示する\n        }\n    }\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。\n\n### 複数件を一括で更新する場合\n\n同一テーブルへの insert/update/delete を繰り返し行う場合は、`executeBatch` によるバッチ更新を使用すること。ラウンドトリップ回数を削減でき、性能改善が期待できる。\n\n> **警告**: 大量データを一括更新する場合は適宜 `executeBatch` を呼び出すこと。実行しないとメモリ不足（OutOfMemoryError）やGC頻発による性能劣化の原因となる。\n\n**SQLファイル** (`nablarch/sample/ss11AC/CM311AC1Component.sql`):\n```sql\nREGSITER_ALL_USER =\nINSERT INTO\n    USER\n    (ID, NAME)\nVALUES\n    (?, ?)\n```\n\n**Java実装**:\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n    private static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\n    public void registerAllUser(List<Map<String, ?>> users) {\n        SqlPStatement batch = getSqlPStatement(\"REGSITER_ALL_USER\");\n        for (Map<String, ?> user : users) {\n            batch.setObject(1, user.get(\"ID\"));\n            batch.setObject(2, user.get(\"NAME\"));\n            batch.addBatch();\n            if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n                batch.executeBatch();\n            }\n        }\n        if (batch.getBatchSize() != 0) {\n            batch.executeBatch();\n        }\n    }\n}\n```\n\n> **注意**: SQLファイルの記述ルールや SQL_ID の指定方法の詳細は、:ref:`retrieve-variable-label` を参照すること。",
+    "s3": "なし"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

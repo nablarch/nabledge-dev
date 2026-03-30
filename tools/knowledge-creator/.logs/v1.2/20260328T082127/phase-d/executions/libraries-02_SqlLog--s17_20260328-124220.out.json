@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s6] / sections[s6]",
+      "description": "Source has a distinct top-level section 'SQLログの出力例' (delimited with `===`) that is separate from 'SqlPStatement#executeBatchメソッドの更新終了時'. The knowledge file merges both into s6 without a separate index entry. The s6 index title remains 'SqlPStatement#executeBatchメソッドの更新終了時', so an AI navigating by index title would not recognize that s6 also contains the SQLログの出力例 content. The extra hints (log.properties, app-log.properties, sqlLogFormatter, SQLログ出力例) partially compensate, but the section title is misleading for the merged content.",
+      "source_evidence": "Source has two distinct sections: 'SqlPStatement#executeBatchメソッドの更新終了時' (------) and 'SQLログの出力例' (===). Knowledge file index has only s1–s6 with s6 titled 'SqlPStatement#executeBatchメソッドの更新終了時', absorbing the entire SQLログの出力例 section into s6's body."
+    }
+  ]
+}

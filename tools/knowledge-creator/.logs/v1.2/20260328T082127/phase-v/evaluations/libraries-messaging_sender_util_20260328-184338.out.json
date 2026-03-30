@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sender_util",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor and have low practical user impact. The hints_missing finding omits general-purpose Nablarch utility classes (ApplicationException, MessageUtil, MessageLevel) that are not specific to this messaging utility and would appear in other knowledge files; the section remains retrievable via the primary messaging-specific hints already present. The fabrication finding involves an inference that is contextually correct and consistent with the document's own configuration pattern — the source RST itself is garbled (missing the subject noun), and \"DEFAULT設定値\" is the only semantically coherent completion given the surrounding messageSender.DEFAULT.* structure. Neither finding would cause an agent to give incorrect guidance to a user.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "ApplicationException, MessageUtil, and MessageLevel are general-purpose Nablarch framework classes, not specific to the messaging utility. They appear in many other contexts and knowledge files. The section is already retrievable via the primary messaging-specific hints (MessageSender, SyncMessage, MessageSendSyncTimeoutException, sendSync). An agent working on messaging tasks would retrieve this section through those primary hints and still see the complete code sample including the error-handling classes. No agent guidance would be incorrect or incomplete as a result of this omission. Why it persisted: Phase E output is identical to Phase D input — the fix step made no changes to the file, suggesting the fixer determined the missing hints were not worth adding (likely treating them as general utility classes out of scope for this section's hints)."
+    },
+    {
+      "category": "fabrication",
+      "location": "s2 — messageSender.リクエストID.timeout row",
+      "impact": "low",
+      "justification": "The source RST contains a documentation defect — the sentence '0以下または指定がない場合はの設定値となる' is syntactically broken (missing the subject noun before 'の設定値'). The knowledge file's inference 'DEFAULT設定値となる' is the only semantically coherent completion: the document defines messageSender.DEFAULT.* as the common/fallback settings, and the per-request-ID timeout property description explicitly notes 'DEFAULT未設定時は必須' for other properties, confirming the DEFAULT fallback pattern throughout. An agent reading this would give users correct behavioral guidance. Why it persisted: Phase E output is identical to Phase D input — the fix step made no changes, likely because the fixer assessed the inference as correct and the fabrication risk as acceptable given the garbled source."
+    }
+  ]
+}

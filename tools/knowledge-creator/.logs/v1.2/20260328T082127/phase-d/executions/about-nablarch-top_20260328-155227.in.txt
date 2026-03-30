@@ -1,0 +1,231 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/TOP/top/index.rst`
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+===================================================
+Nablarch 1.2.8版
+===================================================
+
+----------------------------
+Nablarchについて
+----------------------------
+
+Nablarch(ナブラーク)は、TISの豊富な基幹システム構築経験から得られたナレッジを集約したJavaアプリケーション開発/実行基盤です。
+
+.. toctree::
+  :maxdepth: 1
+
+  about_nablarch/concept
+  about_nablarch/development_policy
+  about_nablarch/contents
+  about_nablarch/support_service
+  about_nablarch/versionup_policy
+
+----------------------------
+Nablarchのコンテンツ
+----------------------------
+
+
+Nablarchのコンテンツは nablarchフォルダに格納されています。下記リンクから参照してください。 
+
+* `Nablarchのコンテンツ <./nablarch/index.html>`_ 
+
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  nablarch/index
+
+
+また、Nablarchを使用したアプリケーション開発に関する質問については、FAQを参照してください。
+
+* `FAQ <./FAQ/index.html>`_ 
+
+----------------------------
+リリース情報
+----------------------------
+
+本リリースのリリース情報は下記のとおりです。
+
+.. list-table:: 
+   :widths: 10, 30
+
+   * - 配布元
+     - | TIS株式会社 テクノロジー開発部
+   * - バージョン番号
+     - 1.2.8
+   * - リリース日
+     - 2024年05月30日
+   * - リリース内容
+     - | `リリースノート <./nablarch/release_note/nablarch-releasenote.xlsx>`_ 
+   * - 既知不具合
+     -   `既知不具合 <./nablarch/release_note/既知不具合.xls>`_ 
+   * - リリース履歴
+     - | 2013年05月13日 1.1.9 リリース
+       | 2021年06月30日 1.2.7 リリース
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-top`
+
+```json
+{
+  "id": "about-nablarch-top",
+  "title": "Nablarch 1.2.8版",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarchについて",
+      "hints": [
+        "Nablarch",
+        "Java開発基盤",
+        "TIS",
+        "アプリケーション開発実行基盤",
+        "about_nablarch/concept",
+        "about_nablarch/development_policy",
+        "about_nablarch/contents",
+        "about_nablarch/support_service",
+        "about_nablarch/versionup_policy"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Nablarchのコンテンツ",
+      "hints": [
+        "Nablarchコンテンツ",
+        "FAQ",
+        "nablarch/index",
+        "コンテンツ一覧"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "リリース情報",
+      "hints": [
+        "リリース情報",
+        "配布元",
+        "バージョン番号",
+        "1.2.8",
+        "リリース日",
+        "リリース内容",
+        "リリースノート",
+        "既知不具合",
+        "リリース履歴"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch(ナブラーク)はTISの豊富な基幹システム構築経験から得られたナレッジを集約したJavaアプリケーション開発/実行基盤。\n\n関連ドキュメント（toctree）:\n- about_nablarch/concept\n- about_nablarch/development_policy\n- about_nablarch/contents\n- about_nablarch/support_service\n- about_nablarch/versionup_policy",
+    "s2": "- [Nablarchのコンテンツ](./nablarch/index.html)\n- [FAQ](./FAQ/index.html)",
+    "s3": "| 項目 | 内容 |\n|---|---|\n| 配布元 | TIS株式会社 テクノロジー開発部 |\n| バージョン番号 | 1.2.8 |\n| リリース日 | 2024年05月30日 |\n| リリース内容 | [リリースノート](./nablarch/release_note/nablarch-releasenote.xlsx) |\n| 既知不具合 | [既知不具合](./nablarch/release_note/既知不具合.xls) |\n| リリース履歴 | 2013年05月13日 1.1.9リリース、2021年06月30日 1.2.7リリース |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

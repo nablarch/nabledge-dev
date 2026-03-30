@@ -1,0 +1,38 @@
+{
+  "file_id": "libraries-07_TagReference--s54",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All five findings are hints_missing for generic attribute names ('name', 'value', 'tag', 'type', 'label'). These terms appear across dozens of Nablarch tags and would add retrieval noise rather than precision. Each affected section already contains the tag-specific discriminating hints (e.g., 'listSearchSortSubmit', 'prettyPrint', 'rawWrite', 'var'/'bySingleValue', 'paramName') that are sufficient for accurate retrieval. No finding reaches medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1] hints",
+      "impact": "low",
+      "justification": "Missing 'tag', 'type', 'label', 'name' — all four are common across many tags. The section is already unambiguously identified by 'listSearchSortSubmit', 'ascSortId', 'descSortId', 'sortCss', 'ascCss', 'descCss', 'defaultSort', 'listSearchInfoName'. Adding generic names risks false positives but omitting them causes no retrieval failure. Persisted because the Phase E fix pass produced an identical hints array — the improvement loop did not apply the diff."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s3] hints",
+      "impact": "none",
+      "justification": "'name' is the sole attribute of prettyPrintタグ, but it is shared by virtually every tag in the reference. Adding it provides no discriminating value. Section is fully identified by 'prettyPrint'. Persisted because Phase E output is identical to Phase D — no change was applied."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s4] hints",
+      "impact": "none",
+      "justification": "Same as s3: 'name' is non-discriminating for rawWriteタグ. 'rawWrite', '生値出力', 'HTMLエスケープなし出力' are sufficient. Persisted for the same reason — Phase E made no change."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s5] hints",
+      "impact": "none",
+      "justification": "'name' and 'value' are ubiquitous across the tag library. setタグ is already covered by 'var', 'scope', 'bySingleValue', 'リクエストスコープ格納'. The generic additions would increase false-positive retrieval. Persisted because Phase E output is unchanged."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s7] hints",
+      "impact": "none",
+      "justification": "'name' and 'value' are generic. 'includeParam', 'paramName', 'インクルード時パラメータ' are sufficient discriminators. Persisted because Phase E output is unchanged from Phase D."
+    }
+  ]
+}

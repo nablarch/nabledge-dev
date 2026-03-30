@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — note about HTML form being a learning example only",
+      "description": "The second sentence of the note under 'ActionからのバリデーションメソッドのHTMLフォーム呼び出し' is omitted. The knowledge file includes only 'Nablarchを使用したWebアプリケーションの開発では custom_tag のカスタムタグを使用する' but drops the explicit warning: '上記実装はあくまでバリデーションの理解に集中するための実装例とし、実際のアプリケーション実装をそのまま行わないよう注意すること。' This warning tells developers not to copy the HTML form implementation directly into production code.",
+      "source_evidence": ".. note::\n   通常、Nablarchを使用したWebアプリケーションの開発では、 :ref:`custom_tag` に記載したカスタムタグを使用する。\n   \n   上記実装はあくまでバリデーションの理解に集中するための実装例とし、実際のアプリケーション実装をそのまま行わないよう注意すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "The code example in s5 uses 'ApplicationException', 'createObject', and 'getMessages' in the Entity DB registration pattern, but none of these appear in s5's hints. An AI retrieving s5 for queries about error handling or object creation in the context of Entity use cannot find this section via these identifiers.",
+      "source_evidence": "if (!result.isValid()) {\n    throw new ApplicationException(result.getMessages());\n}\nUserEntity user = result.createObject();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints array",
+      "description": "The PascalCase class name 'User' appears prominently in s6's code example ('public class User') but is absent from s6's hints. Per V4, PascalCase class names from section content should be included.",
+      "source_evidence": "public class User {\n    private String id;\n    private String name;\n    private String remarks;\n    ...\n    @ValidateFor(\"insert\")\n    public static void validateForInsert(ValidationContext<User> context) {"
+    }
+  ]
+}

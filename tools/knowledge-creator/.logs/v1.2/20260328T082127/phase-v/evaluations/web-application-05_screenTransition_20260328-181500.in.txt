@@ -1,0 +1,238 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-05_screenTransition`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "section_issue",
+    "severity": "minor",
+    "location": "sections.s1",
+    "description": "Section s1 contains raw RST `:download:` markup verbatim (e.g., `:download:\\`W11AC0201.jsp<./_source/download/W11AC0201.jsp>\\``). This RST-specific syntax will appear literally as text in a knowledge file and is not meaningful to AI consumers. File names are still readable but the markup is noise.",
+    "source_evidence": "Source table in 作成内容: `:download:\\`W11AC0201.jsp<./_source/download/W11AC0201.jsp>\\`` and `:download:\\`W11AC0202.jsp<./_source/download/W11AC0202.jsp>\\``"
+  },
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "index[1] (s2)",
+    "description": "Section s2 hints are missing 'name属性' and 'プレフィックス', both of which are key terms used in the implementation instruction for windowScopePrefixes: the developer must specify in windowScopePrefixes the prefix that was specified in the name attribute of the input item's custom tag.",
+    "source_evidence": "Source: 'n:formタグのwindowScopePrefixes属性に入力項目のカスタムタグのname属性に指定したプレフィックス…を指定する。'"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _screenTransition:
+
+============
+画面遷移処理
+============
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 画面遷移処理のJSPへの書き方
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸とその中にある赤文字の遷移の部分である。
+
+.. image:: ./_image/05/screenTransition.png
+ :width: 800px
+ :height: 300
+ :scale: 100
+
+編集するソースコードは以下のとおり。
+
++------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| 名称(右クリック->保存でダウンロード)                       | ステレオタイプ | 処理内容                                                                                                                                      |
++============================================================+================+===============================================================================================================================================+
+| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`| View           | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|
+| :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`|                |                                                                                                                                               |
++------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+View(JSP)の作成
+===============
+
+画面イメージ
+------------
+
+作成するJSPの画面イメージを以下に示す。画面左下の"登録画面へ"ボタンと画面右下の"確定"ボタンを押下したときの画面遷移処理の書き方を説明する。
+
+.. image:: ./_image/05/W11AC0202.png
+ :width: 800px
+ :scale: 100
+
+ソースコード(実装方法)
+----------------------
+
+アプリケーションフレームワーク提供のカスタムタグを使用する。
+  :a): n:formタグを使用して、HTMLフォームを作成する。
+  :b): n:submitタグを使用して、ボタンを指定する。n:submitタグでは、uri属性にサブミットするパスを指定する。
+
+上記を参照し、以下の内容で *W11AC0201.jsp* を作成する。
+
+* W11AC0201.jsp
+
+.. literalinclude:: ./_source/05/W11AC0201.jsp
+   :language: jsp
+   
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+"登録画面へ"戻る場合の入力値の復元
+----------------------------------
+登録画面へボタンを押下して前の画面へ戻った場合、入力内容を復元する必要がある。このためには、実装時に以下の点のみ注意しておけばよい。\
+そうすれば、単純に戻り先の画面へ遷移させれば、入力内容が復元される。
+
+* 入力項目(テキストエリア、ラジオボタンなど)を作成する際は、アプリケーションフレームワーク提供のカスタムタグを使用する。
+* n:formタグのwindowScopePrefixes属性に入力項目のカスタムタグのname属性に指定したプレフィックス\ :ref:`(参照)<04_JSPNameAttribute>`\ を指定する。
+
+------------
+次に読むもの
+------------
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-05_screenTransition",
+  "title": "画面遷移処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "JSPでの画面遷移実装（n:form / n:submitタグ）",
+      "hints": [
+        "n:form",
+        "n:submit",
+        "uri属性",
+        "HTMLフォーム",
+        "画面遷移",
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "登録画面への戻り時の入力値の復元",
+      "hints": [
+        "windowScopePrefixes",
+        "入力値復元",
+        "前画面へ戻る",
+        "カスタムタグ",
+        "n:form",
+        "ウィンドウスコープ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## JSPでの画面遷移実装（n:form / n:submitタグ）\n\nアプリケーションフレームワーク提供のカスタムタグを使用して画面遷移を実装する。\n\n- **n:formタグ**: HTMLフォームを作成する\n- **n:submitタグ**: ボタンを指定する。`uri`属性にサブミットするパスを指定する\n\nJSPソースファイル: :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`, :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`\n\n> **補足**: W11AC0202.jsp 内で W11AC0201.jsp を取り込んでいる。",
+    "s2": "## 登録画面への戻り時の入力値の復元\n\n「登録画面へ」ボタンで前の画面に戻った場合に入力内容を復元するには、以下の2点のみ実装する。これだけで、単純に戻り先の画面へ遷移させれば入力内容が復元される。\n\n1. 入力項目（テキストエリア、ラジオボタンなど）を作成する際は、アプリケーションフレームワーク提供のカスタムタグを使用する\n2. n:formタグの`windowScopePrefixes`属性に、入力項目のカスタムタグの`name`属性に指定したプレフィックス（:ref:`(参照)<04_JSPNameAttribute>`）を指定する"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-05_screenTransition",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "Section s1 contains raw RST `:download:` markup verbatim (e.g., `:download:\\`W11AC0201.jsp<./_source/download/W11AC0201.jsp>\\``). This RST-specific syntax will appear literally as text in a knowledge file and is not meaningful to AI consumers. File names are still readable but the markup is noise.",
+      "source_evidence": "Source table in 作成内容: `:download:\\`W11AC0201.jsp<./_source/download/W11AC0201.jsp>\\`` and `:download:\\`W11AC0202.jsp<./_source/download/W11AC0202.jsp>\\``"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2)",
+      "description": "Section s2 hints are missing 'name属性' and 'プレフィックス', both of which are key terms used in the implementation instruction for windowScopePrefixes: the developer must specify in windowScopePrefixes the prefix that was specified in the name attribute of the input item's custom tag.",
+      "source_evidence": "Source: 'n:formタグのwindowScopePrefixes属性に入力項目のカスタムタグのname属性に指定したプレフィックス…を指定する。'"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "web-application-05_screenTransition",
+  "title": "画面遷移処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "JSPでの画面遷移実装（n:form / n:submitタグ）",
+      "hints": [
+        "n:form",
+        "n:submit",
+        "uri属性",
+        "HTMLフォーム",
+        "画面遷移",
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "カスタムタグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "登録画面への戻り時の入力値の復元",
+      "hints": [
+        "windowScopePrefixes",
+        "入力値復元",
+        "前画面へ戻る",
+        "カスタムタグ",
+        "n:form",
+        "ウィンドウスコープ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## JSPでの画面遷移実装（n:form / n:submitタグ）\n\nアプリケーションフレームワーク提供のカスタムタグを使用して画面遷移を実装する。\n\n- **n:formタグ**: HTMLフォームを作成する\n- **n:submitタグ**: ボタンを指定する。`uri`属性にサブミットするパスを指定する\n\nJSPソースファイル: :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`, :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`\n\n> **補足**: W11AC0202.jsp 内で W11AC0201.jsp を取り込んでいる。",
+    "s2": "## 登録画面への戻り時の入力値の復元\n\n「登録画面へ」ボタンで前の画面に戻った場合に入力内容を復元するには、以下の2点のみ実装する。これだけで、単純に戻り先の画面へ遷移させれば入力内容が復元される。\n\n1. 入力項目（テキストエリア、ラジオボタンなど）を作成する際は、アプリケーションフレームワーク提供のカスタムタグを使用する\n2. n:formタグの`windowScopePrefixes`属性に、入力項目のカスタムタグの`name`属性に指定したプレフィックス（:ref:`(参照)<04_JSPNameAttribute>`）を指定する"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

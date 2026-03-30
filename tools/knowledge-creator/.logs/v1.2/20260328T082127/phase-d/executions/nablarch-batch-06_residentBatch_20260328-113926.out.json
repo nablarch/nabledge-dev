@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-06_residentBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — property table, dataWatchInterval row",
+      "description": "The knowledge file specifies `dataWatchInterval` as type `long` in the property table, but the source file contains no such type information. The source only has an XML comment `<!-- データ監視間隔(ms) -->` and an example value `3600000`. The data type `long` has no basis in the source.",
+      "source_evidence": "Source XML: `<property name=\"dataWatchInterval\" value=\"3600000\" />` with comment `<!-- データ監視間隔(ms) -->`. No type declaration anywhere in the source."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — property table structure",
+      "description": "The knowledge file introduces a formal property table with columns 型/必須/デフォルト値/説明 for `dataWatchInterval`. The source contains no such table; only the XML attribute and its inline comment exist. The 必須 and デフォルト値 columns are left empty (implying optional with no default), but neither claim is supported by the source.",
+      "source_evidence": "Source contains only the XML snippet and inline comment. No property specification table exists in the source."
+    }
+  ]
+}

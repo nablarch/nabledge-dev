@@ -1,0 +1,288 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/01_SystemConstitution/04_RDBMS_Policy.rst`
+- Format: `rst`
+
+```
+.. _`rdbms_policy`:
+
+===========================================
+RDBMS の使用ポリシー
+===========================================
+
+
+本フレームワークの一部の機能は、RDBMSの使用を前提としている。
+
+ここではこれらの機能で RDBMS を使用する際に適用するポリシーについて記載する。
+
+.. _`rdbms_independency`:
+
+------------------------------
+RDBMS への依存の排除
+------------------------------
+Nablarch は、製品全体のポリシーとして、特定の製品への依存させないポリシーを取っている。
+RDBMS 製品への依存もこのポリシーを踏襲しており、 Nablarch の各機能は RDBMS 製品を問わず動作することを目指す。
+
+RDBMS 製品への依存を排除するため、本フレームワークの機能で使用するテーブルは、RDBMS 非依存の形態として定義する。
+
+カラムの定義方法
+=========================
+RDBMS 製品への依存を排除するため、 RDBMS の使用を前提とする機能では、データの型を RDBMS 上の型ではなく Java の
+データ型で定義する。
+
+例えば Oracle で VARCHAR2 の値を使用する際は、 java.lang.String で取り扱うと記載する。
+
+
+テーブル定義に使用するデータ型
+=======================================
+
+RDBMS への依存を排除することの2つの目的を果たすために、フレームワークではデータの持つ意味に合わせて Java のデータ型とデータの内容を規定する。
+実際のテーブル定義でどのようなデータ型を採用するかはフレームワークで規定せず、アプリケーションのテーブル設計にて決定する方針とする。
+
+フレームワークで使用する RDBMS に保存するデータの用途と、データに対応する Java のデータ型、フレームワークが求めるデータ保持方法に関する規定について以下に示す。
+ここで示す以外のデータはフレームワークから使用しない。
+
+
+============================  ============================  =========================================================================
+データの用途                  Javaのデータ型                データベース上のデータ保持方法の規定
+============================  ============================  =========================================================================
+文字列                        java.lang.String              文字列として取得、設定できる項目であることのみ規定する。
+
+                                                            アプリケーションの設計時は、 Oracle の VARCHAR2 のような
+                                                            可変長文字列型、あるいは CHAR のような固定長文字列型のいずれかを
+                                                            選択する。
+                                                            
+                                                            データ長については、アプリケーションの利用形態に合わせて
+                                                            設計することとして、フレームワークでは規定しない。
+
+数値                          | int                         int , long といった
+                              | long                        整数型の場合は小数点以下に値を持たないデータ型であることを規定する。
+                              | java.math.BigDecimal        
+                                                            
+                                                            
+                                                            整数部、小数部の桁数については、アプリケーションの設計時に適切な
+                                                            値を決定する。
+
+日付                          java.lang.String              フレームワークでは、日付を yyyyMMdd 形式の8ケタの文字列で表現する。
+                                                            このため、データベース上では8ケタの文字列を保持できるデータ型であること
+                                                            を規定する。
+                                                            
+                                                            アプリケーションの設計時は、 Oracle の VARCHAR2 のような可変長文字列型、
+                                                            あるいは CHAR のような固定長文字列型のいずれかを選択する。
+                                                            
+日時                          java.sql.Timestamp            java.sql.Timestamp 型で取得できることのみ規定する。
+
+
+                                                            データベース上のデータ型は Oracle の DATE あるいは TIMESTAMP といった日付と
+                                                            時刻の情報を持つデータ型を選択する。
+============================  ============================  =========================================================================
+
+
+.. _`rdbms_common_column_update_policy`:
+
+------------------------------
+共通項目の更新について
+------------------------------
+アプリケーションでは、慣例的、あるいは機能的な要求により「最終更新日時」、「最終更新者」、「作成日時」、「作成者」、
+「削除フラグ」、「削除日」といったカラムをテーブル間で共通的に付与することがある。
+これら共通項目を付与する場合、「最終更新日時」、「最終更新者」、「作成日時」、「作成者」といった項目はレコードの作成、
+更新時に、画一的に更新するポリシーを設定することが一般的である。
+
+本フレームワークのいくつかの機能では、テーブルに対する更新を行うが、基本的にテーブル更新時にこれら共通項目の更新ができる機能をサポートしない。
+これはフレームワークにより更新を行うことで、アプリケーションに下記問題が発生する可能性を考慮しての方針である。
+
+ * 仕様頻度が高い機能で共通項目を更新することで、テーブル更新にかかるコストが増大してパフォーマンス劣化につながる問題
+ * アプリケーションに意味のない更新(例えばログイン失敗時にパスワード間違い回数を増加させる)によって共通項目が上書きされ、元にあった「最終更新者」等の情報が消失する問題
+
+ただし、上記で示した問題が発生する可能性がなく、アプリケーションにとって有益であると判断した際は、例外的にテーブル更新時に共通項目を更新する機能を提供するものとする。
+
+
+.. _`rdbms_table_access_api`:
+
+---------------------------------------------------------------
+フレームワークで規定するテーブルへのアクセスについて
+---------------------------------------------------------------
+前述の通り、フレームワークでは、テーブルの設計のうち、基本的なカラムのみ規定している。
+フレームワークで規定したテーブルの詳細な設計は、アプリケーションのテーブル設計時に策定する方針としている。
+
+フレームワークでは、業務ロジックから頻繁に使用され、アプリケーションの要求による影響が発生しづらいロジックについて
+データの参照、更新を行う機能を提供する。
+
+.. アプリケーションの要求により実装方法の変化が大きい共通機能は、フレームワークとしてではなく、Nablarch Business Componentとして提供する。
+
+業務ロジックからは、必要に応じてフレームワークが規定するテーブルにアクセスする。
+
+この方針は、データベースの情報を業務ロジックから参照・更新させないルールを設定した場合に発生する下記問題が、
+アプリケーションにとって致命的だと考えた結果策定したものである。
+
+ * フレームワークが規定するテーブルとアプリケーション独自のテーブルを結合できない問題。
+ * フレームワークが規定するテーブルのレコードを追加、更新する際、一括登録APIやデータローダを使用できず、効率が悪化する問題。
+ 
+ただし、フレームワークが規定するテーブルへのアクセスを許可した場合、フレームワークのバージョンアップにより、 下記問題が発生する恐れがある。
+
+ * バージョンアップ時に、フレームワークが規定するテーブルにカラムが追加された場合、テーブル構造の変更と
+   アプリケーションの再テストが必要となってしまう問題。
+ * フレームワークが規定するテーブルのカラムに設定する値の意味が変更されることにより、
+   このカラムを参照、更新する業務ロジックを値の意味が合うように修正しなければならなくなる問題。
+   
+
+これら問題を発生させないために、リリース済みのフレームワークでは下記を保証する。
+ 
+ * フレームワークが規定するテーブルについて、カラムの追加や、カラムの属性の変更なしにフレームワークをバージョンアップできること。
+ * フレームワークが規定するテーブルのカラムについて、カラムに設定した値の意味を変更しないこと。
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-04_RDBMS_Policy`
+
+```json
+{
+  "id": "about-nablarch-04_RDBMS_Policy",
+  "title": "RDBMS の使用ポリシー",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "RDBMS への依存の排除",
+      "hints": [
+        "RDBMS非依存",
+        "カラム定義",
+        "データ型マッピング",
+        "java.lang.String",
+        "java.math.BigDecimal",
+        "java.sql.Timestamp",
+        "yyyyMMdd"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "共通項目の更新について",
+      "hints": [
+        "共通項目",
+        "最終更新日時",
+        "最終更新者",
+        "テーブル更新ポリシー",
+        "パフォーマンス"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "フレームワークで規定するテーブルへのアクセスについて",
+      "hints": [
+        "フレームワーク規定テーブル",
+        "テーブルアクセス",
+        "バージョンアップ互換性",
+        "カラム互換性保証",
+        "一括登録API"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchは特定製品への依存を排除するポリシーを持つ。RDBMSも同様で、各機能はRDBMS製品を問わず動作することを目指す。フレームワークが使用するテーブルはRDBMS非依存の形態で定義する。\n\n### カラムの定義方法\n\nRDBMSの使用を前提とする機能では、データ型はRDBMS上の型ではなくJavaのデータ型で定義する。（例：OracleのVARCHAR2の値は `java.lang.String` で取り扱うと記載する）\n\n### テーブル定義に使用するデータ型\n\n実際のテーブル定義でどのデータ型を採用するかはフレームワークでは規定せず、アプリケーションのテーブル設計で決定する方針。\n\n| データの用途 | Javaのデータ型 | データベース上のデータ保持方法の規定 |\n|---|---|---|\n| 文字列 | `java.lang.String` | 文字列として取得・設定できる項目であることのみ規定。可変長（VARCHAR2等）または固定長（CHAR等）のいずれかをアプリ設計時に選択。データ長はアプリの利用形態に合わせて設計（フレームワークでは規定しない）。 |\n| 数値 | `int`, `long`, `java.math.BigDecimal` | `int`/`long`は小数点以下に値を持たないデータ型であることを規定。整数部・小数部の桁数はアプリ設計時に決定。 |\n| 日付 | `java.lang.String` | yyyyMMdd形式の8桁文字列で表現。データベース上では8桁文字列を保持できるデータ型を使用。可変長または固定長文字列型のいずれかをアプリ設計時に選択。 |\n| 日時 | `java.sql.Timestamp` | `java.sql.Timestamp`型で取得できることのみ規定。データベース上ではOracleのDATEまたはTIMESTAMPのような日付・時刻情報を持つデータ型を選択。 |",
+    "s2": "フレームワークがテーブルを更新する際、基本的に共通項目（最終更新日時・最終更新者・作成日時・作成者等）の更新機能をサポートしない。\n\n理由：\n1. 使用頻度が高い機能で共通項目を更新すると、テーブル更新コストが増大しパフォーマンス劣化につながる\n2. 意味のない更新（例：ログイン失敗時にパスワード間違い回数を増加させる処理）によって共通項目が上書きされ、「最終更新者」等の情報が消失する\n\nただし、上記問題が発生する可能性がなくアプリケーションにとって有益と判断された場合は、例外的にテーブル更新時に共通項目を更新する機能を提供することがある。",
+    "s3": "業務ロジックからフレームワーク規定テーブルへのアクセスを許可する方針。\n\n**アクセスを禁止した場合に発生する問題（許可する理由）：**\n1. フレームワーク規定テーブルとアプリ独自テーブルを結合できない\n2. レコードの追加・更新時に一括登録APIやデータローダを使用できず、効率が悪化する\n\n**アクセスを許可した場合のバージョンアップ時のリスク：**\n1. フレームワーク規定テーブルにカラムが追加された場合、テーブル構造の変更とアプリの再テストが必要になる\n2. カラムに設定する値の意味が変更された場合、そのカラムを参照・更新する業務ロジックの修正が必要になる\n\n**リリース済みフレームワークの保証事項（上記リスクへの対応）：**\n1. フレームワーク規定テーブルについて、カラムの追加やカラム属性の変更なしにバージョンアップできることを保証する\n2. フレームワーク規定テーブルのカラムに設定した値の意味を変更しないことを保証する"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

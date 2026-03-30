@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1 (末尾)",
+      "description": "セクション s1 の末尾に RST ナビゲーションマークアップ `:doc:`6`` が文字列としてそのまま含まれている。これは「related information」admonition 内のナビゲーション専用コンテンツであり、知識ファイルのセクションテキストとして残すべきではない。AI がこのセクションを読んだ際に意味不明なマークアップとして扱われる。",
+      "source_evidence": ".. admonition:: related information\n\n    * :doc:`6`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "コード例の `handle` メソッドシグネチャおよび戻り値に登場する PascalCase クラス名 `ExecutionContext` と `Success` がヒントに含まれていない。",
+      "source_evidence": "public Result handle(SqlRow inputData, ExecutionContext ctx) { ... return new Success(); }"
+    }
+  ]
+}

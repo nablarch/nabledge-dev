@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — ファイルが空の場合 (空ファイルエラー説明)",
+      "description": "The source explicitly states \"ファイル名のみが表示され、ファイルパスは表示されない\" after the empty-file error message output example. This clarifies that {0} contains only the filename, not the full file path — information relevant to writing the error message template. The knowledge file states {0} contains ファイル名 but omits the explicit caveat that the path is excluded.",
+      "source_evidence": "ファイル名のみが表示され、ファイルパスは表示されない。 (source, 空ファイル section, after message output example)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 — hints",
+      "description": "The hint `DbAccessSupport` is missing from s7. The source specifically calls out that action classes inherit from DbAccessSupport, and the importWith method's first parameter is typed as DbAccessSupport. This is a PascalCase class name central to the importWith API that would help retrieve this section.",
+      "source_evidence": "BulkValidationResult#importWith(DbAccessSupport dbAccessSupport, String insertSqlId) — 第１引数にはDbAccessSupportクラスのインスタンスを指定する。通常ActionクラスはDbAccessSupportクラスを継承しているので、自分自身の参照(this参照)を使用すれば良い。"
+    }
+  ]
+}

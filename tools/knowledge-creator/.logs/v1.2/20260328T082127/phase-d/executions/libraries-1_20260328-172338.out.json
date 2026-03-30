@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — code example",
+      "description": "The code example omits the outer RuntimeException and the SingleValidationTester call stack lines present in the source. The source shows the full trace starting with `java.lang.RuntimeException: unexpected exception occurred. target entity=[...] property=[failedCount]` and the `SingleValidationTester.invokeValidation` / `SingleValidationTester.testSingleValidation` frames. Only the `Caused by: IllegalArgumentException` portion is included in the knowledge file.",
+      "source_evidence": "java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]\n    at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)\n    at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 covers three h3 sub-headings from the source (「Formの実装」「Action からのバリデーションメソッドの呼び出し」「バリデーション結果のエラーメッセージ生成」) without splitting into sub-sections. The combined plain text for this h2 in the source is well over 2000 characters and contains three distinct h3 headings, which meets the split threshold.",
+      "source_evidence": "Source h3 headings under バリデーションの実行と入力値の変換: (1) Formの実装 ====, (2) Action からのバリデーションメソッドの呼び出し ====, (3) バリデーション結果のエラーメッセージ生成 ===="
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1.hints",
+      "description": "`isValid` is absent from s1 hints despite being used in the primary code example (`if (!result.isValid())`). It is also absent from s2 and s3 hints where the same pattern appears. Users asking about `isValid` would not find these sections via hint matching.",
+      "source_evidence": "Source code in all three sections: `if (!result.isValid()) { throw new ApplicationException(result.getMessages()); }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1.hints",
+      "description": "`Validatable` interface is missing from s1 hints. It is explicitly named in the source as the third argument type of `ValidationUtil.validateAndConvertRequest`.",
+      "source_evidence": "Source: '入力値を保持した Validatable インタフェースを実装したクラス、または Map 。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3.hints",
+      "description": "`validateForInsert` is missing from s3 hints. It is the concrete method name defined and demonstrated in this section as the insert-time validation method.",
+      "source_evidence": "Source code in s3: `public static void validateForInsert(ValidationContext<User> context) { ValidationUtil.validateWithout(context, INSERT_SKIP_PROPS); }`"
+    }
+  ]
+}

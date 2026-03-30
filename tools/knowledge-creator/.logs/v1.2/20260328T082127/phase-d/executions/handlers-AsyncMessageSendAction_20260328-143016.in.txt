@@ -1,0 +1,364 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/handler/AsyncMessageSendAction.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+応答不要電文送信処理用アクションハンドラ
+===========================================================================================
+
+**クラス名:** ``nablarch.fw.messaging.action.AsyncMessageSendAction``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本クラスは、 :doc:`../core_library/messaging_sending_batch` において、
+電文送信処理を実行するアクションハンドラである。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "Main"
+      , "MultiThreadExecutionHandler"
+      , "MessagingContextHandler"
+      , "TransactionManagementHandler"
+      , "DataReadHandler"
+      , "AsyncMessageSendAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`Main`                           送信対象電文のリクエストIDを起動時の引数 **-messageRequestId** に指定する。
+
+  :doc:`MessagingContextHandler`        本ハンドラでは、スレッドローカル上の :ref:`メッセージングコンテキスト<messaging_api>`
+                                        を用いて送信処理を行う。
+  
+  :doc:`TransactionManagementHandler`   トランザクションコミット完了後、およびロールバック時のコールバック内で、
+                                        送信ステータスの更新処理を行う。
+  
+  :doc:`DataReadHandler`                本ハンドラが作成したデータリーダ ( :doc:`../reader/DatabaseRecordReader` )  を
+                                        使用して処理対象レコードの読込みを行う。
+  ====================================  ===================================================================================
+
++++++++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+
+.. _callback:
+
+**[コールバック]**
+  **1. (送信メッセージのメッセージIDを取得)**
+    :doc:`MultiThreadExecutionHandler` の処理開始前にコールバックされ、
+    起動引数 **-messageRequestId** の値を `CommandLine`_ オブジェクトより取得する。
+
+  **2. (データリーダの作成)**
+    :doc:`MultiThreadExecutionHandler` からコールバックされ、送信メッセージの内容が格納されたテーブルに対する
+    データリーダを作成してリターンする。
+    
+    具体的には以下のSQLリソースを取得し、そのクエリに対するプリペアードステートメントを使用する
+    :doc:`../reader/DatabaseRecordReader` を作成して返す。
+      
+      .. code-block:: bash
+
+        (SQL定義配置パッケージ設定値) + "." + ( 1. で取得したメッセージリクエストID ) + "#" + "SELECT_SEND_DATA"
+
+
+.. _inbound:
+
+**[往路処理]**
+  **3. (送信電文オブジェクトの作成)**
+    送信電文オブジェクト( `SendingMessage`_ ) を生成する。
+
+  **4. (フレームワーク制御ヘッダ部フォーマット定義を取得)**
+    設定値に指定されたフレームワーク制御ヘッダ定義ファイルを取得する。
+
+  **5. (フレームワーク制御ヘッダを作成)**
+    **4.** で取得したフォーマット定義に従って、フレームワーク制御ヘッダを以下の手順で作成し、
+    送信電文オブジェクトに設定する。
+
+      - **1.** で取得したメッセージリクエストIDを、 **requestId** フレームワーク制御ヘッダに設定。
+      - フレームワーク制御ヘッダ項目名リストに設定された項目名と同じフィールドが処理対象レコードに定義されていれば
+        その値をヘッダ値として設定する。当該のフィールドが存在しない場合は、nullを設定する。
+
+  **6. (メッセージデータ部フォーマット定義を取得)**
+    設定値に指定されたフォーマット定義ファイルの論理パスから、下記ファイル名のフォーマット定義を取得する。
+    
+      .. code-block:: bash
+
+        ( 1.で取得したメッセージリクエストID ) + "_SEND"
+        
+
+  **7. (メッセージデータ部を作成)**
+    **6.** で取得したフォーマット定義に従って、処理対象レコードからメッセージデータ部を作成し、
+    送信電文オブジェクトに設定する。
+    (処理対象レコードの各フィールドが、フォーマット定義上の各フィールドの値として設定される。)
+
+
+  **8. (メッセージ送信)**
+    設定値に指定された送信宛先キュー論理名を送信電文オブジェクトに設定し、
+    カレントスレッド上のメッセージングコンテキストを使用して送信する。
+
+
+.. _outbound:
+
+**[往路処理]**
+  **5. (正常終了)**
+    正常終了のマーカオブジェクト(`Result.Success`_)をリターンして終了する。
+    (このハンドラでは後続ハンドラに対する処理移譲は行わない。)
+
+.. _error:
+
+**[例外処理]**
+  (本ハンドラでは明示的な例外制御は行わない。処理中に発生した実行時例外はそのまま送出される。)
+
+
+**[コールバック]**
+  **6. (処理対象レコードステータス変更1)**
+    :doc:`TransactionManagementHandler` でのコミットが完了した場合にコールバックされ、
+    以下のSQLリソースを実行し、処理対象レコードのステータスを処理済みに更新する。
+
+      .. code-block:: bash
+
+        (SQL定義配置パッケージ設定値) + "." + ( 1. で取得したメッセージリクエストID ) + "#" + "UPDATE_NORMAL_END"
+
+  **6a. (処理対象レコードステータス変更2)**
+    :doc:`TransactionManagementHandler` において、業務トランザクションがロールバックした場合に場合にコールバックされ、
+    以下のSQLリソースを実行し、処理対象レコードのステータスをエラーに更新する。
+
+      .. code-block:: bash
+
+        (SQL定義配置パッケージ設定値) + "." + ( 1. で取得したメッセージリクエストID ) + "#" + "UPDATE_ABNORMAL_END"
+  
+  **7. (ステータス変更エラー)**
+    **6.** もしくは **6a.** でのステータス変更の対象となったレコード数が1でなかった場合は、実行時例外を送出する。
+
+
+++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定値は、 `AsyncMessageSendActionSettings`_ に集約されている。
+以下はその設定項目の一覧である。
+
+  ===================================== ===================== ============= ======================================================
+  設定項目                              プロパティ名          データ型　    備考
+  ===================================== ===================== ============= ======================================================
+  SQL定義配置パッケージ                 sqlFilePackage        String        | (必須指定)
+                                                                            | このハンドラで使用するSQL定義ファイルを格納する
+                                                                              パッケージ名を設定する。
+
+  送信宛先キュー論理名                  queueName             String        | (必須設定)
+                                                                            | メッセージの送信宛先キューの論理名を設定する。
+
+  フォーマット定義格納ディレクトリ      formatDir             String        | (任意指定: デフォルト="format")
+                                                                            | 送信電文のフォーマット定義を格納するディレクトリ
+                                                                              の論理パスを指定する。
+  
+  ヘッダフォーマット定義名              headerFormatName      String        | (必須指定)
+                                                                            | 送信電文のフレームワーク制御ヘッダのフォーマット
+                                                                              定義ファイル名を指定する。
+
+  フォームクラス名                      formClassName         String        | (必須指定)
+                                                                            | 送信要求テーブル上の送信ステータス項目更新処理で
+                                                                              使用するフォームクラスの名称を指定する。
+
+  フレームワーク制御ヘッダ項目リスト    headerItemList        List<String>  | (任意指定: デフォルト=ヘッダ項目には何も指定しない)
+                                                                            | レコードのフィールドのうち、
+                                                                              送信電文のフレームワーク制御ヘッダとして設定する
+                                                                              項目のリストを設定する。
+
+  トランザクション名                    transactionName       String        | (任意指定: デフォルト="transaction")
+                                                                            | 送信要求のステータス変更処理で使用する
+                                                                              トランザクションの識別名
+
+  ===================================== ===================== ============= ======================================================
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-AsyncMessageSendAction`
+
+```json
+{
+  "id": "handlers-AsyncMessageSendAction",
+  "title": "応答不要電文送信処理用アクションハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "AsyncMessageSendAction",
+        "nablarch.fw.messaging.action.AsyncMessageSendAction",
+        "応答不要電文送信",
+        "メッセージング送信バッチ",
+        "ハンドラキュー構成",
+        "MultiThreadExecutionHandler",
+        "MessagingContextHandler",
+        "TransactionManagementHandler",
+        "DataReadHandler"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "SendingMessage",
+        "CommandLine",
+        "Result.Success",
+        "DatabaseRecordReader",
+        "SELECT_SEND_DATA",
+        "UPDATE_NORMAL_END",
+        "UPDATE_ABNORMAL_END",
+        "電文送信処理フロー",
+        "コールバック",
+        "メッセージリクエストID",
+        "requestId",
+        "フレームワーク制御ヘッダ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "AsyncMessageSendActionSettings",
+        "sqlFilePackage",
+        "queueName",
+        "formatDir",
+        "headerFormatName",
+        "formClassName",
+        "headerItemList",
+        "transactionName",
+        "設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.action.AsyncMessageSendAction`\n\n:doc:`../core_library/messaging_sending_batch` において電文送信処理を実行するアクションハンドラ。\n\n**ハンドラキュー構成**: Main → MultiThreadExecutionHandler → MessagingContextHandler → TransactionManagementHandler → DataReadHandler → AsyncMessageSendAction\n\n**関連ハンドラ**:\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`Main` | 送信対象電文のリクエストIDを起動時の引数 **-messageRequestId** に指定する。 |\n| :doc:`MessagingContextHandler` | スレッドローカル上の :ref:`メッセージングコンテキスト<messaging_api>` を用いて送信処理を行う。 |\n| :doc:`TransactionManagementHandler` | トランザクションコミット完了後、およびロールバック時のコールバック内で、送信ステータスの更新処理を行う。 |\n| :doc:`DataReadHandler` | 本ハンドラが作成したデータリーダ（:doc:`../reader/DatabaseRecordReader`）を使用して処理対象レコードの読込みを行う。 |",
+    "s2": "**[コールバック]**\n\n1. **送信メッセージのリクエストID取得**: :doc:`MultiThreadExecutionHandler` の処理開始前にコールバックされ、起動引数 **-messageRequestId** の値を `CommandLine` オブジェクトより取得する。\n2. **データリーダの作成**: :doc:`MultiThreadExecutionHandler` からコールバックされ、送信メッセージ格納テーブルに対するデータリーダを作成して返す。以下のSQLリソースに対するプリペアードステートメントを使用する :doc:`../reader/DatabaseRecordReader` を作成する:\n   ```\n   (sqlFilePackage) + \".\" + (messageRequestId) + \"#\" + \"SELECT_SEND_DATA\"\n   ```\n\n**[往路処理]**\n\n3. **送信電文オブジェクトの作成**: `SendingMessage` を生成する。\n4. **フレームワーク制御ヘッダ部フォーマット定義を取得**: 設定値に指定されたフレームワーク制御ヘッダ定義ファイルを取得する。\n5. **フレームワーク制御ヘッダを作成**: 以下の手順でヘッダを作成し送信電文オブジェクトに設定する:\n   - 取得したメッセージリクエストIDを `requestId` フレームワーク制御ヘッダに設定。\n   - `headerItemList` に設定された項目名と同名フィールドが処理対象レコードに存在すればその値を設定、存在しなければnullを設定。\n6. **メッセージデータ部フォーマット定義を取得**: 以下のファイル名のフォーマット定義を取得する:\n   ```\n   (messageRequestId) + \"_SEND\"\n   ```\n7. **メッセージデータ部を作成**: 処理対象レコードの各フィールドをフォーマット定義の各フィールドの値として設定し、送信電文オブジェクトに設定する。\n8. **メッセージ送信**: 設定値の送信宛先キュー論理名を送信電文オブジェクトに設定し、カレントスレッド上のメッセージングコンテキストを使用して送信する。\n\n**[往路処理]**\n\n- **正常終了**: `Result.Success` をリターンして終了。このハンドラでは後続ハンドラへの処理移譲は行わない。\n\n**[例外処理]**\n\n明示的な例外制御なし。処理中に発生した実行時例外はそのまま送出される。\n\n**[コールバック]**\n\n6. **処理対象レコードステータス変更（正常）**: :doc:`TransactionManagementHandler` のコミット完了後にコールバックされ、以下のSQLリソースを実行して処理対象レコードのステータスを処理済みに更新する:\n   ```\n   (sqlFilePackage) + \".\" + (messageRequestId) + \"#\" + \"UPDATE_NORMAL_END\"\n   ```\n6a. **処理対象レコードステータス変更（異常）**: 業務トランザクションのロールバック時にコールバックされ、以下のSQLリソースを実行して処理対象レコードのステータスをエラーに更新する:\n   ```\n   (sqlFilePackage) + \".\" + (messageRequestId) + \"#\" + \"UPDATE_ABNORMAL_END\"\n   ```\n7. **ステータス変更エラー**: 6. または 6a. でのステータス変更の対象となったレコード数が1でなかった場合は実行時例外を送出する。",
+    "s3": "本ハンドラの設定値は `AsyncMessageSendActionSettings` に集約されている。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| sqlFilePackage | String | ○ | | このハンドラで使用するSQL定義ファイルを格納するパッケージ名 |\n| queueName | String | ○ | | メッセージの送信宛先キューの論理名 |\n| formatDir | String | | \"format\" | 送信電文のフォーマット定義を格納するディレクトリの論理パス |\n| headerFormatName | String | ○ | | 送信電文のフレームワーク制御ヘッダのフォーマット定義ファイル名 |\n| formClassName | String | ○ | | 送信要求テーブル上の送信ステータス項目更新処理で使用するフォームクラスの名称 |\n| headerItemList | List\\<String\\> | | (なし) | レコードのフィールドのうち、送信電文のフレームワーク制御ヘッダとして設定する項目のリスト |\n| transactionName | String | | \"transaction\" | 送信要求のステータス変更処理で使用するトランザクションの識別名 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

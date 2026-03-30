@@ -1,0 +1,70 @@
+{
+  "id": "libraries-07_SubmitTag--s14",
+  "title": "二重サブミットの防止",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    ""
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げる方法",
+      "hints": [
+        "ポップアップタグ",
+        "複数ウィンドウ",
+        "popupWindowName",
+        "popupOption",
+        "changeParamName",
+        "WebView_PopupSubmitTag",
+        "WebView_PopupButtonTag",
+        "WebView_PopupLinkTag",
+        "WebView_ChangeParamNameTag",
+        "n:popupButton"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "nablarch_opened_windows",
+        "ポップアップウィンドウ管理",
+        "window.open",
+        "onunload",
+        "ウィンドウクローズ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ファイルダウンロードの実現方法",
+      "hints": [
+        "ダウンロードタグ",
+        "StreamResponse",
+        "DataRecordResponse",
+        "WebView_DownloadSubmitTag",
+        "WebView_DownloadButtonTag",
+        "WebView_DownloadLinkTag",
+        "ファイルダウンロード",
+        "BLOBダウンロード",
+        "CSVダウンロード",
+        "n:downloadButton",
+        "n:downloadLink"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "二重サブミット防止",
+        "リクエストの二重送信防止",
+        "処理済みリクエストの受信防止",
+        "prevent_double_submission"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ポップアップタグを使用して複数ウィンドウを開き、入力補助を実現する。\n\n**ポップアップタグ**:\n- :ref:`WebView_PopupSubmitTag`\n- :ref:`WebView_PopupButtonTag`\n- :ref:`WebView_PopupLinkTag`\n\n通常のsubmitタグ/buttonタグ/submitLinkタグとの違い:\n- 新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う\n- 入力項目のパラメータ名を変更できる\n\n`window.open`関数で実現。属性:\n\n| 属性 | 説明 |\n|---|---|\n| popupWindowName | ポップアップのウィンドウ名。`window.open`の第2引数。未指定時は:ref:`WebView_CustomTagConfig`のデフォルト値を使用（デフォルト値未設定時はDate関数から取得した現在時刻ミリ秒をウィンドウ名に使用）。 |\n| popupOption | ポップアップのオプション。`window.open`の第3引数。未指定時は:ref:`WebView_CustomTagConfig`のデフォルト値を使用（デフォルト値未設定時は何も指定しない）。 |\n\npopupWindowNameのデフォルト値設定による動作の違い:\n- **デフォルト値あり**: 常に同じウィンドウ名 → 常に同一ウィンドウを再利用（1ウィンドウのみ開く）\n- **デフォルト値なし**: 毎回異なるウィンドウ名 → 常に新しいウィンドウをオープン\n\n**changeParamNameタグ** (:ref:`WebView_ChangeParamNameTag`): ポップアップタグは元画面の全input要素を動的に追加してサブミットするため、アクション間でパラメータ名が一致しない場合に使用する。\n\n| 属性 | 説明 |\n|---|---|\n| paramName（必須） | サブミット時に使用するパラメータの名前 |\n| inputName（必須） | 変更元となる元画面のinput要素のname属性 |\n\n使用例（郵便番号`users.postalCode`を`condition.postalCode`に変更して検索ポップアップを開く）:\n\n```jsp\n<n:popupButton name=\"searchAddress\" uri=\"/action/SearchAction/RW11AB0101\">\n    検索\n    <n:changeParamName inputName=\"users.postalCode\" paramName=\"condition.postalCode\" />\n    <n:param paramName=\"condition.max\" value=\"10\" />\n</n:popupButton>\n```\n\n送信されるリクエスト（`condition.postalCode=1234567`, `condition.max=10`）。`users.postalCode`はchangeParamNameにより変換済みのため元のパラメータ名では含まれない。",
+    "s2": "フレームワークは、ポップアップタグでオープンしたウィンドウへの参照をJavaScriptのグローバル変数に保持する。\n\n```javascript\n// keyはウィンドウ名\nvar nablarch_opened_windows = {};\n```\n\n元画面遷移時に不要な別ウィンドウを全て閉じる実装例（onunloadイベントにバインド）:\n\n```javascript\nonunload = function() {\n  for (var key in nablarch_opened_windows) {\n    var openedWindow = nablarch_opened_windows[key];\n    if (openedWindow && !openedWindow.closed) {\n      openedWindow.close();\n    }\n  }\n  return true;\n};\n```",
+    "s3": "**ダウンロードタグ**:\n- :ref:`WebView_DownloadSubmitTag`\n- :ref:`WebView_DownloadButtonTag`\n- :ref:`WebView_DownloadLinkTag`\n\n**ダウンロードユーティリティ**:\n\n| クラス名 | 説明 |\n|---|---|\n| `StreamResponse` | ストリームからHTTPレスポンスを生成。`java.io.File`または`java.sql.Blob`のダウンロードをサポート。 |\n| `DataRecordResponse` | データレコードからHTTPレスポンスを生成。フォーマット定義ファイルでフォーマット。`Map<String, ?>`型データ（SqlRowなど）をサポート。 |\n\n> **重要**: フレームワークはサブミット制御にJavaScriptを使用しているため、通常のsubmitタグでダウンロードを実行すると同じフォーム内の他のサブミットが機能しなくなる。ダウンロードボタン/リンクには必ずダウンロードタグを使用すること。\n\n通常のsubmitタグとの違い:\n- 新しいフォームを作成し、新規フォームに対してサブミットを行う\n- 入力項目のパラメータ名を変更できる（:ref:`WebView_ChangeParamNameTag`）\n\nchangeParamNameタグ属性: paramName（必須）、inputName（必須）\n\n**ファイルのダウンロード** (StreamResponse使用):\n\n```jsp\n<n:downloadButton uri=\"./TempFile\" name=\"tempFile\">ダウンロード</n:downloadButton>\n```\n\n```java\npublic HttpResponse doTempFile(HttpRequest request, ExecutionContext context) {\n    File file = getTempFile();\n    // 第2引数: リクエスト終了時にファイルを削除する場合はtrue（フレームワークが削除を実行）\n    StreamResponse response = new StreamResponse(file, true);\n    response.setContentType(\"text/plain; charset=UTF-8\");\n    response.setContentDisposition(file.getName());\n    return response;\n}\n```\n\n**BLOB型カラムのダウンロード** (StreamResponse使用):\n\n```java\npublic HttpResponse doBlobColumn(HttpRequest request, ExecutionContext context) {\n    SqlRow record = getRecord(request);\n    StreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\n    response.setContentType(\"image/jpeg\");\n    response.setContentDisposition(record.getString(\"FILE_NAME\"));\n    return response;\n}\n```\n\n**データレコードのダウンロード（CSV形式）** (DataRecordResponse使用):\n\nフォーマット定義例（`N11AA001.fmt`）:\n```\nfile-type:        \"Variable\"\ntext-encoding:    \"Shift_JIS\"\nrecord-separator: \"\\n\"\nfield-separator:  \",\"\n\n[header]\n1  messageId  N \"メッセージID\"\n2  lang       N \"言語\"\n3  message    N \"メッセージ\"\n\n[data]\n1  messageId  X\n2  lang       X\n3  message    N\n```\n\n```java\npublic HttpResponse doCsvDataRecord(HttpRequest request, ExecutionContext context) {\n    SqlResultSet records = getRecords(request);\n    // コンストラクタ引数: フォーマット定義のベースパス論理名とファイル名\n    DataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\n    response.write(\"header\", Collections.<String, Object>emptyMap());\n    for (SqlRow record : records) {\n        response.write(\"data\", record);\n    }\n    response.setContentType(\"text/csv; charset=Shift_JIS\");\n    response.setContentDisposition(\"メッセージ一覧.csv\");\n    return response;\n}\n```",
+    "s4": "データベースコミットを伴う処理を要求する画面で使用する。2つの防止方法があり、**両方の併用を推奨**。\n\n**リクエストの二重送信防止（クライアント側）**: ダブルクリックや再クリックによる2回以上のリクエスト送信を防止する。\n\n**処理済みリクエストの受信防止（サーバ側）**: ブラウザの戻るボタンなどで処理済みリクエストが再送信された場合、重複処理しないよう受け付けを防止する。\n\n> **重要**: 片方のみ使用した場合のリスク:\n> - クライアント側のみ: ブラウザ戻るボタン等で処理済みリクエストが再送信され、重複処理される恐れがある\n> - サーバ側のみ: ダブルクリックで2件のリクエストが送信された場合、ユーザには2件目のリクエストに対するエラーレスポンスのみ返され、1件目の処理結果を確認できない"
+  }
+}

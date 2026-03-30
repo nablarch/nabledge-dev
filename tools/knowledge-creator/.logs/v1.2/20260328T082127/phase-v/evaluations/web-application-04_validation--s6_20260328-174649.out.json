@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s6",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor. The conceptual rule for multiple validation methods is stated, and ValidationContext (covering isValid) is already hinted. Neither omission would cause an AI agent to produce incorrect or misleading answers.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — バリデーションメソッドの実装",
+      "impact": "low",
+      "justification": "The decision rule itself is present: 「処理ごとにバリデーションメソッドを用意すること」. The omitted password example is illustrative, not definitional — an AI agent can correctly answer 'when do I need multiple validation methods?' from the rule alone. The reference to :ref:`multiple_validation_method` also points readers to the dedicated section. The missing example adds color but does not gate correct answers. Why D→E did not resolve: The Phase E output is byte-for-byte identical to Phase D input, indicating Phase E applied no edits at all — likely treating the finding as too minor to warrant a change."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints",
+      "impact": "low",
+      "justification": "`ValidationContext` is already in s1 hints, and queries about validation result checking will naturally include that class name. The absence of `isValid` as a standalone hint creates a marginal retrieval gap, but the method appears verbatim in s1 content as `ValidationContext#isValid`, so full-text matching would still surface the section. No correct answer is blocked. Why D→E did not resolve: Same as above — Phase E made no edits to the file, leaving both findings unchanged."
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/core_library/messaging_sender_util.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+同期応答メッセージ送信ユーティリティ
+==========================================
+対外システムに対するメッセージの同期送信を行うユーティリティクラス。
+
+本ユーティリティは :ref:`フレームワーク制御ヘッダ<fw_header>` の利用を前提とし、
+再送電文フラグを利用した再送/タイムアウト制御等の機能を実装している。
+
+  .. note::
+
+    本ユーティリティでは、同期応答メッセージ送信処理のみをサポートしている。
+    応答を伴わない、もしくは、、非同期応答を伴うメッセージの送信については、
+    :doc:`messaging_sending_batch` を使用する。
+
+++++++++++++++++++
+
+
+使用方法
+===================
+本ユーティリティでは以下の2つのクラスを使用する。
+
+  - `MessageSender`_
+
+    ユーティリティ本体。
+    このクラスに定義された **sendSync()** メソッドを使用することによって、同期応答送信を行うことができる。
+
+  - `SyncMessage`_
+
+    送信メッセージおよび、応答されたメッセージの内容を格納するオブジェクト。
+
+**コードサンプル**
+  以下はこれらのクラス機能を使用して実際にメッセージ送信処理を行う例である。
+
+    .. code-block:: java
+  
+      String requestId = "RM11AD0101";
+      String timeoutErrorMessageId = "MW11AD01";
+
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("title",     form.getTitle());
+      data.put("publisher", form.getPublisher());
+      data.put("authors",   form.getAuthors());
+  
+      SyncMessage responseMessage;
+      try {
+          responseMessage = MessageSender.sendSync(new SyncMessage(requestId).addDataRecord(data));
+      } catch (MessageSendSyncTimeoutException e) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, timeoutErrorMessageId));
+      }
+
+
+.. note::
+
+  このクラスは、カレントスレッドに紐づけられている :ref:`メッセージングコンテキスト<messaging_api>` を
+  利用してメッセージ送信を行うため、 :doc:`../handler/MessagingContextHandler` を
+  ハンドラキュー上に配置しておく必要がある。
+
+
+
+++++++++++++++++
+
+設定項目
+======================================
+本機能を利用するには、以下の2つの設定ファイルを用意する必要がある。
+
+**電文フォーマット定義ファイル**
+  送受信電文内のメッセージボディ領域のフォーマット定義を記述したファイル。
+  "format"論理パス配下にある以下のファイル名で作成する。
+ 
+     - **送信電文:** リクエストID＋"_SEND"
+     - **受信電文:** リクエストID＋"_RECEIVE"
+
+  フォーマット定義ファイルを配置する論理パス名は、設定により変更することができる。(後述)
+  フォーマット定義の記述方法については、 :doc:`record_format` を参照すること。
+
+**送信設定ファイル**
+  送受信キューの論理名や再送要求の有無といった、送信処理の各種設定を記述したファイル。
+  :doc:`../02_FunctionDemandSpecifications/01_Core/02_Repository` のプロパティファイルとして作成する。
+
+  以下は、その定義例である。
+
+  **リポジトリ定義ファイル内のプロパティファイル定義**
+
+    .. code-block:: xml
+
+      <!-- 送信設定ファイル -->
+      <config-file file="nablarch/common/web/demo/messageSender.config" />
+
+  **送信定義ファイルの内容**
+
+    .. code-block:: bash
+    
+      # 共通設定
+      messageSender.DEFAULT.messagingProviderName=messagingProvider
+      messageSender.DEFAULT.destination=QUEUE1
+      messageSender.DEFAULT.replyTo=REPLY1
+      messageSender.DEFAULT.retryCount=3
+      messageSender.DEFAULT.formatDir=format
+      messageSender.DEFAULT.headerFormatName=HEADER
+      
+      # リクエストIDごとの設定
+
+      # リクエストID: RM11AD0101
+      messageSender.RM11AD0101.timeout=3000
+      
+      #(後略) 
+
+**送信設定一覧**
+  **共通設定**
+    ============================================================ ===========================================================================================================
+    項目名                                                       内容
+    ============================================================ ===========================================================================================================
+    messageSender.DEFAULT.messagingProviderName                  :ref:`メッセージングプロバイダ<messaging_provider>` をリポジトリから取得する際に
+                                                                 使用するコンポーネント名
+    messageSender.DEFAULT.destination                            送信キュー名(論理名)
+    messageSender.DEFAULT.replyTo                                応答受信キュー名(論理名)
+    messageSender.DEFAULT.retryCount                             タイムアウト発生時の再送回数。再送しない場合は0以下を指定。デフォルトは-1
+    messageSender.DEFAULT.formatDir                              フォーマット定義ファイルの格納ディレクトリ(論理名)。デフォルトは"format"
+    messageSender.DEFAULT.headerFormatName                       ヘッダフォーマット名
+    messageSender.DEFAULT.messageConvertorName                   `SyncMessageConvertor`_ をリポジトリから取得する際に使用するコンポーネント名
+    ============================================================ ===========================================================================================================
+
+  **リクエストID毎設定**
+    ============================================================ ===========================================================================================================
+    項目名                                                       内容
+    ============================================================ ===========================================================================================================
+    messageSender.**リクエストID.messagingProviderName           MessagingProviderをリポジトリから取得する際に使用するコンポーネント名。
+                                                                 デフォルト設定を指定しない場合は必須
+    messageSender.リクエストID.destination                       送信キュー名(論理名)。デフォルト設定を指定しない場合は必須
+    messageSender.リクエストID.replyTo                           応答受信キュー名(論理名)。デフォルト設定を指定しない場合は必須
+    messageSender.リクエストID.timeout                           応答タイムアウト(単位:ミリ秒)。デフォルトは-1。
+                                                                 0以下または指定がない場合はの設定値となる
+    messageSender.リクエストID.retryCount                        タイムアウト発生時の再送回数。再送しない場合は0以下を指定
+    messageSender.リクエストID.headerFormatName                  ヘッダフォーマット名。デフォルト設定を指定しない場合は必須
+    messageSender.リクエストID.sendingRequestId                  送信用リクエストID。メッセージ処理用のリクエストIDが重複する場合に使用する。
+                                                                 送信用リクエストIDが指定された場合は、送信用リクエストIDの値をヘッダのリクエストIDに設定する。
+    messageSender.リクエストID.messageConvertorName              `SyncMessageConvertor`_ をリポジトリから取得する際に使用するコンポーネント名
+    ============================================================ ===========================================================================================================
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-messaging_sender_util`
+
+```json
+{
+  "id": "libraries-messaging_sender_util",
+  "title": "同期応答メッセージ送信ユーティリティ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用方法",
+      "hints": [
+        "MessageSender",
+        "SyncMessage",
+        "MessageSendSyncTimeoutException",
+        "sendSync",
+        "同期応答メッセージ送信",
+        "メッセージングコンテキスト",
+        "フレームワーク制御ヘッダ",
+        "MessagingContextHandler"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定項目",
+      "hints": [
+        "電文フォーマット定義ファイル",
+        "送信設定ファイル",
+        "SyncMessageConvertor",
+        "messageSender.DEFAULT.messagingProviderName",
+        "messageSender.DEFAULT.destination",
+        "messageSender.DEFAULT.replyTo",
+        "messageSender.DEFAULT.retryCount",
+        "messageSender.DEFAULT.formatDir",
+        "messageSender.DEFAULT.headerFormatName",
+        "messageSender.DEFAULT.messageConvertorName",
+        "messageSender.リクエストID.timeout",
+        "messageSender.リクエストID.sendingRequestId",
+        "再送設定",
+        "タイムアウト設定",
+        "送受信キュー設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`フレームワーク制御ヘッダ<fw_header>` の利用を前提とし、再送電文フラグを利用した再送/タイムアウト制御等の機能を実装している。\n\n> **注意**: 同期応答メッセージ送信のみサポート。非同期応答または応答なし送信には :doc:`messaging_sending_batch` を使用する。\n\n**クラス**: `MessageSender`, `SyncMessage`\n\n- `MessageSender`: ユーティリティ本体。`sendSync()` メソッドで同期応答送信を実行。\n- `SyncMessage`: 送信メッセージおよび応答メッセージの内容を格納するオブジェクト。\n\n```java\nString requestId = \"RM11AD0101\";\nString timeoutErrorMessageId = \"MW11AD01\";\n\nMap<String, Object> data = new HashMap<String, Object>();\ndata.put(\"title\",     form.getTitle());\ndata.put(\"publisher\", form.getPublisher());\ndata.put(\"authors\",   form.getAuthors());\n\nSyncMessage responseMessage;\ntry {\n    responseMessage = MessageSender.sendSync(new SyncMessage(requestId).addDataRecord(data));\n} catch (MessageSendSyncTimeoutException e) {\n    throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, timeoutErrorMessageId));\n}\n```\n\n> **注意**: :doc:`../handler/MessagingContextHandler` をハンドラキュー上に配置しておく必要がある（カレントスレッドに紐づく :ref:`メッセージングコンテキスト<messaging_api>` を利用するため）。",
+    "s2": "以下の2つの設定ファイルが必要。\n\n**電文フォーマット定義ファイル**\n\n送受信電文のメッセージボディ領域のフォーマット定義。\"format\"論理パス配下に配置（論理パス名は設定により変更可能）。\n- 送信電文ファイル名: リクエストID＋`_SEND`\n- 受信電文ファイル名: リクエストID＋`_RECEIVE`\n\nフォーマット定義の記述方法は :doc:`record_format` 参照。\n\n**送信設定ファイル**\n\n:doc:`../02_FunctionDemandSpecifications/01_Core/02_Repository` のプロパティファイルとして作成。\n\n```xml\n<config-file file=\"nablarch/common/web/demo/messageSender.config\" />\n```\n\n```bash\n# 共通設定\nmessageSender.DEFAULT.messagingProviderName=messagingProvider\nmessageSender.DEFAULT.destination=QUEUE1\nmessageSender.DEFAULT.replyTo=REPLY1\nmessageSender.DEFAULT.retryCount=3\nmessageSender.DEFAULT.formatDir=format\nmessageSender.DEFAULT.headerFormatName=HEADER\n\n# リクエストIDごとの設定\nmessageSender.RM11AD0101.timeout=3000\n```\n\n**共通設定**\n\n| 項目名 | 内容 |\n|---|---|\n| messageSender.DEFAULT.messagingProviderName | :ref:`メッセージングプロバイダ<messaging_provider>` をリポジトリから取得する際のコンポーネント名 |\n| messageSender.DEFAULT.destination | 送信キュー名（論理名） |\n| messageSender.DEFAULT.replyTo | 応答受信キュー名（論理名） |\n| messageSender.DEFAULT.retryCount | タイムアウト時の再送回数。再送しない場合は0以下。デフォルト: -1 |\n| messageSender.DEFAULT.formatDir | フォーマット定義ファイルの格納ディレクトリ（論理名）。デフォルト: \"format\" |\n| messageSender.DEFAULT.headerFormatName | ヘッダフォーマット名 |\n| messageSender.DEFAULT.messageConvertorName | `SyncMessageConvertor` をリポジトリから取得する際のコンポーネント名 |\n\n**リクエストID毎設定**\n\n| 項目名 | 内容 |\n|---|---|\n| messageSender.リクエストID.messagingProviderName | MessagingProviderをリポジトリから取得する際のコンポーネント名。DEFAULT未設定時は必須 |\n| messageSender.リクエストID.destination | 送信キュー名（論理名）。DEFAULT未設定時は必須 |\n| messageSender.リクエストID.replyTo | 応答受信キュー名（論理名）。DEFAULT未設定時は必須 |\n| messageSender.リクエストID.timeout | 応答タイムアウト（ミリ秒）。デフォルト: -1 |\n| messageSender.リクエストID.retryCount | タイムアウト時の再送回数。再送しない場合は0以下 |\n| messageSender.リクエストID.headerFormatName | ヘッダフォーマット名。DEFAULT未設定時は必須 |\n| messageSender.リクエストID.sendingRequestId | 送信用リクエストID。メッセージ処理用リクエストIDが重複する場合に使用。指定時はヘッダのリクエストIDにこの値を設定 |\n| messageSender.リクエストID.messageConvertorName | `SyncMessageConvertor` をリポジトリから取得する際のコンポーネント名 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

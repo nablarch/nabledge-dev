@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-SessionConcurrentAccessHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (概要)",
+      "description": "The source explains that individual session variable reads/writes are thread-safe but overall session object integrity is not guaranteed. This context clarifies the conditions under which this handler is necessary and is omitted from the knowledge file.",
+      "source_evidence": "この際、セッション変数単体の読み書きについてはスレッドセーフであることが保証されるものの、セッションオブジェクト全体の整合性については保証されない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (ハンドラ処理フロー) hints",
+      "description": "CopyOnReadMap (nablarch.core.util.map.CopyOnReadMap) is referenced in the s2 section content but is absent from the s2 hints array.",
+      "source_evidence": "s2 content: 「セッション同期ポリシー(CONCURRENT)に対応したセッションスコープのラッパーオブジェクト(`nablarch.core.util.map.CopyOnReadMap`)を作成し実行コンテキストに設定。」"
+    }
+  ]
+}

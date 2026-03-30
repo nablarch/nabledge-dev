@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5, s6",
+      "description": "`PartInfo` is a PascalCase Nablarch class used in code examples in both sections (as the return type of `req.getPart(...).get(0)`) but is absent from the hints of s5 and s6.",
+      "source_evidence": "s5 code: `PartInfo part = req.getPart(\"fileToMove\").get(0);`  s6 code: `PartInfo part = req.getPart(\"image\").get(0);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7",
+      "description": "`ParameterizedSqlPStatement` is a PascalCase Nablarch class that appears in the `InsertionStrategy` implementation code example in s7 (as the return type of `prepareStatement` and parameter type of `addBatch`) but is not listed in s7's hints.",
+      "source_evidence": "`public ParameterizedSqlPStatement prepareStatement(UserInfoTempEntity userInfoTempEntity)` and `public void addBatch(ParameterizedSqlPStatement statement, UserInfoTempEntity userInfoTempEntity)` in the 独自実装 example."
+    }
+  ]
+}

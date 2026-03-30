@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-LoopHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The exclusivity constraint with TransactionManagementHandler and RequestThreadLoopHandler is labeled '**警告**' in the knowledge file, but the source presents this as a plain paragraph (not a `.. warning::` directive). Only the rollback-possibility paragraph is an actual `.. warning::` in the source.",
+      "source_evidence": "Source plain paragraph: '本ハンドラの機能はトランザクション管理機能とループ制御機能を兼ねているため :doc:`TransactionManagementHandler` および :doc:`RequestThreadLoopHandler` とは排他利用である。' — no warning directive wraps this text."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "`ExecutionContext` is a PascalCase class name that appears in both callback method signatures in s1 content but is absent from s1 hints.",
+      "source_evidence": "Callback signatures: 'TransactionManagementHandler.Callback<TData>#transactionNormalEnd(TData data, ExecutionContext context): void' and '...transactionAbnormalEnd(TData data, ExecutionContext context): void'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "`TransactionManagementHandler.Callback` and `ExecutionContext` appear in s2 content (callback references in steps 5 and 5b) but are absent from s2 hints. Hints should be self-contained per section.",
+      "source_evidence": "s2 content references: 'TransactionManagementHandler.Callback を実装しているハンドラに対して transactionNormalEnd コールバックを呼び出す' and the full callback signatures in the exception handling sub-step."
+    }
+  ]
+}

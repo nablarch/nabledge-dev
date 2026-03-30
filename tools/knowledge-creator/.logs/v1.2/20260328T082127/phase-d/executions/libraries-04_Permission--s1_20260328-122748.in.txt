@@ -1,0 +1,445 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/02_FunctionDemandSpecifications/03_Common/04_Permission.rst`
+- Format: `rst`
+
+```
+.. _permission:
+
+====================================================
+認可
+====================================================
+
+------------
+概要
+------------
+リクエストに対して認可チェックを行う機能を提供する。
+ 
+本機能は、ハンドラとして使用されることを想定している。詳細は :doc:`../../handler/PermissionCheckHandler` を参照すること。
+
+通常アーキテクトが本機能を使用して実装を行い認可処理を局所化するため、アプリケーションプログラマは本機能を直接使用しない。
+
+------------
+特徴
+------------
+グループ単位とユーザ単位を併用した権限設定
+=============================================================================================================================================
+ | グループに対して権限を設定し、ユーザにグループを設定することで、グループ単位の権限を設定することができる。
+ | さらに、ユーザに直接権限を設定することもできるため、イレギュラーな権限付与に対応することができる。
+
+自由度の高いテーブル定義
+=================================================================================================================================
+ | テーブル名・カラム名を自由に付けることができ、カラムのデータ型についてもフレームワークが規定するJavaの型に変換可能であれば任意のデータ型を使用できる。
+ | そのため、個別アプリケーションは、プロジェクトの命名規約を使用して、本機能に必要なテーブル定義を作成することができる。
+
+------------
+要求
+------------
+
+実装済み
+========================
+* 機能（任意のリクエストのかたまり）単位で認可判定の設定を行うことができる。
+* ユーザに対してグループを設定することができ、グループ単位で認可判定の設定を行うことができる。
+* リクエストIDを設定し、特定のリクエストIDを認可判定の対象から除外できる。
+* ユーザに有効日（From/To）を設定できる。
+* ユーザとグループの関連に有効日（From/To）を設定できる。
+* 認可判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。
+
+未実装
+==================
+* 本機能で使用するマスタデータをメンテナンスできる。
+* 本機能で使用するマスタの初期データを一括登録できる。
+* 認証機能によりユーザIDがロックされているユーザの認可判定を失敗にできる。
+
+未検討
+==================
+* データへのアクセスを制限できる。
+* 機能単位の権限に有効日（From/To）を設定できる。
+
+------------
+構成
+------------
+
+概念モデル
+==============================
+| 認可情報の概念モデルを下記に示す。
+| 本機能では、リクエストIDを使用して認可判定を行う。リクエストIDの体系は、アプリケーション毎に設計する。
+
+.. image:: ./_images/04/Permission_ConceptualModel.jpg
+   :scale: 60
+
+本機能では、ユーザが機能として認識する最小単位の概念として、認可単位という用語を使用する。
+
+認可単位とリクエストの関係を下記に示す。
+
+.. image:: ./_images/04/Permission_Unit.jpg
+   :scale: 60
+
+| この例では、社員登録は入力画面→確認画面→完了画面、社員検索は検索画面→検索結果画面と画面遷移することを想定している。
+| 認可単位には、認可を実現するために必要なリクエスト（Webアプリケーションであれば画面のイベント）が複数紐付く。
+| 
+| グループに認可単位を紐付けることでグループ権限、ユーザに認可単位を直接紐付けることでユーザ権限を表す。
+| グループ権限とユーザ権限の例を下記に示す。
+
+.. image:: ./_images/04/Permission_Authority.jpg
+   :scale: 60
+
+| 
+
+======================= ===========================================================================================
+ユーザ                  説明
+======================= ===========================================================================================
+Aさん                   | 人事部グループに紐づいているので、社員登録・社員削除・社員検索・社員情報変更を使用できる。
+Bさん                   | 社員グループに紐づいているので、社員検索・社員情報変更を使用できる。
+Cさん                   | パートナーグループに紐づいているので、社員情報変更のみ使用できる。
+Xさん                   | 部長グループと社員グループに紐づいているので、社員登録・社員削除・社員検索・社員情報変更を使用できる。
+Yさん                   | 社員グループに紐づいているので、社員検索・社員情報変更を使用できる。
+                        | さらにDさんは、社員登録認可単位に直接紐づいているので、社員登録も使用できる。
+
+                           .. note::
+                            Yさんのようにグループ権限とユーザ権限が異なる場合は、\
+                            双方の権限に紐づく認可単位が足し合わされる。
+======================= ===========================================================================================
+
+.. note::
+
+ | 通常は、認可情報のメンテナンス性を考慮して、グループ権限を登録し、ユーザにグループを割り当てることで権限の設定を行う。
+ | ユーザに直接認可単位を紐付けるユーザ権限は、イレギュラーな権限付与に対応するために使用する。
+
+クラス図
+========================
+.. image:: ./_images/04/Permission_ClassDiagram.jpg
+   :scale: 60
+
+各クラスの責務
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+インタフェース定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+=========================================================== ===========================================================================================
+インタフェース名                                             概要
+=========================================================== ===========================================================================================
+nablarch.common.permission.Permission                       | 認可を行うインタフェース。
+                                                            | 認可判定の実現方法毎に本インタフェースの実装クラスを作成する。
+nablarch.common.permission.PermissionFactory                | Permissionを生成するインタフェース。
+                                                            | 認可情報の取得先毎に本インタフェースの実装クラスを作成する。
+=========================================================== ===========================================================================================
+
+クラス定義
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\a) nablarch.common.permission.Permissionの実装クラス
+
+=========================================================== ===========================================================================================
+クラス名                                                    概要
+=========================================================== ===========================================================================================
+nablarch.common.permission.BasicPermission                  | 保持しているリクエストIDを使用して認可を行うPermissionの基本実装クラス。
+=========================================================== ===========================================================================================
+
+\b) nablarch.common.permission.PermissionFactoryの実装クラス
+
+================================================================================== ===========================================================================================
+クラス名                                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.permission.BasicPermissionFactory                                  BasicPermissionを生成するPermissionFactoryの基本実装クラス。
+                                                                                   
+                                                                                   データベース上のユーザ及びユーザが属するグループ毎に使用できる\
+                                                                                   認可単位を保持したテーブル構造から、ユーザに紐付く認可情報を取得する。
+================================================================================== ===========================================================================================
+
+\c) その他のクラス
+
+================================================================================== ===========================================================================================
+クラス名                                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.handler.PermissionCheckHandler                                     | 認可判定を行うハンドラ。
+nablarch.common.permission.PermissionUtil                                          | 権限管理に使用するユーティリティ。
+================================================================================== ===========================================================================================
+
+シーケンス図
+=================================
+| 本機能のシーケンス図を下記に示す。
+
+* PermissionCheckHandlerは、リクエストの度にユーザに紐付くPermissionを取得し、認可判定を行った後、Permissionをスレッドローカルに格納する。
+* 個別アプリケーションにおいて認可判定が必要な場合は、PermissionUtilからPermissionを取得して認可判定を行う。
+* 認証機能によりユーザIDがロックされている場合は認可失敗となる。
+* 認可判定の対象リクエストのチェックには、設定で指定されたリクエストIDを使用して行う。設定方法は、 :ref:`ignoreRequestIdsSetting` を参照のこと。
+* ユーザIDとリクエストIDは、PermissionCheckHandlerよりも先に処理を行うハンドラにより、ThreadContextに設定しておく必要がある。ThreadContextへの設定は、 :ref:`ThreadContextHandler` が行う。
+
+.. image:: ./_images/04/Permission_SequenceDiagram.jpg
+   :scale: 60
+
+テーブル定義
+=================================
+| 本機能で使用するテーブル定義を下記に示す。
+| 
+| テーブル名、カラム名は、後述するBasicPermissionFactoryの設定で指定するので、任意の名前を使用できる。
+| データベースの型についても、表のJavaの型に変換可能な型であれば、任意の型を使用できる。
+
+グループ
+^^^^^^^^^^^^^^^^^^^^^^^^
+| グループテーブルには、グループ情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型              制約
+========================= ==================== =====================================
+グループID                | java.lang.String   | ユニークキー
+========================= ==================== =====================================
+
+システムアカウント
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| システムアカウントテーブルには、アカウント情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+ユーザID                  | java.lang.String   | ユニークキー
+ユーザIDロック            | boolean            | 
+有効日(From)              | java.lang.String   | 書式 yyyyMMdd
+                                               | 指定しない場合は"19000101"
+有効日(To)                | java.lang.String   | 書式 yyyyMMdd
+                                               | 指定しない場合は"99991231"
+========================= ==================== =====================================
+
+グループシステムアカウント
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| グループシステムアカウントテーブルには、グループとシステムアカウントの関連情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+グループID                | java.lang.String   | ユニークキー
+ユーザID                  | java.lang.String   | ユニークキー
+有効日(From)              | java.lang.String   | ユニークキー
+                                               | 書式 yyyyMMdd
+                                               | 指定しない場合は"19000101"
+有効日(To)                | java.lang.String   | 書式 yyyyMMdd
+                                               | 指定しない場合は"99991231"
+========================= ==================== =====================================
+
+認可単位
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| 認可単位には、認可単位情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+認可単位ID                | java.lang.String   | ユニークキー
+========================= ==================== =====================================
+
+認可単位リクエスト
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| 認可単位リクエストテーブルには、認可単位とリクエストの関連情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+認可単位ID                | java.lang.String   | ユニークキー
+リクエストID              | java.lang.String   | ユニークキー
+========================= ==================== =====================================
+  
+グループ権限
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| グループ権限テーブルには、グループと認可単位の関連情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+グループID                | java.lang.String   | ユニークキー
+認可単位ID                | java.lang.String   | ユニークキー
+========================= ==================== =====================================
+
+システムアカウント権限
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| システムアカウント権限テーブルには、システムアカウントと認可単位の関連情報を格納する。
+
+========================= ==================== =====================================
+定義                      Javaの型             制約
+========================= ==================== =====================================
+ユーザID                  | java.lang.String   | ユニークキー
+認可単位ID                | java.lang.String   | ユニークキー
+========================= ==================== =====================================
+
+テーブル定義の例
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* システムアカウントテーブルは、認証機能と同じテーブルを使用することを想定しているので、認証機能で使用するデータ項目（パスワード等）が含まれている。
+
+.. image:: ./_images/04/Permission_ERDiagram.jpg
+   :scale: 60
+
+------------------------
+```
+
+## Knowledge File
+
+- ID: `libraries-04_Permission--s1`
+
+```json
+{
+  "id": "libraries-04_Permission--s1",
+  "title": "認可",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "PermissionCheckHandler",
+        "認可チェック",
+        "認可機能",
+        "ハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "グループ権限",
+        "ユーザ権限",
+        "権限設定",
+        "テーブル定義",
+        "イレギュラー権限付与"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "認可判定",
+        "有効日",
+        "リクエストID除外",
+        "画面表示制御",
+        "グループ単位認可"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "構成",
+      "hints": [
+        "nablarch.common.permission.Permission",
+        "nablarch.common.permission.PermissionFactory",
+        "nablarch.common.permission.BasicPermission",
+        "nablarch.common.permission.BasicPermissionFactory",
+        "nablarch.common.handler.PermissionCheckHandler",
+        "nablarch.common.permission.PermissionUtil",
+        "BasicPermission",
+        "BasicPermissionFactory",
+        "PermissionUtil",
+        "認可単位",
+        "テーブル定義",
+        "シーケンス図",
+        "概念モデル",
+        "グループシステムアカウント",
+        "システムアカウント権限",
+        "認可単位リクエスト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リクエストに対して認可チェックを行う機能。ハンドラ（:doc:`../../handler/PermissionCheckHandler`）として使用することを想定。\n\n> **注意**: アーキテクトが認可処理を局所化するために使用するため、アプリケーションプログラマは本機能を直接使用しない。",
+    "s2": "## グループ単位とユーザ単位を併用した権限設定\n\nグループに権限を設定しユーザにグループを割り当てることで、グループ単位の権限設定が可能。ユーザへの直接権限設定も可能なため、イレギュラーな権限付与に対応できる。\n\n## 自由度の高いテーブル定義\n\nテーブル名・カラム名は自由に設定可能。フレームワークが規定するJavaの型に変換可能であれば任意のデータ型を使用できるため、プロジェクトの命名規約を使用してテーブル定義を作成できる。",
+    "s3": "### 実装済み\n\n- 機能（任意のリクエストのかたまり）単位で認可判定の設定を行うことができる。\n- ユーザに対してグループを設定することができ、グループ単位で認可判定の設定を行うことができる。\n- リクエストIDを設定し、特定のリクエストIDを認可判定の対象から除外できる。\n- ユーザに有効日（From/To）を設定できる。\n- ユーザとグループの関連に有効日（From/To）を設定できる。\n- 認可判定の結果に応じて画面項目（メニューやボタンなど）の表示・非表示を切り替えることができる。\n\n### 未実装\n\n- 本機能で使用するマスタデータをメンテナンスできる。\n- 本機能で使用するマスタの初期データを一括登録できる。\n- 認証機能によりユーザIDがロックされているユーザの認可判定を失敗にできる。\n\n### 未検討\n\n- データへのアクセスを制限できる。\n- 機能単位の権限に有効日（From/To）を設定できる。",
+    "s4": "## 概念モデル\n\n本機能では**リクエストID**を使用して認可判定を行う。リクエストIDの体系はアプリケーション毎に設計する。\n\n**認可単位**: ユーザが機能として認識する最小単位の概念。認可単位には複数のリクエスト（Webアプリケーションであれば画面のイベント）が紐付く。\n\n- **グループ権限**: グループに認可単位を紐付ける\n- **ユーザ権限**: ユーザに認可単位を直接紐付ける\n\n> **注意**: グループ権限とユーザ権限が異なる場合は、双方の権限に紐づく認可単位が足し合わされる。\n\n> **注意**: 通常はグループ権限でメンテナンス性を確保し、ユーザ権限はイレギュラーな権限付与に使用する。\n\n![概念モデル](assets/libraries-04_Permission--s1/Permission_ConceptualModel.jpg)\n\n![認可単位とリクエストの関係](assets/libraries-04_Permission--s1/Permission_Unit.jpg)\n\n![グループ権限とユーザ権限](assets/libraries-04_Permission--s1/Permission_Authority.jpg)\n\n## クラス図\n\n![クラス図](assets/libraries-04_Permission--s1/Permission_ClassDiagram.jpg)\n\n### インタフェース\n\n| インタフェース名 | 概要 |\n|---|---|\n| `nablarch.common.permission.Permission` | 認可を行うインタフェース。認可判定の実現方法毎に実装クラスを作成する。 |\n| `nablarch.common.permission.PermissionFactory` | Permissionを生成するインタフェース。認可情報の取得先毎に実装クラスを作成する。 |\n\n### `Permission`の実装クラス\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.permission.BasicPermission` | 保持しているリクエストIDを使用して認可を行うPermissionの基本実装クラス。 |\n\n### `PermissionFactory`の実装クラス\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.permission.BasicPermissionFactory` | BasicPermissionを生成するPermissionFactoryの基本実装クラス。DBのユーザ・グループ毎の認可単位テーブル構造からユーザに紐付く認可情報を取得する。 |\n\n### その他のクラス\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.handler.PermissionCheckHandler` | 認可判定を行うハンドラ。 |\n| `nablarch.common.permission.PermissionUtil` | 権限管理に使用するユーティリティ。 |\n\n## シーケンス図\n\n![シーケンス図](assets/libraries-04_Permission--s1/Permission_SequenceDiagram.jpg)\n\n1. `PermissionCheckHandler`は、リクエストの度にユーザに紐付く`Permission`を取得し、認可判定後にPermissionをスレッドローカルに格納する。\n2. 個別アプリケーションで認可判定が必要な場合は、`PermissionUtil`からPermissionを取得して認可判定を行う。\n3. 認証機能によりユーザIDがロックされている場合は認可失敗となる。\n4. 認可判定の対象リクエストのチェックには、設定で指定されたリクエストIDを使用する（:ref:`ignoreRequestIdsSetting`参照）。\n5. ユーザIDとリクエストIDは、`PermissionCheckHandler`よりも先に処理を行うハンドラにより、ThreadContextに設定しておく必要がある。ThreadContextへの設定は:ref:`ThreadContextHandler`が行う。\n\n## テーブル定義\n\nテーブル名・カラム名はBasicPermissionFactoryの設定で指定するため任意の名前を使用できる。DBの型もJavaの型に変換可能な型であれば任意の型を使用できる。\n\n### グループテーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| グループID | `java.lang.String` | ユニークキー |\n\n### システムアカウントテーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| ユーザID | `java.lang.String` | ユニークキー |\n| ユーザIDロック | `boolean` | |\n| 有効日(From) | `java.lang.String` | 書式 yyyyMMdd / 未指定時は\"19000101\" |\n| 有効日(To) | `java.lang.String` | 書式 yyyyMMdd / 未指定時は\"99991231\" |\n\n### グループシステムアカウントテーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| グループID | `java.lang.String` | ユニークキー |\n| ユーザID | `java.lang.String` | ユニークキー |\n| 有効日(From) | `java.lang.String` | ユニークキー / 書式 yyyyMMdd / 未指定時は\"19000101\" |\n| 有効日(To) | `java.lang.String` | 書式 yyyyMMdd / 未指定時は\"99991231\" |\n\n### 認可単位テーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| 認可単位ID | `java.lang.String` | ユニークキー |\n\n### 認可単位リクエストテーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| 認可単位ID | `java.lang.String` | ユニークキー |\n| リクエストID | `java.lang.String` | ユニークキー |\n\n### グループ権限テーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| グループID | `java.lang.String` | ユニークキー |\n| 認可単位ID | `java.lang.String` | ユニークキー |\n\n### システムアカウント権限テーブル\n\n| 定義 | Javaの型 | 制約 |\n|---|---|---|\n| ユーザID | `java.lang.String` | ユニークキー |\n| 認可単位ID | `java.lang.String` | ユニークキー |\n\n![ER図](assets/libraries-04_Permission--s1/Permission_ERDiagram.jpg)\n\n> **注意**: システムアカウントテーブルは認証機能と同じテーブルを想定しているため、パスワード等の認証機能用データ項目も含まれる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

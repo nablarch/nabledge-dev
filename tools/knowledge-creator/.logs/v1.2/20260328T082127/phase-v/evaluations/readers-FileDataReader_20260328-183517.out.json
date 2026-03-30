@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-FileDataReader",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "The omission of the data reader factory usage context is decision-necessary for correct placement of implementation code, warranting medium impact and a fix.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — code example context",
+      "impact": "medium",
+      "justification": "The label 'データリーダファクトリ内でデータリーダを作成する例' is not cosmetic — it tells developers where to instantiate FileDataReader. Nablarch batch processing requires readers to be created inside a DataReaderFactory implementation; placing the instantiation elsewhere leads to incorrect architecture. An agent lacking this context may suggest creating the reader in the wrong location (e.g., directly in a business action), causing a structural implementation error. Phase E logs are entirely empty, indicating Phase E did not execute or did not process this file, leaving the finding unresolved."
+    },
+    {
+      "category": "fabrication",
+      "location": "s1 — properties table",
+      "impact": "low",
+      "justification": "The fabricated '必須' column has empty cells for all three properties, so no false required/optional values are stated. The risk is indirect: a developer scanning empty cells might infer all properties are optional, which would be wrong for layoutFile and dataFile. However, the code example itself makes those two properties obviously necessary (both are always set), limiting the chance of misinterpretation in practice. Phase E logs are entirely empty, indicating the fix was never applied."
+    }
+  ]
+}

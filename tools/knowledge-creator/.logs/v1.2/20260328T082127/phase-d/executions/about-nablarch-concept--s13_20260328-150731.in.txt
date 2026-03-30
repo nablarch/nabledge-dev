@@ -1,0 +1,598 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/fw/architectural_pattern/concept.rst`
+- Format: `rst`
+
+```
+処理結果の識別
+--------------------------------------
+**処理結果オブジェクト**
+  処理結果オブジェクトとは、ハンドラの処理結果を表すオブジェクトであり、次のインターフェースで定義される。
+
+    .. code-block:: java
+
+      /**
+       * ハンドラでの処理結果を表すインターフェース。
+       *
+       * @author Iwauo Tajima
+       * @since 1.0
+       */
+      public interface Result {
+          /**
+           * ステータスコードを返す。
+           * @return ステータスコード
+           */
+          int getStatusCode();
+
+          /**
+           * 処理結果に関する詳細情報を返す。
+           * @return 詳細情報
+           */
+          String getMessage();
+
+          /**
+           * 処理が正常終了したかどうかを返す。
+           * @return 正常終了した場合はtrue
+           */
+          @Published
+          boolean isSuccess();
+      }
+
+.. **
+
+
+**ハンドラの処理結果**
+  ハンドラでの処理が終了した場合、その処理結果を上位のハンドラに返す方法は以下の4つのいずれかとなる。
+
+  1. **後続のハンドラの結果をそのままリターンする。**
+
+    多くのハンドラでは、後続のハンドラに処理を委譲し、その結果をそのままリターンする。
+
+  2. **処理結果オブジェクトを作成してリターンする。**
+
+    :ref:`リクエスト<request_processing>` に対する処理が正常終了し、処理結果が確定した場合、
+    その内容を表す以下のオブジェクトを作成してリターンする。
+    実行中のトランザクションは、 :doc:`../handler/TransactionManagementHandler` によりコミットされる。
+
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    | 実行制御基盤                   | 正常終了時に返却する型    | 内容                                                          |
+    +================================+===========================+===============================================================+
+    | :doc:`web_gui`                 | `HttpResponse`_           | 遷移先画面のパス等の内容を設定したオブジェクトをリターンする。|
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    | :doc:`messaging_request_reply` | `ResponseMessage`_        | 応答電文のフォーマットや内容を設定したオブジェクト            |
+    |                                |                           | をリターンする。                                              |
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    |  | :doc:`batch`                | `Result.Success`_         | 正常終了を表すマーカオブジェクトをリターンする。              |
+    |  | :doc:`messaging_receive`    |                           | (これらの処理ではレスポンス処理が無いので、内容の設定は不要)  |
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+
+  3. **処理結果オブジェクトを実行時例外として送出する。**
+
+    :ref:`リクエスト<request_processing>` に対する処理が異常終了することが確定した場合、下記の例外を作成して送出する。
+    実行中のトランザクションは、 :doc:`../handler/TransactionManagementHandler` によりロールバックされる。
+
+
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    | 実行制御基盤                   | 異常終了時に送出する型    | 内容                                                          |
+    +================================+===========================+===============================================================+
+    | :doc:`web_gui`                 | `HttpErrorResponse`_      | エラー時遷移先画面のパス等の内容を設定したオブジェクトを      |
+    |                                |                           | 送出する。                                                    |
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    | :doc:`messaging_request_reply` | `ErrorResponseMessage`_   | エラー応答電文のフォーマットや内容を設定したオブジェクトを    |
+    |                                |                           | 送出する。                                                    |
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+    |  | :doc:`batch`                | `Result.Error`_           | 異常終了を表すマーカオブジェクトを送出する。                  |
+    |  | :doc:`messaging_receive`    | のサブクラス              | (これらの処理ではレスポンス処理が無いので、内容の設定は不要)  |
+    +--------------------------------+---------------------------+---------------------------------------------------------------+
+
+  4. **処理結果オブジェクトではない実行時例外を送出する。**
+
+    その他、一般の実行時例外が送出された場合は、トランザクションがロールバックされ、
+    :doc:`web_gui` 、 :doc:`messaging_request_reply` ではレスポンス処理が行われる。
+    この場合はレスポンス内容を指定することができないため、既定のレスポンス処理が行われる。
+
+
+**レスポンス処理**
+  上で述べたように、 :doc:`web_gui` や :doc:`messaging_request_reply` では、クライアントに対する応答の内容を
+  指定するオブジェクトを処理結果として返却もしくは送出する。
+
+  これらのオブジェクトは、ハンドラキュー上の特定のハンドラによって処理され、クライアントに対するレスポンスとして送信される。 (下図)
+
+  .. figure:: ../_image/response_handler.png
+
+  詳細は以下を参照すること。
+
+    - :doc:`../handler/HttpResponseHandler`
+    - :doc:`../handler/MessageReplyHandler`
+
++++++++++++++++++++++
+
+.. _scope:
+
+-----------------------------------
+変数スコープ
+-----------------------------------
+**変数スコープ** とは、ハンドラキュー上のハンドラ間でデータを共有する際に使用する領域のことである。
+変数スコープには共有範囲や存続期間が異なる以下の4つのスコープが存在し、それぞれ使用目的が異なる。
+
+**リクエストスコープ**
+  各リクエストの開始から終了までの間、スレッド毎に固有の変数を保持する変数スコープである。
+  リクエストスコープは実行コンテキスト上に保持されており、
+  Map<String, Object>インターフェースでアクセスすることができる。
+
+**セッションスコープ**
+  セッションスコープは複数のリクエストを跨って存続し、各リクエストスレッド間で共有される変数を保持する変数スコープである
+  (共有範囲、存続期間は各処理形態ごとに異なる)。
+  リクエストスコープと同様、実行コンテキストからMap<String, Object>インターフェースでアクセスすることができる。
+  
+  なお、セッションスコープの内容をリクエストスレッドから変更する場合は、
+  :doc:`../handler/SessionConcurrentAccessHandler` を使用するなど、何らかの同期化を行なう必要がある。
+
+**スレッドローカル**
+  リクエストスコープやセッションスコープは、ハンドラ間の引数である実行コンテキストを経由して引き渡されるため、
+  DB接続のように、どこで使用するか予期できないデータの受け渡しをしようとすると、
+  ハンドラとは直接関係の無いクラスのメソッドにまで実行コンテキストを引数として渡さなければならず、あまり現実的では無い。
+
+  そのため、 :doc:`../handler/DbConnectionManagementHandler` など一部のハンドラでは、
+  変数スコープではなく、スレッドローカル変数(java.lang.ThreadLocal)を経由してデータやオブジェクトの引き回しを行なっている。
+
+**スレッドコンテキスト**
+  スレッドコンテキストは、スレッドローカル変数上に保持された変数スコープ(Map)である。
+  ユーザIDや、リクエストIDのように、ログ出力やDB共通項目への設定などの用途において、実行コンテキストを経由した
+  引き回しが難しいパラメータ類を格納する。
+
+  その内容の多くは、 :doc:`../handler/ThreadContextHandler` によって設定されるが、
+  それ以外ハンドラでも、スレッドコンテキストに変数を設定するものが存在するほか、
+  業務アクションハンドラから任意の変数を設定することも可能である。
+
+以下の図は、これらのスコープの特性をあらわしたものである。
+
+  .. figure:: ../_image/handler_scope.png
+
+また、画面オンライン実行制御基盤では、上記のスコープに加えて **ウィンドウスコープ** と呼ばれる変数スコープを使用する。
+
+.. _windowscope:
+
+ウィンドウスコープ
+======================
+  ウィンドウスコープとは、セッションスコープと同様、複数のリクエストを跨るデータを格納する変数スコープである。
+  セッションスコープがアプリケーションサーバ上でデータを格納するのに対して、
+  ウィンドウスコープは、複数画面間をhiddenタグで持ちまわることにより実現される。
+  ウィンドウスコープを使用することで、ブラウザで複数のウィンドウを立ち上げても
+  並列に動作させることができる。また、ブラウザのヒストリバックによる遷移が可能となる。
+
+  下図は、複数の入力画面で構成されるアンケートアプリケーションにおける動作イメージである。
+  ユーザからの入力項目をhiddenタグで持ちまわることで、
+  セッションスコープを使用せずに複数画面にまたがった情報の保持を可能としている。
+
+  .. image:: ../_image/window_scope_sequence.png
+
+  上記のように、hiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されている。
+  このようにして、他のウィンドウやタブに影響を与えずに、複数のリクエストをまたがったデータ共有を実現している。
+
+  .. note::
+   ウィンドウスコープに格納された変数は、カスタムタグを使用することで自動的にhiddenタグに変換されるので、
+   **アプリケーションプログラマがJSPにhiddenタグを書く必要はない。**\
+
+  画面オンライン制御基盤の画面間のデータ連携では、基本的にセッションスコープではなくこのウィンドウスコープを使用することになる。
+  詳細については、以下の文書を参照すること。
+
+  * 画面オンライン制御基盤における各種スコープの使い分けについて
+
+    `画面オンライン用業務アクションハンドラ:変数スコープの利用 <../handler/HttpMethodBinding.html#web-scope>`_
+
+  * カスタムタグを使用したウィンドウスコープの使用方法について
+
+    `カスタムタグ実装例集 <../../../../guide/development_guide/04_Explanation/CustomTag/basic.html#howto-window-scope>`_
+
+
+
++++++++++++++++++
+
+----------------------------------------------
+ハンドライベントコールバック
+----------------------------------------------
+一部のハンドラでは、特定のインタフェースを実装した後続ハンドラに対してコールバックを行う。
+
+コールバックを行うハンドラの代表例は :doc:`../handler/TransactionManagementHandler` である。
+このハンドラでは、以下のインタフェースを実装しているハンドラに対して、
+コミットもしくはロールバックのタイミングでコールバックを行う。
+
+  .. code-block:: java
+
+    /**
+     * トランザクション(コミット or ロールバック)毎に呼び出される
+     * コールバックメソッドを定義するインタフェース。
+     *
+     * @param <TData>ハンドラへの入力データ
+     * @author hisaaki sioiri
+     * @since 1.1
+     */
+    public interface TransactionEventCallback<TData> {
+
+        /**
+         * 入力データに対する処理が正常に処理された場合に呼ばれる。
+         */
+        void transactionNormalEnd(TData data, ExecutionContext ctx);
+
+        /**
+         * 入力データに対する処理で異常が発生した場合に呼ばれる。
+         */
+        void transactionAbnormalEnd(Throwable e, TData data, ExecutionContext ctx);
+    }
+
+.. **
+
+例えば、業務アクションハンドラがこのインターフェースを実装することによって、
+業務トランザクションがロールバックされた場合の例外制御を行なうことができる。
+次の図は、この動作を表した模式図である。
+
+  .. figure:: ../_image/handler_callback.png
+     :scale: 80
+
+このようなコールバック制御を行うハンドラには以下のものがある。
+
+  - :doc:`../handler/TransactionManagementHandler`
+  - :doc:`../handler/MultiThreadExecutionHandler`
+  - :doc:`../handler/LoopHandler`
+
++++++++++++++++++++++++++++
+
+.. _data_reader:
+
+---------------------------------------------
+データリーダ
+---------------------------------------------
+データリーダとは、外部のリソース (ファイル、DB、メッセージキューなど) から、
+1業務トランザクションの実行に必要な情報を読み込むコンポーネントである。
+データリーダで読み込まれたデータは、後続のハンドラの入力として渡され、
+最終的に業務アクションハンドラによって処理される。
+
+  .. note::
+
+    :doc:`web_gui` では、HTTPリクエスト内に1業務トランザクションの実行に必要な情報が含まれているので、
+    別途データリーダを使用する必要はない。
+
+データリーダのインターフェースは以下で定義される。
+
+  .. code-block:: java
+
+    /**
+     * ハンドラが処理する入力データを外部から読み込むインタフェース。
+     *
+     * データリーダは複数のリクエストスレッドから並行アクセスされ得るので、
+     * 各メソッドはスレッドセーフに実装されなければならない。
+     *
+     * @param <TData> このクラスが読み込んだデータの型
+     *
+     * @author Iwauo Tajima
+     * @since  1.1
+     */
+    public interface DataReader<TData> {
+        /**
+         * ハンドラが処理する入力データを読み込んで返却する。
+         *
+         * 入力データがこれ以上存在しない状態、すなわち、hasNext()の結果がfalseとなる
+         * 状態でこのメソッドを呼んだ場合の結果は不定である。
+         *
+         * @param ctx 実行コンテキスト
+         * @return 入力データオブジェクト
+         */
+        TData read(ExecutionContext ctx);
+
+        /**
+         * 次に読み込むデータが存在するかどうかを返却する。
+         *
+         * @param ctx 実行コンテキスト
+         * @return 次に読み込むデータがまだ残っている場合はtrue
+         */
+        boolean hasNext(ExecutionContext ctx);
+
+        /**
+         * このリーダの使用を停止し、内部的に保持している各種リソースを開放する。
+         *
+         * @param ctx 実行コンテキスト
+         */
+        void close(ExecutionContext ctx);
+    }
+
+.. **
+
+**データリーダの作成**
+  データリーダを作成する責務とタイミングは実行制御基盤ごとに以下のように異なる。
+  いずれの場合でも、作成されたデータリーダは実行コンテキストに設定され、後続のハンドラによって使用される。
+
+    =========================== ================================ ================================================================================
+    実行制御基盤                作成するコンポーネント           作成するタイミング
+    =========================== ================================ ================================================================================
+    :doc:`web_gui`              (データリーダを使用しない。)     N/A
+
+    :doc:`batch`                業務アクションハンドラ           | :doc:`../handler/MultiThreadExecutionHandler` の初期処理内。
+                                                                 | (業務アクションハンドラが実装する `DataReaderFactory`_ をコールバックする。)
+
+    :doc:`messaging`            `リポジトリ`_                    | `リポジトリ`_ での初期化処理内で作成する。
+                                                                 | (オブジェクトキー名: **dataReader**)
+
+    =========================== ================================ ================================================================================
+
+**データリードハンドラ**
+  データリーダを使用して読込み処理を行うのは、 :doc:`../handler/DataReadHandler` である。
+  このハンドラは、実行コンテキスト上のデータリーダから1件分の業務処理データを読み込み、
+  それを引数として後続ハンドラに処理を委譲する。
+
+  次の図は、データリードハンドラの挙動を表したものである。
+
+  .. figure:: ../_image/handler_datareader.png
+
+++++++++++++++
+
+.. _implementing_action_handler:
+
+---------------------------------
+業務アクションハンドラの実装
+---------------------------------
+業務アクションハンドラは、業務処理を実装するハンドラであり、業務アプリケーションの開発担当者が実装する。
+このハンドラで行う業務処理のおおまかな流れは下図のようになる。
+
+.. figure:: ../_image/action_handler.png
+   :scale: 80
+   :align: center
+
+図中の番号は処理の順番を示している。以下は上図の説明である。
+
+1. **入力データの取得**
+
+  入力データの内容は、基本的にMap形式で取得できるようになっている。(図中①)
+
+  (以降で使用する入力精査やDBアクセスといったライブラリも、基本的にMapを引数や戻り値として使用する。)
+
+2. **入力精査**
+
+  前段で取得した入力データのMapに対して精査処理を行う。(図中②)
+  精査ロジックはフォーム定義に沿って行なう。
+
+  **フォーム定義に沿った入力精査**
+
+    フォームとは「システムへの入力項目」の精査と値の保持を行うクラスであり、画面項目定義や
+    電文フォーマット定義などに沿って作成される。
+    フォームクラスの各項目には宣言的に精査仕様を設定できるようになっており、
+    精査ロジックを簡便に実装できる。
+
+    なお、DB内容との比較などの処理を含む精査については、ビジネスロジックの一部として実装する。
+
+  .. note::
+    フォームのうち、下記の特徴を持つクラスを特にエンティティと呼称する。
+    エンティティはテーブル定義に沿って作成される。
+
+    * フォームクラスがRDBMS上のテーブルと1対1にひもづく。
+    * フォームクラスのプロパティとテーブルのカラムが1対1にひもづく。
+
+
+3. **ビジネスロジックの実行**
+
+  精査が完了した入力データはフォームもしくはエンティティオブジェクトとして取得できる。
+  この内容をもとに、ビジネスロジックを実行する。
+  また、フレームワークが提供するライブラリを使用することで、
+  DB、データファイル、メッセージキューを通じた入出力を行うことができる。 (図中③)
+  これらのライブラリについても、Mapインターフェースを通じて使用できるようになっている。
+
+  **共通コンポーネントの使用**
+
+    複数の業務アクションから共用しうるロジックについては、業務アクションハンドラに直接実装するのではなく
+    個別のクラス(共通コンポーネント)として実装することを推奨する。(図中④)
+    また、既存の共通コンポーネントが適用可能であれば、積極的に使用すること。
+
+4. **処理結果の返却**
+
+  ビジネスロジックの処理結果を表すオブジェクトを返却する。(図中⑤)
+  業務処理が正常終了した場合は、処理結果の内容を表すオブジェクトを生成して返す。
+  業務処理を異常終了させる場合には、実行時例外を送出する。
+  実行時例外を送出することで、 :doc:`../handler/TransactionManagementHandler` により
+  業務トランザクションがロールバックされる。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-concept--s13`
+
+```json
+{
+  "id": "about-nablarch-concept--s13",
+  "title": "Nablarchの概念",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "処理結果の識別",
+      "hints": [
+        "Result",
+        "HttpResponse",
+        "ResponseMessage",
+        "Result.Success",
+        "HttpErrorResponse",
+        "ErrorResponseMessage",
+        "Result.Error",
+        "処理結果オブジェクト",
+        "ハンドラ処理結果",
+        "レスポンス処理",
+        "トランザクションコミット",
+        "トランザクションロールバック",
+        "HttpResponseHandler",
+        "MessageReplyHandler",
+        "isSuccess",
+        "@Published"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "変数スコープ",
+      "hints": [
+        "リクエストスコープ",
+        "セッションスコープ",
+        "スレッドローカル",
+        "スレッドコンテキスト",
+        "ウィンドウスコープ",
+        "java.lang.ThreadLocal",
+        "変数スコープ",
+        "hiddenタグ",
+        "SessionConcurrentAccessHandler",
+        "ThreadContextHandler",
+        "ブラウザ複数ウィンドウ",
+        "DbConnectionManagementHandler"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ハンドライベントコールバック",
+      "hints": [
+        "TransactionEventCallback",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "ExecutionContext",
+        "ハンドライベントコールバック",
+        "TransactionManagementHandler",
+        "MultiThreadExecutionHandler",
+        "LoopHandler"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データリーダ",
+      "hints": [
+        "DataReader",
+        "DataReaderFactory",
+        "DataReadHandler",
+        "read",
+        "hasNext",
+        "close",
+        "データリーダ",
+        "データリードハンドラ",
+        "スレッドセーフ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "業務アクションハンドラ",
+        "フォーム",
+        "エンティティ",
+        "入力精査",
+        "ビジネスロジック",
+        "共通コンポーネント",
+        "処理結果返却",
+        "TransactionManagementHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 処理結果オブジェクト\n\n**インターフェース**: `Result`\n\n| メソッド | 戻り値 | 説明 | 安定性 |\n|---|---|---|---|\n| `getStatusCode()` | `int` | ステータスコード | — |\n| `getMessage()` | `String` | 詳細情報 | — |\n| `isSuccess()` | `boolean` | 正常終了した場合`true` | `@Published`（安定公開API） |\n\n> **注意**: `isSuccess()` のみ `@Published` アノテーションが付与されており、Nablarchの安定した公開APIとして保証されている。`getStatusCode()` と `getMessage()` はこのアノテーションを持たない。\n\n## ハンドラの処理結果\n\nハンドラが処理終了時に上位ハンドラへ結果を返す4つの方法:\n\n1. **後続ハンドラの結果をそのままリターン**: 後続ハンドラに処理を委譲しその結果をそのまま返す（多くのハンドラで採用）\n\n2. **処理結果オブジェクトを作成してリターン**: 正常終了確定時。:doc:`../handler/TransactionManagementHandler` によりコミット\n\n| 実行制御基盤 | 正常終了時に返却する型 | 内容 |\n|---|---|---|\n| :doc:`web_gui` | `HttpResponse` | 遷移先画面のパス等を設定したオブジェクト |\n| :doc:`messaging_request_reply` | `ResponseMessage` | 応答電文のフォーマット・内容を設定したオブジェクト |\n| :doc:`batch` / :doc:`messaging_receive` | `Result.Success` | 正常終了を表すマーカオブジェクト |\n\n3. **処理結果オブジェクトを実行時例外として送出**: 異常終了確定時。:doc:`../handler/TransactionManagementHandler` によりロールバック\n\n| 実行制御基盤 | 異常終了時に送出する型 | 内容 |\n|---|---|---|\n| :doc:`web_gui` | `HttpErrorResponse` | エラー時遷移先画面のパス等を設定したオブジェクト |\n| :doc:`messaging_request_reply` | `ErrorResponseMessage` | エラー応答電文のフォーマット・内容を設定したオブジェクト |\n| :doc:`batch` / :doc:`messaging_receive` | `Result.Error` のサブクラス | 異常終了を表すマーカオブジェクト |\n\n4. **処理結果オブジェクトではない実行時例外を送出**: トランザクションがロールバックされ、:doc:`web_gui` や :doc:`messaging_request_reply` では既定のレスポンス処理が行われる（レスポンス内容の指定不可）\n\n## レスポンス処理\n\n:doc:`web_gui` や :doc:`messaging_request_reply` では、クライアントへの応答内容を指定するオブジェクトを処理結果として返却・送出する。これらはハンドラキュー上の :doc:`../handler/HttpResponseHandler`、:doc:`../handler/MessageReplyHandler` によって処理され、クライアントへのレスポンスとして送信される。\n\n![レスポンスハンドラの動作](assets/about-nablarch-concept--s13/response_handler.png)",
+    "s2": "ハンドラキュー上のハンドラ間でデータを共有する領域。共有範囲や存続期間が異なる4つのスコープが存在する。\n\n| スコープ | 特性 | アクセス方法 |\n|---|---|---|\n| リクエストスコープ | 各リクエストの開始〜終了まで、スレッド毎に固有 | 実行コンテキストから `Map<String, Object>` でアクセス |\n| セッションスコープ | 複数リクエストを跨って存続、各リクエストスレッド間で共有（共有範囲・存続期間は処理形態により異なる） | 実行コンテキストから `Map<String, Object>` でアクセス |\n| スレッドローカル | スレッド固有。DB接続のようにどこで使用するか予期できないデータの引き回しに使用。:doc:`../handler/DbConnectionManagementHandler` などで採用 | `java.lang.ThreadLocal` |\n| スレッドコンテキスト | スレッドローカル変数上のMap。ユーザIDやリクエストIDなど実行コンテキスト経由が難しいパラメータを格納 | スレッドコンテキスト経由 |\n\n> **注意**: セッションスコープの内容をリクエストスレッドから変更する場合は、:doc:`../handler/SessionConcurrentAccessHandler` を使用するなど同期化が必要\n\nスレッドコンテキストの内容は主に :doc:`../handler/ThreadContextHandler` によって設定されるが、業務アクションハンドラから任意の変数を設定することも可能。\n\n![ハンドラスコープの特性](assets/about-nablarch-concept--s13/handler_scope.png)\n\n## ウィンドウスコープ\n\n画面オンライン実行制御基盤での変数スコープ。セッションスコープと同様に複数リクエストを跨るデータを格納するが、アプリケーションサーバではなく **hiddenタグ** で持ちまわることで実現する。\n\n- 複数ウィンドウの並列動作が可能\n- ブラウザのヒストリバックによる遷移が可能\n\n> **注意**: ウィンドウスコープに格納された変数はカスタムタグで自動的にhiddenタグに変換されるため、**アプリケーションプログラマがJSPにhiddenタグを書く必要はない**\n\n画面オンライン制御基盤のデータ連携では、セッションスコープではなくウィンドウスコープを基本的に使用する。\n\n- 変数スコープの使い分け: [画面オンライン用業務アクションハンドラ:変数スコープの利用](../handler/HttpMethodBinding.html#web-scope)\n- カスタムタグでの使用方法: [カスタムタグ実装例集](../../../../guide/development_guide/04_Explanation/CustomTag/basic.html#howto-window-scope)\n\n![ウィンドウスコープのシーケンス](assets/about-nablarch-concept--s13/window_scope_sequence.png)",
+    "s3": "一部のハンドラは特定のインタフェースを実装した後続ハンドラに対してコールバックを行う。代表例は :doc:`../handler/TransactionManagementHandler` で、コミットまたはロールバックのタイミングでコールバックする。\n\n**インターフェース**: `TransactionEventCallback<TData>`\n\n| メソッド | 呼び出しタイミング |\n|---|---|\n| `transactionNormalEnd(TData data, ExecutionContext ctx)` | 入力データの処理が正常終了した場合 |\n| `transactionAbnormalEnd(Throwable e, TData data, ExecutionContext ctx)` | 入力データの処理で異常が発生した場合 |\n\n業務アクションハンドラがこのインターフェースを実装することで、業務トランザクションがロールバックされた場合の例外制御が可能。\n\nコールバック制御を行うハンドラ:\n- :doc:`../handler/TransactionManagementHandler`\n- :doc:`../handler/MultiThreadExecutionHandler`\n- :doc:`../handler/LoopHandler`\n\n![ハンドラコールバック動作](assets/about-nablarch-concept--s13/handler_callback.png)",
+    "s4": "外部リソース（ファイル、DB、メッセージキューなど）から1業務トランザクション実行に必要な情報を読み込むコンポーネント。読み込まれたデータは後続ハンドラの入力として渡され、最終的に業務アクションハンドラで処理される。\n\n> **注意**: :doc:`web_gui` ではHTTPリクエスト内に必要な情報が含まれているため、データリーダは不要\n\n**インターフェース**: `DataReader<TData>`（複数のリクエストスレッドから並行アクセスされるため、スレッドセーフに実装必要）\n\n| メソッド | 説明 |\n|---|---|\n| `TData read(ExecutionContext ctx)` | 入力データを読み込んで返却。`hasNext()`がfalseの状態での呼び出し結果は不定 |\n| `boolean hasNext(ExecutionContext ctx)` | 次に読み込むデータが存在するかどうかを返却 |\n| `void close(ExecutionContext ctx)` | リーダの使用を停止し内部リソースを開放 |\n\n## データリーダの作成\n\n作成されたデータリーダは実行コンテキストに設定され、後続ハンドラによって使用される。\n\n| 実行制御基盤 | 作成するコンポーネント | 作成するタイミング |\n|---|---|---|\n| :doc:`web_gui` | (使用しない) | N/A |\n| :doc:`batch` | 業務アクションハンドラ | :doc:`../handler/MultiThreadExecutionHandler` の初期処理内（業務アクションハンドラが実装する `DataReaderFactory` をコールバック） |\n| :doc:`messaging` | リポジトリ | リポジトリでの初期化処理内（オブジェクトキー名: **dataReader**） |\n\n## データリードハンドラ\n\n:doc:`../handler/DataReadHandler` がデータリーダを使用して読込みを行う。実行コンテキスト上のデータリーダから1件分の業務処理データを読み込み、後続ハンドラに処理を委譲する。\n\n![データリードハンドラの挙動](assets/about-nablarch-concept--s13/handler_datareader.png)",
+    "s5": "業務処理を実装するハンドラ（業務アプリケーション開発担当者が実装）。\n\n業務処理の流れ:\n\n1. **入力データの取得**: 入力データはMap形式で取得。入力精査・DBアクセス等のライブラリもMapを引数・戻り値として使用\n\n2. **入力精査**: 入力データのMapに対して精査を実施。精査ロジックはフォーム定義に沿って行う\n   - **フォーム**: 入力項目の精査と値保持を行うクラス。各項目に宣言的に精査仕様を設定可能\n   - **エンティティ**: フォームのうちRDBMSのテーブルと1対1に紐づくクラス（プロパティとカラムも1対1対応）。テーブル定義に沿って作成\n   - DB内容との比較を含む精査はビジネスロジックの一部として実装する\n\n3. **ビジネスロジックの実行**: 精査完了後の入力データ（フォームまたはエンティティ）をもとにビジネスロジックを実行。DB・データファイル・メッセージキューの入出力はフレームワーク提供ライブラリ（Mapインターフェース）で実施\n   - 複数業務アクションから共用しうるロジックは個別クラス（共通コンポーネント）として実装することを推奨\n\n4. **処理結果の返却**:\n   - 正常終了: 処理結果内容を表すオブジェクトを生成してリターン\n   - 異常終了: 実行時例外を送出 → :doc:`../handler/TransactionManagementHandler` により業務トランザクションがロールバック\n\n![業務アクションハンドラの流れ](assets/about-nablarch-concept--s13/action_handler.png)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 9
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

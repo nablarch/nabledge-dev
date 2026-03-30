@@ -1,0 +1,272 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.2/document/guide/04_Explanation_other/04_Explanation_mail/02_basic.rst`
+- Format: `rst`
+
+```
+========================================
+メール送信処理のアプリケーション構造
+========================================
+
+概要
+====
+
+フレームワークのメール送信処理は、常駐バッチを経由し、業務アプリケーションの処理とは非同期に行う方式を採用している。
+その理由は以下の通り。
+
+* 業務アプリケーションから見て、メール送信処理を業務アプリケーションのDBトランザクションに含めることができる。
+* メールサーバー障害やネットワーク障害によりメール送信が遅延もしくは失敗しても、業務アプリケーションの処理への影響を与えないようにすることができる。
+
+上記方式を実現するため、本フレームワークは、業務アプリケーションからメール送信の要求データ(以下、メール送信要求)を
+受け付けデータベースに格納するAPI(以下、メール送信要求API)と、
+メール送信要求に基づいてメールを送信する常駐バッチ(以下、逐次メール送信バッチ)を提供する。
+
+アプリケーションプログラマは、本フレームワークが提供するメール送信要求APIを呼び出すだけでよい。
+メール送信要求は、業務アプリケーションがメール送信要求APIを呼び出す毎に一つ作成され、メール送信要求一つにつきメールが一通送信される。
+
+なお、逐次メール送信バッチでは、メール送信ライブラリとして、 `JavaMail API <http://www.oracle.com/technetwork/java/javamail/index.html>`_ を使用する。
+
+本フレームワークのメール送信処理の概要を下図に示す。
+
+.. image:: ./_image/mail_overview.jpg
+   :scale: 80
+
+
+メール送信のパターン
+====================
+
+本フレームワークのメール送信要求APIは、下記2パターンのメール送信をサポートしている。
+
+== ================ ===============================================================================
+No パターン         説明
+== ================ ===============================================================================
+ 1 定型メール送信   予めデータベースに登録されたテンプレートを元にメールを作成・送信する。\
+                    テンプレートの可変部分にはプレースホルダを用意し、メールデータ作成時に\
+                    本フレームワークが各プレースホルダを業務アプリケーションから指定された文字列に\
+                    置き換える。
+ 2 非定型メール送信 任意の件名・本文でメールを作成・送信する。
+== ================ ===============================================================================
+
+
+
+テーブル定義
+============
+本フレームワークのメール送信で使用するテーブル定義を下記に示す。
+
+* テーブル名・カラム名は任意に指定できる。
+* データベースの型は、Javaの型に変換可能な型を選択する。
+
+なお、サンプルアプリケーションのテーブル定義はテーブル定義書を参照。
+
+メール送信要求
+~~~~~~~~~~~~~~
+
+======================= ================== ===========================
+定義                    Javaの型           制約
+======================= ================== ===========================
+メール送信要求ID        java.lang.String   PK
+件名                    java.lang.String
+送信者メールアドレス    java.lang.String
+返信先メールアドレス    java.lang.String
+差戻し先メールアドレス  java.lang.String
+文字セット              java.lang.String
+ステータス              java.lang.String
+要求日時                java.sql.Timestamp
+送信日時                java.sql.Timestamp
+本文                    java.lang.String
+======================= ================== ===========================
+
+メール送信先
+~~~~~~~~~~~~
+
+======================= ================ ===========================
+定義                    Javaの型         制約
+======================= ================ ===========================
+メール送信要求ID        java.lang.String   PK
+連番                    int                PK
+送信先区分              java.lang.String
+メールアドレス          java.lang.String
+======================= ================ ===========================
+
+メール添付ファイル
+~~~~~~~~~~~~~~~~~~
+
+========================= ================ ===========================
+定義                      Javaの型         制約
+========================= ================ ===========================
+メール送信要求ID          java.lang.String PK
+連番                      int              PK
+添付ファイル名            java.lang.String
+添付ファイルContent-Type  java.lang.String
+添付ファイル              byte[]
+========================= ================ ===========================
+
+メールテンプレート
+~~~~~~~~~~~~~~~~~~
+
+==================== ================ ===============
+定義                 Javaの型         制約
+==================== ================ ===============
+メールテンプレートID java.lang.String PK
+言語                 java.lang.String PK
+件名                 java.lang.String
+本文                 java.lang.String
+文字セット           java.lang.String
+==================== ================ ===============
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-02_basic`
+
+```json
+{
+  "id": "libraries-02_basic",
+  "title": "メール送信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "メール送信処理",
+        "非同期",
+        "常駐バッチ",
+        "逐次メール送信バッチ",
+        "メール送信要求API",
+        "JavaMail API"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "メール送信のパターン",
+      "hints": [
+        "定型メール送信",
+        "非定型メール送信",
+        "テンプレート",
+        "プレースホルダ",
+        "メール送信パターン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テーブル定義",
+      "hints": [
+        "メール送信要求",
+        "メール送信先",
+        "メール添付ファイル",
+        "メールテンプレート",
+        "テーブル定義",
+        "java.lang.String",
+        "java.sql.Timestamp"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "メール送信処理は常駐バッチ（逐次メール送信バッチ）を経由し、業務アプリケーションとは非同期で行う。\n\n**理由**:\n- 業務アプリケーションのDBトランザクションにメール送信処理を含めることができる\n- メールサーバー/ネットワーク障害時でも業務アプリの処理への影響を与えない\n\n**構成要素**:\n- **メール送信要求API**: メール送信要求データをDBに格納するAPI。呼び出し毎に1つのメール送信要求が作成され、1要求につき1通のメールが送信される\n- **逐次メール送信バッチ**: DB上のメール送信要求に基づいてメールを送信する常駐バッチ。メール送信ライブラリとして[JavaMail API](http://www.oracle.com/technetwork/java/javamail/index.html)を使用",
+    "s2": "メール送信要求APIは以下の2パターンをサポートする。\n\n| No | パターン | 説明 |\n|---|---|---|\n| 1 | 定型メール送信 | DBに登録済みテンプレートからメールを作成。テンプレートのプレースホルダを指定文字列に置換 |\n| 2 | 非定型メール送信 | 任意の件名・本文でメールを作成 |",
+    "s3": "メール送信で使用するテーブル。テーブル名・カラム名は任意に指定可能。DBの型はJavaの型に変換可能な型を選択する。\n\n### メール送信要求\n\n| カラム | Javaの型 | 制約 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 件名 | java.lang.String | |\n| 送信者メールアドレス | java.lang.String | |\n| 返信先メールアドレス | java.lang.String | |\n| 差戻し先メールアドレス | java.lang.String | |\n| 文字セット | java.lang.String | |\n| ステータス | java.lang.String | |\n| 要求日時 | java.sql.Timestamp | |\n| 送信日時 | java.sql.Timestamp | |\n| 本文 | java.lang.String | |\n\n### メール送信先\n\n| カラム | Javaの型 | 制約 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 連番 | int | PK |\n| 送信先区分 | java.lang.String | |\n| メールアドレス | java.lang.String | |\n\n### メール添付ファイル\n\n| カラム | Javaの型 | 制約 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 連番 | int | PK |\n| 添付ファイル名 | java.lang.String | |\n| 添付ファイルContent-Type | java.lang.String | |\n| 添付ファイル | byte[] | |\n\n### メールテンプレート\n\n| カラム | Javaの型 | 制約 |\n|---|---|---|\n| メールテンプレートID | java.lang.String | PK |\n| 言語 | java.lang.String | PK |\n| 件名 | java.lang.String | |\n| 本文 | java.lang.String | |\n| 文字セット | java.lang.String | |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

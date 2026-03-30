@@ -1,0 +1,59 @@
+{
+  "id": "web-application-03_listSearch--s10",
+  "title": "リクエストに対応するメソッドの作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メソッドの実装",
+      "hints": [
+        "DbAccessSupport",
+        "SqlResultSet",
+        "ParameterizedSqlPStatement",
+        "W11AC01Action",
+        "W11AC01SearchForm",
+        "動的SQL構築",
+        "LIKE検索",
+        "動的ORDER BY",
+        "条件可変SQL",
+        "一覧検索"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リクエストに対応するメソッドの作成",
+      "hints": [
+        "W11AC01Action",
+        "HttpRequest",
+        "HttpResponse",
+        "ExecutionContext",
+        "ValidationContext",
+        "TooManyResultException",
+        "@OnError",
+        "XSS防止",
+        "n:writeタグ",
+        "検索実行",
+        "ApplicationException",
+        "ValidationUtil",
+        "MessageUtil",
+        "MessageLevel",
+        "W11AC01SearchForm"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "データベースアクセス",
+        "カスタムタグ",
+        "一覧表示"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `W11AC01Action`（`DbAccessSupport` を継承）\n\n**SQL (`W11AC01Action.sql`)**:\n\n```sql\nSELECT_USER_BY_CONDITION = \nSELECT\n  SA.LOGIN_ID, SA.USER_ID, SA.USER_ID_LOCKED,\n  USR.KANJI_NAME, USR.KANA_NAME, USR.MAIL_ADDRESS,\n  USR.EXTENSION_NUMBER_BUILDING, USR.EXTENSION_NUMBER_PERSONAL,\n  UGRP.UGROUP_ID, UGRP.UGROUP_NAME\nFROM USERS USR\nINNER JOIN UGROUP_SYSTEM_ACCOUNT USA ON USR.USER_ID = USA.USER_ID\nINNER JOIN SYSTEM_ACCOUNT SA ON USR.USER_ID = SA.USER_ID\nINNER JOIN UGROUP UGRP ON UGRP.UGROUP_ID = USA.UGROUP_ID\nWHERE\n    $if (loginId) {SA.LOGIN_ID = :loginId}\n    AND $if (kanjiName) {USR.KANJI_NAME LIKE :%kanjiName%}\n    AND $if (kanaName) {USR.KANA_NAME  LIKE :%kanaName%}\n    AND $if (ugroupId) {UGRP.UGROUP_ID = :ugroupId}\n    AND $if (userIdLocked) {SA.USER_ID_LOCKED = :userIdLocked}\n$sort (sortId) {\n    (1 SA.LOGIN_ID)\n    (2 SA.LOGIN_ID DESC)\n    (3 USR.KANJI_NAME, SA.LOGIN_ID)\n    (4 USR.KANJI_NAME DESC, SA.LOGIN_ID)\n    (5 USR.KANA_NAME, SA.LOGIN_ID)\n    (6 USR.KANA_NAME DESC, SA.LOGIN_ID)\n}\n```\n\n**Java (`W11AC01Action.java`)**:\n\n```java\npublic class W11AC01Action extends DbAccessSupport {\n    private SqlResultSet selectByCondition(W11AC01SearchForm condition) {\n        return search(\"SELECT_USER_BY_CONDITION\", condition);\n    }\n}\n```\n\n- `$if (field) {condition}`: conditionオブジェクトの該当フィールドがnullでも空文字でもない場合のみ、`{}`内を検索条件に組み込む\n- `LIKE :%field%`: LIKE検索時のエスケープ処理および`%`付加のJavaコードは不要\n- `$sort (sortId)`: `sortId`の値に応じてORDER BY句を動的に変更\n\n> **注意**: :ref:`03_field` を明示的に使用する場合、`getParameterizedSqlStatement`の第2引数と`statement.retrieve`の引数に同じインスタンスを渡すこと。異なるインスタンスを渡すと意図した条件で検索が行われない。\n\n明示使用時の実装例:\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\n        \"SELECT_USER_BY_CONDITION\", condition);\nreturn statement.retrieve(condition);\n```",
+    "s2": "## リクエストに対応するメソッドの作成\n\n**クラス**: `W11AC01Action`  \n**アノテーション**: `@OnError`\n\n```java\n@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\npublic HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC01SearchForm> searchConditionCtx =\n        ValidationUtil.validateAndConvertRequest(\"11AC_W11AC01\", W11AC01SearchForm.class, req, \"search\");\n    if (!searchConditionCtx.isValid()) {\n        throw new ApplicationException(searchConditionCtx.getMessages());\n    }\n    W11AC01SearchForm condition = searchConditionCtx.createObject();\n    ctx.setRequestScopedVar(\"11AC_W11AC01\", condition);\n    SqlResultSet searchResult;\n    try {\n        searchResult = selectByCondition(condition);\n    } catch (TooManyResultException e) {\n        throw new ApplicationException(\n            MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount()));\n    }\n    ctx.setRequestScopedVar(\"searchResult\", searchResult);\n    ctx.setRequestScopedVar(\"resultCount\", condition.getResultCount());\n    return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n}\n```\n\n## View(JSP)の作成\n\n検索結果一覧表示用カスタムタグを使用するため、JSP内でループ処理は行わない。詳細は :ref:`custom_tag_paging` 参照。\n\n> **警告**: 値の出力には `n:write` タグを使用すること。EL式はサニタイジング処理を行わないため、EL式で直接出力しないこと。",
+    "s3": "- [データベースアクセス処理を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/04_DbAccessSpec.html)\n- [データベースアクセス処理の実例を知りたい時](./DB/01_DbAccessSpec_Example.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}

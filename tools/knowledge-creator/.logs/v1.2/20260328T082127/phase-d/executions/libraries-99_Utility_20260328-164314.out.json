@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-99_Utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example for addMonth (月数加減算)",
+      "description": "The knowledge file presents two identical method calls with the same arguments but different return values: `DateUtil.addMonth(\"201103\", 1) -> 201104` and `DateUtil.addMonth(\"201103\", 1) -> 201102`. The same call cannot produce different results. The source document contains a typo in the 減算 example (uses `1` instead of `-1`), but the knowledge file reproduces both lines side-by-side, making the contradiction visible and logically impossible.",
+      "source_evidence": "Source: `DateUtil.addMonth(date, 1); // -> 201102` under `// 1ヶ月減算する場合(年月指定)` — the argument should be `-1` for subtraction; source has a typo"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — code example for getDays (日付間の日数取得, 同日の場合)",
+      "description": "The knowledge file shows `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` as the example for the same-day case of `getDays`. However, `getDate(String date)` is defined in the same knowledge file as accepting exactly one parameter and returning `java.util.Date`. A two-argument call to `getDate` is invalid per the documented API. The correct method for this operation is `getDays`. The source document contains the same typo, but the knowledge file reproduces it as apparently correct usage.",
+      "source_evidence": "Source under 日付間の日数取得: `DateUtil.getDate(\"20110302\", \"20110302\"); // -> 0` — should be `getDays`; contradicts the `getDate(String date)` signature defined earlier in the same source file"
+    }
+  ]
+}

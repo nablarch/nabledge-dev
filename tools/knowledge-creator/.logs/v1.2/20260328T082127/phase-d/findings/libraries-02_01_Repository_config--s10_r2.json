@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (List と Map をコンポーネントとして登録する)",
+      "description": "Java retrieval example for List is omitted. The source shows how to access List elements by index with type casting: list.get(0) returns ComponentB, list.get(1) returns ComponentB, list.get(2) returns String. This demonstrates the insertion-order access pattern and type-cast requirements for each element type.",
+      "source_evidence": "ComponentA compA = (ComponentA) SystemRepository.getObject(\"compA\"); List<?> list = compA.getListProperty(); ComponentB compB_0 = (ComponentB) list.get(0); ... String stringValue = (String) list.get(2);"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (List と Map をコンポーネントとして登録する)",
+      "description": "Java retrieval example for Map is omitted. The source shows that retrieving a value using an inline key-component requires constructing a new KeyComponent instance with matching property values (id=\"00001\", lang=\"ja\") to use as the map lookup key. This is a non-obvious usage pattern for the key-component entry type.",
+      "source_evidence": "KeyComponent key = new KeyComponent(); key.setId(\"00001\"); key.setLang(\"ja\"); ComponentB compB_3 = (ComponentB) map.get(key);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`SystemRepository` is a PascalCase class referenced in s1's Java code example (`SystemRepository.getObject(\"primitiveValueHolder\")`) but is absent from s1's hints array.",
+      "source_evidence": "PrimitiveValueHolder primitiveValueHolder = (PrimitiveValueHolder) SystemRepository.getObject(\"primitiveValueHolder\");"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`HelloImport` is a PascalCase class referenced in s4's Java code example but is missing from s4's hints array.",
+      "source_evidence": "HelloImport helloImport1 = (HelloImport) SystemRepository.getObject(\"helloImport1\"); HelloImport helloImport2 = (HelloImport) SystemRepository.getObject(\"helloImport2\");"
+    }
+  ]
+}

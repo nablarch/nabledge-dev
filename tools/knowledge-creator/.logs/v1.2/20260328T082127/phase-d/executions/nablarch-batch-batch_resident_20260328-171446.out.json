@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — 重複起動エラー flow, step 5",
+      "description": "The knowledge file annotates the final Main (復路) step of the 重複起動エラー flow as '異常終了', but the source JavaScript flow definition for `duplaunch` contains no such annotation: `[\"Main\", \"outbound\"]`. Other error flows that terminate abnormally (forcestop, abort, retryerror) explicitly include the '異常終了' annotation in their source definitions; its absence in duplaunch appears intentional in the source.",
+      "source_evidence": "Source duplaunch flow: `[\"Main\", \"outbound\"]` — no '異常終了' annotation. Compare with forcestop: `[\"Main\", \"outbound\", \"異常終了\"]`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "`BatchAction` is absent from s3 hints despite appearing extensively throughout s3 content: it is listed in the handler queue (position 19) and participates in every detailed flow (with inbound, outbound, callback, and error roles). An AI searching for BatchAction would retrieve only s2, which merely states 'inherit from template class', missing all flow-level callback details contained in s3.",
+      "source_evidence": "s3 content references BatchAction in the handler queue and in every flow's step-by-step detail (e.g., callback events: 処理開始前、データリーダ作成、業務コミット後、全件終了後). BatchAction appears in s2 hints but not s3 hints."
+    }
+  ]
+}

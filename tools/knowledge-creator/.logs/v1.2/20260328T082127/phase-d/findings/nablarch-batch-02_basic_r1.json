@@ -1,0 +1,41 @@
+{
+  "file_id": "nablarch-batch-02_basic",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s9 — エラーが発生したリクエストに対するエラー処理",
+      "description": "Source states \"メイン処理で発生した例外またはエラーは、ExecutionException#getCause()で取得できる\" but the knowledge file writes only \"メイン処理で発生した例外は\" — dropping \"またはエラー\". In Java's Throwable hierarchy, Error subclasses are distinct from Exception subclasses; omitting this qualifier may mislead an AI agent about what getCause() can return.",
+      "source_evidence": "メイン処理で発生した例外またはエラーは、\\ ``ExecutionException#getCause()``\\ で取得できる。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7 — リーダ作成（createReaderメソッド）",
+      "description": "The knowledge file states \"入力データはファイルまたはデータベースのいずれかとなる\" inserting \"または\" between ファイル and データベース. The source reads \"通常、入力データはファイルデータベースいずれかとなる\" with no explicit connector between the two nouns. Additionally, the qualifier \"通常\" (normally) present in the source is dropped.",
+      "source_evidence": "通常、入力データはファイルデータベースいずれかとなる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — DBを入力とするバッチを実装する場合",
+      "description": "The method signature table in s2 prominently features the PascalCase class names `CommandLine` and `ExecutionContext` (they appear in multiple method signatures), but neither is listed in s2's hints. Per V4, hints should include PascalCase class names from the section's content.",
+      "source_evidence": "void initialize(CommandLine command, ExecutionContext context) / DataReader<D> createReader(ExecutionContext context) / Result handle(D inputData, ExecutionContext context) ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — ファイルを入力とするバッチを実装する場合",
+      "description": "`ExecutionContext` appears in the `do+レコードタイプ名` method signature within s3's content but is absent from s3's hints.",
+      "source_evidence": "Result do+レコードタイプ名(DataRecord inputData, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 — エラー発生時の処理",
+      "description": "`Throwable` is a PascalCase class name directly referenced in the `error` method discussion (\"引数のThrowableには java.util.concurrent.ExecutionException が渡される\") but is absent from s9's hints. `ExecutionContext` also appears in method signatures discussed in s9 but is not listed.",
+      "source_evidence": "通常、引数のThrowableには\\ ``java.util.concurrent.ExecutionException``\\ が渡される。 / ``void error(Throwable error, ExecutionContext context)``"
+    }
+  ]
+}

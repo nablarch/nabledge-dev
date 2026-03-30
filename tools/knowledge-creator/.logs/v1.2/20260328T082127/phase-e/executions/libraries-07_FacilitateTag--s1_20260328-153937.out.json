@@ -1,0 +1,109 @@
+{
+  "id": "libraries-07_FacilitateTag--s1",
+  "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "検索結果一覧表示",
+        "ページング",
+        "並び替え",
+        "検索結果件数表示",
+        "一覧表示機能"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "検索結果の一覧表示の全体構造",
+      "hints": [
+        "DbAccessSupport",
+        "ListSearchInfo",
+        "listSearchResultタグ",
+        "一覧検索全体構造",
+        "ページング実装"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "DbAccessSupportクラス",
+      "hints": [
+        "DbAccessSupport",
+        "search",
+        "TooManyResultException",
+        "SQL_ID",
+        "ListSearchInfo",
+        "件数取得上限",
+        "ページング検索"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ListSearchInfoクラス",
+      "hints": [
+        "ListSearchInfo",
+        "pageNumber",
+        "getSearchConditionProps",
+        "検索条件クラス",
+        "ページング",
+        "リクエストスコープ設定",
+        "@PropertyName",
+        "@Required",
+        "@NumberRange",
+        "@Digits"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "listSearchResultタグ",
+      "hints": [
+        "listSearchResultタグ",
+        "resultSetName",
+        "WebView_ListSearchResultTag",
+        "検索結果リスト表示",
+        "初期表示"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "全体",
+      "hints": [
+        "listSearchInfoName",
+        "検索結果件数表示",
+        "ページング表示制御",
+        "listSearchResult属性"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "検索結果件数表示",
+        "listSearchResult属性"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "ページング設定",
+        "サブミットURI必須"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索結果の一覧表示が提供する機能:\n\n- 検索結果件数の表示\n- 1画面に全検索結果を表示する一覧表示\n- 指定件数毎に表示するページング\n- 検索結果の並び替え",
+    "s2": "検索結果の一覧表示は以下のクラスとタグで実現される:\n\n- :ref:`WebView_ListSearchResultDbAccessSupport` — 一覧検索用の検索処理を提供\n- :ref:`WebView_ListSearchResultListSearcInfo` — 一覧検索用の情報を保持\n- :ref:`WebView_ListSearchResultListSearchResultTag` — 検索結果の一覧表示を行う\n\nページングを使用する場合、フレームワークが上記タグとクラスによりページング処理を提供するため、業務アプリケーションはページングを作り込みせずに実現できる。\n\n![検索結果の一覧表示の全体構造](assets/libraries-07_FacilitateTag--s1/WebView_ListSearchResultStructure.jpg)",
+    "s3": "**クラス**: `DbAccessSupport`\n\n一覧検索用の`search`メソッドを提供する。詳細は :ref:`db-support-label` 参照。\n\n`search(SQL_ID, ListSearchInfo)`の処理順:\n\n1. SQL_IDとListSearchInfoから検索結果の件数取得\n2. 件数が上限超過 → `TooManyResultException`を送出\n3. 件数が上限以内 → 検索実行し結果を返す。検索結果件数はListSearchInfoに設定される\n\nSQL文はSELECT文のみ指定する。件数取得や開始位置・取得件数の指定はフレームワークが担当する。\n\n`TooManyResultException`は最大件数（上限）と実際の取得件数を保持する。上限設定は :ref:`WebView_ListSearchResultSetting` 参照。\n\n```java\npublic class UserSearchAction extends DbAccessSupport {\n    @OnError(type = ApplicationException.class, path = \"/management/user/USER-001.jsp\")\n    public HttpResponse doUSERS00101(HttpRequest req, ExecutionContext ctx) {\n        UserSearchCondition condition = ...;\n        SqlResultSet searchResult = null;\n        try {\n            searchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\n        } catch (TooManyResultException e) {\n            throw new ApplicationException(\n                MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount()));\n        }\n    }\n}\n```",
+    "s4": "**クラス**: `ListSearchInfo`\n\n業務アプリケーションの検索条件クラスは`ListSearchInfo`を継承して作成する。\n\n`ListSearchInfo`継承クラスの必須実装:\n- ページング用プロパティ`pageNumber`（取得対象のページ番号）を入力精査に含める\n\nアクションの必須実装:\n- 検索結果表示時、`ListSearchInfo`継承クラスのオブジェクトをリクエストスコープに設定する\n\n**`getSearchConditionProps()`メソッド**:\n\nオーバーライドして検索条件のプロパティ名を返す。通常は入力精査対象プロパティと同じとなる。ページングの各サブミット要素（前へ・次へなど）が検索条件をサブミットする際に使用される。\n\n```java\npublic class UserSearchCondition extends ListSearchInfo {\n    public UserSearchCondition(Map<String, Object> params) {\n        setPageNumber((Integer) params.get(\"pageNumber\"));\n    }\n\n    @PropertyName(\"ページ番号\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) {\n        super.setPageNumber(pageNumber);\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"pageNumber\"};\n\n    // 検索条件のプロパティ名を返す。ページングのサブミット要素が検索条件をサブミットする際に使用する。\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\nアクション実装例（リクエストスコープ設定部分）:\n```java\nUserSearchCondition condition = searchConditionCtx.createObject();\nctx.setRequestScopedVar(\"searchCondition\", condition); // ListSearchInfo継承クラスをリクエストスコープに設定\nsearchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\nctx.setRequestScopedVar(\"searchResult\", searchResult);\n```",
+    "s5": ":ref:`WebView_ListSearchResultTag` は検索結果のリスト表示を行うタグ。\n\n`resultSetName`属性で指定された検索結果がリクエストスコープに存在しない場合、`listSearchResult`タグは何も出力しない（検索画面の初期表示に相当）。\n\n> **注意**: 以下で解説する属性は主要なもののみ。全属性は :ref:`WebView_ListSearchResultTag` を参照。オプション設定で要件を実現できない場合はタグファイルを直接カスタマイズすること（:ref:`WebView_ListSearchResultCustomize` 参照）。",
+    "s6": "| 属性 | 説明 |\n|---|---|\n| listSearchInfoName | ListSearchInfoをリクエストスコープから取得する際の名前。指定がない場合は「検索結果件数」および「ページング」を表示しない。一括削除確認画面など一覧表示のみ行う場合は指定しない。 |",
+    "s7": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |",
+    "s8": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| usePaging | true | ページングを表示するか否か |\n| searchUri | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること。 |"
+  }
+}

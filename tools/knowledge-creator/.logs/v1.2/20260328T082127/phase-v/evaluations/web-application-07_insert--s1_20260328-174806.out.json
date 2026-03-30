@@ -1,0 +1,32 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "The s9 fabrication remains unresolved: the section's closing sentence contradicts both the source and the correct explanation within the same section. An AI agent answering \"What does W11AC0201.jsp contain?\" would state that both allowDoubleSubmission and useToken settings are present — which is false. The shared-JSP feature omits useToken precisely because the framework sets the token automatically; a developer who reads this and then inspects the actual JSP (or tries to replicate it) will encounter a mismatch and may incorrectly add useToken, undermining the shared-JSP mechanism. This is a direct, actionable misguidance on concrete implementation output.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s9",
+      "impact": "high",
+      "justification": "The section correctly explains that useToken is unnecessary when using the shared-JSP feature, but the final sentence contradicts this by asserting the JSP contains both settings. An AI agent synthesising s9 would produce a self-contradictory or ultimately wrong answer about what the JSP actually contains. A developer guided to include useToken in the JSP (or expecting to find it there) would diverge from correct Nablarch practice. Phase E did not remove the contradictory closing sentence — likely because the fix agent edited the explanatory paragraph but left the summary sentence intact, or because the truncated Phase E output indicates the section was only partially regenerated."
+    },
+    {
+      "category": "omission",
+      "location": "s4",
+      "impact": "medium",
+      "justification": "Without the a–e browser-back scenario, the AI can explain the token mechanism but cannot accurately explain WHEN to choose it over the JavaScript method. The JavaScript method handles rapid double-clicks; the token method handles the back-button + resubmit pattern. These are distinct problems. An AI lacking this scenario may recommend the token method for double-click cases (over-engineering) or fail to recommend it for the back-button case (under-engineering). Phase E left this unfixed, probably because it was rated minor severity and no explicit fix instruction targeted the omitted scenario steps."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s7",
+      "impact": "low",
+      "justification": "MessageLevel is a simple enum used in one catch-block code example. Adjacent hints (MessageUtil, ApplicationException, DuplicateStatementException) cover the surrounding error-handling context well enough that a query about duplicate-key error handling would still surface s7. Missing MessageLevel only causes a gap for a direct keyword search on that class name. Phase E did not add it, likely because minor hints_missing findings were deprioritised relative to fabrication/omission fixes."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s8",
+      "impact": "low",
+      "justification": "CM311AC1Component already appears in s1 and s7 hints, which are the primary locations documenting that class. Its absence from s8 only matters if a user is specifically looking for 'how CM311AC1Component is instantiated inside an Action method' — an edge case. The Action-level hints (OnDoubleSubmission, W11AC02Action, doRW11AC0204, etc.) are complete for the section's primary purpose. Phase E did not add it for the same reason as s7: minor hints_missing items were lower priority."
+    }
+  ]
+}

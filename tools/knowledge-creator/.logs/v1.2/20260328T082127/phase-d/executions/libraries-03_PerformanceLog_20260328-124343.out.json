@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-03_PerformanceLog",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3",
+      "description": "The source documents that the `end` method accepts an optional third argument (ログ出力のオプション情報): \"endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。以下ではログ出力のオプション情報は指定していない。\" The knowledge file describes the method only as `end(point, result)` with no mention of the optional third parameter, omitting this API specification detail.",
+      "source_evidence": "// endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。\n// 以下ではログ出力のオプション情報は指定していない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The placeholder table has 10 entries but s3 hints include only `$point$` and `$executionTime$`. Missing from hints: `$result$`, `$startTime$`, `$endTime$`, `$maxMemory$`, `$startFreeMemory$`, `$startUsedMemory$`, `$endFreeMemory$`, `$endUsedMemory$`.",
+      "source_evidence": "Placeholder table first column: $point$, $result$, $startTime$, $endTime$, $executionTime$, $maxMemory$, $startFreeMemory$, $startUsedMemory$, $endFreeMemory$, $endUsedMemory$"
+    }
+  ]
+}

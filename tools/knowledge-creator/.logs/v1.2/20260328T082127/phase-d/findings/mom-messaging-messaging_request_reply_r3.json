@@ -1,0 +1,13 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints contains the generic \"ThreadContextHandler\" but the handler queue and all flow steps use the specific variant names \"ThreadContextHandler_main\" and \"ThreadContextHandler_request\". Both specific names appear throughout the s3 content (handler queue positions 5 and 13, and in multiple flow step descriptions) and should be listed as hints.",
+      "source_evidence": "HandlerQueue: \"ThreadContextHandler_main\" (pos 5), \"ThreadContextHandler_request\" (pos 13); flow steps reference both variants explicitly."
+    }
+  ]
+}
