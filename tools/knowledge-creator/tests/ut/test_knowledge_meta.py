@@ -461,7 +461,7 @@ class TestDetectChangedFilesSvn:
         assert result == []
 
     def test_changed_file_detected(self, ctx, tmp_path):
-        """Modified SVN file → detected with correct file_id."""
+        """Modified SVN file → detected with correct source_path."""
         wc_path, _, wc_name = self._setup_svn_meta_and_wc(ctx, tmp_path)
 
         # Modify source file and commit
@@ -473,8 +473,10 @@ class TestDetectChangedFilesSvn:
         )
 
         result = detect_changed_files(ctx)
-        assert "handlers-sample" in result
-        assert "handlers-other" not in result
+        expected = f".lw/nab-official/v{ctx.version}/{wc_name}/ja/application_framework/handlers/sample.rst"
+        other = f".lw/nab-official/v{ctx.version}/{wc_name}/ja/application_framework/handlers/other.rst"
+        assert expected in result
+        assert other not in result
 
     def test_empty_revision_returns_none(self, ctx):
         """Empty commit (first generation) → None (= all files)."""
