@@ -2,6 +2,61 @@
 
 ## 2026-03-30
 
+### 重大指摘の残存原因調査（ログ実証）
+
+Phase D findings（r1/r2/r3）と Phase E execution logs（run 1/run 2）を全5ファイル分読み込み、事実を確認した。
+
+#### Q1: 2ラウンド回しても重大が残る理由
+
+5件中4件は r3 になって初めて critical になった問題。
+
+| ファイル | r1 severity | r3 severity | 経緯 |
+|---------|------------|------------|------|
+| handlers-MessageResendHandler | minor | critical | Phase E が r1 根拠（行動見出し "正常終了"）で修正 → r3 が別箇所（状態分類リスト "異常終了"）を根拠に critical 判定。ソース内部に矛盾あり |
+| libraries-99_Utility | 0 | critical×2 | Phase E run 1 が getDays に修正 → r2 が fabrication 誤判定 → run 2 が revert → r3 でさらに悪化 |
+| web-application-07_insert--s1 | critical omission（セクション欠落） | critical fabrication（s9矛盾文） | Phase E run 1 が s9 新規生成時に矛盾を混入。r2 は未検出（hints のみ指摘） |
+| mom-messaging-03_userSendSyncMessageAction | critical fabrication（XMLタグ） | critical omission（ステップ①欠落） | r1 の critical は修正済み。r3 の critical は別問題（コード変数未宣言）で r1/r2 未検出 |
+| testing-framework-02_componentUnitTest | 0 | critical omission（行対応ルール欠落） | r1/r2 時点で s5 未存在。Phase E run 2 が s5 新規生成時にルールを書き落とし |
+
+#### Q2: 2ラウンドで新たな問題を埋め込んでいるか
+
+埋め込んでいる。ログから確認した数値：
+
+| | r1 | r2 | r3 |
+|-|----|----|-----|
+| fabrication 件数 | 74 | 40 | 42 |
+| うち critical | 25 | 5 | 11 |
+| Phase E が新規導入した fabrication | — | 32件（31ファイル） | 34件（30ファイル） |
+
+Phase E はラウンドごとに既存 fabrication を削減しながら新しい fabrication を導入している。
+
+#### 根本原因（ログから確認した事実のみ）
+
+**1. Phase E はソースにない内容を生成する**
+
+- `libraries-02_CodeManager--s21`：`型` 列（値 "String"）をプロパティテーブルに追加。ソース外。
+- `readers-DatabaseRecordReader`：`必須`・`デフォルト値` 列を追加。ソース外。
+- `web-application-07_insert--s1` s9：新規生成セクションにソース記述と矛盾する文。
+- `testing-framework-02_componentUnitTest` s5：新規生成セクションからクリティカルなルールが欠落。
+
+Phase E の出力はソース RST の変換結果ではなく生成結果であり、ソースに存在しない内容が混入する。
+
+**2. Phase D の severity 評価がラウンド間で一貫しない**
+
+- `handlers-MessageResendHandler`：case 4 の同一問題が r1 では minor、r3 では critical。
+- `libraries-99_Utility`：Phase E run 1 の修正を r2 が critical fabrication と評価 → run 2 が revert → r3 が revert 後を再度 critical fabrication と評価。
+- 全体：fabrication が r1=74 → r2=40 → r3=42 とラウンドをまたいで入れ替わる。
+
+同一内容に対して Phase D がラウンドをまたいで異なる評価を返すため、修正方向が変化し退行が発生する。
+
+**3. Phase E run 2 が run 1 の修正を取り消す経路がある**
+
+- `libraries-99_Utility`：run 1 が getDays に正しく修正 → r2 が fabrication 誤判定 → run 2 が getDate に revert。r3 時点で critical fabrication として残存。
+
+run 1 → r2 → run 2 のサイクルで、run 1 の正しい修正が run 2 によって取り消される経路が存在する。
+
+---
+
 ### kc Execution Report Evaluation
 
 **Execution run**: `20260328T082127` (nabledge-1.2, phases ABCDEMV, 2 rounds)
