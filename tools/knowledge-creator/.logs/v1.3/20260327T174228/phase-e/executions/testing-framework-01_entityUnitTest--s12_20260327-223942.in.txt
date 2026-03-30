@@ -1,0 +1,169 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-01_entityUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s2 — 精査クラスのコンポーネント設定ファイル XMLコード例",
+      "description": "Knowledge file adds `</list>` closing tag that does not appear in the source, and omits the `<!-- 中略 -->` comment that appears in the source between the last `</component>` and `</property>`. The source XML ends with `<!-- 中略 -->` followed immediately by `</property>` (no `</list>`). The knowledge file replaces this with `</list>` + `</property>` instead.",
+      "source_evidence": "Source: `    <!-- 中略 -->\\n</property>` — no `</list>` tag present. Knowledge file: `  </list>\\n</property>` — `</list>` added, `<!-- 中略 -->` removed."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+設定項目一覧
+------------
+
+``nablarch.test.core.entity.EntityTestConfiguration``\ クラスを使用し、\
+以下の値をコンポーネント設定ファイルで設定する（全項目必須）。
+
++--------------------+----------------------------------------------+
+|     設定項目名     |説明                                          |
++====================+==============================================+
+|maxMessageId        |最大文字列長超過時のメッセージID              |
++--------------------+----------------------------------------------+
+|maxAndMinMessageId  |最長最小文字列長範囲外のメッセージID(可変長)  |
++--------------------+----------------------------------------------+
+|fixLengthMessageId  |最長最小文字列長範囲外のメッセージID(固定長)  |
++--------------------+----------------------------------------------+
+|underLimitMessageId |文字列長不足時のメッセージID                  |
++--------------------+----------------------------------------------+
+|emptyInputMessageId |未入力時のメッセージID                        |
++--------------------+----------------------------------------------+
+|characterGenerator  |文字列生成クラス \ [#]_\                      |
++--------------------+----------------------------------------------+
+
+\
+
+.. [#]
+ ``nablarch.test.core.util.generator.CharacterGenerator``\ の実装クラスを指定する。
+ このクラスがテスト用の入力値を生成する。
+ 通常は、\ ``nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator``\ を使用すれば良い。
+
+
+設定するメッセージIDは、バリデータの設定値と合致させる。
+
+（以下の記述例を参照）
+
+
+コンポーネント設定ファイルの記述例
+------------------------------------
+
+以下の設定値を使用する場合のコンポーネント設定ファイル記述例を示す。
+
+**【精査クラスのコンポーネント設定ファイル】**
+
+.. code-block:: xml
+
+    <property name="validators">
+      <list>
+        <component class="nablarch.core.validation.validator.RequiredValidator">
+          <property name="messageId" value="MSG00010"/>
+        </component>
+        <component class="nablarch.core.validation.validator.LengthValidator">
+          <property name="maxMessageId" value="MSG00011"/>
+          <property name="maxAndMinMessageId" value="MSG00011"/>
+          <property name="fixLengthMessageId" value="MSG00023"/>
+        </component>
+        <!-- 中略 -->
+    </property>
+
+
+**【テストのコンポーネント設定ファイル】**
+
+.. code-block:: xml
+ 
+  <!-- エンティティテスト設定 -->
+  <component name="entityTestConfiguration" class="nablarch.test.core.entity.EntityTestConfiguration">
+    <property name="maxMessageId"        value="MSG00011"/>
+    <property name="maxAndMinMessageId"  value="MSG00011"/>
+    <property name="fixLengthMessageId"  value="MSG00023"/>
+    <property name="underLimitMessageId" value="MSG00011"/>
+    <property name="emptyInputMessageId" value="MSG00010"/>
+    <property name="characterGenerator">
+      <component name="characterGenerator"
+                 class="nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator"/>
+    </property>
+  </component>
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-01_entityUnitTest--s12",
+  "title": "エンティティ単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定項目一覧",
+      "hints": [
+        "EntityTestConfiguration",
+        "nablarch.test.core.entity.EntityTestConfiguration",
+        "CharacterGenerator",
+        "nablarch.test.core.util.generator.CharacterGenerator",
+        "BasicJapaneseCharacterGenerator",
+        "nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator",
+        "maxMessageId",
+        "maxAndMinMessageId",
+        "fixLengthMessageId",
+        "underLimitMessageId",
+        "emptyInputMessageId",
+        "characterGenerator",
+        "エンティティテスト設定",
+        "メッセージID設定",
+        "バリデーション設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "RequiredValidator",
+        "nablarch.core.validation.validator.RequiredValidator",
+        "LengthValidator",
+        "nablarch.core.validation.validator.LengthValidator",
+        "entityTestConfiguration",
+        "BasicJapaneseCharacterGenerator",
+        "コンポーネント設定ファイル",
+        "エンティティテストXML設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.test.core.entity.EntityTestConfiguration`\n\nコンポーネント設定ファイルで以下を設定（全項目必須）:\n\n| プロパティ名 | 説明 |\n|---|---|\n| maxMessageId | 最大文字列長超過時のメッセージID |\n| maxAndMinMessageId | 最長最小文字列長範囲外のメッセージID（可変長） |\n| fixLengthMessageId | 最長最小文字列長範囲外のメッセージID（固定長） |\n| underLimitMessageId | 文字列長不足時のメッセージID |\n| emptyInputMessageId | 未入力時のメッセージID |\n| characterGenerator | 文字列生成クラス（`nablarch.test.core.util.generator.CharacterGenerator`の実装クラスを指定） |\n\n`characterGenerator`には通常`nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator`を使用する。\n\n設定するメッセージIDはバリデータの設定値と合致させること。",
+    "s2": "**【精査クラスのコンポーネント設定ファイル】**\n\n```xml\n<property name=\"validators\">\n  <list>\n    <component class=\"nablarch.core.validation.validator.RequiredValidator\">\n      <property name=\"messageId\" value=\"MSG00010\"/>\n    </component>\n    <component class=\"nablarch.core.validation.validator.LengthValidator\">\n      <property name=\"maxMessageId\" value=\"MSG00011\"/>\n      <property name=\"maxAndMinMessageId\" value=\"MSG00011\"/>\n      <property name=\"fixLengthMessageId\" value=\"MSG00023\"/>\n    </component>\n  </list>\n</property>\n```\n\n**【テストのコンポーネント設定ファイル】**\n\n```xml\n<component name=\"entityTestConfiguration\" class=\"nablarch.test.core.entity.EntityTestConfiguration\">\n  <property name=\"maxMessageId\"        value=\"MSG00011\"/>\n  <property name=\"maxAndMinMessageId\"  value=\"MSG00011\"/>\n  <property name=\"fixLengthMessageId\"  value=\"MSG00023\"/>\n  <property name=\"underLimitMessageId\" value=\"MSG00011\"/>\n  <property name=\"emptyInputMessageId\" value=\"MSG00010\"/>\n  <property name=\"characterGenerator\">\n    <component name=\"characterGenerator\"\n               class=\"nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator\"/>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

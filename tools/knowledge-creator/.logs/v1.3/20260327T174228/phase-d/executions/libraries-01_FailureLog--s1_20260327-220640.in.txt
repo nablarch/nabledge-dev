@@ -1,0 +1,598 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/01/01_FailureLog.rst`
+- Format: `rst`
+
+```
+.. _FailureLog:
+
+------------------------------------------
+障害ログの出力
+------------------------------------------
+障害ログは、フレームワーク又はアプリケーションから出力することを想定している。\
+フレームワークでは、処理方式毎の例外ハンドラにおいて出力する。\
+アプリケーションでは、バッチ処理の障害発生時に後続処理を継続する場合などに出力する。
+
+障害ログの出力方針
+======================================================
+障害通知ログと障害解析ログで想定している出力方針を下記に示す。\
+障害通知ログは、ログ監視ツールから監視することで障害を検知することを想定しているので、\
+ロガー名を付けて障害通知専用のファイルに出力する。\
+障害解析ログは、アプリケーション全体のログ出力を行うアプリケーションログに出力する。
+
+================= ================= =======================
+ログの種類        ログレベル        ロガー名
+================= ================= =======================
+障害通知ログ      FATAL、ERROR      MONITOR
+障害解析ログ      FATAL、ERROR      指定なし(クラス名)
+================= ================= =======================
+
+上記出力方針に対するログ出力の設定例を下記に示す。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=monitorFile,appFile
+
+ # 障害通知ログの出力先
+ writer.monitorFile.className=nablarch.core.log.basic.SynchronousFileLogWriter
+ writer.monitorFile.filePath=/var/log/app/monitor.log
+ writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.monitorFile.formatter.format=<障害通知ログ用のフォーマット>
+ writer.monitorFile.lockFilePath=/var/log/lock/monitor.lock
+ writer.monitorFile.lockRetryInterval=10
+ writer.monitorFile.lockWaitTime=3000
+ writer.monitorFile.failureCodeCreateLockFile=MSG00101
+ writer.monitorFile.failureCodeReleaseLockFile=MSG00102
+ writer.monitorFile.failureCodeForceDeleteLockFile=MSG00103
+ writer.monitorFile.failureCodeInterruptLockWait=MSG00104 
+ 
+ # アプリケーションログの出力先
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=/var/log/app/app.log
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=<アプリケーションログ用のフォーマット>
+ 
+ availableLoggersNamesOrder=MON,ROO
+
+ # アプリケーションログの設定
+ loggers.ROO.nameRegex=.*
+ loggers.ROO.level=INFO
+ loggers.ROO.writerNames=appFile
+
+ # 障害通知ログの出力設定
+ loggers.MON.nameRegex=MONITOR
+ loggers.MON.level=ERROR
+ loggers.MON.writerNames=monitorFile
+
+障害ログの出力項目
+======================================================
+障害通知ログと障害解析ログの出力項目を下記に示す。\
+障害通知ログと障害解析ログ毎に出力を想定している項目には、Yマークを入れている。
+
+障害通知ログは、ログ監視ツールから通知を受けた運用オペレータが1次切り分け担当者の特定に使用する。\
+運用オペレータは、障害通知ログのリクエストIDを参照し、1次切り分け担当者を特定することを想定しているため、\
+リクエストIDには、業務コードなど、1次切り分け担当者を特定できるだけの情報(下記ノートを参照)を含める必要がある。\
+リクエストIDに1次切り分け担当者を特定できるだけの情報を含めることができない場合は、 :ref:`FailureLog_Contact` を使用することで、\
+リクエストID毎に連絡先情報をログに含めることができる。
+
+=============================== =================================================================================================== ======== ========
+項目名                          説明                                                                                                障害通知 障害解析
+=============================== =================================================================================================== ======== ========
+出力日時                        ログ出力時のシステム日時。                                                                          Y        Y
+障害レベル                      障害のレベルを判断するために使用する。                                                              Y        Y
+障害コード                      障害を一意に識別するコード。障害内容の特定に使用する。                                              Y        Y
+起動プロセス                    障害が発生したアプリケーションを起動したプロセス名。実行環境の特定に使用する。                      Y        Y
+処理方式区分                    障害が発生した処理方式の特定に使用する。                                                            Y        Y
+リクエストID                    障害が発生した処理を一意に識別するID。1次切り分け担当者の特定に使用する。                           Y        Y
+実行時ID                        障害が発生した処理の実行を一意に識別するID。                                                        Y        Y
+ユーザID                        ログインユーザのユーザID。                                                                          Y        Y
+メッセージ                      障害コードに対応するメッセージ。障害内容の特定に使用する。                                          Y        Y
+処理対象データ                  | 障害が発生した処理が対象としていたデータを特定するために使用する。                                         Y
+                                | データリーダを使用して読み込まれたデータオブジェクトのtoStringメソッド\
+                                  を呼び出し出力される。
+                                
+                                 .. warning::
+                                 
+                                  システムのセキュリティ要件により、\
+                                  障害解析ログであっても個人情報や機密情報の出力が許されない場合は、\
+                                  この項目に対する出力処理をプロジェクトでカスタマイズすること。
+                                  カスタマイズ方法は、 :ref:`FailureLog_PlaceholderCustomize` を参照。
+                                
+                                 .. note::
+                                  
+                                  処理対象データの出力により、障害ログに派生元実行時情報を出力することができる。\
+                                  派生元実行時情報とは、例えば、画面処理からバッチ処理にデータ連携する場合であれば、\
+                                  画面処理を実行した時点の実行時情報(リクエストIDや実行時IDなど)が\
+                                  バッチ処理での派生元実行時情報となる。
+                                  派生元実行時情報の出力方法は、 :ref:`FailureLog_DerivedExecutionInfo` を参照。
+                                
+スタックトレース                障害発生箇所の特定に使用する。                                                                               Y
+付加情報                        フレームワーク又はアプリケーションで追加する付加情報。                                                       Y
+=============================== =================================================================================================== ======== ========
+
+障害ログの個別項目は下記となる。残りの項目は、 :ref:`Log_BasicLogFormatter` の設定で指定する共通項目となる。\
+共通項目と個別項目を組み合わせたフォーマットについては、 :ref:`AppLog_Format` を参照。
+
+* 障害コード
+* メッセージ
+* 処理対象データ
+
+.. note::
+
+ 起動プロセスとリクエストIDは、システムの規模に応じてプロジェクト毎にID体系を規定する。
+ 例えば、大規模なシステムでは、下記のようなID体系となる。
+ 
+     起動プロセス:
+         サーバ名(8桁)＋識別文字列(4桁)･･･識別文字列にはバッチ処理のJOBIDなどが入る。
+     リクエストID:
+         システムID(1桁)＋サブシステムID(2桁)＋業務コード(3桁)＋画面ID(2桁)+イベントID(2桁)
+
+障害ログの出力方法
+======================================================
+障害ログの出力に使用するクラスを下記に示す。
+
+.. image:: ./../_images/01/Log_FailureLog_ClassDiagram.jpg
+   :scale: 80
+
+\
+
+ =========================================================== ===========================================================================================
+ クラス名                                                    概要
+ =========================================================== ===========================================================================================
+ nablarch.core.log.app.FailureLogUtil                        障害ログを出力するクラス。
+
+ nablarch.core.log.app.FailureLogFormatter                   障害ログの個別項目をフォーマットするクラス。
+
+ nablarch.fw.TransactionAbnormalEnd                          トランザクションデータの処理中に異常が発生した場合に送出する例外クラス。
+
+                                                             この例外は、フレームワークの例外ハンドラに捕捉され、障害ログの出力に使用される。
+                                                             この例外に障害コードを指定することで、障害コードに対応するメッセージが障害ログに出力される。
+
+ nablarch.fw.launcher.ProcessAbnormalEnd                     アプリケーションを異常終了させる際に送出する例外クラス。
+
+                                                             この例外は、TransactionAbnormalEndを継承しており使用方法はTransactionAbnormalEndと同じである。
+ =========================================================== ===========================================================================================
+
+アプリケーションでの障害ログの出力は、下記の2通りの方法がある。
+
+* FailureLogUtilを使用して直接出力する。
+* TransactionAbnormalEndやProcessAbnormalEndを送出し例外ハンドラに出力を依頼する。
+
+障害ログを出力し業務処理を終了する場合は、TransactionAbnormalEndやProcessAbnormalEndを使用する。\
+障害ログを出力するが後続の業務処理を継続する場合は、FailureLogUtilを使用する。\
+FailureLogUtilを使用した場合は、例外が送出されるわけではないのでトランザクションがコミットされる。
+
+ProcessAbnormalEndの使用例を下記に示す。
+
+※TransactionAbnormalEndを使用した場合の実装例は、ProcessAbnormalEndと全く同じとなる。
+このため、本実装例での説明は省略する。
+
+.. code-block:: java
+
+ // 障害ログを出力し業務処理を終了する場合
+ 
+ // バリデーションエラーの場合
+ ValidationContext<UserForm> context = 
+     ValidationUtil.validateAndConvertRequest("user", UserForm.class, inputData, "registerUser");
+ if (!context.isValid()) {
+     // 終了コード、バリデーションの例外、障害コードを指定している。
+     // 終了コードとはプロセスを終了する際に System#exit(int) メソッドに設定する値である。
+     throw new ProcessAbnormalEnd(100, new ApplicationException(context.getMessages()), "UM900001");
+ }
+
+ 
+ 
+ // 自ら例外を生成する場合
+ if (user == null) {
+     // 終了コード、障害コードを指定している。
+     throw new ProcessAbnormalEnd(100, "UM900002");
+ }
+ 
+ // 例外を捕捉した場合
+ try {
+     // 業務処理
+ } catch (UserNotFoundException e) {
+     // 終了コード、捕捉した例外、障害コードを指定している。
+     throw new ProcessAbnormalEnd(100, e, "UM900003");
+ }
+ 
+
+FailureLogUtilの使用例を下記に示す。
+
+.. code-block:: java
+
+ // 障害ログを出力し後続処理を継続する場合
+ 
+ // 障害を検知した場合
+ if (user == null) {
+     // 処理対象データ、障害コードを指定している。
+     FailureLogUtil.logError(inputData, "UM800001");
+ }
+ 
+ // 例外を捕捉した場合
+ try {
+     // 業務処理
+ } catch (UserNotFoundException e) {
+     // 捕捉した例外、処理対象データ、障害コードを指定している。
+     FailureLogUtil.logError(e, inputData, "UM800001");
+ }
+
+上記使用例のように、障害ログの出力では、ログから障害内容を特定するために障害コードを指定する。\
+障害コードのコード体系は、プロジェクト毎に規定すること。
+
+障害ログに出力されるメッセージは、 :doc:`../../01_Core/07_Message` 機能を使用して障害コードに対応するメッセージを取得する。\
+:doc:`../../01_Core/07_Message` 機能では、メッセージが見つからない場合に例外が発生する。\
+メッセージ取得処理で例外が発生した場合は、障害ログとは別に、メッセージ取得処理で発生した例外をWARNレベルでログ出力し、\
+障害ログには下記のメッセージを出力する。
+
+.. code-block:: bash
+
+ failed to get the message to output the failure log. failureCode = [<障害コード>]
+
+メッセージが見つからない場合の障害通知ログの出力例を下記に示す。
+
+.. code-block:: bash
+
+ # 障害コード(fail_code = [AP112233])の後にメッセージを出力している。
+ 2011-02-23 18:23:45.680 -FATAL- usr_id = [9999999999] fail_code = [AP112233] failed to get the message to output the failure log. failureCode = [AP112233]
+
+ソース上で指定した障害コードは、設定によりアプリケーションの実行時に変更することができる。\
+アプリケーションの障害コードの変更方法については、 :ref:`FailureLog_AppMsgId` を参照。\
+また、フレームワークで例外が発生した場合の障害コードの変更方法については、 :ref:`FailureLog_FwMsgId` を参照。
+
+フレームワークの例外ハンドラでRuntimeExceptionを捕捉した場合など、障害コードの指定がない場合は、\
+設定で指定するデフォルトの障害コードとメッセージを出力する。
+
+障害ログの設定方法
+======================================================
+FailureLogUtilは、プロパティファイル(app-log.properties)を読み込み、\
+FailureLogFormatterオブジェクトを生成して、個別項目のフォーマット処理を委譲する。\
+プロパティファイルのパス指定や実行時の設定値の変更方法は、 :ref:`AppLog_Config` を参照。\
+障害ログの設定例を下記に示す。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ failureLogFormatter.className=nablarch.core.log.app.FailureLogFormatter
+ failureLogFormatter.defaultFailureCode=ZZ999999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.language=en
+ failureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$
+ failureLogFormatter.derivedRequestIdPropName=insertRequestId
+ failureLogFormatter.derivedUserIdPropName=updatedUserId
+ failureLogFormatter.contactFilePath=classpath:failure-log-contact.properties
+ failureLogFormatter.appFailureCodeFilePath=classpath:failure-log-app-codes.properties
+ failureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties
+
+プロパティの説明を下記に示す。
+
+================================================================ ===================================================================================
+プロパティ名                                                     設定値
+================================================================ ===================================================================================
+failureLogFormatter.className                                    FailureLogFormatterのクラス名。
+
+                                                                 デフォルトはnablarch.core.log.app.FailureLogFormatter。
+                                                                 FailureLogFormatterを差し替える場合に指定する。
+failureLogFormatter.defaultFailureCode(必須)                     デフォルトの障害コード。
+
+                                                                 例外ハンドラでRuntimeExceptionを捕捉した場合など、障害コードの指定がない場合に使用する。
+failureLogFormatter.defaultMessage(必須)                         デフォルトのメッセージ。
+
+                                                                 デフォルトの障害コードを使用する場合に出力するメッセージ。
+failureLogFormatter.language                                     メッセージの言語。\
+                                                                 障害コードからメッセージを取得する際に使用する言語。
+
+                                                                 指定がない場合はThreadContextに設定されている言語を使用する。
+failureLogFormatter.notificationFormat                           障害通知ログの個別項目のフォーマット。
+failureLogFormatter.analysisFormat                               障害解析ログの個別項目のフォーマット。
+failureLogFormatter.contactFilePath                              障害の連絡先情報を指定したプロパティファイルのパス。
+
+                                                                 障害の連絡先情報を出力する場合に指定する。
+                                                                 詳細は :ref:`FailureLog_Contact` を参照。
+failureLogFormatter.appFailureCodeFilePath                       アプリケーションの障害コードの変更情報を指定したプロパティファイルのパス。
+
+                                                                 障害ログ出力時にアプリケーションの障害コードを変更する場合に指定する。
+                                                                 詳細は :ref:`FailureLog_AppMsgId` を参照。
+failureLogFormatter.fwFailureCodeFilePath                        フレームワークの障害コードの変更情報を指定したプロパティファイルのパス。
+
+                                                                 障害ログ出力時にフレームワークの障害コードを変更する場合に指定する。
+                                                                 詳細は :ref:`FailureLog_FwMsgId` を参照。
+================================================================ ===================================================================================
+
+フォーマットに指定可能なプレースホルダの一覧を下記に示す。
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+障害コード                      $failureCode$
+メッセージ                      $message$
+処理対象データ                  $data$
+連絡先                          $contact$
+=============================== ===============================
+
+デフォルトのフォーマットを下記に示す。
+
+.. code-block:: bash
+ 
+ fail_code = [$failureCode$] $message$
+
+障害ログの出力例
+================================================
+障害ログの出力例を下記に示す。\
+データベースに接続できない障害が発生したため、FailureLogFormatterの設定で指定したデフォルトの障害コードとデフォルトのメッセージが出力されている。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # FailureLogFormatterの設定(デフォルトの障害コードと個別項目のフォーマット)
+ failureLogFormatter.defaultFailureCode=ZZ999999
+ failureLogFormatter.defaultMessage=an unexpected exception occurred.
+ failureLogFormatter.notificationFormat=[$failureCode$:$message$]
+ failureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=monitorFile,appFile
+ 
+ # 障害通知ログの出力先
+ writer.monitorFile.className=nablarch.core.log.basic.SynchronousFileLogWriter
+ writer.monitorFile.filePath=/var/log/app/monitor.log
+ writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.monitorFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$
+ writer.monitorFile.lockFilePath=/var/log/lock/monitor.lock
+ writer.monitorFile.lockRetryInterval=10
+ writer.monitorFile.lockWaitTime=3000
+ writer.monitorFile.failureCodeCreateLockFile=MSG00101
+ writer.monitorFile.failureCodeReleaseLockFile=MSG00102
+ writer.monitorFile.failureCodeForceDeleteLockFile=MSG00103
+ writer.monitorFile.failureCodeInterruptLockWait=MSG00104
+  
+ # アプリケーションログの出力先
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=/var/log/app/app.log
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$$information$$stackTrace$
+ 
+ availableLoggersNamesOrder=MON,ROO
+
+ # アプリケーションログの設定
+ loggers.ROO.nameRegex=.*
+ loggers.ROO.level=INFO
+ loggers.ROO.writerNames=appFile
+
+ # 障害通知ログの出力設定
+ loggers.MON.nameRegex=MONITOR
+ loggers.MON.level=ERROR
+ loggers.MON.writerNames=monitorFile
+
+ログの出力例
+
+.. code-block:: bash
+
+ # 障害通知ログ
+ 2011-02-15 14:47:17.745 -FATAL- [APUSRMGR0001201102151447176990004] R[USERS00101] U[0000000001] [ZZ999999:an unexpected exception occurred.]
+ 
+ # 障害解析ログ
+ 2011-02-15 14:47:17.745 -FATAL- [APUSRMGR0001201102151447176990004] R[USERS00101] U[0000000001] fail_code = [ZZ999999] an unexpected exception occurred.
+ Stack Trace Information : 
+ nablarch.core.db.DbAccessException: failed to get database connection.
+     at nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource.getConnection(BasicDbConnectionFactoryForDataSource.java:35)
+     at nablarch.common.handler.DbConnectionManagementHandler.handle(DbConnectionManagementHandler.java:72)
+     at nablarch.common.handler.DbConnectionManagementHandler.handle(DbConnectionManagementHandler.java:1)
+     at nablarch.fw.ExecutionContext.handleNext(ExecutionContext.java:59)
+     # 以降のスタックトレースは省略。
+
+.. _FailureLog_Contact:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-01_FailureLog--s1`
+
+```json
+{
+  "id": "libraries-01_FailureLog--s1",
+  "title": "障害ログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "障害ログ",
+        "フレームワーク例外ハンドラ",
+        "バッチ処理障害",
+        "アプリケーション障害ログ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "障害ログの出力方針",
+      "hints": [
+        "障害通知ログ",
+        "障害解析ログ",
+        "MONITOR",
+        "SynchronousFileLogWriter",
+        "FileLogWriter",
+        "log.properties",
+        "ロガー名"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "障害ログの出力項目",
+      "hints": [
+        "リクエストID",
+        "障害コード",
+        "処理対象データ",
+        "スタックトレース",
+        "FailureLog_Contact",
+        "FailureLog_PlaceholderCustomize",
+        "FailureLog_DerivedExecutionInfo",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "障害ログの出力方法",
+      "hints": [
+        "FailureLogUtil",
+        "FailureLogFormatter",
+        "TransactionAbnormalEnd",
+        "ProcessAbnormalEnd",
+        "logError",
+        "障害ログ出力方法",
+        "FailureLog_AppMsgId",
+        "FailureLog_FwMsgId"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "障害ログの設定方法",
+      "hints": [
+        "failureLogFormatter",
+        "defaultFailureCode",
+        "defaultMessage",
+        "notificationFormat",
+        "analysisFormat",
+        "contactFilePath",
+        "appFailureCodeFilePath",
+        "fwFailureCodeFilePath",
+        "$failureCode$",
+        "$message$",
+        "$data$",
+        "$contact$"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "障害ログの出力例",
+      "hints": [
+        "障害ログ出力例",
+        "ZZ999999",
+        "障害通知ログ",
+        "障害解析ログ",
+        "スタックトレース",
+        "DbAccessException"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "障害ログはフレームワーク（処理方式毎の例外ハンドラ）またはアプリケーション（バッチ処理の障害発生時に後続処理を継続する場合など）から出力する。",
+    "s2": "障害通知ログ・障害解析ログの出力方針:\n\n| ログの種類 | ログレベル | ロガー名 |\n|---|---|---|\n| 障害通知ログ | FATAL、ERROR | MONITOR |\n| 障害解析ログ | FATAL、ERROR | 指定なし(クラス名) |\n\n障害通知ログはログ監視ツールで障害を検知するため、ロガー名`MONITOR`を付けて障害通知専用ファイルに出力する。障害解析ログはアプリケーションログに出力する。\n\nlog.propertiesの設定例:\n\n```bash\nwriterNames=monitorFile,appFile\n\nwriter.monitorFile.className=nablarch.core.log.basic.SynchronousFileLogWriter\nwriter.monitorFile.filePath=/var/log/app/monitor.log\nwriter.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.monitorFile.formatter.format=<障害通知ログ用のフォーマット>\nwriter.monitorFile.lockFilePath=/var/log/lock/monitor.lock\nwriter.monitorFile.lockRetryInterval=10\nwriter.monitorFile.lockWaitTime=3000\nwriter.monitorFile.failureCodeCreateLockFile=MSG00101\nwriter.monitorFile.failureCodeReleaseLockFile=MSG00102\nwriter.monitorFile.failureCodeForceDeleteLockFile=MSG00103\nwriter.monitorFile.failureCodeInterruptLockWait=MSG00104\n\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=/var/log/app/app.log\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=<アプリケーションログ用のフォーマット>\n\navailableLoggersNamesOrder=MON,ROO\n\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appFile\n\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorFile\n```",
+    "s3": "障害通知ログ・障害解析ログの出力項目:\n\n| 項目名 | 説明 | 障害通知 | 障害解析 |\n|---|---|---|---|\n| 出力日時 | ログ出力時のシステム日時 | Y | Y |\n| 障害レベル | 障害のレベルを判断するために使用する | Y | Y |\n| 障害コード | 障害を一意に識別するコード。障害内容の特定に使用する | Y | Y |\n| 起動プロセス | 障害が発生したアプリケーションを起動したプロセス名。実行環境の特定に使用する | Y | Y |\n| 処理方式区分 | 障害が発生した処理方式の特定に使用する | Y | Y |\n| リクエストID | 障害が発生した処理を一意に識別するID。1次切り分け担当者の特定に使用する | Y | Y |\n| 実行時ID | 障害が発生した処理の実行を一意に識別するID | Y | Y |\n| ユーザID | ログインユーザのユーザID | Y | Y |\n| メッセージ | 障害コードに対応するメッセージ。障害内容の特定に使用する | Y | Y |\n| 処理対象データ | DataReaderで読み込まれたデータオブジェクトのtoStringメソッドの出力結果 | — | Y |\n| スタックトレース | 障害発生箇所の特定に使用する | — | Y |\n| 付加情報 | フレームワーク又はアプリケーションで追加する付加情報 | — | Y |\n\n> **警告**: セキュリティ要件により障害解析ログでも個人情報や機密情報の出力が許されない場合は、処理対象データの出力処理をカスタマイズすること。カスタマイズ方法は :ref:`FailureLog_PlaceholderCustomize` を参照。\n\n> **注意**: 処理対象データの出力により障害ログに派生元実行時情報を出力できる。派生元実行時情報の出力方法は :ref:`FailureLog_DerivedExecutionInfo` を参照。\n\n障害ログの個別項目（残りは :ref:`Log_BasicLogFormatter` の設定で指定する共通項目）:\n- 障害コード\n- メッセージ\n- 処理対象データ\n\nリクエストIDに1次切り分け担当者特定情報を含められない場合は :ref:`FailureLog_Contact` を使用することでリクエストID毎に連絡先情報をログに含められる。\n\n> **注意**: 起動プロセスとリクエストIDのID体系はシステムの規模に応じてプロジェクト毎に規定する。大規模システムの例: 起動プロセス=サーバ名(8桁)+識別文字列(4桁)、リクエストID=システムID(1桁)+サブシステムID(2桁)+業務コード(3桁)+画面ID(2桁)+イベントID(2桁)",
+    "s4": "クラス構成:\n- **クラス**: `nablarch.core.log.app.FailureLogUtil` — 障害ログを出力するクラス\n- **クラス**: `nablarch.core.log.app.FailureLogFormatter` — 障害ログの個別項目をフォーマットするクラス\n- **クラス**: `nablarch.fw.TransactionAbnormalEnd` — トランザクションデータの処理中に異常が発生した場合に送出する例外クラス。フレームワークの例外ハンドラに捕捉され障害ログの出力に使用される。この例外に障害コードを指定することで障害コードに対応するメッセージが障害ログに出力される。\n- **クラス**: `nablarch.fw.launcher.ProcessAbnormalEnd` — アプリケーションを異常終了させる際に送出する例外クラス（TransactionAbnormalEndを継承、使用方法は同じ）\n\n出力方法の選択:\n- 障害ログを出力し業務処理を終了する場合: `TransactionAbnormalEnd`または`ProcessAbnormalEnd`を送出し例外ハンドラに出力を依頼する\n- 障害ログを出力し後続の業務処理を継続する場合: `FailureLogUtil`を使用する。`FailureLogUtil`を使用した場合は例外が送出されないのでトランザクションがコミットされる\n\nProcessAbnormalEndの使用例:\n\n```java\n// バリデーションエラーの場合\nValidationContext<UserForm> context =\n    ValidationUtil.validateAndConvertRequest(\"user\", UserForm.class, inputData, \"registerUser\");\nif (!context.isValid()) {\n    throw new ProcessAbnormalEnd(100, new ApplicationException(context.getMessages()), \"UM900001\");\n}\n\n// 自ら例外を生成する場合\nif (user == null) {\n    throw new ProcessAbnormalEnd(100, \"UM900002\");\n}\n\n// 例外を捕捉した場合\ntry {\n    // 業務処理\n} catch (UserNotFoundException e) {\n    throw new ProcessAbnormalEnd(100, e, \"UM900003\");\n}\n```\n\nFailureLogUtilの使用例:\n\n```java\n// 障害を検知した場合\nif (user == null) {\n    FailureLogUtil.logError(inputData, \"UM800001\");\n}\n\n// 例外を捕捉した場合\ntry {\n    // 業務処理\n} catch (UserNotFoundException e) {\n    FailureLogUtil.logError(e, inputData, \"UM800001\");\n}\n```\n\n障害コードのコード体系はプロジェクト毎に規定すること。\n\nメッセージ取得処理で例外が発生した場合は、障害ログとは別にWARNレベルでログ出力し、障害ログには以下のメッセージを出力する:\n\n```\nfailed to get the message to output the failure log. failureCode = [<障害コード>]\n```\n\n障害コードはアプリケーションの実行時に設定で変更可能。アプリの障害コード変更方法は :ref:`FailureLog_AppMsgId`、フレームワーク例外の変更方法は :ref:`FailureLog_FwMsgId` を参照。\n\nフレームワークの例外ハンドラでRuntimeExceptionを捕捉した場合など障害コードの指定がない場合は、設定で指定するデフォルトの障害コードとメッセージを出力する。",
+    "s5": "`FailureLogUtil`はapp-log.propertiesを読み込み`FailureLogFormatter`オブジェクトを生成して個別項目のフォーマット処理を委譲する。プロパティファイルのパス指定や実行時の設定値の変更方法は :ref:`AppLog_Config` を参照。\n\napp-log.propertiesの設定例:\n\n```bash\nfailureLogFormatter.className=nablarch.core.log.app.FailureLogFormatter\nfailureLogFormatter.defaultFailureCode=ZZ999999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.language=en\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.derivedRequestIdPropName=insertRequestId\nfailureLogFormatter.derivedUserIdPropName=updatedUserId\nfailureLogFormatter.contactFilePath=classpath:failure-log-contact.properties\nfailureLogFormatter.appFailureCodeFilePath=classpath:failure-log-app-codes.properties\nfailureLogFormatter.fwFailureCodeFilePath=classpath:failure-log-fw-codes.properties\n```\n\nプロパティ一覧:\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| failureLogFormatter.className | | FailureLogFormatterのクラス名。デフォルト: `nablarch.core.log.app.FailureLogFormatter` |\n| failureLogFormatter.defaultFailureCode | ○ | デフォルトの障害コード。例外ハンドラでRuntimeExceptionを捕捉した場合など障害コード指定がない場合に使用 |\n| failureLogFormatter.defaultMessage | ○ | デフォルトのメッセージ。デフォルト障害コード使用時に出力 |\n| failureLogFormatter.language | | メッセージの言語。指定がない場合はThreadContextに設定されている言語を使用 |\n| failureLogFormatter.notificationFormat | | 障害通知ログの個別項目のフォーマット |\n| failureLogFormatter.analysisFormat | | 障害解析ログの個別項目のフォーマット |\n| failureLogFormatter.contactFilePath | | 障害の連絡先情報プロパティファイルのパス。詳細は :ref:`FailureLog_Contact` を参照 |\n| failureLogFormatter.appFailureCodeFilePath | | アプリケーションの障害コード変更情報プロパティファイルのパス。詳細は :ref:`FailureLog_AppMsgId` を参照 |\n| failureLogFormatter.fwFailureCodeFilePath | | フレームワークの障害コード変更情報プロパティファイルのパス。詳細は :ref:`FailureLog_FwMsgId` を参照 |\n\nフォーマットに指定可能なプレースホルダ:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| 障害コード | $failureCode$ |\n| メッセージ | $message$ |\n| 処理対象データ | $data$ |\n| 連絡先 | $contact$ |\n\nデフォルトのフォーマット: `fail_code = [$failureCode$] $message$`",
+    "s6": "app-log.propertiesの設定例:\n\n```bash\nfailureLogFormatter.defaultFailureCode=ZZ999999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=[$failureCode$:$message$]\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\n```\n\nlog.propertiesの設定例:\n\n```bash\nwriter.monitorFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$\nwriter.appFile.formatter.format=$date$ -$logLevel$- [$executionId$] R[$requestId$] U[$userId$] $message$$information$$stackTrace$\n```\n\nログの出力例:\n\n```bash\n# 障害通知ログ\n2011-02-15 14:47:17.745 -FATAL- [APUSRMGR0001201102151447176990004] R[USERS00101] U[0000000001] [ZZ999999:an unexpected exception occurred.]\n\n# 障害解析ログ\n2011-02-15 14:47:17.745 -FATAL- [APUSRMGR0001201102151447176990004] R[USERS00101] U[0000000001] fail_code = [ZZ999999] an unexpected exception occurred.\nStack Trace Information : \nnablarch.core.db.DbAccessException: failed to get database connection.\n    at nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource.getConnection(BasicDbConnectionFactoryForDataSource.java:35)\n    at nablarch.common.handler.DbConnectionManagementHandler.handle(DbConnectionManagementHandler.java:72)\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

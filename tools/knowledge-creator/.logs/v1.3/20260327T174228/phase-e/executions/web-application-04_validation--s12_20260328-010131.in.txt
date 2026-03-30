@@ -1,0 +1,267 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-04_validation--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The knowledge file adds '（`validateAndConvertRequest`の第1引数に対応）' to explain that the W11AC02 prefix corresponds to the first argument of validateAndConvertRequest. The source JSP section only states 'ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している' without explicitly making this connection. This is an inference added by the knowledge file author.",
+      "source_evidence": "Source says: 'ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している。' — no mention of argument correspondence."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "Section s1 hints are missing PascalCase class names that appear in the code example: HttpResponse, HttpRequest, ExecutionContext.",
+      "source_evidence": "Source code: 'public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx)'"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+メソッドの実装
+--------------
+
+\ :ref:`04_validation`\ と\ :ref:`04_errHandling`\ に従い\ *W11AC02Actionクラス*\ を作成し以下のメソッドを追加する。このメソッドでは、次の処理を行っている。
+
+  :a): @OnErrorアノテーションを使用して、ApplicationException例外発生時の処理を記述。
+  :b): バリデーションの実施。
+  :c): バリデーション結果の確認。エラーが発生している場合は、エラーメッセージが設定されたApplicationExceptionをthrow。
+  :d): 画面入力値が設定されているオブジェクトの取得。
+  :e): ビジネスロジックの実行
+
+.. code-block:: java
+
+  /**
+   * ユーザ情報登録画面の「確認」イベントの処理を行う。
+   *
+   * @param req リクエストコンテキスト
+   * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+   * @return HTTPレスポンス
+   */
+  @OnError(                              // 【説明】例外処理用アノテーション
+      type = ApplicationException.class, // 【説明】例外処理の対象とする例外クラス
+
+      /* 【説明】
+          例外発生時の処理。ここではリクエストID"RW11AC0201"の処理を行うよう(doRW11AC0201メソッドを実行するよう)
+          指定している。 */
+      path = "forward://RW11AC0201"
+  )
+  public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {
+
+      // 精査
+      validate(req);
+
+      // ～中略～
+
+  }
+
+  /**
+   * 入力データの精査と生成を行う。<br>
+   * <br>
+   * 精査エラーの場合はApplicationExceptionを送出する。
+   *
+   * @param req リクエスト
+   * @return 精査済みの入力データから生成したエンティティ
+   */
+  private W11AC02Form validate(HttpRequest req) {
+
+      // 精査
+      // 【説明】W11AC02Formの@ValidateForアノテーションで"registerUser"を指定しているメソッドを実行する
+      ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(
+          "W11AC02", W11AC02Form.class, req, "registerUser");
+
+      // 【説明】ApplicationExceptionをthrowする。
+      // 精査エラーの項目が存在する場合のみ、ApplicationExceptionがthrowされます。
+      context.abortIfInvalid();
+
+      // 生成
+      // 【説明】画面入力値が設定されたオブジェクトの生成
+      W11AC02Form form = context.createObject();
+      SystemAccountEntity systemAccount = form.getSystemAccount();
+      CM311AC1Component function = new CM311AC1Component();
+
+      // ログインIDのチェック
+      checkLoginId(systemAccount.getLoginId());
+
+      // グループIDのチェック
+      if (!function.existGroupId(form.getUgroupSystemAccount())) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0020001")));
+      }
+
+      // 認可単位IDのチェック
+      if (systemAccount.getPermissionUnit() != null
+              && !function.existPermissionUnitId(systemAccount)) {
+          throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR,
+                  "MSG00002", MessageUtil.getStringResource("S0030001")));
+      }
+
+      return form;
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+サンプルアプリケーションでは、バリデーションの処理をプライベートメソッドに切り出しているが、必ずプライベートメソッドに切り出す必要は\ **ない**\ 。
+
+.. note::
+  doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。
+
+.. note::
+  @OnErrorのpathの記述方法はHttpResponseの引数と同じである。詳細は\ :ref:`画面初期表示のActionの作成<makeActionClass>`\ 参照。
+
+View(JSP)の作成
+==================================================
+
+以下の内容で *W11AC0201.jsp* を作成する。
+
+エラーメッセージを表示する場所に、アプリケーションフレームワーク提供のn:errorsタグとn:errorタグを記述する。\
+n:errorsタグは複数のエラーメッセージの一覧表示、n:errorタグは各入力項目のエラーメッセージ表示に使用する。\
+サンプルでは、各入力項目以外のエラーメッセージを画面上部に一覧表示するためにn:errorsタグを使用し、\
+各入力項目に関するエラーメッセージを入力項目の下に表示するためにn:errorタグを使用する。
+
+* app_error.jsp
+
+.. literalinclude:: ./_source/04/app_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(一覧表示)
+
+.. literalinclude:: ./_source/04/W11AC0201_errors.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+* W11AC0201.jsp(ログインIDの入力項目を抜粋)
+
+.. literalinclude:: ./_source/04/W11AC0201_error.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _04_JSPNameAttribute:
+
+画面の入力項目には、フレームワーク提供のカスタムタグ及びサンプル提供のカスタムタグファイルを使用する。
+入力項目のカスタムタグは、リクエストパラメータの名前となるname属性を、以下の形式で指定する。
+
+Formに追加したEntityのプロパティを指定する場合::
+
+  <バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>
+
+Formに直接追加したプロパティを指定する場合::
+
+  <バリデーションで指定するプレフィックス名>.<プロパティ名>
+
+  ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している。
+
+* W11AC0201.jsp(入力フォーム)
+
+.. literalinclude:: ./_source/04/W11AC0201_form.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+------------
+次に読むもの
+------------
+* `バリデーションとEntityの生成を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html>`_
+* `例外処理を詳しく知りたい時 <../../../fw/reference/handler/HttpMethodBinding.html>`_
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-04_validation--s12",
+  "title": "View(JSP)の作成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "メソッドの実装",
+      "hints": [
+        "W11AC02Action",
+        "W11AC02Form",
+        "ValidationContext",
+        "ApplicationException",
+        "@OnError",
+        "@ValidateFor",
+        "validateAndConvertRequest",
+        "abortIfInvalid",
+        "createObject",
+        "SystemAccountEntity",
+        "CM311AC1Component",
+        "MessageUtil",
+        "MessageLevel",
+        "バリデーション実装",
+        "エラーハンドリング",
+        "入力精査",
+        "アクションクラス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "View(JSP)の作成",
+      "hints": [
+        "n:errors",
+        "n:error",
+        "JSP作成",
+        "エラーメッセージ表示",
+        "カスタムタグ",
+        "name属性",
+        "バリデーションエラー表示",
+        "View(JSP)の作成"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "バリデーション参考資料",
+        "例外処理参考",
+        "カスタムタグ参考",
+        "次に読むもの",
+        "関連ドキュメント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": ":ref:`04_validation` と :ref:`04_errHandling` に従い `W11AC02Action` クラスに以下のメソッドを実装する。\n\n**処理フロー**:\n1. `@OnError`アノテーションで`ApplicationException`発生時のフォワード先を指定（`path`で指定）\n2. `ValidationUtil.validateAndConvertRequest()`でバリデーションと変換を実施\n3. `context.abortIfInvalid()`でエラー項目が存在する場合のみ`ApplicationException`をthrow\n4. `context.createObject()`で画面入力値オブジェクトを生成\n5. ビジネスロジックを実行\n\n```java\n@OnError(\n    type = ApplicationException.class,\n    path = \"forward://RW11AC0201\"\n)\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n    validate(req);\n    // ...\n}\n\nprivate W11AC02Form validate(HttpRequest req) {\n    // W11AC02Formの@ValidateForアノテーションで\"registerUser\"を指定したメソッドを実行\n    ValidationContext<W11AC02Form> context = ValidationUtil.validateAndConvertRequest(\n        \"W11AC02\", W11AC02Form.class, req, \"registerUser\");\n    context.abortIfInvalid(); // エラー項目存在時のみApplicationExceptionをthrow\n    W11AC02Form form = context.createObject();\n    SystemAccountEntity systemAccount = form.getSystemAccount();\n    CM311AC1Component function = new CM311AC1Component();\n    // ログインID・グループID・認可単位IDのチェック\n    // エラー時: throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, ...));\n    return form;\n}\n```\n\nバリデーション処理をプライベートメソッドに切り出す必要は**ない**。\n\n> **注意**: `doRW11AC0201`メソッドは、ユーザ情報登録画面を表示する処理。`@OnError`の`path=\"forward://RW11AC0201\"`はエラー発生時にこのメソッドを実行することを意味する。\n\n> **注意**: `@OnError`の`path`の記述方法は`HttpResponse`の引数と同じ。詳細は :ref:`画面初期表示のActionの作成<makeActionClass>` 参照。",
+    "s2": "エラーメッセージ表示には以下のタグを使用する:\n\n- **`n:errors`タグ**: 複数のエラーメッセージを一覧表示（各入力項目以外のエラーを画面上部に表示）\n- **`n:error`タグ**: 各入力項目のエラーメッセージ表示（入力項目の下に表示）\n\n入力項目カスタムタグの`name`属性の形式:\n\n- Formに追加したEntityのプロパティを指定する場合:\n  ```\n  <バリデーションで指定するプレフィックス名>.<FormでのEntityのプロパティ名>.<Entityでのプロパティ名>\n  ```\n- Formに直接追加したプロパティを指定する場合:\n  ```\n  <バリデーションで指定するプレフィックス名>.<プロパティ名>\n  ```\n\nユーザ情報登録では、Formに対して`W11AC02`というプレフィックスを使用している（`validateAndConvertRequest`の第1引数に対応）。",
+    "s3": "- [バリデーションとEntityの生成を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/01_Core/08_Validation.html)\n- [例外処理を詳しく知りたい時](../../../fw/reference/handler/HttpMethodBinding.html)\n- [カスタムタグの使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html)"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,34 @@
+{
+  "file_id": "handlers-NoInputDataBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 概要",
+      "description": "The Java pseudocode block showing the framework call sequence (initialize → handle → commit → error/rollback → terminate) is entirely absent from the knowledge file. This code conveys decision-necessary implementation details: commit() is called after handle(), rollback() is called on exception, and the exact parameter signatures used in the call flow.",
+      "source_evidence": "initialize(command, ctx); ... result = handle(ctx); commit(); ... rollback(); error(e, ctx); ... terminate(result, ctx)"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 概要 (note after code block)",
+      "description": "The note warning that the pseudocode is simplified for explanation and that the actual processing flow is entirely different (controlled by handler configuration, not the pseudocode logic) is missing. This caveat is important for AI not to misapply the call sequence as definitive behavior.",
+      "source_evidence": "このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — handle() method description",
+      "description": "The knowledge file states the override details as '(オーバーロード: `BatchAction` の `handle(InputData data, ExecutionContext ctx)` をオーバーロードしたメソッド)', specifying the exact parent method signature `handle(InputData data, ExecutionContext ctx)`. The source only says '(オーバーロード)' with no elaboration on the parent method signature or its parameter types.",
+      "source_evidence": "Source: '引数は実行コンテキストのみとなる。(オーバーロード)' — no mention of InputData or the parent method signature"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names `CommandLine` and `ExecutionContext` appear in the source's code block within the 概要 section but are absent from s1's hints array.",
+      "source_evidence": "CommandLine command; // バッチ起動時のコマンドライン\nExecutionContext ctx; // 実行コンテキスト"
+    }
+  ]
+}

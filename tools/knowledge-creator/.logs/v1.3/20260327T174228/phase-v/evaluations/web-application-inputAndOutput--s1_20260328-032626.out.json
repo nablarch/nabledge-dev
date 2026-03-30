@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-inputAndOutput--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "s6 describes the offCodeValue auto-detection logic in the attribute table, but without concrete JSP examples the agent cannot reliably generate correct code for the 2+ values case. The critical behavior — that when 3 values exist you must explicitly set both `value` and `offCodeValue`, whereas for 2 values defaults suffice — is easy to misapply from prose alone. This creates a real risk of producing silently incorrect checkbox implementations.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s6 (codeCheckboxタグ)",
+      "impact": "medium",
+      "justification": "The attribute table in s6 describes the offCodeValue auto-detection rule in text, but the two distinct scenarios (2 values vs 3+ values) require different attribute combinations that are non-obvious without examples. For the 3-value case the agent must know to set value=\"Y\" (non-default) AND offCodeValue=\"N\" explicitly — a pattern invisible from the attribute table alone. s3/s4/s5 all carry JSP examples; the absence here is inconsistent and creates meaningful risk of incorrect code generation. Why it persisted: the Phase E fix output was truncated in the log and s6 was not updated — the agent likely treated the prose description as sufficient coverage and did not add the examples."
+    }
+  ]
+}

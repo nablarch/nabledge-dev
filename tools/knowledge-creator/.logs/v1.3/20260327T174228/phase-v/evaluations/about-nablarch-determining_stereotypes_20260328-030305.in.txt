@@ -1,0 +1,185 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `about-nablarch-determining_stereotypes`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s1 — introduction paragraph",
+    "description": "The source contains an important caveat that is omitted from the knowledge file: 「しかしながら、業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。」 This communicates that multiple responsibility placement approaches exist and the following table is just one example for typical projects — not a mandatory pattern. This context is relevant for developers deciding whether to deviate from the described pattern.",
+    "source_evidence": "業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。"
+  }
+]
+```
+
+### Source (RST)
+
+```
+
+.. _fw-bussiness-component-label:
+
+業務コンポーネントの責務配置
+===============================================
+:ref:`implementing_action_handler` で述べるように、本フレームワークにおける業務機能は、
+業務アクションハンドラ、フォーム/エンティティ、業務共通コンポーネントと呼ばれるクラスにそれぞれ実装される。
+しかしながら、業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。
+以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。
+
+なお、本書に記載される業務アプリケーションの実装例は、ここで述べる責務配置を前提として記述されている。
+
+=================================== ========================================================================================================================== 
+名称 (クラス接尾辞)                 責務
+=================================== ==========================================================================================================================
+業務アクションハンドラ (Action)     フレームワークから直接コールバックされ、業務処理のエントリーポイントとなるモジュール。
+                                    Actionは、ユーザ一覧照会、ユーザ情報登録といった取引ごとに1つずつ作成する。
+                                    業務処理が比較的単純なものであれば、このクラスに直接実装してもよい。
+
+                                    複雑な業務処理や、複数の業務および処理形態(バッチと画面オンラインなど)から共用される
+                                    業務処理については、別途、業務共通コンポーネントを作成し、そこに実装する。
+             
+                                    .. note::
+
+                                      業務アクションハンドラは、HTTPリクエストオブジェクトや実行コンテキストなどの、
+                                      フレームワークが作成するオブジェクトに依存するため、自動テストは後述するリクエスト単体テストによって行う必要がある。
+                                      このため、複雑な内部条件をもつ業務ロジックを実装した場合、
+                                      テストデータのセットアップ作業が煩雑となり、作業効率が低下する。
+                                      このような場合は、業務処理部分を業務共通コンポーネントとして切り出した上で、
+                                      クラス単体テストを行うこと。
+
+業務共通コンポーネント (Component)  業務ロジックを実装するクラス。
+                                    このクラスでは、HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤に属するオブジェクトに
+                                    直接依存することは避けること。
+
+業務フォーム (Form)                 アプリケーションで使用するデータの保持と、外部入力値の精査を実行するモジュール。
+                                    業務処理のうち、単項目入力精査および、項目間入力精査を実装する。
+                                    ただし、データベース等へのアクセスが必要となる精査処理については、業務アクションハンドラにて実装する。
+        
+業務画面 (View)                     画面オンライン処理において、ユーザが使用するインタフェースを提供する。(通常はJSPを使用する。)
+                                    業務処理は実装せず、業務アクションハンドラから渡される処理結果を表示する。
+=================================== ========================================================================================================================== 
+
+
+各構成要素間の処理の流れは以下のようになる。(図は画面オンライン処理での例)
+
+  .. image:: _image/fw_app_flow.png
+
+  :a): View(を表示している、Webクライアント)からリクエストが送られる。
+  :b): アプリケーションフレームワークが、リクエストを受信し、Actionを呼び出す。
+  :c): Actionはバリデーションを実行し、画面入力値が格納されたオブジェクト(Form)を生成して、Componentを呼び出す。
+  :d): Componentはビジネスロジックを実行し、結果をActionに返す。
+  :e): Actionは必要に応じて、Componentの戻り値を処理(リクエストスコープへの値の格納など)し、アプリケーションフレームワークに処理を返す。
+  :f): アプリケーションフレームワークはViewを処理(JSPをHTMLに変換など)し、クライアントにレスポンスを返す。
+
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "about-nablarch-determining_stereotypes",
+  "title": "業務コンポーネントの責務配置",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務コンポーネントの責務配置",
+      "hints": [
+        "業務アクションハンドラ",
+        "業務共通コンポーネント",
+        "業務フォーム",
+        "業務画面",
+        "Action",
+        "Component",
+        "Form",
+        "View",
+        "責務配置",
+        "リクエスト単体テスト",
+        "業務ロジック",
+        "バリデーション",
+        "エンティティ",
+        "クラス単体テスト",
+        "JSP"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 業務コンポーネントの責務配置\n\n業務機能は、業務アクションハンドラ・フォーム/エンティティ・業務共通コンポーネントの各クラスに実装される。\n\nなお、本書に記載される業務アプリケーションの実装例は、ここで述べる責務配置を前提として記述されている。\n\n| 名称 (クラス接尾辞) | 責務 |\n|---|---|\n| 業務アクションハンドラ (Action) | フレームワークから直接コールバックされる業務処理のエントリーポイント。取引ごとに1つ作成する。単純な業務処理はActionに直接実装してよい。複雑な処理や複数業務・処理形態（バッチと画面オンラインなど）から共用される処理は業務共通コンポーネントに実装する。 |\n| 業務共通コンポーネント (Component) | 業務ロジックを実装するクラス。HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤オブジェクトに直接依存しないこと。 |\n| 業務フォーム (Form) | データの保持と外部入力値の精査を実行。単項目・項目間入力精査を実装する。DBアクセスが必要な精査処理は業務アクションハンドラで実装する。 |\n| 業務画面 (View) | 画面オンライン処理のユーザインタフェース（通常はJSPを使用する）。業務処理は実装せず、Actionから渡される処理結果を表示する。 |\n\n> **注意**: 業務アクションハンドラはHTTPリクエストオブジェクトや実行コンテキストに依存するため、自動テストはリクエスト単体テストで行う必要がある。複雑な内部条件をもつ業務ロジックを実装した場合、テストデータのセットアップ作業が煩雑となり、作業効率が低下する。このような場合は、業務処理部分を業務共通コンポーネントとして切り出した上でクラス単体テストを行うこと。\n\n### 処理の流れ（画面オンライン処理）\n\n![画面オンライン処理フロー図](assets/about-nablarch-determining_stereotypes/fw_app_flow.png)\n\n1. View（Webクライアント）からリクエストが送られる\n2. フレームワークがリクエストを受信し、Actionを呼び出す\n3. ActionはバリデーションしてForm（画面入力値格納オブジェクト）を生成し、Componentを呼び出す\n4. Componentはビジネスロジックを実行し、結果をActionに返す\n5. ActionはComponentの戻り値を処理（リクエストスコープへの値の格納など）し、フレームワークに返す\n6. フレームワークはViewを処理（JSPをHTMLに変換など）し、クライアントにレスポンスを返す"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "about-nablarch-determining_stereotypes",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — introduction paragraph",
+      "description": "The source contains an important caveat that is omitted from the knowledge file: 「しかしながら、業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。」 This communicates that multiple responsibility placement approaches exist and the following table is just one example for typical projects — not a mandatory pattern. This context is relevant for developers deciding whether to deviate from the described pattern.",
+      "source_evidence": "業務処理の複雑な責務をこれらのクラスに対してどのように配置するかについては様々な考え方があり、特定の方法に絞ることはできない。以下では、典型的なプロジェクトで採用することができる責務配置の1例を示す。"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "about-nablarch-determining_stereotypes",
+  "title": "業務コンポーネントの責務配置",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "業務コンポーネントの責務配置",
+      "hints": [
+        "業務アクションハンドラ",
+        "業務共通コンポーネント",
+        "業務フォーム",
+        "業務画面",
+        "Action",
+        "Component",
+        "Form",
+        "View",
+        "責務配置",
+        "リクエスト単体テスト",
+        "業務ロジック",
+        "バリデーション",
+        "エンティティ",
+        "クラス単体テスト",
+        "JSP"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 業務コンポーネントの責務配置\n\n業務機能は、業務アクションハンドラ・フォーム/エンティティ・業務共通コンポーネントの各クラスに実装される。\n\nなお、本書に記載される業務アプリケーションの実装例は、ここで述べる責務配置を前提として記述されている。\n\n| 名称 (クラス接尾辞) | 責務 |\n|---|---|\n| 業務アクションハンドラ (Action) | フレームワークから直接コールバックされる業務処理のエントリーポイント。取引ごとに1つ作成する。単純な業務処理はActionに直接実装してよい。複雑な処理や複数業務・処理形態（バッチと画面オンラインなど）から共用される処理は業務共通コンポーネントに実装する。 |\n| 業務共通コンポーネント (Component) | 業務ロジックを実装するクラス。HTTPリクエストオブジェクトや実行コンテキストなどの実行制御基盤オブジェクトに直接依存しないこと。 |\n| 業務フォーム (Form) | データの保持と外部入力値の精査を実行。単項目・項目間入力精査を実装する。DBアクセスが必要な精査処理は業務アクションハンドラで実装する。 |\n| 業務画面 (View) | 画面オンライン処理のユーザインタフェース（通常はJSPを使用する）。業務処理は実装せず、Actionから渡される処理結果を表示する。 |\n\n> **注意**: 業務アクションハンドラはHTTPリクエストオブジェクトや実行コンテキストに依存するため、自動テストはリクエスト単体テストで行う必要がある。複雑な内部条件をもつ業務ロジックを実装した場合、テストデータのセットアップ作業が煩雑となり、作業効率が低下する。このような場合は、業務処理部分を業務共通コンポーネントとして切り出した上でクラス単体テストを行うこと。\n\n### 処理の流れ（画面オンライン処理）\n\n![画面オンライン処理フロー図](assets/about-nablarch-determining_stereotypes/fw_app_flow.png)\n\n1. View（Webクライアント）からリクエストが送られる\n2. フレームワークがリクエストを受信し、Actionを呼び出す\n3. ActionはバリデーションしてForm（画面入力値格納オブジェクト）を生成し、Componentを呼び出す\n4. Componentはビジネスロジックを実行し、結果をActionに返す\n5. ActionはComponentの戻り値を処理（リクエストスコープへの値の格納など）し、フレームワークに返す\n6. フレームワークはViewを処理（JSPをHTMLに変換など）し、クライアントにレスポンスを返す"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

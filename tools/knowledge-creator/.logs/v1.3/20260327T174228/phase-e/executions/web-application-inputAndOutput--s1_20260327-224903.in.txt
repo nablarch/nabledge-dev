@@ -1,0 +1,448 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-inputAndOutput--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "`pattern` attribute is missing from s2 hints. It is a key attribute used in all code selection tags (codeSelect, codeRadioButtons, codeCheckboxes) and is explicitly referenced in both prose ('CODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定する') and in all JSP code examples as `pattern=\"PATTERN2\"`. Users searching for how to use code tags would likely search for this attribute name.",
+      "source_evidence": "codeSelectタグ section: 'CODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定する'; JSP examples: `pattern=\"PATTERN2\"` appears in codeSelect, codeRadioButtons, and codeCheckboxes examples"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`howto_single_input`:
+
+==============================================================================
+フォーム内の入力要素を出力するカスタムタグ
+==============================================================================
+本フレームワークでは、Form内の各入力要素(<input>, <textarea>, <select>) に対応する、下記のタグを提供している。
+以下では、これらのタグについて具体例を交えながら、その使用方法について解説する。
+
+================================================================ ================================================================================================
+カスタムタグ                                                     | 出力するHTMLタグ
+================================================================ ================================================================================================
+textタグ                                                         | inputタグ(type=text)
+textareaタグ                                                     | textareaタグ
+passwordタグ                                                     | inputタグ(type=password)
+hiddenタグ                                                       | inputタグ(type=hidden)
+radioButtonタグ                                                  | inputタグ(type=radio)
+checkboxタグ                                                     | inputタグ(type=checkbox)
+compositeKeyRadioButtonタグ                                      | inputタグ(type=radio)
+                                                                 |   ※ 複合キーを使用する場合
+compositeKeyCheckboxタグ                                         | inputタグ(type=checkbox)
+                                                                 |   ※ 複合キーを使用する場合
+selectタグ                                                       | selectタグ
+                                                                 |   ※ List型変数の各要素ごとにoptionタグを出力する。
+radioButtonsタグ                                                 | 複数のinputタグ(type=radio)
+                                                                 |   ※ List型変数の各要素ごとにラジオボタンを出力する。
+checkboxesタグ                                                   | 複数のinputタグ(type=checkbox)
+                                                                 |   ※ List型変数の各要素ごとにチェックボックスを出力する。
+================================================================ ================================================================================================
+
+なお、詳細仕様については、 Application Framework解説書の
+`入力要素を出力するカスタムタグ <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FormTagList.html#form_input>`_
+についても参照すること。
+
+.. _`code_select`:
+
+------------------
+コード値の表示方法
+------------------
+
+本フレームワークでは、コード値を選択/表示するためのタグとして以下を提供する。
+このうち、codeタグは表示用のカスタムタグであり、それ以外が選択項目のカスタムタグである。
+本タグは、CODE_PATTERNテーブルとCODE_NAMEテーブルを使用する。
+
+* codeSelectタグ
+* codeRadioButtonsタグ
+* codeCheckboxesタグ
+* codeCheckboxタグ
+* codeタグ
+
+codeSelectタグ
+==============
+
+codeSelectタグは、HTMLのselectタグに対応している。
+選択項目リストを取得するために、CODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定する。
+
+また、共通属性以外に以下の属性が使用できる。
+
++----------------+-----------------------------------------------------+
+|属性            |説明                                                 |
++================+=====================================================+
+|withNoneOption  |リスト先頭に選択なしのオプションを追加するかどうか。 |
+|                |trueで追加する。                                     |
+|                |falseで追加しない。（デフォルト）                    |
++----------------+-----------------------------------------------------+
+|noneOptionLabel |選択なしの場合にリスト先頭に追加するラベル。         |
+|                |withNoneOption="true"の場合のみ有効。                |
+|                |デフォルトは""                                       |
++----------------+-----------------------------------------------------+
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】codeSelectタグの説明箇所以外は省略。 -->
+     <select name="W11AF01.status">
+         <option value="01">01:初期状態-初期-0002-01-ja</option>
+         <option value="02">02:処理開始待ち-待ち-0002-02-ja</option>
+     </select>
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+---------+---------+---------+
+|ID   |VALUE |PATTERN1 |PATTERN2 |PATTERN3 |
++=====+======+=========+=========+=========+
+|0001 |01    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0001 |02    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0002 |01    |1        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |02    |0        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |03    |0        |0        |0        |
++-----+------+---------+---------+---------+
+
+
+
+* 想定しているCODE_NAMEテーブル
+
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |01    |1          |ja   |男性                    |男         |01:男性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |02    |2          |ja   |女性                    |女         |02:女性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |01    |1          |ja   |初期状態                |初期       |0002-01-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |02    |2          |ja   |処理開始待ち            |待ち       |0002-02-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |03    |3          |ja   |処理実行中              |実行       |0002-03-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeSelectタグの説明箇所以外は省略。
+           CODE_NAMEテーブルの中で、以下の条件を満たすIDを持つ行から、選択項目リストを作成する。
+               1. codeId属性で指定したID
+               2. CODE_PATTERNテーブルのうち、pattern属性で指定したカラム名の値が1
+           pattern属性には、使用するパターンのカラム名を指定する。
+           選択項目リストからラベルを出力するには、labelPattern属性を指定する。
+           実装例では、ラベルパターンの指定で、CODE_NAMEテーブルから以下の値を使用している。
+               $VALUE$：コード値（VALUE）
+               $NAME$：コード名称（NAME）
+               $SHORTNAME$：コード略称（SHORT_NAME）
+               $OPTIONALNAME$：コードのオプション名称（OPTION01）
+           $OPTIONALNAME$を使用するには、optionColumnName属性で、使用するカラム名を指定する必要がある。 --%>
+     <n:codeSelect name="W11AF01.status"
+                   codeId="0002" pattern="PATTERN2" optionColumnName="OPTION01"
+                   labelPattern="$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$"
+                   listFormat="div" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+codeRadioButtonsタグ
+====================
+
+codeRadioButtonsタグは、HTMLの複数のinputタグ(type=radio)に対応している。
+選択項目リストを取得するために、CODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定する。
+
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】
+           codeRadioButtonsタグの説明以外は省略。
+           id属性は、以下の形式で自動で指定される。
+           id属性の形式：nablarch_radio<連番> -->
+     <input id="nablarch_radio1" type="radio" name="W11AF01.status" value="01" />
+         <label for="nablarch_radio1">01:初期状態-初期-0002-01-ja</label><br />
+     <input id="nablarch_radio2" type="radio" name="W11AF01.status" value="02" />
+         <label for="nablarch_radio2">02:処理開始待ち-待ち-0002-02-ja</label><br />
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+---------+---------+---------+
+|ID   |VALUE |PATTERN1 |PATTERN2 |PATTERN3 |
++=====+======+=========+=========+=========+
+|0001 |01    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0001 |02    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0002 |01    |1        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |02    |0        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |03    |0        |0        |0        |
++-----+------+---------+---------+---------+
+
+
+
+* 想定しているCODE_NAMEテーブル
+
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |01    |1          |ja   |男性                    |男         |01:男性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |02    |2          |ja   |女性                    |女         |02:女性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |01    |1          |ja   |初期状態                |初期       |0002-01-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |02    |2          |ja   |処理開始待ち            |待ち       |0002-02-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |03    |3          |ja   |処理実行中              |実行       |0002-03-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeRadioButtonsタグの説明箇所以外は省略。
+           CODE_NAMEテーブルの中で、以下の条件を満たすIDを持つ行から、選択項目リストを作成する。
+               1. codeId属性で指定したID
+               2. CODE_PATTERNテーブルのうち、pattern属性で指定したカラム名の値が1
+           pattern属性には、使用するパターンのカラム名を指定する。
+           選択項目リストからラベルを出力するには、labelPattern属性を指定する。
+           実装例では、ラベルパターンの指定で、CODE_NAMEテーブルから以下の値を使用している。
+               $VALUE$：コード値（VALUE）
+               $NAME$：コード名称（NAME）
+               $SHORTNAME$：コード略称（SHORT_NAME）
+               $OPTIONALNAME$：コードのオプション名称（OPTION01）
+           $OPTIONALNAME$を使用するには、optionColumnName属性で、使用するカラム名を指定する必要がある。 --%>
+     <n:codeRadioButtons name="W11AF01.status"
+                   codeId="0002" pattern="PATTERN2" optionColumnName="OPTION01"
+                   labelPattern="$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$"
+                   listFormat="div" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+codeCheckboxesタグ
+==================
+
+
+codeCheckboxesタグは、HTMLの複数のinputタグ(type=checkbox)に対応している。
+選択項目リストを取得するために、CODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定する。
+
+
+以下のHTMLを出力する実装例を示す。
+
+* 想定するHTMLの出力例
+
+  .. code-block:: html
+
+     <!-- 【説明】
+           codeCheckboxesタグの説明以外は省略。
+           id属性は、以下の形式で自動で指定される。
+           id属性の形式：nablarch_checkbox<連番> -->
+     <input id="nablarch_checkbox1" type="checkbox" name="W11AF01.status" value="01" />
+         <label for="nablarch_checkbox1">01:初期状態-初期-0002-01-ja</label><br />
+     <input id="nablarch_checkbox2" type="checkbox" name="W11AF01.status" value="02" />
+         <label for="nablarch_checkbox2">02:処理開始待ち-待ち-0002-02-ja</label><br />
+
+実装例では、以下のテーブルを想定している。
+
+* 想定しているCODE_PATTERNテーブル
+
++-----+------+---------+---------+---------+
+|ID   |VALUE |PATTERN1 |PATTERN2 |PATTERN3 |
++=====+======+=========+=========+=========+
+|0001 |01    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0001 |02    |1        |0        |0        |
++-----+------+---------+---------+---------+
+|0002 |01    |1        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |02    |0        |1        |0        |
++-----+------+---------+---------+---------+
+|0002 |03    |0        |0        |0        |
++-----+------+---------+---------+---------+
+
+
+
+* 想定しているCODE_NAMEテーブル
+
+
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|ID   |VALUE |SORT_ORDER |LANG |NAME                    |SHORT_NAME |OPTION01         |
++=====+======+===========+=====+========================+===========+=================+
+|0001 |01    |1          |ja   |男性                    |男         |01:男性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0001 |02    |2          |ja   |女性                    |女         |02:女性          |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |01    |1          |ja   |初期状態                |初期       |0002-01-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |02    |2          |ja   |処理開始待ち            |待ち       |0002-02-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+|0002 |03    |3          |ja   |処理実行中              |実行       |0002-03-ja       |
++-----+------+-----------+-----+------------------------+-----------+-----------------+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           codeCheckboxesタグの説明箇所以外は省略。
+           CODE_NAMEテーブルの中で、以下の条件を満たすIDを持つ行から、選択項目リストを作成する。
+               1. codeId属性で指定したID
+               2. CODE_PATTERNテーブルのうち、pattern属性で指定したカラム名の値が1
+           pattern属性には、使用するパターンのカラム名を指定する。
+           選択項目リストからラベルを出力するには、labelPattern属性を指定する。
+           実装例では、ラベルパターンの指定で、CODE_NAMEテーブルから以下の値を使用している。
+               $VALUE$：コード値（VALUE）
+               $NAME$：コード名称（NAME）
+               $SHORTNAME$：コード略称（SHORT_NAME）
+               $OPTIONALNAME$：コードのオプション名称（OPTION01）
+           $OPTIONALNAME$を使用するには、optionColumnName属性で、使用するカラム名を指定する必要がある。 --%>
+     <n:codeCheckboxes name="W11AF01.status"
+                   codeId="0002" pattern="PATTERN2" optionColumnName="OPTION01"
+                   labelPattern="$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$"
+                   listFormat="div" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+codeCheckboxタグ
+==================
+
+
+codeCheckboxタグは、HTMLの単一のinputタグ(type=checkbox)に対応している。\
+codeCheckboxタグでは、使用するコード値のデータ件数に応じて、下記の属性を指定する。\
+コードIDに対応するコード値が2件の場合と、2件以上ある場合の実装例を下記に示す。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+value                                  | XHTMLのvalue属性。
+                                       | チェックありの場合に使用するコード値。
+                                       | デフォルトは"1"。
+codeId(必須)                           | コードID。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       |
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       |
+                                       | デフォルトは"$NAME$"。
+offCodeValue                           | チェックなしの場合に使用するコード値。
+                                       | offCodeValue属性が指定されない場合は、
+                                       | codeId属性の値からチェックなしの場合に使用するコード値を検索する。
+                                       | 検索結果が2件、かつ1件がvalue属性の値である場合は、
+                                       | 残りの1件をチェックなしのコード値として使用する。
+====================================== ==========================================================================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-inputAndOutput--s1",
+  "title": "フォーム内の入力要素を出力するカスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "フォーム内の入力要素を出力するカスタムタグ",
+      "hints": [
+        "textタグ",
+        "textareaタグ",
+        "passwordタグ",
+        "hiddenタグ",
+        "radioButtonタグ",
+        "checkboxタグ",
+        "compositeKeyRadioButtonタグ",
+        "compositeKeyCheckboxタグ",
+        "selectタグ",
+        "radioButtonsタグ",
+        "checkboxesタグ",
+        "フォーム入力要素",
+        "カスタムタグ一覧"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コード値の表示方法",
+      "hints": [
+        "codeSelectタグ",
+        "codeRadioButtonsタグ",
+        "codeCheckboxesタグ",
+        "codeCheckboxタグ",
+        "codeタグ",
+        "withNoneOption",
+        "noneOptionLabel",
+        "labelPattern",
+        "optionColumnName",
+        "offCodeValue",
+        "codeId",
+        "コード値選択",
+        "CODE_PATTERNテーブル",
+        "CODE_NAMEテーブル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "フォーム内の入力要素を出力するカスタムタグ一覧:\n\n| カスタムタグ | 出力するHTMLタグ |\n|---|---|\n| textタグ | inputタグ(type=text) |\n| textareaタグ | textareaタグ |\n| passwordタグ | inputタグ(type=password) |\n| hiddenタグ | inputタグ(type=hidden) |\n| radioButtonタグ | inputタグ(type=radio) |\n| checkboxタグ | inputタグ(type=checkbox) |\n| compositeKeyRadioButtonタグ | inputタグ(type=radio)（複合キーを使用する場合） |\n| compositeKeyCheckboxタグ | inputタグ(type=checkbox)（複合キーを使用する場合） |\n| selectタグ | selectタグ（List型変数の各要素ごとにoptionタグを出力） |\n| radioButtonsタグ | 複数のinputタグ(type=radio)（List型変数の各要素ごとにラジオボタンを出力） |\n| checkboxesタグ | 複数のinputタグ(type=checkbox)（List型変数の各要素ごとにチェックボックスを出力） |",
+    "s2": "コード値を選択/表示するためのタグ（CODE_PATTERNテーブルとCODE_NAMEテーブルを使用）:\n\n- `codeSelect`: selectタグ（選択項目）\n- `codeRadioButtons`: 複数input[type=radio]（選択項目）\n- `codeCheckboxes`: 複数input[type=checkbox]（選択項目）\n- `codeCheckbox`: 単一input[type=checkbox]（選択項目）\n- `code`: 表示用カスタムタグ\n\n## codeSelectタグ\n\nHTMLのselectタグに対応。codeId属性とpattern属性でCODE_PATTERNテーブルとCODE_NAMEテーブルのIDとPATTERNを指定。\n\n| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| withNoneOption | false | リスト先頭に選択なしオプションを追加するか（trueで追加） |\n| noneOptionLabel | \"\" | 選択なし時にリスト先頭に追加するラベル（withNoneOption=\"true\"の場合のみ有効） |\n\nlabelPattern属性のプレースホルダ:\n- `$VALUE$`: コード値（VALUE）\n- `$NAME$`: コード名称（NAME）\n- `$SHORTNAME$`: コード略称（SHORT_NAME）\n- `$OPTIONALNAME$`: コードのオプション名称（OPTION01）。使用時はoptionColumnName属性の指定が必須。\n\n```jsp\n<n:codeSelect name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n## codeRadioButtonsタグ\n\nHTMLの複数のinputタグ(type=radio)に対応。id属性は`nablarch_radio<連番>`の形式で自動設定。\n\n```jsp\n<n:codeRadioButtons name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n## codeCheckboxesタグ\n\nHTMLの複数のinputタグ(type=checkbox)に対応。id属性は`nablarch_checkbox<連番>`の形式で自動設定。\n\n```jsp\n<n:codeCheckboxes name=\"W11AF01.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\n## codeCheckboxタグ\n\nHTMLの単一のinputタグ(type=checkbox)に対応。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| value | | \"1\" | チェックありの場合に使用するコード値 |\n| codeId | ○ | | コードID |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | \"$NAME$\" | ラベルを整形するパターン（$NAME$/$SHORTNAME$/$OPTIONALNAME$/$VALUE$）。$OPTIONALNAME$使用時はoptionColumnName属性の指定が必須 |\n| offCodeValue | | | チェックなしの場合に使用するコード値。未指定時はcodeIdから検索し、結果が2件かつ1件がvalue属性の値の場合は残り1件を使用 |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

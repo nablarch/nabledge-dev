@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — Actionクラスでリクエストスコープにデータを設定 code example",
+      "description": "The knowledge file omits `form.setUserEmailAddressArraySize(emailAddressArray.length)` from the Action code that sets data into request scope. The JSP code in the same section references `W11AC03.userEmailAddressArraySize` in both `<c:forEach end=\"${W11AC03.userEmailAddressArraySize}\">` and `<n:hidden name=\"W11AC03.userEmailAddressArraySize\" />`. Without setting this property, the forEach loop and hidden field would receive null/empty values, producing a broken implementation.",
+      "source_evidence": "Source code in W11AC03Action.doRW11AC0301: `form.setUserEmailAddressArraySize(emailAddressArray.length);` appears between `W11AC03Form form = new W11AC03Form();` and `form.setUserEmailAddressArray(emailAddressArray);`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5, s6 — JSPとActionクラスの間でデータを受け渡す方法 (introductory description)",
+      "description": "The key benefit of the name attribute approach is not captured in any section: 「この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。」This explains that the approach abstracts away scope/parameter awareness, which is important context for an AI explaining why to use this pattern.",
+      "source_evidence": "Source intro: 「JSPとActionクラスの間でデータを受け渡す場合、以下の方法でname属性を指定すればよい。この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — missing 7th section",
+      "description": "The source file contains a 7th section anchor `.. _howto_window_scope:` with a heading separator line (`---`) indicating another h2-level section exists beyond the 6 sections covered. The knowledge file has only 6 sections. The content of this section is cut off in the provided source, but the section itself is not represented at all in the knowledge file index.",
+      "source_evidence": "Source ends with: `.. _\\`howto_window_scope\\`:` followed by `---` (h2 heading separator). Automated check also reports: \"Section count 6 < source headings 7\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "Several PascalCase class names present in the s5 code examples are absent from the hints: `CM311AC1Component`, `W11AC03Form`, `ExecutionContext`, `HttpRequest`.",
+      "source_evidence": "Source s5 code uses: `CM311AC1Component component = new CM311AC1Component()`, `W11AC03Form form = formCtx.createObject()`, `ExecutionContext ctx`, `HttpRequest req`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints array",
+      "description": "Several PascalCase class names present in the s6 code examples are absent from the hints: `UserEmailAddressEntity`, `CM311AC1Component`, `W11AC03Form`, `ExecutionContext`, `HttpRequest`.",
+      "source_evidence": "Source s6 code uses: `UserEmailAddressEntity[] emailAddressArray`, `CM311AC1Component component`, `W11AC03Form form`, `ExecutionContext ctx`, `HttpRequest req`"
+    }
+  ]
+}

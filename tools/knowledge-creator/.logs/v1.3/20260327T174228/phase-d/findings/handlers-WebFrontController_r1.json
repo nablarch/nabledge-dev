@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-WebFrontController",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — property table",
+      "description": "Knowledge file adds a 'デフォルト値' column to the property table, but the source table has no such column. The source table columns are: 設定項目 / プロパティ名 / データ型 / 備考. Adding an empty column not present in the source is fabrication.",
+      "source_evidence": "Source table columns: 設定項目 | プロパティ名 | データ型 | 備考 (no default-value column)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — section heading for step 3",
+      "description": "Knowledge file uses '**[正常終了]**' as a heading for the outbound processing block (step 3), but the source uses '**[往路処理]**' as the section heading there (anchored as `.. _outbound:`). The string '正常終了' appears only as the sub-title of step 3 ('**3. (正常終了)**'), not as a standalone section heading.",
+      "source_evidence": "Source: '.. _outbound:\\n\\n**[往路処理]**\\n  **3. (正常終了)**...'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "Section s2 content explicitly references the class names `HttpServletRequest` and `HttpServletResponse`, but neither appears in the hints. These are PascalCase class names that users may search for when asking how the handler receives HTTP objects.",
+      "source_evidence": "Source step 1: '``HttpServletRequest``/``HttpServletResponse`` をラップした HTTPリクエストオブジェクトおよび実行コンテキストを生成する。'"
+    }
+  ]
+}

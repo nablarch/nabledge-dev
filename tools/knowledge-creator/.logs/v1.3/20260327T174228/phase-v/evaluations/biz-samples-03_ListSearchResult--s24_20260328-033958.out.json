@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s24",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are hints_missing with minor severity. Neither affects the section content itself — only hint-based retrieval. The missing terms appear verbatim in the section content, so content-based retrieval remains functional. No finding reaches medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "The missing class names (HttpResponse, HttpRequest, ExecutionContext, W11AC01SearchForm, W11AC01Action) appear in the s1 code example, so content-based retrieval still works. Furthermore, s1's primary topic is configuration properties (nablarch.listSearch.maxResultCount / max), not these class names. HttpResponse/HttpRequest/ExecutionContext are ubiquitous framework classes unlikely to be the discriminating search term for this specific section. W11AC01Action/W11AC01SearchForm are sample-specific names users would not typically search for directly. Phase E log confirms the fix was not applied — the s1 hints array is identical to the pre-fix state, indicating a silent Phase E execution failure."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 hints",
+      "impact": "low",
+      "justification": "The `defaultSort` attribute (default: asc, options: asc/desc) is documented in the s3 section content table and would be found via content-based retrieval. s3 already has strong hints covering the listSearchSortSubmit tag (ascSortId, descSortId, sortCss, ascCss, descCss, listSearchInfoName), so the section is highly discoverable for sort-related queries. The omission of `defaultSort` from hints creates a marginal retrieval gap only in the unlikely scenario where a user queries specifically on defaultSort behavior without any other sort-related terms. Phase E log shows s3 hints are unchanged from the Phase D state, confirming the fix was not applied."
+    }
+  ]
+}

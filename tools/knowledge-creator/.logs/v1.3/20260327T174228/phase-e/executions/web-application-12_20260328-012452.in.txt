@@ -1,0 +1,133 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 hints",
+      "description": "PascalCase class name `ParserTokenManager` appears in the source stack trace (`nablarch.test.tool.htmlcheck.parser.ParserTokenManager`) but is absent from the hints array.",
+      "source_evidence": "Caused by: nablarch.test.tool.htmlcheck.parser.TokenMgrError: Lexical error at line 31, column 28. ... at nablarch.test.tool.htmlcheck.parser.ParserTokenManager.getNextToken(ParserTokenManager.java:5019)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+============================================================================================
+ JavaScriptコードを記述すると静的解析ツールでエラーが発生します。対処方法を教えてください。
+============================================================================================
+
+.. admonition:: question
+
+    JavaScriptコードをHTMLコメントタグでくくって記述したところ、JSP静的解析ツールで「<!-- (at line=XX column=XX) is forbidden.」というエラーが発生しました。
+
+    HTMLコメントタグでくくらずに記述したところ、HTMLチェックツールで下記のようなエラーが発生しました。
+
+    .. code-block:: java
+
+        nablarch.test.tool.htmlcheck.InvalidHtmlException: syntax check failed. file = []
+            at nablarch.test.tool.htmlcheck.HtmlChecker.doCheckSyntax(HtmlChecker.java:123)
+            ～ 省略 ～
+        Caused by: nablarch.test.tool.htmlcheck.InvalidHtmlException: nablarch.test.tool.htmlcheck.parser.TokenMgrError: Lexical error at line 31, column 28.  Encountered: " " (32), after : "<"
+            at nablarch.test.tool.htmlcheck.HtmlSyntaxChecker.check(HtmlSyntaxChecker.java:44)
+            ～ 省略 ～
+        Caused by: nablarch.test.tool.htmlcheck.parser.TokenMgrError: Lexical error at line 31, column 28.  Encountered: " " (32), after : "<"
+            at nablarch.test.tool.htmlcheck.parser.ParserTokenManager.getNextToken(ParserTokenManager.java:5019)
+            ～ 省略 ～
+
+    JavaScriptコードはどのように記述すればいいのでしょうか。
+
+.. admonition:: answer
+
+    JavaScriptコードを記述したい場合は、<n:script>タグを使用してください。
+
+    JSPの記述例を下記に示します。
+
+    .. code-block:: java
+
+        <n:script type="text/javascript">
+            function clearChnKbn() {
+                var element = document.getElementsByTagName("select")
+                for (var i = 0; i < element.length; i++) {
+                  var shnKbn = element[i];
+                    shnKbn.selectedIndex = 0;
+                }
+            }
+        </n:script>
+
+    HTMLには下記のように出力されます。
+
+    .. code-block:: java
+
+        <script type="text/javascript">
+        <!--
+            function clearChnKbn() {
+                var element = document.getElementsByTagName("select")
+                for (var i = 0; i < element.length; i++) {
+                  var shnKbn = element[i];
+                    shnKbn.selectedIndex = 0;
+                }
+            }
+        -->
+        </script>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-12",
+  "title": "JavaScriptコードを記述すると静的解析ツールでエラーが発生します。対処方法を教えてください。",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "JSPでJavaScriptを記述する方法（n:scriptタグの使用）",
+      "hints": [
+        "n:script",
+        "JavaScriptの記述方法",
+        "JSP静的解析ツール",
+        "HTMLチェックツール",
+        "InvalidHtmlException",
+        "JSPにJavaScript埋め込み",
+        "TokenMgrError",
+        "HtmlChecker",
+        "HtmlSyntaxChecker"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPでJavaScriptコードを記述する場合、`<n:script>`タグを使用する。\n\n- HTMLコメントタグ(`<!-- -->`)で囲んで記述すると、JSP静的解析ツールで「`<!-- (at line=XX column=XX) is forbidden.`」エラーが発生する\n- HTMLコメントタグなしで記述すると、HTMLチェックツールで`InvalidHtmlException`（`Lexical error`）が発生する（`HtmlChecker`、`HtmlSyntaxChecker`、`TokenMgrError` が関与）\n\n**解決策**: `<n:script>`タグを使用する。\n\n```jsp\n<n:script type=\"text/javascript\">\n    function clearChnKbn() {\n        var element = document.getElementsByTagName(\"select\")\n        for (var i = 0; i < element.length; i++) {\n          var shnKbn = element[i];\n            shnKbn.selectedIndex = 0;\n        }\n    }\n</n:script>\n```\n\n`<n:script>`を使用すると、HTMLには自動的にHTMLコメントタグで囲まれた形式で出力される:\n\n```html\n<script type=\"text/javascript\">\n<!--\n    function clearChnKbn() {\n        var element = document.getElementsByTagName(\"select\")\n        for (var i = 0; i < element.length; i++) {\n          var shnKbn = element[i];\n            shnKbn.selectedIndex = 0;\n        }\n    }\n-->\n</script>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

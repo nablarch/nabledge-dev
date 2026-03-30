@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-10_submitParameter",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — doRW11AC0301 code block",
+      "description": "The source code comment `// hidden暗号化を行っていれば発生しないエラー` immediately before `userSearchFormContext.abortIfInvalid()` is omitted. This comment conveys a behavioral constraint: the validation error thrown by `abortIfInvalid()` will not occur when hidden encryption is in use. This is decision-necessary information for developers implementing this pattern.",
+      "source_evidence": "// hidden暗号化を行っていれば発生しないエラー\nuserSearchFormContext.abortIfInvalid();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The annotation hint `OnError` is missing the `@` prefix — it should be `@OnError` to match the annotation syntax in the source. Additionally, three PascalCase class names present in the code sample — `HttpResponse`, `HttpRequest`, and `ExecutionContext` — are absent from the hints array.",
+      "source_evidence": "@OnError(type = ApplicationException.class, ...) public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx)"
+    }
+  ]
+}

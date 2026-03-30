@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 merges 5 distinct h2 source sections into a single knowledge section: (1) ファイルアップロード画面の作成方法（JSP）, (2) アップロードファイルの取得方法（サーバサイド）, (3) アップロードファイルの保存方法, (4) アップロードファイルを読み込む方法, (5) アップロードファイルをDBに登録する方法. Each h2 section covers a distinct implementation topic with its own code example. The automated check (S9) detected source headings 6 > knowledge sections 5, consistent with this merging. The h3 subsections under section 5 are correctly split into s2–s5, but sections 1–4 should each be their own knowledge section.",
+      "source_evidence": "Source contains 5 h2 (===) headings each with independent code examples. Knowledge file has only 1 section (s1) for all 5 h2 topics."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Section s1 is missing PascalCase class names that appear in its code examples: `MessageUtil` (used in error throw), `MessageLevel` (enum used with MessageUtil), and `UserInfoTempEntity` (formClass passed to validateWith in DB registration example).",
+      "source_evidence": "Source code: `MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00039\")` in the getPart error handling block; `UserInfoTempEntity.class` passed to `.validateWith(UserInfoTempEntity.class, \"validateRegister\")`."
+    }
+  ]
+}

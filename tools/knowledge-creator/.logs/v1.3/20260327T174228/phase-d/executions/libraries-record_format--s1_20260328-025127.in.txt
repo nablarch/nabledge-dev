@@ -1,0 +1,326 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/core_library/record_format.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+汎用データフォーマット機能
+================================================
+
+本機能は、EDI等で利用される多様なデータ形式に対応する汎用の入出力ライブラリである。
+本フレームワークの中で、システム間通信、バッチ処理におけるデータファイルの読み書き、ファイルアップロード処理など、
+様々な場面で使用される。
+
+..
+  以下に本機能の特徴を挙げる。
+  - 固定長および可変長データ形式をサポート
+  - マルチレイアウト対応
+  - EBCDICへの対応や、パックおよびゾーン10進数形式のサポートなど、ホスト環境での利用を想定した機能
+  - 形式精査、パディング/トリミングといった、精査・変換処理を実行
+  - カスタムのデータ形式や、変換処理を必要に応じて追加・拡張することが可能
+  
+---------------
+
+
+基本構造
+---------------------
+本機能では、データ形式の定義情報を **フォーマット定義ファイル** と呼ばれるファイルに記述する。
+フレームワークはそれをもとにデータソースに対するレコードの読み書きを行う。
+
+このファイルには、レコード内のフィールドのレイアウトやデータ型に関する情報だけでなく、
+パディング・トリミング処理など、入出力の際の事前処理の実行定義についても指定できる。
+これにより、データ入出力に係わるほとんどの処理をフレームワーク側で行うことができる。
+
+プログラム側では、パース/シリアライズ処理はじめとする定型処理の一切を記述する必要は無く、
+データソース上のレコードを単なるMapオブジェクトとして扱うことができる。
+
+  .. note::
+  
+    なお、別添のツールを使用することで、 データファイルや電文の形式を定義した各種仕様書から
+    **フォーマット定義ファイル** を生成することが可能である。
+
+以下は、本機能のおおまかな構造を表した図である。
+
+    .. figure::  ../_image/dataformat_concept.png
+       :align: center
+
+この図が示すように、本機能は3つの要素から成り立つ。
+
+  **1. フォーマット定義ファイル**
+    その名の通り、データのフォーマット定義を記述したファイルである。
+    アプリケーションプログラマが作成するのは基本的にこのファイルだけである。
+
+  **2. レコードフォーマッター**
+    フォーマット定義ファイルの内容に沿って、実際にデータの読み書きを行うオブジェクトである。
+    入力ストリームからのレコードの読み込みと、出力ストリームに対するレコードの出力が可能である。
+    読み込んだレコードは、各フィールド名をキーとするMapオブジェクトとして取得できる。
+    また逆に、Mapインターフェースを実装した任意のオブジェクトをレコードとして出力できる。
+
+  **3. レコードフォーマッターファクトリ**
+    フォーマット定義ファイルを解析し、その内容に従ってレコードフォーマッターを生成するクラス。
+    フレームワークによって提供される。
+    レコードフォーマッターの機能を拡張する場合は、このファクトリに対して拡張機能を実装したクラスを設定する。
+
+-------------------------------
+
+使用例
+-----------------------------
+本機能を利用するには、まずフォーマット定義ファイルを作成する (もしくは、定義書から自動生成する) 必要がある。
+以下は、フォーマット定義ファイルの例である。
+
+  .. code-block:: bash
+
+        #
+        # ディレクティブ定義部
+        #
+        file-type:     "Fixed"  # 固定長ファイル
+        text-encoding: "ms932"  # 文字列型フィールドの文字エンコーディング
+        record-length:  120     # 各レコードbyte長
+
+        #
+        # データレコード定義部
+        #
+        [Default]
+        1    dataKbn       X(1)  "2"      # 1. データ区分
+        2    FIcode        X(4)           # 2. 振込先金融機関コード
+        6    FIname        X(15)          # 3. 振込先金融機関名称
+        21   officeCode    X(3)           # 4. 振込先営業所コード
+        24   officeName    X(15)          # 5. 振込先営業所名
+        39  ?tegataNum     X(4)  "9999"   # (手形交換所番号)
+        43   syumoku       X(1)           # 6. 預金種目
+        44   accountNum    X(7)           # 7. 口座番号
+        51   recipientName X(30)          # 8. 受取人名
+        81   amount        X(10)          # 9. 振込金額
+        91   isNew         X(1)           # 10.新規コード
+        92   ediInfo       X(20)          # 11.EDI情報
+        112  transferType  X(1)           # 12.振込区分
+        113  withEdi       X(1)  "Y"      # 13.EDI情報使用フラグ
+        114 ?unused        X(7)  pad("0") # (未使用領域)
+
+
+この定義に沿って実際にデータの読み書きを行うには、
+レコードフォーマッター (`DataRecordFormatter`_) のインスタンスを作成する。
+
+  .. code-block:: java
+
+    // 上掲のフォーマットファイルがワーキングディレクトリ直下に、
+    // ファイル名 "test.fmt" で保存されているとする。
+    File formatFile = new File("./test.fmt");
+  
+    // フォーマットファイルをファクトリに設定し、レコードフォーマッターを作成する。
+    DataRecordFormatter formatter = FormatterFactory
+                                   .getInstance()
+                                   .createFormatter(formatFile);
+   
+以下では、作成したフォーマッターを利用し、データファイルの内容を読み込んでいる。
+
+  .. code-block:: java
+
+    // データソース(この場合はファイル) からの入力ストリームを取得する。
+    InputStream in = new FileInputStream("./data.dat");
+ 
+    // 入力ストリームをフォーマッターに接続する。
+    formatter.setInputStream(in)
+             .initialize();
+ 
+    List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
+ 
+    while (formatter.hasNext()) {
+      // 入力ストリームから1レコード分を読み込む。
+      records.add(formatter.readRecord()); 
+    }
+
+
+次の例では、同じフォーマッターを使用して、データファイルにレコードを出力(追加)している。
+
+
+  .. code-block:: java
+
+    // データソース(この場合はファイル) に対する出力ストリームを取得する。
+    OutputStream out = new FileOutputStream("./data.dat");
+ 
+    // 出力ストリームをフォーマッターに接続する。 
+    formatter.setOutputStream(out)
+             .initialize();
+
+    // 新規レコードを出力ストリームに書き込む。
+    formatter.writeRecord(new HashMap() {{
+        put("FIcode",     "9999");
+        put("FIname",     "ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ");
+        put("officeCode", "111");
+        /*
+         * (後略)
+         */
+    }});
+
+  .. **/
+
+--------------------------
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-record_format--s1`
+
+```json
+{
+  "id": "libraries-record_format--s1",
+  "title": "汎用データフォーマット機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "汎用データフォーマット機能",
+        "EDIデータ処理",
+        "ファイル読み書き",
+        "ライブラリ概要",
+        "固定長可変長",
+        "システム間通信",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本構造",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "フォーマット定義ファイル",
+        "レコードフォーマッター",
+        "レコードフォーマッターファクトリ",
+        "Mapオブジェクト",
+        "パディング",
+        "トリミング"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "使用例",
+      "hints": [
+        "DataRecordFormatter",
+        "FormatterFactory",
+        "フォーマット定義ファイル",
+        "固定長ファイル",
+        "readRecord",
+        "writeRecord",
+        "text-encoding",
+        "record-length",
+        "Fixed",
+        "ms932"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "EDI等で利用される多様なデータ形式に対応する汎用の入出力ライブラリ。システム間通信、バッチ処理のデータファイル読み書き、ファイルアップロード処理など、様々な場面で使用される。",
+    "s2": "フォーマット定義ファイルにデータ形式定義を記述し、フレームワークがデータソースのレコード読み書きを行う。フィールドレイアウト、データ型、パディング・トリミング処理も定義可能。プログラム側はMapオブジェクトとしてレコードを扱うだけでよい。\n\n> **補足**: 別添のツールを使用することで、データファイルや電文の形式を定義した各種仕様書からフォーマット定義ファイルを生成することが可能。\n\n3つの構成要素:\n\n1. **フォーマット定義ファイル**: データのフォーマット定義を記述したファイル。アプリケーションプログラマが作成する。\n2. **レコードフォーマッター** (`DataRecordFormatter`): フォーマット定義に沿ってデータの読み書きを行うオブジェクト。入力ストリームからレコードを読み込み、フィールド名をキーとするMapで返す。Mapを実装したオブジェクトをレコードとして出力可能。\n3. **レコードフォーマッターファクトリ** (`FormatterFactory`): フォーマット定義ファイルを解析し、フォーマッターを生成するクラス（フレームワーク提供）。フォーマッターの機能拡張時はこのファクトリに拡張クラスを設定する。",
+    "s3": "フォーマット定義ファイルの例（固定長）:\n\n```\nfile-type:     \"Fixed\"  # 固定長ファイル\ntext-encoding: \"ms932\"  # 文字列型フィールドの文字エンコーディング\nrecord-length:  120     # 各レコードbyte長\n\n[Default]\n1    dataKbn       X(1)  \"2\"      # 1. データ区分\n2    FIcode        X(4)           # 2. 振込先金融機関コード\n6    FIname        X(15)          # 3. 振込先金融機関名称\n21   officeCode    X(3)           # 4. 振込先営業所コード\n24   officeName    X(15)          # 5. 振込先営業所名\n39  ?tegataNum     X(4)  \"9999\"   # (手形交換所番号)\n43   syumoku       X(1)           # 6. 預金種目\n44   accountNum    X(7)           # 7. 口座番号\n51   recipientName X(30)          # 8. 受取人名\n81   amount        X(10)          # 9. 振込金額\n91   isNew         X(1)           # 10.新規コード\n92   ediInfo       X(20)          # 11.EDI情報\n112  transferType  X(1)           # 12.振込区分\n113  withEdi       X(1)  \"Y\"      # 13.EDI情報使用フラグ\n114 ?unused        X(7)  pad(\"0\") # (未使用領域)\n```\n\n`FormatterFactory` でフォーマッター (`DataRecordFormatter`) を作成:\n\n```java\nFile formatFile = new File(\"./test.fmt\");\nDataRecordFormatter formatter = FormatterFactory\n                               .getInstance()\n                               .createFormatter(formatFile);\n```\n\n読み込み:\n\n```java\nInputStream in = new FileInputStream(\"./data.dat\");\nformatter.setInputStream(in).initialize();\nList<Map<String, Object>> records = new ArrayList<Map<String, Object>>();\nwhile (formatter.hasNext()) {\n  records.add(formatter.readRecord());\n}\n```\n\n書き込み:\n\n```java\nOutputStream out = new FileOutputStream(\"./data.dat\");\nformatter.setOutputStream(out).initialize();\nformatter.writeRecord(new HashMap() {{\n    put(\"FIcode\",     \"9999\");\n    put(\"FIname\",     \"ﾅﾌﾞﾗｰｸｷﾞﾝｺｳ\");\n    put(\"officeCode\", \"111\");\n}});\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 5
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Formの実装手順 step 3",
+      "description": "The qualifier '単項目精査' (single-item validation) is dropped from step 3. The source explicitly says the setter annotations represent '単項目精査の条件' (single-item validation conditions), which is important context distinguishing these annotations from multi-field (correlation) validation. The knowledge file simply says 'バリデーションアノテーションを設定' without this qualifier.",
+      "source_evidence": "手順3: 「プロパティのセッタに、プロパティに対する単項目精査の条件を表すアノテーションを設定する。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Entity の使用",
+      "description": "The source explicitly enumerates two benefits of using Entity, but the knowledge file omits them both as a listed rationale. Benefit 2 ('RDBMS の定義から、実装の大部分が自動生成できる') is not mentioned at all. Benefit 1 is only implied through the example rather than stated. Developers deciding whether to use Entity vs. plain Form need to know these benefits.",
+      "source_evidence": "「1. バリデーションとデータベースへの反映を容易に実装できる。2. RDBMS の定義から、実装の大部分が自動生成できる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source h2 section 'バリデーションの実行と入力値の変換' contains three h3 subsections (Formの実装, Action からのバリデーションメソッドの呼び出し, バリデーション結果のエラーメッセージ生成) and its plain text well exceeds 2000 characters. The knowledge file merges all three into a single section (s1) instead of splitting into separate sections.",
+      "source_evidence": "RST h3 headings under first h2: 'Formの実装' (====), 'Action からのバリデーションメソッドの呼び出し' (====), 'バリデーション結果のエラーメッセージ生成' (====)"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-11_exclusiveControl",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Actionの作成 / バージョン番号の取得",
+      "description": "The source contains a full code block for doRW11AC0301 (prepareVersion phase) including an @OnError(type = ApplicationException.class, ...) annotation and the ValidationUtil.validateAndConvertRequest / userId extraction pattern. The knowledge file omits this code example entirely, describing only the prepareVersion call inline. The other two phases (checkVersions, updateVersionsWithCheck) each include full code examples, creating an asymmetry that may leave AI agents without the full implementation pattern for the first phase.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"forward:///action/ss11AC/W11AC01Action/RW11AC0102\")\npublic HttpResponse doRW11AC0301(...) { ... HttpExclusiveControlUtil.prepareVersion(ctx, new ExclusiveCtrlSystemAccountContext(userId)); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "W11AC03Action is the Action class whose implementation is described in detail in s2 (Actionの作成), but it is absent from s2's hints. It appears only in s1 hints. Users asking about W11AC03Action's exclusive-control logic would not be routed to s2 via hint matching.",
+      "source_evidence": "Source section header: 'Actionの作成' describes W11AC03Action (doRW11AC0301, doRW11AC0302, doRW11AC0304 methods)."
+    }
+  ]
+}

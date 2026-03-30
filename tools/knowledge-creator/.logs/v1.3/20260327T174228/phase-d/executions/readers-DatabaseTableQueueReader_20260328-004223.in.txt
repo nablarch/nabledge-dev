@@ -1,0 +1,204 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/reader/DatabaseTableQueueReader.rst`
+- Format: `rst`
+
+```
+====================================
+データベーステーブルキューリーダ
+====================================
+
+このデータリーダでは、データベースに対してクエリを発行し、その結果セットの中から1レコードずつ読み込んで返す。
+クエリで取得したレコードを全て処理した場合には、一定時間待機後（任意の値を指定可能）に再度クエリを発行しレコードを読み込む。
+
+マルチスレッド環境では、データベースに対してクエリを再実行した場合、他のスレッドで処理中のデータが取得される可能性がある。
+本リーダでは処理中のレコードをヒープ上で管理し、他のスレッドで処理中のレコードが取得された場合には、
+そのレコードをスキップし次のレコードを読み込む事で、同一レコードを複数回処理することを防止している。
+
+**ヒープ上で管理する処理中のレコードは、処理後に削除するためヒープを圧迫することはない。**
+
+.. attention::
+
+  本リーダは、 :doc:`../architectural_pattern/batch_resident` 上で使用するものである。
+
+  **他の実行制御基盤上で使用した場合の動作は保証できないため注意すること。
+  特に** :doc:`../architectural_pattern/batch_resident_thread_sync` **上で使用した場合、
+  プロセスを停止できなくなるため使用してはならない**
+
+
+**クラス名**
+
+    nablarch.fw.reader.DatabaseTableQueueReader
+
+**読み込むデータの型**
+
+    nablarch.core.db.statement.SqlRow
+
+**設定項目一覧**
+
+   以下の値をコンストラクタにて指定する。
+
+   +-------------------------------------------------------------------+------------------------+
+   | 設定項目                                                          | データ型               |
+   +===================================================================+========================+
+   | データベースからレコードを読み込む :doc:`DatabaseRecordReader`    | DatabaseRecordReader   |
+   +-------------------------------------------------------------------+------------------------+
+   | データが存在しない場合の待機時間(ミリ秒)                          | int                    |
+   |                                                                   |                        |
+   +-------------------------------------------------------------------+------------------------+
+   | 主キーのカラム名リスト(処理中のレコードを識別する際に使用する。 ) | String... (可変長引数) |
+   |                                                                   |                        |
+   +-------------------------------------------------------------------+------------------------+
+
+**使用例**
+
+  データが存在しない場合の待機時間が1000ミリ秒(1秒)で、主キーのカラム名が ``ID`` の場合のリーダ生成例
+
+  .. code-block:: java
+
+      // プリペアドステートメントを取得(SQLIDを指定)
+      ParameterizedSqlPStatement statement = getParameterizedSqlStatement("GET_DELETE_USER_LIST");
+        
+      // データベースレコードリーダを生成
+      DatabaseRecordReader reader = new DatabaseRecordReader();
+      reader.setStatement(statement);
+
+      return new DatabaseTableQueueReader(reader, 1000, "ID");
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `readers-DatabaseTableQueueReader`
+
+```json
+{
+  "id": "readers-DatabaseTableQueueReader",
+  "title": "データベーステーブルキューリーダ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベーステーブルキューリーダ",
+      "hints": [
+        "DatabaseTableQueueReader",
+        "DatabaseRecordReader",
+        "ParameterizedSqlPStatement",
+        "nablarch.fw.reader.DatabaseTableQueueReader",
+        "nablarch.core.db.statement.SqlRow",
+        "SqlRow",
+        "データベーステーブルキューリーダ",
+        "常駐バッチ",
+        "マルチスレッド重複防止",
+        "待機時間",
+        "レコードスキップ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.reader.DatabaseTableQueueReader`\n\n**読み込むデータ型**: `nablarch.core.db.statement.SqlRow`\n\nデータが存在しない場合、指定した待機時間（ミリ秒）後に再度クエリを発行してレコードを読み込む。マルチスレッド環境では処理中レコードをヒープ上で管理し、他スレッドで処理中のレコードが取得された場合はスキップすることで同一レコードの重複処理を防止する。処理後にヒープから削除するため、ヒープを圧迫しない。\n\n> **注意**: 本リーダは :doc:`../architectural_pattern/batch_resident` 上でのみ使用すること。他の実行制御基盤での動作は保証されない。特に :doc:`../architectural_pattern/batch_resident_thread_sync` 上で使用するとプロセスを停止できなくなるため使用禁止。\n\n**コンストラクタ引数**:\n\n| 設定項目 | 型 |\n|---|---|\n| データベースからレコードを読み込む :doc:`DatabaseRecordReader` | DatabaseRecordReader |\n| データが存在しない場合の待機時間（ミリ秒） | int |\n| 主キーのカラム名リスト（処理中レコードの識別に使用） | String... (可変長引数) |\n\n**使用例**（待機時間1000ms、主キー `ID`）:\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_DELETE_USER_LIST\");\n\nDatabaseRecordReader reader = new DatabaseRecordReader();\nreader.setStatement(statement);\n\nreturn new DatabaseTableQueueReader(reader, 1000, \"ID\");\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

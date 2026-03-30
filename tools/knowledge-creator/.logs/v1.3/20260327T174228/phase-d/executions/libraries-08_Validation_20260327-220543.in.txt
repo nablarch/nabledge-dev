@@ -1,0 +1,300 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/08_Validation.rst`
+- Format: `rst`
+
+```
+
+.. _validation-and-form:
+
+===================================
+バリデーションとFormの生成
+===================================
+.. _validation-abstract:
+
+-----
+概要
+-----
+| 画面や外部システムからの入力値に対して、入力値が有効なものであるかをチェックするバリデーションの機能と、
+  入力値から Form を生成する機能を提供する。
+| Form とは、下記2つの責務を持つ業務コンポーネントである。
+
+    1. 外部入力値の入力チェック
+    2. 外部入力値の保持
+
+
+| Form 以外の業務コンポーネントについては :ref:`fw-bussiness-component-label` を参照のこと。
+| 
+| 一般に入力値のバリデーションは、下記のレベルに分けられる。
+
+    1. 単項目の入力チェック
+    2. 複数項目にまたがる入力チェック
+    3. データベースのデータを使用した入力チェック
+
+| このうち、本機能では 1,2 の入力チェックをサポートする。
+| 本機能でサポートしない入力チェックについては、ビジネスロジックとしてアプリケーションプログラマが別途実装する。
+
+| 本機能を使用する際は、入力値は Map とし、生成する Form はセッタとゲッタを持つクラスである必要がある。
+
+| バリデーションに必要な情報は、この Form にアノテーションとして設定する。
+| 
+
+
+| 本機能は、 Action 側で業務ロジックを呼び出す前に実施する入力チェックで使用する。
+| アプリケーションプログラマは、 :ref:`validation_and_convert` 以降に記述したバリデーションの使用方法を参考にして、 Action を実装する。
+
+| なお、 Form をRDBMS上のテーブルと1対1に作成し、さらに Form のプロパティとテーブルのカラムを1対1に対応づける実装
+  を行うことで、下記2つの利点が得られる。
+
+    * バリデーションとデータベースへの反映を容易に実装できる。
+    * RDBMS の定義から実装の多くの部分を自動生成できる。
+
+| 上記の条件を満たす Form を特に Entity と呼称する。
+
+-----
+特徴
+-----
+
+アノテーションによる条件の記述
+====================================================== 
+
+ バリデーションは Form に設定したアノテーションをもとに実施されるため、煩雑な単項目の入力チェック処理の実装が不要となり、
+ バリデーションの実装が極小化できる。
+ このため、ハードコーディングによるバリデーションを行う場合と比較して生産性を向上できる。
+ 
+ また、バリデーションの条件をFormに保持するため、 画面処理とバッチ処理等、
+ 異なる入力元に対してバリデーションの条件を共有できる利点がある。
+
+メッセージ機能を使用
+====================================================== 
+
+ バリデーション結果のメッセージの作成には、 :doc:`./07_Message` の機能を使用しており、
+ バリデーション結果を表すメッセージとビジネスロジックが発生させるメッセージを透過的に扱える。
+ 
+ このため、エラーメッセージの表示を行う処理では、バリデーションで発生したメッセージと、その他のビジネスロジックで
+ 発生したメッセージを同じように取り扱うことができる。
+
+
+-----
+要求
+-----
+
+実装済み
+========
+
+ * 文字列が特定の文字種のみで構成されているかチェックするバリデーションができる。
+ * 文字列長をチェックするバリデーションができる。
+ * 必須入力値が入力されているかをチェックするバリデーションができる。
+ * 数値が規定の範囲に入っているかをチェックするバリデーションができる。
+ * 入力値の文字列を格納した Map から、Formのインスタンスを生成できる。
+ * 入力値の文字列をFormのプロパティの型に合うように変換可能かチェックするバリデーションができる。
+ * 入力値の文字列をFormのプロパティの型に合わせて変換できる。
+ * 生成した Form のプロパティに設定する前に、プロパティに設定する値に対してバリデーションを実行できる。
+ * エラーメッセージに出力するプロパティの表示名称を任意に指定できる。
+ * エラーメッセージに出力するプロパティの表示名称を国際化できる。
+ * Form 内部のプロパティの Form に対するバリデーションができる。
+ * 下記日付形式のチェックができる。
+ 
+   * 西暦(年月日)フォーマット(詳細は :ref:`ExtendedValidation_yyyymmddConvertor` を参照)
+
+ * 入力値の文字列に対してトリムが実行できる。
+ * コード値として有効かをチェックするバリデーションができる。
+
+未実装
+========
+
+ * 下記日付形式のチェックができる。
+ 
+   * 和暦フォーマット
+   * 年月フォーマット
+   * 営業日
+   
+ * 入力禁止文字をチェックするバリデーションができる。
+
+  システム毎に規定された、入力してはいけない文字が文字列に含まれていないかをチェックするバリデーションができる。
+
+ * 制御文字が含まれていないかをチェックするバリデーションができる。
+
+ * パスワードの強度判定をチェックするバリデーションができる。
+
+ * 氏名フォーマットをチェックするバリデーションができる。
+
+ * 入力値の文字列に対してアノテーションでトリム要否を設定できる。
+
+ * 日本語電話番号フォーマットをチェックするバリデーションができる。
+ 
+ * メールアドレスフォーマットをチェックするバリデーションができる。
+
+未検討
+========
+ * 文字列が正規表現にマッチするかをチェックするバリデーションができる。
+ * 複数のアノテーションをまとめたアノテーションが定義できる。
+ * カード番号として有効かをチェックするバリデーションができる。
+ * 郵便番号として有効かをチェックするバリデーションができる。
+ * 金額として有効な文字列かをチェックするバリデーションができる。
+ * 文字列の範囲(Ex. "0001"～"9999")をチェックするバリデーションができる。
+ * 文字列をトリムしてからバリデーションできる。
+ * 外部入力値とデータベースの値をマージした Form に対してバリデーションができる。
+
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-08_Validation`
+
+```json
+{
+  "id": "libraries-08_Validation",
+  "title": "バリデーションとFormの生成",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "Form",
+        "Entity",
+        "バリデーション",
+        "入力チェック",
+        "Map",
+        "アノテーション",
+        "業務コンポーネント"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "アノテーション",
+        "メッセージ機能",
+        "バリデーション特徴",
+        "入力元共有",
+        "エラーメッセージ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "実装済み",
+        "未実装",
+        "文字種チェック",
+        "文字列長チェック",
+        "必須入力チェック",
+        "コード値チェック",
+        "日付フォーマットチェック",
+        "トリム"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 概要\n\nFormは以下2つの責務を持つ業務コンポーネント:\n1. 外部入力値の入力チェック\n2. 外部入力値の保持\n\nバリデーションは3レベルに分類される:\n1. 単項目の入力チェック\n2. 複数項目にまたがる入力チェック\n3. データベースのデータを使用した入力チェック\n\n本機能は1と2をサポートする。3のDB使用チェックはアプリケーションプログラマが別途実装する。\n\n**前提条件**: 入力値はMap形式、FormはセッタとゲッタをもつJavaクラスであること。バリデーション条件はFormにアノテーションとして設定する。\n\n本機能はAction側で業務ロジック呼び出し前の入力チェックに使用する。実装方法は :ref:`validation_and_convert` を参照。\n\nFormをRDBMSテーブルと1対1対応させ（プロパティとカラムも1対1対応）た実装を **Entity** と呼称する。Entityにより:\n- バリデーションとDBへの反映を容易に実装できる\n- RDBMSの定義から実装の多くの部分を自動生成できる",
+    "s2": "## 特徴\n\n**アノテーションによる条件の記述**: バリデーション条件はFormにアノテーションで保持するため、画面処理・バッチ処理等の異なる入力元間でバリデーション条件を共有できる。\n\n**メッセージ機能の使用**: バリデーション結果のメッセージ作成に :doc:`./07_Message` を使用。バリデーションエラーとビジネスロジックが発生させるメッセージを透過的に扱えるため、エラーメッセージ表示処理で両者を同一に取り扱える。",
+    "s3": "## 要求\n\n### 実装済み\n\n- 文字列の特定文字種チェック\n- 文字列長チェック\n- 必須入力値チェック\n- 数値の規定範囲チェック\n- 入力値文字列のMapからFormインスタンス生成\n- 型変換可否チェック（Formプロパティの型に合わせた変換チェック）\n- 入力値文字列をFormプロパティの型に変換\n- プロパティ設定前にバリデーション実行\n- エラーメッセージのプロパティ表示名指定\n- エラーメッセージのプロパティ表示名の国際化\n- Form内部のプロパティFormに対するバリデーション\n- 日付形式チェック: 西暦(年月日)フォーマット（詳細は :ref:`ExtendedValidation_yyyymmddConvertor` を参照）\n- 入力値のトリム\n- コード値の有効チェック\n\n### 未実装\n\n- 日付形式チェック: 和暦フォーマット、年月フォーマット、営業日\n- 入力禁止文字チェック\n- 制御文字チェック\n- パスワード強度判定\n- 氏名フォーマットチェック\n- アノテーションによるトリム要否設定\n- 日本語電話番号フォーマットチェック\n- メールアドレスフォーマットチェック\n\n### 未検討\n\n- 正規表現マッチチェック\n- 複数アノテーションをまとめたアノテーション定義\n- カード番号の有効チェック\n- 郵便番号の有効チェック\n- 金額フォーマットチェック\n- 文字列範囲チェック\n- トリム後バリデーション\n- 外部入力値とDB値をマージしたFormのバリデーション"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

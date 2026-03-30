@@ -1,0 +1,13 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Several PascalCase class/interface names and flow name appearing in s3 content are absent from s3 hints: \"正常受信・正常応答\" (the primary normal-operation flow name in the table), \"Retryable\" (interface that retry-eligible exceptions must implement), \"ProcessAbnormalEnd\" (exception class triggering abnormal termination), \"ProcessStop\" (exception class for normal process stop handling). A developer asking about any of these terms would not be routed to s3.",
+      "source_evidence": "Flow table row: 正常受信・正常応答; connectionerror/retryerror flows: \"リトライ可能実行時例外(Retryableを実装した例外)\"; abort flow: \"ProcessAbnormalEnd\"; termination flow: \"プロセス停止要求(ProcessStop)\""
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_DbAccessTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 (更新系テストの警告)",
+      "description": "更新系テストでcommitTransactionsが必要な理由（Nablarch Application Frameworkでは複数種類のトランザクションを併用することが前提）が省略されている。制約の背景知識としてAIが適切な説明をするために有用な情報。",
+      "source_evidence": "「Nablarch Application Frameworkでは複数種類のトランザクションを併用することが前提となっている。そのため、テスト対象クラス実行後にデータベースの内容を確認する際には、トランザクションをコミットしなければならない。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s11 (データベーステストデータの省略記述方法)",
+      "description": "カラム省略機能が「特に更新系テストケースに有効」であり「多くのカラムのうち１カラムだけが更新される場合」の具体的なユースケースが省略されている。機能の適切な使いどころをAIが案内するために有用なコンテキスト。",
+      "source_evidence": "「この機能は特に更新系テストケースに有効である。多くのカラムのうち１カラムだけが更新される場合、不要なカラムを記述する必要がなくなる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 (テストデータ記述例 - 参照系) hints",
+      "description": "セクション本文で「`assertSqlResultSetEquals`の第2引数にこの期待値IDを指定する」と言及されているが、hintsに`assertSqlResultSetEquals`が含まれていない。",
+      "source_evidence": "s6本文: \"`assertSqlResultSetEquals`の第2引数にこの期待値IDを指定する。\""
+    }
+  ]
+}

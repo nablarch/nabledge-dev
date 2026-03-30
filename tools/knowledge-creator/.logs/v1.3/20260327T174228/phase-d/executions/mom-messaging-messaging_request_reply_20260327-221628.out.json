@@ -1,0 +1,27 @@
+{
+  "file_id": "mom-messaging-messaging_request_reply",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — 開閉局エラーフロー Step 5 (MessageReplyHandler error)",
+      "description": "Knowledge file states 'FW制御ヘッダ部のみを出力して送信し、閉局エラーを再送出する' but the source says '認可エラーを再送出する' for this step in the 開閉局エラー flow. The knowledge file changed '認可エラー' to '閉局エラー', which has no basis in the source.",
+      "source_evidence": "Source notonservice flow step 5: [\"MessageReplyHandler\", \"error\", \"業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。\"]"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Introduction (above 基本構造)",
+      "description": "The source introduction states 'オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される' — technology selection guidance about when to use this pattern (authorization-like business requiring immediate response). This is not captured in any section of the knowledge file.",
+      "source_evidence": "Source intro: 'オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Three handler names referenced in the standard handler queue and detailed flow steps are missing from s3 hints: 'Main', 'ThreadContextHandler_main', 'ThreadContextHandler_request'. These appear both in the HandlerQueue list and in multiple individual flow sequences documented in s3.",
+      "source_evidence": "HandlerQueue includes 'Main', 'ThreadContextHandler_main', 'ThreadContextHandler_request'. These also appear repeatedly in the launch, duplaunch, normalreply, termination, and other flows."
+    }
+  ]
+}

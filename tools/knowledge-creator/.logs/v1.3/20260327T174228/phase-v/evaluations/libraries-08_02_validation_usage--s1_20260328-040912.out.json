@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a duplicated word \"Action\" in an index section title. The section content (s2), hints, and all other sections are accurate and complete. The title error does not cause the agent to produce incorrect technical guidance — the section remains discoverable via the correct hints, and the content itself is faithful to the source.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "index[1].title (section s2)",
+      "impact": "low",
+      "justification": "The title 'ActionからのバリデーションメソッドのAction呼び出し' has 'Action' duplicated compared to the source 'Action からのバリデーションメソッドの呼び出し'. This is a cosmetic inaccuracy in the navigation index only. The section body (s2) correctly explains ValidationUtil.validateAndConvertRequest usage and the call from Action. The section is still reachable via the accurate hints array (validateAndConvertRequest, ValidationUtil, etc.), so retrieval is unaffected. An agent reading this title would understand the topic correctly despite the redundancy. Why it persisted: The Phase E log output is truncated and shows the same unchanged title, indicating the fix agent did not apply the correction — likely because the file was cut off before that index entry was patched, or the minor-severity finding was deprioritized during the fix pass."
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `mom-messaging-02_basic-04_Explanation_delayed_send`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "s1",
+    "description": "The knowledge file adds the statement 「このコンポーネントはテーブルからの読み取りと送信のみを担当し、データ登録は行わない」, but the source only states that data registration is done by pre-processing (前処理). The characterization of what \"this component\" does or does not do is an inference not explicitly made in the source.",
+    "source_evidence": "電文送信テーブルへのデータ登録は、前処理（画面オンライン処理やバッチ処理）で行われる。それぞれのアプリケーション構造や実装方法は、下記リンク先を参照すること。"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _messageDelayedSendDesign:
+
+========================================================================
+応答不要メッセージ送信処理のアプリケーション構造
+========================================================================
+
+本項では、応答不要メッセージ送信処理の基本的なクラス構造について説明する。
+
+----
+概要
+----
+
+Nablarch Application Frameworkでは、複雑になりがちなメッセージング処理を簡潔かつ堅牢に作成できるように以下のような機能を備えている。
+
+* 電文をデータベースの一時テーブルから送信するための共通的なアクションクラスを提供する。
+
+  Nablarchでは、データベースの一時テーブル(送信する電文のデータを保持するテーブル)から送信対象のデータを取得し、電文の作成及び送信を行う共通的なアクションを提供している。
+  このアクションを使用することにより、アプリケーション開発者は電文及びテーブルに依存した幾つかの成果物(下記参照)のみを作成すればよく、
+  非常に簡単に電文の送信処理を実装できるようになっている。
+  
+  * 電文のレイアウトを表すフォーマット定義ファイル
+  * SQLファイル(下記3種類のSQL文を定義する)
+
+    * | 電文送信テーブルからステータスが未送信のデータを取得するためのSELECT文
+      | 条件には、未送信であることを含める必要がある。
+    * | 電文送信後に、該当データのステータスを処理済みに更新するためのUPDATE文
+    * | 電文送信に失敗した場合に、該当データのステータスを送信失敗(エラー)に更新するためのUPDATE文
+
+  * 送信用の電文を保持するための一時テーブル
+
+  .. _sendTableStatusUpdateForm:
+
+  * 一時テーブルの処理ステータス更新用のFormクラス
+
+    .. note::
+
+     Formクラスに必要なプロパティは、ステータス更新に必要なテーブル項目に対応するもののみで良い。
+     これにより、一時テーブルのテーブルレイアウトをプロジェクト共通で定義することにより、
+     単一のFormクラスを全ての応答不要メッセージ送信処理で使用することが出来るようになる。
+
+     詳細は、\ :ref:`応答不要メッセージ送信処理のFormクラス実装方法<sendFormSample>`\ を参照すること。
+
+  それぞれの成果物の実装方法及び実装例は、\ :ref:`応答不要メッセージ送信処理の実装方法<mqDelayedSendTitle>`\ にて解説を行なっているため、参照すること。
+
+  .. note::
+
+    電文送信テーブルへのデータ登録は、前処理（画面オンライン処理やバッチ処理）で行われる。
+    それぞれのアプリケーション構造や実装方法は、下記リンク先を参照すること。
+    
+    * :doc:`../../04_Explanation/index`
+    * :doc:`../../04_Explanation_batch/index`
+
+----------
+クラス構造
+----------
+.. image:: _image/class.png
+
+----------
+処理の流れ
+----------
+| ① SQLファイルから電文送信用のデータを取得するためのSELECT文を取得する。
+| ② 一時テーブルから、電文送信用のデータを取得する。
+| ③ 電文のレイアウトを表すフォーマット定義ファイルを元に送信用の電文を生成する。
+| ④ 電文を送信する。
+| ⑤ 一時テーブルのステータスを更新するためのFormクラスを生成する。
+| ⑥ ステータス更新用のUPDATE文を取得する。
+| ⑦ Formクラス及びUPDATE文を使用して一時テーブルのステータスを更新する。
+
+  .. note::
+
+    ステータスを更新することにより、以下の事象の発生を防ぐことが出来る。
+
+     * 同一電文を複数回送信することを防止する。
+     * エラーとなったデータ（ポイズンデータ）を繰り返し送信しようとし、繰り返し障害となることを防止する。
+
+.. image:: _image/sequence.png
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "mom-messaging-02_basic-04_Explanation_delayed_send",
+  "title": "応答不要メッセージ送信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ送信",
+        "電文送信テーブル",
+        "一時テーブル",
+        "Formクラス",
+        "フォーマット定義ファイル",
+        "SQLファイル",
+        "共通アクションクラス",
+        "前処理",
+        "画面オンライン処理",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "クラス構造",
+      "hints": [
+        "クラス構造",
+        "応答不要メッセージ送信処理アーキテクチャ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "処理の流れ",
+      "hints": [
+        "処理の流れ",
+        "ステータス更新",
+        "重複送信防止",
+        "ポイズンデータ",
+        "電文送信シーケンス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "共通アクションクラスが電文送信テーブル（一時テーブル）から未送信データを取得して電文作成・送信を行う。アプリケーション開発者が作成する成果物:\n\n- フォーマット定義ファイル（電文レイアウト定義）\n- SQLファイル（以下3種類）:\n  - 未送信データ取得用SELECT文（条件に未送信ステータスを含める必要あり）\n  - 送信完了後の処理済みステータス更新用UPDATE文\n  - 送信失敗時のエラーステータス更新用UPDATE文\n- 送信用一時テーブル\n- 一時テーブルのステータス更新用Formクラス\n\n> **注意**: Formクラスに必要なプロパティはステータス更新に必要なテーブル項目のみ。テーブルレイアウトをプロジェクト共通で定義することで単一Formクラスを全応答不要メッセージ送信処理で共用可能。詳細は :ref:`sendFormSample` 参照。\n\n> **注意**: 電文送信テーブルへのデータ登録は、前処理（画面オンライン処理やバッチ処理）で行われる。このコンポーネントはテーブルからの読み取りと送信のみを担当し、データ登録は行わない。",
+    "s2": "![応答不要メッセージ送信処理のクラス構造図](assets/mom-messaging-02_basic-04_Explanation_delayed_send/class.png)",
+    "s3": "1. SQLファイルから電文送信用データ取得のためのSELECT文を取得する\n2. 一時テーブルから電文送信用データを取得する\n3. フォーマット定義ファイルをもとに送信用電文を生成する\n4. 電文を送信する\n5. 一時テーブルのステータス更新用Formクラスを生成する\n6. ステータス更新用UPDATE文を取得する\n7. FormクラスとUPDATE文で一時テーブルのステータスを更新する\n\n> **注意**: ステータス更新により以下を防止できる:\n> - 同一電文の複数回送信\n> - エラーデータ（ポイズンデータ）の繰り返し送信による障害\n\n![応答不要メッセージ送信処理のシーケンス図](assets/mom-messaging-02_basic-04_Explanation_delayed_send/sequence.png)"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "mom-messaging-02_basic-04_Explanation_delayed_send",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file adds the statement 「このコンポーネントはテーブルからの読み取りと送信のみを担当し、データ登録は行わない」, but the source only states that data registration is done by pre-processing (前処理). The characterization of what \"this component\" does or does not do is an inference not explicitly made in the source.",
+      "source_evidence": "電文送信テーブルへのデータ登録は、前処理（画面オンライン処理やバッチ処理）で行われる。それぞれのアプリケーション構造や実装方法は、下記リンク先を参照すること。"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "mom-messaging-02_basic-04_Explanation_delayed_send",
+  "title": "応答不要メッセージ送信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "応答不要メッセージ送信",
+        "電文送信テーブル",
+        "一時テーブル",
+        "Formクラス",
+        "フォーマット定義ファイル",
+        "SQLファイル",
+        "共通アクションクラス",
+        "前処理",
+        "画面オンライン処理",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "クラス構造",
+      "hints": [
+        "クラス構造",
+        "応答不要メッセージ送信処理アーキテクチャ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "処理の流れ",
+      "hints": [
+        "処理の流れ",
+        "ステータス更新",
+        "重複送信防止",
+        "ポイズンデータ",
+        "電文送信シーケンス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "共通アクションクラスが電文送信テーブル（一時テーブル）から未送信データを取得して電文作成・送信を行う。アプリケーション開発者が作成する成果物:\n\n- フォーマット定義ファイル（電文レイアウト定義）\n- SQLファイル（以下3種類）:\n  - 未送信データ取得用SELECT文（条件に未送信ステータスを含める必要あり）\n  - 送信完了後の処理済みステータス更新用UPDATE文\n  - 送信失敗時のエラーステータス更新用UPDATE文\n- 送信用一時テーブル\n- 一時テーブルのステータス更新用Formクラス\n\n> **注意**: Formクラスに必要なプロパティはステータス更新に必要なテーブル項目のみ。テーブルレイアウトをプロジェクト共通で定義することで単一Formクラスを全応答不要メッセージ送信処理で共用可能。詳細は :ref:`sendFormSample` 参照。\n\n> **注意**: 電文送信テーブルへのデータ登録は、前処理（画面オンライン処理やバッチ処理）で行われる。このコンポーネントはテーブルからの読み取りと送信のみを担当し、データ登録は行わない。",
+    "s2": "![応答不要メッセージ送信処理のクラス構造図](assets/mom-messaging-02_basic-04_Explanation_delayed_send/class.png)",
+    "s3": "1. SQLファイルから電文送信用データ取得のためのSELECT文を取得する\n2. 一時テーブルから電文送信用データを取得する\n3. フォーマット定義ファイルをもとに送信用電文を生成する\n4. 電文を送信する\n5. 一時テーブルのステータス更新用Formクラスを生成する\n6. ステータス更新用UPDATE文を取得する\n7. FormクラスとUPDATE文で一時テーブルのステータスを更新する\n\n> **注意**: ステータス更新により以下を防止できる:\n> - 同一電文の複数回送信\n> - エラーデータ（ポイズンデータ）の繰り返し送信による障害\n\n![応答不要メッセージ送信処理のシーケンス図](assets/mom-messaging-02_basic-04_Explanation_delayed_send/sequence.png)"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

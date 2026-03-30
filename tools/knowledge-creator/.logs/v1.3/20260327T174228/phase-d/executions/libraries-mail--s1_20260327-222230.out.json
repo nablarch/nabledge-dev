@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source H2)",
+      "description": "The entire 概要 section is absent from the knowledge file. Missing decision-necessary information: (1) The system adopts an async approach via 常駐バッチ — this is the core architectural design. (2) Two reasons for the async design: mail requests can be included in the business application's DB transaction, and mail server / network failures do not affect business application processing. (3) JavaMail API (http://www.oracle.com/technetwork/java/javamail/index.html) is used as the mail sending library. (4) Behavioral constraint: one mail request = one email sent (メール送信要求一つにつきメールが一通送信される).",
+      "source_evidence": "本フレームワークのメール送信処理は、常駐バッチを経由し、業務アプリケーションの処理とは非同期に行う方式を採用している。 / メール送信要求一つにつきメールが一通送信される。 / 逐次メール送信バッチでは、メール送信ライブラリとして、JavaMail API を使用する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "逐次メール送信バッチ section (source H2)",
+      "description": "The 逐次メール送信バッチ H2 section is not represented as a separate knowledge section. Critically, the specific startup argument name `mailSendPatternId` is never mentioned anywhere in the knowledge file. An implementer who needs to filter by mail send pattern ID would not know what argument name to use. The s2 section mentions that a pattern ID can be passed as a startup argument, but omits the key name.",
+      "source_evidence": "バッチ起動時の引数として「mailSendPatternId」を指定した場合には、指定されたメール送信パターンIDと一致する送信要求データが監視対象となる。"
+    }
+  ]
+}

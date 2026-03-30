@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "PascalCase class name `SqlPStatement` is missing from hints. The source explicitly names it in the feature description: \"SqlPStatementクラスではなく、ParameterizedSqlPStatementクラスを使用する\".",
+      "source_evidence": "プリペアドステートメントを作成する際に、SqlPStatementクラスではなく、ParameterizedSqlPStatementクラスを使用する(DbAccessSupport#getParameterizedSqlStatementを使用する)。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s7].hints",
+      "description": "PascalCase class name `DbAccessSupport` is missing from s7 hints. It appears in the s7 section content (\"DbAccessSupport#getParameterizedSqlStatement実行時\") but is not listed as a hint for that section.",
+      "source_evidence": "loginIdがnullもしくは空文字かどうかの判断は、SQL文を組み立てる際(DbAccessSupport#getParameterizedSqlStatement実行時)の引数のオブジェクトに設定されているloginIdフィールドの値による。"
+    }
+  ]
+}

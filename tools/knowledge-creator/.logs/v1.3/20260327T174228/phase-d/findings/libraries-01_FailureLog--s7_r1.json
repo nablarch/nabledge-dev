@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — ソートされたプロパティファイルの説明",
+      "description": "キー名の長さが等しい場合、ソート後の順番は実行毎に変わるという非決定論的な挙動の注記が欠落している。ソース内のコードブロックにコメント「# 上3つの並び順は、キー名の長さが等しいため、実行毎に変わる。」が明記されており、同一長のキーが複数ある場合に特定の順序に依存した設計ができないという制約は実装判断に直結する重要な情報である。",
+      "source_evidence": "# 上3つの並び順は、キー名の長さが等しいため、実行毎に変わる。\nUSERS00301=USRMGR301\nUSERS00302=USRMGR302\nUSERS00303=USRMGR303\n..."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — フレームワークの障害コードの変更方法",
+      "description": "フレームワークのクラス毎に障害コードを設定するのは細かすぎるため現実的ではなく、基本はパッケージ名単位で指定するという推奨事項が欠落している。これはアーキテクチャ設計に影響するベストプラクティスの情報であり、実装判断に有用である。",
+      "source_evidence": "ただし、フレームワークのクラス毎に障害コードを設定するのは、分類が細かすぎるため現実的ではない。基本はパッケージ名単位に障害コードを指定することで、フレームワークのどの機能で例外が送出されたか判断することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "ソースに登場するPascalCaseクラス名 `AutoPropertyHandler` がs4のhintsに含まれていない。ソースでは「AutoPropertyHandlerの実装クラス」として参照されており、このクラス名でnabledgeに問い合わせるユーザーがいる可能性がある。",
+      "source_evidence": "アノテーションの詳細については、 :ref:`AutoPropertyHandlerの実装クラス<db-object-save-class-label>` を参照。"
+    }
+  ]
+}

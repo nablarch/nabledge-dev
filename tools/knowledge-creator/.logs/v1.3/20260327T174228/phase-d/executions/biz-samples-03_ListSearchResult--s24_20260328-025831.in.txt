@@ -1,0 +1,698 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/biz_sample/doc/03_ListSearchResult.rst`
+- Format: `rst`
+
+```
+検索結果の一覧表示機能のデフォルト値設定
+----------------------------------------------
+検索結果の一覧表示機能のデフォルト値設定は、画面表示に関する設定と、一覧検索用の検索処理に関する設定に大別される。
+
+画面表示に関する設定は、タグファイル内で直接デフォルト値を指定している。\
+画面表示に関する設定の詳細は、 :ref:`ListSearchResult_TagReference` を参照。
+
+ここでは、一覧検索用の検索処理に関する設定について解説する。
+
+検索処理の設定では、下記の設定を行える。
+
+* 検索結果の最大件数(上限)
+* 検索結果の取得件数(1ページの表示件数)
+
+これらの設定値は、リポジトリ機能の環境設定ファイルに指定する。
+property名と設定内容を下記に示す。
+
+===================================================================== ===================================================================================
+property名                                                            設定内容
+===================================================================== ===================================================================================
+nablarch.listSearch.maxResultCount                                    検索結果の最大件数(上限)。
+nablarch.listSearch.max                                               検索結果の取得最大件数(1ページの表示件数)。
+===================================================================== ===================================================================================
+
+上記の設定値は、ListSearchInfoの生成時にリポジトリから取得し、ListSearchInfo自身のプロパティに設定される。\
+リポジトリの設定値が存在しない場合は、下記のデフォルト値が設定される。
+
+* 検索結果の最大件数(上限)：200
+* 検索結果の取得最大件数(1ページの表示件数)：20
+
+尚、一部機能のみ個別に設定値を変更したい場合は、下記の通り個別機能の実装で対応する。
+
+* 画面表示に関する設定は、JSP上で :ref:`ListSearchResult_Tag` の属性を指定する。
+* ページング用の検索処理に関する設定は、該当の一覧表示画面を表示するActionのメソッドにて、ListSearchInfoを継承したクラスに値を設定する。
+
+下記に検索結果の最大件数(上限)を50、表示件数を10に変更する場合の実装例を下記に示す。
+
+.. code-block:: java
+
+    public class W11AC01Action extends DbAccessSupport {
+        
+        // 一覧表示の最大表示件数
+        private static final int MAX_ROWS = 10;
+        
+        // 一覧表示の検索結果件数（上限）
+        private static final int MAX_RESULT_COUNT = 50;
+        
+        
+        @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0101.jsp")
+        public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+            
+            // 業務処理は省略。
+            
+            // 入力精査は省略。
+            
+            W11AC01SearchForm condition = ... ;
+            
+            // 最大表示件数を設定。
+            condition.setMax(MAX_ROWS);
+            
+            // 検索結果の最大件数（上限）を設定。
+            condition.setMaxResultCount(MAX_RESULT_COUNT);
+            
+            // 検索処理は省略。
+            
+            // 以降の処理は省略。
+        }
+    }
+
+
+.. _ListSearchResult_Customize:
+
+------------------------------------------------------------------------------------
+業務アプリケーションへのサンプル実装(タグファイル)の取り込み方法
+------------------------------------------------------------------------------------
+業務アプリケーションへサンプル実装(タグファイル)を取り込む場合は、下記の手順で実施する。
+
+* 業務アプリケーションへタグファイルの配置
+* タグファイル内のプレフィックスの修正
+
+業務アプリケーションへタグファイルの配置
+=====================================================
+下記のとおり、listSearchResultパッケージを業務アプリケーションに配置する。\
+
+ コピー元
+   *META-INF/tags/*\ **listSearchResult**
+
+ コピー先
+  業務アプリケーションの /WEB-INF/tags ディレクトリ
+
+タグファイル内のプレフィックスの修正
+=====================================================
+サンプル実装では、タグファイル内のプレフィックスに「nbs」を付けている。\
+業務アプリケーションの配置場所に応じて、プレフィックスの定義とプレフィックスを修正する。
+/WEB-INF/tags/listSearchResult に配置している前提で、修正前後の内容を示す。
+
+ 修正前
+   プレフィックスの定義::
+   
+    <%@ taglib prefix="nbs" uri="http://tis.co.jp/nablarch-biz-sample" %>
+   
+   プレフィックス::
+   
+    nbs
+
+ 週生後
+   プレフィックスの定義::
+   
+    <%@ taglib prefix="listSearchResult" tagdir="/WEB-INF/tags/listSearchResult" %>
+   
+   プレフィックス::
+   
+    listSearchResult
+
+
+.. _ListSearchResult_TagReference:
+
+---------------------------------------------------------
+タグリファレンス
+---------------------------------------------------------
+
+====================================================== ==========================================================================================
+タグ                                                   | 機能
+====================================================== ==========================================================================================
+:ref:`ListSearchResult_Tag`                            | 検索結果の一覧表示を行う。
+:ref:`ListSearchResult_ListSearchSortSubmitTag`        | 検索結果の一覧表示で並び替え対応の列見出しを出力する。
+====================================================== ==========================================================================================
+
+.. _ListSearchResult_Tag:
+
+listSearchResultタグ
+=====================================
+listSearchResultタグでは、画面要素毎に属性を示す。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+全体
+---------------------------------------------------------------------------------------------------------------------------------
+listSearchInfoName                     | ListSearchInfoをリクエストスコープから取得する際に使用する名前。
+                                       | 指定がない場合は「検索結果件数」および「ページング」を表示しない。
+                                       | 一括削除確認画面など、一覧表示のみを行う場合は指定しない。
+listSearchResultWrapperCss             | ページング付きテーブル全体(検索結果件数、ページング、検索結果)をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_listSearchResultWrapper"。
+検索結果件数
+---------------------------------------------------------------------------------------------------------------------------------
+useResultCount                         | 検索結果件数を表示するか否か。
+                                       | デフォルトはtrue。
+resultCountCss                         | 検索結果件数をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_resultCount"。
+resultCountFragment                    | 検索結果件数を出力するJSPフラグメント。
+                                       | デフォルトは"検索結果 <PagingInfoのresultCountプロパティ>件"。
+ページング
+---------------------------------------------------------------------------------------------------------------------------------
+usePaging                              | ページングを表示するか否か。
+                                       | デフォルトはtrue。
+searchUri                              | ページングのサブミット要素に使用するURI。
+                                       | ページングを表示する場合は必ず指定すること。
+pagingPosition                         | ページングの表示位置。
+                                       | 下記のいずれかを指定する。
+                                       | top(上側のみ)
+                                       | bottom(下側のみ)
+                                       | both(両方)
+                                       | none(表示なし)
+                                       | デフォルトはtop。
+pagingCss                              | ページングのサブミット要素(前へ、次へなど)全体をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_paging"。
+====================================== ==========================================================================================
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+現在のページ番号
+---------------------------------------------------------------------------------------------------------------------------------
+useCurrentPageNumber                   | 現在のページ番号を使用するか否か。
+                                       | デフォルトはtrue。
+currentPageNumberCss                   | 現在のページ番号をラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_currentPageNumber"。
+currentPageNumberFragment              | 現在のページ番号を出力するJSPフラグメント。
+                                       | デフォルトは"[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]"。
+最初
+---------------------------------------------------------------------------------------------------------------------------------
+useFirstSubmit                         | 最初のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+firstSubmitTag                         | 最初のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+firstSubmitType                        | 最初のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+firstSubmitCss                         | 最初のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_firstSubmit"。
+firstSubmitLabel                       | 最初のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"最初"。
+firstSubmitName                        | 最初のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"firstSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"firstSubmit_top"となる。
+前へ
+---------------------------------------------------------------------------------------------------------------------------------
+usePrevSubmit                          | 前のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはtrue。
+prevSubmitTag                          | 前のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+prevSubmitType                         | 前のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+prevSubmitCss                          | 前のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_prevSubmit"。
+prevSubmitLabel                        | 前のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"前へ"。
+prevSubmitName                         | 前のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"prevSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"prevSubmit_top"となる。
+ページ番号(ページ番号をラベルとして使用するためラベル指定がない)
+---------------------------------------------------------------------------------------------------------------------------------
+usePageNumberSubmit                    | ページ番号のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+pageNumberSubmitTag                    | ページ番号のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+pageNumberSubmitType                   | ページ番号のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+pageNumberSubmitCss                    | ページ番号のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_pageNumberSubmit"。
+pageNumberSubmitName                   | ページ番号のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"pageNumberSubmit"。
+                                       | ページ番号とページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側でページ番号が3の場合は"pageNumberSubmit3_top"となる。
+次へ
+---------------------------------------------------------------------------------------------------------------------------------
+useNextSubmit                          | 次のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはtrue。
+nextSubmitTag                          | 次のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+nextSubmitType                         | 次のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+nextSubmitCss                          | 次のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_nextSubmit"。
+nextSubmitLabel                        | 次のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"次へ"。
+nextSubmitName                         | 次のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"nextSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"nextSubmit_top"となる。
+最後
+---------------------------------------------------------------------------------------------------------------------------------
+useLastSubmit                          | 最後のページに遷移するサブミットを使用するか否か。
+                                       | デフォルトはfalse。
+lastSubmitTag                          | 最後のページに遷移するサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+lastSubmitType                         | 最後のページに遷移するサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+lastSubmitCss                          | 最後のページに遷移するサブミットをラップするdivタグのclass属性。
+                                       | デフォルトは"nablarch_lastSubmit"。
+lastSubmitLabel                        | 最後のページに遷移するサブミットに使用するラベル。
+                                       | デフォルトは"最後"。
+lastSubmitName                         | 最後のページに遷移するサブミットに使用するタグのname属性。
+                                       | デフォルトは"lastSubmit"。
+                                       | ページングの表示位置を表すサフィックス(上側は"_top"、下側は"_bottom")を付けて出力する。
+                                       | 例えば、デフォルトかつ表示位置が上側の場合は"lastSubmit_top"となる。
+====================================== ==========================================================================================
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingTableFull.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+検索結果
+---------------------------------------------------------------------------------------------------------------------------------
+resultSetName(必須)                    | 検索結果をリクエストスコープから取得する際に使用する名前。
+resultSetCss                           | 検索結果テーブルのclass属性。
+                                       | デフォルトは"nablarch_resultSet"。
+headerRowFragment(必須)                | ヘッダ行のJSPフラグメント。
+bodyRowFragment(必須)                  | ボディ行のJSPフラグメント。
+varRowName                             | ボディ行のフラグメントで行データ(c:forEachタグのvar属性)を参照する際に使用する変数名。
+                                       | デフォルトは"row"。
+varStatusName                          | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。
+                                       | デフォルトは"status"。
+                                       
+                                         .. note::
+                                         
+                                          n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\
+                                          エラーが発生し値を取得できない。\
+                                          n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\
+                                          下記に使用例を示す。
+                                          
+                                          .. code-block:: jsp
+                                          
+                                           <n:set var="rowCount" value="${status.count}" />
+                                           <n:write name="rowCount" />
+                                       
+varCountName                           | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。
+                                       | デフォルトは"count"。
+varRowCountName                        | 検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。
+                                       | デフォルトは"rowCount"。
+varOddEvenName                         | ボディ行のclass属性を参照する際に使用する変数名。
+                                       | この変数名は、1行おきにclass属性の値を変更したい場合に使用する。
+                                       | デフォルトは"oddEvenCss"。
+oddValue                               | ボディ行の奇数行に使用するclass属性。
+                                       | デフォルトは"nablarch_odd"。
+evenValue                              | ボディ行の偶数行に使用するclass属性。
+                                       | デフォルトは"nablarch_even"。
+====================================== ==========================================================================================
+
+.. _ListSearchResult_ListSearchSortSubmitTag:
+
+listSearchSortSubmitタグ
+=====================================
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+tag                                    | 並び替えを行うサブミットに使用するNablarchタグ。
+                                       | 下記のいずれかを指定する。
+                                       | submitLink(aタグ)
+                                       | submit(inputタグ)
+                                       | button(buttonタグ)
+                                       | デフォルトはsubmitLink。
+type                                   | 並び替えを行うサブミットに使用するタグのtype属性。
+                                       | 下記のみサポート。
+                                       | submit
+                                       | button
+                                       | サブミットに使用するNablarchタグがsubmitLinkの場合は使用しない。
+sortCss                                | 並び替えを行うサブミットのclass属性。
+                                       | 常にサブミットのclass属性に出力される。
+                                       | デフォルトは"nablarch_sort"。
+ascCss                                 | 昇順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_asc"。(出力例: class="nablarch_sort nablarch_asc")
+descCss                                | 降順に並び替えた場合に指定するサブミットのclass属性。
+                                       | sortCss属性に付加するかたちで出力される。
+                                       | デフォルトは"nablarch_desc"。(出力例: class="nablarch_sort nablarch_desc")
+ascSortId(必須)                        | 昇順に並び替える場合のソートID。
+descSortId(必須)                       | 降順に並び替える場合のソートID。
+defaultSort                            | デフォルトのソート。
+                                       | 下記のいずれかを指定する。
+                                       | asc(昇順)
+                                       | desc(降順)
+                                       | デフォルトは"asc"。
+label(必須)                            | 並び替えを行うサブミットに使用するラベル。
+name(必須)                             | 並び替えを行うサブミットに使用するタグのname属性。
+                                       | name属性は、画面内で一意にすること。
+listSearchInfoName(必須)               | ListSearchInfoをリクエストスコープから取得する際に使用する名前。
+====================================== ==========================================================================================
+
+```
+
+## Knowledge File
+
+- ID: `biz-samples-03_ListSearchResult--s24`
+
+```json
+{
+  "id": "biz-samples-03_ListSearchResult--s24",
+  "title": "検索結果の一覧表示機能のデフォルト値設定",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の一覧表示機能のデフォルト値設定",
+      "hints": [
+        "ListSearchInfo",
+        "nablarch.listSearch.maxResultCount",
+        "nablarch.listSearch.max",
+        "検索結果最大件数",
+        "ページング表示件数",
+        "setMax",
+        "setMaxResultCount",
+        "DbAccessSupport",
+        "ApplicationException",
+        "OnError"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アプリケーションへのサンプル実装(タグファイル)の取り込み方法",
+      "hints": [
+        "listSearchResultタグファイル",
+        "タグファイル配置",
+        "プレフィックス修正",
+        "taglib",
+        "WEB-INF/tags"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "タグリファレンス",
+      "hints": [
+        "listSearchResultタグ",
+        "listSearchSortSubmitタグ",
+        "タグリファレンス",
+        "並び替え列見出し",
+        "ascSortId",
+        "descSortId",
+        "listSearchInfoName",
+        "sortCss",
+        "ascCss",
+        "descCss"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "全体",
+      "hints": [
+        "listSearchInfoName",
+        "listSearchResultWrapperCss",
+        "listSearchResultタグ全体属性",
+        "一覧表示ラッパー"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "resultCountCss",
+        "resultCountFragment",
+        "検索結果件数表示"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "pagingPosition",
+        "pagingCss",
+        "ページング表示"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "現在のページ番号",
+      "hints": [
+        "useCurrentPageNumber",
+        "currentPageNumberCss",
+        "currentPageNumberFragment",
+        "現在ページ番号表示"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "最初",
+      "hints": [
+        "useFirstSubmit",
+        "firstSubmitTag",
+        "firstSubmitType",
+        "firstSubmitCss",
+        "firstSubmitLabel",
+        "firstSubmitName",
+        "最初ページ遷移"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "前へ",
+      "hints": [
+        "usePrevSubmit",
+        "prevSubmitTag",
+        "prevSubmitType",
+        "prevSubmitCss",
+        "prevSubmitLabel",
+        "prevSubmitName",
+        "前ページ遷移"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ページ番号(ページ番号をラベルとして使用するためラベル指定がない)",
+      "hints": [
+        "usePageNumberSubmit",
+        "pageNumberSubmitTag",
+        "pageNumberSubmitType",
+        "pageNumberSubmitCss",
+        "pageNumberSubmitName",
+        "ページ番号遷移"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "次へ",
+      "hints": [
+        "useNextSubmit",
+        "nextSubmitTag",
+        "nextSubmitType",
+        "nextSubmitCss",
+        "nextSubmitLabel",
+        "nextSubmitName",
+        "次ページ遷移"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "最後",
+      "hints": [
+        "useLastSubmit",
+        "lastSubmitTag",
+        "lastSubmitType",
+        "lastSubmitCss",
+        "lastSubmitLabel",
+        "lastSubmitName",
+        "最後ページ遷移"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "検索結果",
+      "hints": [
+        "resultSetName",
+        "resultSetCss",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "検索結果テーブル表示"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索処理の設定（最大件数・1ページ取得件数）はリポジトリ機能の環境設定ファイルで指定する。ListSearchInfo生成時にリポジトリから取得され、設定値がない場合は以下のデフォルト値が適用される。\n\n| プロパティ名 | 設定内容 | デフォルト値 |\n|---|---|---|\n| nablarch.listSearch.maxResultCount | 検索結果の最大件数（上限） | 200 |\n| nablarch.listSearch.max | 1ページの表示件数 | 20 |\n\n個別機能のみ設定値を変更する場合:\n- 画面表示設定: JSP上で :ref:`ListSearchResult_Tag` の属性を指定\n- ページング検索設定: ActionメソッドでListSearchInfoを継承したクラスに値を設定\n\n最大件数50・表示件数10に変更する実装例:\n\n```java\npublic class W11AC01Action extends DbAccessSupport {\n    private static final int MAX_ROWS = 10;\n    private static final int MAX_RESULT_COUNT = 50;\n\n    @OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\n    public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n        W11AC01SearchForm condition = ... ;\n        condition.setMax(MAX_ROWS);\n        condition.setMaxResultCount(MAX_RESULT_COUNT);\n    }\n}\n```",
+    "s2": "タグファイルの配置:\n- コピー元: `META-INF/tags/listSearchResult`\n- コピー先: 業務アプリケーションの `/WEB-INF/tags` ディレクトリ\n\n`/WEB-INF/tags/listSearchResult` に配置した場合のプレフィックス修正:\n\n修正前:\n```jsp\n<%@ taglib prefix=\"nbs\" uri=\"http://tis.co.jp/nablarch-biz-sample\" %>\n```\nプレフィックス: `nbs`\n\n修正後:\n```jsp\n<%@ taglib prefix=\"listSearchResult\" tagdir=\"/WEB-INF/tags/listSearchResult\" %>\n```\nプレフィックス: `listSearchResult`",
+    "s3": "| タグ | 機能 |\n|---|---|\n| :ref:`ListSearchResult_Tag` | 検索結果の一覧表示 |\n| :ref:`ListSearchResult_ListSearchSortSubmitTag` | 検索結果の一覧表示で並び替え対応の列見出しを出力 |\n\n## listSearchSortSubmitタグ属性\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| tag | | submitLink | 並び替えサブミットに使用するNablarchタグ（submitLink/submit/button） |\n| type | | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| sortCss | | nablarch_sort | 並び替えサブミットのclass属性（常に出力） |\n| ascCss | | nablarch_asc | 昇順時に付加するclass属性（例: class=\"nablarch_sort nablarch_asc\"） |\n| descCss | | nablarch_desc | 降順時に付加するclass属性（例: class=\"nablarch_sort nablarch_desc\"） |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトのソート（asc/desc） |\n| label | ○ | | サブミットのラベル |\n| name | ○ | | タグのname属性（画面内で一意にすること） |\n| listSearchInfoName | ○ | | ListSearchInfoをリクエストスコープから取得する際の名前 |",
+    "s4": "listSearchResultタグの全体属性:\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| listSearchInfoName | | | ListSearchInfoをリクエストスコープから取得する際の名前。未指定の場合は「検索結果件数」および「ページング」を表示しない（一括削除確認画面など一覧表示のみの場合は指定しない） |\n| listSearchResultWrapperCss | | nablarch_listSearchResultWrapper | ページング付きテーブル全体（検索結果件数・ページング・検索結果）をラップするdivのclass属性 |",
+    "s5": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n| resultCountCss | nablarch_resultCount | 検索結果件数をラップするdivのclass属性 |\n| resultCountFragment | \"検索結果 <PagingInfoのresultCountプロパティ>件\" | 検索結果件数を出力するJSPフラグメント |",
+    "s6": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePaging | | true | ページングを表示するか否か |\n| searchUri | ○(ページング表示時) | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること |\n| pagingPosition | | top | ページングの表示位置（top/bottom/both/none） |\n| pagingCss | | nablarch_paging | ページングのサブミット要素全体をラップするdivのclass属性 |",
+    "s7": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useCurrentPageNumber | true | 現在のページ番号を使用するか否か |\n| currentPageNumberCss | nablarch_currentPageNumber | 現在のページ番号をラップするdivのclass属性 |\n| currentPageNumberFragment | \"[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]\" | 現在のページ番号を出力するJSPフラグメント |",
+    "s8": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useFirstSubmit | false | 最初のページに遷移するサブミットを使用するか否か |\n| firstSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| firstSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| firstSubmitCss | nablarch_firstSubmit | ラップするdivのclass属性 |\n| firstSubmitLabel | 最初 | ラベル |\n| firstSubmitName | firstSubmit | name属性。表示位置サフィックスが付加される（上側: _top、下側: _bottom）。例: firstSubmit_top |",
+    "s9": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| usePrevSubmit | true | 前のページに遷移するサブミットを使用するか否か |\n| prevSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| prevSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| prevSubmitCss | nablarch_prevSubmit | ラップするdivのclass属性 |\n| prevSubmitLabel | 前へ | ラベル |\n| prevSubmitName | prevSubmit | name属性。表示位置サフィックスが付加される（例: prevSubmit_top） |",
+    "s10": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| usePageNumberSubmit | false | ページ番号のページに遷移するサブミットを使用するか否か |\n| pageNumberSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| pageNumberSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| pageNumberSubmitCss | nablarch_pageNumberSubmit | ラップするdivのclass属性 |\n| pageNumberSubmitName | pageNumberSubmit | name属性。ページ番号と表示位置サフィックスが付加される（例: pageNumberSubmit3_top） |",
+    "s11": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useNextSubmit | true | 次のページに遷移するサブミットを使用するか否か |\n| nextSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| nextSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| nextSubmitCss | nablarch_nextSubmit | ラップするdivのclass属性 |\n| nextSubmitLabel | 次へ | ラベル |\n| nextSubmitName | nextSubmit | name属性。表示位置サフィックスが付加される（例: nextSubmit_top） |",
+    "s12": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useLastSubmit | false | 最後のページに遷移するサブミットを使用するか否か |\n| lastSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| lastSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| lastSubmitCss | nablarch_lastSubmit | ラップするdivのclass属性 |\n| lastSubmitLabel | 最後 | ラベル |\n| lastSubmitName | lastSubmit | name属性。表示位置サフィックスが付加される（例: lastSubmit_top） |",
+    "s13": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| resultSetName | ○ | | 検索結果をリクエストスコープから取得する際の名前 |\n| resultSetCss | | nablarch_resultSet | 検索結果テーブルのclass属性 |\n| headerRowFragment | ○ | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | ○ | | ボディ行のJSPフラグメント |\n| varRowName | | row | ボディ行のフラグメントで行データ（c:forEachのvar）を参照する変数名 |\n| varStatusName | | status | ボディ行のフラグメントでステータス（c:forEachのstatus）を参照する変数名 |\n| varCountName | | count | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | | rowCount | 検索結果のカウント（取得開始位置＋ステータスのカウント）を参照する変数名 |\n| varOddEvenName | | oddEvenCss | ボディ行のclass属性を参照する変数名（1行おきにclass変更する場合に使用） |\n| oddValue | | nablarch_odd | 奇数行のclass属性 |\n| evenValue | | nablarch_even | 偶数行のclass属性 |\n\n> **注意**: `varStatusName`で指定した変数にn:writeタグでアクセスするとエラーになる。n:setタグを使用してアクセスすること。\n\n```jsp\n<n:set var=\"rowCount\" value=\"${status.count}\" />\n<n:write name=\"rowCount\" />\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 13 < source headings 15
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

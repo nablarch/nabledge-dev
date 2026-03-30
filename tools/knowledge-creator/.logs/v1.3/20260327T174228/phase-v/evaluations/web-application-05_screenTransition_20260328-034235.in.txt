@@ -1,0 +1,254 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-05_screenTransition`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "section_issue",
+    "severity": "minor",
+    "location": "s3 (次に読むもの)",
+    "description": "Section content is 'なし' but the hints array lists substantive terms (カスタムタグ, WebView, 画面遷移参照). An AI agent retrieving s3 based on those hints would find no usable content. Either the hints should be removed (since the source section is navigation-only) or the section itself should be omitted.",
+    "source_evidence": "Source 次に読むもの contains only a navigation link to `WebView.html`. Knowledge file s3 content: 'なし'. Knowledge file s3 hints: ['カスタムタグ', 'WebView', '画面遷移参照']."
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _screenTransition:
+
+============
+画面遷移処理
+============
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 画面遷移処理のJSPへの書き方
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸とその中にある赤文字の遷移の部分である。
+
+.. image:: ./_image/05/screenTransition.png
+ :scale: 50
+
+編集するソースコードは以下のとおり。
+
++--------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| 名称(右クリック->保存でダウンロード)                         | ステレオタイプ | 処理内容                                                                                                                                      |
++==============================================================+================+===============================================================================================================================================+
+| | :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`| View           | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|
+| | :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`|                |                                                                                                                                               |
++--------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+View(JSP)の作成
+===============
+
+画面イメージ
+------------
+
+作成するJSPの画面イメージを以下に示す。画面下の"キャンセル"ボタンと画面下の"確定"ボタンを押下したときの画面遷移処理の書き方を説明する。
+
+.. image:: ./_image/05/W11AC0202.png
+ :scale: 55
+
+ソースコード(実装方法)
+----------------------
+
+アプリケーションフレームワーク提供のカスタムタグを使用する。
+  :a): n:formタグを使用して、HTMLフォームを作成する。
+  :b): button:cancel(キャンセルボタン)タグ 、button:confirm(確定ボタン)タグを使用してボタンを出力する。
+       uri属性には、サブミットするパスを指定する。
+
+       ※buttonタグは、サンプル提供されるタグファイル。
+
+上記を参照し、以下の内容で\ *W11AC0201.jsp*\ を作成する。
+
+* W11AC0201.jsp
+
+.. literalinclude:: ./_source/05/W11AC0201.jsp
+   :language: jsp
+   
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+
+  デフォルトで、button:cancelは「キャンセル」、button:confirmは「確定」をラベルに出力する。
+  一部画面でラベルに表示する値を変えたい場合には、label属性に表示したい文言を指定すること。
+
+
+登録画面へ戻る(キャンセルボタン押下)場合の入力値の復元
+-------------------------------------------------------
+キャンセルボタンを押下して前の画面へ戻った場合、入力内容を復元する必要がある。このためには、実装時に以下の点のみ注意しておけばよい。\
+そうすれば、単純に戻り先の画面へ遷移させれば、入力内容が復元される。
+
+* 入力項目(テキストエリア、ラジオボタンなど)を作成する際は、アプリケーションフレームワーク提供のカスタムタグを使用する。
+* n:formタグのwindowScopePrefixes属性に入力項目のカスタムタグのname属性に指定したプレフィックス\ :ref:`(参照)<04_JSPNameAttribute>`\ を指定する。
+
+------------
+次に読むもの
+------------
+* `カスタムタグの使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07_WebView.html>`_
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-05_screenTransition",
+  "title": "画面遷移処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "画面遷移処理",
+        "ViewJSPファイル",
+        "ステレオタイプ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "n:form",
+        "button:cancel",
+        "button:confirm",
+        "windowScopePrefixes",
+        "uri属性",
+        "label属性",
+        "入力値復元",
+        "キャンセルボタン",
+        "確定ボタン",
+        "JSP画面遷移実装",
+        "サンプル提供タグファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "カスタムタグ",
+        "WebView",
+        "画面遷移参照"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 作成ファイル\n\n| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` | View | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|\n| :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>` | | |\n\nステレオタイプについては :ref:`stereoType` を参照。",
+    "s2": "## View(JSP)の作成\n\n画面遷移の実装にはアプリケーションフレームワーク提供のカスタムタグを使用する。\n\n- `n:form` タグ: HTMLフォームの作成に使用する。`windowScopePrefixes` 属性で入力値の復元を制御する。\n- `button:cancel` タグ: キャンセルボタンを出力する。`uri` 属性にサブミットするパスを指定する。\n- `button:confirm` タグ: 確定ボタンを出力する。`uri` 属性にサブミットするパスを指定する。\n\n> **注意**: `button:cancel` と `button:confirm` はアプリケーションフレームワークのコア機能ではなく、**サンプル提供されるタグファイル**である。\n\n> **注意**: `button:cancel` のデフォルトラベルは「キャンセル」、`button:confirm` は「確定」。一部画面でラベルを変えたい場合は `label` 属性に表示文言を指定する。\n\n## 登録画面へ戻る際の入力値の復元\n\nキャンセルボタン押下で前の画面へ戻った際に入力値を復元するには、以下の2点を実装すること:\n\n1. 入力項目（テキストエリア、ラジオボタンなど）の作成にはアプリケーションフレームワーク提供のカスタムタグを使用する。\n2. `n:form` タグの `windowScopePrefixes` 属性に、入力項目のカスタムタグの `name` 属性で指定したプレフィックス :ref:`(参照)<04_JSPNameAttribute>` を指定する。\n\n実装ファイル: :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`",
+    "s3": "なし"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-05_screenTransition",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 (次に読むもの)",
+      "description": "Section content is 'なし' but the hints array lists substantive terms (カスタムタグ, WebView, 画面遷移参照). An AI agent retrieving s3 based on those hints would find no usable content. Either the hints should be removed (since the source section is navigation-only) or the section itself should be omitted.",
+      "source_evidence": "Source 次に読むもの contains only a navigation link to `WebView.html`. Knowledge file s3 content: 'なし'. Knowledge file s3 hints: ['カスタムタグ', 'WebView', '画面遷移参照']."
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "web-application-05_screenTransition",
+  "title": "画面遷移処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "画面遷移処理",
+        "ViewJSPファイル",
+        "ステレオタイプ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "n:form",
+        "button:cancel",
+        "button:confirm",
+        "windowScopePrefixes",
+        "uri属性",
+        "label属性",
+        "入力値復元",
+        "キャンセルボタン",
+        "確定ボタン",
+        "JSP画面遷移実装",
+        "サンプル提供タグファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "次に読むもの",
+      "hints": [
+        "カスタムタグ",
+        "WebView",
+        "画面遷移参照"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 作成ファイル\n\n| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` | View | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|\n| :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>` | | |\n\nステレオタイプについては :ref:`stereoType` を参照。",
+    "s2": "## View(JSP)の作成\n\n画面遷移の実装にはアプリケーションフレームワーク提供のカスタムタグを使用する。\n\n- `n:form` タグ: HTMLフォームの作成に使用する。`windowScopePrefixes` 属性で入力値の復元を制御する。\n- `button:cancel` タグ: キャンセルボタンを出力する。`uri` 属性にサブミットするパスを指定する。\n- `button:confirm` タグ: 確定ボタンを出力する。`uri` 属性にサブミットするパスを指定する。\n\n> **注意**: `button:cancel` と `button:confirm` はアプリケーションフレームワークのコア機能ではなく、**サンプル提供されるタグファイル**である。\n\n> **注意**: `button:cancel` のデフォルトラベルは「キャンセル」、`button:confirm` は「確定」。一部画面でラベルを変えたい場合は `label` 属性に表示文言を指定する。\n\n## 登録画面へ戻る際の入力値の復元\n\nキャンセルボタン押下で前の画面へ戻った際に入力値を復元するには、以下の2点を実装すること:\n\n1. 入力項目（テキストエリア、ラジオボタンなど）の作成にはアプリケーションフレームワーク提供のカスタムタグを使用する。\n2. `n:form` タグの `windowScopePrefixes` 属性に、入力項目のカスタムタグの `name` 属性で指定したプレフィックス :ref:`(参照)<04_JSPNameAttribute>` を指定する。\n\n実装ファイル: :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`",
+    "s3": "なし"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

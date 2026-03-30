@@ -1,0 +1,228 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "about-nablarch-6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — DB2の場合 / SQLServerの場合 (version disclaimers)",
+      "description": "Both DB2 and SQLServer sections contain explicit version disclaimers warning that answers are based on specific versions (DB2 v10.1, SQLServer v2008R2) and that other versions may behave differently, with instructions to always consult vendor-provided manuals. These are omitted from the knowledge file entirely.",
+      "source_evidence": "DB2: 「回答内容は、バージョン10.1のドキュメントを元に作成しています。他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に設定及び実装を行うようにしてください。」 / SQLServer: 「回答内容は、バージョン2008R2のドキュメントを元に作成しています。他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に設定及び実装を行うようにしてください。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — DB2サイズ小さい場合 / SQLServer ResultSetConvertor実装",
+      "description": "Two architect-responsibility notes are omitted: (1) for the DB2 small-BLOB DataSource configuration: 'この設定はアーキテクトが行うものであり、各開発者が行う必要はありません'; (2) for the SQLServer ResultSetConvertor implementation: 'ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はありません'. These role-assignment notes are important for project members to understand who should perform these tasks.",
+      "source_evidence": "DB2小さい場合: 「なお、この設定はアーキテクトが行うものであり、各開発者が行う必要はありません。」 / SQLServer ResultSetConvertor: 「なお、ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はありません。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — DB2サイズ大きい場合 / SQLServerアプリケーション実装",
+      "description": "The technical constraint explaining WHY executeQuery must be used is omitted for both DB2 (large BLOB) and SQLServer: 'java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます' / 'java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます'. The knowledge file states the instruction (use executeQuery) but omits the underlying constraint.",
+      "source_evidence": "DB2大きい場合: 「java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます。このため、retrieveではなくexecuteQueryを使用してカレントレコードのBLOBデータへアクセスする必要があります。」 / SQLServer: 「java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます。このため、retrieveではなくexecuteQueryを使用して…」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The Nablarch-specific class `SqlRow` appears in both DB2 and SQLServer code examples but is absent from the hints array.",
+      "source_evidence": "Source code examples: `SqlRow row = rows.getRow();` (both DB2 and SQLServer sections)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+DB2やSQLServerでのバイナリ型のカラムへのアクセス方法を教えてください
+=======================================================================
+
+.. admonition:: question
+
+    DB2のBLOB型のデータへアクセスすると「操作が無効です: Lob はクローズされています。」エラーが発生します。
+    このエラーを回避する方法はありますか？
+
+    SQLServerのLONGVARBINARY(VARBINARY(max)で定義されたカラム)にアクセスすると、
+    ヒープが大量に消費されますが、回避方法はありますか？
+
+
+.. admonition:: answer
+
+    * DB2の場合
+
+      **回答内容は、バージョン10.1のドキュメントを元に作成しています。
+      他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
+      設定及び実装を行うようにしてください。**
+
+      BLOB型に格納されるサイズにより、以下の2通りの対応方法があります。
+      それぞれに対して対応案を例示しますので、アーキテクトの方はどちらがプロジェクトに適しているかを判断し、対応を行なってください。
+
+      1) BLOBに格納される値のサイズが小さい場合（ヒープに展開されても問題ない場合）
+      2) BLOBに格納される値のサイズが大きい場合（ヒープに展開されるとメモリが不足する可能性がある場合）
+
+      * BLOBに格納されるサイズが小さい場合
+
+       BLOB型のカラムに格納されるデータサイズが小さい(ヒープサイズから見てメモリ上に展開されても問題ないサイズ)場合は、
+       DB2のDataSourceのプロパティへの設定でバイナリデータをヒープに展開されるようにしてください。
+       これにより、「Lobはクローズされています。」エラーを回避することができます。
+
+       なお、この設定はアーキテクトが行うものであり、各開発者が行う必要はありません。
+
+       以下に設定例を示します。
+
+       .. code-block:: xml
+
+         <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+           <!-- 接続先情報などは省略 -->
+
+           <!-- progressiveStreamingには、「2」を設定する。 -->
+           <property name="progressiveStreaming" value="2" />
+         </component>
+
+      * BLOBに格納されるサイズが大きい場合
+
+       BLOB型のカラムに格納されるデータサイズが大きい(ヒープサイズから見てメモリ上に展開されることが好ましくない)場合は、
+       ロケータを使用してアクセスする必要があります。
+       なお、この場合は設定ファイルと実装の両方へ影響があります。
+
+       * 設定ファイルの例
+
+         .. code-block:: xml
+
+            <component class="com.ibm.db2.jcc.DB2SimpleDataSource">
+              <!-- 接続先情報などは省略 -->
+
+              <!-- progressiveStreamingには、「1」を設定する。 -->
+              <property name="progressiveStreaming" value="1" />
+            </component>
+
+       * 実装例
+
+         java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます。
+         このため、retrieveではなくexecuteQueryを使用してカレントレコードのBLOBデータへアクセスする必要があります。
+
+         .. code-block:: java
+
+           // retrieveではなく、executeQueryを使用する。
+           // retrieveを使用すると、「Lobはクローズされています。」エラーが発生します。
+           ResultSetIterator rows = statement.executeQuery();
+
+           // ResultSetIterator#nextを使って次のレコードへカレントを進めてからBLOBのデータにアクセスします。
+           if (rows.next()) {
+               // データが取得できている場合は、BLOBのデータを取得する。
+               SqlRow row = rows.getRow();
+               Blob blobColumn = (Blob) row.get("blob_column");
+
+               // Blobのデータにアクセスする処理は省略
+           }
+
+    * SQLServerの場合
+
+      **回答内容は、バージョン2008R2のドキュメントを元に作成しています。
+      他のバージョンでは、異なる動作となることも考えられますので、必ずベンダーから提供されるマニュアルを元に
+      設定及び実装を行うようにしてください。**
+
+      LONGVARBINARY(VARBINARY(max)と定義したカラム)の場合には、ストリーム経由でデータへアクセスすることを推奨します。
+      VARBINARY(max)以外の場合は、指定できる上限が8000であることからストリーム経由ではなく、ヒープ上にデータを展開する実装でも問題ないでしょう。
+      
+      LONGVARBINARYをストリーム経由で取得するためには、ResultSetConvertorの実装クラスを作成しストリームオブジェクトを返却する必要があります。
+      アプリケーションプログラムでは、ストリームオブジェクトからデータを読み込む必要があります。
+
+      * ResultSetConvertorの実装
+
+        実装サンプルとして提供される、nablarch.core.db.statement.SqlServerResultSetConvertorを参考にしてください。
+        必要に応じてパッケージの変更や実装変更を行ってください。
+
+        なお、ResultSetConvertorの実装はアーキテクトが行うものであり、各開発者が行う必要はありません。
+
+      * アプリケーション実装
+
+        java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます。
+        このため、retrieveではなくexecuteQueryを使用してカレントレコードのLONGVARBINARYデータへアクセスする必要があります。
+
+        また、LONGVARBINARYと同時にその他のバイナリ型(BINARYやVARBINARY)のカラムを取得することはできないので、
+        LONGVARBINARY型のカラムを取得する際は、その他のバイナリ型のカラムをSELECT句に含めないようにしてください。
+
+        .. code-block:: java
+        
+          // retrieveではなく、executeQueryを使用する。
+          // retrieveを使用すると、「ストリームは閉じられています。」エラーが発生します。
+          ResultSetIterator rows = statement.executeQuery();
+
+          // ResultSetIterator#nextを使って次のレコードへカレントを進めてからLONGVARBINARYのデータにアクセスします。
+          if (rows.next()) {
+              // データが取得できている場合は、BLOBのデータを取得する。
+              SqlRow row = rows.getRow();
+              InputStream binaryColumn = (InputStream) row.get("binary_column");
+
+              // InputStreamにアクセスする処理は省略
+          }
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "about-nablarch-6",
+  "title": "DB2やSQLServerでのバイナリ型のカラムへのアクセス方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DB2およびSQLServerでのバイナリ型カラムアクセス方法",
+      "hints": [
+        "DB2",
+        "BLOB型",
+        "progressiveStreaming",
+        "DB2SimpleDataSource",
+        "com.ibm.db2.jcc.DB2SimpleDataSource",
+        "SQLServer",
+        "LONGVARBINARY",
+        "VARBINARY(max)",
+        "ResultSetConvertor",
+        "SqlServerResultSetConvertor",
+        "nablarch.core.db.statement.SqlServerResultSetConvertor",
+        "ResultSetIterator",
+        "executeQuery",
+        "retrieve",
+        "バイナリ型カラムアクセス",
+        "ロケータ",
+        "ストリーム経由取得"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## DB2のBLOB型アクセス\n\nBLOB型のサイズにより2通りの対応が必要。\n\n### サイズが小さい場合（ヒープ展開可）\n\nDB2のDataSourceの`progressiveStreaming`プロパティを`2`に設定することで「Lobはクローズされています。」エラーを回避できる。\n\n```xml\n<component class=\"com.ibm.db2.jcc.DB2SimpleDataSource\">\n  <property name=\"progressiveStreaming\" value=\"2\" />\n</component>\n```\n\n### サイズが大きい場合（ヒープ展開不可）\n\nロケータを使用してアクセスする必要がある。設定ファイルと実装の両方に影響がある。\n\n> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「Lobはクローズされています。」エラーが発生する。`ResultSetIterator#next`でカレントを進めてからBLOBデータにアクセスすること。\n\n設定:\n```xml\n<component class=\"com.ibm.db2.jcc.DB2SimpleDataSource\">\n  <property name=\"progressiveStreaming\" value=\"1\" />\n</component>\n```\n\n実装例:\n```java\nResultSetIterator rows = statement.executeQuery();\nif (rows.next()) {\n    SqlRow row = rows.getRow();\n    Blob blobColumn = (Blob) row.get(\"blob_column\");\n}\n```\n\n## SQLServerのLONGVARBINARY(VARBINARY(max))アクセス\n\n> **重要**: LONGVARBINARY（VARBINARY(max)と定義したカラム）はストリーム経由でアクセスすること。VARBINARY(max)以外（上限8000）はヒープ展開でも問題ない。\n\n> **重要**: `retrieve`ではなく`executeQuery`を使用すること。`retrieve`を使用すると「ストリームは閉じられています。」エラーが発生する。\n\n> **重要**: LONGVARBINARYと同時に他のバイナリ型（BINARYやVARBINARY）のカラムは取得不可。LONGVARBINARYを取得する際はSELECT句に他のバイナリ型カラムを含めないこと。\n\nストリーム経由で取得するには`ResultSetConvertor`の実装クラスを作成してストリームオブジェクトを返却する必要がある。参考実装: `nablarch.core.db.statement.SqlServerResultSetConvertor`\n\n実装例:\n```java\nResultSetIterator rows = statement.executeQuery();\nif (rows.next()) {\n    SqlRow row = rows.getRow();\n    InputStream binaryColumn = (InputStream) row.get(\"binary_column\");\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

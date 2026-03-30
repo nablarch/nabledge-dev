@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is low impact. All content from both merged source headings is fully preserved in s3, and the hints array correctly indexes both topics (\"入力値のトリム\", \"trimPolicy\", \"StringConvertor\" for trimming; \"Map\", \"SqlRow\", \"様々なMapオブジェクトの精査と変換\" for Map validation). An agent querying either topic will be routed to s3 and find the correct information. The embedded `## 様々なMapオブジェクトの精査と変換` heading inside the section body is structurally unusual but does not mislead or suppress content. Retrieval precision is slightly reduced (queries on one topic will also return the other topic's content), but no answer will be wrong or incomplete as a result.",
+  "findings_assessment": [
+    {
+      "category": "section_issue",
+      "location": "s3",
+      "impact": "low",
+      "justification": "Both topics are fully present and retrievable. Hints in s3's index entry cover both 'trimPolicy'/'入力値のトリム' and 'Map'/'SqlRow'/'様々なMapオブジェクトの精査と変換', so neither topic is orphaned from retrieval. The only cost is slightly reduced retrieval precision — a trim-related query returns Map content as a side effect, and vice versa — but no knowledge is lost and no answer will be incorrect. The embedded heading is cosmetically odd but does not break agent reasoning. Why it persisted: Phase E output is identical to Phase D, indicating the fix agent chose not to restructure the JSON (splitting one section into two requires adding a new index entry, renumbering, and updating the sections map — a higher-effort change the fixer likely judged disproportionate for a minor structural issue with no content loss)."
+    }
+  ]
+}

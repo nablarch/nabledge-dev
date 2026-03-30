@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-03_Tips--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 (シーケンスオブジェクトを使った採番のテストをしたい) — 準備データのnote",
+      "description": "The source contains a note about setup data scope: \"採番用テーブルに準備データを設定する。準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。\" (only set records used within the test scope). This is a best-practice constraint for writing test data and is absent from s1.",
+      "source_evidence": "Source note after SETUP_TABLE=TEST_SBN_TBL example: 「採番用テーブルに準備データを設定する。準備データでは、テスト範囲内で使用する採番対象のレコードのみを設定する。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (任意のディレクトリのExcelファイルを読み込みたい)",
+      "description": "The source explains that Excel files in the same directory as the test source can be read by specifying only the sheet name, and TestDataParser is needed only for files in a different directory. The knowledge file omits the first half of this contrast, losing the guidance on when NOT to use TestDataParser.",
+      "source_evidence": "「テストソースコードと同じディレクトリに存在するExcelファイルであれば、シート名を指定するだけで読み込み可能であるが、別のディレクトリに存在するファイルを読み込みたい場合は、TestDataParser実装クラスを直接使用することで取得できる。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s10 (デフォルト以外のトランザクションを使用したい)",
+      "description": "The hints only list [\"DbAccessTestSupport\", \"トランザクション自動制御\"] but are missing \"プロパティファイル\" and \"トランザクション名\", both of which are key configuration terms from the source describing how the mechanism is activated.",
+      "source_evidence": "「プロパティファイルにトランザクション名を記載しておけば、テスティングフレームワークは、テストメソッド実行前にトランザクション開始、テストメソッド終了後にトランザクションを終了する。」"
+    }
+  ]
+}

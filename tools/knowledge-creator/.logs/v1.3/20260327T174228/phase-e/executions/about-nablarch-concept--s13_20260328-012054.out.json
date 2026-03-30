@@ -1,0 +1,98 @@
+{
+  "id": "about-nablarch-concept--s13",
+  "title": "Nablarchコンセプト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "処理結果の識別",
+      "hints": [
+        "Result",
+        "HttpResponse",
+        "ResponseMessage",
+        "Result.Success",
+        "HttpErrorResponse",
+        "ErrorResponseMessage",
+        "Result.Error",
+        "HttpResponseHandler",
+        "MessageReplyHandler",
+        "@Published",
+        "isSuccess",
+        "処理結果オブジェクト",
+        "ハンドラ処理結果",
+        "レスポンス処理",
+        "正常終了",
+        "異常終了"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "変数スコープ",
+      "hints": [
+        "SessionConcurrentAccessHandler",
+        "DbConnectionManagementHandler",
+        "ThreadContextHandler",
+        "java.lang.ThreadLocal",
+        "リクエストスコープ",
+        "セッションスコープ",
+        "スレッドローカル",
+        "スレッドコンテキスト",
+        "ウィンドウスコープ",
+        "変数スコープ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ハンドライベントコールバック",
+      "hints": [
+        "TransactionEventCallback",
+        "TransactionManagementHandler",
+        "MultiThreadExecutionHandler",
+        "LoopHandler",
+        "ExecutionContext",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "ハンドライベントコールバック",
+        "トランザクションコールバック"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データリーダ",
+      "hints": [
+        "DataReader",
+        "DataReadHandler",
+        "DataReaderFactory",
+        "MultiThreadExecutionHandler",
+        "ExecutionContext",
+        "データリーダ",
+        "read",
+        "hasNext",
+        "close",
+        "バッチ入力データ読み込み"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "業務アクションハンドラ",
+        "フォーム",
+        "エンティティ",
+        "入力精査",
+        "ビジネスロジック",
+        "共通コンポーネント",
+        "処理結果返却",
+        "TransactionManagementHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 処理結果オブジェクト\n\n**インターフェース**: `Result`\n\n| メソッド | 戻り値 | 説明 | @Published |\n|---|---|---|---|\n| `getStatusCode()` | int | ステータスコード | — |\n| `getMessage()` | String | 詳細情報 | — |\n| `isSuccess()` | boolean | 正常終了した場合はtrue | ✓ |\n\n> **重要**: `@Published` アノテーションが付与されているのは `isSuccess()` のみ。`getStatusCode()` と `getMessage()` は `@Published` ではないため、アプリケーション開発者が業務コードから安全に呼び出せることが保証されているのは `isSuccess()` だけである。\n\n## ハンドラの処理結果\n\nハンドラの処理終了時、上位ハンドラへの返却方法は以下の4つ：\n\n1. **後続ハンドラの結果をそのままリターン**: 後続に処理を委譲しその結果をそのまま返す（多くのハンドラ）。\n2. **処理結果オブジェクトを作成してリターン**: リクエスト処理が正常終了した場合。:doc:`../handler/TransactionManagementHandler` によりコミットされる。\n\n| 実行制御基盤 | 正常終了時の返却型 | 内容 |\n|---|---|---|\n| :doc:`web_gui` | `HttpResponse` | 遷移先画面のパス等を設定したオブジェクト |\n| :doc:`messaging_request_reply` | `ResponseMessage` | 応答電文のフォーマットや内容を設定したオブジェクト |\n| :doc:`batch` / :doc:`messaging_receive` | `Result.Success` | 正常終了を表すマーカオブジェクト（レスポンス処理なし） |\n\n3. **処理結果オブジェクトを実行時例外として送出**: リクエスト処理が異常終了した場合。:doc:`../handler/TransactionManagementHandler` によりロールバックされる。\n\n| 実行制御基盤 | 異常終了時に送出する型 | 内容 |\n|---|---|---|\n| :doc:`web_gui` | `HttpErrorResponse` | エラー時遷移先画面のパス等を設定したオブジェクト |\n| :doc:`messaging_request_reply` | `ErrorResponseMessage` | エラー応答電文のフォーマットや内容を設定したオブジェクト |\n| :doc:`batch` / :doc:`messaging_receive` | `Result.Error` のサブクラス | 異常終了を表すマーカオブジェクト（レスポンス処理なし） |\n\n4. **処理結果オブジェクトではない実行時例外を送出**: トランザクションはロールバックされる。:doc:`web_gui` ・ :doc:`messaging_request_reply` ではレスポンス処理が行われるが、レスポンス内容を指定できないため既定のレスポンス処理が行われる。\n\n## レスポンス処理\n\n:doc:`web_gui` や :doc:`messaging_request_reply` では、クライアント応答内容を指定するオブジェクトをハンドラキュー上の特定ハンドラ（:doc:`../handler/HttpResponseHandler` または :doc:`../handler/MessageReplyHandler`）が処理してレスポンス送信する。",
+    "s2": "変数スコープは、ハンドラキュー上のハンドラ間でデータを共有する領域。共有範囲・存続期間が異なる4種類がある。\n\n**リクエストスコープ**: 各リクエストの開始〜終了までスレッド固有の変数を保持。実行コンテキスト上に保持。`Map<String, Object>` インターフェースでアクセス。\n\n**セッションスコープ**: 複数リクエストを跨って存続し、リクエストスレッド間で共有（共有範囲・存続期間は処理形態ごとに異なる）。実行コンテキストから `Map<String, Object>` インターフェースでアクセス。\n\n> **注意**: セッションスコープをリクエストスレッドから変更する場合は、:doc:`../handler/SessionConcurrentAccessHandler` を使用するなど何らかの同期化が必要。\n\n**スレッドローカル**: DB接続のようにどこで使用するか予期できないデータの受け渡しに使用。実行コンテキストを経由しないため、関係のないクラスのメソッドに引数として渡す必要がない。:doc:`../handler/DbConnectionManagementHandler` などが `java.lang.ThreadLocal` を使用。\n\n**スレッドコンテキスト**: スレッドローカル変数上に保持された変数スコープ（Map）。ユーザIDやリクエストIDのように、ログ出力やDB共通項目設定などで実行コンテキスト経由での引き回しが難しいパラメータを格納。多くは :doc:`../handler/ThreadContextHandler` によって設定される。業務アクションハンドラからも任意の変数を設定可能。\n\n## ウィンドウスコープ\n\n画面オンライン実行制御基盤で使用。セッションスコープと同様、複数リクエストを跨るデータを格納するが、アプリケーションサーバ上ではなくhiddenタグで複数画面間を持ちまわることで実現。\n\n- ブラウザで複数ウィンドウを立ち上げても並列動作可能\n- ブラウザのヒストリバックによる遷移が可能\n\n> **注意**: ウィンドウスコープに格納された変数はカスタムタグを使用することで自動的にhiddenタグに変換されるため、アプリケーションプログラマがJSPにhiddenタグを書く必要はない。\n\n画面オンライン制御基盤の画面間データ連携では、基本的にセッションスコープではなくウィンドウスコープを使用する。\n\n- `画面オンライン用業務アクションハンドラ:変数スコープの利用 <../handler/HttpMethodBinding.html#web-scope>`_\n- `カスタムタグ実装例集 <../../../../guide/development_guide/04_Explanation/CustomTag/basic.html#howto-window-scope>`_",
+    "s3": "一部のハンドラでは、特定のインタフェースを実装した後続ハンドラに対してコールバックを行う。\n\n## TransactionEventCallback\n\n**インターフェース**: `TransactionEventCallback<TData>`\n\n:doc:`../handler/TransactionManagementHandler` がコミット・ロールバックのタイミングで、このインターフェースを実装しているハンドラにコールバックする。\n\n| メソッド | 呼ばれるタイミング |\n|---|---|\n| `transactionNormalEnd(TData data, ExecutionContext ctx)` | 入力データに対する処理が正常終了した場合 |\n| `transactionAbnormalEnd(Throwable e, TData data, ExecutionContext ctx)` | 入力データに対する処理で異常が発生した場合 |\n\n業務アクションハンドラがこのインターフェースを実装することで、業務トランザクションがロールバックされた場合の例外制御が可能。\n\n## コールバック制御を行うハンドラ\n\n- :doc:`../handler/TransactionManagementHandler`\n- :doc:`../handler/MultiThreadExecutionHandler`\n- :doc:`../handler/LoopHandler`",
+    "s4": "データリーダは、外部リソース（ファイル、DB、メッセージキューなど）から1業務トランザクションの実行に必要な情報を読み込むコンポーネント。読み込んだデータは後続ハンドラの入力として渡され、最終的に業務アクションハンドラが処理する。\n\n> **注意**: :doc:`web_gui` ではHTTPリクエスト内に1業務トランザクション実行に必要な情報が含まれるため、別途データリーダを使用する必要はない。\n\n## DataReader インターフェース\n\n**インターフェース**: `DataReader<TData>`\n\n> **注意**: データリーダは複数のリクエストスレッドから並行アクセスされ得るため、各メソッドはスレッドセーフに実装しなければならない。\n\n| メソッド | 説明 |\n|---|---|\n| `read(ExecutionContext ctx)` | 入力データを読み込んで返却。`hasNext()` が false の状態で呼んだ場合の結果は不定 |\n| `hasNext(ExecutionContext ctx)` | 次に読み込むデータが存在するか |\n| `close(ExecutionContext ctx)` | 使用停止し内部リソースを開放 |\n\n## データリーダの作成\n\n作成されたデータリーダは実行コンテキストに設定され、後続のハンドラによって使用される。\n\n| 実行制御基盤 | 作成するコンポーネント | 作成するタイミング |\n|---|---|---|\n| :doc:`web_gui` | (使用しない) | N/A |\n| :doc:`batch` | 業務アクションハンドラ | :doc:`../handler/MultiThreadExecutionHandler` の初期処理内（業務アクションハンドラが実装する `DataReaderFactory` をコールバック） |\n| :doc:`messaging` | リポジトリ | リポジトリの初期化処理内（オブジェクトキー名: **dataReader**） |\n\n## DataReadHandler\n\n:doc:`../handler/DataReadHandler` がデータリーダを使用して読込み処理を行う。実行コンテキスト上のデータリーダから1件分の業務処理データを読み込み、引数として後続ハンドラに処理を委譲する。",
+    "s5": "業務アクションハンドラは業務処理を実装するハンドラ。業務アプリケーション開発担当者が実装する。\n\n## 実装の流れ\n\n1. **入力データの取得**: 入力データはMap形式で取得（以降のライブラリも基本的にMapを引数・戻り値として使用）。\n2. **入力精査**: 取得した入力データのMapに対してフォーム定義に沿って精査処理を行う。DB内容との比較を含む精査はビジネスロジックの一部として実装する。\n3. **ビジネスロジックの実行**: 精査完了後の入力データ（フォームまたはエンティティオブジェクト）をもとに実行。フレームワーク提供ライブラリでDB・データファイル・メッセージキューとの入出力が可能（いずれもMapインターフェース経由）。複数業務アクションから共用しうるロジックは業務アクションハンドラに直接実装せず個別クラス（共通コンポーネント）として実装することを推奨。\n4. **処理結果の返却**: 正常終了時は処理結果を表すオブジェクトを生成して返す。業務処理を異常終了させる場合は実行時例外を送出する（:doc:`../handler/TransactionManagementHandler` により業務トランザクションがロールバックされる）。\n\n## フォームとエンティティ\n\n**フォーム**: システムへの入力項目の精査と値の保持を行うクラス。画面項目定義や電文フォーマット定義などに沿って作成。フォームクラスの各項目に宣言的に精査仕様を設定できる。\n\n**エンティティ**: 以下の特徴を持つフォームのサブセット。テーブル定義に沿って作成される。\n- フォームクラスがRDBMSのテーブルと1対1にひもづく\n- フォームクラスのプロパティとテーブルのカラムが1対1にひもづく"
+  }
+}

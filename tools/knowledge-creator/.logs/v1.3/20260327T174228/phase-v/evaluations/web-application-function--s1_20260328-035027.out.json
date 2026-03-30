@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s1",
+  "needs_improvement": true,
+  "user_impact": "medium",
+  "reason": "Finding 1 has medium impact: the s4 JSP example omits the `n:form` wrapper, producing structurally incorrect code. An agent serving this knowledge would give a developer a non-functional JSP snippet. Finding 2 is low-impact (optional UI tip). Because at least one finding is medium, needs_improvement is true.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s4 — 別ウィンドウのJSP実装例",
+      "impact": "medium",
+      "justification": "The `<n:form name=\"downloadForm\">` wrapper is required for Nablarch's form-submission mechanism to work. Without it, the JSP example is structurally incorrect: `n:downloadSubmit` and `n:button` must be children of `n:form`. An agent using this knowledge file as its sole source would provide a non-functional code snippet to developers, directly causing implementation bugs. The fix was not applied in Phase E — the Phase E output's s4 section still renders `<n:downloadSubmit>` and `<n:button>` as direct children of `<body>` without the `n:form` wrapper, indicating the fix agent retained the omission, likely treating it as a minor editorial issue rather than a functional one."
+    },
+    {
+      "category": "omission",
+      "location": "s4 — 別ウィンドウのJSP実装例",
+      "impact": "low",
+      "justification": "The CSS hide-button tip (`style=\"display: none;\"`) is an optional UI customization. The core pattern (popup + onload auto-submit + download) works correctly without this guidance. An agent lacking this tip would still produce a functionally correct implementation; developers would simply discover the CSS technique independently if needed. The fix was not applied in Phase E — the fix agent likely judged the tip as supplementary commentary not essential to the knowledge content, and keeping it out reduces noise in the generated file."
+    }
+  ]
+}

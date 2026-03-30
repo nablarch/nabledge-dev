@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (障害ログの出力方法)",
+      "description": "The source includes a concrete log output example showing what the failure notification log looks like when a message cannot be retrieved (メッセージが見つからない場合の障害通知ログの出力例). This example is omitted from the knowledge file.",
+      "source_evidence": "2011-02-23 18:23:45.680 -FATAL- usr_id = [9999999999] fail_code = [AP112233] failed to get the message to output the failure log. failureCode = [AP112233]"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (障害ログの出力方針) — hints",
+      "description": "`BasicLogFormatter` is a class referenced in the log.properties configuration example in s2 (as `nablarch.core.log.basic.BasicLogFormatter`) but is absent from the hints array.",
+      "source_evidence": "writer.monitorFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 (障害ログの設定方法) — hints",
+      "description": "Three property names present in the app-log.properties configuration table and example are missing from the hints array: `language`, `derivedRequestIdPropName`, `derivedUserIdPropName`.",
+      "source_evidence": "failureLogFormatter.language=en\nfailureLogFormatter.derivedRequestIdPropName=insertRequestId\nfailureLogFormatter.derivedUserIdPropName=updatedUserId"
+    }
+  ]
+}

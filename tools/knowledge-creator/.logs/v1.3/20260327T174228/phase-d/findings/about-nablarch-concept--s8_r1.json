@@ -1,0 +1,34 @@
+{
+  "file_id": "about-nablarch-concept--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ハンドラインターフェースの定義 (末尾段落)",
+      "description": "The source explicitly states that the return type (TResult) must also be declared as a type variable per handler, varying by processing style: 「処理結果オブジェクトの型もリクエストと同様、処理方式ごとに異なるため、ハンドラごとに型変数として宣言する必要がある。」 This constraint is absent from s1. The code example shows TResult but the textual explanation of why and how to declare it is missing.",
+      "source_evidence": "``handle()`` メソッドはその戻り値として、ハンドラの処理結果を表すオブジェクトを返す。処理結果オブジェクトの型もリクエストと同様、処理方式ごとに異なるため、ハンドラごとに型変数として宣言する必要がある。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — リクエストパスとリクエストIDのマッピング",
+      "description": "The source contains a note that for messaging, the request ID is typically included directly in the request so mapping is not needed: 「messaging では、通常、リクエストIDが直接リクエストに含まれるため、マッピングは不要である。」 This note is absent from s3, even though the mapping table and ThreadContextHandler explanation are present.",
+      "source_evidence": "※ :doc:`messaging` では、通常、リクエストIDが直接リクエストに含まれるため、マッピングは不要である。j"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Several PascalCase handler class names appearing in the type-variable table within s1 are absent from s1's hints array: TransactionManagementHandler, ServiceAvailabilityCheckHandler, RequestPathJavaPackageMapping, RequestHandlerEntry, HttpResponseHandler, HttpAccessLogHandler.",
+      "source_evidence": "型変数テーブルのハンドラの例列: TransactionManagementHandler, ServiceAvailabilityCheckHandler, RequestPathJavaPackageMapping, RequestHandlerEntry, HttpResponseHandler, HttpAccessLogHandler"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "FileBatchAction (referenced in the standard MethodBinder table as the handler associated with RecordTypeBinding) and MethodBinder (the concept term used throughout the section to describe the standard binder implementations) are absent from s5's hints array.",
+      "source_evidence": "nablarch.fw.handler.RecordTypeBinding — 参照: :doc:`../handler/FileBatchAction`; フレームワーク標準の **MethodBinder** として、以下の実装が提供される。"
+    }
+  ]
+}

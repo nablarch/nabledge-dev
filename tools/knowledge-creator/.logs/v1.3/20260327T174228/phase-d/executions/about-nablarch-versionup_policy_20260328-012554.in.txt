@@ -1,0 +1,416 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/TOP/top/about_nablarch/versionup_policy.rst`
+- Format: `rst`
+
+```
+.. image:: ./_image/Nablarch.jpg
+ :width: 300px
+
+.. _`versionup_policy`:
+
+==================================================
+Nablarch のバージョンアップ方針
+==================================================
+
+Nablarchが提供するコンテンツ(詳細は\ :ref:`nablarch_contents` \をご参照ください)に対するバージョンアップ方針について説明します。
+
+
+.. _`versionup_variety`:
+
+----------------------
+更新内容
+----------------------
+
+Nablarchが提供するコンテンツに対して実施されるバージョンアップでは、下記の更新が実施されます。
+
++-----------------------------------------------------------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+|コンテンツに対して実施する更新内容                                                             |説明                                                                  |リリース頻度                                  |
++-----------+--------------------------------------+--------------------------------------------+                                                                      |                                              |
+|大分類     |中分類                                |小分類                                      |                                                                      |                                              |
++===========+======================================+============================================+======================================================================+==============================================+
+|不具合対応 |Nablarch Application FW(NAF)、        |セキュリティ・運用レベルに致命的な不具合対応|NAF、NTFの不具合の中でも、                                            |不具合検出後直ちに対応し、随時リリースします。|
+|           |Nablarch Testing FW(NTF)の不具合      |                                            |セキュリティや運用レベルに致命的な影響を与える不具合対応です。セキュリ|                                              |
+|           |                                      |                                            |ティホールが検出された場合などが該当します。                          |                                              |
+|           |                                      +--------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+|           |                                      |その他の不具合対応                          |通常の一般的な不具合です。NAFだけではなく、例えば不成功となるべきテス |不具合検出後、影響範囲を見定めリリーススケ    |
+|           |                                      |                                            |トが成功してしまうようなNTFの不具合なども該当します。                 |ジュールを策定し、リリースします。            |
+|           +--------------------------------------+--------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+|           |NAF、NTF以外の不具合                                                               |Nablarch標準の改訂や、チュートリアル用サンプルの不具合対応など、製造成|半期に一度程度の頻度でリリースを予定してい    |
+|           |                                                                                   |果物に直接影響しない不具合対応です。                                  |ます。                                        |
++-----------+-----------------------------------------------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+|機能追加                                                                                       |NAFやNTFに対する機能追加、Nablarch標準の追加、                        |半期に一度程度の頻度でリリースを予定してい    |
+|                                                                                               |Nablarch Toolbox へのツール追加などです。                             |ます。                                        |
++-----------------------------------------------------------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+|アーキテクチャデザインの変更(API変更を伴う)                                                    |Nablarchの全面改訂です。APIが変更される場合もあります。               |特にサイクルはありません。                    |
+|                                                                                               |                                                                      |技術革新等、大きな外部環境の変化に追随する場  |
+|                                                                                               |                                                                      |合、ソフトウェアやサービスの新規追加に伴って  |
+|                                                                                               |                                                                      |アーキテクチャデザインを見直す場合等          |
+|                                                                                               |                                                                      |が想定されます。                              |
++-----------------------------------------------------------------------------------------------+----------------------------------------------------------------------+----------------------------------------------+
+   
+各バージョンアップ時にお客様に行っていただく作業は、\ :ref:`about_version_up` \をご参照ください。
+
+.. _`backward_compatibility_policy`:
+
+------------------
+後方互換性ポリシー
+------------------
+Nablarchの後方互換性ポリシーについて説明します。
+
+後方互換性を維持する範囲
+========================
+Nablarchライブラリとして提供するコンテンツ(NAF、NTF)に対して、\ :ref:`backward_compatibility_is_not_maintained` \に該当する場合を除き、
+\ :ref:`backward_compatibility_contents` \に記載の内容で、後方互換性を維持いたします。
+
+なお、Nablarchライブラリ以外のコンテンツに対する後方互換性の維持は考慮されません。
+
+.. _`backward_compatibility_contents`:
+
+後方互換性維持の内容
+====================
+Nablarch では、下記のポリシーで後方互換性を維持するよう目指しています。
+
+* Nablarchライブラリのバージョンアップを行った場合に、出来る限り下記を発生させないよう考慮します。
+
+  * 既存のアプリケーションコードの修正。
+  * 既存の自動テストコードの修正。
+  * 既存の自動テストデータの修正。
+
+この後方互換性維持の方針によりNablarchライブラリは、基本的にオブジェクトコード(jarファイル)の差し替えと設定ファイルの変更のみでバージョンアップできます。
+
+この後方互換性維持の方針は、NAF/NTFのAPIのうち、Nablarchが定める公開APIを対象にしています。
+Nablarchが定める公開APIとはjavadocにより仕様を公開しているAPIになります。
+公開APIに対して、javadocにより仕様を公開していないAPIは、非公開APIになります。
+
+非公開APIは、事前通知なく後方互換性が維持されないバージョンアップを行う場合がありますので、プロジェクトにて非公開APIを使用しないでください。
+
+Nablarchでは、非公開APIの使用を検知するツールを提供しています。
+プロジェクトにてこのツールを使用して非公開APIが使用されないように運用してください。
+ツールの詳細は、下記を参照してください。
+
+　プログラミング・単体テストガイド＞プログラミング工程で使用するツール＞Java静的解析ツール＞使用不許可APIチェックツール
+
+.. _`backward_compatibility_is_not_maintained`:
+
+後方互換性の例外
+================
+下記内容に該当する場合は、事前通知なく後方互換性が維持されないバージョンアップを行う場合があります。
+
+* Nablarchライブラリが出力するログのレベル、文言に対する変更。
+* アーキテクチャデザインの変更を目的とするバージョンアップを行った場合。 [#backward_compatibility_major_versionup]_
+
+下記内容に該当する場合は、事前通知の上で後方互換性が維持されないバージョンアップを行う場合があります。
+
+* Nablarchの不具合が検出され、その対応が後方互換性を維持したまま実施できない場合。
+* Nablarchを動作させる環境である、JDKのバージョンアップに起因する問題が発生し、その対応が後方互換性を維持したまま実施できない場合。
+
+.. [#backward_compatibility_major_versionup]
+  | このバージョンアップが実施されるのは、メジャーバージョンアップ時のみです。
+  | リビジョンアップ、マイナーバージョンアップの際は、アーキテクチャデザインの変更は実施されません。
+
+.. _`eosl_policy`:
+
+------------
+EOSLポリシー
+------------
+
+Nablarchは、基幹システムのアプリケーション開発・実行基盤として安心してご利用いただくために、EOSL\ [#a]_ \の期間は設けません。
+ご利用中のお客様がいるバージョンに対しては、基本サービスを提供いたします。
+
+基本サービスの内容については、 :ref:`basic_support_service` をご覧ください。
+
+.. [#a] EOSL：End Of Service Lifeの略で、製品に対するサポートやサービスの提供を終了することです。
+
+.. note::
+   * 新規に導入いただく場合は、原則として、契約時点での最新版をご導入いただきます。
+   * 不具合対応などのバージョンアップはお客様がご利用中のマイナーバージョンの最新のリビジョンに対してのみ実施されます。
+   * マイナーバージョンアップでは、既にご利用中のお客様がいなくなったバージョンはお選びいただけません。
+   
+   バージョン番号、リビジョンについては、 :ref:`version_number` をご参照ください。
+
+
+.. _`version_number`:
+
+------------------
+バージョン番号体系
+------------------
+
+Nablarchのバージョン番号は、メジャー番号、マイナー番号、リビジョン番号の3つの部分から成り立っています。Nablarchの
+バージョン番号は、下記のようにこれら3つを"."でつないだ、 *x.y.z* で表されます。
+
+ .. code-block:: html
+
+  {メジャー番号}.{マイナー番号}.{リビジョン番号}
+
+コンテンツとバージョン番号の関係
+================================
+Nablarchのコンテンツにはさまざまな物が含まれます(詳細は\ :ref:`nablarch_contents` \をご参照ください)。これら一式に対して1つ
+のバージョン番号が割り振られます。
+
+
+バージョン番号と更新内容の対応
+============================================
+バージョン番号の各部分は、\ :ref:`versionup_variety` \と以下のような対応を持っています。また、各部分がインクリメントする
+バージョンアップのことを、バージョンアップの名称欄に記載した名称で呼びます。各番号の詳細は、下表の後の記述をご参照ください。
+
++--------------+------------------------------------------------+------------------------+------------+
+|番号          |対応する対応内容                                |バージョンアップの名称  |リリース頻度|
++==============+================================================+========================+============+
+|リビジョン番号|NAF、NTFの不具合対応                            |リビジョンアップ        |随時        |
++--------------+------------------------------------------------+------------------------+------------+
+|マイナー番号  |機能追加またはNAF、NTF以外の不具合対応          |マイナーバージョンアップ|半期に一度  |
++--------------+------------------------------------------------+------------------------+------------+
+|メジャー番号  |アーキテクチャデザインの更新                    |メジャーバージョンアップ|数年に一度  |
++--------------+------------------------------------------------+------------------------+------------+
+
+
+リビジョン番号
+--------------
+リビジョン番号がインクリメントするバージョンアップをリビジョンアップと呼びます。リビジョンアップは不具合対応を目的としています。
+中でも、製造成果物の品質に影響を与える不具合への対応を行います。
+
+リビジョンアップが行われても、マイナー番号、メジャー番号は変化しません。
+
+マイナー番号
+------------
+マイナー番号がインクリメントするバージョンアップをマイナーバージョンアップと呼びます。マイナーバージョンアップは機能追加と不具合対応を目的としています。
+不具合対応については、製造成果物に影響を与えない不具合の対応を行います。また、前回のマイナーバージョンアップ以降に発生した、リビジョンアップの内
+容も含みます。
+
+マイナーバージョンアップが行われると、リビジョン番号は0にリセットされます。メジャー番号は変化しません。
+
+メジャー番号
+------------
+メジャー番号がインクリメントするバージョンアップをメジャーバージョンアップと呼びます。メジャーバージョンアップはNablarch自身のアーキテクチャデザインの更新
+(API変更を伴います)を目的としています。
+
+メジャーバージョンアップが行われると、リビジョン番号、メジャー番号は共に0にリセットされます。
+
+.. _`about_version_up`:
+
+--------------------------------------------------------------
+バージョンアップ時に必要なお客様のアプリケーションへの適用作業
+--------------------------------------------------------------
+
+Nablarchは、不具合修正や機能追加を実施する場合にバージョンアップを行います(詳細は\ :ref:`versionup_variety` \をご参照ください)。
+バージョンアップには、リビジョンアップ、マイナーバージョンアップ、メジャーバージョンアップの3種類があり(詳細は\ :ref:`version_number` \をご参照ください)、
+お客様に実施していただく作業に以下のような違いがあります。
+
+リビジョンアップ時に必要な作業
+==============================
+オブジェクトコード(jarファイル)の差し替えと設定ファイルの書き換えでバージョンアップとなります。
+
+.. note::
+
+   原則として\ [#b]_ \ 、お客様のアプリケーションへの影響はありません。
+
+マイナーバージョンアップ時に必要な作業
+======================================
+オブジェクトコード(jarファイル)の差し替えと設定ファイルの書き換えでバージョンアップとなります。
+
+.. note::
+
+   原則として\ [#b]_ \、既存のお客様のアプリケーションオブジェクトコードへの影響はありません。
+   
+   また、新機能を使用する際には、設定ファイルの修正(追記)が必要になります。
+
+メジャーバージョンアップ時に必要な作業
+======================================
+お客様のアプリケーションの修正、設定ファイルの修正、必要であればモデルの修正、オブジェクトコード(jarファイル)の差し替えでバージョンアップとなります。
+
+.. note::
+
+   後方互換性は保障されないため、お客様のアプリケーションに修正が必要です(システム再構築と同等となる場合もあります)。
+
+.. [#b] リビジョンアップとマイナーバージョンアップの場合も、例外的に不具合対応のため、やむを得ず後方互換性が保てない場合があります。この場合、テストコード、テストデータ、
+         お客様のアプリケーションの修正が必要になります(詳細は\ :ref:`backward_compatibility_is_not_maintained` \をご参照ください)。
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-versionup_policy`
+
+```json
+{
+  "id": "about-nablarch-versionup_policy",
+  "title": "Nablarchのバージョンアップ方針",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "更新内容",
+      "hints": [
+        "バージョンアップ種別",
+        "不具合対応",
+        "機能追加",
+        "リリース頻度",
+        "アーキテクチャデザイン変更",
+        "セキュリティ不具合",
+        "NAF",
+        "NTF",
+        "Nablarch Application FW",
+        "Nablarch Testing FW"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "後方互換性ポリシー",
+      "hints": [
+        "後方互換性",
+        "公開API",
+        "非公開API",
+        "後方互換性の例外",
+        "javadoc",
+        "使用不許可APIチェックツール",
+        "Java静的解析ツール"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "EOSLポリシー",
+      "hints": [
+        "EOSL",
+        "End Of Service Life",
+        "サポート終了",
+        "基本サービス",
+        "バージョンサポート期間"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バージョン番号体系",
+      "hints": [
+        "バージョン番号",
+        "メジャー番号",
+        "マイナー番号",
+        "リビジョン番号",
+        "バージョン体系",
+        "リビジョンアップ",
+        "マイナーバージョンアップ",
+        "メジャーバージョンアップ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "バージョンアップ時に必要なお客様のアプリケーションへの適用作業",
+      "hints": [
+        "バージョンアップ手順",
+        "リビジョンアップ",
+        "マイナーバージョンアップ",
+        "メジャーバージョンアップ",
+        "アプリケーション修正",
+        "jarファイル差し替え",
+        "設定ファイル変更"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarchが提供するコンテンツに対して実施されるバージョンアップの更新内容とリリース頻度。\n\n| 更新内容 | 説明 | リリース頻度 |\n|---|---|---|\n| 不具合対応: セキュリティ・運用レベルに致命的な不具合（NAF/NTF） | セキュリティホール等、セキュリティや運用レベルに致命的な影響を与える不具合 | 不具合検出後直ちに対応、随時リリース |\n| 不具合対応: その他の不具合（NAF/NTF） | 通常の一般的な不具合。成功すべきでないテストが成功するようなNTFの不具合も含む | 不具合検出後、影響範囲を見定めリリーススケジュールを策定しリリース |\n| 不具合対応: NAF/NTF以外の不具合 | Nablarch標準の改訂やチュートリアル用サンプルの不具合対応など、製造成果物に直接影響しない不具合 | 半期に一度程度 |\n| 機能追加 | NAFやNTFに対する機能追加、Nablarch標準の追加、Nablarch Toolboxへのツール追加など | 半期に一度程度 |\n| アーキテクチャデザインの変更（API変更を伴う） | Nablarchの全面改訂。APIが変更される場合もある | 特にサイクルなし。技術革新等の大きな外部環境の変化への追随時、ソフトウェア・サービス新規追加に伴うアーキテクチャデザイン見直し時等 |\n\n各バージョンアップ時に行う作業: :ref:`about_version_up`",
+    "s2": "## 後方互換性を維持する範囲\n\nNAF/NTFに対して後方互換性を維持する（:ref:`backward_compatibility_is_not_maintained` に該当する場合を除く）。Nablarchライブラリ以外のコンテンツに対する後方互換性維持は考慮されない。\n\n## 後方互換性維持の内容\n\nNablarchライブラリのバージョンアップ時に、以下を発生させないよう考慮する:\n- 既存のアプリケーションコードの修正\n- 既存の自動テストコードの修正\n- 既存の自動テストデータの修正\n\n基本的にオブジェクトコード（jarファイル）の差し替えと設定ファイルの変更のみでバージョンアップ可能。\n\n対象: NAF/NTFのAPIのうち、javadocで仕様を公開している公開API。javadocで仕様を公開していないAPIは非公開API。\n\n> **警告**: 非公開APIは事前通知なく後方互換性が維持されないバージョンアップが行われる場合がある。プロジェクトで非公開APIを使用しないこと。NablarchはJava静的解析ツール（使用不許可APIチェックツール）を提供しているので、プロジェクトにて活用すること。\n\n## 後方互換性の例外\n\n**事前通知なし**で後方互換性が維持されないバージョンアップが行われる場合:\n- Nablarchライブラリが出力するログのレベル・文言に対する変更\n- アーキテクチャデザインの変更を目的とするバージョンアップ（メジャーバージョンアップ時のみ。リビジョンアップ・マイナーバージョンアップ時は実施されない）\n\n**事前通知あり**で後方互換性が維持されないバージョンアップが行われる場合:\n- Nablarchの不具合が検出され、その対応が後方互換性を維持したまま実施できない場合\n- JDKのバージョンアップに起因する問題が発生し、その対応が後方互換性を維持したまま実施できない場合",
+    "s3": "NablarchはEOSL（End Of Service Life: 製品に対するサポートやサービスの提供を終了すること）の期間を設けない。利用中のお客様がいるバージョンに対しては基本サービスを提供する。\n\n基本サービスの内容: :ref:`basic_support_service`\n\n> **注意**:\n> - 新規導入の場合は、原則として契約時点での最新版を導入する\n> - 不具合対応などのバージョンアップはお客様が利用中のマイナーバージョンの最新リビジョンに対してのみ実施される\n> - マイナーバージョンアップでは、すでに利用者がいなくなったバージョンは選択できない",
+    "s4": "バージョン番号形式: `{メジャー番号}.{マイナー番号}.{リビジョン番号}`\n\nすべてのコンテンツ一式に対して1つのバージョン番号が割り振られる。\n\n| 番号 | 対応する更新内容 | バージョンアップの名称 | リリース頻度 |\n|---|---|---|---|\n| リビジョン番号 | NAF、NTFの不具合対応 | リビジョンアップ | 随時 |\n| マイナー番号 | 機能追加またはNAF、NTF以外の不具合対応 | マイナーバージョンアップ | 半期に一度 |\n| メジャー番号 | アーキテクチャデザインの更新 | メジャーバージョンアップ | 数年に一度 |\n\n**リビジョンアップ**: NAF/NTFの不具合対応（製造成果物の品質に影響を与える不具合への対応）。マイナー番号・メジャー番号は変化しない。\n\n**マイナーバージョンアップ**: 機能追加と不具合対応（製造成果物に影響を与えない不具合）。前回のマイナーバージョンアップ以降のリビジョンアップ内容も含む。マイナーバージョンアップ時にリビジョン番号は0にリセット。メジャー番号は変化しない。\n\n**メジャーバージョンアップ**: NablarchのアーキテクチャデザインのAPI変更を伴う更新。メジャーバージョンアップ時にリビジョン番号、メジャー番号は共に0にリセット。",
+    "s5": "バージョンアップには3種類あり（リビジョンアップ、マイナーバージョンアップ、メジャーバージョンアップ）、必要な作業が異なる。\n\n**リビジョンアップ時**: オブジェクトコード（jarファイル）の差し替えと設定ファイルの書き換えのみ。\n> **注意**: 原則としてお客様のアプリケーションへの影響はない。ただし例外的に後方互換性が保てない場合があり、その場合はテストコード・テストデータ・アプリケーションの修正が必要（:ref:`backward_compatibility_is_not_maintained`）。\n\n**マイナーバージョンアップ時**: オブジェクトコード（jarファイル）の差し替えと設定ファイルの書き換えのみ。\n> **注意**: 原則として既存のお客様のアプリケーションオブジェクトコードへの影響はない。新機能を使用する際は設定ファイルの修正（追記）が必要。例外的に後方互換性が保てない場合はテストコード・テストデータ・アプリケーションの修正が必要（:ref:`backward_compatibility_is_not_maintained`）。\n\n**メジャーバージョンアップ時**: お客様のアプリケーションの修正、設定ファイルの修正、必要であればモデルの修正、オブジェクトコード（jarファイル）の差し替えが必要。\n> **注意**: 後方互換性は保障されないため、お客様のアプリケーションに修正が必要（システム再構築と同等となる場合もある）。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 5 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

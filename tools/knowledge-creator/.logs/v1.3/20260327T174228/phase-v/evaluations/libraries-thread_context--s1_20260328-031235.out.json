@@ -1,0 +1,32 @@
+{
+  "file_id": "libraries-thread_context--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Two of the four findings (s5/s6 Session selection criteria) have medium impact because they omit the framework-vs-app responsibility boundary — critical guidance for developers implementing login-time language/timezone loading. Without it, an AI may miss the login processing requirement or fail to distinguish what the Util provides vs what the app must implement. The Cookie findings (s5/s6 Cookie) are lower impact since LanguageAttributeInHttpUtil is referenced elsewhere in s5/s6, but still leave a gap in the selection criteria rows.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s5 — LanguageAttributeInHttpCookie selection criteria",
+      "impact": "low",
+      "justification": "The selection criteria row for LanguageAttributeInHttpCookie omits the note that cookie-setting is handled by LanguageAttributeInHttpUtil. However, LanguageAttributeInHttpUtil is described in the class table in s5 as 'ユーザが選択した言語を保持する処理を提供するユーティリティクラス', and the registration note references it. An AI can still reason that the Util handles cookie persistence. Risk: may not mention keepLanguage() explicitly when advising on this pattern. Why it persisted: Phase E likely updated the class description table (already adequate) but did not modify the 説明 column in the 選択基準 table rows, which are a separate structure in the knowledge file."
+    },
+    {
+      "category": "omission",
+      "location": "s5 — LanguageAttributeInHttpSession selection criteria",
+      "impact": "medium",
+      "justification": "The selection criteria row for LanguageAttributeInHttpSession omits three distinct implementation requirements: (1) app must fetch user's language at login time from DB, (2) LanguageAttributeInHttpUtil handles the HTTP session setting, (3) app must persist the selected language to DB. The framework-vs-app boundary is non-obvious and essential for correct implementation. Without it, an AI may omit the login-time session initialization step entirely or tell the developer to implement HTTP session setting themselves. Why it persisted: Phase E output is truncated in the logs but the finding recurs, indicating the fix was applied to the class description table rather than the 選択基準 table's 説明 cell for LanguageAttributeInHttpSession."
+    },
+    {
+      "category": "omission",
+      "location": "s6 — TimeZoneAttributeInHttpCookie selection criteria",
+      "impact": "low",
+      "justification": "Parallel to the LanguageAttributeInHttpCookie case. TimeZoneAttributeInHttpUtil is referenced in the class table and registration note in s6. An AI can infer the Util handles timezone cookie persistence. Risk is limited to potentially not citing keepTimeZone() explicitly. Why it persisted: Same root cause as the Cookie/Language case — Phase E did not update the 説明 column in the 選択基準 table row for TimeZoneAttributeInHttpCookie."
+    },
+    {
+      "category": "omission",
+      "location": "s6 — TimeZoneAttributeInHttpSession selection criteria",
+      "impact": "medium",
+      "justification": "Parallel to the LanguageAttributeInHttpSession case. Omits: (1) app must fetch user's timezone at login, (2) Util handles HTTP session setting, (3) app must persist timezone to DB. This is the same structural gap as the Session/Language finding and carries the same risk of an AI producing incomplete implementation guidance — specifically omitting the login-time timezone loading step. Why it persisted: Phase E did not update the 選択基準 table row for TimeZoneAttributeInHttpSession, likely because the class description table (which covers the Util at a high level) was already present and the fixer treated it as sufficient."
+    }
+  ]
+}

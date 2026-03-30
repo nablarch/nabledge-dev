@@ -1,0 +1,235 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-MessageReplyHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 関連するハンドラ section (preceding the table)",
+      "description": "The source contains a general placement rule: \"応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。\" This is a critical constraint for handler chain design — any handler that needs to modify response message content must be placed after MessageReplyHandler. The knowledge file lists the three named handlers in the table but omits this general principle, which is necessary for users adding custom or other handlers that edit response messages.",
+      "source_evidence": "応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+電文応答制御ハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.messaging.handler.MessageReplyHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本ハンドラでは、後続ハンドラの処理結果である `ResponseMessage`_ オブジェクトの内容を
+もとに応答電文を構築し送信する。
+送信した応答電文オブジェクトをこのハンドラの戻り値として返す。
+
+
++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread'
+    , HandlerQueue = ["MessagingContextHandler"
+                     ,"MessageReplyHandler"
+                     ,"DataReadHandler_messaging"
+                     ,"TransactionManagementHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+  応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`MessagingContextHandler`        本ハンドラでは、スレッドローカル上のメッセージングコンテキストを用いて
+                                        応答電文の送信を行なうので、本ハンドラより上位に配置する必要がある。
+
+  :doc:`TransactionManagementHandler`   同ハンドラとの前後関係は、2相コミットを使用するか否かで変わる。
+                                          **a)** 2相コミットを使用する場合。
+                                            DBトランザクションとJMSトランザクションをトランザクションマネージャー側で
+                                            まとめてコミットするので、トランザクション制御ハンドラは、このハンドラより
+                                            先に実行されなければならない。
+                                          **b)** 2相コミットを使用しない場合。
+                                            このハンドラが応答を送信する前に、DBトランザクション終了させ、
+                                            業務処理の結果を確定させる必要がある。
+                                            このため、トランザクション制御ハンドラはこのハンドラの後に実行されなければならない。
+
+  :doc:`DataReadHandler`                要求電文のフォーマット不正に起因する例外はデータリーダ上で発生する可能性がある。
+                                        そのエラー応答電文をこのハンドラで送信するためには、
+                                        :doc:`DataReadHandler` を本ハンドラの後続に配置する必要がある。
+  ====================================  ===================================================================================
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラの実行)**
+    本ハンドラは往路において特段の処理を行なわずに後続のハンドラに処理を委譲し、
+    その処理結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **2. (応答電文オブジェクトの取得)**
+    **1.** での処理結果の型が応答電文オブジェクト(`ResponseMessage`_) であった場合は、
+    処理結果を応答電文オブジェクトにキャストして以降の処理で用いる。
+
+  **2a. (受信待機タイムアウト)**
+    キュー上に取得対象電文が存在しないまま、データリーダが一定時間待機し続けた場合、 `DataReader.NoMoreRecord`_ が返される。
+    **1.** の処理結果がこの型であった場合は、応答処理は行なわずに、処理結果をそのままリターンして終了する。
+
+  **2b. (処理結果タイプエラー)**
+    **1.** での処理結果の型が、応答電文オブジェクトでも `DataReader.NoMoreRecord`_ でも無かった場合は、
+    実行時例外 (java.lang.ClassCastException) を送出する。
+
+  **3. (処理結果コードの設定)**
+    フレームワーク制御ヘッダ中の処理結果コードが未設定であった場合は、処理結果オブジェクトのステータスコードを設定する。
+
+  **4. (メッセージ送信)**
+    スレッドローカル上のメッセージコンテキストを使用して、応答電文オブジェクトの送信(応答キューへのPUT)を行なう。
+
+  **5. (正常終了)**
+    応答電文オブジェクトをリターンする。
+
+  **5a. (エラー応答正常終了)**
+    ただし、後続ハンドラの処理で例外が送出されていた場合( **2c.** )は、その例外を再送出する。
+
+.. _error:
+
+**[例外処理]** 
+  **2c. (エラー応答電文作成)**
+    後続ハンドラの処理中に実行時例外/エラーが発生した場合、
+    エラー内容をもとに応答電文を作成し、それを **3.** 以降で使用する。
+    なお、元例外は本ハンドラの処理終了時に再送出する。
+
+  **4a. (応答電文送信エラー)**
+    送信処理中に例外が送出された場合は、送信元に対する応答を断念し、例外を再送出して終了する。
+
+  **4b. (エラー応答電文送信エラー)**
+    送信処理中に例外が送出され、それ以前に、後続ハンドラの処理でも例外が送出されていた( **2c.** )場合、
+    送信処理中に発生した例外についてはワーニングレベルのログとして出力した上で、
+    **2c.** で捕捉していた例外を再送出する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラに設定項目は設けられていない。
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <!-- 応答電文制御ハンドラ -->
+    <component class="nablarch.fw.messaging.handler.MessageReplyHandler" />
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-MessageReplyHandler",
+  "title": "電文応答制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessageReplyHandler",
+        "nablarch.fw.messaging.handler.MessageReplyHandler",
+        "MessagingContextHandler",
+        "TransactionManagementHandler",
+        "DataReadHandler",
+        "電文応答制御ハンドラ",
+        "応答電文送信",
+        "メッセージング",
+        "関連ハンドラ配置制約",
+        "2相コミット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ResponseMessage",
+        "DataReader.NoMoreRecord",
+        "ClassCastException",
+        "java.lang.ClassCastException",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "応答電文キュー",
+        "受信待機タイムアウト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "MessageReplyHandler",
+        "nablarch.fw.messaging.handler.MessageReplyHandler",
+        "XML設定",
+        "設定項目なし",
+        "コンポーネント設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.messaging.handler.MessageReplyHandler`\n\n後続ハンドラの処理結果である`ResponseMessage`オブジェクトをもとに応答電文を構築・送信し、送信した応答電文オブジェクトを戻り値として返す。\n\n**関連ハンドラ（配置制約）**\n\n| ハンドラ | 配置制約 |\n|---|---|\n| :doc:`MessagingContextHandler` | スレッドローカル上のメッセージングコンテキストを使用するため、本ハンドラより上位に配置する必要がある |\n| :doc:`TransactionManagementHandler` | 2相コミット使用時: DBトランザクションとJMSトランザクションをトランザクションマネージャー側でまとめてコミットするため、本ハンドラより先に実行する必要がある。非使用時: 応答送信前にDBトランザクションを終了させ業務処理結果を確定させるため、本ハンドラの後に実行する必要がある |\n| :doc:`DataReadHandler` | 要求電文フォーマット不正のエラー応答を本ハンドラで送信するため、本ハンドラの後続に配置する必要がある |",
+    "s2": "**[往路処理]**\n\n1. 往路では特段の処理を行わず、後続ハンドラに処理を委譲し処理結果を取得する。\n\n**[復路処理]**\n\n1. 処理結果の型が`ResponseMessage`の場合、応答電文オブジェクトにキャストして以降の処理で使用する。\n2. 受信待機タイムアウト: 処理結果が`DataReader.NoMoreRecord`の場合、応答処理は行わずそのままリターンして終了する。\n3. 処理結果タイプエラー: 処理結果が`ResponseMessage`でも`DataReader.NoMoreRecord`でもない場合、`java.lang.ClassCastException`を送出する。\n4. フレームワーク制御ヘッダの処理結果コードが未設定の場合、処理結果オブジェクトのステータスコードを設定する。\n5. スレッドローカル上のメッセージコンテキストを使用して、応答電文オブジェクトを応答キューへPUT（送信）する。\n6. 応答電文オブジェクトをリターンする。後続ハンドラで例外が送出されていた場合はその例外を再送出する。\n\n**[例外処理]**\n\n- エラー応答電文作成: 後続ハンドラの処理中に実行時例外/エラーが発生した場合、エラー内容をもとに応答電文を作成し3.以降で使用する。元例外は本ハンドラの処理終了時に再送出する。\n- 応答電文送信エラー: 送信処理中に例外が送出された場合、送信元への応答を断念し例外を再送出して終了する。\n- エラー応答電文送信エラー: 送信処理中に例外が発生し、かつ後続ハンドラの処理でも例外が発生していた場合、送信処理中の例外はワーニングレベルのログとして出力し、後続ハンドラで捕捉していた例外を再送出する。",
+    "s3": "本ハンドラに設定項目はない。\n\n**標準設定**:\n\n```xml\n<component class=\"nablarch.fw.messaging.handler.MessageReplyHandler\" />\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

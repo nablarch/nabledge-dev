@@ -1,0 +1,314 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-batch_single_shot",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — エラー終了フロー step 3",
+      "description": "The parenthetical note '（全件正常終了フローの「業務コミット後」とは異なる）' appended to the BatchAction callback description is editorial commentary not present in the source. The source simply lists the four callback events for the error flow without comparing them to the normal flow.",
+      "source_evidence": "errorend BatchAction callback in source: '1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後' — no comparative note exists"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 主要処理フロー table, 全件正常終了 row",
+      "description": "The table overview for 全件正常終了 omits the first part of the source description: 'Javaコマンドからバッチプロセスを起動する。' The knowledge file only retains the second sentence about all records completing normally.",
+      "source_evidence": "Source table 概要 column for 全件正常終了: 'Javaコマンドからバッチプロセスを起動する。対象レコード全件に対する業務処理が正常終了し、プロセス自体も正常終了する。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "'DbConnectionManagementHandler_main' is missing from the s3 hints. The source HandlerQueue and all three main flows (normalend, errorend) reference this handler as a distinct entry separate from 'DbConnectionManagementHandler', but only the latter appears in the hints.",
+      "source_evidence": "HandlerQueue in source: '\"DbConnectionManagementHandler_main\"' listed separately from '\"DbConnectionManagementHandler\"'; appears in normalend and errorend flow steps"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+====================================================
+都度起動バッチ実行制御基盤
+====================================================
+本節で解説する :doc:`batch_single_shot` では、
+DBやファイルに格納されたデータレコード1件ごとに業務処理を繰り返し実行する基本的なバッチ処理の仕組みを提供する。
+
+++++++++++++++++
+
+-------------------------------------------
+基本構造
+-------------------------------------------
+本方式では、データレコード1件毎に業務処理を実行するループ構造が基本となっている。
+このループでは、1業務トランザクションが処理するレコードを読み込む責務をもった :ref:`data_reader` と、
+業務トランザクションを実行する **業務アクションハンドラ** を交互に呼び出し、データリーダからレコードが
+読み込めなくなった時点で終了する。
+なおデータリーダは、業務アクションハンドラが生成したものを使用する。
+
+
+**リクエストパスによる業務アクションの指定**
+
+バッチ処理では :ref:`リクエストパス<request_processing>` をバッチプロセスの起動引数 **-requestPath** に指定する。
+リクエストパスは以下の書式に従って記述し、バッチで実行する業務アクションハンドラを指定する。
+
+  .. code-block:: bash
+
+    "(業務アクションクラス名)" + "/" + "(リクエストID)"
+
+リクエストIDは、以降、各バッチプロセスの識別子として用いられる。
+(同一の業務アクションクラスを実行するプロセスを複数起動する場合などは、このリクエストIDが識別子となる。)
+
+詳細は、 :doc:`../handler/Main` を参照すること。
+
+++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+
+業務アクションを実装するには、FW側で提供されるテンプレートクラスを継承して作成する。
+詳細は、 :doc:`../handler/BatchAction` を参照すること。
+
+
+++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`batch_single_shot` における主要な処理フローと標準ハンドラ構成である。
+
+.. _flow-table:
+  
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+  | 区分                   | 種別       | 処理フロー名           | 概要                                      | 機能                 |
+  +========================+============+========================+===========================================+======================+
+  | バッチ処理制御         | 正常フロー | 全件正常終了           | Javaコマンドからバッチプロセスを起動する。| .. _normalend:       |
+  |                        |            |                        | 対象レコード全件に対する業務処理が正常    |                      |
+  |                        |            |                        | 終了し、プロセス自体も正常終了する。      | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 重複起動エラー         | プロセス起動時、既に同一プロセスが        | .. _duplaunch:       |
+  |                        |            |                        | 起動していた場合は異常終了する。          |                      |
+  |                        |            |                        |                                           | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | エラー終了             | 業務処理実行中にエラーが発生した場合は、  | .. _errorend:        |
+  |                        |            |                        | その時点で処理を中断し、                  |                      |
+  |                        |            |                        | 障害ログを出力する。                      |                      |
+  |                        |            |                        | プロセス自体も異常終了する。              | `フローを表示`_      |
+  |                        +------------+------------------------+-------------------------------------------+----------------------+
+  |                        | 異常フロー | 閉局エラー             | バッチのリクエストIDに対する業務機能      | .. _notonservice:    |
+  |                        |            |                        | が閉局中であった場合は、業務処理を実行    |                      |
+  |                        |            |                        | せず、異常終了する。                      | `フローを表示`_      |
+  +------------------------+------------+------------------------+-------------------------------------------+----------------------+
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. _フローを表示:
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'batch resident'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "ThreadContextClearHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "ServiceAvailabilityCheckHandler"
+      , "FileRecordWriterDisposeHandler"
+      , "DbConnectionManagementHandler_main"
+      , "TransactionManagementHandler_main"
+      , "RequestPathJavaPackageMapping"
+      , "MultiThreadExecutionHandler"
+      , "DbConnectionManagementHandler"
+      , "LoopHandler"
+      , "ProcessStopHandler"
+      , "DataReadHandler"
+      , "BatchAction"
+      ]
+    , Flow = {
+
+        // 全件正常終了
+        normalend: [
+          ["Main",                               "inbound"]
+        , ["ThreadContextHandler_main",          "inbound", "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成、3. 業務コミット後 、4. 全件終了後"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "outbound"]
+        , ["LoopHandler",                        "outbound", "コミット時に業務アクションへのコールバックを行う。"
+                                                           + "また⑩ で取得した結果セットが空になるまでここでループする。"]
+        , ["BatchAction",                        "callback"]
+        , ["DbConnectionManagementHandler",      "outbound"]
+        , ["MultiThreadExecutionHandler",        "outbound", "全件正常終了後に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback"]
+        , ["TransactionManagementHandler_main",  "outbound"]
+        , ["DbConnectionManagementHandler_main", "outbound"]
+        , ["StatusCodeConvertHandler",           "outbound", "ステータスコード:207(MultiStatus) → 終了コード:0"]
+        , ["Main",                               "outbound", "正常終了(終了コード=0)"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["Main",                         "outbound"]
+        ],
+
+        // エラー終了
+        errorend: [
+          ["Main",                               "inbound"]
+        , ["ThreadContextHandler_main",          "inbound", "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["DbConnectionManagementHandler_main", "inbound"]
+        , ["TransactionManagementHandler_main",  "inbound"]
+        , ["RequestPathJavaPackageMapping",      "inbound"]
+        , ["MultiThreadExecutionHandler",        "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後"]
+        , ["DbConnectionManagementHandler",      "inbound"]
+        , ["LoopHandler",                        "inbound"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "error",    "業務処理をエラー終了させる場合は、実行時例外を送出する。"
+                                                           + "これにより、トランザクションがロールバックされ、障害ログが出力される。"]
+        , ["LoopHandler",                        "outbound", "複数件コミットを使用している場合は、未コミットの処理についてもロールバックされる。"
+                                                           + "また業務アクションをコールバックする。"]
+        , ["BatchAction",                        "callback"]
+        , ["DbConnectionManagementHandler",      "error"]
+        , ["MultiThreadExecutionHandler",        "errror",   "全件終了後に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback"]
+        , ["TransactionManagementHandler_main",  "error"]
+        , ["DbConnectionManagementHandler_main", "error"]
+        , ["GlobalErrorHandler",                 "error",    "ここで障害ログが出力される。一般の実行時例外のステータスコードは500"]
+        , ["StatusCodeConvertHandler",           "outbound", "ステータスコード:500 → 終了コード:20"]
+        , ["Main",                               "outbound", "異常終了(終了コード=20)"]
+        ],
+
+        // 閉局終了
+        notonservice: [
+          ["Main",                            "inbound"]
+        , ["ThreadContextHandler_main",       "inbound",  "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["ServiceAvailabilityCheckHandler", "inbound",  "閉局エラー例外を送出する。"]
+        , ["GlobalErrorHandler",              "error",    "ここで障害ログが出力される。閉局エラーのステータスコードは503"]
+        , ["StatusCodeConvertHandler",        "outbound", "ステータスコード:503 → 終了コード:20"]
+        , ["Main",                            "outbound", "異常終了(終了コード=20)"]
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-batch_single_shot",
+  "title": "都度起動バッチ実行制御基盤",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "基本構造",
+      "hints": [
+        "data_reader",
+        "BatchAction",
+        "-requestPath",
+        "リクエストパス",
+        "業務アクション",
+        "ループ構造",
+        "バッチ起動引数",
+        "リクエストID"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "BatchAction",
+        "業務アクションハンドラ実装",
+        "テンプレートクラス継承"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "Main",
+        "StatusCodeConvertHandler",
+        "ThreadContextClearHandler",
+        "GlobalErrorHandler",
+        "ThreadContextHandler_main",
+        "DuplicateProcessCheckHandler",
+        "ServiceAvailabilityCheckHandler",
+        "FileRecordWriterDisposeHandler",
+        "DbConnectionManagementHandler",
+        "TransactionManagementHandler_main",
+        "RequestPathJavaPackageMapping",
+        "MultiThreadExecutionHandler",
+        "LoopHandler",
+        "ProcessStopHandler",
+        "DataReadHandler",
+        "BatchAction",
+        "全件正常終了",
+        "重複起動エラー",
+        "エラー終了",
+        "閉局エラー",
+        "ハンドラ構成",
+        "処理フロー",
+        "終了コード"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "都度起動バッチの基本ループ構造: :ref:`data_reader` と業務アクションハンドラを交互に呼び出し、データリーダからレコードが読み込めなくなった時点で終了する。データリーダは業務アクションハンドラが生成したものを使用する。\n\n**リクエストパスによる業務アクションの指定**\n\nバッチ処理では :ref:`リクエストパス<request_processing>` をバッチプロセスの起動引数 `-requestPath` に指定する。書式:\n\n```bash\n\"(業務アクションクラス名)\" + \"/\" + \"(リクエストID)\"\n```\n\nリクエストIDは各バッチプロセスの識別子として使用される（同一業務アクションクラスで複数プロセス起動時の識別に用いる）。",
+    "s2": "業務アクションは、FW側で提供されるテンプレートクラス（:doc:`../handler/BatchAction`）を継承して作成する。",
+    "s3": "**標準ハンドラ構成**\n\nMain → StatusCodeConvertHandler → ThreadContextClearHandler → GlobalErrorHandler → ThreadContextHandler_main → DuplicateProcessCheckHandler → ServiceAvailabilityCheckHandler → FileRecordWriterDisposeHandler → DbConnectionManagementHandler_main → TransactionManagementHandler_main → RequestPathJavaPackageMapping → MultiThreadExecutionHandler → DbConnectionManagementHandler → LoopHandler → ProcessStopHandler → DataReadHandler → BatchAction\n\n**主要処理フロー**\n\n| 種別 | 処理フロー名 | 概要 |\n|---|---|---|\n| 正常フロー | 全件正常終了 | 対象レコード全件に対する業務処理が正常終了し、プロセス自体も正常終了する |\n| 異常フロー | 重複起動エラー | 起動時に同一プロセスが既に起動していた場合は異常終了する |\n| 異常フロー | エラー終了 | 業務処理実行中にエラーが発生した場合、処理を中断し障害ログを出力して異常終了する |\n| 異常フロー | 閉局エラー | バッチのリクエストIDに対する業務機能が閉局中の場合、業務処理未実行で異常終了する |\n\n**全件正常終了フロー**\n\n1. ThreadContextHandler_main (往路): 起動引数 `-requestPath` からリクエストIDを決定する\n2. MultiThreadExecutionHandler (往路): 処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う\n3. BatchAction (コールバック): 1.処理開始前、2.データリーダ作成、3.業務コミット後、4.全件終了後にコールバックされる\n4. LoopHandler (復路): コミット時に業務アクションへのコールバックを行う。結果セットが空になるまでループする\n5. MultiThreadExecutionHandler (復路): 全件正常終了後に業務アクションへのコールバックを行う\n6. StatusCodeConvertHandler: ステータスコード207(MultiStatus) → 終了コード0\n7. Main: 正常終了（終了コード=0）\n\n**重複起動エラーフロー**\n\n1. ThreadContextHandler_main (往路): 起動引数 `-requestPath` からリクエストIDを決定する\n2. DuplicateProcessCheckHandler (往路): 同一プロセス起動検知。起動停止時の終了コードをこのハンドラに設定する\n3. GlobalErrorHandler (例外): 障害ログが出力される\n\n**エラー終了フロー**\n\n1. ThreadContextHandler_main (往路): 起動引数 `-requestPath` からリクエストIDを決定する\n2. MultiThreadExecutionHandler (往路): 処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う\n3. BatchAction (コールバック): 1.処理開始前、2.データリーダ作成、3.エラー終了後、4.全件終了後にコールバックされる（全件正常終了フローの「業務コミット後」とは異なる）\n4. BatchAction (例外): 業務処理をエラー終了させる場合は実行時例外を送出する。トランザクションがロールバックされ、障害ログが出力される\n5. LoopHandler (復路): 複数件コミット使用時は未コミットの処理もロールバックされる。業務アクションをコールバックする\n6. MultiThreadExecutionHandler (例外): 全件終了後に業務アクションへのコールバックを行う\n7. BatchAction (コールバック)\n8. GlobalErrorHandler (例外): 障害ログが出力される。一般の実行時例外のステータスコードは500\n9. StatusCodeConvertHandler: ステータスコード500 → 終了コード20\n10. Main: 異常終了（終了コード=20）\n\n**閉局エラーフロー**\n\n1. ServiceAvailabilityCheckHandler (往路): 閉局エラー例外を送出する\n2. GlobalErrorHandler (例外): 障害ログが出力される。閉局エラーのステータスコードは503\n3. StatusCodeConvertHandler: ステータスコード503 → 終了コード20\n4. Main: 異常終了（終了コード=20）"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

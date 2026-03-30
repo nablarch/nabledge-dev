@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — BusinessDateUtil機能不足時の拡張",
+      "description": "SampleBusinessDateUtil のコード例が省略されている。s4 の SampleSystemTimeUtil にはコード例が含まれているが、s5 の対応箇所はテキスト要約のみ。ソースには `getDate()` で BusinessDateUtil へ移譲するメソッドと、プロジェクト固有の `getBeforeDate()` メソッドを含む完全なコード例がある。",
+      "source_evidence": "source: `public class SampleBusinessDateUtil { public static String getDate() { return BusinessDateUtil.getDate(); } public static String getBeforeDate() { ... } }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — 日付の上書き機能",
+      "description": "日付上書きの動作を示す具体的なコード例（`getDate(\"00\")` が 20110710 を返し、`getDate(\"01\")` が 20110708 を返す）が省略されている。このコード例は BusinessDateUtil の getDate(segment) メソッドシグネチャと、リポジトリ優先の動作を示す唯一の具体例である。",
+      "source_evidence": "source: `// 20110710が取得される。 getDate(\"00\"); // 20110708が取得される。 getDate(\"01\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints",
+      "description": "`AppDbConnection` および `DbConnectionContext` がセクション本文に登場する（dbTransactionName の説明内）にもかかわらず、hints に含まれていない。",
+      "source_evidence": "knowledge s5: `デフォルトトランザクション（DbConnectionContext.getConnection()でコネクション取得可能）を使用する場合は省略可 / DbConnectionContext.getConnection(\"appTransactionName\")`"
+    }
+  ]
+}

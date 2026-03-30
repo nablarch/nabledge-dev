@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-validation_basic_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — システム許容文字のバリデーション / 基本的な考え方",
+      "description": "Source has a '基本的な考え方' subsection explaining the two-step conceptual approach: (1) define character sets using Unicode code points, (2) define system-permitted characters as the union of those sets. This foundational concept is entirely absent from s2. While the class descriptions implicitly reflect it, explicitly stating the design approach aids correct configuration decisions.",
+      "source_evidence": "* Unicodeのコードポイントを用いて、システムで使用可能な文字集合を定義する。\n* 定義した文字集合の和集合をシステム許容文字として定義する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — システム許容文字のバリデーション (top-level note)",
+      "description": "The surrogate-pair warning in s2 omits the first clause about supported character range: 'JVMが扱える範囲の文字(U+0000～U+10FFFF)は全て扱えるが'. This specifies the full supported range before introducing the limitation, which is useful context for understanding scope.",
+      "source_evidence": "本バリデーションでは、JVMが扱える範囲の文字(U+0000～U+10FFFF)は全て扱えるが、サロゲートペアを許容する場合は、文字列中のchar値の数と実際の文字数が合わなくなる問題が発生する点に注意すること。"
+    }
+  ]
+}

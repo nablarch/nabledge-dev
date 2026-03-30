@@ -1,0 +1,66 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s8",
+  "title": "大量データの検索機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "大量データの検索機能",
+      "hints": [
+        "DbAccessSupport",
+        "SqlPStatement",
+        "ResultSetIterator",
+        "SqlRow",
+        "executeQuery",
+        "大量データ検索",
+        "getSqlPStatement"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ResultSetIterator使用上の注意",
+      "hints": [
+        "ResultSetIterator",
+        "iterator",
+        "複数回呼び出し禁止",
+        "for-each",
+        "NG実装パターン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "更新(insert、update、delete) - 1件のデータを更新する場合",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "getSqlPStatement",
+        "REGISTER_USER",
+        "UPDATE_USER_NAME",
+        "1件更新",
+        "INSERT",
+        "UPDATE"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "複数件を一括で更新する場合",
+      "hints": [
+        "SqlPStatement",
+        "addBatch",
+        "executeBatch",
+        "getBatchSize",
+        "BATCH_EXECUTE_MAX_CNT",
+        "バッチ更新",
+        "一括更新",
+        "OutOfMemoryError"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "大量データを取得する場合は、簡易検索機能ではなく `executeQuery` を使用する。`executeQuery` は `ResultSetIterator` を返却し、JDBCの機能を直接使用せずにデータ取得が可能。\n\n> **注意**: 大量データの取得とは、SELECT文の結果として取得されるデータ件数が大量であることをさす（取得開始位置ではなく取得件数が基準）。例: `statement.retrieve(10000000, 20)` は大量データではない（取得最大件数が20件のため）。\n\n**SQLファイル例** (SQL_ID: GET_ALL_USER):\n\n```sql\nGET_ALL_USER =\nSELECT USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS\nFROM USER_MST\nORDER BY USER_ID\n```\n\n**Java実装例** (`DbAccessSupport` を継承したクラス):\n\n```java\npublic ResultSetIterator getAllUser() {\n    SqlPStatement statement = getSqlPStatement(\"GET_ALL_USER\");\n    statement.setString(1, \"00001\");\n    return statement.executeQuery();\n}\n\n// ResultSetIteratorはIterableを実装しているためfor-each使用可\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`",
+    "s2": "> **警告**: `ResultSetIterator#iterator` の呼び出しは複数回行うことができない。\n\n**NGとなる実装パターン**:\n\n```java\n// iteratorメソッドを2回呼び出しているためNG\nResultSetIterator rs = statement.executeQuery();\nrs.iterator();\nrs.iterator();\n\n// 2回目のfor文で2回目のiterator呼び出しが行われるためNG\nResultSetIterator rs = statement.executeQuery();\nfor (SqlRow row : rs) { /* 処理 */ }\nfor (SqlRow row : rs) { /* 処理 */ }  // NG\n```",
+    "s3": "**SQLファイル例**:\n\n```sql\nREGISTER_USER =\nINSERT INTO USER_MST (USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS)\nVALUES (?, ?, ?, ?, ?)\n\nUPDATE_USER_NAME =\nUPDATE USER_MST SET USER_NAME = ? WHERE USER_ID = ?\n```\n\n**Java実装例**:\n\n```java\n// 登録処理\npublic void registerUser(String userId, String userName, String userNameKana,\n        String tel, String mailAddress) {\n    SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\");\n    statement.setString(1, userId);\n    statement.setString(2, userName);\n    statement.setString(3, userNameKana);\n    statement.setString(4, tel);\n    statement.setString(5, mailAddress);\n    statement.executeUpdate();\n}\n\n// 更新処理\npublic void updateUserName(String userId, String userName) {\n    SqlPStatement updateStatement = getSqlPStatement(\"UPDATE_USER_NAME\");\n    updateStatement.setString(1, userName);\n    updateStatement.setString(2, userId);\n    int updCnt = updateStatement.executeUpdate();\n    if (updCnt != 1) {\n        // 更新対象が存在しない場合は対象なしエラーを表示する\n    }\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`",
+    "s4": "同一テーブルへの更新(insert、update、delete)を繰り返し行う場合には、バッチ更新機能(`executeBatch`)を使用する。データベースサーバとのラウンドトリップ回数を削減でき、性能改善が期待できる。\n\n> **警告**: 大量データを一括更新する場合には、適宜 `executeBatch` を呼び出すこと。これを行わないと `OutOfMemoryError` が発生したり、GCが頻発して性能劣化の原因となる。\n\n**SQLファイル例** (SQL_ID: REGSITER_ALL_USER):\n\n```sql\nREGSITER_ALL_USER =\nINSERT INTO USER (ID, NAME) VALUES (?, ?)\n```\n\n**Java実装例**:\n\n```java\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\npublic void registerAllUser(List<Map<String, ?>> users) {\n    SqlPStatement batch = getSqlPStatement(\"REGSITER_ALL_USER\");\n    for (Map<String, ?> user : users) {\n        batch.setObject(1, user.get(\"ID\"));\n        batch.setObject(2, user.get(\"NAME\"));\n        batch.addBatch();\n        if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n            batch.executeBatch();\n        }\n    }\n    if (batch.getBatchSize() != 0) {\n        batch.executeBatch();\n    }\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`"
+  }
+}

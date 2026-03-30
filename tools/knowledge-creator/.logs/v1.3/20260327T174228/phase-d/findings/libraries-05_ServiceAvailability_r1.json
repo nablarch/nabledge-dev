@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-05_ServiceAvailability",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 未検討 section",
+      "description": "The note under the 未検討 item 'サービス提供不可の場合に、個別画面へ遷移できる' is missing. The source states: '現時点での設計判断では、サービス提供不可の場合に個別画面へ遷移する要件はないと想定している。' This provides important context explaining why the feature is 未検討 (no current requirement).",
+      "source_evidence": "Source RST note: '現時点での設計判断では、サービス提供不可の場合に個別画面へ遷移する要件はないと想定している。'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — インタフェース block, label '**クラス**:'",
+      "description": "The label '**クラス**:' is used for `nablarch.common.availability.ServiceAvailability`, but the source defines it as an インタフェース (interface), not a class. The description text correctly says 'インタフェース', making the label inconsistent and potentially misleading.",
+      "source_evidence": "Source heading: 'インタフェース定義'. Source table description for nablarch.common.availability.ServiceAvailability: 'リクエストIDをもとに、サービス提供可否状態を判定するインタフェース。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "The `Initializable` interface is referenced in the s5 section text ('Initializable インタフェースを実装') as a key prerequisite for correct initialization setup, but it is absent from the s5 hints array.",
+      "source_evidence": "Source: 'BasicServiceAvailabilityクラスは初期化が必要なため、:ref:`repository_initialize` に記述したInitializableインタフェースを実装している。'"
+    }
+  ]
+}

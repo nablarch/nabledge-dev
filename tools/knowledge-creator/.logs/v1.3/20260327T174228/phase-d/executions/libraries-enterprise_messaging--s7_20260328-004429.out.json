@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`setFormatter` is a key `SendingMessage` API method called in every code example (Patterns 1–4) but is absent from s1's hints array.",
+      "source_evidence": "Source code samples for all 4 patterns include `.setFormatter(formatter)` as part of the SendingMessage builder chain."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "`JndiHelper` (class name) and `jndiHelper` (property name) are absent from s3's hints, despite appearing in the repository initialization XML example for the JMS provider.",
+      "source_evidence": "Source XML shows `<property name=\"jndiHelper\"><component class=\"nablarch.core.repository.jndi.JndiHelper\">` as part of the JndiLookingUpJmsMessagingProvider configuration."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated warning S9",
+      "description": "The automated pre-check warning 'Section count 4 < source headings 7' is a false positive. The source contains exactly 4 RST headings (2 `===` level and 2 `---` level). The 4 bold-formatted pattern labels (`**1. 応答不要メッセージ送信**` etc.) are not RST headings and should not be counted. The knowledge file's 4 sections correctly match the 4 actual headings."
+    }
+  ]
+}

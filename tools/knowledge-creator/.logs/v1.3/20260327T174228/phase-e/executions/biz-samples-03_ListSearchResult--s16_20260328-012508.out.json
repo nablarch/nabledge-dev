@@ -1,0 +1,48 @@
+{
+  "id": "biz-samples-03_ListSearchResult--s16",
+  "title": "検索結果",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果",
+      "hints": [
+        "nbs:listSearchResult",
+        "ListSearchResult",
+        "listSearchInfoName",
+        "resultSetName",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "useResultCount",
+        "resultCountFragment",
+        "usePaging",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "ListSearchInfo",
+        "検索結果件数",
+        "ページング",
+        "検索条件維持",
+        "ウィンドウスコープ",
+        "検索結果テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "ListSearchResult_Sort",
+        "ソート"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## nbs:listSearchResult の検索結果関連属性\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| resultSetName | ○ | 検索結果をリクエストスコープから取得する際に使用する名前 |\n| headerRowFragment | ○ | ヘッダ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n| bodyRowFragment | ○ | ボディ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n\n## 検索結果件数\n\n`useResultCount`属性が`true`（デフォルト: `true`）かつ検索結果がリクエストスコープに存在する場合に表示される。\n\nデフォルト書式:\n\n```jsp\n検索結果 <%-- ListSearchInfoのresultCountプロパティ --%>件\n```\n\n`resultCountFragment`属性にJSPフラグメントを指定することでカスタム書式に変更可能。フラグメント内では`listSearchInfoName`属性で指定した名前でListSearchInfoオブジェクトにアクセス可能。\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    resultSetName=\"searchResult\">\n    <jsp:attribute name=\"resultCountFragment\">\n       [サーチ結果 <n:write name=\"searchCondition.resultCount\" />頁]\n    </jsp:attribute>\n</nbs:listSearchResult>\n```\n\n## ページング\n\n`usePaging`属性が`true`（デフォルト: `true`）の場合に表示される。ページング全体は検索結果件数が1件以上の場合に表示される。\n\n| ページング要素 | 表示ルール |\n|---|---|\n| 現在のページ番号 | 常に表示 |\n| 最初、前へ、次へ、最後 | 遷移可能な場合はサブミット可能な状態で表示。遷移不可の場合はリンクならラベル、ボタンなら使用不可状態で表示 |\n| ページ番号（1..n） | 総ページ数が2以上の場合のみ全ページ番号を表示 |\n\nカスタマイズ可能な設定（全属性は :ref:`ListSearchResult_Tag` 参照）:\n- 各画面要素の使用有無\n- 各画面要素のラベル（最初、前へ、次へ、最後など）。現在のページ番号はJSPフラグメントで変更可能。ページ番号のラベルは変更不可。\n- 各サブミット要素に使用するタグ（n:submitLink、n:submit、n:buttonのいずれか）\n\n**ページング時の検索条件の注意点**\n\nページング時は前回検索時の条件（現在表示の検索結果を取得した条件）を使用する。検索条件を変更後にページングした場合、変更した検索条件の値は破棄される。\n\n検索条件の維持にはウィンドウスコープを使用するため、検索条件と検索結果一覧を同一画面に配置する場合は、それぞれのフォームを分けて実装する必要がある。\n\n**検索結果が減少した場合の動作**\n\n指定されたページ番号に基づき検索を実施してページング表示を行う。検索結果減少時でも現在のページ番号とサブミット要素の対応が保たれ、操作不能な状態にはならない。\n\n例（取得件数20件/ページで3ページ目表示中に検索結果が44件→10件に減少し、2ページ目を選択した場合）:\n\n| ページング要素 | 表示内容 |\n|---|---|\n| 現在のページ番号 | 2/1ページ（2ページ目が指定され、検索結果20件以下のため） |\n| 最初、前へ | リンク表示（前ページへ遷移可能） |\n| 次へ、最後 | ラベル表示（次ページへ遷移不可） |\n| ページ番号 | 非表示（総ページ数が1のため） |\n\nこの状態からさらに「前へ」を選択すると、現在のページ番号と総ページ数の対応が正常な状態に戻る。なお、検索フォームから検索しなおした場合は1ページ目からの検索結果となる。\n\n## 検索結果テーブル\n\n検索結果はリクエストスコープに存在する場合は常に表示される。0件の場合はヘッダ行のみ表示される。\n\nヘッダ行は`headerRowFragment`属性、ボディ行は`bodyRowFragment`属性にJSPフラグメントで指定する。ボディ行のJSPフラグメントはJSTLの`c:forEach`タグのループ内で呼び出される。\n\nボディ行フラグメントで行データとステータスにアクセスするための属性:\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varRowName | `\"row\"` | 行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | `\"status\"` | ステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | `\"count\"` | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | `\"rowCount\"` | 検索結果のカウント（取得開始位置＋ステータスカウント）を参照する変数名 |\n\n> **注意**: `n:write`タグでステータスにアクセスするとエラーが発生する。`n:set`タグを使用すること。\n> ```jsp\n> <n:set var=\"rowCount\" value=\"${status.count}\" />\n> <n:write name=\"rowCount\" />\n> ```\n\n1行おきに背景色を変えるためのclass属性関連:\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varOddEvenName | `\"oddEvenCss\"` | ボディ行のclass属性を参照する変数名 |\n| oddValue | `\"nablarch_odd\"` | 奇数行のclass属性値 |\n| evenValue | `\"nablarch_even\"` | 偶数行のclass属性値 |\n\nユーザ検索の実装例:\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                      searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                      resultSetName=\"searchResult\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>ログインID</th>\n            <th>漢字氏名</th>\n            <th>カナ氏名</th>\n            <th>グループ</th>\n            <th>内線番号</th>\n            <th>メールアドレス</th>\n        </tr>\n    </jsp:attribute>\n    <jsp:attribute name=\"bodyRowFragment\">\n        <tr class=\"<n:write name='oddEvenCss' />\">\n            <td>[<n:write name=\"count\" />]<br/>[<n:write name=\"rowCount\" />]<br/><n:write name=\"row.loginId\" /></td>\n            <td><n:write name=\"row.kanjiName\" /></td>\n            <td><n:write name=\"row.kanaName\" /></td>\n            <td><n:write name=\"row.ugroupId\" />:<n:write name=\"row.ugroupName\" /></td>\n            <td><n:write name=\"row.extensionNumberBuilding\" />-<n:write name=\"row.extensionNumberPersonal\" /></td>\n            <td><n:write name=\"row.mailAddress\" /></td>\n        </tr>\n    </jsp:attribute>\n</nbs:listSearchResult>\n```",
+    "s2": "なし"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "readers-DatabaseRecordReader",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The fabricated '必須' column shows ○ for both rows, but the '説明' column text in the same rows explicitly states \"排他利用。いずれか必須\" — the exclusive-or constraint is preserved in full. An AI agent reading the complete row would receive both the ○ mark and the clarifying explanation. The risk of misinterpretation is low because the constraint semantics are not lost. Phase E did not resolve this because the fix agent determined the existing 説明 text already communicates the exclusivity constraint, making the change low-priority and safe to defer.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — configuration table, 必須 column",
+      "impact": "low",
+      "justification": "The ○ marks in the fabricated 必須 column are technically non-false (one of the two IS required), and critically, the 説明 column in both rows preserves the source's exact constraint text '排他利用。いずれか必須'. An AI reading the full table row receives the exclusivity constraint from the description and is unlikely to misinterpret both properties as independently mandatory. Impact is low, not medium, because the semantically critical information is not missing — only the column structure is inaccurate. Phase E left the file unchanged: the fix agent concluded the description text was sufficient to convey the constraint and did not apply a structural correction."
+    }
+  ]
+}

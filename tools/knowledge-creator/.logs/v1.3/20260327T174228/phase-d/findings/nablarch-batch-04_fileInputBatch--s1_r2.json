@@ -1,0 +1,62 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "フォーマット定義ファイル section (source h2)",
+      "description": "The entire フォーマット定義ファイル section is absent. This includes the complete fixed-length file format definition example with all record types (header/data/trailer/end/Classifier), field specifications (loginId, kanjiName, kanaName, mailAddress, extensionNumber*, mobilePhoneNumber*, filler fields with byte offsets and types), and global settings (text-encoding: MS932, record-length: 420, record-separator: CRLF, file-type: Fixed). This is essential for implementing the file batch.",
+      "source_evidence": "Source section 'フォーマット定義ファイル' contains a full bash code block with the format definition file content."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "初期化処理 section (source h2)",
+      "description": "The entire 初期化処理 section is absent. Missing: (1) the initialize() method override with CommandLine/ExecutionContext parameters and allowZeroRecord extraction via command.getParam(\"allowZeroRecord\"), (2) guidance on when to override initialize (command-line args, instance variable initialization), (3) critical warning that BatchActions using instance variables cannot run multi-threaded, instance variables must be explicitly initialized in initialize(), and the exception condition (read-only after initialization allows multi-thread).",
+      "source_evidence": "Source section '初期化処理' contains initialize() Java code block and a warning block about multi-thread constraints."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "リーダ生成 section (source h2)",
+      "description": "The entire リーダ生成 section is absent. Missing: getDataFileName() and getFormatFileName() methods (both return FILE_ID = \"N11AA002\"), and the explanation that implementing these methods causes the superclass to generate the reader automatically.",
+      "source_evidence": "Source section 'リーダ生成' contains Java code with FILE_ID constant and getDataFileName()/getFormatFileName() method overrides."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファイルバリデータ生成 section (source h2)",
+      "description": "The entire ファイルバリデータ生成 section is absent. Missing: (1) getValidatorAction() override returning FileLayoutValidatorAction, (2) FileLayoutValidator inner class implementing FileValidator with its constants (INVALID_FILE_LAYOUT_FAILURE_CODE='NB11AA0102', TRAILER_RECORD_ERROR_FAILURE_CODE='NB11AA0103', HEADER_RECORD_ERROR_FAILURE_CODE='NB11AA0104', HEADER_RECORD='1', DATA_RECORD='2', TRAILER_RECORD='8', END_RECORD='9') and instance variables (preRecordKbn, recordCount, dataRecordCount), (3) the numbered layout validation rules (header must be record 1; data records follow; trailer after data; end record is last; trailer totalCount must match dataRecordCount), (4) the ASCII image diagram showing record ordering.",
+      "source_evidence": "Source section 'ファイルバリデータ生成' contains getValidatorAction() code, FileLayoutValidator class skeleton, numbered validation rules, and ASCII record structure diagram."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "ファイルバリデータ実装 section intro (source h2)",
+      "description": "The introductory content of the ファイルバリデータ実装 section is absent. Missing: the explanation that RecordTypeBindingHandler dispatches methods by record type, the table mapping record types to method names (header→doHeader, data→doData, trailer→doTrailer, end→doEnd), and the footnote that the naming convention is `do` + record type name (public Result \"do\" + [record type name](DataRecord, ExecutionContext)).",
+      "source_evidence": "Source section 'ファイルバリデータ実装' contains a 3-column table and footnote [#] explaining the method dispatch mechanism."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Overall section structure",
+      "description": "The knowledge file contains only 3 sections (s1–s3) covering only the h3-level subsections under 'ファイルバリデータ実装'. Five h2-level sections from the source (フォーマット定義ファイル, 初期化処理, リーダ生成, ファイルバリデータ生成, ファイルバリデータ実装 intro) are entirely unrepresented. The source has 5 h2 sections plus 3 h3 subsections, but only the 3 h3 subsections appear in the knowledge file.",
+      "source_evidence": "Source h2 headings: フォーマット定義ファイル, 初期化処理, リーダ生成, ファイルバリデータ生成, ファイルバリデータ実装 (with h3 sub-sections ヘッダーレコードの精査処理, データレコードの精査処理, トレーラレコードの精査処理)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "Missing hint 'ValidatableFileDataReader' — the source names this class in the ファイルバリデータ生成 section context (getValidatorAction returns ValidatableFileDataReader.FileValidatorAction), which is relevant to understanding ヘッダーレコードの精査処理 context.",
+      "source_evidence": "Source: 'public ValidatableFileDataReader.FileValidatorAction getValidatorAction()'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints, index[s2].hints, index[s3].hints",
+      "description": "Missing hint 'FileValidator' and 'FileLayoutValidator' — the inner class implementing FileValidator is the context for all three precision processing methods (doHeader, doData, doTrailer). These class names are relevant for users searching how to implement custom file validators.",
+      "source_evidence": "Source: 'private class FileLayoutValidator implements FileValidator'"
+    }
+  ]
+}

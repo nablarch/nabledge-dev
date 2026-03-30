@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-08_01_validation_architecture",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — formArraySizeValueMaxLength property description",
+      "description": "The source explicitly states the security behavior: 「配列の添え字にこの長さを超える長さの文字列を指定したリクエストが送られた場合、ValidationManager は無条件にその項目をエラー(リクエストの改竄)と判断する。」 This describes that violations are unconditionally treated as request tampering — a security-relevant behavioral detail. The knowledge file table cell only says 「Formの配列サイズ文字列の最大長。デフォルト3（999個まで許容）。」 and the bottom note only clarifies the type difference (not max count but string length of index). The tamper-detection behavior when the limit is exceeded is entirely absent.",
+      "source_evidence": "設定内容詳細 — formArraySizeValueMaxLength 行: 「配列の添え字にこの長さを超える長さの文字列を指定したリクエストが送られた場合、ValidationManager は無条件にその項目をエラー(リクエストの改竄)と判断する。」"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections s17, s18, s19, s20, s21, s22 — デフォルトのフォーマット",
+      "description": "The 'デフォルトのフォーマット' content in sections s17–s22 has no basis in the provided source file. The source only explicitly shows default format sections for SqlPStatement#retrieve start/end (s13, s14) and SqlPStatement#execute start/end (s15, s16). The source is truncated before any placeholder tables or default format entries appear for executeQuery, executeUpdate, and executeBatch methods. The default format strings shown in s17–s22 (e.g., `$methodName$\\n\\texecute_time(ms) = [$executeTime$]`) are not stated in the source; they appear to be inferred from the pattern of the preceding sections.",
+      "source_evidence": "Source file ends after the SqlPStatement#executeメソッドの実行終了時 placeholder/default-format section. No default format text exists in the source for executeQuery, executeUpdate, or executeBatch methods."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — JSP code example",
+      "description": "The JSP code example contains the comment `<%-- n:hiddenでフォームデータを維持 --%>` which does not appear in the source file. The source has no such comment; it only lists the `n:hidden` tags without annotation.",
+      "source_evidence": "Source JSP example contains no comment between the n:compositeKeyCheckbox tag and the n:hidden tags."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — trailing descriptive sentence",
+      "description": "The sentence \"各行のユーザーデータは`n:hidden`フィールドで保持し、次画面へのフォームデータ送信を確保する\" is an interpretation not stated in the source. The source shows the n:hidden usage in code but does not explicitly describe its purpose as \"次画面へのフォームデータ送信を確保する\".",
+      "source_evidence": "Source only shows the n:hidden tags in the JSP example without explanation of their purpose."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The hints for s1 are missing `namePrefix` and `valueObject`, both of which are explicitly used as attributes of `n:compositeKeyCheckbox` in the JSP code example (`namePrefix=\"form\"`, `valueObject=\"${row}\"`) and are relevant for finding this section.",
+      "source_evidence": "Source JSP: `<n:compositeKeyCheckbox namePrefix=\"form\" valueObject=\"${row}\" keyNames=\"userId,pk2,pk3\" name=\"form.userCompositeKeys\" />`"
+    }
+  ]
+}

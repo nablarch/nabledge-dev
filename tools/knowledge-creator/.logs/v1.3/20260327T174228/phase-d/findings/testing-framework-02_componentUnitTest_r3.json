@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-02_componentUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — 異常系データのID命名規則 example",
+      "description": "The knowledge file provides a concrete example stating '正常系IDが `\"registerUser\"` なら異常系IDは `\"registerUserErr\"`', but the source never gives this specific example. The source only says '前項で指定したIDの末尾に\"Err\"を付加する'. In the source, '前項で指定したID' refers to the data section IDs used in getListMap calls (e.g., 'sysAcctEntity', 'usersEntity', 'grpSysAcctEntity'), not to 'registerUser' which is the sheet name variable. The fabricated example incorrectly conflates the sheet name with the data section IDs.",
+      "source_evidence": "こちらでは、前項で指定したIDの末尾に\"Err\"を付加することで、同じExcelシート内に正常系と異常系のデータを混載している。 / (previous section): List<Map<String, String>> sysAcctDatas = getListMap(sheetName, \"sysAcctEntity\");"
+    }
+  ]
+}

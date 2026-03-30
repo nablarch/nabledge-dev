@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1",
+      "description": "The source contains a titled subsection 「ボディ行のJSPフラグメントが評価されるタイミング」 with a concrete JSP code example showing the exact evaluation mechanism. This code reveals that `oddEvenCss` is set to the literal string `\"odd\"` for odd rows and `\"even\"` for even rows. The knowledge file's variable table only describes `oddEvenCss` as 「奇数行・偶数行ごとのクラス名」 without specifying the actual CSS class name values. Developers need the exact values \"odd\" and \"even\" to write correct CSS rules for the search result table.",
+      "source_evidence": "ボディ行のJSPフラグメントが評価されるタイミング code block: `<c:if test=\"${status.count % 2 != 0}\"><n:set var=\"oddEvenCss\" value=\"odd\" /></c:if><c:if test=\"${status.count % 2 == 0}\"><n:set var=\"oddEvenCss\" value=\"even\" /></c:if>`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`@OnError` annotation is absent from s1 hints. It appears prominently on the action method signature in the code example: `@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")`.",
+      "source_evidence": "`@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")` in the アクションの実装例 code block"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ApplicationException` is absent from s1 hints. It is both a PascalCase class name and an XxxException appearing in the action code: used in the `@OnError` annotation and in the `TooManyResultException` catch block (`throw new ApplicationException(...)`).",
+      "source_evidence": "`throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount()));` in the アクションの実装例 code block"
+    }
+  ]
+}

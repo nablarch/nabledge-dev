@@ -1,0 +1,333 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/handler/MultiThreadExecutionHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+=================================
+マルチスレッド実行制御ハンドラ
+=================================
+
+**クラス名:** ``nablarch.fw.MultiThreadExecutionHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+本ハンドラでは、サブスレッドを作成し、ハンドラキュー上の後続ハンドラの処理を各サブスレッド上で並行実行することができる。
+このハンドラでの処理結果は、各サブスレッドでの実行結果を集約したオブジェクト(`Result.MultiStatus`_)となる。
+
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "MultiThreadExecutionHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+.. _callback:
+
+**コールバック**
+
+  下記の抽象クラス／インターフェースを後続のハンドラで継承／実装することにより、本ハンドラ実行中にコールバックを受けることができる。 
+
+  +------------------------------+----------------+--------------------------------------------------------------------------+
+  | 抽象クラス／インターフェース | メソッド       | イベント                                                                 |
+  +==============================+================+==========================================================================+
+  | `BatchActionBase`_           | initialize     | マルチスレッド実行開始前一度だけ呼ばれる。                               |
+  |                              +----------------+--------------------------------------------------------------------------+
+  |                              | error          | サブスレッドのいずれかが異常終了(未捕捉の実行時例外またはエラーを送出)   |
+  |                              |                | した場合に一度だけ呼ばれる。                                             |
+  |                              +----------------+--------------------------------------------------------------------------+
+  |                              | terminate      | サブスレッド上の処理完了後に一度だけ呼ばれる。                           |
+  |                              |                | (異常終了時では、error後に呼ばれる。)                                    |
+  +------------------------------+----------------+--------------------------------------------------------------------------+
+  | `DataReaderFactory`_         | createReader   | 実行コンテキスト上にデータリーダが設定されていなかった場合は、           |
+  |                              |                | BatchActionBase#initialize() の呼び出し直後に一度だけ呼ばれる。          |
+  +------------------------------+----------------+--------------------------------------------------------------------------+
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`BatchAction`                    バッチアクションでは、本ハンドラのコールバックを利用することで、
+                                        バッチの初期処理及び終了処理を実装している。
+  ====================================  ===================================================================================
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (並行実行スレッド数をスレッドコンテキストに登録)**
+    このハンドラに設定されている **並行実行スレッド数** をスレッドコンテキストの属性値として登録する。
+    この値は後続処理において、シングルスレッド環境でしか利用できない機能の実行可否を判定する際に参照する。
+
+  **2. (コールバック呼び出し)**
+    後続ハンドラの内、 **BatchActionBase** を継承しているものについて、下記のコールバックを呼び出す。::
+
+      BatchActionBase#initialize(Object data, ExecutionContext context): Object
+    
+  **3. (データリーダを取得)**
+    サブスレッドで使用するデータリーダを実行コンテキスト(`ExecutionContext`_)から取得する。
+    データリーダが実行コンテキストに設定されていなかった場合は、データリーダファクトリを使用して
+    データリーダを作成する。
+
+  **3a. (データリーダ未設定エラー)**
+    実行コンテキスト上にデータリーダ及びデータリーダファクトリのいずれも設定されていなかった場合、
+    実行時例外(`IllegalStateException`_)を送出する。
+
+  **4. (実行コンテキストのコピー)**
+    各サブスレッドで使用する実行コンテキストを、現在の実行コンテキストをもとに作成する。
+    この際、実行コンテキストの各属性は以下のように複製される。
+    
+    =======================  =====================  ============================================================
+    属性名                   データ型               コピーされる内容
+    =======================  =====================  ============================================================
+    ハンドラキュー           List<`Handler`_ >      現在のListのシャローコピーを作成する。
+                                                    従って、各ハンドラはスレッドセーフに作成される必要がある。
+    リクエストコンテキスト   Map<String, Object>    新規のMapを作成する。
+                                                    メインスレッド側の変数はサブスレッドに引き継がれない。
+    セッションコンテキスト   Map<String, Object>    現在のセッションスコープのMapをそのまま設定する。
+                                                    各サブスレッドは、単一のMapを共有する。
+    データリーダ             `DataReader`_          現在のデータリーダをそのまま設定する。
+    データリーダファクトリ   `DataReaderFactory`_   現在のファクトリをそのまま設定する。
+    =======================  =====================  ============================================================
+
+  **5. (サブスレッドの作成と実行)**
+    サブスレッドを作成し実行する。
+    各サブスレッドでは、 **4.** で作成した実行コンテキスト中のハンドラキューに処理を委譲し、その結果をサブスレッドの実行結果として
+    メインスレッドに返す。
+    メインスレッドは全てのサブスレッドが終了するまで待機する。
+
+.. _outbound:
+
+**[復路処理]**
+  **6. (コールバック呼び出し)**
+    後続ハンドラの内、 **BatchActionBase** を継承しているものについて、下記のコールバックを呼び出す。::
+
+      BatchActionBase#terminate(Object data, ExecutionContext context): Object
+
+  **7. (正常終了)**
+    各サブスレッドの処理結果を `Result.MultiStatus`_ に追加してリターンする。
+  
+.. _error: 
+
+**[例外処理]**
+  **5a. (サブスレッドが異常終了)**
+    サブスレッド上のいずれかが異常終了(=未捕捉の実行時例外またはエラーを送出)した場合、
+    後続ハンドラの内、 **BatchActionBase** を継承しているものについて、下記のコールバックを呼び出す。::
+
+      BatchActionBase#error(Throwable e, ExecutionContext context): void
+
+    次に、現在実行中の各サブスレッド対して割り込み要求をおこなった上で、
+    全サブスレッドが完了するか、 **スレッド停止タイムアウト** を経過するまで待機する。
+    最後に **6.** のコールバックを呼び出した上で、起因例外を再送出する。
+
+++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  =============================== ============================ ============================ ==============================
+  設定項目                        プロパティ名                 データ型　                   備考
+  =============================== ============================ ============================ ==============================
+  並行実行スレッド数              concurrentNumber             int                          デフォルト値は1
+  スレッド停止のタイムアウト秒数  terminationTimeout           int                          デフォルト値は600(秒) 
+  =============================== ============================ ============================ ==============================
+
+**基本設定**
+  以下は標準的なスレッドコンテキストの設定例である。
+  並行実行スレッド数は、運用時に値を変更する可能性が高い為、
+  埋め込みパラメータとして定義することを推奨する。
+
+  .. code-block:: xml
+
+    <!-- スレッド実行ハンドラ -->
+    <component class = "nablarch.fw.handler.MultiThreadExecutionHandler">
+      <property name="concurrentNumber" value="${threadCount}" />
+    </component>
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-MultiThreadExecutionHandler`
+
+```json
+{
+  "id": "handlers-MultiThreadExecutionHandler",
+  "title": "マルチスレッド実行制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "nablarch.fw.MultiThreadExecutionHandler",
+        "BatchActionBase",
+        "DataReaderFactory",
+        "Result.MultiStatus",
+        "マルチスレッド実行",
+        "サブスレッド並行実行",
+        "コールバック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ExecutionContext",
+        "IllegalStateException",
+        "DataReader",
+        "DataReaderFactory",
+        "Handler",
+        "BatchActionBase",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "スレッドコンテキスト",
+        "実行コンテキストのコピー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "concurrentNumber",
+        "terminationTimeout",
+        "並行実行スレッド数",
+        "スレッド停止タイムアウト",
+        "nablarch.fw.handler.MultiThreadExecutionHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.MultiThreadExecutionHandler`\n\nサブスレッドを作成し、ハンドラキュー上の後続ハンドラの処理を各サブスレッド上で並行実行する。処理結果は各サブスレッドの実行結果を集約した `Result.MultiStatus` となる。\n\n**コールバック**\n\n後続ハンドラで以下の抽象クラス／インターフェースを継承／実装することでコールバックを受けられる：\n\n| 抽象クラス／インターフェース | メソッド | イベント |\n|---|---|---|\n| `BatchActionBase` | initialize | マルチスレッド実行開始前に一度だけ呼ばれる |\n| `BatchActionBase` | error | サブスレッドのいずれかが異常終了した場合に一度だけ呼ばれる |\n| `BatchActionBase` | terminate | サブスレッド上の処理完了後に一度だけ呼ばれる（異常終了時は error 後に呼ばれる） |\n| `DataReaderFactory` | createReader | 実行コンテキスト上にデータリーダが未設定の場合、`BatchActionBase#initialize()` 呼び出し直後に一度だけ呼ばれる |\n\n**関連するハンドラ**\n\n- :doc:`BatchAction`: バッチアクションでは本ハンドラのコールバックを利用してバッチの初期処理・終了処理を実装している",
+    "s2": "**[往路処理]**\n\n1. 並行実行スレッド数をスレッドコンテキストに登録する。後続処理でシングルスレッド環境でしか利用できない機能の実行可否を判定する際に参照される。\n2. `BatchActionBase` を継承しているハンドラに対して `BatchActionBase#initialize(Object data, ExecutionContext context)` コールバックを呼び出す。\n3. サブスレッドで使用するデータリーダを実行コンテキスト（`ExecutionContext`）から取得する。データリーダが未設定の場合はデータリーダファクトリを使用して作成する。\n   - データリーダ・データリーダファクトリともに未設定の場合、`IllegalStateException` を送出する。\n4. 各サブスレッド用の実行コンテキストを現在の実行コンテキストをもとに作成する。各属性のコピー方式：\n\n| 属性名 | データ型 | コピーされる内容 |\n|---|---|---|\n| ハンドラキュー | List\\<Handler\\> | 現在のListのシャローコピー。各ハンドラはスレッドセーフに作成される必要がある |\n| リクエストコンテキスト | Map\\<String, Object\\> | 新規Mapを作成。メインスレッド側の変数はサブスレッドに引き継がれない |\n| セッションコンテキスト | Map\\<String, Object\\> | 現在のセッションスコープのMapをそのまま設定。各サブスレッドは単一のMapを共有する |\n| データリーダ | `DataReader` | 現在のデータリーダをそのまま設定 |\n| データリーダファクトリ | `DataReaderFactory` | 現在のファクトリをそのまま設定 |\n\n5. サブスレッドを作成し実行する。各サブスレッドはコピーした実行コンテキスト中のハンドラキューに処理を委譲する。メインスレッドは全サブスレッドが終了するまで待機する。\n\n**[復路処理]**\n\n6. `BatchActionBase` を継承しているハンドラに対して `BatchActionBase#terminate(Object data, ExecutionContext context)` コールバックを呼び出す。\n7. 各サブスレッドの処理結果を `Result.MultiStatus` に追加してリターンする。\n\n**[例外処理]**\n\nサブスレッドのいずれかが異常終了（未捕捉の実行時例外またはエラーを送出）した場合：\n1. `BatchActionBase#error(Throwable e, ExecutionContext context)` コールバックを呼び出す。\n2. 現在実行中の全サブスレッドに割り込み要求を行い、全サブスレッドが完了するか**スレッド停止タイムアウト**を経過するまで待機する。\n3. `BatchActionBase#terminate` コールバックを呼び出した上で、起因例外を再送出する。",
+    "s3": "| 設定項目 | プロパティ名 | データ型 | 備考 |\n|---|---|---|---|\n| 並行実行スレッド数 | concurrentNumber | int | デフォルト値は1 |\n| スレッド停止のタイムアウト秒数 | terminationTimeout | int | デフォルト値は600(秒) |\n\n並行実行スレッド数は運用時に値を変更する可能性が高いため、埋め込みパラメータとして定義することを推奨する。\n\n```xml\n<component class=\"nablarch.fw.handler.MultiThreadExecutionHandler\">\n  <property name=\"concurrentNumber\" value=\"${threadCount}\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "主なクラス, リソース テーブル",
+      "description": "HttpServer クラスが knowledge file に一切登場しない。ソースの主なクラス/リソーステーブルには「内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ。」と説明されており、テストフレームワークの中核クラスであるにもかかわらず、knowledge file のどのセクションにもクラス名 HttpServer が記述されていない。",
+      "source_evidence": "| HttpServer | 内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ。| \\－ |"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "主なクラス, リソース テーブル直後の段落",
+      "description": "全クラスが同一 JVM 上で動作するという重要なアーキテクチャ特性が knowledge file に含まれていない。この特性により「リクエストやセッション等のサーバ側のオブジェクトを加工できる」ことが保証されており、テスト実装判断に必要な情報である。",
+      "source_evidence": "上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7",
+      "description": "セクションタイトルが「リポジトリの初期化」となっているが、ソースでは「リポジトリの初期化」はあくまで「実行」セクション配下のサブセクションである。s7 の主要コンテンツは execute メソッドのシグネチャと実行方法（「実行」セクション）であり、タイトルがその内容を正確に反映していない。",
+      "source_evidence": "実行\n====\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、内蔵サーバが起動されリクエストが送信される。\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)\n```\n...\nリポジトリの初期化\n------------------\n（executeの内部動作の説明）"
+    }
+  ]
+}

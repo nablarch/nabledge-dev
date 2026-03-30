@@ -1,0 +1,30 @@
+{
+  "id": "web-application-function--s1",
+  "title": "ファイルダウンロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルダウンロードの実現方法",
+      "hints": [
+        "StreamResponse",
+        "DataRecordResponse",
+        "downloadSubmit",
+        "downloadButton",
+        "downloadLink",
+        "ファイルダウンロード",
+        "BLOBダウンロード",
+        "CSVダウンロード",
+        "データレコードダウンロード",
+        "別ウィンドウダウンロード",
+        "allowDoubleSubmission",
+        "setContentDisposition",
+        "setContentType"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルダウンロードに使用するタグとユーティリティクラス:\n\n**タグ**: `downloadSubmit`, `downloadButton`, `downloadLink`\n\n**クラス**: `StreamResponse`, `DataRecordResponse`\n\n## ファイルのダウンロード方法\n\n- JSP: `downloadButton`タグを使用\n- Action: `StreamResponse`クラスを使用\n\n```jsp\n<n:downloadButton uri=\"/action/ss11AC/W11AC02Action/TempFile\" name=\"tempFile\">ダウンロード</n:downloadButton>\n```\n\n```java\nStreamResponse response = new StreamResponse(file, true);\nresponse.setContentType(\"text/plain; charset=UTF-8\");\nresponse.setContentDisposition(file.getName());\nreturn response;\n```\n\n`StreamResponse(File file, boolean deleteOnClose)`: 第2引数`true`=ダウンロード後にファイルを削除（フレームワークが削除）、`false`=削除しない。\n\n## BLOB型カラムのダウンロード方法\n\n- JSP: `downloadLink`タグを使用、`n:param`タグで行IDパラメータを渡す\n- Action: `StreamResponse(Blob)`を使用\n\n```jsp\n<n:downloadLink uri=\"/action/ss11AC/W11AC02Action/BlobColumn\" name=\"blobColumn_${status.index}\">\n    <n:write name=\"record.fileName\" />(<n:write name=\"fileId\" />)\n    <n:param paramName=\"fileId\" name=\"fileId\" />\n</n:downloadLink>\n```\n\n```java\nStreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\nresponse.setContentType(\"image/jpeg\");\nresponse.setContentDisposition(record.getString(\"FILE_NAME\"));\nreturn response;\n```\n\n## データレコードのダウンロード方法\n\nデータレコードをフォーマットしてダウンロードするには、フォーマット定義ファイルが必要（配置場所はプロジェクトの実装方針に従う）。\n\n- JSP: `downloadSubmit`タグを使用\n- Action: `DataRecordResponse(String formatBaseLogicalName, String formatFileName)`を使用\n\n```java\nDataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\nresponse.write(\"header\", Collections.<String, Object>emptyMap());\nfor (SqlRow record : records) {\n    response.write(\"data\", record);\n}\nresponse.setContentType(\"text/csv; charset=Shift_JIS\");\nresponse.setContentDisposition(\"メッセージ一覧.csv\");\nreturn response;\n```\n\n`DataRecordResponse.write(String recordType, Map<String, ?> record)`: ヘッダーのデフォルト値を使用する場合は空マップ`Collections.emptyMap()`を指定。\n\n## 別ウィンドウを開きダウンロードを開始したい場合\n\n1. 親画面: `n:popupButton`タグで別ウィンドウを開く（:ref:`howto_open_multi_window` 参照）\n2. 別ウィンドウ: `onload`イベントでダウンロードフォームを自動サブミット\n3. `downloadSubmit`の`allowDoubleSubmission=\"false\"`を指定\n\n```jsp\n<%-- 親画面 --%>\n<n:popupButton uri=\"/action/ss11AC/W11AC02Action/ShowSub\" name=\"showSub\">ダウンロード</n:popupButton>\n```\n\n```jsp\n<%-- 別ウィンドウ --%>\n<body onload=\"doOnclick('submit');\">\n    <n:downloadSubmit type=\"button\" uri=\"/action/ss11AC/W11AC02Action/TempFile\"\n                      name=\"submit\" value=\"ダウンロード\" allowDoubleSubmission=\"false\" />\n    <n:button uri=\"#\" name=\"close\" onclick=\"window.close();\" displayMethod=\"NORMAL\">閉じる</n:button>\n</body>\n```"
+  }
+}

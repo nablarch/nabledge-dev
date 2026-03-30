@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-03_Tips--s10",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor omissions of contextual/emphasis information. The knowledge file contains complete, accurate, actionable instructions for both features. Neither omission would cause a developer to implement something incorrectly or fail to find the feature.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "sections.s1",
+      "impact": "low",
+      "justification": "The missing 'のみ' (only) emphasis is a value proposition — reassuring users that production code is untouched — not an instruction. The knowledge file already shows the test config as an override of the production component, making it evident that only config changes are needed. A developer would understand and correctly implement the feature without this phrase. Why it persisted: Phase E did not update s1 content (the log is truncated mid-sentence at 'Excelファイル記', suggesting the fix may have been partially or incorrectly applied and the content reverted to original)."
+    },
+    {
+      "category": "omission",
+      "location": "sections.s10",
+      "impact": "low",
+      "justification": "The missing background ('通常、データベースアクセスクラスではトランザクション制御を行わない') explains the motivating scenario but is not required to use the feature. The s10 content correctly describes what to do (inherit DbAccessTestSupport, list transaction names in properties file) and what benefit it provides (no explicit start/no leaked endings). A developer following the knowledge file would correctly apply the feature. Why it persisted: Phase E output shows s10 content identical to the original — the background sentence was not added, likely because the fix agent treated minor context additions as low-priority and did not modify sections where the actionable guidance was already complete."
+    }
+  ]
+}

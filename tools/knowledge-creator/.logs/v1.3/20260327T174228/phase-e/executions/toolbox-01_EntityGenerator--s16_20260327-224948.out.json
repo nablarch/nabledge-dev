@@ -1,0 +1,29 @@
+{
+  "id": "toolbox-01_EntityGenerator--s16",
+  "title": "共通項目自動設定機能で使用するアノテーションの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "共通項目自動設定機能で使用するアノテーションの出力",
+      "hints": [
+        "FieldBlock",
+        "FieldAnnotation",
+        "nablarch.tool.formgenerator.helper.FieldBlock",
+        "nablarch.tool.formgenerator.helper.FieldAnnotation",
+        "@UserId",
+        "@CurrentDateTime",
+        "fieldAnnotation",
+        "annotationMapping",
+        "templatePath",
+        "共通項目自動設定",
+        "アノテーション自動付与",
+        "フォームジェネレータ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "特定のプロパティ名に一致するプロパティに対し、共通項目自動設定機能用アノテーションを自動生成時に付与できる。\n\n**クラス**: `nablarch.tool.formgenerator.helper.FieldBlock`, `nablarch.tool.formgenerator.helper.FieldAnnotation`\n\n**アノテーション**: `@UserId`, `@CurrentDateTime`\n\n`FieldBlock` の `fieldAnnotation` プロパティに `FieldAnnotation` コンポーネントを設定し、`annotationMapping` にプロパティ名→アノテーション名のマッピングを定義する。\n\n```xml\n<component name=\"fieldBlock\"\n           class=\"nablarch.tool.formgenerator.helper.FieldBlock\">\n  <property name=\"templatePath\" value=\"classpath:nablarch/tool/formgenerator/field_template.txt\"/>\n  <property name=\"fieldAnnotation\">\n    <component name=\"fieldAnnotationBlock\"\n               class=\"nablarch.tool.formgenerator.helper.FieldAnnotation\">\n      <property name=\"annotationMapping\">\n        <map>\n          <entry key=\"INSERT_USER_ID\" value=\"@UserId\"/>\n          <entry key=\"INSERT_DATE_TIME\" value=\"@CurrentDateTime\"/>\n          <entry key=\"UPDATE_USER_ID\" value=\"@UserId\"/>\n          <entry key=\"UPDATE_DATE_TIME\" value=\"@CurrentDateTime\"/>\n        </map>\n      </property>\n    </component>\n  </property>\n</component>\n```"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "toolbox-01_EntityGenerator--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "source: 概要 section",
+      "description": "The 概要 (Overview) section is entirely absent from the knowledge file. It contains decision-relevant information: (1) the three input file types the tool requires (テーブル定義書/外部インタフェース設計書, ドメイン定義書, コード設計書), (2) what tasks the tool automates — adding properties to Forms based on table/interface design, and setting single-item validation annotations on Forms based on domain definitions. An AI cannot answer 'what does this tool do?' or 'what does it automate?' without this.",
+      "source_evidence": "本ツールは、下記のファイルからアプリケーションで使用するFormのひな形を作成する。/ Formの作成に必要な下記の作業が自動化できる。/ ドメイン定義に従い、Form の単項目精査で使用するアノテーションを設定する。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index s11 title",
+      "description": "The index title for s11 is '「Entity 出力の仕様」' but the section content (ant -f formgen.xml commands) corresponds to the source heading '自動生成ツールの実行手順'. The source heading '「Entity 出力の仕様」' is actually the parent section for s12 (class/property naming rules), not the execution commands. The title should be '自動生成ツールの実行手順'.",
+      "source_evidence": "Source section '自動生成ツールの実行手順' contains: `ant -f formgen.xml generate-entity` / `ant -f formgen.xml generate-form`. Source heading 'Entity 出力の仕様' is the parent of 'Entity のクラス名とプロパティ名' (s12), not the execution procedure."
+    }
+  ]
+}

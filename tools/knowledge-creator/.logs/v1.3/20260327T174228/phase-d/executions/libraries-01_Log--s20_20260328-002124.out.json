@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-01_Log--s20",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s9 — $information$ placeholder description",
+      "description": "The description of `$information$` omits the key detail that for regular objects, each individual field is displayed by calling `Object#toString()` on it. The knowledge file only says \"オプション情報のフィールド情報\" (vague) and notes the special case for wrapper/CharSequence/Date types showing the object-level toString(). Without the general-case rule, an AI cannot explain or predict the per-field output format seen in s10's example.",
+      "source_evidence": "オプション情報に指定されたオブジェクトのフィールドに対して、Object#toString()メソッドを実行した結果を表示する。オプション情報に指定されたオブジェクトが基本データ型のラッパクラス、CharSequenceインタフェース、Dateクラスの場合は、オブジェクトに対してObject#toString()メソッドを実行した結果のみを表示する。"
+    }
+  ]
+}

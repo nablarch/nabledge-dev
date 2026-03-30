@@ -1,0 +1,433 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/core_library/enterprise_messaging.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+
+==========================================
+システム間メッセージング機能
+==========================================
+
+
+本節では、本フレームワークが提供するシステム間メッセージング機能について解説する。
+
+  - `全体構成`_
+  - `基本概念`_
+  - `メッセージング基盤API`_
+  - `メッセージングプロバイダ`_
+  - :doc:`../architectural_pattern/messaging`
+  - :doc:`messaging_sending_batch`
+  - :doc:`messaging_sender_util`
+
+---------------------------------
+
+全体構成
+================================
+次の図に示されるように、本機能は大きく分けると3つのレイヤによって構成されている。
+
+  .. figure::  ../_image/messaging_components.png
+     :align: center
+     :scale: 60
+
+
+**1. メッセージング基盤API**
+  以下の4つの送受信処理を実行するためのAPIが定義された本機能の中心となるクラス群である。
+
+    - `応答不要メッセージ送信`_
+    - `同期応答メッセージ送信`_
+    - `応答不要メッセージ受信`_
+    - `同期応答メッセージ受信`_
+
+
+**2. メッセージングプロバイダ**
+  **メッセージング基盤API** の実装系を与えるモジュールである。
+  現時点では、以下の実装系が用意されている。
+ 
+  - `JMS メッセージングプロバイダ`_
+
+    JMSインターフェースの実装系を使用したメッセージングコンテキストの実装。
+    メッセージングミドルウェアがJMS互換であれば、このクラスを経由して利用することができる。
+
+  - `組込みメッセージングプロバイダ`_
+
+    JVM上の1つのサブスレッドとして動作するMOMを使用するメッセージングプロバイダ。
+    自動テストで使用する。
+
+  ..
+    - **Websphere MQ メッセージングプロバイダ**
+
+      Websphere MQによるメッセージングコンテキストの実装を与える。
+      現時点では、2相コミットが利用可能な唯一のメッセージングプロバイダである。
+
+
+
+**3. フレームワーク機能**
+  **メッセージング基盤API** を使用して実装されたフレームワークが提供する各種機能。
+  これらの機能は、後述する「フレームワーク制御ヘッダ」の利用を前提として設計されている。
+
+  - :doc:`../architectural_pattern/messaging`
+
+    NAFの実行制御基盤の1つであり、外部から送信される要求電文に対して適切な業務アプリケーションを実行する制御基盤である。
+    
+  - :doc:`messaging_sending_batch`
+
+    特定のテーブル上の内容を定期的に監視し、各レコードの内容をもとにメッセージを作成して送信する常駐バッチ。
+    応答を行わないメッセージ送信処理で用いる。
+    業務側からは監視対象テーブルへの単純なINSERT文を発行するだけでメッセージを送信することができる。
+
+
+  - :doc:`messaging_sender_util`
+    
+    対外システムに対してメッセージの同期送信を行うユーティリティクラス。
+    フレームワーク制御ヘッダ内の再送電文フラグを利用した再送/タイムアウトの機構を実装している。
+    なお、応答を伴わないメッセージの送信については、 :doc:`messaging_sending_batch` を使用する。
+
+
++++++++++++++++++++++++++++++
+
+
+.. _message_model:
+
+基本概念
+======================================
+**送受信電文のデータモデル**
+  本機能では、送受信電文の内容を以下のようなデータモデルで表現している。
+
+  .. figure::  ../_image/messaging_message_model.png
+     :align: center
+  
+  **プロトコルヘッダー**
+    主にMOMによるメッセージ送受信処理において使用される情報を格納したヘッダー領域である。
+    プロトコルヘッダーはMapインターフェースでアクセスすることが可能となっている。
+
+  **共通プロトコルヘッダー**
+    プロトコルヘッダーのうち、メッセージングコンテキストが使用する以下のヘッダーについては、
+    特定のキー名でアクセスすることができる。
+    
+    ================== =============== ============================================================ =============================================
+    ヘッダー論理名      キー名         内容                                                         JMSメッセージングプロバイダでの実装
+    ================== =============== ============================================================ =============================================
+    メッセージID       MessageId       MOMによって電文ごとに一意採番される文字列。                  MessageID JMSヘッダーの値を設定
+
+                                       **送信時**
+                                         送信処理の際、MOMが採番した値が設定される。
+
+                                       **受信時**
+                                         送信側のMOMが発番した値が設定されている。
+
+    関連メッセージID   CorrelationId   電文が関連する電文のメッセージID                             CorrelationID JMSヘッダーの値を設定
+                                       応答電文および再送要求電文で使用され、それぞれ、以下の値を
+                                       設定する。
+  
+                                       **応答電文**
+                                         要求電文のメッセージIDを設定する。                 
+
+                                       **再送要求**
+                                         応答再送を要求する要求電文のメッセージIDを設定する。
+
+    送信宛先           Destination     電文の送信宛先を表す論理名。                                 送信キューのDestinationオブジェクトに
+                                                                                                    紐付けられた論理名を設定
+                                       **送信時**
+                                         送信キューの論理名を指定する。
+
+                                       **受信時**
+                                         受信キューの論理名が設定されている。                                          
+
+    応答宛先           ReplyTo         この電文に応答を送信する際に使用する宛先を表す論理名。       応答受信キューのDestinationオブジェクトに
+                                                                                                    紐付けられた論理名を設定
+                                       **送信時**
+                                         同期応答処理の場合は応答受信キューの論理名を設定する。
+                                         応答不要送信の場合は設定不要。
+
+                                       **受信時**
+                                         同期応答受信の場合は、応答宛先キューの論理名が
+                                         設定されている。
+                                         応答不要受信の場合は、通常は何も設定されていない。
+
+    有効期間           TimeToLive      送信処理開始時点を起点とする電文の有効期間(msec)             Expiration JMSヘッダー に、
+                                                                                                    (送信処理実行時点での時刻 + 有効期間) を設定
+                                       **送信時**
+                                         送信電文の有効期間を設定する。
+
+                                       **受信時**
+                                         何も設定されない。
+    ================== =============== ============================================================ =============================================
+      
+    共通プロトコルヘッダー以外のヘッダーについては、各メッセージングプロバイダ側で任意に定義することが可能である。
+    このようなヘッダーは **個別プロトコルヘッダ** と呼ばれる。
+    例えば、JMSメッセージングプロバイダの場合、全てのJMSヘッダー、JMS拡張ヘッダーおよび任意属性は、個別プロトコルヘッダとして扱われる。
+     
+  **メッセージボディ**
+    プロトコルヘッダーを除いた電文のデータ領域をメッセージボディと呼ぶ。
+    メッセージングプロバイダ、メッセージングコンテキストは、原則としてプロトコルヘッダー領域のみを使用する。
+    それ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。
+    
+    メッセージボディの解析は、 :doc:`record_format` によって行う。
+    これにより、電文の内容をフィールド名をキーとするMap形式で読み書きすることが可能である。
+
+
+  .. _fw_header:
+
+  **フレームワーク制御ヘッダー**
+    本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されている
+    ことを前提として設計されているものが多く存在する。
+    そのような制御項目のことを「フレームワーク制御ヘッダ」とよぶ。
+
+    フレームワーク制御ヘッダの一覧とそれを使用するハンドラの対応は以下のとおり。
+
+    ======================== ========================================= ===========================================
+    フレームワーク制御ヘッダ 役割                                      このヘッダを使用する主要なハンドラ
+    ======================== ========================================= ===========================================
+    リクエストID             この電文を受信したアプリケーションが      | :doc:`../handler/RequestPathJavaPackageMapping`
+                             実行すべき業務処理を識別するためのID。    | :doc:`../handler/RequestHandlerEntry`
+                                                                       | :doc:`../handler/ServiceAvailabilityCheckHandler`
+                                                                       | :doc:`../handler/PermissionCheckHandler`
+                                                                       | :doc:`../reader/FwHeaderReader`
+                                                                       |  ...他
+
+    ユーザID                 この電文の実行権限を表す文字列。          :doc:`../handler/PermissionCheckHandler`
+    再送要求フラグ           再送要求電文送信時に設定されるフラグ。    :doc:`../handler/MessageResendHandler`
+    ステータスコード         要求電文に対する処理結果を表すコード値    :doc:`../handler/MessageReplyHandler`
+                             応答電文に設定される。                     
+    ======================== ========================================= ===========================================
+
+    フレームワークヘッダーは、デフォルトの設定では、メッセージボディの最初のデータレコード中に、
+    それぞれ以下のフィールド名で定義されている必要がある。
+
+    ======================== =============
+    フレームワーク制御ヘッダ フィールド名
+    ======================== =============
+    リクエストID             requestId
+    ユーザID                 userId
+    再送要求フラグ           resendFlag
+    ステータスコード         statusCode
+    ======================== =============
+ 
+    以下は、標準的なフレームワーク制御ヘッダの定義例である。
+      
+    .. code-block:: bash
+
+      #===================================================================
+      # フレームワーク制御ヘッダ部 (50byte)
+      #===================================================================
+      [NablarchHeader]
+      1   requestId   X(10)       # リクエストID
+      11  userId      X(10)       # ユーザID
+      21  resendFlag  X(1)  "0"   # 再送要求フラグ (0: 初回送信 1: 再送要求)
+      22  statusCode  X(4)  "200" # ステータスコード
+      26 ?filler      X(25)       # 予備領域
+      #====================================================================
+
+    フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、
+    フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスすることができ、
+    PJ毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用することができる。
+
+    また、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、
+    予備領域を設けておくことを強く推奨する。
+
+
++++++++++++++++++++++++++++++++
+
+.. _messaging_api:
+
+```
+
+## Knowledge File
+
+- ID: `libraries-enterprise_messaging--s1`
+
+```json
+{
+  "id": "libraries-enterprise_messaging--s1",
+  "title": "システム間メッセージング機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システム間メッセージング機能",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング基盤",
+        "メッセージングプロバイダ",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構成",
+      "hints": [
+        "メッセージング基盤API",
+        "JMSメッセージングプロバイダ",
+        "組込みメッセージングプロバイダ",
+        "応答不要メッセージ送信",
+        "同期応答メッセージ送信",
+        "応答不要メッセージ受信",
+        "同期応答メッセージ受信",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "message_model",
+        "メッセージデータモデル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "基本概念",
+      "hints": [
+        "プロトコルヘッダー",
+        "共通プロトコルヘッダー",
+        "フレームワーク制御ヘッダー",
+        "MessageId",
+        "CorrelationId",
+        "Destination",
+        "ReplyTo",
+        "TimeToLive",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "NablarchHeader",
+        "メッセージボディ",
+        "個別プロトコルヘッダ",
+        "RequestPathJavaPackageMapping",
+        "RequestHandlerEntry",
+        "ServiceAvailabilityCheckHandler",
+        "PermissionCheckHandler",
+        "FwHeaderReader",
+        "MessageResendHandler",
+        "MessageReplyHandler"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "",
+      "hints": [
+        "messaging_api",
+        "メッセージング基盤API"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "なし",
+    "s3": "**1. メッセージング基盤API**\n以下の4種類の送受信処理APIを提供するクラス群:\n- 応答不要メッセージ送信\n- 同期応答メッセージ送信\n- 応答不要メッセージ受信\n- 同期応答メッセージ受信\n\n**2. メッセージングプロバイダ**\nメッセージング基盤APIの実装系:\n- **JMSメッセージングプロバイダ**: JMSインターフェース実装。JMS互換のメッセージングミドルウェアで利用可能。\n- **組込みメッセージングプロバイダ**: JVM上のサブスレッドとして動作するMOMを使用。自動テスト専用。\n\n**3. フレームワーク機能**\nメッセージング基盤APIを使用した機能群。フレームワーク制御ヘッダの利用を前提として設計。\n- :doc:`../architectural_pattern/messaging`: 外部からの要求電文に適切な業務アプリケーションを実行する制御基盤。\n- :doc:`messaging_sending_batch`: 監視テーブルのレコードからメッセージを作成・送信する常駐バッチ。業務側はINSERT文のみでメッセージ送信可能。応答不要メッセージ送信で使用。\n- :doc:`messaging_sender_util`: 対外システムへの同期メッセージ送信ユーティリティ。フレームワーク制御ヘッダの再送電文フラグによる再送/タイムアウト機構を実装。応答なしメッセージ送信には :doc:`messaging_sending_batch` を使用。",
+    "s4": "なし",
+    "s5": "**プロトコルヘッダー**\nMOMによるメッセージ送受信処理で使用される情報を格納したヘッダー領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダー**\nメッセージングコンテキストが使用するヘッダー群。特定のキー名でアクセス可能。\n\n| ヘッダー論理名 | キー名 | 内容 | JMS実装 |\n|---|---|---|---|\n| メッセージID | MessageId | MOMが電文ごとに一意採番する文字列。送信時:MOMが採番した値。受信時:送信側MOMが発番した値。 | MessageID JMSヘッダー |\n| 関連メッセージID | CorrelationId | 関連電文のメッセージID。応答電文:要求電文のMessageId。再送要求:応答再送を要求する要求電文のMessageId。 | CorrelationID JMSヘッダー |\n| 送信宛先 | Destination | 電文の送信宛先論理名。送信時:送信キュー論理名。受信時:受信キュー論理名。 | 送信キューのDestinationオブジェクト論理名 |\n| 応答宛先 | ReplyTo | 応答送信先論理名。同期応答送信時:応答受信キュー論理名。応答不要送信時:設定不要。受信時(同期応答):応答宛先キュー論理名が設定されている。受信時(応答不要):通常は何も設定されていない。 | 応答受信キューのDestinationオブジェクト論理名 |\n| 有効期間 | TimeToLive | 送信処理開始時点からの電文有効期間(msec)。受信時は設定されない。 | Expiration JMSヘッダーに(送信時刻+有効期間)を設定 |\n\n共通プロトコルヘッダー以外のヘッダーは**個別プロトコルヘッダ**としてプロバイダ側で任意に定義可能。JMSの場合、JMSヘッダー・JMS拡張ヘッダー・任意属性はすべて個別プロトコルヘッダとして扱われる。\n\n**メッセージボディ**\nプロトコルヘッダーを除いたデータ領域。メッセージングコンテキストはプロトコルヘッダー領域のみ使用し、それ以外は未解析のバイナリデータとして扱う。メッセージボディの解析は :doc:`record_format` で行い、フィールド名をキーとするMap形式で読み書き可能。\n\n**フレームワーク制御ヘッダー**\nフレームワーク機能が電文中に定義されていることを前提とする制御項目群。\n\n| フレームワーク制御ヘッダ | フィールド名 | 役割 | 使用するハンドラ |\n|---|---|---|---|\n| リクエストID | requestId | 実行すべき業務処理を識別するID | :doc:`../handler/RequestPathJavaPackageMapping`, :doc:`../handler/RequestHandlerEntry`, :doc:`../handler/ServiceAvailabilityCheckHandler`, :doc:`../handler/PermissionCheckHandler`, :doc:`../reader/FwHeaderReader` 他 |\n| ユーザID | userId | 電文の実行権限を表す文字列 | :doc:`../handler/PermissionCheckHandler` |\n| 再送要求フラグ | resendFlag | 再送要求電文送信時に設定されるフラグ | :doc:`../handler/MessageResendHandler` |\n| ステータスコード | statusCode | 要求電文に対する処理結果コード（応答電文に設定） | :doc:`../handler/MessageReplyHandler` |\n\nデフォルトではメッセージボディの最初のデータレコードに上記フィールド名で定義する必要がある。\n\n```bash\n#===================================================================\n# フレームワーク制御ヘッダ部 (50byte)\n#===================================================================\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n#====================================================================\n```\n\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、任意ヘッダ項目としてPJごとに簡易拡張可能。将来の項目追加に備えて予備領域を設けることを強く推奨。",
+    "s6": "なし"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

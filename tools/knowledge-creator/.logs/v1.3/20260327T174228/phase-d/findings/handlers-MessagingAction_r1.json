@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-MessagingAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`TransactionManagementHandler` appears in s1 content (onError description: \"TransactionManagementHandler で業務トランザクションがロールバックされた時点でコールバックされる\") but is not listed in s1 hints.",
+      "source_evidence": "onError() row: \"業務トランザクションがロールバックされた時点で、:doc:`TransactionManagementHandler` からコールバックされる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`RequestMessage`, `TransactionManagementHandler`, and `getParamMap` all appear in s2 content but are absent from s2 hints. `RequestMessage` is referenced in step 1 (readRecord call); `getParamMap` is described as the accessor method for loaded records; `TransactionManagementHandler` is named in the callback step.",
+      "source_evidence": "Step 1: \"RequestMessage の readRecord() を呼び出し\"; \"getParamMap() 等のメソッドにより\"; Step 4: \":doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合\""
+    }
+  ]
+}

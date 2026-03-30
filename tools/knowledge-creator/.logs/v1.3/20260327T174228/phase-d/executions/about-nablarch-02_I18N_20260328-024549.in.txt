@@ -1,0 +1,339 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/01_SystemConstitution/02_I18N.rst`
+- Format: `rst`
+
+```
+==========================================
+国際化対応
+==========================================
+本フレームワークが国際化対応で実装する要求と実装方針について以下に示す。
+
+要求
+================
+本フレームワークでは、次の方針に基づき国際化対応で実装する要求を選定する。
+
+ * | アプリケーションを多言語化する際に使用頻度が高い要求に対応する。
+ * | アプリケーション毎の差異がない一般化された要求(日付、数字など)に対応する。
+   | 一般化できない要求の一例を下記に示す。
+
+   * 名前(姓名順序、ミドルネーム)
+   * 住所
+   * 通貨変換
+   * 単位変換(長さ(メートル、マイルなど)、重さ(キロ、ポンドなど))
+
+本フレームワークが国際化対応で実装する要求を下記に示す。
+
+ * ユーザが言語とタイムゾーンを選択できる。
+
+   * リクエストパラメータ(選択画面またはリンクなど)
+   * ブラウザの言語設定
+
+ * ユーザが選択した言語とタイムゾーンを保持できる。(クッキーまたはHTTPセッション)
+
+ * 指定された言語で表示できる。
+
+   * 画面(メッセージ、項目名、画面名、メニュー名、ボタン名など)
+   * 帳票(タイトル、項目名など)
+   * 照会結果ファイル(CSVファイルのヘッダ部など)
+   * メール(件名、メール本文)
+   * コード(コード値としてあらかじめマスタ登録する項目(性別、単位、区分など)の名称)
+   * 日付(年月日順(YYMMDD、MMDDYY、DDMMYYなど))
+   * 数字(区切り文字(123,456.789、123.456,789))
+   * 障害メッセージ(障害発生時に出力される障害コードに対応するメッセージ)
+
+ * 指定されたタイムゾーン(サマータイム含む)に応じて日時を表示できる。(基準となるタイムゾーンからの時差を考慮し表示する)
+ * リソース(ファイルやデータなど)追加のみで対応言語を追加できる。
+
+本フレームワークで対応していない要求については、多言語化を行うアプリケーション毎に対応する。
+
+本フレームワークの全ての機能に共通する国際化対応の実装方針
+=======================================================================
+
+--------------------------------------
+RDBMS上データの保持方法
+--------------------------------------
+本フレームワークでは、RDBMS上に各国語対応が必要なデータを配置する際、必ずデータベースに対応する言語を表すカラムを持つポリシーとする。
+例えばメッセージを保持するデータベースは下記例のようなカラム定義を行うことを前提としている。
+
++------------+-------------+--------------------------------------------+
+| カラム名   | データ型    | 備考                                       |
++============+=============+============================================+
+| MESSAGE_ID | VARCHR2(10) | メッセージのキー                           |
++------------+-------------+--------------------------------------------+
+| LANG       | VARCHR2(10) | 対応する言語('EN','JA'等)                  |
++------------+-------------+--------------------------------------------+
+| MESSAGE    | VARCHR2(150)| メッセージ                                 |
++------------+-------------+--------------------------------------------+
+
+なお、この方針は本フレームワークのみに影響する方針であり、本フレームワークを使用したアプリケーションではこの方針に従う必要はない。
+
+--------------------------------------
+言語を指定した取得方法
+--------------------------------------
+本フレームワークの各国語対応を行う機能は、基本的にスレッドローカルに保持した言語を使用するため、言語を明示的に渡す必要はない。
+ただし、複数言語を同時に1つの画面内に表示するなど、言語を明示的に指定するようなケースを想定して、
+言語によって処理内容が異なる機能では必ず言語を指定した呼び出しができるよう考慮する。
+
+例えば言語に対応するメッセージを取得する機能を提供するクラスであれば、下記のように2通りの呼び出し方法を持つ。
+
+
+スレッドに紐付けられた言語でメッセージを取得する場合
+
+.. code-block:: java
+
+  String msg = MessageResource.get("MSG0001");
+
+英語のメッセージを取得する場合
+
+.. code-block:: java
+
+  String msg = MessageResource.get("MSG0001", "EN");
+
+----------------------------------------------------------------------------
+フレームワーク内で作成するログ出力メッセージの使用言語
+----------------------------------------------------------------------------
+本フレームワーク内で作成するログ出力メッセージは、世界で広く普及している英語を使用することとし、国際化は行わない。
+
+----------------------------------------------------------------------------
+ファイル入出力の文字コード
+----------------------------------------------------------------------------
+本フレームワークでファイル入出力を伴う機能を提供する場合は、設定によりファイルの文字コードを指定できるよう考慮する。
+このため、本フレームワークのファイル入出力機能を使用することで、アプリケーションを国際化対応できる。
+
+Webアプリケーションに特化した国際化対応の実装方針
+=========================================================================
+
+.. _i18n_lang_select_keep:
+
+--------------------------------
+言語の選択と保持
+--------------------------------
+
+Webアプリケーションでは、言語を選択する方法には、様々な方法が存在する。\
+本フレームワークでは、言語を選択する方法のうち、頻繁に使用される下記の選択方法のみ提供する。
+
+ * ブラウザの言語設定で指定された言語を選択する。
+
+アプリケーションで言語を選択する方法には、上記本フレームワークが提供する選択方法の他に、ユーザが言語を選択\
+する方法が考えられる。\
+しかし、下記のようなユーザの操作により言語を選択する方法は実現方法、選択方法が多岐に渡り、典型的な方法を特定できない。
+
+ * ユーザが画面上で言語を選択する。
+ * ログインしたユーザに紐づく言語を選択する。
+
+このため、本フレームワークではユーザの操作により言語を選択する方法自体は提供しない。\
+ただし、本フレームワークの規定する拡張ポイントで、アプリケーション毎にユーザが選択した言語を取得する方法を実装\
+した場合には、選択した言語による表示が可能となるよう考慮する。
+
+本フレームワークでは、使用する言語をユーザからのリクエストごとに下記の優先順位で選択する。
+
+1. クッキーまたはHTTPセッションに保持している言語を選択する。
+2. ブラウザの言語設定が取得できた場合、最も優先されている言語を選択する。
+3. アプリケーションで設定するデフォルト言語を選択する。
+
+なお、上記で選択した言語は、スレッドローカルに保持することとし、リクエストの処理完了までいつでも取得できる。
+
+言語の選択と保持方法の詳細は、共通ハンドラの :ref:`ThreadContextHandler` を参照。
+
+--------------------------------
+タイムゾーンの選択と保持
+--------------------------------
+
+タイムゾーンの選択と保持は、 :ref:`i18n_lang_select_keep` と同じ方針とする。\
+ただし、ブラウザの設定でタイムゾーンを指定することができないため、ブラウザの設定によるタイムゾーン選択は存在しない。\
+ユーザにタイムゾーンを選択させる場合は、アプリケーション毎に選択方法を実装する必要がある。
+
+タイムゾーンの選択と保持方法の詳細は、共通ハンドラの :ref:`ThreadContextHandler` を参照。
+
+------------------------------------------------
+JSPファイルおよび静的ファイルのパス
+------------------------------------------------
+一般的にJSPファイルと、JSPファイルから参照される画像ファイルやCSSファイルといった静的ファイルのパスは、\
+言語ごとに異なる指定が必要となるため、国際化対応の検討が必要となる。
+
+JSPファイルを国際化対応する方法には、次の2通りの方法が考えられる。
+
+* JSPファイル中に記述する全ての文字列を国際化されたリソースから取得するように記述する方法
+* JSPファイル自体を言語ごとに用意する方法
+
+本フレームワークでは、上記2通りの方法をサポートする。\
+これは、多言語化対象の言語種類により、デザインが異ならないためJSPファイルを共通化することが可能な場合と、
+デザインが異なるためJSPファイルを共通化できない場合があり、どちらのケースにも対応できるようにするためである。
+
+本フレームワークでは複数言語に対してJSPファイルを共通化することを可能とするため、
+JSPファイルに記述される静的ファイルのパスについてもファイル自体を言語ごとに用意する方法をサポートする。
+
+ファイル自体を言語ごとに用意する場合、次の2通りの方法を提供する。
+
+* 言語毎にディレクトリを分ける方法
+* 言語ごとにファイルを分ける方法
+
+| JSPファイル中で国際化されたリソースの取得方法の詳細は、カスタムタグの :ref:`WebView_Message` を参照。
+| JSPファイルの言語ごとのパス切り替え方法の詳細は、Webフロントコントローラの :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。
+| 静的ファイルの言語ごとのパス切り替え方法の詳細は、カスタムタグの :ref:`WebView_LangResourcePath` を参照。
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-02_I18N`
+
+```json
+{
+  "id": "about-nablarch-02_I18N",
+  "title": "国際化対応",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "要求",
+      "hints": [
+        "国際化対応要求",
+        "多言語化",
+        "タイムゾーン",
+        "言語選択",
+        "日付フォーマット",
+        "数字フォーマット",
+        "言語保持",
+        "クッキー",
+        "HTTPセッション"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "全機能共通の国際化対応実装方針",
+      "hints": [
+        "RDBMS国際化",
+        "言語カラム",
+        "スレッドローカル言語",
+        "MessageResource",
+        "ファイル文字コード",
+        "ログメッセージ英語",
+        "言語指定取得"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Webアプリケーションに特化した国際化対応実装方針",
+      "hints": [
+        "ブラウザ言語設定",
+        "言語選択優先順位",
+        "ThreadContextHandler",
+        "タイムゾーン選択",
+        "JSP国際化",
+        "JSPファイル共通化",
+        "デザイン差異",
+        "言語ごとJSP",
+        "WebView_Message",
+        "WebView_LangResourcePath",
+        "http_response_handler_i18n"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 要求\n\nフレームワークが国際化対応で実装する要求の選定方針:\n- 多言語化で使用頻度が高い要求に対応する\n- アプリケーション毎の差異がない一般化された要求（日付、数字など）に対応する\n- 一般化できない要求（名前の姓名順序・ミドルネーム、住所、通貨変換、単位変換など）は対象外\n\n**実装される要求:**\n- ユーザが言語とタイムゾーンを選択できる（リクエストパラメータまたはブラウザの言語設定）\n- 選択した言語とタイムゾーンをクッキーまたはHTTPセッションで保持できる\n- 指定された言語で表示できる対象:\n  - 画面（メッセージ、項目名、画面名、メニュー名、ボタン名など）\n  - 帳票（タイトル、項目名など）\n  - 照会結果ファイル（CSVファイルのヘッダ部など）\n  - メール（件名、メール本文）\n  - コード（コード値としてあらかじめマスタ登録する項目の名称）\n  - 日付（年月日順: YYMMDD、MMDDYY、DDMMYYなど）\n  - 数字（区切り文字: 123,456.789、123.456,789など）\n  - 障害メッセージ\n- 指定されたタイムゾーン（サマータイム含む）に応じて日時を表示できる（基準タイムゾーンからの時差を考慮）\n- リソース（ファイルやデータなど）追加のみで対応言語を追加できる\n\n非対応の要求はアプリケーション毎に対応する。",
+    "s2": "## 全機能共通の国際化対応実装方針\n\n### RDBMS上データの保持方法\n\nRDBMS上に各国語対応が必要なデータを配置する際、必ず言語を表すカラムを持つ。\n\n例（メッセージテーブルのカラム定義）:\n\n| カラム名 | データ型 | 備考 |\n|---|---|---|\n| MESSAGE_ID | VARCHR2(10) | メッセージのキー |\n| LANG | VARCHR2(10) | 対応する言語（'EN','JA'等） |\n| MESSAGE | VARCHR2(150) | メッセージ |\n\n> **注意**: この方針はフレームワーク自体にのみ影響する。フレームワークを使用するアプリケーションはこの方針に従う必要はない。\n\n### 言語を指定した取得方法\n\n各国語対応機能はスレッドローカルに保持した言語を使用するため、言語を明示的に渡す必要はない。複数言語を同時表示など明示的に言語を指定する場合もサポートする。\n\n```java\n// スレッドの言語でメッセージを取得\nString msg = MessageResource.get(\"MSG0001\");\n// 英語のメッセージを取得\nString msg = MessageResource.get(\"MSG0001\", \"EN\");\n```\n\n### フレームワーク内ログ出力メッセージの使用言語\n\nフレームワーク内のログ出力メッセージは英語を使用し、国際化は行わない。\n\n### ファイル入出力の文字コード\n\nファイル入出力を伴う機能は、設定によりファイルの文字コードを指定できる。これによりアプリケーションの国際化対応が可能となる。",
+    "s3": "## Webアプリケーションに特化した国際化対応実装方針\n\n### 言語の選択と保持\n\nフレームワークが提供する言語選択方法: ブラウザの言語設定で指定された言語のみ。\n\nユーザが画面上で言語を選択する方法やログインユーザに紐づく言語の選択は実現方法が多岐にわたるため提供しない。ただし、フレームワークの拡張ポイントでアプリケーション毎に言語取得方法を実装した場合、選択した言語による表示が可能。\n\n**言語の選択優先順位（リクエストごと）:**\n1. クッキーまたはHTTPセッションに保持している言語\n2. ブラウザの言語設定が取得できた場合、最も優先されている言語\n3. アプリケーションで設定するデフォルト言語\n\n選択した言語はスレッドローカルに保持され、リクエスト処理完了まで取得可能。\n\n詳細は :ref:`ThreadContextHandler` を参照。\n\n### タイムゾーンの選択と保持\n\n言語の選択と保持と同じ方針。ただし、ブラウザ設定によるタイムゾーン選択は存在しない（ブラウザでタイムゾーンを指定できないため）。ユーザにタイムゾーンを選択させる場合はアプリケーション毎に実装が必要。\n\n詳細は :ref:`ThreadContextHandler` を参照。\n\n### JSPファイルおよび静的ファイルのパス\n\nJSPファイルの国際化対応方法（両方サポート）:\n- JSPファイル中の全文字列を国際化されたリソースから取得する方法（JSPファイルを共通化）\n- JSPファイル自体を言語ごとに用意する方法\n\n**方法の選択基準:** 多言語化対象の言語種類によりデザインが異ならない場合はJSPファイルを共通化できるため前者を選択する。デザインが異なる場合はJSPファイルを共通化できないため後者を選択する。フレームワークはどちらのケースにも対応できるよう両方の方法をサポートしている。\n\n静的ファイルのパスを言語ごとに用意する方法（2通り）:\n- 言語毎にディレクトリを分ける方法\n- 言語ごとにファイルを分ける方法\n\nJSPファイル中での国際化リソース取得: :ref:`WebView_Message` を参照。\nJSPファイルの言語ごとのパス切り替え: :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。\n静的ファイルの言語ごとのパス切り替え: :ref:`WebView_LangResourcePath` を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 7
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

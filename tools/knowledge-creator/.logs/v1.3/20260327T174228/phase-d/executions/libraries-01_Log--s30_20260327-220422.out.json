@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-01_Log--s30",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s7 — FileLogWriterの設定テーブル: writer.<名称>.level",
+      "description": "Knowledge file shows the `writer.<名称>.level` property as not required (empty 必須 column) with default '全レベル出力'. However, the source explicitly marks this property as '(必須)' in the property table. While the source description also explains what happens when not specified (creating an internal contradiction in the source), the knowledge file should not silently override the source's '必須' designation.",
+      "source_evidence": "writer.<ログライタの名称>.level | ログレベルの名称。(必須) | LogLevel列挙型の名称を指定する。| ここで指定したレベル以上のログを全て出力する。| 指定がない場合はレベルに応じた出力制御を行わず、全てのレベルのログを出力する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — SynchronousFileLogWriterの設定: failure code properties",
+      "description": "The default log messages output when no failure code is configured for the four SynchronousFileLogWriter failure code properties are omitted. These are concrete English-language strings that users would see in logs and are decision-relevant for debugging lock issues.",
+      "source_evidence": "failureCodeCreateLockFile: 'failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].'\nfailureCodeReleaseLockFile: 'failed to delete lock file. lock file path=[{0}].'\nfailureCodeForceDeleteLockFile: 'failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].'\nfailureCodeInterruptLockWait: 'interrupted while waiting for lock retry.'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — ログ出力項目の変更方法",
+      "description": "The concrete output example demonstrating the result of the CustomLogFormatter is omitted. The source shows the actual log output `INFO ROO [CUSTOM_PROCESS]` with a comment explaining that logLevel, loggerName, and bootProcess are output. This confirms the formatter configuration works as expected.",
+      "source_evidence": "```bash\n# ロブレベル、ロガー名、起動プロセスが出力される。\nINFO ROO [CUSTOM_PROCESS]\n```"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 — hints",
+      "description": "Several property names from the FileLogWriter and SynchronousFileLogWriter configuration tables are missing from the hints array: `encoding`, `outputBufferSize`, `lockRetryInterval`, `lockWaitTime`, `failureCodeCreateLockFile`, `failureCodeReleaseLockFile`, `failureCodeForceDeleteLockFile`, `failureCodeInterruptLockWait`.",
+      "source_evidence": "Source property table includes: writer.<名称>.encoding, writer.<名称>.outputBufferSize, writer.<名称>.lockRetryInterval, writer.<名称>.lockWaitTime, writer.<名称>.failureCodeCreateLockFile, writer.<名称>.failureCodeReleaseLockFile, writer.<名称>.failureCodeForceDeleteLockFile, writer.<名称>.failureCodeInterruptLockWait"
+    }
+  ]
+}

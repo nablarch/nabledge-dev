@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-HttpRequestJavaPackageMapping",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — configuration properties table",
+      "description": "The knowledge file table adds a '必須' column that has no counterpart in the source. The source table has four columns: 設定項目, プロパティ名, データ型, 備考 — where '備考' combines optionality ('任意指定') and default value in a single cell. The knowledge file restructures this into separate '必須' and 'デフォルト値' columns, introducing '必須' as an explicit header that does not appear in the source. All '必須' cells are empty (consistent with '任意指定'), so no incorrect information is conveyed, but the column header itself lacks a source basis.",
+      "source_evidence": "Source '備考' column contains '| 任意指定 | (デフォルト = \"\")' etc. No '必須' column exists in the source table."
+    }
+  ]
+}

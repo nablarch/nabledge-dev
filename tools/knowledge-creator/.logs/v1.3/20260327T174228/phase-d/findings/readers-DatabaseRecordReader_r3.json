@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-DatabaseRecordReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — configuration table, 必須 column",
+      "description": "The knowledge file adds a '必須' column with '○' marks for both rows, but the source table has no such column. The source only has a '備考' column containing '排他利用。いずれか必須'. Marking both rows with '○' could mislead an AI into thinking both properties are independently required, whereas the source specifies an exclusive-use constraint (exactly one of the two must be provided).",
+      "source_evidence": "備考列: '排他利用。いずれか必須' — source table columns are: 設定項目 / プロパティ名 / データ型 / 備考。No '必須' column exists in the source."
+    }
+  ]
+}

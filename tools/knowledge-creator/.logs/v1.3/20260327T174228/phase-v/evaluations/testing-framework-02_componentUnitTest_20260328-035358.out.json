@@ -1,0 +1,14 @@
+{
+  "file_id": "testing-framework-02_componentUnitTest",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The fabricated example conflates the sheet name variable (`\"registerUser\"`) with the data section IDs (`\"sysAcctEntity\"` etc.), but the core rule — \"append Err to the normal-case IDs\" — is correctly conveyed. The surrounding text explicitly states \"同じExcelシート内に...混載\" (mix in the same sheet), preserving the key architectural concept. A developer following the getListMap call patterns in their own code would likely apply the \"Err\" suffix to the correct data section IDs regardless of this misleading example. The example is wrong about *which kind of ID* gets the suffix, but not about *the rule itself*. Impact is low: confusion is possible but the conceptual explanation limits practical damage.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s5 — 異常系データのID命名規則 example",
+      "impact": "low",
+      "justification": "The example uses `\"registerUser\"` (the sheet name variable, not a data section ID) as the 'normal-case ID', yielding the incorrect illustration `\"registerUser\"` → `\"registerUserErr\"`. A correct example would use an actual data section ID such as `\"sysAcctEntity\"` → `\"sysAcctEntityErr\"`. However, the rule itself ('append Err') is accurate, and the surrounding sentence 'IDの末尾に\"Err\"を付加することで、同じExcelシート内に正常系と異常系のデータを混載している' provides correct conceptual grounding. A developer who reads the surrounding context and applies the rule to their own getListMap IDs will likely arrive at the correct implementation. The misleading example could cause confusion about whether the sheet name itself changes, but the explicit 'same sheet' statement mitigates this. Phase E did not fix this because the fix agent appears to have accepted the example as a reasonable illustration of the rule despite the technical inaccuracy — the output JSON is identical to the pre-fix version, indicating the agent either did not flag it as requiring correction or produced no change."
+    }
+  ]
+}

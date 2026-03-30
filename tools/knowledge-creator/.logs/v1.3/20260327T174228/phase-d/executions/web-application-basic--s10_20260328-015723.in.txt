@@ -1,0 +1,288 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/CustomTag/basic.rst`
+- Format: `rst`
+
+```
+アクションの実装方法
+====================
+
+ウィンドウスコープを使用する場合、以下のことに注意してActionクラスを実装すること。
+
+* 遷移先の画面に入力データを引き継ぐための処理を、Actionクラスで明示的に行わない。
+
+  データを引き継ぐためにセッションを利用する方式では、
+  入力画面から遷移したActionクラスで、入力データを明示的にセッションに設定する必要がある。
+  一方、ウィンドウスコープを使用する方式では、入力データを引き継ぐための処理をフレームワークが自動的に行う。
+
+* Actionクラスでウィンドウスコープのデータを使用する場合、バリデーションを行う。
+
+  リクエストから直接取得したデータはString型であり、データの型変換が必要となることがある。
+  しかし、バリデーションを実行し、フォームのプロパティの設定値としてデータを取得した場合、
+  そのプロパティのデータは自動で型変換が行われる。
+  
+  
+以下の遷移を例に、ウィンドウスコープを用いてデータを引き継ぐ際のActionクラスの実装例を示す。
+
+更新確認画面→更新完了画面
+
+
+* JSPの実装例
+
+  更新確認画面
+  
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           confirmationPageタグを指定すると、入力画面（更新画面）と同じ記述で確認項目の出力が出来る。 --%>
+     <n:confirmationPage />
+     <%-- 【説明】完了画面で表示するために、検索条件だけでなく、更新情報のプレフィックス（W11AC03）も指定 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01,W11AC03">
+         <%-- 【説明】更新対象データ --%>
+         <n:write name="W11AC03.user.userId"/>
+         <n:text name="W11AC03.user.kanjiName" size="65" maxlength="25" />
+         <%-- 【説明】完了画面へのサブミットボタン --%>
+         <n:submit cssClass="mainBtn" type="button" name="confirm" value="確定" uri="/action/ss11AC/W11AC03Action/RW11AC0304" />
+     </n:form>
+
+  更新完了画面
+  
+  .. code-block:: jsp
+  
+      <%-- 【説明】
+            ウィンドウスコープの説明箇所以外は省略。
+            一覧照会画面で検索条件を表示するために、11AC_W11AC01の値をウィンドウスコープに設定 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01">
+         <%-- 【説明】更新確認画面から渡されたウィンドウスコープの値出力は省略 --%>
+         <n:submit cssClass="mainBtn" type="submit" name="refer" uri="/action/ss11AC/W11AC01Action/RW11AC0102" value="一覧照会画面へ" />
+     </n:form>
+     
+     
+* Actionクラスの実装例
+
+  .. code-block:: java
+  
+     public class W11AC03Action {
+       /* 【説明】
+           更新処理を行うメソッド。
+           ウィンドウスコープの処理以外は省略 */
+       public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {
+         /* 【説明】
+             以下で検索条件(11AC_W11AC01)に関する処理を記述していないが、
+             検索条件の入力データは更新完了画面に引き継がれる。 */
+         
+         /* 【説明】更新情報のバリデーション */
+         ValidationContext<W11AC03Form> formCtx =
+             ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             
+         // 【説明】バリデーションエラーがあれば、例外を返す。
+         formCtx.abortIfInvalid();
+
+         /* 【説明】
+             Actionクラスで使用するW11AC03Formインスタンスの生成
+             自動で型変換された更新情報がプロパティに設定されている。 */
+         W11AC03Form form = formCtx.createObject();
+         
+         /* 【説明】以下、W11AC03Formインスタンスを使用した更新処理は省略 */
+       }
+     }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`set_value_on_jsp`:
+
+---------------------------------
+JSP上で変数に値を設定する方法
+---------------------------------
+
+画面タイトルや検索結果などの値を、JSP上で変数に設定して使用する方法を示す。
+
+
+* JSPの実装例
+
+  .. code-block:: html
+  
+     <%-- 【説明】変数の使用部分以外は省略 --%>
+     <head>
+         <%-- 【説明】
+               リクエストスコープ上の変数"title"に、value属性で値を直接設定。
+               値を直接設定する場合、value属性を使用する。 --%>
+         <n:set var="title" value="ユーザ情報登録" />
+         <jsp:include page="/html_header.jsp">
+             <%-- 【説明】
+                   ページの埋め込み時に変数を使ってパラメータを指定。
+                   値の出力ではないので、EL式を使用しても問題ない。 --%>
+             <jsp:param name="title" value="${title}"/>
+         </jsp:include>
+     </head>
+     <body>
+         <%-- 【説明】レイアウトやその他の入力項目は省略 --%>
+         <n:form>
+             <%-- 【説明】
+                   リクエストスコープ上の変数"officeLocation"に、name属性で指定したオブジェクトを参照して値を設定。
+                   スコープ上のオブジェクトを参照して値を設定する場合、name属性でスコープ上のキーを指定する。 --%>
+             <n:set var="officeLocation" name="W11AC02.systemUser.officeLocation"/>
+                 <c:if test="${officeLocation == ''}">
+                     <%-- 【説明】W11AC02.systemUser.officeLocationの値が空文字の場合の処理は省略 --%>
+                 </c:if>
+         </n:form>
+     </body>
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-basic--s10`
+
+```json
+{
+  "id": "web-application-basic--s10",
+  "title": "アクションの実装方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アクションの実装方法",
+      "hints": [
+        "W11AC03Action",
+        "ValidationContext",
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "windowScopePrefixes",
+        "n:confirmationPage",
+        "ウィンドウスコープ",
+        "データ引き継ぎ",
+        "バリデーション",
+        "型変換",
+        "HttpResponse",
+        "HttpRequest",
+        "ExecutionContext",
+        "W11AC03Form"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JSP上で変数に値を設定する方法",
+      "hints": [
+        "n:set",
+        "var",
+        "JSP変数設定",
+        "value属性",
+        "name属性",
+        "リクエストスコープ",
+        "スコープ上のオブジェクト参照"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## アクションの実装方法\n\nウィンドウスコープ使用時のActionクラス実装における注意点:\n\n- **遷移先画面へのデータ引き継ぎ処理をActionクラスで明示的に行わない。** フレームワークが自動的に処理する（セッション方式では明示的な設定が必要だが、ウィンドウスコープ方式では不要）。\n- **ウィンドウスコープのデータを使用する場合はバリデーションを実行する。** リクエストから直接取得したデータはString型であり、型変換が必要となることがある。バリデーションを実行し、フォームのプロパティからデータを取得すると、自動で型変換が行われる。\n\n### JSP実装例（更新確認画面→更新完了画面）\n\n更新確認画面:\n```jsp\n<n:confirmationPage />\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write name=\"W11AC03.user.userId\"/>\n    <n:text name=\"W11AC03.user.kanjiName\" size=\"65\" maxlength=\"25\" />\n    <n:submit cssClass=\"mainBtn\" type=\"button\" name=\"confirm\" value=\"確定\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0304\" />\n</n:form>\n```\n\n更新完了画面:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:submit cssClass=\"mainBtn\" type=\"submit\" name=\"refer\" uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\" value=\"一覧照会画面へ\" />\n</n:form>\n```\n\n`windowScopePrefixes` に検索条件（`11AC_W11AC01`）と更新情報（`W11AC03`）の両方を指定することで、完了画面でどちらの値も引き継げる。\n\n### Actionクラス実装例\n\n```java\npublic class W11AC03Action {\n  public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {\n    // 検索条件(11AC_W11AC01)を明示的に処理しなくても、更新完了画面に引き継がれる\n\n    // 更新情報のバリデーション\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n\n    // バリデーションエラーがあれば例外を返す\n    formCtx.abortIfInvalid();\n\n    // 自動で型変換された更新情報がプロパティに設定されたインスタンスを生成\n    W11AC03Form form = formCtx.createObject();\n  }\n}\n```",
+    "s2": "## JSP上で変数に値を設定する方法\n\n`n:set` タグを使用してJSP上でリクエストスコープの変数に値を設定できる。\n\n- **`value` 属性**: 値を直接設定する場合に使用する。\n- **`name` 属性**: スコープ上のオブジェクトを参照して値を設定する場合に、スコープ上のキーを指定する。\n\n### JSP実装例\n\n```html\n<!-- value属性で値を直接設定 -->\n<n:set var=\"title\" value=\"ユーザ情報登録\" />\n<jsp:include page=\"/html_header.jsp\">\n    <!-- EL式でパラメータ指定（値の出力でないためEL式使用可） -->\n    <jsp:param name=\"title\" value=\"${title}\"/>\n</jsp:include>\n\n<!-- name属性でスコープ上のオブジェクトを参照して設定 -->\n<n:set var=\"officeLocation\" name=\"W11AC02.systemUser.officeLocation\"/>\n<c:if test=\"${officeLocation == ''}\">\n    <%-- W11AC02.systemUser.officeLocationの値が空文字の場合の処理 --%>\n</c:if>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 3
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

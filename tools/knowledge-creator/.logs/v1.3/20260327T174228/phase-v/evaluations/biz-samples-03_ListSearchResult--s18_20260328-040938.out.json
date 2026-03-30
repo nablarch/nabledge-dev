@@ -1,0 +1,14 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s18",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is low impact. The s1 section content explicitly contains `$sort (sortId)` with a full explanation, and the hint `可変ORDER BY` already captures the concept users would search for when implementing dynamic ORDER BY. A direct search for the token `$sort` via hints would miss this section, but contextual queries (\"動的ORDER BY\", \"並び替え\", \"sortId\") are covered. The risk of a user being unable to find this knowledge is minimal.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "The `$sort` syntax token is absent from s1 hints, but the concept is reachable via the existing `可変ORDER BY` hint and the `sortId` hint. The section body itself contains `$sort (sortId)` prominently with explanation, so content-based retrieval would still surface it. Only a narrow direct-token search for `$sort` would be affected. Why it persisted: The Phase E output shows s1 hints unchanged from Phase D — the fix agent did not add `$sort` to the hints list, leaving the finding unresolved."
+    }
+  ]
+}

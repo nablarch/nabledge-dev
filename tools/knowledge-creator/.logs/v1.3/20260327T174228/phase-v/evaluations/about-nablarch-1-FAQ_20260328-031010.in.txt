@@ -1,0 +1,151 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `about-nablarch-1-FAQ`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "sections.s1 hints",
+    "description": "PascalCase class names appearing in the code example are missing from hints: `ExecutionContext`, `Result`, `Success`. The `@Override` annotation is also missing.",
+    "source_evidence": "Code example uses: `ExecutionContext ctx`, `Result handle(...)`, `return new Success()`, `@Override`"
+  }
+]
+```
+
+### Source (RST)
+
+```
+SqlRow等のMap実装クラスからEntityやFormを生成する方法を教えてください
+===========================================================================================================
+
+.. admonition:: question
+
+    SqlRow等のMap実装クラスからEntityやFormを生成する方法は、
+    以下の2種類の実装があると思いますがどちらの実装方法が推奨されるのでしょうか？
+
+    * Mapインタフェースを引数にとるコンストラクタを使用してMap実装クラスからEntity(Form)を生成する。
+    * 項目ごとsetterを呼び出してMap実装クラスからEntity(Form)を生成する。
+
+.. admonition:: answer
+
+    基本的にMapインタフェースを引数に取るコンストラクタを使用して、Entity(Form)を生成することを推奨します。
+    なぜなら、Mapインタフェースを引数に取るコンストラクタ自体がMapからEnity(Form)への変換責務を持っているためであり、
+    全く同じ責務を持つロジックを新たに作り込む必要はないからです。
+
+    ただし、業務仕様として編集しなければならない項目等は、Entity(Form)を生成する側がその責務を有するため、
+    コンストラクタではなく個別にsetterを呼び出して値を設定する必要があります。
+
+    以下にバッチアクションの本処理を例に実装例を示します。
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // SqlRowからEntityの生成
+            SampleEntity entity = new SampleEntity(inputData);
+
+            // 編集が必要な項目は個別設定
+            entity.setDate(DateUtil.addDay(inputData.getString("date"), 1));
+
+            return new Success();
+        }
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "about-nablarch-1-FAQ",
+  "title": "SqlRow等のMap実装クラスからEntityやFormを生成する方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SqlRow等のMap実装クラスからEntityやFormを生成する方法",
+      "hints": [
+        "SqlRow",
+        "SampleEntity",
+        "MapインタフェースからEntity生成",
+        "Mapコンストラクタ推奨",
+        "setter呼び出し",
+        "Entity生成方法",
+        "Form生成方法",
+        "DateUtil"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "MapインタフェースからEntity(Form)を生成する場合、**Mapインタフェースを引数に取るコンストラクタを使用することを推奨**。\n\n理由: コンストラクタ自体がMapからEntity(Form)への変換責務を持つため、同一責務のロジックを新たに作り込む必要がない。\n\nただし、業務仕様として編集が必要な項目は、コンストラクタではなく個別にsetterを呼び出して値を設定する必要がある。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n\n    // SqlRowからEntityの生成\n    SampleEntity entity = new SampleEntity(inputData);\n\n    // 編集が必要な項目は個別設定\n    entity.setDate(DateUtil.addDay(inputData.getString(\"date\"), 1));\n\n    return new Success();\n}\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "about-nablarch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 hints",
+      "description": "PascalCase class names appearing in the code example are missing from hints: `ExecutionContext`, `Result`, `Success`. The `@Override` annotation is also missing.",
+      "source_evidence": "Code example uses: `ExecutionContext ctx`, `Result handle(...)`, `return new Success()`, `@Override`"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "about-nablarch-1-FAQ",
+  "title": "SqlRow等のMap実装クラスからEntityやFormを生成する方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SqlRow等のMap実装クラスからEntityやFormを生成する方法",
+      "hints": [
+        "SqlRow",
+        "SampleEntity",
+        "MapインタフェースからEntity生成",
+        "Mapコンストラクタ推奨",
+        "setter呼び出し",
+        "Entity生成方法",
+        "Form生成方法",
+        "DateUtil"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "MapインタフェースからEntity(Form)を生成する場合、**Mapインタフェースを引数に取るコンストラクタを使用することを推奨**。\n\n理由: コンストラクタ自体がMapからEntity(Form)への変換責務を持つため、同一責務のロジックを新たに作り込む必要がない。\n\nただし、業務仕様として編集が必要な項目は、コンストラクタではなく個別にsetterを呼び出して値を設定する必要がある。\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n\n    // SqlRowからEntityの生成\n    SampleEntity entity = new SampleEntity(inputData);\n\n    // 編集が必要な項目は個別設定\n    entity.setDate(DateUtil.addDay(inputData.getString(\"date\"), 1));\n\n    return new Success();\n}\n```"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

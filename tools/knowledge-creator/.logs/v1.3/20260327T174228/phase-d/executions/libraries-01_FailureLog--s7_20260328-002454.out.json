@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 (アプリケーションの障害コードの変更方法)",
+      "description": "The source mentions `FailureLogUtil` alongside `TransactionAbnormalEnd` and `ProcessAbnormalEnd` as application failure log output mechanisms that hardcode failure codes: \"TransactionAbnormalEnd(ProcessAbnormalEnd)やFailureLogUtilを使用して障害ログの出力を行う。この場合、アプリケーションでは、ソースコード上に直接障害コードを書き込む(ハードコーディング)。\" The knowledge file only mentions TransactionAbnormalEnd/ProcessAbnormalEnd, omitting FailureLogUtil.",
+      "source_evidence": "アプリケーションでは、TransactionAbnormalEnd(ProcessAbnormalEnd)やFailureLogUtilを使用して障害ログの出力を行う。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 index hints",
+      "description": "`FailureLogUtil` is not included in the hints for s2, but it appears in the source as one of the application failure log output mechanisms that this feature applies to. An AI searching for FailureLogUtil and failure code changes would not find this section.",
+      "source_evidence": "TransactionAbnormalEnd(ProcessAbnormalEnd)やFailureLogUtilを使用して障害ログの出力を行う"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (フレームワークの障害コードの変更方法)",
+      "description": "The source shows the sorted result of the fw-codes property file (after loading, sorted by key length descending), but s3 in the knowledge file only includes the original unsorted version. By contrast, s1 correctly includes both the original and sorted versions for the contact properties file. The sorted order shows entries like `nablarch.core.transaction` and `nablarch.core.repository` (equal length 25) adjacent, which has the same non-determinism implication as noted in s1.",
+      "source_evidence": "上記プロパティファイルは、読み込み後下記の通りソートされ、上から順に検索に使用する。\n nablarch.core.transaction=FW020600\n nablarch.core.repository=FW020500\n nablarch.core.message=FW020400\n nablarch.core.cache=FW020100\n nablarch.core.date=FW020200\n nablarch.core.db=FW020300\n nablarch=FW999999"
+    }
+  ]
+}

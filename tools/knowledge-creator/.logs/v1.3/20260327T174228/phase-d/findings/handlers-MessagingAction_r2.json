@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-MessagingAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 (概要)",
+      "description": "The Java pseudo-code block showing how the framework calls each template method is entirely omitted. This block provides the only source-level documentation of the method signatures: `onReceive(req, ctx)` (RequestMessage + ExecutionContext) and `onError(e, req, ctx)` (exception + RequestMessage + ExecutionContext). It also shows that `commit()` is called after onReceive and that `send(res)` is called in a finally block. These calling conventions are essential for implementing the template methods correctly.",
+      "source_evidence": "以下のソースコードは、フレームワークが本クラスの各テンプレートメソッドをどのタイミングで呼び出すかを表したものである。\n```java\nres = onReceive(req, ctx);\n...\nres = onError(e, req, ctx);\n```"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ExecutionContext` is referenced in the source code block as a parameter passed to `onReceive(req, ctx)` and `onError(e, req, ctx)`, making it a relevant class name for this section, but it is absent from s1 hints.",
+      "source_evidence": "ExecutionContext ctx; ... res = onReceive(req, ctx); ... res = onError(e, req, ctx);"
+    }
+  ]
+}

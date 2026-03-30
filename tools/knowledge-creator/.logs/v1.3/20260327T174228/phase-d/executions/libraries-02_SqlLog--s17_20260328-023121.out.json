@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The knowledge file adds parenthetical Japanese descriptions for placeholders that do not appear in the source: `$startPosition$`（検索開始位置）、`$size$`（取得件数）、`$retrieveTime$`（データ取得時間）、`$count$`（取得件数）. The source only shows these placeholders in the configuration example without any descriptive labels.",
+      "source_evidence": "Source shows only: `sqlLogFormatter.startRetrieveFormat=$methodName$\\n\\tSQL:$sql$\\n\\tstart:$startPosition$ size:$size$\\n\\tadditional_info:\\n\\t$additionalInfo$` and `sqlLogFormatter.endRetrieveFormat=$methodName$\\n\\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$` — no descriptions of individual placeholders are provided."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (index entry)",
+      "description": "Hint `$methodName$` is missing from s2 (SqlPStatement#executeQueryメソッドの検索終了時). The source's placeholder table for this section explicitly lists メソッド名 / $methodName$ as the first row.",
+      "source_evidence": "Source table for 検索終了時: メソッド名 → $methodName$, 実行時間 → $executeTime$. Only $executeTime$ and execute_time appear in s2 hints."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 (index entry)",
+      "description": "Hint `$methodName$` is missing from s4 (SqlPStatement#executeUpdateメソッドの更新終了時). The source's placeholder table for this section lists メソッド名 / $methodName$ as the first row.",
+      "source_evidence": "Source table for 更新終了時: メソッド名 → $methodName$, 実行時間 → $executeTime$, 更新件数 → $updateCount$. $methodName$ does not appear in s4 hints."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 (index entry)",
+      "description": "Hint `$methodName$` is missing from s6, and hint `$updateCount$` is also missing. The source's placeholder table lists $methodName$, and the default format string uses `$updateCount$` as the actual placeholder for batch_count (not $batchCount$ as listed in the table). `$updateCount$` is the operative placeholder in the rendered format but absent from hints.",
+      "source_evidence": "Source default format for executeBatch終了時: `$methodName$\\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]`. The table lists $batchCount$ for バッチ件数, but the format uses $updateCount$. Neither $methodName$ nor $updateCount$ appears in s6 hints."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "java-static-analysis-UnpublishedApi",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The only residual finding is a minor hint discoverability gap. The section s6 already contains the hint \"ネストクラスコンストラクタ\" which covers the primary use case (nested class constructor configuration). A user querying by the class name \"Result.Success\" specifically would miss this hint, but the section content itself prominently contains `nablarch.fw.Result.Success`, and the conceptual hint is present. The practical retrieval impact is low.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s6 hints",
+      "impact": "low",
+      "justification": "The hint 'ネストクラスコンストラクタ' already covers the concept. A direct class-name search for 'Result.Success' would miss this section, but the scenario is narrow — users are more likely to search for the pattern ('nested class constructor') than the specific example class. The section content itself contains the full string 'nablarch.fw.Result.Success', so if the retrieval system does content-level matching the gap is further reduced. As for why D→E did not resolve it: the Phase E output is byte-for-byte identical to Phase D for s6 hints, meaning the fix agent returned the file unchanged. The finding was classified 'minor' and the agent likely evaluated the existing 'ネストクラスコンストラクタ' hint as sufficient coverage."
+    }
+  ]
+}

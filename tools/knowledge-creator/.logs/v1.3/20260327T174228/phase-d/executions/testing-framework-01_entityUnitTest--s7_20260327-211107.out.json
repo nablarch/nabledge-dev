@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: プロパティ名の一覧を簡易的に取得する手順 section (h2, anchor: property-name-copy-label)",
+      "description": "The entire 'プロパティ名の一覧を簡易的に取得する手順' section is absent from the knowledge file. This section contains concrete procedural steps that are referenced from s1 and s4 ('※Entityの保有するプロパティ名のExcelへの記述手順は :ref:`property-name-copy-label` を参照') but never defined. The procedure includes: (1) opening the Entity class in Eclipse and showing the Outline view, (2) selecting properties, (3) using right-click → 'Copy Qualified Name', (4) pasting into Excel and using the Replace function to strip the fully-qualified class name prefix. A concrete replacement example is given: search for `nablarch.sample.management.user.SystemAccountEntity.`, replace with empty string. Without this, an AI cannot guide users through the property name extraction workflow that is repeatedly referenced in the knowledge file.",
+      "source_evidence": "①Eclipseでテスト対象のEntityクラスをオープンし、Outline(アウトライン)を表示する。②コピーしたいプロパティを選択する。③マウスの右クリックで表示されるメニューからCopy Qualified Name(修飾名のコピー)を選択する。④コピーしたプロパティ名のリストをエクセルに貼り付ける。...検索する文字列：nablarch.sample.management.user.SystemAccountEntity. / 置き換え後の文字列：(空のまま)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2)",
+      "description": "PascalCase class names from the code example in s2 are missing from hints: `SampleForm`, `SystemUserEntity`, `UserTelEntity`. These appear in the Java code example demonstrating nested Form property specification.",
+      "source_evidence": "public class SampleForm { private SystemUserEntity systemUser; private UserTelEntity[] userTelArray; }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3] (s4)",
+      "description": "`getListParamMap` is missing from hints. It is mentioned in the code comment in s4 as the alternative method to use when there are multiple test target properties: '(テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)'",
+      "source_evidence": "// (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)\nMap<String, String[]> data = getParamMap(sheetName, \"testConstructorOther\");"
+    }
+  ]
+}

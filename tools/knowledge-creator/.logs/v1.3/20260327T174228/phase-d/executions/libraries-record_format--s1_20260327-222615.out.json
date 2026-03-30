@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-record_format--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "Section s3 contains only 'なし' (3 chars, far below 50-char threshold). This section has no corresponding h2 heading in the source — the RST horizontal rule (`-------------------------------`) between 基本構造 and 使用例 is a visual separator, not a section heading. No real content exists for this section.",
+      "source_evidence": "Source RST has only two h2 headings: '基本構造' (underlined with `---------------------`) and '使用例' (underlined with `-----------------------------`). The `------` lines are bare horizontal rules, not RST section headings."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "Section s5 contains only 'なし' (3 chars, far below 50-char threshold). Same issue as s3 — the trailing RST horizontal rule (`--------------------------`) at the end of the file is a visual separator, not a section heading.",
+      "source_evidence": "Source RST ends with a bare `---` horizontal rule after the 使用例 section. This creates no new section in RST."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index (overall)",
+      "description": "Knowledge file has 5 sections (s1–s5) but the source has only 3 logical sections: the introduction, 基本構造, and 使用例. The two extra sections (s3, s5) were created by misinterpreting RST bare horizontal rules as section boundaries.",
+      "source_evidence": "RST section count: h1 title '汎用データフォーマット機能' + h2 '基本構造' + h2 '使用例' = 3 sections. The `------` dividers between and after these sections are decorative horizontal rules."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-basic--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — 更新確認画面から更新完了画面への遷移 (Action class doRW11AC0304)",
+      "description": "The Action class example for transitioning from 更新確認画面 to 更新完了画面 (doRW11AC0304) is completely missing from s2. The source includes a concrete implementation showing ValidationUtil.validateAndConvertRequest, formContext.createObject(), and the return to W11AC0303.jsp. This demonstrates the final step in the 4-screen flow and the pattern of validating and extracting data at the update execution step.",
+      "source_evidence": "Source section '更新確認画面から更新完了画面への遷移を行う': `public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) { ValidationContext<W11AC03Form> formContext = ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\"); W11AC03Form form = formContext.createObject(); return new HttpResponse(\"/ss11AC/W11AC0303.jsp\"); }`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 更新画面遷移 Action例 (doRW11AC0301) code example",
+      "description": "The knowledge file omits the CM311AC1Component instantiation and the four selectXxx calls (selectSystemAccount, selectUsers, selectPermissionUnit, selectUgroup) that produce the variables sysAcct, users, permissionUnit, ugroup. These variables are then passed to getWindowScopeObject in the knowledge file's code, but are never declared — making the condensed example misleading to developers who would see undefined variables.",
+      "source_evidence": "Source: `CM311AC1Component comp = new CM311AC1Component(); SqlResultSet sysAcct = comp.selectSystemAccount(userId); SqlResultSet users = comp.selectUsers(userId); SqlResultSet permissionUnit = comp.selectPermissionUnit(userId); SqlResultSet ugroup = comp.selectUgroup(userId); W11AC03Form form = getWindowScopeObject(sysAcct, users, permissionUnit, ugroup);`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The PascalCase class name W11AC02Action appears in the s1 code examples but is absent from the s1 hints array.",
+      "source_evidence": "Source s1 code: `public class W11AC02Action { ... public HttpResponse doRW11AC0202(...)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "The PascalCase class names W11AC03Action, W11AC03Form, and ValidationContext appear throughout the s2 code examples but are absent from the s2 hints array.",
+      "source_evidence": "Source s2 code: `public class W11AC03Action`, `ValidationContext<W11AC03Form> userSearchFormContext`, `W11AC03Form form = formContext.createObject()`"
+    }
+  ]
+}

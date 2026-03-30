@@ -1,0 +1,120 @@
+{
+  "id": "libraries-02_SqlLog--s17",
+  "title": "SQLログの出力例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SqlPStatement#executeQueryメソッドの検索開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索開始時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "SqlPStatement#executeQueryメソッドの検索終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索終了時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$executeTime$",
+        "execute_time"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "SqlPStatement#executeUpdateメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新開始時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "SqlPStatement#executeUpdateメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新終了時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$executeTime$",
+        "$updateCount$",
+        "update_count"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "SqlPStatement#executeBatchメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新開始時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$methodName$",
+        "$sql$",
+        "$additionalInfo$"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "SqlPStatement#executeBatchメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新終了時",
+        "SQLログフォーマット",
+        "プレースホルダ",
+        "$executeTime$",
+        "$batchCount$",
+        "batch_count"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "SQLログの出力例",
+      "hints": [
+        "SQLログ出力例",
+        "log.properties",
+        "app-log.properties",
+        "sqlLogFormatter",
+        "startRetrieveFormat",
+        "endRetrieveFormat",
+        "$startPosition$",
+        "$size$",
+        "$retrieveTime$",
+        "$count$",
+        "FileLogWriter",
+        "BasicLogFormatter",
+        "nameRegex",
+        "writerNames"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| SQL文 | $sql$ |\n| 付加情報 | $additionalInfo$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s2": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| 実行時間 | $executeTime$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$]\n```",
+    "s3": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| SQL文 | $sql$ |\n| 付加情報 | $additionalInfo$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s4": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| 実行時間 | $executeTime$ |\n| 更新件数 | $updateCount$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]\n```",
+    "s5": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| SQL文 | $sql$ |\n| 付加情報 | $additionalInfo$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s6": "**プレースホルダ一覧**\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| 実行時間 | $executeTime$ |\n| バッチ件数 | $batchCount$ |\n\n**デフォルトのフォーマット**:\n\n```\n$methodName$\n    $\\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]\n```",
+    "s7": "**log.propertiesの設定例**:\n\n```\nwriterNames=appFile\n\n# ログの出力先\nwriter.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.filePath=./app.log\nwriter.appFile.encoding=UTF-8\nwriter.appFile.maxFileSize=10000\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appFile.formatter.format=$date$ -$logLevel$- R[$requestId$] U[$userId$] E[$executionId$] $message$\n\navailableLoggersNamesOrder=SQL\n\n# SQL\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appFile\n```\n\n**app-log.propertiesの設定例** (sqlLogFormatterの個別項目フォーマット):\n\n```\n# SqlLogFormatterの設定(個別項目のフォーマット)\nsqlLogFormatter.startRetrieveFormat=$methodName$\\n\\tSQL:$sql$\\n\\tstart:$startPosition$ size:$size$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\n\\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$\n```\n\n`startRetrieveFormat` で使用できる追加プレースホルダ: `$startPosition$`（検索開始位置）、`$size$`（取得件数）\n\n`endRetrieveFormat` で使用できる追加プレースホルダ: `$retrieveTime$`（データ取得時間）、`$count$`（取得件数）\n\n**出力例**:\n\n```\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    SQL:SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?\n    start:1 size:0\n    additional_info:\n2011-02-15 18:06:05.952 -TRACE- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#Parameters\n    01 = [00]\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    exe:0ms ret:0ms count:1\n2011-02-15 18:06:05.952 -DEBUG- R[LOGIN00102] U[9999999999] E[APUSRMGR0001201102151806058420002] nablarch.core.db.transaction.JdbcTransaction#commit()\n```"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "web-application-function--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`UploadHelper` is listed in the hints for section s4 (アップロードファイルを読み込む方法), but `UploadHelper` does not appear anywhere in the corresponding source section. That section only uses `PartInfo`, `getInputStream()`, and `InputStream`. Including `UploadHelper` as a hint for s4 has no basis in the source and could mislead routing.",
+      "source_evidence": "Source s4 section: `PartInfo partInfo = req.getPart(\"imageFile\").get(0); InputStream in = partInfo.getInputStream();` — no UploadHelper reference."
+    }
+  ]
+}

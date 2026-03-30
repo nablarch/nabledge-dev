@@ -1,0 +1,217 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-WebFrontController",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — [例外処理] 3a",
+      "description": "The qualifier 'サーバプロセスの継続に影響するような特定の' is dropped from the fatal-error clause. The source says 'サーバプロセスの継続に影響するような特定の致命的エラーを除けば' (only fatal errors that affect server process continuation are excluded from GlobalErrorHandler's catch), whereas the knowledge file says simply '致命的エラーを除けば'. The qualifier narrows which fatal errors bypass GlobalErrorHandler, so its removal slightly loosens the meaning.",
+      "source_evidence": "サーバプロセスの継続に影響するような特定の致命的エラーを除けば、ここで例外を捕捉することは無い。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _WebFrontController:
+
+=================================================================
+Webフロントコントローラ (サーブレットフィルタ)
+=================================================================
+**クラス名:** ``nablarch.fw.web.servlet.WebFrontController``
+
+----------------------------------------------
+概要
+----------------------------------------------
+:doc:`../architectural_pattern/web_gui` において、サーブレットコンテナから直接コールバックされ、
+ハンドラキューの実行の起点となるクラスである。
+
+サーブレットコンテキスト上にサーブレットフィルタとしてデプロイされる。
+
++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler web'
+    , HandlerQueue = [
+        "NablarchServletContextListener"
+      , "WebFrontController"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  ======================================  ===================================================================================
+  ハンドラ                                内容
+  ======================================  ===================================================================================
+  :doc:`NablarchServletContextListener`   本クラスは **NablarchServletContextListener** によって初期化される。
+  ======================================  ===================================================================================
+
++++++++++++++++++++++
+
+
+
+----------------------------------------------
+処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+
+  **1. (HTTPリクエストオブジェクト、実行コンテキストの生成)**
+    ``HttpServletRequest``/``HttpServletResponse`` をラップした
+    HTTPリクエストオブジェクトおよび実行コンテキストを生成する。
+
+
+  **2. (ハンドラキューに対する処理委譲)**
+    このサーブレットフィルタに設定されたハンドラキュー内の先頭ハンドラを、
+    **2.** で作成したHTTPリクエストオブジェクトおよび実行コンテキストを引数として
+    実行する。
+
+.. _outbound:
+
+**[往路処理]**
+  **3. (正常終了)**
+    ハンドラキューでの処理が正常に終了した時点で、当該リクエストに対する処理を終了し、
+    サーブレットコンテナ側に制御を戻す。
+
+.. _error:
+
+**[例外処理]**
+  **3a. (後続ハンドラ処理中のエラー)**
+    ハンドラキューでの処理中に例外が送出された場合、特段の例外制御は行なわず
+    発生した例外をそのまま送出する。
+
+    ただし、標準ハンドラ構成では、このハンドラの直後に :doc:`GlobalErrorHandler` が配置されるため、
+    サーバプロセスの継続に影響するような特定の致命的エラーを除けば、ここで例外を捕捉することは無い。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本クラスの設定項目の一覧は以下のとおり。
+
+  ========================== ================  ===============  ==================================
+  設定項目                   プロパティ名      データ型　       備考
+  ========================== ================  ===============  ==================================
+  ハンドラキュー             handlerQueue      List<Handler>    必須指定
+  ========================== ================  ===============  ==================================
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <component
+      name  ="webFrontController"
+      class ="nablarch.fw.web.servlet.WebFrontController">
+
+      <!-- ハンドラキュー構成 -->
+      <property name="handlerQueue">
+      <list>
+        <component class="nablarch.fw.handler.GlobalErrorHandler" />
+        <component class="nablarch.fw.web.handler.HttpCharacterEncodingHandler" />
+        <component-ref name="sessionConcurrentAccessHandler" />
+        <component-ref name="httpResponseHandler" />
+
+        <!-- 以下ハンドラ定義(略) -->
+
+      </list>
+      </property>
+    </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-WebFrontController",
+  "title": "Webフロントコントローラ (サーブレットフィルタ)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "WebFrontController",
+        "nablarch.fw.web.servlet.WebFrontController",
+        "NablarchServletContextListener",
+        "サーブレットフィルタ",
+        "ハンドラキュー起点"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "処理フロー",
+      "hints": [
+        "処理フロー",
+        "HTTPリクエストオブジェクト生成",
+        "ハンドラキュー実行",
+        "GlobalErrorHandler",
+        "例外処理",
+        "HttpServletRequest",
+        "HttpServletResponse"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "handlerQueue",
+        "ハンドラキュー設定",
+        "WebFrontController設定",
+        "GlobalErrorHandler",
+        "HttpCharacterEncodingHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.servlet.WebFrontController`\n\n:doc:`../architectural_pattern/web_gui` においてサーブレットコンテナから直接コールバックされ、ハンドラキューの実行の起点となるクラス。サーブレットコンテキスト上にサーブレットフィルタとしてデプロイされる。\n\n**関連するハンドラ**:\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`NablarchServletContextListener` | 本クラスを初期化する |",
+    "s2": "**[往路処理]**\n\n1. `HttpServletRequest`/`HttpServletResponse` をラップしたHTTPリクエストオブジェクトおよび実行コンテキストを生成する。\n2. ハンドラキュー内の先頭ハンドラをHTTPリクエストオブジェクトおよび実行コンテキストを引数として実行する。\n\n**[往路処理]**\n\n3. ハンドラキューでの処理が正常に終了した時点で、サーブレットコンテナ側に制御を戻す。\n\n**[例外処理]**\n\n3a. ハンドラキュー処理中に例外が送出された場合、特段の例外制御は行わず発生した例外をそのまま送出する。標準ハンドラ構成では直後に :doc:`GlobalErrorHandler` が配置されるため、致命的エラーを除けばここで例外を捕捉することはない。",
+    "s3": "| 設定項目 | プロパティ名 | データ型 | 備考 |\n|---|---|---|---|\n| ハンドラキュー | handlerQueue | List\\<Handler\\> | 必須指定 |\n\n**標準設定**:\n\n```xml\n<component\n  name  =\"webFrontController\"\n  class =\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- ハンドラキュー構成 -->\n  <property name=\"handlerQueue\">\n  <list>\n    <component class=\"nablarch.fw.handler.GlobalErrorHandler\" />\n    <component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\" />\n    <component-ref name=\"sessionConcurrentAccessHandler\" />\n    <component-ref name=\"httpResponseHandler\" />\n  </list>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 常駐処理業務エラー flow",
+      "description": "The 常駐処理業務エラー flow in the knowledge file omits the following handler steps that are present in the source JavaScript flow definition: (inbound path) DbConnectionManagementHandler_main, TransactionManagementHandler_main, RequestPathJavaPackageMapping, DbConnectionManagementHandler, LoopHandler, DataReadHandler, BatchAction(inbound); (error path) BatchAction callback after LoopHandler error, DbConnectionManagementHandler(error), TransactionManagementHandler_main(error), DbConnectionManagementHandler_main(error). Only ProcessResidentHandler → MultiThreadExecutionHandler → BatchAction(callback) → BatchAction(error) → LoopHandler(error) → MultiThreadExecutionHandler(error) → ProcessResidentHandler(error) → RetryHandler(error) is shown.",
+      "source_evidence": "Source JavaScript retryerror/errorend flows list: DbConnectionManagementHandler_main (inbound), TransactionManagementHandler_main (inbound), RequestPathJavaPackageMapping (inbound), DbConnectionManagementHandler (inbound), LoopHandler (inbound), DataReadHandler (inbound), BatchAction (inbound), BatchAction (error), LoopHandler (error), BatchAction (callback), DbConnectionManagementHandler (error), MultiThreadExecutionHandler (error), BatchAction (callback), TransactionManagementHandler_main (error), DbConnectionManagementHandler_main (error), ProcessResidentHandler (error), RetryHandler (error)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — プロセス異常停止 flow",
+      "description": "The プロセス異常停止 (abort) flow in the knowledge file condenses the starting point and intermediate handlers. The source flow begins with BatchAction (inbound) as the trigger, then proceeds through LoopHandler (error) with rollback of uncommitted transactions and BatchAction callbacks. The knowledge file skips BatchAction (inbound) as the starting point and summarizes the entire LoopHandler/DbConnectionManagementHandler/MultiThreadExecutionHandler/TransactionManagementHandler_main error chain as 「各ハンドラ error 経由」, losing the detail about rollback behavior and BatchAction callbacks in this specific flow.",
+      "source_evidence": "Source JavaScript abort flow: [\"BatchAction\", \"inbound\", \"処理中に java.lang.Error のサブクラスが送出されたとする。\"], [\"LoopHandler\", \"error\", \"複数件コミットを使用している場合は、未コミットの処理についてもロールバックされる。また業務アクションをコールバックする。\"], [\"BatchAction\", \"callback\"], [\"DbConnectionManagementHandler\", \"error\"], [\"MultiThreadExecutionHandler\", \"error\", \"異常終了後に業務アクションへのコールバックを行う。\"], [\"BatchAction\", \"callback\"], [\"TransactionManagementHandler_main\", \"error\"], [\"DbConnectionManagementHandler_main\", \"error\"], ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "ThreadContextHandler_main is present in the handler queue (position 4 in the standard handler configuration) and appears in the 正常起動 and 重複起動エラー processing flows, but is not listed in the s3 hints array. Users asking about ThreadContextHandler_main would not find this section via hints.",
+      "source_evidence": "Source HandlerQueue array includes \"ThreadContextHandler_main\". normalend flow: [\"ThreadContextHandler_main\", \"inbound\"]. duplaunch flow: [\"ThreadContextHandler_main\", \"inbound\", \"起動引数-requestPathからこのバッチのリクエストIDを決定する。\"]. Knowledge file s3 hints do not include \"ThreadContextHandler_main\"."
+    }
+  ]
+}

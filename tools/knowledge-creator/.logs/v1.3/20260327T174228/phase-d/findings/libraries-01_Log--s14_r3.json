@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "SynchronousFileLogWriter の設定プロパティ名（lockFilePath、failureCodeCreateLockFile、failureCodeReleaseLockFile、failureCodeForceDeleteLockFile、failureCodeInterruptLockWait）がヒントに含まれていない。これらはs2の設定例に登場するプロパティで、ユーザーがこれらを検索した場合にs2が見つからなくなる。",
+      "source_evidence": "writer.monitorFile.lockFilePath=/var/log/lock/monitor.lock\nwriter.monitorFile.failureCodeCreateLockFile=MSG00101\nwriter.monitorFile.failureCodeReleaseLockFile=MSG00102\nwriter.monitorFile.failureCodeForceDeleteLockFile=MSG00103\nwriter.monitorFile.failureCodeInterruptLockWait=MSG00104"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "BasicLogFormatter の完全修飾クラス名 `nablarch.core.log.basic.BasicLogFormatter` がヒントに含まれていない。クラス名 `BasicLogFormatter` は含まれているが、FQCNがない。",
+      "source_evidence": "writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

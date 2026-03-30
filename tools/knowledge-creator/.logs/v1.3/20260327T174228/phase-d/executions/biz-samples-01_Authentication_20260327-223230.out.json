@@ -1,0 +1,20 @@
+{
+  "file_id": "biz-samples-01_Authentication",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "SYSTEM_ACCOUNTテーブルの物理カラム名のうち、`USER_ID`、`PASSWORD`、`EFFECTIVE_DATE_FROM`、`EFFECTIVE_DATE_TO`、`LAST_LOGIN_DATE_TIME` がhintsに含まれていない。`USER_ID_LOCKED`、`PASSWORD_EXPIRATION_DATE`、`FAILED_COUNT` は含まれているが、残り5つが欠落している。",
+      "source_evidence": "テーブル定義の物理名列: USER_ID（主キー）、PASSWORD、EFFECTIVE_DATE_FROM（yyyyMMdd形式）、EFFECTIVE_DATE_TO（yyyyMMdd形式）、LAST_LOGIN_DATE_TIME（Timestamp）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "s4のXML設定例に登場するPascalCaseクラス名 `BasicBusinessDateProvider` と `BasicSystemTimeProvider` がhintsに含まれていない。",
+      "source_evidence": "`<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\" />` および `<component name=\"systemTimeProvider\" class=\"nablarch.core.date.BasicSystemTimeProvider\" />` がXML設定例に明示されている。"
+    }
+  ]
+}

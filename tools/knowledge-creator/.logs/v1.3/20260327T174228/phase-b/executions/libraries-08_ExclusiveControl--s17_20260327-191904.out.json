@@ -1,0 +1,46 @@
+{
+  "id": "libraries-08_ExclusiveControl--s17",
+  "title": "排他制御",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アクションの実装例",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "UsersExclusiveControl",
+        "OptimisticLockException",
+        "@OnError",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersionsWithCheck",
+        "checkVersion",
+        "updateVersionWithCheck",
+        "排他制御",
+        "バージョン番号準備",
+        "楽観的ロック",
+        "一括更新処理",
+        "複合主キー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定ファイルの定義",
+      "hints": [
+        "BasicExclusiveControlManager",
+        "ExclusiveControlManager",
+        "optimisticLockErrorMessageId",
+        "exclusiveControlManager",
+        "OptimisticLockException",
+        "排他制御設定",
+        "楽観ロックエラーメッセージ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "排他制御の実装は `HttpExclusiveControlUtil` を使用する。\n\n**バージョン番号の準備 (`prepareVersion`)**\n\n**メソッド**:\n- `boolean prepareVersion(ExecutionContext context, ExclusiveControlContext exclusiveControlContext)`\n- `boolean prepareVersions(ExecutionContext context, List<? extends ExclusiveControlContext> exclusiveControlContexts)`\n\n> **注意**: 排他制御用テーブルに主キーに合致するデータが存在しない場合（排他制御対象のデータが物理削除された場合など）はfalseを返す。バージョン番号が存在しない場合の処理を共通化する場合は、`HttpExclusiveControlUtil` のラッパクラスを作成する。\n\n```java\nHttpExclusiveControlUtil.prepareVersion(context, new UsersExclusiveControl(user.getUserId()));\n```\n\n**バージョン番号の更新チェック (`checkVersions`)**\n\nバージョン番号が更新されている場合は `OptimisticLockException` が送出される。`@OnError(type = OptimisticLockException.class, path = \"...\")` で遷移先を指定する。\n\n```java\nHttpExclusiveControlUtil.checkVersions(request, context);\n```\n\n**バージョン番号の更新チェックと更新 (`updateVersionsWithCheck`)**\n\n```java\nHttpExclusiveControlUtil.updateVersionsWithCheck(request);\n```\n\n**一括更新処理における更新チェック（単一主キー）**\n\n更新対象レコードのみに更新チェックを行う場合、チェックボックスのリクエストパラメータ名を引数に指定する。\n\n> **注意**: チェックボックスのvalue値には更新対象レコードの主キーを指定する。\n\n```java\n// 更新チェック\nHttpExclusiveControlUtil.checkVersions(request, context, \"user.deactivate\");\n// 更新チェックと更新\nHttpExclusiveControlUtil.updateVersionsWithCheck(request, \"user.deactivate\");\n```\n\n**一括更新処理における更新チェック（複合主キー）**\n\n複合主キーの場合は `checkVersion()` / `updateVersionWithCheck()`（sなし・主キークラスを引数に取る）をレコードごとに繰り返し呼び出す。\n\n> **注意**: チェックボックスのvalue値には主キーを区切り文字（主キーの値にはなり得ない任意の文字）で結合した文字列を指定する。formクラスには、リクエストパラメータから主キーを取り出す処理を実装する。\n\n```java\n// 更新チェック\nfor (User deletedUser : deletedUsers) {\n    HttpExclusiveControlUtil.checkVersion(request, context,\n        new UsersExclusiveControl(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));\n}\n// 更新チェックと更新\nfor (User deletedUser : deletedUsers) {\n    HttpExclusiveControlUtil.updateVersionWithCheck(request,\n        new ExclusiveUserCondition(deletedUser.getUserId(), deletedUser.getPk2(), deletedUser.getPk3()));\n}\n```",
+    "s2": "排他制御機能を使用するには、リポジトリに `exclusiveControlManager` というコンポーネント名で `ExclusiveControlManager` インタフェースを実装したクラスを登録する。\n\n**クラス**: `nablarch.common.exclusivecontrol.BasicExclusiveControlManager`（デフォルト実装）\n\n`OptimisticLockException` は `ApplicationException` を継承しており、`n:errors` タグで画面上にエラーメッセージを表示できる。\n\n> **注意**: 楽観ロックエラーメッセージはアプリケーションで1つのみ指定可能。機能ごとにメッセージを変えたい場合は、アクションで `OptimisticLockException` をキャッチして例外処理を実装する。\n\n```xml\n<component name=\"exclusiveControlManager\"\n           class=\"nablarch.common.exclusivecontrol.BasicExclusiveControlManager\">\n    <property name=\"optimisticLockErrorMessageId\" value=\"CUST0001\" />\n</component>\n```\n\n**ExclusiveControlManager 設定属性**\n\n| 属性値 | 必須 | 設定内容 |\n|---|---|---|\n| name | ○ | `\"exclusiveControlManager\"`（変更不可） |\n| class | ○ | `nablarch.common.exclusivecontrol.BasicExclusiveControlManager`。独自実装の場合は `ExclusiveControlManager` を実装したクラスを指定。 |\n\n**BasicExclusiveControlManager プロパティ**\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| optimisticLockErrorMessageId | ○ | 楽観ロックエラーメッセージID |"
+  }
+}

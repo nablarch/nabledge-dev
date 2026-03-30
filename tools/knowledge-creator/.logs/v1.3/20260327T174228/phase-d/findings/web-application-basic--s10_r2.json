@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-basic--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — バリデーションの説明",
+      "description": "The source explains that data obtained directly from a request is String type and may require type conversion, and that validation solves this by automatically converting types when data is retrieved from form properties. The knowledge file only states the positive outcome ('バリデーション実行後にフォームのプロパティからデータを取得すると、自動で型変換が行われる') without the preceding context about why this matters (direct request data is String型). This context is decision-relevant for understanding when/why validation is required in window scope usage.",
+      "source_evidence": "リクエストから直接取得したデータはString型であり、データの型変換が必要となることがある。しかし、バリデーションを実行し、フォームのプロパティの設定値としてデータを取得した場合、そのプロパティのデータは自動で型変換が行われる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "The `var` attribute is a key property of the `n:set` tag (used as `n:set var=\"title\"` and `n:set var=\"officeLocation\"` in the source code examples) but is not listed in the hints for s2.",
+      "source_evidence": "<n:set var=\"title\" value=\"ユーザ情報登録\" /> and <n:set var=\"officeLocation\" name=\"W11AC02.systemUser.officeLocation\"/>"
+    }
+  ]
+}

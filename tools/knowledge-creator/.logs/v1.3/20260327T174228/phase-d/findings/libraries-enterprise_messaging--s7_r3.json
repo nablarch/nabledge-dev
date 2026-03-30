@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (JMS メッセージングプロバイダ)",
+      "description": "The source XML comment states '// その他のプロパティは親クラス(JmsMessagingProvider)と同じ', indicating that JndiLookingUpJmsMessagingProvider inherits additional configurable properties from parent class JmsMessagingProvider. This inheritance relationship is not mentioned in the knowledge file, so an AI assistant would not know there may be additional properties beyond those listed in the table.",
+      "source_evidence": "Source XML: <!-- その他のプロパティは親クラス(JmsMessagingProvider)と同じ -->"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (組込みメッセージングプロバイダ)",
+      "description": "The source includes an explanatory comment for why defaultTimeToLive is set to 0 in the embedded provider: '送信メッセージの有効期間 (テスト用のため消さない。)' — meaning messages should not expire so they persist for test inspection. The knowledge file shows the value=0 setting but omits the rationale, which is useful context for test environment usage.",
+      "source_evidence": "Source XML: <!-- 送信メッセージの有効期間 (テスト用のため消さない。)--> <property name=\"defaultTimeToLive\" value=\"0\" />"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "DataRecordFormatter is referenced in code examples across all four messaging patterns (Pattern 1, 2, and 4) as the class used to format message bodies, but is absent from the s1 hints list. Users asking how to configure message body formatting would benefit from this class being discoverable via hints.",
+      "source_evidence": "Source Pattern 1 code: 'DataRecordFormatter formatter = createFormatter();' — also appears in Pattern 2 and Pattern 4 code examples."
+    }
+  ]
+}

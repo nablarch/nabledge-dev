@@ -1,0 +1,61 @@
+{
+  "id": "web-application-Other--s16",
+  "title": "コード名称と値の取得方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード名称と値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getName",
+        "getShortName",
+        "getOptionalName",
+        "getValues",
+        "コード名称取得",
+        "コード略称取得",
+        "オプション名称取得",
+        "コード値取得",
+        "ThreadContext言語",
+        "パターンカラム指定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "コード値のバリデーション方法",
+      "hints": [
+        "@CodeValue",
+        "CodeValue",
+        "@PropertyName",
+        "PropertyName",
+        "codeId",
+        "pattern",
+        "コード値バリデーション",
+        "バリデーションアノテーション"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "正常な画面遷移においてメッセージを表示する方法",
+      "hints": [
+        "WebUtil",
+        "MessageUtil",
+        "notifyMessages",
+        "createMessage",
+        "n:errors",
+        "MessageLevel",
+        "警告メッセージ表示",
+        "正常画面遷移メッセージ",
+        "nablarch_warn",
+        "nablarch_info",
+        "nablarch_error"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `CodeUtil`\n\nコード管理機能でコード名称・コード値を取得する。全メソッドはThreadContextの言語設定に応じた値を返す。\n\n### コード名称の取得\n\n`CodeUtil.getName(codeId, value)` — コード名称テーブルのNAMEカラムの値を取得。\n\n```java\nString name = CodeUtil.getName(\"0001\", \"1\");\n// en -> \"Male\", ja -> \"男性\"\n```\n\n### コード略称の取得\n\n`CodeUtil.getShortName(codeId, value)` — コード名称テーブルのSHORT_NAMEカラムの値を取得。\n\n```java\nString name = CodeUtil.getShortName(\"0001\", \"1\");\n// en -> \"男\", ja -> \"M\"\n```\n\n### オプション名称の取得\n\n`CodeUtil.getOptionalName(codeId, value, columnName)` — コード名称テーブルの任意カラム（NAME_WITH_VALUE等）の値を取得。カラム名を第3引数に指定する。\n\n```java\nString name = CodeUtil.getOptionalName(\"0001\", \"1\", \"NAME_WITH_VALUE\");\n// en -> \"1:Male\", ja -> \"1:男性\"\n```\n\n### コード値の取得\n\n`CodeUtil.getValues(codeId)` — コード値リストをSORT_ORDERカラムの昇順で返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\");\n// en -> {\"2\", \"1\", \"9\"}, ja -> {\"1\", \"2\", \"9\"}\n```\n\n### パターンごとのコード値の取得\n\n`CodeUtil.getValues(codeId, patternColumn)` — コードパターンテーブルのパターンカラムを指定してコード値リストを取得。パターンカラムに\"1\"が設定された行のみ対象。値はSORT_ORDERカラムの昇順で返す。\n\n```java\nList<String> values = CodeUtil.getValues(\"0001\", \"PATTERN1\");\n// en -> {\"2\", \"1\"}, ja -> {\"1\", \"2\"}\n```",
+    "s2": "**アノテーション**: `@CodeValue`\n\nコード値のバリデーションには`@CodeValue`バリデータを使用する。\n\n```java\n@PropertyName(\"性別\")\n@CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\npublic String setGender(String gender) {\n    this.gender = gender;\n}\n```\n\n- `codeId`: 対象のコードID\n- `pattern`: パターンのカラム名。指定したパターンに含まれる値（パターンカラムが\"1\"の行）のみ有効とする。パターンに含まれない値はバリデーションエラーとなる。",
+    "s3": "**クラス**: `WebUtil`, `MessageUtil`\n\n正常な画面遷移でメッセージを表示する場合、ActionでWebUtilの`notifyMessages`メソッドを使用してメッセージを設定し、JSPで`<n:errors />`タグで出力する。精査エラーではなく業務仕様上のチェック結果として警告メッセージを次画面に表示する場合に使用する。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG00022\");\nWebUtil.notifyMessages(ctx, message);\nreturn new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n```\n\n```jsp\n<n:errors />\n```\n\n`n:errors`タグはMessageLevelに応じたCSSクラス名を出力する：\n\n| MessageLevel | CSSクラス名 |\n|---|---|\n| INFO | `nablarch_info` |\n| WARN | `nablarch_warn` |\n| ERROR | `nablarch_error` |"
+  }
+}

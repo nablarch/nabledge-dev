@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-04_validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "s2のインデックスタイトルが「本項で説明する内容」となっているが、s2のコンテンツは「作成内容」サブセクション（ファイル一覧テーブル）に対応している。「本項で説明する内容」の説明内容（箇条書き3項目）はs1に収録されており、タイトルとコンテンツが不一致。",
+      "source_evidence": "ソースのRST構造: 本項で説明する内容(h2) > 説明内容(h3) / 作成内容(h3)。s1が説明内容を収録、s2が作成内容テーブルを収録しているにもかかわらず、s2タイトルが親セクション名の「本項で説明する内容」になっている。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s4].title",
+      "description": "s4のインデックスタイトルが「作成手順」となっているが、s4のコンテンツは「プロパティの追加」サブセクション（追加ルールと手順a/b）に対応している。「作成手順」は上位のh2セクションであり、s3(Formの生成イントロ)とs4/s5(プロパティの追加)を包含する。タイトルがコンテンツの実際のスコープを誤表現している。",
+      "source_evidence": "ソース構造: 作成手順(h2) > Formの生成(h3) > プロパティの追加(h4)。s4のコンテンツはプロパティの追加(h4)に相当するが、タイトルはh2の「作成手順」を使用。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5のコードサンプルに登場するPascalCaseクラス名「SystemAccountEntity」「UgroupSystemAccountEntity」がhints未収録。これらはW11AC02Formのプロパティ定義とコンストラクタ、@ValidationTargetのsetterに明示的に使われている。",
+      "source_evidence": "ソースコード例: `private SystemAccountEntity systemAccount;`、`private UgroupSystemAccountEntity ugroupSystemAccount;`、`@ValidationTarget public void setSystemAccount(...)`, `@ValidationTarget public void setUgroupSystemAccount(...)`"
+    }
+  ]
+}

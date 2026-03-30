@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s22",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor hints_missing issues involving example-code symbols rather than framework APIs. Neither causes a meaningful retrieval gap: `getValues` is already covered by other sections in the same knowledge file (s1 documents index-based retrieval), and `refreshAndGetValue`/`createData` are user-defined example method names that developers would not use as search terms. The knowledge file reliably surfaces the core framework concepts (`refresh`, `StaticDataCache`, `loadAll`, etc.) needed for actual implementation tasks.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s6] (静的データの再読み込み)",
+      "impact": "low",
+      "justification": "`getValues` is already present as a hint in s1 (インデックス機能) and covered by surrounding sections, so its absence from s6 hints creates no real retrieval gap. `refreshAndGetValue` is a user-defined example method name, not a Nablarch framework API — developers would not search for it. The essential concept (`refresh`, `StaticDataCache`, `リロード`) is well-represented in s6 hints. Phase E logs show the file was output unchanged, meaning the fix agent did not apply the additions — likely treating them as below the threshold for actionable changes given their minor severity."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s2] (ExampleDataをロードするクラス)",
+      "impact": "none",
+      "justification": "`createData` is a project-specific helper method in the example code, explicitly omitted from the shown implementation (noted as abbreviated). It is not a Nablarch framework API and would never be used as a search term by a developer looking up static data cache functionality. Its absence from hints has zero practical impact on retrieval. Phase E did not apply this fix, consistent with the agent recognizing it as a non-framework symbol with no search value."
+    }
+  ]
+}

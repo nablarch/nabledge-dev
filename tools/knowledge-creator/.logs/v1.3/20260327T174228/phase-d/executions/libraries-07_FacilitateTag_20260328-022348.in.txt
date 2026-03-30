@@ -1,0 +1,285 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.rst`
+- Format: `rst`
+
+```
+.. _WebView_InputConfirmationCommon:
+
+============================================================================================================================================================
+入力画面と確認画面の共通化をサポートするカスタムタグ
+============================================================================================================================================================
+入力画面と確認画面が1対1に対応する画面であれば、入力画面と確認画面を共通化することで、確認画面のJSPを作成する工数を削減することができる。\
+マスタメンテナンス画面など、複雑な操作が要求されない画面を大量に、短期間で作成する場合は、この機能が活躍する。
+
+実装の共通化は、入力画面のJSPにおいて行い、確認画面のJSPは入力画面のJSPにフォワードだけを行う。\
+アクションは、入力画面と確認画面でそれぞれ別々のJSPにフォワードしておき、\
+仕様変更に伴い入力画面と確認画面を別々に作成する必要が発生した場合にもアクションへの影響を抑える。
+
+確認画面のJSPは、 :ref:`WebView_ConfirmationPageTag` を使用してフォワードを行う。\
+確認画面の実装例を示す。\
+入力画面と確認画面のJSPは同じ場所に配置することが多いので、実装例のように相対パスで指定できる。
+
+.. code-block:: jsp
+
+  <%-- USER003.jspは入力画面のJSPとする。 --%>
+  <n:confirmationPage path="./USER003.jsp" />
+
+入力項目のカスタムタグでは、入力項目と入力項目に対応する確認画面用の出力機能を提供しているので、\
+入力画面と確認画面で表示を切り替える機能を提供する。
+
+------------------------------------
+入力画面と確認画面の表示切り替え
+------------------------------------
+入力画面と確認画面の表示切り替えには、入力画面と確認画面のそれぞれにおいてのみボディを評価する下記タグを使用する。
+
+===================================== ================================================================================================
+カスタムタグ                          | 出力するHTMLタグ
+===================================== ================================================================================================
+:ref:`WebView_ForInputPageTag`        | 入力画面のみボディを評価する。
+:ref:`WebView_ForConfirmationPageTag` | 確認画面のみボディを評価する。
+===================================== ================================================================================================
+
+パスワードの使用例
+============================
+パスワードの例を下記に示す。\
+入力画面では確認用の入力があるため2つの入力項目を表示するが、確認画面では一方だけ出力する。
+
+.. image:: ./_images/WebView_PasswordInput.jpg
+   :scale: 60
+
+.. code-block:: jsp
+
+  <n:password name="systemAccount.newPassword" size="22" maxlength="20" />
+  <n:forInputPage>
+    <br/>
+    <n:password name="systemAccount.confirmPassword" size="22" maxlength="20" /><span class="dinstruct">(確認用)</span>
+  </n:forInputPage>
+
+携帯電話番号の使用例
+============================
+携帯電話番号の例を下記に示す。\
+携帯電話番号は入力項目がハイフンで連結されており、全て入力するかしないかの2択である。\
+確認画面では入力されていない場合にハイフンを表示させないように制御する。
+
+.. image:: ./_images/WebView_MobileInput.jpg
+   :scale: 60
+
+.. code-block:: jsp
+
+  <n:forInputPage>
+      <n:text name="users.mobilePhoneNumberAreaCode" size="5" maxlength="3" />&nbsp;-&nbsp;
+      <n:text name="users.mobilePhoneNumberCityCode" size="6" maxlength="4" />&nbsp;-&nbsp;
+      <n:text name="users.mobilePhoneNumberSbscrCode" size="6" maxlength="4" />
+  </n:forInputPage>
+  <n:forConfirmationPage>
+    <c:if test="${users.mobilePhoneNumberAreaCode != ''}">
+      <n:text name="users.mobilePhoneNumberAreaCode" size="5" maxlength="3" />&nbsp;-&nbsp;
+      <n:text name="users.mobilePhoneNumberCityCode" size="6" maxlength="4" />&nbsp;-&nbsp;
+      <n:text name="users.mobilePhoneNumberSbscrCode" size="6" maxlength="4" />
+    </c:if>
+  </n:forConfirmationPage>
+  
+ボタンの使用例
+============================
+もう一つ、ボタンの例を下記に示す。\
+入力画面は確認ボタン、確認画面は登録画面へ戻るボタンと確定ボタンを表示する。
+
+.. code-block:: jsp
+
+  <n:forInputPage> 
+    <n:submit cssClass="buttons" type="button" name="confirm" value="確認" uri="/action/ss11AC/W11AC02Action/RW11AC0202"/> 
+  </n:forInputPage>
+  <n:forConfirmationPage> 
+    <n:submit cssClass="buttons" type="button" name="back" value="登録画面へ" uri="/action/ss11AC/W11AC02Action/RW11AC0203"/>
+    <n:submit cssClass="buttons" type="button" name="register" value="確定" uri="/action/ss11AC/W11AC02Action/RW11AC0204" allowDoubleSubmission="false"/>
+  </n:forConfirmationPage>
+
+上記に提供しているタグで対応できない場合は、入力画面と確認画面の差異が多いため、この機能の使用に適していない可能性がある。\
+適していない場合は、無理に1つのJSPで作成しようとせずに、入力画面と確認画面のJSPを分けて開発すること。
+
+-------------------------------
+確認画面での入力項目の表示
+-------------------------------
+ユーザがどの画面にいても素早く目的の画面にアクセスできるように、全画面の共通ヘッダに検索フォームを配置したい場合がある。
+しかし、 :ref:`WebView_ConfirmationPageTag` を使用した画面では、確認画面の場合にすべての入力項目のカスタムタグが確認用の出力を行うため、
+共通ヘッダの検索フォームも確認用として出力される。
+このため、確認画面へ入力項目を表示するために、本機能は :ref:`WebView_IgnoreConfirmationTag` を提供する。
+
+ignoreConfirmationタグのボディに配置された入力項目のカスタムタグは、常に入力項目として出力される。
+ignoreConfirmationタグを使用することで、画面内の一部分を常に入力項目として表示することができる。
+
+ignoreConfirmationタグを使用した検索フォームの実装例を下記に示す。
+
+.. code-block:: jsp
+
+  <%-- ignoreConfirmationタグで囲まれた範囲のみ、常に入力項目として表示される。 --%>
+  <n:ignoreConfirmation>
+  <n:form>
+    <n:text name="searchWords" />
+    <n:submit type="button" uri="./CUSTOM00207" name="CUSTOM00207_submit" value="検索" />
+  </n:form>
+  </n:ignoreConfirmation>
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_FacilitateTag`
+
+```json
+{
+  "id": "libraries-07_FacilitateTag",
+  "title": "入力画面と確認画面の共通化をサポートするカスタムタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力画面と確認画面の共通化",
+      "hints": [
+        "入力画面と確認画面の共通化",
+        "n:confirmationPage",
+        "confirmationPage",
+        "JSPのフォワード",
+        "WebView_ConfirmationPageTag",
+        "確認画面JSP省略",
+        "マスタメンテナンス画面",
+        "短期間で大量作成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入力画面と確認画面の表示切り替え",
+      "hints": [
+        "入力画面と確認画面の表示切り替え",
+        "n:forInputPage",
+        "n:forConfirmationPage",
+        "forInputPage",
+        "forConfirmationPage",
+        "WebView_ForInputPageTag",
+        "WebView_ForConfirmationPageTag",
+        "パスワード入力",
+        "携帯電話番号",
+        "ボタン表示切り替え"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "確認画面での入力項目の表示",
+      "hints": [
+        "n:ignoreConfirmation",
+        "ignoreConfirmation",
+        "確認画面での入力項目の表示",
+        "共通ヘッダ検索フォーム",
+        "WebView_IgnoreConfirmationTag",
+        "入力項目の強制表示"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "入力画面と確認画面が1対1に対応する画面では、確認画面のJSPで :ref:`WebView_ConfirmationPageTag` を使用して入力画面のJSPにフォワードするだけで共通化できる。これにより確認画面のJSPを作成する工数を削減できる。マスタメンテナンス画面など、複雑な操作が要求されない画面を大量に、短期間で作成する場合に特に活躍する機能である。アクションは入力画面と確認画面でそれぞれ別々のJSPにフォワードしておく（仕様変更時の影響を抑えるため）。入力画面と確認画面のJSPは同じ場所に配置することが多いので、相対パスで指定できる。\n\n```jsp\n<%-- USER003.jspは入力画面のJSPとする。 --%>\n<n:confirmationPage path=\"./USER003.jsp\" />\n```",
+    "s2": "入力画面と確認画面で表示を切り替えるタグ:\n\n| カスタムタグ | 説明 |\n|---|---|\n| :ref:`WebView_ForInputPageTag` | 入力画面のみボディを評価する |\n| :ref:`WebView_ForConfirmationPageTag` | 確認画面のみボディを評価する |\n\n> **注意**: 上記タグで対応できない場合は、入力画面と確認画面の差異が多いため、JSPを分けて開発すること。\n\n**パスワードの例**（入力画面では確認用入力項目を2つ表示、確認画面では1つのみ）:\n\n![パスワード入力画面](assets/libraries-07_FacilitateTag/WebView_PasswordInput.jpg)\n\n```jsp\n<n:password name=\"systemAccount.newPassword\" size=\"22\" maxlength=\"20\" />\n<n:forInputPage>\n  <br/>\n  <n:password name=\"systemAccount.confirmPassword\" size=\"22\" maxlength=\"20\" /><span class=\"dinstruct\">(確認用)</span>\n</n:forInputPage>\n```\n\n**携帯電話番号の例**（確認画面では入力されていない場合にハイフンを表示させない）:\n\n![携帯電話番号入力画面](assets/libraries-07_FacilitateTag/WebView_MobileInput.jpg)\n\n```jsp\n<n:forInputPage>\n    <n:text name=\"users.mobilePhoneNumberAreaCode\" size=\"5\" maxlength=\"3\" />&nbsp;-&nbsp;\n    <n:text name=\"users.mobilePhoneNumberCityCode\" size=\"6\" maxlength=\"4\" />&nbsp;-&nbsp;\n    <n:text name=\"users.mobilePhoneNumberSbscrCode\" size=\"6\" maxlength=\"4\" />\n</n:forInputPage>\n<n:forConfirmationPage>\n  <c:if test=\"${users.mobilePhoneNumberAreaCode != ''}\">\n    <n:text name=\"users.mobilePhoneNumberAreaCode\" size=\"5\" maxlength=\"3\" />&nbsp;-&nbsp;\n    <n:text name=\"users.mobilePhoneNumberCityCode\" size=\"6\" maxlength=\"4\" />&nbsp;-&nbsp;\n    <n:text name=\"users.mobilePhoneNumberSbscrCode\" size=\"6\" maxlength=\"4\" />\n  </c:if>\n</n:forConfirmationPage>\n```\n\n**ボタンの例**（入力画面は確認ボタン、確認画面は戻るボタンと確定ボタン）:\n\n```jsp\n<n:forInputPage> \n  <n:submit cssClass=\"buttons\" type=\"button\" name=\"confirm\" value=\"確認\" uri=\"/action/ss11AC/W11AC02Action/RW11AC0202\"/> \n</n:forInputPage>\n<n:forConfirmationPage> \n  <n:submit cssClass=\"buttons\" type=\"button\" name=\"back\" value=\"登録画面へ\" uri=\"/action/ss11AC/W11AC02Action/RW11AC0203\"/>\n  <n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"確定\" uri=\"/action/ss11AC/W11AC02Action/RW11AC0204\" allowDoubleSubmission=\"false\"/>\n</n:forConfirmationPage>\n```",
+    "s3": ":ref:`WebView_ConfirmationPageTag` を使用した確認画面では、すべての入力項目のカスタムタグが確認用の出力を行うため、共通ヘッダの検索フォームも確認用として出力される問題がある。\n\n:ref:`WebView_IgnoreConfirmationTag` を使用することで、ボディ内の入力項目を常に入力項目として出力できる（画面内の一部分を常に入力項目として表示可能）。\n\n```jsp\n<%-- ignoreConfirmationタグで囲まれた範囲のみ、常に入力項目として表示される。 --%>\n<n:ignoreConfirmation>\n<n:form>\n  <n:text name=\"searchWords\" />\n  <n:submit type=\"button\" uri=\"./CUSTOM00207\" name=\"CUSTOM00207_submit\" value=\"検索\" />\n</n:form>\n</n:ignoreConfirmation>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

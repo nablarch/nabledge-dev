@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-02_basic",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings concern missing hints in s3 for terms (`CommandLine`, `Result`) that are already covered by dedicated sections. `CommandLine` is present in s5 hints and s5 fully covers command-line argument handling. `Result` is covered by s8 hints (`nablarch.fw.Result`, `nablarch.fw.Result.Success`) with explicit detail. A user querying either term would still retrieve the relevant section. The s3 content itself is complete and correct — only the hint-based routing for s3 is marginally incomplete. No retrieval failure scenario leads to missing information for the user.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s3 hints",
+      "impact": "low",
+      "justification": "`CommandLine` is absent from s3 hints but is present in s5 hints (`CommandLine`, `getParamMap`, `getArgs`). s5 is the dedicated section for command-line arguments and provides full coverage. A user querying `CommandLine` would reach s5 directly. The only loss is that s3 (class structure overview) would not surface as a secondary result, but the method signature table in s3 is supplementary context — not the primary answer. The fix did not apply because Phase E output (as logged) retained the original s3 hints array unchanged, likely a non-application of the patch."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 hints",
+      "impact": "low",
+      "justification": "`Result` is absent from s3 hints but is covered in s8 hints via `nablarch.fw.Result` and `nablarch.fw.Result.Success`, which is the dedicated section explaining the return value contract of `handle`. Users asking about `Result` in batch context would be routed to s8, which gives the authoritative answer. The `terminate(Result result, ...)` and `do+レコードタイプ名` signatures in s3 are supporting context, not the primary explanation. The fix did not apply for the same reason as the first finding — Phase E logs show the s3 hints array was not modified."
+    }
+  ]
+}

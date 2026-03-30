@@ -1,0 +1,480 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/CustomTag/function.rst`
+- Format: `rst`
+
+```
+検索結果の一覧表示
+------------------------------------------------------------
+本フレームワークの検索結果の一覧表示機能を使用した下記の実装例を解説する。
+
+* :ref:`custom_tag_paging_paging`
+* :ref:`custom_tag_paging_specified_page_settings`
+* :ref:`custom_tag_paging_sort` 
+* :ref:`custom_tag_paging_nopaging` 
+
+ページングの基本的な実装は、 :ref:`custom_tag_paging_paging` において解説する。\
+:ref:`custom_tag_paging_specified_page_settings` では、ページングが実現されていることを前提に、特定の一覧表示にて表示件数と検索結果件数(上限)を個別に設定する方法を解説する。\
+:ref:`custom_tag_paging_sort` では、ページングが実現されていることを前提に、検索結果の並び替えを行う方法を解説する。
+
+
+.. _`custom_tag_paging_paging`:
+
+ページングを使用した一覧表示
+====================================================================================
+ここでは、基本的なページング機能の実装方法を述べる。
+
+ページングを実現するには下記の実装を行う。
+
+* ListSearchInfoクラスを使用して検索条件を保持するクラスを実装する。
+* listSearchResultタグを使用して検索結果を表示するJSPを実装する。
+* 検索処理のアクションを実装する。
+
+ユーザ検索処理の実装例を以下に示す。
+
+* 検索条件を保持するクラスの実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        ユーザ検索の検索条件を保持するクラス。
+        ListSearchInfoクラスを継承し、
+        ListSearchInfoクラスのpageNumberプロパティ(取得対象のページ番号)を入力精査に含める。 */
+    public class W11AC01SearchForm extends ListSearchInfo {
+        
+        //  検索条件のプロパティ定義は省略。
+        
+        /*  【説明】
+             バリデーション機能に対応したコンストラクタ。 */ 
+        public W11AC01SearchForm(Map<String, Object> params) {
+            
+            //  検索条件のプロパティ設定は省略。
+            
+            /* 【説明】
+                ListSearchInfoのプロパティを設定する。 */
+            setPageNumber((Integer) params.get("pageNumber"));
+        }
+        
+        
+        /* 【説明】
+            オーバーライドして入力精査用のアノテーションを付加する。
+            検索結果の最大件数(上限):200件、1ページの表示件数:20件の場合。 */
+        @PropertyName("開始ページ")
+        @Required
+        @NumberRange(max = 10, min = 1)
+        @Digits(integer = 2)
+        public void setPageNumber(Integer pageNumber) {
+            super.setPageNumber(pageNumber);
+        }
+        
+        /* 【説明】
+            精査対象プロパティにListSearchInfoのプロパティを指定する。
+            検索条件のプロパティは省略。 */
+        private static final String[] SEARCH_COND_PROPS = new String[] { ..., "pageNumber"};
+        
+        /* 【説明】
+            オーバーライドして検索条件のプロパティ名を返す。
+            通常は精査対象プロパティと同じとなる。 */
+        public String[] getSearchConditionProps() {
+            return SEARCH_COND_PROPS;
+        }
+    }
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           ユーザ検索画面。
+           
+           ページング時の検索条件は、前回検索時の条件を使用する。
+           ウィンドウスコープを使用して前回検索時の条件を維持するため、
+           検索条件と検索結果一覧のフォームを分ける。 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01">
+         
+         <%-- 【説明】
+               検索条件。
+               検索ボタンに変更パラメータを指定する。 --%>
+         <div class="search">
+             <table class="data conditionArea" width="100%">
+                 
+                 <%-- 検索条件の入力項目は省略。 --%>
+                 
+             </table>
+             <div id="buttons" class="placeButton">
+             
+                 <input class="cbuttons" type="reset" value="リセット" />
+                 
+                 <%-- 【説明】
+                       検索ボタン。
+                       検索ボタンが押された場合の検索結果の取得開始ページを変更パラメータで指定する。
+                       検索ボタンが押された場合は1ページ目から表示するので、通常は1を指定する。 --%>
+                 <n:submit cssClass="cbuttons" type="button" name="search" 
+                           uri="/action/ss11AC/W11AC01Action/RW11AC0102" value="検索">
+                     <n:param paramName="11AC_W11AC01.pageNumber" value="1" />
+                 </n:submit>
+                 
+             </div>
+         </div>
+     </n:form>
+     
+     <n:form windowScopePrefixes="11AC_W11AC01">
+         <%-- 【説明】
+               ページング付きの検索結果。
+               listSearchInfoName属性:
+                   アクションでListSearchInfoを継承したクラス(W11AC01SearchForm)を
+                   リクエストスコープに設定する際に使用した変数名を指定する。
+               searchUri属性:
+                   検索を行うパスを指定する。
+                   通常は検索ボタンと同じパスを指定する。
+               resultSetName属性:
+                   アクションで検索結果を
+                   リクエストスコープに設定する際に使用した変数名を指定する。 --%>
+         <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                             searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                             resultSetName="searchResult">
+                           
+             <%-- 【説明】
+                   headerRowFragment属性には、ヘッダ行のJSPフラグメントを指定する。 --%>
+             <jsp:attribute name="headerRowFragment">
+                 <tr>
+                     <th>ログインID</th>
+                     <th>漢字氏名</th>
+                     <th>カナ氏名</th>
+                     <th>グループ</th>
+                     <th>内線番号</th>
+                     <th>メールアドレス</th>
+                 </tr>
+             </jsp:attribute>
+             
+             <%-- 【説明】
+                   bodyRowFragment属性には、ボディ行のJSPフラグメントを指定する。
+                   ここで指定したJSPフラグメントは、
+                   下記の「ボディ行のJSPフラグメントが評価されるタイミング」
+                   に示したタイミングで評価される。 --%>
+             <jsp:attribute name="bodyRowFragment">
+             
+                 <%-- 【説明】
+                       ボディ行で使用可能な変数は、下記の通り。
+                       row:        行データ
+                       oddEvenCss: 奇数行と偶数行ごとのクラス名
+                       count:      ループ内のカウント(1はじまり)
+                       rowCount:   全ての検索結果件数内のカウント
+                                   (取得開始位置＋ループ内のインデックス(0はじまり)) --%>
+                 <tr class="<n:write name="oddEvenCss" />">
+                     <td><n:write name="row.loginId" /></td>
+                     <td><n:write name="row.kanjiName" /></td>
+                     <td><n:write name="row.kanaName" /></td>
+                     <td><n:write name="row.ugroupId" />:<n:write name="row.ugroupName" /></td>
+                     <td><n:write name="row.extensionNumberBuilding" />-<n:write name="row.extensionNumberPersonal" /></td>
+                     <td><n:write name="row.mailAddress" /></td>
+                 </tr>
+                 
+             </jsp:attribute>
+             
+         </nbs:listSearchResult>
+     
+     </n:form>
+
+  **ボディ行のJSPフラグメントが評価されるタイミング**
+
+  .. code-block:: jsp
+
+     <c:forEach var="row" items="${searchResult}" varStatus="status">
+     
+         <c:if test="${status.count % 2 != 0}">
+             <n:set var="oddEvenCss" value="odd" />
+         </c:if>
+         <c:if test="${status.count % 2 == 0}">
+             <n:set var="oddEvenCss" value="even" />
+         </c:if>
+         
+         <n:set var="count" value="${status.count}" />
+         <n:set var="rowCount" value="${startPosition + status.index}" />
+         
+         (bodyRowFragment属性で指定した内容がここにくる)
+                         
+     </c:forEach>
+
+* アクションの実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        ユーザ検索処理のアクション。
+        実装例ではDbAccessSupportクラスを継承して使用するが、
+        プロジェクトの方針に合わせて実装する。 */
+    public class W11AC01Action extends DbAccessSupport {
+    
+        /* 【説明】
+            ユーザ検索画面の初期表示で呼ばれるメソッド。 */
+        public HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {
+            // 初期表示は、業務処理のみのため省略。
+        }
+        
+        /* 【説明】
+            ユーザ検索画面の検索で呼ばれるメソッド。 */
+        @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0101.jsp")
+        public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+            
+            // 業務処理は省略。
+            
+            // 入力精査
+            ValidationContext<W11AC01SearchForm> searchConditionCtx = ...;
+            searchConditionCtx.abortIfInvalid();
+
+            W11AC01SearchForm condition = searchConditionCtx.createObject();
+            
+            /* 【説明】
+                検索結果表示(listSearchResultタグ)で使用するため、
+                ListSearchInfoを継承したクラス(W11AC01SearchForm)をリクエストスコープに設定する。 */
+            ctx.setRequestScopedVar("searchCondition", condition);
+            
+            // 検索実行
+            SqlResultSet searchResult;
+            try {
+                /* 【説明】
+                    ユーザ検索処理。
+                    DbAccessSupportクラスのsearchメソッドを使用する。
+                    "SELECT_USER_BY_CONDITION"は、ユーザ検索を行うSELECT文に対するSQL_ID。 */
+                searchResult = search("SELECT_USER_BY_CONDITION", condition);
+            } catch (TooManyResultException e) {
+                /* 【説明】
+                    検索結果件数が上限を超えた場合のエラー処理。
+                    TooManyResultExceptionは、検索結果の最大件数(上限)、実際の検索結果件数を提供する。
+                    "MSG00024"は「検索結果が上限件数({0}件)を超えました。」というメッセージに対するメッセージID。 */
+                throw new ApplicationException(
+                    MessageUtil.createMessage(MessageLevel.ERROR, "MSG00024", e.getMaxResultCount()));
+            }
+            
+            // 検索結果をリクエストスコープに設定
+            ctx.setRequestScopedVar("11AC_W11AC01", searchResult);
+            
+            return new HttpResponse("/ss11AC/W11AC0101.jsp");
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`custom_tag_paging_specified_page_settings`:
+
+特定の一覧表示で表示件数と検索結果件数(上限)を個別に設定する方法
+============================================================================================================
+
+ここでは特定の一覧表示にて、システムのデフォルト値とは異なる表示件数と検索結果件数（上限）を設定する実装例を示す。
+
+尚、ここでは、 :ref:`custom_tag_paging_paging` が実現されているものとして、 
+:ref:`custom_tag_paging_paging` との差分についてのみ実装例を示す。
+
+特定の一覧表示にて個別の表示件数と検索結果件数（上限）を設定するには、下記の実装を行う。
+
+* 一覧表示画面を表示するアクションのメソッドにて、ListSearchInfoを継承したクラスに表示件数と検索結果件数(上限)を設定する。
+
+ユーザ検索画面にてデフォルト値とは異なる表示件数と検索結果件数（上限）を設定する実装例を以下に示す。
+
+* アクションの実装例
+
+  .. code-block:: java
+
+      // 一覧表示の最大表示件数
+      private static final int MAX_ROWS = 10;
+      
+      // 一覧表示の検索結果件数（上限）
+      private static final int MAX_RESULT_COUNT = 100;
+      
+      /* 【説明】
+          ユーザ検索画面の検索で呼ばれるメソッド。 */
+      @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0101.jsp")
+      public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+          
+          // 業務処理は省略。
+          
+          // 入力精査は省略。
+          W11AC01SearchForm condition = .....;
+          
+          /* 【説明】
+              一覧表示の表示件数がデフォルト値と異なる場合は、
+              ListSearchInfoを継承したクラス(W11AC01SearchForm)のmaxプロパティに設定する。 */
+          condition.setMax(MAX_ROWS);
+          
+          /* 【説明】
+              検索結果件数（上限）がデフォルト値と異なる場合は、
+              ListSearchInfoを継承したクラス(W11AC01SearchForm)のmaxResultCountプロパティに設定する。 */
+          condition.setMaxResultCount(MAX_RESULT_COUNT);
+          
+          /* 【説明】
+              検索結果表示(listSearchResultタグ)で使用するため、
+              ListSearchInfoを継承したクラス(W11AC01SearchForm)をリクエストスコープに設定する。 */
+          ctx.setRequestScopedVar("searchCondition", condition);
+          
+          // 検索処理は省略
+          
+          // 以降の処理は省略。
+      }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`custom_tag_paging_sort`:
+
+```
+
+## Knowledge File
+
+- ID: `web-application-function--s10`
+
+```json
+{
+  "id": "web-application-function--s10",
+  "title": "検索結果の一覧表示",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ページングを使用した一覧表示",
+      "hints": [
+        "ListSearchInfo",
+        "W11AC01SearchForm",
+        "DbAccessSupport",
+        "SqlResultSet",
+        "TooManyResultException",
+        "@PropertyName",
+        "@Required",
+        "@NumberRange",
+        "@Digits",
+        "pageNumber",
+        "getSearchConditionProps",
+        "nbs:listSearchResult",
+        "listSearchInfoName",
+        "searchUri",
+        "resultSetName",
+        "windowScopePrefixes",
+        "bodyRowFragment",
+        "headerRowFragment",
+        "ページング",
+        "検索結果一覧表示",
+        "listSearchResultタグ",
+        "検索条件保持"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特定の一覧表示で表示件数と検索結果件数(上限)を個別に設定する方法",
+      "hints": [
+        "ListSearchInfo",
+        "setMax",
+        "setMaxResultCount",
+        "max",
+        "maxResultCount",
+        "表示件数設定",
+        "検索結果件数上限設定",
+        "ページング個別設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ページングを実現するための実装:\n1. `ListSearchInfo`を継承した検索条件クラスの実装\n2. `nbs:listSearchResult`タグを使用したJSPの実装\n3. 検索処理アクションの実装\n\n**検索条件クラス** (`ListSearchInfo`継承):\n- `setPageNumber()`をオーバーライドして`pageNumber`プロパティにバリデーションアノテーションを付加する（例: 最大件数200件・1ページ20件の場合は`@NumberRange(max = 10, min = 1)`, `@Digits(integer = 2)`）\n- `getSearchConditionProps()`をオーバーライドして`\"pageNumber\"`を含む検索条件プロパティ配列を返す\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        setPageNumber((Integer) params.get(\"pageNumber\"));\n    }\n\n    @PropertyName(\"開始ページ\")\n    @Required\n    @NumberRange(max = 10, min = 1)\n    @Digits(integer = 2)\n    public void setPageNumber(Integer pageNumber) {\n        super.setPageNumber(pageNumber);\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"pageNumber\"};\n\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n**JSP実装**: 検索条件フォームと検索結果フォームを分け、`windowScopePrefixes`でウィンドウスコープを使用して前回検索条件を維持する。検索ボタンには`<n:param>`で`pageNumber=1`（1ページ目）を変更パラメータとして指定する。\n\n`nbs:listSearchResult`タグの属性:\n\n| 属性名 | 説明 |\n|---|---|\n| `listSearchInfoName` | リクエストスコープに設定した`ListSearchInfo`継承クラスの変数名 |\n| `searchUri` | 検索を行うパス（通常は検索ボタンと同じパス） |\n| `resultSetName` | リクエストスコープに設定した検索結果の変数名 |\n\n`bodyRowFragment`内で使用可能な変数:\n\n| 変数名 | 説明 |\n|---|---|\n| `row` | 行データ |\n| `oddEvenCss` | 奇数行・偶数行ごとのクラス名 |\n| `count` | ループ内カウント（1始まり） |\n| `rowCount` | 全検索結果件数内カウント（取得開始位置＋ループインデックス(0始まり)） |\n\n**アクション実装**:\n- `DbAccessSupport`の`search(SQL_ID, condition)`メソッドで検索実行\n- 検索実行前に`ListSearchInfo`継承クラスをリクエストスコープに設定: `ctx.setRequestScopedVar(\"変数名\", condition)`\n- 検索結果件数が上限超過時は`TooManyResultException`がスローされる。`e.getMaxResultCount()`で上限件数を取得可能\n\n```java\npublic class W11AC01Action extends DbAccessSupport {\n    @OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\n    public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n        W11AC01SearchForm condition = ...;\n        ctx.setRequestScopedVar(\"searchCondition\", condition);\n\n        SqlResultSet searchResult;\n        try {\n            searchResult = search(\"SELECT_USER_BY_CONDITION\", condition);\n        } catch (TooManyResultException e) {\n            throw new ApplicationException(\n                MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00024\", e.getMaxResultCount()));\n        }\n\n        ctx.setRequestScopedVar(\"11AC_W11AC01\", searchResult);\n        return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n    }\n}\n```",
+    "s2": ":ref:`custom_tag_paging_paging` が実現されている前提で、特定の一覧表示にてシステムデフォルト値とは異なる表示件数・検索結果件数（上限）を設定する方法。\n\nアクションメソッド内で`ListSearchInfo`継承クラスに設定する:\n- 表示件数のオーバーライド: `condition.setMax(件数)` （`max`プロパティ）\n- 検索結果件数上限のオーバーライド: `condition.setMaxResultCount(件数)` （`maxResultCount`プロパティ）\n\n```java\nprivate static final int MAX_ROWS = 10;\nprivate static final int MAX_RESULT_COUNT = 100;\n\npublic HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n    W11AC01SearchForm condition = .....;\n    condition.setMax(MAX_ROWS);\n    condition.setMaxResultCount(MAX_RESULT_COUNT);\n    ctx.setRequestScopedVar(\"searchCondition\", condition);\n    // 以降の処理は省略\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

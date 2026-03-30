@@ -1,0 +1,411 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_SubmitTag.rst`
+- Format: `rst`
+
+```
+リクエストの二重送信防止
+------------------------------------------------------------------------
+リクエストの二重送信防止は、JavaScriptを使用して実現する。\
+下記のカスタムタグが対応している。
+
+* :ref:`WebView_SubmitTag` (inputのtype=submit,button,imageに対応)
+* :ref:`WebView_DownloadSubmitTag` (inputのtype=submit,button,imageに対応)
+* :ref:`WebView_ButtonTag`
+* :ref:`WebView_DownloadButtonTag`
+* :ref:`WebView_SubmitLinkTag`
+* :ref:`WebView_DownloadLinkTag`
+
+\a) allowDoubleSubmission属性の使用方法
+
+allowDoubleSubmission属性を指定することで、特定のボタン及びリンクだけを対象に二重サブミットを防止する。\
+二重サブミットは、1回目のサブミット時に対象要素のonclick属性を書き換え、2回目以降のサブミット要求はサーバ側に送信しないことで防止する。\
+さらにボタンの場合は、disabled属性を設定し、画面上でボタンをクリックできない状態にする。
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+allowDoubleSubmission                  | 二重サブミットを許可するか否か。
+                                       | 許可する場合はtrue、許可しない場合はfalse。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+ユーザ登録確認画面の使用例を下記に示す。\
+登録ボタンはデータベースにコミットを行うので、登録ボタンのみ二重サブミットを防止する。
+
+.. code-block:: jsp
+
+  <n:submit cssClass="buttons" type="button" name="back" value="戻る"
+            uri="./USERS00301" />
+  <n:submit cssClass="buttons" type="button" name="register" value="登録"
+            uri="./USERS00302" allowDoubleSubmission="false" />
+
+.. note::
+
+ リクエストの二重送信防止を使用している画面では、1回目のサブミット後に処理結果が返ってこない(画面が遷移しない)ため、\
+ ユーザがブラウザの中止ボタンを押した場合、ボタンはクリックできない状態(disabled属性により非活性)が続くため、\
+ 再度サブミットすることはできなくなる。\
+ この場合、ユーザは、サブミットに使用したボタン以外のボタン又はリンクを使用して処理を継続することができる。
+
+\b) アプリケーションでの二重サブミット発生時の振る舞いの追加方法
+
+個別アプリケーションにて二重サブミット発生時の振る舞いを追加する場合は、JavaScriptでコールバック関数を実装する。\
+フレームワークのJavaScript関数は、2回目以降のサブミット要求が発生した場合、コールバック関数が存在していれば、コールバック関数を呼び出す。\
+コールバック関数のシグネチャを下記に示す。
+
+.. code-block:: javascript
+
+  // アプリケーションで作成するJavaScript関数
+  
+  /**
+   * @param element 二重サブミットが行われた対象要素(ボタン又はリンク)
+   */
+  function nablarch_handleDoubleSubmission(element) {
+    // ここに処理を記述する。
+  }
+
+------------------------------------------------------------------------------------
+処理済みリクエストの受信防止
+------------------------------------------------------------------------------------
+処理済みリクエストの受信防止は、サーバ側で発行した一意なトークンをサーバ側(セッション)とクライアント側(hiddenタグ)に保持し、\
+サーバ側で突合することで実現する。このトークンは、1回のチェックに限り有効である。
+
+.. note::
+
+ 処理済みリクエストの受信防止では、一意なトークンを業務(ユーザ登録機能の入力から完了画面までなど)毎にサーバ側(セッション)に設定する。\
+ このため、同じ業務(入力から完了画面まで)で複数のリクエストに対しては、別々にトークンをチェックすることができない。\
+ 例えば、1人のユーザがユーザ登録機能を複数ウィンドウで並行に操作し、複数の確認画面を同時に開いた場合に問題となる。\
+ この場合、後に確認画面に遷移したウィンドウのみ処理を継続でき、先に確認画面に遷移したウィンドウはトークンが古いので処理を実行すると、\
+ 二重サブミットと判定する。\
+ 別々の業務を複数ウィンドウで並行に操作することは、問題とならない。\
+ 問題となる場合の画面遷移を下記に示す。
+ 
+ .. image:: ./_images/WebView_TokenConstraint.jpg
+   :scale: 60
+
+処理済みリクエストの受信防止では、トークンの設定を行うJSPとトークンのチェックを行うアクションにおいて、それぞれ作業が必要となる。
+以降は、それぞれについて解説する。
+
+\a) トークンの設定
+
+\a.1) useToken属性の使用方法
+
+トークンの発行及びサーバ側とクライアント側へのトークンの設定は、 :ref:`WebView_FormTag` のuseToken属性を指定することで行う。\
+ユーザ登録確認画面の使用例と属性の説明を下記に示す。
+
+.. code-block:: jsp
+
+  <n:form useToken="true">
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+useToken                               | トークンを設定するか否か。
+                                       | トークンを設定する場合はtrue、設定しない場合はfalse。
+                                       | デフォルトはfalse。
+                                       | confirmationPageタグが指定された場合は、デフォルトがtrueとなる。
+                                       | confirmationPageタグについては、 :ref:`WebView_InputConfirmationCommon` を参照。
+====================================== ==========================================================================================
+
+クライアント側のトークンの設定では、1つの画面内で複数のformタグのuseToken属性にtrueが指定された場合、\
+画面内で一番最初に発行されたトークンを全てのformタグで使用する。\
+このため、useToken属性は、1つの画面内で複数のformタグを使用することに対応している。
+
+\a.2) アプリケーションでトークンの発行処理を変更する方法
+
+トークンの発行処理は、TokenGeneratorインタフェースを実装することで変更することができる。\
+実装したクラスをリポジトリに"tokenGenerator"という名前で登録する。
+
+本機能では、基本実装としてRandomTokenGeneratorクラスを提供している。\
+RandomTokenGeneratorでは、16文字のランダムな文字列を生成する。\
+リポジトリに"tokenGenerator"が登録されていない場合、フレームワークはRandomTokenGeneratorを生成して使用する。
+
+\b) トークンのチェック
+
+\b.1) OnDoubleSubmissionアノテーションの使用方法
+
+サーバ側でのトークンのチェックは、アクションのメソッドにOnDoubleSubmissionアノテーションを指定することで行う。\
+UserActionでの使用例と属性の説明を下記に示す。
+
+.. code-block:: java
+
+  // ユーザ登録確認画面の登録ボタンに対応するメソッド
+  @OnDoubleSubmission(path = "forward://MENUS00103", messageId = "MSG00022")
+  public HttpResponse doUSERS00302(HttpRequest req, ExecutionContext ctx) {
+      // 省略。
+  }
+
+| 
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+path                                   | 二重サブミットと判定した場合の遷移先のリソースパス
+messageId                              | 二重サブミットと判定した場合の遷移先画面に表示するエラーメッセージに使用するメッセージID
+statusCode                             | 二重サブミットと判定した場合のレスポンスステータス
+                                       | デフォルトは400(Bad Request)。
+====================================== ==========================================================================================
+
+\b.2) アプリケーションでOnDoubleSubmissionアノテーションの振る舞いを変更する方法
+
+OnDoubleSubmissionアノテーションの振る舞いは、DoubleSubmissionHandlerインタフェースを実装することで変更することができる。\
+実装したクラスをリポジトリに"doubleSubmissionHandler"という名前で登録する。
+
+本機能では、基本実装としてBasicDoubleSubmissionHandlerクラスを提供している。\
+リポジトリにDoubleSubmissionHandlerインタフェースを実装したクラスが存在しない場合、フレームワークはBasicDoubleSubmissionHandlerを生成し使用する。
+
+アプリケーション全体で使用するOnDoubleSubmissionアノテーションのデフォルト値を設定する場合は、BasicDoubleSubmissionHandlerをリポジトリに登録する。\
+BasicDoubleSubmissionHandlerでは、アノテーションの属性が指定されなかった場合に、自身のプロパティに設定されたリソースパス、メッセージID、ステータスコードを使用する。
+BasicDoubleSubmissionHandlerクラスの設定例を下記に示す。\
+
+.. code-block:: xml
+
+    <component name="doubleSubmissionHandler"
+               class="nablarch.common.web.token.BasicDoubleSubmissionHandler">
+        <%-- 入力画面に戻したいのでpathは各アクションで指定する。 --%>
+        <property name="messageId" value="MSG00022" />
+        <property name="statusCode" value="200" />
+    </component>
+
+プロパティの説明を下記に示す。
+
+===================================================================== ===================================================================================
+property名                                                            設定内容
+===================================================================== ===================================================================================
+path                                                                  | 二重サブミットと判定した場合の遷移先のリソースパス。\
+                                                                      | OnDoubleSubmissionアノテーションで個別に指定していない場合は、ここに指定したリソースパスを使用する。
+messageId                                                             | 二重サブミットと判定した場合の遷移先画面に表示するエラーメッセージに使用するメッセージID。\
+                                                                      | OnDoubleSubmissionアノテーションで個別に指定していない場合は、ここに指定したメッセージIDを使用する。
+statusCode                                                            | 二重サブミットと判定した場合のレスポンスステータス。\
+                                                                      | OnDoubleSubmissionアノテーションで個別に指定していない場合は、ここに指定したレスポンスステータスを使用する。\
+                                                                      | デフォルトは400(Bad Request)。
+===================================================================== ===================================================================================
+
+.. warning::
+
+ アノテーション又はBasicDoubleSubmissionHandlerのどちらもpath属性の指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。\
+ このため、トークンを使用した二重サブミットの防止機能を使用するアプリケーションでは、必ずどちらか一方のpath属性を指定すること。
+
+
+.. _`prevent_history_back`:
+
+==============================
+ブラウザのキャッシュ防止
+==============================
+ブラウザのキャッシュ防止とは、ブラウザの戻るボタンが押された場合に、前画面を表示できないようにすることである。\
+ブラウザのキャッシュ防止は、 :ref:`WebView_NoCacheTag` を使用する。\
+ブラウザの戻るボタンは、画面表示時にキャッシュしておいた画面を再表示するので、キャッシュを防止したい画面のJSPでnoCacheタグを使用する。\
+noCacheタグの使用例を下記に示す。\
+
+.. code-block:: jsp
+
+  <%-- headタグ内にnoCacheタグを指定する。 --%>
+  <head>
+    <n:noCache/>
+    <%-- 以下省略。 --%>
+  </head>
+
+上記JSPは、下記のレスポンスヘッダをブラウザに返す。
+
+.. code-block:: bash
+
+  Expires Thu, 01 Jan 1970 00:00:00 GMT
+  Cache-Control no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+  Pragma no-cache
+
+さらに、下記のHTMLを生成する。
+
+.. code-block:: html
+
+  <head>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+  </head>
+
+.. note::
+
+ HTTPの仕様上は、レスポンスヘッダのみを指定すればよいはずであるが、この仕様に準拠していない古いブラウザのためにmetaタグも指定している。
+
+.. note::
+
+ 本機能は、下記ブラウザでHTTP/1.0かつSSL(https)が適用されない通信において有効にならない。
+ このため、本機能を使用する画面は、必ずSSL通信を適用するように設計すること。
+ 
+ 問題が発生するブラウザ： IE6, IE7, IE8
+ 
+.. warning::
+
+ noCacheタグは、\ **<n:include>(<jsp:include>)**\ でinclude [#include]_ されるJSPでは指定できない為、必ずforwardされるJSPで指定すること。
+
+ ただし、システム全体でキャッシュ防止機能を使用する場合は、各JSPで実装漏れが発生しないようにハンドラで一律設定すること。
+ ハンドラでは、上記のレスポンスヘッダ例の内容をレスポンスヘッダーに設定する。
+
+ .. [#include] Servlet API(javax.servlet.RequestDispatcher#include)の仕様で、「includeされたServlet(JSP)でヘッダへの値設定などは行えない」と定められているためである。
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_SubmitTag--s18`
+
+```json
+{
+  "id": "libraries-07_SubmitTag--s18",
+  "title": "ブラウザのキャッシュ防止",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエストの二重送信防止",
+      "hints": [
+        "allowDoubleSubmission",
+        "nablarch_handleDoubleSubmission",
+        "二重サブミット防止",
+        "disabled属性",
+        "WebView_SubmitTag",
+        "WebView_ButtonTag",
+        "WebView_DownloadSubmitTag",
+        "WebView_SubmitLinkTag",
+        "WebView_DownloadButtonTag",
+        "WebView_DownloadLinkTag"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "WebView_NoCacheTag",
+        "noCacheタグ",
+        "キャッシュ防止",
+        "ブラウザの戻るボタン防止",
+        "Cache-Control",
+        "Pragma no-cache",
+        "SSL通信"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "処理済みリクエストの受信防止",
+      "hints": [
+        "OnDoubleSubmission",
+        "useToken",
+        "TokenGenerator",
+        "RandomTokenGenerator",
+        "BasicDoubleSubmissionHandler",
+        "DoubleSubmissionHandler",
+        "path",
+        "messageId",
+        "statusCode",
+        "トークン",
+        "WebView_FormTag",
+        "nablarch.common.web.token.BasicDoubleSubmissionHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JavaScriptを使用して二重送信を防止する。以下のカスタムタグが対応している:\n- :ref:`WebView_SubmitTag` (input type=submit,button,image)\n- :ref:`WebView_DownloadSubmitTag` (input type=submit,button,image)\n- :ref:`WebView_ButtonTag`\n- :ref:`WebView_DownloadButtonTag`\n- :ref:`WebView_SubmitLinkTag`\n- :ref:`WebView_DownloadLinkTag`\n\n## allowDoubleSubmission属性\n\n| 属性 | 説明 |\n|---|---|\n| allowDoubleSubmission | 二重サブミットを許可するか（true=許可、false=防止）。デフォルト: true |\n\n- falseを指定すると、1回目のサブミット時に対象要素のonclick属性を書き換え、2回目以降のサブミット要求はサーバに送信しない。\n- ボタンの場合はdisabled属性を設定し、クリック不可状態にする。\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"back\" value=\"戻る\"\n          uri=\"./USERS00301\" />\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"./USERS00302\" allowDoubleSubmission=\"false\" />\n```\n\n> **注意**: ブラウザの中止ボタン押下後はdisabled状態が続き再サブミット不可となる。他のボタン/リンクで処理を継続すること。\n\n## コールバック関数\n\n2回目以降のサブミット時、コールバック関数 `nablarch_handleDoubleSubmission` が存在すれば呼び出される。\n\n```javascript\n/**\n * @param element 二重サブミットが行われた対象要素（ボタン/リンク）\n */\nfunction nablarch_handleDoubleSubmission(element) {\n  // ここに処理を記述する。\n}\n```",
+    "s2": "ブラウザの戻るボタン押下時に前画面を表示させないようにするには、:ref:`WebView_NoCacheTag` を使用する。キャッシュを防止したい画面のJSPのheadタグ内で指定する。\n\n```jsp\n<%-- headタグ内にnoCacheタグを指定する。 --%>\n<head>\n  <n:noCache/>\n</head>\n```\n\n以下のレスポンスヘッダが返される:\n\n```\nExpires Thu, 01 Jan 1970 00:00:00 GMT\nCache-Control no-store, no-cache, must-revalidate, post-check=0, pre-check=0\nPragma no-cache\n```\n\n以下のHTMLが生成される（古いブラウザ対応のためmetaタグも含む）:\n\n```html\n<head>\n  <meta http-equiv=\"pragma\" content=\"no-cache\">\n  <meta http-equiv=\"cache-control\" content=\"no-cache\">\n  <meta http-equiv=\"expires\" content=\"0\">\n</head>\n```\n\n> **警告**: noCacheタグは `<n:include>(<jsp:include>)` でincludeされるJSPでは指定不可。必ずforwardされるJSPで指定すること。これはServlet API（`javax.servlet.RequestDispatcher#include`）の仕様で、「includeされたServlet（JSP）でヘッダへの値設定などは行えない」と定められているためである。\n\n> **注意**: IE6/7/8でHTTP/1.0かつSSL(https)が適用されない通信では有効にならない。本機能を使用する画面は必ずSSL通信を適用すること。\n\n> **警告**: システム全体でキャッシュ防止する場合は、実装漏れを防ぐためハンドラで一律設定すること（レスポンスヘッダに上記内容を設定する）。",
+    "s3": "サーバ側(セッション)とクライアント側(hiddenタグ)に一意なトークンを保持し、サーバ側で突合することで実現する。トークンは1回のチェックのみ有効。\n\n> **注意**: 同一業務を複数ウィンドウで並行操作した場合、後に確認画面に遷移したウィンドウのみ有効。先に確認画面に遷移したウィンドウはトークンが古いため二重サブミット判定される。別々の業務を複数ウィンドウで並行操作する場合は問題なし。\n\n![処理済みリクエストの受信防止 - 問題発生時の画面遷移図](assets/libraries-07_SubmitTag--s18/WebView_TokenConstraint.jpg)\n\n## a) トークンの設定\n\n### a.1) useToken属性\n\n:ref:`WebView_FormTag` のuseToken属性でトークンを発行・設定する。\n\n```jsp\n<n:form useToken=\"true\">\n```\n\n| 属性 | 説明 |\n|---|---|\n| useToken | トークンを設定するか（true/false）。デフォルト: false。confirmationPageタグ指定時はデフォルトtrue（:ref:`WebView_InputConfirmationCommon` 参照）。 |\n\n同一画面内の複数formタグでuseToken=trueを指定した場合、最初に発行されたトークンを全formタグで使用する。\n\n### a.2) TokenGeneratorのカスタマイズ\n\n`TokenGenerator` インタフェースを実装してリポジトリに\"tokenGenerator\"という名前で登録することで変更可能。デフォルト実装: `RandomTokenGenerator`（16文字のランダム文字列）。\n\n## b) トークンのチェック\n\n### b.1) OnDoubleSubmissionアノテーション\n\n**アノテーション**: `@OnDoubleSubmission`\n\n```java\n@OnDoubleSubmission(path = \"forward://MENUS00103\", messageId = \"MSG00022\")\npublic HttpResponse doUSERS00302(HttpRequest req, ExecutionContext ctx) {\n    // 省略。\n}\n```\n\n| 属性 | デフォルト | 説明 |\n|---|---|---|\n| path | | 二重サブミット判定時の遷移先リソースパス |\n| messageId | | 遷移先画面に表示するエラーメッセージのメッセージID |\n| statusCode | 400 | レスポンスステータス |\n\n### b.2) DoubleSubmissionHandlerのカスタマイズ\n\n`DoubleSubmissionHandler` インタフェースを実装してリポジトリに\"doubleSubmissionHandler\"という名前で登録することでアノテーションの振る舞いを変更可能。デフォルト実装: `nablarch.common.web.token.BasicDoubleSubmissionHandler`。\n\nアプリケーション全体のデフォルト値を設定する場合は、`BasicDoubleSubmissionHandler` をリポジトリに登録する:\n\n```xml\n<component name=\"doubleSubmissionHandler\"\n           class=\"nablarch.common.web.token.BasicDoubleSubmissionHandler\">\n    <property name=\"messageId\" value=\"MSG00022\" />\n    <property name=\"statusCode\" value=\"200\" />\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| path | 二重サブミット判定時の遷移先リソースパス（アノテーション個別指定がない場合に使用） |\n| messageId | 遷移先画面のエラーメッセージID（アノテーション個別指定がない場合に使用） |\n| statusCode | レスポンスステータス（デフォルト: 400）（アノテーション個別指定がない場合に使用） |\n\n> **警告**: アノテーションとBasicDoubleSubmissionHandlerのどちらにもpath属性の指定がない場合、遷移先不明でシステムエラーになる。トークンを使用した二重サブミット防止機能を使用する場合、必ずどちらか一方でpath属性を指定すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

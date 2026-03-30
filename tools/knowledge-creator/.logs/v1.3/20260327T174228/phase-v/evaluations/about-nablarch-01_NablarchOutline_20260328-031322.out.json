@@ -1,0 +1,14 @@
+{
+  "file_id": "about-nablarch-01_NablarchOutline",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The residual finding concerns an omitted implementation constraint for window scope. The knowledge file correctly states \"使用方法は他の2種類のスコープと異なる\" and includes a reference to guide_appendix_windowScope for details. This is an overview document — its role is to introduce concepts and direct readers to detailed references, not to specify implementation mechanics. An AI agent using this file would correctly convey that window scope usage differs from other scopes and refer users to the detailed documentation, which is the appropriate behavior for an overview file. The missing phrase adds implementation-level precision but does not change the conceptual accuracy or lead to incorrect guidance.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s5 — ウィンドウスコープの説明",
+      "impact": "low",
+      "justification": "The knowledge file states 'usage differs from the other 2 scopes' and references guide_appendix_windowScope for detailed usage. The omitted constraint ('単純に実行コンテキストに保持するわけではない') would add implementation-level precision, but the conceptual message is preserved: window scope requires a different usage pattern. This is an overview document; implementation constraints belong in the referenced appendix. An AI agent would not incorrectly assert that window scope works like request/session scope — it would flag the difference and direct users to documentation. The fix did not apply in Phase E (s5 content is identical to the Phase D state), but the low impact means the current content is acceptable for an overview file."
+    }
+  ]
+}

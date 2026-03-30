@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 個別項目と共通項目の区別",
+      "description": "The knowledge file states common items (共通項目) are「出力日時、起動プロセスID、処理方式区分」but omits 付加情報. According to the source, individual items (個別項目) run from リクエストID through 空きメモリ量(開始時); 付加情報 appears after that range in the table and therefore falls under「残りの項目」= common items.",
+      "source_evidence": "「HTTPアクセスログの個別項目は、リクエストID、ユーザID、URLから空きメモリ量(開始時)までとなる。残りの項目は、:ref:`Log_BasicLogFormatter` の設定で指定する共通項目となる。」— 付加情報 is the last row in the output-items table, positioned after 空きメモリ量(開始時)."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "httpAccessLogFormatter.endFormat is absent from all section hints. It is the last format-string property defined in the configuration table (リクエスト処理終了時のログ出力フォーマット) and is important for users configuring end-of-request logging.",
+      "source_evidence": "Property table first column: 「httpAccessLogFormatter.endFormat — リクエスト処理終了時のログ出力に使用するフォーマット」. The corresponding *OutputEnabled property (httpAccessLogFormatter.endOutputEnabled) IS in s1 hints, but the format property itself is missing from every section's hint list."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "httpAccessLogFormatter.className is absent from all section hints despite being the first property in the configuration table and being the entry point for swapping the formatter implementation.",
+      "source_evidence": "Property table first column: 「httpAccessLogFormatter.className — HttpAccessLogFormatterクラスを差し替える場合に指定する。」"
+    }
+  ]
+}

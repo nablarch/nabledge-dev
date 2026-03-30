@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — BasicSqlLoader SQLファイル記述ルール (e項)",
+      "description": "SQLファイルの記述ルールa)から「コメント行は、空行とはならない。」が欠落している。この制約がないと、開発者がコメント行をSQL_IDグループの区切りとして誤用する可能性がある（例: 空行なしでコメント行だけを間に挟む）。",
+      "source_evidence": "a) SQL_IDとSQL文の1グループは、空行で区切られて記述されている。…コメント行は、空行とはならない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — インタフェース定義 ResultSetConvertor",
+      "description": "ResultSetConvertorの実装クラスを追加すべき主なユースケース（「データベースのデータタイプに応じてJavaオブジェクトのデータ対応を決め打ちたい場合」）が欠落している。AIがいつカスタム実装を追加すべきか説明するための文脈情報。",
+      "source_evidence": "主に、getObject以外を使用するケースは、データベースのデータタイプに応じてJavaオブジェクトのデータ対応を決め打ちたい場合である。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "s4のhintsに `executeQuery` メソッド名が含まれていない。大量データ処理の警告でPreparedStatementラッパーの `executeQuery` を使うよう明示されており、このメソッド名で検索するユーザーがs4にたどり着けない。",
+      "source_evidence": "大量データを検索する場合には、PreparedStatementラッパークラスのexecuteQueryを使用し、ResultSetIteratorを使用して検索結果を扱うこと。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "DbAccessSupportが属するパッケージ `nablarch.core.db.support` がs4のhintsに含まれていない。パッケージ名で検索する場合にs4が検索されない。",
+      "source_evidence": "nablarch.core.db.supportパッケージ / DbAccessSupport (クラス定義f)"
+    }
+  ]
+}

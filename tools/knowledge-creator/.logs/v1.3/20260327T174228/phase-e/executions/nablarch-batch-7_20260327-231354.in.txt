@@ -1,0 +1,116 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — error message code block",
+      "description": "The error message in the knowledge file is truncated. The source contains the full message: `[500 DuplicateProcess] specified request_id is already used by another process. you can not start two or more processes with same request_id.` but the knowledge file omits the second sentence `you can not start two or more processes with same request_id.`",
+      "source_evidence": "Source code-block: `[500 DuplicateProcess] specified request_id is already used by another process. you can not start two or more processes with same request_id.`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`プロセス多重起動防止ハンドラ` is referenced in the section body as the documentation target but is absent from the hints array. Users searching for this handler name would not match this section.",
+      "source_evidence": "Source: 「プロセス多重起動防止ハンドラ」listed as the reference document entry. Knowledge file section body ends with: 「多重起動防止機能の詳細は「プロセス多重起動防止ハンドラ」を参照。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+バッチ処理を実行すると\ **DuplicateProcess**\ が発生し、処理が異常終了してしまいます。対処方法を教えてください
+==============================================================================================================
+.. admonition:: question
+
+    バッチ処理を実行すると、以下のメッセージがログに出力されてバッチ処理が異常終了してしまいます。
+    対処方法を教えてください。
+
+    .. code-block:: java
+
+        [500 DuplicateProcess] specified request_id is already used by another process. you can not start two or more processes with same request_id.
+    
+.. admonition:: answer
+
+    Nablarchでは、同一の処理が同時に実行されデータ不整合が発生するのを防止するために、多重起動防止機能を提供しています。
+
+    この機能を使用した場合、データベースの実行中フラグを用いて多重起動かのチェックを行ないます。
+    このため、実行中フラグが適切にクリアされないと\ [#f1]_\ 、何度バッチ処理を実行しても *DuplicateProcess* が発生してしまいます。
+
+    この問題を回避するためには、実行中フラグを管理するテーブル [#f2]_ の実行中フラグをクリアする必要があります。
+    このテーブルは、リクエストIDをキーにステータスを管理するテーブルとなっているので、
+    問題の起きているリクエストIDを条件にして実行中フラグを更新（0で更新）してください。
+    これにより、再度バッチ処理を実行することができるようになります。
+
+
+    詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch Application Framework 解説書]** -> **[リファレンス]** -> **[ハンドラリファレンス]** -> **[プロセス多重起動防止ハンドラ]**
+    
+    .. [#f1]
+        デバッグ実行中に処理を停止した場合などに、実行中フラグのクリアが行われずにフラグが実行中のままとなります。
+
+    .. [#f2]
+        Nablarchでは、プロセス管理テーブルと定義しています。
+
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-7",
+  "title": "バッチ処理を実行するとDuplicateProcessが発生し、処理が異常終了してしまいます。対処方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DuplicateProcess発生時の対処方法",
+      "hints": [
+        "DuplicateProcess",
+        "多重起動防止",
+        "実行中フラグ",
+        "プロセス管理テーブル",
+        "リクエストID",
+        "多重起動防止機能"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## DuplicateProcess発生時の対処方法\n\n`[500 DuplicateProcess] specified request_id is already used by another process.` が発生する原因は、多重起動防止機能が使用する「実行中フラグ」が適切にクリアされていないことである。\n\n> **注意**: デバッグ実行中に処理を停止した場合など、実行中フラグのクリアが行われずにフラグが実行中のままになることがある。この状態では、何度バッチ処理を実行しても *DuplicateProcess* が発生し続ける。\n\n**対処手順**:\n\n1. プロセス管理テーブル（Nablarchが多重起動チェックに使用するテーブル）を確認する\n2. リクエストIDをキーにして、問題の起きているリクエストIDに対応する実行中フラグを `0` で更新する\n3. 更新後、バッチ処理を再実行する\n\n多重起動防止機能の詳細は「プロセス多重起動防止ハンドラ」を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

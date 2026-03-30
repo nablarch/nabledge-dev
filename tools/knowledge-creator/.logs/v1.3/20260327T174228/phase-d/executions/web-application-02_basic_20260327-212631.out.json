@@ -1,0 +1,19 @@
+{
+  "file_id": "web-application-02_basic",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — Actionの作成 footnote [#jsp_path]",
+      "description": "The footnote about JSP path conventions is omitted. The source specifies: (1) JSP paths are basically absolute from the application's web root directory; (2) when switching JSP files by language, a language folder is placed under web root and the path is written as absolute from that language folder; (3) the code example (`/ss11AC/W11AC0101.jsp`) represents the latter case where the file is placed at `<webroot>/<language>/ss11AC/W11AC0101.jsp`; (4) `<language>` is automatically set to the user's selected language (e.g., \"ja\" or \"en\"). This is implementation guidance relevant to correctly constructing JSP paths in a project with internationalization.",
+      "source_evidence": "遷移させるJSPファイルのパスは、基本的にアプリケーションの web ルートディレクトリからの絶対パスで記述する。ただし、言語によって遷移先のファイルを切り替える場合に、web ルート直下に言語フォルダを配置してその言語フォルダ配下にJSPファイルを配置することがある。この場合、言語フォルダからの絶対パスで記述する。ここで示した例は後者の場合であり... ※ <言語>の箇所にはユーザが選択した言語(\"ja\"や\"en\")が自動的に設定される。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated warning: Section count 4 < source headings 5",
+      "description": "The automated warning is NOT a real issue. The source has 5 h2-level (`------`) sections: 本項で説明する内容, 作成手順 (parent), Actionのメソッド名命名方法, Actionの作成, and 次に読むもの. The knowledge file has 4 sections: s1 maps to 本項で説明する内容; s2–s4 map to the h3 sub-sections under 作成手順 (ビジネスロジック, Action, View). 次に読むもの is navigation-only and correctly omitted. Actionのメソッド名命名方法 and Actionの作成 are correctly merged into s3. The count difference is fully justified and should not be treated as a defect."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-batch_single_shot",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The residual finding is a minor structural rephrasing, not a factual error. The knowledge file places the BatchAction link in parentheses after \"テンプレートクラス\", which subtly implies BatchAction is the template class name. However, in Nablarch batch development, BatchAction is indeed the relevant base class (it appears as the business action handler throughout s3's handler queue and processing flows). Developers directed to BatchAction documentation will find the correct inheritance information. The practical guidance is functionally equivalent and does not mislead.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s2",
+      "impact": "low",
+      "justification": "The knowledge file rephrases 'テンプレートクラスを継承して作成する。詳細は BatchAction を参照' as 'テンプレートクラス（BatchAction）を継承して作成する', implying BatchAction is the template class name. This is technically imprecise — the source only references BatchAction docs for further detail. However, in Nablarch batch, BatchAction is the business action handler class that developers implement (confirmed by s3's handler queue and all processing flows). A developer receiving this guidance will arrive at the correct class. The risk of misuse (e.g., inheriting the wrong class) is negligible because the BatchAction documentation itself would clarify the correct inheritance. Phase E did not resolve this finding — the s2 section is identical in both the Phase D and Phase E outputs — suggesting the fix agent determined the practical meaning was equivalent and left it unchanged."
+    }
+  ]
+}

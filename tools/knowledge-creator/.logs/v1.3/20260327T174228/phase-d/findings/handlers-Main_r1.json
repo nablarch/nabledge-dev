@@ -1,0 +1,34 @@
+{
+  "file_id": "handlers-Main",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The entire '起動引数の処理' subsection, which categorizes Java command arguments into three types, is omitted. Most critically, the Javaシステムプロパティ explanation is missing: the source states that DI repository embedded parameters (e.g., `${commitInterval}`, `${maxExecutionCount}`) can be set via Java system properties using `-D` flags (e.g., `-DcommitInterval=100`). This is decision-necessary for developers configuring batch jobs via DI repositories.",
+      "source_evidence": "2. Javaシステムプロパティ\n  DIリポジトリ設定ファイル中の埋め込みパラメータの値は、Javaシステムプロパティを用いて指定することができる。上記の例では、**-DcommitInterval=100** と **-DmaxExecutionCount=100000** がこれに相当し、それぞれ埋め込みパラメータ **${commitInterval}** および **${maxExecutionCount}** の値を指定している。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The full command-line invocation example and the JavaVMパラメータ explanation (category 1) are omitted. The example concretely shows all three argument categories together, and the note that JavaVM parameters (-server, -Xmx) are not used directly by the framework helps developers understand the distinction.",
+      "source_evidence": "java \\\n    -server \\\n    -Xmx128m \\\n    -DcommitInterval=100 \\\n    ...\nnablarch.fw.launcher.Main \\\n    -diConfig    file:./batch-config.xml \\\n    -requestPath admin.DataUnloadBatchAction/BC0012 \\\n    ...\n\n1. JavaVMパラメータ\n  上記例中の **-server** や **-Xmx** はJavaVM自体の挙動に関するパラメータである。本フレームワークでこれらの値を直接使用することは無い。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — コマンドライン起動引数の扱い",
+      "description": "The concrete example values for named parameters and unnamed parameters are omitted. The source shows JavaScript-style objects illustrating the exact parsed result of `getParamMap()` and `getArgs()`, which help developers understand the exact format of the parsed output.",
+      "source_evidence": "**上記例で取得できる値**\n{ diConfig: \"file:./batch-config.xml\", requestPath: \"nablarch.fw.sample.SampleBatchAction\", userId: \"testUser\", namedParam: \"value\" }\n\n**上記例で取得できる値**\n[ \"value1\", \"value2\", \"value3\" ]"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 関連するハンドラ (StatusCodeConvertHandler row)",
+      "description": "The StatusCodeConvertHandler description omits 'necessary に応じて差し替えられるよう' — the source explicitly states the reason for separating this responsibility is so it can be replaced as needed. This is relevant for developers who may need to customize exit code handling.",
+      "source_evidence": "終了コードの体系はプロジェクト毎に異なる可能性があるので必要に応じて差し替えられるよう、本クラスから責務を分離している。"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-RequestThreadLoopHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 例外処理テーブル, nablarch.fw.launcher.ProcessAbnormalEnd 行の備考",
+      "description": "ソースの備考欄に「(極めて特殊なケースを除き使用されない。)」という注記があるが、知識ファイルでは「—」と省略されている。この例外がほぼ使われない旨はAIが質問に答える際に有用な情報。",
+      "source_evidence": "| nablarch.fw.launcher.ProcessAbnormalEnd | なし | なし | 捕捉した例外を再送出 | (極めて特殊なケースを除き使用されない。) |"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 実行コンテキストのコピーテーブル",
+      "description": "ソースの実行コンテキストコピーテーブルには「データ型」列（List<Handler>、Map<String, Object>、DataReader、DataReaderFactory）が含まれているが、知識ファイルではこの列が省略されている。DataReader・DataReaderFactory はNablarchクラス名であり、AI回答に有用。",
+      "source_evidence": "=======================  =====================  ============================================================\n属性名                   データ型               コピーされる内容\n=======================  =====================  ============================================================\nハンドラキュー           List<`Handler`_>       ...\nデータリーダ             `DataReader`_          ...\nデータリーダファクトリ   `DataReaderFactory`_   ..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2 のコンテンツで言及されているクラス名 ServiceAvailabilityCheckHandler、RetryHandler、Result.Success がhints配列に含まれていない。これらはユーザーが検索時に使う可能性のある識別子。",
+      "source_evidence": ":doc:`ServiceAvailabilityCheckHandler` から送出される / 再送出し上位の :doc:`RetryHandler` で継続判断を行う / `Result.Success`_ を返却して"
+    }
+  ]
+}

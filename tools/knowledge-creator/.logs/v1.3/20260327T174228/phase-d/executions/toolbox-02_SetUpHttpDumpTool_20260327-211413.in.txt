@@ -1,0 +1,248 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/08_TestTools/01_HttpDumpTool/02_SetUpHttpDumpTool.rst`
+- Format: `rst`
+
+```
+=================================================
+リクエスト単体データ作成ツール インストールガイド
+=================================================
+
+:doc:`index`\ のインストール方法について説明する。
+
+.. _http_dump_tool_prerequisite:
+
+前提事項
+========
+
+本ツールを使用する際、以下の前提事項を満たす必要がある。
+
+* javaコマンドがパスに含まれていること
+* htmlファイルがブラウザに関連付けされていること
+* ブラウザのプロキシ設定で、localhostが除外されていること
+
+
+提供方法
+==================
+
+本ツールは、Nablarchのサンプルアプリケーションに同梱して提供する。
+本ツールのツール構成を下記に示す。
+
+ ========================================== ====================================================================================
+ ファイル名                                 説明
+ ========================================== ====================================================================================
+ httpDump.bat                               | 起動バッチファイル（Windows用）
+ nablarch-tfw-X.X.jar                       | Nablarch Testing Framework のJARファイル（X.Xの部分はバージョン番号）
+ poi-X.X.jar                                | Apache POI のJARファイル（X.Xの部分はバージョン番号など）
+ jetty.jar                                  | Jetty Server のJARファイル
+ jetty-util.jar                             | Jetty Utilities のJARファイル
+ servlet-api.jar                            | Servlet Specification 2.5 API のJARファイル
+ ========================================== ====================================================================================
+
+各JARファイルへのクラスパスが設定されたhttpDump.batがサンプルアプリケーションの下記パスに配置されている。
+
+ .. code-block:: bash
+
+  /test/tool/httpDump.bat
+
+Eclipseとの連携
+===============
+
+以下の設定をすることでEclipseから本ツールを起動することができる。
+
+
+設定画面起動
+------------
+
+ツールバーから、ウィンドウ(Window)→設定(Prefernce)を選択する。
+左側のペインから一般(General)→エディタ(Editors)→ファイルの関連付け(File Associations)
+を選択、右側のペインから*.htmlを選択し、追加(Add)ボタンを押下する。
+
+.. image:: ./_image/01_Eclipse_Preference.png
+   :scale: 100
+
+ 
+外部プログラム選択
+------------------
+
+ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
+
+.. image:: ./_image/02_Eclipse_EditorSelection.png
+   :scale: 100
+
+
+起動用バッチファイル（シェルスクリプト）選択
+--------------------------------------------
+
+Windowsの場合はバッチファイル(httpDump.bat)を、
+Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
+
+.. image:: ./_image/03_Eclipse_OpenFile.png
+   :scale: 100
+
+
+.. _howToExecuteFromEclipse:
+
+HTMLファイルからの起動方法
+--------------------------
+
+Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、
+httpDumpで開くことでツールを起動できる。
+
+.. image:: ./_image/04_Eclipse_OpenWith.png
+   :scale: 100
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-02_SetUpHttpDumpTool`
+
+```json
+{
+  "id": "toolbox-02_SetUpHttpDumpTool",
+  "title": "リクエスト単体データ作成ツール インストールガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提事項",
+      "hints": [
+        "インストール前提条件",
+        "javaコマンド設定",
+        "ブラウザプロキシ設定",
+        "localhost除外",
+        "HTMLファイル関連付け"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "提供方法",
+      "hints": [
+        "ツール構成ファイル",
+        "httpDump.bat",
+        "nablarch-tfw",
+        "インストール",
+        "配置パス"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Eclipseとの連携",
+      "hints": [
+        "Eclipse連携",
+        "ファイル関連付け設定",
+        "外部プログラム設定",
+        "httpDump起動",
+        "HTMLファイル起動方法",
+        "設定画面起動",
+        "バッチファイル選択"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 前提事項\n\n本ツールを使用する際の必須要件:\n\n- `java`コマンドがパスに含まれていること\n- HTMLファイルがブラウザに関連付けされていること\n- ブラウザのプロキシ設定で、localhostが除外されていること",
+    "s2": "## 提供方法\n\nNablarchのサンプルアプリケーションに同梱して提供。ツール構成ファイル:\n\n| ファイル名 | 説明 |\n|---|---|\n| httpDump.bat | 起動バッチファイル（Windows用） |\n| nablarch-tfw-X.X.jar | Nablarch Testing Framework のJARファイル（X.Xはバージョン番号） |\n| poi-X.X.jar | Apache POI のJARファイル（X.Xはバージョン番号） |\n| jetty.jar | Jetty Server のJARファイル |\n| jetty-util.jar | Jetty Utilities のJARファイル |\n| servlet-api.jar | Servlet Specification 2.5 API のJARファイル |\n\n`httpDump.bat`の配置パス:\n\n```bash\n/test/tool/httpDump.bat\n```",
+    "s3": "## Eclipseとの連携\n\nEclipseから本ツールを起動するための設定手順:\n\n1. ツールバー → ウィンドウ(Window) → 設定(Preference) を選択\n2. 左ペイン: 一般(General) → エディタ(Editors) → ファイルの関連付け(File Associations) を選択\n3. 右ペインから `*.html` を選択し、追加(Add)ボタンを押下\n4. ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下\n5. Windowsの場合は `httpDump.bat`、Linuxの場合は `httpDump.sh` を選択\n\n**HTMLファイルからの起動方法**: Eclipseのパッケージエクスプローラ等からHTMLファイルを右クリックし、「httpDumpで開く」を選択することでツールを起動できる。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

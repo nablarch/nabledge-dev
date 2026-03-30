@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-function--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — JSP実装例",
+      "description": "ソースのJSP実装例では `nbs:listSearchResult` タグ（`listSearchInfoName`, `searchUri`, `resultSetName`, `usePageNumberSubmit` 属性）で全体を囲み、各ユーザーデータ列（userId, pk2, pk3, name, profile, version）の `n:hidden` フィールドと `n:write` 表示フィールドを含む完全な例が示されている。知識ファイルは `n:compositeKeyCheckbox` のスニペットのみを示し、`n:hidden` フィールドによるフォームデータ維持パターンを省略している。",
+      "source_evidence": "JSP実装例の `<n:hidden name=\"form.users[${count -1}].userId\" />` 等6フィールド、および `<nbs:listSearchResult listSearchInfoName=\"condition\" searchUri=\"./EXCLUS30102\" resultSetName=\"form.users\" usePageNumberSubmit=\"true\">` の記述"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "s1のコード例に登場する `UsersBulkDeleteForm`（Formクラス名）および `nbs:listSearchResult`（JSP実装例の外枠タグ）がs1のhintsに含まれていない。",
+      "source_evidence": "`public class UsersBulkDeleteForm` および `<nbs:listSearchResult ...>` のJSP実装例"
+    }
+  ]
+}

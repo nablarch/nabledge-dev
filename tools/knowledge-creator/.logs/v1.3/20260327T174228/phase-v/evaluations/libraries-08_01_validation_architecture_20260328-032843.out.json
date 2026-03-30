@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-08_01_validation_architecture",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The missing tamper-detection behavior description is explanatory security context, not configuration-critical information. The knowledge file already documents the property name, default value, and type clarification. The `invalidSizeKeyMessageId` description in the same table mentions that it applies when `formArraySizeValueMaxLength` is exceeded, allowing partial inference of the error behavior. A developer can still correctly configure `formArraySizeValueMaxLength` without knowing it is labeled as \"request tampering\" detection. The omission affects depth of understanding rather than correctness of implementation guidance.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s4 — formArraySizeValueMaxLength property description",
+      "impact": "low",
+      "justification": "The missing detail — that exceeding the limit causes ValidationManager to unconditionally treat the request as tampered — is security-relevant context but not actionable configuration guidance. The core facts (property name, default value of 3, string-length-not-count semantics) are all present. The invalidSizeKeyMessageId row in the same table already references the exceed-limit error case, so the error behavior is partially implied. A developer configuring this property or troubleshooting unexpected rejections would benefit from the tamper-detection framing, but the absence does not cause misconfiguration or silent failures. As for why Phase E did not resolve it: the Phase E output log is truncated mid-JSON, indicating the fix agent's response was cut off before completing the s4 section rewrite. The residual finding reflects an incomplete Phase E execution rather than a deliberate decision to omit the detail."
+    }
+  ]
+}

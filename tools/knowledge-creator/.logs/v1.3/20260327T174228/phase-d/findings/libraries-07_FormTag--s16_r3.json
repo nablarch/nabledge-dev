@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — hiddenの暗号化処理",
+      "description": "The source explicitly states that parameter names themselves are also encrypted ('hiddenのパラメータ名も含めて暗号化するため、改竄すること自体を難しくしている'), which is a key security characteristic distinguishing this approach. The knowledge file mentions tamper detection via hash/request ID but omits the fact that encrypting parameter names makes even discovering what parameters exist difficult for an attacker.",
+      "source_evidence": "「暗号化では、formタグに含まれる下記のデータをまとめて暗号化し、1つのhiddenタグで出力する。このため、hiddenのパラメータ名も含めて暗号化するため、改竄すること自体を難しくしている。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hiddenの復号処理 hints",
+      "description": "The RST anchor label `WebView_HiddenEncryption_Handler` (defined immediately before the decryption section heading) is missing from s2 hints. This label is the cross-reference key used by other documents to link to this section.",
+      "source_evidence": "「.. _WebView_HiddenEncryption_Handler:」 appears directly before the hiddenの復号処理 heading in the source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hiddenの復号処理 hints",
+      "description": "The `writeタグ` is mentioned in the source as a notable exception to the input data restoration value-search order ('ただし、writeタグは出力専用のため、リクエストパラメータを検索対象に含めない'), but it is absent from s2 hints.",
+      "source_evidence": "「ただし、writeタグは出力専用のため、リクエストパラメータを検索対象に含めない。」"
+    }
+  ]
+}

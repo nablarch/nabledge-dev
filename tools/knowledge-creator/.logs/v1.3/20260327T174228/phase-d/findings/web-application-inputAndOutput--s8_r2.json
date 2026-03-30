@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-inputAndOutput--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The knowledge file introduces a property table with a \"型\" (type) column listing `boolean` for `useHiddenEncryption`. The source never states the Java type explicitly — it only shows `useHiddenEncryption=\"true\"` (デフォルト) and `useHiddenEncryption=\"false\"` in XML comments and the component config example. The type `boolean` is an inference, not a fact from the source.",
+      "source_evidence": "Source comment: `useHiddenEncryption=\"true\"で暗号化を行う。（デフォルト）` / `useHiddenEncryption=\"false\"で暗号化を行わない。` — no type declaration present."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "PascalCase Nablarch framework class names `HttpResponse` and `HttpRequest` appear in both Action class code examples (doRW11AC0201, doRW11AC0301 method signatures) but are absent from the s1 hints array.",
+      "source_evidence": "`public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx)` and `public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx)` — both appear in s1 source code examples."
+    }
+  ]
+}

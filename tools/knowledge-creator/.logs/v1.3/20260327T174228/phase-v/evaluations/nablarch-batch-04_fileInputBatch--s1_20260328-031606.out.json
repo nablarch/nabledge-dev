@@ -1,0 +1,32 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three residual findings are minor hint-quality issues that do not affect the substantive content of any section. The section text and code blocks are accurate and grounded in the source. An agent retrieving any of these sections will receive correct implementation guidance regardless of the hint inaccuracies.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s5 hints — RecordTypeBindingHandler",
+      "impact": "low",
+      "justification": "The fabricated class name RecordTypeBindingHandler coexists with the correct RecordTypeBinding in the same hint list, so the section is still reachable via the accurate term. The s5 section body itself uses 'RecordTypeBindingハンドラ' without asserting a Java class name, so the agent will not propagate the fabricated name into its answer. Worst-case effect is a spurious match on a non-existent class search, but the retrieved content remains correct."
+    },
+    {
+      "category": "fabrication",
+      "location": "s2 hints — BatchAction",
+      "impact": "low",
+      "justification": "BatchAction as a hint may route a query for that class name to s2, but the s2 section content discusses 'バッチアクション' purely as a conceptual term and never claims BatchAction is a Java class. The agent would read accurate constraints about instance variables and multi-thread execution. No incorrect class usage would be suggested to the user."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s4 hints — FileLayoutValidatorAction absent",
+      "impact": "low",
+      "justification": "FileLayoutValidatorAction does not appear as a hint in s4, but the section is still reachable via the getValidatorAction hint (the method that returns it) and via FileLayoutValidator / FileValidatorAction hints. When s4 is retrieved, the code block showing 'return new FileLayoutValidatorAction()' is fully present, so the agent can still surface the correct class name from content. A direct keyword search for FileLayoutValidatorAction alone would miss s4, but this is an unlikely isolated query pattern."
+    },
+    {
+      "category": "fabrication",
+      "location": "Phase E — fixes not applied",
+      "impact": "low",
+      "justification": "The Phase E output JSON is identical to the Phase D input for the affected hints (BatchAction retained in s2, RecordTypeBindingHandler retained in s5, FileLayoutValidatorAction still absent from s4). Phase E processed the file but did not write the corrected hints back. Since all three issues are minor and user impact is low, the failure to fix them does not block release, but the fix loop should be re-run or the hints patched manually."
+    }
+  ]
+}

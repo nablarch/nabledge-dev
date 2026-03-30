@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sending_batch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — intro/overview paragraph",
+      "description": "The key user-facing implementation note is missing: \"利用側からは対象テーブルへのINSERT文を発行するだけでメッセージを送信することができる。\" This explains the core usage pattern — callers only need to INSERT into the target table to trigger message sending — which is decision-necessary for implementation.",
+      "source_evidence": "Source intro paragraph: \"利用側からは対象テーブルへのINSERT文を発行するだけでメッセージを送信することができる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "GlobalErrorHandler and BatchAction are prominent PascalCase names in the s2 section content but are absent from s2 hints. GlobalErrorHandler appears in the 重複起動エラー and forcestop flows as the handler that captures ProcessAbnormalEnd and outputs failure logs. BatchAction appears as the key callback target throughout normalend, errorend, and forcestop flows.",
+      "source_evidence": "s2 content references: GlobalErrorHandler (重複起動エラー: \"障害ログが出力される\"; forcestop: \"ProcessAbnormalEndを捕捉した場合、障害ログを出力\"), BatchAction (多数のコールバックステップ)"
+    }
+  ]
+}

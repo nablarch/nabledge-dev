@@ -1,0 +1,106 @@
+{
+  "id": "libraries-08_02_validation_usage--s8",
+  "title": "1つのForm内の複数項目にまたがる入力チェック",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "1つのForm内の複数項目にまたがる入力チェック",
+      "hints": [
+        "ValidationContext",
+        "ValidationUtil",
+        "@ValidateFor",
+        "addResultMessage",
+        "addMessage",
+        "相関バリデーション",
+        "複数項目バリデーション",
+        "getConvertedValue"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "convert_property",
+        "値の変換"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "値の変換",
+      "hints": [
+        "@Digits",
+        "@NumberRange",
+        "BigDecimal",
+        "Long",
+        "値の変換",
+        "型変換",
+        "数値型プロパティ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "入力値のトリム",
+        "バリデーション"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "入力値のトリム",
+      "hints": [
+        "StringConvertor",
+        "trimPolicy",
+        "入力値トリム",
+        "Map",
+        "SqlRow",
+        "様々なMapオブジェクトの精査と変換",
+        "YYYYMMDDConvertor"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "SqlRowをインプットとして精査を行う例",
+      "hints": [
+        "SqlRow",
+        "ValidationUtil",
+        "validateAndConvertRequest",
+        "UserEntity",
+        "データベースレコード精査",
+        "nullプレフィックス"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "",
+      "hints": [
+        "validation-message-creation",
+        "プロパティに紐付くメッセージの作成"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "プロパティに紐付くメッセージの作成",
+      "hints": [
+        "ValidationUtil",
+        "createMessageForProperty",
+        "ApplicationException",
+        "プロパティ紐付きメッセージ",
+        "Message",
+        "MessageUtil"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数のプロパティを比較するバリデーション（例: パスワードと確認パスワードの一致チェック）は、`@ValidateFor` アノテーションを設定したメソッド内でハードコーディングして実現する。\n\n`ValidationUtil.validate(context, String[])` で特定プロパティのみを対象にバリデーションを実行できる。\n\nバリデーション後のエラーメッセージ追加:\n- プロパティに紐付ける場合: `context.addResultMessage(\"propertyName\", \"msgId\")`\n- プロパティに紐付けない場合: `context.addMessage(\"msgId\")`\n\n```java\nprivate static final String[] PASSWORD_CHANGE_PROPS\n        = new String[] {\"id\", \"prevPassword\", \"newPassword\", \"confirmPassword\"};\n\n@ValidateFor(\"changePassword\")\npublic static void validateForChangePassword(ValidationContext<User> context) {\n    ValidationUtil.validate(context, PASSWORD_CHANGE_PROPS);\n    if (!context.isValid()) {\n        return;\n    }\n    String newPassword = (String) context.getConvertedValue(\"newPassword\");\n    String confirmPassword = (String) context.getConvertedValue(\"confirmPassword\");\n    if (!newPassword.equals(confirmPassword)) {\n        context.addResultMessage(\"newPassword\", \"MSG10001\");\n    }\n}\n```\n\n:ref:`validation-prop` と同様に `ValidationUtil.validateAndConvertRequest` で実行する。\n\n```java\nValidationContext result = ValidationUtil.validateAndConvertRequest(\"user\", User.class, req, \"changePassword\");\n```",
+    "s2": "なし",
+    "s3": "FormのプロパティはLong、BigDecimalなどの数値型を持てる。文字列からFormプロパティ型への変換はバリデーション機構で自動的に実行される。\n\n数値型プロパティのセッタに設定するアノテーション:\n- `@Digits(integer=桁数)`: 整数部の桁数を指定\n- `@NumberRange(min=値, max=値)`: 数値の範囲を指定\n\n```java\n@PropertyName(\"合計金額\")\n@Required\n@Digits(integer=6)\n@NumberRange(min=0, max=200000)\npublic void setAmount(BigDecimal amount) {\n    this.amount = amount;\n}\n```\n\nバリデーション実行は文字列型プロパティのFormと同様:\n\n```java\nValidationContext<Order> result = ValidationUtil.validateAndConvertRequest(\"form\", Order.class, req, \"insert\");\n```",
+    "s4": "なし",
+    "s5": "Formのプロパティ型によってトリムの動作が異なる:\n- 数値型（Long、BigDecimal等）: 空白が許容されないため必ずトリムが行われる\n- 文字列型: `trimPolicy` の設定によりトリムの要否を選択できる（`\"trimAll\"` または `\"noTrim\"`）\n\n詳細は :ref:`StringConvertorの設定値<stringconvertor-setting>` の `trimPolicy` プロパティを参照。\n\n```xml\n<component class=\"nablarch.core.validation.convertor.StringConvertor\">\n  <property name=\"conversionFailedMessageId\" value=\"MSG90001\" />\n  <property name=\"allowNullValue\" value=\"${validationConvertorAllowNullValue}\" />\n  <property name=\"trimPolicy\" value=\"trimAll\" />\n  <property name=\"extendedStringConvertors\">\n    <list>\n      <component class=\"nablarch.common.date.YYYYMMDDConvertor\">\n        <property name=\"parseFailedMessageId\" value=\"MSG90003\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n## 様々なMapオブジェクトの精査と変換\n\n精査・変換可能なオブジェクトは `Map<String, ?>` 。キー値がStringであるMap実装クラスであれば精査と変換処理が可能。\n\nNablarchのデータベースアクセスのSqlRow（`Map<String, Object>` の実装）も精査可能。デフォルトコンバータ使用時は変換可能なオブジェクト型に制限がある（:ref:`validator_and_convertor` 参照）。",
+    "s6": "SqlRow（`Map<String, Object>`）をインプットとして精査を実行できる。プレフィックス（第一引数）に `null` を指定する。カラム名は変換先オブジェクトのプロパティ名と一致させること（大文字・小文字・アンダースコアの区別なし）。\n\n```java\nSqlRow row = search();\nValidationContext<UserEntity> context = ValidationUtil.validateAndConvertRequest(\n        null, UserEntity.class, row, \"validateUserData\");\n```",
+    "s7": "なし",
+    "s8": "バリデーションで検出できないエラーのメッセージをActionの実装内から直接設定する場合、メッセージの種類によって使用するメソッドが異なる:\n- 通常（プロパティに紐付けない場合）: `MessageUtil.createMessage` メソッドを使用する\n- プロパティに紐付くメッセージを作成する場合: `ValidationUtil.createMessageForProperty` メソッドを使用する\n\n```java\n// user.loginId プロパティのエラーメッセージを設定する。\nMessage message = ValidationUtil.createMessageForProperty(\"user.loginId\", \"MSG00091\");\nthrow new ApplicationException(message);\n```"
+  }
+}

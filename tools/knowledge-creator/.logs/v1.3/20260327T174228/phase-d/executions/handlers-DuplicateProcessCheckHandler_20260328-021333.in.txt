@@ -1,0 +1,328 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/handler/DuplicateProcessCheckHandler.rst`
+- Format: `rst`
+
+```
+
+.. include:: ../api/link.rst
+
+===============================
+プロセス多重起動防止ハンドラ
+===============================
+
+**クラス名:** ``nablarch.fw.handler.DuplicateProcessCheckHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+このハンドラでは、DB上のテーブル(プロセス管理テーブル)を参照し、
+同一のリクエストIDを持ったプロセスが実行されていないことを確認する。
+もし、そのようなプロセスが存在していれば、起動処理をエラー終了させる。
+
+これにより、運用時の手違いなどによって同一のバッチが複数起動してしまう事態を防止することができる。
+
+**プロセス管理テーブルの構造**
+  各プロセスの実行状態は、データベース上の **プロセス管理テーブル** 上に格納する。
+  このハンドラでは **プロセス管理テーブル** 内の以下のカラムを使用する。
+
+  ===================  =============  ==============================
+  論理名               データ型　　   備考
+  ===================  =============  ==============================
+  リクエストID         VARCHAR PK     プロセスを特定するためのID
+  アクティブフラグ     CHAR(1)        "0": 未実行、"1": 実行中
+  ===================  =============  ==============================
+
+
+++++++++++++
+
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = ["ThreadContextHandler_main", "DuplicateProcessCheckHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+**関連するハンドラ**
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`ThreadContextHandler`           本ハンドラではスレッドコンテキスト上に保持されたリクエストIDを使用して
+                                        同一プロセスの判定を行う。そのため、必ず :doc:`ThreadContextHandler` を本ハンドラの上位に
+                                        設置する必要がある。
+  ====================================  ===================================================================================
+
++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストIDの取得)**
+    スレッドコンテキストからリクエストIDを取得する。
+  
+  **1a. (多重起動チェック対象外プロセス)**
+    取得したリクエストIDが、本ハンドラに設定されたチェック対象外のIDリストに含まれていた場合、
+    このハンドラでは何もせず、後続ハンドラに処理を委譲した結果をリターンする。
+
+  **2.  (多重起動チェック)**
+    後述の **プロセス管理テーブル** に対して更新処理を行なう。(FW用DB接続を使用)
+
+      :更新条件: リクエストID = (1.で取得したリクエストID) AND 実行中フラグ = "0" (未実行)
+      :更新内容: 実行中フラグ = "1" (実行中)
+
+  **2a. (多重起動エラー)**
+    2. での更新対象が0件であった場合、多重起動と判断し ``Result.InternalError`` を送出する。(終了コード20) 
+
+  **3. (後続ハンドラの実行)**
+    ハンドラキュー上の後続のハンドラに処理を委譲する。
+
+.. _outbound:
+
+**[復路処理]**
+  **4. (実行中フラグの更新)**
+    **プロセス管理テーブル** に対して更新処理を行なう。
+
+      :更新条件: リクエストID = (1.で取得したリクエストID) AND 実行中フラグ = "1" (実行中)
+      :更新内容: 実行中フラグ = "0" (未実行)
+
+.. _error:
+
+**[例外処理]** 
+  **3a. (実行中フラグの更新)**
+    後続ハンドラの処理中に例外が送出された場合でも、必ず実行中フラグを"0"(未実行)に更新する。
+
+++++++++++++++++++++
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  ============================== ============================ ============================ ==============================
+  設定項目                       プロパティ名                 データ型　                   備考
+  ============================== ============================ ============================ ==============================
+  プロセス管理テーブル名         tableName                    String                       必須指定
+  リクエストIDカラム名           requestIdColumnName          String                       必須指定
+  アクティブフラグカラム名       processActiveFlgColumnName   String                       必須指定
+  DBトランザクションマネージャ   dbTransactionManager         SimpleDbTransactionManager   必須指定
+  多重起動エラー時の終了コード   exitCode                     Integer                      任意指定(デフォルト = 127)
+  チェック対象外リクエストID     permitRequestIds             List<String>                 任意指定
+  ============================== ============================ ============================ ==============================
+
+**基本設定**
+  
+  .. code-block:: xml
+  
+    <component
+      name="duplicateProcessCheckHandler"
+      class="nablarch.fw.handler.DuplicateProcessCheckHandler">
+      <!--プロセス管理テーブル名-->
+      <property name="tableName" value="BATCH_REQUEST" />
+      <!--プロセス管理テーブル上のリクエストIDカラム名-->
+      <property name="requestIdColumnName" value="REQUEST_ID" />
+      <!--プロセス管理テーブル上のアクティブフラグカラム名-->
+      <property name="processActiveFlgColumnName" value="PROCESS_ACTIVE_FLG" />
+      <!--トランザクション管理-->
+      <property name="dbTransactionManager" ref="simpleDbTransactionManager" />
+    </component>
+
+**任意の設定項目も含めた例**
+  
+  .. code-block:: xml
+  
+    <component
+      name="duplicateProcessCheckHandler"
+      class="nablarch.fw.handler.DuplicateProcessCheckHandler">
+
+      <property name="tableName" value="BATCH_REQUEST" />
+      <property name="requestIdColumnName" value="REQUEST_ID" />
+      <property name="processActiveFlgColumnName" value="PROCESS_ACTIVE_FLG" />
+      <property name="dbTransactionManager" ref="simpleDbTransactionManager" />
+      
+      <!--多重起動エラー時のプロセス終了コード--> 
+      <property name="exitCode" value="27" />
+
+      <!--多重起動を認めるリクエストIDの一覧-->
+      <property name="permitRequestIds" value="BC0010,BC0011" />
+    </component>
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-DuplicateProcessCheckHandler`
+
+```json
+{
+  "id": "handlers-DuplicateProcessCheckHandler",
+  "title": "プロセス多重起動防止ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "DuplicateProcessCheckHandler",
+        "nablarch.fw.handler.DuplicateProcessCheckHandler",
+        "ThreadContextHandler",
+        "プロセス多重起動防止",
+        "バッチ多重起動チェック",
+        "プロセス管理テーブル",
+        "リクエストID",
+        "アクティブフラグ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "DuplicateProcessCheckHandler",
+        "Result.InternalError",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "アクティブフラグ更新",
+        "多重起動エラー",
+        "実行中フラグ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "tableName",
+        "requestIdColumnName",
+        "processActiveFlgColumnName",
+        "dbTransactionManager",
+        "exitCode",
+        "permitRequestIds",
+        "SimpleDbTransactionManager",
+        "設定項目",
+        "チェック対象外リクエストID"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.DuplicateProcessCheckHandler`\n\nDBのプロセス管理テーブルを参照し、同一リクエストIDのプロセスが実行中でないことを確認する。実行中の同一プロセスが存在する場合はエラー終了させる。これにより、バッチの多重起動を防止できる。\n\n**プロセス管理テーブル構造**\n\n| 論理名 | データ型 | 備考 |\n|---|---|---|\n| リクエストID | VARCHAR PK | プロセスを特定するためのID |\n| アクティブフラグ | CHAR(1) | \"0\": 未実行、\"1\": 実行中 |\n\n**関連ハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| ThreadContextHandler | スレッドコンテキスト上のリクエストIDを使用して同一プロセス判定を行うため、必ず本ハンドラの上位に配置すること |",
+    "s2": "**[往路処理]**\n\n1. スレッドコンテキストからリクエストIDを取得する。\n   - 取得したリクエストIDがチェック対象外IDリストに含まれている場合: 後続ハンドラに委譲してリターンする。\n2. プロセス管理テーブルを更新する（FW用DB接続使用）。\n   - 更新条件: リクエストID = 取得したリクエストID AND 実行中フラグ = \"0\"（未実行）\n   - 更新内容: 実行中フラグ = \"1\"（実行中）\n   - 更新対象0件の場合: 多重起動と判断し `Result.InternalError` を送出する（終了コード20）。\n3. 後続ハンドラに処理を委譲する。\n\n**[復路処理]**\n\n4. プロセス管理テーブルを更新する。\n   - 更新条件: リクエストID = 取得したリクエストID AND 実行中フラグ = \"1\"（実行中）\n   - 更新内容: 実行中フラグ = \"0\"（未実行）\n\n**[例外処理]**\n\n後続ハンドラ処理中に例外が送出された場合でも、必ず実行中フラグを\"0\"（未実行）に更新する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| tableName | String | ○ | | プロセス管理テーブル名 |\n| requestIdColumnName | String | ○ | | リクエストIDカラム名 |\n| processActiveFlgColumnName | String | ○ | | アクティブフラグカラム名 |\n| dbTransactionManager | SimpleDbTransactionManager | ○ | | DBトランザクションマネージャ |\n| exitCode | Integer | | 127 | 多重起動エラー時のプロセス終了コード |\n| permitRequestIds | List\\<String\\> | | | 多重起動チェック対象外のリクエストID一覧 |\n\n**基本設定**\n\n```xml\n<component\n  name=\"duplicateProcessCheckHandler\"\n  class=\"nablarch.fw.handler.DuplicateProcessCheckHandler\">\n  <property name=\"tableName\" value=\"BATCH_REQUEST\" />\n  <property name=\"requestIdColumnName\" value=\"REQUEST_ID\" />\n  <property name=\"processActiveFlgColumnName\" value=\"PROCESS_ACTIVE_FLG\" />\n  <property name=\"dbTransactionManager\" ref=\"simpleDbTransactionManager\" />\n</component>\n```\n\n**任意設定を含む例**\n\n```xml\n<component\n  name=\"duplicateProcessCheckHandler\"\n  class=\"nablarch.fw.handler.DuplicateProcessCheckHandler\">\n  <property name=\"tableName\" value=\"BATCH_REQUEST\" />\n  <property name=\"requestIdColumnName\" value=\"REQUEST_ID\" />\n  <property name=\"processActiveFlgColumnName\" value=\"PROCESS_ACTIVE_FLG\" />\n  <property name=\"dbTransactionManager\" ref=\"simpleDbTransactionManager\" />\n  <property name=\"exitCode\" value=\"27\" />\n  <property name=\"permitRequestIds\" value=\"BC0010,BC0011\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

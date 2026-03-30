@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-06_IdGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "automated pre-check warning: S9",
+      "description": "Automated check flagged section count 5 < source headings 12, but this is a false positive. The RST file has exactly 5 H2-level headings (using `----` underline: 概要, 特徴, 要求, 構造, テーブルを使用した採番機能), matching the 5 knowledge sections s1–s5. The count of 12 includes H3 and deeper sub-headings, which are properly merged into their parent sections.",
+      "source_evidence": "RST H2 headings with `----`: 概要 / 特徴 / 要求 / 構造 / テーブルを使用した採番機能 = 5 total"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Section s5 contains Java code that uses `SystemRepository` as a PascalCase class name (SystemRepository.getObject(\"tableIdGenerator\")), but `SystemRepository` is absent from s5's hints array.",
+      "source_evidence": "Source 使用例 Java code: `IdGenerator generator = (IdGenerator) SystemRepository.getObject(\"tableIdGenerator\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Section s5 references the fully-qualified class names `nablarch.core.db.transaction.SimpleDbTransactionManager` and `nablarch.core.repository.initialization.BasicApplicationInitializer` in the XML configuration example and property tables, but only their short names appear in hints. The full package-qualified names are absent, which may reduce discoverability when users query with fully-qualified names.",
+      "source_evidence": "Source XML: `class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\"` and `class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\"`"
+    }
+  ]
+}

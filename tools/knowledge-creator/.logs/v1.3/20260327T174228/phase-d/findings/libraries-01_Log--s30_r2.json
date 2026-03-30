@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_Log--s30",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7",
+      "description": "Property names `formatter.format`, `formatter.datePattern`, `loggers.writerNames` are present in the section content (property tables) but absent from the hints array.",
+      "source_evidence": "Source BasicLogFormatterの設定 table: `writer.<名称>.formatter.format`, `writer.<名称>.formatter.datePattern`; ロガーの設定 table: `loggers.<名称>.writerNames`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s9",
+      "description": "The concrete format combination examples from the '各種ログの共通項目のフォーマット' subsection are omitted. These examples show exactly how the common format (`$date$ req_id = [$requestId$] <$message$> ...`) and individual format (`url:$url$ port:$port$ method:$method$`) are combined via the `$message$` placeholder into the final log output. These are useful for understanding how to correctly configure split log formats.",
+      "source_evidence": "Source section '各種ログの共通項目のフォーマット': three code blocks showing (1) common format + intermediate result, (2) individual HTTP access log format + intermediate result, (3) combined final output: `2011-02-07 19:07:30.970 req_id = [USERS00302] <url:/action/management/user/UserRegisterAction/USERS00302 port:8090 method:POST> usr_id = [0000000001]`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7",
+      "description": "The h2 section 'プロパティファイルの記述ルール' contains at least 7 h3 subsections (ロガーファクトリの設定, フレームワーク実装の設定, ログライタの設定, ロガーの設定, FileLogWriterの設定, SynchronousFileLogWriterの設定, BasicLogFormatterの設定) with total plain-text length well exceeding 2000 characters, but all are merged into a single knowledge section s7 without splitting.",
+      "source_evidence": "Source RST: h2 'プロパティファイルの記述ルール' (====) with multiple h3 subsections (^^^^), each containing large property tables."
+    }
+  ]
+}

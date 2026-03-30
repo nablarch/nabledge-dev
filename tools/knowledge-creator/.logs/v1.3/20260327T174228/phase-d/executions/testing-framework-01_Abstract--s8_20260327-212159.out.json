@@ -1,0 +1,34 @@
+{
+  "file_id": "testing-framework-01_Abstract--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Section s2 merges 5 distinct RST sections (シート内の構造, コメント, マーカーカラム, セルの書式, セルへの特殊な記述方法) into a single knowledge section. Each has its own `====`-underlined heading in the source and independent topic scope. Combined plain-text length far exceeds 2000 characters. The section title 'シート内の構造' reflects only the first of the five merged source sections.",
+      "source_evidence": "Source contains separate headings: 'シート内の構造 ==============', 'コメント ========', 'マーカーカラム ==============', 'セルの書式 ==========', 'セルへの特殊な記述方法 ======================'."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — common data format rules",
+      "description": "The specification that '2行目以降の書式はデータタイプにより異なる' (row 2 and beyond format varies by data type) is omitted. This is stated as part of the 'データの種類に依らない共通の書式' bullet list and is an implementation-relevant constraint for understanding how data sheets are structured.",
+      "source_evidence": "Source: '* データ1行目は「データタイプ=値」の形式で、データタイプと値を記載する。\\n* 2行目以降の書式はデータタイプにより異なる。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`${updateTime}` is a named special notation in the source's special-notation table but is absent from the s2 hints array. A user asking about `${updateTime}` would not be routed to this section.",
+      "source_evidence": "Source table row: '${updateTime} | システム日時 | ${systemTime}の別名。特にデータベースのタイムスタンプ更新時の期待値として使用する。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`SystemTimeProvider` is a PascalCase class name explicitly referenced in the source (footnote for `${systemTime}`) but is missing from the s2 hints array.",
+      "source_evidence": "Source footnote: 'コンポーネント設定ファイルにて設定されたSystemTimeProvider実装クラスから取得したTimestampの文字列形式に変換される。'"
+    }
+  ]
+}

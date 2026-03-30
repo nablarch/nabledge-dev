@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_FileDownload--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source 特徴 h2 section contains >= 2000 chars of plain text and has two h3 subsections (実装の容易性 and サイズが大きいファイルをダウンロードする場合でもメモリリソースを圧迫しない), but both are merged into a single knowledge section s2 without splitting. Per V3 rules, large h2 sections with h3 children should be split in the knowledge file. The automated check also flagged the overall section count (9) as lower than the source heading count (15, counting h2+h3 levels).",
+      "source_evidence": "Source has h3 headings '実装の容易性' (with method list, code example, two notes) and 'サイズが大きいファイルをダウンロードする場合でもメモリリソースを圧迫しない' under the 特徴 h2, both merged into s2."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9",
+      "description": "Section s9 covers the detailed property tables for all encoder-related configuration classes, but two property names are absent from hints: `encoder` (from nablarch.fw.web.download.DownloadFileNameEncoderEntry table) and `downloadFileNameEncoderFactory` (from nablarch.fw.web.handler.HttpResponseHandler table). Both are first-column property names in the source configuration tables.",
+      "source_evidence": "Source DownloadFileNameEncoderEntryの設定 table has property 'encoder'. Source HttpResposeHandlerの設定 table has property 'downloadFileNameEncoderFactory'. Neither appears in s9 hints array."
+    }
+  ]
+}

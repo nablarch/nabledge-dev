@@ -1,0 +1,742 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/01/02_SqlLog.rst`
+- Format: `rst`
+
+```
+.. _SqlLog:
+
+---------------------------------------
+SQLログの出力
+---------------------------------------
+SQLログは、パフォーマンスチューニングに使用するために、SQL文の実行時間やSQL文を出力する。\
+アプリケーションでは、ログ出力の設定を行うことにより出力する。
+
+SQLログの出力方針
+===================================================
+SQLログで想定している出力方針を下記に示す。\
+SQLログは、開発時の使用を想定しているためDEBUGレベル以下で出力する。
+
+================= =======================
+ログレベル        ロガー名
+================= =======================
+DEBUG、TRACE      SQL
+================= =======================
+
+ログレベルと出力内容を下記に示す。
+
+================= =======================
+ログレベル        出力内容
+================= =======================
+DEBUG             SQL文、実行時間、\
+                  件数(検索件数や更新件数など)、\
+                  トランザクションの処理結果(コミット又はロールバック)
+TRACE             SQLパラメータ(バインド変数の値)
+================= =======================
+
+上記出力方針に対するログ出力の設定例を下記に示す。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ # SQL
+ loggers.SQL.nameRegex=SQL
+ loggers.SQL.level=TRACE
+ loggers.SQL.writerNames=<出力先のログライタ>
+
+
+SQLログの出力項目
+===================================================
+SQLログの個別項目を下記に示す。\
+SQLログは、SQL文を発行する方法に応じて出力項目が異なる。
+
+ここでは、 :ref:`Log_BasicLogFormatter` の設定で指定できる共通項目については省略する。\
+共通項目と個別項目を組み合わせたフォーマットについては、 :ref:`AppLog_Format` を参照。
+
+SqlPStatement#retrieveメソッドの検索開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+SQL文                           SQL文。
+取得開始位置                    検索結果のデータ取得を開始する行数。
+取得最大件数                    検索結果に含める最大行数。
+タイムアウト時間                検索のタイムアウト時間。
+フェッチする行数                データ取得時のフェッチ件数。
+付加情報                        BasicSqlPStatementの設定で指定された付加情報。
+=============================== =================================================================================
+
+SqlPStatement#retrieveメソッドの検索終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+実行時間                        実行時間。
+データ取得時間                  検索後のデータ取得に要した時間。
+検索件数                        検索結果の件数。
+=============================== =================================================================================
+
+SqlPStatement#executeメソッドの実行開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+SQL文                           SQL文。
+付加情報                        BasicSqlPStatementの設定で指定された付加情報。
+=============================== =================================================================================
+
+SqlPStatement#executeメソッドの実行終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+実行時間                        実行時間。
+=============================== =================================================================================
+
+SqlPStatement#executeQueryメソッドの検索開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+SQL文                           SQL文。
+付加情報                        BasicSqlPStatementの設定で指定された付加情報。
+=============================== =================================================================================
+
+SqlPStatement#executeQueryメソッドの検索終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+実行時間                        検索の実行時間。
+=============================== =================================================================================
+
+SqlPStatement#executeUpdateメソッドの更新開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+SQL文                           SQL文。
+付加情報                        BasicSqlPStatementの設定で指定された付加情報。
+=============================== =================================================================================
+
+SqlPStatement#executeUpdateメソッドの更新終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+実行時間                        実行時間。
+更新件数                        更新件数。
+=============================== =================================================================================
+
+SqlPStatement#executeBatchメソッドの更新開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+SQL文                           SQL文。
+付加情報                        BasicSqlPStatementの設定で指定された付加情報。
+=============================== =================================================================================
+
+SqlPStatement#executeBatchメソッドの更新終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+出力項目
+
+=============================== =================================================================================
+項目名                          説明                                                                             
+=============================== =================================================================================
+メソッド名                      クラス名#メソッド名形式。
+実行時間                        実行時間。
+バッチ件数                      バッチ件数。
+=============================== =================================================================================
+
+SQLログの出力方法
+===================================================
+SQLログの出力に使用するクラスを下記に示す。
+
+.. image:: ./../_images/01/Log_SqlLog_ClassDiagram.jpg
+   :scale: 80
+
+\
+
+ =========================================================== ===========================================================================================
+ クラス名                                                    概要
+ =========================================================== ===========================================================================================
+ nablarch.core.db.statement.SqlLogUtil                       SQLログのフォーマットを助けるクラス。
+ nablarch.core.db.statement.SqlLogFormatter                  SQLログの個別項目をフォーマットするクラス。
+ =========================================================== ===========================================================================================
+
+BasicSqlPStatementは、SQL文、実行時間、件数のフォーマットにSqlLogUtilを使用する。\
+トランザクションの処理結果とSQLパラメータの出力では、SqlLogUtilを使用せずに直接Loggerを使用して出力する。
+
+SQLログは、ログ出力の設定でロガー名にSQLを指定することで出力される。\
+ログ出力の設定を下記に示す。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ # SQL
+ loggers.SQL.nameRegex=SQL
+ loggers.SQL.level=TRACE
+ loggers.SQL.writerNames=<出力先のログライタ>
+
+SQLログの出力例を下記に示す。SQLログの個別項目は、デフォルトのフォーマットを使用した場合の出力例である。
+
+log.propertiesの設定例
+
+.. code-block:: bash
+
+ writerNames=appFile
+ 
+ # appFile
+ writer.appFile.className=nablarch.core.log.basic.FileLogWriter
+ writer.appFile.filePath=./app.log
+ writer.appFile.encoding=UTF-8
+ writer.appFile.maxFileSize=10000
+ writer.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter
+ writer.appFile.formatter.format=$date$ -$logLevel$- R[$requestId$] U[$userId$] E[$executionId$] $message$
+ 
+ availableLoggersNamesOrder=SQL
+ 
+ # SQL
+ loggers.SQL.nameRegex=SQL
+ loggers.SQL.level=TRACE
+ loggers.SQL.writerNames=appFile
+
+ログの出力例
+
+.. code-block:: bash
+
+ 2011-02-08 23:07:25.182 -DEBUG- R[LOGIN00102] U[9999999999] E[AP01201102082307249470003] nablarch.core.db.statement.BasicSqlPStatement#retrieve
+     SQL = [SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?]
+     start_position = [1] size = [0]
+     query_timeout = [0] fetch_size = [500]
+     additional_info:
+ 2011-02-08 23:07:25.182 -TRACE- R[LOGIN00102] U[9999999999] E[AP01201102082307249470003] nablarch.core.db.statement.BasicSqlPStatement#Parameters
+     01 = [00]
+ 2011-02-08 23:07:25.182 -DEBUG- R[LOGIN00102] U[9999999999] E[AP01201102082307249470003] nablarch.core.db.statement.BasicSqlPStatement#retrieve
+     execute_time(ms) = [0] retrieve_time(ms) = [0] count = [1]
+
+SqlLogUtilは、プロパティファイル(app-log.properties)を読み込み、\
+SqlLogFormatterオブジェクトを生成して、個別項目のフォーマット処理を委譲する。\
+プロパティファイルのパス指定や実行時の変更方法は、 :ref:`AppLog_Config` を参照。
+
+SQLログの設定例を下記に示す。
+
+app-log.propertiesの設定例
+
+.. code-block:: bash
+
+ # SqlLogFormatter
+ sqlLogFormatter.className=nablarch.core.db.statement.SqlLogFormatter
+ sqlLogFormatter.startRetrieveFormat=$methodName$\n\tSQL:$sql$\n\tstart:$startPosition$ size:$size$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endRetrieveFormat=$methodName$\n\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$
+ sqlLogFormatter.startExecuteFormat=$methodName$\n\tSQL:$sql$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endExecuteFormat=$methodName$\n\texe:$executeTime$ms
+ sqlLogFormatter.startExecuteQueryFormat=$methodName$\n\tSQL:$sql$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endExecuteQueryFormat=$methodName$\n\texe:$executeTime$ms
+ sqlLogFormatter.startExecuteUpdateFormat=$methodName$\n\tSQL:$sql$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endExecuteUpdateFormat=$methodName$\n\texe:$executeTime$ms count:$updateCount$
+ sqlLogFormatter.startExecuteBatchFormat=$methodName$\n\tSQL:$sql$\n\tadditional_info:\n\t$additionalInfo$
+ sqlLogFormatter.endExecuteBatchFormat=$methodName$\n\texe:$executeTime$ms count:$updateCount$
+
+プロパティの説明を下記に示す。
+
+================================================================ ===================================================================================
+プロパティ名                                                     設定値
+================================================================ ===================================================================================
+sqlLogFormatter.className                                        SqlLogFormatterのクラス名。
+
+                                                                 SqlLogFormatterクラスを差し替える場合に指定する。
+sqlLogFormatter.startRetrieveFormat                              SqlPStatement#retrieveメソッドの検索開始時に使用するフォーマット。
+sqlLogFormatter.endRetrieveFormat                                SqlPStatement#retrieveメソッドの検索終了時に使用するフォーマット。
+sqlLogFormatter.startExecuteFormat                               SqlPStatement#executeメソッドの実行開始時に使用するフォーマット。
+sqlLogFormatter.endExecuteFormat                                 SqlPStatement#executeメソッドの実行終了時に使用するフォーマット。
+sqlLogFormatter.startExecuteQueryFormat                          SqlPStatement#executeQueryメソッドの検索開始時に使用するフォーマット。
+sqlLogFormatter.endExecuteQueryFormat                            SqlPStatement#executeQueryメソッドの検索終了時に使用するフォーマット。
+sqlLogFormatter.startExecuteUpdateFormat                         SqlPStatement#executeUpdateメソッドの更新開始時に使用するフォーマット。
+sqlLogFormatter.endExecuteUpdateFormat                           SqlPStatement#executeUpdateメソッドの更新終了時に使用するフォーマット。
+sqlLogFormatter.startExecuteBatchFormat                          SqlPStatement#executeBatchメソッドの更新開始時に使用するフォーマット。
+sqlLogFormatter.endExecuteBatchFormat                            SqlPStatement#executeBatchメソッドの更新終了時に使用するフォーマット。
+================================================================ ===================================================================================
+
+フォーマットに指定可能なプレースホルダの一覧とデフォルトのフォーマットを下記に示す。\
+デフォルトのフォーマットは、フォーマット内の改行位置で改行して表示する。
+
+SqlPStatement#retrieveメソッドの検索開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+SQL文                           $sql$
+取得開始位置                    $startPosition$
+取得最大件数                    $size$
+タイムアウト時間                $queryTimeout$
+フェッチする行数                $fetchSize$
+付加情報                        $additionalInfo$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\tSQL = [$sql$]
+     \n\tstart_position = [$startPosition$] size = [$size$]
+     \n\tquery_timeout = [$queryTimeout$] fetch_size = [$fetchSize$]
+     \n\tadditional_info:
+     \n\t$additionalInfo$
+
+SqlPStatement#retrieveメソッドの検索終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+実行時間                        $executeTime$
+データ取得時間                  $retrieveTime$
+検索件数                        $count$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\texecute_time(ms) = [$executeTime$] retrieve_time(ms) = [$retrieveTime$] count = [$count$]
+
+SqlPStatement#executeメソッドの実行開始時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+SQL文                           $sql$
+付加情報                        $additionalInfo$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\tSQL = [$sql$]
+     \n\tadditional_info:
+     \n\t$additionalInfo$
+
+SqlPStatement#executeメソッドの実行終了時
+------------------------------------------------------------------------------------------------------------------------------
+
+プレースホルダ一覧
+
+=============================== ===============================
+項目名                          プレースホルダ
+=============================== ===============================
+メソッド名                      $methodName$
+実行時間                        $executeTime$
+=============================== ===============================
+
+デフォルトのフォーマット
+
+.. code-block:: bash
+
+ $methodName$
+     \n\texecute_time(ms) = [$executeTime$]
+
+```
+
+## Knowledge File
+
+- ID: `libraries-02_SqlLog--s1`
+
+```json
+{
+  "id": "libraries-02_SqlLog--s1",
+  "title": "SQLログの出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "SQLログ",
+        "SqlLog",
+        "ログレベル設定",
+        "パフォーマンスチューニング",
+        "DEBUG",
+        "TRACE",
+        "SQL出力方針",
+        "loggers.SQL",
+        "SQLログ出力方針"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "SQLログの出力",
+      "hints": [
+        "SqlLogUtil",
+        "SqlLogFormatter",
+        "BasicSqlPStatement",
+        "sqlLogFormatter.className",
+        "sqlLogFormatter.startRetrieveFormat",
+        "sqlLogFormatter.endRetrieveFormat",
+        "sqlLogFormatter.startExecuteFormat",
+        "sqlLogFormatter.endExecuteFormat",
+        "sqlLogFormatter.startExecuteQueryFormat",
+        "sqlLogFormatter.endExecuteQueryFormat",
+        "sqlLogFormatter.startExecuteUpdateFormat",
+        "sqlLogFormatter.endExecuteUpdateFormat",
+        "sqlLogFormatter.startExecuteBatchFormat",
+        "sqlLogFormatter.endExecuteBatchFormat",
+        "SQLログ設定",
+        "app-log.properties",
+        "AppLog_Config"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "SqlPStatement#retrieveメソッドの検索開始時",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "検索開始",
+        "取得開始位置",
+        "取得最大件数",
+        "タイムアウト時間",
+        "フェッチする行数",
+        "付加情報",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "SqlPStatement#retrieveメソッドの検索終了時",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "検索終了",
+        "実行時間",
+        "データ取得時間",
+        "検索件数",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "SqlPStatement#executeメソッドの実行開始時",
+      "hints": [
+        "SqlPStatement",
+        "execute",
+        "実行開始",
+        "SQL文",
+        "付加情報",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "SqlPStatement#executeメソッドの実行終了時",
+      "hints": [
+        "SqlPStatement",
+        "execute",
+        "実行終了",
+        "実行時間",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "SqlPStatement#executeQueryメソッドの検索開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索開始",
+        "SQL文",
+        "付加情報",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "SqlPStatement#executeQueryメソッドの検索終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeQuery",
+        "検索終了",
+        "実行時間",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "SqlPStatement#executeUpdateメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新開始",
+        "SQL文",
+        "付加情報",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "SqlPStatement#executeUpdateメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "更新終了",
+        "実行時間",
+        "更新件数",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "SqlPStatement#executeBatchメソッドの更新開始時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新開始",
+        "SQL文",
+        "付加情報",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "SqlPStatement#executeBatchメソッドの更新終了時",
+      "hints": [
+        "SqlPStatement",
+        "executeBatch",
+        "更新終了",
+        "実行時間",
+        "バッチ件数",
+        "出力項目"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "SqlPStatement#retrieveメソッドの検索開始時",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "検索開始",
+        "$methodName$",
+        "$sql$",
+        "$startPosition$",
+        "$size$",
+        "$queryTimeout$",
+        "$fetchSize$",
+        "$additionalInfo$",
+        "プレースホルダ",
+        "デフォルトフォーマット"
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "SqlPStatement#retrieveメソッドの検索終了時",
+      "hints": [
+        "SqlPStatement",
+        "retrieve",
+        "検索終了",
+        "$executeTime$",
+        "$retrieveTime$",
+        "$count$",
+        "プレースホルダ",
+        "デフォルトフォーマット"
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "SqlPStatement#executeメソッドの実行開始時",
+      "hints": [
+        "SqlPStatement",
+        "execute",
+        "実行開始",
+        "$sql$",
+        "$additionalInfo$",
+        "プレースホルダ",
+        "デフォルトフォーマット"
+      ]
+    },
+    {
+      "id": "s16",
+      "title": "SqlPStatement#executeメソッドの実行終了時",
+      "hints": [
+        "SqlPStatement",
+        "execute",
+        "実行終了",
+        "$executeTime$",
+        "プレースホルダ",
+        "デフォルトフォーマット"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "SQLログはパフォーマンスチューニング用。SQL文の実行時間とSQL文を出力する。開発時の使用を想定しているためDEBUGレベル以下で出力する。\n\n**ロガー名**: `SQL`\n\n| ログレベル | 出力内容 |\n|---|---|\n| DEBUG | SQL文、実行時間、件数（検索件数・更新件数など）、トランザクションの処理結果（コミット/ロールバック） |\n| TRACE | SQLパラメータ（バインド変数の値） |\n\n**log.properties設定例**:\n```bash\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=<出力先のログライタ>\n```\n\n共通項目については :ref:`Log_BasicLogFormatter` を参照。共通項目と個別項目を組み合わせたフォーマットは :ref:`AppLog_Format` を参照。",
+    "s2": "**クラス**: `nablarch.core.db.statement.SqlLogUtil`, `nablarch.core.db.statement.SqlLogFormatter`\n\n- `nablarch.core.db.statement.SqlLogUtil`: SQLログのフォーマットを助けるクラス\n- `nablarch.core.db.statement.SqlLogFormatter`: SQLログの個別項目をフォーマットするクラス\n\nBasicSqlPStatementはSQL文・実行時間・件数のフォーマットにSqlLogUtilを使用する。トランザクション処理結果とSQLパラメータの出力はSqlLogUtilを使用せず直接Loggerを使用する。\n\nlog.propertiesでロガー名に`SQL`を指定することでSQLログが出力される。\n\n**ログ出力例**:\n```bash\n2011-02-08 23:07:25.182 -DEBUG- ... nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    SQL = [SELECT BIZ_DATE FROM BUSINESS_DATE WHERE SEGMENT = ?]\n    start_position = [1] size = [0]\n    query_timeout = [0] fetch_size = [500]\n    additional_info:\n2011-02-08 23:07:25.182 -TRACE- ... nablarch.core.db.statement.BasicSqlPStatement#Parameters\n    01 = [00]\n2011-02-08 23:07:25.182 -DEBUG- ... nablarch.core.db.statement.BasicSqlPStatement#retrieve\n    execute_time(ms) = [0] retrieve_time(ms) = [0] count = [1]\n```\n\n**app-log.propertiesの設定例**:\n```bash\nsqlLogFormatter.className=nablarch.core.db.statement.SqlLogFormatter\nsqlLogFormatter.startRetrieveFormat=$methodName$\\n\\tSQL:$sql$\\n\\tstart:$startPosition$ size:$size$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\n\\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$\nsqlLogFormatter.startExecuteFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteFormat=$methodName$\\n\\texe:$executeTime$ms\nsqlLogFormatter.startExecuteQueryFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteQueryFormat=$methodName$\\n\\texe:$executeTime$ms\nsqlLogFormatter.startExecuteUpdateFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteUpdateFormat=$methodName$\\n\\texe:$executeTime$ms count:$updateCount$\nsqlLogFormatter.startExecuteBatchFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteBatchFormat=$methodName$\\n\\texe:$executeTime$ms count:$updateCount$\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| sqlLogFormatter.className | SqlLogFormatterのクラス名。差し替える場合に指定 |\n| sqlLogFormatter.startRetrieveFormat | SqlPStatement#retrieveメソッドの検索開始時フォーマット |\n| sqlLogFormatter.endRetrieveFormat | SqlPStatement#retrieveメソッドの検索終了時フォーマット |\n| sqlLogFormatter.startExecuteFormat | SqlPStatement#executeメソッドの実行開始時フォーマット |\n| sqlLogFormatter.endExecuteFormat | SqlPStatement#executeメソッドの実行終了時フォーマット |\n| sqlLogFormatter.startExecuteQueryFormat | SqlPStatement#executeQueryメソッドの検索開始時フォーマット |\n| sqlLogFormatter.endExecuteQueryFormat | SqlPStatement#executeQueryメソッドの検索終了時フォーマット |\n| sqlLogFormatter.startExecuteUpdateFormat | SqlPStatement#executeUpdateメソッドの更新開始時フォーマット |\n| sqlLogFormatter.endExecuteUpdateFormat | SqlPStatement#executeUpdateメソッドの更新終了時フォーマット |\n| sqlLogFormatter.startExecuteBatchFormat | SqlPStatement#executeBatchメソッドの更新開始時フォーマット |\n| sqlLogFormatter.endExecuteBatchFormat | SqlPStatement#executeBatchメソッドの更新終了時フォーマット |\n\nプロパティファイルのパス指定や実行時の変更方法は :ref:`AppLog_Config` を参照。",
+    "s3": "SqlPStatement#retrieveメソッドの検索開始時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| SQL文 | SQL文 |\n| 取得開始位置 | 検索結果のデータ取得を開始する行数 |\n| 取得最大件数 | 検索結果に含める最大行数 |\n| タイムアウト時間 | 検索のタイムアウト時間 |\n| フェッチする行数 | データ取得時のフェッチ件数 |\n| 付加情報 | BasicSqlPStatementの設定で指定された付加情報 |",
+    "s4": "SqlPStatement#retrieveメソッドの検索終了時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| 実行時間 | 実行時間 |\n| データ取得時間 | 検索後のデータ取得に要した時間 |\n| 検索件数 | 検索結果の件数 |",
+    "s5": "SqlPStatement#executeメソッドの実行開始時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| SQL文 | SQL文 |\n| 付加情報 | BasicSqlPStatementの設定で指定された付加情報 |",
+    "s6": "SqlPStatement#executeメソッドの実行終了時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| 実行時間 | 実行時間 |",
+    "s7": "SqlPStatement#executeQueryメソッドの検索開始時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| SQL文 | SQL文 |\n| 付加情報 | BasicSqlPStatementの設定で指定された付加情報 |",
+    "s8": "SqlPStatement#executeQueryメソッドの検索終了時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| 実行時間 | 検索の実行時間 |",
+    "s9": "SqlPStatement#executeUpdateメソッドの更新開始時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| SQL文 | SQL文 |\n| 付加情報 | BasicSqlPStatementの設定で指定された付加情報 |",
+    "s10": "SqlPStatement#executeUpdateメソッドの更新終了時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| 実行時間 | 実行時間 |\n| 更新件数 | 更新件数 |",
+    "s11": "SqlPStatement#executeBatchメソッドの更新開始時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| SQL文 | SQL文 |\n| 付加情報 | BasicSqlPStatementの設定で指定された付加情報 |",
+    "s12": "SqlPStatement#executeBatchメソッドの更新終了時の出力項目:\n\n| 項目名 | 説明 |\n|---|---|\n| メソッド名 | クラス名#メソッド名形式 |\n| 実行時間 | 実行時間 |\n| バッチ件数 | バッチ件数 |",
+    "s13": "SqlPStatement#retrieveメソッドの検索開始時のプレースホルダ一覧とデフォルトフォーマット:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| SQL文 | $sql$ |\n| 取得開始位置 | $startPosition$ |\n| 取得最大件数 | $size$ |\n| タイムアウト時間 | $queryTimeout$ |\n| フェッチする行数 | $fetchSize$ |\n| 付加情報 | $additionalInfo$ |\n\n**デフォルトフォーマット**:\n```\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tstart_position = [$startPosition$] size = [$size$]\n    \\n\\tquery_timeout = [$queryTimeout$] fetch_size = [$fetchSize$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s14": "SqlPStatement#retrieveメソッドの検索終了時のプレースホルダ一覧とデフォルトフォーマット:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| 実行時間 | $executeTime$ |\n| データ取得時間 | $retrieveTime$ |\n| 検索件数 | $count$ |\n\n**デフォルトフォーマット**:\n```\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] retrieve_time(ms) = [$retrieveTime$] count = [$count$]\n```",
+    "s15": "SqlPStatement#executeメソッドの実行開始時のプレースホルダ一覧とデフォルトフォーマット:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| SQL文 | $sql$ |\n| 付加情報 | $additionalInfo$ |\n\n**デフォルトフォーマット**:\n```\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```",
+    "s16": "SqlPStatement#executeメソッドの実行終了時のプレースホルダ一覧とデフォルトフォーマット:\n\n| 項目名 | プレースホルダ |\n|---|---|\n| メソッド名 | $methodName$ |\n| 実行時間 | $executeTime$ |\n\n**デフォルトフォーマット**:\n```\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$]\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

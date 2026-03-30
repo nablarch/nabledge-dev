@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_04_validation_form_inheritance",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1のコード例には `@ValidateFor`、`ValidationContext`、`ValidationUtil` が登場するが、これらがhintsに含まれていない。PascalCaseクラス名および@アノテーション名はhintsに含める必要がある。",
+      "source_evidence": "source s1 code: `@ValidateFor(\"insert\") public static void validateForUpdate(ValidationContext<UserEntity> context) { ValidationUtil.validate(context, UPDATE_PARAMS); }`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s4 (property table row for useFormPropertyNameAsMessageId)",
+      "description": "プロパティ `useFormPropertyNameAsMessageId` の型として `boolean` が記載されているが、ソースにはこのプロパティの型が明示されていない。ソースは `value=\"true\"` という設定例のみを示している。",
+      "source_evidence": "source: `<property name=\"useFormPropertyNameAsMessageId\" value=\"true\"/>` のみ記載。型の明示なし。"
+    }
+  ]
+}

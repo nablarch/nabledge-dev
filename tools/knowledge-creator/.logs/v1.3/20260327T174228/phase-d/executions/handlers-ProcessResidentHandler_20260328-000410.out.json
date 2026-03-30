@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-ProcessResidentHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "`java.lang.Error` is referenced in the source exception handling section (3e: エラー終了) but is absent from s2 hints. Users asking about Java error handling in this handler would not retrieve s2.",
+      "source_evidence": "3e: 後続ハンドラ実行中にエラー(java.lang.Error)が送出された場合は、捕捉したエラーをそのまま再送出して終了する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "`ProcessStop` and `ProcessAbnormalEnd` appear as default values in the s3 configuration table (`[ProcessStop.class]` and `[ProcessAbnormalEnd.class]`) but are absent from s3 hints. Users asking about these classes in the context of configuration would not retrieve s3.",
+      "source_evidence": "normalEndExceptions: デフォルト=[ProcessStop.class], abnormalEndExceptions: デフォルト=[ProcessAbnormalEnd.class]"
+    }
+  ]
+}

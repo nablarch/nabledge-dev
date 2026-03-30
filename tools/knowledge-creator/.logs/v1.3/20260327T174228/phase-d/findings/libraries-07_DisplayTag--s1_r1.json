@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_DisplayTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7",
+      "description": "s7 states \"errorsタグが全エラーをリスト表示するのに対し\" but the source shows errorsタグ has a `filter` attribute with values `all` (全てのメッセージ) and `global` (入力項目に対応しないメッセージのみ). The tag does not unconditionally show \"全エラー\" — it depends on the filter setting.",
+      "source_evidence": "filter属性: \"all(全てのメッセージを表示する) / global(入力項目に対応しないメッセージのみを表示) / デフォルトはall\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "s1 content references `ExtendedValidation_yyyymmddConvertor`, `ExtendedValidation_yyyymmConvertor`, and `WebView_CustomTagConfig` — all important ref names a user might search by — but none appear in s1's hints array.",
+      "source_evidence": "「:ref:`ExtendedValidation_yyyymmddConvertor`」「:ref:`ExtendedValidation_yyyymmConvertor`」「:ref:`WebView_CustomTagConfig`」 are all mentioned in the yyyymmdd/yyyymm format description."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 hints",
+      "description": "s6 hints include `nablarch_errors` and `nablarch_error` but omit `nablarch_info` and `nablarch_warn`, which are the default CSS class names for the `infoCss` and `warnCss` attributes defined in the attributes table.",
+      "source_evidence": "infoCss: デフォルトは\"nablarch_info\" / warnCss: デフォルトは\"nablarch_warn\""
+    }
+  ]
+}

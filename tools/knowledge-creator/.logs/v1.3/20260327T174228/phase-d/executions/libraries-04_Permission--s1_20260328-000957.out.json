@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Permission--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — 概念モデル",
+      "description": "The source contains a detailed user example table (Aさん〜Yさん) showing how group memberships map to accessible functions. The table concretely illustrates that multiple group memberships union permissions (Xさん belonging to 部長グループ and 社員グループ gets combined access), and that direct user-permission grants are additive to group permissions (Yさんの例). While the bullet points capture the abstract rule, the concrete examples demonstrating real-world permission combinations are omitted.",
+      "source_evidence": "Source table with rows for Aさん (人事部グループ→社員登録・社員削除・社員検索・社員情報変更), Bさん (社員グループ), Cさん (パートナーグループ→社員情報変更のみ), Xさん (部長グループ+社員グループ→全機能), Yさん (社員グループ+直接紐付き→社員登録も追加)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — index hints",
+      "description": "s3 hints are missing `未検討` as a keyword. The source has an explicit 未検討 subsection listing requirements not yet considered (データアクセス制限, 機能単位の権限への有効日設定). Users asking about unimplemented or not-yet-considered requirements would benefit from this hint.",
+      "source_evidence": "Source: `未検討` section listing: データへのアクセスを制限できる / 機能単位の権限に有効日（From/To）を設定できる"
+    }
+  ]
+}

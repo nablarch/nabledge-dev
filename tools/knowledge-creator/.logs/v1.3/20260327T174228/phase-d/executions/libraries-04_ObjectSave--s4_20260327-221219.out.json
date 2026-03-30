@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor クラス説明（最終warningブロック直前の箇条書き）",
+      "description": "VariableInSyntaxConvertor の説明に含まれる4つのSQL解析制約が未記載。SQLリテラル処理とコメント非対応の制約は実装判断に必須の情報。",
+      "source_evidence": "* リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない。\n* リテラル文字は、シングルクォート(\"'\")で囲われている。\n* リテラル文字のエスケープ文字は、シングルクォート(\"'\")である。\n* SQL文にコメントが存在しない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor クラス説明（最終 .. warning:: ブロック）",
+      "description": "VariableInSyntaxConvertor に対する「SQL文の妥当性チェックを行わない、不正構文はSQL実行時エラー」という警告が未記載。同等の警告は VariableOrderBySyntaxConvertor には記載されているが、VariableInSyntaxConvertor 分が欠落している。",
+      "source_evidence": ".. warning::\n  本クラスでは、SQL文の妥当性のチェックは行わない。\n  このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-1-FAQ",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor. The omission is a caveat about an example's SQL reuse (not core API guidance), and the missing hint is for a domain entity class unlikely to be used as a search term. Neither rises to medium impact.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 条件を必要としないSQL文の場合の実装例 (Java code comment)",
+      "impact": "low",
+      "justification": "The omitted comment warns that the no-arg countByParameterizedSql example reuses GET_DELETE_USER_LIST for convenience, but in real usage the SQL should have no variable conditions. Without this note an agent might tell a developer it is acceptable to pass any SQL ID to the no-arg variant. However, the comment is an example-quality caveat, not a core API rule. A developer who encounters a mismatch (a SQL with WHERE clauses returning unexpected counts) would quickly identify the error from the Nablarch runtime behavior. Risk of silent mis-guidance is low. Why it persisted: Phase E output is byte-for-byte identical to Phase D input, indicating the fix agent produced no edits at all — the improvement loop stalled without modifying the file."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "none",
+      "justification": "SystemAccountEntity is a project-specific domain entity introduced only as a concrete usage example; it is not a Nablarch framework class. Users asking about batch record-count logging would search with Nablarch API terms (DbAccessSupport, countByParameterizedSql, etc.), not a domain entity name. Omitting it from hints has no practical effect on knowledge retrieval. Why it persisted: same cause as finding 1 — Phase E produced no file modifications."
+    }
+  ]
+}

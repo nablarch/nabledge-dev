@@ -1,0 +1,34 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2",
+      "description": "The knowledge file states 「この設定がないとページング動作になる」 (if this setting is missing, paging behavior results), but the source only says the setMax call is 「必須」 (required) for no-paging use. The source does not state what happens when this setting is omitted.",
+      "source_evidence": "Source: 「検索結果の取得件数(1ページの表示件数)に検索結果の最大件数(上限)を設定する。ページングを使用しないため下記の設定が必須となる。」 — states it is required, but makes no claim about the behavior when omitted."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The source contains two substantial h3-level sub-sections under 「検索結果の並び替え」: 「検索処理の実装方法」(===) and 「listSearchSortSubmitタグ」(===), each with significant content including code examples and tables. These are merged into a single s1 section which is well over 2000 characters. Per V3 criteria (h2 >= 2000 chars with h3 sub-sections not split), these should be separate sections.",
+      "source_evidence": "Source headings: 「検索結果の並び替え」(---), 「検索処理の実装方法」(===), 「listSearchSortSubmitタグ」(===). Section count 3 vs source headings 5+."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The hints for s2 are missing `W11AC01Action`, which appears in the source section as the Action class implementing the no-paging pattern (class definition with DbAccessSupport and the setMax call).",
+      "source_evidence": "Source: 「public class W11AC01Action extends DbAccessSupport { ... condition.setMax(condition.getMaxResultCount()); ... }」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The hints for s3 are missing `ApplicationException`, `MessageUtil`, and `MessageLevel`, all of which are PascalCase class names used in the Action class implementation example in the source.",
+      "source_evidence": "Source code: 「} catch (TooManyResultException e) { throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount())); }」"
+    }
+  ]
+}

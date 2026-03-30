@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s2 — Action の実装 code block",
+      "description": "Knowledge file uses `validateSample.abortIfInvalid()` but the source has `validateForSample.abortIfInvalid()`. The name `validateSample` does not appear anywhere in the source file.",
+      "source_evidence": "Source: `validateForSample.abortIfInvalid();` (Action の実装 section)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1 — footnote code examples",
+      "description": "The footnote in the source provides two code blocks: one for UserForm (parent, showing `@ValidateFor(\"multiInsert\")` on `validateForMultiInsert`) and one for UserEntity (child, showing `@ValidateFor({\"insert\", \"multiInsert\"})`). The knowledge file only includes the UserEntity (child) side, omitting the UserForm (parent) code example that demonstrates how the parent specifies the shared string.",
+      "source_evidence": "Source footnote [#form_validate_for]: `public class UserForm { ... @ValidateFor(\"multiInsert\") public static void validateForMultiInsert(ValidationContext<UserForm> context) { ... } }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "`AddressEntity` is a PascalCase class used prominently in the UserForm code example and HTML form (form.address.*) but is absent from s1's hints.",
+      "source_evidence": "Source: `private AddressEntity address;`, `AddressEntity addressEntity = userForm.getAddress();`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1].hints (s2)",
+      "description": "`Entity1` (PascalCase class used throughout the fixed-array example) and `ValidationContext` (used in the validateForSample method signature) are missing from s2's hints.",
+      "source_evidence": "Source: `private Entity1[] entityArray;`, `public static void validateForSample(ValidationContext<Entity1> context)`"
+    }
+  ]
+}

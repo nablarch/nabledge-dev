@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 簡易検索機能 (admonition: SqlResultSetとは)",
+      "description": "SqlResultSetの2つの利点が省略されている: (1) リソース解放(close処理)を実装する必要がない、(2) 取得レコード数がわかる。これらはjava.sql.ResultSetとの違いを説明する実装判断に必要な情報。",
+      "source_evidence": "主に、以下の利点がある。\n* リソース解放(close処理)を実装する必要がない\n* 取得レコード数がわかる"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 大量データの警告に付属するfootnote [#]",
+      "description": "大量データの定義と具体例が省略されている。大量データとは「SELECT文の結果として取得されるデータ件数が大量であること」を指し、テーブルの件数ではない。また `statement.retrieve(10000000, 20)` のように開始位置が大きくても取得件数が少なければ大量データに該当しないという重要な判断基準が失われている。",
+      "source_evidence": "大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。\n// 大量データに該当しない例\nstatement.retrieve(10000000, 20); // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — 範囲指定での検索処理",
+      "description": "メソッドシグネチャを `SqlPStatement#retrieve(int startPos, int maxCount)` と記載しているが、ソースには `SqlPStatement#retrieve(int, int)` としか記載されていない。パラメータ名 `maxCount` はソースに根拠がない。",
+      "source_evidence": "SqlPStatement#retrieve(int, int)を呼び出して、対象範囲のデータを取得する。"
+    }
+  ]
+}

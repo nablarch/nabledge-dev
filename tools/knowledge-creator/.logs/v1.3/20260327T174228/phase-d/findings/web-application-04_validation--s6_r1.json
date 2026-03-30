@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-04_validation--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "PascalCase class names from code examples in s1 content are missing from hints: `SystemAccountEntity` (numeric property example in note), `UgroupSystemAccountEntity` (validate example), `UsersEntity` (validateWithout example), `W11AC02Form` (Entity-based Form example).",
+      "source_evidence": "Code blocks in バリデーションメソッドの実装 section reference these classes: `ValidationContext<UgroupSystemAccountEntity>`, `ValidationContext<UsersEntity>`, `ValidationContext<W11AC02Form>`, and the note's code block references `SystemAccountEntity`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "`W11AC02Form` is a PascalCase class name used in s2's code example but is missing from s2 hints.",
+      "source_evidence": "Source code example for 項目間精査 shows `ValidationContext<W11AC02Form>` and `W11AC02Form form = context.createObject();`."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The source's first h2 (`バリデーションの実装`) contains two distinct h3 subsections (`アノテーションの付与` and `バリデーションメソッドの実装`), each with multiple code examples. The combined content likely exceeds 2000 chars plain text, but s1 merges both without splitting. Per V3 criteria (h2 >= 2000 chars AND h3 exists but knowledge doesn't split), these should be separate sections.",
+      "source_evidence": "Source has `アノテーションの付与` (~~~~~~) and `バリデーションメソッドの実装` (~~~~~~) as distinct h3 subsections under the h2 `バリデーションの実装` (------). The combined content spans multiple code examples (confirmPassword setter, failedCount setter, three validation method examples)."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The source's method table for ValidationContext error methods includes a third column `例` (examples) that provides concrete use-case illustrations: `addResultMessage` → 「新パスワードと確認用パスワードが異なる場合」; `addMessage` → 「検索条件が１つ以上必要な場合に、１つも条件指定がされなかった場合」. The knowledge file's table omits this column.",
+      "source_evidence": "Source table has 3 columns: メソッド | 用途 | 例. The 例 column for `addMessage` illustrates a search-condition scenario that is distinct from the password example shown in the code block, providing additional decision-making guidance on when to use this method."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — DBAccessSupport table row",
+      "description": "The description for `DBAccessSupport` in the knowledge file reads \"一覧検索用のsearchメソッドを提供するサポートクラス\" but the source table says \"一覧検索用の検索を行うsearchメソッドを提供する\". The word \"サポートクラス\" was added and \"の検索を行う\" was removed with no basis in the source table row.",
+      "source_evidence": "Source table: `DBAccessSupport  一覧検索用の検索を行うsearchメソッドを提供する。`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — クラス図 section introductory text",
+      "description": "The key design-decision statement from the クラス図 section is omitted: \"アプリケーションプログラマはページングを作り込みせずに実現できる\". This tells developers that paging is fully handled by the framework/tag files and requires no custom implementation — important guidance for deciding whether to build custom pagination logic.",
+      "source_evidence": "Source text under クラス図: \"ページングを実現したい場合、フレームワークが提供するクラスとサンプル提供のタグファイルがページングに必要な処理を行うため、アプリケーションプログラマはページングを作り込みせずに実現できる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "Several PascalCase class names that appear in the s5 code examples are absent from hints: `ValidationContext`, `HttpRequest`, `HttpResponse`, `ExecutionContext`, `UserSearchCondition`.",
+      "source_evidence": "Source code in ListSearchInfoクラス section: `ValidationContext<W11AC01SearchForm> searchConditionCtx = ...;`, `public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx)`, `UserSearchCondition condition = searchConditionCtx.createObject();`"
+    }
+  ]
+}

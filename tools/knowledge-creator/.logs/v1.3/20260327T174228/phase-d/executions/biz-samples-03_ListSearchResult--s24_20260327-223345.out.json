@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s24",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — resultCountFragment default value",
+      "description": "The default value notation for `resultCountFragment` uses `{PagingInfoのresultCountプロパティ}` (curly braces) instead of the source's `<PagingInfoのresultCountプロパティ>` (angle brackets). The source explicitly states: デフォルトは\"検索結果 <PagingInfoのresultCountプロパティ>件\".",
+      "source_evidence": "resultCountFragment | 検索結果件数を出力するJSPフラグメント。| デフォルトは\"検索結果 <PagingInfoのresultCountプロパティ>件\"。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7 — currentPageNumberFragment default value",
+      "description": "The default value for `currentPageNumberFragment` uses `{PagingInfoのcurrentPageNumberプロパティ}/{PagingInfoのpageCountプロパティ}` (curly braces) instead of the source's `<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>` (angle brackets).",
+      "source_evidence": "currentPageNumberFragment | 現在のページ番号を出力するJSPフラグメント。| デフォルトは\"[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]\"。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "Missing `ApplicationException` (exception class used in @OnError) and `OnError` (Nablarch annotation shown in the code example). Per V4, XxxException names and @Annotation names from section content should be included in hints.",
+      "source_evidence": "@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")"
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/06_sharingInputAndConfirmationJsp.rst`
+- Format: `rst`
+
+```
+.. _sharingInputAndConfirmationJsp:
+
+==========================
+入力画面と確認画面の共通化
+==========================
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* 入力画面と確認画面とでJSPファイルを共通化する方法
+
+Nablarch Application Frameworkでは、入力画面と確認画面が1対1に対応するような画面を作成する場合に、\
+JSPを共通化する機能を提供する。
+
+
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸の部分である。
+
+
+.. image:: ./_image/06/screenTransition.png
+ :scale: 50
+
+編集するソースコードは以下のとおり。
+
++--------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| 名称(右クリック->保存でダウンロード)                         | ステレオタイプ | 処理内容                                                                                                                                      |
++==============================================================+================+===============================================================================================================================================+
+| | :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`| View           | ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。|
+| | :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`|                |                                                                                                                                               |
++--------------------------------------------------------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+View(JSP)の作成
+===============
+
+画面イメージ
+------------
+
+作成するJSPの画面イメージを以下に示す。
+
+.. image:: ./_image/05/W11AC0202.png
+ :scale: 55
+
+概要
+----
+
+入力画面と確認画面を共通化する場合、入力画面のJSPに全ての情報を記載する。\
+確認画面のJSPには、入力画面とJSPを共通化する旨のカスタムタグを記載するだけである。
+
+入力画面と確認画面とで表示内容が異なる箇所については、入力画面のほうに\
+分岐処理を埋め込んで、入力画面用の表示処理、確認画面用の表示処理を記述する。
+
+
+入力画面の作成方法
+------------------
+
+  :a): 両方の画面に含まれる内容を記述する
+  :b): 入力画面でのみ表示する内容は、n:forInputPageタグを使用して記述する。
+  :c): 確認画面でのみ表示する内容は、n:forConfirmationPageタグを使用して記述する
+  
+.. note::
+ n:textタグ、n:passwordタグ、n:selectタグは、入力画面ではinputタグやselectタグとして出力されるが、\
+ 確認画面として描画される場合はタグではなく文字列として表示される。詳細については、 `入力項目の確認画面用の出力 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FormTag.html#output-for-confirmation-page>`_ を参照。
+
+ ※サンプル提供のタグファイルを使用した場合、「nタグ」を直接使用するのではなく「fieldタグ」内で「nタグ」が出力される。
+
+
+.. note::
+ n:forInputPageタグで囲まれた箇所は入力画面でのみ評価され、n:forConfirmationPageタグで囲まれた箇所は確認画面でのみ評価される。詳細については、 `入力画面と確認画面の表示切り替え <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#id13>`_ を参照。
+
+
+上記を参照し、以下の内容で\ *W11AC0201.jsp*\ を作成する。
+
+* W11AC0201.jsp
+
+.. literalinclude:: ./_source/06/W11AC0201.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+確認画面の作成方法
+------------------
+
+  :a): 確認画面JSPに、n:confirmationPageタグを使用して、path属性には共通化する入力画面へのパスを指定する
+
+
+上記を参照し、以下の内容で *W11AC0202.jsp* を作成する。
+
+* W11AC0202.jsp
+
+.. literalinclude:: ./_source/06/W11AC0202.jsp
+   :language: jsp
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ 本ソースコードをそのままファイルに保管しようとすると、文字コードに関するエラーが出る。
+ 必ず、【説明】で始まるコメント行を削除してからファイルを保管すること。
+
+------------
+共通化の指針
+------------
+
+入力画面と確認画面がほぼ同一の内容であるような、シンプルな登録処理であれば、\
+入力画面と確認画面を共通化することにより、JSP記述量を減らすことができる。\
+このような場合は、生産性向上が見込まれるので本機能を使用するべきである。\
+
+逆に、複雑な業務で、入力画面と確認画面での差異が大きい場合は、\
+入力画面と確認画面との場合分けの記述を１画面に詰め込むことになるので\
+かえって煩雑で保守性の低いコードになる恐れがある。\
+このような場合には、無理に共通化はせず別々のJSPファイルを作成すべきである。
+
+
+------------
+次に読むもの
+------------
+* `画面共通化のカスタムタグ使用方法を詳しく知りたい時 <../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-inputconfirmationcommon>`_
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-06_sharingInputAndConfirmationJsp`
+
+```json
+{
+  "id": "web-application-06_sharingInputAndConfirmationJsp",
+  "title": "入力画面と確認画面の共通化",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "JSP共通化",
+        "入力画面と確認画面の共通化",
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "n:confirmationPage",
+        "n:forInputPage",
+        "n:forConfirmationPage"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "n:forInputPage",
+        "n:forConfirmationPage",
+        "n:confirmationPage",
+        "n:text",
+        "n:password",
+        "n:select",
+        "View作成",
+        "JSP実装手順",
+        "入力画面JSP",
+        "確認画面JSP"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "共通化の指針",
+      "hints": [
+        "JSP共通化の指針",
+        "確認画面共通化",
+        "保守性",
+        "入力画面と確認画面"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "次に読むもの",
+      "hints": [
+        "カスタムタグ",
+        "画面共通化",
+        "n:confirmationPage"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch Application Frameworkは、入力画面と確認画面が1対1に対応する場合にJSPを共通化する機能を提供する。\n\n編集対象ファイル:\n- :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` (View): ユーザ情報登録画面に入力した内容・戻るボタン・登録ボタンを表示。W11AC0202.jspに取り込まれる。\n- :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`",
+    "s2": "入力画面と確認画面を共通化する場合、入力画面のJSPに全ての情報を記載する。確認画面のJSPには共通化用タグを記載するだけでよい。入力画面と確認画面で表示内容が異なる箇所は、入力画面JSPに分岐処理を記述する。\n\n**入力画面JSP (W11AC0201.jsp) の作成:**\n1. 両画面に共通する内容を記述する\n2. 入力画面でのみ表示する内容は `n:forInputPage` タグで囲む\n3. 確認画面でのみ表示する内容は `n:forConfirmationPage` タグで囲む\n\n> **注意**: `n:text`、`n:password`、`n:select` タグは、入力画面ではinput/selectタグとして出力されるが、確認画面では文字列として表示される。詳細: [入力項目の確認画面用の出力](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FormTag.html#output-for-confirmation-page)。サンプル提供のタグファイルを使用した場合、「nタグ」を直接使用するのではなく「fieldタグ」内で「nタグ」が出力される。\n\n> **注意**: `n:forInputPage` タグで囲まれた箇所は入力画面でのみ評価され、`n:forConfirmationPage` タグで囲まれた箇所は確認画面でのみ評価される。詳細: [入力画面と確認画面の表示切り替え](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#id13)\n\nサンプル: :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`\n\n**確認画面JSP (W11AC0202.jsp) の作成:**\n- `n:confirmationPage` タグを使用し、`path` 属性に共通化する入力画面へのパスを指定する\n\nサンプル: :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>`\n\n> **注意**: サンプルコードをそのまま保存しようとすると文字コードエラーが発生する。「説明」で始まるコメント行を削除してからファイルを保存すること。",
+    "s3": "**共通化を使用すべき場合**: 入力画面と確認画面がほぼ同一のシンプルな登録処理。JSP記述量が削減でき、生産性向上が見込まれる。\n\n**共通化を避けるべき場合**: 入力画面と確認画面の差異が大きい複雑な業務。入力画面と確認画面の場合分けを1画面に詰め込むと煩雑で保守性の低いコードになる。このような場合は別々のJSPファイルを作成すること。",
+    "s4": "[画面共通化のカスタムタグ使用方法を詳しく知りたい時](../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FacilitateTag.html#webview-inputconfirmationcommon)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 4 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

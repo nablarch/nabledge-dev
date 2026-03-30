@@ -1,0 +1,202 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/FAQ/batch/2.rst`
+- Format: `rst`
+
+```
+データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？
+========================================================================================================================
+
+.. admonition:: question
+
+    データベースをインプットとして処理を行う場合で、インプットデータが処理済みの場合の処理の流れは以下のようになると思います。
+
+     #. 入力データを受け取る。
+     #. データを出力する。(テーブルへのINSERTやUPDATE)
+
+    このようなケースの場合、INSERTやUPDATE時にEntityは使用せずに1項目ずつsetStringやsetObjectを呼び出す想定でいます。
+    イメージ的には、以下のような実装を想定しています。
+    
+    これは、実装方法として正しいのでしょうか？
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityは使用せずに1項目ずつ値をバインドする。
+            SqlPStatement statement = getSqlPStatement("INSERT_SQL");
+            statement.setString(1, inputData.getString("id"));
+            statement.setString(2, inputData.getString("name"));
+            statement.setString(3, inputData.getString("kana_name"));
+            statement.setString(4, inputData.getString("tel"));
+            statement.executeUpdate();
+
+            return new Success();
+        }
+
+.. admonition:: answer
+
+    精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERTやUPDATE処理を行うようにしてください。
+
+    なぜなら、保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きいからです。
+    また、1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能も使用することができなくなってしまいます。
+
+    上記の **question** にある実装を、Entityを使用した実装に置き換えると以下のようになります。
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityを生成して、データベースの更新を行う。
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SQL");
+            statement.executeUpdateByObject(new SampleEntity(inputData));
+
+            return new Success();
+        }
+
+.. admonition:: related information
+
+    * :doc:`6`
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-2`
+
+```json
+{
+  "id": "nablarch-batch-2",
+  "title": "データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースINSERT/UPDATE時のEntity使用方針",
+      "hints": [
+        "SqlRow",
+        "SqlPStatement",
+        "ParameterizedSqlPStatement",
+        "SampleEntity",
+        "executeUpdateByObject",
+        "ExecutionContext",
+        "Result",
+        "Success",
+        "バッチ処理",
+        "Entity使用",
+        "データベース更新",
+        "共通項目設定",
+        "INSERT",
+        "UPDATE",
+        "保守性",
+        "生産性"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERT/UPDATE処理を行うこと。\n\nEntityを使用する理由は2つある:\n1. 保守性や生産性の面で、1項目ずつ値を設定するよりもEntityを使用したデータベース更新（INSERTやUPDATE）のほうがメリットが大きい。\n2. 1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能が使用できなくなる。\n\n**非推奨（Entityなし）**:\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    SqlPStatement statement = getSqlPStatement(\"INSERT_SQL\");\n    statement.setString(1, inputData.getString(\"id\"));\n    statement.setString(2, inputData.getString(\"name\"));\n    statement.setString(3, inputData.getString(\"kana_name\"));\n    statement.setString(4, inputData.getString(\"tel\"));\n    statement.executeUpdate();\n    return new Success();\n}\n```\n\n**推奨（Entity使用）**:\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SQL\");\n    statement.executeUpdateByObject(new SampleEntity(inputData));\n    return new Success();\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

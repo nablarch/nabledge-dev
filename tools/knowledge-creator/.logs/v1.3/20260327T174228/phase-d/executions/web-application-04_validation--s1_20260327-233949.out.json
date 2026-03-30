@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-04_validation--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source provides two concrete examples explaining the decision rationale for Entity vs. direct Form property, both omitted. (1) 内線番号→UsersEntity illustrates table-mapped properties going through Entity. (2) 新パスワード・確認用パスワード→direct Form property explains that because the DB stores only an encrypted password (no plain-text column), these cannot map to an Entity and must be added directly. The encryption rationale is a non-obvious design constraint that is decision-relevant.",
+      "source_evidence": "後者の例を挙げると、本サンプルで画面から入力する、\"新(変更後)パスワード\"と\"パスワード(確認用)\"は2つが平文で入力されるが、システムアカウントテーブルには暗号化されたパスワードを格納するカラムだけがある。この場合、これらのプロパティは、直接Formクラスのプロパティとして追加する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The PascalCase class name `UsersEntity` appears in the s5 code example (field declaration and @ValidationTarget setter) but is absent from s5's hints array. Per V4, PascalCase class names from content should be included in hints.",
+      "source_evidence": "private UsersEntity users; ... @ValidationTarget public void setUsers(UsersEntity users) { this.users = users; }"
+    }
+  ]
+}

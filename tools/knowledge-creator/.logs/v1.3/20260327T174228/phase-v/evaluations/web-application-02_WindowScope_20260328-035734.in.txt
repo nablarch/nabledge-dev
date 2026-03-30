@@ -1,0 +1,176 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-02_WindowScope`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "s1",
+    "description": "The image alt text '複数の入力画面でhiddenタグによりデータを引き継ぐシーケンス図' has no basis in the source. The source only contains `.. image:: ./_image/sequence.png` with no caption or alt text attribute.",
+    "source_evidence": ".. image:: ./_image/sequence.png  (no alt text or caption in source)"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _guide_appendix_windowScope:
+
+=======================================
+Appendix A: ウィンドウスコープ概要
+=======================================
+
+ウィンドウスコープとは、リクエストを跨るデータを格納する領域である。\
+セッションスコープがアプリケーションサーバ上でデータを格納するのに対して、\
+ウィンドウスコープは、複数画面間をhiddenタグで持ちまわることにより実現される。
+ウィンドウスコープを使用することで、ブラウザで複数のウィンドウを立ち上げても\
+並列に動作させることができる。また、ブラウザのヒストリバックによる遷移が可能となる。
+
+動作イメージ
+============
+
+以下に、複数の入力画面で構成されるアンケートアプリケーションの例を記載する。\
+ユーザからの入力項目をhiddenタグで持ちまわることで、\
+セッションスコープを使用せずに複数画面をまたがって情報を保持している。
+
+
+
+.. image:: ./_image/sequence.png
+
+
+上記のように、hiddenで引き継がれる情報は特定のウィンドウ内のHTMLに記載されている。\
+このようにして、他のウィンドウやタブに影響を与えずに、複数のリクエストをまたがったデータ共有を実現している。
+
+.. note::
+ ウィンドウスコープに格納された変数は、カスタムタグを使用することで自動的にhiddenタグに変換されるので、
+ **アプリケーションプログラマがJSPにhiddenタグを書く必要はない。**\
+ （具体的な実装方法は、\ :ref:`window_scope_guide_links`\ のリンク先を参照。）
+
+
+セッションスコープとの使い分け
+==============================
+
+基本的に、セッションスコープではなく、\ **ウィンドウスコープを使用**\ する。
+
+ただし、ウィンドウスコープは、その名の通りウィンドウ内のデータ領域である為、
+ウィンドウ間でのデータを共有する用途\ [#]_\ には使用できない。\
+よって、ウィンドウ間でデータを共有する必要がある場合はセッションスコープにデータを格納する。\
+逆に、ウィンドウ間で共有する必要の無いデータについては、ウィンドウスコープを使用する。
+つまり、ほとんどの場合ではウィンドウスコープを使用することになる。
+
+
+ .. [#] 例えば、ショッピングサイトにおけるショッピングカート内の商品情報は、ユーザが複数のウィンドウを使用していても、ユーザに対して１つにしなければならない。このような用途にはセッションスコープを使用する。
+
+.. _`window_scope_guide_links`:
+
+詳細情報
+========
+
+詳細については、以下の文書を参照すること。
+
+* ウィンドウスコープ、セッションスコープ等の変数スコープについて
+
+  画面オンライン処理用業務アクションハンドラ - `変数スコープの利用  <../../../fw/reference/handler/HttpMethodBinding.html#web-scope>`_
+
+* カスタムタグを使用したウィンドウスコープの使用方法について
+
+  カスタムタグ実装例集 - :ref:`howto_window_scope` 
+
+ 
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-02_WindowScope",
+  "title": "Appendix A: ウィンドウスコープ概要",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "動作イメージ",
+      "hints": [
+        "ウィンドウスコープ",
+        "hiddenタグ",
+        "複数画面間のデータ保持",
+        "カスタムタグ",
+        "JSP",
+        "ヒストリバック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "セッションスコープとの使い分け",
+      "hints": [
+        "ウィンドウスコープ",
+        "セッションスコープ",
+        "スコープ選択",
+        "ウィンドウ間データ共有",
+        "ショッピングカート"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "詳細情報",
+      "hints": [
+        "変数スコープ",
+        "howto_window_scope",
+        "カスタムタグ実装例集",
+        "HttpMethodBinding",
+        "window_scope_guide_links"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープは、リクエストを跨るデータを格納する領域。セッションスコープがサーバ上でデータを格納するのに対し、複数画面間をhiddenタグで持ちまわることで実現される。ブラウザで複数ウィンドウを立ち上げても並列動作が可能で、ヒストリバックによる遷移も可能。\n\nhiddenで引き継がれる情報は特定ウィンドウ内のHTMLに記載されるため、他のウィンドウやタブに影響を与えずに複数リクエストをまたがったデータ共有を実現する。\n\n> **注意**: ウィンドウスコープに格納された変数は、カスタムタグを使用することで自動的にhiddenタグに変換される。**アプリケーションプログラマがJSPにhiddenタグを書く必要はない**（具体的な実装方法は :ref:`window_scope_guide_links` 参照）。\n\n![複数の入力画面でhiddenタグによりデータを引き継ぐシーケンス図](assets/web-application-02_WindowScope/sequence.png)",
+    "s2": "**基本方針**: セッションスコープではなく**ウィンドウスコープを使用**する。\n\n- **ウィンドウスコープを使用**: ウィンドウ間で共有する必要のないデータ（ほとんどの場合）\n- **セッションスコープを使用**: ウィンドウ間でデータを共有する必要がある場合（例: ショッピングカート内の商品情報はユーザが複数ウィンドウを使用していてもユーザに対して1つにしなければならないケース）",
+    "s3": "- 変数スコープの利用（ウィンドウスコープ、セッションスコープ等）: 画面オンライン処理用業務アクションハンドラ - [変数スコープの利用](../../../fw/reference/handler/HttpMethodBinding.html#web-scope)\n- カスタムタグを使用したウィンドウスコープの使用方法: カスタムタグ実装例集 - :ref:`howto_window_scope`"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-02_WindowScope",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The image alt text '複数の入力画面でhiddenタグによりデータを引き継ぐシーケンス図' has no basis in the source. The source only contains `.. image:: ./_image/sequence.png` with no caption or alt text attribute.",
+      "source_evidence": ".. image:: ./_image/sequence.png  (no alt text or caption in source)"
+    }
+  ]
+}
+--- Phase E logs ---
+
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

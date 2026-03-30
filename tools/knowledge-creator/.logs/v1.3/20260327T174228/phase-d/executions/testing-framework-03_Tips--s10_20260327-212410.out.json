@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-03_Tips--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "The `dbTransactionManager` property is defined in the test XML configuration snippet for FastTableIdGenerator (source: `<property name=\"dbTransactionManager\" ref=\"dbTransactionManager\" / >`) but is absent from s1's hints array.",
+      "source_evidence": "<property name=\"dbTransactionManager\" ref=\"dbTransactionManager\" / >"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[s10].hints",
+      "description": "`beginTransactions` and `endTransactions` appear in s10's hints but are not mentioned anywhere in the s10 source section (「デフォルト以外のトランザクションを使用したい」). These methods are only introduced in the s12 source section (「本フレームワークのクラスを継承せずに使用したい」). Including them as hints for s10 has no basis in the s10 source.",
+      "source_evidence": "s10 source contains only: 「テストクラスにてDbAccessTestSupportを継承する（これにより、スーパークラスの@Before、@Afterメソッドが自動的に呼び出される）」— no mention of beginTransactions/endTransactions. These methods first appear in the s12 code example: `dbSupport.beginTransactions()` / `dbSupport.endTransactions()`."
+    }
+  ]
+}

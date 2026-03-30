@@ -1,0 +1,55 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "前提事項 section",
+      "description": "The entire 前提事項 (Prerequisites) section is absent from the knowledge file. This section contains a critical applicability constraint: the HTML dump-based request unit testing targets only thin-client web applications with 1 request = 1 screen transition, and explicitly states that Ajax or rich client applications CANNOT use HTML dump for layout verification. Also omitted: the note that non-JSP view technologies can produce HTML dumps if they render the full screen on a servlet container.",
+      "source_evidence": "内蔵サーバを利用してHTMLダンプを出力するというリクエスト単体テストは、１リクエスト１画面遷移のシンクライアント型Webアプリケーションを対象としている。Ajaxやリッチクライアントを利用したアプリケーションの場合、HTMLダンプによるレイアウト確認は使用できない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "構造 > BasicHttpRequestTestTemplate section",
+      "description": "The BasicHttpRequestTestTemplate section is entirely absent. The source describes it as the superclass for all test classes, that using it standardizes test sources and test data, and that it significantly reduces the amount of test source code to write. This is useful context for AI to answer questions about which class to extend.",
+      "source_evidence": "本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、テストソース記述量を大きく削減できる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "構造 > AbstractHttpRequestTestTemplate section",
+      "description": "The AbstractHttpRequestTestTemplate section is entirely absent. The source states that application programmers do NOT use this class directly, and that it is used when extending the auto-test framework (e.g., to change the test data format). This constraint is important for AI to answer questions about when/whether to use this class.",
+      "source_evidence": "アプリケーションプログラマが直接使用することはない。テストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "構造 > TestCaseInfo section",
+      "description": "The TestCaseInfo section under 構造 is absent. The source explains that when you want to change the test data format, you should inherit both TestCaseInfo and AbstractHttpRequestTestTemplate. This inheritance instruction is decision-necessary for customization scenarios.",
+      "source_evidence": "テストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — setToken usage code example",
+      "description": "The knowledge file omits the code example demonstrating how to use setToken with a boolean value read from test data (using Boolean.parseBoolean). This example illustrates the primary use case for setToken over setValidToken: avoiding if/else branching in test code by driving token setup from test data.",
+      "source_evidence": "String isTokenValid; \nsetToken(req, ctx, Boolean.parseBoolean(isTokenValid)));\n以下のように使用することで、テストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — repository reinitialization step 2",
+      "description": "The knowledge file says \"テスト対象WebアプリケーションのコンポーネントXMLを用いてリポジトリを再初期化\" but the source only says \"コンポーネント設定ファイル\" (component configuration file). The source does not specify the file format as XML; adding \"XML\" is an unsupported assertion.",
+      "source_evidence": "テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — section count",
+      "description": "The knowledge file has 5 sections but the source contains at least 6 content areas with substantive information (前提事項, BasicHttpRequestTestTemplate, AbstractHttpRequestTestTemplate, TestCaseInfo, 実行/リポジトリ初期化, メッセージ, HTMLダンプ). The 前提事項 section in particular, as an h2-level heading with important constraints, warrants its own section rather than being omitted entirely.",
+      "source_evidence": "Automated pre-check: Section count 5 < source headings 6. Source h2 sections include 前提事項 (Prerequisites) which is absent from the knowledge file."
+    }
+  ]
+}

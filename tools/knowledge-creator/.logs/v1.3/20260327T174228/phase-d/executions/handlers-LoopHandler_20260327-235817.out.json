@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-LoopHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The exclusive use statement (排他利用) with TransactionManagementHandler and RequestThreadLoopHandler is labeled as **警告** in the knowledge file, but in the source it is a plain statement — not inside a `.. warning::` block. Only the bulk commit risk is a formal warning in the source.",
+      "source_evidence": "本ハンドラの機能はトランザクション管理機能とループ制御機能を兼ねているため :doc:`TransactionManagementHandler` および :doc:`RequestThreadLoopHandler` とは排他利用である。 (no warning directive; the .. warning:: block that follows covers only the rollback risk)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Knowledge file says 'コミット間隔でスループット調整可能' (throughput is adjustable), but the source says 'バッチ処理のスループットを向上させることができる' (can improve batch throughput). The meaning is changed: source claims improvement/enhancement, not adjustment, and the batch processing context is dropped.",
+      "source_evidence": "これにより、バッチ処理のスループットを向上させることができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "`TransactionManagementHandler` (the handler class itself, without `.Callback` suffix) is absent from s1 hints, despite being a key class named in the exclusive use constraint. Users asking about TransactionManagementHandler compatibility would not be routed here.",
+      "source_evidence": ":doc:`TransactionManagementHandler` および :doc:`RequestThreadLoopHandler` とは排他利用である。"
+    }
+  ]
+}

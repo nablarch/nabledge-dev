@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-WebFrontController",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — [例外処理] 3a",
+      "description": "The qualifier 'サーバプロセスの継続に影響するような特定の' is dropped from the fatal-error clause. The source says 'サーバプロセスの継続に影響するような特定の致命的エラーを除けば' (only fatal errors that affect server process continuation are excluded from GlobalErrorHandler's catch), whereas the knowledge file says simply '致命的エラーを除けば'. The qualifier narrows which fatal errors bypass GlobalErrorHandler, so its removal slightly loosens the meaning.",
+      "source_evidence": "サーバプロセスの継続に影響するような特定の致命的エラーを除けば、ここで例外を捕捉することは無い。"
+    }
+  ]
+}

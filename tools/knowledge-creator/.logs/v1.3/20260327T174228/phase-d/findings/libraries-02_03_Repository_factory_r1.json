@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_03_Repository_factory",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — ファクトリークラス実装例 code block comments",
+      "description": "The factory class code example in the knowledge file omits all comments from the source. The source contains an important 注意 (WARNING) block and an implementation note:\n1. 'このコードはプロジェクトのアーキテクトが作成するものである / 通常、各アプリケーション・プログラマはこのような実装を行わない' — this is role-based guidance (architect vs. app programmer)\n2. 'フレームワーク外のソフトウェアに含まれるクラスの場合は、クラスに必要な初期化処理をハードコーディングする' — this is a specific implementation requirement for external-framework classes (hard-code initialization instead of just calling new)\n\nThe second point in particular is decision-necessary information: it tells developers what to do differently when the target class comes from software outside the framework.",
+      "source_evidence": "// ******** 注意 ********\n// 下記のコードはプロジェクトのアーキテクトが作成するものである。\n// 通常、各アプリケーション・プログラマはこのような実装を行わない。\n...\n// この例では単にクラスをnewして返しているが、フレームワーク外のソフトウェアに\n// 含まれるクラスの場合は、クラスに必要な初期化処理をハードコーディングする。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — opening sentence",
+      "description": "The knowledge file adds '（`ComponentFactory`クラス自体はコンポーネントにならない）' as an explicit parenthetical claim. The source never states this directly; it only states that the returned object of createObject becomes the component. While this is a reasonable inference, it is not a verbatim or paraphrased statement from the source.",
+      "source_evidence": "DIコンテナはこの設定を特別に扱い、ComponentFactory インタフェースに定義された createObject メソッドで返されたオブジェクトをコンポーネントとする。 (no explicit statement that the factory class itself does not become a component)"
+    }
+  ]
+}

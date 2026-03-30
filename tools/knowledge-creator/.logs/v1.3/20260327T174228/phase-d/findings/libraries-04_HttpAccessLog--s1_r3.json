@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — HTTPアクセスログの出力項目 table",
+      "description": "実行時ID is missing from the output items table. The source RST table contains a row for 実行時ID (処理の実行を一意に識別するID) between リクエストID and ユーザID. The knowledge file's table skips this item entirely.",
+      "source_evidence": "実行時ID | 処理の実行を一意に識別するID。 (source table, between リクエストID and ユーザID rows)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints array",
+      "description": "実行時ID is absent from s1 hints. As a named output item in the access log, it is a searchable term that users may query about.",
+      "source_evidence": "実行時ID listed as a log output item in the HTTPアクセスログの出力項目 section of the source"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "file_id": "about-nablarch-concept--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — Result interface / isSuccess() method",
+      "description": "The `@Published` annotation on `isSuccess()` is not reflected in the knowledge file. In the source, only `isSuccess()` carries `@Published`, meaning it is the sole method in the `Result` interface guaranteed for application-developer use. `getStatusCode()` and `getMessage()` are not `@Published`. This distinction is decision-necessary: an AI agent advising a developer on which `Result` methods are safe to call in business code would give incorrect guidance without it.",
+      "source_evidence": "@Published\nboolean isSuccess();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`@Published` is absent from the hints. It appears in the source as an annotation on `isSuccess()` and is a searchable marker for identifying Nablarch's public-API boundary.",
+      "source_evidence": "@Published\nboolean isSuccess();"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "`ExecutionContext` is missing from hints. It appears in both method signatures of `TransactionEventCallback` (`transactionNormalEnd(TData data, ExecutionContext ctx)` and `transactionAbnormalEnd(Throwable e, TData data, ExecutionContext ctx)`) and is a prominent class developers would search by name.",
+      "source_evidence": "void transactionNormalEnd(TData data, ExecutionContext ctx);\nvoid transactionAbnormalEnd(Throwable e, TData data, ExecutionContext ctx);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints array",
+      "description": "`ExecutionContext` is missing from hints. It appears as a parameter in all three `DataReader` method signatures (`read`, `hasNext`, `close`) and is a class developers commonly search for when working with data readers.",
+      "source_evidence": "TData read(ExecutionContext ctx);\nboolean hasNext(ExecutionContext ctx);\nvoid close(ExecutionContext ctx);"
+    }
+  ]
+}

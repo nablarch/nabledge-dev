@@ -1,0 +1,507 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/08_TestTools/05_JavaStaticAnalysis/UnpublishedApi.rst`
+- Format: `rst`
+
+```
+.. _java_check_tool_unpublished_api:
+
+============================
+使用不許可APIチェックツール
+============================
+
+使用不許可APIチェックツールの仕様と使用方法を記述する。
+
+概要
+====
+
+本ツールは、Javaコーディング規約にて規定されている使用許可API以外のAPIを使用させないため、使用されているAPIをチェックするツールである。
+
+使用できるAPIを限定することにより、安全でない実装を抑制でき、また、保守性向上などのメリットも得られる。
+
+前提条件
+=========
+
+* Nablarch開発環境構築ガイドに従って開発環境を構築済みであること。
+
+仕様
+====
+
+本ツールは、コーディング規約で定められた使用を許可するAPI(以下、公開API)以外を使用していないことをチェックするツールである。
+公開APIの指定は、ホワイトリスト形式で設定ファイルに記述する仕様となっているため、Nablarch導入プロジェクトのコーディング規約に従いカスタマイズを行うことが可能である。
+
+公開APIは設定ファイルで指定する。詳細は :ref:`01_customJavaAnalysis` を参照のこと。
+
+公開API以外の呼び出しは、下記ルールに従いチェックを行う。
+
+* 非公開クラスの参照（インスタンス化、クラスメソッドの呼び出し）
+* 非公開メソッドの呼び出し
+* 非公開例外の補足、及び送出
+
+設定ファイルには次の単位で公開APIを指定できる。
+
+* パッケージ
+* クラスまたはインタフェース
+* コンストラクタまたはメソッド
+
+デフォルトでは、Nablarchが提供する標準のJavaコーディング規約に準拠した以下の設定ファイルを提供する。
+
+
+  ===========================================  ===========================================================================================================
+  設定ファイル名                               概要
+  ===========================================  ===========================================================================================================
+  JavaOpenApi.config                           Nablarchが規定するJava標準ライブラリ使用可能API
+  NablarchApiForProgrammer.config              プログラマ向け Nablarch Application Framework 使用可能API （業務機能の実装に必要なAPI）
+  NablarchTFWApiForProgrammer.config           プログラマ向け Nablarch Testing Framework 使用可能API （業務機能のテストに必要なAPI）
+  NablarchApiForArchitect.config               アーキテクト向け Nablarch Application Framework 使用可能API （NAFの機能拡張などで利用する必要があるAPI）
+  NablarchTFWApiForArchitect.config            アーキテクト向け Nablarch Testing Framework 使用可能API （NTFの機能拡張などで利用する必要があるAPI）
+  ===========================================  ===========================================================================================================
+
+本ツールはFindBugsのカスタムルールとして提供する。
+つまり、次のように通常のFindBugs使用と同じ方法で使用できる。また、チェック結果も他のFindBugsのバグと同様の方法で確認できる。
+
+* Antを使用して実行
+* Eclipse Pluginとして実行
+
+各使用方法についての詳細は :ref:`01_customJavaAnalysisEclipse` 、 :ref:`01_customJavaAnalysisAnt` を参照のこと。
+
+本ツールが提供するFindBugsのカスタムルールのバグコード、バグタイプは次のとおりである。
+
+* バグコード ： UPU
+* バグタイプ ： UPU_UNPUBLISHED_API_USAGE
+
+
+継承・インタフェース実装に関するチェック仕様
+--------------------------------------------
+
+継承されたメソッド、インタフェースにて定義されたメソッドに対するチェック仕様は通常のチェック仕様とは異なる。
+ここでは継承・インタフェース実装に関するチェック仕様について詳述する。
+なお、本ツールはJavaコーディング規約に従い、インタフェース実装クラスへのアクセスはインタフェースを型として宣言していることを前提としている。
+
+*   以下に、SubClassがSuperClassを継承している場合のチェック仕様を示す。
+
+
+  例： ::
+
+    List list = new ArrayList();
+    list.add(test); // Listインタフェースのaddメソッドが公開されていることをチェックする
+
+    SuperClass varSuper = new SubClass();
+    varSuper.testMethod(); // SuperClass.testMethodが公開されていることをチェックする。
+
+    SubClass varSub = new SubClass();
+    varSub.testMethod(); // SubClass.testMethod()が公開されていることをチェックする。
+
+* 宣言されているクラス・インタフェースに当該のAPIが定義されていない場合、その親クラスまたはインタフェースを自クラスに近い方から順次検索する。
+  そして、最初にそのAPIが定義されているクラスが見つかったら、そのクラスのメソッドが公開されているか否かを判定する。
+
+  例：
+
+  下図のような継承関係を考える。
+
+    .. image:: ./_image/InheritClasses.jpg
+
+    この時、使用可能か否かは次のとおりである。 ::
+
+      ClassC hoge = new ClassC();
+      hoge.methodA(); // 使用可能
+      hoge.methodB(); // 使用不可
+
+設定ファイル
+================
+
+ここでは、本ツールの設定ファイルの配置方法、記述方法を記述する。
+
+設定ファイル配置方法
+----------------------
+
+設定ファイルを格納したディレクトリ（以後、設定ファイルディレクトリ）には、複数の設定ファイルを配置することが可能である。
+設定ファイルの拡張子は「config」とすること。
+
+  .. warning::
+    当ツールは、使用されている全てのAPIに対してチェックを行う。そのため、デフォルトで提供する設定ファイルのみでは、自プロジェクトで宣言しているAPIにもチェックしてしまう。
+    そのため、自プロジェクトで宣言しているAPIを公開する設定を行う必要がある。
+    **デフォルトの2つの設定ファイルとは別に、自プロジェクト用の設定ファイルを設定ファイルディレクトリに配置し、自プロジェクトのパッケージを一意に特定できるパッケージを記述すること。**
+
+    例：プロジェクトにて作成する全てのパッケージが「jp.co.tis.sample」で始まる場合、「jp.co.tis.sample」と記述したテキストファイルを1つ設定ファイルディレクトリに配置する。
+
+また上記の通り、Nablarchは対象とする開発者・スコープごとに4種類の設定ファイルを提供している。これらの設定ファイルの配置例を以下に示す。
+
+  * チェックする単位（各Eclipseプロジェクトなど）毎に、プロダクションコード向けの設定ファイルディレクトリとテストコード向けの設定ファイルディレクトリを用意し、下記のようにファイルを配置する ::
+
+      <ワークスペース>
+      ├─<プロジェクト>
+      │  │  ├─tool
+      │  │  │   ├─staticanalysis
+      │  │  │   │  ├─production（プロダクションコード用設定ファイルディレクトリ）
+      │  │  │   │  │  └─ NablarchApiForProgrammer.config
+      │  │  │   │  ├─test（テストコード用設定ファイルディレクトリ）
+      │  │  │   │  │  ├─ NablarchApiForProgrammer.config
+      │  │  │   │  │  └─ NablarchTFWApiForProgrammer.config
+
+  * チェック対象がフレームワークの拡張などを行うためのコードの場合には、NablarchApiForArchitect.config, NablarchTFWApiForArchitect.configを利用する。
+
+
+.. _01_customJavaAnalysis:
+
+設定ファイル記述方法
+----------------------
+
+設定ファイルには、パッケージ、クラス、インタフェース、コンストラクタ、メソッドのレベルで公開したいAPIを指定できる。
+
+  ===========================  ==================================================================================
+  指定レベル                    説明と記述方法
+  ===========================  ==================================================================================
+  パッケージ 　                指定されたパッケージに含まれる全てのAPI（サブパッケージのAPIを含める。）を公開する。
+
+                               .. admonition:: 設定例
+
+                                .. code-block:: java
+
+                                 // java.lang配下を公開する場合
+                                 java.lang
+                                 // nablarch.fw.web配下を公開する場合
+                                 nablarch.fw.web
+
+  クラス、インタフェース       指定されたクラスまたはインタフェースに含まれる全てのAPIを公開する。
+
+                               クラスの完全修飾名を記述する。
+
+                               .. admonition:: 設定例
+
+                                .. code-block:: java
+
+                                 // CodeUtilの全ての機能を公開する場合
+                                 nablarch.common.code.CodeUtil
+                                 // Result.Successの全ての機能を公開する場合
+                                 // Successは、Resultのネストクラス
+                                 nablarch.fw.Result.Success
+
+  コンストラクタ、メソッド     指定されたコンストラクタまたはメソッドを公開する。
+
+                               コンストラクタまたはメソッドの完全修飾名を記述する。
+                               参照型の引数も完全修飾名を記述すること。
+
+                               .. admonition:: 設定例
+
+                                .. code-block:: java
+
+                                 // コンストラクタの場合
+                                 java.lang.Boolean.Boolean(boolean)
+                                 java.lang.StringBuilder.StringBuilder(java.lang.String)
+                                 nablarch.fw.web.HttpResponse.HttpResponse()
+
+                                 // メソッド呼出の場合
+                                 java.lang.String.indexOf(int)
+                                 nablarch.core.validation.ValidationContext.isValid()
+                                 nablarch.fw.web.HttpResponse.write(byte[])
+                                 nablarch.fw.web.HttpRequest.setParam(java.lang.String, java.lang.String...)
+
+                                 //*******************************************************************
+                                 // ネストクラスのコンストラクタの場合
+                                 //*******************************************************************
+                                 // ネストクラスの場合は、記述方法が完全修飾名とは異なるため注意すること。
+                                 // 以下にネストクラスの場合の記述例を示す。
+
+                                 // コンストラクタの場合
+                                 // SuccessがResultクラスのネストクラスの場合で引数なしコンストラクタを公開する場合は、
+                                 // コンストラクタ名は「Result.Success()」と設定すること。
+                                 // ※nablarch.fw.Result.Success.Success()と設定した場合、
+                                 // Result.Successクラスのコンストラクタは使用可能とはならないので注意すること。
+                                 nablarch.fw.Result.Success.Result.Success()
+                                 // 引数ありコンストラクタの場合
+                                 nablarch.fw.Result.Success.Result.Success(java.lang.String)
+
+                                 // メソッド呼出の場合
+                                 nablarch.fw.Result.Success.Result.getStatusCode()
+
+  ===========================  ==================================================================================
+
+
+設定ファイルの1行につき、1つの公開APIを記述する。記述の順序は問わない。
+次は、設定ファイルの記述例である。
+
+  ::
+
+    java.lang
+    nablarch.fw.web
+    nablarch.common.code.CodeUtil
+    java.lang.Object
+    java.lang.Boolean(boolean)
+    java.lang.StringBuilder(java.lang.String)
+    nablarch.fw.web.HttpResponse.HttpResponse()
+    java.lang.String.indexOf(int)
+    nablarch.core.validation.ValidationContext.isValid()
+    nablarch.fw.web.HttpResponse.write(byte[])
+    nablarch.fw.web.HttpRequest.setParam(java.lang.String, java.lang.String...)
+
+.. _01_customJavaAnalysisEclipse:
+
+Eclipse Pluginとして使用
+==========================
+
+ここでは、Eclipse Pluginとして本使用する場合の設定方法とチェック結果確認方法を記述する。
+
+なお、Eclipseでのチェックではアーキテクト向けとプログラマ向け、プロダクションコードとテストコードなどの分類に従ったチェックを行うことができない。
+CIなどでAntタスクとしても実行し、使用不許可APIが使用されていないことを分類に従って定期的に必ずチェックすること。
+
+* 設定方法は次のとおりである。Nablarch開発環境構築ガイドに従って環境構築を行った場合、この設定を行わなくてよい。
+
+  * 下記のように、本ツールが含まれるJAR「nablarch-tfw.jar」をFindBugsEclipsePluginホームディレクトリ直下にあるpluginディレクトリに配置する。 ::
+
+      <Eclipseホームディレクトリ>
+      ├─dropins(またはplugins)
+      │  │  ├─<FindBugsEclipsePluginホームディレクトリ>
+      │  │  │   ├─plugin
+      │  │  │   │  └─ nablarch-tfw.jar
+
+  * Eclipseホームディレクトリにある、eclipse.iniファイルを修正する。
+
+    システムプロパティに「nablarch-findbugs-config」をキーとして設定ファイルディレクトリの絶対パスを設定する。
+    具体的には、次のように「-vmargs」の下に「-Dnablarch-findbugs-config=<テストコード用設定ファイルディレクトリの絶対パス>」を記述する。 ::
+
+      -vmargs
+      -Dnablarch-findbugs-config=C:/nablarch/workspace/Nablarch_sample/tool/staticanalysis/published-config/test
+
+  * Eclipseを再起動する。
+
+* チェック結果は、エディターの左端に現れるバグマークまたは、FindBugsパースペクティブにて確認することができる。
+
+.. _01_customJavaAnalysisAnt:
+
+FindBugsのAntタスクとして使用
+================================
+
+ここでは、Antから本ツールを実行する場合の方法を記述する。チェック結果の確認方法は、各プロジェクトでFindBugsをどう使用するかによって異なるためここでは述べない（CI上で使用することを想定している）。
+
+FindBugsをAntから実行する場合、「nablarch-tfw.jar」をクラスパスに含めること。
+
+また、systemProperty要素に「nablarch-findbugs-config」というキーで、設定ファイルディレクトリの絶対パスを下記のように設定する必要がある。
+
+* プロダクションコードに対してチェックするタスク
+    プロダクションコード用設定ファイルディレクトリの絶対パスを設定する
+
+* テストコードに対してチェックするタスク
+    テストコード用設定ファイルディレクトリの絶対パスを設定する
+
+以下に、本ツールを使用する際のfindbugsタスクの定義例を示す。 (findbugsタスクの詳細は `Findbugs公式サイト <http://findbugs.sourceforge.net/ja/manual/anttask.html>`_ を参照のこと。)
+
+    .. code-block:: xml
+
+      <target name="findbugs">
+        <taskdef name="findBugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="tool_lib/findbugs-1.3.9-rc1/findbugs-ant.jar" />
+        <delete dir="reports/findbugs" />
+        <mkdir dir="reports/findbugs" />
+        <findbugs home="reports/findbugs"
+            output="xml"
+            outputFile="nablarch-findbugs.xml"
+            excludeFilter="findbugs-exclude.xml" >
+            <class location="target/main" />
+            <auxClasspath path="main/web/WEB-INF/lib/xxxxx.jar" />
+            <sourcePath path="main/java" />
+            <systemProperty name="nablarch-findbugs-config" value="C:/nablarch/workspace/Nablarch_sample/tool/staticanalysis/published-config" />
+        </findbugs>
+      </target>
+
+```
+
+## Knowledge File
+
+- ID: `java-static-analysis-UnpublishedApi`
+
+```json
+{
+  "id": "java-static-analysis-UnpublishedApi",
+  "title": "使用不許可APIチェックツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "使用不許可APIチェックツール",
+        "FindBugsカスタムルール",
+        "ホワイトリスト",
+        "公開API"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "仕様",
+      "hints": [
+        "UPU_UNPUBLISHED_API_USAGE",
+        "JavaOpenApi.config",
+        "NablarchApiForProgrammer.config",
+        "NablarchTFWApiForProgrammer.config",
+        "NablarchApiForArchitect.config",
+        "NablarchTFWApiForArchitect.config",
+        "非公開API使用チェック",
+        "バグコード UPU"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "継承・インタフェース実装に関するチェック仕様",
+      "hints": [
+        "継承チェック仕様",
+        "インタフェース実装チェック",
+        "宣言型によるチェック",
+        "親クラス検索"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "設定ファイル配置方法",
+      "hints": [
+        "設定ファイルディレクトリ",
+        "プロジェクト用設定ファイル",
+        "プロダクションコード設定",
+        "テストコード設定",
+        "nablarch-findbugs-config"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "設定ファイル記述方法",
+      "hints": [
+        "パッケージ指定",
+        "クラス指定",
+        "メソッド指定",
+        "ネストクラスコンストラクタ",
+        "ValidationContext",
+        "完全修飾名"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Eclipse Pluginとして使用",
+      "hints": [
+        "Eclipse Plugin",
+        "nablarch-findbugs-config",
+        "nablarch-tfw.jar",
+        "FindBugsパースペクティブ",
+        "eclipse.ini"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "FindBugsのAntタスクとして使用",
+      "hints": [
+        "Antタスク",
+        "nablarch-findbugs-config",
+        "nablarch-tfw.jar",
+        "systemProperty",
+        "findbugsタスク定義"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Javaコーディング規約で規定された公開API以外の使用をチェックするツール。公開APIはホワイトリスト形式の設定ファイルで指定し、プロジェクトのコーディング規約に合わせてカスタマイズ可能。",
+    "s2": "公開API以外の呼び出しを以下のルールでチェックする:\n- 非公開クラスの参照（インスタンス化、クラスメソッドの呼び出し）\n- 非公開メソッドの呼び出し\n- 非公開例外の補足および送出\n\n設定ファイルには以下の単位で公開APIを指定できる:\n- パッケージ\n- クラスまたはインタフェース\n- コンストラクタまたはメソッド\n\nデフォルト提供設定ファイル:\n\n| 設定ファイル名 | 概要 |\n|---|---|\n| `JavaOpenApi.config` | Java標準ライブラリ使用可能API |\n| `NablarchApiForProgrammer.config` | プログラマ向けNAF使用可能API（業務機能実装） |\n| `NablarchTFWApiForProgrammer.config` | プログラマ向けNTF使用可能API（業務機能テスト） |\n| `NablarchApiForArchitect.config` | アーキテクト向けNAF使用可能API（機能拡張等） |\n| `NablarchTFWApiForArchitect.config` | アーキテクト向けNTF使用可能API（機能拡張等） |\n\nFindBugsカスタムルールとして提供。バグコード: `UPU`、バグタイプ: `UPU_UNPUBLISHED_API_USAGE`。\n実行方法: Antタスクまたは Eclipse Plugin。",
+    "s3": "インタフェースを型として宣言していることを前提とする（Javaコーディング規約に従う）。\n\n宣言型に基づいてチェックを行う:\n```java\nList list = new ArrayList();\nlist.add(test); // Listインタフェースのaddメソッドが公開されているかをチェック\n\nSuperClass varSuper = new SubClass();\nvarSuper.testMethod(); // SuperClass.testMethodが公開されているかをチェック\n\nSubClass varSub = new SubClass();\nvarSub.testMethod(); // SubClass.testMethod()が公開されているかをチェック\n```\n\n宣言されたクラス・インタフェースに対象APIが定義されていない場合、親クラス/インタフェースを自クラスに近い方から順次検索し、最初にAPIが定義されたクラスのメソッドが公開されているか否かを判定する。\n\n例（ClassC が ClassB を継承、ClassB が ClassA を継承の場合、ClassA.methodA は公開済み、ClassB.methodB は非公開）:\n```java\nClassC hoge = new ClassC();\nhoge.methodA(); // 使用可能（ClassAのmethodAが公開されているため）\nhoge.methodB(); // 使用不可（ClassBのmethodBが非公開のため）\n```",
+    "s4": "設定ファイルの拡張子は `config` とすること。設定ファイルディレクトリには複数の設定ファイルを配置可能。\n\n> **警告**: 本ツールは使用されている全APIをチェックするため、デフォルト設定ファイルのみでは自プロジェクトで宣言しているAPIもチェック対象になる。デフォルトの設定ファイルとは別に、**自プロジェクト用の設定ファイルを設定ファイルディレクトリに配置し、自プロジェクトのパッケージを一意に特定できるパッケージを記述すること。**\n> 例: 全パッケージが `jp.co.tis.sample` で始まる場合、`jp.co.tis.sample` と記述したテキストファイルを設定ファイルディレクトリに配置する。\n\n設定ファイル配置例（プロダクションコード用とテストコード用でディレクトリを分ける）:\n```\n<ワークスペース>\n└─<プロジェクト>\n   └─tool/staticanalysis/\n      ├─production/（プロダクションコード用）\n      │  └─NablarchApiForProgrammer.config\n      └─test/（テストコード用）\n         ├─NablarchApiForProgrammer.config\n         └─NablarchTFWApiForProgrammer.config\n```\n\nフレームワーク拡張コードをチェックする場合は `NablarchApiForArchitect.config`、`NablarchTFWApiForArchitect.config` を使用する。",
+    "s5": "1行につき1つの公開APIを記述。記述順序は問わない。\n\n| 指定レベル | 説明 | 設定例 |\n|---|---|---|\n| パッケージ | 指定パッケージ配下の全API（サブパッケージ含む）を公開 | `java.lang`、`nablarch.fw.web` |\n| クラス・インタフェース | 指定クラス/インタフェースの全APIを公開。完全修飾クラス名を記述 | `nablarch.common.code.CodeUtil`、`nablarch.fw.Result.Success` |\n| コンストラクタ・メソッド | 指定コンストラクタ/メソッドを公開。完全修飾名で記述（参照型引数も完全修飾名） | `java.lang.Boolean.Boolean(boolean)`、`java.lang.String.indexOf(int)` |\n\n**ネストクラスのコンストラクタは通常の完全修飾名とは異なる記述方法が必要**:\n\n```\n// SuccessがResultのネストクラスの場合（引数なしコンストラクタ）\nnablarch.fw.Result.Success.Result.Success()\n// 引数ありコンストラクタ\nnablarch.fw.Result.Success.Result.Success(java.lang.String)\n// メソッドの場合\nnablarch.fw.Result.Success.Result.getStatusCode()\n```\n\n> **注意**: `nablarch.fw.Result.Success.Success()` と設定した場合、Result.Successクラスのコンストラクタは使用可能とはならない。\n\n設定ファイルの記述例:\n```\njava.lang\nnablarch.fw.web\nnablarch.common.code.CodeUtil\njava.lang.Object\njava.lang.Boolean(boolean)\njava.lang.StringBuilder(java.lang.String)\nnablarch.fw.web.HttpResponse.HttpResponse()\njava.lang.String.indexOf(int)\nnablarch.core.validation.ValidationContext.isValid()\nnablarch.fw.web.HttpResponse.write(byte[])\nnablarch.fw.web.HttpRequest.setParam(java.lang.String, java.lang.String...)\n```",
+    "s6": "> **注意**: Eclipseではアーキテクトとプログラマやプロダクションコードとテストコードの分類に従ったチェックができない。CIなどでAntタスクとしても実行し、分類に従ったチェックを定期的に必ず実施すること。\n\n**設定手順**（Nablarch開発環境構築ガイドに従って環境構築済みの場合は不要）:\n\n1. `nablarch-tfw.jar` をFindBugsEclipsePluginホームディレクトリ配下の `plugin` ディレクトリに配置:\n   ```\n   <Eclipseホームディレクトリ>/dropins(またはplugins)/<FindBugsEclipsePluginホームディレクトリ>/plugin/nablarch-tfw.jar\n   ```\n\n2. `eclipse.ini` の `-vmargs` 配下にシステムプロパティ `nablarch-findbugs-config` を設定:\n   ```\n   -vmargs\n   -Dnablarch-findbugs-config=<テストコード用設定ファイルディレクトリの絶対パス>\n   ```\n\n3. Eclipseを再起動する。\n\nチェック結果はエディターの左端のバグマークまたはFindBugsパースペクティブで確認できる。",
+    "s7": "FindBugsをAntから実行する際の設定:\n- `nablarch-tfw.jar` をクラスパスに含める。\n- `systemProperty` 要素にキー `nablarch-findbugs-config` で設定ファイルディレクトリの絶対パスを設定する。\n  - プロダクションコードチェックタスク: プロダクションコード用設定ファイルディレクトリの絶対パス\n  - テストコードチェックタスク: テストコード用設定ファイルディレクトリの絶対パス\n\nfindbugsタスク定義例:\n```xml\n<target name=\"findbugs\">\n  <taskdef name=\"findBugs\" classname=\"edu.umd.cs.findbugs.anttask.FindBugsTask\" classpath=\"tool_lib/findbugs-1.3.9-rc1/findbugs-ant.jar\" />\n  <delete dir=\"reports/findbugs\" />\n  <mkdir dir=\"reports/findbugs\" />\n  <findbugs home=\"reports/findbugs\"\n      output=\"xml\"\n      outputFile=\"nablarch-findbugs.xml\"\n      excludeFilter=\"findbugs-exclude.xml\" >\n      <class location=\"target/main\" />\n      <auxClasspath path=\"main/web/WEB-INF/lib/xxxxx.jar\" />\n      <sourcePath path=\"main/java\" />\n      <systemProperty name=\"nablarch-findbugs-config\" value=\"C:/nablarch/workspace/Nablarch_sample/tool/staticanalysis/published-config\" />\n  </findbugs>\n</target>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

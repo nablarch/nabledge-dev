@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — HTTPアクセスログの出力項目 table",
+      "description": "The output items table in s1 omits three items that are present in the source table: 出力日時（ログ出力時のシステム日時）、起動プロセスID（アプリケーションを起動したプロセス名）、処理方式区分（処理方式の特定に使用）. These are listed as logged items in the source.",
+      "source_evidence": "Source table rows: '出力日時 | ログ出力時のシステム日時', '起動プロセスID | アプリケーションを起動したプロセス名。実行環境の特定に使用する。', '処理方式区分 | 処理方式の特定に使用する。'"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — HTTPアクセスログの出力項目 section",
+      "description": "The knowledge file omits the critical distinction between 個別項目 and 共通項目. The source explains that (1) individual items (個別項目) span from リクエストID through 空きメモリ量(開始時), while 出力日時/起動プロセスID/処理方式区分 are common items (共通項目) configured via BasicLogFormatter; and (2) リクエストIDとユーザIDは共通項目と重複するが、フォーマットの自由度を高めるために個別項目として指定できる. This distinction is decision-critical for correct log configuration.",
+      "source_evidence": "HTTPアクセスログの個別項目は、リクエストID、ユーザID、URLから空きメモリ量(開始時)までとなる。残りの項目は、:ref:`Log_BasicLogFormatter` の設定で指定する共通項目となる。共通項目と個別項目を組み合わせたフォーマットについては、:ref:`AppLog_Format` を参照。 / リクエストIDとユーザIDは、:ref:`Log_BasicLogFormatter` が出力を提供する共通項目と重複するが、HTTPアクセスログのフォーマットの自由度を高めるために個別項目として指定できるようにしている。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — introduction",
+      "description": "The knowledge file omits the intended dual-use design note from the introduction: that when request parameter output satisfies audit trail (証跡ログ) requirements, HTTPアクセスログと証跡ログを兼用することも想定している. This is relevant context for users designing their logging strategy.",
+      "source_evidence": "リクエストパラメータを含めたリクエスト情報を出力することで、個別アプリケーションの証跡ログの要件を満たせる場合は、HTTPアクセスログと証跡ログを兼用することも想定している。"
+    }
+  ]
+}

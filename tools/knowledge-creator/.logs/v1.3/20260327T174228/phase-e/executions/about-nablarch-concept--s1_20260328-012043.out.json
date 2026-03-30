@@ -1,0 +1,67 @@
+{
+  "id": "about-nablarch-concept--s1",
+  "title": "NAF基本アーキテクチャ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "NAFのアプリケーション動作モデル",
+      "hints": [
+        "ハンドラキュー",
+        "業務アクションハンドラ",
+        "リクエスト処理フロー",
+        "NAFアーキテクチャ",
+        "ハンドラ",
+        "handlerQueue"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "標準ハンドラ構成",
+      "hints": [
+        "TransactionManagementHandler",
+        "RequestPathJavaPackageMapping",
+        "PermissionCheckHandler",
+        "ServiceAvailabilityCheckHandler",
+        "HttpResponseHandler",
+        "HttpAccessLogHandler",
+        "NablarchTagHandler",
+        "MultiThreadExecutionHandler",
+        "DuplicateProcessCheckHandler",
+        "MessageReplyHandler",
+        "MessageResendHandler",
+        "標準ハンドラ構成",
+        "画面オンライン処理",
+        "バッチ処理",
+        "メッセージング処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "アプリケーションの実行と初期化処理",
+      "hints": [
+        "NablarchServletContextListener",
+        "WebFrontController",
+        "RepositoryBasedWebFrontController",
+        "Main",
+        "StatusCodeConvertHandler",
+        "GlobalErrorHandler",
+        "LoopHandler",
+        "DataReadHandler",
+        "RequestPathJavaPackageMapping",
+        "MultiThreadExecutionHandler",
+        "リポジトリ初期化",
+        "ハンドラキュー構築",
+        "サーブレットコンテナ",
+        "Javaコマンド起動",
+        "diConfig"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**リクエスト**: NAFにおける処理の最小単位。「処理」と「データ」から構成される。\n- 画面オンライン処理: HTTPリクエストが最小単位\n- バッチ処理: ファイルまたはDBのデータレコードが最小単位\n\n**ハンドラキュー**: 処理を「トランザクション制御」「応答電文の送信」などのステップごとにハンドラ（モジュール）に分割し、実行順に並べたキュー。\n\n処理フロー:\n1. 先頭ハンドラがリクエストを受け取り、ハンドラキューを順次実行（往路）\n2. 末尾の**業務アクションハンドラ**（業務ロジックを実装したハンドラ）が業務処理を実行し、処理結果をリターン\n3. 処理結果がハンドラキューを逆順に遡り（復路）、先頭ハンドラまで戻った時点で処理完了\n\n![NAFにおけるアプリケーションの基本構造](assets/about-nablarch-concept--s1/handler_queue.png)",
+    "s2": "NAFのハンドラ種別:\n\n**汎用ハンドラ**:\n- TransactionManagementHandler\n- RequestPathJavaPackageMapping\n- PermissionCheckHandler\n- ServiceAvailabilityCheckHandler\n\n**画面オンライン処理専用ハンドラ**:\n- HttpResponseHandler\n- HttpAccessLogHandler\n- NablarchTagHandler\n\n**バッチ処理専用ハンドラ**:\n- MultiThreadExecutionHandler\n- DuplicateProcessCheckHandler\n\n**メッセージング処理専用ハンドラ**:\n- MessageReplyHandler\n- MessageResendHandler\n\n**標準ハンドラ構成**: 用途ごとに定義された標準的なハンドラキューの構成。\n\n![画面オンライン処理ハンドラ構成(簡易版)](assets/about-nablarch-concept--s1/handler_structure_online_minify.png)\n\n![バッチ処理ハンドラ構成(簡易版)](assets/about-nablarch-concept--s1/handler_structure_batch_minify.png)",
+    "s3": "**リポジトリ**: NAFのDIベースのオブジェクト管理機構。アプリケーション起動時に全オブジェクトの生成・初期化を行い、ハンドラキューもリポジトリによって構築される。\n\nハンドラ構成のXML定義例（バッチ処理）:\n```xml\n<list name=\"handlerQueue\">\n  <component class=\"nablarch.fw.handler.StatusCodeConvertHandler\" />\n  <component class=\"nablarch.fw.handler.GlobalErrorHandler\" />\n  <component-ref name=\"threadContextHandler\" />\n  <component-ref name=\"duplicateProcessCheckHandler\" />\n  <component-ref name=\"dbConnectionManagementHandler\" />\n  <component-ref name=\"transactionManagementHandler\" />\n  <component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n    <property name=\"basePackage\" value=\"nablarch.sample\" />\n    <property name=\"immediate\" value=\"false\" />\n  </component>\n  <component class=\"nablarch.fw.handler.MultiThreadExecutionHandler\">\n    <property name=\"concurrentNumber\" value=\"${threadCount}\" />\n    <property name=\"commitLogger\" ref=\"commitLogger\" />\n  </component>\n  <component-ref name=\"dbConnectionManagementHandler\" />\n  <component class=\"nablarch.fw.handler.LoopHandler\">\n    <property name=\"commitInterval\" value=\"${commitInterval}\" />\n    <property name=\"transactionFactory\" ref=\"transactionFactory\" />\n  </component>\n  <component-ref name=\"processStopHandler\" />\n  <component class=\"nablarch.fw.handler.DataReadHandler\">\n    <property name=\"maxCount\" value=\"${maxCount}\" />\n  </component>\n</list>\n```\n\n**実行方法**: NAFアプリケーションの実行方法は2通り。\n- 画面オンライン処理: サーブレットAPIが前提のため、Tomcatなどのサーブレットコンテナへのデプロイが必要\n- バッチ処理など: javaコマンドから直接起動\n\n**サーブレットコンテナ上での実行**:\n- **クラス**: `nablarch.fw.web.servlet.NablarchServletContextListener` — デプロイ時にweb.xmlのリポジトリ設定ファイル（`di.config`パラメータ）を読み込みリポジトリ初期化（ハンドラキュー構築含む）\n- **クラス**: `nablarch.fw.web.servlet.RepositoryBasedWebFrontController` — 全HTTPリクエストをハンドラキューへ入力\n\nweb.xml設定例:\n```xml\n<web-app>\n  <context-param>\n    <param-name>di.config</param-name>\n    <param-value>web-component-configuration.xml</param-value>\n  </context-param>\n  <listener>\n    <listener-class>nablarch.fw.web.servlet.NablarchServletContextListener</listener-class>\n  </listener>\n  <filter>\n    <filter-name>controller</filter-name>\n    <filter-class>nablarch.fw.web.servlet.RepositoryBasedWebFrontController</filter-class>\n  </filter>\n  <filter-mapping>\n    <filter-name>controller</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>\n```\n\n**Javaコマンドでの実行**: `Main` のメイン関数を実行。起動引数 `-diConfig` でリポジトリ設定ファイルパスを指定。\n\n起動コマンド例:\n```sh\njava \\\n    -Xmx128m \\\n    -DcommitInterval=100 \\\n    -DmaxExecutionCount=100000 \\\n    nablarch.fw.launcher.Main \\\n    -diConfig    file:./batch-config.xml \\\n    -requestPath admin.DataUnloadBatchAction/BC0012 \\\n    -userId      batchUser012\n```"
+  }
+}

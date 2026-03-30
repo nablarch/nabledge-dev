@@ -1,0 +1,73 @@
+{
+  "id": "web-application-07_insert--s1",
+  "title": "登録処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本項で説明する内容",
+      "hints": [
+        "CM311AC1Component",
+        "W11AC02Action",
+        "W11AC0201.jsp",
+        "W11AC0202.jsp",
+        "登録処理",
+        "二重サブミット防止",
+        "データベース挿入",
+        "Component",
+        "Action",
+        "View",
+        "ステレオタイプ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成手順",
+      "hints": [
+        "作成手順",
+        "二重サブミット防止",
+        "ステレオタイプ別作成手順"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "JavaScriptを使用した二重サブミットの防止",
+      "hints": [
+        "allowDoubleSubmission",
+        "JavaScriptによる二重サブミット防止",
+        "buttonタグ",
+        "二重サブミット防止"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "トークンを使用した二重サブミットの防止",
+      "hints": [
+        "@OnDoubleSubmission",
+        "useToken",
+        "n:form",
+        "OnDoubleSubmission",
+        "トークンによる二重サブミット防止",
+        "セッション",
+        "hiddenタグ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "まとめ",
+      "hints": [
+        "二重サブミット防止機能まとめ",
+        "機能概要",
+        "二重サブミット防止"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本項の説明内容:\n- 二重サブミットの防止\n- データベースに対する挿入処理\n\n作成対象ファイル:\n\n| 名称 | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`CM311AC1Component.java<./_source/download/CM311AC1Component.java>` | Component | ユーザ情報登録確認画面の情報をDBに登録する。使用するSQLファイルは :download:`CM311AC1Component.sql<./_source/download/CM311AC1Component.sql>` 参照。 |\n| :download:`W11AC02Action.java<./_source/download/W11AC02Action.java>` | Action | Componentのメソッドを呼び出し、結果をリクエストスコープに格納、セッションをクリアしJSPに遷移させる。 |\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`, :download:`W11AC0202.jsp<./_source/download/W11AC0202.jsp>` | View | ユーザ情報登録画面に入力した内容と、登録画面に戻るボタン・登録処理を行うボタンを表示する。W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。 |\n\nステレオタイプについては :ref:`stereoType` 参照。",
+    "s2": "まず :ref:`二重サブミットの防止 <double_submit>` について説明する。次に各ステレオタイプごとの作成手順を説明する（:ref:`07_actionClassCreate` と :ref:`07_jsp` で :ref:`二重サブミット防止 <double_submit>` の具体例を説明する）。",
+    "s3": "DBの登録・更新処理で二重サブミットが発生すると処理が2度実行される。\n\n**実装方法**: buttonタグの `allowDoubleSubmission` 属性に `false` を指定することで二重サブミットを防止できる。具体例は :ref:`07_jsp` 参照。",
+    "s4": "サーバ側で発行した一意なトークンをセッション（サーバ側）とhiddenタグ（クライアント側）に保持し、突合することで二重サブミットを防止する。\n\n**使用例**: 登録確認画面で登録ボタン押下→登録実行→完了画面→ブラウザ戻る→再度登録ボタン押下（2回目のサブミット）を検知し、入力画面にエラーを表示するケースなどで使用。\n\n**JSP実装**: 二重サブミットを防止したい `n:form` タグの `useToken` 属性に `true` を設定する。ただし :doc:`./06_sharingInputAndConfirmationJsp` を使用（入力・確認画面のJSPを共通化）している場合は、確認画面では `useToken` 属性をtrueに設定しなくてもトークンが自動設定される。\n\n**Action実装**: トークンをチェックしたいメソッドに **アノテーション**: `@OnDoubleSubmission` を付与する。具体例は :ref:`07_actionClassCreate` 参照。\n\n> **注意**: 入力画面と確認画面の共通化有無によるuseToken属性とアノテーション付与の方法:\n\n| 入力画面と確認画面の共通化 | formタグのuseToken属性の設定 | メソッドへのアノテーションの付与 |\n|---|---|---|\n| 共有化している | 設定不要（自動的にトークンが設定される） | 必要 |\n| 共有化していない | trueを設定する | 必要 |\n\n例：DBの更新は発生するが確認画面がない（入力画面のみ）場合は、入力画面のformタグの `useToken` 属性に `true` を設定し、submitされたときに実行されるActionのメソッドに `@OnDoubleSubmission` アノテーションを付与する。",
+    "s5": "アプリケーションフレームワークが提供する二重サブミット防止機能の概要:\n\n![二重サブミット防止機能の概要](assets/web-application-07_insert--s1/doubleSubmit.png)"
+  }
+}

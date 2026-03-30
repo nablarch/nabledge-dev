@@ -1,0 +1,82 @@
+{
+  "id": "testing-framework-02_RequestUnitTest--s7",
+  "title": "各種設定値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "各種設定値",
+      "hints": [
+        "HttpTestConfiguration",
+        "nablarch.test.core.http.HttpTestConfiguration",
+        "Html4HtmlChecker",
+        "HtmlChecker",
+        "htmlDumpDir",
+        "webBaseDir",
+        "xmlComponentFile",
+        "userIdSessionKey",
+        "exceptionRequestVarKey",
+        "dumpFileExtension",
+        "httpHeader",
+        "sessionInfo",
+        "htmlResourcesExtensionList",
+        "jsTestResourceDir",
+        "backup",
+        "htmlResourcesCharset",
+        "checkHtml",
+        "htmlChecker",
+        "htmlCheckerConfig",
+        "ignoreHtmlResourceDirectory",
+        "tempDirectory",
+        "uploadTmpDirectory",
+        "dumpVariableItem",
+        "コンポーネント設定ファイル",
+        "リクエスト単体テスト設定",
+        "HTMLダンプ設定",
+        "セッション設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "JVMオプションの指定",
+      "hints": [
+        "JVMオプション",
+        "ヒープサイズ設定",
+        "実行速度向上",
+        "-Xms256m",
+        "-Xmx256m",
+        "-Xverify:none",
+        "リクエスト単体テスト実行速度"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "代替JREの指定",
+      "hints": [
+        "代替JRE",
+        "JavaSE6",
+        "起動速度向上",
+        "テスト実行速度",
+        "JRE切り替え"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "HTMLリソースコピーの抑止",
+      "hints": [
+        "HTMLリソースコピー抑止",
+        "nablarch.test.skip-resource-copy",
+        "システムプロパティ",
+        "HTMLダンプ",
+        "静的リソース"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.test.core.http.HttpTestConfiguration`\n\n| 設定項目名 | 説明 | デフォルト値 |\n|---|---|---|\n| `htmlDumpDir` | HTMLダンプファイルを出力するディレクトリ | `./tmp/http_dump` |\n| `webBaseDir` | Webアプリケーションのルートディレクトリ | `../main/web` |\n| `xmlComponentFile` | リクエスト単体テスト実行時に使用するコンポーネント設定ファイル | （なし） |\n| `userIdSessionKey` | ログイン中ユーザIDを格納するセッションキー | `user.id` |\n| `exceptionRequestVarKey` | ApplicationExceptionが格納されるリクエストスコープのキー | `nablarch_application_error` |\n| `dumpFileExtension` | ダンプファイルの拡張子 | `html` |\n| `httpHeader` | HttpRequestにHTTPリクエストヘッダとして格納される値 | `Content-Type: application/x-www-form-urlencoded`、`Accept-Language: ja JP` |\n| `sessionInfo` | セッションに格納される値 | （なし） |\n| `htmlResourcesExtensionList` | ダンプディレクトリへコピーされるHTMLリソースの拡張子 | `css`、`jpg`、`js` |\n| `jsTestResourceDir` | JavaScriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名 | `../test/web` |\n| `backup` | ダンプディレクトリのバックアップOn/Off | `true` |\n| `htmlResourcesCharset` | CSSファイルの文字コード | `UTF-8` |\n| `checkHtml` | HTMLチェックの実施On/Off | `true` |\n| `htmlChecker` | HTMLチェックを行うオブジェクト（`HtmlChecker`インタフェース実装が必要）。詳細は :ref:`customize_html_check` を参照。 | `nablarch.test.tool.htmlcheck.Html4HtmlChecker` |\n| `htmlCheckerConfig` | HTMLチェックツールの設定ファイルパス（`htmlChecker`未設定時のみ有効） | `test/resources/httprequesttest/html-check-config.csv` |\n| `ignoreHtmlResourceDirectory` | HTMLリソースの中でコピー対象外とするディレクトリ名のリスト | （なし） |\n| `tempDirectory` | JSPのコンパイル先ディレクトリ | jettyのデフォルト動作に依存 |\n| `uploadTmpDirectory` | アップロードファイルを一時的に格納するディレクトリ | `./tmp` |\n| `dumpVariableItem` | HTMLダンプ出力時に可変項目（JSESSIONID・2重サブミット防止トークン）を出力するか否か | `false` |\n\n> **注意**: `xmlComponentFile`を設定した場合、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。クラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ設定する。\n\n> **注意**: `ignoreHtmlResourceDirectory`にバージョン管理用ディレクトリ（`.svn`や`.git`）を設定するとHTMLリソースコピー時のパフォーマンスが向上する。\n\n> **注意**: `tempDirectory`のjettyデフォルト動作では`./work`がコンパイル先ディレクトリ。`./work`が存在しない場合はTempフォルダ（Windowsの場合はユーザのホームディレクトリ/Local Settings/Temp）が出力先となる。\n\n`dumpVariableItem`の動作:\n- `false`（デフォルト）: JSESSIONID・2重サブミット防止トークンを非出力。毎回同じHTMLダンプ結果を得たい場合に設定。\n- `true`: 可変項目をそのままHTMLに出力。\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n    <property name=\"htmlDumpDir\" value=\"./tmp/http_dump\"/>\n    <property name=\"webBaseDir\" value=\"../main/web\"/>\n    <property name=\"xmlComponentFile\" value=\"http-request-test.xml\"/>\n    <property name=\"userIdSessionKey\" value=\"user.id\"/>\n    <property name=\"httpHeader\">\n        <map>\n            <entry key=\"Content-Type\" value=\"application/x-www-form-urlencoded\"/>\n            <entry key=\"Accept-Language\" value=\"ja JP\"/>\n        </map>\n    </property>\n    <property name=\"sessionInfo\">\n        <map>\n            <entry key=\"commonHeaderLoginUserName\" value=\"リクエスト単体テストユーザ\"/>\n            <entry key=\"commonHeaderLoginDate\" value=\"20100914\" />\n        </map>\n    </property>\n    <property name=\"htmlResourcesExtensionList\">\n        <list>\n            <value>css</value>\n            <value>jpg</value>\n            <value>js</value>\n        </list>\n    </property>\n    <property name=\"backup\" value=\"true\" />\n    <property name=\"htmlResourcesCharset\" value=\"UTF-8\" />\n    <property name=\"ignoreHtmlResourceDirectory\">\n        <list>\n            <value>.svn</value>\n        </list>\n    </property>\n    <property name=\"tempDirectory\" value=\"webTemp\" />\n    <property name=\"htmlCheckerConfig\" value=\"test/resources/httprequesttest/html-check-config.csv\" />\n</component>\n```",
+    "s2": "性能が低いPC（Pentium4、Pentium Dual-Core等）でリクエスト単体テストの実行速度を向上させるためのJVMオプション設定。これら以降のCPUを搭載したマシンでは効果は限定的。\n\n- `-Xms256m -Xmx256m`: 最大・最小ヒープサイズを同一値に設定し、ヒープサイズ拡張のオーバヘッドを回避する。\n- `-Xverify:none`: クラスファイルの検証を省略して実行速度を向上する。",
+    "s3": "JavaSE5のJDKで開発している場合、テスト実行時のみJavaSE6のJREを使用することで実行速度（特に起動速度）が向上する。\n\n> **注意**: 事前にJavaSE6のJDKまたはJREをインストールし、Eclipseに「インストール済みのJRE」として登録しておく必要がある。",
+    "s4": "リクエスト単体実行時にシステムプロパティ`-Dnablarch.test.skip-resource-copy=true`を指定すると、:ref:`HTMLダンプ出力<dump-dir-label>`時にHTMLリソースコピーを抑止できる。CSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合に有効。\n\n> **警告**: 本システムプロパティを指定した場合、HTMLリソースのコピーが行われなくなるため、CSSなどのHTMLリソースを編集しても:ref:`HTMLダンプ出力<dump-dir-label>`に反映されない。\n\n> **注意**: HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらずHTMLリソースのコピーが実行される。"
+  }
+}

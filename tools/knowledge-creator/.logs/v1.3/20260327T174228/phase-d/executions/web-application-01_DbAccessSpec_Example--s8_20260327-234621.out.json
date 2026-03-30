@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 大量データの定義の脚注コード例",
+      "description": "ソースの脚注には「大量データの取得に該当する例」として `statement.retrieve()` と `statement.retrieve(1, 10000000)` の2例が含まれているが、ナレッジファイルは「大量データに該当しない例」(`statement.retrieve(10000000, 20)`) のみを記載している。正例があることで、大量データ判定の基準（件数の上限指定の有無）が対比的に理解できるため、実装判断に役立つ情報が欠落している。",
+      "source_evidence": "// 大量データの取得に該当する例\nstatement.retrieve();  // SqlResultSetのサイズが多い場合は、大量データとなる。\nstatement.retrieve(1, 10000000);  // 取得件数に1千万件を指定しているため大量データとなる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "ソースの脚注コード例のコメントに `SqlResultSet` クラス名が登場するが、s1 の hints に含まれていない。",
+      "source_evidence": "statement.retrieve();  // この結果返却されるSqlResultSetのサイズが多い場合は、大量データとなる。\nstatement.retrieve(1, 10000000);  // SqlResultSetのサイズが最大で1千万件となるため、大量データとなる。"
+    }
+  ]
+}

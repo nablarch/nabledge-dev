@@ -1,0 +1,32 @@
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 4 (s6 hints_missing) carries medium impact due to the operative placeholder discrepancy: the source table lists `$batchCount$` but the actual default format uses `$updateCount$`. This inconsistency is faithfully reproduced in s6 content, but `$updateCount$` is absent from s6 hints. A developer configuring executeBatch logging who searches by `$updateCount$` will not reach s6, and one who reads only the placeholder table may use `$batchCount$` (which is not operative). All four findings persisted because the Phase E output is identical to the pre-fix knowledge file — the fix agent made no changes, likely treating all findings as too minor to act on.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s7",
+      "impact": "low",
+      "justification": "The parenthetical descriptions (`検索開始位置`, `取得件数`, `データ取得時間`, `取得件数`) are supplementary annotations that do not appear verbatim in the s7 source context. Two labels are slightly inaccurate vs. the main placeholder tables (`取得開始位置` not `検索開始位置`; `取得最大件数` not `取得件数` for $size$; `検索件数` not `取得件数` for $count$). However, the placeholder names themselves and the format strings are correct, so this causes only minor confusion in a supplementary description, not an operational error. The Phase E fix agent left s7 unchanged, apparently treating the added context as acceptable despite the label inaccuracies."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s2 (index entry)",
+      "impact": "low",
+      "justification": "`$methodName$` is missing from s2 hints (executeQuery 検索終了時), but the section content correctly includes it in both the placeholder table and the default format string. Users reaching s2 via its other hints (`executeQuery`, `検索終了時`) will see $methodName$ in the content. The omission only slightly reduces keyword-search discoverability and has no effect on content accuracy. Phase E made no changes to s2 hints."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s4 (index entry)",
+      "impact": "low",
+      "justification": "`$methodName$` is missing from s4 hints (executeUpdate 更新終了時), identical pattern to s2. The section content is fully correct including $methodName$, $executeTime$, and $updateCount$ in both table and format. Discoverability is marginally reduced but content fidelity is unaffected. Phase E made no changes to s4 hints."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s6 (index entry)",
+      "impact": "medium",
+      "justification": "Two hints are missing from s6 (executeBatch 更新終了時): `$methodName$` and `$updateCount$`. The `$updateCount$` gap is the more significant issue: the source placeholder table lists `$batchCount$` for バッチ件数, but the actual default format string uses `$updateCount$`. The knowledge file correctly reproduces this discrepancy, but `$updateCount$` does not appear in s6 hints. A developer searching for `$updateCount$` in a batch logging context will not find s6, and a developer who reads only the placeholder table may attempt to use `$batchCount$` — which is not the operative placeholder. This creates a real risk of misconfiguration. Phase E left s6 hints entirely unchanged."
+    }
+  ]
+}

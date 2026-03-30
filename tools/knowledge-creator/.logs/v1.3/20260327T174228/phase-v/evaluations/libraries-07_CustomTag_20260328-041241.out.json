@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_CustomTag",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are low-impact. The fabrication in s1 uses factually accurate labels that improve readability without misleading the agent. The missing hint in s3 is inconsequential because s3 contains only a cross-reference pointer to web_view_format, not actual content — failing to retrieve s3 for a web_view_format query does not deprive the agent of useful information.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — URIパターンの見出しラベル",
+      "impact": "low",
+      "justification": "The added labels「UserActionの例 — サブディレクトリあり」and「MenuActionの例 — basePackage直下」are factually correct: the first URI path includes a subdirectory (management/user/) and the second is directly under basePackage. The labels aid agent comprehension without introducing any inaccuracy. An agent acting on this information will reach correct conclusions. Phase E did not fix this because the fabrication is benign and arguably improves usability — removing accurate descriptive labels would reduce clarity."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 — hints",
+      "impact": "low",
+      "justification": "s3 references web_view_format only as a cross-reference pointer — it contains no substantive information about that feature. The actual web_view_format content resides in a dedicated knowledge file. If s3 is not retrieved for a web_view_format query, the agent loses nothing of substance. Phase E did not fix this because the section is an overview/index page and the missing hint has no meaningful effect on answer quality."
+    }
+  ]
+}

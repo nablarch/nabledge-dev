@@ -1,0 +1,54 @@
+{
+  "id": "web-application-01_DbAccessSpec_Example--s1",
+  "title": "データベースアクセス実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "データベースアクセス実装例",
+        "簡易検索",
+        "範囲指定検索",
+        "バイナリデータアクセス",
+        "オブジェクト保存",
+        "マップ保存",
+        "executeQuery"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "基本的な実装",
+      "hints": [
+        "DbAccessSupport",
+        "データベースアクセス",
+        "継承モデル",
+        "CM311AC1Component",
+        "インスタンス化"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "簡易検索機能",
+      "hints": [
+        "SqlResultSet",
+        "SqlPStatement",
+        "SqlRow",
+        "retrieve",
+        "簡易検索",
+        "大量データ",
+        "OutOfMemoryError",
+        "範囲指定検索",
+        "全件検索",
+        "GET_USER_INFO",
+        "GET_USER_LIST"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本ページで説明する実装例の目次:\n\n* :ref:`basic_implementation`\n* :ref:`simple_search`\n  * :ref:`retrieve-variable-label`\n  * :ref:`range_search`\n  * :ref:`how_to_use_sql_result_set`\n* :ref:`executeQuery-label`\n* :ref:`insert_update_delete`\n  * :ref:`update_single_data`\n  * :ref:`executeBatch-label`\n* :ref:`access_to_binary_data`\n  * :ref:`searching_binary_data`\n  * :ref:`insert_binary_data`\n  * :ref:`insert_file_data_as_binary_data`\n  * :ref:`generate_binary_file`\n* :ref:`db-object-save-samole`\n  * :ref:`update_single_data_by_object`\n  * :ref:`update_multiple_data_by_object`\n* :ref:`map-save-label`\n  * :ref:`update_single_data_by_map`\n  * :ref:`update_multiple_data_by_map`\n* :ref:`object-select-label`\n  * :ref:`using_simple_search`\n  * :ref:`using_simple_search_having_like_conditions`\n  * :ref:`variable-condition-sql-label`\n  * :ref:`changing_dynamically_in`\n  * :ref:`changing_dynamically_order_by`\n  * :ref:`serching_for_mass_data`\n* :ref:`map-search-label`",
+    "s2": "**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\nデータベースアクセスを行うクラスは `DbAccessSupport` を継承して作成する。\n\n```java\npublic class CM311AC1Component extends DbAccessSupport {\n}\n```\n\n> **注意**: 継承モデルを使用しない場合（別のスーパークラスを継承する必要があり、`DbAccessSupport` を継承できない場合）は、`DbAccessSupport` をインスタンス化して使用する。自身のクラスオブジェクトをコンストラクタに指定する。\n\n```java\nDbAccessSupport support = new DbAccessSupport(getClass());\n```\n\n> **警告**: 継承モデルを使用しない場合にデフォルトコンストラクタ（引数なしコンストラクタ）を使用すると、SQL実行クラスに対応するSQLファイルを特定できず実行時エラーとなる。",
+    "s3": "**クラス**: `SqlResultSet`, `SqlPStatement`, `SqlRow`\n\n簡易検索機能を使用すると、検索結果が `SqlResultSet` オブジェクトに格納されて返却される。\n\n> **警告**: 大量データを簡易検索機能で取得すると大量にメモリを消費しOutOfMemoryErrorが発生する可能性がある。大量データを取得する場合は簡易検索機能ではなく :ref:`executeQuery-label` を使用すること。\n\n## 条件に紐付くデータの全件検索処理\n\n`SqlPStatement#retrieve()` を使用して全件取得する。\n\nSQLファイル記述ルール:\n- SQL_IDとSQL文の1グループは空行で区切る。SQL文の中に空行を入れてはならない\n- SQL文の最初の `=` までがSQL_ID（SQLファイル内でSQL文を一意に特定するID）\n- コメントは `--` で開始\n- バインド変数のインデックスは1から開始（`java.sql.PreparedStatement` と同様）\n\nSQLファイル例（`nablarch/sample/ss11AC/CM311AC1Component.sql`）:\n\n```sql\nGET_USER_INFO =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = ?\nORDER BY\n    USER_ID\n```\n\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_INFO\");\nstatement.setString(1, \"00001\");\nSqlResultSet resultSet = statement.retrieve();\n```\n\n## 範囲指定での検索処理\n\n`SqlPStatement#retrieve(int startPos, int maxCount)` を使用して開始位置と取得件数を指定して検索する。\n\n```sql\nGET_USER_LIST =\nSELECT\n    USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nORDER BY\n    USER_ID\n```\n\n```java\nSqlPStatement statement = getSqlPStatement(\"GET_USER_LIST\");\nreturn statement.retrieve(startPos, 20);\n```\n\n## 取得したSqlResultSetの使用方法\n\n`SqlResultSet` には `SqlRow` クラスが格納されており、カラムの値を取り出せる。カラム名はSQL名（`USER_ID`）またはJavaBeansプロパティ命名規約の名称（`userId`）のどちらでも指定可能。\n\n```java\nSqlResultSet resultSet = statement.retrieve();\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n    String userNameKana = row.getString(\"USER_NAME_KANA\");\n}\n```\n\nJSPでは `SqlResultSet` とJavaオブジェクトのリストを透過的に扱える:\n\n```jsp\n<c:forEach var=\"row\" items=\"${searchResult}\">\n    <td><n:write name=\"row.userId\" /></td>\n    <td><n:write name=\"row.userName\" /></td>\n    <td><n:write name=\"row.kanaName\" /></td>\n</c:forEach>\n```"
+  }
+}

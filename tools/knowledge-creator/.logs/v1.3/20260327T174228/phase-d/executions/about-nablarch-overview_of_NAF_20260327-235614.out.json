@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-overview_of_NAF",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 処理方式共通リスト末尾",
+      "description": "ソースの処理方式共通リストは「- **... etc**」で終わっており、リストが不完全であることを明示している。ナレッジファイルではこの「... etc」が省略されており、AIが10項目で網羅的と誤解する可能性がある。",
+      "source_evidence": "- 国際化処理方式  \n- **... etc**"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "出力ライブラリの処理方式名（同期応答メッセージ送信、無応答メッセージ送信、メール送信、SMTPリレー）がhintsに含まれていない。これらはs3内のテーブルで定義される主要な検索対象語である。",
+      "source_evidence": "| 1  | メッセージ  | 同期応答メッセージ送信 | ...\n| 2  |             | 無応答メッセージ送信   | ...\n| 4  | メール      | メール送信             | ...外部のメールASPサービスを利用し、SMTPリレーを行う"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-01_Abstract--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 シート内の構造",
+      "description": "Source explicitly states 'また、データの個数も複数記述できる。' (multiple data items can be described in a single sheet), but this is not mentioned in s2. This is a feature/capability statement useful for developers.",
+      "source_evidence": "また、データの個数も複数記述できる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 セルへの特殊な記述方法",
+      "description": "The footnote [#] in the source provides specific edge-case examples for the double-quote stripping behavior (e.g., '\"ab\"c\"' → 'ab\"c', '\"abc\"\"' → 'abc\"', 'ab\"c' → 'ab\"c'), clarifying that only the outermost surrounding quotes are stripped and internal quotes are left as-is. These parsing edge cases are omitted from the knowledge file.",
+      "source_evidence": "\"ab\"c\" | ab\"cとして扱われる。(前後のダブルクォートが除去される。) / \"abc\"\" | abc\"として扱われる。(前後のダブルクォートが除去される。)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The hint 'default_values_when_column_omitted' is missing from s2 hints. This is a named cross-reference anchor used in the EXPECTED_COMPLETE_TABLE description, and users may search for it directly.",
+      "source_evidence": "省略したカラムには\\ :ref:`default_values_when_column_omitted`\\ が設定されているものとして扱われる。"
+    }
+  ]
+}

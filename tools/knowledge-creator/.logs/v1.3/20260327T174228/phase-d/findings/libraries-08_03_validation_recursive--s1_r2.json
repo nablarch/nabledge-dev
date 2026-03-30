@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_03_validation_recursive--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3)",
+      "description": "Section s3 hints are missing PascalCase class names `Example2Form` and `Entity1`, both of which appear in the s3 code examples (Form and JSP implementation for variable-length arrays).",
+      "source_evidence": "Source section '可変配列長の Form 配列を入力する際の実装例' uses Example2Form constructor and Entity1[] array. s3 hints contain only: @ValidationTarget, sizeKey, @Digits, @Required, @PropertyName, 可変配列長, リクエストパラメータ 配列長, entityArraySize."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s2 — Action の実装 code",
+      "description": "The Action code in s2 faithfully reproduces a variable name bug from the source: `validateForSample.abortIfInvalid()` uses the method name as a variable, but the declared variable is `validationResult`. While this matches the source verbatim, it may mislead AI agents reading the knowledge file.",
+      "source_evidence": "Source code block under 'Action の実装': `ValidationContext<Example2Form> validationResult = ValidationUtil.validateAndConvertRequest(...); validateForSample.abortIfInvalid();` — the second line should be `validationResult.abortIfInvalid()`."
+    }
+  ]
+}

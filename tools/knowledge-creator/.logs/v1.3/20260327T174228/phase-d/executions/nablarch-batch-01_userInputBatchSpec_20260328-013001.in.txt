@@ -1,0 +1,316 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation_batch/01_userInputBatchSpec.rst`
+- Format: `rst`
+
+```
+==========================
+ユーザ情報入力バッチの仕様
+==========================
+
+機能概要
+========
+
+ユーザ情報ファイルを入力として、ユーザ情報テンポラリテーブルを作成する。
+
+.. image:: ./_image/userInputBatch.jpg
+
+
+.. note::
+ 本サンプルアプリケーションでは、ファイル入力バッチのサンプルを示すために\
+ CSVファイルと固定長ファイルの２種類のファイル入力バッチを提供する。
+
+主な仕様は、以下の通り。
+
+1) ユーザ情報入力処理
+
+ ユーザ情報ファイルを読み込み、データレコードの情報をユーザ情報テンポラリに登録する。
+
+ 【INPUTデータ】
+
+ * ユーザ情報入力ファイル
+
+ 【OUTPUTデータ】
+
+ * ユーザ情報テンポラリ
+
+ 【精査仕様】
+
+ ファイルのレイアウトは、ヘッダレコード→データレコード(データレコードは、存在していなくても良い)→トレーラレコード→エンドレコードの順であること。
+
+ [レイアウト精査]
+
+ #. １レコード目はヘッダーレコードであること。
+ #. ２レコード目以降にデータレコードが複数存在していること。ただし、データレコードが存在しない場合は、トレーラレコードであること。
+ #. データレコードの次のレコードは、トレーラレコードであること。
+ #. 最終レコードはエンドレコードであること。
+
+ [トレーラレコードの精査]
+
+ #. トレーラレコードの総レコード数が、データレコードのレコード数と一致すること。
+
+
+ 上記以外の精査仕様については、下記のファイル情報を参照。
+
+
+
+エンティティ情報
+================
+
+エンティティ論理名：ユーザ情報テンポラリ
+
+======================= ==============================================
+カラム論理名            入力データ
+======================= ==============================================
+ユーザ情報ID            ユーザ情報IDで採番した値
+ログインID              ユーザ情報ファイル.ログインID
+漢字氏名                ユーザ情報ファイル.漢字氏名
+カナ氏名                ユーザ情報ファイル.カナ氏名
+メールアドレス          ユーザ情報ファイル.メールアドレス
+内線番号(ビル番号)      ユーザ情報ファイル.内線番号(ビル番号)
+内線番号(個人番号)      ユーザ情報ファイル.内線番号(個人番号)
+携帯電話番号(市外)      ユーザ情報ファイル.携帯電話番号(市外)
+携帯電話番号(市内)      ユーザ情報ファイル.携帯電話番号(市内)
+携帯電話番号(加入)      ユーザ情報ファイル.携帯電話番号(加入)
+======================= ==============================================
+
+
+ファイル情報
+============
+
+【ヘッダレコード】
+
+==================== ============== ==========  ============ ========================================================================
+項目名               データタイプ   開始位置    バイト数     説明
+==================== ============== ==========  ============ ========================================================================
+レコード区分         X              1           1            ヘッダレコードを示す区分値 
+                                                             ('1'固定)
+日付                 X              2           8            業務日付と一致していること。
+FIRREL               X              9           411          空白（半角スペース）
+==================== ============== ==========  ============ ========================================================================
+
+【データレコード】
+
+==================== ============== ==========  ============ ========================================================================
+項目名               データタイプ   開始位置    バイト数     説明
+==================== ============== ==========  ============ ========================================================================
+レコード区分         X              1           1            データレコードを示す区分値
+                                                             ('2'固定)
+ログインID           X              2           20           半角:20桁以下:必須
+漢字氏名             N              22          100          全角:50桁以下:必須
+カナ氏名             N              122         100          全角カナ:50桁以下:必須
+FILLER1              X              222         50           
+メールアドレス       X              272         100          半角:100桁以下:必須
+内線番号(ビル番号)   9              372         2            半角数字:2桁以下:必須
+内線番号(個人番号)   9              374         4            半角数字:4桁以下:必須
+携帯電話番号(市外)   9              376         3            半角数字:3桁以下
+携帯電話番号(市内)   9              379         4            半角数字:4桁以下
+                                                             ※携帯電話番号(市外)が入力された場合は必須
+                                                             　携帯電話番号(市外)が未入力の場合は、未入力であること
+携帯電話番号(加入)   9              384         4            半角数字:4桁以下:必須
+                                                             ※携帯電話番号(市外)が入力された場合は必須
+                                                             　携帯電話番号(市外)が未入力の場合は、未入力であること
+FILLER2              X              389         32           空白（半角スペース）
+==================== ============== ==========  ============ ========================================================================
+
+【トレーラレコード】
+
+==================== ============== ==========  ============ ========================================================================
+項目名               データタイプ   開始位置    バイト数     説明
+==================== ============== ==========  ============ ========================================================================
+レコード区分         X              1           1            トレーラレコードを示す区分値
+                                                             ('8'固定)
+総件数               9              2           19           データレコードの総件数と一致すること。
+FILLER               X              21          400          空白（半角スペース）
+==================== ============== ==========  ============ ========================================================================
+
+【エンドレコード】
+
+==================== ============== ==========  ============ ========================================================================
+項目名               データタイプ   開始位置    バイト数     説明
+==================== ============== ==========  ============ ========================================================================
+レコード区分         X              1           1            エンドレコードを示す区分値
+                                                             ('9'固定)
+FILLER               X              2           419          空白（半角スペース）
+==================== ============== ==========  ============ ========================================================================
+
+障害通知仕様
+============
+
+===== =============== =============== ======================================================================
+No    終了コード      障害コード      原因
+===== =============== =============== ======================================================================
+1     100             NB11AA0102      ファイルのレイアウトが不正な場合
+2     101             NB11AA0103      トレーラレコードの総件数とデータレコードのレコード数が不一致の場合
+3     102             NB11AA0104      ヘッダーレコードの日付が業務日付と不一致の場合
+===== =============== =============== ======================================================================
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-01_userInputBatchSpec`
+
+```json
+{
+  "id": "nablarch-batch-01_userInputBatchSpec",
+  "title": "ユーザ情報入力バッチの仕様",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "ユーザ情報入力バッチ",
+        "ファイル入力バッチ",
+        "精査仕様",
+        "レイアウト精査",
+        "トレーラレコード検証",
+        "CSVファイル",
+        "固定長ファイル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エンティティ情報",
+      "hints": [
+        "ユーザ情報テンポラリ",
+        "エンティティ",
+        "ログインID",
+        "ユーザ情報ID",
+        "カラムマッピング"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ファイル情報",
+      "hints": [
+        "ヘッダレコード",
+        "データレコード",
+        "トレーラレコード",
+        "エンドレコード",
+        "固定長ファイルレイアウト",
+        "レコード区分",
+        "ファイルフォーマット"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "障害通知仕様",
+      "hints": [
+        "障害通知",
+        "終了コード",
+        "障害コード",
+        "NB11AA0102",
+        "NB11AA0103",
+        "NB11AA0104"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ユーザ情報ファイルを入力として、ユーザ情報テンポラリテーブルを作成する。\n\n![ユーザ情報入力バッチ処理フロー](assets/nablarch-batch-01_userInputBatchSpec/userInputBatch.jpg)\n\n> **注意**: CSVファイルと固定長ファイルの2種類のファイル入力バッチを提供する。\n\n**INPUT**: ユーザ情報入力ファイル  \n**OUTPUT**: ユーザ情報テンポラリ\n\n**精査仕様**\n\nファイルのレイアウト順: ヘッダレコード → データレコード（存在しなくてもよい）→ トレーラレコード → エンドレコード\n\n[レイアウト精査]\n1. 1レコード目はヘッダーレコードであること\n2. 2レコード目以降にデータレコードが複数存在すること。データレコードが存在しない場合はトレーラレコードであること\n3. データレコードの次のレコードはトレーラレコードであること\n4. 最終レコードはエンドレコードであること\n\n[トレーラレコードの精査]\n1. トレーラレコードの総レコード数がデータレコードのレコード数と一致すること",
+    "s2": "**エンティティ論理名**: ユーザ情報テンポラリ\n\n| カラム論理名 | 入力データ |\n|---|---|\n| ユーザ情報ID | ユーザ情報IDで採番した値 |\n| ログインID | ユーザ情報ファイル.ログインID |\n| 漢字氏名 | ユーザ情報ファイル.漢字氏名 |\n| カナ氏名 | ユーザ情報ファイル.カナ氏名 |\n| メールアドレス | ユーザ情報ファイル.メールアドレス |\n| 内線番号(ビル番号) | ユーザ情報ファイル.内線番号(ビル番号) |\n| 内線番号(個人番号) | ユーザ情報ファイル.内線番号(個人番号) |\n| 携帯電話番号(市外) | ユーザ情報ファイル.携帯電話番号(市外) |\n| 携帯電話番号(市内) | ユーザ情報ファイル.携帯電話番号(市内) |\n| 携帯電話番号(加入) | ユーザ情報ファイル.携帯電話番号(加入) |",
+    "s3": "**【ヘッダレコード】**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| レコード区分 | X | 1 | 1 | ヘッダレコードを示す区分値('1'固定) |\n| 日付 | X | 2 | 8 | 業務日付と一致すること |\n| FIRREL | X | 9 | 411 | 空白（半角スペース） |\n\n**【データレコード】**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| レコード区分 | X | 1 | 1 | データレコードを示す区分値('2'固定) |\n| ログインID | X | 2 | 20 | 半角:20桁以下:必須 |\n| 漢字氏名 | N | 22 | 100 | 全角:50桁以下:必須 |\n| カナ氏名 | N | 122 | 100 | 全角カナ:50桁以下:必須 |\n| FILLER1 | X | 222 | 50 | |\n| メールアドレス | X | 272 | 100 | 半角:100桁以下:必須 |\n| 内線番号(ビル番号) | 9 | 372 | 2 | 半角数字:2桁以下:必須 |\n| 内線番号(個人番号) | 9 | 374 | 4 | 半角数字:4桁以下:必須 |\n| 携帯電話番号(市外) | 9 | 376 | 3 | 半角数字:3桁以下 |\n| 携帯電話番号(市内) | 9 | 379 | 4 | 半角数字:4桁以下。携帯電話番号(市外)が入力された場合は必須、未入力の場合は未入力であること |\n| 携帯電話番号(加入) | 9 | 384 | 4 | 半角数字:4桁以下。携帯電話番号(市外)が入力された場合は必須、未入力の場合は未入力であること |\n| FILLER2 | X | 389 | 32 | 空白（半角スペース） |\n\n**【トレーラレコード】**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| レコード区分 | X | 1 | 1 | トレーラレコードを示す区分値('8'固定) |\n| 総件数 | 9 | 2 | 19 | データレコードの総件数と一致すること |\n| FILLER | X | 21 | 400 | 空白（半角スペース） |\n\n**【エンドレコード】**\n\n| 項目名 | データタイプ | 開始位置 | バイト数 | 説明 |\n|---|---|---|---|---|\n| レコード区分 | X | 1 | 1 | エンドレコードを示す区分値('9'固定) |\n| FILLER | X | 2 | 419 | 空白（半角スペース） |",
+    "s4": "| No | 終了コード | 障害コード | 原因 |\n|---|---|---|---|\n| 1 | 100 | NB11AA0102 | ファイルのレイアウトが不正な場合 |\n| 2 | 101 | NB11AA0103 | トレーラレコードの総件数とデータレコードのレコード数が不一致の場合 |\n| 3 | 102 | NB11AA0104 | ヘッダーレコードの日付が業務日付と不一致の場合 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

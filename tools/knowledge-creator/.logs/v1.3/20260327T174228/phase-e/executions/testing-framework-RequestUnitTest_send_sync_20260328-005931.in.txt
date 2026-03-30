@@ -1,0 +1,281 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-RequestUnitTest_send_sync",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7",
+      "description": "RST cross-reference directives (`:ref:`send_sync_request_write_test_data`` and `:ref:`about_fixed_length_file``) are left verbatim in the Markdown knowledge file content. These RST-specific directives are unresolvable in a knowledge file context and reduce AI readability. They should either be omitted (as navigation-only references) or replaced with plain-text descriptions.",
+      "source_evidence": "Source uses RST `:ref:` directives: `\\ :ref:`send_sync_request_write_test_data`\\` and `\\ :ref:`about_fixed_length_file`\\` — these are RST link directives that have no meaning outside RST rendering."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+=====================================================================
+ リクエスト単体テスト（同期応答メッセージ送信処理）
+=====================================================================
+
+
+概要
+====
+
+リクエスト単体テスト（同期応答メッセージ送信処理)では、
+要求電文1件をキューに送信し、結果を同期的に受信する際の動作を擬似的に再現し、テストを行う。
+    
+
+.. note:: 
+ リクエスト単体テストそのものの概要については、
+ :ref:`message_sendSyncMessage_test`
+ を参照。
+
+
+全体像
+------
+
+バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。
+
+.. image:: ./_images/send_sync.png
+   :scale: 70
+
+
+
+.. note:: 
+ 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。
+
+ * StandaloneTestSupportTemplate
+ * AbstractHttpRequestTestTemplate
+
+
+
+主なクラス, リソース
+====================
+
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|名称                                          |役割                                                  | 作成単位                             |
++==============================================+======================================================+======================================+
+|リクエスト単体\                               |テストロジックを実装する。                            |テスト対象クラス(Action)につき１つ作成|
+|テストクラス                                  |                                                      |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|Excelファイル\                                |要求電文の期待値および応答電文などの                  |テストクラスにつき１つ作成            |
+|（テストデータ）                              |テストデータを記載する。\                             |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|StandaloneTest\                               |Action実行後に、MockMessagingContextを用いて          | \－                                  |
+|SupportTemplate                               |要求電文のアサートを実行する。                        |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|AbstractHttpRequest\                          |Action実行後に、MockMessagingContextを用いて          | \－                                  |
+|TestTemplate                                  |要求電文のアサートを実行する。                        |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|MessageSender                                 |同期応答メッセージ送信を行う際に\                     | \－                                  |
+|                                              |使用するコンポーネント。                              |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+|RequestTestingMessagingProvider               |リクエスト単体テストにおいて、\                       | \－                                  |
+|                                              |要求電文のアサート機能および\                         |                                      |
+|                                              |応答電文の生成・返却機能を提供する。                  |                                      |
++----------------------------------------------+------------------------------------------------------+--------------------------------------+
+
+
+構造
+====
+
+
+StandaloneTestSupportTemplate
+----------------------------------------
+
+Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
+
+同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
+本クラスもしくはAbstractHttpRequestTestTemplateを実装したテストケースを使用する必要がある。
+
+
+
+AbstractHttpRequestTestTemplate
+---------------------------------------------------
+
+Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
+
+同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
+本クラスもしくはStandaloneTestSupportTemplateを実装したテストケースを使用する必要がある。
+
+
+RequestTestingMessagingProvider
+-------------------------------------------------
+
+要求電文のアサートおよび、応答電文の生成・返却する機能を提供するクラス。
+
+また、Excelに記載された要求電文の期待値と、応答電文の読み込みも実行する。
+
+本クラスは、以下の準備処理、結果確認機能を提供する。
+
+ +----------------------------+--------------------------+
+ | 準備処理                   | 結果確認                 |
+ +============================+==========================+
+ |応答電文の生成              |要求電文のアサート        |
+ +----------------------------+--------------------------+
+
+.. note:: 
+ 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。
+
+
+
+MessageSender
+---------------------------------
+
+同期応答メッセージ送信処理で使用するコンポーネント。
+
+主に以下の機能を提供する。
+
+* Actionなどの呼び出し元から渡されたパラメータから、要求電文を生成する。
+* 要求電文を元にMockMessagingContextを実行する。
+* MockMessagingContextから返却された応答電文をパースする。
+* パース結果のオブジェクトを呼び出し元に返却する。
+
+
+
+テストデータ
+============
+
+同期応答メッセージ送信処理固有のテストデータについて説明する。
+
+
+同期応答メッセージ送信処理
+-----------------------------
+
+基本的な記述方法は、\
+\ :ref:`send_sync_request_write_test_data`\
+を参照。
+
+.. note::
+ パディングおよびバイナリデータの扱いは、\ :ref:`about_fixed_length_file`\ と同様である。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-RequestUnitTest_send_sync",
+  "title": "リクエスト単体テスト（同期応答メッセージ送信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要・全体像",
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "同期応答メッセージ送信処理",
+        "親クラス選択",
+        "バッチ処理",
+        "要求電文送信"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "主なクラス・リソース",
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "MessageSender",
+        "RequestTestingMessagingProvider",
+        "MockMessagingContext",
+        "テストクラス",
+        "Excelファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "StandaloneTestSupportTemplate",
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "MockMessagingContext",
+        "要求電文アサート",
+        "同期応答メッセージ送信テスト"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "AbstractHttpRequestTestTemplate",
+      "hints": [
+        "AbstractHttpRequestTestTemplate",
+        "MockMessagingContext",
+        "要求電文アサート",
+        "同期応答メッセージ送信テスト"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "RequestTestingMessagingProvider",
+      "hints": [
+        "RequestTestingMessagingProvider",
+        "要求電文アサート",
+        "応答電文生成",
+        "MockMessagingContext",
+        "一括アサート",
+        "Excelテストデータ読み込み"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "MessageSender",
+      "hints": [
+        "MessageSender",
+        "要求電文生成",
+        "MockMessagingContext",
+        "応答電文パース",
+        "同期応答メッセージ"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "テストデータ",
+      "hints": [
+        "テストデータ",
+        "同期応答メッセージ送信処理",
+        "パディング",
+        "バイナリデータ",
+        "固定長"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 概要・全体像\n\n要求電文1件をキューに送信し、結果を同期的に受信する際の動作を擬似的に再現してテストを行う。\n\n![バッチ処理での同期応答メッセージ送信処理の全体像](assets/testing-framework-RequestUnitTest_send_sync/send_sync.png)\n\n> **注意**: 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承する必要がある。\n> - `StandaloneTestSupportTemplate`\n> - `AbstractHttpRequestTestTemplate`",
+    "s2": "## 主なクラス・リソース\n\n| 名称 | 役割 | 作成単位 |\n|---|---|---|\n| リクエスト単体テストクラス | テストロジックを実装する | テスト対象クラス(Action)につき１つ |\n| Excelファイル（テストデータ） | 要求電文の期待値および応答電文などのテストデータを記載する | テストクラスにつき１つ |\n| `StandaloneTestSupportTemplate` | Action実行後に`MockMessagingContext`を用いて要求電文のアサートを実行する | － |\n| `AbstractHttpRequestTestTemplate` | Action実行後に`MockMessagingContext`を用いて要求電文のアサートを実行する | － |\n| `MessageSender` | 同期応答メッセージ送信処理で使用するコンポーネント | － |\n| `RequestTestingMessagingProvider` | 要求電文のアサート機能および応答電文の生成・返却機能を提供する | － |",
+    "s3": "## StandaloneTestSupportTemplate\n\nAction実行後に`MockMessagingContext`を用いて要求電文のアサートを行う機能を持つクラス。\n\n同期応答メッセージ送信処理のリクエスト単体テストを行う場合、処理の形態に合わせて本クラスまたは`AbstractHttpRequestTestTemplate`を実装したテストケースを使用する必要がある。",
+    "s4": "## AbstractHttpRequestTestTemplate\n\nAction実行後に`MockMessagingContext`を用いて要求電文のアサートを行う機能を持つクラス。\n\n同期応答メッセージ送信処理のリクエスト単体テストを行う場合、処理の形態に合わせて本クラスまたは`StandaloneTestSupportTemplate`を実装したテストケースを使用する必要がある。",
+    "s5": "## RequestTestingMessagingProvider\n\n要求電文のアサートおよび応答電文の生成・返却機能を提供するクラス。Excelに記載された要求電文の期待値と応答電文の読み込みも実行する。\n\n| 準備処理 | 結果確認 |\n|---|---|\n| 応答電文の生成 | 要求電文のアサート |\n\n> **注意**: 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。",
+    "s6": "## MessageSender\n\n同期応答メッセージ送信処理で使用するコンポーネント。主な機能:\n\n1. 呼び出し元から渡されたパラメータから要求電文を生成する\n2. 要求電文を元に`MockMessagingContext`を実行する\n3. `MockMessagingContext`から返却された応答電文をパースする\n4. パース結果のオブジェクトを呼び出し元に返却する",
+    "s7": "## テストデータ - 同期応答メッセージ送信処理\n\n基本的な記述方法は、:ref:`send_sync_request_write_test_data` を参照。\n\n> **注意**: パディングおよびバイナリデータの扱いは、:ref:`about_fixed_length_file` と同様である。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

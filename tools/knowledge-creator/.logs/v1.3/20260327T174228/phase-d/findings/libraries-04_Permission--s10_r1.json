@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Permission--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "The source h2 section '使用方法' contains 3 h3-level subsections (BasicPermissionFactoryの設定方法, 特定のリクエストIDを認可判定の対象から除外する方法, 使用例) and is significantly larger than 2000 characters, but the knowledge file uses a single section (s1) without splitting.",
+      "source_evidence": "Source has 3 `===`-underlined subsections under the `---`-underlined '使用方法' section. Knowledge file maps all content to a single s1 section."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "Missing property name hints for BasicPermissionFactory table entries: `groupTableSchema`, `systemAccountTableSchema`, `groupSystemAccountTableSchema`, `permissionUnitTableSchema`, `permissionUnitRequestTableSchema`, `groupAuthorityTableSchema`, `systemAccountAuthorityTableSchema`. Also missing PascalCase class names: `SimpleDbTransactionManager` (referenced in dbManager property description and XML), `BasicBusinessDateProvider` (appears in XML configuration example).",
+      "source_evidence": "BasicPermissionFactoryのプロパティ table first column: groupTableSchema(必須), systemAccountTableSchema(必須), groupSystemAccountTableSchema(必須), permissionUnitTableSchema(必須), permissionUnitRequestTableSchema(必須), groupAuthorityTableSchema(必須), systemAccountAuthorityTableSchema(必須). XML: `<component class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">`, `<component name=\"businessDateProvider\" class=\"nablarch.core.date.BasicBusinessDateProvider\" />`."
+    }
+  ]
+}

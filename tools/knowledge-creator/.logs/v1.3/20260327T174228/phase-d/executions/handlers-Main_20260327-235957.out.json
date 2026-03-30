@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-Main",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 必須パラメータ表 -userId 行",
+      "description": "ソースの -userId 説明に含まれる「ハンドラ以外の任意のコンポーネントからアクセスできるようになる」という情報が欠落している。スレッドコンテキストに保持されることで非ハンドラコンポーネントからも参照可能になるという点は、userId の利用範囲を理解するうえで実装判断に影響する情報である。",
+      "source_evidence": "後続の ThreadContextHandler によってスレッドコンテキストに保持されることで、ハンドラ以外の任意のコンポーネントからアクセスできるようになる。"
+    }
+  ]
+}

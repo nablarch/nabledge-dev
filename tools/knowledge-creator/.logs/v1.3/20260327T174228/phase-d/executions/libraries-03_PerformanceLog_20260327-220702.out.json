@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-03_PerformanceLog",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Source h2 section 'パフォーマンスログの出力方法' contains an h3 subsection 'パフォーマンスログの出力例' with substantial content (complete log.properties writer configuration with className, filePath, encoding, maxFileSize, formatter settings, and availableLoggersNamesOrder). The source h2 section is well over 2000 chars and an h3 exists, but the knowledge file merges everything into s3 without splitting.",
+      "source_evidence": "RST h3 heading '^^^^^^' for 'パフォーマンスログの出力例' with log.properties block containing writerNames, writer.appFile.*, availableLoggersNamesOrder, loggers.PER.* settings"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Several property names and placeholder names from tables in s3 are missing from hints: `performanceLogFormatter.className` (first column of property table), and placeholders `$result$`, `$startTime$`, `$endTime$`, `$maxMemory$`, `$startFreeMemory$`, `$startUsedMemory$`, `$endFreeMemory$`, `$endUsedMemory$` (all first-column values from the placeholder table, while only `$point$` and `$executionTime$` are included).",
+      "source_evidence": "Property table first column: performanceLogFormatter.className, .format, .datePattern, .targetPoints. Placeholder table first column: $point$, $result$, $startTime$, $endTime$, $executionTime$, $maxMemory$, $startFreeMemory$, $startUsedMemory$, $endFreeMemory$, $endUsedMemory$"
+    }
+  ]
+}

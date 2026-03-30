@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s2 — 精査クラスのコンポーネント設定ファイル XMLコード例",
+      "description": "Knowledge file adds `</list>` closing tag that does not appear in the source, and omits the `<!-- 中略 -->` comment that appears in the source between the last `</component>` and `</property>`. The source XML ends with `<!-- 中略 -->` followed immediately by `</property>` (no `</list>`). The knowledge file replaces this with `</list>` + `</property>` instead.",
+      "source_evidence": "Source: `    <!-- 中略 -->\\n</property>` — no `</list>` tag present. Knowledge file: `  </list>\\n</property>` — `</list>` added, `<!-- 中略 -->` removed."
+    }
+  ]
+}

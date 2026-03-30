@@ -1,0 +1,351 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/core_library/validation_advanced_validators.rst`
+- Format: `rst`
+
+```
+======================================
+拡張バリデータ・コンバータ
+======================================
+
+本フレームワークが提供する基本となるバリデータ・コンバータの他に提供する利便的に拡張されたバリデータおよび拡張されたコンバータに関して記述する。
+バリデーション機能の概要、基本となるバリデーションに関する詳細は、 :ref:`validation-and-form` を参照。
+
+拡張バリデータ・コンバータの精査仕様は変更できない。
+バリデータについて下記に示す精査仕様とは異なる精査を行う場合は、バリデータの場合は :ref:`add-validation-method` 、
+コンバータの場合は :ref:`StringConvertor<stringconvertor-setting>` のextendedStringConvertors欄をそれぞれ参照して
+個別にバリデータまたはコンバータを追加すること。
+
+
+.. _ExtendedValidation_yyyymmddConvertor:
+
+------------------------------------
+年月日コンバータ
+------------------------------------
+年月日に関する精査機能、システムが内部で使用する8桁の年月日を表す文字列(以降は年月日文字列と称す)への変換機能に関して解説する。
+
+本機能では精査を行うと同時に、入力値をシステムが内部で使用する年月日文字列へ変換を行う。
+精査後に生成するFormオブジェクトの該当プロパティには変換後の年月日文字列が設定される。
+
+年月日コンバータで使用するコンバータとアノテーションを下記に示す。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - コンバータクラス名
+     - 対応するアノテーション
+   * - nablarch.common.date.YYYYMMDDConvertor
+     - @YYYYMMDD
+
+YYYYMMDDConvertorを使用するには、StringConvertorの拡張コンバータとして、StringConvertorのextendedStringConvertors属性に設定する必要がある。
+設定方法は、  :ref:`StringConvertor<stringconvertor-setting>` を参照。
+
+コンバータに設定可能な設定値は下記のとおりである。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - property名
+     - 設定内容
+   * - parseFailedMessageId(必須)
+     - 日付の精査に失敗した際のメッセージID
+
+       例 : "{0}は有効な日付ではありません。"
+
+アノテーションに設定可能な属性値は下記のとおりである。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - 属性名
+     - 設定内容
+   * - allowFormat(必須)
+     - 入力値として許容する年月日フォーマット。java.text.SimpleDateFormatが規定している構文で指定する。パターン文字は、y(年)、M(月)、d(月における日)のみ指定可能。
+   * - messageId
+     - 日付の精査に失敗した際のメッセージID
+
+       例 : "{0}は有効な日付ではありません。"
+
+       messageId属性の指定がない場合はYYYYMMDDConvertorに設定されたメッセージIDが使用される。
+
+ .. note::
+
+  カスタムタグの :ref:`WebView_TextTag` で年月日のフォーマットが指定された場合は、\
+  YYYYMMDDアノテーションのallowFormat属性でなく、\
+  textタグで指定されたフォーマットが精査に使用される。
+  textタグのフォーマット指定については、 :ref:`web_view_format` を参照。
+
+
+精査仕様
+================
+
+精査仕様は下記のとおりである。
+
+* 必須精査は行わない。（ :ref:`validate-requiredvalidator-setting` を用いて精査すること。）
+* 指定されたフォーマットまたは指定されたフォーマットから年月日の区切り文字を取り除いたフォーマットで解析できること。
+
+    .. list-table:: 
+     :widths: 100 200 200
+     :header-rows: 1
+
+     * - フォーマット
+       - 入力値
+       - バリデーション結果
+     * - "yyyy/MM/dd"
+       - "2011/09/28"
+       - OK。フォーマット通り。
+     * - "yyyy/MM/dd"
+       - "20110928"
+       - OK。年月日の区切り文字を取り除いたフォーマット通り。
+     * - "yyyy/MM/dd"
+       - "2011/02/29"
+       - NG。存在しない日付(閏年以外の年の2/29)。
+     * - "yyyy/MM/dd"
+       - "2011-09-28"
+       - NG。年月日の区切り文字が異なる。
+     * - "yyyy/MM/dd"
+       - "2011928"
+       - NG。年月日の区切り文字を取り除いたフォーマットに1桁足りない。
+
+変換仕様
+===============
+
+変換仕様は下記のとおりである。
+
+* "yyyyMMdd"形式の年月日文字列に入力値を変換する。
+
+実装例
+===============
+
+精査対象プロパティのセッタにYYYYMMDDアノテーションを付与する。
+YYYYMMDDアノテーションのallowFormat属性にフォーマットを指定する。
+allowFormat属性にはjava.text.SimpleDateFormatが規定している構文を指定する。
+フォーマットのパターン文字は、y(年)、M(月)、d(月における日)のみ指定可能である。
+
+例：
+
+  .. code-block:: java
+
+    private String date;
+
+    @YYYYMMDD(allowFomat = "yyyy/MM/dd")
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+.. _ExtendedValidation_yyyymmConvertor:
+    
+----------------
+年月コンバータ
+----------------
+
+年月に関する精査機能、システムが内部で使用する6桁の年月を表す文字列(以降は年月文字列と称す)への変換機能に関して解説する。
+
+年月コンバータは、\ `年月日コンバータ`_\ とほぼ同様の機能である。
+年月日コンバータが年月日を扱うのに対して、年月コンバータは年月を扱う点が異なるのみである。
+よって、ここでは差分のみを説明する。
+
+年月コンバータで使用するコンバータとアノテーションを下記に示す。
+
+  .. list-table:: 
+   :widths: 100 200
+   :header-rows: 1
+
+   * - コンバータクラス名
+     - 対応するアノテーション
+   * - nablarch.common.date.YYYYMMConvertor
+     - @YYYYMM
+
+     
+精査仕様
+========
+
+年月を扱う点以外は\ `年月日コンバータ`_\ と同様である。
+例のみ提示しておく。
+
+    .. list-table:: 
+     :widths: 100 200 200
+     :header-rows: 1
+
+     * - フォーマット
+       - 入力値
+       - バリデーション結果
+     * - "yyyy/MM"
+       - "2011/09"
+       - OK。フォーマット通り。
+     * - "yyyy/MM"
+       - "201109"
+       - OK。年月日の区切り文字を取り除いたフォーマット通り。
+     * - "yyyy/MM"
+       - "2011/13"
+       - NG。存在しない日付。
+     * - "yyyy/MM/dd"
+       - "2011-09"
+       - NG。年月日の区切り文字が異なる。
+     * - "yyyy/MM"
+       - "20119"
+       - NG。年月日の区切り文字を取り除いたフォーマットに1桁足りない。
+
+変換仕様
+========
+
+年月を扱う点以外は\ `年月日コンバータ`_\ と同様である。
+
+実装例
+======
+
+年月を扱う点以外は\ `年月日コンバータ`_\ と同様である。
+     
+
+```
+
+## Knowledge File
+
+- ID: `libraries-validation_advanced_validators`
+
+```json
+{
+  "id": "libraries-validation_advanced_validators",
+  "title": "拡張バリデータ・コンバータ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "年月日コンバータ",
+      "hints": [
+        "YYYYMMDDConvertor",
+        "nablarch.common.date.YYYYMMDDConvertor",
+        "@YYYYMMDD",
+        "parseFailedMessageId",
+        "allowFormat",
+        "messageId",
+        "extendedStringConvertors",
+        "年月日バリデーション",
+        "日付コンバータ",
+        "年月日フォーマット精査",
+        "yyyyMMdd",
+        "SimpleDateFormat"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "年月コンバータ",
+      "hints": [
+        "YYYYMMConvertor",
+        "nablarch.common.date.YYYYMMConvertor",
+        "@YYYYMM",
+        "年月バリデーション",
+        "年月コンバータ",
+        "yyyyMM",
+        "年月フォーマット精査"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "拡張バリデータ・コンバータの精査仕様は変更できない。コンバータの精査仕様を変更する場合は :ref:`StringConvertor<stringconvertor-setting>` のextendedStringConvertors欄を参照して個別にコンバータを追加すること。\n\n**クラス**: `nablarch.common.date.YYYYMMDDConvertor`\n**アノテーション**: `@YYYYMMDD`\n\n`YYYYMMDDConvertor`は`StringConvertor`の`extendedStringConvertors`属性に拡張コンバータとして設定する必要がある（:ref:`StringConvertor<stringconvertor-setting>` 参照）。\n\n精査と同時に入力値を`yyyyMMdd`形式の8桁年月日文字列に変換する。変換後の文字列がFormオブジェクトのプロパティに設定される。\n\n**コンバータ設定値**:\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| parseFailedMessageId | ○ | 日付精査失敗時のメッセージID（例: `{0}は有効な日付ではありません。`） |\n\n**@YYYYMMDD アノテーション属性**:\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| allowFormat | ○ | 許容する年月日フォーマット（`java.text.SimpleDateFormat`構文）。パターン文字はy（年）、M（月）、d（日）のみ指定可能 |\n| messageId | | 日付精査失敗時のメッセージID。未指定時は`YYYYMMDDConvertor`に設定されたメッセージIDを使用 |\n\n> **注意**: カスタムタグの :ref:`WebView_TextTag` で年月日フォーマットが指定された場合、`@YYYYMMDD`の`allowFormat`ではなく、textタグのフォーマットが精査に使用される（:ref:`web_view_format` 参照）。\n\n**精査仕様**:\n- 必須精査は行わない（:ref:`validate-requiredvalidator-setting` で精査すること）\n- 指定フォーマット、または年月日の区切り文字を除去したフォーマットで解析できること\n\n| フォーマット | 入力値 | 結果 |\n|---|---|---|\n| `yyyy/MM/dd` | `2011/09/28` | OK（フォーマット通り） |\n| `yyyy/MM/dd` | `20110928` | OK（区切り文字除去後のフォーマット通り） |\n| `yyyy/MM/dd` | `2011/02/29` | NG（存在しない日付） |\n| `yyyy/MM/dd` | `2011-09-28` | NG（区切り文字が異なる） |\n| `yyyy/MM/dd` | `2011928` | NG（区切り文字除去後のフォーマットに1桁不足） |\n\n**変換仕様**: 入力値を`yyyyMMdd`形式の8桁年月日文字列に変換する。\n\n**実装例**:\n\n```java\nprivate String date;\n\n@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")\npublic void setDate(String date) {\n    this.date = date;\n}\n```",
+    "s2": "**クラス**: `nablarch.common.date.YYYYMMConvertor`\n**アノテーション**: `@YYYYMM`\n\n年月日コンバータ（:ref:`ExtendedValidation_yyyymmddConvertor`）とほぼ同様の機能。年月日の代わりに6桁の年月文字列（`yyyyMM`形式）を扱う点のみが異なる。\n\n**精査仕様**（年月日コンバータとの差分）:\n\n| フォーマット | 入力値 | 結果 |\n|---|---|---|\n| `yyyy/MM` | `2011/09` | OK（フォーマット通り） |\n| `yyyy/MM` | `201109` | OK（区切り文字除去後のフォーマット通り） |\n| `yyyy/MM` | `2011/13` | NG（存在しない月） |\n| `yyyy/MM/dd` | `2011-09` | NG（区切り文字が異なる） |\n| `yyyy/MM` | `20119` | NG（区切り文字除去後のフォーマットに1桁不足） |\n\n**変換仕様**: 入力値を`yyyyMM`形式の6桁年月文字列に変換する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

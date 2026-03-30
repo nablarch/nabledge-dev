@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-03_userSendSyncMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — Javaコード例（④応答電文からデータ取得の後）",
+      "description": "ソースコードの「引き継ぎ項目を格納」ブロックがナレッジファイルのコード例から省略されている。具体的には `W11AC01SearchForm successionForm = new W11AC01SearchForm()` の生成、`successionForm.setSystemAccount(systemAccount)`、`ctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm)` の3行が欠落している。この `ExecutionContext.setRequestScopedVar()` の使用パターンは次画面へのデータ引き継ぎ方法を示す実装上重要な情報である。",
+      "source_evidence": "// 引き継ぎ項目を格納\nW11AC01SearchForm successionForm = new W11AC01SearchForm();\nsuccessionForm.setSystemAccount(systemAccount);\nctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm);"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 応答電文フォーマット定義ファイル例のフィールドコメント",
+      "description": "応答電文フォーマット定義ファイル（RM11AC0201_RECEIVE.fmt）の各フィールドに付いている日本語コメントが、知識ファイルでは先頭フィールド（dataKbn）以外すべて省略されている。特に `# 採番したユーザID`（userId）、`# 障害事由コード`（failureCode）、`# 問い合わせID`（userInfoId）は各フィールドの業務的意味を説明する情報として有用である。要求電文の同様のコメント（`# ログインID`、`# 漢字氏名` 等）も同様に省略されている。",
+      "source_evidence": "2   userId                      X(10)       # 採番したユーザID\n12  failureCode                 X(20)       # 障害事由コード\n32  userInfoId                  X(20)       # 問い合わせID"
+    }
+  ]
+}

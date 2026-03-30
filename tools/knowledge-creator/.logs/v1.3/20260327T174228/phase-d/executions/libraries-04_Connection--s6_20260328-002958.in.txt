@@ -1,0 +1,352 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/04/04_Connection.rst`
+- Format: `rst`
+
+```
+設定内容詳細
+------------
+
+.. _SimpleDbTransactionManager-configuration-label:
+
+\a) SimpleDbTransactionManagerの設定
+
+ ========================== ============================================================================================================
+ property名                 設定内容
+ ========================== ============================================================================================================
+ connectionFactory(必須)    nablarch.core.db.connection.ConnectionFactoryを実装したクラスの設定を行う。
+
+                            本サンプルでは、「nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource」を設定している。
+ transactionFactory(必須)   nablarch.core.transaction.TransactionFactoryを実装したクラスの設定を行う。
+
+                            本サンプルでは、「nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource」を設定している。
+
+ dbTransactionName          データベーストランザクション名を任意の値で設定する。
+
+                            設定を行わない場合、デフォルトのデータベーストランザクション名が本プロパティに自動的に設定される。
+ ========================== ============================================================================================================
+
+.. _db-dataSourceConnectionFactory-label:
+
+\b) nablarch.core.db.connection.BasicDbConnectionFactoryForDataSourceの設定
+
+ ================================ ============================================================================================================
+ property名                       設定内容
+ ================================ ============================================================================================================
+ statementReuse(必須)             Statementをキャッシュするか否かの設定を、trueまたはfalseで設定する。
+
+                                  trueを設定すると、BasicDbConnectionのインスタンス単位でStatementオブジェクトがキャッシュされる。
+
+                                  .. note ::
+                                    キャッシュを有効にした場合は、同一のSQLを複数回実行した場合、\
+                                    2回目以降はキャッシュされたStatementオブジェクトが使用される。
+                                    このため、複数回同一のSQL文を実行した場合はオブジェクトの生成コストを削減でき性能改善が期待できる。
+                                    特に1処理で同一のSQL文を多数実行する可能性のあるバッチ処理(バッチ処理では、大量データを繰り返し実行するので、
+                                    同一のSQL文を複数回実行する。)では効果が期待できる。
+
+                                    逆に、画面処理では1処理で同一のSQL文を繰り返し実行する事が少く、
+                                    キャッシュが有効に使用されない可能性が高いため、本機能を使用するメリットはあまりない。
+
+ dataSource(必須)                 javax.sql.DataSourceを実装したクラスを設定する。
+
+                                  本サンプルでは、「oracle.jdbc.pool.OracleDataSource」を設定し、OracleDataSourceのproperyに必要な情報を設定している。
+
+                                  .. note ::
+                                    本propertyに設定する値は、各データベースベンダーのJDBC関連ドキュメントを参照し設定すること。
+        
+ statementFactory(必須)           nablarch.core.statement.StatementFactoryを実装したクラスを設定する。
+
+                                  本サンプルでは、「nablarch.core.db.statement.BasicStatementFactory」を設定している。
+
+                                  .. note::
+                                    statementFactoryの設定は、後述の :ref:`db-sqlstatement-label` を参照
+
+ dbAccessExceptionFactory(必須)   データベースへのアクセス例外が発生した際に本クラスが送出する例外を生成するクラスを設定する。
+
+                                  設定できるクラスは、DbAccessExceptionFactoryを実装したクラスである。
+ ================================ ============================================================================================================
+
+.. _JdbcTransactionFactory-configuration-label:
+
+\c) nablarch.core.db.transaction.JdbcTransactionFactoryへの設定
+
+ ========================== ============================================================================================================
+ property名                 設定内容
+ ========================== ============================================================================================================
+ isolationLevel             アイソレーションレベルを設定する。
+
+                            設定可能なアイソレーションレベル
+
+                            * READ_COMMITTED(java.sql.Connection#TRANSACTION_READ_COMMITTED)
+                            * READ_UNCOMMITTED(java.sql.Connection#TRANSACTION_READ_UNCOMMITTED)
+                            * REPEATABLE_READ(java.sql.Connection#TRANSACTION_REPEATABLE_READ)
+                            * SERIALIZABLE(java.sql.Connection#TRANSACTION_SERIALIZABLE)
+
+                            本設定を記述しない場合は、デフォルトでREAD_COMMITTEDが設定される。
+
+                            .. note ::
+                              データベースによっては、使用できるアイソレーションレベルが限られている。
+                              データベースベンダーのマニュアルを参照し、適切なアイソレーションレベルを設定すること。
+
+ initSqlList                トランザクション開始時に実行したいSQL文をlist形式で設定する。
+
+                            SQL文を実行する必要がない場合には、設定は不要である。
+ ========================== ============================================================================================================
+
+\d) nablarch.core.db.connection.exception.BasicDbAccessExceptionFactoryへの設定
+
+ ========================== ============================================================================================================
+ property名                 設定内容
+ ========================== ============================================================================================================
+ sql(必須)                  データベースへの接続が有効かどうかを問い合わせるためのSQL文を設定する。
+
+                            本プロパティに設定するSQL文は、データベースへの負荷が少ないSQL文を設定すること。
+                            例えば、Oracleの場合には、\ **dual表**\ へアクセスするSQL文（以下SQL文）を設定すると良い。
+
+                            .. code-block:: sql
+
+                              select '1' from dual
+ ========================== ============================================================================================================
+
+.. _database-connection-config-from-jndi-label:
+
+設定ファイル例(JNDIを使用してデータベース接続を行う場合)
+==============================================================
+本設定例は、JNDI経由でデータベース接続を取得する際に必要となる箇所のみを記載している。
+JNDIに関連のない設定については、 :ref:`db-connection-config-label` を参照し、必要な設定を行うこと。
+
+.. code-block:: xml
+
+    <component class="nablarch.core.db.connection.BasicDbConnectionFactoryForJndi">
+        
+        <!-- jndiPropertiesの設定 -->
+        <property name="jndiProperties">
+            <map>
+                <entry key="java.naming.factory.initial" value="weblogic.jndi.WLInitialContextFactory"/>
+                <entry key="java.naming.provider.url" value="t3://localhost:7001"/>
+            </map>
+        </property>
+        <!-- jndiリソース名 -->
+        <property name="jndiResourceName" value="NablarchDataSource"/>
+
+        <!-- statementFactoryを実装したクラスの設定 -->
+        <property name="statementFactory">
+            <component name="statementFactory"
+                       class="nablarch.core.db.statement.BasicStatementFactory">
+                <property name="fetchSize" value="500"/>
+                <property name="queryTimeout" value="600" />
+                <property name="sqlStatementExceptionFactory">
+                    <component class="nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory">
+                        <property name="duplicateErrorSqlState" value=""/>
+                        <property name="duplicateErrorErrCode" value="1"/>
+                    </component>
+                </property>
+            </component>
+        </property>
+        <property name="statementReuse" value="true"/>
+
+        <!-- DbAccessExceptionFactoryを実装したクラスの設定 -->
+        <property name="dbAccessExceptionFactory">
+            <component name="dbAccessExceptionFactory" class="nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory">
+                <property name="sql" value="select * from dual" />
+            </component>
+        </property>
+    </component>
+
+設定内容詳細
+------------
+ ================================ ============================================================================================================
+ property名                       設定内容
+ ================================ ============================================================================================================
+ statementReuse(必須)             :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照すること。
+
+ statementFactory(必須)           :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照すること。
+
+ dbAccessExceptionFactory(必須)   :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照すること。
+
+ jndiProperties                   JNDI経由でDataSourceを取得するための、環境設定を行う。
+                                  Webサーバ上で稼働する場合や、クラスパス配下に「jndi.properties」を配置している場合には、本設定値は省略して良い。
+
+                                  .. note::
+                                   設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。
+
+                                   本設定例は、WebLogicサーバ上にDataSourceが登録されていることを想定した設定例となっている。
+
+ jndiResourceName(必須)           JNDIリソース名を設定する。
+
+                                  .. note::
+                                   設定に関する詳細は、Webサーバのベンダーマニュアルなどを参照すること。
+
+                                   例えば、WebLogicサーバの場合は、管理コンソールからDataSourceを登録する際に「JNDI Name」に入力した値を設定する。
+ ================================ ============================================================================================================
+```
+
+## Knowledge File
+
+- ID: `libraries-04_Connection--s6`
+
+```json
+{
+  "id": "libraries-04_Connection--s6",
+  "title": "設定ファイル例(JNDIを使用してデータベース接続を行う場合)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定内容詳細",
+      "hints": [
+        "SimpleDbTransactionManager",
+        "BasicDbConnectionFactoryForDataSource",
+        "JdbcTransactionFactory",
+        "BasicDbAccessExceptionFactory",
+        "ConnectionFactory",
+        "TransactionFactory",
+        "StatementFactory",
+        "DbAccessExceptionFactory",
+        "BasicDbConnection",
+        "DataSource",
+        "connectionFactory",
+        "transactionFactory",
+        "dbTransactionName",
+        "statementReuse",
+        "dataSource",
+        "statementFactory",
+        "dbAccessExceptionFactory",
+        "isolationLevel",
+        "initSqlList",
+        "データベース接続設定",
+        "トランザクション設定",
+        "アイソレーションレベル",
+        "Statementキャッシュ",
+        "接続ファクトリ設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicDbConnectionFactoryForJndi",
+        "BasicStatementFactory",
+        "BasicSqlStatementExceptionFactory",
+        "BasicDbAccessExceptionFactory",
+        "jndiProperties",
+        "jndiResourceName",
+        "statementReuse",
+        "statementFactory",
+        "dbAccessExceptionFactory",
+        "fetchSize",
+        "queryTimeout",
+        "duplicateErrorSqlState",
+        "duplicateErrorErrCode",
+        "JNDI接続設定",
+        "DataSource取得",
+        "WebLogic設定",
+        "データベース接続"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "### a) SimpleDbTransactionManagerの設定\n\n**クラス**: `nablarch.core.db.connection.SimpleDbTransactionManager`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| connectionFactory | ○ | `nablarch.core.db.connection.ConnectionFactory` を実装したクラスを設定する |\n| transactionFactory | ○ | `nablarch.core.transaction.TransactionFactory` を実装したクラスを設定する |\n| dbTransactionName | | データベーストランザクション名。未設定の場合、デフォルトのトランザクション名が自動設定される |\n\n### b) BasicDbConnectionFactoryForDataSourceの設定\n\n**クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| statementReuse | ○ | Statementをキャッシュするか否か（true/false）。trueの場合、`BasicDbConnection` のインスタンス単位でStatementオブジェクトがキャッシュされる |\n| dataSource | ○ | `javax.sql.DataSource` を実装したクラスを設定する。設定する値は各データベースベンダーのJDBC関連ドキュメントを参照すること |\n| statementFactory | ○ | `nablarch.core.statement.StatementFactory` を実装したクラスを設定する（:ref:`db-sqlstatement-label` 参照） |\n| dbAccessExceptionFactory | ○ | `DbAccessExceptionFactory` を実装したクラスを設定する |\n\n> **注意**: statementReuse=trueは、同一SQLを繰り返し実行するバッチ処理で効果が期待できる。画面処理では同一SQLの繰り返し実行が少なく効果は限定的。\n\n### c) JdbcTransactionFactoryへの設定\n\n**クラス**: `nablarch.core.db.transaction.JdbcTransactionFactory`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| isolationLevel | | アイソレーションレベル。未設定時はREAD_COMMITTEDが設定される。設定可能値: READ_COMMITTED、READ_UNCOMMITTED、REPEATABLE_READ、SERIALIZABLE |\n| initSqlList | | トランザクション開始時に実行するSQL文のリスト。不要な場合は設定不要 |\n\n> **注意**: データベースによって使用できるアイソレーションレベルが限られる。データベースベンダーのマニュアルを参照すること。\n\n### d) BasicDbAccessExceptionFactoryへの設定\n\n**クラス**: `nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| sql | ○ | データベースへの接続が有効かどうかを問い合わせるSQL文。負荷の少ないSQL文を設定すること（例: Oracleの場合 `select '1' from dual`） |",
+    "s2": "JNDI経由でデータベース接続を取得する際の設定例。JNDI関連以外の設定は :ref:`db-connection-config-label` を参照。\n\n**クラス**: `nablarch.core.db.connection.BasicDbConnectionFactoryForJndi`\n\n```xml\n<component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForJndi\">\n    <property name=\"jndiProperties\">\n        <map>\n            <entry key=\"java.naming.factory.initial\" value=\"weblogic.jndi.WLInitialContextFactory\"/>\n            <entry key=\"java.naming.provider.url\" value=\"t3://localhost:7001\"/>\n        </map>\n    </property>\n    <property name=\"jndiResourceName\" value=\"NablarchDataSource\"/>\n    <property name=\"statementFactory\">\n        <component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n            <property name=\"fetchSize\" value=\"500\"/>\n            <property name=\"queryTimeout\" value=\"600\" />\n            <property name=\"sqlStatementExceptionFactory\">\n                <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n                    <property name=\"duplicateErrorSqlState\" value=\"\"/>\n                    <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n                </component>\n            </property>\n        </component>\n    </property>\n    <property name=\"statementReuse\" value=\"true\"/>\n    <property name=\"dbAccessExceptionFactory\">\n        <component name=\"dbAccessExceptionFactory\" class=\"nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory\">\n            <property name=\"sql\" value=\"select * from dual\" />\n        </component>\n    </property>\n</component>\n```\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| statementReuse | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照 |\n| statementFactory | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照 |\n| dbAccessExceptionFactory | ○ | :ref:`BasicDbConnectionFactoryForDataSourceへの設定<db-dataSourceConnectionFactory-label>` の同一項目を参照 |\n| jndiProperties | | JNDI経由でDataSourceを取得するための環境設定。Webサーバ上で稼働または `jndi.properties` をクラスパス配下に配置している場合は省略可。設定詳細はWebサーバのベンダーマニュアルを参照すること |\n| jndiResourceName | ○ | JNDIリソース名。設定詳細はWebサーバのベンダーマニュアルを参照すること（例: WebLogicサーバの場合は、管理コンソールからDataSourceを登録する際に「JNDI Name」に入力した値を設定する） |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

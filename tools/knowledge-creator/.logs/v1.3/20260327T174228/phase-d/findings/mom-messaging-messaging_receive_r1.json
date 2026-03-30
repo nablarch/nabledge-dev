@@ -1,0 +1,13 @@
+{
+  "file_id": "mom-messaging-messaging_receive",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "4 handler names appear in the s3 handler queue table and flow details but are absent from s3 hints: ThreadContextClearHandler (positions 4 and 13 in the queue, referenced in flows), ThreadContextHandler_main (position 5, referenced in 正常起動 and 重複起動エラー flows), ThreadContextHandler_request (position 14, referenced in multiple flows), RequestPathJavaPackageMapping (position 7, referenced in 受付正常終了 and 受付エラー flows).",
+      "source_evidence": "HandlerQueue includes all four names; flow steps explicitly reference ThreadContextHandler_main, ThreadContextHandler_request, and RequestPathJavaPackageMapping with annotations."
+    }
+  ]
+}

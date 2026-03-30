@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "`ValidationUtil` is a PascalCase class used in the `validateForSearch` code example (`ValidationUtil.validate(context, SEARCH_COND_PROPS)`) but is absent from s5 hints.",
+      "source_evidence": "ValidationUtil.validate(context, SEARCH_COND_PROPS);"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "The constructor pattern for initializing ListSearchInfo properties from `Map<String, Object> params` is absent. The source explicitly shows that `setPageNumber` and `setSortId` must be called in the constructor using values from the params map, which is important for a developer implementing a similar form.",
+      "source_evidence": "public W11AC01SearchForm(Map<String, Object> params) {\n    ...\n    setPageNumber((Integer) params.get(\"pageNumber\"));\n    setSortId((String) params.get(\"sortId\"));\n}"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index order: s4 before s5",
+      "description": "In the knowledge file index, s4 (ビジネスロジック/作成手順) appears before s5 (Formクラスの作成). In the source document, the `Formクラスの作成` sub-section appears inside `検索条件を保持するForm` and thus before `ビジネスロジック(Action)の作成`. The index ordering does not preserve source document order.",
+      "source_evidence": "Source order: 検索条件を保持するForm(SearchForm)の作成 → Formクラスの作成 → ビジネスロジック(Action)の作成"
+    }
+  ]
+}

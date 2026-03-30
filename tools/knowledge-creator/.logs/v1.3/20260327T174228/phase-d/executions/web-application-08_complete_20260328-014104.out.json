@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-08_complete",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 登録完了画面の表示確認 step",
+      "description": "The source includes a note at the JSP display confirmation step: 「ただし、この時点では更新処理を実装していない為、DBの更新は行われていない。」 This constraint — that DB updates are NOT performed when verifying the complete screen display — is absent from the knowledge file. It clarifies the incremental implementation order and is relevant context for an AI answering questions about this step.",
+      "source_evidence": "2) 登録完了画面の表示確認 — 「ただし、この時点では更新処理を実装していない為、DBの更新は行われていない。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The SQL INSERT statement in s2 references columns `UPDATED_USER_ID` and `UPDATED_DATE`, but these column names are absent from the s2 hints array. `INSERT_USER_ID` and `INSERT_DATE` are present, creating an inconsistent set.",
+      "source_evidence": "SQL in ①ユーザテーブル登録用のSQL文の追加: `UPDATED_USER_ID`, `UPDATED_DATE` appear as column names and bind variables `:updatedUserId`, `:updatedDate`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The SQL file name `W11AC01Action` (from `W11AC01Action.sql`) follows PascalCase and is explicitly referenced in the source as the file where `REGISTER_USERS` SQL is stored. It is missing from s2 hints despite being content-level navigation information.",
+      "source_evidence": "①ユーザテーブル登録用のSQL文の追加 table: SQLファイル名 = `W11AC01Action.sql`"
+    }
+  ]
+}

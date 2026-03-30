@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_spec",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ユーザ情報登録機能の概要",
+      "description": "キャンセル遷移が実装されない旨の注記が省略されている。チュートリアルでこの機能を実装する際に、登録確認画面からのキャンセル遷移が意図的に除外されていることを知らないと混乱を招く可能性がある。",
+      "source_evidence": "「なお、画面遷移図上は登録確認画面から「キャンセル」の遷移が存在するが、本チュートリアルでは実装しない。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "画面情報テーブルのリクエストID (RW11AC0201, RW11AC0202, RW11AC0204) がhintsに含まれていない。ユーザがリクエストIDで検索する場合にこのセクションが検出されない。",
+      "source_evidence": "画面情報テーブル: RW11AC0201（登録画面初期表示処理）、RW11AC0202（登録入力確認処理）、RW11AC0204（登録処理）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — index hints",
+      "description": "登録処理仕様に含まれる追加カラムの物理名 (INSERT_USER_ID, INSERT_DATE, UPDATED_USER_ID, UPDATED_DATE) がhintsに含まれていない。これらはNAFにより自動設定される特殊なカラムであり、検索対象になりうる。",
+      "source_evidence": "登録対象カラム表: INSERT_USER_ID（実行ユーザ、NAFにより自動設定）、INSERT_DATE（システム日時、NAFにより自動設定）、UPDATED_USER_ID、UPDATED_DATE"
+    }
+  ]
+}

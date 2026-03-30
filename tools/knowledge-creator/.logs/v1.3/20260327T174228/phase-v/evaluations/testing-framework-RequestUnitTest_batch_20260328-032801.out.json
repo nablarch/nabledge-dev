@@ -1,0 +1,26 @@
+{
+  "file_id": "testing-framework-RequestUnitTest_batch",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three residual findings are minor structural or completeness issues with no meaningful retrieval failures. Section content is complete and accurate. The missing full class name hint is partially compensated by the short name and the content body itself. Unsplit sections are slightly large but do not omit any information.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s5 hints",
+      "impact": "low",
+      "justification": "The short name `OneShotLoopHandler` is already present in s5 hints, so keyword searches on the class name still resolve correctly. The full qualified name `nablarch.test.OneShotLoopHandler` also appears verbatim in the s5 section body XML code block, so content-based retrieval is unaffected. Only a strict full-class-name hint lookup would miss — an edge case with negligible practical impact. Phase E added the short name but stopped short of also adding the fully-qualified form, leaving this asymmetry unfixed."
+    },
+    {
+      "category": "section_issue",
+      "location": "s3",
+      "impact": "low",
+      "justification": "The 構造 section is kept as a single s3 despite containing ~2700 chars across 5 h3 subsections. No information is missing; all five class descriptions (StandaloneTestSupportTemplate, TestShot, BatchRequestTestSupport, MainForRequestTesting, FileSupport) are present in full. The only practical effect is that queries targeting one specific class return the entire structural section. This slightly increases response size but does not cause retrieval failure or incorrect answers. Phase E did not split the section, likely treating the size as borderline or the five classes as a cohesive structural unit."
+    },
+    {
+      "category": "section_issue",
+      "location": "s5",
+      "impact": "low",
+      "justification": "The 各種設定値 section (~2000+ chars with 2 h3 subsections) remains unsplit as a single s5. Both subsections — handler configuration for resident batch tests and directive default values — are fully represented in the content. A query about only one of the two topics returns the whole section, which is slightly noisy but not incorrect. Phase E preserved the original single-section structure without splitting, likely judging the two topics sufficiently related or the size as borderline per the V3 rule threshold."
+    }
+  ]
+}

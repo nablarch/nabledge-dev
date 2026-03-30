@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The source contains an explicit warning (marked with `// ******** 注意 ********`) that the XmlComponentDefinitionLoader bootstrap code should NOT be implemented by application programmers: \"通常のアプリケーションでは実装する必要がない。従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。\" The knowledge file only contextualizes the code as \"ブートストラップ処理では\" without conveying the explicit instruction that application programmers must not write this code themselves.",
+      "source_evidence": "// ******** 注意 ********\n// 直下のコードはブートストラップ処理で行うべき処理であり、通常のアプリケーションでは実装する必要がない。\n// 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The Java retrieval example for map entries using `key-component` is omitted. The source shows that to retrieve a value stored with a `key-component` key, a caller must instantiate a new `KeyComponent` object with matching property values (`setId(\"00001\")`, `setLang(\"ja\")`) and pass it to `map.get(key)`. This usage pattern is non-obvious and decision-necessary for implementers using the key-component feature.",
+      "source_evidence": "KeyComponent key = new KeyComponent();\nkey.setId(\"00001\");\nkey.setLang(\"ja\");\nComponentB compB_3 = (ComponentB) map.get(key);\n// \"compB_3\" が取得できる"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "`DiContainer` is a PascalCase class name explicitly used in s4's code example but is absent from the hints array for that section.",
+      "source_evidence": "DiContainer container = new DiContainer(loader);"
+    }
+  ]
+}

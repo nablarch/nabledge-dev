@@ -1,0 +1,26 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three findings are hints_missing with minor severity. The section content is complete and accurate — the missing hints only affect retrieval by specific keyword. Users querying validation/constructor tests would naturally use API method names (testValidateAndConvert, testConstructorAndGetter) rather than example class names or generic column names. None of the gaps block a realistic user query path.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1].hints",
+      "impact": "low",
+      "justification": "title と description は汎用的な単語で他セクションとの衝突リスクもある。ユーザーが「テストケース表のカラム構成」を調べる場合、testShots や expectedMessageId など既存ヒントで十分 s1 に到達できる。s1 のコンテンツにこれらのカラム名は記載済み。Phase E ログを見ると修正が適用されず同一ヒント列のまま出力されており、fix エージェントが minor と判断してスキップしたと推定される。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s3].hints",
+      "impact": "low",
+      "justification": "SystemAccountEntity はサンプルクラスであり、実際のユーザーは自分のエンティティ名で検索しない。s3 への到達は testValidateAndConvert / validateFor / EntityTestSupport などのメソッド名ヒントで十分。Phase E ログでは s3 ヒントが未変更のまま出力されており、fix が適用されていない。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s4].hints",
+      "impact": "low",
+      "justification": "SystemAccountEntityTest（テストクラス）はすでに s4 ヒントに含まれている。テスト対象エンティティ SystemAccountEntity はサンプルであり、ユーザーは testConstructorAndGetter / getParamMap などのメソッド名で検索する。Phase E ログでは s4 ヒントも未変更のまま出力されており、fix エージェントが変更を適用しなかった。"
+    }
+  ]
+}

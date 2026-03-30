@@ -1,0 +1,189 @@
+{
+  "id": "biz-samples-03_ListSearchResult--s24",
+  "title": "検索結果の一覧表示機能のデフォルト値設定",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の一覧表示機能のデフォルト値設定",
+      "hints": [
+        "ListSearchInfo",
+        "nablarch.listSearch.maxResultCount",
+        "nablarch.listSearch.max",
+        "検索結果最大件数",
+        "ページング表示件数",
+        "setMax",
+        "setMaxResultCount",
+        "DbAccessSupport",
+        "ApplicationException",
+        "OnError"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アプリケーションへのサンプル実装(タグファイル)の取り込み方法",
+      "hints": [
+        "listSearchResultタグファイル",
+        "タグファイル配置",
+        "プレフィックス修正",
+        "taglib",
+        "WEB-INF/tags"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "タグリファレンス",
+      "hints": [
+        "listSearchResultタグ",
+        "listSearchSortSubmitタグ",
+        "タグリファレンス",
+        "並び替え列見出し",
+        "ascSortId",
+        "descSortId",
+        "listSearchInfoName",
+        "sortCss",
+        "ascCss",
+        "descCss"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "全体",
+      "hints": [
+        "listSearchInfoName",
+        "listSearchResultWrapperCss",
+        "listSearchResultタグ全体属性",
+        "一覧表示ラッパー"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "検索結果件数",
+      "hints": [
+        "useResultCount",
+        "resultCountCss",
+        "resultCountFragment",
+        "検索結果件数表示"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ページング",
+      "hints": [
+        "usePaging",
+        "searchUri",
+        "pagingPosition",
+        "pagingCss",
+        "ページング表示"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "現在のページ番号",
+      "hints": [
+        "useCurrentPageNumber",
+        "currentPageNumberCss",
+        "currentPageNumberFragment",
+        "現在ページ番号表示"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "最初",
+      "hints": [
+        "useFirstSubmit",
+        "firstSubmitTag",
+        "firstSubmitType",
+        "firstSubmitCss",
+        "firstSubmitLabel",
+        "firstSubmitName",
+        "最初ページ遷移"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "前へ",
+      "hints": [
+        "usePrevSubmit",
+        "prevSubmitTag",
+        "prevSubmitType",
+        "prevSubmitCss",
+        "prevSubmitLabel",
+        "prevSubmitName",
+        "前ページ遷移"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "ページ番号(ページ番号をラベルとして使用するためラベル指定がない)",
+      "hints": [
+        "usePageNumberSubmit",
+        "pageNumberSubmitTag",
+        "pageNumberSubmitType",
+        "pageNumberSubmitCss",
+        "pageNumberSubmitName",
+        "ページ番号遷移"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "次へ",
+      "hints": [
+        "useNextSubmit",
+        "nextSubmitTag",
+        "nextSubmitType",
+        "nextSubmitCss",
+        "nextSubmitLabel",
+        "nextSubmitName",
+        "次ページ遷移"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "最後",
+      "hints": [
+        "useLastSubmit",
+        "lastSubmitTag",
+        "lastSubmitType",
+        "lastSubmitCss",
+        "lastSubmitLabel",
+        "lastSubmitName",
+        "最後ページ遷移"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "検索結果",
+      "hints": [
+        "resultSetName",
+        "resultSetCss",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "検索結果テーブル表示"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索処理の設定（最大件数・1ページ取得件数）はリポジトリ機能の環境設定ファイルで指定する。ListSearchInfo生成時にリポジトリから取得され、設定値がない場合は以下のデフォルト値が適用される。\n\n| プロパティ名 | 設定内容 | デフォルト値 |\n|---|---|---|\n| nablarch.listSearch.maxResultCount | 検索結果の最大件数（上限） | 200 |\n| nablarch.listSearch.max | 1ページの表示件数 | 20 |\n\n個別機能のみ設定値を変更する場合:\n- 画面表示設定: JSP上で :ref:`ListSearchResult_Tag` の属性を指定\n- ページング検索設定: ActionメソッドでListSearchInfoを継承したクラスに値を設定\n\n最大件数50・表示件数10に変更する実装例:\n\n```java\npublic class W11AC01Action extends DbAccessSupport {\n    private static final int MAX_ROWS = 10;\n    private static final int MAX_RESULT_COUNT = 50;\n\n    @OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")\n    public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {\n        W11AC01SearchForm condition = ... ;\n        condition.setMax(MAX_ROWS);\n        condition.setMaxResultCount(MAX_RESULT_COUNT);\n    }\n}\n```",
+    "s2": "タグファイルの配置:\n- コピー元: `META-INF/tags/listSearchResult`\n- コピー先: 業務アプリケーションの `/WEB-INF/tags` ディレクトリ\n\n`/WEB-INF/tags/listSearchResult` に配置した場合のプレフィックス修正:\n\n修正前:\n```jsp\n<%@ taglib prefix=\"nbs\" uri=\"http://tis.co.jp/nablarch-biz-sample\" %>\n```\nプレフィックス: `nbs`\n\n修正後:\n```jsp\n<%@ taglib prefix=\"listSearchResult\" tagdir=\"/WEB-INF/tags/listSearchResult\" %>\n```\nプレフィックス: `listSearchResult`",
+    "s3": "| タグ | 機能 |\n|---|---|\n| :ref:`ListSearchResult_Tag` | 検索結果の一覧表示 |\n| :ref:`ListSearchResult_ListSearchSortSubmitTag` | 検索結果の一覧表示で並び替え対応の列見出しを出力 |\n\n## listSearchSortSubmitタグ属性\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| tag | | submitLink | 並び替えサブミットに使用するNablarchタグ（submitLink/submit/button） |\n| type | | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| sortCss | | nablarch_sort | 並び替えサブミットのclass属性（常に出力） |\n| ascCss | | nablarch_asc | 昇順時に付加するclass属性（例: class=\"nablarch_sort nablarch_asc\"） |\n| descCss | | nablarch_desc | 降順時に付加するclass属性（例: class=\"nablarch_sort nablarch_desc\"） |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトのソート（asc/desc） |\n| label | ○ | | サブミットのラベル |\n| name | ○ | | タグのname属性（画面内で一意にすること） |\n| listSearchInfoName | ○ | | ListSearchInfoをリクエストスコープから取得する際の名前 |",
+    "s4": "listSearchResultタグの全体属性:\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| listSearchInfoName | | | ListSearchInfoをリクエストスコープから取得する際の名前。未指定の場合は「検索結果件数」および「ページング」を表示しない（一括削除確認画面など一覧表示のみの場合は指定しない） |\n| listSearchResultWrapperCss | | nablarch_listSearchResultWrapper | ページング付きテーブル全体（検索結果件数・ページング・検索結果）をラップするdivのclass属性 |",
+    "s5": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useResultCount | true | 検索結果件数を表示するか否か |\n| resultCountCss | nablarch_resultCount | 検索結果件数をラップするdivのclass属性 |\n| resultCountFragment | \"検索結果 <PagingInfoのresultCountプロパティ>件\" | 検索結果件数を出力するJSPフラグメント |",
+    "s6": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| usePaging | | true | ページングを表示するか否か |\n| searchUri | ○(ページング表示時) | | ページングのサブミット要素に使用するURI。ページングを表示する場合は必ず指定すること |\n| pagingPosition | | top | ページングの表示位置（top/bottom/both/none） |\n| pagingCss | | nablarch_paging | ページングのサブミット要素全体をラップするdivのclass属性 |",
+    "s7": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useCurrentPageNumber | true | 現在のページ番号を使用するか否か |\n| currentPageNumberCss | nablarch_currentPageNumber | 現在のページ番号をラップするdivのclass属性 |\n| currentPageNumberFragment | \"[<PagingInfoのcurrentPageNumberプロパティ>/<PagingInfoのpageCountプロパティ>ページ]\" | 現在のページ番号を出力するJSPフラグメント |",
+    "s8": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useFirstSubmit | false | 最初のページに遷移するサブミットを使用するか否か |\n| firstSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| firstSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| firstSubmitCss | nablarch_firstSubmit | ラップするdivのclass属性 |\n| firstSubmitLabel | 最初 | ラベル |\n| firstSubmitName | firstSubmit | name属性。表示位置サフィックスが付加される（上側: _top、下側: _bottom）。例: firstSubmit_top |",
+    "s9": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| usePrevSubmit | true | 前のページに遷移するサブミットを使用するか否か |\n| prevSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| prevSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| prevSubmitCss | nablarch_prevSubmit | ラップするdivのclass属性 |\n| prevSubmitLabel | 前へ | ラベル |\n| prevSubmitName | prevSubmit | name属性。表示位置サフィックスが付加される（例: prevSubmit_top） |",
+    "s10": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| usePageNumberSubmit | false | ページ番号のページに遷移するサブミットを使用するか否か |\n| pageNumberSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| pageNumberSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| pageNumberSubmitCss | nablarch_pageNumberSubmit | ラップするdivのclass属性 |\n| pageNumberSubmitName | pageNumberSubmit | name属性。ページ番号と表示位置サフィックスが付加される（例: pageNumberSubmit3_top） |",
+    "s11": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useNextSubmit | true | 次のページに遷移するサブミットを使用するか否か |\n| nextSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| nextSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| nextSubmitCss | nablarch_nextSubmit | ラップするdivのclass属性 |\n| nextSubmitLabel | 次へ | ラベル |\n| nextSubmitName | nextSubmit | name属性。表示位置サフィックスが付加される（例: nextSubmit_top） |",
+    "s12": "| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| useLastSubmit | false | 最後のページに遷移するサブミットを使用するか否か |\n| lastSubmitTag | submitLink | Nablarchタグ（submitLink/submit/button） |\n| lastSubmitType | | タグのtype属性（submit/button）。submitLinkの場合は使用しない |\n| lastSubmitCss | nablarch_lastSubmit | ラップするdivのclass属性 |\n| lastSubmitLabel | 最後 | ラベル |\n| lastSubmitName | lastSubmit | name属性。表示位置サフィックスが付加される（例: lastSubmit_top） |",
+    "s13": "| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| resultSetName | ○ | | 検索結果をリクエストスコープから取得する際の名前 |\n| resultSetCss | | nablarch_resultSet | 検索結果テーブルのclass属性 |\n| headerRowFragment | ○ | | ヘッダ行のJSPフラグメント |\n| bodyRowFragment | ○ | | ボディ行のJSPフラグメント |\n| varRowName | | row | ボディ行のフラグメントで行データ（c:forEachのvar）を参照する変数名 |\n| varStatusName | | status | ボディ行のフラグメントでステータス（c:forEachのstatus）を参照する変数名 |\n| varCountName | | count | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | | rowCount | 検索結果のカウント（取得開始位置＋ステータスのカウント）を参照する変数名 |\n| varOddEvenName | | oddEvenCss | ボディ行のclass属性を参照する変数名（1行おきにclass変更する場合に使用） |\n| oddValue | | nablarch_odd | 奇数行のclass属性 |\n| evenValue | | nablarch_even | 偶数行のclass属性 |\n\n> **注意**: `varStatusName`で指定した変数にn:writeタグでアクセスするとエラーになる。n:setタグを使用してアクセスすること。\n\n```jsp\n<n:set var=\"rowCount\" value=\"${status.count}\" />\n<n:write name=\"rowCount\" />\n```"
+  }
+}

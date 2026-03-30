@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-04_validation--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s2].title",
+      "description": "The index entry for s2 has an empty title string. The source section heading is \"View(JSP)の作成\", which is also the top-level knowledge file title. The s2 index title should reflect the section heading so the section is identifiable in AI navigation.",
+      "source_evidence": "Source heading: \"View(JSP)の作成\" (underlined with ==)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "The concrete prefix example is missing: the source states \"ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している\", which ties the JSP name attribute format directly to the \"W11AC02\" prefix used in validateAndConvertRequest in s1. This helps AI answer questions about how to assign name attributes in JSPs.",
+      "source_evidence": "Source: \"ユーザ情報登録では、Formに対してW11AC02というプレフィックスを使用している。\""
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The note explaining what doRW11AC0201 does is omitted. Since s1 code uses @OnError with path=\"forward://RW11AC0201\", the note \"doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。\" provides necessary context for understanding the error handling flow.",
+      "source_evidence": "Source note: \"doRW11AC0201メソッドは、ユーザ情報登録画面を表示する処理。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "Several PascalCase class names from the source code are absent from s1 hints: SystemAccountEntity, CM311AC1Component, MessageUtil, MessageLevel. These appear in the validate() method body in the source.",
+      "source_evidence": "Source code: `SystemAccountEntity systemAccount = form.getSystemAccount();`, `CM311AC1Component function = new CM311AC1Component();`, `MessageUtil.createMessage(MessageLevel.ERROR, ...)`, `MessageUtil.getStringResource(...)`"
+    }
+  ]
+}

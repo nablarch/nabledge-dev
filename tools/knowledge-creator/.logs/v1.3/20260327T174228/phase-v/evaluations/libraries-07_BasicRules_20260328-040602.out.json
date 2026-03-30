@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_BasicRules",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor. The fabricated label \"対象スコープ：\" is misleading framing but the actual list content is complete and accurate — an AI agent guided by this file will still enumerate the correct targets. The omitted rationale for the nablarch_ prohibition means the AI cannot explain *why* the rule exists, but the rule itself (\"use is prohibited\") is correctly conveyed and users can follow it without the backstory. Neither finding causes incorrect guidance or missing safety-critical information.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1",
+      "impact": "low",
+      "justification": "The label \"対象スコープ：\" incorrectly implies all listed items are scope-related, but only the last item (ページスコープ、リクエストスコープ、セッションスコープの属性名) is actually a scope concept. HTML attributes, CSS class names, and JavaScript names are not scopes. However, the list items themselves are fully and accurately reproduced, so an AI agent will still present the correct set of targets. The misleading label may cause slight confusion in explanations but does not lead to incorrect guidance or omit actionable information."
+    },
+    {
+      "category": "omission",
+      "location": "s1",
+      "impact": "low",
+      "justification": "The omitted rationale — that the framework itself uses the nablarch_ prefix for its own names to avoid collision — reduces the AI's ability to explain *why* the prohibition exists. However, the prohibition rule is correctly and completely stated. Users can apply the rule correctly without knowing the reason. The impact is limited to explanation quality when a user explicitly asks for the reasoning; it does not cause any incorrect behavior guidance. Why it persisted: the Phase E output (sections.s1) is byte-for-byte identical to the Phase D input — the fix agent produced no change to s1, likely failing silently without applying the two corrections."
+    }
+  ]
+}

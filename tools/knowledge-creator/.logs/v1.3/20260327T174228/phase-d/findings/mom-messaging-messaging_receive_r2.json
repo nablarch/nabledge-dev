@@ -1,0 +1,20 @@
+{
+  "file_id": "mom-messaging-messaging_receive",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Section s3 hints are missing several PascalCase class/interface names that appear explicitly in the section content: `DataReader` (from `DataReader.NoMoreRecord` in the タイムアウト flow), `ProcessStop` (exception class in the プロセス正常停止 flow), `Retryable` (interface in the DB/MQ接続エラー flow), and `Result` (from `Result.Forbidden` and `Result.ServiceUnavailable` in the 認可エラー and 閉局中待機 flows).",
+      "source_evidence": "Flow definitions in source: `DataReader.NoMoreRecord をリターンする`, `リトライ可能実行時例外(Retryableを実装した例外)`, `認可エラー(Result.Forbidden/ステータスコード:403)`, `閉局エラー(Result.ServiceUnavailable)`, `プロセス停止要求(ProcessStop)を捕捉`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Section s3 hints include only 3 of the 9 processing flow names (正常起動, 重複起動エラー, DB/MQ接続エラー). The remaining 6 flow names from the source table are absent: 受付正常終了, 受信待機タイムアウト, 受付エラー, 認可エラー, 閉局中待機, プロセス正常停止.",
+      "source_evidence": "Source flow table 処理フロー名 column lists: 正常起動, 重複起動エラー, 受付正常終了, 受信待機タイムアウト, 受付エラー, 認可エラー, 閉局中待機, DB/MQ接続エラー, プロセス正常停止"
+    }
+  ]
+}

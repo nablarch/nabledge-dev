@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (ロガー設定)",
+      "description": "Source explicitly states \"LoggerManager#getメソッドでクラスを指定した場合は、FQCNがロガー名となる\" but this fact is absent from the knowledge file. Without it, an AI cannot explain why nameRegex patterns use fully-qualified class names (e.g., `nablarch.core.validation.validator.RequiredValidator`).",
+      "source_evidence": "「LoggerManager#getメソッドでクラスを指定した場合は、FQCNがロガー名となる。」(ロガー設定セクション、コード例の直前)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 (FileLogWriter) — hints array",
+      "description": "The property `level` appears as the last row in the s6 content table but is not listed in the hints array for that section.",
+      "source_evidence": "writer.appFile.level=INFO (設定例) および「LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。」(プロパティ説明)"
+    }
+  ]
+}

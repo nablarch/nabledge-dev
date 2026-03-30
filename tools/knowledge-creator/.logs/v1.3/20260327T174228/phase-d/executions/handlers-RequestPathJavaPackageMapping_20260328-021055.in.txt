@@ -1,0 +1,443 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/handler/RequestPathJavaPackageMapping.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _requestJavaPackageMapping:
+
+==========================================
+リクエストディスパッチハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.handler.RequestPathJavaPackageMapping``
+
+----------------------------------------------
+概要
+----------------------------------------------
+:doc:`RequestPathJavaPackageMapping` は、 :ref:`リクエストパス<request_processing>` をJavaパッケージ階層にマッピングすることで、
+リクエストパスの値に応じて実行するハンドラを任意に切り替えることを可能とするハンドラである。
+
+主に **業務アクションハンドラ** のディスパッチを行う際に使用する。
+
+例えば、以下の設定例では、リクエストパスが **/app/action/** で始まる場合に、
+後続処理を Javaパッケージ **nablarch.application** 配下のクラスにディスパッチする。
+(ディスパッチ対象のクラスをハンドラキューに追加する。)
+
+  .. code-block:: xml
+
+    <!-- ディスパッチ -->
+    <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+      <property name="basePath"    value="/app/action/" />
+      <property name="basePackage" value="nablarch.application" />
+    </component>
+
+この場合、リクエストパスの値とディスパッチ先のクラス名との対応は以下のようになる。
+
+  ===========================   =====================================
+  リクエストパス                ディスパッチ対象クラス
+  ===========================   =====================================
+  /app/action/AdminApp          nablarch.application.AdminApp
+  /app/action/user/UserApp      nablarch.application.user.UserApp
+  /app/application/AdminApp     (ディスパッチ対象無し:404エラー) 
+  ===========================   =====================================
+
+++++++++++++++++++++
+
+**ハンドラ処理概要** (:doc:`../architectural_pattern/messaging_request_reply` での構成)
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "DataReadHandler_messaging"
+      , "RequestPathJavaPackageMapping"
+      , "MessagingAction" 
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+**関連するハンドラ**
+
+  ========================================  ==============================================================================================
+  ハンドラ                                  内容
+  ========================================  ==============================================================================================
+  :doc:`Main`                               :doc:`../architectural_pattern/batch` では、プロセス起動引数 **--requestPath**
+                                            に指定された :ref:`リクエストパス<request_processing>` の値に応じてディスパッチを行う。 
+
+  :doc:`DataReadHandler`                    :doc:`../architectural_pattern/messaging_request_reply` では、
+                                            :doc:`../reader/FwHeaderReader` が読み込むフレームワーク制御ヘッダ領域のリクエストIDヘッダ
+                                            **(項目名:requestId)** の値を使用する。
+
+  :doc:`HttpRequestJavaPackageMapping`      :doc:`../architectural_pattern/web_gui` では、本ハンドラを拡張した
+                                            :doc:`HttpRequestJavaPackageMapping` を使用する。
+
+  ========================================  ==============================================================================================
+
++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストパスの取得)**
+    ハンドラの引数として渡されたリクエストオブジェクトから、以下のAPIを使用してリクエストパスを取得する。::
+
+      nablarch.fw.Request#getRequestPath(): String
+    
+  **1a. (ベースパス外アクセスエラー)**
+    取得したリクエストパスに対して、本ハンドラに設定されたベースパスが前方一致しない場合は、
+    実行時例外 `Result.NotFound`_ を送出する。
+
+  **1b. (非Java識別子を含むパスによるアクセスエラー)**
+    取得したリクエストパスの各ディレクトリ文字列中に、Java識別子以外の文字 [#rf1]_ が含まれていた場合は、
+    Javaの名前空間にマッピングすることができないので、実行時例外 `Result.NotFound`_ を送出する。
+
+  **2. (ディスパッチ対象クラスの決定)**
+    以下の仕様に従って、ディスパッチ対象クラスの完全修飾名を決定する。
+    
+    1. リクエストパス中の **”.”** を **”/”** に置換する。
+    2. リクエストパスの先頭から 本ハンドラに設定された **ベースパス** と一致する部分を、同じく本ハンドラに設定された
+       **マッピング先Javaパッケージ名** に置換する。
+       (**optionalPackageMappingEntries** が設定されている場合は、そちらの設定によるマッピングが優先される。
+       マッチするものが存在しなかった場合は、上記の **ベースパス** によるマッチングを行う。
+       **optionalPackageMappingEntries** の仕様と設定方法については、 :ref:`複雑なマッピング定義<optionalPackageMappingEntries>` 
+       の項を参照。)
+    3. **2.** の結果文字列を **”.”** で分割する。分割後の各トークンの内、英大文字で始まっているものをクラス名とし、
+       それ以前の各トークンをパッケージ階層とする。
+    4. 本ハンドラ設定値として、 **ディスパッチ対象クラス名の接頭辞/接尾辞** が設定されている場合はクラス名の前後にそれぞれ付加する。
+
+  **3. (ディスパッチ対象クラスのインスタンス作成)**
+    コンテキストクラスパスから、 **2.** で決定された完全修飾名のクラスをロードし、
+    デフォルトコンストラクタを用いてインスタンスを作成する。
+
+  **3a. (クラスロードエラー)**
+    対象のクラスがコンテキストクラスパス上に存在しなかった場合は、実行時例外 `Result.NotFound`_ を送出する。
+
+  **3b. (インスタンス生成時エラー)**
+    対象のクラスにデフォルトコンストラクタが定義されていない場合や、コンストラクタ内で例外が送出されるなど、
+    何らかの理由でインスタンスの生成に失敗した場合は、実行時例外を送出する。
+
+  
+  **5. (ハンドラインスタンスをハンドラキューに追加)**
+    実行コンテキスト上のハンドラキューにハンドラインスタンスを追加する。
+    ハンドラの追加位置は、本ハンドラの設定値(**immediate**)によって以下のように定まる。
+    
+      :ディスパッチ対象クラスを即時実行する場合(immediate=true): ディスパッチハンドラの直後にハンドラインスタンスを挿入する。 (デフォルト)
+      :ディスパッチ対象クラスを遅延実行する場合(immediate=false): ハンドラキューの末尾にハンドラインスタンスを追加する。
+
+    なお、ハンドラキューに追加したインスタンスがハンドラインタフェースを実装していなかった場合は、
+    実行コンテキスト上の **MethodBinder** を使用して、 :ref:`メソッド単位のディスパッチ<method_binding>` を行う
+    ハンドラインターフェースのアダプタが作成される。
+
+  **5a. (ディスパッチ不可能エラー)**
+    対象のクラスがハンドラインターフェースを実装しておらず、また、実行コンテキスト上に **MethodBinder** が設定されていない場合は、
+    `Result.NotFound`_ が送出される。
+ 
+  **6. (後続ハンドラの実行)**
+    ハンドラキュー上の後続ハンドラに対して処理を委譲し、その結果を取得する。
+    
+.. _outbound:
+
+**[復路処理]**
+  **7. (正常終了)**
+    **6.** の結果をリターンして終了する。
+
+.. _error:
+
+**[例外処理]** 
+  **6a. (後続ハンドラ処理でエラー)**
+    後続ハンドラの処理中に例外が発生した場合はそのまま再送出して終了する。
+
+.. [#rf1] リクエストパスに ascii範囲外のマルチバイト文字が含まれていても許容される。
+          ただし、マッピング先のJavaクラスにascii範囲外の文字が含まれる場合は、404エラー扱いとなる。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | 設定項目                               | プロパティ名                  | データ型　                  | 備考                    |
+  +========================================+===============================+=============================+=========================+
+  | ベースパス文字列                       | basePath                      | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ベースパッケージ                       | basePackage                   | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ディスパッチ対象クラス名の接頭辞       | classNamePrefix               | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ディスパッチ対象クラス名の接尾辞       | classNameSuffix               | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ハンドラ追加位置                       | immediate                     | boolean                     | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = true)   |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | リクエストパスのパターンとマッピング先 | optionalPackageMappingEntries | | nablarch.fw.handler       | | 任意指定              |
+  | Javaパッケージの組み合わせ             |                               | | .JavaPackageMappingEntry  | | (デフォルト = null)   |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+
+
+**基本設定**
+
+  .. code-block:: xml
+
+    <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+      <!-- ベースパッケージ -->
+      <property name="basePackage" value="nablarch.sample.batch.action" />
+      <!-- ハンドラ追加位置(ハンドラキューの末尾に追加) -->
+      <property name="immediate" value="false" />
+    </component>
+
+**ディスパッチ対象のクラス名を [リソース名] + "Action" とする場合**
+
+  .. code-block:: xml
+
+    <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+      <property name="basePackage"     value="nablarch.sample.batch.action" />
+      <property name="immediate"       value="false" />
+      <property name="classNameSuffix" value="Action" />
+    </component>
+
+.. _optionalPackageMappingEntries:
+
+**複雑なマッピング設定**
+
+  optionalPackageMappingEntries プロパティに設定を行うことで、リクエストパスごとにマッピング先Javaパッケージを切り替えることができる。
+  optionalPackageMappingEntries プロパティには、リクエストパスのパターンとJava パッケージの組み合わせを設定する。
+  
+  optionalPackageMappingEntries プロパティに設定した順番にリクエストパスのパターンとリクエストパスとのマッチングが行われ、
+  最初にマッチしたJavaパッケージが使用される。マッチするものが存在しない場合、本ハンドラのbasePackage プロパティに設定したJavaパッケージが使用される。
+
+  リクエストパスのパターンは、Glob式に似た書式で指定することができる。
+  詳細は、 :ref:`requestHandlerEntry` を参照すること（リクエストハンドラエントリと同一の記法でパターンを指定できる）。
+  
+  例えば、以下の設定では、リクエストパスのパターン **/sample/admin//** をJavaパッケージ **nablarch.sample.app1** 、
+  リクエストパスのパターン **/sample/user//** をJavaパッケージ **nablarch.sample.apps2** に対応させている。
+  いずれのリクエストパターンにもマッチしない場合は、本ハンドラのbasePackage プロパティに設定した **nablarch.sample.base** が使用される。
+
+  
+  .. code-block:: xml
+
+    <!-- ディスパッチ -->
+    <component class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+        <property name="optionalPackageMappingEntries">
+          <!-- リクエストパスのパターンとJavaパッケージの組み合わせをマッチさせたい順番に記載する。 -->
+          <list> 
+            <component class="nablarch.fw.handler.JavaPackageMappingEntry">
+              <property name="requestPattern" value="/admin//" />
+              <property name="basePackage" value="nablarch.sample.apps1" />
+            </component>
+            <component class="nablarch.fw.handler.JavaPackageMappingEntry">
+              <property name="requestPattern" value="/user//" />
+              <property name="basePackage" value="nablarch.sample.apps2" />
+            </component>
+          </list>
+        </property>
+        <!-- optionalPackageMappingEntriesにマッチするものが存在しない場合に使用されるJavaパッケージ -->
+        <property name="basePackage" value="nablarch.sample.base" />
+    </component>
+  
+  
+  ============================= =====================================
+  リクエストパス                ディスパッチ対象クラス
+  ============================= =====================================
+  /admin/AdminApp               nablarch.sample.apps1.admin.AdminApp
+  /user/UserApp                 nablarch.sample.apps2.user.UserApp
+  /BaseApp                      nablarch.sample.base.BaseApp
+  ============================= =====================================
+
+  .. note::
+    リクエストパスのパターンのマッチは、リクエストパス中のすべての **”.”** をスラッシュ **”/”** に置換してから行われる。
+    この仕様は、Nablarchのバッチ処理で過去に使用していたドット区切りのリクエストパス（例： ss01A001.B01AA001Action/B01AA0010）との互換性を保つために存在している。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-RequestPathJavaPackageMapping`
+
+```json
+{
+  "id": "handlers-RequestPathJavaPackageMapping",
+  "title": "リクエストディスパッチハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "RequestPathJavaPackageMapping",
+        "nablarch.fw.handler.RequestPathJavaPackageMapping",
+        "Main",
+        "DataReadHandler",
+        "HttpRequestJavaPackageMapping",
+        "FwHeaderReader",
+        "リクエストディスパッチ",
+        "業務アクションハンドラ",
+        "Javaパッケージマッピング",
+        "basePath",
+        "basePackage"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "nablarch.fw.Request#getRequestPath()",
+        "Result.NotFound",
+        "MethodBinder",
+        "immediate",
+        "classNamePrefix",
+        "classNameSuffix",
+        "ハンドラ処理フロー",
+        "クラスロード",
+        "メソッド単位のディスパッチ",
+        "method_binding",
+        "往路処理",
+        "復路処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "basePath",
+        "basePackage",
+        "classNamePrefix",
+        "classNameSuffix",
+        "immediate",
+        "optionalPackageMappingEntries",
+        "JavaPackageMappingEntry",
+        "nablarch.fw.handler.JavaPackageMappingEntry",
+        "requestPattern",
+        "requestHandlerEntry",
+        "複雑なマッピング設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.RequestPathJavaPackageMapping`\n\nリクエストパスをJavaパッケージ階層にマッピングし、リクエストパスの値に応じて実行するハンドラを切り替えるハンドラ。主に**業務アクションハンドラ**のディスパッチに使用する。\n\n設定例 (`basePath=/app/action/`, `basePackage=nablarch.application`):\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePath\"    value=\"/app/action/\" />\n  <property name=\"basePackage\" value=\"nablarch.application\" />\n</component>\n```\n\n| リクエストパス | ディスパッチ対象クラス |\n|---|---|\n| /app/action/AdminApp | nablarch.application.AdminApp |\n| /app/action/user/UserApp | nablarch.application.user.UserApp |\n| /app/application/AdminApp | (ディスパッチ対象無し: 404エラー) |\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`Main` | :doc:`../architectural_pattern/batch` では、プロセス起動引数 `--requestPath` に指定された :ref:`リクエストパス<request_processing>` の値に応じてディスパッチを行う |\n| :doc:`DataReadHandler` | :doc:`../architectural_pattern/messaging_request_reply` では、:doc:`../reader/FwHeaderReader` が読み込むフレームワーク制御ヘッダ領域のリクエストIDヘッダ `(項目名:requestId)` の値を使用する |\n| :doc:`HttpRequestJavaPackageMapping` | :doc:`../architectural_pattern/web_gui` では、本ハンドラを拡張した :doc:`HttpRequestJavaPackageMapping` を使用する |",
+    "s2": "**[往路処理]**\n\n1. **リクエストパスの取得** (`nablarch.fw.Request#getRequestPath()`): リクエストオブジェクトからリクエストパスを取得する。\n   - **1a. ベースパス外アクセスエラー**: 取得したリクエストパスにベースパスが前方一致しない場合、`Result.NotFound` を送出する。\n   - **1b. 非Java識別子を含むパスエラー**: リクエストパスの各ディレクトリ文字列中にJava識別子以外の文字が含まれる場合、`Result.NotFound` を送出する。[^1]\n2. **ディスパッチ対象クラスの決定**:\n   1. リクエストパス中の `\".\"` を `\"/\"` に置換する。\n   2. リクエストパス先頭からベースパスと一致する部分をマッピング先Javaパッケージ名に置換する (`optionalPackageMappingEntries` が設定されている場合はそちらが優先。マッチしない場合にベースパスによるマッチングを行う)。\n   3. 2の結果を `\".\"` で分割し、英大文字で始まるトークンをクラス名、それ以前をパッケージ階層とする。\n   4. `classNamePrefix`/`classNameSuffix` が設定されている場合はクラス名の前後に付加する。\n3. **ディスパッチ対象クラスのインスタンス作成**: コンテキストクラスパスから完全修飾名のクラスをロードし、デフォルトコンストラクタでインスタンスを作成する。\n   - **3a. クラスロードエラー**: クラスがコンテキストクラスパス上に存在しない場合、`Result.NotFound` を送出する。\n   - **3b. インスタンス生成エラー**: デフォルトコンストラクタが未定義またはコンストラクタで例外が発生した場合、実行時例外を送出する。\n5. **ハンドラインスタンスをハンドラキューに追加**: `immediate` 設定値によって追加位置が異なる。\n   - `immediate=true` (デフォルト): ディスパッチハンドラの直後にハンドラインスタンスを挿入する。\n   - `immediate=false`: ハンドラキューの末尾にハンドラインスタンスを追加する。\n   - ハンドラインターフェースを実装していないクラスの場合、実行コンテキスト上の `MethodBinder` を使用して :ref:`メソッド単位のディスパッチ<method_binding>` を行うアダプタが作成される。\n   - **5a. ディスパッチ不可能エラー**: ハンドラインターフェース未実装かつ `MethodBinder` が未設定の場合、`Result.NotFound` を送出する。\n6. **後続ハンドラの実行**: ハンドラキュー上の後続ハンドラに処理を委譲し、結果を取得する。\n\n**[復路処理]**\n\n7. **正常終了**: ステップ6の結果をリターンして終了する。\n\n**[例外処理]**\n\n- **6a. 後続ハンドラ処理でエラー**: 後続ハンドラの処理中に例外が発生した場合はそのまま再送出して終了する。\n\n[^1]: リクエストパスにascii範囲外のマルチバイト文字が含まれていても許容される。ただし、マッピング先のJavaクラスにascii範囲外の文字が含まれる場合は404エラー扱いとなる。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| basePath | String | | \"\" | ベースパス文字列 |\n| basePackage | String | | \"\" | ベースパッケージ |\n| classNamePrefix | String | | \"\" | ディスパッチ対象クラス名の接頭辞 |\n| classNameSuffix | String | | \"\" | ディスパッチ対象クラス名の接尾辞 |\n| immediate | boolean | | true | ハンドラ追加位置 (true: ディスパッチハンドラ直後に挿入, false: キュー末尾に追加) |\n| optionalPackageMappingEntries | nablarch.fw.handler.JavaPackageMappingEntry | | null | リクエストパスのパターンとマッピング先Javaパッケージの組み合わせ |\n\n**基本設定例** (ハンドラキュー末尾に追加):\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\" value=\"nablarch.sample.batch.action\" />\n  <property name=\"immediate\" value=\"false\" />\n</component>\n```\n\n**クラス名サフィックスを\"Action\"とする場合**:\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"basePackage\"     value=\"nablarch.sample.batch.action\" />\n  <property name=\"immediate\"       value=\"false\" />\n  <property name=\"classNameSuffix\" value=\"Action\" />\n</component>\n```\n\n**複雑なマッピング設定 (`optionalPackageMappingEntries`)**\n\n`optionalPackageMappingEntries` に設定した順番でリクエストパスとのマッチングが行われ、最初にマッチしたJavaパッケージが使用される。マッチするものが存在しない場合、`basePackage` が使用される。リクエストパスのパターンはGlob式に似た書式で指定する (詳細は :ref:`requestHandlerEntry` を参照)。\n\n> **注意**: リクエストパスのパターンのマッチは、リクエストパス中のすべての `\".\"` をスラッシュ `\"/\"` に置換してから行われる（Nablarchのバッチ処理で過去に使用していたドット区切りのリクエストパスとの互換性維持のため）。\n\n```xml\n<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">\n  <property name=\"optionalPackageMappingEntries\">\n    <list>\n      <component class=\"nablarch.fw.handler.JavaPackageMappingEntry\">\n        <property name=\"requestPattern\" value=\"/admin//\" />\n        <property name=\"basePackage\" value=\"nablarch.sample.apps1\" />\n      </component>\n      <component class=\"nablarch.fw.handler.JavaPackageMappingEntry\">\n        <property name=\"requestPattern\" value=\"/user//\" />\n        <property name=\"basePackage\" value=\"nablarch.sample.apps2\" />\n      </component>\n    </list>\n  </property>\n  <property name=\"basePackage\" value=\"nablarch.sample.base\" />\n</component>\n```\n\n| リクエストパス | ディスパッチ対象クラス |\n|---|---|\n| /admin/AdminApp | nablarch.sample.apps1.admin.AdminApp |\n| /user/UserApp | nablarch.sample.apps2.user.UserApp |\n| /BaseApp | nablarch.sample.base.BaseApp |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

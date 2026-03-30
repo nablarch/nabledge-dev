@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-06_IdGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "Section s5 maps to the source h2 section 'テーブルを使用した採番機能', which contains well over 2000 characters of plain text across four h3 subsections (採番テーブルの構造, シーケンス図, 使用例, 設定ファイルの定義). Per V3, an h2 section with ≥2000 chars and existing h3 structure warrants splitting into separate knowledge sections rather than consolidating everything into one section.",
+      "source_evidence": "Source h2 'テーブルを使用した採番機能' contains h3 headings: 採番テーブルの構造 (====), シーケンス図 (====), 使用例 (====), and under 使用例: テーブルデータ例 (----), プロジェクト毎の採番クラスの実装例 (----), 設定ファイルの定義 (----), 設定内容詳細 (^^^^). Total plain-text content including tables, code blocks, and property definitions substantially exceeds 2000 characters."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Section s5 hints are missing `LpadFormatter` and `IdGenerator`, both PascalCase class names that appear directly in the section's Java code example.",
+      "source_evidence": "s5 Java code example references: `(IdGenerator) SystemRepository.getObject(...)` and `new LpadFormatter(10, '0')`. V4 requires hints to include PascalCase class names from section content. Neither `LpadFormatter` nor `IdGenerator` appears in s5 hints, though both appear in s4 hints."
+    }
+  ]
+}

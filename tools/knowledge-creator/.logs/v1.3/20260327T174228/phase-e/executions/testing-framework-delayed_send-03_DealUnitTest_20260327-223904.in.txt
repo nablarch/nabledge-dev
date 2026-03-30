@@ -1,0 +1,77 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-delayed_send-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[0].hints[3]",
+      "description": "The hint \"遅延送信\" does not appear in the source file text. The source only mentions \"応答不要メッセージ送信処理\" and \"同期応答メッセージ送信処理\". This term was inferred from the filename \"delayed_send.rst\" but has no textual basis in the source content.",
+      "source_evidence": "Source text: 「取引単体テストの実施方法は、同期応答メッセージ送信処理と同じである。」— the term 遅延送信 is absent."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==================================================================
+取引単体テストの実施方法（応答不要メッセージ送信処理）
+==================================================================
+
+取引単体テストの実施方法は、同期応答メッセージ送信処理と同じである。
+実施方法の詳細は\ :doc:`./real`\ を参照すること。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-delayed_send-03_DealUnitTest",
+  "title": "取引単体テストの実施方法（応答不要メッセージ送信処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "取引単体テストの実施方法（応答不要メッセージ送信処理）",
+      "hints": [
+        "取引単体テスト",
+        "応答不要メッセージ送信処理",
+        "同期応答メッセージ送信処理",
+        "遅延送信"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "応答不要メッセージ送信処理の取引単体テストは、同期応答メッセージ送信処理と同じ方法で実施する。詳細は :doc:`./real` を参照。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

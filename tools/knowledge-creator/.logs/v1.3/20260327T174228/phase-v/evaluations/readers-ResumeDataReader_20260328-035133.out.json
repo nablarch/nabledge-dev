@@ -1,0 +1,14 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is a minor omission of the permissive clause (\"patching at the failure point itself is acceptable\"). The critical safety constraint — that patching prior records requires a 0-clear — is fully present in the knowledge file. The missing clause is a positive reassurance for one specific sub-case. Its absence may cause a developer to perform an unnecessary 0-clear (safe but wasteful), but cannot lead to incorrect behavior. No high or medium impact findings remain.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — warning about patching records",
+      "impact": "low",
+      "justification": "The knowledge file correctly conveys the actionable constraint: patching records prior to the failure point requires 0-clearing the resume point. The omitted clause ('patching at the failure point itself is acceptable') is a permissive clarification. Without it, the worst-case developer behavior is an unnecessary 0-clear before reprocessing — extra work, but not incorrect. The finding persisted through Phase E because the Phase E output JSON is byte-for-byte identical to the Phase D input: the fix agent did not apply any change, likely treating the minor severity as below the fix threshold."
+    }
+  ]
+}

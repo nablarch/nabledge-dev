@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — source introduction (before warning block)",
+      "description": "The source introduction describes the overall purpose of the architecture ('一定間隔ごとにバッチ処理を実行する常駐型プロセスを作成するための制御基盤を提供する') and gives a concrete use-case example ('オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される'). Neither the purpose statement nor the example use case appears in the knowledge file. This context is needed for AI to answer 'when should I use this architecture' questions.",
+      "source_evidence": "本節で解説する :doc:`batch_resident_thread_sync` では、一定間隔ごとにバッチ処理を実行する常駐型プロセスを作成するための制御基盤を提供する。\n例えば、オンライン処理で作成されたトランザクションデータを定期的に一括処理するような場合に使用される。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "Several class/type names that appear in the s3 section content are absent from the hints array: ThreadContextClearHandler (in handler queue table), GlobalErrorHandler (in duplaunch, abort, forcestop flows), ThreadContextHandler_main (in handler queue table and flows), FileRecordWriterDisposeHandler (in handler queue table), RequestPathJavaPackageMapping (in handler queue table and multiple flows), ProcessAbnormalEnd (in forcestop and retryerror flows), DataReader (DataReader.NoMoreRecord referenced in waitdata flow).",
+      "source_evidence": "HandlerQueue includes: ThreadContextClearHandler, GlobalErrorHandler, ThreadContextHandler_main, FileRecordWriterDisposeHandler, RequestPathJavaPackageMapping. Flow scripts reference ProcessAbnormalEnd (forcestop/retryerror) and DataReader.NoMoreRecord (waitdata)."
+    }
+  ]
+}

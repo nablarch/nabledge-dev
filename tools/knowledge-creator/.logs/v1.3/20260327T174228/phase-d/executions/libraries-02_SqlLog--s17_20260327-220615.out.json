@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-02_SqlLog--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "SQLログの出力例 section (=== heading in source)",
+      "description": "The entire 'SQLログの出力例' section content is absent from the knowledge file. The knowledge file uses this as its title but never materializes a section for it. The missing content includes: (1) log.properties configuration example with writerNames, FileLogWriter, BasicLogFormatter, SQL logger nameRegex/level/writerNames settings; (2) app-log.properties sqlLogFormatter settings — startRetrieveFormat and endRetrieveFormat — which introduce new placeholders not covered elsewhere: $startPosition$, $size$, $retrieveTime$, $count$; (3) concrete sample log output showing actual log lines with timestamps, log levels, and request/user/execution IDs.",
+      "source_evidence": "Source section 'SQLログの出力例' (===) contains log.properties example, app-log.properties example with sqlLogFormatter.startRetrieveFormat and sqlLogFormatter.endRetrieveFormat, and a multi-line sample output block ending with JdbcTransaction#commit()."
+    }
+  ]
+}

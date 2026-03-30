@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_TransactionConnectionName",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — トランザクション名の使用例コードブロック",
+      "description": "The source code comment explaining that `TransactionContext.getTransaction()` is primarily the framework's responsibility, and that application code should only use it when a transaction must be committed even in the event of an exception (abnormal termination), is absent from the knowledge file. This guidance tells developers when they should personally call `getTransaction()` versus relying on the framework.",
+      "source_evidence": "// 基本的にこの処理はフレームワークの責務である。\n// アプリケーションで、トランザクションが必要となるケースは、\n// 例外発生時(異常終了)であっても処理を確定する必要がある場合である。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated pre-check: Section count 2 < source headings 3",
+      "description": "The automated check flagged a heading count mismatch (2 knowledge sections vs 3 detected source headings). On manual inspection, the source contains exactly 2 h2-level headings (underlined with `---`): 'データベースコネクション名' and 'トランザクション名'. The third heading detected ('実装コードで見るトランザクション制御') is an h4 nested under an h3 under 'トランザクション名', and its content is correctly included within s2. This is a false positive from the automated tool; no actual content is missing.",
+      "source_evidence": "Source h2 headings: 'データベースコネクション名' (---) and 'トランザクション名' (---). 'JdbcTransactionを使用した場合...' uses === (h3) and '実装コードで見るトランザクション制御' uses --- but appears as h4 in context."
+    }
+  ]
+}

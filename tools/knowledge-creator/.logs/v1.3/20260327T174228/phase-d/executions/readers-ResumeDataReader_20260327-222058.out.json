@@ -1,0 +1,20 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — note block (レジュームポイントに関する注意)",
+      "description": "The source note contains a behavioral guarantee: '物理レコード数とレジュームポイントが一致していなくても、レジューム機能は問題なく動作する。これは、同じファイルを何度読んでもデータリーダが返す値は変わらないため、レジュームポイントまで読み飛ばす処理は正常に機能するからである。' This guarantee — that a mismatch between physical record count and resume point does NOT cause problems, with the reason explained — is entirely absent from the knowledge file. Without it, an AI cannot correctly answer questions such as 'the resume point doesn't match the physical record number; will the resume work properly?'",
+      "source_evidence": "物理レコード数とレジュームポイントが一致していなくても、レジューム機能は問題なく動作する。これは、同じファイルを何度読んでもデータリーダが返す値は変わらないため、レジュームポイントまで読み飛ばす処理は正常に機能するからである。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "The class name `FileLayoutValidatorAction` appears in the second Java code example in s1 (used as the argument to `setValidatorAction`), but is absent from the s1 hints list. Users asking how to configure ValidatableFileDataReader validation may query by this class name.",
+      "source_evidence": ".setValidatorAction(new FileLayoutValidatorAction())"
+    }
+  ]
+}

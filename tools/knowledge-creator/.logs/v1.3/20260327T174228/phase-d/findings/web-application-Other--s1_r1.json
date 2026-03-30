@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections (index entries for s8, s9, s10)",
+      "description": "Knowledge file s1 lists all 9 TOC items including コード値の取得方法 (:ref:`other_example_code_get`), コード値を使ったバリデーション (:ref:`other_example_code_validate`), and 警告メッセージの表示方法 (:ref:`other_example_warn_message`), but the knowledge file contains no sections (s8, s9, s10) for these three topics. The index has no entries for them either. The automated pre-check confirms source has 15 headings while knowledge has only 7 sections.",
+      "source_evidence": "TOC in source: `* :ref:`other_example_code_get`` / `* :ref:`other_example_code_validate`` / `* :ref:`other_example_warn_message`` — all three are listed in 本ページの構成 but have no corresponding knowledge sections"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (メッセージの取得方法)",
+      "description": "The note that non-internationalized messages can pass a plain string directly as the option argument is omitted. This is relevant for implementation decisions on when StringResource is required vs. optional.",
+      "source_evidence": "Source: 「国際化を行わない場合はオプション引数に直接文字列を指定してもよい。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4, s5, s6 hints",
+      "description": "`MessageLevel` is used in code examples in s4, s5, and s6 (`MessageLevel.ERROR`) but does not appear in the hints of any section. A query referencing `MessageLevel` would not reach these sections.",
+      "source_evidence": "All three sections use `MessageUtil.createMessage(MessageLevel.ERROR, ...)` in their code examples"
+    }
+  ]
+}

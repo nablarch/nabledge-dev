@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s15",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[1].title / sections.s2",
+      "description": "s2のtitleが空文字列になっている。ソースの対応するh2見出しは「複合キーを用いた排他制御の実装」であり、タイトルを設定すべき。",
+      "source_evidence": "複合キーを用いた排他制御の実装\n======================================"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s3",
+      "description": "「通常のscriptタグは使用不可」という記述がナレッジファイルに含まれているが、ソースにはこの表現はない。ソースは「必ず専用のスクリプトタグを使用すること」と述べているのみで、通常のscriptタグの使用を明示的に禁止する文言はない。",
+      "source_evidence": "Javascriptを使用する場合は、下記の記述例の様に必ず専用の\n`スクリプトタグ <...>`_\nを使用すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1].hints (s2)",
+      "description": "s2のコード例に登場する主要クラス名・メソッド名がhintsに含まれていない: `UsersBulkDeleteForm`（Formクラス名）、`getDeletedUsers`（排他制御対象取得メソッド）。",
+      "source_evidence": "public class UsersBulkDeleteForm { ... public User[] getDeletedUsers() { ... } }"
+    }
+  ]
+}

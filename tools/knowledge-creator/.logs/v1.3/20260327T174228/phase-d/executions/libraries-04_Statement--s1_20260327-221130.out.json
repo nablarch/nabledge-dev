@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_Statement--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s4 — DbAccessSupport#search method signature",
+      "description": "The `search` method signature omits `throws TooManyResultException`. This is decision-necessary information: callers must know this exception can be thrown and handle it accordingly.",
+      "source_evidence": "Source f): `SqlResultSet search(String sqlId, ListSearchInfo condition) throws TooManyResultException`\nKnowledge file s4: `SqlResultSet search(String sqlId, ListSearchInfo condition)` — exception declaration is absent."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — DbAccessSupport constructor signature",
+      "description": "The constructor parameter type is written as `Class<?>` in the knowledge file, but the source has `Clazz<?>`. Even if the source contains a typo, the knowledge file text differs from the source without basis.",
+      "source_evidence": "Source f): `.. function:: DbAccessSupport(Clazz<?> clazz)`\nKnowledge file s4: `DbAccessSupport(Class<?> clazz)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`TooManyResultException` is referenced in the source's `search` method signature but is absent from s4 hints. Users asking about exception handling for the search method would not be directed to this section.",
+      "source_evidence": "Source f): `throws TooManyResultException` in the `search` method; s4 hints list does not include `TooManyResultException`."
+    }
+  ]
+}

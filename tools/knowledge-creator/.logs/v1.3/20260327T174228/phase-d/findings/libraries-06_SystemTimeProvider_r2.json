@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-06_SystemTimeProvider",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — システム日時機能",
+      "description": "The conceptual definition of システム日時 is missing from s4 content. The source states: 「システム日時とは、OS日時(サーバ日時)のことを指し、業務日付のように営業日や非営業日の考え方を持たない日時である。」 This distinction from 業務日付 (no 営業日/非営業日 concept) is useful for AI to answer questions about when to use システム日時 vs 業務日付.",
+      "source_evidence": "構造 > システム日時機能: 「システム日時とは、OS日時(サーバ日時)のことを指し、業務日付のように営業日や非営業日の考え方を持たない日時である。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5 — 業務日付機能",
+      "description": "s5 consolidates the entire 業務日付機能 subtree which exceeds 2000 characters of plain text and contains many distinct h4-level subsections (設定ファイル、日付の上書き機能、業務日付のメンテナンス、BusinessDateUtil機能不足時の拡張). While the content is all present and internally organized with ## headings, splitting this into multiple knowledge sections would improve navigation and retrieval.",
+      "source_evidence": "Source 業務日付機能 section spans: インタフェース定義、クラス定義、テーブル定義、複数の業務日付の設定、設定ファイル（長大な設定プロパティ表）、日付の上書き機能、業務日付のメンテナンス、BusinessDateUtil拡張 — all merged into a single s5 section."
+    }
+  ]
+}

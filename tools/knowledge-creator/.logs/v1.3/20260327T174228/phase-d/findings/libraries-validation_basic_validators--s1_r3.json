@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-validation_basic_validators--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 — 許容文字判定結果のキャッシュ",
+      "description": "The source explains the specific condition under which CachingCharsetDef is needed beyond just using frequency-ordered CompositeCharsetDef: '多種の文字を許容し、かつ各文字の出現頻度に偏りが少ないほど、性能が劣化する可能性が高くなる'. This is decision-necessary guidance — without it, a reader cannot distinguish when frequency ordering alone (s5) suffices versus when caching (s6) is required. The knowledge file omits this trigger condition entirely.",
+      "source_evidence": "多種の文字を許容し、かつ各文字の出現頻度に偏りが少ないほど、性能が劣化する可能性が高くなる。このような場合は、判定結果をキャッシュすることで性能を改善できる。"
+    }
+  ]
+}

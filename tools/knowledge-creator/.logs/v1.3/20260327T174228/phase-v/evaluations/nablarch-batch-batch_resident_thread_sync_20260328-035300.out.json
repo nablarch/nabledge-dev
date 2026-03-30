@@ -1,0 +1,26 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Two medium-impact flow omissions persist after Phase E: the 常駐処理業務エラー flow is missing its entire inbound handler chain and several error-path callbacks, and the プロセス異常停止 flow hides rollback behavior and BatchAction callbacks behind a vague「各ハンドラ error 経由」summary. Developers relying on these flows for error-handling design or debugging will receive an incomplete and partially misleading picture of how transactions and callbacks behave during failures. The hints_missing finding appears to have been resolved in Phase E (ThreadContextHandler_main is present in the Phase E hints array) and is not a true residual.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s3 — 常駐処理業務エラー flow",
+      "impact": "medium",
+      "justification": "The knowledge file shows only ProcessResidentHandler → MultiThreadExecutionHandler → BatchAction(callback) → BatchAction(error) → LoopHandler(error) → MultiThreadExecutionHandler(error) → ProcessResidentHandler(error) → RetryHandler(error). The entire inbound segment (DbConnectionManagementHandler_main, TransactionManagementHandler_main, RequestPathJavaPackageMapping, DbConnectionManagementHandler, LoopHandler, DataReadHandler, BatchAction inbound) is absent, as are the BatchAction callback after LoopHandler(error), DbConnectionManagementHandler(error), TransactionManagementHandler_main(error), and DbConnectionManagementHandler_main(error). A developer implementing or debugging resident-batch error handling—especially around transaction rollback scope and the BatchAction callback events—would form an incorrect mental model of the handler execution sequence. Phase E did not fix this: the regenerated section retained the same abbreviated structure, likely because the fix targeted only the hints array addition and left the flow prose unchanged."
+    },
+    {
+      "category": "omission",
+      "location": "s3 — プロセス異常停止 flow",
+      "impact": "medium",
+      "justification": "The knowledge file starts the abort flow at「各ハンドラ error 経由」, suppressing: (1) BatchAction (inbound) as the explicit trigger point where java.lang.Error is thrown, (2) LoopHandler (error) with its rollback-of-uncommitted-transactions detail, and (3) two BatchAction (callback) invocations during error propagation (after LoopHandler error and after MultiThreadExecutionHandler error). The rollback behavior of uncommitted transactions under a java.lang.Error is architecturally significant and differs from the RuntimeException path; omitting it means a developer investigating data-consistency guarantees on abnormal termination cannot rely solely on this knowledge file. Phase E did not fix this: the same condensed「各ハンドラ error 経由」wording remained in the regenerated output."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 — hints array",
+      "impact": "none",
+      "justification": "The Phase E output's index JSON for s3 explicitly includes \"ThreadContextHandler_main\" in the hints array. The finding appears to have been resolved during Phase E. Listing it as a residual finding is inconsistent with the Phase E artifact. No user-visible gap remains for this item."
+    }
+  ]
+}

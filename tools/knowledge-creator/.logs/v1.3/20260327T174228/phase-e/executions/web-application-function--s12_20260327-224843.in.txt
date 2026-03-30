@@ -1,0 +1,327 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-function--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s2 / index[1].hints",
+      "description": "Section s2 source contains several PascalCase class names and annotation names that are absent from the hints array: `DbAccessSupport` (action class extended in the implementation example), `TooManyResultException` (caught in the action), `ValidationContext` (used in input validation), and `@OnError` annotation. These are referenced in the action implementation code example and are decision-relevant for users implementing the no-paging pattern.",
+      "source_evidence": "Source: `public class W11AC01Action extends DbAccessSupport`, `} catch (TooManyResultException e) {`, `ValidationContext<W11AC01SearchForm> searchConditionCtx = ...`, `@OnError(type = ApplicationException.class, path = \"/ss11AC/W11AC0101.jsp\")`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+検索結果の並び替え
+======================================================
+ここでは検索結果の一覧画面の並べ替えの実装例を示す。
+
+尚、ここでは、 :ref:`custom_tag_paging_paging` が実現されているものとして、 
+:ref:`custom_tag_paging_paging` との差分についてのみ実装例を示す。
+
+検索結果の並び替えを実現するには下記の実装を行う。
+
+* 可変ORDER BY構文を使用したSQL文を実装する。
+* 検索条件を保持するクラスにListSearchInfoクラスのsortIdプロパティの入力精査を含める。
+* listSearchSortSubmitタグを使用して並べ替え用のリンクを表示するJSPを実装する。
+
+ユーザ検索画面の実装例を以下に示す。
+
+* SQL文の実装例
+
+  .. code-block:: sql
+
+   -- 【説明】
+   -- 可変ORDER BY構文を使用したSQL文。
+   -- ログインIDとメールアドレスを並び替える場合の実装例。
+   -- どのORDER BYを使用するかは、$sort (sortId)の記述により、
+   -- 検索条件オブジェクトのsortIdフィールドから取得した値が使用される。
+   -- 例えば、検索条件オブジェクトのsortIdフィールドが3の場合、
+   -- ORDER BY句は"ORDER BY USR.MAIL_ADDRESS"に変換される。
+   
+   SELECT_USER_BY_CONDITION =
+   SELECT
+     -- 省略
+   FROM
+       -- 省略
+   WHERE
+       -- 省略
+   $sort (sortId) {
+      (1 SA.LOGIN_ID)
+      (2 SA.LOGIN_ID DESC)
+      (3 USR.MAIL_ADDRESS)
+      (4 USR.MAIL_ADDRESS DESC) }
+
+
+* 検索条件を保持するクラスの実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        ユーザ検索の検索条件を保持するクラス。 */
+    public class W11AC01SearchForm extends ListSearchInfo {
+        
+        //  検索条件のプロパティ定義は省略。
+        
+        /*  バリデーション機能に対応したコンストラクタ。 */ 
+        public W11AC01SearchForm(Map<String, Object> params) {
+            
+            //  検索条件のプロパティ設定は省略。
+            
+            /* 【説明】
+                ListSearchInfoのsortIdプロパティを設定する。 */
+            setSortId((String) params.get("sortId"));
+        }
+        
+        
+        /* 【説明】
+            オーバーライドして入力精査用のアノテーションを付加する。 */
+        @PropertyName("ソートID")
+        @Required
+        public void setSortId(String sortId) {
+            super.setSortId(sortId);
+        }
+        
+        /* 【説明】
+            精査対象プロパティにListSearchInfoのsortIdプロパティを指定する。
+            検索条件のプロパティは省略。 */
+        private static final String[] SEARCH_COND_PROPS = new String[] { ..., "sortId"};
+        
+        /* 【説明】
+            オーバーライドして検索条件のプロパティ名を返す。
+            通常は精査対象プロパティと同じとなる。 */
+        public String[] getSearchConditionProps() {
+            return SEARCH_COND_PROPS;
+        }
+    }
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                         searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                         resultSetName="searchResult"
+                         usePageNumberSubmit="true"
+                         useLastSubmit="true">
+         <%-- 【説明】
+               ヘッダ行にlistSearchSortSubmitタグを使用して並び替え用のリンクを追加する。--%>
+         <jsp:attribute name="headerRowFragment">
+             <tr>
+                 <th>
+                     <%-- 【説明】
+                           ログインIDを並び替え用のリンクにする。
+                           SQL文に合わせて昇順(1)と降順(2)のソートIDを指定する。
+                           name属性は画面で一意になるように指定する。 --%>
+                     <nbs:listSearchSortSubmit ascSortId="1" descSortId="2"
+                                             label="ログインID" uri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                                             name="loginIdSort" listSearchInfoName="11AC_W11AC01" />
+                 </th>
+                 <th>漢字氏名</th>
+                 <th>カナ氏名</th>
+                 <th>グループ</th>
+                 <th>内線番号</th>
+                 <th>
+                     <%-- 【説明】
+                           メールアドレスを並び替え用のリンクにする。
+                           SQL文に合わせて昇順(3)と降順(4)のソートIDを指定する。
+                           name属性は画面で一意になるように指定する。 --%>
+                     <nbs:listSearchSortSubmit ascSortId="3" descSortId="4"
+                                         label="メールアドレス" uri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                                         name="kanaNameSort" listSearchInfoName="11AC_W11AC01" />
+                 </th>
+             </tr>
+         </jsp:attribute>
+         <jsp:attribute name="bodyRowFragment">
+             <%-- 省略 --%>
+         </jsp:attribute>
+     </nbs:listSearchResult>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`custom_tag_paging_nopaging`:
+
+ページングを使用しない一覧表示
+==========================================================================================
+ここでは検索結果の一覧画面においてページングを使用せずに1画面にすべての検索結果を表示する場合の実装例を示す。
+
+1画面にすべての検索結果を一覧表示する場合、基本的な実装方法はページングを使用する場合と変わらない。\
+検索処理や並び替えの処理もページングを使用する場合と同じ実装方法となる。
+
+
+ユーザ検索処理の実装例を以下に示す。
+
+* ListSearchInfoを継承するクラスの実装例
+
+  .. code-block:: java
+
+      /* 【説明】
+          ユーザ検索の検索条件を保持するクラス。
+          ListSearchInfoを継承する。 */
+      public class W11AC01SearchForm extends ListSearchInfo {
+      
+          // 検索条件のプロパティ定義は省略。
+          
+          /* 【説明】
+              バリデーション機能に対応したコンストラクタ。 */
+          public W11AC01SearchForm(Map<String, Object> params) {
+          
+              // 検索条件のプロパティ設定は省略。
+          
+              /* 【説明】
+                  ページングを使用する場合と異なり、ListSearchInfoのpageNumberプロパティの設定は不要。
+                  pageNumberプロパティの初期値は1のため常に1ページ目となる。 */
+          }
+          
+          /* 【説明】
+              精査対象プロパティ。
+              検索条件のプロパティのみとなる。 */
+          private static final String[] SEARCH_COND_PROPS = new String[] { ... };
+      
+          /* 【説明】
+              オーバーライドして検索条件のプロパティ名を返す。
+              通常は精査対象プロパティと同じとなる。 */
+          public String[] getSearchConditionProps() {
+              return SEARCH_COND_PROPS;
+          }
+      }
+
+* アクションの実装例
+
+  .. code-block:: java
+
+    /* 【説明】
+        ユーザ検索処理のアクション。
+        実装例ではDbAccessSupportクラスを継承して使用するが、
+        プロジェクトの方針に合わせて実装する。 */
+    public class W11AC01Action extends DbAccessSupport {
+
+        /* 【説明】
+            ユーザ検索画面の検索で呼ばれるメソッド。 */
+        @OnError(type = ApplicationException.class, path = "/ss11AC/W11AC0101.jsp")
+        public HttpResponse doRW11AC0102(HttpRequest req, ExecutionContext ctx) {
+            
+            // 業務処理は省略。
+            
+            // 入力精査
+            ValidationContext<W11AC01SearchForm> searchConditionCtx = ...;
+            searchConditionCtx.abortIfInvalid();
+            W11AC01SearchForm condition = searchConditionCtx.createObject();
+            
+            /* 【説明】
+                検索結果の取得件数(1ページの表示件数)に検索結果の最大件数(上限)を設定する。
+                ページングを使用しないため下記の設定が必須となる。 */
+            condition.setMax(condition.getMaxResultCount());
+            
+            ctx.setRequestScopedVar("searchCondition", condition);
+            
+            // 検索実行
+            SqlResultSet searchResult;
+            try {
+                // 検索処理は省略。
+            } catch (TooManyResultException e) {
+                // 例外処理は省略。
+            }
+            
+            // 検索結果をリクエストスコープに設定
+            ctx.setRequestScopedVar("11AC_W11AC01", searchResult);
+            
+            return new HttpResponse("/ss11AC/W11AC0101.jsp");
+        }
+    }
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+       <%-- 【説明】
+             ページングを使用しないのでusePaging属性にfalseを指定する。
+             ページングを使用しないのでsearchUri属性の指定は不要。 --%>
+       <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                           usePaging="false"
+                           resultSetName="searchResult">
+       
+           <%-- その他の属性は省略。 --%>
+       
+       </nbs:listSearchResult>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`using_composite_key`:
+
+-------------------------------------------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-function--s12",
+  "title": "検索結果の並び替え",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の並び替え",
+      "hints": [
+        "ListSearchInfo",
+        "listSearchSortSubmit",
+        "sortId",
+        "@Required",
+        "@PropertyName",
+        "検索結果の並び替え",
+        "可変ORDER BY",
+        "$sort構文",
+        "ソートID"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ページングを使用しない一覧表示",
+      "hints": [
+        "ListSearchInfo",
+        "setMax",
+        "getMaxResultCount",
+        "usePaging",
+        "listSearchResult",
+        "ページングなし一覧表示",
+        "全件表示",
+        "pageNumber"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "検索結果の並び替えを実現するには以下の3つの実装が必要。\n\n1. 可変ORDER BY構文を使用したSQL文\n2. 検索条件クラスに`ListSearchInfo`の`sortId`プロパティの入力精査を含める\n3. `listSearchSortSubmit`タグを使用して並び替え用のリンクを表示するJSP\n\n**SQL文（可変ORDER BY構文）**:\n\n`$sort (sortId)` 構文で、検索条件オブジェクトの`sortId`フィールドの値に対応するORDER BY句が使用される。例: `sortId=3` の場合は `ORDER BY USR.MAIL_ADDRESS` に変換される。\n\n```sql\nSELECT_USER_BY_CONDITION =\nSELECT ...\nFROM ...\nWHERE ...\n$sort (sortId) {\n   (1 SA.LOGIN_ID)\n   (2 SA.LOGIN_ID DESC)\n   (3 USR.MAIL_ADDRESS)\n   (4 USR.MAIL_ADDRESS DESC) }\n```\n\n**検索条件クラスの実装**:\n\n`ListSearchInfo`を継承し、`setSortId()`をオーバーライドして`@Required`等のバリデーションアノテーションを付加する。`SEARCH_COND_PROPS`に`\"sortId\"`を含める。\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        setSortId((String) params.get(\"sortId\"));\n    }\n\n    @PropertyName(\"ソートID\")\n    @Required\n    public void setSortId(String sortId) {\n        super.setSortId(sortId);\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"sortId\"};\n\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n**JSPの実装（`listSearchSortSubmit`タグ）**:\n\n`ascSortId`・`descSortId`にはSQL文の`$sort`定義に対応するsortId値を指定する。`name`属性は画面で一意になるように指定する。\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    resultSetName=\"searchResult\"\n                    usePageNumberSubmit=\"true\"\n                    useLastSubmit=\"true\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>\n                <nbs:listSearchSortSubmit ascSortId=\"1\" descSortId=\"2\"\n                    label=\"ログインID\" uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    name=\"loginIdSort\" listSearchInfoName=\"11AC_W11AC01\" />\n            </th>\n            <th>\n                <nbs:listSearchSortSubmit ascSortId=\"3\" descSortId=\"4\"\n                    label=\"メールアドレス\" uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    name=\"kanaNameSort\" listSearchInfoName=\"11AC_W11AC01\" />\n            </th>\n        </tr>\n    </jsp:attribute>\n</nbs:listSearchResult>\n```",
+    "s2": "ページングを使用せずに1画面にすべての検索結果を表示する場合、基本的な実装方法はページングを使用する場合と変わらない。検索処理や並び替えの処理もページングを使用する場合と同じ実装方法となる。\n\n**ListSearchInfoを継承するクラス**:\n\n- `pageNumber`プロパティの設定は不要。初期値が1のため常に1ページ目となる。\n- `SEARCH_COND_PROPS`には検索条件プロパティのみ含める。\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        // pageNumberプロパティの設定は不要\n    }\n\n    private static final String[] SEARCH_COND_PROPS = new String[] { ... };\n\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n**アクションの実装**:\n\nページングを使用しない場合、以下の設定が必須。検索結果の取得件数（1ページの表示件数）に検索結果の最大件数（上限）を設定する。\n\n```java\ncondition.setMax(condition.getMaxResultCount());\n```\n\n**JSPの実装**:\n\n`usePaging=\"false\"` を指定する。`searchUri`属性の指定は不要。\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    usePaging=\"false\"\n                    resultSetName=\"searchResult\">\n</nbs:listSearchResult>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

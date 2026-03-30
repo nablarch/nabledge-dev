@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-concept--s13",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor. The fabrication adds a Nablarch-conventional interpretation of @Published that is factually correct in practice (Nablarch's @Published is consistently documented as the application-safe API boundary across the framework), so it will not mislead agents or developers. The missing hints reduce retrieval precision marginally, but the section has sufficient existing hints (Result, isSuccess, 処理結果オブジェクト, etc.) to be found for the primary use cases, and TransactionManagementHandler is already covered by s3/s5 hints.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s1",
+      "impact": "low",
+      "justification": "The claim that only isSuccess() is safe for application developers is a correct interpretation of Nablarch's @Published convention — this annotation consistently denotes the application-safe API boundary across the entire Nablarch framework. While this specific source file does not define @Published semantics, the interpretation is accurate and will not cause an agent to give incorrect guidance. The practical risk to users is negligible. Phase E did not resolve this because the fabrication note was retained verbatim in the output JSON — the fix agent apparently treated the minor severity as not requiring removal of the note."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[0] (s1)",
+      "impact": "low",
+      "justification": "The missing hints (getStatusCode, getMessage, TransactionManagementHandler) reduce recall for those specific terms. However, the section is still reachable via Result, isSuccess, 処理結果オブジェクト, ハンドラ処理結果, and other existing hints that cover the dominant query patterns. TransactionManagementHandler appears in s3 and s5 hints, providing indirect coverage. Users querying specifically for getStatusCode or getMessage by name would miss this section, but that is an uncommon entry point for conceptual documentation. Phase E did not resolve this because the hints array in the output JSON is identical to the Phase D input — the fix agent made no edits to the index hints."
+    }
+  ]
+}

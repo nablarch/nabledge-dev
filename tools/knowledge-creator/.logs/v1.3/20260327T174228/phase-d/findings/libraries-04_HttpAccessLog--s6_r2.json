@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "s1のhintsにプレースホルダ表に定義されている $contentPath$、$startTime$、$endTime$、$maxMemory$、$freeMemory$ が含まれていない。これらはリクエスト終了時専用のプレースホルダであり、ユーザーが各プレースホルダを検索する際に s1 にたどり着けない可能性がある。",
+      "source_evidence": "ソース表の2列目: $contentPath$, $startTime$, $endTime$, $maxMemory$, $freeMemory$"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "ソースにある「HTTPアクセスログの個別項目のフォーマットは、デフォルトのフォーマットを使用する。」という記述が省略されている。この出力例がデフォルトフォーマットを使用していることを示す文脈情報であり、s1 のデフォルトフォーマットとこの出力例を対応させて理解する際に有用なため、あると望ましい。",
+      "source_evidence": "HTTPアクセスログの出力例セクション: 「HTTPアクセスログの個別項目のフォーマットは、デフォルトのフォーマットを使用する。」"
+    }
+  ]
+}

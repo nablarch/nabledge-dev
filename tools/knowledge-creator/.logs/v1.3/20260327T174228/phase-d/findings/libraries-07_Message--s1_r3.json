@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-07_Message--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s8",
+      "description": "The source code examples for 'StringResourceを使用する実装例' and 'Messageを使用する実装例' both begin with an explicit warning block: `// ******** 注意 ********` / `// 直下のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。` / `// 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。` Knowledge file s8 removes these warnings entirely and provides no compensating explanatory text, making the code examples—which include ThreadContext.setLanguage() calls—appear to be expected application code. This risks misleading an AI into advising developers to call setLanguage() themselves, which the source explicitly says is the framework's responsibility.",
+      "source_evidence": "Source: `// ******** 注意 ********\n// 直下のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。\n// 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。` — appears at the start of both code blocks under オプションパラメータの国際化."
+    }
+  ]
+}

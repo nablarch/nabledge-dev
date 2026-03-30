@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_componentUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (テストデータの作成)",
+      "description": "The constraint that static master data (メッセージデータ、コードマスタ等) is pre-loaded by the project and must NOT be created as individual test data is missing. This is a test design constraint that directly affects what developers need to include in their Excel test data files.",
+      "source_evidence": "メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている（これらのデータを個別のテストデータとして作成しない）前提である。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (テストデータ(入力値)の作成 subsection)",
+      "description": "The indirect reference pattern for array-type entity properties in Excel test data is not captured. When an entity property is an array (e.g., useCaseId in SystemAccountEntity), the test data row holds a key ID that points to a separate table in the same sheet, and test code must retrieve the key, fetch the array data with getListMap, build the array, then pass it to the constructor. This pattern is needed for any entity with array properties.",
+      "source_evidence": "sysAcctEntityのuseCaseIdはuseCaseIdプロパティに設定される値そのものではなく(SystemAccountEntityのuseCaseIdプロパティは配列)、図中矢印で示している別の表のデータを指している。テストコードでは、取得した値をキーとして更にデータを取得、配列を作成し、useCaseIdプロパティに設定している。 + corresponding code: String id = sysAcctDatas.get(i).get(\"useCaseId\"); useCaseData = getListMap(sheetName, id); String[] useCaseId = new String[useCaseData.size()];"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "PascalCase entity class names that appear in the s4 code example are absent from hints: SystemAccountEntity, UsersEntity, UgroupSystemAccountEntity. Users asking about these classes would not be routed to s4.",
+      "source_evidence": "Code in s4 source section: SystemAccountEntity sysAcct = null; UsersEntity users = null; UgroupSystemAccountEntity grpSysAcct = null;"
+    }
+  ]
+}

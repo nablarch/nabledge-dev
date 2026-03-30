@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_ObjectSave--s5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — XML設定ファイル例 (fieldAnnotationCache の loader 要素)",
+      "description": "知識ファイルのXML例では `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader` を使用しているが、ソースのXML例では `nablarch.core.statement.autoproperty.FieldAndAnnotationLoader` (`.db` パッケージなし)。ソースの本文説明では `.db.statement.autoproperty` 版を使っており、ソース内に不整合があるが、知識ファイルのXMLコード例はソースのXMLコード例と異なるクラス名を示している。",
+      "source_evidence": "ソースXML: `<component class=\"nablarch.core.statement.autoproperty.FieldAndAnnotationLoader\"/>` / ソース本文(b)-4): `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader を設定する`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 index hints",
+      "description": "`dateProvider` (CurrentDateTimeAnnotationHandler の必須プロパティ) および `loader` (BasicStaticDataCache の必須プロパティ) がs4のhintsに含まれていない。いずれもプロパティ設定表の第1列に記載されているプロパティ名。",
+      "source_evidence": "b)-1テーブル: `dateProvider(必須)` — システム日付を取得するためのクラス設定。b)-4テーブル: `loader(必須)` — FieldAndAnnotationLoaderを設定。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 — b)-4 BasicStaticDataCache の loader プロパティ説明",
+      "description": "ソースのattentionに含まれる、loaderプロパティが設定ファイルに記述される理由（「StaticDataCacheの実装クラスであるBasicStaticDataCacheを置き換える可能性があるため設定ファイルに記述する」という設計意図）が省略されている。密結合の理由は記載されているが、設定ファイルに記述する理由が欠けている。",
+      "source_evidence": "ソース(b)-4 attention): 「本来は、この設定は不変であるため設定ファイルに記述する必要はないが、StaticDataCacheの実装クラスのBasicStaticDataCacheを置き換える可能性があるため設定ファイルに記述を行うようにしている。」"
+    }
+  ]
+}

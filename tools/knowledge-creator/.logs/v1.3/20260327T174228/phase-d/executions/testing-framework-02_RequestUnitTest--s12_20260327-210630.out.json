@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "Section count (4) is significantly lower than source main-heading count (8). ダウンロードファイルのテスト is a distinct h2 section in the source but is merged into s1, whose title is 固有の処理を追加する場合. While all content is preserved, the s1 title does not reflect the ダウンロードファイルのテスト content it contains, which may reduce discoverability through title-based routing.",
+      "source_evidence": "Source h2 headings: 固有の処理を追加する場合 / ダウンロードファイルのテスト / テスト起動方法 / テスト結果確認（目視）/ HTMLダンプ出力結果 / リクエスト単体テストクラス作成時の注意点 / ThreadContextへの値設定は不要 / テストクラスでのトランザクション制御は不要"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "HttpRequest is a PascalCase class name used in the request-parameter validation subsection (testCaseInfo.getHttpRequest() returns HttpRequest; request.getParam() is called on it), but it is absent from s1 hints.",
+      "source_evidence": "Source: HttpRequest request = testCaseInfo.getHttpRequest(); // テスト実行後のHttpRequest and assertEquals(\"\", request.getParam(\"resetparameter\"));"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "getListMap is the method for retrieving test data from Excel in the その他の場合 subsection, but it is absent from s1 hints.",
+      "source_evidence": "Source: List<Map<String, String>> expected = getListMap(\"doRW25AA0303NormalEnd\", \"result_1\");"
+    }
+  ]
+}

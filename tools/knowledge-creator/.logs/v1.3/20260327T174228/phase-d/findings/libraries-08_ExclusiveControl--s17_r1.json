@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — バージョン番号の準備 note内",
+      "description": "`CommonExclusiveControlUtil` ラッパクラスの実装コード例が欠落している。ソースには `prepareVersion` が false を返した場合に `ApplicationException` を送出する完全な実装例（`MessageUtil.createMessage`、`throw new ApplicationException(message)` を含む）が記載されているが、知識ファイルには「ラッパクラスを作成する」という言及のみで実装パターンが示されていない。",
+      "source_evidence": "ソース: `public final class CommonExclusiveControlUtil { public static void prepareVersion(...) { if (HttpExclusiveControlUtil.prepareVersion(...)) { return; } Message message = MessageUtil.createMessage(MessageLevel.ERROR, \"M001101\"); throw new ApplicationException(message); } }`"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 一括更新処理における更新チェック（複合主キー）",
+      "description": "`UsersExclusiveControl` クラスの実装コード例が欠落している。ソースには `ExclusiveControlContext` を継承し、PK列挙型の定義、`setTableName`、`setVersionColumnName`、`setPrimaryKeyColumnNames`、`appendCondition` の呼び出し方を含む完全なクラス実装が記載されている。これらは複合主キーの排他制御を実装する際に必要なAPIの使用方法であり、知識ファイルはクラス名のみを参照している。",
+      "source_evidence": "ソース: `public class UsersExclusiveControl extends ExclusiveControlContext { private enum PK { USER_ID, PK2, PK3 } public UsersExclusiveControl(...) { setTableName(\"USERS\"); setVersionColumnName(\"VERSION\"); setPrimaryKeyColumnNames(PK.values()); appendCondition(PK.USER_ID, userId); ... } }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "s1 の hints に以下が欠落している: `CommonExclusiveControlUtil`（ソースのラッパクラス例に登場するクラス名）、`ExclusiveUserCondition`（知識ファイル自身の複合主キー `updateVersionWithCheck` コード例で使用されているクラス名）、`@OnErrors`（ソースのアクション実装例で使用されているアノテーション）。",
+      "source_evidence": "`@OnErrors({ @OnError(...) })` がソースの doUU00202/doEXCLUS00203 に使用されている。`CommonExclusiveControlUtil` はラッパクラス例に登場。`ExclusiveUserCondition` はソースおよび知識ファイルの updateVersionWithCheck 呼び出しに登場。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2 の hints に `ApplicationException` が欠落している。s2 のセクション本文に「`OptimisticLockException` は `ApplicationException` を継承している」と記述されており、PascalCase クラス名として hints に含まれるべきである。",
+      "source_evidence": "知識ファイル s2: 「`OptimisticLockException` は `ApplicationException` を継承しており」"
+    }
+  ]
+}

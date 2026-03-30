@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-01_Log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "書き込み処理とフォーマット処理 (source second major h2 section)",
+      "description": "The entire '書き込み処理とフォーマット処理' section is absent from the knowledge file. This section contains all class definitions for LogWriter/LogFormatter subsystem, including critical decision-necessary information: (1) LogWriter interface, (2) LogFormatter interface, (3) FileLogWriter — with an important note that it outputs per-process and SynchronousFileLogWriter must be used for multi-process single-file output, (4) SynchronousFileLogWriter — with a critical performance warning that it must NOT be used for high-frequency logs (application/access logs) because lock contention causes severe performance degradation; it should only be used for low-frequency logs like failure notification logs, (5) StandardOutputLogWriter, (6) BasicLogFormatter — formats minimum required info (datetime, user ID, request ID, object fields, stack traces), (7) LogContext — holds logging info (message, error, datetime, user ID, request ID from ThreadContext), (8) LogLevelLabelProvider.",
+      "source_evidence": "Source section '書き込み処理とフォーマット処理' (delimited by '---') contains LogWriter/LogFormatter interface definitions, and classes: LogWriterSupport, FileLogWriter (note: '複数プロセスから単一のログファイルに出力したい場合には、SynchronousFileLogWriterを使用すること'), SynchronousFileLogWriter (note: '頻繁にログの出力が行われる場面で本クラスを使用するとロック取得待ちによって性能が著しく劣化するので、アプリケーションログやアクセスログのように出力頻度の高いログ出力での使用は推奨しない'), StandardOutputLogWriter, BasicLogFormatter, LogContext, LogLevelLabelProvider."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 (要求 section) — 未検討 subsection",
+      "description": "The '未検討' subsection is entirely absent from s3. It contains 11 items that are neither implemented nor planned, which is decision-necessary: developers querying whether certain capabilities exist (e.g., filtering logs by request ID, hot-reloading config, tamper-prevention, log thread isolation, partial implementation swap, file path substitution characters, stack trace masking, framework execution time measurement, per-request SQL count alerting) would receive incorrect answers without this information.",
+      "source_evidence": "Source 未検討 section lists: リクエストID単位でのログ出力有無制御、アプリケーション停止なしの設定変更反映、ログファイルの改竄防止、ファイルパスへの置換文字使用、ログ出力スレッドのワーカスレッドからの独立、ログ出力機能の部分的差し替え、外部ツールからの出力ファイル切り替え、スタックトレース内メッセージのマスク、フレームワーク処理実行時間の測定、リクエスト処理時間上限値によるアラート、1トランザクションSQL発行回数上限値によるアラート。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "knowledge file sections (s1–s8)",
+      "description": "The knowledge file has 8 sections but the source has 13 split-level headings. The gap is explained by the entirely missing '書き込み処理とフォーマット処理' h2 section and its subsections (クラス図, 各クラスの責務, インタフェース定義, クラス定義), which account for 5 missing headings. The automated pre-check warning is valid.",
+      "source_evidence": "Source h2 sections (---- underline): 概要, 特徴, 要求, ログ出力要求受付処理, 書き込み処理とフォーマット処理. The last h2 and its four h3/h4 subsections have no corresponding sections in the knowledge file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index hints (no section covers 書き込み処理とフォーマット処理)",
+      "description": "Because the '書き込み処理とフォーマット処理' section is entirely missing, the following PascalCase class/interface names are absent from all hints: LogWriter, LogFormatter, LogWriterSupport, FileLogWriter, SynchronousFileLogWriter, StandardOutputLogWriter, BasicLogFormatter, LogContext, LogLevelLabelProvider.",
+      "source_evidence": "Source section '書き込み処理とフォーマット処理' defines: nablarch.core.log.basic.LogWriter, nablarch.core.log.basic.LogFormatter, nablarch.core.log.basic.LogWriterSupport, nablarch.core.log.basic.FileLogWriter, nablarch.core.log.basic.SynchronousFileLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, nablarch.core.log.basic.BasicLogFormatter, nablarch.core.log.basic.LogContext, nablarch.core.log.basic.LogLevelLabelProvider."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 index hints",
+      "description": "The hints for s3 do not include a term for the '未検討' category (e.g., '未検討機能' or '未実装機能一覧'), making it harder for an AI to retrieve this section when a user asks whether a specific unimplemented feature exists.",
+      "source_evidence": "Source 要求 section has three subsections: 実装済み, 未実装, 未検討. Only 実装済み and 未実装 are reflected in s3 hints ('実装済み機能', '未実装機能')."
+    }
+  ]
+}

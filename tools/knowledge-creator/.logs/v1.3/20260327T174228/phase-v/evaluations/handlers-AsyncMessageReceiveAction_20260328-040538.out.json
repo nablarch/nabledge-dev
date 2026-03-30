@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageReceiveAction",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor cosmetic issues. The fabricated column contains no values, so no incorrect information is presented. The RST syntax, while not ideal, is still interpretable by AI consumers. Neither finding causes incorrect behavior or misleads users.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s3 — configuration table",
+      "impact": "low",
+      "justification": "The added 'デフォルト値' column has no basis in the source, but all cells are empty. An AI agent reading this table receives no false information — the empty column merely implies no defaults are specified, which does not contradict the source. The structural mismatch is a fidelity issue but causes no practical harm to users relying on this knowledge."
+    },
+    {
+      "category": "section_issue",
+      "location": "s1 — 概要 section body",
+      "impact": "low",
+      "justification": "The verbatim RST cross-reference ':doc:`../architectural_pattern/messaging_receive`' is noise in the markdown, but the surrounding sentence still conveys the correct meaning to an AI consumer (this handler implements a typical action handler for the messaging_receive pattern). The raw syntax does not introduce incorrect information and is parseable enough that no user-visible answer would be corrupted. The fix was not applied: comparing Phase D and Phase E outputs, the knowledge file content is byte-for-byte identical, indicating the Phase E fix agent was invoked but produced no changes."
+    }
+  ]
+}

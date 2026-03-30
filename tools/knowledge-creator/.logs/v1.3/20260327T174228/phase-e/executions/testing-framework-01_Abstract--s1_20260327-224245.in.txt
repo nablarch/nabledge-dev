@@ -1,0 +1,371 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-01_Abstract--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3, s4",
+      "description": "Section title placement is inverted for the 'テストメソッド記述方法' source section. s3 (empty title) contains the introductory text that opens the section, while s4 carries the title 'テストメソッド記述方法' but only holds the code block and note. The title should be on s3 (the section opener), not on s4.",
+      "source_evidence": "Source heading '----------------------\\nテストメソッド記述方法\\n----------------------' introduces the paragraph 'JUnit4のアノテーションを使用する...' followed by the code block. The paragraph is the section entry point and should bear the heading."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5, s6",
+      "description": "s6 carries the title 'Excelによるテストデータ記述' but its content corresponds to the '命名規約' subsection of the source. The intro paragraph for 'Excelによるテストデータ記述' (about spreadsheets being more readable than Java source code) is in the untitled s5. The title in s6 should be '命名規約'.",
+      "source_evidence": "Source structure: h2 '---------------------------\\nExcelによるテストデータ記述\\n---------------------------' contains an intro paragraph (= s5 content), then h3 '========\\n命名規約\\n========' (= s6 content). The title 'Excelによるテストデータ記述' in s6 misidentifies the subsection heading."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _auto-test-framework:
+
+========================
+自動テストフレームワーク
+========================
+
+----
+特徴
+----
+
+JUnit4ベース
+============
+自動テストフレームワークは、JUnit4をベースとしている。
+各種アノテーション、assertメソッドやMatcherクラスなど、JUnit4で提供されている機能を使用する。
+
+
+テストデータの外部化
+====================
+テストデータをExcelファイルに記述できる。
+データベース準備データや期待するテスト結果などを記載したExcelファイルを
+自動テストフレームワークのAPIを通じて使用できる。
+
+
+Nablarchに特化したテスト補助機能を提供
+======================================
+トランザクション制御やシステム日付設定など、Nablarchアプリケーションに特化したAPIを用意する。
+
+
+.. ----
+.. 要求
+.. ----
+
+
+
+.. 実装済み
+.. ========
+
+.. * データセットアップ
+
+..   * EXCELにデータベース(テーブル)データの準備データが記述できる。
+ 
+
+.. * テスト実行機能
+   
+
+.. * 判定（アサート機能）
+
+..   * テーブルの更新結果がアサートできる
+..   * SELECT文の実行結果(取得結果)がアサートできる
+..   * メソッドの戻り値となる値がアサートできる
+
+..     * List<Map<String, String>
+
+..   * セル内のデータについて、空白やnullを明示的に記述できる。
+
+
+
+.. 未実装
+.. ======
+.. * データセットアップ
+
+..   * マスタデータが高速にセットアップできる。
+
+..     * マスタデータ(メッセージ、コードなど、、)の投入。※テストケース毎に変わらないデータは、ダンプ等から高速にロードができる。
+
+..   * データシートから、各テスト環境へデータ投入ができる。
+..   * データバックアップ。
+..   * バックアップからの復元。
+..   * テストデータの記述形式が見やすく記述できる。
+..   * テストデータが任意の単位で記述できる。
+..   * テストデータが文字コードに依存せずに記述できる。
+..   * 自動テストのケース修正・追加が容易にできる。
+..   * ターゲットモジュールのリファクタリングを行った際にデータシートに与える影響が最小限であること。
+..   * 下記のデータを記述できること
+
+..     * DB データ
+..     * ファイル(XML, CSV, 固定長)
+..     * メソッドの戻り値となる値（Java のオブジェクト等）
+..     * 終了コード、ログ出力メッセージ(JOBLOGも含む)
+..     * HTTPリクエスト/レスポンス
+..     * その他電文（MQ 等）
+..     * バイナリーデータ
+
+..   * EXCELで作成したデータファイルから、ファイル(固定長、CSV、可変長、XML等)を作成し各テスト環境へ配置できる。
+
+
+
+.. * テスト実行機能
+
+..   * インプットデータ（バッチの起動パラメータ/ユーザーの入力等）を EXCEL に記述できること。
+..   * 準備データをインプットとして自動テストを実行できること。（当然、DB/ファイル共に実行可能。）
+..   * スタブを使用して自動テストが実行できる(MQ、暗号化、外部接続、プロダクト依存等)。
+..   * 項目精査の自動テストは、テスト毎のデータを用意せずに実行できる。
+..   * 同じ自動テストが繰り返し実行できる。
+..   * 自動テストを実行する範囲を指定できる。
+..   * 自動テスト全実行時に実行順番によって結果が変わらない。
+..   * 自動テスト全実行が高速に実行できる。
+..   * 準備データシート上から自動テストを実行できる。
+..   * 異常系のテスト用に、環境起因で発生するエラーも擬似的に発生させることができる。
+..   * OS 等の環境に依存しないでテストを実行できる。
+..   * ターゲットモジュールの全てのロジック（メソッド、プロシージャ等）に対してテストが実行できる。
+..   * デッドロックや、ロック要求タイムアウトのリトライが透過的に実行できる。
+
+.. * 判定（アサート機能）
+
+..   * XMLファイルがアサートできる。
+..   * 画面レイアウトがアサートできる。
+..   * 帳票データーがアサートできる。
+
+
+.. 未検討
+.. ======
+
+..   * Excelデータから任意のJavaオブジェクト(例：Entityのリスト、JMSメッセージ…)を生成するロジックを、既存機能に変更を加えずに追加できる。
+
+
+
+..   * リンク機能の搭載。例えば、あるセルに"\*LINK1"と書いてあると、"\*LINK1"というIDを持ったデータの中身を取ってこれる。
+..   * Excelファイルを、単なる外部ファイルではなく、テスト仕様書として使用することができる。テスト仕様書をもとにテストを駆動できる。
+    
+..   * JUnitテストコードを書かなくても、Excelファイルを用意するだけでテストを実行できる。
+
+
+.. 取り下げ
+.. ========
+
+.. 現状無し。
+
+
+.. _`testing_fw_components`:
+
+------------------------------
+自動テストフレームワークの構成
+------------------------------
+
+.. image:: _images/abstract_structure.png
+   :scale: 80
+
+
++----------------------------+--------------------------------------+--------------------------------------+
+|構成物                      |説明                                  |作成者                                |
++============================+======================================+======================================+
+|テストクラス                |テスト処理を記述する。                |アプリケーションプログラマ            |
++----------------------------+--------------------------------------+--------------------------------------+
+|テスト対象クラス            |テスト対象となるクラス。              |アプリケーションプログラマ            |
++----------------------------+--------------------------------------+--------------------------------------+
+|Excelファイル               |テストデータを記載する。自動テストフレ|アプリケーションプログラマ            |
+|                            |ームワークを使用することにより、データ|                                      |
+|                            |を読み取ることができる。              |                                      |
++----------------------------+--------------------------------------+--------------------------------------+
+|コンポーネント設定ファイル・|テスト実行時の各種設定を記載する。    |アプリケーションプログラマ（個別のテス|
+|環境設定ファイル            |                                      |トに固有の設定が必要な場合）          |
++----------------------------+--------------------------------------+--------------------------------------+
+|自動テストフレームワーク    |テストに必要な機能を提供する。        | \－                                  |
+|                            |                                      |                                      |
++----------------------------+--------------------------------------+--------------------------------------+
+|Nablarch Application        |フレームワーク本体（本機能の対象外）  | \－                                  |
+|Framework                   |                                      |                                      |
++----------------------------+--------------------------------------+--------------------------------------+
+
+
+
+----------------------
+テストメソッド記述方法
+----------------------
+
+JUnit4のアノテーションを使用する。
+テストメソッドに @Test アノテーションを付与する。
+
+
+ .. code-block:: java 
+
+    public class SampleTest {
+
+        @Test
+        public void testSomething() {
+            // テスト処理
+        }
+    }
+
+
+.. note::
+  @Beforeや@Afterなどのアノテーションも使用できる。これらのアノテーションを用いて、
+  テストメソッド前後にリソースの取得解放などの共通処理を行いたい場合は、
+  次の項を参照（ :ref:`using_junit_annotation` ）。
+
+
+.. _`how_to_write_excel`:
+
+
+---------------------------
+Excelによるテストデータ記述
+---------------------------
+
+データベースの準備データやデータベース検索結果などのデータを表すには、
+Javaソースコードよりスプレッドシートのほうが可読性や編集のしやすさという点で有利である。
+Excelファイルを使用することにより、このようなデータをスプレッドシート形式で扱うことができる。
+
+命名規約
+========
+
+Excelファイル名、ファイルパスには推奨される規約が存在する。この規約に従うことにより、テストクラスで明示的にディレクトリ名やファイル名を指定してファイルを読み込む必要がなくなり、簡潔にテストソースコードを記述できる。また明示的にパスを指定することで任意の場所のExcelファイルを読み込むことも可能である。
+
+
+パス、ファイル名に関する規約
+----------------------------
+
+ファイル名、パスに関して推奨される規約は以下の通り。
+
+- Excelファイル名は、テストソースコードと同じ名前にする（拡張子のみ異なる）。
+
+- Excelファイルを、テストソースコードと同じディレクトリに配置する。
+
+
+例を以下に示す。
+
++--------------------+----------------------+----------------------------+
+|ファイルの種類      |配置ディレクトリ      |ファイル名                  |
++====================+======================+============================+
+|テストソースファイル|<PROJECT_ROOT>/test   |ExampleDbAcessTest.java     |
++--------------------+/jp/co/tis/example/db/+----------------------------+
+|Excelファイル       |                      |ExampleDbAcessTest.xls [#]_ |
++--------------------+----------------------+----------------------------+
+
+.. [#] Excel ファイルは、 Excel2003以前のファイル形式(拡張子 xls の形式)および Excel2007 以降のファイル形式(拡張子 xlsx の形式)に対応している。   
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-01_Abstract--s1",
+  "title": "自動テストフレームワーク",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "自動テストフレームワーク",
+        "JUnit4",
+        "テストデータ外部化",
+        "Nablarch特化API",
+        "アサート機能"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "自動テストフレームワークの構成",
+      "hints": [
+        "自動テストフレームワークの構成",
+        "テストクラス",
+        "Excelファイル",
+        "コンポーネント設定ファイル",
+        "Nablarch Application Framework"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "JUnit4アノテーション",
+        "@Test",
+        "テストメソッド記述方法"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テストメソッド記述方法",
+      "hints": [
+        "@Test",
+        "SampleTest",
+        "@Before",
+        "@After",
+        "using_junit_annotation"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "",
+      "hints": [
+        "Excelファイル",
+        "テストデータ記述",
+        "データベース準備データ",
+        "スプレッドシート形式"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Excelによるテストデータ記述",
+      "hints": [
+        "命名規約",
+        "Excelファイル名規約",
+        "ファイルパス規約",
+        "テストデータファイル"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "パス、ファイル名に関する規約",
+      "hints": [
+        "Excelファイル名",
+        "パス規約",
+        "xls",
+        "xlsx",
+        "ExampleDbAcessTest"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "自動テストフレームワークの特徴:\n\n- **JUnit4ベース**: 各種アノテーション（`@Test`、`@Before`、`@After`等）、assertメソッド、MatcherクラスなどJUnit4機能を使用する。\n- **テストデータの外部化**: データベース準備データや期待するテスト結果などをExcelファイルに記述し、自動テストフレームワークのAPIを通じて読み込める。\n- **Nablarch特化API**: トランザクション制御やシステム日付設定など、Nablarchアプリケーション固有のAPIを提供する。",
+    "s2": "自動テストフレームワークの構成要素:\n\n| 構成物 | 説明 | 作成者 |\n|---|---|---|\n| テストクラス | テスト処理を記述する | アプリケーションプログラマ |\n| テスト対象クラス | テスト対象となるクラス | アプリケーションプログラマ |\n| Excelファイル | テストデータを記載する。自動テストフレームワークのAPIを通じて読み込める | アプリケーションプログラマ |\n| コンポーネント設定ファイル・環境設定ファイル | テスト実行時の各種設定を記載する | アプリケーションプログラマ（個別のテストに固有の設定が必要な場合） |\n| 自動テストフレームワーク | テストに必要な機能を提供する | — |\n| Nablarch Application Framework | フレームワーク本体（本機能の対象外） | — |",
+    "s3": "テストメソッドの記述にはJUnit4のアノテーションを使用する。テストメソッドに`@Test`アノテーションを付与する。",
+    "s4": "```java\npublic class SampleTest {\n\n    @Test\n    public void testSomething() {\n        // テスト処理\n    }\n}\n```\n\n> **注意**: `@Before`や`@After`などのアノテーションも使用できる。テストメソッド前後にリソースの取得・解放などの共通処理を行いたい場合は、:ref:`using_junit_annotation` を参照。",
+    "s5": "データベースの準備データやデータベース検索結果などのデータを表すには、Javaソースコードよりスプレッドシートのほうが可読性・編集しやすさで有利。Excelファイルを使用することにより、このようなデータをスプレッドシート形式で扱える。",
+    "s6": "Excelファイル名・ファイルパスには推奨される命名規約がある。この規約に従うことで、テストクラスでディレクトリ名やファイル名を明示的に指定せずに簡潔にテストソースコードを記述できる。また明示的にパスを指定することで任意の場所のExcelファイルを読み込むことも可能。",
+    "s7": "推奨される規約:\n\n- Excelファイル名は、テストソースコードと同じ名前にする（拡張子のみ異なる）\n- Excelファイルを、テストソースコードと同じディレクトリに配置する\n\n| ファイルの種類 | 配置ディレクトリ | ファイル名 |\n|---|---|---|\n| テストソースファイル | `<PROJECT_ROOT>/test/jp/co/tis/example/db/` | ExampleDbAcessTest.java |\n| Excelファイル | `<PROJECT_ROOT>/test/jp/co/tis/example/db/` | ExampleDbAcessTest.xls |\n\nExcelファイルはExcel2003以前のファイル形式（拡張子`xls`）およびExcel2007以降のファイル形式（拡張子`xlsx`）に対応。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

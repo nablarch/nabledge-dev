@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_SubmitTag--s14",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — DataRecordResponse使用例（データレコードのダウンロード方法）",
+      "description": "Source includes a complete format definition file example required for DataRecordResponse usage. The file name convention (`N11AA001.fmt`), placement guidance, and complete format structure (file-type, text-encoding, record-separator, field-separator, [header] and [data] record definitions) are entirely omitted. An AI answering questions about DataRecordResponse implementation needs this to show a complete working example.",
+      "source_evidence": "フォーマット定義の実装コードブロック: `file-type: \"Variable\"`, `text-encoding: \"Shift_JIS\"`, `record-separator: \"\\n\"`, `field-separator: \",\"`, `[header]` / `[data]` セクション定義, 「N11AA001.fmtというファイル名でプロジェクトで規定された場所に配置する」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — popupOption属性の説明",
+      "description": "The fallback behavior when `popupOption` has no default value set in WebView_CustomTagConfig is missing. Source footnote states that in this case nothing is specified (\"何も指定しない\"). Knowledge file only mentions that the default value from WebView_CustomTagConfig is used, without covering the no-default-value case.",
+      "source_evidence": "脚注: 「popupOption属性が指定されない場合、WebView_CustomTagConfigで指定したデフォルト値が使用される（デフォルト値が設定されていない場合は何も指定しない）」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "Attribute names `paramName` and `inputName` from the changeParamName tag table are not present in s1 hints. These are the required attribute names a user would search for when working with changeParamName in popup contexts.",
+      "source_evidence": "changeParamNameタグ属性テーブル: `paramName(必須)` — サブミット時に使用するパラメータの名前, `inputName(必須)` — 変更元となる元画面のinput要素のname属性"
+    }
+  ]
+}

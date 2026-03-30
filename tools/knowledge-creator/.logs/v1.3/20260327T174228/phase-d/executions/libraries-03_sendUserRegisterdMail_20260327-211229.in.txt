@@ -1,0 +1,330 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation_other/04_Explanation_mail/03_sendUserRegisterdMail.rst`
+- Format: `rst`
+
+```
+======================
+ メール送信の実装方法
+======================
+
+メール送信要求を表すデータオブジェクト(以下、送信要求データオブジェクト)に必要な項目を設定の上、\
+そのオブジェクトを引数にメール送信要求APIを呼び出す。\
+前述2パターンのAPIはそれぞれ以下の通り。
+
+  == ================ =========================================================================
+  No パターン         API
+  == ================ =========================================================================
+   1 定型メール送信   nablarch.common.mail.MailRequester#requestToSend(TemplateMailContext ctx)
+   2 非定型メール送信 nablarch.common.mail.MailRequester#requestToSend(FreeTextMailContext ctx)
+  == ================ =========================================================================
+
+実装例
+======
+
+* 定型メール送信の実装例:
+
+サンプルアプリケーションでは、この定型メール送信のパターンを使用している。
+メールテンプレートテーブルには、予め以下のデータが設定されている。
+
+  ================ ===== ============================================= =========== ==============================================================
+  MAIL_TEMPLATE_ID LANG  SUBJECT                                       CHARSET     MAIL_BODY
+  ================ ===== ============================================= =========== ==============================================================
+  1                ja    {kanjiName}さんのユーザー登録が完了しました。 iso-2022-jp {kanjiName}さん
+
+                                                                                   Nablarch Sampleアプリケーションへのユーザー登録が完了しました。
+
+                                                                                   ログインID：{loginId}
+
+                                                                                   下記URLからログインしてください。
+
+                                                                                   http://localhost:8999/action/ss11AB/W11AB01Action/RW11AB0101
+  ================ ===== ============================================= =========== ==============================================================
+
+実装例を以下に示す。実装箇所は、ユーザー登録機能のアクションクラス(W11AC02Action.java)である。
+
+  .. code-block:: java
+
+        // 定型メール送信要求データオブジェクトを作成する。
+        TemplateMailContext tmctx = new TemplateMailContext();
+
+        // 送信元・送信先メールアドレスを設定する。
+        tmctx.setFrom(SystemRepository.getString("defaultFromMailAddress"));
+        tmctx.addTo(user.getMailAddress());
+
+        // 定型メールのテンプレートと言語を設定する。
+        tmctx.setTemplateId(USER_REGISTERD_MAIL_TEMPLATE_ID);
+        tmctx.setLang(USER_LANG);
+
+        // テンプレートのプレースホルダのキーと置換文字を設定する。
+        tmctx.setReplaceKeyValue("kanjiName", user.getKanjiName());
+        tmctx.setReplaceKeyValue("loginId", systemAccount.getLoginId());
+
+        // メール送信APIのインスタンスを取得する。
+        MailRequester mailRequester = MailUtil.getMailRequester();
+
+        // メール送信要求を行う。
+        mailRequester.requestToSend(tmctx);
+
+
+* 非定型メール送信の実装例:
+
+非定型メールの場合はテンプレートを使用せず、件名と本文を直接指定する。
+実装例を以下に示す。
+
+  .. code-block:: java
+
+        // 非定型メール送信要求データオブジェクトを作成する。
+        FreeTextMailContext ctx = new FreeTextMailContext();
+        ctx.setFrom(from);
+        ctx.addTo("to@tis.co.jp");
+        ctx.addCc("cc@tis.co.jp");
+        ctx.addBcc("bcc@tis.co.jp");
+        ctx.setSubject("件名");
+        ctx.setMailBody("本文");
+
+        /*
+         * 添付ファイルを設定する。
+         *
+         * 【説明】
+         * ファイルを添付する場合は、
+         * 添付ファイルのオブジェクトを作成し、設定する。
+         * 添付ファイルは、添付ファイルを表すデータオブジェクト
+         * nablarch.common.mail.AttachedFileにContent-Typeの指定とともに設定する。
+         */
+        AttachedFile attachedFile = new AttachedFile("text/plain", new File("path/to/file"));
+        ctx.addAttachedFile(attachedFile);
+
+        // メール送信APIのインスタンスを取得する。
+        MailRequester requester = MailUtil.getMailRequester();
+        // メール送信要求を行う。
+        String requestId = requester.requestToSend(ctx);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+送信要求データオブジェクトへの設定項目
+======================================
+
+各パターンにおける送信要求データオブジェクトへの設定項目は下表の通り。
+
+* 定型メール送信時の送信要求データオブジェクト(nablarch.common.mail.TemplateMailContext)設定項目
+
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |項目                                              |設定メソッド名      |説明                                                  |
+  +==================================================+====================+======================================================+
+  |送信元メールアドレス(From)                        |setFrom             |必須                                                  |
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |送信先メールアドレス(TO)                          |addTo               | * TO,CC,BCCあわせて1つ以上必須。                     |
+  +--------------------------------------------------+--------------------+ * それぞれ複数指定可。                               |
+  |送信先メールアドレス(CC)                          |addCc               | * 上限数(To,CC,BCC合計)の設定が可能([1]_)。          |
+  +--------------------------------------------------+--------------------+                                                      |
+  |送信先メールアドレス(BCC)                         |addBcc              |                                                      |
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |返信先メールアドレス(Reply-To)                    |setReplyTo          |省略可。                                              |
+  |                                                  |                    |省略時は予め設定されたデフォルト値が適用される([2]_)。|
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |差戻し先メールアドレス(Return-Path)               |setReturnPath       |省略可。                                              |
+  |                                                  |                    |省略時は予め設定されたデフォルト値が適用される([2]_)。|
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |メールテンプレートID                              |setTemplateId       |必須                                                  |
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |メールテンプレートの言語                          |setLang             |必須                                                  |
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |メールテンプレートのプレースホルダのキーと置換文字|setReplaceKeyValue  |必要な場合のみ。                                      |
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+  |添付ファイル                                      |addAttachedFile     |必要な場合のみ。複数可。合計サイズ上限設定可能([3]_)。|
+  +--------------------------------------------------+--------------------+------------------------------------------------------+
+
+\
+
+* 非定型メール送信の送信要求データオブジェクト(nablarch.common.mail.FreeTextMailContext)設定項目
+
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |項目                                |設定メソッド名      |説明                                                  |
+  +====================================+====================+======================================================+
+  |送信元メールアドレス(From)          |setFrom             |必須                                                  |
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |送信先メールアドレス(TO)            |addTo               |* TO,CC,BCCあわせて1つ以上必須。                      |
+  +------------------------------------+--------------------+* それぞれ複数指定可。                                |
+  |送信先メールアドレス(CC)            |addCc               |* 上限数(To,CC,BCC合計)の設定が可能([1]_)。           |
+  +------------------------------------+--------------------+                                                      |
+  |送信先メールアドレス(BCC)           |addBcc              |                                                      |
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |返信先メールアドレス(Reply-To)      |setReplyTo          |省略可。                                              |
+  |                                    |                    |省略時は予め設定されたデフォルト値が適用される([2]_)。|
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |差戻し先メールアドレス(Return-Path) |setReturnPath       |省略可。                                              |
+  |                                    |                    |省略時は予め設定されたデフォルト値が適用される([2]_)。|
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |件名                                |setSubject          |必須                                                  |
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |本文                                |setMailBody         |必須                                                  |
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |文字セット                          |setCharset          |省略可。                                              |
+  |                                    |                    |省略時は予め設定されたデフォルト値が適用される([2]_)。|
+  +------------------------------------+--------------------+------------------------------------------------------+
+  |添付ファイル                        |addAttachedFile     |必要な場合のみ。複数可。合計サイズ上限設定可能([3]_)。|
+  +------------------------------------+--------------------+------------------------------------------------------+
+
+  .. [1] 上限数の設定方法は `フレームワーク解説書 <../../../../fw/reference/core_library/mail.html>`_ を参照。
+  .. [2] デフォルト値の設定方法は `フレームワーク解説書 <../../../../fw/reference/core_library/mail.html>`_ を参照。
+  .. [3] サイズ上限の設定方法は `フレームワーク解説書 <../../../../fw/reference/core_library/mail.html>`_ を参照。
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-03_sendUserRegisterdMail`
+
+```json
+{
+  "id": "libraries-03_sendUserRegisterdMail",
+  "title": "メール送信の実装方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "実装例",
+      "hints": [
+        "MailRequester",
+        "TemplateMailContext",
+        "FreeTextMailContext",
+        "AttachedFile",
+        "MailUtil",
+        "requestToSend",
+        "定型メール送信",
+        "非定型メール送信",
+        "メール送信要求",
+        "添付ファイル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "送信要求データオブジェクトへの設定項目",
+      "hints": [
+        "TemplateMailContext",
+        "FreeTextMailContext",
+        "setFrom",
+        "addTo",
+        "addCc",
+        "addBcc",
+        "setReplyTo",
+        "setReturnPath",
+        "setTemplateId",
+        "setLang",
+        "setReplaceKeyValue",
+        "addAttachedFile",
+        "setSubject",
+        "setMailBody",
+        "setCharset",
+        "送信要求データオブジェクト",
+        "メール送信設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "メール送信は `nablarch.common.mail.MailRequester#requestToSend()` で行う。送信要求データオブジェクトを引数に渡す。\n\n| No | パターン | API |\n|---|---|---|\n| 1 | 定型メール送信 | `nablarch.common.mail.MailRequester#requestToSend(TemplateMailContext ctx)` |\n| 2 | 非定型メール送信 | `nablarch.common.mail.MailRequester#requestToSend(FreeTextMailContext ctx)` |\n\n**定型メール送信の実装例** (`nablarch.common.mail.TemplateMailContext` 使用):\n\n```java\nTemplateMailContext tmctx = new TemplateMailContext();\ntmctx.setFrom(SystemRepository.getString(\"defaultFromMailAddress\"));\ntmctx.addTo(user.getMailAddress());\ntmctx.setTemplateId(USER_REGISTERD_MAIL_TEMPLATE_ID);\ntmctx.setLang(USER_LANG);\ntmctx.setReplaceKeyValue(\"kanjiName\", user.getKanjiName());\ntmctx.setReplaceKeyValue(\"loginId\", systemAccount.getLoginId());\nMailRequester mailRequester = MailUtil.getMailRequester();\nmailRequester.requestToSend(tmctx);\n```\n\n**非定型メール送信の実装例** (`nablarch.common.mail.FreeTextMailContext` 使用): テンプレートを使わず、件名・本文を直接指定する。\n\n```java\nFreeTextMailContext ctx = new FreeTextMailContext();\nctx.setFrom(from);\nctx.addTo(\"to@tis.co.jp\");\nctx.addCc(\"cc@tis.co.jp\");\nctx.addBcc(\"bcc@tis.co.jp\");\nctx.setSubject(\"件名\");\nctx.setMailBody(\"本文\");\nAttachedFile attachedFile = new AttachedFile(\"text/plain\", new File(\"path/to/file\"));\nctx.addAttachedFile(attachedFile);\nMailRequester requester = MailUtil.getMailRequester();\nString requestId = requester.requestToSend(ctx);\n```\n\n添付ファイルは `nablarch.common.mail.AttachedFile` にContent-Typeの指定とともに設定する。",
+    "s2": "**定型メール送信の送信要求データオブジェクト** (`nablarch.common.mail.TemplateMailContext`) 設定項目:\n\n| 項目 | 設定メソッド名 | 説明 |\n|---|---|---|\n| 送信元メールアドレス(From) | setFrom | 必須 |\n| 送信先メールアドレス(TO) | addTo | TO,CC,BCCあわせて1つ以上必須。複数指定可。上限数(To,CC,BCC合計)の設定が可能。 |\n| 送信先メールアドレス(CC) | addCc | 複数指定可 |\n| 送信先メールアドレス(BCC) | addBcc | 複数指定可 |\n| 返信先メールアドレス(Reply-To) | setReplyTo | 省略可。省略時はデフォルト値が適用される。 |\n| 差戻し先メールアドレス(Return-Path) | setReturnPath | 省略可。省略時はデフォルト値が適用される。 |\n| メールテンプレートID | setTemplateId | 必須 |\n| メールテンプレートの言語 | setLang | 必須 |\n| メールテンプレートのプレースホルダのキーと置換文字 | setReplaceKeyValue | 必要な場合のみ |\n| 添付ファイル | addAttachedFile | 必要な場合のみ。複数可。合計サイズ上限設定可能。 |\n\n**非定型メール送信の送信要求データオブジェクト** (`nablarch.common.mail.FreeTextMailContext`) 設定項目:\n\n| 項目 | 設定メソッド名 | 説明 |\n|---|---|---|\n| 送信元メールアドレス(From) | setFrom | 必須 |\n| 送信先メールアドレス(TO) | addTo | TO,CC,BCCあわせて1つ以上必須。複数指定可。上限数(To,CC,BCC合計)の設定が可能。 |\n| 送信先メールアドレス(CC) | addCc | 複数指定可 |\n| 送信先メールアドレス(BCC) | addBcc | 複数指定可 |\n| 返信先メールアドレス(Reply-To) | setReplyTo | 省略可。省略時はデフォルト値が適用される。 |\n| 差戻し先メールアドレス(Return-Path) | setReturnPath | 省略可。省略時はデフォルト値が適用される。 |\n| 件名 | setSubject | 必須 |\n| 本文 | setMailBody | 必須 |\n| 文字セット | setCharset | 省略可。省略時はデフォルト値が適用される。 |\n| 添付ファイル | addAttachedFile | 必要な場合のみ。複数可。合計サイズ上限設定可能。 |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

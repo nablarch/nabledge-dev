@@ -1,0 +1,450 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-mail--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "概要 section (source H2)",
+      "description": "The entire 概要 section is absent from the knowledge file. Missing decision-necessary information: (1) The system adopts an async approach via 常駐バッチ — this is the core architectural design. (2) Two reasons for the async design: mail requests can be included in the business application's DB transaction, and mail server / network failures do not affect business application processing. (3) JavaMail API (http://www.oracle.com/technetwork/java/javamail/index.html) is used as the mail sending library. (4) Behavioral constraint: one mail request = one email sent (メール送信要求一つにつきメールが一通送信される).",
+      "source_evidence": "本フレームワークのメール送信処理は、常駐バッチを経由し、業務アプリケーションの処理とは非同期に行う方式を採用している。 / メール送信要求一つにつきメールが一通送信される。 / 逐次メール送信バッチでは、メール送信ライブラリとして、JavaMail API を使用する。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "逐次メール送信バッチ section (source H2)",
+      "description": "The 逐次メール送信バッチ H2 section is not represented as a separate knowledge section. Critically, the specific startup argument name `mailSendPatternId` is never mentioned anywhere in the knowledge file. An implementer who needs to filter by mail send pattern ID would not know what argument name to use. The s2 section mentions that a pattern ID can be passed as a startup argument, but omits the key name.",
+      "source_evidence": "バッチ起動時の引数として「mailSendPatternId」を指定した場合には、指定されたメール送信パターンIDと一致する送信要求データが監視対象となる。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==========
+メール送信
+==========
+
+概要
+====
+
+メールを送信する機能を提供する。
+
+
+本フレームワークのメール送信処理は、 :doc:`../architectural_pattern/batch_resident` を経由し、
+業務アプリケーションの処理とは非同期に行う方式を採用している。
+その理由は以下の通り。
+
+* 業務アプリケーションから見て、メール送信処理を業務アプリケーションのDBトランザクションに含めることができる。
+* メールサーバー障害やネットワーク障害によりメール送信が遅延もしくは失敗しても、業務アプリケーションの処理への影響を与えないようにすることができる。
+
+上記方式を実現するため、本フレームワークは、業務アプリケーションからメール送信の要求データ(以下、メール送信要求)を
+受け付けデータベースに格納するAPI(以下、メール送信要求API)と、
+メール送信要求に基づいてメールを送信する常駐バッチ(以下、逐次メール送信バッチ)を提供する。
+
+アプリケーションプログラマは、本フレームワークが提供するメール送信要求APIを呼び出すだけでよい。
+メール送信要求は、業務アプリケーションがメール送信要求APIを呼び出す毎に一つ作成され、メール送信要求一つにつきメールが一通送信される。
+
+なお、逐次メール送信バッチでは、メール送信ライブラリとして、 `JavaMail API <http://www.oracle.com/technetwork/java/javamail/index.html>`_ を使用する。
+
+本フレームワークのメール送信処理方式の概要を下図に示す。
+
+.. image:: ../_image/mail_overview.jpg
+   :scale: 80
+
+
+構造
+====
+
+クラス図
+--------
+
+.. image:: ../_image/09_Mail.jpg
+   :scale: 70
+
+各クラスの責務
+--------------
+
+メール送信要求API
+~~~~~~~~~~~~~~~~~
+
+  ================================== ================================================
+  クラス名                           概要
+  ================================== ================================================
+  nablarch.common.mail.MailRequester メール送信受付API
+  nablarch.common.mail.MailUtil      MailRequesterインスタンス取得用のユーティリティ
+  ================================== ================================================
+
+逐次メール送信バッチアクションクラス
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ================================== ================================================================================================
+  クラス名                           概要
+  ================================== ================================================================================================
+  nablarch.common.mail.MailSender    逐次メール送信バッチのアクションクラス
+
+                                     本バッチは、\ `メール送信要求テーブル`_\ から未送信のデータを抽出し、メール送信を行う。
+                                     未送信のデータを抽出する際の条件は、テーブル全体から未送信のデータを抽出するか、
+                                     メール送信パターンID毎に未送信のデータを抽出するかを選択可能となっている。
+
+                                     メール送信パターンID毎に未送信のデータを抽出する場合には、監視対象のメール送信パターンID毎に
+                                     逐次メール送信バッチのプロセスを起動する必要がある。
+                                     プロセス起動時には、処理対象のメール送信パターンIDを起動引数に指定する。
+                                     詳細は、\ `処理対象のメール送信パターンID`_\ を参照。
+
+                                     また、電子署名を付加したりメール本文を暗号化したメールを送信したい場合には、
+                                     本クラスを継承しすることにより実現可能となっている。（詳細は、本クラスのJavaDocコメントを参照）
+
+                                     例えば、以下表のように電子署名を付加したメールと、電子署名なしのメールを扱うようなシステムの場合には、
+                                     本クラスでは電子署名なしのメールを送信し、拡張したクラスで電子署名付きのメールを送信すれば良い。
+
+
+                                     ====================   ================   ================================================
+                                     メール送信パターンID   送信内容           使用するバッチアクション
+                                     ====================   ================   ================================================
+                                     01                     電子署名なし       本クラス(MailSender)を使用する。
+                                     02                     電子署名あり       本クラスを拡張したバッチアクションを使用する。
+                                     ====================   ================   ================================================
+
+  ================================== ================================================================================================
+
+
+メール送信要求データオブジェクト
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ======================================== ====================================================
+  クラス名                                 概要
+  ======================================== ====================================================
+  nablarch.common.mail.MailContext         メール送信要求を表す抽象クラス
+  nablarch.common.mail.FreeTextMailContext 非定形メール送信要求を表すクラス
+  nablarch.common.mail.TemplateMailContext 定型メール送信要求を表すクラス
+  nablarch.common.mail.AttachedFile        メール添付ファイルの情報を保持するクラス
+  ======================================== ====================================================
+
+設定値を保持するクラス
+~~~~~~~~~~~~~~~~~~~~~~
+
+  ====================================== ================================================================
+  クラス名                               概要
+  ====================================== ================================================================
+  nablarch.common.mail.MailRequestConfig メールのデフォルト設定を保持するクラス
+  nablarch.common.mail.MailConfig        出力ライブラリ(メール送信)のコード値を保持するクラス
+  nablarch.common.mail.MailSessionConfig メール送信用設定値を保持するクラス
+  ====================================== ================================================================
+
+テーブルのスキーマ情報を保持するクラス
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ========================================== ========================================================================
+  クラス名                                   概要
+  ========================================== ========================================================================
+  nablarch.common.mail.MailRecipientTable    メール送信先管理テーブルのスキーマ情報を保持するクラス
+  nablarch.common.mail.MailRequestTable      メール送信要求管理テーブルのスキーマを保持するクラス
+  nablarch.common.mail.MailAttachedFileTable 添付ファイル管理テーブルのスキーマ情報を保持するクラス
+  nablarch.common.mail.MailTemplateTable     メールテンプレート管理テーブルのスキーマ情報を保持するクラス
+  ========================================== ========================================================================
+
+例外クラス
+~~~~~~~~~~
+
+  ================================================== ======================================================================
+  クラス名                                           概要
+  ================================================== ======================================================================
+  nablarch.common.mail.AttachedFileSizeOverException 添付ファイルサイズが上限値を超えている場合に発生する例外
+  nablarch.common.mail.RecipientCountException       宛先数が不正な場合(宛先なし、もしくは上限数を超えている)に発生する例外
+  ================================================== ======================================================================
+
+.. _mailTables:
+
+テーブル定義
+------------
+
+メール送信機能で使用するテーブル定義を下記に示す。
+
+* テーブル名・カラム名は任意に指定できる。
+* データベースの型は、Javaの型に変換可能な型を選択する。
+
+
+メール送信要求テーブル
+~~~~~~~~~~~~~~~~~~~~~~
+
+メール送信要求を管理するテーブル。
+
+  ======================= ================== ======================================================================================================================
+  定義                    Javaの型           備考
+  ======================= ================== ======================================================================================================================
+  メール送信要求ID        java.lang.String   PK
+                                             メール送信要求を一意に識別するID
+  メール送信パターンID    java.lang.String   メールの送信方法のパターンを識別するためのID
+                                             
+                                             本IDの用途などの詳細は、\ `逐次メール送信バッチアクションクラス`_\ を参照。
+                                             
+                                             **本項目は任意項目なので、定義しなくてもメール送信機能は動作する。**
+  件名                    java.lang.String   
+  送信者メールアドレス    java.lang.String   メールのFromヘッダに指定するメールアドレス
+  返信先メールアドレス    java.lang.String   メールのReply-Toヘッダに指定するメールアドレス
+  差戻し先メールアドレス  java.lang.String   メールのReturn-Pathヘッダに指定するメールアドレス
+  文字セット              java.lang.String   メールのContent-Typeヘッダに指定する文字セット
+  ステータス              java.lang.String   メールの送信状態(未送信／送信済／送信失敗)を表すコード値
+  要求日時                java.sql.Timestamp 
+  送信日時                java.sql.Timestamp 
+  本文                    java.lang.String   
+  ======================= ================== ======================================================================================================================
+
+メール送信先テーブル
+~~~~~~~~~~~~~~~~~~~~
+
+メール送信要求毎の送信先を管理するテーブル。
+
+  ======================= ================ =================================================
+  定義                    Javaの型         備考
+  ======================= ================ =================================================
+  メール送信要求ID        java.lang.String | PK
+  連番                    int              | PK
+                                           | 一つのメール送信要求内の連番
+  送信先区分              java.lang.String | メールの送信先区分(TO／CC／BCC)を表すコード値
+  メールアドレス          java.lang.String |
+  ======================= ================ =================================================
+
+メール添付ファイルテーブル
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+メール送信要求毎の添付ファイルを管理するテーブル。
+
+  ========================= ================ ===========================
+  定義                      Javaの型         備考
+  ========================= ================ ===========================
+  メール送信要求ID          java.lang.String PK
+  連番                      int              PK
+  添付ファイル名            java.lang.String
+  添付ファイルContent-Type  java.lang.String
+  添付ファイル              byte[]
+  ========================= ================ ===========================
+
+メールテンプレートテーブル
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+定型メールのメールテンプレートを管理するテーブル。
+
+  ==================== ================ ================================
+  定義                 Javaの型         備考
+  ==================== ================ ================================
+  メールテンプレートID java.lang.String PK
+  言語                 java.lang.String PK
+  件名                 java.lang.String
+  本文                 java.lang.String
+  文字セット           java.lang.String メール送信時に指定する文字セット
+  ==================== ================ ================================
+
+メール送信要求API
+=================
+
+メール送信要求
+--------------
+
+業務アプリケーションがメール送信要求APIを呼び出すと、本フレームワークは、業務アプリケーションから引き渡された内容を、
+メール送信要求としてメール送信要求テーブルとその関連テーブル(後述、 :ref:`mailTables` 参照)に格納する。
+その際、最大宛先数と添付ファイルサイズの精査を行う。
+
+本フレームワークのメール送信要求APIは、下記2パターンのメール送信をサポートしている。
+
+== ================ ================================================================================
+No パターン         説明
+== ================ ================================================================================
+ 1 定型メール送信   予めデータベースに登録されたテンプレートを元にメールを作成・送信する。
+                    テンプレートの可変部分にはプレースホルダを用意しておくと、
+                    本フレームワークがメール送信要求をテーブルに格納する際に、
+                    各プレースホルダを業務アプリケーションから指定された文字列に
+                    置き換える。
+ 2 非定型メール送信 任意の件名・本文でメールを作成・送信する。
+== ================ ================================================================================
+
+メール送信要求実装例
+--------------------
+
+以下に、業務アプリケーションからメール送信要求APIを呼び出す実装例(定型メール送信の場合)を示す。
+
+  .. code-block:: java
+
+        // 定型メール送信要求データオブジェクトを作成する。
+        TemplateMailContext ctx = new TemplateMailContext();
+        ctx.setFrom("from@tis.co.jp");
+        ctx.addTo("to@tis.co.jp");
+        ctx.addCc("cc@tis.co.jp");
+        ctx.addBcc("bcc@tis.co.jp");
+        ctx.setSubject("件名");
+        ctx.setTemplateId("テンプレートID");
+        ctx.setLang("ja");
+
+        // テンプレートのプレースホルダに対する値を設定する。
+        ctx.setReplaceKeyValue("name", "名前");
+        ctx.setReplaceKeyValue("address", "住所");
+        ctx.setReplaceKeyValue("tel", "電話番号");
+        // 以下のように値にnullを設定した場合、空文字列で置き換えが行われる。
+        ctc.setReplaceKeyValue("opeion", null);
+
+        // メール送信パターンIDを設定する。
+        // 【説明】
+        // メール送信要求テーブルにメール送信パターンIDを定義している場合は、
+        // メール送信パターンIDを設定する。
+        ctx.setMailSendPatternId("00001");
+
+        /*
+         * 添付ファイルを設定する。
+         *
+         * 【説明】
+         * ファイルを添付する場合は、
+         * 添付ファイルのオブジェクトを作成し、設定する。
+         * 添付ファイルは、添付ファイルを表すデータオブジェクト
+         * nablarch.common.mail.AttachedFileにContent-Typeの指定とともに設定する。
+         */
+        AttachedFile attachedFile = new AttachedFile("text/plain", new File("path/to/file"));
+        ctx.addAttachedFile(attachedFile);
+
+        // メール送信APIのインスタンスを取得する。
+        MailRequester requester = MailUtil.getMailRequester();
+        // メール送信要求を行う。
+        String requestId = requester.requestToSend(ctx);
+
+  .. /*
+
+
+
+逐次メール送信バッチ
+======================
+本フレームワークは :doc:`../architectural_pattern/batch_resident` に準拠した逐次メール送信バッチ（バッチアクションクラス:nablarch.common.mail.MailSender）を提供し、
+アーキテクトによる設定(後述、 :ref:`mailBatchConfig` 参照)のみで使用できる。
+このバッチは、メール送信要求テーブルを監視し、メール送信要求があれば逐次メールを送信する。
+
+なお、バッチ起動時の引数として「mailSendPatternId」を指定した場合には、指定されたメール送信パターンIDと一致する送信要求データが監視対象となる。
+
+
+設定の記述
+==========
+
+メール送信処理の設定は、リポジトリ機能を使用する。
+以下に、メール送信処理の設定方法を記述する。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-mail--s1",
+  "title": "メール送信",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "クラス図",
+      "hints": [
+        "クラス図",
+        "メール送信クラス構造",
+        "アーキテクチャ図"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "各クラスの責務",
+      "hints": [
+        "MailRequester",
+        "MailUtil",
+        "MailSender",
+        "MailContext",
+        "FreeTextMailContext",
+        "TemplateMailContext",
+        "AttachedFile",
+        "MailRequestConfig",
+        "MailConfig",
+        "MailSessionConfig",
+        "MailRecipientTable",
+        "MailRequestTable",
+        "MailAttachedFileTable",
+        "MailTemplateTable",
+        "AttachedFileSizeOverException",
+        "RecipientCountException",
+        "メール送信要求API",
+        "逐次メール送信バッチ",
+        "例外クラス"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テーブル定義",
+      "hints": [
+        "メール送信要求テーブル",
+        "メール送信先テーブル",
+        "メール添付ファイルテーブル",
+        "メールテンプレートテーブル",
+        "テーブルスキーマ",
+        "メール送信パターンID",
+        "メールテンプレートID",
+        "送信先区分"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メール送信要求",
+      "hints": [
+        "定型メール送信",
+        "非定型メール送信",
+        "メール送信要求API",
+        "プレースホルダ",
+        "最大宛先数",
+        "添付ファイルサイズ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "メール送信要求実装例",
+      "hints": [
+        "TemplateMailContext",
+        "MailRequester",
+        "MailUtil",
+        "AttachedFile",
+        "setReplaceKeyValue",
+        "requestToSend",
+        "setTemplateId",
+        "setMailSendPatternId",
+        "addTo",
+        "定型メール送信実装例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "![メール送信クラス図](assets/libraries-mail--s1/09_Mail.jpg)",
+    "s2": "## メール送信要求API\n\n- **クラス**: `nablarch.common.mail.MailRequester` — メール送信受付API\n- **クラス**: `nablarch.common.mail.MailUtil` — MailRequesterインスタンス取得用のユーティリティ\n\n## 逐次メール送信バッチアクションクラス\n\n- **クラス**: `nablarch.common.mail.MailSender` — 逐次メール送信バッチのアクションクラス。メール送信要求テーブルから未送信データを抽出しメール送信を行う。テーブル全体から抽出するか、メール送信パターンID毎に抽出するかを選択可能。パターンID毎の場合は、パターンID毎にプロセスを起動し起動引数にパターンIDを指定する。電子署名付加や本文暗号化はMailSenderを継承することで実現可能（例: パターン01→MailSender使用、パターン02→拡張クラス使用）。\n\n## メール送信要求データオブジェクト\n\n- **クラス**: `nablarch.common.mail.MailContext` — メール送信要求を表す抽象クラス\n- **クラス**: `nablarch.common.mail.FreeTextMailContext` — 非定形メール送信要求を表すクラス\n- **クラス**: `nablarch.common.mail.TemplateMailContext` — 定型メール送信要求を表すクラス\n- **クラス**: `nablarch.common.mail.AttachedFile` — メール添付ファイルの情報を保持するクラス\n\n## 設定値を保持するクラス\n\n- **クラス**: `nablarch.common.mail.MailRequestConfig` — メールのデフォルト設定を保持するクラス\n- **クラス**: `nablarch.common.mail.MailConfig` — 出力ライブラリ(メール送信)のコード値を保持するクラス\n- **クラス**: `nablarch.common.mail.MailSessionConfig` — メール送信用設定値を保持するクラス\n\n## テーブルスキーマ情報を保持するクラス\n\n- **クラス**: `nablarch.common.mail.MailRecipientTable` — メール送信先管理テーブルのスキーマ情報を保持するクラス\n- **クラス**: `nablarch.common.mail.MailRequestTable` — メール送信要求管理テーブルのスキーマを保持するクラス\n- **クラス**: `nablarch.common.mail.MailAttachedFileTable` — 添付ファイル管理テーブルのスキーマ情報を保持するクラス\n- **クラス**: `nablarch.common.mail.MailTemplateTable` — メールテンプレート管理テーブルのスキーマ情報を保持するクラス\n\n## 例外クラス\n\n- **クラス**: `nablarch.common.mail.AttachedFileSizeOverException` — 添付ファイルサイズが上限値を超えている場合に発生する例外\n- **クラス**: `nablarch.common.mail.RecipientCountException` — 宛先数が不正な場合(宛先なし、もしくは上限数を超えている)に発生する例外",
+    "s3": "テーブル名・カラム名は任意に指定できる。DBの型はJavaの型に変換可能な型を選択する。\n\n## メール送信要求テーブル\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK。メール送信要求を一意に識別するID |\n| メール送信パターンID | java.lang.String | メールの送信方法のパターンを識別するID。**任意項目。定義しなくてもメール送信機能は動作する。** |\n| 件名 | java.lang.String | |\n| 送信者メールアドレス | java.lang.String | メールのFromヘッダに指定するメールアドレス |\n| 返信先メールアドレス | java.lang.String | メールのReply-Toヘッダに指定するメールアドレス |\n| 差戻し先メールアドレス | java.lang.String | メールのReturn-Pathヘッダに指定するメールアドレス |\n| 文字セット | java.lang.String | メールのContent-Typeヘッダに指定する文字セット |\n| ステータス | java.lang.String | メールの送信状態(未送信／送信済／送信失敗)を表すコード値 |\n| 要求日時 | java.sql.Timestamp | |\n| 送信日時 | java.sql.Timestamp | |\n| 本文 | java.lang.String | |\n\n## メール送信先テーブル\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 連番 | int | PK。一つのメール送信要求内の連番 |\n| 送信先区分 | java.lang.String | メールの送信先区分(TO／CC／BCC)を表すコード値 |\n| メールアドレス | java.lang.String | |\n\n## メール添付ファイルテーブル\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メール送信要求ID | java.lang.String | PK |\n| 連番 | int | PK |\n| 添付ファイル名 | java.lang.String | |\n| 添付ファイルContent-Type | java.lang.String | |\n| 添付ファイル | byte[] | |\n\n## メールテンプレートテーブル\n\n| 定義 | Javaの型 | 備考 |\n|---|---|---|\n| メールテンプレートID | java.lang.String | PK |\n| 言語 | java.lang.String | PK |\n| 件名 | java.lang.String | |\n| 本文 | java.lang.String | |\n| 文字セット | java.lang.String | メール送信時に指定する文字セット |",
+    "s4": "メール送信要求APIは以下2パターンのメール送信をサポートする。\n\n| No | パターン | 説明 |\n|---|---|---|\n| 1 | 定型メール送信 | DBに登録されたテンプレートを元にメール作成。テンプレートのプレースホルダはメール送信要求格納時に指定した文字列に置き換えられる。 |\n| 2 | 非定型メール送信 | 任意の件名・本文でメール作成・送信。 |\n\nメール送信要求API呼び出し時、最大宛先数と添付ファイルサイズの精査が行われる。",
+    "s5": "定型メール送信の実装例:\n\n```java\nTemplateMailContext ctx = new TemplateMailContext();\nctx.setFrom(\"from@tis.co.jp\");\nctx.addTo(\"to@tis.co.jp\");\nctx.addCc(\"cc@tis.co.jp\");\nctx.addBcc(\"bcc@tis.co.jp\");\nctx.setSubject(\"件名\");\nctx.setTemplateId(\"テンプレートID\");\nctx.setLang(\"ja\");\n\n// テンプレートのプレースホルダに対する値を設定する。\nctx.setReplaceKeyValue(\"name\", \"名前\");\nctx.setReplaceKeyValue(\"address\", \"住所\");\nctx.setReplaceKeyValue(\"tel\", \"電話番号\");\n// 値にnullを設定した場合、空文字列で置き換えが行われる。\nctc.setReplaceKeyValue(\"opeion\", null);\n\n// メール送信パターンIDを設定する（メール送信要求テーブルにメール送信パターンIDを定義している場合）。\nctx.setMailSendPatternId(\"00001\");\n\n// 添付ファイルを設定する。\nAttachedFile attachedFile = new AttachedFile(\"text/plain\", new File(\"path/to/file\"));\nctx.addAttachedFile(attachedFile);\n\n// メール送信要求を行う。\nMailRequester requester = MailUtil.getMailRequester();\nString requestId = requester.requestToSend(ctx);\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

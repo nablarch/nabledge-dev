@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three residual findings are low impact. The trimming omission is an edge-case behavioral detail that only affects developers who write $sort expressions with extra whitespace around sort IDs or case bodies — the documented syntax examples use no extra spaces, so typical usage is unaffected. The two hints_missing findings concern interface names (AutoPropertyHandler, SqlConvertor), but concrete implementation class names are already present in hints; users overwhelmingly search by concrete class name or functionality keyword, not by interface name. Retrieval for this file would succeed in the vast majority of real queries. None of these gaps would cause an AI agent to give incorrect answers — at worst, a narrow query using the interface name alone might miss this file, but the same user would likely find the content via concrete class names already indexed.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — VariableOrderBySyntaxConvertor spec",
+      "impact": "low",
+      "justification": "Trimming of sort IDs and case bodies is a whitespace-handling edge case. The documented syntax examples show no extra spaces, so developers following normal patterns are unaffected. Only impacts developers who intentionally write expressions like '( 1  USER_ID ASC )' with leading/trailing spaces — an unusual scenario. Missing this spec does not lead to incorrect implementation for typical $sort usage."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[0].hints — AutoPropertyHandler",
+      "impact": "low",
+      "justification": "All three concrete AutoPropertyHandler implementations (CurrentDateTimeAnnotationHandler, UserIdAnnotationHandler, RequestIdAnnotationHandler) and their annotations (@CurrentDateTime, @UserId, @RequestId) are already in hints. Users asking about auto-property behavior will hit this file via those terms. Only a query using the bare interface name 'AutoPropertyHandler' in isolation would miss this file, which is an atypical search pattern."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[0].hints — SqlConvertor",
+      "impact": "low",
+      "justification": "All concrete SqlConvertor implementations (SqlConvertorSupport, VariableConditionSyntaxConvertor, VariableInSyntaxConvertor, VariableOrderBySyntaxConvertor) and their syntax keywords ($if, $sort, 可変条件構文, 可変IN構文, 可変ORDER BY構文) are already in hints. Retrieval via concrete class or feature name succeeds. Missing the abstract interface name only affects a narrow query pattern developers rarely use."
+    }
+  ]
+}

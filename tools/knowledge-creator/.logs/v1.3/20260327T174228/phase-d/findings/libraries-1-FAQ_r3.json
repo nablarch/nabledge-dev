@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — code example",
+      "description": "The code example in s1 shows only the `Caused by` portion of the stack trace, omitting the outer exception and its frames. The source contains: `java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[...]` followed by `SingleValidationTester.invokeValidation` and `SingleValidationTester.testSingleValidation` frames, and the `ValidationManager.validateAndConvertProperty` frame under the `Caused by` block. A user encountering this error in their test output would first see the `RuntimeException` message, not the `IllegalArgumentException`, so omitting the outer exception makes the error example unrecognizable.",
+      "source_evidence": "java.lang.RuntimeException: unexpected exception occurred. target entity=[nablarch.sample.ss11.entity.SystemAccountEntity] property=[failedCount] parameter=[[Ljava.lang.String;@1de891b]\n    at nablarch.test.core.entity.SingleValidationTester.invokeValidation(SingleValidationTester.java:122)\n    at nablarch.test.core.entity.SingleValidationTester.testSingleValidation(SingleValidationTester.java:70)\n...Caused by: ...\n    at nablarch.core.validation.ValidationManager.validateAndConvertProperty(ValidationManager.java:377)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`RuntimeException` is a PascalCase class appearing in the source code example but is absent from the hints array.",
+      "source_evidence": "java.lang.RuntimeException: unexpected exception occurred."
+    }
+  ]
+}

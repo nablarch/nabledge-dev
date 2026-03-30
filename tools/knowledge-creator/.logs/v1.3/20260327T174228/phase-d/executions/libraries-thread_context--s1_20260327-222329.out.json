@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-thread_context--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file omits that handlers other than ThreadContextHandler (non-business-action framework handlers) can also set thread context variables. The source states: 「それ以外ハンドラでも、スレッドコンテキストに変数を設定するものが存在するほか」— this is a distinct third category beyond ThreadContextHandler and business action handlers. Only business action handlers are mentioned in the knowledge file.",
+      "source_evidence": "その内容の多くは、ThreadContextHandlerによって設定されるが、それ以外ハンドラでも、スレッドコンテキストに変数を設定するものが存在するほか、業務アクションハンドラから任意の変数を設定することも可能である。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "The knowledge file adds a type column (`List<ThreadContextAttribute>`) and a required status (○) for the `attributes` property. The source only provides the property name and a prose description; it does not specify the Java type or mark the property as required.",
+      "source_evidence": "attributes | ThreadContextAttributeインタフェースを実装したクラスのリストを設定する。 (source provides no type or required annotation)"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The knowledge file adds a `String` type column for the `sessionKey` and `anonymousId` properties. The source only provides property names and prose descriptions; it does not specify Java types.",
+      "source_evidence": "sessionKey | セッションからユーザIDを取得する際のキーを設定する。/ anonymousId | 未ログインユーザに対して設定するユーザIDを設定する。 (source provides no type annotation)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Section s3 merges two large source h2 sections (クラス定義 and 使用方法) along with all their h3 subsections (RequestIdAttribute, InternalRequestIdAttribute, UserIdAttribute, LanguageAttribute, TimeZoneAttribute, ExecutionIdAttribute, selection criteria tables, and a full XML configuration example). The resulting section is far above 2000 characters with multiple h3-level subsections that were not split out.",
+      "source_evidence": "Source has distinct h2-level sections クラス定義 and 使用方法, the latter containing six h3-level subsections (RequestIdAttribute through ExecutionIdAttribute) each with substantial content."
+    }
+  ]
+}

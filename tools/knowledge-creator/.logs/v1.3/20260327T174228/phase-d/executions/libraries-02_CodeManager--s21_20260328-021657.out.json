@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2, s4, s5, s6, s7 property tables",
+      "description": "A type column is added to all property tables. Source tables have only two columns (property名 and 設定内容). No type column exists in the source. Some types are inferrable from descriptions (SimpleDbTransactionManager for dbManager, String[] for patternColumnNames), but types such as String for tableName, idColumnName, valueColumnName, langColumnName, sortOrderColumnName, nameColumnName, shortNameColumnName, and messageId are pure inferences not stated in the source.",
+      "source_evidence": "All source tables use format: property名 | 設定内容. No type column in BasicCodeManager, BasicCodeLoader, CodePatternSchema, CodeNameSchema, or CodeValueValidator tables."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7",
+      "description": "Section s7 merges three distinct source subsections into one: エンティティの実装 (====), Validatorの設定 (====), and a second 設定内容詳細 (=====) for CodeValueValidator properties. The merged section exceeds 2000 characters. The automated check reported section count 7 vs source headings 8, consistent with this merge.",
+      "source_evidence": "Source has separate headings: エンティティの実装 (============================), Validatorの設定 (============================), and 設定内容詳細 (=====================) for CodeValueValidator settings."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Missing hint: CodeManager (interface name explicitly mentioned in the main configuration requirement).",
+      "source_evidence": "Source: CodeManager インタフェースを実装したクラスを登録する必要がある"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "Missing hints: Customer (PascalCase class name in Java code example) and validateAndConvertRequest (method name explicitly referenced in source).",
+      "source_evidence": "Source: public class Customer and ValidationUtil クラスの validateAndConvertRequest メソッドを呼び出すことで"
+    }
+  ]
+}

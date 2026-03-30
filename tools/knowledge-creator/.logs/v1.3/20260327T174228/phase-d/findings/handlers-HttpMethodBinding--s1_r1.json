@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — section heading for classpath content path",
+      "description": "Section heading reads \"Javaクラスパス上のリソース\" but the source heading is \"Javaコンテキストクラスローダ上のリソース\". These are distinct Java concepts (classpath vs. context class loader). The body text within s5 correctly uses \"コンテキストクラスローダ\" so only the heading is inaccurate.",
+      "source_evidence": "Source: \"**5. Javaコンテキストクラスローダ上のリソース**\" / \"コンテキストクラスローダ上のリソースの内容を出力する。\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 — section content",
+      "description": "Section s1 contains only ~44 characters: \"**クラス名**: `nablarch.fw.web.HttpMethodBinding`\". This is below the 50-character threshold.",
+      "source_evidence": "Source クラス名 declaration: \"**クラス名:** `nablarch.fw.web.HttpMethodBinding`\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "`WebFrontController` is referenced in the source's サーブレットフォーワード note as the reason why ハンドラキューの処理 is not re-executed during servlet forward (infinite loop risk). It is mentioned in s5 body text but absent from s5 hints, reducing discoverability for queries about WebFrontController behavior.",
+      "source_evidence": "Source note: \"WebFrontController が全リクエストを対象としたサーブレットフィルタとして実装されており、サーブレットフォーワードで再度処理した場合、無限ループしてしまうためである。\""
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-screenTransition--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are missing hints for sample/example class names. These classes (W11AC02Action, W11AC01SearchForm, CM311AC1Component) are project-specific example classes in the RST documentation, not Nablarch framework API classes. SqlResultSet is a real framework class but its primary documentation lives elsewhere; its appearance here is incidental to the param-tag screen-transition topic. The sections remain discoverable through the existing hints (e.g., \"submitタグ\", \"サブミット先指定\", \"paramタグ\", \"一覧照会詳細遷移\"). No realistic user query would be blocked by these omissions.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[0] (s1) hints",
+      "impact": "low",
+      "justification": "W11AC02Action is a project-specific sample class used only to illustrate the uri attribute pattern. Users searching for how to configure submit destinations would use terms like 'submitタグ' or 'サブミット先指定', which are already present. No real query is blocked. The fix did not persist: the Phase E output JSON shows the s1 hints array is identical to the Phase D state, meaning the fix agent processed but did not actually append W11AC02Action to the array before the loop terminated."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[2] (s3) hints",
+      "impact": "low",
+      "justification": "W11AC01SearchForm and CM311AC1Component are project-specific sample classes; users would not search by these names. SqlResultSet is a real Nablarch class but its main documentation is in the UniversalDao/database-access knowledge files — its presence here is incidental to the param-tag topic, and the section is already reachable via 'paramタグ', '一覧照会詳細遷移', 'W11AC01Action'. The fix did not persist: the Phase E output JSON shows the s3 hints array is identical to the Phase D state, indicating the fix agent failed to append the three class names before the improvement loop ended."
+    }
+  ]
+}

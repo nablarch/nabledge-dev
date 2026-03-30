@@ -1,0 +1,13 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — uploadTmpDirectory table row",
+      "description": "The knowledge file table entry for `uploadTmpDirectory` includes only the first sentence of the source description but omits the behavioral explanation: test upload target files are copied to this directory before being processed, so even if the action moves the file, only the copy under this directory is moved, preventing the actual source file from being moved. This explains the safety guarantee the setting provides and is relevant for developers debugging upload-related test behavior.",
+      "source_evidence": "テスト時に準備した、アップロード対象のファイルは本ディレクトリにコピー後に処理される。これにより、アクションでファイルの移動を行った場合でも、本ディレクトリ配下のファイルが移動されるだけであり、実態が移動されることを防ぐことができる。"
+    }
+  ]
+}

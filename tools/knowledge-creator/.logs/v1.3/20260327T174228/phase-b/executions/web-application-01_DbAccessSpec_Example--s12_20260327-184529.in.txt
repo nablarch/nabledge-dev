@@ -1,0 +1,847 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `web-application-01_DbAccessSpec_Example--s12`
+- Format: `rst` (rst/md/xlsx)
+- Type: `guide`
+- Category: `web-application`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+バイナリデータへのアクセス
+--------------------------
+データベースのデータタイプがバイナリ型(BLOBやbyte)の場合の参照、更新方法の実装例
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- パスワード取得用
+   -- SQL_ID:GET_PASSWORD
+   --------------------------
+   GET_PASSWORD =
+   SELECT
+       PWD
+   FROM
+       USER_MST
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- パスワード更新用
+   -- SQL_ID:UPDATE_PASSWORD
+   --------------------------
+   UPDATE_PASSWORD =
+   UPDATE
+       USER_MST
+   SET
+       PWD = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF更新用
+   -- SQL_ID:UPDATE_PDF
+   --------------------------
+   UPDATE_PDF =
+   UPDATE
+       PDF_LIST
+   SET
+       PDF_DATA = ?
+   WHERE
+       USER_ID = ?
+
+   --------------------------
+   -- PDF取得用
+   -- SQL_ID:GET_PDF
+   --------------------------
+   GET_PDF =
+   SELECT
+       PDF_DATA
+   FROM
+       PDF_LIST
+   WHERE
+       USER_ID = ?
+
+.. _searching_binary_data:
+
+バイナリデータの検索方法
+========================
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public byte[] getPassword(String userId) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement select = getSqlPStatement("GET_PASSWORD");
+
+            select.setString(1, userId);
+            SqlResultSet rs = select.retrieve();
+
+            SqlRow row = rs.get(0);
+
+            // 【説明】バイナリデータは、SqlRow#getBytesで取得する。
+            return row.getBytes("pwd");
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 本実装例は、getBytesメソッドでバイナリデータを一括で取得しているが、ファイルデータのようにデータ量が大きい場合には、 :ref:`generate_binary_file` の実装例にしたがうこと。
+
+
+.. _insert_binary_data:
+
+バイナリデータの登録方法
+========================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PASSWORD");
+
+    statement.setBytes(1, pwd);
+    statement.setString(2, "00001");
+    int updNo = statement.executeUpdate();
+
+.. warning::
+ | 本実装例は、setBytesを使用してバイナリデータの設定しているが、データベースベンダーによってはsetBytesをサポートしない場合がある。
+ | どのsetメソッドを使用すればよいかは、データベースベンダーのJDBCマニュアルを参照すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _insert_file_data_as_binary_data:
+
+ファイルの内容をバイナリデータとして登録する方法
+================================================
+
+.. code-block:: java
+
+    SqlPStatement statement = getSqlPStatement("UPDATE_PDF");
+
+    File file = new File("hoge.pdf");
+    FileInputStream fis = new FileInputStream(file);
+
+    try {
+        // 【説明】setBinaryStream(int, InputStream, int)を使用してファイルのストリームをバインド変数に設定
+        statement.setBinaryStream(1, fis, (int) file.length());
+        statement.setString(2, "00001");
+        statement.executeUpdate();
+    } finally {
+        fis.close();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. _generate_binary_file:
+
+バイナリデータをファイルとして出力する方法
+==========================================
+
+.. code-block:: java
+
+    SqlPStatement select = getSqlPStatement("GET_PDF");
+
+    select.setString(1, "00001");
+    SqlResultSet rs = select.retrieve();
+
+    // 【説明】データベースからBlobとしてデータを取得する。
+    Blob fileData = (Blob) rs.get(0).get("PDF_DATA");
+
+    InputStream pdfData = null;
+    FileOutputStream output = null;
+    try {
+        // 【説明】Blobデータからストリームを取得し、バイナリデータを読み込む
+        pdfData = fileData.getBinaryStream();
+
+        // 【説明】出力ファイルを開く
+        output = new FileOutputStream("hoge.pdf");
+
+        byte[] b = new byte[1024];
+        int size = 0;
+        while ((size = pdfData.read(b)) != -1) {
+            output.write(b, 0, size);
+            output.flush();
+        }
+    } finally {
+        try {
+            if (pdfData != null) {
+                pdfData.close();
+            }
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. warning::
+ 上記実装例は、\ *java.io*\ パッケージを使用した実装となっている。
+ この実装は、リソースの開放漏れなどが発生する可能性があり、アプリケーションプログラマが実装することは推奨しない。
+
+ 必要な場合には、アーキテクトがコンポーネントを作成するなどして対処すること。
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _db-object-save-samole:
+
+--------------------------------------------------------------
+オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)
+--------------------------------------------------------------
+オブジェクトのフィールドの値を登録する際の実装例
+
+画面処理の場合で、精査済みリクエストパラメータの値をJavaBeansで保持している場合には、本機能を使用することにより実装ステップ数を軽減することができる。
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+ ファイル名:nablarch/sample/ss11AE/CM211AE1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- 売上登録
+   -- SQL_ID:REGISTER_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「オブジェクトのフィールド名」とすること。
+   REGISTER_SALES =
+   INSERT INTO
+       SALES
+       (
+       CST_ID,
+       KINGAKU,
+       INS_DATE_TIME,
+       INS_USER_ID,
+       UPD_DATE_TIME,
+       UPD_USER_ID,
+       EXECUTION_ID,
+       REQUEST_ID
+       )
+   VALUES
+       (
+       :cstId,
+       :kingaku,
+       :insDateTime,
+       :insUserId,
+       :updDateTime,
+       :updUserId,
+       :executionId,
+       :requestId
+       )
+
+   --------------------------
+   -- 売上更新
+   -- SQL_ID:UPDATE_SALES
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「Mapのキー名」とすること。
+   UPDATE_SALES =
+   UPDATE
+       SALES
+   SET
+       KINGAKU = :KINGAKU
+   WHERE
+       CST_ID = :CST_ID
+
+
+.. _update_single_data_by_object:
+
+1件のデータを更新する場合
+=========================
+
+| 下記実装例はinsert文となっているが、update文やdelete文でも同じように実装することができる。
+
+.. code-block:: java
+
+    // オブジェクト実装
+    public class W11AE01Form {
+        // 顧客ID
+        private String cstId;
+
+        // 金額
+        private long kingaku;
+
+        // 登録日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String insDateTime;
+
+        // 登録ユーザID
+        @UserId
+        private String insUserId;
+
+        // 更新日時
+        @CurrentDateTime(format="yyyyMMddHHmmss")
+        private String updDateTime;
+
+        // 更新ユーザID
+        @UserId
+        private String updUserId;
+
+        // リクエストID
+        @RequestId
+        private String requestId;
+
+        // 【説明】本来はここに各フィールド項目のアクセスメソッドを定義する。
+
+    }
+
+    public void doRW11AE0101() {
+        // 【説明】オブジェクトを生成し、自動設定項目以外を設定する。
+        W11AE01Form form = new W11AE01Form();
+        form.setCstId("0001");
+        form.setKingaku(100);
+
+        CM211AE1Component component = new CM211AE1Component();
+        component.registerSales(form);
+    }
+
+    package nablarch.sample.ss11AE;
+
+    public class CM211AE1Component extends DbAccessSupport {
+
+        public void registerSales(W11AE01Form form) {
+
+            // 【説明】SQL_IDを指定して、Statementオブジェクトを取得する。
+            ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+            // 【説明】executeUpdateByObjectを呼び出してオブジェクトのフィールドの値を登録する。
+            insert.executeUpdateByObject(form);
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _update_multiple_data_by_object:
+
+複数件を更新する場合
+====================
+複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。
+
+.. code-block:: java
+
+    // 1回のexecuteBatchで更新する最大の件数
+    private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+    // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+
+    ParameterizedSqlPStatement insert = getParameterizedSqlStatement("REGISTER_SALES");
+
+    for (W11AE02Form form : forms) {
+        statement.addBatchObject(form);
+        if (insert.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+            insert.executeBatch();
+        }
+    }
+    if (insert.getBatchSize() != 0) {
+        insert.executeBatch();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _map-save-label:
+
+----------------------------------------------------------
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- バイナリデータへのアクセス
+- 
+- オブジェクトのフィールドの値の登録機能(オブジェクト(Form)編)
+- 
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/web-application-01_DbAccessSpec_Example--s12/filename.png)` |
+
+Office attachments → reference in `assets/web-application-01_DbAccessSpec_Example--s12/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `web-application-01_DbAccessSpec_Example--s12`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

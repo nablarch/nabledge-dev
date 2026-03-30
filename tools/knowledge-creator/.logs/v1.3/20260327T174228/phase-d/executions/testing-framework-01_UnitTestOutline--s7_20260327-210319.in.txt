@@ -1,0 +1,231 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/02_UnitTestOutline/01_UnitTestOutline.rst`
+- Format: `rst`
+
+```
+画面オンライン処理における取引単体テスト
+--------------------------------------------
+
+TomcatやWeblogic等のアプリケーションサーバ上に、Webアプリケーションをデプロイして打鍵テストを行う。
+
+
+
+.. image:: _images/screenTransition.png
+   :scale: 80
+
+またリクエスト単体テストでは確認できないテスト項目についてもここでテストする。
+
+* ブラウザに入力した内容が、正しくサーバアプリケーションに受け渡しできているか（formタグ（およびその内部のタグ）の属性が正しいか）
+* 画面遷移が正しいか（anchorタグのリンク先が正しいか）
+* JavaScriptが正しく動作するか
+
+
+
+
+.. image:: _images/DealUnitTestRange.png
+   :scale: 80
+
+
+
+* テスト実施の詳細については、\ :doc:`../05_UnitTestGuide/03_DealUnitTest/index` を参照。
+
+.. * テスト標準については、\ :doc:`../07_TestStandard/03_DealUnitTestStandard`\ を参照。
+
+.. .. note::
+..  取引単体テストは、オンラインアプリケーションの場合に実施する。バッチアプリケーションの場合は取引単体テストは必要ない。
+ 
+..  オンラインアプリケーションの場合は、Webアプリケーションの制約により、ひとつの取引が複数画面で実現されることになる。
+..  その為、取引という業務的に意味のあるまとまりでテストをしないと、設計書に記載された内容が正しく実装されているかどうか
+..  ブラックボックステストの観点でテストをすることができない。
+..  一方、バッチアプリケーションの場合、１つのバッチリクエストで実現される処理が、単体でも業務的な意味を持っており
+..  設計書に記載された内容をブラックボックステストの観点でテストすることができる。
+..  よって、オンラインアプリケーションのように取引という考え方をする必要がない。
+
+..  なお、複数のバッチリクエストを束ねる形式のテスト（例えば複数のバッチアプリケーションプログラムを起動するシェルスクリプトのテスト）は結合テストで実施することとする。
+
+.. .. note::
+..  バッチアプリケーションでの単体テストについては現在検討中。
+
+
+バッチ処理における取引単体テスト
+------------------------------------
+
+取引が一連のバッチ処理により構成される場合、取引単体テストにてその組み合わせを確認する。
+バッチ処理の場合は、自動テストフレームワークを用いて、各バッチを連続してテストすることで\
+取引単体テストが実施可能である。
+
+.. image:: ./_images/dealUnitTestOnBatch.png
+.. image:: ./_images/hanrei.png
+
+
+
+メッセージング処理における取引単体テスト
+--------------------------------------------
+
+メッセージング処理では、リクエストと取引とでスコープが同じであることがほとんである。
+このように、１リクエスト＝１取引である場合は、取引単体テストを実施する必要はない。
+
+ただし、複数のメッセージにより取引が成立する場合\ [#]_\ は、\ `バッチ処理における取引単体テスト`_\ 
+と同様に、リクエスト毎のテストを連続実行することにより取引単体テストが実施可能である。
+
+.. [#]
+ 例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合。
+```
+
+## Knowledge File
+
+- ID: `testing-framework-01_UnitTestOutline--s7`
+
+```json
+{
+  "id": "testing-framework-01_UnitTestOutline--s7",
+  "title": "取引単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "画面オンライン処理における取引単体テスト",
+      "hints": [
+        "画面オンライン処理",
+        "取引単体テスト",
+        "打鍵テスト",
+        "formタグ",
+        "画面遷移",
+        "JavaScript",
+        "アプリケーションサーバ",
+        "Tomcat",
+        "Weblogic"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バッチ処理における取引単体テスト",
+      "hints": [
+        "バッチ処理",
+        "取引単体テスト",
+        "自動テストフレームワーク",
+        "バッチ連続実行",
+        "組み合わせテスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "メッセージング処理における取引単体テスト",
+      "hints": [
+        "メッセージング処理",
+        "取引単体テスト",
+        "リクエスト単位",
+        "複数メッセージ",
+        "連続実行",
+        "照会電文",
+        "要求電文"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "画面オンライン処理の取引単体テストは、TomcatやWeblogic等のアプリケーションサーバ上にWebアプリケーションをデプロイして打鍵テストで実施する。\n\nリクエスト単体テストでは確認できない以下の項目をテストする:\n- ブラウザ入力がサーバアプリケーションに正しく受け渡されているか（formタグおよびその内部タグの属性が正しいか）\n- 画面遷移が正しいか（anchorタグのリンク先が正しいか）\n- JavaScriptが正しく動作するか\n\n![画面遷移図](assets/testing-framework-01_UnitTestOutline--s7/screenTransition.png)\n\n![取引単体テスト範囲](assets/testing-framework-01_UnitTestOutline--s7/DealUnitTestRange.png)",
+    "s2": "取引が一連のバッチ処理により構成される場合、取引単体テストにてその組み合わせを確認する。バッチ処理の場合は自動テストフレームワークを用いて各バッチを連続実行することで取引単体テストを実施できる。\n\n![バッチ処理における取引単体テスト](assets/testing-framework-01_UnitTestOutline--s7/dealUnitTestOnBatch.png)\n\n![凡例](assets/testing-framework-01_UnitTestOutline--s7/hanrei.png)",
+    "s3": "メッセージング処理では、リクエストと取引のスコープが同じ（1リクエスト＝1取引）であることがほとんどのため、取引単体テストを実施する必要はない。\n\nただし、複数のメッセージにより取引が成立する場合[^1]は、`バッチ処理における取引単体テスト`_と同様に、リクエスト毎のテストを連続実行することで取引単体テストを実施できる。\n\n[^1]: 例えば、最初に事前条件確認用の照会電文が来て、その後に本処理用の要求電文が送信されるような場合。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_BasicRules",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file uses the label \"対象スコープ：\" to introduce the list of naming rule targets. The source does not use the word \"スコープ\" in this context — it says \"この命名ルールの対象を下記に示す。\" The list items include HTML attribute values, CSS class names, and JavaScript function/global variable names, which are not \"scopes.\" The fabricated label incorrectly implies all items are scope-related.",
+      "source_evidence": "この命名ルールの対象を下記に示す。\n* HTMLの属性値\n* CSSのクラス名\n* JavaScriptの関数名とグローバル変数名\n* ページスコープ、リクエストスコープ、セッションスコープの属性名"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The knowledge file omits the context explaining *why* the nablarch_ prefix is prohibited for individual applications: the framework itself uses the \"nablarch_\" prefix for its own framework-defined names (CSS class names, JavaScript function names, etc.) to avoid duplication with individual applications. This rationale is the basis for the prohibition and is relevant when an AI needs to explain the rule to users.",
+      "source_evidence": "フレームワークでは、CSSのクラス名やJavaScriptの関数名など、フレームワークが規定する名前については、個別アプリケーションと重複しないようにプレフィックス「nablarch_」を使用する。このため、個別アプリケーションでは、「nablarch_」から始まる名前を使用しないこと。"
+    }
+  ]
+}

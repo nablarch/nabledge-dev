@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — Pattern 3 (応答不要メッセージ受信)",
+      "description": "The protocol header table for Pattern 3 is entirely absent from the knowledge file. The source contains a 5-row table specifying received header content (メッセージID, 関連メッセージID, 送信宛先: 宛先の論理名, 応答宛先, 有効期間). All other patterns (1, 2, 4) have their protocol header tables preserved; Pattern 3 alone is missing this specification.",
+      "source_evidence": "Source section '3. 応答不要メッセージ受信': table with rows including '送信宛先 | 宛先の論理名' between the figure directive and the code sample."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 2 (同期応答メッセージ送信), response header table",
+      "description": "The knowledge file's response header table for Pattern 2 omits 3 rows present in the source: 'メッセージID: 送信先システム側で採番された一意文字列が設定される', '応答宛先: N/A', and '有効期間: 任意'. Only the two bold rows are included.",
+      "source_evidence": "Source section '2. 同期応答メッセージ送信': 5-row response header table with all rows shown; knowledge file table has only 2 rows."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — Pattern 4 (同期応答メッセージ受信), response header table",
+      "description": "The knowledge file's protocol header table for Pattern 4 omits the '有効期間 | 任意' row that appears in the source table.",
+      "source_evidence": "Source section '4. 同期応答メッセージ受信': 5-row table includes '有効期間 | 任意'; knowledge file table has only 4 rows."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-08_05_custom_validator",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The omitted annotation-level message override pattern is an optional, advanced customization technique described in the source as applicable only \"if a specific property needs a different error message.\" The knowledge file already covers the primary implementation points for custom validator creation — including multi-pattern validator-level message properties — which are sufficient for the vast majority of custom validator implementations. This is explicitly architect-level code (source notes \"通常、各アプリケーション・プログラマはこのような実装を行わない\"), further narrowing the affected audience. An AI agent lacking this knowledge would still correctly guide architects through all required implementation steps; only the optional per-property annotation-override pattern would be missing.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — バリデータの作成 (implementation point 1)",
+      "impact": "low",
+      "justification": "The annotation-level message ID override is an optional extension pattern ('もし特定のプロパティのみ別のエラーメッセージを設定したい場合') for a narrow use case: when a single property in a form needs a different error message from the system-wide validator default. The core knowledge for implementing a custom validator (Validator interface, addResultMessage usage, multi-condition message properties) is fully present. The pattern persisted through Phase E because Phase E produced no change to the file — the two JSON blocks are byte-for-byte identical — suggesting the fix loop did not generate or apply a correction, likely treating the minor severity as below the fix threshold."
+    }
+  ]
+}

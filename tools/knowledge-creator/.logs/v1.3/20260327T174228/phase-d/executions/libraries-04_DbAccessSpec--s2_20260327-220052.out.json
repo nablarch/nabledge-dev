@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections s4 and s5",
+      "description": "Sections s4 and s5 duplicate the same source content. Both contain the identical list of 4 sub-function document references (04_Connection, 04_Statement, 04_ObjectSave, 04_TransactionTimeout) derived from the single 各機能単位の構造 section in the source. The source has only one such section, not two.",
+      "source_evidence": "Source has a single 各機能単位の構造 section with 4 toctree directives. Knowledge file splits this into s4 (title: 各機能単位の構造（サブ機能一覧）) and s5 (title: 各機能単位の構造) with identical content."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SQLインジェクション対策について",
+      "description": "The rationale explaining why PreparedStatement-based SQL injection protection alone is insufficient is omitted. The source states this approach relies on enforcing rules across all developers and is insufficient, and that detecting a vulnerable implementation (input value string concatenation inside business logic) is extremely difficult. This context explains why the external SQL file approach is the recommended design choice.",
+      "source_evidence": "「一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値をバインド変数化することと言われている。ただし、この対策は各アプリケーションプログラマにルールを徹底させるものであり、対策としては不十分である。例えば、SQLインジェクションの脆弱性を含んだ実装を業務ロジック内で行われた場合、問題を検出することが非常に困難である。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) — hints",
+      "description": "`DbConnectionContext` is a PascalCase class name referenced in the SQL injection code examples but is absent from the s1 hints array.",
+      "source_evidence": "Source code example: `AppDbConnection connection = DbConnectionContext.getConnection();` appears in both the correct and vulnerable implementation examples."
+    }
+  ]
+}

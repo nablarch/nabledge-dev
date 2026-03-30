@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-RequestHandlerEntry",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — ワイルドカード説明",
+      "description": "ワイルドカード `*` の説明から「任意個の列」が省略されており、意味が変わっている。ソースは「任意の文字の**任意個の列**にマッチする」（任意の長さの文字列にマッチ）と明記しているが、知識ファイルは「任意の文字にマッチ」と記述しており、1文字のみにマッチするとも解釈できる。",
+      "source_evidence": "ソース: \"'*'はワイルドカードであり'.'と'/'を除く任意の文字の任意個の列にマッチする。\" / 知識ファイル: \"`*` はワイルドカードで `.` と `/` を除く任意の文字にマッチ\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "設定例のXMLコードに `immediate` プロパティ（`<property name=\"immediate\" value=\"false\" />`）が使用されているが、s3のhintsに `immediate` が含まれていない。",
+      "source_evidence": "ソースのXML例: `<property name=\"immediate\" value=\"false\" />`"
+    }
+  ]
+}

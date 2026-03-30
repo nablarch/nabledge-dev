@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_HttpAccessLog--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — HTTPアクセスログの出力例 (source section)",
+      "description": "The actual log output example (the code block showing all 4 log entry types: BEGIN, PARAMETERS, DISPATCHING CLASS, and END) is completely omitted from the knowledge file. This example demonstrates: the full format of each log entry, how masked passwords appear as ######## in the output, the structure of the PARAMETERS block including nablarch_token, and how all placeholders render in a real-world scenario. This is decision-necessary information for understanding log output format and verifying masking behavior.",
+      "source_evidence": "Source contains a code block starting with `2011-03-03 19:35:47.848 -INFO- ACC [201103031935478480009] @@@@ BEGIN @@@@` through the END entry with start_time/end_time/execution_time/max_memory/free_memory fields."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index",
+      "description": "The source file contains 2 distinct h2-level sections ('リクエスト処理終了時のログ出力に使用するフォーマット' with --- underline, and 'HTTPアクセスログの出力例' with === underline), but the knowledge file merges both into a single section s1. The second section's content is partially included inline under s1 but without its own section entry.",
+      "source_evidence": "Source heading 1: 'リクエスト処理終了時のログ出力に使用するフォーマット\\n---...'; Source heading 2: 'HTTPアクセスログの出力例\\n===...'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "$responseStatusCode$ is listed in the placeholder table in the source but is absent from the hints array. This is a named placeholder that users may search for specifically.",
+      "source_evidence": "Source table row: 'ステータスコード(クライアント) | $responseStatusCode$'"
+    }
+  ]
+}

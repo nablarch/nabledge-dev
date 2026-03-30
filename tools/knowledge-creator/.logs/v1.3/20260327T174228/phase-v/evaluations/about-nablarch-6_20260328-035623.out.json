@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-6",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor. The fabrication (「不可」vs「好ましくない」) does not change the recommended implementation path — architects still apply the locator approach in both interpretations. The missing hint (ResultSet) does not block retrieval because users query this topic via DB2/BLOB/LONGVARBINARY terms, and the text `java.sql.ResultSet` is already present in section body for semantic matching.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — DB2大サイズ case subheading",
+      "impact": "low",
+      "justification": "The overstatement (「不可」vs「好ましくない」) affects nuance but not actionable guidance. In both readings, the architect uses progressiveStreaming=1 with a locator. A developer following this file reaches the correct implementation regardless. The distinction matters only to the architect making a judgment call, but the surrounding content (「メモリが不足する可能性がある場合」) correctly frames it as a risk-based decision. Phase E log shows the fix was not applied — the output JSON is byte-for-byte identical to Phase D input, indicating the fix agent silently returned the unchanged file."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints array",
+      "impact": "low",
+      "justification": "Hints drive keyword-based section retrieval. Users querying binary column access issues will use DB2, BLOB, LONGVARBINARY, executeQuery, or ResultSetIterator as search terms — all present in hints. A query specifically on `ResultSet` or `java.sql.ResultSet` is unlikely as the entry point for this topic; the class is a Java standard API, not a Nablarch-specific term. The class name is present in section body, so semantic retrieval is unaffected. Phase E log confirms the fix was not applied — hints array is unchanged from Phase D."
+    }
+  ]
+}

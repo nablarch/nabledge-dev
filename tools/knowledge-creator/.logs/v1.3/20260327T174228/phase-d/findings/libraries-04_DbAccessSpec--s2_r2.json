@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — vulnerable SQL implementation code comment",
+      "description": "The code comment in the vulnerable implementation example was modified. The knowledge file has `// 入力値を直接連結 ← NG` but the source has `// 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。`. The annotation \"← NG\" is not present in the source.",
+      "source_evidence": "// 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SQLインジェクション対策について (footnote [#0])",
+      "description": "The footnote definition explaining what \"入力値\" means is omitted. Source defines it as: \"入力値とは、ユーザ入力値や外部システムからの連携データの事である。\" This clarifies the scope of input values subject to SQL injection risk.",
+      "source_evidence": ".. [#0] 入力値とは、ユーザ入力値や外部システムからの連携データの事である。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`PreparedStatement` is missing from s1 hints. It is a key class name explicitly mentioned in the SQLインジェクション対策 section as the standard (but insufficient) defense approach, and is referenced by name in the vulnerable code example via `connection.prepareStatement(sql)`.",
+      "source_evidence": "一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値をバインド変数化することと言われている。"
+    }
+  ]
+}

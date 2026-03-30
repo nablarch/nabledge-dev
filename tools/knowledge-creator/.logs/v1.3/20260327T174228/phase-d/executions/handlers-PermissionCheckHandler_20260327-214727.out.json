@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-PermissionCheckHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The outbound processing label is rendered as \"[復路処理]\" in the knowledge file, but the source file reads \"[往路での処理]\" (which appears to be a typo in the source, but the knowledge file silently changed the label rather than preserving the source text).",
+      "source_evidence": "Source: `**[往路での処理]**` (under `.. _outbound:`). Knowledge file: `**[復路処理]**`."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The type of `permissionFactory` is listed as `PermissionFactory` in the knowledge file, but the source table has `PermissionFactorry` (with a double 'r'). The knowledge file silently corrected what appears to be a source typo without preserving the source text.",
+      "source_evidence": "Source table: `permissionFactory | PermissionFactorry | 必須指定`. Knowledge file: `permissionFactory | PermissionFactory | ○`."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "`FwHeaderReader` is a PascalCase class name referenced in the DataReadHandler row of s1's content table but is absent from s1's hints array.",
+      "source_evidence": "Source: `:doc:`../reader/FwHeaderReader` が受信電文中のフレームワークヘッダ部を解析する際に、requestId および userId ヘッダの値をスレッドコンテキストに設定する。`"
+    }
+  ]
+}

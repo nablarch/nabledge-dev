@@ -1,0 +1,32 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All four residual findings have low user impact. The critical fabrication finding (type column) involves inferred types that are almost certainly correct in practice — String for XML property name fields is the standard Java type in Nablarch configuration, and SimpleDbTransactionManager/String[] were explicitly named in the source descriptions. No developer would be misled by this information. The remaining three findings (section merge, missing hints) involve structural and discoverability issues where the actual content is fully preserved and alternative hints provide adequate coverage.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s2, s4, s5, s6, s7 property tables",
+      "impact": "low",
+      "justification": "The type column adds inferred Java types to property tables. While technically fabricated (not in source), the inferred types are practically correct: String is the standard type for XML property name fields (tableName, idColumnName, etc.) in Nablarch configuration, and SimpleDbTransactionManager/String[] were explicitly named in source descriptions. An AI agent using these tables would give developers accurate type guidance. No realistic path to misleading guidance exists. Persisted through D→E likely because the Phase E agent assessed the types as defensible inferences and removing the column would degrade usability without improving accuracy."
+    },
+    {
+      "category": "section_issue",
+      "location": "s7",
+      "impact": "low",
+      "justification": "The three source subsections (エンティティの実装, Validatorの設定, CodeValueValidator設定内容詳細) are merged into s7, but all content is preserved under clear markdown headings within the section. Developers asking about any of these topics will receive complete, accurate answers. The only downside is a large section (~2000+ chars), which slightly reduces readability but does not affect correctness. Persisted through D→E likely because splitting would require creating new section IDs and the content completeness was deemed sufficient."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "The interface name 'CodeManager' is absent from s1 hints. However, 'BasicCodeManager' and 'codeManager' (the component name) are present, and queries about CodeManager configuration would match these synonymous hints. The s1 content body also explicitly mentions CodeManager, providing retrieval coverage via full-text search paths. Persisted through D→E as a deprioritized minor gap given existing coverage."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s7 hints",
+      "impact": "low",
+      "justification": "'Customer' is merely an example class name with no practical search value. 'validateAndConvertRequest' has some value as a method name developers might search, but s7 already contains 'ValidationUtil' as a hint, which would surface this section for related queries. The @CodeValue, CodeValueValidator, and ValidationManager hints provide strong coverage for the primary use cases of s7. Persisted through D→E as low-priority additions that don't materially affect retrieval quality."
+    }
+  ]
+}

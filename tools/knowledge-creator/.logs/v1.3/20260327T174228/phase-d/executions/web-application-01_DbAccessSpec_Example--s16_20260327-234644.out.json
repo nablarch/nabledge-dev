@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (可変条件のSQLの場合)",
+      "description": "W11BB02Form class definition is omitted. Source shows the concrete Java fields: `private String loginId`, `private String userKanjiName`, `private String userKanaName`, `private String groupId`. While the SQL bind variable names in s2 imply these field names, the explicit Form class definition that confirms the Java field-to-bind-variable mapping is absent from s5.",
+      "source_evidence": "Source: `public class W11BB02Form { /** ログインID */ private String loginId; /** 漢字氏名 */ private String userKanjiName; /** カナ氏名 */ private String userKanaName; /** グループID */ private String groupId; }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 (like条件をもつ簡易検索の場合)",
+      "description": "PascalCase class names `W11BB01Form` and `SqlResultSet` appear in the s4 code example but are absent from s4's hints array.",
+      "source_evidence": "Source code in like条件 section: `W11BB01Form form = new W11BB01Form();` and `SqlResultSet rs = select.retrieve(form);`"
+    }
+  ]
+}

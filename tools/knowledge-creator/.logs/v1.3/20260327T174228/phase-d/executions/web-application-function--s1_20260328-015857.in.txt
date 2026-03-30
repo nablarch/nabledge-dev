@@ -1,0 +1,467 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/CustomTag/function.rst`
+- Format: `rst`
+
+```
+.. _`howto_file_download`:
+
+------------------------------------------------------------------------------------------------
+ファイルダウンロードの実現方法
+------------------------------------------------------------------------------------------------
+ファイルダウンロードは、下記のタグとHttpResponseを継承したユーティリティクラスを使用する。
+
+**タグ**
+
+* downloadSubmit
+* downloadButton
+* downloadLink
+
+**ユーティリティクラス**
+
+* StreamResponse
+* DataRecordResponse
+
+ファイルのダウンロード方法
+==========================================================================================
+ボタンが押されたらサーバ上のファイルをダウンロードする場合の実装例を示す。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           downloadButtonタグを使用してダウンロードボタンを実装する。 --%>
+     <n:downloadButton uri="/action/ss11AC/W11AC02Action/TempFile" name="tempFile">ダウンロード</n:downloadButton>
+
+* アクションの実装例
+
+  .. code-block:: java
+
+    /* 【説明】JavaDocは省略。 */
+    public HttpResponse doTempFile(HttpRequest request, ExecutionContext context) {
+
+        /* 【説明】
+            ファイルを取得する処理はプロジェクトの実装方式に従う。*/
+        File file = getTempFile();
+
+        /* 【説明】
+            FileのダウンロードにはStreamResponseクラスを使用する。
+            コンストラクタ引数にダウンロード対象のファイルと
+            リクエスト処理の終了時にファイルを削除する場合はtrue、削除しない場合はfalseを指定する。
+            ファイルの削除はフレームワークが行う。
+            通常ダウンロード用のファイルはダウンロード後に不要となるためtrueを指定する。*/
+        StreamResponse response = new StreamResponse(file, true);
+
+        /* 【説明】
+            Content-Typeヘッダ、Content-Dispositionヘッダを設定する。*/
+        response.setContentType("text/plain; charset=UTF-8");
+        response.setContentDisposition(file.getName());
+
+        return response;
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+BLOB型カラムのダウンロード方法
+==========================================================================================
+下記テーブル定義に対して、行データ毎にリンクを表示し、\
+選択されたリンクに対応するデータをダウンロードする場合の実装例を示す。
+
+ ==================== ==================== ==================== ====================
+ カラム(論理名)       カラム(物理名)       データ型             補足
+ ==================== ==================== ==================== ====================
+ ファイルID           FILE_ID              CHAR(3)              PK
+ ファイル名           FILE_NAME            NVARCHAR2(100)
+ ファイルデータ       FILE_DATA            BLOB
+ ==================== ==================== ==================== ====================
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           recordsという名前で行データのリストが
+           リクエストスコープに設定されているものとする。 --%>
+     <c:forEach var="record" items="${records}" varStatus="status">
+         <n:set var="fileId" name="record.fileId" />
+         <div>
+             <%-- downloadLinkタグを使用してリンクを実装する。 --%>
+             <n:downloadLink uri="/action/ss11AC/W11AC02Action/BlobColumn" name="blobColumn_${status.index}">
+                 <n:write name="record.fileName" />(<n:write name="fileId" />)
+                 <%-- 選択されたリンクを判別するためにfileIdパラメータをparamタグで設定する。 --%>
+                 <n:param paramName="fileId" name="fileId" />
+             </n:downloadLink>
+         </div>
+     </c:forEach>
+
+* アクションの実装例
+
+  .. code-block:: java
+
+    /* 【説明】JavaDocは省略。 */
+    public HttpResponse doBlobColumn(HttpRequest request, ExecutionContext context) {
+
+        /* 【説明】
+            fileIdパラメータを使用して選択されたリンクに対応する行データを取得する。 */
+        SqlRow record = getRecord(request);
+
+        /* 【説明】
+            BlobのダウンロードにはStreamResponseクラスを使用する。*/
+        StreamResponse response = new StreamResponse((Blob) record.get("FILE_DATA"));
+
+        /* 【説明】
+            Content-Typeヘッダ、Content-Dispositionヘッダを設定する。*/
+        response.setContentType("image/jpeg");
+        response.setContentDisposition(record.getString("FILE_NAME"));
+
+        return response;
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+データレコードのダウンロード方法
+==========================================================================================
+下記テーブル定義に対して、全データをCSV形式でダウンロードする場合の使用例を示す。
+
+ ==================== ==================== ==================== ====================
+ カラム(論理名)       カラム(物理名)       データ型             補足
+ ==================== ==================== ==================== ====================
+ メッセージID         MESSAGE_ID           CHAR(8)              PK
+ 言語                 LANG                 CHAR(2)              PK
+ メッセージ           MESSAGE              NVARCHAR2(200)
+ ==================== ==================== ==================== ====================
+
+データレコードのダウンロードでは、データレコードをフォーマットした上でダウンロードを行うため、\
+フォーマットに使用するフォーマット定義ファイルを作成する必要がある。\
+フォーマット定義ファイルの配置場所はプロジェクトの実装方針に従う。
+            
+* フォーマット定義の実装例
+
+  .. code-block:: bash
+
+     # 【説明】
+     #  N11AA001.fmtというファイル名でプロジェクトで規定された場所に配置する。
+     
+     #-------------------------------------------------------------------------------
+     # メッセージ一覧のCSVファイルフォーマット
+     #-------------------------------------------------------------------------------
+     file-type:        "Variable"
+     text-encoding:    "Shift_JIS" # 文字列型フィールドの文字エンコーディング
+     record-separator: "\n"        # レコード区切り文字
+     field-separator:  ","         # フィールド区切り文字
+     
+     [header]
+     1   messageId    N "メッセージID"
+     2   lang         N "言語"
+     3   message      N "メッセージ"
+     
+     [data]
+     1   messageId    X # メッセージID
+     2   lang         X # 言語
+     3   message      N # メッセージ
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           downloadSubmitタグを使用してダウンロードボタンを実装する。 --%>
+     <n:downloadSubmit type="button" uri="/action/ss11AC/W11AC02Action/CsvDataRecord"
+                       name="csvDataRecord" value="ダウンロード" />
+
+* アクションの実装例
+
+  .. code-block:: java
+
+    /* 【説明】JavaDocは省略。 */
+    public HttpResponse doCsvDataRecord(HttpRequest request, ExecutionContext context) {
+
+        /* 【説明】
+            レコードを取得する。*/
+        SqlResultSet records = getRecords(request);
+
+        /* 【説明】
+            データレコードのダウンロードにはDataRecordResponseクラスを使用する。
+            コンストラクタ引数にフォーマット定義のベースパス論理名と
+            フォーマット定義のファイル名を指定する。*/
+        DataRecordResponse response = new DataRecordResponse("format", "N11AA001");
+
+        /* 【説明】
+            DataRecordResponseのwrite(String recordType, Map<String, ?> record)メソッド
+            を使用してヘッダーを書き込む。
+            フォーマット定義に指定したデフォルトのヘッダー情報を使用するため、
+            空のマップを指定する。*/
+        response.write("header", Collections.<String, Object>emptyMap());
+
+        /* 【説明】
+            DataRecordResponseのwrite(String recordType, Map<String, ?> record)メソッド
+            を使用してレコードを書き込む。*/
+        for (SqlRow record : records) {
+            /* 【説明】レコードを編集する場合はここで行う。 */
+            response.write("data", record);
+        }
+
+        /* 【説明】
+            Content-Typeヘッダ、Content-Dispositionヘッダを設定する。*/
+        response.setContentType("text/csv; charset=Shift_JIS");
+        response.setContentDisposition("メッセージ一覧.csv");
+
+        return response;
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+別ウィンドウを開きダウンロードを開始したい場合
+==========================================================================================
+リクエストを受け付けてからダウンロードが開始するまでに処理時間がかかってしまう場合など、\
+ユーザにダウンロードのサブミットを送信したことを視覚的に伝達するために、\
+ダウンロードボタンを押すと別ウィンドウが開きダウンロードを開始したい場合がある。
+
+ここでは、別ウィンドウを開きダウンロードを開始したい場合の実装例を示す。
+
+* 別ウィンドウを開くためのJSPの実装例
+
+  別ウィンドウを開くための実装は、 :ref:`howto_open_multi_window` で説明した実装方法で行う。
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           ポップアップタグを使用して別ウィンドウを開く。--%>
+     <n:popupButton uri="/action/ss11AC/W11AC02Action/ShowSub" name="showSub">
+         ダウンロード
+     </n:popupButton>
+
+* ダウンロードを開始する別ウィンドウのJSPの実装例
+
+  画面表示後にすぐにダウンロードを開始するため、\
+  ダウンロード用のフォームを実装し、onloadイベントでサブミットを行う。
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           指定されたname属性を持つ要素のonclickイベントを発生させる
+           doOnclick関数を指定する。--%>
+     <body onload="doOnclick('submit');">
+         <h1><n:write name="title" /></h1>
+         <p>ダウンロードを開始します。</p>
+         <n:errors filter="global" />
+         <n:form name="downloadForm">
+             <%-- 【説明】
+                   ダウンロードボタンを表示したくない場合は、
+                   「style="display: none;"」などCSSを使用する。 --%>
+             <n:downloadSubmit type="button" uri="/action/ss11AC/W11AC02Action/TempFile"
+                               name="submit" value="ダウンロード"
+                               allowDoubleSubmission="false" />
+             <n:button uri="#" name="close" onclick="window.close();"
+                       displayMethod="NORMAL">閉じる</n:button>
+         </n:form>
+     </body>
+
+* JavaScriptの実装例
+
+  .. code-block:: javascript
+
+     /**
+      * 指定されたname属性を持つ要素のonclickイベントを発生させる。
+      * @param name onclickイベントを発生させる要素のname属性
+      */
+     function doOnclick(name) {
+         var element = document.getElementsByName(name)[0];
+         if (element.fireEvent) { // for IE
+             element.fireEvent("onclick");
+         } else if (document.createEvent) { // for not IE
+             var evt = document.createEvent("MouseEvents");
+             var bubbles = false;
+             var cancelable = true;
+             evt.initEvent("click", bubbles, cancelable);
+             element.dispatchEvent(evt);
+         } else { // just in case
+             element.onclick();
+         }
+     }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _`howto_file_upload`:
+
+------------------------------------------------------------------------------------------------
+```
+
+## Knowledge File
+
+- ID: `web-application-function--s1`
+
+```json
+{
+  "id": "web-application-function--s1",
+  "title": "ファイルダウンロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadButton",
+        "ファイルダウンロード",
+        "setContentDisposition",
+        "setContentType",
+        "downloadSubmit",
+        "downloadLink",
+        "DataRecordResponse"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "BLOB型カラムのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadLink",
+        "BLOBダウンロード",
+        "BLOB",
+        "setContentDisposition",
+        "n:param",
+        "SqlRow",
+        "Blob"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データレコードのダウンロード方法",
+      "hints": [
+        "DataRecordResponse",
+        "downloadSubmit",
+        "CSVダウンロード",
+        "データレコードダウンロード",
+        "フォーマット定義ファイル",
+        "Variable",
+        "Shift_JIS",
+        "N11AA001",
+        "field-separator",
+        "record-separator",
+        "SqlResultSet"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "別ウィンドウを開きダウンロードを開始したい場合",
+      "hints": [
+        "別ウィンドウダウンロード",
+        "popupButton",
+        "doOnclick",
+        "allowDoubleSubmission",
+        "onload",
+        "downloadSubmit",
+        "fireEvent",
+        "dispatchEvent"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルダウンロードに使用するタグとユーティリティクラス:\n\n**タグ**: `downloadSubmit`, `downloadButton`, `downloadLink`\n\n**クラス**: `StreamResponse`, `DataRecordResponse`\n\n## ファイルのダウンロード方法\n\n- JSP: `downloadButton`タグを使用\n- Action: `StreamResponse`クラスを使用\n\n```jsp\n<n:downloadButton uri=\"/action/ss11AC/W11AC02Action/TempFile\" name=\"tempFile\">ダウンロード</n:downloadButton>\n```\n\n```java\nStreamResponse response = new StreamResponse(file, true);\nresponse.setContentType(\"text/plain; charset=UTF-8\");\nresponse.setContentDisposition(file.getName());\nreturn response;\n```\n\n`StreamResponse(File file, boolean deleteOnClose)`: 第2引数`true`=ダウンロード後にファイルを削除（フレームワークが削除）、`false`=削除しない。",
+    "s2": "BLOB型カラムのダウンロード方法:\n\n- JSP: `downloadLink`タグを使用、`n:param`タグで行IDパラメータを渡す\n- Action: `StreamResponse(Blob)`を使用\n\n```jsp\n<n:downloadLink uri=\"/action/ss11AC/W11AC02Action/BlobColumn\" name=\"blobColumn_${status.index}\">\n    <n:write name=\"record.fileName\" />(<n:write name=\"fileId\" />)\n    <n:param paramName=\"fileId\" name=\"fileId\" />\n</n:downloadLink>\n```\n\n```java\nSqlRow record = getRecord(request);\nStreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\nresponse.setContentType(\"image/jpeg\");\nresponse.setContentDisposition(record.getString(\"FILE_NAME\"));\nreturn response;\n```",
+    "s3": "データレコードをフォーマットしてダウンロードするには、フォーマット定義ファイルが必要（配置場所はプロジェクトの実装方針に従う）。\n\n### フォーマット定義ファイルの例 (N11AA001.fmt)\n\n```\nfile-type:        \"Variable\"\ntext-encoding:    \"Shift_JIS\"\nrecord-separator: \"\\n\"\nfield-separator:  \",\"\n\n[header]\n1   messageId    N \"メッセージID\"\n2   lang         N \"言語\"\n3   message      N \"メッセージ\"\n\n[data]\n1   messageId    X\n2   lang         X\n3   message      N\n```\n\n- JSP: `downloadSubmit`タグを使用\n- Action: `DataRecordResponse(\"format\", \"N11AA001\")`を使用\n\n```jsp\n<n:downloadSubmit type=\"button\" uri=\"/action/ss11AC/W11AC02Action/CsvDataRecord\"\n                  name=\"csvDataRecord\" value=\"ダウンロード\" />\n```\n\n```java\nSqlResultSet records = getRecords(request);\nDataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\nresponse.write(\"header\", Collections.<String, Object>emptyMap());\nfor (SqlRow record : records) {\n    response.write(\"data\", record);\n}\nresponse.setContentType(\"text/csv; charset=Shift_JIS\");\nresponse.setContentDisposition(\"メッセージ一覧.csv\");\nreturn response;\n```\n\n`DataRecordResponse.write(String recordType, Map<String, ?> record)`: ヘッダーのデフォルト値を使用する場合は空マップ`Collections.emptyMap()`を指定。",
+    "s4": "リクエストからダウンロード開始まで時間がかかる場合など、ユーザに視覚的に伝達するために別ウィンドウを開いてダウンロードを開始する。\n\n1. 親画面: `n:popupButton`タグで別ウィンドウを開く\n2. 別ウィンドウ: `onload`イベントでダウンロードフォームを自動サブミット\n3. `downloadSubmit`の`allowDoubleSubmission=\"false\"`を指定\n4. `doOnclick(name)`: 指定された`name`属性の要素のonclickイベントを発生させるJavaScript関数（IE対応含むクロスブラウザ実装）\n\n```jsp\n<%-- 親画面 --%>\n<n:popupButton uri=\"/action/ss11AC/W11AC02Action/ShowSub\" name=\"showSub\">ダウンロード</n:popupButton>\n```\n\n```jsp\n<%-- 別ウィンドウ --%>\n<body onload=\"doOnclick('submit');\">\n    <n:downloadSubmit type=\"button\" uri=\"/action/ss11AC/W11AC02Action/TempFile\"\n                      name=\"submit\" value=\"ダウンロード\" allowDoubleSubmission=\"false\" />\n    <n:button uri=\"#\" name=\"close\" onclick=\"window.close();\" displayMethod=\"NORMAL\">閉じる</n:button>\n</body>\n```\n\n```javascript\nfunction doOnclick(name) {\n    var element = document.getElementsByName(name)[0];\n    if (element.fireEvent) { // for IE\n        element.fireEvent(\"onclick\");\n    } else if (document.createEvent) { // for not IE\n        var evt = document.createEvent(\"MouseEvents\");\n        var bubbles = false;\n        var cancelable = true;\n        evt.initEvent(\"click\", bubbles, cancelable);\n        element.dispatchEvent(evt);\n    } else { // just in case\n        element.onclick();\n    }\n}\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

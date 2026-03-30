@@ -1,0 +1,20 @@
+{
+  "file_id": "toolbox-PublishedApiConfigGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — Ant Javadocタスクの設定方法 code example",
+      "description": "The knowledge file's code example shows only the `<javadoc>` block, omitting the preceding `<path id=\"lib.path\">` definition that configures the required classpath (nablarch.jar, nablarch-toolbox.jar, tools.jar). This definition is what makes `pathref=\"lib.path\"` in the doclet tag work and is part of the tool's required configuration.",
+      "source_evidence": "Source includes: `<path id=\"lib.path\"><pathelement location=\"main/web/WEB-INF/lib/nablarch.jar\" /><pathelement location=\"tool_lib/nablarch-toolbox.jar\" /><pathelement location=\"tool_lib/tools.jar\" /></path>` before the `<javadoc>` block, with a note that the example shows only the settings required for this tool."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2",
+      "description": "The source 使用方法 H2 section exceeds 2000 characters of plain text and contains an H3 subsection (Ant Javadocタスクの設定方法), but the knowledge file merges both into a single section s2 without creating a separate s3 for the Ant subsection.",
+      "source_evidence": "Source headings: H2 '使用方法' (large section with argument tables, output target rules, etc.) followed by H3 'Ant Javadocタスクの設定方法' (its own configuration table and full code example)."
+    }
+  ]
+}

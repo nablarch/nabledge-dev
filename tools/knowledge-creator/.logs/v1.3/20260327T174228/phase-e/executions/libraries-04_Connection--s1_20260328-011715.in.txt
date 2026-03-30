@@ -1,0 +1,422 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_Connection--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "PascalCase class names `SqlPStatement` and `SqlResultSet` appear in the Java code example in s5 but are absent from s5 hints.",
+      "source_evidence": "Source Java code: `SqlPStatement prepared = connection.prepareStatement(query);` and `SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(...)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "The closing comment inside the Java code block explaining that `doTransaction()` invokes the `execute` method as a callback is omitted. This comment conveys the callback mechanism of the framework pattern.",
+      "source_evidence": "Source code comment before `}.doTransaction();`: 「// SimpleDbTransactionExecutorを実装したクラスのdoTransactionを実行する。\\n// これにより、上記で説明したexecuteメソッドがコールバックされSQL文を簡易的に実行することが可能となる。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+--------------------------
+データベース接続部品の構造
+--------------------------
+本章では、データベース接続部分についての解説を行う。
+
+本機能で提供する接続方式については、 :ref:`db-summary-label` を参照すること。
+
+クラス図
+========
+.. image:: ../_images/04/DbAccessSpec_ConnectionClassDesign.jpg
+   :scale: 60
+
+
+各クラスの責務
+--------------
+インタフェース定義
+^^^^^^^^^^^^^^^^^^
+=========================================================== =======================================================================================
+インタフェース名                                            概要
+=========================================================== =======================================================================================
+nablarch.core.db.connectionパッケージ
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ConnectionFactory                                           データベース接続を生成するインターフェース。
+
+                                                            データベース接続方式を追加する場合や、 :ref:`実装クラス<db-connectionFactory-sub-label>` で生成されるBasicDbConnectionを入れ替える場合には、
+                                                            本インタフェースの実装クラスを追加する必要がある。
+
+AppDbConnection                                             データベース接続を保持したインタフェース。
+
+                                                            アプリケーションでは、本インタフェースを使用して、SQL文実行用オブジェクトを取得する。
+
+TransactionManagerConnection                                トランザクション制御を行うインタフェース(AppDbConnectionのサブインタフェース)。
+
+                                                            本機能の特徴である :ref:`リソース解放機能<db-feature-2-label>` は、本インタフェースの実装クラスで提供される。
+
+
+DbAccessExceptionFactory                                    データベースへのアクセス例外に応じたDbAccessExceptionを生成するインタフェース。
+
+                                                            データベースアクセス時に発生したSQLExceptionの内容（エラーコードなど）を元に、
+                                                            DbAccessExceptionを生成する。
+=========================================================== =======================================================================================
+
+クラス定義
+^^^^^^^^^^
+
+.. _db-connectionFactory-sub-label:
+
+\a) nablarch.core.db.connection.ConnectionFactoryの実装クラス
+
+ =========================================================== =======================================================================================
+ クラス名                                                    概要
+ =========================================================== =======================================================================================
+ nablarch.core.db.connectionパッケージ
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+ ConnectionFactorySupport                                    ConnectionFactoryインタフェースを実装したクラスをサポートするクラス。
+
+                                                             本クラスの実装は、サブクラスで必要となる共通設定を保持するのみである。
+
+ BasicDbConnectionFactoryForJndi                             .. _BasicDbConnectionFactoryForJndi-class-label:
+ 
+                                                             JNDI経由でWebアプリケーションサーバ等からデータベース接続(java.sql.Connection)を取得し、
+                                                             BasicDbConnectionを生成するクラス。
+
+                                                             JNDI経由でデータベース接続を取得するための情報は、
+                                                             :doc:`../02_Repository` を使用して本クラスに設定をする必要がある。
+                                                             設定ファイルの記述方法は、 :ref:`database-connection-config-from-jndi-label` を参照すること。
+
+ BasicDbConnectionFactoryForDataSource                       .. _BasicDbConnectionFactoryForDataSource-class-label:
+                                                             
+                                                             javax.sql.DataSourceからデータベース接続(java.sql.Connection)を取得し、
+                                                             BasicDbConnectionを生成するクラス。
+                                                             
+                                                             javax.sql.DataSourceは、 :doc:`../02_Repository` を使用して本クラスに設定をする必要がある。
+                                                             設定ファイルの記述方法は、 :ref:`db-connection-config-label` を参照すること。
+ =========================================================== =======================================================================================
+
+\b) nablarch.core.db.connection.TransactionManagerConnectionの実装クラス
+
+ =========================================================== =======================================================================================
+ クラス名                                                    概要
+ =========================================================== =======================================================================================
+ nablarch.core.db.connectionパッケージ
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+ BasicDbConnection                                           TransactionManagerConnection(AppDbConnection)の基本実装クラス。
+
+                                                             .. note::
+                                                               本クラスは、データベースベンダー非依存の実装となっている。
+
+                                                               各プロジェクトにおいて、データベースベンダーに依存するような実装が出てきた場合には、
+                                                               TransactionManagerConnectionの実装クラスを新たに追加し、本クラスから差し替えて使用すること。
+ =========================================================== =======================================================================================
+
+\c) DbAccessExceptionFactory関連クラス
+
+ =========================================================== =======================================================================================
+ クラス名                                                                                概要
+ =========================================================== =======================================================================================
+ nablarch.core.db.connection.exceptionパッケージ
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+ BasicDbAccessExceptionFactory                               DbAccessExceptionFactoryの基本実装クラス。
+
+                                                             データベースアクセス例外がデータベースとの接続が切断したことを示す例外の場合、
+                                                             DbConnectionExceptionを送出する。
+                                                             これ以外の例外の場合には、DbAccessExceptionを送出する。
+
+                                                             .. note::
+
+                                                               データベースとの接続が切断されたか否かは、本クラスに設定されたSQL文を実行して確認する。
+                                                               SQL文の実行に失敗した場合には、データベースとの接続が切れていると判断し、
+                                                               DbConnectionExceptionを送出する。
+                                                               SQL文の実行に成功した場合には、データベースとの接続が切れていないと判断し、
+                                                               DbAccessExceptionを送出する。
+
+                                                               本クラスに設定されたSQL文が実行不可能(構文エラーやオブジェクトが存在しない場合)な
+                                                               場合には、必ずSQL文の実行に失敗しDbConnectionExceptionが送出されるので注意すること。 
+
+
+ DbAccessException                                           データベース接続時に発生する例外クラス。
+
+                                                             データベース接続時に発生したSQLExceptionの内容により、本クラスのサブクラスが
+                                                             例外として送出される場合がある。
+
+ DbConnectionException                                       データベース接続が切断された場合に発生する例外クラス。
+
+                                                             本クラスは、DbAccessExceptionのサブクラス。
+
+ =========================================================== =======================================================================================
+
+
+\d) その他のクラス
+
+ =========================================================== =======================================================================================
+ クラス名                                                                                概要
+ =========================================================== =======================================================================================
+ nablarch.core.db.transactionパッケージ
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+ SimpleDbTransactionManager                                  簡易的にトランザクション制御を行うクラス。
+
+                                                             本クラスを使用して、トランザクションを開始するとAppDbConnectionが生成され、DbConnectionContextに設定される。
+
+ SimpleDbTransactionExecutor                                 SimpleDbTransactionManagerを使用してSQL文を実行するための抽象クラス。
+
+                                                             本クラス経由でSQL文を実行することにより、全ての機能で統一的な例外処理を提供することが出来る。
+
+
+ nablarch.core.db.connectionパッケージ
+ ---------------------------------------------------------------------------------------------------------------------------------------------------
+ DbConnectionContext                                         AppDbConnectionをThreadLocalで保持するクラス。
+
+                                                             保持するAppDbConnectionには、任意の名前(データベースコネクション名)を付加することができる。
+
+                                                             .. _db-connection-name-label:
+
+                                                               データベースコネクション名の詳細は、下記ドキュメントを参照
+
+                                                               .. toctree::
+                                                                 :maxdepth: 2
+                                                                 :numbered:
+                                                                 :glob:
+
+                                                                 04_TransactionConnectionName
+
+                                                               .. attention::
+                                                                 ThreadLocalでAppDbConnectionが管理されるため、アプリケーションのスレッドと同一のスレッドでAppDbConnectionを設定する必要がある。
+                                                                 マルチスレッド環境では、各スレッドに対してAppDbConnectionを設定する必要があるため、注意が必要である。
+ =========================================================== =======================================================================================
+
+
+
+トランザクション制御、データベースアクセスの使用例
+==================================================
+
+処理シーケンス
+--------------
+.. image:: ../_images/04/DbAccessSpec_ConnectionSequence.jpg
+   :scale: 70
+
+
+Javaの実装例
+------------
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // SimpleDbTransactionManagerは、フレームワーク専用のトランザクション制御クラスである。
+    // このため、アプリケーションプログラマがSimpleDbTransactionManagerや、
+    // SimpleDbTransactionExecutorを参照する下記のような実装を行うことはない。
+
+    // リポジトリからSimpleDbTransactionManagerを取得する。
+    // （SimpleDbTransactionManagerは、setterインジェクションでインジェクションを行うか本サンプルのようにリポジトリから取得する。)
+    SimpleDbTransactionManager transactionManager = (SimpleDbTransactionManager) SystemRepository.getObject("transactionManager");
+
+    // SimpleDbTransactionExecutorを継承し、executeメソッドを実装する。
+    // executeメソッドでは、パラメータのデータベース接続を使用してSQL文を実行する。
+    SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(
+            transactionManager) {
+        @Override
+        public SqlResultSet execute(AppDbConnection connection) {
+            SqlPStatement prepared = connection.prepareStatement(query);
+            int parameterIndex = 1;
+            prepared.setString(parameterIndex++, requestId);
+            prepared.setString(parameterIndex,
+                    requestTableServiceAvailableOkStatus);
+            return prepared.retrieve();
+        }
+    // SimpleDbTransactionExecutorを実装したクラスのdoTransactionを実行する。
+    // これにより、上記で説明したexecuteメソッドがコールバックされSQL文を簡易的に実行することが可能となる。
+    }.doTransaction();
+
+
+.. attention::
+  SimpleDbTransactionExecutorを使用してSQL文を実行するのは、既に開始されている業務トランザクション以外のトランザクションを使用してSQL文を実行する場合である。
+  主に、Webアプリケーションの認証機能や開閉局チェック機能のように、ビジネスロジックとは異なる独立したトランザクションが必要となるコンポーネントで使用する。
+
+.. _db-connection-config-label:
+
+設定ファイル例(DataSourceを使用してデータベース接続を行う場合)
+==============================================================
+本設定ファイルは、 :ref:`DataSourceからデータベース接続を取得する場合の<BasicDbConnectionFactoryForDataSource-class-label>` 設定例となっている。
+:ref:`JNDI経由でデータベース接続を取得する場合<BasicDbConnectionFactoryForJndi-class-label>` は、 :ref:`database-connection-config-from-jndi-label` を参照すること。
+
+.. code-block:: xml
+
+    <!-- SimpleDbTransactionManagerの設定 -->
+    <component name="transactionManager" class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+        <!-- ConnectionFactoryを実装したクラスの設定 -->
+        <property name="connectionFactory">
+
+            <!-- DataSourceからConnectionを取得するBasicDbConnectionFactoryForDataSourceを設定 -->
+            <component class="nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource">
+                <property name="statementReuse" value="true"/>
+
+                <!-- DataSourceには、Oracleのデータソースを設定 -->
+                <property name="dataSource">
+                    <component class="oracle.jdbc.pool.OracleDataSource">
+                        <property name="user" value="ssd"/>
+                        <property name="password" value="ssd"/>
+                        <property name="URL"
+                                  value="jdbc:oracle:thin:ssd/ssd@localhost:1521/xe"/>
+                    </component>
+                </property>
+
+                <!-- statementFactoryを実装したクラスの設定 -->
+                <property name="statementFactory">
+                    <component name="statementFactory"
+                               class="nablarch.core.db.statement.BasicStatementFactory">
+                        <property name="fetchSize" value="500"/>
+                        <property name="queryTimeout" value="600" />
+                        <property name="sqlStatementExceptionFactory">
+                            <component class="nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory">
+                                <property name="duplicateErrorSqlState" value=""/>
+                                <property name="duplicateErrorErrCode" value="1"/>
+                            </component>
+                        </property>
+                    </component>
+                </property>
+
+                <!-- DbAccessExceptionFactoryを実装したクラスの設定 -->
+                <property name="dbAccessExceptionFactory">
+                    <component name="dbAccessExceptionFactory" class="nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory">
+                        <property name="sql" value="select * from dual" />
+                    </component>
+                </property>
+
+            </component>
+        </property>
+
+        <!-- TransactionFactoryを実装したクラスの設定 -->
+        <property name="transactionFactory">
+            <component class="nablarch.core.db.transaction.JdbcTransactionFactory">
+                <property name="isolationLevel" value="READ_COMMITTED"/>
+                <property name="initSqlList">
+                    <list>
+                        <value>ALTER SESSION SET NLS_TIMESTAMP_FORMAT = 'yyyy-mm-dd hh24:mi:ss.ff'</value>
+                    </list>
+                </property>
+            </component>
+        </property>
+        <property name="dbTransactionName" value="generator-transaction"/>
+    </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_Connection--s1",
+  "title": "データベース接続部品の構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベース接続部品の構造",
+      "hints": [
+        "データベース接続部品",
+        "ConnectionFactory",
+        "AppDbConnection",
+        "TransactionManagerConnection",
+        "DbConnectionContext",
+        "クラス図"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "各クラスの責務",
+      "hints": [
+        "ConnectionFactory",
+        "AppDbConnection",
+        "TransactionManagerConnection",
+        "DbAccessExceptionFactory",
+        "データベース接続インターフェース",
+        "トランザクション制御",
+        "リソース解放"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "nablarch.core.db.connectionパッケージ",
+      "hints": [
+        "BasicDbConnectionFactoryForJndi",
+        "BasicDbConnectionFactoryForDataSource",
+        "ConnectionFactorySupport",
+        "BasicDbConnection",
+        "BasicDbAccessExceptionFactory",
+        "DbAccessException",
+        "DbConnectionException",
+        "SimpleDbTransactionManager",
+        "SimpleDbTransactionExecutor",
+        "DbConnectionContext",
+        "データベース接続実装クラス",
+        "ThreadLocal"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "処理シーケンス",
+      "hints": [
+        "処理シーケンス",
+        "データベース接続処理フロー",
+        "SimpleDbTransactionManager",
+        "トランザクション制御フロー"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Javaの実装例",
+      "hints": [
+        "SimpleDbTransactionExecutor",
+        "SimpleDbTransactionManager",
+        "BasicDbConnectionFactoryForDataSource",
+        "BasicStatementFactory",
+        "BasicDbAccessExceptionFactory",
+        "BasicSqlStatementExceptionFactory",
+        "JdbcTransactionFactory",
+        "DataSource設定",
+        "Java実装例",
+        "XML設定例",
+        "doTransaction"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本機能で提供する接続方式については、:ref:`db-summary-label` を参照すること。\n\n![データベース接続部品クラス図](assets/libraries-04_Connection--s1/DbAccessSpec_ConnectionClassDesign.jpg)",
+    "s2": "**パッケージ**: `nablarch.core.db.connection`\n\n| インタフェース名 | 概要 |\n|---|---|\n| `ConnectionFactory` | DB接続を生成するインターフェース。接続方式追加や :ref:`実装クラス<db-connectionFactory-sub-label>` で生成されるBasicDbConnectionを差替える場合、本インターフェースの実装クラスを追加する必要がある。 |\n| `AppDbConnection` | DB接続を保持するインターフェース。アプリケーションからSQL文実行用オブジェクトを取得する際に使用。 |\n| `TransactionManagerConnection` | トランザクション制御インターフェース（AppDbConnectionのサブインターフェース）。:ref:`リソース解放機能<db-feature-2-label>` はこのインターフェースの実装クラスで提供される。 |\n| `DbAccessExceptionFactory` | DBアクセス例外に応じたDbAccessExceptionを生成するインターフェース。SQLExceptionのエラーコードなどを元にDbAccessExceptionを生成する。 |",
+    "s3": "**a) ConnectionFactory実装クラス** (`nablarch.core.db.connection`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `ConnectionFactorySupport` | ConnectionFactoryの実装クラスをサポートするクラス。サブクラスで必要な共通設定を保持するのみ。 |\n| `BasicDbConnectionFactoryForJndi` | JNDI経由でWebアプリケーションサーバ等からDB接続を取得しBasicDbConnectionを生成するクラス。設定方法は :ref:`database-connection-config-from-jndi-label` を参照。 |\n| `BasicDbConnectionFactoryForDataSource` | `javax.sql.DataSource` からDB接続を取得しBasicDbConnectionを生成するクラス。設定方法は :ref:`db-connection-config-label` を参照。 |\n\n**b) TransactionManagerConnection実装クラス** (`nablarch.core.db.connection`パッケージ)\n\n**クラス**: `BasicDbConnection`\nTransactionManagerConnection（AppDbConnection）の基本実装クラス。DBベンダー非依存の実装。ベンダー依存実装が必要な場合はTransactionManagerConnectionの実装クラスを新規追加して差替えること。\n\n**c) DbAccessExceptionFactory関連クラス** (`nablarch.core.db.connection.exception`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `BasicDbAccessExceptionFactory` | DbAccessExceptionFactoryの基本実装。設定されたSQL文を実行して接続切断を判定し、実行失敗時はDbConnectionException、成功時はDbAccessExceptionを送出する。 |\n| `DbAccessException` | DBアクセス時例外クラス。SQLExceptionの内容によりサブクラスが送出される場合がある。 |\n| `DbConnectionException` | DB接続切断時例外クラス。DbAccessExceptionのサブクラス。 |\n\n> **注意**: BasicDbAccessExceptionFactoryに設定したSQL文が実行不可（構文エラー・オブジェクト不存在）な場合、必ずSQL実行に失敗しDbConnectionExceptionが送出される。\n\n**d) その他のクラス** (`nablarch.core.db.transaction`パッケージ)\n\n| クラス名 | 概要 |\n|---|---|\n| `SimpleDbTransactionManager` | 簡易トランザクション制御クラス。トランザクション開始時にAppDbConnectionが生成されDbConnectionContextに設定される。 |\n| `SimpleDbTransactionExecutor` | SimpleDbTransactionManagerを使用してSQL文を実行するための抽象クラス。全機能で統一的な例外処理を提供。 |\n\n`nablarch.core.db.connection`パッケージ:\n\n**クラス**: `DbConnectionContext`\nAppDbConnectionをThreadLocalで保持するクラス。任意の名前（データベースコネクション名）を付加できる。詳細は :doc:`04_TransactionConnectionName` を参照。\n\n> **注意**: ThreadLocalでAppDbConnectionが管理されるため、アプリケーションスレッドと同一スレッドでAppDbConnectionを設定する必要がある。マルチスレッド環境では各スレッドに対してAppDbConnectionを設定すること。",
+    "s4": "![処理シーケンス図](assets/libraries-04_Connection--s1/DbAccessSpec_ConnectionSequence.jpg)",
+    "s5": "> **注意**: SimpleDbTransactionExecutorを使用するのは、既に開始されている業務トランザクション以外のトランザクションを使用してSQL文を実行する場合。主にWebアプリケーションの認証機能や開閉局チェック機能のような、ビジネスロジックとは異なる独立したトランザクションが必要なコンポーネントで使用する。\n\n```java\n// ******** 注意 ********\n// SimpleDbTransactionManagerは、フレームワーク専用のトランザクション制御クラスである。\n// このため、アプリケーションプログラマがSimpleDbTransactionManagerや、\n// SimpleDbTransactionExecutorを参照する下記のような実装を行うことはない。\n\n// リポジトリからSimpleDbTransactionManagerを取得\nSimpleDbTransactionManager transactionManager =\n    (SimpleDbTransactionManager) SystemRepository.getObject(\"transactionManager\");\n\n// SimpleDbTransactionExecutorを継承しexecuteメソッドを実装\nSqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(transactionManager) {\n    @Override\n    public SqlResultSet execute(AppDbConnection connection) {\n        SqlPStatement prepared = connection.prepareStatement(query);\n        int parameterIndex = 1;\n        prepared.setString(parameterIndex++, requestId);\n        prepared.setString(parameterIndex, requestTableServiceAvailableOkStatus);\n        return prepared.retrieve();\n    }\n}.doTransaction();\n```\n\nDataSourceを使用する設定例 (:ref:`db-connection-config-label`):\n\n```xml\n<component name=\"transactionManager\" class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n    <property name=\"connectionFactory\">\n        <component class=\"nablarch.core.db.connection.BasicDbConnectionFactoryForDataSource\">\n            <property name=\"statementReuse\" value=\"true\"/>\n            <property name=\"dataSource\">\n                <component class=\"oracle.jdbc.pool.OracleDataSource\">\n                    <property name=\"user\" value=\"ssd\"/>\n                    <property name=\"password\" value=\"ssd\"/>\n                    <property name=\"URL\" value=\"jdbc:oracle:thin:ssd/ssd@localhost:1521/xe\"/>\n                </component>\n            </property>\n            <property name=\"statementFactory\">\n                <component name=\"statementFactory\"\n                           class=\"nablarch.core.db.statement.BasicStatementFactory\">\n                    <property name=\"fetchSize\" value=\"500\"/>\n                    <property name=\"queryTimeout\" value=\"600\" />\n                    <property name=\"sqlStatementExceptionFactory\">\n                        <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n                            <property name=\"duplicateErrorSqlState\" value=\"\"/>\n                            <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n                        </component>\n                    </property>\n                </component>\n            </property>\n            <property name=\"dbAccessExceptionFactory\">\n                <component name=\"dbAccessExceptionFactory\"\n                           class=\"nablarch.core.db.connection.exception.BasicDbAccessExceptionFactory\">\n                    <property name=\"sql\" value=\"select * from dual\" />\n                </component>\n            </property>\n        </component>\n    </property>\n    <property name=\"transactionFactory\">\n        <component class=\"nablarch.core.db.transaction.JdbcTransactionFactory\">\n            <property name=\"isolationLevel\" value=\"READ_COMMITTED\"/>\n            <property name=\"initSqlList\">\n                <list>\n                    <value>ALTER SESSION SET NLS_TIMESTAMP_FORMAT = 'yyyy-mm-dd hh24:mi:ss.ff'</value>\n                </list>\n            </property>\n        </component>\n    </property>\n    <property name=\"dbTransactionName\" value=\"generator-transaction\"/>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

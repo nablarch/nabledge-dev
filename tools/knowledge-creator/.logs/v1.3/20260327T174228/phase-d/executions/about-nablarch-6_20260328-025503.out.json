@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — DB2大サイズ case subheading",
+      "description": "The subheading reads「サイズが大きい場合（ヒープ展開不可）」, but the source says「ヒープサイズから見てメモリ上に展開されることが好ましくない」(not preferable/desirable). 「不可」(impossible/disabled) overstates the constraint — the source characterizes it as inadvisable, not technically impossible.",
+      "source_evidence": "「BLOBに格納される値のサイズが大きい場合（ヒープに展開されるとメモリが不足する可能性がある場合）」および「ヒープサイズから見てメモリ上に展開されることが好ましくない」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The PascalCase class name `ResultSet` (fully qualified: `java.sql.ResultSet`) appears in the section content for both the DB2 and SQLServer cases but is absent from the hints list.",
+      "source_evidence": "「java.sql.ResultSetがカレントレコードの場合のみBLOBのデータにアクセスできます」および「java.sql.ResultSetがカレントレコードの場合のみLONGVARBINARYのデータにアクセスできます」"
+    }
+  ]
+}

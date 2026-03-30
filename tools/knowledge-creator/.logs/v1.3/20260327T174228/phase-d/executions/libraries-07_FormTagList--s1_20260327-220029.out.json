@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_FormTagList--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s8 — namePrefix属性の説明",
+      "description": "namePrefixの動作メカニズムの詳細が省略されている。具体的には: (1) '.' でkeyNamesと結合してform.key1/form.key2のようなパスを構成すること、(2) 表示時はそのパスでリクエストスコープの値を参照してチェックボックスの値を出力すること、(3) サブミット後のリクエスト処理でform.key1/form.key2というリクエストパラメータから値が取得できること。これらはnamePrefixを正しく設定するために必要な実装情報。",
+      "source_evidence": "「この名称に '.' と keyNames で指定したキー名と合致する値を通常の name 属性と同様に取り扱う。例えば namePrefix に 'form' 、 keyNames に 'key1,key2' を指定した場合、表示時には form.key1、form.key2 でリクエストスコープに含まれる値を使用してこのチェックボックスの値を出力する。また、このチェックボックスを選択してサブミットしたリクエストの処理では、 form.key1 form.key2 というリクエストパラメータから選択された値が取得できる。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s8 — name属性の制約の説明",
+      "description": "知識ファイルでは「nameタグの名称は」と記述されているが、ソースは「本タグの name 属性には」と記述しており意味が異なる。「nameタグの名称」はHTMLの<name>タグのように誤読される可能性があり、正確には「このタグのname属性の値」を指している。",
+      "source_evidence": "「なお、本タグの name 属性には namePrefix 属性と keyNames 属性で指定したキーの組み合わせと異なる名称にしなければならない特殊な制約がある。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3, s5, s7, s9, s11",
+      "description": "これら5つのセクションのコンテンツはすべて「なし」(3文字)であり、50文字未満。RST上のアンカー位置を表すプレースホルダーとして意図的に作成されているが、各セクションがアンカーのみを表す旨の説明がなく、内容が空である。",
+      "source_evidence": "s5はRSTの `.. _WebView_SingleCheckBoxTag:` アンカー、s9は `.. _WebView_MultiSelectCustomTag:` と `.. _WebView_ListSelectCommon:` アンカーに対応するが、いずれもコンテンツなし。"
+    }
+  ]
+}

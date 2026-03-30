@@ -1,0 +1,64 @@
+{
+  "id": "biz-samples-03_ListSearchResult--s18",
+  "title": "検索結果の並び替え",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果の並び替え",
+      "hints": [
+        "ListSearchInfo",
+        "W11AC01SearchForm",
+        "listSearchSortSubmit",
+        "sortId",
+        "ascSortId",
+        "descSortId",
+        "sortCss",
+        "ascCss",
+        "descCss",
+        "defaultSort",
+        "listSearchInfoName",
+        "@PropertyName",
+        "@Required",
+        "並び替え",
+        "ソート",
+        "可変ORDER BY"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "1画面にすべての検索結果を一覧表示する場合の実装方法",
+      "hints": [
+        "ListSearchInfo",
+        "W11AC01SearchForm",
+        "DbAccessSupport",
+        "setMax",
+        "getMaxResultCount",
+        "usePaging",
+        "ページングなし",
+        "全件表示",
+        "1画面表示"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "デフォルトの検索条件で検索した結果を初期表示する場合の実装方法",
+      "hints": [
+        "ListSearchInfoUtil",
+        "setDefaultCondition",
+        "W11AC01SearchForm",
+        "TooManyResultException",
+        "SqlResultSet",
+        "デフォルト検索条件",
+        "初期表示",
+        "ウィンドウスコープ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 検索結果の並び替え\n\n並び替えは :ref:`ListSearchResult_ListSearchSortSubmitTag` と可変ORDER BY構文（ORDER BY句を動的に変更）を組み合わせて実現する。\n\n### 検索処理の実装方法\n\n`$sort (sortId)` 構文により、検索条件オブジェクトの`sortId`フィールドの値に応じてORDER BY句が動的に決まる。\n\n```sql\nSELECT ... FROM ... WHERE ...\n$sort (sortId) {\n    (kanjiName_asc  USR.KANJI_NAME, SA.LOGIN_ID)\n    (kanjiName_desc USR.KANJI_NAME DESC, SA.LOGIN_ID)\n    (kanaName_asc   USR.KANA_NAME, SA.LOGIN_ID)\n    (kanaName_desc  USR.KANA_NAME DESC, SA.LOGIN_ID) }\n```\n\n`ListSearchInfo`は`sortId`プロパティを持つ。並び替えを使用する場合は`sortId`を入力精査に含める。\n\n`ListSearchInfo`継承クラスの実装例（`W11AC01SearchForm`）:\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        setSortId((String) params.get(\"sortId\"));\n    }\n    @PropertyName(\"ソートID\")\n    @Required\n    public void setSortId(String sortId) {\n        super.setSortId(sortId);\n    }\n    private static final String[] SEARCH_COND_PROPS = new String[] { ..., \"sortId\"};\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\n### listSearchSortSubmitタグ\n\n並び替え用サブミット要素を出力するタグ。\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| sortCss | | nablarch_sort | サブミットのclass属性（常に出力） |\n| ascCss | | nablarch_asc | 昇順時に付加するCSSクラス（出力例: class=\"nablarch_sort nablarch_asc\"） |\n| descCss | | nablarch_desc | 降順時に付加するCSSクラス（出力例: class=\"nablarch_sort nablarch_desc\"） |\n| ascSortId | ○ | | 昇順ソートID |\n| descSortId | ○ | | 降順ソートID |\n| defaultSort | | asc | デフォルトのソート方向（asc/desc） |\n| label | ○ | | サブミットのラベル |\n| name | ○ | | タグのname属性（画面内で一意にすること） |\n| listSearchInfoName | ○ | | ListSearchInfoをリクエストスコープから取得する名前 |\n\nJSP実装例:\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    resultSetName=\"searchResult\"\n                    usePageNumberSubmit=\"true\"\n                    useLastSubmit=\"true\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>\n                <nbs:listSearchSortSubmit ascSortId=\"kanjiName_asc\" descSortId=\"kanjiName_desc\"\n                                        label=\"漢字氏名\"\n                                        uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                                        name=\"kanjiNameSort\"\n                                        listSearchInfoName=\"11AC_W11AC01\" />\n            </th>\n        </tr>\n    </jsp:attribute>\n</nbs:listSearchResult>\n```\n\n> **重要**: 並び替えのサブミット要素は常に先頭ページ（ページ番号: 1）を検索する。並び替えが変更された場合、変更前のページ番号は新しい並び順で意味のある位置ではないため。\n\n並び替えサブミット要素は、ページングと同様にウィンドウスコープを使用して検索条件を維持する。\n\n**現在の並び替え状態に応じたタグの動作**（`ascSortId=\"kanjiName_asc\"`, `descSortId=\"kanjiName_desc\"` の場合）:\n\n| 検索に使用されたソートID | リクエスト送信するソートID | 使用されるCSSクラス |\n|---|---|---|\n| kanjiName_asc | descSortId の値（kanjiName_desc）を使用 | ascCss（nablarch_asc） |\n| kanjiName_desc | ascSortId の値（kanjiName_asc）を使用 | descCss（nablarch_desc） |\n| 他の列のソートID | defaultSort に応じて ascSortId（kanjiName_asc）を使用 | なし |\n\n昇順・降順のCSS実装例（CSSクラス名はデフォルト名）:\n\n```css\na.nablarch_sort {\n    padding-right: 15px;\n    background-position: 100% 0%;\n    background-repeat: no-repeat;\n}\na.nablarch_asc {\n    background-image: url(\"../img/asc.jpg\");\n}\na.nablarch_desc {\n    background-image: url(\"../img/desc.jpg\");\n}\n```",
+    "s2": "## 1画面にすべての検索結果を一覧表示する場合の実装方法\n\nページングなしで全件表示する場合の実装はページング使用時と基本的に同じ。ただし下記の変更が必要。\n\n**Actionクラスでの必須設定**: 検索結果の最大件数（上限）を取得件数として設定する。この設定がないとページング動作になる。\n\n```java\n// ページングを使用しないため下記の設定が必須\ncondition.setMax(condition.getMaxResultCount());\n```\n\n`ListSearchInfo`継承クラス（`W11AC01SearchForm`）では`pageNumber`プロパティの設定は不要（初期値1のため常に1ページ目）。\n\n```java\npublic class W11AC01SearchForm extends ListSearchInfo {\n    public W11AC01SearchForm(Map<String, Object> params) {\n        // pageNumberプロパティの設定は不要（初期値1）\n    }\n    private static final String[] SEARCH_COND_PROPS = new String[] { ... };\n    public String[] getSearchConditionProps() {\n        return SEARCH_COND_PROPS;\n    }\n}\n```\n\nJSPでは`usePaging=\"false\"`を指定し、`searchUri`属性は不要。\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    usePaging=\"false\"\n                    resultSetName=\"searchResult\">\n</nbs:listSearchResult>\n```",
+    "s3": "## デフォルトの検索条件で検索した結果を初期表示する場合の実装方法\n\n初期表示でデフォルト検索条件を使用する場合、検索条件がリクエストパラメータとして送信されないため、ページングで使用するウィンドウスコープに検索条件が存在しない。このため、アクションの初期表示処理でデフォルト検索条件をウィンドウスコープに設定する必要がある。\n\nデフォルト検索条件のウィンドウスコープ設定には`ListSearchInfoUtil.setDefaultCondition()`を使用する（共通処理のためユーティリティとして提供）。JSPなどアクション初期表示処理以外は、通常のページングと実装方法は同じ。\n\n**Actionクラスの初期表示処理の実装例**:\n\n```java\npublic HttpResponse doRW11AC0101(HttpRequest req, ExecutionContext ctx) {\n    W11AC01SearchForm condition = new W11AC01SearchForm();\n    condition.setUserIdLocked(\"0\");\n    condition.setSortId(\"kanjiName_asc\");\n    condition.setDate(\"20130703\");\n    condition.setMoney(BigDecimal.valueOf(123456789.12d));\n\n    // デフォルトの検索条件をリクエストスコープに設定（入力フォーム表示用）\n    ctx.setRequestScopedVar(\"11AC_W11AC01\", condition);\n\n    // デフォルトの検索条件をウィンドウスコープに設定（ページング用）\n    ListSearchInfoUtil.setDefaultCondition(req, \"11AC_W11AC01\", condition);\n\n    SqlResultSet searchResult;\n    try {\n        searchResult = selectByCondition(condition);\n    } catch (TooManyResultException e) {\n        throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00035\", e.getMaxResultCount()));\n    }\n\n    ctx.setRequestScopedVar(\"searchResult\", searchResult);\n    ctx.setRequestScopedVar(\"resultCount\", condition.getResultCount());\n\n    return new HttpResponse(\"/ss11AC/W11AC0101.jsp\");\n}\n```"
+  }
+}

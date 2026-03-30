@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-enterprise_messaging--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — 共通プロトコルヘッダー table, ReplyTo row",
+      "description": "The knowledge file omits the behavior detail for ReplyTo during 応答不要受信: \"応答不要受信の場合は、通常は何も設定されていない。\" The knowledge file only covers the synchronous response reception case.",
+      "source_evidence": "応答不要受信の場合は、通常は何も設定されていない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — フレームワーク制御ヘッダー code example",
+      "description": "The knowledge file omits the comment line \"# フレームワーク制御ヘッダ部 (50byte)\" from the code block, which specifies the total header size as 50 bytes — implementation-relevant sizing information.",
+      "source_evidence": "#===================================================================\n# フレームワーク制御ヘッダ部 (50byte)\n#==================================================================="
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "The hints for s3 include 応答不要メッセージ送信 and 同期応答メッセージ送信, but are missing 応答不要メッセージ受信 and 同期応答メッセージ受信, which are listed as equal members of the 4 key API types in the source.",
+      "source_evidence": "以下の4つの送受信処理を実行するためのAPIが定義された...\n- 応答不要メッセージ送信\n- 同期応答メッセージ送信\n- 応答不要メッセージ受信\n- 同期応答メッセージ受信"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The s5 hints are missing the handler class names referenced in the フレームワーク制御ヘッダー table within the section content: RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader, MessageResendHandler, MessageReplyHandler.",
+      "source_evidence": "| :doc:`../handler/RequestPathJavaPackageMapping`\n| :doc:`../handler/RequestHandlerEntry`\n| :doc:`../handler/ServiceAvailabilityCheckHandler`\n| :doc:`../handler/PermissionCheckHandler`\n| :doc:`../reader/FwHeaderReader`\n:doc:`../handler/MessageResendHandler`\n:doc:`../handler/MessageReplyHandler`"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "file_id": "handlers-NoInputDataBatchAction",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "Two high-impact issues remain unresolved: (1) a fabricated parent method signature that will produce incorrect implementation guidance, and (2) absence of the commit/rollback pseudocode which omits transaction-critical behavior. Phase E produced an identical file to Phase D — no fixes were applied.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 — 概要",
+      "impact": "high",
+      "justification": "The pseudocode is the only place in the source that explicitly shows commit() after handle() and rollback() on exception. Without it, an AI agent answering questions about transaction handling in NoInputDataBatchAction has no basis to describe the commit/rollback sequence. This can lead to incorrect guidance on a mission-critical concern. Why it persisted: Phase E output is byte-for-byte identical to Phase D input — no edits were made."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — 概要 (note after code block)",
+      "impact": "medium",
+      "justification": "The caveat that the pseudocode is a simplification and that actual behavior is handler-configuration-driven is architecturally important. If the pseudocode is added (fixing finding 1), the absence of this note would cause an AI to present the simplified call sequence as definitive, leading to incorrect mental models. Even without the pseudocode, the note conveys that runtime behavior is controlled by handler configuration — a key design principle. Why it persisted: same as finding 1 — Phase E made no changes."
+    },
+    {
+      "category": "fabrication",
+      "location": "s1 — handle() method description",
+      "impact": "high",
+      "justification": "The knowledge file asserts a specific parent method signature `handle(InputData data, ExecutionContext ctx)` on BatchAction that is not present in the source. The source only notes '(オーバーロード)' with no parent signature. An AI agent relying on this file will confidently state a concrete but unverified API signature to developers, potentially causing compilation errors or incorrect overrides. Fabricated API details are a direct correctness risk in enterprise Java development. Why it persisted: Phase E output is identical to Phase D — the fabrication was flagged but not corrected."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints",
+      "impact": "low",
+      "justification": "CommandLine and ExecutionContext are PascalCase class names in the source code block and are natural search terms. Their absence reduces retrieval precision when users ask about these types in the context of NoInputDataBatchAction. However, ExecutionContext appears in the body text (via the fabricated override description), and the omission does not cause incorrect behavior — only reduced discoverability. Why it persisted: Phase E made no changes to any part of the file."
+    }
+  ]
+}

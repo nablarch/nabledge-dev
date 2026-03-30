@@ -1,0 +1,354 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/03_Common/07/07_HowToSettingCustomTag.rst`
+- Format: `rst`
+
+```
+========================================================================
+カスタムタグライブラリに関する設定
+========================================================================
+
+.. _WebView_NablarchTagHandler:
+
+----------------------------------
+NablarchTagHandlerの設定
+----------------------------------
+
+NablarchTagHandlerは、カスタムタグを使用したリクエストを処理する際に必要となる前処理を行うハンドラである。\
+カスタムタグを使用する場合は、NablarchTagHandlerの設定が必須となる。
+NablarchTagHandlerの処理内容は、リンク先の説明を参照。
+
+* :ref:`WebView_ChangeableParams`
+* :ref:`WebView_HiddenEncryption`
+* :ref:`checkboxタグのチェックなしに対する値の設定<WebView_SingleCheckBoxTag>`
+
+NablarchTagHandler の設定値の詳細は、  :ref:`NablarchTagHandler` に記載する。
+
+
+.. _WebView_CustomTagConfig:
+
+----------------------------------
+カスタムタグのデフォルト値の設定
+----------------------------------
+選択項目のラベルパターンなど、カスタムタグの属性は、個々の画面で毎回設定するよりも、アプリケーション全体で統一したデフォルト値を使用したい場合がある。\
+このため、カスタムタグのデフォルト値の設定を行う機能を提供する。
+
+カスタムタグのデフォルト値の設定は、CustomTagConfigクラスを"customTagConfig"という名前でリポジトリに登録することで行う。\
+下記のプロパティを指定することができる。
+
+===================================================================== ===================================================================================
+property名                                                            設定内容
+===================================================================== ===================================================================================
+errorCss                                                              | errorタグと入力項目タグのerrorCss属性のデフォルト値。
+messageFormat                                                         | errorタグのmessageFormat属性のデフォルト値。
+elementLabelPattern                                                   | selectタグ、radioButtonsタグ、checkboxesタグのelementLabelPattern属性のデフォルト値。
+listFormat                                                            | selectタグ、radioButtonsタグ、checkboxesタグのlistFormat属性のデフォルト値。
+codeLabelPattern                                                      | codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeタグのlabelPattern属性のデフォルト値。
+codeListFormat                                                        | codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeタグのlistFormat属性のデフォルト値。
+lineSeparator                                                         | カスタムタグが出力時に使用する改行コードのデフォルト値。
+                                                                      | 下記のいずれかを指定する。
+                                                                      | LF(Line Feed)
+                                                                      | CR(Carriage Return)
+                                                                      | CRLF
+                                                                      | デフォルトはLF。
+port                                                                  | URI指定でhttpとhttpsを切り替える際に使用するhttp用のポート番号。
+securePort                                                            | URI指定でhttpとhttpsを切り替える際に使用するhttps用のポート番号。
+host                                                                  | URI指定でhttpとhttpsを切り替える際に使用するホストのデフォルト値。
+yyyymmddPattern                                                       | 年月日のフォーマットに使用するデフォルトのパターンのデフォルト値。
+dateTimePattern                                                       | 日時のフォーマットに使用するデフォルトのパターンのデフォルト値。
+patternSeparator                                                      | フォーマットに使用するパターンの区切り文字のデフォルト値。
+useHiddenEncryption                                                   | hiddenタグの暗号化機能を使用するか否かのデフォルト値。
+                                                                      | デフォルトはtrue。
+noHiddenEncryptionRequestIds                                          | hiddenタグを暗号化しないリクエストIDのデフォルト値。
+                                                                      |  :ref:`list要素<repository_elements_list>` で指定する。
+checkboxOnValue                                                       | checkboxタグのチェックありに対する値のデフォルト値。
+checkboxOffValue                                                      | checkboxタグのチェックなしに対する値のデフォルト値。
+resourcePathRule                                                      | 言語対応のリソースパスを取得する際に使用するリソースパスルール。
+                                                                      | nablarch.fw.web.i18n.ResourcePathRuleインタフェースを実装したクラスのインスタンスを指定する。\
+                                                                        ResourcePathRuleおよびサブクラスの詳細は、 :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` を参照。
+                                                                      | デフォルトはDirectoryBasedResourcePathRuleのインスタンス。
+scriptBodyPrefix                                                      | scriptタグのボディに対するプレフィックス。
+                                                                      | デフォルトを下記に示す。
+                                                                      
+                                                                         .. code-block:: bash
+                                                                      
+                                                                          <!--
+                                                                      
+scriptBodySuffix                                                      | scriptタグのボディに対するサフィックス。
+                                                                      | デフォルトを下記に示す。
+                                                                      
+                                                                         .. code-block:: bash
+                                                                      
+                                                                          -->
+                                                                      
+displayControlCheckers                                                | フォームのサブミットを行うタグの表示制御を行うか否かの判定を行う条件一覧。
+                                                                      | nablarch.common.web.tag.DisplayControlCheckerインタフェースを実装したクラスのリストを設定する。
+displayMethod                                                         | サブミットを行うタグの表示制御を行う場合の表示方法。
+                                                                      | 認可判定と開閉局判定の結果に応じて表示制御を行う場合に使用される。
+                                                                      | 下記のいずれかを指定する。
+                                                                      | NODISPLAY (非表示)
+                                                                      | DISABLED (非活性)
+                                                                      | NORMAL (通常表示)
+                                                                      | デフォルトはNORMAL。
+
+submitLinkDisabledJsp                                                 |  \ `displayMethod`\ の設定値が\ `DISABLED`\ の場合に使用するJSPファイルの
+                                                                      |  URLを設定する。JSPファイルを編集することで、非活性時の描画方法をカスタマイズできる。
+                                                                      |  SubmitLinkのボディ部の値は、\ `nablarch_link_body`\ というキーで
+                                                                      |  リクエストスコープに格納されている。
+                                                                      |  また、活性時に a タグに出力される id や class といった属性は、
+                                                                      |  \ `nablarch_link_attributes_<属性名>`\ というキーでリクエストスコープに格納されている。
+                                                                      |  以下に例を示す。この例では、非活性項目はボディ部の内容が打ち消し線付きで描画され、
+                                                                      |  n:SubmitLink タグの cssClass 属性に指定した属性(活性時は a タグの class 属性に出力される)
+                                                                      |  がそのまま span タグの class に出力される。
+                                                                      
+                                                                         .. code-block:: jsp
+                                                                      
+                                                                          <%@ page contentType="text/html;charset=UTF-8" %>
+                                                                          <%@ taglib prefix="n"
+                                                                                     uri="http://tis.co.jp/nablarch" %>
+                                                                          <span class="<n:write name="nablarch_link_attributes_class" withHtmlFormat="false"/>" 
+                                                                                style="text-decoration: line-through;">
+                                                                          <n:write name="nablarch_link_body" />
+                                                                          </span>
+                                                                      
+
+                                                                        
+safeTags                                                              修飾付き出力(n:prettyPrint)タグにおいて、
+                                                                      HTMLエスケープの対象とせずにHTMLタグとしてそのまま出力するタグ名のリスト
+                                                                      をカンマ区切りで設定する。
+                                                                      デフォルトの設定では、以下のタグが利用できる。
+                                                                      
+                                                                          - b
+                                                                          - big
+                                                                          - blockquote
+                                                                          - br
+                                                                          - caption
+                                                                          - center
+                                                                          - dd
+                                                                          - del
+                                                                          - dl
+                                                                          - dt
+                                                                          - em
+                                                                          - font
+                                                                          - h1
+                                                                          - h2
+                                                                          - h3
+                                                                          - hr
+                                                                          - i
+                                                                          - ins
+                                                                          - li
+                                                                          - ol
+                                                                          - p
+                                                                          - small
+                                                                          - strong
+                                                                          - sub
+                                                                          - sup
+                                                                          - table
+                                                                          - td
+                                                                          - th
+                                                                          - tr
+                                                                          - u
+                                                                          - ul
+
+safeAttributes                                                        修飾付き出力(n:prettyPrint)タグにおいて、
+                                                                      HTMLエスケープの対象とせずにHTMLタグとしてそのまま出力する属性名のリスト
+                                                                      をカンマ区切りで設定する。
+                                                                      デフォルトの設定では、以下の属性が利用できる。
+
+                                                                         - color
+                                                                         - size
+                                                                         - border
+                                                                         - colspan
+                                                                         - rowspan
+                                                                         - bgcolor 
+
+useValueAsNullIfObjectExists                                          | 入力系のタグで name 属性に指定した名称に対応する値を取得する際に、
+                                                                        値を保持するオブジェクトが 
+                                                                        null であれば null を設定されたものとして動作するか否かを設定する。
+                                                                      | 本設定値は後方互換性のために存在する。 false に設定することで、
+                                                                        リクエストスコープに設定されたオブジェクトが存在した場合も、
+                                                                        プロパティが null であればリクエストパラメータの値を優先的に使用するよう
+                                                                        動作する。
+                                                                      | デフォルトは true 。
+
+popupWindowName                                                         ポップアップのウィンドウ名を設定する。
+                                                                        新規ポップアップウィンドウを開くとき、window.open関数の第2引数に渡される。
+
+popupOption                                                             ポップアップのオプション情報を設定する。
+                                                                        新規ポップアップウィンドウを開くとき、window.open関数の第3引数に渡される。
+                                                                        例えば、\ `width=200,height=100`\ のように指定する。
+autocompleteDisableTarget                                             | autocomplete属性をOFFにする対象のデフォルト値。
+                                                                      | 下記のいずれかを指定する。
+                                                                      | all(すべてのタグ)
+                                                                      | password(パスワードのみ)
+                                                                      | none(対象なし)
+                                                                      | デフォルトはnone。
+                                                                      | カスタムタグでautocomplete属性を個別指定した場合は、デフォルト値でなく個別指定した値が使用される。
+===================================================================== ===================================================================================
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-07_HowToSettingCustomTag`
+
+```json
+{
+  "id": "libraries-07_HowToSettingCustomTag",
+  "title": "カスタムタグライブラリに関する設定",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "NablarchTagHandlerの設定",
+      "hints": [
+        "NablarchTagHandler",
+        "カスタムタグ",
+        "ハンドラ設定",
+        "前処理",
+        "WebView_NablarchTagHandler"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "カスタムタグのデフォルト値の設定",
+      "hints": [
+        "CustomTagConfig",
+        "customTagConfig",
+        "errorCss",
+        "messageFormat",
+        "elementLabelPattern",
+        "listFormat",
+        "codeLabelPattern",
+        "codeListFormat",
+        "lineSeparator",
+        "useHiddenEncryption",
+        "noHiddenEncryptionRequestIds",
+        "checkboxOnValue",
+        "checkboxOffValue",
+        "resourcePathRule",
+        "DisplayControlChecker",
+        "displayControlCheckers",
+        "displayMethod",
+        "submitLinkDisabledJsp",
+        "safeTags",
+        "safeAttributes",
+        "useValueAsNullIfObjectExists",
+        "popupWindowName",
+        "popupOption",
+        "autocompleteDisableTarget",
+        "カスタムタグ デフォルト値",
+        "n:prettyPrint",
+        "hiddenタグ暗号化",
+        "表示制御",
+        "scriptBodyPrefix",
+        "scriptBodySuffix"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "カスタムタグを使用する場合、`NablarchTagHandler` の設定が必須。\n\n**クラス**: `NablarchTagHandler`\n\nカスタムタグを使用したリクエストの前処理を行うハンドラ。処理内容は :ref:`WebView_ChangeableParams`、:ref:`WebView_HiddenEncryption`、:ref:`checkboxタグのチェックなしに対する値の設定<WebView_SingleCheckBoxTag>` を参照。設定値の詳細は :ref:`NablarchTagHandler` を参照。",
+    "s2": "**クラス**: `CustomTagConfig`\n\n`\"customTagConfig\"` という名前でリポジトリに登録する。\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| errorCss | | errorタグと入力項目タグのerrorCss属性のデフォルト値 |\n| messageFormat | | errorタグのmessageFormat属性のデフォルト値 |\n| elementLabelPattern | | selectタグ、radioButtonsタグ、checkboxesタグのelementLabelPattern属性のデフォルト値 |\n| listFormat | | selectタグ、radioButtonsタグ、checkboxesタグのlistFormat属性のデフォルト値 |\n| codeLabelPattern | | codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeタグのlabelPattern属性のデフォルト値 |\n| codeListFormat | | codeSelectタグ、codeRadioButtonsタグ、codeCheckboxesタグ、codeタグのlistFormat属性のデフォルト値 |\n| lineSeparator | LF | カスタムタグ出力時の改行コード（LF/CR/CRLF） |\n| port | | httpとhttpsを切り替える際のhttp用ポート番号 |\n| securePort | | httpとhttpsを切り替える際のhttps用ポート番号 |\n| host | | httpとhttpsを切り替える際のホスト |\n| yyyymmddPattern | | 年月日フォーマットのデフォルトパターン |\n| dateTimePattern | | 日時フォーマットのデフォルトパターン |\n| patternSeparator | | フォーマットパターンの区切り文字 |\n| useHiddenEncryption | true | hiddenタグの暗号化機能を使用するか否か |\n| noHiddenEncryptionRequestIds | | hiddenタグを暗号化しないリクエストID。:ref:`list要素<repository_elements_list>` で指定 |\n| checkboxOnValue | | checkboxタグのチェックありに対する値 |\n| checkboxOffValue | | checkboxタグのチェックなしに対する値 |\n| resourcePathRule | DirectoryBasedResourcePathRuleインスタンス | 言語対応リソースパスルール。`nablarch.fw.web.i18n.ResourcePathRule` 実装クラスを指定。詳細は :ref:`言語毎のコンテンツパスの切り替え<http_response_handler_i18n>` 参照 |\n| scriptBodyPrefix | `<!--` | scriptタグのボディのプレフィックス |\n| scriptBodySuffix | `-->` | scriptタグのボディのサフィックス |\n| displayControlCheckers | | サブミットタグの表示制御判定条件一覧。`nablarch.common.web.tag.DisplayControlChecker` 実装クラスのリストを設定 |\n| displayMethod | NORMAL | サブミットタグの表示制御方法（NODISPLAY:非表示/DISABLED:非活性/NORMAL:通常表示） |\n| submitLinkDisabledJsp | | displayMethodがDISABLEDの場合に使用するJSPファイルのURL。SubmitLinkのボディ部は `nablarch_link_body` キーで、活性時のaタグ属性は `nablarch_link_attributes_<属性名>` キーでリクエストスコープに格納 |\n| safeTags | b,big,blockquote,br,caption,center,dd,del,dl,dt,em,font,h1,h2,h3,hr,i,ins,li,ol,p,small,strong,sub,sup,table,td,th,tr,u,ul | n:prettyPrintタグでHTMLエスケープせずそのまま出力するタグ名（カンマ区切り） |\n| safeAttributes | color,size,border,colspan,rowspan,bgcolor | n:prettyPrintタグでHTMLエスケープせずそのまま出力する属性名（カンマ区切り） |\n| useValueAsNullIfObjectExists | true | 入力系タグでname属性に対応するオブジェクトがnullの場合にnullとして動作するか否か。後方互換性のための設定。falseにするとオブジェクトが存在してもプロパティがnullならリクエストパラメータ値を優先 |\n| popupWindowName | | ポップアップのウィンドウ名（window.openの第2引数） |\n| popupOption | | ポップアップのオプション情報（window.openの第3引数。例：`width=200,height=100`） |\n| autocompleteDisableTarget | none | autocomplete属性をOFFにする対象（all:全タグ/password:パスワードのみ/none:対象なし）。個別タグで個別指定した場合はデフォルト値より個別指定が優先 |\n\n`submitLinkDisabledJsp` の設定例（非活性時に打ち消し線付きで描画）：\n\n```jsp\n<%@ page contentType=\"text/html;charset=UTF-8\" %>\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n<span class=\"<n:write name=\"nablarch_link_attributes_class\" withHtmlFormat=\"false\"/>\" \n      style=\"text-decoration: line-through;\">\n<n:write name=\"nablarch_link_body\" />\n</span>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

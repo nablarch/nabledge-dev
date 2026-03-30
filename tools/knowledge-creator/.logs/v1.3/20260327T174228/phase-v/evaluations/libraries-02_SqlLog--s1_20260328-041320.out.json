@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The fabrication finding is a false positive. The RST source provided DOES contain placeholder tables and default format strings for executeQuery, executeUpdate, and executeBatch methods — the source is not truncated at the execute end section as claimed. Content in s17–s22 is grounded in the source. Two minor label inaccuracies exist (s20 uses `count =` vs source's `update_count =`; s22 uses `count =` vs source's `batch_count =`), but these affect only the default format display labels in a section users would typically override with custom formats. The placeholder variables themselves are correct.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections s17, s18, s19, s20, s21, s22 — デフォルトのフォーマット",
+      "impact": "low",
+      "justification": "False positive. The full RST source contains complete placeholder tables and default format strings for all six method sections (executeQuery start/end, executeUpdate start/end, executeBatch start/end). The checker's source_evidence claim — that 'source file ends after executeメソッドの実行終了時' — is incorrect; the source continues well past that point. The D→E loop preserved the existing content rather than removing it, which was the correct behavior. Two residual minor inaccuracies remain: s20 renders the label as `count =` while the source says `update_count =`, and s22 renders it as `count =` while the source says `batch_count =`. These are low impact because (1) they appear only in default format strings that developers routinely override via app-log.properties, (2) the placeholder variables ($updateCount$, $executeTime$, etc.) are all correct, and (3) no developer would rely solely on the knowledge file for exact default format output — they would test against the running framework."
+    }
+  ]
+}

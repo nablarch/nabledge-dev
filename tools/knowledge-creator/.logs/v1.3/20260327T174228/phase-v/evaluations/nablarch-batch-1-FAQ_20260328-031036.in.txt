@@ -1,0 +1,221 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `nablarch-batch-1-FAQ`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "minor",
+    "location": "s1 — 条件を必要としないSQL文の場合の実装例 (Java code comment)",
+    "description": "The source includes a clarifying comment in the no-condition code example: '// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。' This is a recommendation that, in the no-condition case, the caller should specify an SQL statement that genuinely has no variable conditions (rather than reusing the GET_DELETE_USER_LIST SQL as is done in the example). The knowledge file omits this guidance, leaving the code example without the important caveat about correct usage.",
+    "source_evidence": "// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。"
+  },
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "s1 hints",
+    "description": "The PascalCase class `SystemAccountEntity` appears in the Java code example in s1 (used as the condition object) but is not listed in the hints array.",
+    "source_evidence": "SystemAccountEntity condition = new SystemAccountEntity();"
+  }
+]
+```
+
+### Source (RST)
+
+```
+バッチの処理対象件数をログに出力する方法はありますか？
+=========================================================
+
+.. admonition:: question
+
+    バッチの処理対象件数をバッチの処理前（事前処理）でログに出力したいと考えています。
+    
+    具体的には、インプットデータの種類に応じて以下の値をログ出力したいのですが、
+    インプットデータの取得方法、及びログ出力はどのように実装したらいいでしょうか？
+
+    * データベースをインプットとするバッチの場合は、データベースの処理対象のレコードのレコード数
+    * ファイルをインプットとするバッチの場合は、ファイルの総レコード数とデータレコードのレコード数
+
+.. admonition:: answer
+
+    * データベースをインプットとする場合
+
+      *nablarch.core.db.support.DbAccessSupport* が提供する件数取得機能を使用して処理対象レコード数を取得します。
+
+      実装例を以下に示します。
+
+      .. code-block:: sql
+
+        --------------------------------------------------------------------------------
+        -- 削除対象のユーザ一覧を取得する。
+        --------------------------------------------------------------------------------
+        GET_DELETE_USER_LIST =
+        SELECT
+            USER_ID
+        FROM
+            SYSTEM_ACCOUNT
+        WHERE
+            EFFECTIVE_DATE_TO <= :effectiveDateTo
+        ORDER BY
+            USER_ID
+
+      .. code-block:: java
+
+        //*****************************************
+        // 件数取得処理は、createReaderで行う。
+        //*****************************************
+        public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+            //*****************************************
+            // オブジェクトを条件とする場合の実装例
+            //*****************************************
+            // SQLのバインド変数に値を埋め込むための条件オブジェクトを生成する。
+            SystemAccountEntity condition = new SystemAccountEntity();
+            condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+
+            // 処理対象件数の取得時には、処理対象データを取得すためのSQL文のSQL_IDを指定する。
+            // Nablarchでは、処理対象データを取得するSQL文を件数取得用のSQL文に書き換え件数を取得して返却します。
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
+
+            //*****************************************
+            // Mapを条件とする場合の実装例
+            //*****************************************
+            Map<String, Object> condition = new HashMap<String, Object>();
+            condition.put("effectiveDateTo", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
+
+            //*****************************************
+            // 条件を必要としないSQL文の場合の実装例
+            //*****************************************
+            // SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。
+            int count = countByParameterizedSql("GET_DELETE_USER_LIST");
+        }
+
+    * ファイルをインプットとする場合
+
+      本処理の前に行うファイルのレイアウト構成精査時にファイルレコード数やデータレコードのレコード数をカウントすることにより、
+      ログ出力対象のレコード数を取得します。
+
+      詳細は、以下のガイドを参照してください。
+
+        * **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[ファイルを入力とするバッチ]** -> **[ファイルバリデータ生成]**
+
+    * ログ出力方法
+
+      バッチアクションの親クラスが提供する *writeLog* メソッドを使用することによりログ出力を行えます。
+
+      詳細は、以下のガイドを参照してください。
+
+        * **[Nablarch プログラミング・単体テストガイド]** -> **[業務アプリケーションの実装方法 (バッチ処理編)]** -> **[データベースを入力とするバッチ]** -> **[ログ出力]**
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "nablarch-batch-1-FAQ",
+  "title": "バッチの処理対象件数をログに出力する方法はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチ処理対象件数のログ出力",
+      "hints": [
+        "DbAccessSupport",
+        "countByParameterizedSql",
+        "writeLog",
+        "DataReader",
+        "SqlRow",
+        "createReader",
+        "ExecutionContext",
+        "バッチ処理対象件数取得",
+        "データベース件数取得",
+        "ファイルレコード数取得",
+        "ログ出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\n### データベースをインプットとする場合\n\n`countByParameterizedSql` メソッドで処理対象レコード数を取得する。件数取得は `createReader` 内で行う。件数取得時には処理対象データを取得するSQL文のSQL_IDを指定する。NablarchはそのSQL文を件数取得用に書き換えて件数を返却する。\n\n```sql\nGET_DELETE_USER_LIST =\nSELECT\n    USER_ID\nFROM\n    SYSTEM_ACCOUNT\nWHERE\n    EFFECTIVE_DATE_TO <= :effectiveDateTo\nORDER BY\n    USER_ID\n```\n\n```java\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    // オブジェクトを条件とする場合\n    SystemAccountEntity condition = new SystemAccountEntity();\n    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // Mapを条件とする場合\n    Map<String, Object> condition = new HashMap<String, Object>();\n    condition.put(\"effectiveDateTo\", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // 条件を必要としないSQL文の場合\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\");\n}\n```\n\n### ファイルをインプットとする場合\n\nファイルのレイアウト構成精査時にファイルレコード数やデータレコード数をカウントすることで、ログ出力対象のレコード数を取得する。\n\n### ログ出力方法\n\nバッチアクションの親クラスが提供する `writeLog` メソッドを使用してログ出力を行う。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "nablarch-batch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 条件を必要としないSQL文の場合の実装例 (Java code comment)",
+      "description": "The source includes a clarifying comment in the no-condition code example: '// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。' This is a recommendation that, in the no-condition case, the caller should specify an SQL statement that genuinely has no variable conditions (rather than reusing the GET_DELETE_USER_LIST SQL as is done in the example). The knowledge file omits this guidance, leaving the code example without the important caveat about correct usage.",
+      "source_evidence": "// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The PascalCase class `SystemAccountEntity` appears in the Java code example in s1 (used as the condition object) but is not listed in the hints array.",
+      "source_evidence": "SystemAccountEntity condition = new SystemAccountEntity();"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "nablarch-batch-1-FAQ",
+  "title": "バッチの処理対象件数をログに出力する方法はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "バッチ処理対象件数のログ出力",
+      "hints": [
+        "DbAccessSupport",
+        "countByParameterizedSql",
+        "writeLog",
+        "DataReader",
+        "SqlRow",
+        "createReader",
+        "ExecutionContext",
+        "バッチ処理対象件数取得",
+        "データベース件数取得",
+        "ファイルレコード数取得",
+        "ログ出力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.core.db.support.DbAccessSupport`\n\n### データベースをインプットとする場合\n\n`countByParameterizedSql` メソッドで処理対象レコード数を取得する。件数取得は `createReader` 内で行う。件数取得時には処理対象データを取得するSQL文のSQL_IDを指定する。NablarchはそのSQL文を件数取得用に書き換えて件数を返却する。\n\n```sql\nGET_DELETE_USER_LIST =\nSELECT\n    USER_ID\nFROM\n    SYSTEM_ACCOUNT\nWHERE\n    EFFECTIVE_DATE_TO <= :effectiveDateTo\nORDER BY\n    USER_ID\n```\n\n```java\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    // オブジェクトを条件とする場合\n    SystemAccountEntity condition = new SystemAccountEntity();\n    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // Mapを条件とする場合\n    Map<String, Object> condition = new HashMap<String, Object>();\n    condition.put(\"effectiveDateTo\", ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n\n    // 条件を必要としないSQL文の場合\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\");\n}\n```\n\n### ファイルをインプットとする場合\n\nファイルのレイアウト構成精査時にファイルレコード数やデータレコード数をカウントすることで、ログ出力対象のレコード数を取得する。\n\n### ログ出力方法\n\nバッチアクションの親クラスが提供する `writeLog` メソッドを使用してログ出力を行う。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

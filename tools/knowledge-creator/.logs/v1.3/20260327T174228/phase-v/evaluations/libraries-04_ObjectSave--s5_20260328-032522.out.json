@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_ObjectSave--s5",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are low impact. The XML configuration example in s4 already visually demonstrates that VariableInSyntaxConvertor and VariableOrderBySyntaxConvertor require no properties (shown as bare `<component class=\"...\"/>` tags). The missing `sqlConvertors` hint is a retrieval optimization gap, but the property is present in the section content and other hints (BasicSqlParameterParserFactory, VariableConditionSyntaxConvertor, etc.) would surface s4 for any related query.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s4 — 設定内容詳細 (a)-3 and a)-4 sub-sections)",
+      "impact": "low",
+      "justification": "The XML config example in s4 already shows both classes used as bare `<component class=\"...\"/>` elements with no child properties, making it visually apparent that no configuration is needed. An AI reasoning from the example would correctly conclude no configuration is required. The absence of the explicit prose statement ('本クラスは、プロパティを持たないため特に設定は不要である') is a minor redundancy gap, not a functional knowledge gap. Why it persisted: Phase E likely skipped this as the implicit evidence in the config example was deemed sufficient for practical use, and adding redundant prose to an already long section was deprioritized."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s4 — hints array",
+      "impact": "low",
+      "justification": "The property name `sqlConvertors` is explicitly present in the s4 section content (XML example and the a)-1 property table). Retrieval via other hints already in s4 (e.g., BasicSqlParameterParserFactory, VariableConditionSyntaxConvertor, VariableInSyntaxConvertor) would surface s4 for any query about SQL convertor configuration. The missing hint reduces retrieval precision marginally but does not create a knowledge gap. Why it persisted: Phase E fix agents commonly prioritize content correctness over hints completeness; since the content was accurate, this retrieval-only improvement was not applied."
+    }
+  ]
+}

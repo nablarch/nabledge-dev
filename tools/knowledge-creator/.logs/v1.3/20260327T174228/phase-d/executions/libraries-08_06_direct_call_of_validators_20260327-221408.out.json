@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_06_direct_call_of_validators",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — second equivalent-annotation code block (setPrefectureCode)",
+      "description": "The knowledge file omits @PropertyName(\"都道府県\") and @Required from the equivalent annotation code for setPrefectureCode. The source shows all three annotations (@PropertyName, @Required, @CodeValue) as equivalent to the Map-based ValidationUtil.validate() call, but the knowledge file shows only @CodeValue. This misrepresents what the explicit validator call is semantically equivalent to.",
+      "source_evidence": "@PropertyName(\"都道府県\")\n@Required\n@CodeValue(codeId=\"1052\", pattern=\"A\", messageId=\"M4865\")\npublic void setPrefectureCode(String value) {\n    this.value = value;\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "The @PropertyName annotation appears in both code examples in the source but is absent from the hints list.",
+      "source_evidence": "@PropertyName(\"昼間連絡先電話番号\") and @PropertyName(\"都道府県\") appear in the two annotation-equivalent code blocks in the source."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "file_id": "web-application-function--s15",
+  "needs_improvement": false,
+  "user_impact": "low",
+  "reason": "All three residual findings are minor. The two fabrications are technically accurate interpretations (n:hidden does maintain form data for next-screen submission), so they do not mislead users. The missing hints reduce discoverability slightly, but the section remains findable via the many existing hints including `n:compositeKeyCheckbox` and `keyNames`. No finding rises to medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 — JSP code example",
+      "impact": "low",
+      "justification": "The added comment `<%-- n:hiddenでフォームデータを維持 --%>` accurately describes what n:hidden does in this context. It does not introduce incorrect guidance. Phase E retained it because the content is technically correct and removing it would reduce clarity without improving accuracy."
+    },
+    {
+      "category": "fabrication",
+      "location": "s1 — trailing descriptive sentence",
+      "impact": "low",
+      "justification": "The sentence '各行のユーザーデータはn:hiddenフィールドで保持し、次画面へのフォームデータ送信を確保する' is a valid interpretation of the source's n:hidden usage pattern in a multi-step form flow. It does not contradict the source or mislead the agent. Phase E left it because it is accurate and adds context without fabricating facts."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 — hints array",
+      "impact": "low",
+      "justification": "namePrefix and valueObject are absent from hints, slightly reducing discoverability for queries using those specific attribute names. However, the section is still reachable via closely related existing hints such as `n:compositeKeyCheckbox` and `keyNames`. Phase E did not add them, likely treating this as below the fix threshold given the already-broad hint coverage."
+    }
+  ]
+}

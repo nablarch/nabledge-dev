@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "`RecordTypeBindingHandler` appears as a hint but this exact Java class name is not present in the source. The source only says \"RecordTypeBindingハンドラ\" (a descriptive phrase), which does not establish the class name.",
+      "source_evidence": "Source text: \"RecordTypeBindingハンドラにより、入力レコードのレコードタイプに応じてメソッドが呼び分けられる\""
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`BatchAction` appears as a hint but the source never uses this Java class name. The source only uses the Japanese term \"バッチアクション\" (general concept), not a class named `BatchAction`.",
+      "source_evidence": "Source text: \"バッチアクションでインスタンス変数を使用する場合、以下の制約が生じる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "`FileLayoutValidatorAction` is missing from s4 hints despite being the concrete class returned by `getValidatorAction()` and appearing explicitly in the s4 code block.",
+      "source_evidence": "Source code: \"return new FileLayoutValidatorAction();\" and knowledge file s4 code block reproduces this."
+    }
+  ]
+}

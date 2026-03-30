@@ -1,0 +1,597 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_TagReference--s39",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s1 (codeCheckboxesタグ)",
+      "description": "Hints are missing property names present in the attribute table: `name`, `disabled`, `onchange`, `pattern`",
+      "source_evidence": "Source table first column: name(必須), disabled, onchange, pattern"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s2 (codeCheckboxタグ)",
+      "description": "Hints are missing property names present in the attribute table: `name`, `value`, `autofocus`, `optionColumnName`, `disabled`, `onchange`",
+      "source_evidence": "Source table first column: name(必須), value, autofocus, optionColumnName, disabled, onchange"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s3 (codeタグ)",
+      "description": "Hints are missing property names present in the attribute table: `name`, `pattern`",
+      "source_evidence": "Source table first column: name, pattern"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s4 (messageタグ)",
+      "description": "Hints are missing property names present in the attribute table: `language`, `option0`",
+      "source_evidence": "Source table first column: language, option0～option9"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s5 (writeタグ)",
+      "description": "Hints are missing property name `name` present in the attribute table",
+      "source_evidence": "Source table first column: name(必須)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s7 (rawWriteタグ / setタグ)",
+      "description": "Hints are missing property names from the set tag attribute table: `name`, `value`",
+      "source_evidence": "Source setタグ table first column: var(必須), name, value, scope, bySingleValue"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index.s9 (includeParamタグ)",
+      "description": "Hints are missing property names present in the attribute table: `name`, `value`",
+      "source_evidence": "Source table first column: paramName(必須), name, value"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+codeCheckboxesタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | id属性は指定不可。
+:ref:`WebView_FocusAttributesTag`      | accesskey属性は指定不可。
+name(必須)                             | XHTMLのname属性。
+codeId(必須)                           | コードID。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+autofocus                              | HTML5のautofocus属性。
+                                       | 選択肢のうち、先頭要素のみautofocus属性を出力する。
+pattern                                | 使用するパターンのカラム名。
+                                       | デフォルトは指定なし。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CodeCheckboxTag:
+
+codeCheckboxタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+:ref:`WebView_GenericAttributesTag`    | 
+:ref:`WebView_FocusAttributesTag`      | 
+name(必須)                             | XHTMLのname属性。
+value                                  | XHTMLのvalue属性。
+                                       | チェックありの場合に使用するコード値。
+                                       | デフォルトは"1"。
+autofocus                              | HTML5のautofocus属性。
+codeId(必須)                           | コードID。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+offCodeValue                           | チェックなしの場合に使用するコード値。
+                                       | offCodeValue属性が指定されない場合は、
+                                       | codeId属性の値からチェックなしの場合に使用するコード値を検索する。
+                                       | 検索結果が2件、かつ1件がvalue属性の値である場合は、
+                                       | 残りの1件をチェックなしのコード値として使用する。
+                                       | 検索で見つからない場合は、デフォルト値の"0"を使用する。
+disabled                               | XHTMLのdisabled属性。
+onchange                               | XHTMLのonchange属性。
+errorCss                               | エラーレベルのメッセージに使用するCSSクラス名。
+                                       | デフォルトは"nablarch_error"。
+nameAlias                              | name属性のエイリアスを設定する。
+                                       | 複数指定する場合はカンマ区切り。
+====================================== ==========================================================================================
+
+.. _WebView_CodeTag:
+
+codeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name                                   | 表示対象のコード値を変数スコープから取得する際に使用する名前
+                                       | 省略した場合は、コードID属性とpattern属性にて絞り込んだコードの一覧を表示する。
+codeId(必須)                           | コードID。
+pattern                                | 使用するパターンのカラム名。
+                                       | デフォルトは指定なし。
+optionColumnName                       | 取得するオプション名称のカラム名。
+labelPattern                           | ラベルを整形するパターン。
+                                       | 
+                                       | プレースホルダを下記に示す。
+                                       | $NAME$: コード値に対応するコード名称
+                                       | $SHORTNAME$: コード値に対応するコードの略称
+                                       | $OPTIONALNAME$: コード値に対応するコードのオプション名称
+                                       |                 $OPTIONALNAME$を使用する場合は、optionColumnName属性の指定が必須となる。
+                                       | $VALUE$: コード値
+                                       | 
+                                       | デフォルトは"$NAME$"。
+listFormat                             | リスト表示時に使用するフォーマット。
+                                       | 下記のいずれかを指定する。
+                                       |   br(brタグ)
+                                       |   div(divタグ)
+                                       |   span(spanタグ)
+                                       |   ul(ulタグ)
+                                       |   ol(olタグ)
+                                       |   sp(スペース区切り)
+                                       | デフォルトはbr。
+====================================== ==========================================================================================
+
+.. _WebView_MessageTag:
+
+messageタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+messageId(必須)                        | メッセージID。
+option0～option9                       | メッセージフォーマットに使用するインデックスが0～9のオプション引数。
+                                       | 最大10個までオプション引数が指定できる。
+language                               | メッセージの言語。
+                                       | デフォルトはスレッドコンテキストに設定された言語。
+var                                    | リクエストスコープに格納する際に使用する変数名。
+                                       | var属性が指定された場合はメッセージを出力せずにリクエストスコープに設定する。
+                                       | リクエストスコープに設定する場合はHTMLエスケープとHTMLフォーマットを行わない。
+htmlEscape                             | HTMLエスケープをするか否か。
+                                       | HTMLエスケープをする場合はtrue、しない場合はfalse。
+                                       | デフォルトはtrue。
+withHtmlFormat                         | HTMLフォーマット(改行と半角スペースの変換)をするか否か。
+                                       | HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+.. _WebView_WriteTag:
+
+writeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+withHtmlFormat                         | HTMLフォーマット(改行と半角スペースの変換)をするか否か。
+                                       | HTMLフォーマットはHTMLエスケープをする場合のみ有効となる。
+                                       | デフォルトはtrue。
+valueFormat                            | 出力時のフォーマット。
+                                       | 
+                                       | フォーマットは、"データタイプ{パターン}"形式で指定する。
+                                       | フレームワークがデフォルトでサポートしているフォーマットを下記に示す。
+                                       | **dateTimeはwriteタグのみで使用できる。**
+                                       | 
+                                       | yyyymmdd:
+                                       
+                                        | 年月日のフォーマット。
+                                        | 値はyyyyMMdd形式またはパターン形式の文字列を指定する。
+                                        | パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。
+                                        | **パターン文字には、y(年)、M(月)、d(月における日)のみ指定可能。**
+                                        |  :ref:`WebView_CustomTagConfig` を使用してパターンのデフォルト値を設定することができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # デフォルトのパターンを使用する場合。
+                                         valueFormat="yyyymmdd"
+                                         
+                                         # パターンを指定する場合。
+                                         valueFormat="yyyymmdd{yyyy/MM/dd}"
+
+                                       |
+                                       | yyyymm:
+                                       
+                                        | 年月のフォーマット。
+                                        | 値はyyyyMM形式またはパターン形式の文字列を指定する。使用方法は、yyyymmddと同様。
+
+                                       | dateTime:
+                                       
+                                        | 日時のフォーマット。
+                                        | 値はjava.util.Date型を指定する。
+                                        | パターンにはjava.text.SimpleDateFormatが規定している構文を指定する。
+                                        | ThreadContextに設定されたタイムゾーンを使用して、タイムゾーンに応じた日時が出力される。
+                                        | 区切り文字"|"を使用してパターンに直接タイムゾーンを指定することができる。
+                                        | タイムゾーンはパターンの末尾に付加する。
+                                        |  :ref:`WebView_CustomTagConfig` を使用して、パターンのデフォルト値の設定と、区切り文字"|"の変更を行うことができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # デフォルトのパターンとThreadContextに設定されたタイムゾーンを使用する場合。
+                                         valueFormat="datetime"
+                                         
+                                         # デフォルトのパターンを使用し、タイムゾーンのみ指定する場合。
+                                         valueFormat="datetime{|Asia/Tokyo}"
+                                         
+                                         # ThreadContextに設定されたタイムゾーンを使用し、パターンのみ指定する場合。
+                                         valueFormat="datetime{yy/MM/dd HH:mm:ss}"
+                                         
+                                         # パターンとタイムゾーンを指定する場合。
+                                         valueFormat="datetime{yy/MM/dd HH:mm:ss|Asia/Tokyo}"
+                                       
+                                       | decimal:
+                                       
+                                        | 10進数のフォーマット。
+                                        | 値はjava.lang.Number型又は数字の文字列を指定する。
+                                        | 文字列の場合、言語に対応する1000の区切り文字を取り除いた後でフォーマットされる。
+                                        | パターンにはjava.text.DecimalFormatが規定している構文を指定する。
+                                        | ThreadContextに設定された言語が使用して、言語に応じた形式で値が出力される。
+                                        | 区切り文字"|"を使用してパターンに直接言語を指定することができる。
+                                        | 言語はパターンの末尾に付加する。
+                                        |  :ref:`WebView_CustomTagConfig` を使用して、区切り文字"|"の変更を行うことができる。
+                                        | valueFormat属性の指定例を下記に示す。
+                                       
+                                        .. code-block:: bash
+                                        
+                                         # ThreadContextに設定された言語を使用し、パターンのみ指定する場合。
+                                         valueFormat="decimal{###,###,###.000}"
+                                         
+                                         # パターンと言語を指定する場合。
+                                         valueFormat="decimal{###,###,###.000|ja}"
+                                       
+====================================== ==========================================================================================
+
+
+.. _WebView_PrettyPrintTag:
+
+prettyPrintタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+====================================== ==========================================================================================
+
+
+
+.. _WebView_RawWriteTag:
+
+rawWriteタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+name(必須)                             | 表示対象の値を変数スコープから取得する際に使用する名前
+====================================== ==========================================================================================
+
+
+.. _WebView_SetTag:
+
+setタグ
+^^^^^^^^^^^^^^^^^^^^^
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+var(必須)                              | リクエストスコープに格納する際に使用する変数名。
+name                                   | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する。
+value                                  | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する。
+scope                                  | 変数を格納するスコープを設定する。
+                                       | 指定できるスコープを下記に示す。
+                                       | page: ページスコープ
+                                       | request: リクエストスコープ
+                                       | デフォルトはリクエストスコープ。
+bySingleValue                          | name属性に対応する値を単一値として取得するか否か。
+                                       | デフォルトはtrue。
+====================================== ==========================================================================================
+
+.. _WebView_IncludeTag:
+
+includeタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+path(必須)                             | インクルード先のパス。
+====================================== ==========================================================================================
+
+.. _WebView_IncludeParamTag:
+
+includeParamタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+paramName(必須)                        | インクルード時に使用するパラメータの名前。
+name                                   | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する。
+value                                  | 値。直接値を指定する場合に使用する。name属性とvalue属性のどちらか一方を指定する。
+====================================== ==========================================================================================
+
+.. _WebView_ConfirmationPageTag:
+
+confirmationPageタグ
+-------------------------
+
+====================================== ==========================================================================================
+属性                                   | 説明
+====================================== ==========================================================================================
+path                                   | フォワード先(入力画面)のパス。
+====================================== ==========================================================================================
+
+.. _WebView_IgnoreConfirmationTag:
+
+ignoreConfirmationタグ
+-------------------------
+| 属性なし。
+
+.. _WebView_ForInputPageTag:
+
+forInputPageタグ
+-------------------------
+| 属性なし。
+
+.. _WebView_ForConfirmationPageTag:
+
+forConfirmationPageタグ
+-------------------------
+| 属性なし。
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_TagReference--s39",
+  "title": "タグリファレンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "codeCheckboxesタグ",
+      "hints": [
+        "codeCheckboxes",
+        "codeId",
+        "labelPattern",
+        "listFormat",
+        "errorCss",
+        "nameAlias",
+        "optionColumnName",
+        "autofocus",
+        "コードチェックボックス",
+        "チェックボックスグループ",
+        "コード値選択"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "codeCheckboxタグ",
+      "hints": [
+        "codeCheckbox",
+        "codeId",
+        "offCodeValue",
+        "labelPattern",
+        "errorCss",
+        "nameAlias",
+        "チェックボックス",
+        "コード値",
+        "チェックなし"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "codeタグ",
+      "hints": [
+        "code",
+        "codeId",
+        "labelPattern",
+        "listFormat",
+        "optionColumnName",
+        "コード表示",
+        "コード値一覧"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "messageタグ",
+      "hints": [
+        "message",
+        "messageId",
+        "htmlEscape",
+        "withHtmlFormat",
+        "var",
+        "メッセージ出力",
+        "メッセージフォーマット",
+        "HTMLエスケープ"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "writeタグ",
+      "hints": [
+        "write",
+        "valueFormat",
+        "withHtmlFormat",
+        "yyyymmdd",
+        "yyyymm",
+        "dateTime",
+        "decimal",
+        "SimpleDateFormat",
+        "DecimalFormat",
+        "値表示",
+        "日付フォーマット",
+        "数値フォーマット"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "prettyPrintタグ",
+      "hints": [
+        "prettyPrint",
+        "name",
+        "値表示"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "rawWriteタグ / setタグ",
+      "hints": [
+        "rawWrite",
+        "set",
+        "var",
+        "scope",
+        "bySingleValue",
+        "スコープ設定",
+        "リクエストスコープ",
+        "ページスコープ"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "includeタグ",
+      "hints": [
+        "include",
+        "path",
+        "インクルード"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "includeParamタグ",
+      "hints": [
+        "includeParam",
+        "paramName",
+        "インクルードパラメータ"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "confirmationPageタグ",
+      "hints": [
+        "confirmationPage",
+        "path",
+        "確認画面",
+        "フォワード"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "ignoreConfirmationタグ",
+      "hints": [
+        "ignoreConfirmation",
+        "確認画面スキップ"
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "forInputPageタグ",
+      "hints": [
+        "forInputPage",
+        "入力画面",
+        "条件分岐"
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "forConfirmationPageタグ",
+      "hints": [
+        "forConfirmationPage",
+        "確認画面",
+        "条件分岐"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`codeCheckboxes`タグの属性一覧。:ref:`WebView_GenericAttributesTag` および :ref:`WebView_FocusAttributesTag` を継承。\n\n> **注意**: :ref:`WebView_GenericAttributesTag` のid属性は指定不可。:ref:`WebView_FocusAttributesTag` のaccesskey属性は指定不可。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| codeId | ○ | | コードID |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| autofocus | | | HTML5のautofocus属性。選択肢のうち先頭要素のみautofocus属性を出力する |\n| pattern | | 指定なし | 使用するパターンのカラム名 |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称、optionColumnName指定が必須)、`$VALUE$`(コード値) |\n| listFormat | | `br` | リスト表示フォーマット。`br`(brタグ)・`div`(divタグ)・`span`(spanタグ)・`ul`(ulタグ)・`ol`(olタグ)・`sp`(スペース区切り) |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s2": "`codeCheckbox`タグの属性一覧。:ref:`WebView_GenericAttributesTag` および :ref:`WebView_FocusAttributesTag` を継承。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | XHTMLのname属性 |\n| value | | `1` | XHTMLのvalue属性。チェックありの場合に使用するコード値 |\n| autofocus | | | HTML5のautofocus属性 |\n| codeId | ○ | | コードID |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称、optionColumnName指定が必須)、`$VALUE$`(コード値) |\n| offCodeValue | | `0` | チェックなしの場合に使用するコード値。未指定時はcodeId属性からチェックなしのコード値を検索。検索結果が2件かつ1件がvalue属性の値なら残りの1件を使用。見つからない場合はデフォルト`0` |\n| disabled | | | XHTMLのdisabled属性 |\n| onchange | | | XHTMLのonchange属性 |\n| errorCss | | `nablarch_error` | エラーレベルのメッセージに使用するCSSクラス名 |\n| nameAlias | | | name属性のエイリアス。複数指定する場合はカンマ区切り |",
+    "s3": "`code`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | | | 表示対象のコード値を変数スコープから取得する名前。省略時はcodeId属性とpattern属性で絞り込んだコードの一覧を表示する |\n| codeId | ○ | | コードID |\n| pattern | | 指定なし | 使用するパターンのカラム名 |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | `$NAME$` | ラベルを整形するパターン。プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称、optionColumnName指定が必須)、`$VALUE$`(コード値) |\n| listFormat | | `br` | リスト表示フォーマット。`br`(brタグ)・`div`(divタグ)・`span`(spanタグ)・`ul`(ulタグ)・`ol`(olタグ)・`sp`(スペース区切り) |",
+    "s4": "`message`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| messageId | ○ | | メッセージID |\n| option0〜option9 | | | メッセージフォーマットに使用するオプション引数。最大10個 |\n| language | | スレッドコンテキストの言語 | メッセージの言語 |\n| var | | | リクエストスコープに格納する変数名。指定した場合はメッセージを出力せずリクエストスコープに設定する（この場合、HTMLエスケープとHTMLフォーマットは行わない） |\n| htmlEscape | | `true` | HTMLエスケープするか否か。`true`でエスケープ |\n| withHtmlFormat | | `true` | HTMLフォーマット（改行と半角スペースの変換）するか否か。HTMLエスケープをする場合のみ有効 |",
+    "s5": "`write`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する名前 |\n| withHtmlFormat | | `true` | HTMLフォーマット（改行と半角スペースの変換）するか否か。HTMLエスケープをする場合のみ有効 |\n| valueFormat | | | 出力フォーマット。`データタイプ{パターン}`形式で指定する |\n\n**valueFormat データタイプ:**\n\n| データタイプ | 説明 |\n|---|---|\n| `yyyymmdd` | 年月日フォーマット。値はyyyyMMdd形式またはパターン形式の文字列。パターンはjava.text.SimpleDateFormatの構文（y/M/dのみ指定可）。:ref:`WebView_CustomTagConfig` でデフォルトパターン設定可 |\n| `yyyymm` | 年月フォーマット。値はyyyyMM形式またはパターン形式。yyyymmddと同様 |\n| `dateTime` | 日時フォーマット（**writeタグのみ使用可**）。値はjava.util.Date型。パターンはjava.text.SimpleDateFormatの構文。ThreadContextのタイムゾーンを使用。区切り文字`|`でパターンにタイムゾーンを直接指定可。:ref:`WebView_CustomTagConfig` でデフォルトパターンと区切り文字変更可 |\n| `decimal` | 10進数フォーマット。値はjava.lang.Number型または数字文字列（言語対応の1000区切り文字除去後にフォーマット）。パターンはjava.text.DecimalFormatの構文。ThreadContextの言語を使用。区切り文字`|`で言語を直接指定可。:ref:`WebView_CustomTagConfig` で区切り文字変更可 |\n\n**valueFormat 指定例:**\n\n```bash\n# yyyymmdd: デフォルトパターン使用\nvalueFormat=\"yyyymmdd\"\n# yyyymmdd: パターン指定\nvalueFormat=\"yyyymmdd{yyyy/MM/dd}\"\n\n# dateTime: デフォルトパターンとThreadContextのタイムゾーン使用\nvalueFormat=\"datetime\"\n# dateTime: タイムゾーンのみ指定\nvalueFormat=\"datetime{|Asia/Tokyo}\"\n# dateTime: パターンのみ指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss}\"\n# dateTime: パターンとタイムゾーン指定\nvalueFormat=\"datetime{yy/MM/dd HH:mm:ss|Asia/Tokyo}\"\n\n# decimal: パターンのみ指定\nvalueFormat=\"decimal{###,###,###.000}\"\n# decimal: パターンと言語指定\nvalueFormat=\"decimal{###,###,###.000|ja}\"\n```",
+    "s6": "`prettyPrint`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する名前 |",
+    "s7": "`rawWrite`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | ○ | | 表示対象の値を変数スコープから取得する名前 |\n\n## setタグ\n\n`set`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| var | ○ | | リクエストスコープに格納する変数名 |\n| name | | | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する |\n| value | | | 値（直接指定）。name属性とvalue属性のどちらか一方を指定する |\n| scope | | `request` | 変数を格納するスコープ。`page`(ページスコープ)または`request`(リクエストスコープ) |\n| bySingleValue | | `true` | name属性に対応する値を単一値として取得するか否か |",
+    "s8": "`include`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | ○ | | インクルード先のパス |",
+    "s9": "`includeParam`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| paramName | ○ | | インクルード時に使用するパラメータの名前 |\n| name | | | 値を取得するための名前。name属性とvalue属性のどちらか一方を指定する |\n| value | | | 値（直接指定）。name属性とvalue属性のどちらか一方を指定する |",
+    "s10": "`confirmationPage`タグの属性一覧。\n\n| 属性名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| path | | | フォワード先（入力画面）のパス |",
+    "s11": "`ignoreConfirmation`タグ。属性なし。",
+    "s12": "`forInputPage`タグ。属性なし。",
+    "s13": "`forConfirmationPage`タグ。属性なし。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,173 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/FAQ/batch/7.rst`
+- Format: `rst`
+
+```
+バッチ処理を実行すると\ **DuplicateProcess**\ が発生し、処理が異常終了してしまいます。対処方法を教えてください
+==============================================================================================================
+.. admonition:: question
+
+    バッチ処理を実行すると、以下のメッセージがログに出力されてバッチ処理が異常終了してしまいます。
+    対処方法を教えてください。
+
+    .. code-block:: java
+
+        [500 DuplicateProcess] specified request_id is already used by another process. you can not start two or more processes with same request_id.
+    
+.. admonition:: answer
+
+    Nablarchでは、同一の処理が同時に実行されデータ不整合が発生するのを防止するために、多重起動防止機能を提供しています。
+
+    この機能を使用した場合、データベースの実行中フラグを用いて多重起動かのチェックを行ないます。
+    このため、実行中フラグが適切にクリアされないと\ [#f1]_\ 、何度バッチ処理を実行しても *DuplicateProcess* が発生してしまいます。
+
+    この問題を回避するためには、実行中フラグを管理するテーブル [#f2]_ の実行中フラグをクリアする必要があります。
+    このテーブルは、リクエストIDをキーにステータスを管理するテーブルとなっているので、
+    問題の起きているリクエストIDを条件にして実行中フラグを更新（0で更新）してください。
+    これにより、再度バッチ処理を実行することができるようになります。
+
+
+    詳細は、以下のドキュメントを参照してください。
+
+    * **[Nablarch Application Framework 解説書]** -> **[リファレンス]** -> **[ハンドラリファレンス]** -> **[プロセス多重起動防止ハンドラ]**
+    
+    .. [#f1]
+        デバッグ実行中に処理を停止した場合などに、実行中フラグのクリアが行われずにフラグが実行中のままとなります。
+
+    .. [#f2]
+        Nablarchでは、プロセス管理テーブルと定義しています。
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-7`
+
+```json
+{
+  "id": "nablarch-batch-7",
+  "title": "バッチ処理を実行するとDuplicateProcessが発生し、処理が異常終了してしまいます。対処方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "DuplicateProcess発生時の対処方法",
+      "hints": [
+        "DuplicateProcess",
+        "多重起動防止",
+        "実行中フラグ",
+        "プロセス管理テーブル",
+        "リクエストID",
+        "多重起動防止機能"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## DuplicateProcess発生時の対処方法\n\n`[500 DuplicateProcess] specified request_id is already used by another process.` が発生する原因は、多重起動防止機能が使用する「実行中フラグ」が適切にクリアされていないことである。\n\n> **注意**: デバッグ実行中に処理を停止した場合など、実行中フラグのクリアが行われずにフラグが実行中のままになることがある。この状態では、何度バッチ処理を実行しても *DuplicateProcess* が発生し続ける。\n\n**対処手順**:\n\n1. プロセス管理テーブル（Nablarchが多重起動チェックに使用するテーブル）を確認する\n2. リクエストIDをキーにして、問題の起きているリクエストIDに対応する実行中フラグを `0` で更新する\n3. 更新後、バッチ処理を再実行する\n\n多重起動防止機能の詳細は「プロセス多重起動防止ハンドラ」を参照。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

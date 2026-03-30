@@ -1,0 +1,13 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — warning about patching records",
+      "description": "The warning omits the first clause of the source: 「障害発生ポイントのレコードにパッチを当てることは問題ないが」 (patching the record at the failure point itself is acceptable). The knowledge file only conveys the negative case (patching prior records requires 0-clear), losing the clarification that patching at the exact failure point is safe. This distinction is decision-relevant for implementers applying patches.",
+      "source_evidence": "障害発生ポイントのレコードにパッチを当てることは問題ないが、発生ポイント以前のデータ（既に正常に処理が終わっているデータ）に対してパッチを当てた場合は、レジュームポイントを0クリアして1レコード目から再度処理する必要があるため注意すること。"
+    }
+  ]
+}

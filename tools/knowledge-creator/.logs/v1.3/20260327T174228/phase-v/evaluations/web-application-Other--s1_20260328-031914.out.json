@@ -1,0 +1,14 @@
+{
+  "file_id": "web-application-Other--s1",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "Three complete functional sections covering CodeUtil API usage, @CodeValue validation, and WebUtil.notifyMessages warning display are absent. These are distinct, commonly-used Nablarch patterns. The index (s1) advertises these topics via hints, so agents will attempt to retrieve them and find no content — a silent miss rather than a graceful fallback.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "sections (missing s8, s9, s10)",
+      "impact": "high",
+      "justification": "Three standalone functional areas are completely absent: (1) CodeUtil.getName/getShortName/getOptionalName/getValues — the primary API for retrieving code list values used in dropdowns and display; (2) @CodeValue annotation-based validation with codeId/pattern attributes — the designated approach for validating user-submitted code values; (3) WebUtil.notifyMessages + n:errors for warning messages in normal screen transitions — a distinct pattern from error-path messaging with no overlap with existing sections s2–s7. All three are listed in the s1 index with dedicated hints ('コード値取得', 'コード値バリデーション', '警告メッセージ'), meaning an agent will be routed to this file for these queries but receive no substantive answer. The Phase E fix did not resolve this because the source RST excerpt provided to the fix agent was truncated — it ended at the opening heading of other_example_code_get with no body content, leaving the agent unable to reconstruct the missing sections. The full source content is available and sufficient to add s8–s10."
+    }
+  ]
+}

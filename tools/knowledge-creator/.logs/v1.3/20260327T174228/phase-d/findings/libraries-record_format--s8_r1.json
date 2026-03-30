@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-record_format--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2",
+      "description": "Missing recommendation to use the requires-title feature when reading files whose first row is a title row. Source states: 「以上の点より、最初の行にタイトルが存在するファイルを読み込む場合は、本機能を使用することを推奨する。」This is actionable best-practice guidance that an AI needs to answer questions like 'should I use requires-title?'",
+      "source_evidence": "以上の点より、最初の行にタイトルが存在するファイルを読み込む場合は、本機能を使用することを推奨する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2",
+      "description": "Missing secondary benefit of the requires-title feature: because the first row is guaranteed to be a title row, file layout verification can be skipped. Source states: 「また、本機能を使用する場合、最初の行がタイトル行であることが保証されるので、ファイルレイアウトの精査を省略できるといったメリットもある。」",
+      "source_evidence": "また、本機能を使用する場合、最初の行がタイトル行であることが保証されるので、ファイルレイアウトの精査を省略できるといったメリットもある。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1",
+      "description": "Hints for s1 are missing the specific field type identifiers that appear as first-column entries in the fixed-length field type table: X9, SX9, XN, SZ, SP. These are distinct enough to be useful search hints (unlike single-letter types X, N, Z, P, B which are too generic).",
+      "source_evidence": "Fixed-length field type table first column: X, N, XN, Z, SZ, P, SP, B, X9, SX9"
+    }
+  ]
+}

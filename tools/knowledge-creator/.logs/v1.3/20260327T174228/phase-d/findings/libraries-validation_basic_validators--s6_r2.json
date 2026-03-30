@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-validation_basic_validators--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — extendedStringConvertors property description",
+      "description": "The source provides a concrete use case for `extendedStringConvertors`: removing slashes from date strings such as 2011/09/09. This practical usage guidance helps developers decide when to apply the attribute but is absent from the knowledge file.",
+      "source_evidence": "スラッシュが付与された年月日文字列（2011/09/09）からスラッシュを除去したい場合などにextendedStringConvertors属性を指定する。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — StringConvertor Java code example",
+      "description": "The knowledge file's Java code example omits the `private String date;` field declaration that appears in the source. The source shows the complete Form class structure including the field declaration before the annotated setter.",
+      "source_evidence": "private String date;\n\n// 追加の変換を行うコンバータに対応したアノテーションを\n// 追加で変換を行うプロパティのセッタに付与する。\n@PropertyName(\"日付\")\n@YYYYMMDD(allowFomat = \"yyyy/MM/dd\")\npublic void setDate(String date) { ... }"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index / sections",
+      "description": "The source contains 9 h2-level class sections (StringConvertor, StringArrayConvertor, BigDecimalConvertor, IntegerConvertor, LongConvertor, RequiredValidator, LengthValidator, NumberRangeValidator, SystemCharValidator), each with its own `====` heading. The knowledge file consolidates all 9 into a single section `s1` instead of using one section per class.",
+      "source_evidence": "nablarch.core.validation.convertor.StringConvertor\n============================================================\n...\nnablarch.core.validation.convertor.BigDecimalConvertor\n============================================================\n... (9 total h2 sections)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`parseFailedMessageId` is a property name that appears in the XML configuration code example for `YYYYMMDDConvertor` and is relevant for users configuring `extendedStringConvertors`. It is not included in the hints array.",
+      "source_evidence": "<component class=\"nablarch.common.date.YYYYMMDDConvertor\">\n  <property name=\"parseFailedMessageId\" value=\"MSG90001\" />\n</component>"
+    }
+  ]
+}

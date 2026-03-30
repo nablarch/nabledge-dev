@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-inputAndOutput--s3",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[4] (s5)",
+      "description": "Section s5 has an empty title string \"\". The source ends with an RST anchor `.. _\\`default_value_setting\\`:` followed by a horizontal rule separator — a cross-reference target with no heading or body content. The empty title should be set to a descriptive placeholder or the anchor name rather than left as an empty string.",
+      "source_evidence": "Source ends with: `.. _\\`default_value_setting\\`:\\n\\n---------------------------` — RST anchor target only, no heading text"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "Section s5 content is \"なし\" (3 characters), which is well below the 50-character minimum. The section exists solely to register the `default_value_setting` anchor but carries no substantive content.",
+      "source_evidence": "Source fragment ends with the bare anchor `.. _\\`default_value_setting\\`:` — no body content present in this file fragment"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "`listFormat` attribute is used in the s3 JSP example (`listFormat=\"div\"`) but is absent from s3 hints. A user asking about `listFormat` would not find this section.",
+      "source_evidence": "Source JSP: `<n:code ... listFormat=\"div\" />`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[3] (s4) hints",
+      "description": "Several attribute names present in the s4 JSP example are missing from s4 hints: `listFormat`, `optionColumnName`, `labelPattern`, `$VALUE$`, `$NAME$`, `$SHORTNAME$`, `$OPTIONALNAME$`. These are the key configuration attributes used in this section's code example.",
+      "source_evidence": "Source JSP for s4: `<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\" labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\" listFormat=\"div\" />`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "PascalCase class name `W11AC02Action` appears in the s3 source (Action class implementation example) and is referenced in the knowledge file content, but is not included in s3 hints.",
+      "source_evidence": "Source Java: `public class W11AC02Action { ... public HttpResponse doRW11AC0201(...) { ... } }`"
+    }
+  ]
+}

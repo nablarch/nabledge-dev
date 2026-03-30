@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-04_Connection--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s1 — section a) header",
+      "description": "The knowledge file adds '**クラス**: `nablarch.core.db.connection.SimpleDbTransactionManager`' but this fully-qualified class name does not appear in the source file. The source only says 'SimpleDbTransactionManagerの設定' without any package path.",
+      "source_evidence": "Source section a) heading: '\\a) SimpleDbTransactionManagerの設定' — no package name present anywhere in the source for this class."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "'BasicStatementFactory' (nablarch.core.db.statement.BasicStatementFactory) is mentioned in source section b) as the sample class for statementFactory but is absent from s1 hints.",
+      "source_evidence": "Source section b) statementFactory: '本サンプルでは、「nablarch.core.db.statement.BasicStatementFactory」を設定している。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "'OracleDataSource' (oracle.jdbc.pool.OracleDataSource) is mentioned in source section b) as the sample DataSource implementation but is absent from s1 hints.",
+      "source_evidence": "Source section b) dataSource: '本サンプルでは、「oracle.jdbc.pool.OracleDataSource」を設定し、OracleDataSourceのproperyに必要な情報を設定している。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1].hints (s2)",
+      "description": "'WLInitialContextFactory' (weblogic.jndi.WLInitialContextFactory) appears in the JNDI XML example in the source but is absent from s2 hints.",
+      "source_evidence": "Source XML: '<entry key=\"java.naming.factory.initial\" value=\"weblogic.jndi.WLInitialContextFactory\"/>'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1].hints (s2)",
+      "description": "'sqlStatementExceptionFactory' appears as a property in the JNDI XML example in the source but is absent from s2 hints.",
+      "source_evidence": "Source XML: '<property name=\"sqlStatementExceptionFactory\">...</property>' inside the statementFactory component."
+    }
+  ]
+}

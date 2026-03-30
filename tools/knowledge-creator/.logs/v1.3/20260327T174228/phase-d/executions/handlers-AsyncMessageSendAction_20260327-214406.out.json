@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-AsyncMessageSendAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — [復路処理] section label",
+      "description": "The knowledge file introduces the section label `**[復路処理]**` for the section containing step 5 (正常終了), but this text does not exist in the source. The source RST reads `**[往路処理]**` for that section (with RST anchor `.. _outbound:`). The text \"復路処理\" is nowhere in the source file.",
+      "source_evidence": "Source: `.. _outbound:` followed by `**[往路処理]**` / `**5. (正常終了)**` — the label in the source is literally 往路処理, not 復路処理."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`MultiThreadExecutionHandler` appears in the handler queue (Main → MultiThreadExecutionHandler → …) described in s1 content but is absent from the s1 hints list.",
+      "source_evidence": "Source 概要 section handler queue: `\"MultiThreadExecutionHandler\"` is one of the queue entries."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`MultiThreadExecutionHandler` and `TransactionManagementHandler` both appear prominently in s2 content (steps 1, 2, 6, 6a) but are absent from the s2 hints list.",
+      "source_evidence": "Source ハンドラ処理フロー section: step 1 and 2 reference MultiThreadExecutionHandler; steps 6 and 6a reference TransactionManagementHandler."
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `handlers-ThreadContextClearHandler`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "s3",
+    "description": "The qualifier '基本的に' (basically/essentially) was dropped, changing a hedged statement into an absolute one.",
+    "source_evidence": "Source: '本ハンドラの実装内容は基本的に変更不要なものであり' → Knowledge: '本ハンドラの実装内容は変更不要のため'"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. include:: ../api/link.rst
+
+.. _ThreadContextClearHandler:
+
+================================================
+スレッドコンテキスト変数削除ハンドラ
+================================================
+
+**クラス名:** ``nablarch.common.handler.threadcontext.ThreadContextClearHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+:ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除するハンドラである。
+
+.. note::
+
+ 本ハンドラは極力手前側に配置すること。
+ なぜなら往路処理では、本ハンドラより手前のハンドラではスレッドコンテキストにアクセスできなくなるため。
+
++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "ThreadContextClearHandler",
+        "ThreadContextHandler_main"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (後続ハンドラへの処理委譲)**
+    往路では何もせずに後続のハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **2. (正常終了)**
+    :ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除する。
+
+.. _error:
+
+**[例外処理]**
+  **1. (エラー終了)**
+    後続ハンドラの処理中にエラーが発生した場合も、 :ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除する。
+
++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの実装内容は基本的に変更不要なものであり、そのまま使用することができる。
+以下はDIリポジトリ設定ファイルへの記述例である。
+
+  .. code-block:: xml
+
+    <component class="nablarch.common.handler.threadcontext.ThreadContextClearHandler" />
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "handlers-ThreadContextClearHandler",
+  "title": "スレッドコンテキスト変数削除ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ThreadContextClearHandler",
+        "nablarch.common.handler.threadcontext.ThreadContextClearHandler",
+        "ThreadContextHandler",
+        "スレッドコンテキスト変数削除",
+        "スレッドローカル変数",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ThreadContextClearHandler",
+        "ThreadContextHandler",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "スレッドローカル変数削除"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "ThreadContextClearHandler",
+        "DIリポジトリ設定",
+        "XML設定",
+        "ハンドラ設定",
+        "設定不要"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.threadcontext.ThreadContextClearHandler`\n\n:ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除するハンドラ。\n\n> **注意**: 本ハンドラは極力手前側に配置すること。往路処理では、本ハンドラより手前のハンドラではスレッドコンテキストにアクセスできなくなるため。",
+    "s2": "1. **[往路処理]** 何もせずに後続ハンドラへ処理委譲。\n2. **[復路処理]** :ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除。\n3. **[例外処理]** 後続ハンドラでエラーが発生した場合も、:ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除。",
+    "s3": "本ハンドラの実装内容は変更不要のため、そのまま使用可能。\n\n```xml\n<component class=\"nablarch.common.handler.threadcontext.ThreadContextClearHandler\" />\n```"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "handlers-ThreadContextClearHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The qualifier '基本的に' (basically/essentially) was dropped, changing a hedged statement into an absolute one.",
+      "source_evidence": "Source: '本ハンドラの実装内容は基本的に変更不要なものであり' → Knowledge: '本ハンドラの実装内容は変更不要のため'"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "handlers-ThreadContextClearHandler",
+  "title": "スレッドコンテキスト変数削除ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "ThreadContextClearHandler",
+        "nablarch.common.handler.threadcontext.ThreadContextClearHandler",
+        "ThreadContextHandler",
+        "スレッドコンテキスト変数削除",
+        "スレッドローカル変数",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "ThreadContextClearHandler",
+        "ThreadContextHandler",
+        "ハンドラ処理フロー",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "スレッドローカル変数削除"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "ThreadContextClearHandler",
+        "DIリポジトリ設定",
+        "XML設定",
+        "ハンドラ設定",
+        "設定不要"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.threadcontext.ThreadContextClearHandler`\n\n:ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除するハンドラ。\n\n> **注意**: 本ハンドラは極力手前側に配置すること。往路処理では、本ハンドラより手前のハンドラではスレッドコンテキストにアクセスできなくなるため。",
+    "s2": "1. **[往路処理]** 何もせずに後続ハンドラへ処理委譲。\n2. **[復路処理]** :ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除。\n3. **[例外処理]** 後続ハンドラでエラーが発生した場合も、:ref:`ThreadContextHandler` で設定したスレッドローカル上の変数を削除。",
+    "s3": "本ハンドラの実装内容は変更不要のため、そのまま使用可能。\n\n```xml\n<component class=\"nablarch.common.handler.threadcontext.ThreadContextClearHandler\" />\n```"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

@@ -1,0 +1,438 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation_batch/03_dbInputBatch.rst`
+- Format: `rst`
+
+```
+================================
+データベースを入力とするバッチ
+================================
+
+:doc:`ユーザ情報削除バッチ<01_userDeleteBatchSpec>`\
+を例に、データベースを入力とするバッチ処理の実装方法を説明する。
+
+
+.. image:: ./_image/userDeleteBatch.jpg
+
+
+初期化処理
+==========
+
+初期化処理では、削除条件の日付を算出する。
+算出した初期化を本処理でも使用できるよう、ExecutionContextに設定している。
+
+.. code-block:: java
+
+
+    /**
+     * {@inheritDoc}
+     * 事前処理として、削除条件となる日付（システム日付の2年前）を算出し、セッションに保持する。
+     */
+    @Override
+    protected void initialize(CommandLine command, ExecutionContext context) {
+
+        // 削除条件の日付を算出しログ出力
+        String today = SystemTimeUtil.getDateString();
+        String deleteDate = DateUtil.addMonth(today, RETENTION_PERIOD);
+        writeLog("MB11AA0101", DateUtil.formatDate(deleteDate, "yyyy/MM/dd"));
+
+        // 削除条件をセッションに格納
+        context.setSessionScopedVar(DATE_DATE_SESSION_KEY, deleteDate);
+
+    }
+
+writeLogメソッドについては、\ :ref:`log_output_in_batch_action` \を参照。
+
+リーダ作成
+==========
+
+削除対象のユーザ一覧を読み込むリーダを生成する。\
+削除対象となるユーザの一覧をSQLを発行して取得する。
+
+取得した\ ``SqlResultSet``\ を\ ``DatabaseRecordReader``\ に与えることで、\
+リーダを作成することができる。
+
+.. code-block:: java
+
+    /**
+     * {@inheritDoc}
+     * 削除対象のユーザ一覧を読み込む{@link DataReader}を生成する。
+     */
+    @Override
+    public DataReader<SqlRow> createReader(ExecutionContext ctx) {
+
+        // 初期化処理で算出した削除条件日付をセッションから取得する
+        SystemAccountEntity condition = new SystemAccountEntity();
+        condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(
+                DATE_DATE_SESSION_KEY));
+
+        // ログ出力用にレコード件数を取得
+        int count = countByParameterizedSql("GET_DELETE_USER_LIST", condition);
+        // 処理対象件数をログ出力
+        writeLog("M000000001", count);
+
+        // リーダを生成
+        DatabaseRecordReader reader = new DatabaseRecordReader();
+        ParameterizedSqlPStatement statement = getParameterizedSqlStatement(
+                "GET_DELETE_USER_LIST");
+        reader.setStatement(statement, condition);
+        return reader;
+    }
+
+\
+
+writeLogメソッドについては、\ :ref:`log_output_in_batch_action` \を参照。
+
+
+１件ごとの処理
+==============
+
+
+削除対象ユーザ1件ごとの処理を行う。
+この処理は、削除対象ユーザの件数分だけ繰り返し起動される。
+
+処理概要は以下の通り。
+
+* 削除対象ユーザの排他制御を行う（悲観的ロック）。
+
+* 削除対象ユーザの詳細情報をデータベースより取得する。
+
+ * 排他制御を行っており必ずデータが取得できるはずなので、取得できなかった場合はエラーとみなす。
+ 
+* 削除対象ユーザの情報を各テーブルから削除する。
+
+* 削除したユーザの情報をテンポラリテーブル、削除ユーザ情報メッセージ送信テーブルに登録する。
+
+
+
+.. code-block:: java
+
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * 削除対象のユーザIDに関連する下記テーブルを物理削除する。
+     * <ul>
+     * <li>システムアカウント:SYSTEM_ACCOUNT</li>
+     * <li>システムアカウント権限:SYSTEM_ACCOUNT_AUTHORITY</li>
+     * <li>グループシステムアカウント:UGROUP_SYSTEM_ACCOUNT</li>
+     * <li>ユーザ情報:USERS</li>
+     * </ul>
+     */
+    @Override
+    public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+        // 排他制御
+        ExclusiveControlUtil.updateVersion(
+                new ExclusiveCtrlSystemAccountContext(
+                        inputData.getString("userId")));
+
+        // 削除対象のユーザ情報を取得する。
+        SqlRow userInfo = getUserInfo(inputData.getString("userId"),
+                ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));
+
+        if (userInfo == null) {
+            // ユーザデータが取得出来なかった場合は、エラーとする。
+            throw new TransactionAbnormalEnd(100, "NB11AA0101",
+                    inputData.getString("userId"));
+        }
+
+        // ユーザ情報を削除
+        CM311AC1Component component = new CM311AC1Component();
+        component.deleteUser(userInfo.getString("userId"));
+
+        // テンポラリに削除したユーザ情報を登録
+        insertDeleteUserReportTemp(new DeleteUserReportTempEntity(userInfo));
+
+        // 削除したユーザ情報を外部システムに送信するために、
+        // 削除ユーザ情報メッセージ送信テーブルにデータを登録
+        insertSendMessage(new DeleteUserSendMessage(userInfo));
+
+        return new Success();
+    }
+
+
+``BatchAction``\ クラスは、\ ``DbAccessSupport`` クラスのサブクラスなので、
+データベースアクセスの機能も備えている。\
+本クラスでは、以下のメソッドでスーパクラスの機能を用いてデータベースアクセスを行っている。
+
+1. 削除対象のユーザ情報を取得するメソッド (getUserInfoメソッド)
+2. 削除したユーザ情報をテンポラリテーブルに登録するメソッド (insertDeleteUserReportTempメソッド)
+
+
+.. admonition:: SqlRowからFormのプロパティへ値を設定する方法
+
+  * 入力データに対する精査が必要な場合
+
+    バリデーション機能を使用して、精査時にプロパティへの値設定を行う。
+
+  * 入力データに対する精査が必要ない場合(既に精査済みの値がデータベースに格納されており、精査が不用な場合)
+
+    FormのMapを引数に取るコンストラクタを使用して、インスタンス生成時にSqlRowが保持する値をプロパティに設定する。
+    上記実装例の場合、\ *new DeleteUserReportTempEntity(userInfo)*\ がSqlRwoを元にFormを生成しプロパティへの値設定を行なっているコードとなる。
+
+    ※引数なしのコンストラクタを使用してインスタンス生成後に、明示的にセッターを呼び出すような実装はしないこと。
+    この様な実装は、プロパティ数が増えると実装コードが大幅に増え、生産性への影響や実装ミスによる不具合の原因となるためである。
+
+   .. note::
+
+    編集が必要な項目（例えば、金額や日付を計算して求めるような項目）などは、明示的にセッターを使用して値を設定する必要がある。
+    この様な場合は、SqlRow元にインスタンス生成を行ない、その後に値の編集及びセッターを使用して値の設定を行えば良い。
+
+    以下に実装例を示す。
+
+    .. code-block:: java
+
+      // SqlRowからEntityを生成
+      DeleteUserReportTempEntity entity = new DeleteUserReportTempEntity(userInfo)
+      // 編集が必要な項目は、明示的にセッターを呼び出す。
+      entity.setSampleItem(DateUtil.addDay(userInfo.getString("SampleItem"), 100));
+
+
+削除対象ユーザ詳細情報の取得に失敗した場合にエラーとするため、
+\ ``TransactionAbnormalEnd``\ エラーを送出している。コンストラクタ引数は以下のとおり。
+
+============== ================================================================= ==============================
+引数           説明                                                              設定値
+============== ================================================================= ==============================
+exitCode       終了コード(プロセスを終了する際に設定する値)                      100
+failureCode    障害コード                                                        NB11AA0101 
+messageOptions 障害コードからメッセージを取得する際に使用するオプション情報      取得失敗したユーザのユーザID
+============== ================================================================= ==============================
+
+本エラーを送出すると、フレームワークにて以下の処理が行われる。
+
+#. FATALレベルでの運用ログ出力
+#. 後続の業務処理を停止
+#. 指定された終了コードでプロセスを終了
+
+
+エラー発生時の処理
+==================
+
+特別な処理は必要ないため、実装しない。
+
+終了処理
+========
+
+特別な処理は必要ないため、実装しない。
+
+
+.. _`log_output_in_batch_action`:
+
+ログ出力
+========
+
+レコードを件数などをログ出力している箇所があるが、\
+これはスーパクラスで用意された以下のメソッドを呼び出している。
+ 
+.. code-block:: java
+ 
+    protected void writeLog(String msgId, Object... msgOption);
+ 
+第１引数にメッセージID(必須)を、第２引数にメッセージへの埋め込み用オブジェクト(任意)を指定する。\
+この機能を使用してログ出力する場合は、使用するメッセージがメッセージテーブルに登録されている必要がある。
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-03_dbInputBatch`
+
+```json
+{
+  "id": "nablarch-batch-03_dbInputBatch",
+  "title": "データベースを入力とするバッチ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "初期化処理",
+      "hints": [
+        "ExecutionContext",
+        "SystemTimeUtil",
+        "DateUtil",
+        "setSessionScopedVar",
+        "initialize",
+        "CommandLine",
+        "初期化処理",
+        "削除条件日付算出",
+        "セッションスコープ設定"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "リーダ作成",
+      "hints": [
+        "DatabaseRecordReader",
+        "ParameterizedSqlPStatement",
+        "DataReader",
+        "SqlRow",
+        "SqlResultSet",
+        "SystemAccountEntity",
+        "createReader",
+        "getParameterizedSqlStatement",
+        "countByParameterizedSql",
+        "リーダ作成",
+        "データベース入力バッチ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "１件ごとの処理",
+      "hints": [
+        "ExclusiveControlUtil",
+        "ExclusiveCtrlSystemAccountContext",
+        "TransactionAbnormalEnd",
+        "BatchAction",
+        "DbAccessSupport",
+        "SqlRow",
+        "DeleteUserReportTempEntity",
+        "CM311AC1Component",
+        "DeleteUserSendMessage",
+        "Success",
+        "排他制御",
+        "悲観的ロック",
+        "SqlRowからFormへの変換",
+        "エラー終了コード",
+        "handle"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "エラー発生時の処理",
+      "hints": [
+        "エラー発生時処理",
+        "バッチエラー処理"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "終了処理",
+      "hints": [
+        "終了処理",
+        "バッチ終了処理"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ログ出力",
+      "hints": [
+        "writeLog",
+        "ログ出力",
+        "メッセージID",
+        "メッセージテーブル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`initialize`メソッドで削除条件の日付を算出し、`ExecutionContext`のセッションスコープ変数に格納する。後続の`createReader`・`handle`メソッドでセッションから取得して使用する。\n\n```java\n@Override\nprotected void initialize(CommandLine command, ExecutionContext context) {\n    String today = SystemTimeUtil.getDateString();\n    String deleteDate = DateUtil.addMonth(today, RETENTION_PERIOD);\n    writeLog(\"MB11AA0101\", DateUtil.formatDate(deleteDate, \"yyyy/MM/dd\"));\n    context.setSessionScopedVar(DATE_DATE_SESSION_KEY, deleteDate);\n}\n```\n\nログ出力については :ref:`log_output_in_batch_action` を参照。",
+    "s2": "`createReader`メソッドで`DatabaseRecordReader`を生成する。セッションから削除条件日付を取得し、`SystemAccountEntity`を条件オブジェクトとして使用する。取得した`SqlResultSet`を`DatabaseRecordReader`に与えることでリーダを作成できる。`ParameterizedSqlPStatement`をリーダに設定する。\n\n```java\n@Override\npublic DataReader<SqlRow> createReader(ExecutionContext ctx) {\n    SystemAccountEntity condition = new SystemAccountEntity();\n    condition.setEffectiveDateTo(ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n\n    int count = countByParameterizedSql(\"GET_DELETE_USER_LIST\", condition);\n    writeLog(\"M000000001\", count);\n\n    DatabaseRecordReader reader = new DatabaseRecordReader();\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_DELETE_USER_LIST\");\n    reader.setStatement(statement, condition);\n    return reader;\n}\n```\n\nログ出力については :ref:`log_output_in_batch_action` を参照。",
+    "s3": "`handle`メソッドで削除対象ユーザ1件の処理を行う。処理概要:\n\n1. 排他制御（悲観的ロック）: `ExclusiveControlUtil.updateVersion()`を使用\n2. ユーザ詳細情報をDBから取得。取得できなかった場合はエラー（`TransactionAbnormalEnd`を送出）\n3. 各テーブル（SYSTEM_ACCOUNT、SYSTEM_ACCOUNT_AUTHORITY、UGROUP_SYSTEM_ACCOUNT、USERS）からユーザ情報を物理削除\n4. テンポラリテーブルおよび削除ユーザ情報メッセージ送信テーブルに登録\n\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ExclusiveControlUtil.updateVersion(\n            new ExclusiveCtrlSystemAccountContext(inputData.getString(\"userId\")));\n\n    SqlRow userInfo = getUserInfo(inputData.getString(\"userId\"),\n            ctx.<String>getSessionScopedVar(DATE_DATE_SESSION_KEY));\n\n    if (userInfo == null) {\n        throw new TransactionAbnormalEnd(100, \"NB11AA0101\", inputData.getString(\"userId\"));\n    }\n\n    CM311AC1Component component = new CM311AC1Component();\n    component.deleteUser(userInfo.getString(\"userId\"));\n\n    insertDeleteUserReportTemp(new DeleteUserReportTempEntity(userInfo));\n    insertSendMessage(new DeleteUserSendMessage(userInfo));\n\n    return new Success();\n}\n```\n\n`BatchAction`は`DbAccessSupport`のサブクラスのため、データベースアクセス機能を備えている。\n\n**`TransactionAbnormalEnd`のコンストラクタ引数:**\n\n| 引数 | 説明 | 設定値 |\n|---|---|---|\n| exitCode | 終了コード（プロセス終了時に設定する値） | 100 |\n| failureCode | 障害コード | NB11AA0101 |\n| messageOptions | 障害コードからメッセージ取得時に使用するオプション情報 | 取得失敗したユーザのユーザID |\n\n`TransactionAbnormalEnd`送出時のフレームワーク動作:\n1. FATALレベルでの運用ログ出力\n2. 後続の業務処理を停止\n3. 指定された終了コードでプロセスを終了\n\n**`SqlRow`からFormへの値設定方法:**\n\n> **重要**: 引数なしコンストラクタでインスタンス生成後に明示的にセッターを呼び出す実装はしないこと。プロパティ数が増えると実装コードが大幅に増え、実装ミスによる不具合の原因となる。\n\n- 精査が必要な場合: バリデーション機能を使用してプロパティへの値設定を行う\n- 精査が不要な場合（既にDBに精査済み値が格納されている場合）: `Map`を引数に取るコンストラクタを使用してインスタンス生成時に`SqlRow`の値をプロパティに設定する（例: `new DeleteUserReportTempEntity(userInfo)`）\n\n> **注意**: 編集が必要な項目（金額や日付の計算など）は、`Map`コンストラクタでインスタンス生成後、明示的にセッターで値を設定する。\n\n```java\nDeleteUserReportTempEntity entity = new DeleteUserReportTempEntity(userInfo);\nentity.setSampleItem(DateUtil.addDay(userInfo.getString(\"SampleItem\"), 100));\n```",
+    "s4": "特別な処理は必要ないため、実装しない。",
+    "s5": "特別な処理は必要ないため、実装しない。",
+    "s6": "スーパークラスの`writeLog`メソッドを使用してログ出力を行う。\n\n```java\nprotected void writeLog(String msgId, Object... msgOption);\n```\n\n- 第1引数: メッセージID（必須）\n- 第2引数: メッセージへの埋め込みオブジェクト（任意）\n\nこのメソッドを使用する場合、使用するメッセージがメッセージテーブルに登録されている必要がある。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S13: Section 's4' too short (19 chars)
+- S13: Section 's5' too short (19 chars)
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

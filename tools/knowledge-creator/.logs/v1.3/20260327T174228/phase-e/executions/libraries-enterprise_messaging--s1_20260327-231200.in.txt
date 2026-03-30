@@ -1,0 +1,381 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-enterprise_messaging--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — 共通プロトコルヘッダー table, ReplyTo row",
+      "description": "The knowledge file omits the behavior detail for ReplyTo during 応答不要受信: \"応答不要受信の場合は、通常は何も設定されていない。\" The knowledge file only covers the synchronous response reception case.",
+      "source_evidence": "応答不要受信の場合は、通常は何も設定されていない。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — フレームワーク制御ヘッダー code example",
+      "description": "The knowledge file omits the comment line \"# フレームワーク制御ヘッダ部 (50byte)\" from the code block, which specifies the total header size as 50 bytes — implementation-relevant sizing information.",
+      "source_evidence": "#===================================================================\n# フレームワーク制御ヘッダ部 (50byte)\n#==================================================================="
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "The hints for s3 include 応答不要メッセージ送信 and 同期応答メッセージ送信, but are missing 応答不要メッセージ受信 and 同期応答メッセージ受信, which are listed as equal members of the 4 key API types in the source.",
+      "source_evidence": "以下の4つの送受信処理を実行するためのAPIが定義された...\n- 応答不要メッセージ送信\n- 同期応答メッセージ送信\n- 応答不要メッセージ受信\n- 同期応答メッセージ受信"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The s5 hints are missing the handler class names referenced in the フレームワーク制御ヘッダー table within the section content: RequestPathJavaPackageMapping, RequestHandlerEntry, ServiceAvailabilityCheckHandler, PermissionCheckHandler, FwHeaderReader, MessageResendHandler, MessageReplyHandler.",
+      "source_evidence": "| :doc:`../handler/RequestPathJavaPackageMapping`\n| :doc:`../handler/RequestHandlerEntry`\n| :doc:`../handler/ServiceAvailabilityCheckHandler`\n| :doc:`../handler/PermissionCheckHandler`\n| :doc:`../reader/FwHeaderReader`\n:doc:`../handler/MessageResendHandler`\n:doc:`../handler/MessageReplyHandler`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+
+==========================================
+システム間メッセージング機能
+==========================================
+
+
+本節では、本フレームワークが提供するシステム間メッセージング機能について解説する。
+
+  - `全体構成`_
+  - `基本概念`_
+  - `メッセージング基盤API`_
+  - `メッセージングプロバイダ`_
+  - :doc:`../architectural_pattern/messaging`
+  - :doc:`messaging_sending_batch`
+  - :doc:`messaging_sender_util`
+
+---------------------------------
+
+全体構成
+================================
+次の図に示されるように、本機能は大きく分けると3つのレイヤによって構成されている。
+
+  .. figure::  ../_image/messaging_components.png
+     :align: center
+     :scale: 60
+
+
+**1. メッセージング基盤API**
+  以下の4つの送受信処理を実行するためのAPIが定義された本機能の中心となるクラス群である。
+
+    - `応答不要メッセージ送信`_
+    - `同期応答メッセージ送信`_
+    - `応答不要メッセージ受信`_
+    - `同期応答メッセージ受信`_
+
+
+**2. メッセージングプロバイダ**
+  **メッセージング基盤API** の実装系を与えるモジュールである。
+  現時点では、以下の実装系が用意されている。
+ 
+  - `JMS メッセージングプロバイダ`_
+
+    JMSインターフェースの実装系を使用したメッセージングコンテキストの実装。
+    メッセージングミドルウェアがJMS互換であれば、このクラスを経由して利用することができる。
+
+  - `組込みメッセージングプロバイダ`_
+
+    JVM上の1つのサブスレッドとして動作するMOMを使用するメッセージングプロバイダ。
+    自動テストで使用する。
+
+  ..
+    - **Websphere MQ メッセージングプロバイダ**
+
+      Websphere MQによるメッセージングコンテキストの実装を与える。
+      現時点では、2相コミットが利用可能な唯一のメッセージングプロバイダである。
+
+
+
+**3. フレームワーク機能**
+  **メッセージング基盤API** を使用して実装されたフレームワークが提供する各種機能。
+  これらの機能は、後述する「フレームワーク制御ヘッダ」の利用を前提として設計されている。
+
+  - :doc:`../architectural_pattern/messaging`
+
+    NAFの実行制御基盤の1つであり、外部から送信される要求電文に対して適切な業務アプリケーションを実行する制御基盤である。
+    
+  - :doc:`messaging_sending_batch`
+
+    特定のテーブル上の内容を定期的に監視し、各レコードの内容をもとにメッセージを作成して送信する常駐バッチ。
+    応答を行わないメッセージ送信処理で用いる。
+    業務側からは監視対象テーブルへの単純なINSERT文を発行するだけでメッセージを送信することができる。
+
+
+  - :doc:`messaging_sender_util`
+    
+    対外システムに対してメッセージの同期送信を行うユーティリティクラス。
+    フレームワーク制御ヘッダ内の再送電文フラグを利用した再送/タイムアウトの機構を実装している。
+    なお、応答を伴わないメッセージの送信については、 :doc:`messaging_sending_batch` を使用する。
+
+
++++++++++++++++++++++++++++++
+
+
+.. _message_model:
+
+基本概念
+======================================
+**送受信電文のデータモデル**
+  本機能では、送受信電文の内容を以下のようなデータモデルで表現している。
+
+  .. figure::  ../_image/messaging_message_model.png
+     :align: center
+  
+  **プロトコルヘッダー**
+    主にMOMによるメッセージ送受信処理において使用される情報を格納したヘッダー領域である。
+    プロトコルヘッダーはMapインターフェースでアクセスすることが可能となっている。
+
+  **共通プロトコルヘッダー**
+    プロトコルヘッダーのうち、メッセージングコンテキストが使用する以下のヘッダーについては、
+    特定のキー名でアクセスすることができる。
+    
+    ================== =============== ============================================================ =============================================
+    ヘッダー論理名      キー名         内容                                                         JMSメッセージングプロバイダでの実装
+    ================== =============== ============================================================ =============================================
+    メッセージID       MessageId       MOMによって電文ごとに一意採番される文字列。                  MessageID JMSヘッダーの値を設定
+
+                                       **送信時**
+                                         送信処理の際、MOMが採番した値が設定される。
+
+                                       **受信時**
+                                         送信側のMOMが発番した値が設定されている。
+
+    関連メッセージID   CorrelationId   電文が関連する電文のメッセージID                             CorrelationID JMSヘッダーの値を設定
+                                       応答電文および再送要求電文で使用され、それぞれ、以下の値を
+                                       設定する。
+  
+                                       **応答電文**
+                                         要求電文のメッセージIDを設定する。                 
+
+                                       **再送要求**
+                                         応答再送を要求する要求電文のメッセージIDを設定する。
+
+    送信宛先           Destination     電文の送信宛先を表す論理名。                                 送信キューのDestinationオブジェクトに
+                                                                                                    紐付けられた論理名を設定
+                                       **送信時**
+                                         送信キューの論理名を指定する。
+
+                                       **受信時**
+                                         受信キューの論理名が設定されている。                                          
+
+    応答宛先           ReplyTo         この電文に応答を送信する際に使用する宛先を表す論理名。       応答受信キューのDestinationオブジェクトに
+                                                                                                    紐付けられた論理名を設定
+                                       **送信時**
+                                         同期応答処理の場合は応答受信キューの論理名を設定する。
+                                         応答不要送信の場合は設定不要。
+
+                                       **受信時**
+                                         同期応答受信の場合は、応答宛先キューの論理名が
+                                         設定されている。
+                                         応答不要受信の場合は、通常は何も設定されていない。
+
+    有効期間           TimeToLive      送信処理開始時点を起点とする電文の有効期間(msec)             Expiration JMSヘッダー に、
+                                                                                                    (送信処理実行時点での時刻 + 有効期間) を設定
+                                       **送信時**
+                                         送信電文の有効期間を設定する。
+
+                                       **受信時**
+                                         何も設定されない。
+    ================== =============== ============================================================ =============================================
+      
+    共通プロトコルヘッダー以外のヘッダーについては、各メッセージングプロバイダ側で任意に定義することが可能である。
+    このようなヘッダーは **個別プロトコルヘッダ** と呼ばれる。
+    例えば、JMSメッセージングプロバイダの場合、全てのJMSヘッダー、JMS拡張ヘッダーおよび任意属性は、個別プロトコルヘッダとして扱われる。
+     
+  **メッセージボディ**
+    プロトコルヘッダーを除いた電文のデータ領域をメッセージボディと呼ぶ。
+    メッセージングプロバイダ、メッセージングコンテキストは、原則としてプロトコルヘッダー領域のみを使用する。
+    それ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。
+    
+    メッセージボディの解析は、 :doc:`record_format` によって行う。
+    これにより、電文の内容をフィールド名をキーとするMap形式で読み書きすることが可能である。
+
+
+  .. _fw_header:
+
+  **フレームワーク制御ヘッダー**
+    本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されている
+    ことを前提として設計されているものが多く存在する。
+    そのような制御項目のことを「フレームワーク制御ヘッダ」とよぶ。
+
+    フレームワーク制御ヘッダの一覧とそれを使用するハンドラの対応は以下のとおり。
+
+    ======================== ========================================= ===========================================
+    フレームワーク制御ヘッダ 役割                                      このヘッダを使用する主要なハンドラ
+    ======================== ========================================= ===========================================
+    リクエストID             この電文を受信したアプリケーションが      | :doc:`../handler/RequestPathJavaPackageMapping`
+                             実行すべき業務処理を識別するためのID。    | :doc:`../handler/RequestHandlerEntry`
+                                                                       | :doc:`../handler/ServiceAvailabilityCheckHandler`
+                                                                       | :doc:`../handler/PermissionCheckHandler`
+                                                                       | :doc:`../reader/FwHeaderReader`
+                                                                       |  ...他
+
+    ユーザID                 この電文の実行権限を表す文字列。          :doc:`../handler/PermissionCheckHandler`
+    再送要求フラグ           再送要求電文送信時に設定されるフラグ。    :doc:`../handler/MessageResendHandler`
+    ステータスコード         要求電文に対する処理結果を表すコード値    :doc:`../handler/MessageReplyHandler`
+                             応答電文に設定される。                     
+    ======================== ========================================= ===========================================
+
+    フレームワークヘッダーは、デフォルトの設定では、メッセージボディの最初のデータレコード中に、
+    それぞれ以下のフィールド名で定義されている必要がある。
+
+    ======================== =============
+    フレームワーク制御ヘッダ フィールド名
+    ======================== =============
+    リクエストID             requestId
+    ユーザID                 userId
+    再送要求フラグ           resendFlag
+    ステータスコード         statusCode
+    ======================== =============
+ 
+    以下は、標準的なフレームワーク制御ヘッダの定義例である。
+      
+    .. code-block:: bash
+
+      #===================================================================
+      # フレームワーク制御ヘッダ部 (50byte)
+      #===================================================================
+      [NablarchHeader]
+      1   requestId   X(10)       # リクエストID
+      11  userId      X(10)       # ユーザID
+      21  resendFlag  X(1)  "0"   # 再送要求フラグ (0: 初回送信 1: 再送要求)
+      22  statusCode  X(4)  "200" # ステータスコード
+      26 ?filler      X(25)       # 予備領域
+      #====================================================================
+
+    フォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、
+    フレームワーク制御ヘッダの任意ヘッダ項目としてアクセスすることができ、
+    PJ毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用することができる。
+
+    また、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、
+    予備領域を設けておくことを強く推奨する。
+
+
++++++++++++++++++++++++++++++++
+
+.. _messaging_api:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-enterprise_messaging--s1",
+  "title": "システム間メッセージング機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "システム間メッセージング機能",
+      "hints": [
+        "システム間メッセージング機能",
+        "メッセージング基盤",
+        "メッセージングプロバイダ",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構成",
+      "hints": [
+        "メッセージング基盤API",
+        "JMSメッセージングプロバイダ",
+        "組込みメッセージングプロバイダ",
+        "応答不要メッセージ送信",
+        "同期応答メッセージ送信",
+        "フレームワーク機能"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "message_model",
+        "メッセージデータモデル"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "基本概念",
+      "hints": [
+        "プロトコルヘッダー",
+        "共通プロトコルヘッダー",
+        "フレームワーク制御ヘッダー",
+        "MessageId",
+        "CorrelationId",
+        "Destination",
+        "ReplyTo",
+        "TimeToLive",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "NablarchHeader",
+        "メッセージボディ",
+        "個別プロトコルヘッダ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "",
+      "hints": [
+        "messaging_api",
+        "メッセージング基盤API"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "なし",
+    "s2": "なし",
+    "s3": "**1. メッセージング基盤API**\n以下の4種類の送受信処理APIを提供するクラス群:\n- 応答不要メッセージ送信\n- 同期応答メッセージ送信\n- 応答不要メッセージ受信\n- 同期応答メッセージ受信\n\n**2. メッセージングプロバイダ**\nメッセージング基盤APIの実装系:\n- **JMSメッセージングプロバイダ**: JMSインターフェース実装。JMS互換のメッセージングミドルウェアで利用可能。\n- **組込みメッセージングプロバイダ**: JVM上のサブスレッドとして動作するMOMを使用。自動テスト専用。\n\n**3. フレームワーク機能**\nメッセージング基盤APIを使用した機能群。フレームワーク制御ヘッダの利用を前提として設計。\n- :doc:`../architectural_pattern/messaging`: 外部からの要求電文に適切な業務アプリケーションを実行する制御基盤。\n- :doc:`messaging_sending_batch`: 監視テーブルのレコードからメッセージを作成・送信する常駐バッチ。業務側はINSERT文のみでメッセージ送信可能。応答不要メッセージ送信で使用。\n- :doc:`messaging_sender_util`: 対外システムへの同期メッセージ送信ユーティリティ。フレームワーク制御ヘッダの再送電文フラグによる再送/タイムアウト機構を実装。応答なしメッセージ送信には :doc:`messaging_sending_batch` を使用。",
+    "s4": "なし",
+    "s5": "**プロトコルヘッダー**\nMOMによるメッセージ送受信処理で使用される情報を格納したヘッダー領域。Mapインターフェースでアクセス可能。\n\n**共通プロトコルヘッダー**\nメッセージングコンテキストが使用するヘッダー群。特定のキー名でアクセス可能。\n\n| ヘッダー論理名 | キー名 | 内容 | JMS実装 |\n|---|---|---|---|\n| メッセージID | MessageId | MOMが電文ごとに一意採番する文字列。送信時:MOMが採番した値。受信時:送信側MOMが発番した値。 | MessageID JMSヘッダー |\n| 関連メッセージID | CorrelationId | 関連電文のメッセージID。応答電文:要求電文のMessageId。再送要求:応答再送を要求する要求電文のMessageId。 | CorrelationID JMSヘッダー |\n| 送信宛先 | Destination | 電文の送信宛先論理名。送信時:送信キュー論理名。受信時:受信キュー論理名。 | 送信キューのDestinationオブジェクト論理名 |\n| 応答宛先 | ReplyTo | 応答送信先論理名。同期応答送信時:応答受信キュー論理名。応答不要送信時:設定不要。受信時(同期応答):応答宛先キュー論理名。 | 応答受信キューのDestinationオブジェクト論理名 |\n| 有効期間 | TimeToLive | 送信処理開始時点からの電文有効期間(msec)。受信時は設定されない。 | Expiration JMSヘッダーに(送信時刻+有効期間)を設定 |\n\n共通プロトコルヘッダー以外のヘッダーは**個別プロトコルヘッダ**としてプロバイダ側で任意に定義可能。JMSの場合、JMSヘッダー・JMS拡張ヘッダー・任意属性はすべて個別プロトコルヘッダとして扱われる。\n\n**メッセージボディ**\nプロトコルヘッダーを除いたデータ領域。メッセージングコンテキストはプロトコルヘッダー領域のみ使用し、それ以外は未解析のバイナリデータとして扱う。メッセージボディの解析は :doc:`record_format` で行い、フィールド名をキーとするMap形式で読み書き可能。\n\n**フレームワーク制御ヘッダー**\nフレームワーク機能が電文中に定義されていることを前提とする制御項目群。\n\n| フレームワーク制御ヘッダ | フィールド名 | 役割 | 使用するハンドラ |\n|---|---|---|---|\n| リクエストID | requestId | 実行すべき業務処理を識別するID | :doc:`../handler/RequestPathJavaPackageMapping`, :doc:`../handler/RequestHandlerEntry`, :doc:`../handler/ServiceAvailabilityCheckHandler`, :doc:`../handler/PermissionCheckHandler`, :doc:`../reader/FwHeaderReader` 他 |\n| ユーザID | userId | 電文の実行権限を表す文字列 | :doc:`../handler/PermissionCheckHandler` |\n| 再送要求フラグ | resendFlag | 再送要求電文送信時に設定されるフラグ | :doc:`../handler/MessageResendHandler` |\n| ステータスコード | statusCode | 要求電文に対する処理結果コード（応答電文に設定） | :doc:`../handler/MessageReplyHandler` |\n\nデフォルトではメッセージボディの最初のデータレコードに上記フィールド名で定義する必要がある。\n\n```bash\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n```\n\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、任意ヘッダ項目としてPJごとに簡易拡張可能。将来の項目追加に備えて予備領域を設けることを強く推奨。",
+    "s6": "なし"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

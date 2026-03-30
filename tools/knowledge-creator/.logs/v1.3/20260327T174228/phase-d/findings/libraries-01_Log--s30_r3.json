@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s30",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "Property name `writer.<名称>.className` (first column of ログライタの設定 table) is not included in hints. Other table-first-column entries (writerNames, loggerFactory.className) are present, but this one is missing.",
+      "source_evidence": "Source table row: `writer.<ログライタの名称>.className` | ログライタのクラス名。必須。LogWriterを実装したクラスのFQCNを指定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9 hints",
+      "description": "Two property names from the FileLogWriter settings table (first column) are absent from hints: `level` (for `writer.<名称>.level`) and `formatter.className` (for `writer.<名称>.formatter.className`). Other property names in that table (filePath, encoding, outputBufferSize, maxFileSize) are all covered.",
+      "source_evidence": "Source table rows: `writer.<ログライタの名称>.level` (ログレベルの名称。(必須)) and `writer.<ログライタの名称>.formatter.className` (ログライタで使用するログフォーマッタのクラス名。LogFormatterを実装したクラスのFQCNを指定する。)"
+    }
+  ]
+}

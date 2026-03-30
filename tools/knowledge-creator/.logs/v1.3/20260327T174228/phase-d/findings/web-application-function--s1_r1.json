@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-function--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — データレコードのダウンロード方法",
+      "description": "The format definition file example (N11AA001.fmt) is entirely omitted. The source provides the complete format file content including file-type (\"Variable\"), text-encoding (\"Shift_JIS\"), record-separator (\"\\n\"), field-separator (\",\"), and the [header]/[data] record definitions with field types (N, X). Without this, an AI cannot guide users on how to write the required format file for DataRecordResponse.",
+      "source_evidence": "Source section 'データレコードのダウンロード方法' contains a full `.. code-block:: bash` block showing N11AA001.fmt with all format properties and field definitions."
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 別ウィンドウを開きダウンロードを開始したい場合",
+      "description": "The JavaScript `doOnclick` function implementation is completely missing. The source provides a full cross-browser implementation (IE via fireEvent, modern browsers via createEvent/MouseEvents/dispatchEvent, fallback via element.onclick()). This function is required to trigger the download on page load in the sub-window and is an integral part of the feature implementation.",
+      "source_evidence": "Source section 'JavaScriptの実装例' contains the complete doOnclick(name) function with three browser branches."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "The source file contains 4 h2-level headings (ファイルのダウンロード方法, BLOB型カラムのダウンロード方法, データレコードのダウンロード方法, 別ウィンドウを開きダウンロードを開始したい場合), but the knowledge file has only 1 section (s1). Each source section has distinct content warranting separate sections for targeted retrieval.",
+      "source_evidence": "Source h2 headings: 'ファイルのダウンロード方法', 'BLOB型カラムのダウンロード方法', 'データレコードのダウンロード方法', '別ウィンドウを開きダウンロードを開始したい場合'."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_SubmitTag--s18",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "s1のhintsに `WebView_DownloadButtonTag` と `WebView_DownloadLinkTag` が欠落している。ソースのリクエストの二重送信防止セクションでは、対応するカスタムタグとして6種類すべてが列挙されているが、この2つがhintsに含まれていない。",
+      "source_evidence": "* :ref:`WebView_DownloadButtonTag`\n* :ref:`WebView_DownloadLinkTag`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s2",
+      "description": "noCacheタグがincludeされるJSPで使用できない理由（Servlet API仕様）の説明が省略されている。制約自体は記載されているが、技術的根拠（javax.servlet.RequestDispatcher#includeの仕様でincludeされたServletからのヘッダ設定が不可）が含まれていない。",
+      "source_evidence": ".. [#include] Servlet API(javax.servlet.RequestDispatcher#include)の仕様で、「includeされたServlet(JSP)でヘッダへの値設定などは行えない」と定められているためである。"
+    }
+  ]
+}

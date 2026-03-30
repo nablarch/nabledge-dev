@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (section s1)",
+      "description": "The key syntax keywords `$if` and `$sort` are absent from hints. These are the primary identifiers users would search for when asking about variable condition SQL or variable ORDER BY SQL — more likely search terms than the full class names `VariableConditionSyntaxConvertor` / `VariableOrderBySyntaxConvertor`.",
+      "source_evidence": "Source describes `$if(フィールド名) {SQL文の条件}` for variable condition syntax and `$sort(フィールド名) {(ケース1)...}` for variable ORDER BY syntax."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "section s1 — BasicSqlParameterParser, Nablarch extended syntax list",
+      "description": "The qualifier 'デフォルトでは' (by default) is omitted from the extended syntax list. The source states 'デフォルトでは、下記の拡張構文を変換する', implying the set of converters is configurable. The knowledge file presents the list as fixed/definitive.",
+      "source_evidence": "Source: 'デフォルトでは、下記の拡張構文を変換する。\\n* 可変条件構文\\n* 可変IN構文\\n* 可変ORDER BY構文'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "section s1 — multiple locations in markdown body",
+      "description": "RST cross-reference syntax (`:ref:`) appears verbatim in the markdown content in at least three locations: (1) the extended syntax list under BasicSqlParameterParser, (2) the config-file reference in CurrentDateTimeAnnotationHandler's table note, and (3) the system-date-time-feature note under CurrentDateTimeAnnotationHandler. These RST directives will not resolve in a markdown context and will appear as raw markup to an AI reader.",
+      "source_evidence": "Knowledge file body contains: `:ref:\\`可変条件構文<variable_condition_syntax_convertor-label>\\`` , `:ref:\\`設定ファイル<db-object-config-label>\\``, and `:ref:\\`system-date-time-feature\\``"
+    }
+  ]
+}

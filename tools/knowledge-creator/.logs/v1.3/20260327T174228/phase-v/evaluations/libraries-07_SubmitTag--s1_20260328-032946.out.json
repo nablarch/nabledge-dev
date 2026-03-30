@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_SubmitTag--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding in s7 has medium impact: the omission of the default displayControlCheckers behavior leaves developers unaware that explicit configuration is optional. This may cause unnecessary configuration work or confusion. The s6 HTML output omission is low impact as the mechanism is already explained in prose.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s6",
+      "impact": "low",
+      "justification": "The HTML output example (anchor tags with onclick and nablarch_hidden input) is illustrative but the core mechanism is already captured: the knowledge file states that変更パラメータは nablarch_hidden に格納され NablarchTagHandler が処理する. The sampleId=U0002 note is a concrete example of the same behavior already described. A developer can implement the feature correctly without it. Phase E truncated mid-output (the Phase E log shows the s6 section cut off), so the fix was not applied, but the impact remains low."
+    },
+    {
+      "category": "omission",
+      "location": "s7",
+      "impact": "medium",
+      "justification": "The default behavior — that omitting displayControlCheckers causes the framework to automatically use ServiceAvailabilityDisplayControlChecker and PermissionDisplayControlChecker — is absent. Without this, developers cannot tell whether the XML configuration block is mandatory or optional, potentially leading to unnecessary configuration or misunderstanding of the feature's out-of-box behavior. Phase E did not resolve this; the truncated Phase E output indicates the fix was not applied to s7 either."
+    }
+  ]
+}

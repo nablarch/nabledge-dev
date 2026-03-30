@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — SQLファイル内容 (object-form-retrieve-label)",
+      "description": "GET_ALL SQLの定義がknowledge fileのs2に含まれていない。ソースのSQLファイルにはGET_ALLが定義されており、他のクエリと異なるテーブル名(USER_MST vs 他はUSER_MTR)および異なるカラム(USER_NAME_KANA, TEL, MAIL_ADDRESS)を使用している。これはユーザーがこれらのカラムやテーブルについて質問した際に必要な情報である。",
+      "source_evidence": "GET_ALL =\nSELECT USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = :userId\nORDER BY\n    USER_ID"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`getBatchSize` がs1のhints配列に含まれていない。s1のコード例で `statement.getBatchSize()` として明示的に使用されているメソッド名であり、バッチ更新の実装パターンを検索する際の重要なキーワードである。",
+      "source_evidence": "if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) { statement.executeBatch(); }\nif (statement.getBatchSize() != 0) { statement.executeBatch(); }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`CM211BB1Component` がs3のhints配列に含まれていない。ソースコードに登場するPascalCaseクラス名であり、s3のコード例の元となるクラスである。W11BB01FormはhintにあるがCM211BB1Componentは欠落している。",
+      "source_evidence": "package nablarch.sample.ss11BB;\npublic class CM211BB1Component {\n    public SqlResultSet get(W11BB01Form form) {\n        ParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET\");\n        return select.retrieve(form);\n    }\n}"
+    }
+  ]
+}

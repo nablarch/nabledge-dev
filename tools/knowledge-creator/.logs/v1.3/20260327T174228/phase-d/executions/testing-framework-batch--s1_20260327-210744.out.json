@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (固定長ファイルの準備)",
+      "description": "The note about efficiently creating test data by copy-pasting from 外部インタフェース設計書 is omitted. Specifically, the tip that users should use the '行列を入れ替える' (transpose) option when pasting field definitions (フィールド名称, データ型, フィールド長) from design documents.",
+      "source_evidence": "「フィールド名称、データ型、フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。（ペーストする際、「行列を入れ替える」オプションにチェックすること）」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6 (固定長ファイルの準備)",
+      "description": "The concrete example of a SETUP_FIXED layout (members.txt) is not included. This example demonstrates multi-layout file structure with ヘッダ/データ/トレーラ/エンドレコード, shows actual directives (text-encoding=Windows-31J, record-separator=CRLF), data types (9, X), field lengths, and concrete data values. It illustrates correct usage patterns that clarify how the format works in practice.",
+      "source_evidence": "Source provides a full table example: `SETUP_FIXED=work/members.txt` with ヘッダ (レコード区分1桁+FILLER10桁, data=0), データ (レコード区分1桁+会員番号10桁+入会日8桁, 2 records), トレーラ (レコード区分1桁+レコード件数5桁+FILLER4桁, data=8/2), エンド (レコード区分1桁+FILLER10桁, data=9)"
+    }
+  ]
+}

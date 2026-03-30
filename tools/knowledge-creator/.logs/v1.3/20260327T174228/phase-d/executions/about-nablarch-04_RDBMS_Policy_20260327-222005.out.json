@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-04_RDBMS_Policy",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "The data type table in the source lists `int` and `long` as Java data types for numeric data, but these are absent from s1's hints. Other Java types from the same table (`java.lang.String`, `java.math.BigDecimal`, `java.sql.Timestamp`) are included.",
+      "source_evidence": "数値 | int / long / java.math.BigDecimal | int, long といった整数型の場合は小数点以下に値を持たないデータ型..."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[2] (s3) hints",
+      "description": "The s3 content mentions 'データローダ' as a tool that cannot be used when framework table access is prohibited, matching the source. However, 'データローダ' is absent from s3's hints.",
+      "source_evidence": "フレームワークが規定するテーブルのレコードを追加、更新する際、一括登録APIやデータローダを使用できず、効率が悪化する問題。"
+    }
+  ]
+}

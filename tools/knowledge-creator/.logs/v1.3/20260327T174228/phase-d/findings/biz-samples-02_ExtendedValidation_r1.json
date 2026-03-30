@@ -1,0 +1,27 @@
+{
+  "file_id": "biz-samples-02_ExtendedValidation",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2, s3, s4 — property tables",
+      "description": "The knowledge file adds a '型' (type) column to the property tables with values 'String' (for messageId in s2/s3) and 'int' (for length in s4). These type values do not appear anywhere in the source document. The source tables have only two columns: 'property名' and '設定内容'. The 'デフォルト値' column is also added but left empty, and 'String'/'int' type annotations are purely invented.",
+      "source_evidence": "Source table structure (all sections): columns are 'property名' and '設定内容' only. No type information is provided for any property in the source."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — 日本電話番号バリデーション",
+      "description": "Section s3 is very long (well over 2000 characters) and collapses three h3-level subsections from the source ('単項目の電話番号に対する精査', '複数項目で表される電話番号に対する精査', and their respective '精査仕様'/'実装例' subsections) into a single knowledge section. Per the V3 rule, an RST h2 section with >= 2000 chars and existing h3 subsections should be split.",
+      "source_evidence": "Source contains h3 headings: '単項目の電話番号に対する精査' (with '精査仕様' h4), '複数項目で表される電話番号に対する精査' (with '精査仕様' and '実装例' h4s) all under the h2 '日本電話番号バリデーション'."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "The hints array for s3 is missing PascalCase class names and annotation names that appear in the code example within the section: '@ValidateFor', 'ValidationContext', 'ValidationUtil', 'StringUtil'. These are referenced in the implementation example and are searchable identifiers users might query.",
+      "source_evidence": "Source code example contains: `@ValidateFor(\"registerCompany\")`, `ValidationContext<CompanyEntity>`, `ValidationUtil.validateWithout(...)`, `StringUtil.isNullOrEmpty(...)`."
+    }
+  ]
+}

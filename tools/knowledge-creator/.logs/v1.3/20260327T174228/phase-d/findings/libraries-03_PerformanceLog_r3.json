@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-03_PerformanceLog",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — Java code example",
+      "description": "The comment '// 以下ではログ出力のオプション情報は指定していない。' is omitted from the code example. This comment explicitly notes that the optional log output information parameter is intentionally not provided in the example, which is informative for understanding the full API signature of PerformanceLogUtil.end().",
+      "source_evidence": "// endメソッドでは、ポイント、処理結果を表す文字列、ログ出力のオプション情報を指定できる。\n// 以下ではログ出力のオプション情報は指定していない。\nPerformanceLogUtil.end(point, String.valueOf(searchResult.size()));"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints array",
+      "description": "The full class names 'nablarch.core.log.basic.FileLogWriter' and 'nablarch.core.log.basic.BasicLogFormatter' appear in the s4 code example but are not included in the hints. Other sections (s3) consistently include full package-qualified class names as hints for the classes they cover.",
+      "source_evidence": "writer.appFile.className=nablarch.core.log.basic.FileLogWriter\nwriter.appFile.formatter.className=nablarch.core.log.basic.BasicLogFormatter"
+    }
+  ]
+}

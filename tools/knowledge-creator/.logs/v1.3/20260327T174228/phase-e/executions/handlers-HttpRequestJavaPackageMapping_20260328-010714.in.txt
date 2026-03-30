@@ -1,0 +1,178 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-HttpRequestJavaPackageMapping",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "The XML code example in s2 references `nablarch.fw.web.handler.HttpRequestJavaPackageMapping` (note `web.handler` subpackage, distinct from the top-level class name `nablarch.fw.handler.HttpRequestJavaPackageMapping`). This class path is not listed in s2 hints.",
+      "source_evidence": "Source XML example: `<component class=\"nablarch.fw.web.handler.HttpRequestJavaPackageMapping\">`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+.. _httpRequestJavaPackageMapping:
+
+==========================================
+HTTPリクエストディスパッチハンドラ
+==========================================
+
+**クラス名:** ``nablarch.fw.handler.HttpRequestJavaPackageMapping``
+
+----------------------------------------------
+概要
+----------------------------------------------
+このハンドラは、画面オンライン処理におけるリクエストパス中の部分文字列(ベースURI)をJavaパッケージ階層にマッピングすることで、
+動的に委譲先ハンドラを決定するディスパッチ処理を行う。
+
+本ハンドラの実装は :doc:`RequestPathJavaPackageMapping` を直接継承しており、その機能は以下の2点を除けば全く同じものである。
+
+  1. ディスパッチ対象のクラスが確定した時点で、HTTPアクセスログにその内容を出力する。
+  2. ベースパスを設定する際にURLの書式精査を行うアクセサ(**#setBaseUri()**)を追加。
+
+機能の詳細については、 :doc:`RequestPathJavaPackageMapping` を参照すること。
+
+
++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = ["HttpRequestJavaPackageMapping"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | 設定項目                               | プロパティ名                  | データ型　                  | 備考                    |
+  +========================================+===============================+=============================+=========================+
+  | ベースURI                              | baseUri                       | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ベースパッケージ                       | basePackage                   | String                      | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = "")     |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | ハンドラ追加位置                       | immediate                     | boolean                     | | 任意指定              |
+  |                                        |                               |                             | | (デフォルト = true)   |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+  | リクエストパスのパターンとマッピング先 | optionalPackageMappingEntries | | nablarch.fw.handler       | | 任意指定              |
+  | Javaパッケージの組み合わせ             |                               | | .JavaPackageMappingEntry  | | (デフォルト = null)   |
+  +----------------------------------------+-------------------------------+-----------------------------+-------------------------+
+                             
+**設定例**
+  以下の設定では、画面オンライン処理のリクエストパス中のベースURI（コンテキストルート） **/webapp/sample** を、
+  Javaパッケージ **nablarch.sample.apps** に対応させている。
+
+  .. code-block:: xml
+
+    <!-- ディスパッチ -->
+    <component class="nablarch.fw.web.handler.HttpRequestJavaPackageMapping">
+      <property name="baseUri"    value="/webapp/sample" />
+      <property name="basePackage" value="nablarch.sample.apps" />
+    </component>
+
+
+上記設定を行った場合のディスパッチの例を以下に示す。
+
+  =============================   =====================================
+  リクエストパス                  ディスパッチ対象クラス
+  =============================   =====================================
+  /webapp/sample/AdminApp         nablarch.sample.apps.AdminApp
+  /webapp/sample/user/UserApp     nablarch.sample.apps.user.UserApp
+  =============================   =====================================
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-HttpRequestJavaPackageMapping",
+  "title": "HTTPリクエストディスパッチハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "HttpRequestJavaPackageMapping",
+        "nablarch.fw.handler.HttpRequestJavaPackageMapping",
+        "RequestPathJavaPackageMapping",
+        "HTTPリクエストディスパッチ",
+        "ベースURI",
+        "Javaパッケージマッピング",
+        "HTTPアクセスログ",
+        "setBaseUri"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "baseUri",
+        "basePackage",
+        "immediate",
+        "optionalPackageMappingEntries",
+        "JavaPackageMappingEntry",
+        "nablarch.fw.handler.JavaPackageMappingEntry",
+        "設定項目",
+        "ディスパッチ設定例"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.handler.HttpRequestJavaPackageMapping`\n\n画面オンライン処理におけるリクエストパス中のベースURIをJavaパッケージ階層にマッピングし、動的に委譲先ハンドラを決定するディスパッチ処理を行う。\n\n:doc:`RequestPathJavaPackageMapping` を直接継承しており、以下の2点のみ異なる:\n\n1. ディスパッチ対象クラスが確定した時点で、HTTPアクセスログにその内容を出力する。\n2. ベースパス設定時にURLの書式精査を行うアクセサ(`#setBaseUri()`)を追加。\n\nその他の機能詳細は :doc:`RequestPathJavaPackageMapping` を参照。",
+    "s2": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| baseUri | String | | \"\" | ベースURI |\n| basePackage | String | | \"\" | ベースパッケージ |\n| immediate | boolean | | true | ハンドラ追加位置 |\n| optionalPackageMappingEntries | nablarch.fw.handler.JavaPackageMappingEntry | | null | リクエストパスのパターンとマッピング先Javaパッケージの組み合わせ |\n\n**設定例**: ベースURI `/webapp/sample` をパッケージ `nablarch.sample.apps` にマッピングする場合:\n\n```xml\n<component class=\"nablarch.fw.web.handler.HttpRequestJavaPackageMapping\">\n  <property name=\"baseUri\"    value=\"/webapp/sample\" />\n  <property name=\"basePackage\" value=\"nablarch.sample.apps\" />\n</component>\n```\n\n上記設定時のディスパッチ例:\n\n| リクエストパス | ディスパッチ対象クラス |\n|---|---|\n| /webapp/sample/AdminApp | nablarch.sample.apps.AdminApp |\n| /webapp/sample/user/UserApp | nablarch.sample.apps.user.UserApp |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

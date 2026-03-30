@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_Log--s14",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor hints omissions. Neither blocks users from finding the relevant content: the SynchronousFileLogWriter lock properties (finding 1) are documented in a dedicated SynchronousFileLogWriter section elsewhere in the knowledge base, and BasicLogFormatter's FQCN (finding 2) is covered by a dedicated BasicLogFormatter section. In both cases the missing hints represent secondary lookup paths, not primary discovery failures.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s2].hints",
+      "impact": "low",
+      "justification": "lockFilePath, failureCodeCreateLockFile, failureCodeReleaseLockFile, failureCodeForceDeleteLockFile, failureCodeInterruptLockWait are specific SynchronousFileLogWriter properties. They appear in s2 only as part of a general framework configuration example. Users specifically searching for these properties would most likely land on a dedicated SynchronousFileLogWriter section (covered in the same RST source under a separate heading). The absence from s2's hints means only an indirect discovery path is lost; the properties remain fully documented. Phase E did not apply the fix because the output JSON in the E-phase log shows the s2 hints array unchanged from Phase D — the fix step was generated but not persisted to the file."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s6].hints",
+      "impact": "low",
+      "justification": "The short class name BasicLogFormatter is already in s6's hints. The missing FQCN nablarch.core.log.basic.BasicLogFormatter is a secondary lookup token; users who search for the FQCN will find it via the dedicated BasicLogFormatter knowledge section (s14 contains a separate BasicLogFormatter section in the RST). The omission only affects users who search the full FQCN and expect to land on the FileLogWriter configuration context rather than the formatter's own section. Phase E did not apply the fix — the s6 hints array in the Phase E output JSON is identical to the Phase D version, indicating the fix instruction was not executed against the file."
+    }
+  ]
+}

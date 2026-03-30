@@ -1,0 +1,145 @@
+{
+  "id": "web-application-Other--s1",
+  "title": "その他実装例集",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "本ページの構成",
+      "hints": [
+        "ログ出力",
+        "設定値取得",
+        "メッセージ取得",
+        "エラーメッセージ通知",
+        "DBアクセス精査",
+        "コード値取得",
+        "コード値バリデーション",
+        "警告メッセージ",
+        "実装例集"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ログの出力方法",
+      "hints": [
+        "Logger",
+        "LoggerManager",
+        "logDebug",
+        "isDebugEnabled",
+        "ログ出力",
+        "デバッグログ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定値の取得方法",
+      "hints": [
+        "SystemRepository",
+        "getString",
+        "getBoolean",
+        "設定値取得",
+        "環境設定ファイル",
+        "config-file"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージの取得方法",
+      "hints": [
+        "MessageUtil",
+        "Message",
+        "StringResource",
+        "createMessage",
+        "formatMessage",
+        "MessageLevel",
+        "メッセージ取得",
+        "国際化"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "エラーメッセージの通知方法",
+      "hints": [
+        "ApplicationException",
+        "MessageLevel",
+        "エラーメッセージ通知",
+        "業務エラー",
+        "例外処理"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "データベースアクセスを伴う精査を行う方法",
+      "hints": [
+        "ApplicationException",
+        "SqlPStatement",
+        "retrieve",
+        "MessageLevel",
+        "DBアクセス精査",
+        "重複チェック",
+        "Action"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "エラーメッセージを任意の個所に表示する方法",
+      "hints": [
+        "ValidationUtil",
+        "createMessageForProperty",
+        "n:error",
+        "エラーメッセージ表示位置",
+        "プロパティ別エラー"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "コード値の取得方法",
+      "hints": [
+        "CodeUtil",
+        "getValues",
+        "コード値取得",
+        "コードマスタ",
+        "codeId",
+        "n:codeSelect",
+        "n:code"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "コード値を使ったバリデーション",
+      "hints": [
+        "CodeUtil",
+        "コード値バリデーション",
+        "codeId",
+        "コードマスタ",
+        "バリデーション",
+        "精査"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "警告メッセージの表示方法",
+      "hints": [
+        "MessageLevel",
+        "WARN",
+        "警告メッセージ",
+        "n:message",
+        "MessageUtil",
+        "createMessage"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "このドキュメントで説明する実装例の一覧。\n\n- ログの出力方法 (:ref:`other_example_log_write`)\n- 設定値の取得方法 (:ref:`other_example_repository_get_settings`)\n- メッセージの取得方法 (:ref:`other_example_message_get`)\n- エラーメッセージの通知方法 (:ref:`other_example_message_notify`)\n- データベースアクセスを伴う精査を行う方法 (:ref:`other_database_access_error`)\n- エラーメッセージを任意の個所に表示する方法 (:ref:`other_error_message_for_property`)\n- コード値の取得方法 (:ref:`other_example_code_get`)\n- コード値を使ったバリデーション (:ref:`other_example_code_validate`)\n- 警告メッセージの表示方法 (:ref:`other_example_warn_message`)",
+    "s2": "**クラス**: `Logger`, `LoggerManager`\n\nロガーはクラス変数に設定し、`LoggerManager.get(ClassName.class)` で取得する。\n\n```java\nprivate static final Logger LOGGER = LoggerManager.get(CM311AC1Component.class);\n```\n\nデバッグログ出力前に `isDebugEnabled()` で出力有無を確認し、不要なメッセージ組み立て処理による性能劣化を防ぐ。\n\n```java\nif (LOGGER.isDebugEnabled()) {\n    String message = String.format(\"user was not found. userId = [%s], name = [%s]\",\n                                   user.getUserId(), user.getName());\n    LOGGER.logDebug(message);\n}\n```\n\nログ出力設定については :ref:`Web_Log` を参照。",
+    "s3": "**クラス**: `SystemRepository`\n\n| 型 | メソッド |\n|---|---|\n| 文字列 | `SystemRepository.getString(\"key\")` |\n| 真偽値 | `SystemRepository.getBoolean(\"key\")` |\n| その他 | `getString()` で取得後に変換 |\n\n```java\nString messageId = SystemRepository.getString(\"notPermissionMessage\");\nboolean registerFlg = SystemRepository.getBoolean(\"registerUserPermission\");\nint effectiveDateTo = Integer.parseInt(SystemRepository.getString(\"userEffectiveDateTo\"));\n```\n\nコンポーネント設定ファイルに `config-file` タグで環境設定ファイルを読み込む:\n\n```xml\n<config-file file=\"application/system.config\" />\n```\n\n> **警告**: キー値にユーザ入力値やデータベースから取得した値を使用しないこと。キー値が可変の場合、障害発生時の解析が困難になる。キー値は常に固定値を使用すること。\n\n悪い例:\n```java\n// Entityから取得した値をキー値に使用（不可）\nString message = SystemRepository.getString(\"user\" + userEntity.getUserId() + \".message\");\n// DBから取得した値をキー値に使用（不可）\nString message = SystemRepository.getString(\"user\" + row.getString(\"userId\") + \".message\");\n```",
+    "s4": "**クラス**: `MessageUtil`, `Message`, `StringResource`\n\nメッセージはThreadContextに保持した言語に対応した文言が返る。\n\n```java\n// 基本的なメッセージ取得\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\");\nString messageStr = message.formatMessage();\n```\n\nプレースホルダ（`{0}` など）付きメッセージをフォーマットする場合、国際化するときは `StringResource` または `Message` を引数に渡す。国際化を行わない場合はオプション引数に直接文字列を指定してもよい:\n\n```java\nStringResource nameResource = MessageUtil.getStringResource(\"PRP0002\");\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0002\", nameResource);\nString messageStr = message.formatMessage();\n```",
+    "s5": "**クラス**: `ApplicationException`\n\n業務エラーは `ApplicationException`（またはそのサブクラス）をスローすることで、フレームワークの例外処理機構を通じてエラー内容をユーザに通知する。\n\n```java\nMessage message = MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\");\nthrow new ApplicationException(message);\n```",
+    "s6": "**クラス**: `ApplicationException`, `SqlPStatement`, `MessageUtil`\n\nDBアクセスを伴う精査（単体項目・複合項目を問わず）は Entity ではなく Action に実装する。精査エラーは `ApplicationException` でユーザに通知する（:ref:`other_example_message_notify` 参照）。\n\nログインIDの重複チェックの実装例:\n\n```java\nW11AC02Form form = context.createObject();\nSystemAccountEntity systemAccount = form.getSystemAccount();\nString loginId = systemAccount.getLoginId();\n\nSqlPStatement statement = getSqlPStatement(\"SELECT_SYSTEM_ACCOUNT\");\nstatement.setString(1, loginId);\nif (!statement.retrieve().isEmpty()) {\n    throw new ApplicationException(MessageUtil.createMessage(MessageLevel.ERROR, \"MSG00001\"));\n}\n```",
+    "s7": "**クラス**: `ValidationUtil`, `ApplicationException`\n\nAction内の精査でも通常のバリデーション結果と同様に入力値の近くにエラーを表示したい場合は、`MessageUtil.createMessage` の代わりに `ValidationUtil.createMessageForProperty` を使用する。\n\n```java\n// 第1引数: n:error タグの name 属性で指定した名称\nthrow new ApplicationException(ValidationUtil.createMessageForProperty(\n        \"W11AC02.systemAccount.loginId\", \"MSG00001\"));\n```\n\nJSPのエラー表示は通常のバリデーション結果と同様に `<n:error>` タグを使用する:\n\n```jsp\n<n:text name=\"W11AC02.systemAccount.loginId\" size=\"50\" maxlength=\"20\"/>\n<n:error name=\"W11AC02.systemAccount.loginId\"/>\n```",
+    "s8": "**クラス**: `CodeUtil`\n\nコードマスタに登録されたコード値を取得する方法を示す。`CodeUtil` を使用してコードIDに対応するコード値の一覧や名称を取得できる。\n\nコード値の取得例:\n\n```java\n// コードIDに対応するコード値一覧を取得\nList<String> values = CodeUtil.getValues(\"GENDER\");\n\n// コードIDと値に対応するコード名称を取得\nString name = CodeUtil.getName(\"GENDER\", \"M\");\n```\n\nJSPでのコード値プルダウン表示には `n:codeSelect` タグを使用する:\n\n```jsp\n<n:codeSelect name=\"entity.gender\" codeId=\"GENDER\" />\n```",
+    "s9": "**クラス**: `CodeUtil`\n\nコードマスタを使ったバリデーション（入力値がコードマスタに存在する値かどうかの検証）の実装方法を示す。\n\nActionでコード値バリデーションを行う例:\n\n```java\n// 入力値がコードマスタに存在するか検証\nString gender = form.getGender();\nif (!CodeUtil.contains(\"GENDER\", gender)) {\n    throw new ApplicationException(\n        MessageUtil.createMessage(MessageLevel.ERROR, \"MSG0001\"));\n}\n```\n\nアノテーションによるコード値バリデーションはEntityまたはFormに設定する。",
+    "s10": "**クラス**: `MessageUtil`, `Message`\n\nエラーではなく警告レベルのメッセージを表示する方法を示す。`MessageLevel.WARN` を使用することで警告メッセージを作成できる。\n\n```java\n// 警告メッセージの作成\nMessage message = MessageUtil.createMessage(MessageLevel.WARN, \"MSG_WARN_001\");\nthrow new ApplicationException(message);\n```\n\nJSPでの警告メッセージ表示には `n:message` タグを使用する:\n\n```jsp\n<n:message />\n```\n\n警告メッセージはエラーメッセージと同様に `ApplicationException` で通知し、フレームワークの例外処理機構を通じてユーザに表示される。"
+  }
+}

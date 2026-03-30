@@ -1,0 +1,125 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `web-application-7`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "minor",
+    "location": "sections.s1",
+    "description": "The statement 「`pattern` 属性に数値（例: `2`）を直接指定すると「パターンが存在しない」エラーが発生する」 is presented as an authoritative technical fact, but in the source this is only described as the user's observed experience within the question admonition. The answer section does not confirm this behavior — it only redirects to :doc:`../all/3`. The knowledge file converts a user-reported symptom into a definitive statement about system behavior without source backing.",
+    "source_evidence": "Source question admonition: 「パターン2を使用して精査を行いたいので、*pattern* 属性には **2** を指定してみましたがパターンが存在しないとのエラーが発生してしまいます。」 — this is user-reported, not confirmed by the answer."
+  }
+]
+```
+
+### Source (RST)
+
+```
+コード値精査時に指定するパターンには何を指定するのでしょうか？
+====================================================================================================
+
+.. admonition:: question
+
+    コード値精査( *CodeValue* )でパターンを指定して精査を実施したいのですが、パターンには何を指定したらいいのでしょうか?
+
+    パターン2を使用して精査を行いたいので、 *pattern* 属性には **2** を指定してみましたがパターンが存在しないとのエラーが発生してしまいます。
+
+.. admonition:: answer
+
+    :doc:`../all/3` を参照してください。
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "web-application-7",
+  "title": "コード値精査時に指定するパターンには何を指定するのでしょうか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード値精査（CodeValue）のパターン属性指定",
+      "hints": [
+        "CodeValue",
+        "pattern",
+        "コード値精査",
+        "パターン指定",
+        "バリデーション",
+        "パターンが存在しない",
+        "エラー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`CodeValue` の `pattern` 属性に指定するパターン値については、:doc:`../all/3` を参照。なお、`pattern` 属性に数値（例: `2`）を直接指定すると「パターンが存在しない」エラーが発生する。パターンの指定方法はドキュメントで確認すること。"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "web-application-7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The statement 「`pattern` 属性に数値（例: `2`）を直接指定すると「パターンが存在しない」エラーが発生する」 is presented as an authoritative technical fact, but in the source this is only described as the user's observed experience within the question admonition. The answer section does not confirm this behavior — it only redirects to :doc:`../all/3`. The knowledge file converts a user-reported symptom into a definitive statement about system behavior without source backing.",
+      "source_evidence": "Source question admonition: 「パターン2を使用して精査を行いたいので、*pattern* 属性には **2** を指定してみましたがパターンが存在しないとのエラーが発生してしまいます。」 — this is user-reported, not confirmed by the answer."
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "web-application-7",
+  "title": "コード値精査時に指定するパターンには何を指定するのでしょうか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コード値精査（CodeValue）のパターン属性指定",
+      "hints": [
+        "CodeValue",
+        "pattern",
+        "コード値精査",
+        "パターン指定",
+        "バリデーション",
+        "パターンが存在しない",
+        "エラー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`CodeValue` の `pattern` 属性に指定するパターン値については、:doc:`../all/3` を参照。なお、`pattern` 属性に数値（例: `2`）を直接指定すると「パターンが存在しない」エラーが発生する。パターンの指定方法はドキュメントで確認すること。"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

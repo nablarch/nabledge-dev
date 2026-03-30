@@ -1,0 +1,75 @@
+{
+  "id": "testing-framework-02_componentUnitTest",
+  "title": "Componentのクラス単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストケース実行のパターン分け",
+      "hints": [
+        "テストケース分類",
+        "DBの検索結果確認",
+        "DB更新後の確認",
+        "メッセージID確認",
+        "クラス単体テストパターン",
+        "エラー処理テスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストデータとテストクラスの作成",
+      "hints": [
+        "DbAccessTestSupport",
+        "テストデータExcelファイル",
+        "テストクラス命名規則",
+        "Component単体テスト",
+        "テストクラス継承",
+        "nablarch.test.core.db.DbAccessTestSupport"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "事前準備データの作成処理",
+      "hints": [
+        "setThreadContextValues",
+        "setUpDb",
+        "スレッドコンテキスト設定",
+        "事前データ投入",
+        "テストDBセットアップ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "処理終了後のデータベースの状況を確認",
+      "hints": [
+        "commitTransactions",
+        "assertTableEquals",
+        "getListMap",
+        "DB更新確認",
+        "トランザクションコミット",
+        "テスト結果検証",
+        "insert_auto_setting_item"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "メッセージIDを確認しなければならないもの",
+      "hints": [
+        "ApplicationException",
+        "メッセージID確認",
+        "例外キャッチ",
+        "エラー処理テスト",
+        "getMessageId",
+        "getMessages"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストケースは処理の種類によって以下の4パターンに分類される。パターンごとにテストクラスやデータの作成方法が異なる。\n\n| パターン | 当てはまる処理の例 |\n|---|---|\n| 戻り値（DBの検索結果）を確認しなければならないもの | 検索処理 |\n| 戻り値（DB検索結果以外）を確認しなければならないもの | 計算、判定処理 |\n| 処理終了後のDBの状況を確認しなければならないもの | 更新（挿入、削除含む）処理 |\n| メッセージIDを確認しなければならないもの | エラー処理 |",
+    "s2": "テストクラス作成ルール: (1) テスト対象Componentと同一パッケージ (2) クラス名は `<Componentクラス名>Test` (3) `nablarch.test.core.db.DbAccessTestSupport` を継承\n\nテストデータ（Excelファイル）はテストソースコードと同じディレクトリに同じ名前（拡張子のみ異なる）で格納する。全テストデータは同じExcelシートに記載する。\n\n```java\npublic class UserComponentTest extends DbAccessTestSupport {\n```",
+    "s3": "事前準備処理の主要メソッド:\n\n- `setThreadContextValues(sheetName, \"threadContext\")`: スレッドコンテキスト（USER_ID、REQUEST_ID等）の設定\n- `setUpDb(sheetName)`: 事前データの投入。各テストケースごとに初期化するため、ループ内で呼び出す。\n\n```java\nsetThreadContextValues(sheetName, \"threadContext\");\nfor (int i = 0; i < sysAcctDatas.size(); i++) {\n    setUpDb(sheetName); // 各ケースごとに初期化するためループ中で実行\n}\n```\n\n![事前準備データのExcelシート構成](assets/testing-framework-02_componentUnitTest/componentUnitTest_Setup.png)",
+    "s4": "DB更新処理のクラス単体テストではフレームワークによるトランザクション制御が行われないため、テスト側でコミットが必要。\n\n> **重要**: `commitTransactions()` を呼び出してコミットしないと、テスト結果の確認が正常に行われない。参照系テストではコミット不要。\n\n入力データの読み込みには `getListMap(sheetName, \"シートID\")` を使用する（:doc:`../../06_TestFWGuide/03_Tips` の :ref:`how_to_get_data_from_excel` 参照）。\n\n想定結果の検証には `assertTableEquals(groupId, sheetName, groupId)` を使用する。アプリケーション設定項目だけでなく自動設定項目（:ref:`insert_auto_setting_item` 参照）も想定結果に含めること。\n\nグループIDで複数の想定結果を管理する:\n\n```java\nString expectedGroupId = getListMap(sheetName, \"expected\").get(i).get(\"caseNo\");\nassertTableEquals(expectedGroupId, sheetName, expectedGroupId);\n```\n\n![入力データのExcelシート構成](assets/testing-framework-02_componentUnitTest/componentUnitTest_inputData.png)\n\n![想定結果（正常系）のExcelシート構成](assets/testing-framework-02_componentUnitTest/componentUnitTest_expectedDataNormal.png)",
+    "s5": "メッセージID確認テストでは、目的の例外をキャッチしてメッセージIDを比較する。\n\n> **警告**: キャッチする例外は発生を想定する例外クラスを指定すること。`RuntimeException` などの上位クラスを使うと例外種別の誤りを検出できなくなる。\n\n```java\ntry {\n    target.registerUser(sysAcct, users, grpSysAcct);\n    fail();\n} catch (ApplicationException ae) {\n    assertEquals(expected.get(i).get(\"messageId\"), ae.getMessages().get(0).getMessageId());\n}\n```\n\n![想定結果（異常系）のExcelシート構成](assets/testing-framework-02_componentUnitTest/componentUnitTest_expectedDataAbnormal.png)"
+  }
+}

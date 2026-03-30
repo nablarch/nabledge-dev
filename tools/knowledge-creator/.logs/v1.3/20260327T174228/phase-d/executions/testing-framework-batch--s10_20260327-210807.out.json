@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s7 — データベースの結果検証",
+      "description": "Knowledge file says 「実際のDB状態を確認する」 but the source text for the データベースの結果検証 section says 「実際のファイル出力結果を確認することができる」. The phrase 「DB状態」 has no direct basis in this source section (it appears the source contains a copy-paste wording issue, but the knowledge file's correction deviates from the literal source).",
+      "source_evidence": "テストケース一覧のexpectedTable欄にグループIDを記載することにより、そのグループIDのテストデータで実際のファイル出力結果を確認することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 — ログの結果検証",
+      "description": "`LIST_MAP` is a key directive name used in the log verification section (e.g., `LIST_MAP=expectedLogMessages`) and appears in the section content, but is absent from s7's hints array.",
+      "source_evidence": "``LIST_MAP=expectedLogMessages``"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — 可変長ファイル（CSVファイル）の準備",
+      "description": "Property names `text-encoding` and `record-separator` appear as first-column entries in the CSV file configuration table in the source, but neither is included in s1's hints. These are configuration property names a developer would search for.",
+      "source_evidence": "+-----------------+-------------+...\n|text-encoding    |Windows-31J  ...\n|record-separator |CRLF         ..."
+    }
+  ]
+}

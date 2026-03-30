@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — first code block",
+      "description": "The first code block in s3 conflates code from two separate classes/methods in the source. The lines `ParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET\"); return select.retrieve(form);` are taken from `CM211BB1Component.get()`, but in the knowledge file they appear in the same pseudo-code scope as the form setup from `doRW11BB0101()`. In the source, the caller (`doRW11BB0101`) creates a `CM211BB1Component` and calls `component.get(form)` — it never directly calls `getParameterizedSqlStatement`. The knowledge file fabricates a direct-call pattern that does not exist in the source.",
+      "source_evidence": "Source first block: `public void doRW11BB0101() { ... CM211BB1Component component = new CM211BB1Component(); component.get(form); }` — Source second block: `public class CM211BB1Component { public SqlResultSet get(W11BB01Form form) { ParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET\"); return select.retrieve(form); } }`"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — WHERE clause of the variable SQL execution example",
+      "description": "The knowledge file shows `ESCAPE '\\\\'` (double backslash) in the WHERE clause example for the variable condition SQL section, but the source for this section uses `ESCAPE '\\''` (single backslash). The source in s4's note uses `'\\\\'`, but the s5 source consistently uses `'\\''` in all three LIKE conditions shown.",
+      "source_evidence": "Source s5: `AND (0 = 0 OR (USER_MTR.USER_KANJI_NAME LIKE ? ESCAPE '\\'))` and `AND (0 = 1 OR (USER_MTR.USER_KANA_NAME  LIKE ? ESCAPE '\\'))` — Knowledge file s5: `ESCAPE '\\\\'` in both lines"
+    }
+  ]
+}

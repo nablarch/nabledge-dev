@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-screenTransition--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 (一覧照会画面から詳細画面へ遷移する場合)",
+      "description": "The HTML output example and nablarch_hidden mechanism explanation are entirely absent from s3. The source contains a full HTML output block showing: (1) that a `nablarch_hidden` hidden field is automatically generated in the form, (2) the naming convention `nablarch_hidden_submit_<name属性>` is used to store each link's parameters (e.g., `nablarch_hidden_submit_showDetail_0=11AC_W11AC01.loginId\\=U0001|...`), and (3) an explanation that the framework's handler reads the selected link's change parameters and sets them to the request. This mechanism-level information is decision-necessary for developers debugging paramタグ behavior or understanding how parameter transmission works internally.",
+      "source_evidence": "Source HTML output block with comment: 「nablarch_hidden_submit_<name属性>」というプレフィックスを付けてリンク毎の変更パラメータが出力される。選択されたリンクの変更パラメータはフレームワークのハンドラによりリクエストに設定される。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "knowledge file overall (missing sections)",
+      "description": "The source file contains 7 headings (per the S9 automated warning) but the knowledge file covers only 3 sections. The source content provided ends with the anchor `.. _`howto_open_multi_window`` indicating at least one additional h2 section (`howto_open_multi_window`) exists in the full source. With 7 total source headings and only 3 knowledge sections (s1=h2+2 sub-h3s, s2=h2, s3=h2), at minimum 2 additional h2-level sections are entirely absent from the knowledge file.",
+      "source_evidence": "Source file ends mid-content with `.. _`howto_open_multi_window`:` anchor; S9 automated check reports source has 7 headings vs 3 knowledge sections."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`nablarch_hidden` is missing from s3 hints. The source documents an automatically generated hidden field named `nablarch_hidden` that is central to how paramタグ/n:param transmits link-specific parameters. A developer searching for `nablarch_hidden` would not find this section.",
+      "source_evidence": "Source HTML output: `<input type=\"hidden\" name=\"nablarch_hidden\" value=\"nablarch_hidden_submit_showDetail_0=...\" />`"
+    }
+  ]
+}

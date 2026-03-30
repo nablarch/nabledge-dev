@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index[s4].title",
+      "description": "Section s4 is titled \"作成手順\" but its content is from the child section \"ビジネスロジック(Action)の作成\". In the source, \"作成手順\" is the h2 container with no direct content of its own; the content of s4 (list of 4 DB access features + note about ActionClass) belongs to the \"ビジネスロジック(Action)の作成\" h3 subsection. The correct title should be \"ビジネスロジック(Action)の作成\".",
+      "source_evidence": "Source h2: 「作成手順」（コンテナ、直接コンテンツなし） → h3: 「ビジネスロジック(Action)の作成」（本処理では、アプリケーションフレームワークが持つデータベースアクセス機能の中から、以下のものを使用している。…ComponentクラスではなくActionクラスに作成する）"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "s6 hints are missing `retrieve` (method name for `ParameterizedSqlPStatement#retrieve`), which is the key method cited in step (c) of the feature description. A user asking how to execute a parameterized query would search for this method name.",
+      "source_evidence": "Source step c: \"ParameterizedSqlPStatement#retrieveの引数に、バインド変数に指定したフィールドを持つJavaオブジェクトのインスタンスを渡す\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "s5 hints are missing `SystemAccountEntity`, which is a PascalCase class referenced in the constructor (`systemAccount = (SystemAccountEntity) params.get(\"systemAccount\")`) and as a field declaration in W11AC01SearchForm.",
+      "source_evidence": "Source code: `/** システムアカウントテーブルの情報 */ private SystemAccountEntity systemAccount;` and `systemAccount = (SystemAccountEntity) params.get(\"systemAccount\");`"
+    }
+  ]
+}

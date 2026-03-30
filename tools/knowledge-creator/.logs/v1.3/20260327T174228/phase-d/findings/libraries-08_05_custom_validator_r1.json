@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_05_custom_validator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s2 / index[1].hints",
+      "description": "The source explicitly calls out `ValidationContext.getMessage()` as the standard way to obtain the property display name for `addResultMessage`'s optional parameter. This method name is absent from s2's hints, reducing discoverability for queries about error message construction.",
+      "source_evidence": "「通常エラーメッセージの置き換え文字にプロパティ名を挿入することが多い。このような場合、サンプルのように ValidationContext の getMessage メソッドで取得した Message をオプションパラメータとして設定しておく。」 and the code `context.getMessage(propertyMessageId)` used three times in the validate method."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s4 / index[3].hints",
+      "description": "`annotationType` is missing from s4's hints. The source code for the anonymous SampleCheck implementation requires overriding `annotationType()` — it is the only non-business method in the anonymous class and a mandatory part of the DirectCallableValidator pattern.",
+      "source_evidence": "```java\npublic Class<? extends Annotation> annotationType() {\n    return SampleCheck.class;\n}\n```"
+    }
+  ]
+}

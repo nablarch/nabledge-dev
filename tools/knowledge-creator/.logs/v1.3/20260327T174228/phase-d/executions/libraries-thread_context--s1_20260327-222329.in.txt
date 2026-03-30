@@ -1,0 +1,560 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/core_library/thread_context.rst`
+- Format: `rst`
+
+```
+.. _thread-context-label:
+
+----------------------------------------------------
+同一スレッド内でのデータ共有(スレッドコンテキスト)
+----------------------------------------------------
+スレッドコンテキストは、スレッドローカル変数上に保持された変数スコープである。
+ユーザIDや、リクエストIDのように、ログ出力やDB共通項目への設定などの用途において、実行コンテキストを経由した
+引き回しが難しいパラメータ類を格納する。
+
+その内容の多くは、 :doc:`../handler/ThreadContextHandler` によって設定されるが、
+それ以外ハンドラでも、スレッドコンテキストに変数を設定するものが存在するほか、
+業務アクションハンドラから任意の変数を設定することも可能である。
+
+カレントスレッド内で子スレッドを起動した場合、本クラスで保持する値を暗黙的に子スレッドに引き継ぐ仕様となっている。
+このため、子スレッドでは個別に値を設定することなく、親スレッドで設定した値を使用することが出来る。
+ただし、子スレッドで値を変更する場合は、明示的に子スレッドにて値を設定する必要がある。
+
++++++++++++++
+
+
+クラス図
+=====================
+
+.. image:: ../_image/thread_context.jpg
+    :scale: 70
+
+
+
+インタフェース定義
+------------------------------
+
+================================================================================== ===========================================================================================
+クラス・インタフェース名                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.handler.threadcontext.ThreadContextAttribute                       | スレッドコンテキストに属性を設定するインタフェース。
+                                                                                   | このインタフェースを実装したクラスは、コンテキストから属性値を取得する責務を持つ。
+================================================================================== ===========================================================================================
+
+クラス定義
+------------------------------
+
+================================================================================== ===========================================================================================
+クラス名                                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.handler.threadcontext.ThreadContextHandler                         | スレッドコンテキストを初期化するハンドラ。
+nablarch.common.handler.threadcontext.RequestIdAttribute                           | :ref:`リクエストID<request_processing>` をスレッドコンテキストに設定するThreadContextAttribute。
+nablarch.common.handler.threadcontext.InternalRequestIdAttribute                   | :ref:`内部リクエストID<internal_request_id>` をリクエストIDと同じ値に初期設定する。
+nablarch.common.handler.threadcontext.UserIdAttribute                              | ログインしているユーザのユーザIDをスレッドコンテキストに設定するThreadContextAttribute。
+                                                                                   | ログインしていない場合には未認証ユーザを表すユーザIDを設定する。
+nablarch.common.handler.threadcontext.LanguageAttribute                            | 言語をスレッドコンテキストに設定するThreadContextAttribute。
+nablarch.common.handler.threadcontext.TimeZoneAttribute                            | タイムゾーンをスレッドコンテキストに設定するThreadContextAttribute。
+nablarch.common.handler.threadcontext.ExecutionIdAttribute                         | 実行時IDをスレッドコンテキストに設定するThreadContextAttribute。
+                                                                                   | 実行時IDについては、 :ref:`execution_id` を参照。
+================================================================================== ===========================================================================================
+
+**LanguageAttributeのサブクラスとユーティリティ**
+
+================================================================================== ===========================================================================================
+クラス名                                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.web.handler.threadcontext.HttpLanguageAttribute                    | スレッドコンテキストに設定する言語をHTTPヘッダ(Accept-Language)から取得するThreadContextAttribute。
+nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSupport           | HTTP上で言語の選択と選択された言語の保持を行うThreadContextAttributeの実装をサポートするクラス。
+nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie            | クッキーを使用して言語の保持を行うThreadContextAttribute。
+nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSession           | HTTPセッションを使用して言語の保持を行うThreadContextAttribute。
+nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpUtil              | HTTP上で選択された言語の保持を行う際に使用するユーティリティクラス。
+================================================================================== ===========================================================================================
+
+**TimeZoneAttributeのサブクラスとユーティリティ**
+
+================================================================================== ===========================================================================================
+クラス名                                                                           概要
+================================================================================== ===========================================================================================
+nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSupport           | HTTP上で選択されたタイムゾーンの保持を行うThreadContextAttributeの実装をサポートするクラス。
+nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie            | クッキーを使用してタイムゾーンの保持を行うThreadContextAttribute。
+nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSession           | HTTPセッションを使用してタイムゾーンの保持を行うThreadContextAttribute。
+nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpUtil              | HTTP上で選択されたタイムゾーンの保持を行う際に使用するユーティリティクラス。
+================================================================================== ===========================================================================================
+
+使用方法
+============
+
+ThreadContextHandlerは、リクエスト毎にスレッドコンテキストの初期化を行う。
+実際にスレッドコンテキストに設定する値を取得する責務は、
+本クラスではなくThreadContextAttributeインタフェース実装クラスが持つ。
+
+本フレームワークでは、スレッドコンテキストに持つ属性のうち、
+フレームワーク内で使用する下記の属性を設定する
+ThreadContextAttributeインタフェース実装クラスを提供している。
+
+* :ref:`リクエストID<request_processing>`
+* :ref:`内部リクエストID<internal_request_id>`
+* ユーザID
+* 言語
+* タイムゾーン
+* :ref:`実行時ID<execution_id>`
+
+実行制御基盤によっては、ThreadContextHandlerによって初期化された上記属性を更新する場合がある。
+上記属性のうち、初期化以降に更新される属性について、その状況を下記に示す。
+
+============================================= =======================================================================================================================================
+属性                                          ThreadContextHandler以外の箇所で更新される状況
+============================================= =======================================================================================================================================
+:ref:`リクエストID<request_processing>`       :doc:`../architectural_pattern/messaging` のみ、 :doc:`../reader/FwHeaderReader` によって更新される。
+:ref:`内部リクエストID<internal_request_id>`  | :doc:`../architectural_pattern/web_gui` では、内部フォーワード時に :doc:`../handler/ForwardingHandler` によって更新される。
+                                              | :doc:`../architectural_pattern/messaging` では、 :doc:`../reader/FwHeaderReader` によって更新される。
+ユーザID                                      :doc:`../architectural_pattern/messaging` のみ、 :doc:`../reader/FwHeaderReader` によって更新される。
+============================================= =======================================================================================================================================
+
+ThreadContextAttributeインタフェース実装クラスについて、以下に記述する。
+
+RequestIdAttribute
+====================================
+RequestIdAttributeクラスは、スレッドコンテキストに設定する :ref:`リクエストID<request_processing>` を取得する責務を持つ。
+本クラスは、URLの最後に現れる"/"から"."の間の文字列をリクエストIDと判断する。
+
+InternalRequestIdAttribute
+====================================
+InternalRequestIdAttributeクラスは、スレッドコンテキスト変数 :ref:`内部リクエストID<internal_request_id>` を
+:ref:`リクエストID<request_processing>` と同じ値に初期化する責務を持つ。
+
+UserIdAttribute
+========================
+UserIdAttributeクラスは、スレッドコンテキストに設定するユーザIDを取得する責務を持つ。
+
+スレッドコンテキストのユーザIDには、Httpセッションに格納されたユーザIDを設定する。
+ただし、HttpセッションからユーザIDを取得できなかった場合は未ログインのユーザとみなし、
+未ログイン状態を示す特別なユーザIDを設定する。
+
+認証処理では、セッションにユーザIDを設定しておく必要がある。
+
+ .. note::
+  | HttpセッションからユーザIDを取得する為のキー、未ログインユーザに設定するユーザIDについては、
+    本クラスのプロパティ設定により変更可能である。
+
+LanguageAttribute
+====================================
+LanguageAttributeクラスは、スレッドコンテキストに設定する言語を取得する責務を持つ。\
+LanguageAttributeは、国際化を行うアプリケーション向けにサブクラスを提供する。\
+LanguageAttributeおよびサブクラスとLanguageAttributeInHttpUtilの説明を下記に示す。
+
+============================================= =======================================================================================================================================
+クラス名                                      説明
+============================================= =======================================================================================================================================
+LanguageAttribute                             | リポジトリの設定で指定された言語をスレッドコンテキストに設定する。\
+                                                明示的に指定しなかった場合、システムのデフォルトロケールが使用される。
+HttpLanguageAttribute                         | HTTPヘッダ(Accept-Language)から取得した言語をスレッドコンテキストに設定する。\
+                                                具体的には以下の処理を行う。
+                                              | 
+                                              | HTTPヘッダ(Accept-Language)から言語の取得を試みる。
+                                              | サポート対象の言語が取得できた場合は取得できた言語をスレッドコンテキストに設定する。
+                                              | サポート対象の言語が取得できない場合は親クラスであるLanguageAttributeに処理を委譲する。
+                                              | 
+LanguageAttributeInHttpCookie                 | クッキーを使用した言語の保持を行う。\
+                                                具体的には以下の処理を行う。
+                                              | 
+                                              | クッキーに保持している言語の取得を試みる。
+                                              | サポート対象の言語が取得できた場合は取得できた言語をスレッドコンテキストに設定する。
+                                              | サポート対象の言語が取得できない場合は親クラスであるHttpLanguageAttributeに処理を委譲する。
+                                              | 
+LanguageAttributeInHttpSession                | HTTPセッションを使用した言語の保持を行う。\
+                                                言語の保持にHTTPセッションを使用することを除き、具体的な処理はLanguageAttributeInHttpCookieと同じ。
+LanguageAttributeInHttpUtil                   | LanguageAttributeInHttpSupportのサブクラスを使用するアプリケーションに対して、\
+                                                ユーザが選択した言語を保持する処理を提供する。\
+                                                具体的には、言語選択処理やログイン処理を行うアクションでクッキーやHTTPセッションに言語を設定する際に使用する。
+                                              | 
+                                              | LanguageAttributeInHttpUtilはリポジトリから取得したLanguageAttributeInHttpSupportのサブクラスに処理を委譲する。\
+                                                このため、本クラスを使用する場合は、リポジトリにLanguageAttributeInHttpSupportのサブクラスを"languageAttribute"という名前で登録する。
+============================================= =======================================================================================================================================
+
+LanguageAttributeおよびサブクラスの選択基準を下記に示す。
+
+=========================================== ================================ ================================ ==========================================================================================
+クラス名                                    言語の選択                       言語の保存                       説明
+=========================================== ================================ ================================ ==========================================================================================
+LanguageAttribute                           なし                             なし                             国際化を行わないアプリケーションで使用する。
+
+                                                                                                              * 言語は常に固定となる。
+                                                                                                              * 言語設定に関してアプリケーションで何も実装しなくてよい。
+
+HttpLanguageAttribute                       ブラウザの言語設定               ブラウザの言語設定               ブラウザの言語設定に応じて言語を切り替える場合に使用する。
+
+                                                                                                              * ログイン前であってもユーザが選択した言語に切り替わる。
+                                                                                                              * ユーザ毎でなくブラウザ(IE、Firefoxなど)毎に言語を保持する。
+                                                                                                              * 言語設定に関してアプリケーションで何も実装しなくてよい。
+
+LanguageAttributeInHttpCookie               選択画面やリンクなど             クッキー                         アプリケーションが提供する画面上でユーザに言語を選択させる場合に使用する。
+
+                                                                                                              * ログイン前であってもユーザが選択した言語に切り替わる。
+                                                                                                              * ユーザ毎でなくブラウザ(IE、Firefoxなど)毎に言語を保持する。
+                                                                                                              * アプリケーションではユーザに言語を選択させる画面処理の実装を行う。\
+                                                                                                                選択された言語をクッキーに設定する処理はLanguageAttributeInHttpUtilが提供する。
+                                                                                                              
+LanguageAttributeInHttpSession              選択画面やリンクなど             データベース                     アプリケーションが提供する画面上でユーザに言語を選択させる場合に使用する。
+
+                                                                                                              * ログイン前はユーザが選択した言語に切り替わらない。
+                                                                                                              * ユーザ毎に言語を保持するため、複数マシンからアプリケーションを使用した場合でも\
+                                                                                                                ユーザが選択した言語に切り替わる。
+                                                                                                              * アプリケーションでは下記の実装を行う。
+
+                                                                                                                * ログイン時にユーザに紐づく言語の取得処理。\
+                                                                                                                  HTTPセッションに言語を設定する処理はLanguageAttributeInHttpUtilが提供する。
+                                                                                                                * ユーザに言語を選択させる画面処理。\
+                                                                                                                  選択された言語をHTTPセッションに設定する処理はLanguageAttributeInHttpUtilが提供する。
+                                                                                                                * 選択された言語をユーザに紐付けてデータベースに保存する処理。
+
+=========================================== ================================ ================================ ==========================================================================================
+
+TimeZoneAttribute
+====================================
+TimeZoneAttributeクラスは、スレッドコンテキストに設定するタイムゾーンを取得する責務を持つ。\
+TimeZoneAttributeは、国際化を行うアプリケーション向けにサブクラスを提供する。\
+TimeZoneAttributeおよびサブクラスとTimeZoneAttributeInHttpUtilの説明を下記に示す。
+
+============================================= =======================================================================================================================================
+クラス名                                      説明
+============================================= =======================================================================================================================================
+TimeZoneAttribute                             | リポジトリの設定で指定されたタイムゾーンをスレッドコンテキストに設定する。\
+                                                明示的に指定しなかった場合、システムのデフォルトタイムゾーンが使用される。
+TimeZoneAttributeInHttpCookie                 | クッキーを使用したタイムゾーンの保持を行う。\
+                                                具体的には以下の処理を行う。
+                                              | 
+                                              | クッキーに保持しているタイムゾーンの取得を試みる。
+                                              | サポート対象のタイムゾーンが取得できた場合は取得できたタイムゾーンをスレッドコンテキストに設定する。
+                                              | サポート対象のタイムゾーンが取得できない場合は親クラスであるTimeZoneAttributeに処理を委譲する。
+                                              | 
+TimeZoneAttributeInHttpSession                | HTTPセッションを使用したタイムゾーンの保持を行う。\
+                                                タイムゾーンの保持にHTTPセッションを使用することを除き、具体的な処理はTimeZoneAttributeInHttpCookieと同じ。
+TimeZoneAttributeInHttpUtil                   | TimeZoneAttributeInHttpSupportのサブクラスを使用するアプリケーションに対して、\
+                                                ユーザが選択したタイムゾーンを保持する処理を提供する。\
+                                                具体的には、タイムゾーン選択処理やログイン処理を行うアクションでクッキーやHTTPセッションにタイムゾーンを設定する際に使用する。
+                                              | 
+                                              | TimeZoneAttributeInHttpUtilはリポジトリから取得したTimeZoneAttributeInHttpSupportのサブクラスに処理を委譲する。\
+                                                このため、本クラスを使用する場合は、リポジトリにTimeZoneAttributeInHttpSupportのサブクラスを"timeZoneAttribute"という名前で登録する。
+============================================= =======================================================================================================================================
+
+TimeZoneAttributeおよびサブクラスの選択基準を下記に示す。
+
+=========================================== ================================ ================================ ==========================================================================================
+クラス名                                    タイムゾーンの選択               タイムゾーンの保存               説明
+=========================================== ================================ ================================ ==========================================================================================
+TimeZoneAttribute                           なし                             なし                             国際化を行わないアプリケーションで使用する。
+
+                                                                                                              * タイムゾーンは常に固定となる。
+                                                                                                              * タイムゾーン設定に関してアプリケーションで何も実装しなくてよい。
+
+TimeZoneAttributeInHttpCookie               選択画面やリンクなど             クッキー                         アプリケーションが提供する画面上でユーザにタイムゾーンを選択させる場合に使用する。
+
+                                                                                                              * ログイン前であってもユーザが選択したタイムゾーンに切り替わる。
+                                                                                                              * ユーザ毎でなくブラウザ(IE、Firefoxなど)毎にタイムゾーンを保持する。
+                                                                                                              * アプリケーションではユーザにタイムゾーンを選択させる画面処理の実装を行う。\
+                                                                                                                選択されたタイムゾーンをクッキーに設定する処理はTimeZoneAttributeInHttpUtilが提供する。
+                                                                                                              
+TimeZoneAttributeInHttpSession              選択画面やリンクなど             データベース                     アプリケーションが提供する画面上でユーザにタイムゾーンを選択させる場合に使用する。
+
+                                                                                                              * ログイン前はユーザが選択したタイムゾーンに切り替わらない。
+                                                                                                              * ユーザ毎にタイムゾーンを保持するため、複数マシンからアプリケーションを使用した場合でも\
+                                                                                                                ユーザが選択したタイムゾーンに切り替わる。
+                                                                                                              * アプリケーションでは下記の実装を行う。
+
+                                                                                                                * ログイン時にユーザに紐づくタイムゾーンの取得処理。\
+                                                                                                                  HTTPセッションにタイムゾーンを設定する処理はTimeZoneAttributeInHttpUtilが提供する。
+                                                                                                                * ユーザにタイムゾーンを選択させる画面処理。\
+                                                                                                                  選択されたタイムゾーンをHTTPセッションに設定する処理はTimeZoneAttributeInHttpUtilが提供する。
+                                                                                                                * 選択されたタイムゾーンをユーザに紐付けてデータベースに保存する処理。
+
+=========================================== ================================ ================================ ==========================================================================================
+
+ExecutionIdAttribute
+====================================
+ExecutionIdAttributeクラスは、スレッドコンテキストに設定する実行時IDを取得する責務を持つ。
+実行時IDについては、 :ref:`execution_id` を参照。
+
+設定例
+========================
+上記の基本的な属性を設定するには、下記のように設定を記述する。
+
+
+.. code-block:: xml
+
+ <component class="nablarch.common.handler.threadcontext.ThreadContextHandler">
+   <property name="attributes">
+     <list>
+       <!-- ユーザID -->
+       <component class="nablarch.common.handler.threadcontext.UserIdAttribute">
+         <property name="sessionKey"  value="user.id" />
+         <property name="anonymousId" value="guest" />
+       </component>
+       
+       <!-- リクエストID -->
+       <component class="nablarch.common.handler.threadcontext.RequestIdAttribute" />
+
+       <!-- 内部リクエストID -->
+       <component class="nablarch.common.handler.threadcontext.InternalRequestIdAttribute" />
+
+       <!-- 言語 -->
+       <component class="nablarch.common.handler.threadcontext.LanguageAttribute">
+           <property name="defaultLanguage" value="ja" />
+       </component>
+       
+       <!-- タイムゾーン -->
+       <component class="nablarch.common.handler.threadcontext.TimeZoneAttribute">
+           <property name="defaultTimeZone" value="Asia/Tokyo" />
+       </component>
+       
+       <!-- 実行時ID -->
+       <component class="nablarch.common.handler.threadcontext.ExecutionIdAttribute" />
+     </list>
+   </property>
+ </component>
+
+
+設定の記述
+============
+
+ThreadContextHandlerの設定
+--------------------------------------------
+ 
+====================================================== ========================================================================================================================
+property名                                             設定内容
+====================================================== ========================================================================================================================
+attributes                                             | ThreadContextAttributeインタフェースを実装したクラスのリストを設定する。
+====================================================== ========================================================================================================================
+
+UserIdAttributeの設定
+--------------------------------------------
+
+====================================================== ========================================================================================================================
+property名                                             設定内容
+====================================================== ========================================================================================================================
+sessionKey                                             | セッションからユーザIDを取得する際のキーを設定する。設定しなかった場合、"USER_ID"がキーとして使用される。
+anonymousId                                            | 未ログインユーザに対して設定するユーザIDを設定する。設定しなかった場合、未ログインユーザ対するユーザIDは設定されない。
+====================================================== ========================================================================================================================
+
+RequestIdAttributeの設定
+------------------------------------------
+  
+RequestIdAttributeには設定値は存在しない。
+
+InternalRequestIdAttributeの設定
+------------------------------------------
+  
+InternalRequestIdAttributeには設定値は存在しない。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `libraries-thread_context--s1`
+
+```json
+{
+  "id": "libraries-thread_context--s1",
+  "title": "同一スレッド内でのデータ共有(スレッドコンテキスト)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "同一スレッド内でのデータ共有(スレッドコンテキスト)",
+      "hints": [
+        "スレッドコンテキスト",
+        "ThreadContextHandler",
+        "子スレッド",
+        "スレッドローカル変数",
+        "リクエストID",
+        "ユーザID",
+        "データ共有"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "インタフェース定義",
+      "hints": [
+        "ThreadContextAttribute",
+        "スレッドコンテキスト属性インタフェース"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "クラス定義",
+      "hints": [
+        "ThreadContextHandler",
+        "RequestIdAttribute",
+        "InternalRequestIdAttribute",
+        "UserIdAttribute",
+        "LanguageAttribute",
+        "TimeZoneAttribute",
+        "ExecutionIdAttribute",
+        "HttpLanguageAttribute",
+        "LanguageAttributeInHttpCookie",
+        "LanguageAttributeInHttpSession",
+        "LanguageAttributeInHttpUtil",
+        "LanguageAttributeInHttpSupport",
+        "TimeZoneAttributeInHttpCookie",
+        "TimeZoneAttributeInHttpSession",
+        "TimeZoneAttributeInHttpUtil",
+        "TimeZoneAttributeInHttpSupport",
+        "言語設定",
+        "タイムゾーン設定",
+        "国際化",
+        "defaultLanguage",
+        "defaultTimeZone"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ThreadContextHandlerの設定",
+      "hints": [
+        "ThreadContextHandler",
+        "attributes",
+        "ThreadContextAttribute設定"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "UserIdAttributeの設定",
+      "hints": [
+        "UserIdAttribute",
+        "sessionKey",
+        "anonymousId",
+        "ユーザID設定",
+        "未ログインユーザ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "RequestIdAttributeの設定",
+      "hints": [
+        "RequestIdAttribute",
+        "リクエストID設定",
+        "設定プロパティなし"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "InternalRequestIdAttributeの設定",
+      "hints": [
+        "InternalRequestIdAttribute",
+        "内部リクエストID設定",
+        "設定プロパティなし"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "スレッドコンテキストはスレッドローカル変数上に保持された変数スコープ。ユーザIDやリクエストIDなど、実行コンテキストを経由した引き回しが難しいパラメータを格納する。設定の多くは :doc:`../handler/ThreadContextHandler` によって行われるが、業務アクションハンドラから任意の変数を設定することも可能。\n\n**子スレッドへの値の引き継ぎ**:\n- 親スレッドで保持する値は暗黙的に子スレッドに引き継がれる\n- 子スレッドで値を変更する場合は、明示的に子スレッドで値を設定する必要がある",
+    "s2": "**インタフェース**: `nablarch.common.handler.threadcontext.ThreadContextAttribute`\n\nスレッドコンテキストに属性を設定するインタフェース。実装クラスはコンテキストから属性値を取得する責務を持つ。",
+    "s3": "## クラス一覧\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.handler.threadcontext.ThreadContextHandler` | スレッドコンテキストを初期化するハンドラ |\n| `nablarch.common.handler.threadcontext.RequestIdAttribute` | :ref:`リクエストID<request_processing>` をスレッドコンテキストに設定するThreadContextAttribute |\n| `nablarch.common.handler.threadcontext.InternalRequestIdAttribute` | :ref:`内部リクエストID<internal_request_id>` をリクエストIDと同じ値に初期設定する |\n| `nablarch.common.handler.threadcontext.UserIdAttribute` | ログインユーザのユーザIDをスレッドコンテキストに設定する。未ログイン時は未認証ユーザIDを設定する |\n| `nablarch.common.handler.threadcontext.LanguageAttribute` | 言語をスレッドコンテキストに設定するThreadContextAttribute |\n| `nablarch.common.handler.threadcontext.TimeZoneAttribute` | タイムゾーンをスレッドコンテキストに設定するThreadContextAttribute |\n| `nablarch.common.handler.threadcontext.ExecutionIdAttribute` | 実行時IDをスレッドコンテキストに設定するThreadContextAttribute（:ref:`execution_id` 参照） |\n\n**LanguageAttributeのサブクラスとユーティリティ**\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.web.handler.threadcontext.HttpLanguageAttribute` | HTTPヘッダ(Accept-Language)から言語を取得するThreadContextAttribute |\n| `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSupport` | HTTP上で言語の選択と保持を行うThreadContextAttributeの実装サポートクラス |\n| `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie` | クッキーを使用して言語を保持するThreadContextAttribute |\n| `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpSession` | HTTPセッションを使用して言語を保持するThreadContextAttribute |\n| `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpUtil` | ユーザが選択した言語を保持する処理を提供するユーティリティクラス |\n\n**TimeZoneAttributeのサブクラスとユーティリティ**\n\n| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSupport` | HTTP上で選択されたタイムゾーンの保持を行うThreadContextAttributeの実装サポートクラス |\n| `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpCookie` | クッキーを使用してタイムゾーンを保持するThreadContextAttribute |\n| `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpSession` | HTTPセッションを使用してタイムゾーンを保持するThreadContextAttribute |\n| `nablarch.common.web.handler.threadcontext.TimeZoneAttributeInHttpUtil` | ユーザが選択したタイムゾーンを保持する処理を提供するユーティリティクラス |\n\n## 使用方法\n\nThreadContextHandlerはリクエスト毎にスレッドコンテキストを初期化する。実際の属性値取得はThreadContextAttributeインタフェース実装クラスが担う。\n\nフレームワーク提供のThreadContextAttribute実装クラスが設定する属性: :ref:`リクエストID<request_processing>` / :ref:`内部リクエストID<internal_request_id>` / ユーザID / 言語 / タイムゾーン / :ref:`実行時ID<execution_id>`\n\n**ThreadContextHandler以外による属性更新状況**:\n\n| 属性 | 更新される状況 |\n|---|---|\n| :ref:`リクエストID<request_processing>` | :doc:`../architectural_pattern/messaging` のみ、:doc:`../reader/FwHeaderReader` によって更新される |\n| :ref:`内部リクエストID<internal_request_id>` | :doc:`../architectural_pattern/web_gui` では内部フォーワード時に :doc:`../handler/ForwardingHandler` によって更新される。:doc:`../architectural_pattern/messaging` では :doc:`../reader/FwHeaderReader` によって更新される |\n| ユーザID | :doc:`../architectural_pattern/messaging` のみ、:doc:`../reader/FwHeaderReader` によって更新される |\n\n### RequestIdAttribute\n\nURLの最後の\"/\"から\".\"の間の文字列をリクエストIDと判断する。\n\n### InternalRequestIdAttribute\n\nスレッドコンテキスト変数 :ref:`内部リクエストID<internal_request_id>` を :ref:`リクエストID<request_processing>` と同じ値に初期化する。\n\n### UserIdAttribute\n\nHttpセッションからユーザIDを取得してスレッドコンテキストに設定する。取得できなかった場合は未ログインユーザとして扱い、特別なユーザIDを設定する。\n\n> **注意**: 認証処理ではセッションにユーザIDを設定しておく必要がある。セッションキーと未ログインユーザIDはプロパティで変更可能。\n\n### LanguageAttributeの選択基準\n\n| クラス名 | 言語の選択 | 言語の保存 | 説明 |\n|---|---|---|---|\n| `LanguageAttribute` | なし | なし | 国際化なし。リポジトリ設定で指定された言語（未指定ならシステムデフォルト）を固定使用。アプリ実装不要 |\n| `HttpLanguageAttribute` | ブラウザの言語設定 | ブラウザの言語設定 | ブラウザの言語設定に応じて切り替え。ログイン前でも有効。アプリ実装不要 |\n| `LanguageAttributeInHttpCookie` | 選択画面やリンクなど | クッキー | アプリが言語選択画面を提供する場合。ログイン前でも有効。ブラウザ毎に保持 |\n| `LanguageAttributeInHttpSession` | 選択画面やリンクなど | データベース | アプリが言語選択画面を提供する場合。ユーザ毎に保持（複数マシンでも一貫）。ログイン後のみ有効 |\n\n> **注意**: `LanguageAttributeInHttpUtil` を使用する場合は、リポジトリにLanguageAttributeInHttpSupportのサブクラスを `\"languageAttribute\"` という名前で登録する必要がある。\n\n### TimeZoneAttributeの選択基準\n\n| クラス名 | タイムゾーンの選択 | タイムゾーンの保存 | 説明 |\n|---|---|---|---|\n| `TimeZoneAttribute` | なし | なし | 国際化なし。リポジトリ設定で指定されたタイムゾーン（未指定ならシステムデフォルト）を固定使用。アプリ実装不要 |\n| `TimeZoneAttributeInHttpCookie` | 選択画面やリンクなど | クッキー | アプリがタイムゾーン選択画面を提供する場合。ログイン前でも有効。ブラウザ毎に保持 |\n| `TimeZoneAttributeInHttpSession` | 選択画面やリンクなど | データベース | アプリがタイムゾーン選択画面を提供する場合。ユーザ毎に保持（複数マシンでも一貫）。ログイン後のみ有効 |\n\n> **注意**: `TimeZoneAttributeInHttpUtil` を使用する場合は、リポジトリにTimeZoneAttributeInHttpSupportのサブクラスを `\"timeZoneAttribute\"` という名前で登録する必要がある。\n\n### 設定例\n\n```xml\n<component class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <component class=\"nablarch.common.handler.threadcontext.UserIdAttribute\">\n        <property name=\"sessionKey\" value=\"user.id\" />\n        <property name=\"anonymousId\" value=\"guest\" />\n      </component>\n      <component class=\"nablarch.common.handler.threadcontext.RequestIdAttribute\" />\n      <component class=\"nablarch.common.handler.threadcontext.InternalRequestIdAttribute\" />\n      <component class=\"nablarch.common.handler.threadcontext.LanguageAttribute\">\n        <property name=\"defaultLanguage\" value=\"ja\" />\n      </component>\n      <component class=\"nablarch.common.handler.threadcontext.TimeZoneAttribute\">\n        <property name=\"defaultTimeZone\" value=\"Asia/Tokyo\" />\n      </component>\n      <component class=\"nablarch.common.handler.threadcontext.ExecutionIdAttribute\" />\n    </list>\n  </property>\n</component>\n```",
+    "s4": "**クラス**: `nablarch.common.handler.threadcontext.ThreadContextHandler`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| attributes | List\\<ThreadContextAttribute\\> | ○ | | ThreadContextAttributeインタフェース実装クラスのリスト |",
+    "s5": "**クラス**: `nablarch.common.handler.threadcontext.UserIdAttribute`\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| sessionKey | String | | \"USER_ID\" | セッションからユーザIDを取得する際のキー |\n| anonymousId | String | | (設定なし) | 未ログインユーザに設定するユーザID。未設定の場合、未ログインユーザに対するユーザIDは設定されない |",
+    "s6": "**クラス**: `nablarch.common.handler.threadcontext.RequestIdAttribute`\n\n設定プロパティなし。",
+    "s7": "**クラス**: `nablarch.common.handler.threadcontext.InternalRequestIdAttribute`\n\n設定プロパティなし。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 8
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

@@ -1,0 +1,506 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s6 — Actionクラスでリクエストスコープにデータを設定 code example",
+      "description": "The knowledge file omits `form.setUserEmailAddressArraySize(emailAddressArray.length)` from the Action code that sets data into request scope. The JSP code in the same section references `W11AC03.userEmailAddressArraySize` in both `<c:forEach end=\"${W11AC03.userEmailAddressArraySize}\">` and `<n:hidden name=\"W11AC03.userEmailAddressArraySize\" />`. Without setting this property, the forEach loop and hidden field would receive null/empty values, producing a broken implementation.",
+      "source_evidence": "Source code in W11AC03Action.doRW11AC0301: `form.setUserEmailAddressArraySize(emailAddressArray.length);` appears between `W11AC03Form form = new W11AC03Form();` and `form.setUserEmailAddressArray(emailAddressArray);`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5, s6 — JSPとActionクラスの間でデータを受け渡す方法 (introductory description)",
+      "description": "The key benefit of the name attribute approach is not captured in any section: 「この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。」This explains that the approach abstracts away scope/parameter awareness, which is important context for an AI explaining why to use this pattern.",
+      "source_evidence": "Source intro: 「JSPとActionクラスの間でデータを受け渡す場合、以下の方法でname属性を指定すればよい。この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — missing 7th section",
+      "description": "The source file contains a 7th section anchor `.. _howto_window_scope:` with a heading separator line (`---`) indicating another h2-level section exists beyond the 6 sections covered. The knowledge file has only 6 sections. The content of this section is cut off in the provided source, but the section itself is not represented at all in the knowledge file index.",
+      "source_evidence": "Source ends with: `.. _\\`howto_window_scope\\`:` followed by `---` (h2 heading separator). Automated check also reports: \"Section count 6 < source headings 7\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "Several PascalCase class names present in the s5 code examples are absent from the hints: `CM311AC1Component`, `W11AC03Form`, `ExecutionContext`, `HttpRequest`.",
+      "source_evidence": "Source s5 code uses: `CM311AC1Component component = new CM311AC1Component()`, `W11AC03Form form = formCtx.createObject()`, `ExecutionContext ctx`, `HttpRequest req`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s6 — hints array",
+      "description": "Several PascalCase class names present in the s6 code examples are absent from the hints: `UserEmailAddressEntity`, `CM311AC1Component`, `W11AC03Form`, `ExecutionContext`, `HttpRequest`.",
+      "source_evidence": "Source s6 code uses: `UserEmailAddressEntity[] emailAddressArray`, `CM311AC1Component component`, `W11AC03Form form`, `ExecutionContext ctx`, `HttpRequest req`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _`import_taglib_dilective`:
+
+------------------------------
+taglibディレクティブの指定方法
+------------------------------
+
+JSPでカスタムタグを使用する場合、taglibディレクティブを指定する。
+
+taglibを使用するJSPの先頭で、prefixを指定して宣言を行う。
+指定したprefixを用いてカスタムタグを使用する。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+     
+     <?xml version="1.0" encoding="UTF-8" ?>
+     <%-- 【説明】taglibディレクティブの宣言 --%>
+     <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+     
+     <%-- 【説明】
+           taglibディレクティブの宣言とカスタムタグの使用例以外は省略
+           prefixを用いてカスタムタグを使用 --%>
+     <n:form>
+       <%-- 【説明】フォーム内の処理は省略 --%>
+     </n:form>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`uri_specifing`:
+
+-------------
+URIの指定方法
+-------------
+
+カスタムタグでURIを指定する方法を示す。
+また、相対パス指定時にURIのプロトコルを切り替える方法を示す。
+
+カスタムタグでURIを指定する方法は次の2種類がある。
+
+* 絶対URLによる指定
+* コンテキストルートからの相対パスによる指定
+
+実装例では、以下のフォルダ構成を想定する。
+
+  ::
+
+    web（コンテキストルート）
+     +-img
+     |  +-header_bar.jpg
+     |  +-sample.jpg
+     +-app_header.jsp
+     +-sample
+        +-sample001.jsp
+        +-sample002.jsp
+
+
+絶対URLによる指定
+==================
+
+http又はhttpsから始まるパスが **絶対URL** である。
+この指定方法では、パスがそのままURIとして使用される。
+
+* JSPの実装例
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】URIの指定以外は省略 --%>
+     <n:a href="http://www.tis.co.jp/" >tis</n:a>
+
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     http://www.tis.co.jp
+   
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+コンテキストルートからの相対パスによる指定
+==========================================
+
+/（スラッシュ）から始まるパスが **コンテキストルートからの相対パス** である。
+この指定方法では、先頭にコンテキストルートのパスが付加されてURIとして使用される。
+
+* JSPの実装例
+
+  header_bar.jpgへのパスを指定する場合
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】URIの指定以外は省略 --%>
+     <n:img src="/img/header_bar.jpg" alt="header" />
+
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     <コンテキストルートのパス>/img/header_bar.jpg
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+HTTPとHTTPSの切り替え
+=====================
+
+コンテキストルートからの相対パスでURIを指定しながらプロトコルを **切り替える** 場合、カスタムタグのsecure属性を指定する。
+また、httpからhttpsへの切り替えで使用するURIを指定するため、ポート番号(http用とhttps用)とホストを設定する必要がある。
+（ポート番号とホストの設定は、 `カスタムタグのデフォルト値の設定 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_HowToSettingCustomTag.html#webview-customtagconfig>`_ 参照）
+
+.. note::
+   secure属性は、 http→https 又は https→http とプロトコルを切り替える場合に指定する。
+   http→http 又は https→https とプロトコルを切り替えない場合にはsecure属性を指定しない。
+   
+   
+JSPから、画像ファイルにアクセスする例を示す。
+（カスタムタグの設定値は、ホスト名：localhost、http用のポート番号：8080、https用のポート番号：443とする。）
+
+* JSPの実装例
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           URIの指定以外は省略。
+           secure="true"でhttp→https。
+           secure="false"でhttps→http。 --%>
+     <n:img src="/img/sample.jpg" alt="sample" secure="true" />
+
+* HTML出力例
+
+  上の実装で指定されるURIは以下になる。
+
+  .. code-block:: none
+
+     # secure="true"の場合
+     https://localhost:443/img/sample.jpg
+     
+     # secure="false"の場合
+     http://localhost:8080/img/sample.jpg
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`for_data_passing`:
+
+-------------------------------------------
+JSPとActionクラスの間でデータを受け渡す方法
+-------------------------------------------
+
+JSPとActionクラスの間でデータを受け渡す場合、以下の方法でname属性を指定すればよい。
+この指定法により、データがどのスコープ又はパラメータに設定されているかを意識せずに使用できる。
+
+
+Map型/フォームのプロパティを受け渡す場合
+============================================
+
+JSPとActionクラスの間でMap型又はフォームのプロパティを受け渡す場合、
+カスタムタグのname属性に次の形式で値を指定する。
+
+  .. code-block:: none
+  
+     <リクエストスコープ上に設定したオブジェクトの変数名>.<プロパティ名>
+     
+
+* Actionクラスの実装例
+
+  Actionクラス→更新画面→Actionクラスの例を示す。
+
+  JSPにデータを受け渡すActionクラス。
+  
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+             /* 【説明】
+                 リクエストにプライマリキー（W11AC03.userId）が設定されているとする。
+                 プライマリキーの精査。 */
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             /* 【説明】
+                 エラー処理は省略。
+                 プライマリキーをプロパティとするW11AC03Formの生成。 */
+             W11AC03Form form = formCtx.createObject();
+
+             /* 【説明】
+                 プライマリキーで検索を行い、更新対象のデータを取得。
+                 取得したデータを、リクエストスコープに設定。
+                 SqlResultSetはListのサブクラスである。 */
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet userInfo = component.selectUsers(form);
+             ctx.setRequestScopedVar("W11AC03", userInfo.get(0));
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】データの受け渡し以外は省略 --%>
+     <n:form>
+       <%-- 【説明】テキストボックスから、サブミット先のActionクラスでW11AC03.kanjiNameとして扱うデータを入力する。 --%>
+       <n:text name="W11AC03.kanjiName" />
+       <n:submit cssClass="mainBtn" type="button" name="confirm" value="確認" uri="/action/ss11AC/W11AC03Action/RW11AC0302" />
+     </n:form>
+   
+   
+* Actionクラスの実装例
+
+  JSPからデータを受け取るActionクラス。
+
+  .. code-block:: java
+
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+             // 【説明】更新画面で入力したデータに対するバリデーション
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             // 【説明】エラーがあれば、ApplicationException例外を投げる。
+             formCtx.abortIfInvalid();
+
+             // 【説明】フォームを生成して使用する。
+             W11AC03Form form = formCtx.createObject();
+             
+             // 【説明】以下の処理は省略。
+         }
+     }
+
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+List型/配列の要素のプロパティを受け渡す場合
+===========================================
+
+JSPとActionクラスの間でList型又は配列の要素のプロパティを受け渡す場合、
+カスタムタグのname属性に次の形式で値を指定する。
+
+  .. code-block:: none
+
+     <リクエストスコープ上に設定したオブジェクトの変数名>[index].<プロパティ名>
+
+
+* Actionクラスの実装例
+
+  JSPにデータを受け渡すActionクラス。
+
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         // 【説明】データの受け渡し以外は省略 。
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+             /* 【説明】
+                 リクエストにプライマリキー（W11AC03.userId）が設定されているとする。
+                 プライマリキーの精査。 */
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             /* 【説明】
+                 エラー処理は省略。
+                 プライマリキーをプロパティとするW11AC03Formの生成。 */
+             W11AC03Form condition = formCtx.createObject();
+
+             /* 【説明】
+                 プライマリキーで検索を行い、検索結果をエンティティの配列に変換してW11AC03Formに設定。
+                 その後、検索結果を設定したフォームをリクエストスコープに設定。 */
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet emailAddressList = component.selecemailAddressList(condition);
+             
+             UserEmailAddressEntity[] emailAddressArray = new UserEmailAddressEntity[emailAddressList.size()];
+             for (int i = 0; i < emailAddressList.size(); i++) {
+                 emailAddressArray[i].setEmailAddress(emailAddressList.get(i).getString("emailAddress"));
+             }
+             
+             W11AC03Form form = new W11AC03Form();
+             form.setUserEmailAddressArraySize(emailAddressArray.length);
+             form.setUserEmailAddressArray(emailAddressArray);
+             ctx.setRequestScopedVar("W11AC03", form);
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  .. code-block:: jsp
+
+     <%-- 【説明】入力フォーム以外は省略 --%>
+     <n:form>
+       <%-- 【説明】
+             リクエストスコープに、W11AC03.userEmailAddressArraySizeをキーとしてメールアドレス件数が設定されているとする。
+             また、indexにループの回数が設定される。 --%>
+       <c:forEach begin="0" end="${W11AC03.userEmailAddressArraySize}" var="index">
+         <%-- 【説明】テキストボックスから、ActionクラスでW11AC03.userEmailAddressArray[index].emailAddressとして扱うデータを入力する。 --%>
+         <n:text name="W11AC03.userEmailAddressArray[${index}].emailAddress" />
+       </c:forEach>
+       <%-- 【説明】フォームのプロパティが任意長配列の場合、入力画面で配列長をサブミットする必要がある。 --%>
+       <n:hidden name="W11AC03.userEmailAddressArraySize" />
+       <n:submit cssClass="buttons" type="button" name="update" value="確認" uri="/action/ss11AC/W11AC03Action/RW11AC0302" />
+     </n:form>
+   
+   
+* Actionクラスの実装例
+
+  JSPからデータを受け取るActionクラス。
+  
+  .. code-block:: java
+
+     public class W11AC03Action {
+         // 【説明】受け取ったデータの取り扱い以外は省略。
+         public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+
+             // 【説明】 入力データの単項目精査。
+             ValidationContext<W11AC03Form> formCtx = 
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             
+             // 【説明】 エラーがあれば、ApplicationException例外を投げる。
+             formCtx.abortIfInvalid();
+
+             // 【説明】フォームを生成して使用する。
+             W11AC03Form form = formCtx.createObject();
+             
+             // 【説明】以降の処理は省略。
+         }
+     }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`howto_window_scope`:
+
+--------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-basic--s1",
+  "title": "ウェブアプリケーション基本機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "taglibディレクティブの指定方法",
+      "hints": [
+        "taglibディレクティブ",
+        "カスタムタグ",
+        "prefix宣言",
+        "JSP",
+        "uri=\"http://tis.co.jp/nablarch\""
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "URIの指定方法 - 絶対URLによる指定",
+      "hints": [
+        "絶対URL",
+        "http",
+        "https",
+        "n:a",
+        "URIの指定方法"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "URIの指定方法 - コンテキストルートからの相対パスによる指定",
+      "hints": [
+        "コンテキストルートからの相対パス",
+        "スラッシュ",
+        "n:img",
+        "URIの指定方法"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "URIの指定方法 - HTTPとHTTPSの切り替え",
+      "hints": [
+        "secure属性",
+        "HTTPSへの切り替え",
+        "プロトコル切り替え",
+        "n:img",
+        "URIの指定方法"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "JSPとActionクラスの間でデータを受け渡す方法 - Map型/フォームのプロパティ",
+      "hints": [
+        "JSPとActionクラス間のデータ受け渡し",
+        "Map型プロパティ",
+        "name属性",
+        "リクエストスコープ",
+        "ValidationUtil",
+        "ValidationContext",
+        "SqlResultSet",
+        "HttpResponse"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "JSPとActionクラスの間でデータを受け渡す方法 - List型/配列の要素のプロパティ",
+      "hints": [
+        "JSPとActionクラス間のデータ受け渡し",
+        "配列プロパティ",
+        "List型",
+        "インデックス",
+        "name属性",
+        "ValidationUtil",
+        "ValidationContext",
+        "SqlResultSet",
+        "HttpResponse"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JSPでカスタムタグを使用する場合、JSPの先頭でtaglibディレクティブを宣言し、prefixを指定する。指定したprefixを使用してカスタムタグにアクセスする。\n\n```jsp\n<%@ taglib prefix=\"n\" uri=\"http://tis.co.jp/nablarch\" %>\n\n<n:form>\n  <%-- フォーム内の処理は省略 --%>\n</n:form>\n```",
+    "s2": "カスタムタグでURIを絶対URLで指定する場合、`http`または`https`から始まるパスを使用する。この指定方法では、パスがそのままURIとして使用される。\n\n```jsp\n<%-- URIの指定以外は省略 --%>\n<n:a href=\"http://www.tis.co.jp/\">tis</n:a>\n```\n\n上の実装で指定されるURIは以下になる。\n\n```\nhttp://www.tis.co.jp\n```",
+    "s3": "カスタムタグでURIをコンテキストルートからの相対パスで指定する場合、`/`（スラッシュ）から始まるパスを使用する。この指定方法では、先頭にコンテキストルートのパスが付加されてURIとして使用される。\n\n```jsp\n<%-- URIの指定以外は省略 --%>\n<n:img src=\"/img/header_bar.jpg\" alt=\"header\" />\n```\n\n上の実装で指定されるURIは以下になる。\n\n```\n<コンテキストルートのパス>/img/header_bar.jpg\n```",
+    "s4": "コンテキストルートからの相対パスでURIを指定しながらプロトコルを切り替える場合、カスタムタグの`secure`属性を指定する。また、http用・https用のポート番号とホストの設定が必要。\n\n> **注意**: `secure`属性は http→https または https→http のプロトコル切り替え時のみ指定する。プロトコルを切り替えない（http→http または https→https）場合は指定しない。\n\n```jsp\n<%-- secure=\"true\"でhttp→https、secure=\"false\"でhttps→http --%>\n<n:img src=\"/img/sample.jpg\" alt=\"sample\" secure=\"true\" />\n```\n\n出力URI例（ホスト：localhost、http用ポート：8080、https用ポート：443の場合）：\n- `secure=\"true\"` → `https://localhost:443/img/sample.jpg`\n- `secure=\"false\"` → `http://localhost:8080/img/sample.jpg`",
+    "s5": "JSPとActionクラスの間でMap型またはフォームのプロパティを受け渡す場合、カスタムタグのname属性に次の形式で値を指定する。\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>.<プロパティ名>\n```\n\nActionクラスでリクエストスコープにデータを設定：\n\n```java\npublic HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"selectUserInfo\");\n    W11AC03Form form = formCtx.createObject();\n    CM311AC1Component component = new CM311AC1Component();\n    SqlResultSet userInfo = component.selectUsers(form);\n    ctx.setRequestScopedVar(\"W11AC03\", userInfo.get(0));\n    return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n}\n```\n\nJSPでname属性に`<変数名>.<プロパティ名>`形式で指定：\n\n```jsp\n<n:form>\n  <n:text name=\"W11AC03.kanjiName\" />\n  <n:submit type=\"button\" name=\"confirm\" value=\"確認\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n</n:form>\n```\n\n受け取り側ActionクラスでのバリデーションにはPrefix（\"W11AC03\"）を使用：\n\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    formCtx.abortIfInvalid();\n    W11AC03Form form = formCtx.createObject();\n}\n```",
+    "s6": "JSPとActionクラスの間でList型または配列の要素のプロパティを受け渡す場合、カスタムタグのname属性に次の形式で値を指定する。\n\n```\n<リクエストスコープ上に設定したオブジェクトの変数名>[index].<プロパティ名>\n```\n\nActionクラスでリクエストスコープにデータを設定：\n\n```java\npublic HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"selectUserInfo\");\n    W11AC03Form condition = formCtx.createObject();\n    CM311AC1Component component = new CM311AC1Component();\n    SqlResultSet emailAddressList = component.selecemailAddressList(condition);\n    UserEmailAddressEntity[] emailAddressArray = new UserEmailAddressEntity[emailAddressList.size()];\n    for (int i = 0; i < emailAddressList.size(); i++) {\n        emailAddressArray[i].setEmailAddress(emailAddressList.get(i).getString(\"emailAddress\"));\n    }\n    W11AC03Form form = new W11AC03Form();\n    form.setUserEmailAddressArray(emailAddressArray);\n    ctx.setRequestScopedVar(\"W11AC03\", form);\n    return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n}\n```\n\nJSPでインデックス付きname属性で指定：\n\n```jsp\n<n:form>\n  <c:forEach begin=\"0\" end=\"${W11AC03.userEmailAddressArraySize}\" var=\"index\">\n    <n:text name=\"W11AC03.userEmailAddressArray[${index}].emailAddress\" />\n  </c:forEach>\n  <%-- フォームのプロパティが任意長配列の場合、配列長をサブミットする必要がある --%>\n  <n:hidden name=\"W11AC03.userEmailAddressArraySize\" />\n  <n:submit type=\"button\" name=\"update\" value=\"確認\" uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n</n:form>\n```\n\n受け取り側Actionクラスでのバリデーション：\n\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    formCtx.abortIfInvalid();\n    W11AC03Form form = formCtx.createObject();\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

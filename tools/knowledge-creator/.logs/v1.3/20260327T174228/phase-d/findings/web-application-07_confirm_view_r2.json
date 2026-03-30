@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-07_confirm_view",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "s1 content includes `HttpRequest` and `ExecutionContext` in the method signature of `doRW11AC0202`, but neither appears in the hints array.",
+      "source_evidence": "public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[1] (s2) hints",
+      "description": "`validateAndConvertForResister` is a named private method defined and called in s2, but is absent from the hints. Also `HttpRequest`, `HttpResponse`, and `ExecutionContext` appear in the code examples but are not listed.",
+      "source_evidence": "private static W11AC02Form validateAndConvertForResister(HttpRequest req) { ... }\npublic HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx)"
+    }
+  ]
+}

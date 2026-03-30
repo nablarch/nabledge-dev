@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageReceiveAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — configuration table",
+      "description": "The knowledge file table adds a 'デフォルト値' column that does not exist in the source table. The source only has columns: 設定項目 / プロパティ名 / データ型 / 備考. All cells in the added column are empty, so no concrete value is fabricated, but the column structure itself has no basis in the source.",
+      "source_evidence": "Source table headers: 設定項目 | プロパティ名 | データ型　| 備考 (no デフォルト値 column)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 — 概要 section body",
+      "description": "RST cross-reference syntax ':doc:`../architectural_pattern/messaging_receive`' is left verbatim in the knowledge file markdown content. This RST-specific notation has no meaning outside of Sphinx/RST rendering and will appear as raw markup to AI consumers of the knowledge file.",
+      "source_evidence": "Source: ':doc:`../architectural_pattern/messaging_receive` における典型的な業務アクションハンドラの実装' — this is valid RST, but the knowledge file should convert it to plain text (e.g., 'messaging_receive パターン')"
+    }
+  ]
+}

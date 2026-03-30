@@ -1,0 +1,13 @@
+{
+  "file_id": "libraries-mail--s6",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "s3のヒントに`mailSmtpConnectionTimeout`と`mailSmtpTimeout`が含まれていない。これらのプロパティ名はs3のXML設定例（メールセッション設定）に明示的に登場しており、s3経由での検索に使えるべきプロパティ名。s10のヒントには含まれているが、s3の内容からも検索できるべき。",
+      "source_evidence": "s3のXML例: `<property name=\"mailSmtpConnectionTimeout\" value=\"100000\" />` および `<property name=\"mailSmtpTimeout\" value=\"100000\" />`"
+    }
+  ]
+}

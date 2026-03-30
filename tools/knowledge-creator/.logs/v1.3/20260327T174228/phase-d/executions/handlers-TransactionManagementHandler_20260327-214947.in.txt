@@ -1,0 +1,381 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/handler/TransactionManagementHandler.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+================================================
+トランザクション制御ハンドラ
+================================================
+
+
+**クラス名:** ``nablarch.common.handler.TransactionManagementHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+データベースやメッセージキューなどのトランザクションに対応したリソースを使用し、
+後続処理における透過的トランザクションを実現するハンドラ。
+
+トランザクション機能の詳細については、
+:doc:`../02_FunctionDemandSpecifications/01_Core/03_TransactionManager` 機能の項を参照すること。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "DbConnectionManagementHandler"
+      , "TransactionManagementHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+.. _callback:
+
+**関連するハンドラ**
+  
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`DbConnectionManagementHandler`  このハンドラの上位に配置することで、本ハンドラが管理するトランザクションに
+                                        DB接続を参加させることができる。
+  ====================================  ===================================================================================
+
+
+**コールバック**
+  本ハンドラではトランザクションに関連した以下のイベントリスナを定義している。
+  後続のハンドラで実装することにより、本ハンドラ実行中にコールバックを受けることができる。
+
+  +------------------------------+---------------------------+-----------------------------------------------+
+  | インターフェース             | メソッド                  | イベント                                      |
+  +==============================+===========================+===============================================+
+  | TransactionEventCallback     | transactionNormalEnd()    | トランザクションコミット直後に呼ばれる。      |
+  |                              +---------------------------+-----------------------------------------------+
+  |                              | transactionAbnormalEnd()  | トランザクションロールバック直後に呼ばれる。  |
+  +------------------------------+---------------------------+-----------------------------------------------+
+
+  なお、 **transactionAbnormalEnd()** は業務トランザクションのロールバック後に実行されるため、
+  個別のトランザクション内で実行される。また、このトランザクションはコールバック完了後
+  自動的にコミット/ロールバックされる。
+
+******************
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (トランザクションオブジェクトの獲得)**
+    このハンドラに設定されている **トランザクションファクトリ** を用いて、
+    スレッドローカル上のDB接続に対するトランザクションを作成する。
+
+  **1a. (DB接続未設定エラー)**
+    本ハンドラに設定された **スレッドローカル登録名** に対するDB接続がスレッドローカル上に設定されていなかった場合は
+    実行時例外を送出して終了する。
+      
+  **2. (スレッドローカルへの登録)**
+    **1.** で取得したトランザクションオブジェクトを、スレッドローカル変数上のMapに登録する。
+    キー名は、本ハンドラに設定された **スレッドローカル登録名** を使用する。
+
+  **2a. (トランザクション重複登録エラー)**
+    スレッドローカル上に同一の登録名で既にトランザクションが設定されていた場合は、実行時例外を送出して終了する。
+
+  **3. (トランザクション開始とハンドラキューの実行)**
+    トランンザクションを開始し、ハンドラキュー上の後続ハンドラに処理を委譲し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **4. (トランザクションコミット)**
+    後続ハンドラの処理が正常終了した場合、トランザクションをコミットする。
+
+  **5. (コールバックの呼び出し)**
+    後続ハンドラの内、 **TransactionEventCallback** を実装しているものについて、
+    以下のコールバックメソッドを呼び出す。::
+
+      TransactionEventCallback#transactionNormalEnd(Object data, ExecutionContext context): void
+
+  **6. (終端処理)**
+    スレッドローカルからトランザクションを除去した上で、トランザクションをクローズする。
+
+  **7. (正常終了)**
+    **3.** で取得した後続ハンドラの処理結果をリターンし終了する。     
+
+.. _error:
+
+**[例外処理]**
+  **3a, 4a.(トランザクションロールバック)**
+    後続ハンドラの処理中およびトランザクションのコミット時に例外が送出された場合は、トランザクションをロールバックし、
+    以下のコールバックメソッドを呼び出す。::
+
+      TransactionEventCallback#transactionAbnormalEnd(Object data, ExecutionContext context): void
+
+    **6.** の終端処理を実行後、元例外を再送出して終了する。
+
+  **3b. (コミット対象エラー)**
+    後続ハンドラの処理中に送出された実行時例外が本ハンドラに設定された **コミット対象例外クラスリスト** に含まれていた場合は、
+    **3a.** のロールバック処理は行わず、かわりに **4.** 、 **5.** 、 **6.** の各処理を実行し、送出された例外を再送出して終了する。 
+      
+
+
++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+  ============================= ============================ ============================== =============================================================
+  設定項目                      プロパティ名                 データ型　                     備考
+  ============================= ============================ ============================== =============================================================
+  トランザクションファクトリ    transactionFactory           | nablarch.core.transaction    | (必須指定)
+                                                             | .TransactionFactory           
+
+  スレッドローカル登録名        transactionName              String                         | (任意指定)
+                                                                                            | カレントスレッドで使用するトランザクションを識別する
+                                                                                              文字列。
+                                                                                              複数のトランザクションを利用する場合に指定する。
+                                                                                              またトランザクションとDBコネクションの登録名は一致させる
+                                                                                              必要がある。
+                                                                                              省略した場合は既定の接続名("transaction")使用する。  
+
+  コミット対象例外クラスリスト  transactionCommitExceptioins List<String>                   | (任意指定)
+                                                                                            | このハンドラで捕捉してもそのままコミットする実行時例外
+                                                                                              のリスト。クラスの完全修飾名のリストを設定する。
+
+  ============================= ============================ ============================== =============================================================
+
+
+**トランザクションファクトリ** の設定方法については
+:doc:`../02_FunctionDemandSpecifications/01_Core/03_TransactionManager`
+を参照すること。
+
+**基本設定**
+
+  .. code-block:: xml
+
+    <component class="nablarch.common.handler.TransactionManagementHandler">
+      <!-- トランザクションファクトリ -->
+      <property name="transactionFactory" ref="transactionFactory"/>
+    </component>
+
+
+  デフォルトの設定では、トランザクションが暗黙的に使用する接続名
+  に対して接続オブジェクトを登録する。
+  接続名を明示的に指定する場合は、属性dbConnectionNameにその値を設定する。
+
+  .. code-block:: xml
+
+    <!-- DB接続管理ハンドラ -->
+    <component class="nablarch.common.handler.DbConnectionManagementHandler">
+      <!-- DBコネクションファクトリ -->
+      <property name="connectionFactory" ref="connectionFactory"/>
+      <!-- DBコネクション登録名 -->
+      <property name="connectionName" value="subTran"/>
+    </component>
+
+    <!-- トランザクション制御ハンドラ -->
+    <component class="nablarch.common.handler.TransactionManagementHandler">
+      <!-- トランザクションファクトリ -->
+      <property name="transactionFactory" ref="transactionFactory"/>
+      <!-- トランザクション登録名(DBコネクションの登録名にあわせる) -->
+      <property name="transactionName" value="subTran"/>
+    </component>
+
+
+
+**特定の例外が発生した場合はロールバックせずにそのままコミットする**
+
+  .. code-block:: xml
+
+    <component class="nablarch.common.handler.TransactionManagementHandler">
+      <!-- トランザクションファクトリ -->
+      <property name="transactionFactory" ref="transactionFactory"/>
+      <!-- トランザクションをコミットする例外 -->
+      <property name="transactionCommitExceptions">
+      <list>
+        <value>example.TransactionCommitException</value>
+        <value>example.TransactionCommitException2</value>
+      </list>
+      </property>
+    </component>
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-TransactionManagementHandler`
+
+```json
+{
+  "id": "handlers-TransactionManagementHandler",
+  "title": "トランザクション制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "TransactionManagementHandler",
+        "nablarch.common.handler.TransactionManagementHandler",
+        "TransactionEventCallback",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "DbConnectionManagementHandler",
+        "トランザクション制御",
+        "透過的トランザクション",
+        "コールバック"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "TransactionEventCallback",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "トランザクションコミット",
+        "トランザクションロールバック",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "コミット対象例外クラスリスト"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "transactionFactory",
+        "transactionName",
+        "transactionCommitExceptions",
+        "TransactionFactory",
+        "トランザクション設定",
+        "スレッドローカル登録名",
+        "コミット対象例外",
+        "connectionName"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.TransactionManagementHandler`\n\nDB・メッセージキューなどトランザクション対応リソースに対して、後続処理における透過的トランザクションを実現するハンドラ。\n\n**関連ハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`DbConnectionManagementHandler` | このハンドラの上位に配置することで、本ハンドラが管理するトランザクションにDB接続を参加させることができる。 |\n\n**コールバック**\n\n後続ハンドラが `TransactionEventCallback` を実装することで、以下のイベント時にコールバックを受け取れる。\n\n| インターフェース | メソッド | イベント |\n|---|---|---|\n| TransactionEventCallback | transactionNormalEnd() | トランザクションコミット直後 |\n| TransactionEventCallback | transactionAbnormalEnd() | トランザクションロールバック直後 |\n\n> **注意**: `transactionAbnormalEnd()` は業務トランザクションのロールバック後に個別のトランザクション内で実行される。このトランザクションはコールバック完了後に自動的にコミット/ロールバックされる。",
+    "s2": "**[往路処理]**\n\n1. トランザクションファクトリを使用してスレッドローカル上のDB接続に対するトランザクションを作成する。\n   - 1a. スレッドローカル登録名に対するDB接続がスレッドローカル上に未設定の場合は実行時例外を送出して終了。\n2. 取得したトランザクションオブジェクトをスレッドローカル変数上のMapに登録する（キー名はスレッドローカル登録名）。\n   - 2a. 同一登録名でトランザクションが既に設定されていた場合は実行時例外を送出して終了。\n3. トランザクションを開始し、後続ハンドラに処理を委譲する。\n\n**[復路処理]**\n\n4. 後続ハンドラが正常終了した場合、トランザクションをコミットする。\n5. `TransactionEventCallback` を実装した後続ハンドラの `transactionNormalEnd()` を呼び出す。\n6. スレッドローカルからトランザクションを除去し、トランザクションをクローズする。\n7. 後続ハンドラの処理結果をリターンして終了。\n\n**[例外処理]**\n\n- 3a/4a. 後続ハンドラ処理中またはコミット時に例外が発生した場合、トランザクションをロールバックし `transactionAbnormalEnd()` を呼び出す。終端処理（6.）後、元例外を再送出して終了。\n- 3b. 発生した実行時例外がコミット対象例外クラスリストに含まれる場合、ロールバックせずにコミット（4.→5.→6.）し、例外を再送出して終了。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| transactionFactory | nablarch.core.transaction.TransactionFactory | ○ | | トランザクションファクトリ |\n| transactionName | String | | transaction | スレッドローカル登録名。複数トランザクション使用時に指定。DBコネクションの登録名と一致させること。 |\n| transactionCommitExceptions | List\\<String\\> | | | ロールバックせずコミットする実行時例外クラスの完全修飾名リスト。 |\n\n**基本設定**\n\n```xml\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <property name=\"transactionFactory\" ref=\"transactionFactory\"/>\n</component>\n```\n\n**複数トランザクション（接続名を明示指定）**\n\nトランザクション登録名（`transactionName`）はDBコネクションの登録名（`connectionName`）と一致させること。\n\n```xml\n<!-- DB接続管理ハンドラ -->\n<component class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n  <property name=\"connectionFactory\" ref=\"connectionFactory\"/>\n  <property name=\"connectionName\" value=\"subTran\"/>\n</component>\n\n<!-- トランザクション制御ハンドラ -->\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <property name=\"transactionFactory\" ref=\"transactionFactory\"/>\n  <property name=\"transactionName\" value=\"subTran\"/>\n</component>\n```\n\n**特定例外発生時にコミットする設定**\n\n```xml\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <property name=\"transactionFactory\" ref=\"transactionFactory\"/>\n  <property name=\"transactionCommitExceptions\">\n    <list>\n      <value>example.TransactionCommitException</value>\n      <value>example.TransactionCommitException2</value>\n    </list>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

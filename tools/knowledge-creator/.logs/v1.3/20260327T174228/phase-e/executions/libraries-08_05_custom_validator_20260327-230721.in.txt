@@ -1,0 +1,384 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-08_05_custom_validator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s2 / index[1].hints",
+      "description": "The source explicitly calls out `ValidationContext.getMessage()` as the standard way to obtain the property display name for `addResultMessage`'s optional parameter. This method name is absent from s2's hints, reducing discoverability for queries about error message construction.",
+      "source_evidence": "「通常エラーメッセージの置き換え文字にプロパティ名を挿入することが多い。このような場合、サンプルのように ValidationContext の getMessage メソッドで取得した Message をオプションパラメータとして設定しておく。」 and the code `context.getMessage(propertyMessageId)` used three times in the validate method."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s4 / index[3].hints",
+      "description": "`annotationType` is missing from s4's hints. The source code for the anonymous SampleCheck implementation requires overriding `annotationType()` — it is the only non-business method in the anonymous class and a mandatory part of the DirectCallableValidator pattern.",
+      "source_evidence": "```java\npublic Class<? extends Annotation> annotationType() {\n    return SampleCheck.class;\n}\n```"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+
+
+.. _`add-validation-method`:
+
+バリデータの追加・変更
+=================================
+バリデーションに使用するアノテーションとバリデータは、必要に応じて追加・変更を行うことができる。
+
+アノテーションとバリデータは下記手順で追加できる。
+
+ 1. アノテーションの作成
+ 2. バリデータの作成
+ 3. バリデータを設定ファイルに登録
+
+また、既存のアノテーションをそのまま使用して、バリデータの処理内容を変更する場合は、
+上記手順の2と3を実施すればよい。
+
+例えば下記要求を満たすサンプルのバリデータの作成する例を考える。
+
+ * 入力した文字列が "0001" , "0002" , "0003" のいずれかであることがチェックできること。 
+ * アノテーションで "0001" の入力を許可しない設定にできること。
+
+このサンプルのバリデータの作成手順は以下のようになる。
+
+アノテーションの作成
+------------------------------------
+バリデータの条件を指定するアノテーションは、下記条件を満たす必要がある。
+
+ * @Validation アノテーションを設定すること。
+ * @Target アノテーションでElementType.METHODを設定すること。
+ * @Retention アノテーションでRetentionPolicy.RUNTIMEを設定すること。
+
+ここで示す例では、「0001を許可するかしないか？」をアノテーションで指定する必要があるため、
+この条件をアノテーションに持たせればよい。
+
+実際のアノテーションは下記のような実装になる。
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // 下記のコードはプロジェクトのアーキテクトが作成するものである。
+    // 通常、各アプリケーション・プログラマはこのような実装を行わない。
+    
+    @Validation
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface SampleCheck {
+        boolean allow0001() default false;
+    }
+
+
+.. note::
+  本フレームワークが提供するアノテーションには、必ずメッセージIDが指定できるよう
+  になっているが、これはバリデータの使用方法に汎用性を持たせるためである。
+  通常のアプリケーションでは、メッセージIDが必要になった場合のみアノテーションに持た
+  せるようにすればよい。
+
+バリデータの作成
+------------------
+バリデータは、 Validator インタフェースを実装して作成する。
+
+実装例を下記に示す。
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // 下記のコードはプロジェクトのアーキテクトが作成するものである。
+    // 通常、各アプリケーション・プログラマはこのような実装を行わない。
+    
+    public class SampleCheckValidator implements Validator {
+    
+        private String allow0001MessageId;
+        private String deny0001MessageId;
+        
+        // ポイント1
+        public void setAllow0001MessageId(String messageId) {
+            this.allow0001MessageId = messageId;
+        }
+        
+        public void setDeny0001MessageId(String deny0001MessageId) {
+            this.deny0001MessageId = deny0001MessageId;
+        }
+        
+        public Class<? extends Annotation> getAnnotationClass() {
+            return SampleCheck.class;
+        }
+    
+        public <T> boolean validate(ValidationContext<T> context,
+                String propertyName, String propertyMessageId,
+                Annotation annotation, Object value) {
+    
+            SampleCheck check = (SampleCheck) annotation;
+            
+            // ポイント2
+            String strValue = (String) value;
+            if (check.allow0001()) {
+                if ("0001".equals(strValue)
+                        || "0002".equals(strValue)
+                        || "0003".equals(strValue)) {
+                    return true;
+                } else {
+                    // ポイント3
+                    context.addResultMessage(propertyName, allow0001MessageId, context.getMessage(propertyMessageId));
+                    return false;
+                }
+            } else {
+                if ("0002".equals(strValue)
+                        || "0003".equals(strValue)) {
+                    return true;
+                } else {
+                    context.addResultMessage(propertyName, deny0001MessageId, context.getMessage(propertyMessageId));
+                    return false;
+                }
+            }
+        }
+
+    }
+
+バリデータの実装ポイントは下記の通りである。
+ 1. デフォルトのエラーメッセージをプロパティに持つ。
+   
+   バリデーション結果のデフォルトのエラーメッセージは、バリデータのプロパティとして持つ。
+   こうすることで、複数のプロパティに対するバリデーション結果のエラーメッセージをシステムとして統一できる。
+   もし特定のプロパティのみ別のエラーメッセージを設定したい場合、別途アノテーションにエラーメッセージを設定できるようにし、
+   アノテーションにエラーメッセージが設定されていた場合にはそちらを優先的に使用するように実装すればよい。
+   
+   また、本サンプルでは0001を許す場合と許さない場合で異なるエラーメッセージを設定可能としている。
+   このように、バリデーション結果に合わせてエラーメッセージを変更したい場合には、本サンプルの allow0001MessageId と
+   deny0001MessageId のように、エラーメッセージのパターンだけエラーメッセージ用のプロパティを追加すればよい。
+   
+ 2. validateメソッド内では引数の value に対してバリデーションを行う。
+   
+   validateメソッドは、アノテーションを設定したプロパティの型に合わせた変換後の値が引数 value で渡される。
+   このため、アノテーションを設定するプロパティの型に合わせてバリデーションの処理を記述すればよい。
+   
+   この例ではアノテーションを文字列のプロパティに対して設定することのみを想定しているため、 value を
+   Stringにキャストしてチェックを行っている。
+   
+   
+ 3. validateメソッドで、バリデーション結果を正しくないと判定した場合は引数の context にメッセージを追加して false を返す。
+
+   入力値のバリデーション結果を正しくないと判定した場合、 ValidationContext の addResultMessage メソッドを使用してエラーメッセージ
+   をコンテキストに追加し、 false を返す。
+   反対にバリデーション結果が正しいと判断した場合には、単に true を返せばよい。
+   
+   addResultMessage メソッドには第1引数に validate メソッドに渡される propertyName 、第2引数にエラーメッセージの
+   メッセージID、第3引数以降にエラーメッセージのオプションパラメータを渡す。
+   オプションパラメータは指定しなくてもかまわないが、通常エラーメッセージの置き換え文字にプロパティ名を挿入することが多い。
+   このような場合、サンプルのように ValidationContext の getMessage メソッドで取得した Message を
+   オプションパラメータとして設定しておく。
+
+
+
+バリデータを設定ファイルに登録
+------------------------------------
+作成したバリデータは、 :ref:`validation_sequence` と同様に設定ファイルに追加しておくことで使用できる。
+
+サンプルの設定を追加した ValidationManager の validators プロパティの設定は下記のようになる。
+ここでは ValidationManager の validators プロパティのリストに追加する以外にバリデータ特有の設定は不要である。
+
+
+.. code-block:: xml
+
+        <property name="validators">
+            <list>
+                <component class="nablarch.core.validation.validator.RequiredValidator">
+                    <property name="messageId" value="MSG00011"/>
+                </component>
+                <component class="nablarch.core.validation.validator.NumberRangeValidator">
+                    <property name="maxMessageId" value="MSG00051"/>
+                    <property name="maxAndMinMessageId" value="MSG00052"/>
+                    <property name="minMessageId" value="MSG00053"/>
+                </component>
+                <component class="nablarch.core.validation.validator.LengthValidator">
+                    <property name="maxMessageId" value="MSG00021"/>
+                    <property name="maxAndMinMessageId" value="MSG00022"/>
+                </component>
+                <!-- 追加 -->
+                <component class="nablarch.core.validation.sample.create.SampleCheckValidator">
+                    <property name="allow0001MessageId" value="MSG00051"/>
+                    <property name="deny0001MessageId" value="MSG00052"/>
+                </component>
+            </list>
+        </property>
+
+以上の設定を行うことで、下記のように Form のプロパティに @SampleCheck アノテーションを付けたバリデーションが可能となる。
+
+
+.. code-block:: xml
+
+    private static class TestEntity {
+
+        private String param1;
+        private String param2;
+        public TestEntity(Map<String, Object> params) {
+            
+        }
+        public String getParam1() {
+            return param1;
+        }
+        
+        @SampleCheck(allow0001 = false)
+        public void setParam1(String param1) {
+            this.param1 = param1;
+        }
+        public String getParam2() {
+            return param2;
+        }
+        @SampleCheck(allow0001 = true)
+        public void setParam2(String param2) {
+            this.param2 = param2;
+        }
+
+    }
+
+.. _implementing_DirectCallable:
+
+バリデータを明示的に呼び出す場合
+---------------------------------------------
+:ref:`direct_call_of_validators` で述べたように、業務ロジックからの直接呼び出しに対応する為には
+**Validator** インターフェースのサブインタフェースである **DirectCallableValidator** インターフェース
+を実装する必要がある。
+
+次のコードは、先の **SampleCheckValidator** これに対応するように拡張したものである。
+(実装する内容は、コード中のコメントにもあるように定型的なものである。)
+
+.. code-block:: java
+
+  // ******** 注意 ********
+  // 下記のコードはプロジェクトのアーキテクトが作成するものである。
+  // 通常、各アプリケーション・プログラマはこのような実装を行わない。
+   
+  public class SampleCheckValidator implements DirectCallableValidator {
+      
+      // 実装するインターフェース名と、追加されたメソッド以外の実装は元のソースコードと同じ 
+
+      // DirectCallableValidator で追加されたメソッドの実装
+      public <T> boolean validate(ValidationContext<T>      context,
+                                  String                    propertyName,
+                                  Object                    propertyDisplayName,
+                                  final Map<String, Object> params,
+                                  Object                    value) {
+
+          // Mapとして渡された属性値を、アノテーションに移し替える。 
+          SampleCheck annotation = new SampleCheck() {
+              public Class<? extends Annotation> annotationType() {
+                  return SampleCheck.class;
+              }
+              public boolean allow001() {
+                  String allow001 = (Boolean) params.get("allow001");
+                  // 属性値が設定されていない場合は、アノテーションに指定されているデフォルト値を返す。
+                  return (allow001 == null) ? false 
+                                            : allow001;
+              }
+          };
+          return validate(context, propertyName, propertyDisplayName, annotation, value);
+      }
+  }
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-08_05_custom_validator",
+  "title": "バリデータの追加・変更",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アノテーションの作成",
+      "hints": [
+        "@Validation",
+        "@Target",
+        "@Retention",
+        "ElementType.METHOD",
+        "RetentionPolicy.RUNTIME",
+        "SampleCheck",
+        "カスタムアノテーション作成",
+        "バリデータ追加手順",
+        "バリデーション拡張"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデータの作成",
+      "hints": [
+        "Validator",
+        "ValidationContext",
+        "SampleCheckValidator",
+        "addResultMessage",
+        "getAnnotationClass",
+        "カスタムバリデータ実装",
+        "エラーメッセージ設定",
+        "バリデーション失敗"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "バリデータを設定ファイルに登録",
+      "hints": [
+        "ValidationManager",
+        "SampleCheckValidator",
+        "validators",
+        "@SampleCheck",
+        "バリデータ登録",
+        "設定ファイル"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "バリデータを明示的に呼び出す場合",
+      "hints": [
+        "DirectCallableValidator",
+        "ValidationContext",
+        "SampleCheckValidator",
+        "バリデータ直接呼び出し",
+        "業務ロジックからの呼び出し",
+        "DirectCallable"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "カスタムアノテーション＋バリデータの追加手順:\n1. アノテーションの作成\n2. バリデータの作成\n3. バリデータを設定ファイルに登録\n\n既存アノテーションを使いバリデータの処理内容のみ変更する場合は、手順2と3のみ実施する。\n\nカスタムアノテーションの作成要件:\n- `@Validation` アノテーションを付与すること\n- `@Target(ElementType.METHOD)` を設定すること\n- `@Retention(RetentionPolicy.RUNTIME)` を設定すること\n\n```java\n@Validation\n@Target(ElementType.METHOD)\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface SampleCheck {\n    boolean allow0001() default false;\n}\n```\n\n> **注意**: メッセージIDは必要な場合のみアノテーションに持たせればよい（フレームワーク提供アノテーションは汎用性のためメッセージIDを持つが、通常アプリでは任意）。",
+    "s2": "**インターフェース**: `Validator`\n\nバリデータ実装のポイント:\n1. デフォルトエラーメッセージをバリデータのプロパティとして持つ。複数プロパティ間でエラーメッセージをシステムとして統一できる。バリデーションパターンごとに別プロパティを追加可能（例: `allow0001MessageId`、`deny0001MessageId`）。\n2. `validate` メソッドの引数 `value` はアノテーションを設定したプロパティの型に変換済みの値が渡される。プロパティの型に合わせてキャストしてバリデーションを行う。\n3. バリデーション失敗時は `ValidationContext.addResultMessage(propertyName, messageId, options...)` でエラーメッセージを追加し `false` を返す。成功時は `true` を返す。第3引数以降のオプションパラメータには通常 `context.getMessage(propertyMessageId)` で取得した `Message` を設定する。\n\n```java\npublic class SampleCheckValidator implements Validator {\n\n    private String allow0001MessageId;\n    private String deny0001MessageId;\n\n    public void setAllow0001MessageId(String messageId) {\n        this.allow0001MessageId = messageId;\n    }\n\n    public void setDeny0001MessageId(String deny0001MessageId) {\n        this.deny0001MessageId = deny0001MessageId;\n    }\n\n    public Class<? extends Annotation> getAnnotationClass() {\n        return SampleCheck.class;\n    }\n\n    public <T> boolean validate(ValidationContext<T> context,\n            String propertyName, String propertyMessageId,\n            Annotation annotation, Object value) {\n\n        SampleCheck check = (SampleCheck) annotation;\n        String strValue = (String) value;\n        if (check.allow0001()) {\n            if (\"0001\".equals(strValue) || \"0002\".equals(strValue) || \"0003\".equals(strValue)) {\n                return true;\n            } else {\n                context.addResultMessage(propertyName, allow0001MessageId, context.getMessage(propertyMessageId));\n                return false;\n            }\n        } else {\n            if (\"0002\".equals(strValue) || \"0003\".equals(strValue)) {\n                return true;\n            } else {\n                context.addResultMessage(propertyName, deny0001MessageId, context.getMessage(propertyMessageId));\n                return false;\n            }\n        }\n    }\n}\n```",
+    "s3": ":ref:`validation_sequence` と同様に `ValidationManager` の `validators` プロパティのリストにバリデータコンポーネントを追加することで使用可能になる。バリデータ固有のプロパティ（メッセージIDなど）も同時に設定する。\n\n```xml\n<property name=\"validators\">\n    <list>\n        <!-- 追加 -->\n        <component class=\"nablarch.core.validation.sample.create.SampleCheckValidator\">\n            <property name=\"allow0001MessageId\" value=\"MSG00051\"/>\n            <property name=\"deny0001MessageId\" value=\"MSG00052\"/>\n        </component>\n    </list>\n</property>\n```\n\nフォームの setter メソッドに `@SampleCheck` アノテーションを付与する:\n\n```java\n@SampleCheck(allow0001 = false)\npublic void setParam1(String param1) { ... }\n\n@SampleCheck(allow0001 = true)\npublic void setParam2(String param2) { ... }\n```",
+    "s4": "業務ロジックからのバリデータ直接呼び出し（:ref:`direct_call_of_validators`）に対応するには、`Validator` のサブインターフェースである `DirectCallableValidator` を実装する必要がある。\n\n追加実装メソッド: `validate(ValidationContext<T> context, String propertyName, Object propertyDisplayName, Map<String, Object> params, Object value)`\n\n`params` に `Map` として渡された属性値をアノテーションオブジェクトに移し替えて、既存の `validate` メソッドに委譲する。属性値が未設定（`null`）の場合はアノテーションのデフォルト値を返す。\n\n```java\npublic class SampleCheckValidator implements DirectCallableValidator {\n\n    public <T> boolean validate(ValidationContext<T> context,\n                                String              propertyName,\n                                Object              propertyDisplayName,\n                                final Map<String, Object> params,\n                                Object              value) {\n\n        SampleCheck annotation = new SampleCheck() {\n            public Class<? extends Annotation> annotationType() {\n                return SampleCheck.class;\n            }\n            public boolean allow001() {\n                String allow001 = (Boolean) params.get(\"allow001\");\n                return (allow001 == null) ? false : allow001;\n            }\n        };\n        return validate(context, propertyName, propertyDisplayName, annotation, value);\n    }\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

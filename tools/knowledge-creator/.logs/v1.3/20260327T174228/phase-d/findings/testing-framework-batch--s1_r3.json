@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s6].hints",
+      "description": "PascalCase class name `FixedLengthConvertorSetting` is missing from s6 hints. Only the camelCase bean name `fixedLengthConvertorSetting` is present, but the class name appears explicitly in the XML configuration as `class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\"` and would be the natural search term for users looking up how to configure this component.",
+      "source_evidence": "XML config in 固定長ファイルの準備 section: `<component name=\"fixedLengthConvertorSetting\" class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s6",
+      "description": "The concrete example table showing 符号付数値/符号無数値 data representation is omitted. The source provides a specific format scenario (フィールド長10桁、パディング文字'0'、小数点必要、符号位置固定、正の符号不要) and shows exactly how values map to test data strings (12345→0000012345, -12.34→-000012.34). This concrete example helps AI agents give precise guidance on test data format, beyond the general rule that is captured.",
+      "source_evidence": "Source note under 固定長ファイルの準備: 「以下に、データ型が符号付数値の場合に表したい値とその表現方法の例を示す。（フォーマット定義：フィールド長10桁、パディング文字'0'、小数点必要、符号位置固定、正の符号不要）」 followed by table showing 12345→0000012345, -12.34→-000012.34"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "id": "libraries-02_01_Repository_config--s18",
+  "title": "リポジトリの設定",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "環境設定ファイルに記述した値をコンポーネント設定ファイルで使用する",
+      "hints": [
+        "環境設定ファイル",
+        "config-file要素",
+        "${キー名}プレースホルダ",
+        "プロパティ値の外部化",
+        "property要素のvalue属性",
+        "entry要素のkey属性",
+        "entry要素のvalue属性",
+        "value要素",
+        "環境依存設定の分離"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ディレクトリに配置された設定ファイルの読み込み",
+      "hints": [
+        "dir属性",
+        "import要素",
+        "config-file要素",
+        "ディレクトリ一括読み込み",
+        "ワイルドカード指定",
+        "相対パス",
+        "repository_import_dir_override_priority"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "自動インジェクション",
+      "hints": [
+        "自動インジェクション",
+        "autowire",
+        "型によるインジェクション",
+        "HelloComponent",
+        "HelloMessageProvider",
+        "BasicHelloMessageProvider",
+        "property要素不要",
+        "インタフェース実装クラスの自動解決"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ネストするコンポーネントの設定",
+      "hints": [
+        "ネストコンポーネント",
+        "component要素のネスト",
+        "コンポーネント名のドット結合",
+        "property要素ネスト",
+        "親コンポーネント名.子コンポーネント名"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "環境設定ファイル記述ルール",
+      "hints": [
+        "環境設定ファイル記述ルール",
+        "デリミタ文字",
+        "コメント文字",
+        "行連結",
+        "エスケープ",
+        "propertiesファイルとの違い",
+        "\\=エスケープ",
+        "行末バックスラッシュ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "コンポーネントのプロパティに環境設定ファイルの値を設定できる。データベース接続設定など環境依存する項目を環境設定ファイルに記述することで、XML設定から分離できる。\n\n**使用に必要な設定**:\n1. 読み込む環境設定ファイルを作成する\n2. コンポーネント設定ファイルの `property` 要素の `value` 属性に `${hello.message}` のように環境設定ファイルに記述したキーを `${}` で囲った文字列を設定する\n\n**使用可能箇所**:\n- `property` 要素の `value` 属性（:ref:`参照<repository_elements_property>`）\n- `entry` 要素の `key` 属性（:ref:`参照<repository_elements_entry>`）\n- `entry` 要素の `value` 属性（:ref:`参照<repository_elements_entry>`）\n- `value` 要素の内容（:ref:`参照<repository_elements_value>`）\n\n**設定例**:\n\n環境設定ファイル（hello.config）:\n```bash\nhello.message = This is Hello Message!!\n```\n\nコンポーネント設定ファイル:\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n\n    <!-- 環境設定ファイルのロード設定 -->\n    <config-file file=\"nablarch/core/repository/di/example/configfile/hello.config\"/>\n\n    <component name=\"helloComponent\" class=\"nablarch.core.repository.di.example.hello.HelloComponent\">\n        <property name=\"helloMessageProvider\" ref=\"helloMessageProvider\"/>\n    </component>\n\n    <component name=\"helloMessageProvider\"\n        class=\"nablarch.core.repository.di.example.hello.HelloMessageProvider\">\n        <!-- 環境設定ファイルに記述した hello.message の値をプロパティhelloMessageに設定する -->\n        <property name=\"helloMessage\" value=\"${hello.message}\" />\n    </component>\n</component-configuration>\n```\n\n`entry` 要素および `list` 要素での使用例:\n```xml\n<map name=\"testMap\">\n    <entry key=\"[${any.key03}]\" value=\"[${any.key04}]\"/>\n</map>\n<list name=\"testList\">\n    <value>[${any.key05}]</value>\n</list>\n```",
+    "s2": "`import` 要素および `config-file` 要素の `dir` 属性を設定することで、ディレクトリに配置されたファイルを一括して読み込める。\n\n`dir` 属性には、コンポーネント設定ファイルが配置されているディレクトリからの**相対パス**を指定する。例えば、コンポーネント設定ファイルが `/opt/component.xml` に配置されている場合に `/opt/environment_config` 以下を一括読み込みする場合は `dir` 属性に `\"./environment_config\"` と設定する。\n\n**設定例**:\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n    <!-- environment_config ディレクトリ以下にある \".config\" で終わるファイル名の環境設定ファイルを一括で読み込む -->\n    <config-file dir=\"./environment_config\" file=\"*.config\" />\n\n    <!-- component_config ディレクトリ以下にある \".xml\" で終わるファイル名のコンポーネント設定ファイルを一括で読み込む -->\n    <import dir=\"./component_config/\" file=\"*.xml\" />\n</component-configuration>\n```\n\n読み込むファイルが頻繁に変更される場合（設定ファイルの増減やファイル名変更が発生する場合）、個別ファイル指定では `import` タグや `config-file` タグを都度書き直す必要があるが、ディレクトリ指定を使用することでその手間を省ける。\n\n:ref:`reporitoy_config_override` に記述した方法で、本番用とテスト用で異なる設定を特定のディレクトリに配置し、本番環境とテスト環境の差異を吸収する使い方もできる。\n\n別々の設定ファイルに記述された同名の設定は :ref:`repository_import_override_priority` および :ref:`repository_import_dir_override_priority` に記述した優先順位で評価される。",
+    "s3": "DIコンテナは、`ref` 属性による明示的なインジェクションに加えて、**クラスの型を判定して自動的にインジェクションを実行する自動インジェクション**機能を持つ。システムで1つしか必要としないコンポーネントについては `property` 要素によるインジェクション設定が不要となる。\n\n**クラス例**:\n```java\npublic interface HelloMessageProvider {\n    public String getHelloMessage();\n}\n\npublic class BasicHelloMessageProvider implements HelloMessageProvider {\n    public String getHelloMessage() {\n        return \"Hello autowire!!\";\n    }\n}\n\npublic class HelloComponent {\n    private HelloMessageProvider helloMessageProvider;\n\n    public void setHelloMessageProvider(HelloMessageProvider helloProvider) {\n        this.helloMessageProvider = helloProvider;\n    }\n\n    public void printHello() {\n        System.out.println(helloMessageProvider.getHelloMessage());\n    }\n}\n```\n\n**設定例**（`helloComponent` には `property` 要素によるインジェクション設定なし）:\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n\n    <!-- HelloComponentクラスはHelloMessageProvider型のプロパティを持つが、インジェクション設定なし -->\n    <component name=\"helloComponent\"\n        class=\"nablarch.core.repository.di.example.autowirebytype.HelloComponent\"/>\n\n    <!-- HelloMessageProviderインタフェースを実装したクラス -->\n    <component\n        class=\"nablarch.core.repository.di.example.autowirebytype.BasicHelloMessageProvider\"/>\n</component-configuration>\n```\n\nこの設定により、`SystemRepository` から取得した `HelloComponent` には自動的に `BasicHelloMessageProvider` が設定される:\n```java\nHelloComponent helloComponent = (HelloComponent) container.getComponentByName(\"helloComponent\");\n// 自動インジェクションされたBasicHelloMessageProviderが返す \"Hello autowire!!\"が表示される\nhelloComponent.printHello();\n```",
+    "s4": "`property` 要素には `component` 要素をネストして記述できる。1つのコンポーネントからのみ使用されるコンポーネントを簡潔に記述できる。\n\n**ネストしたコンポーネントのコンポーネント名**: 親コンポーネントの名称と子コンポーネント定義の名称を `\".\"` で繋いだ名称（例: `helloComponent.helloMessageProvider`）\n\n**設定例**:\n```xml\n<component-configuration xmlns=\"http://tis.co.jp/nablarch/component-configuration\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://tis.co.jp/nablarch/component-configuration ./component-configuration.xsd\">\n    <component name=\"helloComponent\"\n        class=\"nablarch.core.repository.di.example.autowirebytype.HelloComponent\">\n        <property name=\"helloMessageProvider\" ref=\"helloMessageProvider\">\n            <component name=\"helloMessageProvider\"\n                class=\"nablarch.core.repository.di.example.autowirebytype.BasicHelloMessageProvider\"/>\n        </property>\n    </component>\n</component-configuration>\n```\n\n**コンポーネントの取得例**:\n```java\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\nhelloComponent.printHello();\n\n// \"helloComponent.helloMessageProvider\" というコンポーネント名でネストしたコンポーネントを取得できる\nHelloMessageProvider helloMessageProvider = (HelloMessageProvider) SystemRepository\n        .getObject(\"helloComponent.helloMessageProvider\");\nSystem.out.println(helloMessageProvider.getHelloMessage());\n```",
+    "s5": "環境設定ファイルはキーと値を `=` で対応付けて記述する。\n\n**デリミタ文字（`=`）**:\n- デリミタは `=` のみ。空白（タブ含む）や `:` は文字列の一部とみなす（いわゆる `.properties` ファイルとは異なる）\n- キーおよび値は前後の空白（タブ含む）をトリミングする（`\" A B \"` → `\"A B\"`。キーの `'A'` と `'a'` は区別される）\n- `=` で区切られた3つめ以降のトークンは無視する\n- `=` をキーまたは値に含める場合は前に `\\` を付加する（`\\=`）\n\n**コメント文字（`#`）**:\n- `#` 以降の文字列をコメントとみなす（行連結の前に処理されるため継続行中でも使用可能）\n- `#` をキーまたは値に含める場合は前に `\\` を付加する（`\\#`）\n\n**改行文字（`\\`）**:\n- 行末に `\\` を指定することで行をまたがる記述が可能。`\\` を除いた文字列と次の行の先頭の空白を除いた文字列を連結する（`\\` 前の後方空白は維持）\n- `\\` をキーまたは値に含める場合は前に `\\` を付加する（`\\\\`）\n\n> **注意**: 改行文字（`\\`）の前にコメントを入れると設定が正しく動作しない。\n> ```bash\n> # NG例\n> key =   value1,     # comment \\\n>         value2,     # comment \\\n>         value3      # comment\n> ```\n\n**エスケープ文字（`\\`）**:\n- `\\` に続く1文字を特殊文字ではなく一般文字として扱う\n- `\\` をキーまたは値に含める場合は前に `\\` を付加する\n\n**記述例**:\n```bash\n# キー＝\"key\"、値＝\"value\"の場合\nkey = value # commnet\nkey = value = commnet\n\n# キー＝\"key\"、値＝\"value1 = value2\"の場合\nkey = value1 \\= value2  #comment\nkey = \\\n    value1 \\= value2\n\n# キー＝\"key\"、値＝\"value1,value2,value3\"の場合\nkey =   value1,value2,value3    # comment\nkey =   value1,\\\n        value2,\\\n        value3 # comment\nkey =   value1,\\    # comment\n        value2,\\    # comment\n        value3      # comment\n```"
+  }
+}

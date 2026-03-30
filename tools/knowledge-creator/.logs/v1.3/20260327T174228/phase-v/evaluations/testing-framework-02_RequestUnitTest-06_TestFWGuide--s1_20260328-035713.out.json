@@ -1,0 +1,14 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "user_impact": "high",
+  "needs_improvement": true,
+  "reason": "The knowledge file contains fabricated class names (`AbstractHttpRequestTestSupport` / `BasicHttpRequestTestSupport`) that do not exist in the Nablarch framework. The correct names are `AbstractHttpRequestTestTemplate` / `BasicHttpRequestTestTemplate`. An AI agent relying solely on this file would confidently direct developers to nonexistent classes, causing failed searches, incorrect imports, and broken code.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s1 section body (table row) and s1 hints (indices 8–9)",
+      "impact": "high",
+      "justification": "The names 'AbstractHttpRequestTestSupport' and 'BasicHttpRequestTestSupport' appear nowhere in the source — not in the RST table (which has a 'Reqest' typo) and not in the Structure headings (which use 'Template'). An AI agent using this file as its only information source would instruct developers to use nonexistent class names, leading to compilation errors or failed searches. The correct class names — confirmed by the Structure section headings in the same source document — are 'AbstractHttpRequestTestTemplate' and 'BasicHttpRequestTestTemplate'. This persisted through D→E because the Phase E output shows the knowledge file content unchanged: the fix agent produced a corrected JSON in its response but the file was not actually updated — the s1 section body still contains 'AbstractHttpRequestTestSupport / BasicHttpRequestTestSupport' and the s1 hints still list the two wrong names at positions 8–9."
+    }
+  ]
+}

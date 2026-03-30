@@ -1,0 +1,34 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "The `table` tag is listed in the source tag file table but is absent from s3 hints.",
+      "source_evidence": "Source tag table row: `table` — テーブルを出力するタグ"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 hints",
+      "description": "PascalCase class names `ApplicationException`, `SqlResultSet`, and `MessageUtil` appear in the s4 code example but are missing from s4 hints.",
+      "source_evidence": "Source code: `throw new ApplicationException(...)`, `SqlResultSet searchResult = null;`, `MessageUtil.createMessage(...)`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Class name `W11AC01Action` and annotation names `@PropertyName`, `@Required`, `@NumberRange`, `@Digits`, `@OnError` appear in the s5 code examples but are absent from s5 hints.",
+      "source_evidence": "Source code: `public class W11AC01Action extends DbAccessSupport`, `@PropertyName(\"ページ番号\")`, `@Required`, `@NumberRange(max = 10, min = 1)`, `@Digits(integer = 2)`, `@OnError(type = ApplicationException.class, path = ...)`"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4, s6",
+      "description": "Raw RST cross-reference syntax is copied verbatim into knowledge file sections. These render as unresolvable literals in a JSON knowledge file. s4 contains `:ref:`ListSearchResult_Setting``, s6 contains `:ref:`ListSearchResult_Tag``.",
+      "source_evidence": "Source s4: 「検索結果件数の上限設定については、 :ref:`ListSearchResult_Setting` を参照。」/ Source s6: 「全ての属性の詳細については、 :ref:`ListSearchResult_Tag` を参照。」"
+    }
+  ]
+}

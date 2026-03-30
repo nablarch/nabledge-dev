@@ -1,0 +1,41 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s22",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "設定例セクションで「その他の設定方法はオンデマンドロード時と同様となる」という記述が省略されている。これは一括ロード固有の設定（loadOnStartup=true）以外はオンデマンドロードと同じ設定方法であることを示す、実装判断に有用な情報。",
+      "source_evidence": "「その他の設定方法はオンデマンドロード時と同様となる。」（設定例セクション冒頭）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6",
+      "description": "静的データの再読み込み実装例のコード注意書きが省略されている。s2には対応する注意書き（フレームワーク処理である旨）が含まれているが、s6の「プロジェクトのアーキテクトが作成するものであり、通常のアプリケーション・プログラマはこのような実装を行わない」という注意書きは省略されている。対象者（アーキテクト）が異なるため個別に記載する意義がある。",
+      "source_evidence": "「// 下記のコードはプロジェクトのアーキテクトが作成するものである。// 通常、各アプリケーション・プログラマはこのような実装を行わない。」（静的データの再読み込み > 実装例）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s6",
+      "description": "refreshAndGetValueメソッド内のコメント「使用者は、静的データがキャッシュにあるかを意識する必要はない」が省略されている。このコメントはキャッシュ抽象化の重要な設計原則（呼び出し側はキャッシュの存在を意識不要）を説明しており、AIがユーザー質問に答える際に有用な情報。",
+      "source_evidence": "「// 使用者は、静的データがキャッシュにあるかを意識する必要はない」（StaticDataUseExampleのrefreshAndGetValueメソッド内）"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4",
+      "description": "「設定可能なプロパティ: `loader`（必須）、`loadOnStartup`」という要約文がソースに存在しない。ソースの「設定内容詳細」セクションは見出しのみで独立した説明文を持たず、直接サブセクション（BasicStaticDataCacheの設定テーブル）に続く。この要約文はknowledge creatorが合成したもの。",
+      "source_evidence": "ソースの「設定内容詳細」セクションには見出し以外の独立した説明テキストは存在せず、すぐにサブセクション「nablarch.core.cache.BasicStaticDataCacheの設定」のテーブルに続く。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2",
+      "description": "コード例で使用されているPascalCaseクラス `SqlRow` がhintsに含まれていない。",
+      "source_evidence": "「for (SqlRow row : results) {」（ExampleDataLoaderのloadAllメソッド内）"
+    }
+  ]
+}

@@ -1,0 +1,442 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-07_SubmitTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s7].hints",
+      "description": "`submitLinkDisabledJsp` is a specific property name mentioned in the source (both in the table footnote and as a cross-reference target within `WebView_CustomTagConfig`) and is also reproduced verbatim in the s7 section body, but it is absent from s7's hints array.",
+      "source_evidence": "Source footnote [#]: \"`submitLinkDisabledJsp`の項を参照\" — referenced as a named configuration property of WebView_CustomTagConfig for customizing disabled-link rendering."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+============================================================
+ボタン又はリンクによるフォームのサブミット
+============================================================
+フォームのサブミットは、ボタン及びリンクに対応しており、下記のカスタムタグを提供している。\
+これらのカスタムタグでは、ボタン又はリンクとURIを関連付けるためにname属性とuri属性を指定する。\
+name属性は、フォーム内で一意な名前を指定する。\
+uri属性の指定方法については、 :ref:`WebView_SpecifyUri` を参照。
+
+タグ名が「popup」から始まるタグは、新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。\
+タグ名が「download」から始まるタグは、ダウンロード用のサブミットを行う。
+
+================================ ================================================================================================
+カスタムタグ                     | 出力するHTMLタグ
+================================ ================================================================================================
+:ref:`WebView_SubmitTag`         | inputタグ(type=submit,button,image)
+:ref:`WebView_ButtonTag`         | buttonタグ
+:ref:`WebView_SubmitLinkTag`     | aタグ
+:ref:`WebView_PopupSubmitTag`    | inputタグ(type=submit,button,image)
+:ref:`WebView_PopupButtonTag`    | buttonタグ
+:ref:`WebView_PopupLinkTag`      | aタグ
+:ref:`WebView_DownloadSubmitTag` | inputタグ(type=submit,button,image)
+:ref:`WebView_DownloadButtonTag` | buttonタグ
+:ref:`WebView_DownloadLinkTag`   | aタグ
+================================ ================================================================================================
+
+--------------------------------
+サブミット先の指定方法
+--------------------------------
+ボタン又はリンクによるフォームのサブミットでURIを指定する場合、uri属性にコンテキストからの相対パスを指定する。
+ユーザ登録機能の例であれば、入力画面と確認画面はUserActionにより表示されるため、これらの画面が表示される際のパスはUserActionにサブミットしたパスとなる。\
+このため、入力画面の確認ボタン、確認画面の戻るボタンと登録ボタンのuri属性には、コンテキストからUserActionへの相対パスを指定する。\
+ユーザ登録確認画面の戻るボタンと登録ボタンの使用例を下記に示す。
+
+.. code-block:: jsp
+
+  <n:submit cssClass="buttons" type="button" name="back" value="戻る"
+            uri="/action/management/user/UserAction/USERS00301" />
+  <n:submit cssClass="buttons" type="button" name="register" value="登録"
+            uri="/action/management/user/UserAction/USERS00302" />
+
+ボタンを押した場合のサブミット先のURIを下記に示す。\
+サブミット先のURIはコンテキストパスを付加したパスとなる。
+
+.. code-block:: bash
+
+  # ユーザ登録確認画面を表示したURI
+  <コンテキストパス>/action/management/user/UserAction/USER00202
+  
+  # 戻るボタンを押した場合のサブミット先のURI
+  <コンテキストパス>/action/management/user/UserAction/USER00301
+  
+  # 登録ボタンを押した場合のサブミット先のURI
+  <コンテキストパス>/action/management/user/UserAction/USER00302
+
+.. warning::
+  サブミット先は現在のURIからの相対パスでも指定することができるが、現在のURIからの相対パスを指定した場合、
+  想定していない画面遷移により不正なURIを組み立ててしまうことがある。\
+  そのため、ボタン又はリンクによるフォームのサブミットでURIを指定する場合は、コンテキストからの相対パスを指定すること。
+
+
+------------------------------------------------------------------------------------------------------------------------
+サブミットを制御するJavaScript関数
+------------------------------------------------------------------------------------------------------------------------
+フォームのサブミットは、JavaScriptを使用してURIを組み立てることで実現する。\
+カスタムタグは、画面内で1回だけ、サブミットを制御するJavaScript関数を出力する。
+フレームワークが出力するサブミットを制御するJavaScript関数のシグネチャを下記に示す。
+
+.. code-block:: javascript
+
+  // フレームワークが出力するJavaScript関数
+  
+  /**
+   * @param event イベントオブジェクト
+   * @param element イベント元の要素(ボタン又はリンク)
+   * @return イベントを伝搬させないため常にfalse
+   */
+  function nablarch_submit(event, element)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+アプリケーションでonclick属性を指定する場合の制約
+---------------------------------------------------------------------------------------------------------------------------------------------------
+カスタムタグは、アプリケーションによるonclick属性の指定有無により処理内容が異なる。\
+アプリケーションによりonclick属性が指定されなかった場合、カスタムタグは、出力するタグのonclick属性に上記のJavaScript関数を自動で設定する。\
+アプリケーションによりonclick属性が指定された場合、カスタムタグは、JavaScript関数を設定しない。\
+アプリケーションは、onclick属性を指定する場合、アプリケーションで作成するJavaScript内で、フレームワークが出力するJavaScript関数を明示的に呼び出す必要がある。
+
+アプリケーションがonclick属性を指定する場合の実装例を下記に示す。\
+下記の実装例では、サブミット前に確認ダイアログを表示する。
+
+.. code-block:: javascript
+
+  // アプリケーションで作成するJavaScript関数
+  function popUpConfirmation(event, element) {
+      if (window.confirm("登録します。よろしいですか？")) {
+          // OK
+          // フレームワークが出力するJavaScript関数を明示的に呼び出す。
+          return nablarch_submit(event, element);
+      } else {
+          // キャンセル
+          return false;
+      }
+  }
+
+.. code-block:: jsp
+
+  // onclick属性にアプリケーションで作成したJavaScript関数を設定する。
+  <n:submit cssClass="buttons" type="button" name="register" value="登録"
+            uri="./USERS00302" onclick="return popUpConfirmation(event, this);" />
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+アプリケーションでformタグのname属性を指定する場合の制約
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+カスタムタグが出力するJavaScript関数は、サブミット対象のフォームを特定するために、formタグのname属性を使用する。\
+このため、アプリケーションでformタグのname属性を指定する場合は、画面内で一意な名前をname属性に指定する必要がある。\
+アプリケーションでformタグのname属性を指定しなかった場合、カスタムタグは「nablarch_form<連番>」形式でname属性の値を生成してformタグのname属性に設定する。\
+<連番>部分には、画面内でformタグの出現順に1から番号を振る。
+
+.. warning::
+
+ サブミット制御を行うJavaScriptにおいてformタグのname属性を使用するため、\
+ formタグのname属性にはJavaScriptの変数名の構文に則った値を指定すること。\
+ 下記に変数名の構文を示す。
+ 
+ * 値の先頭は英字始まり
+ * 先頭以降の値は英数字またはアンダーバー
+
+.. _WebView_ChangeableParams:
+
+------------------------------------------------------------------------------------------------------------------------------------
+ボタン又はリンク毎にパラメータを変更する方法
+------------------------------------------------------------------------------------------------------------------------------------
+更新機能などにおいて、一覧画面から詳細画面に遷移するケースでは、1つのフォームに複数のリンクで異なるパラメータを送信したい場合がある。\
+本機能では、フォームのボタンやリンク毎にパラメータを変更するために :ref:`WebView_ParamTag` を提供する。\
+尚、以降では、フォームのボタンやリンク毎に変更するパラメータを変更パラメータと呼ぶ。
+
+paramタグでは、リクエストで送信する際に使用するパラメータ名を指定するparamName属性と、\
+直接値を指定する場合はvalue属性、リクエストスコープなどスコープ上のオブジェクトを参照する場合はname属性を指定する。
+
+paramタグの使用例を下記に示す。検索結果から一覧画面でリンク毎に変更パラメータを指定している。
+
+.. code-block:: jsp
+
+ <n:form>
+     <table>
+         <%-- テーブルのヘッダ行は省略 --%>
+         <c:forEach var="user" items="${searchResult}" varStatus="status">
+         <tr>
+             <td>
+                 <%--
+                   リンク毎にsampleIdパラメータを変更している。
+                   検索結果には、id(プライマリキー)とname(名前)が含まれているものとする。
+                 --%>
+                 <n:submitLink uri="./R0001" name="R0001_${status.index}">
+                     <n:write name="user.id"/><%-- リンクのラベル指定 --%>
+                     <n:param paramName="sampleId" name="user.id" /><%-- 変更パラメータの指定 --%>
+                 </n:submitLink>
+             </td>
+             <td><n:write name="user.name"/></td>
+         </tr>
+         </c:forEach>
+     </table>
+ </n:form>
+
+HTMLの出力イメージを下記に示す。\
+「nablarch_hidden」というパラメータに必要な情報を入れておき、\
+変更パラメータをリクエストパラメータとして使用できるようにNablarchTagHandlerクラスが設定を行う。
+このため、変更パラメータを使用する場合は、NablarchTagHandlerの設定が必須となる。\
+NablarchTagHandlerの設定方法については、 :ref:`WebView_NablarchTagHandler` を参照。
+
+ユーザ2のリンクが選択された場合は、リクエストパラメータとして「sampleId=U0002」が使用できる状態となる。
+
+.. code-block:: html
+
+ <a name="R0001_0" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ1
+ </a>
+ <a name="R0001_1" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ2
+ </a>
+ <a name="R0001_2" href="./R0001" onclick="return window.nablarch_submit(event, this);">
+     ユーザ3
+ </a>
+ <%-- nablarch_hiddenパラメータ --%>
+ <input type="hidden" name="nablarch_hidden" value="・・・省略・・・" />
+
+.. warning::
+
+ 変更パラメータを使用する場合は、その数に応じてリクエストのデータ量は増大する。\
+ このため、一覧画面で詳細画面へのリンク毎に変更パラメータを指定する場合は、\
+ 変更パラメータをプライマリキーだけにするなど、必要最小限のパラメータのみ指定するよう考慮すること。
+ 
+
+------------------------------------------------------------------------------------------
+認可判定と開閉局判定の結果に応じた表示切り替え
+------------------------------------------------------------------------------------------
+
+認可判定と開閉局判定の結果に応じて、フォームのサブミットを行うボタン又はリンクの表示を切り替えたい場合がある。
+例えば、閉局状態の機能へサブミットを行うボタンやリンクを画面表示時点で非活性にしておきたい場合が挙げられる。
+これにより、ユーザーが実際にボタン又はリンクを押下する前に該当の機能が使用可能かどうかが分かるため、ユーザビリティの向上につながる。
+
+本機能では、フォームのサブミットを行うボタン又はリンクに対して、下記機能に対応した表示切り替えを提供する。それぞれ、下記機能に対応するハンドラがハンドラ構成に含まれている場合のみ本機能は有効となる。
+
+* :ref:`認可<permission>`
+* :ref:`開閉局<serviceAvailable>`
+
+本機能は次の仕様に基づき表示切り替えを行う。
+
+* サブミットを行うタグに指定されたリクエストIDに対して認可判定と開閉局判定を行う。
+* 認可判定で認可失敗となるか、または開閉局判定で閉局となった場合に表示切り替えを行う。
+* 切り替え時の表示方法には次の3パターンがある。
+
+   =================================== ====================================================================================
+   表示方法                            説明
+   =================================== ====================================================================================
+   非表示                              | タグを表示しない。
+   非活性                              | タグを非活性にする。
+                                       | ボタンの場合は、disabled属性を有効にする。
+                                       | リンクの場合は、以下の2種類のうち、いずれかの動作となる。
+                                       | 1. ラベルのみ表示する（デフォルトの動作。aタグを出力しない）。
+                                       | 2. 非活性リンク描画用JSPをインクルードする（\ :ref:`WebView_CustomTagConfig`\ で指定した場合\ [#]_\ ）。
+   通常表示                            | 表示方法の切り替えを行わない。
+   =================================== ====================================================================================
+
+* デフォルトでは、 :ref:`WebView_CustomTagConfig` で指定された表示方法を使用する。設定方法は :ref:`WebView_CustomTagConfig` を参照。
+* 個別に表示方法を変更したい場合は、各タグのdisplayMethod属性に指定する。下記に属性の説明と設定例を示す。
+
+   ====================================== ==========================================================================================
+   属性                                   説明
+   ====================================== ==========================================================================================
+   displayMethod                          | 認可判定と開閉局判定の結果に応じて表示制御を行う場合の表示方法。
+                                          | 下記のいずれかを指定する。
+                                          | NODISPLAY (非表示)
+                                          | DISABLED (非活性)
+                                          | NORMAL (通常表示)
+   ====================================== ==========================================================================================
+
+   .. code-block:: jsp
+
+     <%-- このタグは常に表示する。 --%>
+     <n:submit displayMethod="NORMAL" type="button" name="login" 
+               value="ログイン" uri="/LoginAction/LOGIN001" />
+
+   .. note::
+
+     :ref:`WebView_CustomTagConfig` でアプリケーション全体の切り替え時の表示方法を非活性や非表示にした場合は、
+     ログイン画面のログインボタンなど認可されていない状態で使用するボタン又はリンクも表示制御され使用できなくなる。
+     このため、常に表示したいボタン又はリンクには、個別にdisplayMethod属性にNORMALを指定する。
+  
+
+本機能は、デフォルトで認可判定と開閉局判定を行う。これらの判定処理は、nablarch.common.web.tag.DisplayControlCheckerインタフェースを実装したクラスが行う。
+実装したクラスを :ref:`WebView_CustomTagConfig` でdisplayControlCheckersプロパティに指定することで、判定処理を変更することができる。
+フレームワークがデフォルトでサポートしている判定処理に対する設定例を下記に示す。
+displayControlCheckersプロパティが指定されていない場合は、フレームワークがデフォルトでサポートしている判定処理を使用する。
+
+ .. code-block:: xml
+
+   <list name="displayControlCheckers" >
+       <component class="nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker" />
+       <component class="nablarch.common.web.tag.PermissionDisplayControlChecker" />
+   </list>
+   
+   <component name="customTagConfig"
+              class="nablarch.common.web.tag.CustomTagConfig">
+
+       <!-- 判定条件を設定する。 -->
+       <property name="displayControlCheckers" ref="displayControlCheckers" />
+   </component>
+   
+
+
+.. [#]
+ 非活性リンクの描画に任意のJSPを使用することができる。
+ これによりプロジェクト毎に表示方法を容易にカスタマイズできる。
+ \ :ref:`WebView_CustomTagConfig`\ の\ `submitLinkDisabledJsp`\ の項を参照。
+ 
+------------------------------------------------------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-07_SubmitTag--s1",
+  "title": "ボタン又はリンクによるフォームのサブミット",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ボタン又はリンクによるフォームのサブミット",
+      "hints": [
+        "n:submit",
+        "n:button",
+        "n:submitLink",
+        "n:popupSubmit",
+        "n:popupButton",
+        "n:popupLink",
+        "n:downloadSubmit",
+        "n:downloadButton",
+        "n:downloadLink",
+        "フォームサブミット",
+        "カスタムタグ一覧",
+        "WebView_SubmitTag",
+        "WebView_ButtonTag",
+        "WebView_SubmitLinkTag",
+        "WebView_PopupSubmitTag",
+        "WebView_PopupButtonTag",
+        "WebView_PopupLinkTag",
+        "WebView_DownloadSubmitTag",
+        "WebView_DownloadButtonTag",
+        "WebView_DownloadLinkTag"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "サブミット先の指定方法",
+      "hints": [
+        "uri属性",
+        "コンテキスト相対パス",
+        "サブミット先URI",
+        "画面遷移",
+        "WebView_SpecifyUri"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "サブミットを制御するJavaScript関数",
+      "hints": [
+        "nablarch_submit",
+        "JavaScript関数",
+        "サブミット制御",
+        "フォームサブミットJavaScript"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "アプリケーションでonclick属性を指定する場合の制約",
+      "hints": [
+        "onclick属性",
+        "nablarch_submit呼び出し",
+        "確認ダイアログ",
+        "popUpConfirmation",
+        "onclick制約"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "アプリケーションでformタグのname属性を指定する場合の制約",
+      "hints": [
+        "formタグname属性",
+        "nablarch_form",
+        "JavaScript変数名構文",
+        "フォーム識別",
+        "name属性自動生成"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "ボタン又はリンク毎にパラメータを変更する方法",
+      "hints": [
+        "n:param",
+        "変更パラメータ",
+        "NablarchTagHandler",
+        "paramName",
+        "nablarch_hidden",
+        "WebView_ParamTag",
+        "WebView_NablarchTagHandler",
+        "ボタン毎パラメータ変更",
+        "WebView_ChangeableParams"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "認可判定と開閉局判定の結果に応じた表示切り替え",
+      "hints": [
+        "displayMethod",
+        "NODISPLAY",
+        "DISABLED",
+        "NORMAL",
+        "DisplayControlChecker",
+        "ServiceAvailabilityDisplayControlChecker",
+        "PermissionDisplayControlChecker",
+        "CustomTagConfig",
+        "認可判定",
+        "開閉局判定",
+        "displayControlCheckers"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "フォームのサブミット用カスタムタグ一覧。name属性はフォーム内で一意な名前、uri属性の指定方法は :ref:`WebView_SpecifyUri` を参照。\n\n| カスタムタグ | 出力するHTMLタグ |\n|---|---|\n| :ref:`WebView_SubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_ButtonTag` | buttonタグ |\n| :ref:`WebView_SubmitLinkTag` | aタグ |\n| :ref:`WebView_PopupSubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_PopupButtonTag` | buttonタグ |\n| :ref:`WebView_PopupLinkTag` | aタグ |\n| :ref:`WebView_DownloadSubmitTag` | inputタグ(type=submit,button,image) |\n| :ref:`WebView_DownloadButtonTag` | buttonタグ |\n| :ref:`WebView_DownloadLinkTag` | aタグ |\n\n- `popup`始まりタグ: 新しいウィンドウをオープンしてサブミット\n- `download`始まりタグ: ダウンロード用サブミット",
+    "s2": "uri属性にはコンテキストからの相対パスを指定する。\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"back\" value=\"戻る\"\n          uri=\"/action/management/user/UserAction/USERS00301\" />\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"/action/management/user/UserAction/USERS00302\" />\n```\n\nサブミット先URIはコンテキストパスを付加したパスになる。\n\n> **警告**: 現在のURIからの相対パスを使用すると、想定外の画面遷移により不正なURIが組み立てられる場合がある。必ずコンテキストからの相対パスを指定すること。",
+    "s3": "カスタムタグはJavaScriptでURIを組み立ててサブミットを実現する。画面内で1回だけ `nablarch_submit` 関数を出力する。\n\n```javascript\n/**\n * @param event イベントオブジェクト\n * @param element イベント元の要素(ボタン又はリンク)\n * @return 常にfalse（イベント伝搬停止）\n */\nfunction nablarch_submit(event, element)\n```",
+    "s4": "onclick属性の指定有無による動作の違い:\n- **onclick未指定**: カスタムタグが自動でonclick属性に `nablarch_submit` を設定\n- **onclick指定**: カスタムタグは `nablarch_submit` を設定しない → アプリ側のJavaScript内で明示的に呼び出す必要あり\n\nonclick指定時の実装例（サブミット前に確認ダイアログ表示）:\n\n```javascript\nfunction popUpConfirmation(event, element) {\n    if (window.confirm(\"登録します。よろしいですか？\")) {\n        // OK: フレームワークのJavaScript関数を明示的に呼び出す\n        return nablarch_submit(event, element);\n    } else {\n        // キャンセル\n        return false;\n    }\n}\n```\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"./USERS00302\" onclick=\"return popUpConfirmation(event, this);\" />\n```",
+    "s5": "`nablarch_submit` はformタグのname属性でサブミット対象フォームを特定する。\n\n- **name属性未指定時**: `nablarch_form<連番>` 形式で自動生成（連番は画面内でformタグの出現順に1から付番）\n- **name属性指定時**: 画面内で一意な名前を指定すること\n\n> **警告**: formタグのname属性はJavaScriptの変数名構文に従うこと。\n> - 先頭は英字\n> - 先頭以降は英数字またはアンダーバー",
+    "s6": "一覧→詳細遷移など、同一フォーム内の複数ボタン/リンクで異なるパラメータを送信する場合は :ref:`WebView_ParamTag` を使用する。\n\n**n:paramタグの属性**:\n- `paramName`: リクエスト送信時のパラメータ名\n- `value`: 直接値を指定\n- `name`: リクエストスコープなどのオブジェクトを参照\n\n```jsp\n<n:form>\n    <c:forEach var=\"user\" items=\"${searchResult}\" varStatus=\"status\">\n    <tr>\n        <td>\n            <n:submitLink uri=\"./R0001\" name=\"R0001_${status.index}\">\n                <n:write name=\"user.id\"/>\n                <n:param paramName=\"sampleId\" name=\"user.id\" />\n            </n:submitLink>\n        </td>\n    </tr>\n    </c:forEach>\n</n:form>\n```\n\n変更パラメータは `nablarch_hidden` パラメータに格納され、NablarchTagHandlerが処理する。**変更パラメータ使用時はNablarchTagHandlerの設定が必須**（設定方法は :ref:`WebView_NablarchTagHandler` を参照）。\n\n> **警告**: 変更パラメータ数に応じてリクエストデータ量が増大する。一覧→詳細遷移ではプライマリキーのみにするなど、変更パラメータは必要最小限にすること。",
+    "s7": "サブミットタグに指定されたリクエストIDに対して認可判定と開閉局判定を行い、結果に応じてボタン/リンクの表示を切り替える。対応するハンドラ（:ref:`認可<permission>`、:ref:`開閉局<serviceAvailable>`）がハンドラ構成に含まれる場合のみ有効。\n\n**表示方法（3パターン）**:\n\n| 表示方法 | 説明 |\n|---|---|\n| NODISPLAY（非表示） | タグを表示しない |\n| DISABLED（非活性） | ボタン: disabled属性を有効化。リンク: ラベルのみ表示（aタグなし）または非活性リンク描画用JSPをインクルード（:ref:`WebView_CustomTagConfig` の `submitLinkDisabledJsp` で指定した場合。プロジェクト毎に表示方法をカスタマイズ可能） |\n| NORMAL（通常表示） | 表示切り替えを行わない |\n\n- デフォルトの表示方法は :ref:`WebView_CustomTagConfig` で設定\n- 個別に変更する場合は各タグの `displayMethod` 属性に指定\n\n```jsp\n<%-- このタグは常に表示する。 --%>\n<n:submit displayMethod=\"NORMAL\" type=\"button\" name=\"login\"\n          value=\"ログイン\" uri=\"/LoginAction/LOGIN001\" />\n```\n\n> **注意**: アプリ全体を非活性/非表示設定にした場合、ログインボタンなど認可前に使用するボタンも制御される。常に表示したいボタンには個別に `displayMethod=\"NORMAL\"` を指定すること。\n\n**判定処理の変更**: `nablarch.common.web.tag.DisplayControlChecker` インタフェースを実装し、:ref:`WebView_CustomTagConfig` の `displayControlCheckers` プロパティに設定する。\n\n```xml\n<list name=\"displayControlCheckers\">\n    <component class=\"nablarch.common.web.tag.ServiceAvailabilityDisplayControlChecker\" />\n    <component class=\"nablarch.common.web.tag.PermissionDisplayControlChecker\" />\n</list>\n\n<component name=\"customTagConfig\"\n           class=\"nablarch.common.web.tag.CustomTagConfig\">\n    <property name=\"displayControlCheckers\" ref=\"displayControlCheckers\" />\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

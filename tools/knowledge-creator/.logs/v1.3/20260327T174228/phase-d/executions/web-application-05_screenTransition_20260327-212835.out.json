@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-05_screenTransition",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — W11AC0201.jsp description",
+      "description": "Knowledge file describes W11AC0201.jsp as 'ユーザ情報登録確認画面' but the source says 'ユーザ情報登録画面に入力した内容'. The word '確認' (confirmation) does not appear in the source and misidentifies the screen type.",
+      "source_evidence": "Source table cell: 'ユーザ情報登録画面に入力した内容及び、登録画面に戻るボタンと、登録処理を行うボタンを表示する。'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — W11AC0202.jsp stereotype",
+      "description": "Knowledge file assigns stereotype 'View' to W11AC0202.jsp, but the source table has a blank stereotype cell for that row. Only W11AC0201.jsp has 'View' listed.",
+      "source_evidence": "Source RST table row 2: `| | :download:`W11AC0202.jsp<...>` |                |` — the stereotype column is empty."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — W11AC0202.jsp processing description",
+      "description": "Knowledge file describes W11AC0202.jsp as 'W11AC0201.jspを取り込むラッパー画面' (wrapper screen). The term 'ラッパー' does not appear in the source. The source only mentions the include relationship ('W11AC0202.jsp内でW11AC0201.jspを取り込んでいる') within W11AC0201.jsp's description row, not as a standalone description of W11AC0202.jsp.",
+      "source_evidence": "Source table: 'W11AC0202.jsp内でW11AC0201.jspを取り込んでいる。' appears in the description cell for W11AC0201.jsp, not as a description of W11AC0202.jsp."
+    }
+  ]
+}

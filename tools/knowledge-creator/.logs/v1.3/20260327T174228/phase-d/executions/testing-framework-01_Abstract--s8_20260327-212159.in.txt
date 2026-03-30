@@ -1,0 +1,497 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/06_TestFWGuide/01_Abstract.rst`
+- Format: `rst`
+
+```
+Excelシート名に関する規約
+-------------------------
+
+Excelシートについては、以下の規約が推奨される。
+
+- １テストメソッドにつき１シート用意する。
+
+- シート名はテストメソッド名と同名にする。
+
+例を以下に示す。
+
++--------------------+--------------------------------+
+|テストメソッド      |@Test public void testInsert()  |
++--------------------+--------------------------------+
+|Excelシート名       |testInsert                      |
++--------------------+--------------------------------+
+
+.. note::
+  シートに関する規約は、「制約」事項ではない。
+  テストメソッド名とExcelシート名が同名でなくても正しく動作する。
+  今後の機能追加は上記規約をデフォルトとして開発されるので、命名規約に準拠することを推奨する。
+  仮に命名規約を変更する場合であってもプロジェクト内で統一を図ること。
+
+
+
+シート内の構造
+==============
+
+Excelシートの記述方法関する規約について説明を行う。
+以下にシートの記述例を記載する。
+
+.. image:: _images/sheet_example.JPG
+   :scale: 90 
+ 
+
+
+シート内には、データベースに格納するデータやデータベース検索結果など、さまざまな種類のデータを記載できる。テストデータの種類を判別するために「データタイプ」というメタ情報をテストデータに付与する必要がある。「データタイプ」は、そのテストデータが何を表しているかを示す。
+
+現状、以下のデータタイプが用意されている。
+
+================================= ==================================================================  ==========================
+データタイプ名                    説明                                                                設定する値                    
+================================= ==================================================================  ==========================
+SETUP_TABLE                       テスト実行前にデータベースに登録するデータ                          登録対象のテーブル名
+EXPECTED_TABLE                    テスト実行後の期待するデータベースのデータ                          確認対象のテーブル名
+                                  省略したカラムは、比較対象外となる。
+EXPECTED_COMPLETE_TABLE           テスト実行後の期待するデータベースのデータ                          確認対象のテーブル名
+                                  省略したカラムには\ :ref:`default_values_when_column_omitted`\                               
+                                  が設定されているものとして扱われる。
+LIST_MAP                          List<Map<String,String>>形式のデータ                                シート内で一意になるID
+                                                                                                      期待値のID(任意の文字列)
+SETUP_FIXED                       事前準備用の固定長ファイル                                          準備ファイルの配置場所
+EXPECTED_FIXED                    期待値を示す固定長ファイル                                          比較対象ファイルの配置場所
+SETUP_VARIABLE                    事前準備用の可変長ファイル                                          準備ファイルの配置場所
+EXPECTED_VARIABLE                 期待値を示す可変長ファイル                                          比較対象ファイルの配置場所
+MESSAGE                           メッセージング処理のテストで使用するデータ                          固定値 \ [#]_\ 
+EXPECTED_REQUEST_HEADER_MESSAGES  要求電文（ヘッダ）の期待値を示す固定長ファイル                      リクエストID
+EXPECTED_REQUEST_BODY_MESSAGES    要求電文（本文）の期待値を示す固定長ファイル                        リクエストID
+RESPONSE_HEADER_MESSAGES          応答電文（ヘッダ）を示す固定長ファイル                              リクエストID
+RESPONSE_BODY_MESSAGES            応答電文（本文）を示す固定長ファイル                                リクエストID
+================================= ==================================================================  ==========================
+
+\
+
+.. [#] \ `setUpMessages`\ または\ `expectedMessages`\ 
+
+
+
+また、データの個数も複数記述できる。
+
+
+
+データの種類に依らない共通の書式は以下の通り。
+
+* データ1行目は「データタイプ=値」の形式で、データタイプと値を記載する。
+* 2行目以降の書式はデータタイプにより異なる。
+
+　データタイプとは、そのデータが何を表すかを特定するための情報である。
+例えばそのデータが、データベースに投入されるべきデータである場合は、データタイプ"SETUP_TABLE"を使用する。
+
+例えば、以下のようにデータタイプを記載した場合、そのデータがCOMPOSERテーブルに準備データとして登録されるべきものであることを示している。
+
+
+SETUP_TABLE=COMPOSER
+
++--------+------------+-----------+
+|     NO | FIRST_NAME | LAST_NAME |
++========+============+===========+
+|  00001 | Steive     | Reich     |
++--------+------------+-----------+
+|  00002 | Phillip    | Glass     |
++--------+------------+-----------+
+
+
+
+コメント
+========
+
+セル内に"//"から開始する文字列を記載した場合、そのセルから右のセルは全て読み込み対象外となる。テストデータ自体には含めたくないが、可読性を向上させるために付加情報を記載したい場合には、コメント機能が使用できる。
+
+以下の例では、2行目でテーブルの論理名を、4行目末尾で期待する結果についてコメントしている。
+
+EXPECTED_TABLE=PLAYER
+
++----------+----------+----------+----------+----------------------------+
+|NO        |FIRST_NAME|LAST_NAME |ADDRESS   |                            |
++==========+==========+==========+==========+============================+
+|//番号    |名        |姓        |住所      |                            |
++----------+----------+----------+----------+----------------------------+
+|0001      |Andres    |Segovia   |Spain     |                            |
++----------+----------+----------+----------+----------------------------+
+|0002      |Julian    |Bream     |England   | // このレコードが追加される| 
++----------+----------+----------+----------+----------------------------+
+
+
+.. _`marker_column`:  
+
+マーカーカラム
+==============
+
+テストデータを記述する際、実際のデータには含めたくないがExcelシート上には記述しておきたい場合がある。\
+前述の「コメント」を使用することにより、実際のデータには含まれない情報を記述できるが、\
+「コメント」には、そのセルから右のセルを読み込み対象外にするという性質があるため、\
+左端（または中央）のセルにはコメントを使用できない。
+
+このような場合は、「マーカーカラム」を使用することで、実際のデータには含まれないが
+Excelシートの見た目上は存在するデータを記述できる。
+
+テストデータの見出し行において、\
+**カラム名が半角角括弧で囲まれている場合、そのカラムは「マーカーカラム」とみなされる。**\
+マーカーカラムに該当する列はテスト実行時には読み込まれない。
+
+例えば、以下のようなテストデータがあるとする。
+
+LIST_MAP=EXAMPLE_MARKER_COLUMN
+
++----+----------+----------+
+|[no]|id        |name      |
++====+==========+==========+
+|1   |U0001     |山田      |
++----+----------+----------+ 
+|2   |U0002     |田中      |
++----+----------+----------+
+
+上記のテストデータは、半角角括弧で囲まれているカラム[no]が無視されるため、
+テスト実行時には以下のテストデータと等価となる。
+
+LIST_MAP=EXAMPLE_MARKER_COLUMN
+
+  +----------+----------+
+  |id        |name      |
+  +==========+==========+
+  |U0001     |山田      |
+  +----------+----------+
+  |U0002     |田中      |
+  +----------+----------+
+
+
+ここではLIST_MAPの例を挙げたが、それ以外のデータタイプでも同様に使用できる。
+
+セルの書式
+==========
+
+セルの書式には、文字列のみを使用する。
+テストデータを作成する前に、全てのセルの書式を文字列に設定しておくこと。
+
+罫線やセルの色付けについては任意に設定可能である。罫線やセルの色付けを行うことでデータが見やすくなり、レビュー品質や保守性の向上が期待できる。
+
+
+.. warning::
+ | Excelファイルに文字列以外の書式でデータを記述した場合、正しくデータが読み取れなくなる。
+
+
+
+.. _`special_notation_in_cell`:
+
+セルへの特殊な記述方法
+======================
+自動テストの利便性を向上させるために、いくつかの特殊記法を提供する。
+下記表が、本フレームワークで提供する特殊な記述方法となっている。
+
+
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|記述方法 (セルに記述す\| 自動テスト内での値 [#]_\   |説明                                                                      |
+|る値)                  |                            |                                                                          |
++=======================+============================+==========================================================================+
+|null                   | null                       |セル内に、「null」 **(半角で大文字、小文字の区別はしない)** と記述されて\ |
++-----------------------+                            |いる場合は、「null」値として扱う。例えば、データベースにnull値を登録した\ |
+|Null                   |                            |い場合や、期待値でnull値を設定したい場合に使用する。                      |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|"null"                 |文字列のnull                |文字列の前後がダブルクォート(半角、全角問わず)で囲われている場合は、前後\ |
++-----------------------+                            |のダブルクォートを取り除いた文字列を扱う。\ [#]_                          |
+|"NULL"                 |                            |                                                                          |
++-----------------------+----------------------------+例えば、「null」や「NULL」を文字列として扱う必要がある場合には、記述方法\ |
+|"1⊔"                   | 1⊔                         |にあるように 「"null"」や「"NULL"」と記述を行う。                         |
++-----------------------+----------------------------+                                                                          |
+|"⊔"                    | ⊔                          |また、セルの値にスペースがあることを解りやすくする目的で、記述方法にあるよ|
++-----------------------+----------------------------+うに「"1?"」や、「"?"」とすることもできる。                               |
+| "１△"                 | １△                        |                                                                          |
+|                       |                            |                                                                          |
++-----------------------+----------------------------+                                                                          |
+| "△△"                  | △△                         |                                                                          |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|${systemTime}          |システム日時 [#]_           |システム日時を記載したい場合に使用する                                    |
++-----------------------+                            +--------------------------------------------------------------------------+
+|${updateTime}          |                            |${systemTime}の別名。特にデータベースのタイムスタンプ更新時の期待値として\|
+|                       |                            |使用する。                                                                |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|${setUpTime}           |コンポーネント設定ファイルに|データベースセットアップ時のタイムスタンプに、決まった値を使用したい場合\ |
+|                       |記載された固定値            |に使用する。                                                              |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|${文字種,文字数} [#]_  |指定した文字種を指定した文字|使用可能な文字列は下記の通り。                                            |
+|                       |数分まで増幅した値          |                                                                          |
+|                       |                            |半角英字,半角数字,半角記号,半角カナ,全角英字,全角数字,                    |
+|                       |                            |全角ひらがな,全角カタカナ,全角漢字,全角記号その他,外字                    |
+|                       |                            |                                                                          |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+|${binaryFile:ファイルパ|BLOB列に格納するバイナリデー|BLOB列にファイルのデータを格納したい場合に使用する。                      |
+|ス}                    |タ                          |ファイルパスはExcelファイルからの相対パスで記述する。                     |
++-----------------------+----------------------------+--------------------------------------------------------------------------+
+
+.. note::
+  **凡例**
+  
+  *  ⊔ は、半角スペースの意
+  *  △は、全角スペースの意
+
+.. [#]
+ セルから読み込み後に自動テストフレームワークにて変換される。
+                                                                                                 
+\ 
+
+
+.. [#]
+
+  本記述方法を利用した場合であっても、文字列中のダブルクォートをエスケープする必要はない。
+  以下に例を示す。
+
+ +-----------------+----------------------------------------------------------------------------+ 
+ |     記述例      | 説明                                                                       |
+ +=================+============================================================================+ 
+ |"ab"c"           | ab"cとして扱われる。(前後のダブルクォートが除去される。)                   |
+ +-----------------+----------------------------------------------------------------------------+
+ |"abc""           | abc"として扱われる。(前後のダブルクォートが除去される。)                   |
+ +-----------------+----------------------------------------------------------------------------+
+ | ab"c            | ab"cとして扱われる。(前後がダブルクォートではないため、そのまま扱われる。) |
+ +-----------------+----------------------------------------------------------------------------+
+ | abc"            | abc"として扱われる。(前後がダブルクォートではないため、そのまま扱われる。) |
+ +-----------------+----------------------------------------------------------------------------+
+
+\
+
+.. [#] コンポーネント設定ファイルにて設定されたSystemTimeProvider実装クラスから取得したTimestampの文字列形式に変換される。\
+ 具体的には、\ `2011-04-11 01:23:45.0` というような値に変換される。
+
+
+\
+
+.. [#]
+ 本記法は単独でも使用可能であるし、組み合わせて使用することもできる。
+ 以下に例を示す。
+
+ +--------------------------+----------------------+-----------------------------------+ 
+ |          記述例          | 変換される値の例     | 説明                              |
+ +==========================+======================+===================================+
+ |${半角英字,5}             | geDSfe               |半角英字5文字に変換される。        |
+ +--------------------------+----------------------+-----------------------------------+
+ |${全角ひらがな,4}         | ぱさぇん             |全角ひらがな4文字に変換される。    |
+ +--------------------------+----------------------+-----------------------------------+
+ |${半角数字,2}-{半角数字4} | 37-3425              |-以外が変換される。                |
+ +--------------------------+----------------------+-----------------------------------+
+ |${全角漢字,4}123          | 山川海森123          |末尾123以外が変換される。          |
+ +--------------------------+----------------------+-----------------------------------+
+
+
+
+--------
+注意事項
+--------
+
+テストメソッドの実行順序に依存しないテストを作成する
+====================================================
+
+テストソースコード、テストデータ作成時には、テストメソッドの実行順序によって、テスト結果が変わらないように留意する。単に順序だけでなく、クラス単体でテストしても、複数まとめてテストしても同じ結果にならなければならない。
+
+
+特に、本フレームワークではテスト中にコミットが行われるため、前後のテストによってデータベースの内容が変更される可能性が高い。\
+よって、自テストクラスで必要となる事前条件については、全て自テストクラス内で準備するようにしておかなければならない。
+
+これにより、以下のような効果が得られる。
+
+* テストの実行順序によって偶然テストが失敗したり偶然成功する、という事態を防ぐ。
+* そのテストのデータまたはソースコードだけで、事前条件が分かる。
+
+マスタデータのような基本的に読み取り専用のテーブルの準備については、共通のExcelファイルを用意してそこに記載すること。テスト実行前に1回だけ実行するか、テスト実行前に事前に準備済みという前提でテストを実行するようにする。
+
+この手法には、以下のようなメリットがある。
+
+* マスタ系のデータを、プロジェクト全体で再利用できる。
+* テストデータのメンテナンスが容易になる。
+* テスト実行速度が上がる。
+
+.. note::
+ マスタデータの投入には、\ :ref:`master_data_setup_tool`\ を使用する。\
+ また、\ :doc:`04_MasterDataRestore`\ により、テスト内で発生したマスタデータの変更をテスト終了時に自動的に元の状態に戻すことができる。これにより、マスタデータに変更が必要なテストケースであっても、他のテストケースに影響無く実行できる。
+
+
+
+テストデータは全てExcelシートに記述する
+=======================================
+
+Excelとテストソースコードとでテストデータが混在していると、可読性、保守性が低下してしまう。テストソースコード中にはテストデータを記載せず、テストデータは全てExcelシートに記載すること。
+
+* Excelシートを見れば、テストケースのバリエーションを把握することができる。
+* テストデータはExcelシート、テストロジックはテストソースコードと役割分担が明確になる。
+* Excelシートを読み込む構造にしておくことで、容易にテストケースを追加できる。
+* テストソースコードの重複を大幅に削減できる(テストソースコード中に単純にリテラル値でデータを記載すると、データのバリエーションが増加すると重複したコードが作られてしまう)。
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-01_Abstract--s8`
+
+```json
+{
+  "id": "testing-framework-01_Abstract--s8",
+  "title": "シート内の構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Excelシート名に関する規約",
+      "hints": [
+        "Excelシート名命名規約",
+        "テストメソッド名",
+        "シート名",
+        "テストメソッドとシートの対応",
+        "1テストメソッド1シート"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "SETUP_TABLE",
+        "EXPECTED_TABLE",
+        "EXPECTED_COMPLETE_TABLE",
+        "LIST_MAP",
+        "SETUP_FIXED",
+        "EXPECTED_FIXED",
+        "SETUP_VARIABLE",
+        "EXPECTED_VARIABLE",
+        "MESSAGE",
+        "EXPECTED_REQUEST_HEADER_MESSAGES",
+        "EXPECTED_REQUEST_BODY_MESSAGES",
+        "RESPONSE_HEADER_MESSAGES",
+        "RESPONSE_BODY_MESSAGES",
+        "データタイプ",
+        "マーカーカラム",
+        "コメント記法",
+        "セルの書式",
+        "特殊記述方法",
+        "${systemTime}",
+        "${setUpTime}",
+        "${binaryFile}",
+        "null値記述方法",
+        "文字種増幅",
+        "シート内構造"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "注意事項",
+      "hints": [
+        "テスト独立性",
+        "テスト実行順序",
+        "事前条件準備",
+        "マスタデータ",
+        "Excelテストデータ分離",
+        "テストデータ管理",
+        "master_data_setup_tool"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## Excelシート名に関する規約\n\n- 1テストメソッドにつき1シートを用意する（推奨）\n- シート名はテストメソッド名と同名にする（推奨）\n\n| テストメソッド | Excelシート名 |\n|---|---|\n| `@Test public void testInsert()` | `testInsert` |\n\n> **注意**: シートに関する規約は「制約」ではない。テストメソッド名とExcelシート名が同名でなくても正しく動作する。今後の機能追加は上記規約をデフォルトとして開発されるため、命名規約への準拠を推奨する。プロジェクト内で統一すること。",
+    "s2": "## シート内の構造\n\n各テストデータには「データタイプ=値」（データの1行目に記述）でデータタイプを付与する。\n\n### データタイプ一覧\n\n| データタイプ名 | 説明 | 設定する値 |\n|---|---|---|\n| `SETUP_TABLE` | テスト実行前にDBに登録するデータ | 登録対象のテーブル名 |\n| `EXPECTED_TABLE` | テスト実行後の期待するDBデータ。省略したカラムは比較対象外 | 確認対象のテーブル名 |\n| `EXPECTED_COMPLETE_TABLE` | テスト実行後の期待するDBデータ。省略したカラムには:ref:`default_values_when_column_omitted`が設定されているものとして扱われる | 確認対象のテーブル名 |\n| `LIST_MAP` | `List<Map<String,String>>`形式のデータ | シート内で一意になるID（期待値のID） |\n| `SETUP_FIXED` | 事前準備用の固定長ファイル | 準備ファイルの配置場所 |\n| `EXPECTED_FIXED` | 期待値を示す固定長ファイル | 比較対象ファイルの配置場所 |\n| `SETUP_VARIABLE` | 事前準備用の可変長ファイル | 準備ファイルの配置場所 |\n| `EXPECTED_VARIABLE` | 期待値を示す可変長ファイル | 比較対象ファイルの配置場所 |\n| `MESSAGE` | メッセージング処理テスト用データ | 固定値（`setUpMessages`または`expectedMessages`） |\n| `EXPECTED_REQUEST_HEADER_MESSAGES` | 要求電文（ヘッダ）期待値の固定長ファイル | リクエストID |\n| `EXPECTED_REQUEST_BODY_MESSAGES` | 要求電文（本文）期待値の固定長ファイル | リクエストID |\n| `RESPONSE_HEADER_MESSAGES` | 応答電文（ヘッダ）の固定長ファイル | リクエストID |\n| `RESPONSE_BODY_MESSAGES` | 応答電文（本文）の固定長ファイル | リクエストID |\n\n### コメント\n\nセル内に`//`から開始する文字列を記載した場合、そのセルから右のセルは全て読み込み対象外となる。\n\n### マーカーカラム\n\n見出し行のカラム名が**半角角括弧で囲まれている場合**（例: `[no]`）、そのカラムは「マーカーカラム」とみなされ、テスト実行時には読み込まれない。全データタイプで使用可能。\n\n### セルの書式\n\n> **警告**: Excelファイルに文字列以外の書式でデータを記述した場合、正しくデータが読み取れなくなる。\n\nテストデータ作成前に、全てのセルの書式を文字列に設定すること。罫線やセルの色付けは任意に設定可能。\n\n### セルへの特殊な記述方法\n\n| 記述方法 | 自動テスト内での値 | 説明 |\n|---|---|---|\n| `null` / `Null` | null | 大文字小文字問わずnull値として扱われる |\n| `\"null\"` / `\"NULL\"` | 文字列のnull | ダブルクォートで囲まれた場合、前後のダブルクォートを除去した文字列として扱われる（文字列中のダブルクォートはエスケープ不要） |\n| `\"1⊔\"` `\"⊔\"` `\"１△\"` `\"△△\"` | スペースを含む値 | ⊔=半角スペース、△=全角スペース |\n| `${systemTime}` / `${updateTime}` | システム日時 | `SystemTimeProvider`から取得したTimestampの文字列形式（例: `2011-04-11 01:23:45.0`）。`${updateTime}`はDBタイムスタンプ更新時の期待値として使用 |\n| `${setUpTime}` | コンポーネント設定ファイルに記載された固定値 | DBセットアップ時のタイムスタンプに固定値を使用する場合 |\n| `${文字種,文字数}` | 指定文字種を指定文字数分増幅した値 | 使用可能文字種: 半角英字、半角数字、半角記号、半角カナ、全角英字、全角数字、全角ひらがな、全角カタカナ、全角漢字、全角記号その他、外字。単独・組み合わせ使用可能（例: `${半角英字,5}` → `geDSfe`） |\n| `${binaryFile:ファイルパス}` | BLOB列に格納するバイナリデータ | ファイルパスはExcelファイルからの相対パス |",
+    "s3": "## 注意事項\n\n### テストメソッドの実行順序に依存しないテストを作成する\n\n- テストメソッドの実行順序によってテスト結果が変わらないようにすること\n- クラス単体でも複数まとめてテストしても同じ結果になること\n- フレームワークはテスト中にコミットを行うため、前後のテストでDBが変更される可能性が高い。自テストクラスで必要な事前条件は全て自テストクラス内で準備すること\n- マスタデータのような読み取り専用テーブルの準備は共通Excelファイルに記載し、テスト実行前に1回実行するか事前準備済みの前提でテストを実行すること\n- マスタデータの投入には:ref:`master_data_setup_tool`を使用する\n- :doc:`04_MasterDataRestore`によりテスト内で発生したマスタデータの変更をテスト終了時に自動的に元の状態に戻すことができる\n\n### テストデータは全てExcelシートに記述する\n\nテストソースコード中にはテストデータを記載せず、テストデータは全てExcelシートに記述すること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

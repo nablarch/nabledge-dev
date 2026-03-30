@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-messaging_sender_util",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction paragraph / note block",
+      "description": "The note that this utility only supports synchronous response message sending, and that messaging_sending_batch should be used for messages without a response or with asynchronous responses, is entirely absent from the knowledge file. This is essential 'when to use X vs Y' guidance.",
+      "source_evidence": "「本ユーティリティでは、同期応答メッセージ送信処理のみをサポートしている。応答を伴わない、もしくは、、非同期応答を伴うメッセージの送信については、:doc:`messaging_sending_batch` を使用する。」"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Introduction paragraph",
+      "description": "The prerequisite that this utility requires フレームワーク制御ヘッダ (framework control header), and that it implements retransmission/timeout control using 再送電文フラグ, is not captured anywhere in the knowledge file. This is a constraint that implementers must know.",
+      "source_evidence": "「本ユーティリティは :ref:`フレームワーク制御ヘッダ<fw_header>` の利用を前提とし、再送電文フラグを利用した再送/タイムアウト制御等の機能を実装している。」"
+    }
+  ]
+}

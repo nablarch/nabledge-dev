@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-02_01_Repository_config--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (コンポーネント設定ファイルの記述) — note about repository design",
+      "description": "The source note explicitly states (1) that the repository does NOT have lazy loading functionality ('レイジーロードの機能を持っていない') unlike Spring Framework or Seasar2, and (2) that registering business logic objects IS possible but developers should verify the trade-offs are acceptable ('このような使用方法を行う際は、このデメリットが許容範囲にあるか十分に検討すること'). The knowledge file omits both: it only notes the effect (slow startup, poor test efficiency) without the architectural reason (no lazy loading), and it implies the use is simply 'not intended' without acknowledging that it can be done with consideration.",
+      "source_evidence": "この前提により、リポジトリはこれらDIコンテナが持つレイジーロードの機能を持っていない。 / このような使用方法を行う際は、このデメリットが許容範囲にあるか十分に検討すること。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "index — section count",
+      "description": "The knowledge file has 7 sections (s1–s7) while the source contains 9 sub-headings (===) plus top-level headings. Specifically, s2 merges three source sub-sections ('読み込む環境設定ファイルの記述例', '環境設定ファイルの読み込み', '環境設定の取得'), s4 merges two source code sections (HelloMessageProvider + HelloComponent), and s7 merges two code sub-sections (SystemRepository初期化 + コンポーネント取得). Content is preserved, but the index granularity is reduced. Flagged by automated pre-check.",
+      "source_evidence": "Source headings include '読み込む環境設定ファイル(sample.config)の記述例', '環境設定ファイルの読み込み (通常フレームワークの責務)', '環境設定の取得', '登録するクラスのソースコード(HelloMessageProvider)', '登録するクラスのソースコード(HelloComponent)', 'コンポーネント設定ファイルの記述(hello.xml)', '値を取得する実装例', 'SystemRepository の初期化処理', 'SystemRepository からのコンポーネント取得'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "The hint list for s5 includes 'ref属性', 'name属性', and 'class属性' but omits 'value属性', which is explicitly named in the source as one of the three property-element attributes (name, value, ref) and appears in the hello.xml example code.",
+      "source_evidence": "name属性にはプロパティ名、value属性にはプロパティに設定する値を記述する"
+    }
+  ]
+}

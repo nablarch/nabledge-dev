@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-07_DisplayTag--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 共通属性使用例",
+      "description": "The Java action implementation code shown before the JSP example is omitted. The source provides: `BatchEntity batch = new BatchEntity(); batch.setStatus(\"03\"); context.setRequestScopedVar(\"batch\", batch);` This code establishes why `name=\"batch.status\"` resolves correctly in the JSP tag, illustrating the action-to-view data binding pattern.",
+      "source_evidence": "Source section 共通属性 usage example: `// アクションの実装例 BatchEntity batch = new BatchEntity(); batch.setStatus(\"03\"); // \"03\"を設定 context.setRequestScopedVar(\"batch\", batch);`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — codeタグ",
+      "description": "The same Java action implementation code (`BatchEntity` setup with `setRequestScopedVar`) that appears before the codeタグ JSP examples in the source is omitted from s7. Without it, the JSP examples lack context showing how the request scope variable `batch` is populated.",
+      "source_evidence": "Source section codeタグ: `// アクションの実装例 BatchEntity batch = new BatchEntity(); batch.setStatus(\"03\"); // \"03\"を設定 context.setRequestScopedVar(\"batch\", batch);` appears before the code tag JSP examples."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — CODE_NAME テーブル例",
+      "description": "The knowledge file's CODE_NAME table omits two columns (SORT_ORDER and LANG) and all 9 English-language rows present in the source. SORT_ORDER determines item display order; LANG demonstrates multilingual support. The source table has 7 columns (ID, VALUE, SORT_ORDER, LANG, NAME, SHORT_NAME, OPTION01) and 14 rows (7 Japanese + 7 English). The knowledge file shows only 5 columns and 7 rows.",
+      "source_evidence": "Source CODE_NAME table header: `ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | OPTION01` with rows for both `ja` and `en` languages (e.g., `0001 | 01 | 2 | en | Male | M | 0001-01-en`)."
+    }
+  ]
+}

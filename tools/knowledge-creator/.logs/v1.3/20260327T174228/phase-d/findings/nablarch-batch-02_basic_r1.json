@@ -1,0 +1,34 @@
+{
+  "file_id": "nablarch-batch-02_basic",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — initialize section, example list item 1",
+      "description": "The knowledge file uses RST cross-reference syntax `:ref:\\`about_commandline_argument\\`` which does not appear in the source. The source uses the RST named hyperlink `` `コマンドライン引数`_ ``. In a JSON knowledge file this RST directive syntax renders as literal text and is meaningless as a reference.",
+      "source_evidence": "Source (初期化処理 section): `* \\`コマンドライン引数\\`_ を処理する。`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 — error section",
+      "description": "The source states that the exception or error raised in main processing can be retrieved via ExecutionException#getCause(): \"メイン処理で発生した例外またはエラーは、ExecutionException#getCause()で取得できる。\" The knowledge file omits \"またはエラー\" and says only \"メイン処理で発生した例外は\".",
+      "source_evidence": "Source (エラーが発生したリクエストに対するエラー処理): \"メイン処理で発生した例外またはエラーは、\\ ``ExecutionException#getCause()``\\ で取得できる。\""
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`BatchActionBase` is referenced in the s2 section content (\"BatchActionBaseはDbAccessSupportを継承しているため…\") but is absent from the s2 hints array, making it unsearchable via hint-based filtering.",
+      "source_evidence": "Source (note under DBバッチメソッド表): \"BatchActionBaseはDbAccessSupportを継承しているため、サブクラスでも DbAccessSupportの機能を用いてデータベースアクセスを行うことができる。\""
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s5",
+      "description": "The source's 「メソッド詳細」h2 section contains more than 2000 characters of plain text and has six h3 sub-sections (初期化処理、リーダ作成、1作業単位毎の処理、エラー発生時の処理、終了処理 plus two h4 sub-sections). The knowledge file merges all of these into a single section s5 rather than splitting them into individual sections.",
+      "source_evidence": "Source h3 headings under メソッド詳細: 初期化処理, リーダ作成, 1作業単位毎の処理, エラー発生時の処理 (with h4: エラーが発生した作業単位に対するエラー処理, エラーが発生したリクエストに対するエラー処理), 終了処理"
+    }
+  ]
+}

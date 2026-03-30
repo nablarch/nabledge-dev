@@ -1,0 +1,14 @@
+{
+  "file_id": "nablarch-batch-05_fileOutputBatch",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The fabricated hints (例外処理, バッチエラー処理) are in the index only, not in the section content. Section s4's content accurately reflects the source (\"特別なエラー処理は不要。実装しない。\"). Even if an agent retrieves s4 via these misleading hints, the information it receives is correct. The fabrication broadens retrieval scope slightly but does not cause wrong information to be delivered to users.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s4 hints",
+      "impact": "low",
+      "justification": "The fabricated hints (例外処理, バッチエラー処理) affect index retrieval only. Section s4's content is accurate and grounded in the source. An agent retrieving s4 via these hints would correctly learn that no special error handling is needed for this batch type — which is the right answer. No incorrect information is propagated to the user. Phase E did not fix this because the output JSON in the E log is byte-for-byte identical to the D log input, indicating the fix agent left the hints unchanged."
+    }
+  ]
+}

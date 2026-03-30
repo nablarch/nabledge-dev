@@ -1,0 +1,299 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-MultipartHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — contentLengthLimit table row",
+      "description": "The knowledge file adds 'リクエスト全体のサイズ上限' as an explanation for contentLengthLimit, but this phrase does not appear in the source. The source only states '1リクエストでアップロードできるデータの上限値（ファイルサイズの上限ではない。）' — it explicitly says it is not the file size limit, but never explicitly calls it 'the total request size limit'.",
+      "source_evidence": "設定項目テーブル: 「1リクエストでアップロードできるデータの上限値 (ファイルサイズの上限ではない。)」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "HttpAccessLogHandler and ThreadContextHandler are both mentioned in the important note about handler ordering (they are concrete examples of handlers that must be placed after MultipartHandler), but neither class name appears in the s1 hints.",
+      "source_evidence": "注意ブロック: 「:doc:`HttpAccessLogHandler` を拡張し、特定のリクエストパラメータを出力するケースや、:doc:`ThreadContextHandler` にリクエストパラメータの内容に依存したカスタムの属性を追加するようなケース」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "HttpRequest.getParam is referenced in the processing flow description (to retrieve non-file parameters) and is present in the s2 section body, but is absent from the s2 hints array.",
+      "source_evidence": "往路処理 2: 「アップロードファイル以外のパラメータについては、通常どおり `HttpRequest.getParam()`_ 等で取得できる。」"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==================================
+マルチパートリクエストハンドラ
+==================================
+
+**クラス名:** ``nablarch.fw.web.upload.MultipartHandler``
+
+
+---------------------------
+概要
+---------------------------
+本ハンドラは、HTTPリクエストボディがマルチパート形式であった場合にその内容を解析し、一時ファイルに保存する。
+保存されたファイルは、アップロード用ユーティリティを使用することで、業務アクションハンドラから参照することが可能となる。
+
+  .. image:: ../_image/MultipartHandler.png
+
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler sub_thread data_read'
+    , HandlerQueue = [
+        "HttpResponseHandler"
+      , "HttpErrorHandler"
+      , "MultipartHandler"
+      , "NablarchTagHandler"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+
+
+**関連するハンドラ**
+
+  ====================================  ===================================================================================
+  ハンドラ                              内容
+  ====================================  ===================================================================================
+  :doc:`HttpErrorHandler`               本ハンドラでは、アップロードされたファイルが許容上限サイズを越えた場合などに
+                                        例外が送出される可能性があるので、 :doc:`HttpErrorHandler` の後続に配置し、
+                                        適切なエラー画面が表示されるようにする必要がある。
+
+  :doc:`NablarchTagHandler`             このハンドラでは、HTTPリクエストオブジェクトのリクエストパラメータを使用するので、
+                                        POSTパラメータの解析の際にリクエストボディが読み込まれる。
+                                        そのため、本ハンドラを :doc:`NablarchTagHandler` よりも上位に配置する必要がある。
+
+  ====================================  ===================================================================================
+
+      .. note::
+
+        一般に、HTTPリクエストのリクエストボディの読みこみを行うハンドラは、必ず :doc:`MultipartHandler`
+        の後続に配置する必要がある。
+
+        具体的には、 :doc:`HttpAccessLogHandler` を拡張し、特定のリクエストパラメータを出力するケースや、
+        :doc:`ThreadContextHandler` にリクエストパラメータの内容に依存したカスタムの属性を追加するようなケースがこれに該当する。
+
+++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (非マルチパートリクエストのスキップ)**
+    HTTPリクエストのCONTENT-TYPEヘッダー値を取得し、 **"multipart/form-data"** に一致しない場合は、
+    このハンドラでは何もせずに、後続のハンドラの実行結果をリターンして終了する。
+
+  **2. (マルチパートリクエストの解析)**
+    HTTPリクエストオブジェクトのメッセージボディを読み込み、マルチパートの解析を行い、アップロードされたファイルを
+    一時ファイルとして保存する。
+    保存先は、論理パス名 **"uploadFileTmpDir"** に設定されたパスとなる。
+    また、論理パスが設定されていない場合は、OS標準の一時ファイル保存先(Javaシステムプロパティ **"java.io.tmpdir"** の値)となる。
+
+    解析結果は、HTTPリクエストオブジェクト自体に格納され、アップロードファイルに関する情報は `HttpRequest.getPart()`_ で取得できる。
+    また、アップロードファイル以外のパラメータについては、通常どおり `HttpRequest.getParam()`_ 等で取得できる。
+  
+  **3. (ログ出力)**
+    アップロードされたファイルに関する情報をログに出力する。(INFOレベル)
+
+  **4. (後続ハンドラに対する処理委譲)**
+    ハンドラキュー上の後続ハンドラに対して処理を委譲し、その結果を取得する。
+
+
+.. _outbound:
+
+**[復路処理]**
+  **5. (終端処理)**
+    アップロードされた一時ファイルを全て削除する。
+
+  **6. (正常終了)**
+    **4.** の結果をリターンして終了する。 
+
+  **2a. (マルチパート形式エラー)**
+    アップロード中に、接続が切断されるなどの事由により、読み込んだリクエストボディの内容がマルチパートフォーマットに反した場合は、
+    実行時例外 `Result.BadRequest`_ を送出して終了する。(ステータスコード400)
+
+  **2b. (アップロード上限超過エラー)**
+    読み込んだデータのサイズが本ハンドラに設定されたアップロードサイズの上限値を超過した場合は、
+    実行時例外 `Result.BadRequest`_ を送出して終了する。(ステータスコード413)
+
+
+.. _error:
+
+**[例外処理]**
+    
+  **4a. (終端処理)**
+    後続ハンドラの処理中に何らかの例外が発生した場合は、 **5.** の終端処理を実行し、例外を再送出する。
+
+++++++++++++++++++++
+
+
+
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定値は、 UploadSettings に集約されており、その内容は以下の通りである。
+
+  ================================ ============================ =========== ======================================================
+  設定項目                         プロパティ名                 データ型　  備考
+  ================================ ============================ =========== ======================================================
+  アップロードサイズ上限           contentLengthLimit           int         | 任意設定。(単位:バイト)
+                                                                            | 1リクエストでアップロードできるデータの上限値
+                                                                            | (ファイルサイズの上限ではない。)
+                                                                            | デフォルトは無制限。
+  一時ファイル自動削除の実施有無   autoCleaning                 boolean     任意指定。デバッグや障害解析用に無効化する。
+                                                                            デフォルトはtrue(自動削除を実施)
+
+                                                                            .. note::
+
+                                                                              一時ファイル保存中に例外が発生した場合には、\
+                                                                              自動削除の設定がオフの場合でもファイルを削除する。
+
+                                                                              これにより、不正な状態のファイル（空ファイルや途中まで\
+                                                                              保存されたファイル）が作成されることを防ぐことが出来る。
+
+                                                                              ※一時ファイルが正常に保存でき、後続のハンドラに処理が\
+                                                                              移譲できた場合には、自動削除がオンの場合のみファイルを削除する。
+
+  ================================ ============================ =========== ======================================================
+
+**基本設定**
+  アップロードサイズの上限値を定めておくことを強く推奨する。
+  また、上限値はユーザ要望等の事由によって変更になる可能性があるので、設定パラメータとして外部化しておくこと。
+
+  .. code-block:: xml
+  
+    <component class="nablarch.fw.web.upload.MultipartHandler" name="multipartHandler">
+      <property name="uploadSettings">
+        <component class="nablarch.fw.web.upload.UploadSettings">
+          <!-- Content-Lengthの上限値 -->
+          <property name="contentLengthLimit" value="${uploadSizeLimit}" />
+        </component>
+      </property>
+    </component>
+
+**アップロードファイルの一時保存先の設定**
+  アップロードされたファイルの一時保存先を指定する場合は、論理パス名 **"uploadFileTmpDir"** を使用すること。
+  保存先のパスは環境依存値となるので、設定パラメータとして外部化しておくこと。
+  
+  .. code-block:: xml
+  
+    <component name="filePathSetting" class="nablarch.core.util.FilePathSetting">
+      <property name="basePathSettings">
+        <map>
+          <!-- アップロードファイルの一時格納場所 -->
+          <entry key="uploadFileTmpDir" value="${upload-file-tmp-dir}" />
+        </map>
+      </property>
+    </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-MultipartHandler",
+  "title": "マルチパートリクエストハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MultipartHandler",
+        "nablarch.fw.web.upload.MultipartHandler",
+        "マルチパートリクエスト処理",
+        "ファイルアップロード",
+        "一時ファイル保存",
+        "HttpErrorHandler",
+        "NablarchTagHandler",
+        "ハンドラ配置順序"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MultipartHandler",
+        "uploadFileTmpDir",
+        "java.io.tmpdir",
+        "Result.BadRequest",
+        "HttpRequest.getPart",
+        "マルチパート解析",
+        "一時ファイル削除",
+        "ファイルアップロード処理フロー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "UploadSettings",
+        "contentLengthLimit",
+        "autoCleaning",
+        "uploadFileTmpDir",
+        "FilePathSetting",
+        "アップロードサイズ上限",
+        "一時ファイル自動削除"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.web.upload.MultipartHandler`\n\nHTTPリクエストボディがマルチパート形式の場合、内容を解析して一時ファイルに保存する。保存されたファイルはアップロード用ユーティリティで業務アクションハンドラから参照可能。\n\n**関連するハンドラ**:\n\n- :doc:`HttpErrorHandler`: アップロードファイルが許容上限サイズを越えた場合などに例外が送出されるため、:doc:`HttpErrorHandler` の後続に配置して適切なエラー画面を表示できるようにする\n- :doc:`NablarchTagHandler`: HTTPリクエストオブジェクトのリクエストパラメータを使用するため（POSTパラメータ解析時にリクエストボディが読み込まれる）、本ハンドラを :doc:`NablarchTagHandler` よりも上位に配置する必要がある\n\n> **注意**: HTTPリクエストのリクエストボディの読み込みを行うハンドラは、必ず :doc:`MultipartHandler` の後続に配置する必要がある。具体的には、:doc:`HttpAccessLogHandler` を拡張して特定のリクエストパラメータを出力するケースや、:doc:`ThreadContextHandler` にリクエストパラメータ内容に依存したカスタム属性を追加するようなケースが該当する。",
+    "s2": "**[往路処理]**\n\n1. **(非マルチパートリクエストのスキップ)**: CONTENT-TYPEヘッダーが `\"multipart/form-data\"` に一致しない場合は何もせずに後続ハンドラの実行結果をリターン\n2. **(マルチパートリクエストの解析)**: メッセージボディを読み込んでマルチパート解析し、アップロードファイルを一時ファイルとして保存。保存先は論理パス名 `\"uploadFileTmpDir\"` に設定されたパス。論理パス未設定の場合はJavaシステムプロパティ `\"java.io.tmpdir\"` の値を使用。解析結果はHTTPリクエストオブジェクトに格納され、`HttpRequest.getPart()` でアップロードファイル情報、`HttpRequest.getParam()` 等でその他パラメータを取得できる\n3. **(ログ出力)**: アップロードファイル情報をINFOレベルでログ出力\n4. **(後続ハンドラへの処理委譲)**: ハンドラキュー上の後続ハンドラに処理を委譲し結果を取得\n\n**[復路処理]**\n\n5. **(終端処理)**: アップロードされた一時ファイルを全て削除\n6. **(正常終了)**: 4の結果をリターン\n\n**[エラー処理]**\n\n- **2a. マルチパート形式エラー**: 読み込んだリクエストボディがマルチパートフォーマットに反する場合（接続切断等）、`Result.BadRequest` を送出（ステータスコード400）\n- **2b. アップロード上限超過エラー**: 読み込んだデータサイズが設定上限値を超過した場合、`Result.BadRequest` を送出（ステータスコード413）\n\n**[例外処理]**\n\n- **4a. 終端処理**: 後続ハンドラの処理中に何らかの例外が発生した場合、終端処理（5）を実行して例外を再送出",
+    "s3": "設定値は `UploadSettings` クラスに集約されている。\n\n| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| contentLengthLimit | int | | 無制限 | 1リクエストでアップロードできるデータ上限値（単位：バイト）。ファイルサイズの上限ではなくリクエスト全体のサイズ上限 |\n| autoCleaning | boolean | | true | 一時ファイルの自動削除。デバッグや障害解析用に無効化可能 |\n\n> **注意**: 一時ファイル保存中に例外が発生した場合は、`autoCleaning` がオフでもファイルを削除する（不正な状態のファイル—空ファイルや途中まで保存されたファイル—の作成防止）。一時ファイルが正常に保存されて後続ハンドラへ処理委譲できた場合のみ、`autoCleaning` オンの場合にファイルを削除する。\n\nアップロードサイズの上限値を設定することを強く推奨する。上限値は変更になる可能性があるため設定パラメータとして外部化すること。\n\n**基本設定例**:\n```xml\n<component class=\"nablarch.fw.web.upload.MultipartHandler\" name=\"multipartHandler\">\n  <property name=\"uploadSettings\">\n    <component class=\"nablarch.fw.web.upload.UploadSettings\">\n      <property name=\"contentLengthLimit\" value=\"${uploadSizeLimit}\" />\n    </component>\n  </property>\n</component>\n```\n\nアップロードファイルの一時保存先を指定する場合は論理パス名 `\"uploadFileTmpDir\"` を使用する。保存先パスは環境依存値のため設定パラメータとして外部化すること。\n\n**一時保存先設定例**:\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"uploadFileTmpDir\" value=\"${upload-file-tmp-dir}\" />\n    </map>\n  </property>\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

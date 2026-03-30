@@ -1,0 +1,58 @@
+{
+  "id": "libraries-07_SubmitTag--s18",
+  "title": "ブラウザのキャッシュ防止",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "リクエストの二重送信防止",
+      "hints": [
+        "allowDoubleSubmission",
+        "nablarch_handleDoubleSubmission",
+        "二重サブミット防止",
+        "disabled属性",
+        "WebView_SubmitTag",
+        "WebView_ButtonTag",
+        "WebView_DownloadSubmitTag",
+        "WebView_SubmitLinkTag"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "WebView_NoCacheTag",
+        "noCacheタグ",
+        "キャッシュ防止",
+        "ブラウザの戻るボタン防止",
+        "Cache-Control",
+        "Pragma no-cache",
+        "SSL通信"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "処理済みリクエストの受信防止",
+      "hints": [
+        "OnDoubleSubmission",
+        "useToken",
+        "TokenGenerator",
+        "RandomTokenGenerator",
+        "BasicDoubleSubmissionHandler",
+        "DoubleSubmissionHandler",
+        "path",
+        "messageId",
+        "statusCode",
+        "トークン",
+        "WebView_FormTag",
+        "nablarch.common.web.token.BasicDoubleSubmissionHandler"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "JavaScriptを使用して二重送信を防止する。以下のカスタムタグが対応している:\n- :ref:`WebView_SubmitTag` (input type=submit,button,image)\n- :ref:`WebView_DownloadSubmitTag` (input type=submit,button,image)\n- :ref:`WebView_ButtonTag`\n- :ref:`WebView_DownloadButtonTag`\n- :ref:`WebView_SubmitLinkTag`\n- :ref:`WebView_DownloadLinkTag`\n\n## allowDoubleSubmission属性\n\n| 属性 | 説明 |\n|---|---|\n| allowDoubleSubmission | 二重サブミットを許可するか（true=許可、false=防止）。デフォルト: true |\n\n- falseを指定すると、1回目のサブミット時に対象要素のonclick属性を書き換え、2回目以降のサブミット要求はサーバに送信しない。\n- ボタンの場合はdisabled属性を設定し、クリック不可状態にする。\n\n```jsp\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"back\" value=\"戻る\"\n          uri=\"./USERS00301\" />\n<n:submit cssClass=\"buttons\" type=\"button\" name=\"register\" value=\"登録\"\n          uri=\"./USERS00302\" allowDoubleSubmission=\"false\" />\n```\n\n> **注意**: ブラウザの中止ボタン押下後はdisabled状態が続き再サブミット不可となる。他のボタン/リンクで処理を継続すること。\n\n## コールバック関数\n\n2回目以降のサブミット時、コールバック関数 `nablarch_handleDoubleSubmission` が存在すれば呼び出される。\n\n```javascript\n/**\n * @param element 二重サブミットが行われた対象要素（ボタン/リンク）\n */\nfunction nablarch_handleDoubleSubmission(element) {\n  // ここに処理を記述する。\n}\n```",
+    "s2": "ブラウザの戻るボタン押下時に前画面を表示させないようにするには、:ref:`WebView_NoCacheTag` を使用する。キャッシュを防止したい画面のJSPのheadタグ内で指定する。\n\n```jsp\n<%-- headタグ内にnoCacheタグを指定する。 --%>\n<head>\n  <n:noCache/>\n</head>\n```\n\n以下のレスポンスヘッダが返される:\n\n```\nExpires Thu, 01 Jan 1970 00:00:00 GMT\nCache-Control no-store, no-cache, must-revalidate, post-check=0, pre-check=0\nPragma no-cache\n```\n\n以下のHTMLが生成される（古いブラウザ対応のためmetaタグも含む）:\n\n```html\n<head>\n  <meta http-equiv=\"pragma\" content=\"no-cache\">\n  <meta http-equiv=\"cache-control\" content=\"no-cache\">\n  <meta http-equiv=\"expires\" content=\"0\">\n</head>\n```\n\n> **警告**: noCacheタグは `<n:include>(<jsp:include>)` でincludeされるJSPでは指定不可。必ずforwardされるJSPで指定すること。\n\n> **注意**: IE6/7/8でHTTP/1.0かつSSL(https)が適用されない通信では有効にならない。本機能を使用する画面は必ずSSL通信を適用すること。\n\n> **警告**: システム全体でキャッシュ防止する場合は、実装漏れを防ぐためハンドラで一律設定すること（レスポンスヘッダに上記内容を設定する）。",
+    "s3": "サーバ側(セッション)とクライアント側(hiddenタグ)に一意なトークンを保持し、サーバ側で突合することで実現する。トークンは1回のチェックのみ有効。\n\n> **注意**: 同一業務を複数ウィンドウで並行操作した場合、後に確認画面に遷移したウィンドウのみ有効。先に確認画面に遷移したウィンドウはトークンが古いため二重サブミット判定される。別々の業務を複数ウィンドウで並行操作する場合は問題なし。\n\n![処理済みリクエストの受信防止 - 問題発生時の画面遷移図](assets/libraries-07_SubmitTag--s18/WebView_TokenConstraint.jpg)\n\n## a) トークンの設定\n\n### a.1) useToken属性\n\n:ref:`WebView_FormTag` のuseToken属性でトークンを発行・設定する。\n\n```jsp\n<n:form useToken=\"true\">\n```\n\n| 属性 | 説明 |\n|---|---|\n| useToken | トークンを設定するか（true/false）。デフォルト: false。confirmationPageタグ指定時はデフォルトtrue（:ref:`WebView_InputConfirmationCommon` 参照）。 |\n\n同一画面内の複数formタグでuseToken=trueを指定した場合、最初に発行されたトークンを全formタグで使用する。\n\n### a.2) TokenGeneratorのカスタマイズ\n\n`TokenGenerator` インタフェースを実装してリポジトリに\"tokenGenerator\"という名前で登録することで変更可能。デフォルト実装: `RandomTokenGenerator`（16文字のランダム文字列）。\n\n## b) トークンのチェック\n\n### b.1) OnDoubleSubmissionアノテーション\n\n**アノテーション**: `@OnDoubleSubmission`\n\n```java\n@OnDoubleSubmission(path = \"forward://MENUS00103\", messageId = \"MSG00022\")\npublic HttpResponse doUSERS00302(HttpRequest req, ExecutionContext ctx) {\n    // 省略。\n}\n```\n\n| 属性 | デフォルト | 説明 |\n|---|---|---|\n| path | | 二重サブミット判定時の遷移先リソースパス |\n| messageId | | 遷移先画面に表示するエラーメッセージのメッセージID |\n| statusCode | 400 | レスポンスステータス |\n\n### b.2) DoubleSubmissionHandlerのカスタマイズ\n\n`DoubleSubmissionHandler` インタフェースを実装してリポジトリに\"doubleSubmissionHandler\"という名前で登録することでアノテーションの振る舞いを変更可能。デフォルト実装: `nablarch.common.web.token.BasicDoubleSubmissionHandler`。\n\nアプリケーション全体のデフォルト値を設定する場合は、`BasicDoubleSubmissionHandler` をリポジトリに登録する:\n\n```xml\n<component name=\"doubleSubmissionHandler\"\n           class=\"nablarch.common.web.token.BasicDoubleSubmissionHandler\">\n    <property name=\"messageId\" value=\"MSG00022\" />\n    <property name=\"statusCode\" value=\"200\" />\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| path | 二重サブミット判定時の遷移先リソースパス（アノテーション個別指定がない場合に使用） |\n| messageId | 遷移先画面のエラーメッセージID（アノテーション個別指定がない場合に使用） |\n| statusCode | レスポンスステータス（デフォルト: 400）（アノテーション個別指定がない場合に使用） |\n\n> **警告**: アノテーションとBasicDoubleSubmissionHandlerのどちらにもpath属性の指定がない場合、遷移先不明でシステムエラーになる。トークンを使用した二重サブミット防止機能を使用する場合、必ずどちらか一方でpath属性を指定すること。"
+  }
+}

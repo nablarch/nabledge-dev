@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_CodeManager--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s13",
+      "description": "The source section heading is \"未検討\" (not yet considered / unplanned), but the knowledge file relabels these items as \"サポート対象外\" and adds a fabricated note: \"以下の機能はコード管理機能の対象外であり、サポートされていない。\" The source makes no such claim — it only indicates the features have not been considered. \"未検討\" means unplanned future work, not permanently out of scope or unsupported.",
+      "source_evidence": "Source: 未検討\n* 外部システム用にコード変換できる。\n* コード値の有効期限を管理できる。\n\nKnowledge file: **未検討（サポート対象外）**: > **注意**: 以下の機能はコード管理機能の対象外であり、サポートされていない。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9, s10",
+      "description": "`Locale` is a PascalCase class used directly in code examples for `getName(String, String, Locale)` and `getValues(String, Locale)`, but it is absent from the hints arrays of both s9 and s10.",
+      "source_evidence": "s9 source code: `CodeUtil.getName(\"0001\", \"1\", Locale.JAPANESE);`\ns10 source code: `getValues(String codeId, Locale locale)` listed as an API method"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "web-application-basic--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 (URIの指定方法)",
+      "description": "Source h2 section 'URIの指定方法' contains 3 h3 subsections (絶対URLによる指定, コンテキストルートからの相対パスによる指定, HTTPとHTTPSの切り替え) and exceeds 2000 chars of plain text, but the knowledge file merges all into a single section s2 without splitting.",
+      "source_evidence": "RST headings: 絶対URLによる指定 (===), コンテキストルートからの相対パスによる指定 (===), HTTPとHTTPSの切り替え (===) under URIの指定方法 (-----)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 (JSPとActionクラスの間でデータを受け渡す方法)",
+      "description": "Source h2 section 'JSPとActionクラスの間でデータを受け渡す方法' contains 2 h3 subsections (Map型/フォームのプロパティを受け渡す場合, List型/配列の要素のプロパティを受け渡す場合) and substantially exceeds 2000 chars of plain text with multiple code examples, but the knowledge file merges all into a single section s3 without splitting.",
+      "source_evidence": "RST headings: Map型/フォームのプロパティを受け渡す場合 (===), List型/配列の要素のプロパティを受け渡す場合 (===) under JSPとActionクラスの間でデータを受け渡す方法 (-----)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "PascalCase framework class names used in code examples within s3 are absent from hints: 'SqlResultSet' (used as return type of component.selectUsers/selecemailAddressList) and 'HttpResponse' (return type of Action methods). These are Nablarch framework classes, not example-specific names.",
+      "source_evidence": "Source code: 'SqlResultSet userInfo = component.selectUsers(form);', 'SqlResultSet emailAddressList = component.selecemailAddressList(condition);', 'return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");'"
+    }
+  ]
+}

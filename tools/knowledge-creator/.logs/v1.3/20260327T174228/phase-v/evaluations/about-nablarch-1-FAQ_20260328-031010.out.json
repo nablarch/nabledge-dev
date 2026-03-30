@@ -1,0 +1,14 @@
+{
+  "file_id": "about-nablarch-1-FAQ",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single finding is low impact. The existing hints (SqlRow, SampleEntity, MapインタフェースからEntity生成, Mapコンストラクタ推奨, setter呼び出し, Entity生成方法, Form生成方法, DateUtil) already cover all realistic user search paths for this FAQ's actual topic. The missing hints (ExecutionContext, Result, Success, @Override) are generic Nablarch/Java constructs that appear incidentally in the code example — users would not typically search for this FAQ via those terms. Retrieval quality for the intended use case is unaffected.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "sections.s1 hints",
+      "impact": "low",
+      "justification": "ExecutionContext, Result, Success, and @Override are generic framework/language constructs used throughout Nablarch. Their absence from hints does not impair retrieval for the actual topic (SqlRow→Entity/Form generation via Map constructor). The existing hints comprehensively cover the primary search scenarios. Phase E did not apply the fix — the output JSON is byte-for-byte identical to the input, indicating the fix agent silently skipped the change, likely judging it below the threshold for action."
+    }
+  ]
+}

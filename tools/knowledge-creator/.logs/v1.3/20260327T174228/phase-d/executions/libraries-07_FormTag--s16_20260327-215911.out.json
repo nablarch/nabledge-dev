@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-07_FormTag--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — hiddenの暗号化処理",
+      "description": "変更パラメータの動作説明が欠落している。暗号化する場合と暗号化しない場合で「nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる」という実装判断に関わる情報が知識ファイルに含まれていない。",
+      "source_evidence": "「尚、変更パラメータは、暗号化する場合と暗号化しない場合で、nablarch_hiddenタグの値が暗号化されることを除き、リクエスト時の動作が同じとなる。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — hiddenの復号処理（入力データの復元）",
+      "description": "入力データの復元が必要となるトリガー条件（入力エラーの場合と確認画面から戻る場合）が欠落している。いつこの機能が動作するかという文脈が失われており、機能の適用範囲を理解するうえで有用な情報である。",
+      "source_evidence": "「入力画面では、入力エラーの場合と確認画面から戻る場合に、入力データを復元した状態で再表示することが要求される。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3 — textタグの出力例",
+      "description": "ソースの「入力項目の確認画面用の出力」（===レベルの独立セクション）がs3に統合されており、専用セクションが存在しない。このセクションはconfirmationPageタグ（全入力タグに適用）を導入する親セクションであるが、s3のタイトルが「textタグの出力例」であるため、confirmationPage機能の適用範囲がtextタグ限定に見える。また、このセクション配下にtextタグ・passwordタグ・selectタグの3つのh3サブセクションがあり、全体のコンテンツ量も大きいため、独立セクションとして分割することが望ましい。"
+    }
+  ]
+}

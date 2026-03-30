@@ -1,0 +1,928 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `testing-framework-02_RequestUnitTest-06_TestFWGuide--s1`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "fabrication",
+    "severity": "critical",
+    "location": "s1 section body and s1 hints",
+    "description": "The class names \"AbstractHttpRequestTestSupport\" and \"BasicHttpRequestTestSupport\" do not exist in the source. The source table lists \"AbstractHttpReqestTestSupport\" and \"BasicHttpReqestTestSupport\" (typos missing 'u'), but the correct class names — confirmed by the Structure section headings — are \"AbstractHttpRequestTestTemplate\" and \"BasicHttpRequestTestTemplate\". The knowledge file corrected the spelling typo but changed \"Template\" to \"Support\", producing class names that appear nowhere in the source. An AI using this file would search for a nonexistent \"AbstractHttpRequestTestSupport\" class.",
+    "source_evidence": "Source table row: `|| AbstractHttpReqestTestSupport` / `|| BasicHttpReqestTestSupport`. Source Structure section headings: `BasicHttpRequestTestTemplate` and `AbstractHttpRequestTestTemplate`. Neither \"AbstractHttpRequestTestSupport\" nor \"BasicHttpRequestTestSupport\" appears in the source."
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. _request-util-test-online:
+
+============================================================
+リクエスト単体テスト（画面オンライン処理）
+============================================================
+
+----
+概要
+----
+
+リクエスト単体テスト(画面オンライン処理)では、内蔵サーバを使用してテストを行う。\
+ここでは、リクエスト単体テストのテスト補助クラスと内蔵サーバの使用方法を記載する。
+
+
+.. note:: 
+
+ リクエスト単体テストそのものの概要については、
+ :ref:`request_unit_test`
+ を参照。
+
+
+全体像
+======
+
+.. image:: _images/request_unit_test_structure.png
+   :scale: 100
+
+
+ 
+主なクラス, リソース
+====================
+
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|名称                            |役割                                                  | 作成単位                             |
++================================+======================================================+======================================+
+|テストクラス                    |テストロジックを実装する。                            |テスト対象クラス(Action)につき１つ作成|
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テストデータ（Excelファイル）   |テーブルに格納する準備データや期待する結果、\         |テストクラスにつき１つ作成            |
+|                                |HTTPパラメータなど、テストデータを記載する。          |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|テスト対象クラス(Action)        |テスト対象のクラス                                    | 取引につき1クラス作成                |
+|                                |(Action以降の業務ロジックを実装する各クラスを含む)    |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|DbAccessTestSupport             |準備データ投入などデータベースを使用するテストに\     | \－                                  |
+|                                |必要な機能を提供する。                                |                                      |
+|                                |                                                      |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpServer                      |内蔵サーバ。サーブレットコンテナとして動作し、\       | \－                                  |
+|                                |HTTPレスポンスをファイル出力する機能を持つ。          |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|HttpRequestTestSupport          |内蔵サーバの起動やリクエスト単体テストで必要とな\     | \－                                  |
+|                                |る各種アサートを提供する。                            |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|| AbstractHttpReqestTestSupport |リクエスト単体テストをテンプレート化するクラス。リ    | \－                                  |
+|| BasicHttpReqestTestSupport    |クエスト単体テストのテストソース、テストデータを定    |                                      |
+|                                |型化する                                              |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+|TestCaseInfo                    |データシートに定義されたテストケース情報を格納するクラ|                                      |
+|                                |ス。                                                  |                                      |
++--------------------------------+------------------------------------------------------+--------------------------------------+
+
+
+上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\
+このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。\
+
+
+
+前提事項
+========
+
+内蔵サーバを利用してHTMLダンプを出力するというリクエスト単体テストは、\
+１リクエスト１画面遷移のシンクライアント型Webアプリケーションを対象としている。\
+Ajaxやリッチクライアントを利用したアプリケーションの場合、\
+HTMLダンプによるレイアウト確認は使用できない。
+
+.. note::
+
+ 本書ではViewテクノロジにJSPを用いているが、\
+ サーブレットコンテナ上で画面全体をレンダリングする方式であれば、\
+ JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。
+
+
+----
+構造
+----
+
+BasicHttpRequestTestTemplate
+=========================================
+
+各テストクラスのスーパクラス。\
+本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\
+テストソース記述量を大きく削減できる。
+
+具体的な使用方法は、\ :doc:`../05_UnitTestGuide/02_RequestUnitTest/index`\ を参照。
+
+AbstractHttpRequestTestTemplate
+======================================
+
+アプリケーションプログラマが直接使用することはない。\
+テストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。\
+
+TestCaseInfo
+============
+
+データシートに定義されたテストケース情報を格納するクラス。\
+テストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。
+
+
+HttpRequestTestSupport
+======================
+
+リクエスト単体テスト用に用意されたスーパクラス。リクエスト単体テスト用のメソッドを用意している。
+
+
+データベース関連機能
+--------------------
+
+データベースに関する機能は、DbAccessTestSupportクラスに委譲することで実現している。
+詳細は、\ :doc:`02_DbAccessTest`\ を参照。
+
+ただし、DbAccessTestSupportのうち以下のメソッドは、\
+リクエスト単体テストでは不要であり、アプリケーションプログラマに誤解を与えないよう、\
+意図的に委譲を行っていない。
+
+* public void beginTransactions()
+* public void commitTransactions()
+* public void endTransactions()
+* public void setThreadContextValues(String sheetName, String id)
+
+
+事前準備補助機能
+----------------
+
+内蔵サーバへのリクエスト送信には、HttpRequestとExecutionContextのインスタンスが必要となる。\
+HttpRequestTestSupportクラスでは、これらのオブジェクトを簡単に作成できるようメソッドを用意している。\
+
+
+HttpRequest
+~~~~~~~~~~~
+
+.. code-block:: java
+
+  HttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)
+
+
+引数には、以下の値を引き渡す。
+
+* テスト対象となるリクエストURI
+* 上記で取得したリクエストパラメータ
+
+本メソッドでは、受け取ったたリクエストURIとリクエストパラメータを元に\
+HttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定した上で返却する。\
+HttpRequestにリクエストパラメータやURI以外のデータを設定したい場合は、\
+本メソッド呼び出しにより取得したインスタンスに対してデータの設定を行うとよい。
+
+
+ExecutionContext
+~~~~~~~~~~~~~~~~
+
+ExecutionContextインスタンスを生成する。
+
+
+.. code-block:: java
+
+  ExecutionContext createExecutionContext(String userId)
+
+
+引数にはユーザIDを指定する。指定したユーザIDはセッションに格納される。\
+これにより、そのユーザIDでログインしている状態となる。\
+
+
+
+
+.. _how_to_set_token_in_request_unit_test:
+
+
+トークン発行
+~~~~~~~~~~~~
+
+2重サブミット防止を施しているURIに対するテストを行うには、\
+テスト実行前にトークンを発行しセッションに設定しておく必要がある。\
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+トークンの発行およびセッションへの格納が行われる。
+
+.. code-block:: java
+
+ void setValidToken(HttpRequest request, ExecutionContext context)
+
+
+リクエスト単体実行時に、テストデータ上でトークンを設定するか否かを制御したい場合は、
+以下のメソッドを使用する。
+
+.. code-block:: java
+
+ void setToken(HttpRequest request, ExecutionContext context, boolean valid)
+
+
+第3引数がbooleanになっており、真の場合は前述のsetValidTokenと同じ動作となる。
+偽の場合は、セッションからトークン情報が除去される。以下のように使用することで、
+テストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。
+
+ 
+.. code-block:: java
+
+     // 【説明】テストデータから取得したものとする。
+     String isTokenValid; 
+
+     // 【説明】"true"の場合はトークンが設定される。
+     setToken(req, ctx, Boolean.parseBoolean(isTokenValid)));
+
+
+
+実行
+====
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+内蔵サーバが起動されリクエストが送信される。
+
+.. code-block:: java
+
+ HttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx) 
+
+
+引数には以下の値を引き渡す。
+
+* テストケース名
+* HttpRequest
+* ExectionContext
+
+テストケース名は、HTMLダンプ出力時のファイル名に使用される。
+詳細は
+:ref:`dump-dir-label`
+を参照。
+
+
+
+リポジトリの初期化
+------------------
+
+executeメソッド内部では、リポジトリの再初期化を行っている。\
+これにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。
+
+* 現在のリポジトリの状態をバックアップ
+* テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化
+* executeメソッド終了時に、バックアップしたリポジトリを復元する。
+
+
+テスト対象のWebアプリケーションに関する設定については、\
+:ref:`howToConfigureRequestUnitTestEnv`\
+を参照。
+
+
+結果確認
+========
+
+
+メッセージ
+----------
+
+HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\
+アプリケーション例外に格納されたメッセージが想定通りであることを確認する。
+
+.. code-block:: java
+
+   
+  void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual);
+
+
+引数には、以下の値を引き渡す。
+
+* テストケース名
+* 期待するメッセージ（複数ある場合はカンマ区切りで指定する。）
+* 先に作成したExectionContext
+
+
+例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合は、\
+アサート失敗となる。
+
+
+.. note::
+ メッセージIDの比較はIDをソートした状態で行うので、テストデータを記載する際に
+ 順序を気にする必要はない。
+
+
+
+HTMLダンプ出力
+==============
+
+.. _dump-dir-label:
+
+HTMLダンプ出力ディレクトリ
+--------------------------
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成される。
+その配下にテストクラス毎に同名のディレクトリが作成され、
+そのテストクラスで実行されたテストケースと同名のHTMLダンプファイルが出力される。
+
+また、HTMLダンプファイルが参照するHTMLリソース（スタイルシートや画像などのリソース）についても
+このディレクトリに出力されるので、このディレクトリを保存することで、どの環境でもHTMLを同じように参照できる。
+
+* html_dumpディレクトリが既に存在する場合は、html_dump_bkという名前でバックアップされる。
+
+
+.. image:: ./_images/htmlDumpDir.png
+
+
+.. _howToConfigureRequestUnitTestEnv:
+
+----------
+各種設定値
+----------
+
+環境設定に依存する設定値については、コンポーネント設定ファイルで変更できる。\
+設定可能な項目を以下に示す。
+
+コンポーネント設定ファイル設定項目一覧
+===============================================
+
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| 設定項目名                 | 説明                                                                    | デフォルト値                                          |
++============================+=========================================================================+=======================================================+
+| htmlDumpDir                | HTMLダンプファイルを出力するディレクトリを指定する。                    | ./tmp/http_dump                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| webBaseDir                 | Webアプリケーションのルートディレクトリ                                 | ../main/web                                           |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| xmlComponentFile           | リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\ [#]_\   | （なし）                                              |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| userIdSessionKey           | ログイン中ユーザIDを格納するセッションキー                              | user.id                                               |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| exceptionRequestVarKey     | ApplicationExceptionが格納されるリクエストスコープのキー                | nablarch_application_error                            |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| dumpFileExtension          | ダンプファイルの拡張子                                                  | html                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| httpHeader                 | HttpRequestにHTTPリクエストヘッダとして格納される値                     |Content-Type : application/x-www-form-urlencoded       |
+|                            |                                                                         |                                                       |
+|                            |                                                                         |Accept-Language : ja JP                                |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| sessionInfo                | セッションに格納される値                                                |（なし）                                               |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlResourcesExtensionList | ダンプディレクトリへコピーされるHTMLリソースの拡張子                    | css、jpg、js                                          |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| jsTestResourceDir          | javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名  | ../test/web                                           |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| backup                     | ダンプディレクトリのバックアップOn/Off                                  | true                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlResourcesCharset       | CSSファイル(スタイルシート)の文字コード                                 | UTF-8                                                 |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| checkHtml                  | HTMLチェックの実施On/Off                                                | true                                                  |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlChecker                | | HTMLチェックを行うオブジェクトを指定する。                            | | nablarch.test.tool.htmlcheck.Html4HtmlChecker       |
+|                            | | オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker               |   クラスのインスタンス。                              |
+|                            |   インタフェースを実装している必要がある。                              | | クラスには htmlCheckerConfig で設定した設定         |
+|                            | | 詳細は :ref:`customize_html_check` を参照。                           |   ファイルが適用される。                              |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| htmlCheckerConfig          | | HTMLチェックツールの設定ファイルパス。                                | test/resources/httprequesttest/html-check-config.csv  |
+|                            | | htmlChecker を設定しなかった場合のみ有効。                            |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| ignoreHtmlResourceDirectory| HTMLリソースの中でコピー対象外とするディレクトリ名のLIST                | （なし）                                              |
+|                            |                                                                         |                                                       |
+|                            | .. note::                                                               |                                                       |
+|                            |  バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると         |                                                       |
+|                            |  HTMLリソースコピー時のパフォーマンスが向上する。                       |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| tempDirectory              | JSPのコンパイル先ディレクトリ                                           | jettyのデフォルト動作に依存                           |
+|                            |                                                                         |                                                       |
+|                            |                                                                         | .. note ::                                            |
+|                            |                                                                         |  jettyのデフォルト動作では、.「/work」                |
+|                            |                                                                         |  がコンパイル先ディレクトリとなる。                   |
+|                            |                                                                         |  「./work」が存在しない場合は、                       |
+|                            |                                                                         |  Tempフォルダ(Windownの場合は、ユーザのホーム         |
+|                            |                                                                         |  ディレクトリ/Local Settings/Temp)が                  |
+|                            |                                                                         |  出力先となる。                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| uploadTmpDirectory         | アップロードファイルを一時的に格納するディレクトリ。                    | ./tmp                                                 |
+|                            |                                                                         |                                                       |
+|                            | テスト時に準備した、アップロード対象のファイルは本ディレクトリに        |                                                       |
+|                            | コピー後に処理される。                                                  |                                                       |
+|                            | これにより、アクションでファイルの移動を行った場合でも、                |                                                       |
+|                            | 本ディレクトリ配下のファイルが移動されるだけであり、                    |                                                       |
+|                            | 実態が移動されることを防ぐことができる。                                |                                                       |
+|                            |                                                                         |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+|dumpVariableItem            | HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。          |false                                                  |
+|                            | ここでの可変項目とは以下の2種類を指す。                                 |                                                       |
+|                            |                                                                         |                                                       |
+|                            | * JSESSIONID                                                            |                                                       |
+|                            | * 2重サブミット防止用のトークン                                         |                                                       |
+|                            |                                                                         |                                                       |
+|                            | これらの項目は、テスト実行毎に異なる値が設定される。                    |                                                       |
+|                            |                                                                         |                                                       |
+|                            | HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF                 |                                                       |
+|                            | (false)に設定する。（前回実行結果と差異がないことを確認したい場合等）   |                                                       |
+|                            |                                                                         |                                                       |
+|                            |                                                                         |                                                       |
+|                            | 可変項目をそのままHTMLに出力する場合は、本項目をON                      |                                                       |
+|                            | (true)に設定する。                                                      |                                                       |
++----------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+ 
+
+.. [#] この項目を設定した場合は、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。\
+       通常は設定する必要はない。\
+       クラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ、この項目を設定する。\
+
+       
+
+コンポーネント設定ファイルの記述例
+===============================================
+
+コンポーネント設定ファイル記述例を記載する。
+設定値には、上記のデフォルト値に加え、セッション(sessionInfo)に以下の値を設定している。
+
+
++----------------------------+------------------------------+--------------------------------------------------------------------+
+| キー                       | 値                           | 説明                                                               |
++============================+==============================+====================================================================+
+| commonHeaderLoginUserName  | "リクエスト単体テストユーザ" | 共通ヘッダ領域に表示するログインユーザ名                           |
++----------------------------+------------------------------+--------------------------------------------------------------------+
+| commonHeaderLoginDate      | "20100914"                   | 共通ヘッダ領域に表示するログイン日時                               |
++----------------------------+------------------------------+--------------------------------------------------------------------+
+
+.. code-block:: xml
+
+    <component name="httpTestConfiguration" class="nablarch.test.core.http.HttpTestConfiguration">
+        <property name="htmlDumpDir" value="./tmp/http_dump"/>
+        <property name="webBaseDir" value="../main/web"/>
+        <property name="xmlComponentFile" value="http-request-test.xml"/>
+        <property name="userIdSessionKey" value="user.id"/>
+        <property name="httpHeader">
+            <map>
+                <entry key="Content-Type" value="application/x-www-form-urlencoded"/>
+                <entry key="Accept-Language" value="ja JP"/>
+            </map>
+        </property>
+        <property name="sessionInfo">
+            <map>
+                <entry key="commonHeaderLoginUserName" value="リクエスト単体テストユーザ"/>
+                <entry key="commonHeaderLoginDate" value="20100914" />
+            </map>
+        </property>
+        <property name="htmlResourcesExtensionList">
+            <list>
+                <value>css</value>
+                <value>jpg</value>
+                <value>js</value>
+            </list>
+        </property>
+        <property name="backup" value="true" />
+        <property name="htmlResourcesCharset" value="UTF-8" />    
+        <property name="ignoreHtmlResourceDirectory">
+            <list>
+                <value>.svn</value>
+            </list>
+        </property>
+        <property name="tempDirectory" value="webTemp" />
+        <property name="htmlCheckerConfig"
+          value="test/resources/httprequesttest/html-check-config.csv" />
+    </component>
+
+
+.. _`optional_settings`:  
+
+その他の設定
+============
+
+性能が高くないPCで開発をしており、リクエスト単体テスト実行速度を向上させたい場合は、\
+以下の設定をすることで実行速度の改善が見込まれる。
+
+.. note::
+  Pentium4、Pentinum Dual-Core等の処理性能が低いCPUを搭載したPCに効果がある。\
+  逆に、これら以降のCPUを搭載したマシンでは、それほど効果的ではないので無理に設定する必要はない。
+
+
+JVMオプションの指定
+-------------------
+
+最大ヒープサイズと最小ヒープサイズを同一の値にすることで、\
+ヒープサイズ拡張のオーバヘッドを回避できる。
+
+ :strong:`-Xms256m -Xmx256m`
+
+
+また、クラスファイルの検証を省略することで実行速度が向上する。
+
+ :strong:`-Xverfiy:none`
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/vmoptions.png
+
+また、実行構成を変更しなくても、以下の方法でデフォルトのVM引数を設定できる。
+
+* メニューバーより「ウィンドウ」→「設定」を選択する。 「設定」ウィンドウが表示されるので、「インストール済みのJRE」をする。
+
+* インストール済みのJREの一覧が表示されるので、使用するJREを選択し「編集」ボタンを押下する。
+
+.. image:: ./_images/installed_jre.png
+
+* 「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/edit_jre.png
+
+
+代替JREの指定
+-------------
+
+JavaSE5のJDKで開発を行っている場合、テスト実行時のみJavaSE6のJREを使用することにより、
+実行速度、特に起動速度が向上する。
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「JRE」タブをクリックし「代替JRE」にJavaSE6のJREを選択する。
+
+.. image:: ./_images/alternate_jre.png
+
+
+.. note::
+  この設定を行う場合は、事前にJavaSE6のJDKまたはJREをインストールし、Eclipseに「インストール済みのJRE」として登録しておく必要がある。
+
+HTMLリソースコピーの抑止
+------------------------
+
+リクエスト単体実行時に、以下のシステムプロパティを指定すると、 :ref:`HTMLダンプ出力<dump-dir-label>` 時に、HTMLリソースコピーを抑止することができる。
+
+ :strong:`-Dnablarch.test.skip-resource-copy=true`
+
+
+
+
+CSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合は、
+テスト実行の度にHTMLリソースをコピーする必要はないので、
+このシステムプロパティを設定してもよい。
+
+
+.. warning::
+   本システムプロパティを指定した場合、HTMLリソースのコピーが行われなくなるので、
+   CSSなどのHTMLリソースを編集しても\ :ref:`HTMLダンプ出力<dump-dir-label>`\ に反映されない。
+
+
+.. note::
+   HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらず、\
+   HTMLリソースのコピーが実行される。
+
+
+Eclipseでの設定方法は以下のとおり。
+
+* メニューバーより「実行」→「実行構成」を選択する。
+
+* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。
+
+.. image:: ./_images/skip_resource_copy.png
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "title": "リクエスト単体テスト（画面オンライン処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "主なクラスとリソース",
+      "hints": [
+        "主なクラス",
+        "リソース",
+        "HttpServer",
+        "内蔵サーバ",
+        "サーブレットコンテナ",
+        "HTTPレスポンスファイル出力",
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "AbstractHttpRequestTestSupport",
+        "BasicHttpRequestTestSupport",
+        "TestCaseInfo",
+        "同一JVM",
+        "サーバ側オブジェクト加工",
+        "セッション加工",
+        "リクエスト加工"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "前提事項",
+      "hints": [
+        "前提事項",
+        "シンクライアント",
+        "HTMLダンプ制約",
+        "Ajax不可",
+        "リッチクライアント不可",
+        "１リクエスト１画面遷移",
+        "JSP以外のViewテクノロジ",
+        "サーブレットコンテナ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "BasicHttpRequestTestTemplate",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "スーパクラス",
+        "テストソース定型化",
+        "テストデータ定型化",
+        "テストソース記述量削減"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "AbstractHttpRequestTestTemplate",
+      "hints": [
+        "AbstractHttpRequestTestTemplate",
+        "自動テストフレームワーク拡張",
+        "テストデータ書き方変更",
+        "アプリケーションプログラマ直接使用不可"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "TestCaseInfo",
+      "hints": [
+        "TestCaseInfo",
+        "テストケース情報",
+        "データシート",
+        "AbstractHttpRequestTestTemplate継承",
+        "テストデータ書き方変更"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "データベース関連機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "beginTransactions",
+        "commitTransactions",
+        "endTransactions",
+        "setThreadContextValues",
+        "データベース関連機能",
+        "委譲除外メソッド"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "事前準備補助機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "createHttpRequest",
+        "createExecutionContext",
+        "setValidToken",
+        "setToken",
+        "トークン発行",
+        "二重サブミット防止",
+        "事前準備補助",
+        "Boolean.parseBoolean",
+        "isTokenValid"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "実行",
+      "hints": [
+        "HttpRequestTestSupport",
+        "execute",
+        "HttpResponse",
+        "リポジトリ初期化",
+        "howToConfigureRequestUnitTestEnv",
+        "dump-dir-label",
+        "内蔵サーバ実行"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "メッセージ",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertApplicationMessageId",
+        "ExecutionContext",
+        "アプリケーション例外",
+        "メッセージID検証",
+        "メッセージアサート"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "HTMLダンプ出力ディレクトリ",
+      "hints": [
+        "HTMLダンプ",
+        "tmp/html_dump",
+        "html_dump_bk",
+        "ダンプ出力ディレクトリ",
+        "バックアップ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リクエスト単体テスト（画面オンライン処理）で使用する主なクラスとリソースは以下の通り。\n\n| 名称 | 役割 | 作成単位 |\n|------|------|----------|\n| テストクラス | テストロジックを実装する | テスト対象クラス(Action)につき１つ |\n| テストデータ（Excelファイル） | テーブルへの準備データ、期待結果、HTTPパラメータ等を記載 | テストクラスにつき１つ |\n| テスト対象クラス(Action) | テスト対象のクラス（Action以降の業務ロジックを実装する各クラスを含む） | 取引につき1クラス |\n| DbAccessTestSupport | 準備データ投入などデータベースを使用するテストに必要な機能を提供する | － |\n| HttpServer | 内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ | － |\n| HttpRequestTestSupport | 内蔵サーバの起動やリクエスト単体テストで必要となる各種アサートを提供する | － |\n| AbstractHttpRequestTestSupport / BasicHttpRequestTestSupport | リクエスト単体テストをテンプレート化するクラス。テストソース・テストデータを定型化する | － |\n| TestCaseInfo | データシートに定義されたテストケース情報を格納するクラス | |\n\nこれらのクラス群は、**内蔵サーバも含め全て同一のJVM上で動作する**。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。",
+    "s2": "リクエスト単体テスト（画面オンライン処理）は、内蔵サーバを利用してHTMLダンプを出力する方式であり、**１リクエスト１画面遷移のシンクライアント型Webアプリケーション**を対象としている。\n\nAjaxやリッチクライアントを利用したアプリケーションの場合、**HTMLダンプによるレイアウト確認は使用できない**。\n\n> **注意**: 本書ではViewテクノロジにJSPを用いているが、サーブレットコンテナ上で画面全体をレンダリングする方式であれば、JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。",
+    "s3": "`BasicHttpRequestTestTemplate`は各テストクラスのスーパクラスである。\n\n本クラスを使用することで、リクエスト単体テストのテストソース・テストデータを定型化でき、**テストソース記述量を大きく削減できる**。\n\n具体的な使用方法は、リクエスト単体テストガイドを参照。",
+    "s4": "`AbstractHttpRequestTestTemplate`は、**アプリケーションプログラマが直接使用することはない**。\n\nテストデータの書き方を変えたい場合など、**自動テストフレームワークを拡張する際に用いる**クラスである。",
+    "s5": "`TestCaseInfo`はデータシートに定義されたテストケース情報を格納するクラスである。\n\nテストデータの書き方を変えたい場合は、**本クラス及び`AbstractHttpRequestTestTemplate`の両方を継承する**。",
+    "s6": "`HttpRequestTestSupport`はDBアクセス機能を`DbAccessTestSupport`に委譲しているが、以下のメソッドはリクエスト単体テストでは不要なため意図的に委譲していない（呼び出し不可）:\n\n- `public void beginTransactions()`\n- `public void commitTransactions()`\n- `public void endTransactions()`\n- `public void setThreadContextValues(String sheetName, String id)`",
+    "s7": "`HttpRequestTestSupport`は内蔵サーバへのリクエスト送信に必要なオブジェクト生成メソッドを提供する。\n\n**HttpRequest生成**:\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\nリクエストURIとパラメータからHTTPメソッドPOSTの`HttpRequest`インスタンスを生成する。URI・パラメータ以外のデータを設定する場合は、返却インスタンスに直接設定する。\n\n**ExecutionContext生成**:\n```java\nExecutionContext createExecutionContext(String userId)\n```\n引数のユーザIDをセッションに格納し、そのユーザIDでログインした状態を作る。\n\n**トークン発行（二重サブミット防止）**:\n\n二重サブミット防止を施しているURIのテストでは、テスト実行前にトークンを発行しセッションに設定しておく必要がある。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nトークンを発行してセッションに格納する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n- `valid=true`: `setValidToken`と同じ動作（トークンを発行・格納）\n- `valid=false`: セッションからトークン情報を除去\n\nテストデータからトークン設定の要否を制御する場合に使用する。テストクラスにif/else分岐を書かずに済む:\n\n```java\n// テストデータから取得したものとする。\nString isTokenValid;\n\n// \"true\"の場合はトークンが設定される。\nsetToken(req, ctx, Boolean.parseBoolean(isTokenValid));\n```",
+    "s8": "`HttpRequestTestSupport`にある下記のメソッドを呼び出すことで、内蔵サーバが起動されリクエストが送信される。\n\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx)\n```\n\n引数:\n- `caseName`: テストケース名（HTMLダンプ出力時のファイル名に使用。`:ref:`dump-dir-label`` 参照）\n- `req`: HttpRequest\n- `ctx`: ExecutionContext\n\n`execute`メソッド内部でリポジトリの再初期化を行う。クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\n処理順序:\n1. 現在のリポジトリの状態をバックアップ\n2. テスト対象のWebアプリケーションのコンポーネント設定ファイルを用いてリポジトリを再初期化\n3. `execute`メソッド終了時に、バックアップしたリポジトリを復元\n\nテスト対象Webアプリの設定については `:ref:`howToConfigureRequestUnitTestEnv`` を参照。",
+    "s9": "`HttpRequestTestSupport.assertApplicationMessageId`でアプリケーション例外のメッセージIDを検証する。\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual)\n```\n\n引数:\n- `expectedCommaSeparated`: 期待するメッセージID（複数の場合はカンマ区切り）\n- `actual`: ExecutionContext\n\n例外が発生しなかった場合、またはアプリケーション例外以外の例外が発生した場合はアサート失敗となる。\n\n> **注意**: メッセージIDの比較はIDをソートして行うため、テストデータの記載順序は問わない。",
+    "s10": "テスト実行時、プロジェクトルートの`tmp/html_dump`ディレクトリにHTMLダンプを出力する。\n\n- `tmp/html_dump/{テストクラス名}/{テストケース名}.html` の形式でファイルが出力される\n- スタイルシート・画像などのリソースも同ディレクトリに出力されるため、ディレクトリごと保存すると他環境でも参照可能\n- `html_dump`が既に存在する場合は`html_dump_bk`としてバックアップされる\n\n![HTMLダンプ出力ディレクトリ](assets/testing-framework-02_RequestUnitTest-06_TestFWGuide--s1/htmlDumpDir.png)"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 section body and s1 hints",
+      "description": "The class names \"AbstractHttpRequestTestSupport\" and \"BasicHttpRequestTestSupport\" do not exist in the source. The source table lists \"AbstractHttpReqestTestSupport\" and \"BasicHttpReqestTestSupport\" (typos missing 'u'), but the correct class names — confirmed by the Structure section headings — are \"AbstractHttpRequestTestTemplate\" and \"BasicHttpRequestTestTemplate\". The knowledge file corrected the spelling typo but changed \"Template\" to \"Support\", producing class names that appear nowhere in the source. An AI using this file would search for a nonexistent \"AbstractHttpRequestTestSupport\" class.",
+      "source_evidence": "Source table row: `|| AbstractHttpReqestTestSupport` / `|| BasicHttpReqestTestSupport`. Source Structure section headings: `BasicHttpRequestTestTemplate` and `AbstractHttpRequestTestTemplate`. Neither \"AbstractHttpRequestTestSupport\" nor \"BasicHttpRequestTestSupport\" appears in the source."
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "testing-framework-02_RequestUnitTest-06_TestFWGuide--s1",
+  "title": "リクエスト単体テスト（画面オンライン処理）",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "主なクラスとリソース",
+      "hints": [
+        "主なクラス",
+        "リソース",
+        "HttpServer",
+        "内蔵サーバ",
+        "サーブレットコンテナ",
+        "HTTPレスポンスファイル出力",
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "AbstractHttpRequestTestSupport",
+        "BasicHttpRequestTestSupport",
+        "TestCaseInfo",
+        "同一JVM",
+        "サーバ側オブジェクト加工",
+        "セッション加工",
+        "リクエスト加工"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "前提事項",
+      "hints": [
+        "前提事項",
+        "シンクライアント",
+        "HTMLダンプ制約",
+        "Ajax不可",
+        "リッチクライアント不可",
+        "１リクエスト１画面遷移",
+        "JSP以外のViewテクノロジ",
+        "サーブレットコンテナ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "BasicHttpRequestTestTemplate",
+      "hints": [
+        "BasicHttpRequestTestTemplate",
+        "スーパクラス",
+        "テストソース定型化",
+        "テストデータ定型化",
+        "テストソース記述量削減"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "AbstractHttpRequestTestTemplate",
+      "hints": [
+        "AbstractHttpRequestTestTemplate",
+        "自動テストフレームワーク拡張",
+        "テストデータ書き方変更",
+        "アプリケーションプログラマ直接使用不可"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "TestCaseInfo",
+      "hints": [
+        "TestCaseInfo",
+        "テストケース情報",
+        "データシート",
+        "AbstractHttpRequestTestTemplate継承",
+        "テストデータ書き方変更"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "データベース関連機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "DbAccessTestSupport",
+        "beginTransactions",
+        "commitTransactions",
+        "endTransactions",
+        "setThreadContextValues",
+        "データベース関連機能",
+        "委譲除外メソッド"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "事前準備補助機能",
+      "hints": [
+        "HttpRequestTestSupport",
+        "createHttpRequest",
+        "createExecutionContext",
+        "setValidToken",
+        "setToken",
+        "トークン発行",
+        "二重サブミット防止",
+        "事前準備補助",
+        "Boolean.parseBoolean",
+        "isTokenValid"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "実行",
+      "hints": [
+        "HttpRequestTestSupport",
+        "execute",
+        "HttpResponse",
+        "リポジトリ初期化",
+        "howToConfigureRequestUnitTestEnv",
+        "dump-dir-label",
+        "内蔵サーバ実行"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "メッセージ",
+      "hints": [
+        "HttpRequestTestSupport",
+        "assertApplicationMessageId",
+        "ExecutionContext",
+        "アプリケーション例外",
+        "メッセージID検証",
+        "メッセージアサート"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "HTMLダンプ出力ディレクトリ",
+      "hints": [
+        "HTMLダンプ",
+        "tmp/html_dump",
+        "html_dump_bk",
+        "ダンプ出力ディレクトリ",
+        "バックアップ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "リクエスト単体テスト（画面オンライン処理）で使用する主なクラスとリソースは以下の通り。\n\n| 名称 | 役割 | 作成単位 |\n|------|------|----------|\n| テストクラス | テストロジックを実装する | テスト対象クラス(Action)につき１つ |\n| テストデータ（Excelファイル） | テーブルへの準備データ、期待結果、HTTPパラメータ等を記載 | テストクラスにつき１つ |\n| テスト対象クラス(Action) | テスト対象のクラス（Action以降の業務ロジックを実装する各クラスを含む） | 取引につき1クラス |\n| DbAccessTestSupport | 準備データ投入などデータベースを使用するテストに必要な機能を提供する | － |\n| HttpServer | 内蔵サーバ。サーブレットコンテナとして動作し、HTTPレスポンスをファイル出力する機能を持つ | － |\n| HttpRequestTestSupport | 内蔵サーバの起動やリクエスト単体テストで必要となる各種アサートを提供する | － |\n| AbstractHttpRequestTestSupport / BasicHttpRequestTestSupport | リクエスト単体テストをテンプレート化するクラス。テストソース・テストデータを定型化する | － |\n| TestCaseInfo | データシートに定義されたテストケース情報を格納するクラス | |\n\nこれらのクラス群は、**内蔵サーバも含め全て同一のJVM上で動作する**。このため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。",
+    "s2": "リクエスト単体テスト（画面オンライン処理）は、内蔵サーバを利用してHTMLダンプを出力する方式であり、**１リクエスト１画面遷移のシンクライアント型Webアプリケーション**を対象としている。\n\nAjaxやリッチクライアントを利用したアプリケーションの場合、**HTMLダンプによるレイアウト確認は使用できない**。\n\n> **注意**: 本書ではViewテクノロジにJSPを用いているが、サーブレットコンテナ上で画面全体をレンダリングする方式であれば、JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。",
+    "s3": "`BasicHttpRequestTestTemplate`は各テストクラスのスーパクラスである。\n\n本クラスを使用することで、リクエスト単体テストのテストソース・テストデータを定型化でき、**テストソース記述量を大きく削減できる**。\n\n具体的な使用方法は、リクエスト単体テストガイドを参照。",
+    "s4": "`AbstractHttpRequestTestTemplate`は、**アプリケーションプログラマが直接使用することはない**。\n\nテストデータの書き方を変えたい場合など、**自動テストフレームワークを拡張する際に用いる**クラスである。",
+    "s5": "`TestCaseInfo`はデータシートに定義されたテストケース情報を格納するクラスである。\n\nテストデータの書き方を変えたい場合は、**本クラス及び`AbstractHttpRequestTestTemplate`の両方を継承する**。",
+    "s6": "`HttpRequestTestSupport`はDBアクセス機能を`DbAccessTestSupport`に委譲しているが、以下のメソッドはリクエスト単体テストでは不要なため意図的に委譲していない（呼び出し不可）:\n\n- `public void beginTransactions()`\n- `public void commitTransactions()`\n- `public void endTransactions()`\n- `public void setThreadContextValues(String sheetName, String id)`",
+    "s7": "`HttpRequestTestSupport`は内蔵サーバへのリクエスト送信に必要なオブジェクト生成メソッドを提供する。\n\n**HttpRequest生成**:\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\nリクエストURIとパラメータからHTTPメソッドPOSTの`HttpRequest`インスタンスを生成する。URI・パラメータ以外のデータを設定する場合は、返却インスタンスに直接設定する。\n\n**ExecutionContext
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

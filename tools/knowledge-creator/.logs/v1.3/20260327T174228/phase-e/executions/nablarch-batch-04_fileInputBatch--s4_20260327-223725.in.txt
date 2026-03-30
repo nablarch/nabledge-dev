@@ -1,0 +1,352 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-04_fileInputBatch--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: エラー発生時の処理 section",
+      "description": "The section 'エラー発生時の処理' is entirely absent from the knowledge file. The source states '特別な処理は必要ないため、実装しない。' — this is decision-necessary information telling implementers that no special error handling needs to be implemented.",
+      "source_evidence": "エラー発生時の処理\n==================\n\n特別な処理は必要ないため、実装しない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "source: 終了処理 section",
+      "description": "The section '終了処理' is entirely absent from the knowledge file. The source states '特別な処理は必要ないため、実装しない。' — this is decision-necessary information telling implementers that no special termination processing needs to be implemented.",
+      "source_evidence": "終了処理\n========\n\n特別な処理は必要ないため、実装しない。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+エンドレコードの精査処理
+------------------------
+
+前レコードのレコード区分は、トレーラであることを確認する。
+
+.. code-block:: java
+
+        /**
+         * エンドレコードの精査
+         * <p/>
+         * 前レコードのレコード区分は、トレーラであること。
+         *
+         * @param inputData 入力データ
+         * @param ctx 実行コンテキスト
+         * @return 結果オブジェクト
+         */
+        public Result doEnd(DataRecord inputData, ExecutionContext ctx) {
+            if (!TRAILER_RECORD.equals(preRecordKbn)) {
+                // 前レコードがトレーラでない場合
+                throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,
+                        INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());
+            }
+            preRecordKbn = END_RECORD;
+            return new Success();
+        }
+
+
+バリデータクラスの終了処理
+--------------------------
+
+全レコードの精査が終了後に、\ ``onFileEnd``\ が起動される。
+本サンプルでは、以下の処理を行っている。
+
+* 最終レコードのレコードタイプがエンドレコードであることの確認
+* 精査レコード件数のログ出力
+
+
+.. code-block:: java
+
+        /**
+         * {@inheritDoc}
+         * <p/>
+         * 最終レコードがエンドレコードであることをチェックする。
+         */
+        public void onFileEnd(ExecutionContext ctx) {
+            if (!END_RECORD.equals(preRecordKbn)) {
+                // 最終レコードがエンドレコードで無い場合
+                throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,
+                        INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());
+            }
+            // レコード数をログに出力
+            writeLog("M000000002", ctx.getLastRecordNumber());
+            writeLog("M000000003", dataRecordCount);
+        }
+
+\
+
+writeLogメソッドについては「\ :doc:`03_dbInputBatch`\ 」の\ :ref:`log_output_in_batch_action` \の項を参照。
+
+
+１件ごとの処理
+==============
+
+ファイルバリデータクラスと同様に、RecordTypeBindingハンドラにより、\
+入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\
+
+.. note::
+ ファイルバリデータクラスにてファイル形式の精査は実施済みであり、
+ 1件ごとの本処理ではファイル形式異常は考慮しなくて良い。
+
+
+ヘッダーレコードの処理
+--------------------------------
+
+ヘッダーレコードの妥当性は前処理で確認済みであるため、
+本処理においては処理は行わない。
+
+
+.. code-block:: java
+
+    /**
+     * ヘッダーレコードの処理。
+     * <p/>
+     * ヘッダーレコードの場合は、処理を行わない。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doHeader(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+データレコードの処理
+--------------------
+
+データレコード1件分の処理を行う。\
+精査処理およびテンポラリテーブルへの登録を行っている。
+
+精査処理の実施方法は画面オンライン処理と同様である。\
+違いは、精査対象となるデータの種類のみである。
+
+=============== ==================================
+実行制御基盤    精査対象データ
+=============== ==================================
+画面オンライン  HTTPリクエストパラメータ
+バッチ          DB検索結果、ファイルのレコード等
+=============== ==================================
+
+\
+
+.. code-block:: java
+
+    /**
+     * データレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doData(DataRecord inputData, ExecutionContext ctx) {
+
+        // 【説明】
+        // ValidationUtilを使用して、データレコードの精査および
+        // エンティティへのマッピングを行う。
+        ValidationContext<UserInfoTempEntity> validationContext = ValidationUtil
+                .validateAndConvertRequest(UserInfoTempEntity.class,
+                        inputData, "validateRegister");
+
+        if (!validationContext.isValid()) {
+            // 精査エラーの場合は異常終了
+            throw new TransactionAbnormalEnd(103,
+                    new ApplicationException(validationContext.getMessages()),
+                    "NB11AA0105", recordNo);
+        }
+
+        // ユーザ情報IDを採番し、ユーザ情報テンポラリを登録する。
+        UserInfoTempEntity entity = validationContext.createObject();
+        entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());
+
+        ParameterizedSqlPStatement statement = getParameterizedSqlStatement(
+                "INSERT_USER_INFO_TEMP");
+        statement.executeUpdateByObject(entity);
+
+        return new Success();
+    }
+
+
+トレーラレコードの処理
+----------------------
+
+特に処理はないが、トレーラレコードが読み込まれたときに\
+呼び出されるメソッドが必要であるため実装している。
+
+.. code-block:: java
+
+    /**
+     * トレーラレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doTrailer(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+エンドレコードの処理。
+----------------------
+
+特に処理はないが、エンドレコードが読み込まれたときに\
+呼び出されるメソッドが必要であるため実装している。
+
+.. code-block:: java
+
+    /**
+     * エンドレコードの処理。
+     *
+     * @param inputData 入力データ
+     * @param ctx 実行コンテキスト
+     * @return 結果オブジェクト
+     */
+    public Result doEnd(DataRecord inputData, ExecutionContext ctx) {
+        return new Success();
+    }
+
+
+エラー発生時の処理
+==================
+
+特別な処理は必要ないため、実装しない。
+
+終了処理
+========
+
+特別な処理は必要ないため、実装しない。
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-04_fileInputBatch--s4",
+  "title": "１件ごとの処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "エンドレコードの精査処理",
+      "hints": [
+        "TransactionAbnormalEnd",
+        "DataRecord",
+        "ExecutionContext",
+        "doEnd",
+        "TRAILER_RECORD",
+        "エンドレコード精査",
+        "レコード区分チェック",
+        "ファイルレイアウトエラー"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "バリデータクラスの終了処理",
+      "hints": [
+        "onFileEnd",
+        "TransactionAbnormalEnd",
+        "ExecutionContext",
+        "writeLog",
+        "バリデータ終了処理",
+        "最終レコード確認",
+        "レコード件数ログ出力"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "ヘッダーレコードの処理",
+      "hints": [
+        "doHeader",
+        "DataRecord",
+        "ExecutionContext",
+        "RecordTypeBindingハンドラ",
+        "ヘッダーレコード処理",
+        "レコードタイプ分岐"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "データレコードの処理",
+      "hints": [
+        "ValidationUtil",
+        "UserInfoTempEntity",
+        "IdGeneratorUtil",
+        "ParameterizedSqlPStatement",
+        "ValidationContext",
+        "validateAndConvertRequest",
+        "generateUserInfoId",
+        "doData",
+        "TransactionAbnormalEnd",
+        "ApplicationException",
+        "データレコード精査",
+        "テンポラリテーブル登録"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "トレーラレコードの処理",
+      "hints": [
+        "doTrailer",
+        "DataRecord",
+        "ExecutionContext",
+        "トレーラレコード処理",
+        "RecordTypeBindingハンドラ"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "エンドレコードの処理。",
+      "hints": [
+        "doEnd",
+        "DataRecord",
+        "ExecutionContext",
+        "エンドレコード処理",
+        "RecordTypeBindingハンドラ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "エンドレコード検証: 前レコードのレコード区分が`TRAILER_RECORD`であることを確認する。前レコードがトレーラでない場合は`TransactionAbnormalEnd`をスロー。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    if (!TRAILER_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, inputData.getRecordNumber());\n    }\n    preRecordKbn = END_RECORD;\n    return new Success();\n}\n```",
+    "s2": "全レコード精査後に`onFileEnd`が起動される。処理内容:\n1. 最終レコードのレコードタイプがエンドレコードであることの確認\n2. 精査レコード件数のログ出力\n\n最終レコードがエンドレコードでない場合は`TransactionAbnormalEnd`をスロー。\n\n```java\npublic void onFileEnd(ExecutionContext ctx) {\n    if (!END_RECORD.equals(preRecordKbn)) {\n        throw new TransactionAbnormalEnd(FILE_LAYOUT_ERROR_EXIT_CODE,\n                INVALID_FILE_LAYOUT_FAILURE_CODE, ctx.getLastRecordNumber());\n    }\n    writeLog(\"M000000002\", ctx.getLastRecordNumber());\n    writeLog(\"M000000003\", dataRecordCount);\n}\n```\n\n`writeLog`メソッドについては :doc:`03_dbInputBatch` の :ref:`log_output_in_batch_action` を参照。",
+    "s3": "`RecordTypeBindingハンドラ`により、入力レコードのレコードタイプに応じてメソッドが呼び分けられる。\n\n> **注意**: ファイルバリデータクラスにてファイル形式の精査は実施済みであり、1件ごとの本処理ではファイル形式異常は考慮しなくて良い。\n\nヘッダーレコードの妥当性は前処理で確認済みのため、本処理では処理を行わない。\n\n```java\npublic Result doHeader(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s4": "データレコード1件分の精査処理とテンポラリテーブルへの登録を行う。精査処理の実施方法は画面オンライン処理と同様で、精査対象データのみ異なる。\n\n| 実行制御基盤 | 精査対象データ |\n|---|---|\n| 画面オンライン | HTTPリクエストパラメータ |\n| バッチ | DB検索結果、ファイルのレコード等 |\n\n`ValidationUtil.validateAndConvertRequest`でデータレコードの精査およびエンティティへのマッピングを行う。精査エラーの場合は`TransactionAbnormalEnd`をスロー。\n\n```java\npublic Result doData(DataRecord inputData, ExecutionContext ctx) {\n    ValidationContext<UserInfoTempEntity> validationContext = ValidationUtil\n            .validateAndConvertRequest(UserInfoTempEntity.class,\n                    inputData, \"validateRegister\");\n\n    if (!validationContext.isValid()) {\n        throw new TransactionAbnormalEnd(103,\n                new ApplicationException(validationContext.getMessages()),\n                \"NB11AA0105\", recordNo);\n    }\n\n    UserInfoTempEntity entity = validationContext.createObject();\n    entity.setUserInfoId(IdGeneratorUtil.generateUserInfoId());\n\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\n            \"INSERT_USER_INFO_TEMP\");\n    statement.executeUpdateByObject(entity);\n\n    return new Success();\n}\n```",
+    "s5": "特に処理はないが、トレーラレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する。\n\n```java\npublic Result doTrailer(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```",
+    "s6": "特に処理はないが、エンドレコードが読み込まれたときに呼び出されるメソッドが必要なため実装する。\n\n```java\npublic Result doEnd(DataRecord inputData, ExecutionContext ctx) {\n    return new Success();\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

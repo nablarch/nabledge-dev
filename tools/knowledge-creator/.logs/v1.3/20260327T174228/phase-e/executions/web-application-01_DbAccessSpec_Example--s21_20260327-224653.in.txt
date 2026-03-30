@@ -1,0 +1,316 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — ORDER BY句を動的に変更する場合",
+      "description": "Source warning for batch processing contains two distinct recommendations: (1) 'バッチ処理では、不要な並び替えを行わず、必要最小限の並び替えのみ使用すること。' and (2) always use fixed ORDER BY SQL. The knowledge file captures only recommendation (2) but omits (1), which is an independent implementation constraint about minimizing sorting in batch even when ORDER BY is static.",
+      "source_evidence": "バッチ処理では、不要な並び替えを行わず、必要最小限の並び替えのみ使用すること。\nまた、バッチ処理で並び替えを使用する場合は、インプットデータであるファイルやデータベースのレイアウトが明確であるため、必ずORDER BY句が固定となるSQLを使用すること。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Section s4 has an empty title and content 'なし'. It was created from the RST cross-reference anchor '.. _map-search-label:' which is not a section heading but a label placed immediately before the actual section heading. The anchor and its target heading ('オブジェクトのフィールドの値の検索機能(Mapのサブクラス編)') form a single RST section and should not be split into two knowledge sections. s4 and s5 should be merged into one section.",
+      "source_evidence": ".. _map-search-label:\n\n--------------------------------------------------------------\nオブジェクトのフィールドの値の検索機能(Mapのサブクラス編)\n--------------------------------------------------------------"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+IN句の条件が動的に変わる場合
+============================
+検索画面では、区分値などでユーザが選択した区分のみを条件に含める場合がある。
+このような場合には、IN句の条件を動的に生成する必要があるため、本機能を使用してSQL文の実行を行う。
+
+※SQL文の記述方法は、 :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST3を参照すること。
+
+.. code-block:: java
+
+    // オブジェクトの実装
+    public class W11BB03SearchForm {
+        /** ログインID */
+        private String loginId;
+        /** 権限区分 */
+        // 【説明】
+        // IN句に対応するフィールドのデータ型は、配列またはjava.util.Collectionとすること。
+        private List kengenKbn;
+    }
+
+    // 【説明】SQL文と条件が設定されたオブジェクトを指定して、ParameterizedSqlPStatementを生成する。
+    ParameterizedSqlPStatement select = getParameterizedSqlStatement("GET_LIST3", user);
+
+    // 【説明】条件が設定されたオブジェクトを引数にSQL文を実行する。
+    SqlResultSet rs = select.retrieve(user);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+上記のコードを実行した場合で、kengenKbnの値が["01", "02"]の場合は、実行されるSQL文は下記となる。
+
+.. code-block:: sql
+
+   -- 【説明】
+   -- kengenKbnの要素数は、["01", "02"]で2となるためIN句の項目数が2としてSQL文が構築される。
+   -- 本SQL文は、可変条件と組み合わせているため、下記のSQL文が構築される。
+   -- 可変条件を使用しなかった場合、構築されるSQL文は「USER_MTR.KENGEN_KBN IN (?, ?)」となる。
+   SELECT USER_MTR.LOGIN_ID,
+          USER_MTR.USER_KANJI_NAME,
+          USER_MTR.USER_KANA_NAME,
+          USER_MTR.GROUP_ID,
+          USER_GROUP.GROUP_NAME
+     FROM USER_MTR,
+          USER_GROUP
+    WHERE (0 = 0 OR (USER_MTR.LOGIN_ID = ?))
+      AND (0 = 1 OR (USER_MTR.KENGEN_KBN IN (?, ?)))
+      AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID
+    ORDER BY LOGIN_ID
+
+.. note::
+  IN句の条件に設定できる値には、上限が設けられている。
+  各アプリケーションでは、この上限値を超えることのないように精査などを行うこと。
+
+  ※上限値は、データベースベンダーによって異なる値となっている。(例えばOracleデータベースであれば、1000となっている。)
+
+.. note::
+  IN句の条件を :ref:`variable-condition-sql-label` と組み合わせることも可能である。
+  可変条件と組み合わせた場合、条件に含めるか否かの条件は、配列(Collection)がnullであるかと、サイズが0であるかとなる。
+
+  以下に例を示す。
+
+   .. code-block:: java
+
+    // 下記条件に対して、サイズ0またはnullの配列(Collection)を設定した場合、生成される条件文は
+    // 「WHERE (0 = 0 OR (KENGEN_KBN IN (?)))」となり条件から除外される。
+    // サイズが1以上の配列(Collection)を設定した場合は、生成される条件文は、
+    // 「WHERE (0 = 1 OR (KENGEN_KBN IN (?)))」となり条件に含まれる。
+    "WHERE $if(kengenKbn) {KENGEN_KBN IN (:kengenKbn[])}"
+
+  ※配列(Collection)の各要素を、可変条件の組み立て条件には使用することはできない。つまり、下記のようなSQL文は定義できないということである。
+
+    .. code-block :: java
+
+      WHERE $if(kengenKbn[0]) {kengenKbn = :kengenKbn[0]}
+
+    |
+
+.. warning::
+  IN句を動的に生成するような実装は、Webアプリケーションでのみ使用すること。
+  バッチ処理では、インプットデータであるファイルやデータベースのレイアウトが明確であるため、必ず条件が固定となるSQLを使用すること。
+  バッチ処理でIN句が動的となるSQL文を使用した場合、SQL文の構築コストがかかり性能劣化の原因となる。
+
+.. warning::
+
+  IN句を動的に生成する場合、条件オブジェクトにはMapインタフェースの実装クラスを指定することは出来ないので注意すること。
+  これは、Mapの値(value値)は、静的な型情報をもっておらず、実行時に型情報が決定するからである。
+  実行時に型情報が決まるということは、必ず配列(Collection)が値として格納されていることが保証できず、
+  予期せぬ不具合の原因となる可能性があるため、本フレームワークとしては敢えて機能を制限している。
+
+.. _changing_dynamically_order_by:
+
+ORDER BY句を動的に変更する場合
+====================================================
+検索画面では、検索結果リストの列見出しによる並び替えを行う場合がある。
+このような場合には、ORDER BY句を動的に変更する必要があるため、本機能を使用してSQL文の実行を行う。
+
+※SQL文の記述方法は、 :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST4を参照すること。
+
+.. code-block:: java
+
+    // オブジェクトの実装
+    public class W11BB03SearchForm {
+
+        // ユーザ名
+        private String userName;
+
+        // 【説明】
+        //  SQL文の$sort(フィールド名)で指定したフィールド名に合わせて、プロパティを用意する。
+        //  このプロパティの値により、SQL文で指定したORDER BY句を動的に変更する。
+        private String sortId;
+
+        // 【説明】本来はここに各フィールドのアクセスメソッドを定義する。
+
+    }
+
+    // 【説明】SQL文と条件が設定されたオブジェクトを指定して、ParameterizedSqlPStatementを生成する。
+    ParameterizedSqlPStatement select = getParameterizedSqlStatement("GET_LIST4", user);
+
+    // 【説明】条件が設定されたオブジェクトを引数にSQL文を実行する。
+    SqlResultSet rs = select.retrieve(user);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+上記のコードを実行した場合で、sortIdの値が"3"の場合は、実行されるSQL文は下記となる。
+
+.. code-block:: sql
+
+   -- 【説明】
+   -- sortIdの値が"3"のため、SQL文のケース「(3 USER_NAME)」が使用され、ORDER BY句が構築される。
+   SELECT
+       USER_ID,
+       USER_NAME
+   FROM
+       USER_MTR
+   WHERE
+       USER_NAME = ?
+   ORDER BY USER_NAME
+
+.. warning::
+  ORDER BY句を動的に変更するような実装は、Webアプリケーションでのみ使用すること。
+
+  バッチ処理では、不要な並び替えを行わず、必要最小限の並び替えのみ使用すること。
+  また、バッチ処理で並び替えを使用する場合は、インプットデータであるファイルやデータベースのレイアウトが明確であるため、\
+  必ずORDER BY句が固定となるSQLを使用すること。
+
+  バッチ処理でORDER BY句が動的となるSQL文を使用した場合、SQL文の構築コストがかかり性能劣化の原因となる。
+
+.. _serching_for_mass_data:
+
+大量データを検索する場合
+========================
+簡易検索ではなく、大量データ検索機能を使用する必要性については、 :ref:`executeQuery-label` を参照すること。
+
+.. code-block:: java
+
+    // 【説明】オブジェクトの宣言、生成については省略
+
+    ParameterizedSqlPStatement statement = getParameterizedSqlStatement("GET_ALL");
+
+    // executeQueryを呼びだすと、ResultSetIteratorが返却される。
+    ResultSetIterator rs = statement.executeQueryByObject(user);
+
+    for (SqlRow row : rs) {
+        String userId = row.getString("USER_ID");
+        String userName = row.getString("USER_NAME");
+
+        // 【説明】本来は、ここで業務処理の実装(呼び出し)が行われる。
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _map-search-label:
+
+--------------------------------------------------------------
+オブジェクトのフィールドの値の検索機能(Mapのサブクラス編)
+--------------------------------------------------------------
+Mapについての実装は、 :ref:`map-save-label` 及び :ref:`object-select-label` を参照すること。
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s21",
+  "title": "IN句の条件が動的に変わる場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "IN句の条件が動的に変わる場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "IN句 動的生成",
+        "kengenKbn",
+        "List",
+        "Collection",
+        "retrieve",
+        "SqlResultSet",
+        "可変条件",
+        "IN句 上限",
+        "IN句 Webアプリケーション",
+        "$if",
+        "動的IN句"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ORDER BY句を動的に変更する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "ORDER BY 動的変更",
+        "sortId",
+        "$sort",
+        "SqlResultSet",
+        "ORDER BY Webアプリケーション",
+        "動的ORDER BY"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "大量データを検索する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "ResultSetIterator",
+        "executeQueryByObject",
+        "SqlRow",
+        "getString",
+        "大量データ検索"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "",
+      "hints": [
+        "map-search-label"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "オブジェクトのフィールドの値の検索機能(Mapのサブクラス編)",
+      "hints": [
+        "Map",
+        "Mapサブクラス",
+        "オブジェクト検索",
+        "map-save-label",
+        "object-select-label"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "IN句の条件を動的に生成するには `ParameterizedSqlPStatement` を使用する（SQL_ID: GET_LIST3）。\n\nIN句に対応するフィールドのデータ型は **配列または `java.util.Collection`** とすること。\n\n```java\npublic class W11BB03SearchForm {\n    private String loginId;\n    private List kengenKbn; // IN句用フィールドはList/配列\n}\n\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST3\", user);\nSqlResultSet rs = select.retrieve(user);\n```\n\nkengenKbnが `[\"01\", \"02\"]` の場合、生成されるSQL:\n\n```sql\nSELECT USER_MTR.LOGIN_ID,\n       USER_MTR.USER_KANJI_NAME,\n       USER_MTR.USER_KANA_NAME,\n       USER_MTR.GROUP_ID,\n       USER_GROUP.GROUP_NAME\n  FROM USER_MTR,\n       USER_GROUP\n WHERE (0 = 0 OR (USER_MTR.LOGIN_ID = ?))\n   AND (0 = 1 OR (USER_MTR.KENGEN_KBN IN (?, ?)))\n   AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\n ORDER BY LOGIN_ID\n```\n\nkengenKbnの要素数（ここでは2）に応じてIN句の項目数が構築される。\n\n> **注意**: IN句の条件に設定できる値には上限がある（例: Oracleは1000）。各アプリケーションでこの上限を超えないよう精査すること。\n\n> **注意**: IN句の条件を :ref:`variable-condition-sql-label` と組み合わせ可能。可変条件と組み合わせた場合、配列(Collection)がnullまたはサイズ0なら条件から除外、サイズ1以上なら条件に含まれる。\n>\n> ```java\n> // サイズ0またはnull → 条件除外: WHERE (0 = 0 OR (KENGEN_KBN IN (?)))\n> // サイズ1以上 → 条件に含む: WHERE (0 = 1 OR (KENGEN_KBN IN (?)))\n> \"WHERE $if(kengenKbn) {KENGEN_KBN IN (:kengenKbn[])}\"\n> ```\n>\n> 配列(Collection)の各要素を可変条件の組み立て条件には使用不可。以下のような定義はできない。\n>\n> ```java\n> WHERE $if(kengenKbn[0]) {kengenKbn = :kengenKbn[0]}\n> ```\n\n> **警告**: IN句の動的生成は **Webアプリケーションでのみ** 使用すること。バッチ処理ではインプットデータのレイアウトが明確なため、必ず条件が固定となるSQLを使用すること（SQL文の構築コストによる性能劣化のため）。\n\n> **警告**: IN句を動的に生成する場合、条件オブジェクトに `Map` インタフェースの実装クラスは指定不可。Mapのvalue値は静的型情報を持たず実行時に型情報が決定するため、配列(Collection)が値として格納されていることを保証できない。本フレームワークとして意図的に機能を制限している。",
+    "s2": "ORDER BY句を動的に変更するには `ParameterizedSqlPStatement` を使用する（SQL_ID: GET_LIST4）。\n\nSQL文の `$sort(フィールド名)` で指定したフィールド名に合わせてプロパティを用意し、そのプロパティ値によりORDER BY句を動的に変更する。\n\n```java\npublic class W11BB03SearchForm {\n    private String userName;\n    private String sortId; // $sort(sortId) に対応するプロパティ\n}\n\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST4\", user);\nSqlResultSet rs = select.retrieve(user);\n```\n\nsortIdが `\"3\"` の場合、生成されるSQL:\n\n```sql\nSELECT\n    USER_ID,\n    USER_NAME\nFROM\n    USER_MTR\nWHERE\n    USER_NAME = ?\nORDER BY USER_NAME\n```\n\nsortIdの値に対応するケース（例: `(3 USER_NAME)`）が使用され、ORDER BY句が構築される。\n\n> **警告**: ORDER BY句の動的変更は **Webアプリケーションでのみ** 使用すること。バッチ処理ではインプットデータのレイアウトが明確なため、必ずORDER BY句が固定となるSQLを使用すること（SQL文の構築コストによる性能劣化のため）。",
+    "s3": "大量データ検索には `executeQueryByObject` を使用し、`ResultSetIterator` で逐次処理する（詳細は :ref:`executeQuery-label` 参照）。\n\n```java\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_ALL\");\n\n// executeQueryByObjectはResultSetIteratorを返す\nResultSetIterator rs = statement.executeQueryByObject(user);\n\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n    // 業務処理\n}\n```",
+    "s4": "なし",
+    "s5": "なし"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

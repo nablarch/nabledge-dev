@@ -1,0 +1,34 @@
+{
+  "file_id": "libraries-02_SqlLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "sections s13–s16 (placeholder/format sections)",
+      "description": "The knowledge file documents placeholder lists and default formats only for SqlPStatement#retrieve (s13–s14) and SqlPStatement#execute (s15–s16), but the source's app-log.properties configuration table explicitly defines six additional format properties: sqlLogFormatter.startExecuteQueryFormat, sqlLogFormatter.endExecuteQueryFormat, sqlLogFormatter.startExecuteUpdateFormat, sqlLogFormatter.endExecuteUpdateFormat, sqlLogFormatter.startExecuteBatchFormat, sqlLogFormatter.endExecuteBatchFormat. The full source document has corresponding placeholder-list and default-format subsections for each of these methods (mirroring the pattern of s13–s16). The knowledge file is entirely missing the placeholder tables and default format strings for SqlPStatement#executeQuery (start/end), SqlPStatement#executeUpdate (start/end), and SqlPStatement#executeBatch (start/end).",
+      "source_evidence": "app-log.propertiesの設定例 lists 10 sqlLogFormatter.* properties including startExecuteQueryFormat, endExecuteQueryFormat, startExecuteUpdateFormat, endExecuteUpdateFormat, startExecuteBatchFormat, endExecuteBatchFormat. The output-item sections s7–s12 confirm these six method phases exist in the source. The placeholder sections for executeQuery/executeUpdate/executeBatch are absent from the knowledge file."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry s14 (SqlPStatement#retrieveメソッドの検索終了時 プレースホルダ)",
+      "description": "The hints for s14 are missing \"$methodName$\". The source placeholder table for this section lists $methodName$ as the first placeholder.",
+      "source_evidence": "Source placeholder table for SqlPStatement#retrieveメソッドの検索終了時: メソッド名 → $methodName$, 実行時間 → $executeTime$, データ取得時間 → $retrieveTime$, 検索件数 → $count$"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry s15 (SqlPStatement#executeメソッドの実行開始時 プレースホルダ)",
+      "description": "The hints for s15 are missing \"$methodName$\". The source placeholder table lists $methodName$ as the first entry for this section.",
+      "source_evidence": "Source placeholder table for SqlPStatement#executeメソッドの実行開始時: メソッド名 → $methodName$, SQL文 → $sql$, 付加情報 → $additionalInfo$"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry s16 (SqlPStatement#executeメソッドの実行終了時 プレースホルダ)",
+      "description": "The hints for s16 are missing \"$methodName$\". The source placeholder table lists $methodName$ as the first entry for this section.",
+      "source_evidence": "Source placeholder table for SqlPStatement#executeメソッドの実行終了時: メソッド名 → $methodName$, 実行時間 → $executeTime$"
+    }
+  ]
+}

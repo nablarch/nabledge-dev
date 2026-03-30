@@ -1,0 +1,117 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "readers-DatabaseRecordReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index[0].hints",
+      "description": "The hint `バッチ処理` is not mentioned anywhere in the source file. The source describes only the class, its data type, configuration properties, and a usage example — no mention of batch processing context.",
+      "source_evidence": "Source file contains no occurrence of 'バッチ処理' or 'バッチ'."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+===============================
+データベースレコードリーダ
+===============================
+このデータリーダでは、初回読み込み時にデータベースに対してクエリを発行し、その結果セットの中から1レコードずつ読み込んで返す。
+
+  **クラス名**
+    nablarch.fw.reader.DatabaseRecordReader 
+
+  **読み込むデータの型**
+    nablarch.core.db.statement.SqlRow
+
+  **設定項目一覧**
+
+   +------------------------------+----------------+---------------------------------------+--------------------------------+
+   | 設定項目                     | プロパティ名   | データ型　                            | 備考                           |
+   +==============================+================+=======================================+================================+
+   | SQLステートメント            | statement      | SqlPStatement                         | 排他利用。いずれか必須         |
+   +------------------------------+----------------+---------------------------------------+                                |
+   | 引数付きSQLステートメント    | statement      | ParameterizedSqlPStatement, Object    |                                |
+   +------------------------------+----------------+---------------------------------------+--------------------------------+  
+
+  **使用例**
+    引数付きプリペアステートメントを使用する場合。   
+
+    .. code-block:: java
+        
+        // 引数オブジェクト
+        Map<String, Object> condition = new HashMap() {{
+            put("param1", "value1");
+            put("param2", "value2");
+        }};
+
+        // プリペアドステートメントを取得(SQLIDを指定)
+        ParameterizedSqlPStatement statement = getParameterizedSqlStatement("GET_DELETE_USER_LIST");
+        
+        // データリーダを作成
+        DatabaseRecordReader reader = new DatabaseRecordReader()
+                                         .setStatement(statement, condition);
+
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "readers-DatabaseRecordReader",
+  "title": "データベースレコードリーダ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースレコードリーダ",
+      "hints": [
+        "DatabaseRecordReader",
+        "nablarch.fw.reader.DatabaseRecordReader",
+        "SqlRow",
+        "nablarch.core.db.statement.SqlRow",
+        "ParameterizedSqlPStatement",
+        "SqlPStatement",
+        "statement",
+        "データベースレコードリーダ",
+        "バッチ処理",
+        "データリーダ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.reader.DatabaseRecordReader`\n\n**読み込むデータ型**: `nablarch.core.db.statement.SqlRow`\n\n初回読み込み時にDBにクエリを発行し、結果セットから1レコードずつ返す。\n\n| プロパティ名 | 型 | 必須 | 説明 |\n|---|---|---|---|\n| statement | SqlPStatement | ○ | SQLステートメント。排他利用。いずれか必須 |\n| statement | ParameterizedSqlPStatement, Object | ○ | 引数付きSQLステートメント。排他利用。いずれか必須 |\n\n引数付きプリペアドステートメント使用例:\n\n```java\nMap<String, Object> condition = new HashMap() {{\n    put(\"param1\", \"value1\");\n    put(\"param2\", \"value2\");\n}};\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"GET_DELETE_USER_LIST\");\n\nDatabaseRecordReader reader = new DatabaseRecordReader()\n                                 .setStatement(statement, condition);\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

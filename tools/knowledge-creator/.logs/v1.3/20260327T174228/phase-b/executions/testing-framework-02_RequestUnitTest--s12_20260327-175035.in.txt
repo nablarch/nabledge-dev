@@ -1,0 +1,839 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `testing-framework-02_RequestUnitTest--s12`
+- Format: `rst` (rst/md/xlsx)
+- Type: `development-tools`
+- Category: `testing-framework`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+固有の処理を追加する場合
+------------------------
+
+スーパクラスでは、どんなテストケースでも必要となる処理を定型化しているが、
+テストケースによっては固有の処理が必要な場合がある。
+(例えば、リクエストスコープにエンティティが格納されており、その内容を確認したい場合等)。
+
+
+シート固有の準備処理、結果確認処理が必要な場合は、\
+execute(String sheetName, Advice advice)を使用して、リクエスト送信前後に処理を挿し込むことができる。
+BasicAdviceクラスには以下のメソッドが用意されており、それぞれリクエスト送信前、送信後にコールバックされる。
+
+* void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+* void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+
+.. note::
+  これらのメソッド両方をオーバーライドする必要はない。必要なものだけをオーバーライドする。
+  また、これらのメソッド内に全ての処理を記述する必要はない。記述が長くなったり、
+  テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00102Normal() {
+        execute("testMenus00102Normal", new BasicAdvice() {
+            // 【説明】本メソッドはリクエスト送信前に呼び出される。
+            @Override
+            public void beforeExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに準備処理を記述する。
+            }
+
+            // 【説明】本メソッドはリクエスト送信後に呼び出される。
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに結果確認処理を記述する。
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストスコープに複数種類の検索結果が格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに「ユーザグループ」と「ユースケース」の2種類の検索結果が含まれており、
+それぞれの検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00103() {
+        execute("testMenus00103", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                
+                String messgae = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlResultSet actualGroup =(SqlResultSet) context.getRequestScopedVar("allGroup");
+                assertSqlResultSetEquals(message, sheetName, "expectedUgroup" + no, actualGroup);
+                        
+                // ユースケース検索結果の検証
+                SqlResultSet actualUseCase =(SqlResultSet) context.getRequestScopedVar("allUseCase");
+                assertSqlResultSetEquals(message, sheetName, "expectedUseCase" + no, actualUseCase);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストスコープに検索結果(SqlResultSet)ではなくFormやエンティティが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープにエンティティが格納されており、
+それぞれの検索結果が期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                String sheetName = testCaseInfo.getSheetName();
+                // システムアカウントを比較
+                // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                // 【説明】実際の値をリクエストスコープから取り出す
+                Object actualSystemAccount = context.getRequestScopedVar("systemAccount");
+                // 【説明】エンティティを比較するメソッドを呼び出す。
+                assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+
+                // ユーザを比較
+                String expectedUsersId = "users" + testCaseInfo.getTestCaseNo();
+                Object actualUsers = context.getRequestScopedVar("users");
+                assertEntity(sheetName, expectedUsersId, actualUsers);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+期待値は、エンティティのクラス単体テスト（\ :ref:`entityUnitTest_SetterGetterCase`\ ）と同様の書式で記述する。
+ただし、この場合はsetterの欄は不要である。
+
+.. image:: ./_image/assert_entity.png
+
+
+.. note::
+   リクエストスコープにFormが格納されている場合、別のFormを設定したプロパティでなければEntityの場合と同様にテストが出来る。
+   
+   別のFormを設定したプロパティの場合、そのFormを取得してEntityと同様にテストをすればよい。以下に例を示す。
+   
+   
+   .. code-block:: java
+   
+       @Test
+       public void testSampleNormal() {
+           execute("testSampleNormal", new BasicAdvice() {
+               @Override
+               public void afterExecute(TestCaseInfo testCaseInfo,
+                       ExecutionContext context) {
+                   String sheetName = testCaseInfo.getSheetName();
+                   // システムアカウントを比較
+                   // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                   String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                   // 【説明】Formをリクエストスコープから取り出す
+                   Object actualForm = context.getRequestScopedVar("form");
+                   // 【説明】Formのプロパティである別のFormを取得
+                   Object actualSystemAccount = actualForm.getSystemAccount();
+                   // 【説明】エンティティを比較するメソッドを呼び出す。
+                   assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+               }
+           });
+       }
+
+
+リクエストスコープにSqlResultSetではなくSqlRowが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに、検索結果一覧(SqlResultSet)ではなく、
+検索結果1件分(SqlRow)がリクエストスコープに格納されており、
+その検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String message = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlRow actual =(SqlRow) context.getRequestScopedVar("user");
+                // 【説明】SqlRowを比較するメソッドを呼び出す。
+                assertSqlRowEquals(message, sheetName, "expectedUser" + no, actual);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストパラメータの値を検証したい場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`ウィンドウスコープ <../../../../fw/reference/architectural_pattern/concept.html#windowscope>`_ の値をリセットするために、
+テスト対象機能にてリクエストパラメータを書き換える場合がある。
+
+以下の例では、テスト対象実行後のリクエストパラメータが期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+
+                HttpRequest request = testCaseInfo.getHttpRequest();   // 【説明】テスト実行後のHttpRequest
+                // リクエストパラメータがリセットされていること
+                assertEquals("", request.getParam("resetparameter"));
+            }
+        });
+    }
+
+
+
+その他の場合
+~~~~~~~~~~~~
+
+前述のように、SqlResultSetやSqlRow等のよく使用されるオブジェクトについては、
+Excelに記載した期待値と直接比較するメソッドが用意されているが、
+そうでない場合については、期待値を読み込む処理を記述する必要がある。
+
+具体的には、以下の手順で検証を行う。
+
+* テストデータをExcelファイルから取得
+* リクエストスコープ等から実際の値を取得
+* 自動テストフレームワークまたはJUnitのAPIを用いて結果検証を行う。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00303Normal() {
+        execute("testUsers00303Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                // 【説明】期待値をExcelファイルから取得
+                List<Map<String, String>> expected = getListMap("doRW25AA0303NormalEnd", "result_1");
+                // 【説明】テスト実行後のリクエストスコープから実際の値を取得
+                List<Map<String, String>> actual = context.getRequestScopedVar("pageData");
+                // 【説明】結果検証
+                assertListMapEquals(expected, actual);
+            }
+        });
+    }
+
+\    
+
+.. note::
+ テストデータの取得方法については、以下のリンク先を参照。
+  * 「\ :ref:`how_to_get_data_from_excel`\ 」
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+
+
+
+ダウンロードファイルのテスト
+============================
+
+ダウンロードファイルをテストする場合は、\
+:ref:`batch_request_test` と同じ方法でファイルの期待値をExcelファイルに記載してテストする。\
+以下にCSVファイルをダウンロードする場合のテスト例を示す。
+
+**期待するファイルの定義例**
+
+ ファイルパスにはダンプファイルを指定する。\
+ ダウンロード処理の場合は、ダウンロードされたファイルがダンプされ、\
+ 下記の命名規則でダンプファイルが出力される。\
+ ダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`html_dump_dir` を参照すること。
+
+  .. code-block:: bash
+
+   ダンプファイルの命名規則：
+     Excelファイルのシート名＋"_"＋テストケース名＋"_"＋ダウンロードされたファイル名
+
+ .. image:: ./_image/expected_download_csv.png
+    :scale: 60
+   
+**テストメソッドの実装例**
+
+ FileSupportクラスのassertFileメソッドを使用してダウンロードファイルのアサートを行う。
+
+ .. code-block:: java
+
+    private FileSupport fileSupport = new FileSupport(getClass());
+    
+    @Test
+    public void testRW11AC0104Download() {
+        execute("testRW11AC0104Download", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String msgOnFail = "ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。";
+                fileSupport.assertFile(msgOnFail, "testRW11AC0104Download");
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+--------------
+テスト起動方法
+--------------
+
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
+
+
+----------------------
+テスト結果確認（目視）
+----------------------
+
+１リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開き、目視確認を行う。
+
+.. note::
+ リクエスト単体テストで生成されたHTMLファイルは自動テストフレームワークにて自動的にチェックされる。\
+ 自動テストフレームワークは、\ :doc:`../../08_TestTools/03_HtmlCheckTool/index`\ を用いて生成されたHTMLファイルをチェックする。
+ HTMLファイル内に構文エラー等の違反があった場合は、その違反内容に応じた例外が発生し、そのテストケースは失敗となる。\
+
+
+
+.. _html_dump_dir:
+
+HTMLダンプ出力結果
+==================
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成され、その配下にHTMLダンプファイルが出力される。
+
+HTMLダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`dump-dir-label` の項を参照すること。
+
+ .. image:: ./_image/htmlDumpDir.png
+
+
+
+
+----------------------------------------
+リクエスト単体テストクラス作成時の注意点
+----------------------------------------
+
+リクエスト単体テストでは、Web Frameworkのハンドラを経由して呼び出される点がクラス単体テストと異なる。
+この違いにより注意すべき点があるので、以下に記載する。
+
+ThreadContextへの値設定は不要
+=============================
+
+リクエスト単体テストでは、Web Frameworkのハンドラが作用する為、
+ThreadContextへの値設定はハンドラで実施される。
+よって、\ **テストクラスからThreadContextへの値を設定する必要はない。**
+
+リクエスト単体テストでのユーザID設定方法については、前述の\ :ref:`request_test_user_info`\ を参照。
+
+
+テストクラスでのトランザクション制御は不要
+==========================================
+
+クラス単体テストでは、Web Frameworkのハンドラが作用しない為、\
+テストクラス内で明示的にトランザクションコミットを行っていた。\
+リクエスト単体テストでは、トランザクション制御はハンドラで行われるので、\
+**テストクラス内で明示的にトランザクションコミットを行う必要はない。**
+
+```
+
+
+## 画像・添付ファイル一覧
+
+| ソース内パス | assetsパス |
+|---|---|
+| ./_image/assert_entity.png | assets/testing-framework-02_RequestUnitTest--s12/assert_entity.png |
+| ./_image/expected_download_csv.png | assets/testing-framework-02_RequestUnitTest--s12/expected_download_csv.png |
+| ./_image/htmlDumpDir.png | assets/testing-framework-02_RequestUnitTest--s12/htmlDumpDir.png |
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- 固有の処理を追加する場合
+- 
+- テスト起動方法
+- 
+- テスト結果確認（目視）
+- 
+- リクエスト単体テストクラス作成時の注意点
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/testing-framework-02_RequestUnitTest--s12/filename.png)` |
+
+Office attachments → reference in `assets/testing-framework-02_RequestUnitTest--s12/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `testing-framework-02_RequestUnitTest--s12`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

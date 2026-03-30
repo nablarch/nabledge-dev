@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-04_Permission--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — 権限設定の例 table, Yさん row",
+      "description": "The knowledge file silently removes 'Dさんは' from the Yさん row, changing the source text without basis. Source reads: 'さらにDさんは、社員登録認可単位に直接紐づいているので、社員登録も使用できる。' Knowledge file reads: 'さらに社員登録認可単位に直接紐づいているので、社員登録も使用できる。'",
+      "source_evidence": "Yさん row: '社員グループに紐づいているので、社員検索・社員情報変更を使用できる。\\nさらにDさんは、社員登録認可単位に直接紐づいているので、社員登録も使用できる。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 — 構成",
+      "description": "Section s4 is well over 2000 characters and the source's 構成 section contains four distinct h3-level subsections (概念モデル, クラス図, シーケンス図, テーブル定義). Per V3 rules, a section this large with multiple h3 subsections should be split into separate knowledge sections.",
+      "source_evidence": "Source h3 subsections under 構成: '概念モデル' (===), 'クラス図' (===), 'シーケンス図' (===), 'テーブル定義' (===)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 — hints",
+      "description": "The hints for s4 are missing first-column property names from the table definitions. These column names are searchable identifiers that users may reference when asking about table schema: グループID, ユーザID, ユーザIDロック, 認可単位ID, リクエストID.",
+      "source_evidence": "Table definitions list first-column names: グループID (グループテーブル), ユーザID / ユーザIDロック (システムアカウント), 認可単位ID (認可単位テーブル), リクエストID (認可単位リクエストテーブル)"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "toolbox-02_ConfigMasterDataSetupTool",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — プロパティファイルの書き換え",
+      "description": "The knowledge file omits the context that `masterdata.test.backup-schema` is used by the マスタデータ自動復旧機能 (automatic master data restore feature). Source says: 「マスタデータ自動復旧機能が使用する、バックアップスキーマ名を設定する。」 The knowledge file only says 「バックアップスキーマ名（`masterdata.test.backup-schema`）を設定する」, dropping the information about which feature relies on this setting.",
+      "source_evidence": "マスタデータ自動復旧機能が使用する、バックアップスキーマ名を設定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "`master_data-log.properties` is listed in the file composition table in s2 but is absent from the s2 hints array. Property file names from the table should be included as hints.",
+      "source_evidence": "master_data-log.properties | ログ出力プロパティファイル (in 提供方法 table)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "S9 automated warning — section count",
+      "description": "The automated warning 'section count 3 < source headings 4' is a false positive. The source contains exactly 3 h2-level headings (前提事項, 提供方法, Eclipseとの連携設定), matching the 3 knowledge sections. The h3 sub-headings are correctly folded into their parent sections. No action required.",
+      "source_evidence": "前提事項 (===), 提供方法 (===), Eclipseとの連携設定 (===) — only 3 h2 sections in source"
+    }
+  ]
+}

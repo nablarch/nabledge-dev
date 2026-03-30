@@ -1,0 +1,66 @@
+{
+  "id": "web-application-screenTransition--s8",
+  "title": "複数ウィンドウを立ち上げたい場合",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "複数ウィンドウを立ち上げたい場合",
+      "hints": [
+        "popupSubmit",
+        "popupButton",
+        "popupLink",
+        "popupOption",
+        "changeParamName",
+        "setInputValueToOpener",
+        "複数ウィンドウ",
+        "ポップアップ",
+        "window.opener",
+        "パラメータ名変更",
+        "別ウィンドウサブミット"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "二重サブミットの防止",
+      "hints": [
+        "二重サブミット防止",
+        "リクエストの二重送信防止",
+        "処理済リクエストの受信防止",
+        "howto_prevent_double_submission",
+        "DBコミット"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "入力画面と確認画面の共通化をサポートするカスタムタグ",
+      "hints": [
+        "入力画面",
+        "確認画面",
+        "共通化",
+        "カスタムタグ",
+        "JSPファイル共通化",
+        "common_page_support"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "ブラウザのキャッシュ防止",
+      "hints": [
+        "ブラウザのキャッシュ防止",
+        "noCacheタグ",
+        "noCache",
+        "戻るボタン",
+        "履歴戻り防止",
+        "howto_prevent_history_back"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "複数ウィンドウを立ち上げる場合は以下のタグを使用する。新しいウィンドウをオープンし、オープンしたウィンドウに対してサブミットを行う。\n\n- `popupSubmit`\n- `popupButton`\n- `popupLink`\n\n| 属性 | 説明 |\n|---|---|\n| `popupOption` | ポップアップのオプション情報。新しいウィンドウを開く際に `window.open` 関数の第3引数（JavaScript）に指定する。 |\n\nオープンしたウィンドウの処理アクションと元画面のアクションでパラメータ名が異なる場合は、`changeParamName` タグを使用してパラメータ名を変更する。\n\n**別ウィンドウにサブミットする場合のJSP実装例**（郵便番号検索の別ウィンドウへのサブミット）:\n\n```jsp\n<n:popupButton name=\"searchAddress\" uri=\"/action/ss11AB/W11AB01Action/RW11AB0101\">\n    検索\n    <n:changeParamName inputName=\"W11AC01.postalCode\" paramName=\"W11AB01.postalCode\" />\n    <n:param paramName=\"W11AB01.max\" value=\"10\" />\n</n:popupButton>\n```\n\n**別ウィンドウから元画面に値を設定する場合**: JavaScriptで実現する。動的な値の埋め込みを防ぐために外部ファイルに記述する。`window.opener` を使用して元画面を参照する。\n\n`setInputValueToOpener` 関数の使用上の制約:\n- **単一入力項目のみサポート**: 本関数は単一入力項目への値設定のみサポートしており、複数項目への同時設定はできない。\n- **name属性の一意性が前提**: 指定されたname属性が親ウィンドウ内で重複していないことを前提に処理する。\n\n```javascript\nfunction setInputValueToOpener(openerInputName, element, prefix, attributeName) {\n    if (attributeName == null) { attributeName = \"name\"; }\n    var value = element[attributeName];\n    value = value.substring(prefix.length, value.length);\n    var input = window.opener.document.getElementsByName(openerInputName)[0];\n    input.value = value;\n    window.close();\n}\n```\n\n> **警告**: JavaScriptに対するエスケープ処理はフレームワークで未実装のため、scriptタグのボディやonclick属性などJavaScriptを記述する部分には、動的な値（入力データなど）を埋め込まないこと。\n\n**リンクで値を選択させる場合のJSP実装例**（郵便番号検索結果）:\n\n```jsp\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:a href=\"#\" name=\"val_${row.postalCode}\"\n             onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:a>\n    </div>\n</c:forEach>\n</n:form>\n```\n\n**ボタンで値を選択させる場合のJSP実装例**（郵便番号検索結果）:\n\n```jsp\n<n:script type=\"text/javascript\" src=\"/js/common.js\" />\n<n:form>\n<c:forEach var=\"row\" items=\"${resultSet}\">\n    <div>\n        <n:button uri=\"#\" name=\"val_${row.postalCode}\"\n            onclick=\"setInputValueToOpener('W11AC01.postalCode', this, 'val_')\">\n            <n:write name=\"row.postalCode\" />\n        </n:button>\n    </div>\n</c:forEach>\n</n:form>\n```",
+    "s2": "データベースへのコミットを伴う画面では二重サブミットを防止する必要がある。\n\n防止方法は以下の2種類を組み合わせて実施する:\n- クライアント側での対策（リクエストの二重送信防止）\n- サーバ側での対策（処理済リクエストの受信防止）",
+    "s3": "入力画面と確認画面が1対1に対応する場合、表示用のJSPファイルを共通化できる。",
+    "s4": "ブラウザの戻るボタンが押されても前の画面を表示できないようにするには、`noCache` タグを使用する。"
+  }
+}

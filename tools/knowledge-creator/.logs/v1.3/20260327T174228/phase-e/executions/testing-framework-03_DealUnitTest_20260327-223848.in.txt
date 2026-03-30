@@ -1,0 +1,151 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source intro paragraph",
+      "description": "The introductory description that 取引単体テストでは、テスト対象のアプリケーションをアプリケーションサーバにデプロイし、手動でアプリケーションを操作しテストを行う is entirely absent from the knowledge file. This characterizes the test as a manual, server-deployed operation — essential context for distinguishing it from automated unit tests.",
+      "source_evidence": "取引単体テストでは、テスト対象のアプリケーションをアプリケーションサーバにデプロイし、手動でアプリケーションを操作しテストを行う。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "Source h2: テスト準備",
+      "description": "The entire テスト準備 section is missing from the knowledge file. It lists three prerequisite steps — データベース準備（データ投入）、アプリケーションのデプロイ、アプリケーションサーバ起動 — that must be completed before testing. An AI answering 'how do I prepare for 取引単体テスト?' cannot give correct guidance without these.",
+      "source_evidence": "* データベース準備（データ投入）\n* アプリケーションのデプロイ\n* アプリケーションサーバ起動"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "Source h2: テスト結果エビデンスの収集 — note",
+      "description": "The note stating that test auxiliary tools (画面ハードコピー取得ツール、DBダンプ取得ツール等) are currently under consideration (現在検討中) is absent from the knowledge file. This informs users that no official tooling exists yet.",
+      "source_evidence": "画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections",
+      "description": "The source file contains 3 distinct h2 sections (テスト準備, テスト実施, テスト結果エビデンスの収集) but the knowledge file collapses all content into a single section s1. While content is short, the merge caused the テスト準備 content to be dropped entirely.",
+      "source_evidence": "テスト準備\n==========\nテスト実施\n==========\nテスト結果エビデンスの収集\n=========================="
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _dealUnitTest:
+
+========================
+取引単体テストの実施方法
+========================
+
+取引単体テストでは、テスト対象のアプリケーションをアプリケーションサーバにデプロイし、\
+手動でアプリケーションを操作しテストを行う。
+
+同期応答メッセージ送信処理を伴う場合は、モックアップクラスを使用して行う。詳細は\ :ref:`dealUnitTest_send_sync`\を参照。
+
+テストケース毎に以下の手順でテストを実施する。
+
+テスト準備
+==========
+
+テスト準備として以下の作業を行う。
+
+* データベース準備（データ投入）
+* アプリケーションのデプロイ
+* アプリケーションサーバ起動
+
+
+テスト実施
+==========
+
+テストケースに従ってテストを実施する。
+
+.. note::
+ エビデンスのうちDBダンプはテスト実行前のものが必要であるため、\
+ テスト実施前に取得しておくこと。
+
+
+テスト結果エビデンスの収集
+==========================
+
+以下のエビデンスを取得する。
+
+* 画面ハードコピー
+* DBダンプ(テスト実行前および実行後)
+
+.. note::
+  画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。
+　
+
+
+テスト結果エビデンスの収集
+==========================
+
+以下のエビデンスを取得する。
+
+* 画面ハードコピー
+* DBダンプ(テスト実行前および実行後)
+
+.. note::
+  画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。
+　
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-03_DealUnitTest",
+  "title": "取引単体テストの実施方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "取引単体テストの実施方法",
+      "hints": [
+        "取引単体テスト",
+        "同期応答メッセージ送信処理",
+        "モックアップクラス",
+        "DBダンプ",
+        "テスト結果エビデンス",
+        "画面ハードコピー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "同期応答メッセージ送信処理を伴う場合は、モックアップクラスを使用する（詳細は :ref:`dealUnitTest_send_sync` を参照）。\n\n> **注意**: DBダンプはテスト実行前のものが必要であるため、テスト実施前に取得しておくこと。\n\n収集するエビデンス:\n- 画面ハードコピー\n- DBダンプ（テスト実行前および実行後）"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

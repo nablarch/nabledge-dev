@@ -1,0 +1,254 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/tool/06_PublishedApi/PublishedApiConfigGenerator.rst`
+- Format: `rst`
+
+```
+.. _published_api:
+
+==================================
+使用許可API一覧作成ツール
+==================================
+
+概要
+====
+
+本ツールは、使用不許可APIチェックツールの設定ファイルとなる公開APIの一覧と、公開APIのJavadocを生成する。
+
+生成される使用許可API一覧をそのまま「使用不許可APIチェックツール」の設定ファイルとして利用することで、
+プロジェクトで実装した基盤部品などについて、業務アプリからの利用を想定していない非公開APIが利用されていないかどうかを使用不許可APIチェックツールを利用してチェックすることができる。
+
+
+
+使用方法
+========
+
+本ツールは、Javadocを生成する際に利用するDocletとして提供される。
+
+Javadoc生成時に以下のDocletを利用し、必要なオプションを渡すことで使用許可API一覧および使用許可APIのみが出力されているJavadocが生成される。
+
+なお、実行時にはNablarch Application Framework, Nablarch ToolboxおよびJDKに付属のtools.jarをdocletpathに指定する必要がある。
+
+**本ツールが提供するDoclet**
+  nablarch.tool.published.doclet.PublishedDoclet
+
+**必要な引数**
+  ============================== =================================================================================================== ========================
+  引数                           説明                                                                                                必須
+  ============================== =================================================================================================== ========================
+  output                         | 使用許可API一覧の出力先ファイルを指定する。                                                       ○
+                                 | 使用不許可APIチェックツールの設定ファイルとして利用する場合には、拡張子を **config** とすること。
+  tag                            出力対象とするタグを指定する。カンマ区切りで複数指定することができる。                              ×
+  ============================== =================================================================================================== ========================
+
+**出力対象**
+  nablarch.core.util.annotation.Publishedアノテーションの付与された、
+
+    * クラス
+    * コンストラクタ
+    * メソッド
+    * フィールド
+    * アノテーション
+
+  が出力対象となる。
+
+  引数tagに出力対象タグが指定されている場合、該当するtag属性が指定されているPublishedアノテーションが付与されたものと、
+  tag属性が指定されていないPublishedアノテーションが付与されたものが出力対象となる。
+
+  引数tagが指定されない場合には、tag属性が指定されていないPublishedアノテーションが付与されたものが出力対象となる。
+
+
+Ant Javadocタスクの設定方法
+---------------------------
+
+本ツールを利用してAntのJavadocタスクを実行する場合は、javadocタグ内で以下のように設定すればよい。
+
+============================ =============================================================== ================================================
+設定項目                     設定値                                                          備考
+============================ =============================================================== ================================================
+**docletタグ**
+---------------------------------------------------------------------------------------------------------------------------------------------
+docletタグのname属性         nablarch.tool.published.doclet.PublishedDoclet
+docletタグのpath属性         nablarch.jar, nablarch-toolbox.jar, tools.jar のパス（;区切り） pathref属性で、pathタグのidを指定しても可
+**docletタグ内のparamタグ（出力先ファイルを指定）**
+---------------------------------------------------------------------------------------------------------------------------------------------
+paramタグのname属性          -output                                                         必ず設定する必要がある
+paramタグのvalue属性         出力先ファイル
+**docletタグ内のparamタグ（出力対象タグを指定）**
+---------------------------------------------------------------------------------------------------------------------------------------------
+paramタグのname属性          -tag                                                            引数tagを指定しない場合は、このparamタグは不要
+paramタグのvalue属性         出力対象とするタグ
+============================ =============================================================== ================================================
+
+実際のAntファイルの例を以下に記載する。
+
+ただし、以下の例では、本ツールの設定に必要な項目のみ設定している。Javadocタスクに必要なその他の設定については、
+`Ant Javadoc Task <http://ant.apache.org/manual/Tasks/javadoc.html>`_ を参照すること。
+
+.. code-block:: xml
+
+  <!-- 本ツールの実行時にクラスパスに含める必要があるパスを定義する。-->
+  <!-- 以下は、Nablarch_totorialワークスペースの場合の値。実際に利用する際には適切な値に修正すること。 -->
+  <path id="lib.path">
+    <!-- nablarch.jarをクラスパスに含める。-->
+    <pathelement location="main/web/WEB-INF/lib/nablarch.jar" />
+    <!-- Nablarch Toolboxをクラスパスに含める。 -->
+    <pathelement location="tool_lib/nablarch-toolbox.jar" />
+    <!-- Oracle JDK付属の tools.jar をクラスパスに含める。 -->
+    <pathelement location="tool_lib/tools.jar" />
+  </path>
+
+  <javadoc>
+    <!-- docletタグで、使用許可API一覧作成ツールのDocletクラスと、必要なクラスパスを設定する。 -->
+    <doclet name="nablarch.tool.published.doclet.PublishedDoclet" pathref="lib.path">
+      <!-- 出力対象とするタグを指定する。指定しない場合には不要。 -->
+      <param name="-tag" value="architect"/>
+      <!-- 使用許可API一覧の出力先ファイルを指定する。 -->
+      <param name="-output" value="ProjectOpenApiForArchitect.config"/>
+    </doclet>
+  </javadoc>
+
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-PublishedApiConfigGenerator`
+
+```json
+{
+  "id": "toolbox-PublishedApiConfigGenerator",
+  "title": "使用許可API一覧作成ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "使用許可API一覧作成ツール",
+        "使用不許可APIチェックツール",
+        "公開API一覧生成",
+        "Javadoc生成",
+        "Published"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "PublishedDoclet",
+        "nablarch.tool.published.doclet.PublishedDoclet",
+        "nablarch.core.util.annotation.Published",
+        "output",
+        "tag",
+        "Ant Javadocタスク設定",
+        "docletpath",
+        "使用許可API一覧設定ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "使用不許可APIチェックツールの設定ファイルとなる公開APIの一覧と、公開APIのJavadocを生成するツール。\n\n生成した使用許可API一覧を「使用不許可APIチェックツール」の設定ファイルとして利用することで、業務アプリから利用を想定していない非公開APIが使われていないかチェックできる。",
+    "s2": "**Docletクラス**: `nablarch.tool.published.doclet.PublishedDoclet`\n\n実行時に `nablarch.jar`、`nablarch-toolbox.jar`、`tools.jar` を `docletpath` に指定する必要がある。\n\n**引数**\n\n| 引数 | 説明 | 必須 |\n|---|---|---|\n| output | 使用許可API一覧の出力先ファイルを指定する。使用不許可APIチェックツールの設定ファイルとして利用する場合は拡張子を **config** にする。 | ○ |\n| tag | 出力対象とするタグをカンマ区切りで複数指定可能。 | × |\n\n**出力対象**\n\n`nablarch.core.util.annotation.Published` アノテーションが付与されたクラス、コンストラクタ、メソッド、フィールド、アノテーション。\n\n- `tag` 指定あり: 指定タグ属性付き `Published` アノテーションの付与されたものと、`tag` 属性なし `Published` アノテーションの付与されたものが対象\n- `tag` 指定なし: `tag` 属性なし `Published` アノテーションの付与されたもののみが対象\n\n### Ant Javadocタスクの設定方法\n\n| 設定項目 | 設定値 | 備考 |\n|---|---|---|\n| docletタグ name属性 | `nablarch.tool.published.doclet.PublishedDoclet` | |\n| docletタグ path属性 | nablarch.jar, nablarch-toolbox.jar, tools.jar のパス（;区切り） | pathref属性でpathタグのid指定も可 |\n| paramタグ name属性（出力先指定） | `-output` | 必須 |\n| paramタグ value属性（出力先指定） | 出力先ファイルパス | |\n| paramタグ name属性（タグ指定） | `-tag` | tagを指定しない場合は不要 |\n| paramタグ value属性（タグ指定） | 出力対象とするタグ | |\n\n```xml\n<javadoc>\n  <doclet name=\"nablarch.tool.published.doclet.PublishedDoclet\" pathref=\"lib.path\">\n    <param name=\"-tag\" value=\"architect\"/>\n    <param name=\"-output\" value=\"ProjectOpenApiForArchitect.config\"/>\n  </doclet>\n</javadoc>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 2 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

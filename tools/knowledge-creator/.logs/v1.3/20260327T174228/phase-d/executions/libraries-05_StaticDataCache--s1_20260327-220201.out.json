@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-05_StaticDataCache--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s11",
+      "description": "The getValues/getId code example in s11 is taken from the source's 'インデックスを指定してデータを取得する際に必要なデータロードの実装方法' section, which opens with the same '// ******** 注意 ******** / 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない' warning comment as the getValue section. s12 carries this warning for the getValue example, but s11 omits it for the getValues/getId example. An AI reader would not know this code (shown in s11) carries the same 'not for application programmers' constraint.",
+      "source_evidence": "Source section 'インデックスを指定してデータを取得する際に必要なデータロードの実装方法': '// ******** 注意 ******** // 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。// 従って、本フレームワークを使用する場合、アプリケーション・プログラマはこのような実装を行わない。'"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s11",
+      "description": "The getValues code example in s11 modifies the source code: the source assigns `String name = (String) key;` and then passes `(String) name` to `stmt.setString`, but s11 omits the intermediate variable assignment and directly passes `(String) key`. While functionally equivalent, the code does not faithfully reproduce the source example.",
+      "source_evidence": "Source code: 'String name = (String) key; ... stmt.setString(1, (String) name);'. Knowledge s11 code: 'stmt.setString(1, (String) key);' — the intermediate variable and its usage are not present in the source at this location."
+    }
+  ]
+}

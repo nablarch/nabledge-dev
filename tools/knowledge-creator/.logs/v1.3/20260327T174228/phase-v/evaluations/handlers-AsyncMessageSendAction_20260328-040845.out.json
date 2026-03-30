@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-AsyncMessageSendAction",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding is the absence of `Main` from s1.hints. Since s1 already contains highly specific hints (AsyncMessageSendAction, nablarch.fw.messaging.action.AsyncMessageSendAction, 応答不要電文送信, and all four other related handlers), s1 will be retrieved reliably for any realistic user query about this handler. `Main` is a generic name that adds little discriminative value as a hint; its absence does not prevent the relevant content from reaching the user. No high or medium impact findings remain.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1.hints",
+      "impact": "low",
+      "justification": "`Main` is absent from s1.hints but is present in the s1 content (handler queue and related handlers table). s1 carries nine other hints—including the fully-qualified class name and all other related handler names—so any realistic query about AsyncMessageSendAction will retrieve s1 through those hints. A query referencing only 'Main' in isolation is unlikely and would be ambiguous across many handler files. Phase E did not add `Main` to hints, leaving the file unchanged; this was an acceptable judgment given the low discriminative value of such a generic name."
+    }
+  ]
+}

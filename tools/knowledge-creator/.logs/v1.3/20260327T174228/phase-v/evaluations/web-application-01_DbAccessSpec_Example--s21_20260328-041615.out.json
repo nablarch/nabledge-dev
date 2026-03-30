@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s21",
+  "user_impact": "none",
+  "needs_improvement": false,
+  "reason": "Both findings concern the absence of `W11BB03SearchForm` from hints arrays. This is a sample-application-specific class name used only to illustrate the pattern in documentation examples — it is not a Nablarch framework API. No real user would search for this class name when looking for guidance on dynamic IN/ORDER BY clause generation. All meaningful retrieval terms (ParameterizedSqlPStatement, IN句 動的生成, $if, $sort, sortId, kengenKbn, etc.) are already present in the hints. The omission has zero impact on retrieval quality. Phase E did not apply the fix because the fix agent correctly judged (implicitly) that adding a sample-only class name to hints provides no retrieval value, leaving the output unchanged from the input.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s1].hints",
+      "impact": "none",
+      "justification": "W11BB03SearchForm is a sample-only class name from the documentation example, not a Nablarch framework API. Users seeking guidance on dynamic IN clause generation would search using terms like ParameterizedSqlPStatement, IN句 動的生成, kengenKbn, List, $if — all of which are already in s1.hints. No user would query by this sample class name, so its absence does not degrade retrieval quality."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s2].hints",
+      "impact": "none",
+      "justification": "W11BB03SearchForm is the same sample class reused for the ORDER BY dynamic change example. Users seeking guidance on dynamic ORDER BY would search using sortId, $sort, ORDER BY 動的変更, ParameterizedSqlPStatement — all present in s2.hints. The class name itself carries no retrieval signal for this topic."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-03_listSearch--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are hints_missing with minor severity. Neither prevents users from retrieving the relevant sections — the primary search terms are already present in each section's hints, and both missing terms are covered by sibling sections (s4) that already include them.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[s6].hints",
+      "impact": "low",
+      "justification": "SqlPStatement is the class users are told NOT to use — ParameterizedSqlPStatement (the correct class) is already in s6's hints. A user querying SqlPStatement would typically be checking whether to use it, and s4 (which covers the overall DB access feature overview) already includes DbAccessSupport as a routing hint. The missing hint causes no retrieval gap for the primary use case of this section. Why it persisted: The Phase E output JSON shows s6 hints unchanged from Phase D — the fix agent regenerated the section content but left the index hints array identical, indicating it addressed the section body but missed the hint list update."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s7].hints",
+      "impact": "low",
+      "justification": "DbAccessSupport is already present in s4 and s6 hints, so users querying on that class name will find the relevant entry points to this topic. s7's existing hint getParameterizedSqlStatement already captures the specific DbAccessSupport method discussed in the section. Adding DbAccessSupport to s7 hints would be a marginal improvement with no retrieval gap in practice. Why it persisted: Same root cause as s6 — the Phase E agent's output shows s7 hints unchanged from Phase D, indicating the hint arrays were not touched during the fix pass."
+    }
+  ]
+}

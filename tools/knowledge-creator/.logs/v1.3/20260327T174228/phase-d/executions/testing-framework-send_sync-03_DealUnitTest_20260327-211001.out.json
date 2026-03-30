@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-send_sync-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s4 — Excelファイル配置場所のプロパティファイル設定 XML code example",
+      "description": "The closing tag of the `filePathSetting` component was changed from `</property>` (source) to `</component>` (knowledge file). While the source appears to contain a typo (opening tag is `<component ...>` but closing tag is `</property>`), the knowledge file presents code that differs from the source.",
+      "source_evidence": "Source: `</property>` (final line of filePathSetting block). Knowledge file: `</component>`."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 要求電文のログ出力",
+      "description": "The source explicitly states that the log output destinations shown are sample configurations ('サンプルでは...') and that output destinations can be changed by modifying log settings ('ログの設定を修正することで出力先の切り替えが可能である'). The knowledge file omits this, presenting the sample destinations as fixed facts rather than configurable examples.",
+      "source_evidence": "Source: 'サンプルでは、Map形式のログは標準出力とアプリケーションログファイルに、CSV形式のログは専用のログファイルに出力する仕様となっているが、ログの設定を修正することで出力先の切り替えが可能である。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "`sendSync` method name is referenced in s1 content (describing timeout behavior: 'sendSyncの戻り値としてnullを返却') but is absent from the s1 hints array. Users asking about sendSync behavior in unit tests would not be routed to this section via hint matching.",
+      "source_evidence": "Source: 'sendSyncメソッドの戻り値としてnullを返却する。' Knowledge file s1 content: '`sendSync`の戻り値として`null`を返却'. Not present in s1 hints."
+    }
+  ]
+}

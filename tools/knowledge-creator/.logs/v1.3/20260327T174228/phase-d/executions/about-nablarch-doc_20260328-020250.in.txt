@@ -1,0 +1,386 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/sample/portal/doc/index.rst`
+- Format: `rst`
+
+```
+=========================================================================================
+開発ポータルサイト テンプレート
+=========================================================================================
+
+***********************************************************
+概要
+***********************************************************
+
+各プロジェクトで設計者・実装者が必要とする情報を集約するために、
+それらの情報・資料へのリンク集となるページのテンプレートをHTMLとして提供します。
+
+`build/html/index.html` をブラウザで開いてご確認ください。
+
+
+
+***********************************************************
+コンテンツ
+***********************************************************
+
+build/html
+    開発ポータルサイトのテンプレートが含まれています。
+
+source
+    開発ポータルサイトのHTMLを生成した `Sphinx`_ ソースコードが含まれています。
+
+
+
+***********************************************************
+利用方法
+***********************************************************
+
+`build/html/index.html` に記載されているリンク先を正しいリンク先に修正してください。
+配布時には、リンク先はすべてダミーとなっています。各リンク先の詳細は :ref:`about_contents` を参照してください。
+
+また、同ファイルのタイトルやページの説明を修正してください。
+
+その後、 `build/html/` 配下のディレクトリ・ファイルを適切なサーバに配置し、 `index.html` へのリンクを
+プロジェクトメンバーに展開してください。（配置するサーバはファイルサーバでも問題ありません）
+
+
+.. note::
+
+   リンク先とポータルサイトの配置先が同一サーバの場合には、リンク先にホスト名は含めずに記載することをお勧めします。
+   そうすることで、異なる拠点から異なるホスト名でアクセスする場合にも同一ファイルを利用できます。
+
+   OK!
+
+   .. code-block:: html
+
+       <a href="/svn/">Subversion</a>
+
+   NG!
+
+   .. code-block:: html
+
+       <a href="http://some.example.co.jp/svn/">Subversion</a>
+
+.. _about_contents:
+
+***********************************************************
+テンプレートに記載してあるコンテンツについて
+***********************************************************
+
+テンプレートに記載してあるコンテンツのリンク先として想定しているドキュメント、ディレクトリなどを一覧で記載します。
+
+なお、Nablarchからフォーマットやサンプルなどが提供されているものについては、対応するNablarchのコンテンツを記載します。
+Nablarchのコンテンツへのパスは、nablarch.zipを解凍したディレクトリからの相対パスが記載されています。
+
+プロジェクト概要
+----------------------
+
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| コンテンツ                           | リンク先                                                                                                                        |
++======================================+=================================================================================================================================+
+| プロジェクト概要                     |                                                                                                                                 |
++--------------------------------------+                                                                                                                                 +
+| マスタスケジュール                   | プロジェクトで作成したドキュメントへのリンクとしてください。                                                                    |
++--------------------------------------+                                                                                                                                 +
+| 体制図                               |                                                                                                                                 |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+設計関連ドキュメント
+---------------------
+
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| コンテンツ                           | リンク先                                                                                                                        |
++======================================+=================================================================================================================================+
+| 要件定義書                           | プロジェクトで作成したドキュメントへのリンクとしてください。                                                                    |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 外部設計書                           | | システム機能設計書などの外部設計書を格納しているディレクトリへのリンクとしてください。                                        |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   フォーマットが、nablarch/standard/document_formatに含まれています。                                                           |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| データモデル設計                     | | テーブル定義書などのデータモデル設計書を格納しているディレクトリへのリンクとしてください。                                    |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   フォーマットが、nablarch/standard/document_formatに含まれています。                                                           |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| UI標準                               | | UI標準へのリンクとしてください。                                                                          |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   サンプルが、nablarch/standard/design_standardに含まれています。                                                               |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| DB設計標準                           | | DB設計標準へのリンクとしてください。                                                                                          |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   サンプルが、nablarch/standard/design_standardに含まれています。                                                               |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| ID体系                               | プロジェクトで作成したドキュメントへのリンクとしてください。                                                                    |
++--------------------------------------+                                                                                                                                 +
+| 非機能要件定義書                     |                                                                                                                                 |
++--------------------------------------+                                                                                                                                 +
+| 方式設計書                           |                                                                                                                                 |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+
+
+実装関連ドキュメント
+---------------------
+
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| コンテンツ                           | リンク先                                                                                                                        |
++======================================+=================================================================================================================================+
+| 開発環境構築ガイド                   | | プロジェクトの開発環境の構築手順が記載されているドキュメントへのリンクとしてください。                                        |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   サンプルが、nablarch/guide/environment_guideに含まれています。                                                                |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 業務アプリケーション開発手順         | | Nablarchの「プログラミング・単体テストガイド」に含まれる、「業務アプリケーション開発手順」へのリンクとしてください。          |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   nablarch/guide/development_guide/03_DevelopmentStep/index.htmlです。                                                          |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 開発プロセス                         | | プロジェクトで作成したドキュメントへのリンクとしてください。                                                                  |
++--------------------------------------+                                                                                                                                 +
+| レビュー依頼ルール                   | （レビュー依頼ルール：開発担当者の実装完了後に、レビュー依頼を行うために必要なチェック事項などを記載してあるドキュメント）      |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Redmine                              | | プロジェクトで利用する課題管理システムへのリンクとしてください。                                                              |
+|                                      | | 例として、Redmineとしています。                                                                                               |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Jenkins                              | | プロジェクトで利用する継続的インテグレーションサーバへのリンクとしてください。                                                |
+|                                      | | 例として、Jenkinsとしています。                                                                                               |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Subversion                           | | プロジェクトで利用するバージョン管理システムへのリンクとしてください。                                                        |
+|                                      | | 例として、Subversionとしています。                                                                                            |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 責務配置                             | | 開発担当者が実装する業務コンポーネントの責務配置を記載したドキュメントへのリンクとしてください。                              |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   Nablarch Application Framework 解説書の「業務コンポーネント責務配置例」に標準的な責務配置の例があります。                     |
+|                                      |   変更がなければ、上記(nablarch/library/fw/doc/determining_stereotypes.html)へのリンクとしてください。                          |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 単体テスト標準                       | | 単体テスト標準へのリンクとしてください。                                                                                      |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   サンプルが、nablarch/standard/unit_testに含まれています。                                                                     |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| コーディング規約                     | | Java, SQLなどのコーディング規約を格納したディレクトリへのリンクとしてください。                                               |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   サンプルが、nablarch/standard/coding_ruleに含まれています。                                                                   |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| 実装FAQ                              | | アプリケーション実装時に参照するFAQへのリンクとしてください。                                                                 |
+|                                      | | 本ドキュメント内でフォーマットを提供していますので、適宜コピーして利用してください。                                          |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| プログラミング・単体テストガイド     | | Nablarchのプログラミング・単体テストガイドへのリンクとしてください。                                                          |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   nablarch/guide/development_guide/03_DevelopmentStep/index.htmlです。                                                          |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Nablarch Application Framework解説書 | | Nablarch Application Framework 解説書へのリンクとしてください。                                                               |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   nablarch/library/fw/doc/index.html です。                                                                                     |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+|Nablarch Application Framework Javadoc| | Nablarch Application Framework の Javadoc へのリンクとしてください。                                                          |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   nablarch/library/fw/javadoc_pg/index.htmlです。                                                                               |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Nablarch Testing Framework Javadoc   | | Nablarch Testing Framework の Javadoc へのリンクとしてください。                                                              |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   nablarch/library/tfw/javadoc_pg/index.htmlです。                                                                              |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+| Nablarch FAQ                         | | Nablarch FAQ へのリンクとしてください。                                                                                       |
+|                                      |                                                                                                                                 |
+|                                      | **対応するNablarchコンテンツ**                                                                                                  |
+|                                      |   FAQ/index.htmlです。                                                                                                          |
++--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------+
+
+
+.. _Sphinx: http://sphinx-doc.org/
+
+
+```
+
+## Knowledge File
+
+- ID: `about-nablarch-doc`
+
+```json
+{
+  "id": "about-nablarch-doc",
+  "title": "開発ポータルサイト テンプレート",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要・コンテンツ・利用方法",
+      "hints": [
+        "開発ポータルサイト",
+        "テンプレート",
+        "利用方法",
+        "相対パス",
+        "ホスト名",
+        "build/html",
+        "source",
+        "Sphinx"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "プロジェクト概要",
+      "hints": [
+        "プロジェクト概要",
+        "マスタスケジュール",
+        "体制図",
+        "開発ポータルサイト リンク先"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設計関連ドキュメント",
+      "hints": [
+        "設計関連ドキュメント",
+        "要件定義書",
+        "外部設計書",
+        "データモデル設計",
+        "UI標準",
+        "DB設計標準",
+        "ID体系",
+        "非機能要件定義書",
+        "方式設計書",
+        "document_format",
+        "design_standard"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "実装関連ドキュメント",
+      "hints": [
+        "実装関連ドキュメント",
+        "開発環境構築ガイド",
+        "業務アプリケーション開発手順",
+        "開発プロセス",
+        "レビュー依頼ルール",
+        "Redmine",
+        "Jenkins",
+        "Subversion",
+        "プログラミング・単体テストガイド",
+        "コーディング規約",
+        "責務配置",
+        "Nablarch Application Framework解説書",
+        "単体テスト標準",
+        "実装FAQ",
+        "Nablarch FAQ",
+        "Javadoc"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**概要**: 各プロジェクトで設計者・実装者が必要とする情報を集約するために、それらの情報・資料へのリンク集となるページのテンプレートをHTMLとして提供します。\n\n確認方法: `build/html/index.html` をブラウザで開いてご確認ください。\n\n**コンテンツ**:\n- `build/html` — 開発ポータルサイトのテンプレートが含まれています\n- `source` — 開発ポータルサイトのHTMLを生成したSphinxソースコードが含まれています\n\n**利用手順**:\n1. `build/html/index.html` のダミーリンクを正しいリンク先に修正する（配布時はすべてダミー）\n2. タイトルとページの説明を修正する\n3. `build/html/` 配下を適切なサーバに配置し、`index.html` へのリンクをプロジェクトメンバーに展開する\n\n> **注意**: リンク先とポータルサイトの配置先が同一サーバの場合、ホスト名は含めず相対パスで記載すること。異なる拠点から異なるホスト名でアクセスする場合も同一ファイルを利用できる。\n\nOK（相対パス）:\n```html\n<a href=\"/svn/\">Subversion</a>\n```\n\nNG（絶対URL）:\n```html\n<a href=\"http://some.example.co.jp/svn/\">Subversion</a>\n```\n\nNablarchコンテンツのパスは、nablarch.zipを解凍したディレクトリからの相対パスで記載されている。",
+    "s2": "| コンテンツ | リンク先 |\n|---|---|\n| プロジェクト概要 | プロジェクトで作成したドキュメント |\n| マスタスケジュール | プロジェクトで作成したドキュメント |\n| 体制図 | プロジェクトで作成したドキュメント |",
+    "s3": "| コンテンツ | リンク先 | 対応Nablarchコンテンツ |\n|---|---|---|\n| 要件定義書 | プロジェクトで作成したドキュメント | — |\n| 外部設計書 | システム機能設計書などの外部設計書ディレクトリ | nablarch/standard/document_format（フォーマット） |\n| データモデル設計 | テーブル定義書などのデータモデル設計書ディレクトリ | nablarch/standard/document_format（フォーマット） |\n| UI標準 | UI標準ドキュメント | nablarch/standard/design_standard（サンプル） |\n| DB設計標準 | DB設計標準ドキュメント | nablarch/standard/design_standard（サンプル） |\n| ID体系 | プロジェクトで作成したドキュメント | — |\n| 非機能要件定義書 | プロジェクトで作成したドキュメント | — |\n| 方式設計書 | プロジェクトで作成したドキュメント | — |",
+    "s4": "| コンテンツ | リンク先 | 対応Nablarchコンテンツ |\n|---|---|---|\n| 開発環境構築ガイド | 開発環境構築手順ドキュメント | nablarch/guide/environment_guide（サンプル） |\n| 業務アプリケーション開発手順 | Nablarchのプログラミング・単体テストガイド | nablarch/guide/development_guide/03_DevelopmentStep/index.html |\n| 開発プロセス | プロジェクトで作成したドキュメント | — |\n| レビュー依頼ルール | プロジェクトで作成したドキュメント（レビュー依頼ルール：開発担当者の実装完了後に、レビュー依頼を行うために必要なチェック事項などを記載してあるドキュメント） | — |\n| Redmine | 課題管理システム | — |\n| Jenkins | 継続的インテグレーションサーバ | — |\n| Subversion | バージョン管理システム | — |\n| 責務配置 | 業務コンポーネントの責務配置ドキュメント。変更がなければ nablarch/library/fw/doc/determining_stereotypes.html（「業務コンポーネント責務配置例」）へのリンクとしてください。 | nablarch/library/fw/doc/determining_stereotypes.html |\n| 単体テスト標準 | 単体テスト標準ドキュメント | nablarch/standard/unit_test（サンプル） |\n| コーディング規約 | Java, SQLなどのコーディング規約ディレクトリ | nablarch/standard/coding_rule（サンプル） |\n| 実装FAQ | アプリケーション実装時参照FAQ。本ドキュメント内でフォーマットを提供していますので、適宜コピーして利用してください。 | — |\n| プログラミング・単体テストガイド | Nablarchのプログラミング・単体テストガイド | nablarch/guide/development_guide/03_DevelopmentStep/index.html |\n| Nablarch Application Framework解説書 | Nablarch AF解説書 | nablarch/library/fw/doc/index.html |\n| Nablarch Application Framework Javadoc | Nablarch AF Javadoc | nablarch/library/fw/javadoc_pg/index.html |\n| Nablarch Testing Framework Javadoc | Nablarch TF Javadoc | nablarch/library/tfw/javadoc_pg/index.html |\n| Nablarch FAQ | Nablarch FAQ | FAQ/index.html |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

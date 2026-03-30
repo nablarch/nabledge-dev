@@ -1,0 +1,308 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/handler/MessagingAction.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+同期応答電文送信処理用業務アクションハンドラのテンプレートクラス
+===========================================================================================
+
+
+**クラス名:** ``nablarch.fw.action.MessagingAction``
+
+---------------------------
+概要
+---------------------------
+本クラスは、 :doc:`../architectural_pattern/messaging_request_reply` における
+業務アクションハンドラを実装する際に使用するテンプレートクラスである。
+
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "MessagingAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++++
+
+本クラスを継承してアクションハンドラを実装するには、以下のテンプレートメソッドを必要に応じて実装する。
+
+  ====================  =============================================================================================
+  メソッド名            内容
+  ====================  =============================================================================================
+  onReceive()           | (必須実装)
+                        | 本ハンドラの往路処理の中で呼ばれる。
+                          要求電文オブジェクト( `RequestMessage`_ )の内容をもとに業務処理を実行し、
+                          応答電文オブジェクト( `ResponseMessage`_ )に応答電文の内容を格納してリターンする。
+  
+  
+  onError()             | (任意実装)
+                        | 業務トランザクションがロールバックされた時点で、 :doc:`TransactionManagementHandler`
+                          からコールバックされる。
+                          エラー応答電文を作成してリターンする。
+                          オーバーライドしなかった場合は、FW制御ヘッダのみが設定された電文がエラー応答として
+                          送信される。
+  
+  usesAutoRead()        | (任意実装)
+                        | 要求電文のデータ部の読込みを自動で行うか否かを指定する。
+                          要求電文のデータ部がマルチレコード/マルチフォーマット構成である場合は、
+                          このメソッドをオーバーライドしてfalseをリターンすることで、
+                          データ部の解析を手動で行うことができる。
+  
+  ====================  =============================================================================================
+
+以下のソースコードは、フレームワークが本クラスの各テンプレートメソッドを
+どのタイミングで呼び出すかを表したものである。
+
+  .. code-block:: java
+   
+    RequestMessage   req;
+    ResponseMessage  res; 
+    ExecutionContext ctx;
+
+
+    req = receive();                // (フレームワークが要求電文を受信)
+
+    try {
+        if ( usesAutoRead() ) {
+            req.readRecord();       // 要求電文のデータ部からデータレコードを自動的に読み込む。
+                                    // (主にシングルレコード形式の電文で使用する。)
+        }
+    
+        res = onReceive(req, ctx);  // 要求電文毎に呼ばれる。
+        commit();                   // (フレームワークが業務トランザクションをコミットする。)
+  
+    } catch(e) {
+        rollback();                 // (業務トランザクションをロールバックする。)
+        res = onError(e, req, ctx); // 業務処理で例外が発生し、業務トランザクションが
+                                    // ロールバックされた直後に呼ばれる。
+                                    // エラー応答電文をリターンして返す。
+    } finally {
+        send(res);                  // (フレームワークが応答電文を送信)
+    }
+
+  .. note::
+
+    このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、
+    ハンドラ構成によって制御されており、全く別物である。
+
+
+++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (業務データ部の自動読み込み)**
+    **usesAutoRead()** を実行し、その結果が **true** であった場合は、
+    `RequestMessage`_ の **readRecord()** メソッドを呼び出し、
+    要求電文内の業務データレコードの読み込みを行なう。
+
+    ここで読み込まれたデータレコードの内容は、 **getParamMap()** 等のメソッドにより、
+    レコードのフィールド名をキーとするMapとしてアクセスすることができる。
+
+  **2. (業務ロジックの実行)**
+    要求電文オブジェクトと実行コンテキストを引数として、 **onReceive()** メソッドを実行し、
+    その結果(応答電文オブジェクト)を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **3. (正常終了)**
+   **2.** で作成した応答電文オブジェクトをリターンし終了する。 
+
+
+.. _error:
+
+**[例外処理]**
+  **1a. (データ終端エラー)**
+    要求電文内のデータレコードを読み込んだ時点で、データ部の終端に達しなかった場合は、
+    実行時例外( `InvalidDataFormatException`_ )を送出する。
+    
+    .. note::
+      
+      電文内に複数のレコードが格納されうる場合は、 **usesAutoRead()** をオーバライドし、falseを返すこと。
+
+.. _callback:
+
+**[コールバック]**
+  **4. (エラー応答電文の制御)**
+    本ハンドラでの処理終了後、 :doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合、
+    **onError()** メソッドを実行し、その結果(エラー応答電文オブジェクト)を返す。
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `handlers-MessagingAction`
+
+```json
+{
+  "id": "handlers-MessagingAction",
+  "title": "同期応答電文送信処理用業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessagingAction",
+        "nablarch.fw.action.MessagingAction",
+        "onReceive",
+        "onError",
+        "usesAutoRead",
+        "RequestMessage",
+        "ResponseMessage",
+        "TransactionManagementHandler",
+        "同期応答電文",
+        "テンプレートクラス",
+        "業務アクションハンドラ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "usesAutoRead",
+        "readRecord",
+        "onReceive",
+        "onError",
+        "InvalidDataFormatException",
+        "RequestMessage",
+        "TransactionManagementHandler",
+        "getParamMap",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "コールバック",
+        "ハンドラ処理フロー"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.MessagingAction`\n\n:doc:`../architectural_pattern/messaging_request_reply` の業務アクションハンドラを実装するためのテンプレートクラス。\n\n以下のテンプレートメソッドを必要に応じて実装する。\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| onReceive() | 必須 | 往路処理内で呼ばれる。`RequestMessage` の内容をもとに業務処理を実行し、`ResponseMessage` に応答内容を格納してリターンする |\n| onError() | 任意 | :doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた時点でコールバックされる。エラー応答電文を作成してリターンする。オーバーライドしない場合はFW制御ヘッダのみが設定された電文がエラー応答として送信される |\n| usesAutoRead() | 任意 | 要求電文データ部の自動読み込みの有無を指定する。マルチレコード/マルチフォーマット構成の場合はオーバーライドしてfalseをリターンすることで手動解析が可能 |",
+    "s2": "**[往路処理]**\n1. **(業務データ部の自動読み込み)**: `usesAutoRead()` の結果が `true` の場合、`RequestMessage` の `readRecord()` を呼び出して業務データレコードを読み込む。読み込んだレコードは `getParamMap()` 等でフィールド名をキーとするMapとしてアクセス可能\n2. **(業務ロジックの実行)**: `onReceive()` を実行し、応答電文オブジェクトを取得する\n\n**[復路処理]**\n3. **(正常終了)**: 往路処理2で作成した応答電文オブジェクトをリターンして終了\n\n**[例外処理]**\n1a. **(データ終端エラー)**: データレコード読み込み時にデータ部の終端に達しなかった場合は `InvalidDataFormatException` を送出する\n\n> **注意**: 電文内に複数のレコードが格納されうる場合は `usesAutoRead()` をオーバーライドしてfalseを返すこと\n\n**[コールバック]**\n4. **(エラー応答電文の制御)**: ハンドラ処理後に :doc:`TransactionManagementHandler` で業務トランザクションがロールバックされた場合、`onError()` を実行しエラー応答電文オブジェクトを返す"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

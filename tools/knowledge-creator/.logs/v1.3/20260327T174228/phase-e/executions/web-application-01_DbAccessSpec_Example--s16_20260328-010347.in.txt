@@ -1,0 +1,538 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s5 (可変条件のSQLの場合)",
+      "description": "W11BB02Form class definition is omitted. Source shows the concrete Java fields: `private String loginId`, `private String userKanjiName`, `private String userKanaName`, `private String groupId`. While the SQL bind variable names in s2 imply these field names, the explicit Form class definition that confirms the Java field-to-bind-variable mapping is absent from s5.",
+      "source_evidence": "Source: `public class W11BB02Form { /** ログインID */ private String loginId; /** 漢字氏名 */ private String userKanjiName; /** カナ氏名 */ private String userKanaName; /** グループID */ private String groupId; }`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4 (like条件をもつ簡易検索の場合)",
+      "description": "PascalCase class names `W11BB01Form` and `SqlResultSet` appear in the s4 code example but are absent from s4's hints array.",
+      "source_evidence": "Source code in like条件 section: `W11BB01Form form = new W11BB01Form();` and `SqlResultSet rs = select.retrieve(form);`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)
+----------------------------------------------------------
+
+.. _update_single_data_by_map:
+
+1件のデータを更新する場合
+=========================
+.. code-block:: java
+
+    // 登録対象のMapを生成する。
+    Map<String, Object> sales = new HashMap<String, Object>();
+    sales.put("CST_ID", "00001");
+    sales.put("KINGAKU", "200");
+
+    ParameterizedSqlPStatement statement = getParameterizedSqlStatement("UPDATE_SALES");
+    int updCnt = statement.executeUpdateByMap(sales);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _update_multiple_data_by_map:
+
+複数件を更新する場合
+====================
+複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。
+
+.. code-block:: java
+
+    // 1回のexecuteBatchで更新する最大の件数
+    private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+    // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+
+    ParameterizedSqlPStatement statement = getParameterizedSqlStatement("UPDATE_SALES");
+
+    for (Map<String, ?> sales : salesList) {
+        statement.addBatchMap(sales);
+        if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+            statement.executeBatch();
+        }
+    }
+    if (statement.getBatchSize() != 0) {
+        statement.executeBatch();
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _object-select-label:
+
+--------------------------------------------------------------
+オブジェクトのフィールドの値の検索機能(オブジェクト(Form)編)
+--------------------------------------------------------------
+オブジェクトのフィールドの値を使用してデータを検索する際の実装例。
+
+* SQLファイルの内容
+
+ 本章で使用するSQL文は、全て下記SQLファイルに記述している。
+
+.. _object-form-retrieve-label:
+
+ ファイル名:nablarch/sample/ss11BB/CM211BB1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- 取得用
+   -- SQL_ID:GET
+   --------------------------
+   --【説明】指定するSQL文のバインド変数部分には、「?」を設定するのではなく、
+   -- 「:」＋「オブジェクトのフィールド名」とすること。
+   GET =
+   SELECT
+       USER_ID,
+       USER_NAME
+   FROM
+       USER_MTR
+   WHERE
+       USER_NAME = :userName
+   ORDER BY
+       USER_ID
+
+   --------------------------
+   -- 一覧取得用１
+   -- SQL_ID:GET_LIST1
+   --------------------------
+   -- 【説明】
+   -- 指定するSQL文のバインド変数部分には、「?」を設定するのではなく、「:」＋「オブジェクトのフィールド名」とすること
+   -- 前方一致の場合は、バインド変数名の末尾に「%」を付加する。    例：「:userName%」
+   -- 後方一致の場合は、バインド変数名の先頭に「%」を付加する。    例：「:%userName」
+   -- 部分一致の場合は、バインド変数名の前後に「%」を付加する。    例：「:%userName%」
+   GET_LIST1 =
+   SELECT
+       USER_ID,
+       USER_NAME
+   FROM
+       USER_MTR
+   WHERE
+       USER_NAME LIKE :userName%      -- 【説明】SQL文には、escape句を記述する必要はない。
+   ORDER BY
+       USER_ID
+
+   --------------------------
+   -- 一覧取得用2
+   -- SQL_ID:GET_LIST2
+   --------------------------
+   GET_LIST2 =
+   SELECT
+       USER_MTR.LOGIN_ID,
+       USER_MTR.USER_KANJI_NAME,
+       USER_MTR.USER_KANA_NAME,
+       USER_MTR.GROUP_ID,
+       USER_GROUP.GROUP_NAME
+   FROM
+       USER_MTR,
+       USER_GROUP
+   WHERE
+       $if (loginId)           {USER_MTR.LOGIN_ID        =    :loginId}
+       AND $if (userKanjiName) {USER_MTR.USER_KANJI_NAME LIKE :userKanjiName%}
+       AND $if (userKanaName)  {USER_MTR.USER_KANA_NAME  LIKE :userKanaName%}
+       AND $if (groupId)       {USER_MTR.GROUP_ID        =    :groupId}
+       AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID
+   ORDER BY
+       LOGIN_ID
+
+   --------------------------
+   -- 一覧取得用3
+   -- SQL_ID:GET_LIST3
+   --------------------------
+   -- 【説明】
+   --  動的にIN句を生成する場合には、バインド変数名の末尾に角括弧([])を付加すること。
+   -- 本SQLの場合は、バインド変数名が「kengenKbn」なので「kengenKbn[]」となる。
+   GET_LIST3 =
+   SELECT
+       USER_MTR.LOGIN_ID,
+       USER_MTR.USER_KANJI_NAME,
+       USER_MTR.USER_KANA_NAME,
+       USER_MTR.GROUP_ID,
+       USER_GROUP.GROUP_NAME
+   FROM
+       USER_MTR,
+       USER_GROUP
+   WHERE
+       $if (loginId)        {USER_MTR.LOGIN_ID   = :loginId}
+       AND $if (kengenKbn)  {USER_MTR.KENGEN_KBN IN (:kengenKbn[])}
+       AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID
+   ORDER BY
+       LOGIN_ID
+
+   --------------------------
+   -- 一覧取得用4
+   -- SQL_ID:GET_LIST4
+   --------------------------
+   --【説明】
+   -- 動的にORDER BY句を変更する場合には、$sort(フィールド名) {(ケース1) (ケース2) ・・・ (ケースn)}を指定する。
+   GET_LIST4 =
+   SELECT
+       USER_ID,
+       USER_NAME
+   FROM
+       USER_MTR
+   WHERE
+       USER_NAME = :userName
+   $sort(sortId) {
+       (1 USER_ID)
+       (2 USER_ID DESC)
+       (3 USER_NAME)
+       (4 USER_NAME DESC)
+   }
+
+   --------------------------
+   -- 全データ取得
+   -- SQL_ID:GET_ALL
+   --------------------------
+   GET_ALL =
+   SELECT USER_ID,
+       USER_NAME,
+       USER_NAME_KANA,
+       TEL,
+       MAIL_ADDRESS
+   FROM
+       USER_MST
+   WHERE
+       USER_ID = :userId
+   ORDER BY
+       USER_ID
+
+.. _using_simple_search:
+
+簡易検索機能を使用する場合
+==========================
+オブジェクトのフィールドの値を条件として、 :ref:`simple_search` を使用する際の実装例
+
+※SQL文の記述方法は、 :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GETを参照すること。
+
+.. code-block:: java
+
+    // オブジェクトの実装
+    public class W11BB01Form {
+        // ユーザID
+        private String userId;
+
+        // ユーザ名
+        private String userName;
+
+        // 【説明】本来はここに各フィールドのアクセスメソッドを定義する。
+
+    }
+
+    public void doRW11BB0101() {
+        // Formを生成し、検索条件を設定する。
+        W11BB01Form form = new W11BB01Form();
+        form.setUserName("ユーザ");
+
+        CM211BB1Component component = new CM211BB1Component();
+        component.get(form);
+    }
+
+    package nablarch.sample.ss11BB;
+
+    public class CM211BB1Component {
+
+        public SqlResultSet get(W11BB01Form form) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            ParameterizedSqlPStatement select = getParameterizedSqlStatement("GET");
+
+            return select.retrieve(form);
+        }
+    }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _using_simple_search_having_like_conditions:
+
+like条件をもつ簡易検索の場合
+============================
+検索条件にLIKE条件(部分一致検索)をもつSQL文の実装例を以下に示す。
+
+※SQL文の記述方法は、 :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST1を参照すること。
+
+.. code-block:: java
+
+    // オブジェクトの実装
+    public class W11BB01Form {
+        // ユーザID
+        private String userId;
+
+        // ユーザ名
+        private String userName;
+
+        // 【説明】本来はここに各フィールドのアクセスメソッドを定義する。
+
+    }
+
+    // Formを生成し、検索条件を設定する。
+    W11BB01Form form = new W11BB01Form();
+    form.setUserName("ユーザ");       // 【説明】like条件の項目であっても、escape処理を行う必要はない。
+
+    ParameterizedSqlPStatement select = getParameterizedSqlStatement("GET_LIST1");
+    SqlResultSet rs = select.retrieve(form);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. note::
+ 上記実装で、実際に実行されるSQL文
+
+   アプリケーションで定義したSQL文
+     SELECT USER_ID,       USER_NAME  FROM USER_MTR WHERE USER_NAME LIKE :userName% ORDER BY USER_ID
+
+   データベースに対して実行されるSQL文(バインド変数名が置き換えられ、escape句が自動で付加される。
+     SELECT USER_ID,       USER_NAME  FROM USER_MTR WHERE USER_NAME LIKE ? ESCAPE '\\' ORDER BY USER_ID
+
+   バインド変数にセットされる値
+     1(:userName)     =   [ユーザ%]
+
+.. warning::
+  後方、部分一致検索は、顧客要件で回避不可能である場合に、顧客と下記デメリットを合意した上で使用すること。
+
+  デメリットの内容::
+
+    後方、部分一致検索では、インデックスが使用されずにテーブルフルスキャンとなるため、極端な性能劣化が発生する。
+
+.. _variable-condition-sql-label:
+
+可変条件のSQLの場合
+===================
+下記の検索画面で、全ての条件が任意項目の場合を例に実装例を説明する。(前提として、どれか１つは入力されていないとSQL文は実行されないこととする。)
+
+※SQL文の記述方法は、 :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST2を参照すること。
+
+.. image:: _images/DbAccessSpec_variable_condition.jpg
+
+.. code-block:: java
+
+    // オブジェクトの実装
+    public class W11BB02Form {
+        /** ログインID */
+        private String loginId;
+        /** 漢字氏名 */
+        private String userKanjiName;
+        /** カナ氏名 */
+        private String userKanaName;
+        /** グループID */
+        private String groupId;
+
+    }
+
+    // 【説明】SQL文と条件が設定されたオブジェクトを指定して、ParameterizedSqlPStatementを生成する。
+    ParameterizedSqlPStatement select = getParameterizedSqlStatement("GET_LIST2", user);
+
+    // 【説明】条件が設定されたオブジェクトを引数にSQL文を実行する。
+    SqlResultSet rs = select.retrieve(user);
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+上記コードを実行した場合で、カナ氏名のみ入力がある場合の実行されるSQL文は下記の形式となる。
+
+.. code-block:: sql
+
+  SELECT USER_MTR.LOGIN_ID
+         USER_MTR.USER_KANJI_NAME,
+         USER_MTR.USER_KANA_NAME,
+         USER_MTR.GROUP_ID,
+         USER_GROUP.GROUP_NAME
+    FROM USER_MTR,
+         USER_GROUP
+   WHERE (0 = 0 OR (USER_MTR.LOGIN_ID        =    ?))             -- ログインIDは、未入力のため(0 = 0)が評価され、「user_mtr.login_id        =    ?」は評価されない。
+     AND (0 = 0 OR (USER_MTR.USER_KANJI_NAME LIKE ? ESCAPE '\'))  -- 漢字氏名は、未入力のため(0 = 0)が評価され、「user_mtr.user_kanji_name like ? escape '\'」は評価されない。
+     AND (0 = 1 OR (USER_MTR.USER_KANA_NAME  LIKE ? ESCAPE '\'))  -- カナ氏名は、入力ありのため(0 = 1)は評価されず、「user_mtr.user_kana_name  like ? escape '\'」が評価される。
+     AND (0 = 0 OR (USER_MTR.GROUP_ID        =    ?))             -- グループIDは、未入力のため(0 = 0)が評価され、「user_mtr.group_id        =    ?」は評価されない。
+     AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID
+   ORDER BY LOGIN_ID
+
+.. warning::
+  可変条件をもつSQL文の使用は、Webアプリケーションでのみ使用すること。
+
+  バッチ処理では、インプットデータであるファイルやデータベースのレイアウトが明確であるため、必ず条件が固定となるSQLを使用すること。
+  バッチ処理で可変条件となるSQL文を使用した場合、条件のカラムに作成されているインデックスが最適に使用されず、性能劣化の原因となることがある。
+
+.. warning::
+  可変条件の書式には一部制限がある。
+  以下が制限事項となる。実装時には、以下の制限に該当しないよう注意すること。
+
+  * | $ifを入れ子にする。
+    | 下記のように$ifをネストさせることはできない。
+    | $if(userName) {USER_NAME = :userName $if(UserId) {USER_ID = :userId}}
+
+  * | or条件を使用する。
+    | 本機能では、未入力の場合条件に「0 = 0 or」を付加して本来評価すべき条件式を評価しない方式を採用している。
+    | 例えば下記条件式があった場合、本来はuser_idを評価すべきであるが、user_nameが未入力であるため「(0 = 0 or (user_name = ?))」の結果が
+    | trueとなりuser_idを評価せずに全レコードが条件に一致するレコードとなる。
+    |
+    | WHERE ((0 = 0 or (user_name = ?))
+    |    OR (0 = 1 or (user_id = ?)))
+    |
+    | このため、or条件を使用する場合には可変条件形式のSQL文を使用せずに通常のSQL文として組み立てを行うこと。(下記実装コードのように実装を行うこと。)
+    | これにより、未入力の場合は「カラム名 = null」となり評価されないため、入力された項目のみを評価することが実現可能となる。
+
+    .. code-block:: sql
+
+       SELECT
+           USER_MTR.LOGIN_ID,
+           USER_MTR.USER_KANJI_NAME,
+           USER_MTR.USER_KANA_NAME,
+           USER_MTR.GROUP_ID,
+           USER_GROUP.GROUP_NAME
+       FROM
+           USER_MTR,
+           USER_GROUP
+       WHERE
+           (USER_MTR.LOGIN_ID        =    :loginId
+           OR USER_MTR.USER_KANJI_NAME LIKE :userKanjiName%
+           OR USER_MTR.USER_KANA_NAME  LIKE :userKanaName%
+           OR USER_MTR.GROUP_ID        =    :groupId)
+           AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID
+       ORDER BY
+           LOGIN_ID
+
+    |
+
+.. _changing_dynamically_in:
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s16",
+  "title": "オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "オブジェクトのフィールドの値の登録機能(Mapのサブクラス編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "executeUpdateByMap",
+        "addBatchMap",
+        "executeBatch",
+        "MapによるDB更新",
+        "バッチ更新",
+        "BATCH_EXECUTE_MAX_CNT",
+        "HashMap",
+        "getBatchSize"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "オブジェクトのフィールドの値の検索機能(オブジェクト(Form)編)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "バインド変数",
+        "LIKE検索",
+        "動的IN句",
+        "動的ORDER BY",
+        "$if",
+        "$sort",
+        "前方一致",
+        "後方一致",
+        "部分一致",
+        "可変条件SQL"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "簡易検索機能を使用する場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "retrieve",
+        "簡易検索",
+        "Formオブジェクト",
+        "W11BB01Form",
+        "SqlResultSet",
+        "CM211BB1Component"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "like条件をもつ簡易検索の場合",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "LIKE条件",
+        "escape自動付加",
+        "部分一致検索",
+        "前方一致検索",
+        "テーブルフルスキャン"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "可変条件のSQLの場合",
+      "hints": [
+        "$if",
+        "可変条件SQL",
+        "ParameterizedSqlPStatement",
+        "動的WHERE条件",
+        "バッチ処理制限",
+        "$ifネスト不可",
+        "OR条件制限",
+        "getParameterizedSqlStatement"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 1件のデータを更新する場合\n\n`executeUpdateByMap(Map)` でMapを使って1件更新する。\n\n```java\nMap<String, Object> sales = new HashMap<String, Object>();\nsales.put(\"CST_ID\", \"00001\");\nsales.put(\"KINGAKU\", \"200\");\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\nint updCnt = statement.executeUpdateByMap(sales);\n```\n\n> **注意**: SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。\n\n## 複数件を更新する場合\n\n複数件を一括で更新する場合の注意点は、 :ref:`JDBC標準機能<executeBatch-label>` と同じである。\n\n```java\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\nParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"UPDATE_SALES\");\n\nfor (Map<String, ?> sales : salesList) {\n    statement.addBatchMap(sales);\n    if (statement.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n        statement.executeBatch();\n    }\n}\nif (statement.getBatchSize() != 0) {\n    statement.executeBatch();\n}\n```\n\n> **注意**: SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。",
+    "s2": "**SQLファイル**: `nablarch/sample/ss11BB/CM211BB1Component.sql`\n\nバインド変数の記法ルール:\n- バインド変数は `?` ではなく `:`＋フィールド名を使用\n- 前方一致: `:フィールド名%`\n- 後方一致: `:%フィールド名`\n- 部分一致: `:%フィールド名%`\n- LIKE句にescape句の記述不要（フレームワークが自動付加）\n- 動的IN句: `:フィールド名[]`（末尾に`[]`を付加）\n- 動的ORDER BY: `$sort(フィールド名) {(ケース COLUMN) ...}`\n- 可変条件: `$if (フィールド名) {条件式}`\n\n```sql\n-- SQL_ID:GET（通常検索）\nGET =\nSELECT\n    USER_ID,\n    USER_NAME\nFROM\n    USER_MTR\nWHERE\n    USER_NAME = :userName\nORDER BY\n    USER_ID\n\n-- SQL_ID:GET_LIST1（前方一致）\nGET_LIST1 =\nSELECT\n    USER_ID,\n    USER_NAME\nFROM\n    USER_MTR\nWHERE\n    USER_NAME LIKE :userName%\nORDER BY\n    USER_ID\n\n-- SQL_ID:GET_LIST2（可変条件）\nGET_LIST2 =\nSELECT\n    USER_MTR.LOGIN_ID,\n    USER_MTR.USER_KANJI_NAME,\n    USER_MTR.USER_KANA_NAME,\n    USER_MTR.GROUP_ID,\n    USER_GROUP.GROUP_NAME\nFROM\n    USER_MTR,\n    USER_GROUP\nWHERE\n    $if (loginId)           {USER_MTR.LOGIN_ID        =    :loginId}\n    AND $if (userKanjiName) {USER_MTR.USER_KANJI_NAME LIKE :userKanjiName%}\n    AND $if (userKanaName)  {USER_MTR.USER_KANA_NAME  LIKE :userKanaName%}\n    AND $if (groupId)       {USER_MTR.GROUP_ID        =    :groupId}\n    AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\nORDER BY\n    LOGIN_ID\n\n-- SQL_ID:GET_LIST3（動的IN句）\nGET_LIST3 =\nSELECT\n    USER_MTR.LOGIN_ID,\n    USER_MTR.USER_KANJI_NAME,\n    USER_MTR.USER_KANA_NAME,\n    USER_MTR.GROUP_ID,\n    USER_GROUP.GROUP_NAME\nFROM\n    USER_MTR,\n    USER_GROUP\nWHERE\n    $if (loginId)        {USER_MTR.LOGIN_ID   = :loginId}\n    AND $if (kengenKbn)  {USER_MTR.KENGEN_KBN IN (:kengenKbn[])}\n    AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\nORDER BY\n    LOGIN_ID\n\n-- SQL_ID:GET_LIST4（動的ORDER BY）\nGET_LIST4 =\nSELECT\n    USER_ID,\n    USER_NAME\nFROM\n    USER_MTR\nWHERE\n    USER_NAME = :userName\n$sort(sortId) {\n    (1 USER_ID)\n    (2 USER_ID DESC)\n    (3 USER_NAME)\n    (4 USER_NAME DESC)\n}\n\n-- SQL_ID:GET_ALL（全データ取得）\n-- 注意: テーブル名はUSER_MST（他のSQLのUSER_MTRとは異なる）\nGET_ALL =\nSELECT USER_ID,\n    USER_NAME,\n    USER_NAME_KANA,\n    TEL,\n    MAIL_ADDRESS\nFROM\n    USER_MST\nWHERE\n    USER_ID = :userId\nORDER BY\n    USER_ID\n```",
+    "s3": "Formオブジェクトのフィールド値を条件に :ref:`simple_search` を使用する場合の実装例。SQL記法は :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET参照。\n\n```java\npublic class W11BB01Form {\n    private String userId;\n    private String userName;\n    // アクセスメソッドを定義する\n}\n\n// Form生成・条件設定\nW11BB01Form form = new W11BB01Form();\nform.setUserName(\"ユーザ\");\n\n// SQL実行\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET\");\nreturn select.retrieve(form);\n```\n\nコンポーネントクラスによる実装例:\n\n```java\npackage nablarch.sample.ss11BB;\n\npublic class CM211BB1Component {\n\n    public SqlResultSet get(W11BB01Form form) {\n        ParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET\");\n        return select.retrieve(form);\n    }\n}\n```\n\n> **注意**: SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。",
+    "s4": "LIKE条件の検索でもescape処理不要（フレームワークが自動付加する）。SQL記法は :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST1参照。\n\n```java\nW11BB01Form form = new W11BB01Form();\nform.setUserName(\"ユーザ\");  // LIKE条件でもescape処理不要\n\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST1\");\nSqlResultSet rs = select.retrieve(form);\n```\n\n実行されるSQL:\n- 定義: `WHERE USER_NAME LIKE :userName%`\n- 実行時: `WHERE USER_NAME LIKE ? ESCAPE '\\\\'`（escape句が自動付加）\n- バインド変数値: `[ユーザ%]`\n\n> **警告**: 後方・部分一致検索は、インデックスが使用されずテーブルフルスキャンとなるため、極端な性能劣化が発生する。顧客要件で回避不可能な場合のみ、顧客との合意の上で使用すること。",
+    "s5": "可変条件SQL(`$if`)使用時の注意事項。SQL記法は :ref:`SQLファイル<object-form-retrieve-label>` のSQL_ID:GET_LIST2参照。\n\n```java\n// SQL文と条件オブジェクトを指定してStatementを生成\nParameterizedSqlPStatement select = getParameterizedSqlStatement(\"GET_LIST2\", user);\nSqlResultSet rs = select.retrieve(user);\n```\n\n未入力フィールドは `(0 = 0 OR 条件式)` として評価されない。カナ氏名のみ入力の場合の実行SQL:\n\n```sql\nWHERE (0 = 0 OR (USER_MTR.LOGIN_ID        =    ?))            -- 未入力のため評価されない\n  AND (0 = 0 OR (USER_MTR.USER_KANJI_NAME LIKE ? ESCAPE '\\')) -- 未入力のため評価されない\n  AND (0 = 1 OR (USER_MTR.USER_KANA_NAME  LIKE ? ESCAPE '\\')) -- 入力ありのため評価される\n  AND (0 = 0 OR (USER_MTR.GROUP_ID        =    ?))            -- 未入力のため評価されない\n  AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\nORDER BY LOGIN_ID\n```\n\n> **警告**: 可変条件SQLはWebアプリケーションでのみ使用すること。バッチ処理では条件固定のSQLを使用すること（可変条件SQLはインデックスが最適に使用されず性能劣化の原因となる）。\n\n> **警告**: `$if` の制限事項:\n> - `$if` のネストは不可: `$if(userName) {... $if(userId) {...}}` は使用不可\n> - or条件との組み合わせは不可: 未入力フィールドが `(0 = 0 OR ...)` になるため、OR条件使用時は全レコードがマッチする。or条件を使う場合は通常のSQLとして実装すること（未入力の場合 `カラム名 = null` となり評価されない）\n\nor条件使用時の正しい実装例:\n\n```sql\nWHERE (USER_MTR.LOGIN_ID        =    :loginId\n    OR USER_MTR.USER_KANJI_NAME LIKE :userKanjiName%\n    OR USER_MTR.USER_KANA_NAME  LIKE :userKanaName%\n    OR USER_MTR.GROUP_ID        =    :groupId)\n    AND USER_GROUP.GROUP_ID = USER_MTR.GROUP_ID\nORDER BY LOGIN_ID\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

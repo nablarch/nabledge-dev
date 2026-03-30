@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-MultipartHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — contentLengthLimit table row",
+      "description": "The knowledge file adds 'リクエスト全体のサイズ上限' as an explanation for contentLengthLimit, but this phrase does not appear in the source. The source only states '1リクエストでアップロードできるデータの上限値（ファイルサイズの上限ではない。）' — it explicitly says it is not the file size limit, but never explicitly calls it 'the total request size limit'.",
+      "source_evidence": "設定項目テーブル: 「1リクエストでアップロードできるデータの上限値 (ファイルサイズの上限ではない。)」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "HttpAccessLogHandler and ThreadContextHandler are both mentioned in the important note about handler ordering (they are concrete examples of handlers that must be placed after MultipartHandler), but neither class name appears in the s1 hints.",
+      "source_evidence": "注意ブロック: 「:doc:`HttpAccessLogHandler` を拡張し、特定のリクエストパラメータを出力するケースや、:doc:`ThreadContextHandler` にリクエストパラメータの内容に依存したカスタムの属性を追加するようなケース」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "HttpRequest.getParam is referenced in the processing flow description (to retrieve non-file parameters) and is present in the s2 section body, but is absent from the s2 hints array.",
+      "source_evidence": "往路処理 2: 「アップロードファイル以外のパラメータについては、通常どおり `HttpRequest.getParam()`_ 等で取得できる。」"
+    }
+  ]
+}

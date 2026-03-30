@@ -1,0 +1,91 @@
+{
+  "id": "libraries-04_ObjectSave--s5",
+  "title": "使用例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用例",
+      "hints": [
+        "オブジェクトフィールド値のDB登録",
+        "使用例",
+        "処理シーケンス概要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "処理シーケンス",
+      "hints": [
+        "AppDbConnection",
+        "prepareParameterizedSqlStatement",
+        "BasicSqlPStatement",
+        "executeUpdateByObject",
+        "BasicSqlParameterParser",
+        "@UserId",
+        "@CurrentDateTime",
+        "@RequestId",
+        "UserIdAnnotationHandler",
+        "CurrentDateTimeAnnotationHandler",
+        "RequestIdAnnotationHandler",
+        "PreparedStatement",
+        "名前付きバインド変数",
+        "自動設定アノテーション",
+        "オブジェクトフィールド値DB登録"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Java実装例(Objectのフィールド値を登録する場合)",
+      "hints": [
+        "ParameterizedSqlPStatement",
+        "AppDbConnection",
+        "DbConnectionContext",
+        "executeUpdateByObject",
+        "@CurrentDateTime",
+        "@UserId",
+        "@RequestId",
+        "Java実装例",
+        "オブジェクトフィールド値登録"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicStatementFactory",
+        "BasicSqlParameterParserFactory",
+        "VariableConditionSyntaxConvertor",
+        "VariableInSyntaxConvertor",
+        "VariableOrderBySyntaxConvertor",
+        "CurrentDateTimeAnnotationHandler",
+        "UserIdAnnotationHandler",
+        "RequestIdAnnotationHandler",
+        "BasicStaticDataCache",
+        "FieldAndAnnotationLoader",
+        "BasicSystemTimeProvider",
+        "BasicApplicationInitializer",
+        "FieldAnnotationHandlerSupport",
+        "sqlParameterParserFactory",
+        "objectFieldCache",
+        "updatePreHookObjectHandlerList",
+        "likeEscapeChar",
+        "likeEscapeTargetCharList",
+        "allowArrayEmptyString",
+        "dateFormat",
+        "fieldAnnotationCache",
+        "dateProvider",
+        "loader",
+        "自動設定値",
+        "LIKE条件エスケープ",
+        "キャッシュ共有"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "オブジェクトのフィールドの値をデータベースに登録する場合のシーケンスと実装例を示す。",
+    "s2": "処理シーケンス（オブジェクトのフィールド値をDBに登録する場合）:\n\n![処理シーケンス図](assets/libraries-04_ObjectSave--s5/DbAccessSpec_ObjectStatementSequence.jpg)\n\n1. 登録対象オブジェクトを生成し、必要な情報を設定する。`@UserId`・`@CurrentDateTime` アノテーションが設定されているフィールドには値を設定不要。\n2. `AppDbConnection#prepareParameterizedSqlStatement` でSQL文実行用statementを取得する。SQL文のバインド変数はJDBC標準の`?`ではなく名前付き変数名(`:`+フィールド名)で記述する。`BasicSqlParameterParser` が解析しJDBC標準へ変換: (1) `?`に置換したSQL文、(2) `?`に対応するバインド変数名リスト。仕様が不十分な場合は :ref:`SqlParameterParser<sql-parameter-parser-label>` の実装クラスを追加して置き換えること。参照: :ref:`BasicSqlParameterParserの概要<basic-sql-parameter-parser-label>`\n3. `BasicSqlPStatement#executeUpdateByObject` でオブジェクトのフィールド値を登録する。\n4. オブジェクトのフィールドに自動設定値が設定される:\n\n| アノテーション | ハンドラ | 設定内容 |\n|---|---|---|\n| `@UserId` | `UserIdAnnotationHandler` | ユーザID |\n| `@CurrentDateTime` | `CurrentDateTimeAnnotationHandler` | システム日時 |\n| `@RequestId` | `RequestIdAnnotationHandler` | リクエストID |\n\n自動設定値の取得元は :ref:`AutoPropertyHandlerの実装クラスのクラス概要<db-object-save-class-label>` を参照。\n\n5. SQL文を実行する。バインド変数への設定は `PreparedStatement#setObject` を使用。フィールドの値が不正（DBへ登録できない値）の場合はSQL実行時例外が発生する。\n\n> **注意**: ハンドラクラスの追加・変更により、各プロジェクトで作成したアノテーションやカラム名で自動設定項目を判断できる。",
+    "s3": "**アノテーション**: `@CurrentDateTime`, `@UserId`, `@RequestId`\n\n```java\n// Entityクラス実装例\npublic class MyEntity {\n    private String cstId;\n    private long kingaku;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String insDateTime;\n    @UserId\n    private String insUserId;\n    @CurrentDateTime(format=\"yyyyMMddHHmmss\")\n    private String updDateTime;\n    @UserId\n    private String updUserId;\n    @RequestId\n    private String requestId;\n}\n\n// 自動設定項目以外を設定してDB登録\nMyEntity entity = new MyEntity();\nentity.setCstId(\"1000000001\");\nentity.setKingaku(1000);\n\nAppDbConnection perCon = DbConnectionContext.getConnection();\n\n// バインド変数は「:」+「フィールド名」で記述すること（「?」ではなく）\nParameterizedSqlPStatement insert = perCon.prepareParameterizedSqlStatement(\n    \"INSERT INTO MY_TABLE (CST_ID, KINGAKU, INS_DATE_TIME, INS_USER_ID, UPD_DATE_TIME, UPD_USER_ID, EXECUTION_ID, REQUEST_ID)\"\n  + \" VALUES (:cstId, :kingaku, :insDateTime, :insUserId, :updDateTime, :updUserId, :executionId, :requestId)\");\ninsert.executeUpdateByObject(entity);\n```\n\n> **注意**: SQL文の外部化を推奨。外部化した場合の実装例は :ref:`sql-gaibuka-label` を参照。",
+    "s4": "**クラス**: `nablarch.core.db.statement.BasicStatementFactory`, `nablarch.core.db.statement.BasicSqlParameterParserFactory`, `nablarch.core.db.statement.sqlconvertor.VariableConditionSyntaxConvertor`, `nablarch.core.db.statement.sqlconvertor.VariableInSyntaxConvertor`, `nablarch.core.db.statement.sqlconvertor.VariableOrderBySyntaxConvertor`, `nablarch.core.db.statement.autoproperty.CurrentDateTimeAnnotationHandler`, `nablarch.core.db.statement.autoproperty.UserIdAnnotationHandler`, `nablarch.core.db.statement.autoproperty.RequestIdAnnotationHandler`, `nablarch.core.cache.BasicStaticDataCache`, `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader`, `nablarch.core.date.BasicSystemTimeProvider`, `nablarch.core.repository.initialization.BasicApplicationInitializer`\n\n設定ファイル例:\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n    <property name=\"sqlParameterParserFactory\">\n        <component class=\"nablarch.core.db.statement.BasicSqlParameterParserFactory\">\n            <property name=\"sqlConvertors\">\n                <list>\n                    <component class=\"nablarch.core.db.statement.sqlconvertor.VariableConditionSyntaxConvertor\">\n                        <property name=\"allowArrayEmptyString\" value=\"false\" />\n                    </component>\n                    <component class=\"nablarch.core.db.statement.sqlconvertor.VariableInSyntaxConvertor\" />\n                    <component class=\"nablarch.core.db.statement.sqlconvertor.VariableOrderBySyntaxConvertor\" />\n                </list>\n            </property>\n        </component>\n    </property>\n    <property name=\"objectFieldCache\" ref=\"fieldAnnotationCache\"/>\n    <property name=\"updatePreHookObjectHandlerList\">\n        <list>\n            <component class=\"nablarch.core.db.statement.autoproperty.CurrentDateTimeAnnotationHandler\">\n                <property name=\"dateFormat\" value=\"yyyyMMdd\"/>\n                <property name=\"fieldAnnotationCache\" ref=\"fieldAnnotationCache\"/>\n                <property name=\"dateProvider\">\n                    <component class=\"nablarch.core.date.BasicSystemTimeProvider\"/>\n                </property>\n            </component>\n            <component class=\"nablarch.core.db.statement.autoproperty.UserIdAnnotationHandler\">\n                <property name=\"fieldAnnotationCache\" ref=\"fieldAnnotationCache\"/>\n            </component>\n            <component class=\"nablarch.core.db.statement.autoproperty.RequestIdAnnotationHandler\">\n                <property name=\"fieldAnnotationCache\" ref=\"fieldAnnotationCache\"/>\n            </component>\n        </list>\n    </property>\n    <property name=\"likeEscapeChar\" value=\"\\\"/>\n    <property name=\"likeEscapeTargetCharList\" value=\"%,％,_,＿\"/>\n</component>\n\n<component name=\"fieldAnnotationCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\">\n        <component class=\"nablarch.core.statement.autoproperty.FieldAndAnnotationLoader\"/>\n    </property>\n    <property name=\"loadOnStartup\" value=\"false\"/>\n</component>\n\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"fieldAnnotationCache\"/>\n        </list>\n    </property>\n</component>\n```\n\n**a) BasicStatementFactory プロパティ:**\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| `sqlParameterParserFactory` | ○ | `nablarch.core.db.statement.SqlParameterParserFactory` 実装クラスを設定。通常は `BasicSqlParameterParserFactory` |\n| `objectFieldCache` | ○ | `nablarch.core.cache.StaticDataCache` 実装クラスを設定 |\n| `updatePreHookObjectHandlerList` | ○ | `nablarch.core.ObjectHandler` 実装クラスのリストを設定。提供クラス: `CurrentDateTimeAnnotationHandler`, `UserIdAnnotationHandler`, `RequestIdAnnotationHandler` |\n| `likeEscapeChar` | ○ | LIKE条件エスケープ文字。未設定時デフォルトは `\\`。設定値は `likeEscapeTargetCharList` 未設定でも自動エスケープされる |\n| `likeEscapeTargetCharList` | ○ | LIKE条件でエスケープ必要な文字をカンマ区切りで設定。未設定時デフォルトは `%`, `_` |\n\n**a)-1. BasicSqlParameterParserFactory プロパティ:**\n\n| プロパティ名 | 説明 |\n|---|---|\n| `sqlConvertors` | `SqlConvertor` 実装クラスのリストを設定。省略時デフォルト: `VariableConditionSyntaxConvertor`, `VariableInSyntaxConvertor`, `VariableOrderBySyntaxConvertor` |\n\n**a)-2. VariableConditionSyntaxConvertor プロパティ:**\n\n| プロパティ名 | 説明 |\n|---|---|\n| `allowArrayEmptyString` | 配列(Collection)の要素数が1でその値が空文字列またはnullの場合に条件に含めるか否か。`false`設定時は`(0 = 0) or`条件を付加して除外。省略時デフォルトは`true` |\n\n> **注意**: 画面アプリケーションでは`allowArrayEmptyString`を`false`に設定すること。リクエストパラメータのキーが存在して値が空文字列の場合、精査後オブジェクトの配列サイズは1・値は空文字列となり、$if構文の条件を除外するのが正しい動作となるため。バッチ処理では条件配列に要素が存在する場合は必ず条件に含める必要があるため`true`（デフォルト値）を設定すること。\n\n**b)-1. CurrentDateTimeAnnotationHandler プロパティ:**\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| `dateFormat` | ○ | デフォルト日付フォーマット。`java.text.SimpleDateFormat` 準拠 |\n| `dateProvider` | ○ | システム日付取得クラス。通常は `nablarch.core.date.BasicSystemTimeProvider` |\n| `fieldAnnotationCache` | ○ | `nablarch.core.cache.StaticDataCache` 実装クラスを設定 |\n\n**b)-2. UserIdAnnotationHandler / b)-3. RequestIdAnnotationHandler プロパティ:**\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| `fieldAnnotationCache` | ○ | `nablarch.core.cache.StaticDataCache` 実装クラスを設定 |\n\n**b)-4. BasicStaticDataCache (`fieldAnnotationCache`) プロパティ** (`FieldAnnotationHandlerSupport` のサブクラスである `CurrentDateTimeAnnotationHandler` や `UserIdAnnotationHandler` などから参照される):\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| `loader` | ○ | `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader` を設定 |\n\n> **重要**: `loader` には必ず `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader` を設定すること。使用クラスと密結合であるため。本来はこの設定は不変であるため設定ファイルに記述する必要はないが、`StaticDataCache` の実装クラスである `BasicStaticDataCache` を置き換える可能性があるため設定ファイルに記述している。\n\n> **重要**: `BasicStatementFactory`, `CurrentDateTimeAnnotationHandler`, `UserIdAnnotationHandler`, `RequestIdAnnotationHandler` は同一の `BasicStaticDataCache` をref属性で参照すること。別々のキャッシュを設定した場合、同一情報が別々のメモリにキャッシュされ不必要なメモリ消費が発生し、メモリ不足によりシステムに重大な影響を与える可能性がある。\n\n**c) initializer の設定:**\n本機能で使用する `BasicStaticDataCache` を初期化する設定を行う（`nablarch.core.repository.initialization.BasicApplicationInitializer` を使用）。詳細は :doc:`../02_Repository` を参照。"
+  }
+}

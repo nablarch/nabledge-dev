@@ -1,0 +1,415 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/02/02_01_Repository_config.rst`
+- Format: `rst`
+
+```
+コンポーネント設定ファイル 要素 リファレンス
+----------------------------------------------------
+コンポーネント設定ファイルで使用できるそれぞれの要素について、以下に記述する。
+
+.. _`repository_elements_component-configuration`:
+
+component-configuration 要素
+================================================
+コンポーネント設定ファイルのルート要素
+
+この要素が持つ子要素を下記表に示す。
+
+==================================================================================================  =============  ==============================================================
+要素名                                                                                              出現回数       説明
+==================================================================================================  =============  ==============================================================
+:ref:`import<repository_elements_import>`                                                           0..*           他のコンポーネント設定ファイルの読み込みを指定する。
+:ref:`config-file<repository_elements_config-file>`                                                 0..*           環境設定ファイルの読み込みを指定する。
+:ref:`component<repository_elements_component>`                                                     0..*           Java Beans 形式のクラスをコンポーネントとして定義する。
+:ref:`list<repository_elements_list>`                                                               0..*           | List をコンポートとして定義する。
+                                                                                                                   | List のエントリには、他のコンポーネントや文字列を含めることができる。
+:ref:`map<repository_elements_map>`                                                                 0..*           | Map をコンポーネントとして定義する。
+                                                                                                                   | Map のエントリのキーと値には、他のコンポーネントや文字列を含めることができる。
+==================================================================================================  =============  ==============================================================
+
+この要素は属性を持たない。
+
+
+.. _`repository_elements_import`:
+
+import 要素
+================================================
+他のコンポーネント設定ファイルの読み込みを指定する。
+
+この要素は子要素を持たない。
+
+この要素が持つ属性を下記表に示す。
+
+==========================================  ===============================================================
+属性名                                      説明
+==========================================  ===============================================================
+file(必須)                                  | インポートするファイル名を指定する。
+                                            | 単純にパスを記述した場合、クラスパスにあるファイルをインポートする。
+                                            | "file://" から始まるパスの場合、ローカルファイルシステム上のファイルをインポートする。
+                                            | また、 dir を指定した場合には "*" を使用してワイルドカードを使用した複数ファイルのインポートが行える。
+dir                                         | インポート対象のディレクトリを、本属性が記述されているコンポーネント設定ファイルからの相対パスで指定する。
+                                            | この指定を行った場合、指定したディレクトリ直下のファイルがインポートされる。
+==========================================  ===============================================================
+
+
+.. _`repository_elements_config-file`:
+
+config-file 要素
+================================================
+環境設定ファイルの読み込みを指定する。
+
+この要素は子要素を持たない。
+
+この要素が持つ属性を下記表に示す。
+
+==========================================  ===============================================================
+属性名                                      説明
+==========================================  ===============================================================
+file(必須)                                  | 読み込むファイル名を指定する。
+                                            | 単純にパスを記述した場合、クラスパスにあるファイルを読み込む。
+                                            | "file://" から始まるパスの場合、ローカルファイルシステム上のファイルを読み込む。
+                                            | また、 dir を指定した場合には "*" を使用してワイルドカードを使用した複数ファイルの読み込みが行える。
+dir                                         | 読み込むファイルのディレクトリを、本属性が記述されているコンポーネント設定ファイルからの相対パスで指定する。
+                                            | この指定を行った場合、指定したディレクトリ直下のファイルが読み込まれる。
+encoding                                    | 環境設定ファイルの文字エンコーディングを指定する。
+                                            | 省略した場合、UTF-8エンコーディングが使用される。
+==========================================  ===============================================================
+
+
+.. _`repository_elements_component`:
+
+component 要素
+================================================
+コンポーネントを定義する。
+
+この要素が持つ子要素を下記表に示す。
+
+==================================================================================================  =============  ==============================================================
+要素名                                                                                              出現回数       説明
+==================================================================================================  =============  ==============================================================
+:ref:`property<repository_elements_property>`                                                       0..*           コンポーネントのプロパティに設定する値を指定する。
+==================================================================================================  =============  ==============================================================
+
+この要素が持つ属性を下記表に示す。
+
+==========================================  ===============================================================
+属性名                                      説明
+==========================================  ===============================================================
+name                                        コンポーネント名を指定する。
+class(必須)                                 コンポーネントのクラス名を指定する。
+autowireType                                | コンポーネントに対する自動インジェクションの方法を指定する。
+                                            | 指定できる値は下記いずれか。
+                                              
+                                              * ByType: 型による自動インジェクションを行う。
+                                              * ByName: 名前による自動インジェクションを行う。
+                                              * None: 自動インジェクションを行わない。
+                                            
+                                            | 省略した場合、ByType。
+==========================================  ===============================================================
+
+
+.. _`repository_elements_property`:
+
+property 要素
+================================================
+コンポーネントのプロパティを設定する。
+
+この要素が持つ子要素を下記表に示す。
+
+=================================================  =============  ==============================================================
+要素名                                             出現回数       説明
+=================================================  =============  ==============================================================
+:ref:`component<repository_elements_component>`    0..1           プロパティに設定するコンポーネントを指定する。
+:ref:`list<repository_elements_list>`              0..1           プロパティに設定する List を指定する。
+:ref:`map<repository_elements_map>`                0..1           プロパティに設定する Map を指定する。
+=================================================  =============  ==============================================================
+
+この要素が持つ属性を下記表に示す。
+
+==========================================  ===============================================================
+属性名                                      説明
+==========================================  ===============================================================
+name                                        プロパティ名を指定する。
+value                                       プロパティに設定する値を直接指定する。
+ref                                         プロパティに設定するコンポーネントの、コンポーネント名を指定する。
+==========================================  ===============================================================
+
+
+.. _`repository_elements_list`:
+
+list 要素
+================================================
+List をコンポーネントとして定義する。
+
+この要素が持つ子要素を下記表に示す。
+
+==================================================================================================  =============  ==============================================================
+要素名                                                                                              出現回数       説明
+==================================================================================================  =============  ==============================================================
+:ref:`component<repository_elements_component>`                                                     0..*           List の要素とするコンポーネントを直接記述する。
+:ref:`component-ref<repository_elements_component-ref>`                                             0..*           List の要素とする、この要素の外で定義したコンポーネントを指定する。
+:ref:`value<repository_elements_value>`                                                             0..*           List の要素とする文字列を指定する。
+==================================================================================================  =============  ==============================================================
+
+この要素が持つ属性を下記表に示す。
+
+============================  ===========================================================================
+属性名                        説明
+============================  ===========================================================================
+name                          登録する List のコンポーネント名。
+============================  ===========================================================================
+
+
+.. _`repository_elements_component-ref`:
+
+component-ref 要素
+================================================
+List の要素となる、他に定義したコンポーネントを指定する。
+
+この要素は子要素を持たない。
+
+この要素が持つ属性を下記表に示す。
+
+============================  ===================================================================================================================================
+属性名                        説明
+============================  ===================================================================================================================================
+name                          List の要素とする、この要素の外で定義したコンポーネントのコンポーネント名を指定する。
+============================  ===================================================================================================================================
+
+
+.. _`repository_elements_value`:
+
+value 要素
+================================================
+| List の要素となる文字列を指定する。
+| この要素に指定した内容が、そのまま List の要素となる。
+| 
+| 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。
+| 埋め込みの方法は :ref:`repository_use_env_value_at_component_setting` を参照。
+| 
+| この要素は属性を持たない。
+
+
+.. _`repository_elements_map`:
+
+map 要素
+================================================
+Map をコンポーネントとして定義する。
+
+この要素が持つ子要素を下記表に示す。
+
+==================================================================================================  =============  ==============================================================
+要素名                                                                                              出現回数       説明
+==================================================================================================  =============  ==============================================================
+:ref:`entry<repository_elements_entry>`                                                             0..*           Map に含まれる Entry を定義する。
+==================================================================================================  =============  ==============================================================
+
+この要素が持つ属性を下記表に示す。
+
+
+============================  ===========================================================================
+属性名                        説明
+============================  ===========================================================================
+name                          登録する Map のコンポーネント名。
+============================  ===========================================================================
+
+
+.. _`repository_elements_entry`:
+
+entry 要素
+================================================
+Map の Entry を定義する。
+
+この要素には、 key属性、key-name属性、key-component要素、 のいずれか1つと value属性、value-name属性、value-component要素 のいずれか1つを必ず指定する。
+
+この要素が持つ子要素を下記表に示す。
+
+==================================================================================================  =============  ==============================================================
+要素名                                                                                              出現回数       説明
+==================================================================================================  =============  ==============================================================
+:ref:`key-component<repository_elements_key-component>`                                             0..1           Entry のキーとなるコンポーネントを直接記述する。
+:ref:`value-component<repository_elements_value-component>`                                         0..1           Entry の値となるコンポーネントを直接記述する。
+==================================================================================================  =============  ==============================================================
+
+この要素が持つ属性を下記表に示す。
+
+============================  ===========================================================================
+属性名                        説明
+============================  ===========================================================================
+key                           | Entry のキーとなる文字列を直接記述する。
+                              | 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。
+                              | 埋め込みの方法は :ref:`repository_use_env_value_at_component_setting` を参照。
+key-name                      | 要素の外で定義したコンポーネントのコンポーネント名を設定し、
+                              | そのコンポーネントを Entry のキーとして指定する。
+value                         | Entry の値となる文字列を直接記述する。
+                              | 文字列には、環境設定ファイルに記述した値の埋め込み機能が使用できる。
+                              | 埋め込みの方法は :ref:`repository_use_env_value_at_component_setting` を参照。
+value-name                    | 要素の外で定義したコンポーネントのコンポーネント名を設定し、
+                              | そのコンポーネントを Entry の値として指定する。
+============================  ===========================================================================
+
+
+
+.. _`repository_elements_key-component`:
+
+key-component 要素
+================================================
+Map の Entry のキーとなるコンポーネントを定義する。
+
+この要素は、 :ref:`component <repository_elements_component>` と同じ子要素、属性を持つ。
+
+
+
+.. _`repository_elements_value-component`:
+
+value-component 要素
+================================================
+Map の Entry の値となるコンポーネントを定義する。
+
+この要素は、 :ref:`component <repository_elements_component>` と同じ子要素、属性を持つ。
+```
+
+## Knowledge File
+
+- ID: `libraries-02_01_Repository_config--s28`
+
+```json
+{
+  "id": "libraries-02_01_Repository_config--s28",
+  "title": "コンポーネント設定ファイル 要素 リファレンス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "コンポーネント設定ファイル 要素 リファレンス",
+      "hints": [
+        "component-configuration",
+        "import",
+        "config-file",
+        "component",
+        "property",
+        "list",
+        "map",
+        "entry",
+        "component-ref",
+        "value",
+        "key-component",
+        "value-component",
+        "autowireType",
+        "encoding",
+        "key-name",
+        "value-name",
+        "ref",
+        "コンポーネント定義",
+        "自動インジェクション",
+        "環境設定ファイル読み込み",
+        "DI設定",
+        "コンポーネント設定ファイル"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## component-configuration 要素\n\nコンポーネント設定ファイルのルート要素。属性なし。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`import<repository_elements_import>` | 0..* | 他のコンポーネント設定ファイルの読み込みを指定 |\n| :ref:`config-file<repository_elements_config-file>` | 0..* | 環境設定ファイルの読み込みを指定 |\n| :ref:`component<repository_elements_component>` | 0..* | Java Beans形式のクラスをコンポーネントとして定義 |\n| :ref:`list<repository_elements_list>` | 0..* | Listをコンポーネントとして定義。エントリには他コンポーネントや文字列を含められる |\n| :ref:`map<repository_elements_map>` | 0..* | Mapをコンポーネントとして定義。エントリのキーと値には他コンポーネントや文字列を含められる |\n\n## import 要素\n\n他のコンポーネント設定ファイルの読み込みを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| file | ○ | インポートするファイル名。単純パスの場合クラスパス上のファイル、`file://`始まりの場合ローカルファイルシステム上のファイル。`dir`指定時は`*`ワイルドカードで複数ファイルのインポート可。 |\n| dir | | インポート対象ディレクトリを、本設定ファイルからの相対パスで指定。指定ディレクトリ直下のファイルがインポートされる。 |\n\n## config-file 要素\n\n環境設定ファイルの読み込みを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| file | ○ | 読み込むファイル名。単純パスの場合クラスパス上のファイル、`file://`始まりの場合ローカルファイルシステム上のファイル。`dir`指定時は`*`ワイルドカードで複数ファイルの読み込み可。 |\n| dir | | 読み込むファイルのディレクトリを相対パスで指定。指定ディレクトリ直下のファイルが読み込まれる。 |\n| encoding | | 環境設定ファイルの文字エンコーディング。省略時はUTF-8。 |\n\n## component 要素\n\nコンポーネントを定義する。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`property<repository_elements_property>` | 0..* | コンポーネントのプロパティに設定する値を指定 |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | コンポーネント名 |\n| class | ○ | コンポーネントのクラス名 |\n| autowireType | | 自動インジェクションの方法。`ByType`（型による）/ `ByName`（名前による）/ `None`（自動インジェクションなし）。省略時は`ByType`。 |\n\n## property 要素\n\nコンポーネントのプロパティを設定する。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`component<repository_elements_component>` | 0..1 | プロパティに設定するコンポーネントを指定 |\n| :ref:`list<repository_elements_list>` | 0..1 | プロパティに設定するListを指定 |\n| :ref:`map<repository_elements_map>` | 0..1 | プロパティに設定するMapを指定 |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | プロパティ名 |\n| value | | プロパティに設定する値を直接指定 |\n| ref | | プロパティに設定するコンポーネントのコンポーネント名を指定 |\n\n## list 要素\n\nListをコンポーネントとして定義する。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`component<repository_elements_component>` | 0..* | Listの要素とするコンポーネントを直接記述 |\n| :ref:`component-ref<repository_elements_component-ref>` | 0..* | この要素の外で定義したコンポーネントをListの要素として参照 |\n| :ref:`value<repository_elements_value>` | 0..* | Listの要素とする文字列を指定 |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | 登録するListのコンポーネント名 |\n\n## component-ref 要素\n\nListの要素となる、他に定義したコンポーネントを指定する。子要素なし。\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | Listの要素とする、この要素の外で定義したコンポーネントのコンポーネント名 |\n\n## value 要素\n\nListの要素となる文字列を指定する。この要素に指定した内容がそのままListの要素となる。属性なし。文字列には環境設定ファイルに記述した値の埋め込み機能が使用できる（:ref:`repository_use_env_value_at_component_setting` 参照）。\n\n## map 要素\n\nMapをコンポーネントとして定義する。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`entry<repository_elements_entry>` | 0..* | Mapに含まれるEntryを定義 |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| name | | 登録するMapのコンポーネント名 |\n\n## entry 要素\n\nMapのEntryを定義する。key属性・key-name属性・key-component要素のいずれか1つと、value属性・value-name属性・value-component要素のいずれか1つを必ず指定する。\n\n| 子要素名 | 出現回数 | 説明 |\n|---|---|---|\n| :ref:`key-component<repository_elements_key-component>` | 0..1 | Entryのキーとなるコンポーネントを直接記述 |\n| :ref:`value-component<repository_elements_value-component>` | 0..1 | Entryの値となるコンポーネントを直接記述 |\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| key | | Entryのキーとなる文字列を直接記述。環境設定ファイルの値の埋め込み可（:ref:`repository_use_env_value_at_component_setting` 参照）。 |\n| key-name | | 外部定義コンポーネントのコンポーネント名を設定し、そのコンポーネントをEntryのキーとして指定 |\n| value | | Entryの値となる文字列を直接記述。環境設定ファイルの値の埋め込み可（:ref:`repository_use_env_value_at_component_setting` 参照）。 |\n| value-name | | 外部定義コンポーネントのコンポーネント名を設定し、そのコンポーネントをEntryの値として指定 |\n\n## key-component 要素\n\nMapのEntryのキーとなるコンポーネントを定義する。:ref:`component <repository_elements_component>` と同じ子要素・属性を持つ。\n\n## value-component 要素\n\nMapのEntryの値となるコンポーネントを定義する。:ref:`component <repository_elements_component>` と同じ子要素・属性を持つ。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

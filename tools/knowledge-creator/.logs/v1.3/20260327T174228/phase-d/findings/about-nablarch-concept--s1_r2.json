@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-concept--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 section content",
+      "description": "The section content preserves RST-specific `:doc:` navigation syntax (e.g., `:doc:`../handler/TransactionManagementHandler``) verbatim. This RST markup is not useful in a knowledge file context; plain class names should be used instead.",
+      "source_evidence": "Source lists handlers as '- :doc:`../handler/TransactionManagementHandler`' etc. Knowledge file copies this RST syntax directly into the section body."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "s3 hints are missing PascalCase class names `RequestPathJavaPackageMapping` and `MultiThreadExecutionHandler`, both of which appear as actual class names in the XML configuration example embedded in s3.",
+      "source_evidence": "Source s3 XML: `<component class=\"nablarch.fw.handler.RequestPathJavaPackageMapping\">` and `<component class=\"nablarch.fw.handler.MultiThreadExecutionHandler\">`. Neither appears in s3 hints (they are in s2 hints only)."
+    }
+  ]
+}

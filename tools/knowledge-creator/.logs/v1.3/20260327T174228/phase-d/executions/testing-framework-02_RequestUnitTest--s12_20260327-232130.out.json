@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest--s12",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "`getRequestScopedVar` is missing from s1 hints. This is a key API method used repeatedly across all sub-examples (multiple SqlResultSet, entity/form, SqlRow cases) to retrieve values from request scope.",
+      "source_evidence": "context.getRequestScopedVar(\"allGroup\"), context.getRequestScopedVar(\"allUseCase\"), context.getRequestScopedVar(\"systemAccount\"), context.getRequestScopedVar(\"users\"), context.getRequestScopedVar(\"user\"), context.getRequestScopedVar(\"pageData\")"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections.s4",
+      "description": "Source has 7 distinct headings at the split level but the knowledge file has only 5 sections. Two separate source sections are merged into s4: 「テスト結果確認（目視）」(underlined with dashes) and 「HTMLダンプ出力結果」(underlined with equals, anchored as `html_dump_dir`). While the content is preserved, these are separate top-level sections in the source with distinct anchors.",
+      "source_evidence": "Source headings at split level: 固有の処理を追加する場合 / ダウンロードファイルのテスト / テスト起動方法 / テスト結果確認（目視）/ HTMLダンプ出力結果 / リクエスト単体テストクラス作成時の注意点 / (ThreadContext and transaction sub-sections). Knowledge file maps these to s1–s5 (5 sections)."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-01_UnitTestOutline--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings are minor omissions of supplementary context. The knowledge file already conveys the core actionable information: test targets (Form/Component) are described without any processing-type restriction, and the four out-of-scope items for request unit testing are listed. Neither omission would cause a developer to misuse the framework or make incorrect implementation decisions.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 (クラス単体テスト概要)",
+      "impact": "low",
+      "justification": "The absence of the explicit cross-cutting statement (「バッチや画面オンラインといった処理の形態に依存しない共通のものとなっている」) is marginal. The knowledge file already describes Form/Component testing without restricting it to any specific processing type, so a developer reading the file can correctly apply these concepts to both batch and online contexts. No misapplication risk exists. Phase E likely left it unresolved because the existing content implicitly covers the scope and adding the explicit statement offers minimal incremental value."
+    },
+    {
+      "category": "omission",
+      "location": "s3 (画面オンライン処理におけるリクエスト単体テスト) — note on out-of-scope items",
+      "impact": "low",
+      "justification": "The knowledge file correctly lists all four out-of-scope items and directs developers to 取引単体テスト for those checks. The omitted technical reason (HTTP simulation vs. actual browser submission) is architectural background that helps explain the boundary but does not change how developers plan or execute tests. A developer who knows which items are excluded and where to test them can work correctly without the 'why'. Phase E likely judged the 'what' sufficient for practical guidance and deferred the explanatory 'why' as low-priority supplementary detail."
+    }
+  ]
+}

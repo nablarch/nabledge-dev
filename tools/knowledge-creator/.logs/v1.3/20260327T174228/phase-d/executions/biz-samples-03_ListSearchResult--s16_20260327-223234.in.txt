@@ -1,0 +1,413 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/biz_sample/doc/03_ListSearchResult.rst`
+- Format: `rst`
+
+```
+検索結果
+---------------------------------------------------------------------------------------------------------------------------------
+resultSetName(必須)                    | 検索結果をリクエストスコープから取得する際に使用する名前。
+headerRowFragment(必須)                | ヘッダ行のJSPフラグメント。ヘッダ行については、 :ref:`ListSearchResult_TableElement` を参照。
+bodyRowFragment(必須)                  | ボディ行のJSPフラグメント。ボディ行については、 :ref:`ListSearchResult_TableElement` を参照。
+====================================== ==========================================================================================
+
+.. _ListSearchResult_ResultCountElement:
+
+検索結果件数
+=====================================
+検索結果件数は、useResultCount属性にtrue(デフォルトはtrue)が指定され、検索結果がリクエストスコープに存在する場合に表示される。\
+検索結果件数は、デフォルトでは下記の書式で出力される。
+
+.. code-block:: jsp
+
+ 検索結果 <%-- ListSearchInfoのresultCountプロパティ --%>件
+
+デフォルトの書式を変更したい場合は、resultCountFragment属性にJSPフラグメントを指定する。\
+resultCountFragment属性の指定例を下記に示す。\
+JSPフラグメントは、カスタムタグから呼び出されて評価されるため、listSearchInfoName属性で指定した名前を使用して\
+ListSearchInfoオブジェクトにアクセスすることが可能となる。
+
+.. code-block:: jsp
+
+ <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                     searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                     resultSetName="searchResult">
+     
+     <%-- resultCountFragment属性にJSPフラグメントを指定する。 --%>
+     <jsp:attribute name="resultCountFragment">
+        [サーチ結果 <n:write name="searchCondition.resultCount" />頁]
+     </jsp:attribute>
+     
+     <%-- その他の属性は省略。 --%>
+     
+ </nbs:listSearchResult>
+
+上記指定後の検索結果件数の書式を下記に示す。
+
+.. code-block:: jsp
+
+ [サーチ結果 <%-- ListSearchInfoのresultCountプロパティ --%>頁]
+
+.. _ListSearchResult_PagingElement:
+
+ページング
+=====================================
+ページングは、usePaging属性にtrue(デフォルトはtrue)が指定された場合に表示される。\
+ページングの画面要素を下記に示す。\
+ページングは、現在のページ番号とページを移動するためのサブミット要素から構成される。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingFull.jpg
+   :scale: 60
+
+|
+
+ページング全体は、検索結果件数が1件以上の場合に表示される。\
+ページング全体が表示される前提で、ページングの画面要素の表示について下記に示す。
+
+====================================== ==========================================================================================
+ページングの画面要素                   説明
+====================================== ==========================================================================================
+現在のページ番号                       現在のページ番号は常に表示される。
+最初、前へ、次へ、最後                 現在のページ番号から各画面要素が示すページに遷移可能な場合は、サブミット可能な状態で表示される。
+                                       遷移不可の場合は、リンクであればラベル、ボタンであれば使用不可な状態で表示される。
+ページ番号                             ページ番号全体(1..n)は、総ページ数が2以上の場合のみ表示される。
+                                       各ページ番号は、上記の「最初」や「前へ」と同様に、遷移可否に応じて表示される。
+====================================== ==========================================================================================
+
+ページングの画面要素で指定可能な属性のうち、代表的なものを下記に示す。
+全ての属性の詳細については、 :ref:`ListSearchResult_Tag` を参照。
+
+* 各画面要素の使用有無
+* 各画面要素のラベル(最初、前へ、次へ、最後など)
+
+ * 現在のページ番号はJSPフラグメントによる変更
+ * ページ番号はページ番号をラベルに使用するため変更不可
+
+* 各サブミット要素に使用するタグ(n:submitLink、n:submit、n:buttonのいずれか)
+
+**ページング時の検索条件**
+
+ページング時の検索条件は、前回検索時の条件（現在表示されている検索結果を取得した時の条件）を使用する。
+つまり、検索条件を変更してからページングを行った場合には、変更した検索条件の値は破棄されることを意味する。
+
+検索条件の維持は、画面間で入力値を持ち回る場合と同様に、ウィンドウスコープを使用して実現する。\
+このため、検索条件と検索結果一覧を一つの画面に配置する場合、検索条件と検索結果一覧のフォームを分けて実装する必要がある。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_FormDivide.jpg
+   :scale: 60
+
+|
+
+**ページング使用時に検索結果が減少した場合の動作**
+
+ここでは、ページングの各サブミット要素で検索結果ページを切り替えてる最中に、他のユーザオペレーションなどにより、\
+検索結果が減少した場合の動作について解説する。
+
+本フレームワークでは、指定されたページ番号に基づき検索を実施し、ページングの各画面要素の表示を行う。\
+下記に検索結果が減少した場合のページングの動作例を示す。
+
+前提として、検索結果の取得件数(1ページの表示件数)は20件とする。
+
+まず、検索を実行し検索結果が44件であったとする。下記は3ページ目を選択した後のページングの表示である。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingBefore.jpg
+   :scale: 60
+
+|
+
+次に2ページ目(又は前へ)を選択した後、かつ検索結果が10件に減少した場合のページングの表示と表示内容の説明を示す。\
+2ページ目に対する検索結果としてページングの各画面要素が表示される。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingAfter.jpg
+   :scale: 60
+
+|
+
+====================================== ==========================================================================================
+ページングの画面要素                   表示内容の説明
+====================================== ==========================================================================================
+現在のページ番号                       2ページ目が指定され、検索結果が20件以下のため、2/1ページとなる。
+最初、前へ                             現在2ページ目で検索結果が10件のため、前のページに遷移可能となりリンクで表示される。
+次へ、最後                             現在2ページ目で検索結果が10件のため、次のページに遷移不可となりラベルで表示される。
+ページ番号                             検索結果が10件で総ページ数が1のため、ページ番号は表示されない。
+====================================== ==========================================================================================
+
+現在のページ番号とサブミット要素の対応が取れているため、操作不能な状態にならず、\
+サブミット要素を選択することで検索結果のページに遷移することが可能である。\
+(もちろん検索フォームから検索しなおせば、1ページ目からの検索結果となる)
+
+次に「前へ」を選択した後のページングの表示を示す。現在のページ番号と総ページ数の対応が正常な状態に戻る。
+
+|
+
+.. image:: ./_images/03/ListSearchResult_PagingAfter2.jpg
+   :scale: 60
+
+|
+
+.. _ListSearchResult_TableElement:
+
+検索結果
+=====================================
+検索結果の画面要素を下記に示す。\
+検索結果は、列見出しを表示するヘッダ行と、行データを表示するボディ行から構成される。
+
+.. image:: ./_images/03/ListSearchResult_TableFull.jpg
+   :scale: 60
+
+検索結果は、検索結果がリクエストスコープに存在する場合は常に表示される。\
+検索結果が0件の場合は、ヘッダ行のみ表示される。
+
+ヘッダ行とボディ行は、それぞれheaderRowFragment属性、bodyRowFragment属性にJSPフラグメントで指定する。\
+ボディ行のJSPフラグメントは、検索結果のループ内(JSTLのc:forEachタグ)で呼び出され評価される。\
+このため、ボディ行のJSPフラグメントで行データ(c:forEachタグのvar属性)とステータス(c:forEachタグのstatus属性)にアクセスするために、\
+下記の属性を設けている。
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+varRowName                             | ボディ行のフラグメントで行データ(c:forEachタグのvar属性)を参照する際に使用する変数名。
+                                       | デフォルトは"row"。
+varStatusName                          | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。
+                                       | デフォルトは"status"。
+                                       
+                                         .. note::
+                                         
+                                          n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\
+                                          エラーが発生し値を取得できない。\
+                                          n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\
+                                          下記に使用例を示す。
+                                          
+                                          .. code-block:: jsp
+                                          
+                                           <n:set var="rowCount" value="${status.count}" />
+                                           <n:write name="rowCount" />
+                                       
+varCountName                           | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。
+                                       | デフォルトは"count"。
+varRowCountName                        | 検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。
+                                       | デフォルトは"rowCount"。
+====================================== ==========================================================================================
+
+さらに、ボディ行では、1行おきに背景色を変えたい場合に対応するために、ボディ行のclass属性を指定する下記の属性を設けている。
+
+====================================== ==========================================================================================
+属性                                   説明
+====================================== ==========================================================================================
+varOddEvenName                         | ボディ行のclass属性を参照する際に使用する変数名。
+                                       | この変数名は、1行おきにclass属性の値を変更したい場合に使用する。
+                                       | デフォルトは"oddEvenCss"。
+oddValue                               | ボディ行の奇数行に使用するclass属性。
+                                       | デフォルトは"nablarch_odd"。
+evenValue                              | ボディ行の偶数行に使用するclass属性。
+                                       | デフォルトは"nablarch_even"。
+====================================== ==========================================================================================
+
+ユーザ検索の指定例を下記に示す。タグファイルのプレフィックスは nbs とする。
+
+.. code-block:: jsp
+
+ <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                       searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                       resultSetName="searchResult">
+     
+     <%-- ヘッダ行のJSPフラグメント指定。 --%>
+     <jsp:attribute name="headerRowFragment">
+         <tr>
+             <th>ログインID</th>
+             <th>漢字氏名</th>
+             <th>カナ氏名</th>
+             <th>グループ</th>
+             <th>内線番号</th>
+             <th>メールアドレス</th>
+         </tr>
+     </jsp:attribute>
+     
+     <%-- ボディ行のJSPフラグメント指定。 --%>
+     <jsp:attribute name="bodyRowFragment">
+     
+         <%-- デフォルトの変数名"oddEvenCss"を使用してclass属性にアクセスする。 --%>
+         <tr class="<n:write name='oddEvenCss' />">
+         
+             <%-- デフォルトの変数名"row"を使用して行データにアクセスする。 --%>
+             <td>[<n:write name="count" />]<br/>[<n:write name="rowCount" />]<br/><n:write name="row.loginId" /></td>
+             <td><n:write name="row.kanjiName" /></td>
+             <td><n:write name="row.kanaName" /></td>
+             <td><n:write name="row.ugroupId" />:<n:write name="row.ugroupName" /></td>
+             <td><n:write name="row.extensionNumberBuilding" />-<n:write name="row.extensionNumberPersonal" /></td>
+             <td><n:write name="row.mailAddress" /></td>
+             
+         </tr>
+     </jsp:attribute>
+ </nbs:listSearchResult>
+
+上記指定後の検索結果を下記に示す。
+
+
+.. image:: ./_images/03/ListSearchResult_TableStatus.jpg
+   :scale: 60
+
+.. _ListSearchResult_Sort:
+
+--------------------------------
+```
+
+## Knowledge File
+
+- ID: `biz-samples-03_ListSearchResult--s16`
+
+```json
+{
+  "id": "biz-samples-03_ListSearchResult--s16",
+  "title": "検索結果",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "検索結果",
+      "hints": [
+        "nbs:listSearchResult",
+        "ListSearchResult",
+        "resultSetName",
+        "headerRowFragment",
+        "bodyRowFragment",
+        "useResultCount",
+        "resultCountFragment",
+        "usePaging",
+        "varRowName",
+        "varStatusName",
+        "varCountName",
+        "varRowCountName",
+        "varOddEvenName",
+        "oddValue",
+        "evenValue",
+        "ListSearchInfo",
+        "検索結果件数",
+        "ページング",
+        "検索条件維持",
+        "ウィンドウスコープ",
+        "検索結果テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "ListSearchResult_Sort",
+        "ソート"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## nbs:listSearchResult の検索結果関連属性\n\n| 属性名 | 必須 | 説明 |\n|---|---|---|\n| resultSetName | ○ | 検索結果をリクエストスコープから取得する際に使用する名前 |\n| headerRowFragment | ○ | ヘッダ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n| bodyRowFragment | ○ | ボディ行のJSPフラグメント（:ref:`ListSearchResult_TableElement` 参照） |\n\n## 検索結果件数\n\n`useResultCount`属性が`true`（デフォルト: `true`）かつ検索結果がリクエストスコープに存在する場合に表示される。\n\nデフォルト書式:\n\n```jsp\n検索結果 <%-- ListSearchInfoのresultCountプロパティ --%>件\n```\n\n`resultCountFragment`属性にJSPフラグメントを指定することでカスタム書式に変更可能。フラグメント内では`listSearchInfoName`属性で指定した名前でListSearchInfoオブジェクトにアクセス可能。\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                    searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                    resultSetName=\"searchResult\">\n    <jsp:attribute name=\"resultCountFragment\">\n       [サーチ結果 <n:write name=\"searchCondition.resultCount\" />頁]\n    </jsp:attribute>\n</nbs:listSearchResult>\n```\n\n## ページング\n\n`usePaging`属性が`true`（デフォルト: `true`）の場合に表示される。ページング全体は検索結果件数が1件以上の場合に表示される。\n\n| ページング要素 | 表示ルール |\n|---|---|\n| 現在のページ番号 | 常に表示 |\n| 最初、前へ、次へ、最後 | 遷移可能な場合はサブミット可能な状態で表示。遷移不可の場合はリンクならラベル、ボタンなら使用不可状態で表示 |\n| ページ番号（1..n） | 総ページ数が2以上の場合のみ全ページ番号を表示 |\n\nカスタマイズ可能な設定（全属性は :ref:`ListSearchResult_Tag` 参照）:\n- 各画面要素の使用有無\n- 各画面要素のラベル（最初、前へ、次へ、最後など）。現在のページ番号はJSPフラグメントで変更可能。ページ番号のラベルは変更不可。\n- 各サブミット要素に使用するタグ（n:submitLink、n:submit、n:buttonのいずれか）\n\n**ページング時の検索条件の注意点**\n\nページング時は前回検索時の条件（現在表示の検索結果を取得した条件）を使用する。検索条件を変更後にページングした場合、変更した検索条件の値は破棄される。\n\n検索条件の維持にはウィンドウスコープを使用するため、検索条件と検索結果一覧を同一画面に配置する場合は、それぞれのフォームを分けて実装する必要がある。\n\n**検索結果が減少した場合の動作**\n\n指定されたページ番号に基づき検索を実施してページング表示を行う。検索結果減少時でも現在のページ番号とサブミット要素の対応が保たれ、操作不能な状態にはならない。\n\n例（取得件数20件/ページで3ページ目表示中に検索結果が44件→10件に減少し、2ページ目を選択した場合）:\n\n| ページング要素 | 表示内容 |\n|---|---|\n| 現在のページ番号 | 2/1ページ（2ページ目が指定され、検索結果20件以下のため） |\n| 最初、前へ | リンク表示（前ページへ遷移可能） |\n| 次へ、最後 | ラベル表示（次ページへ遷移不可） |\n| ページ番号 | 非表示（総ページ数が1のため） |\n\n## 検索結果テーブル\n\n検索結果はリクエストスコープに存在する場合は常に表示される。0件の場合はヘッダ行のみ表示される。\n\nヘッダ行は`headerRowFragment`属性、ボディ行は`bodyRowFragment`属性にJSPフラグメントで指定する。ボディ行のJSPフラグメントはJSTLの`c:forEach`タグのループ内で呼び出される。\n\nボディ行フラグメントで行データとステータスにアクセスするための属性:\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varRowName | `\"row\"` | 行データ（c:forEachのvar属性）を参照する変数名 |\n| varStatusName | `\"status\"` | ステータス（c:forEachのstatus属性）を参照する変数名 |\n| varCountName | `\"count\"` | ステータスのcountプロパティを参照する変数名 |\n| varRowCountName | `\"rowCount\"` | 検索結果のカウント（取得開始位置＋ステータスカウント）を参照する変数名 |\n\n> **注意**: `n:write`タグでステータスにアクセスするとエラーが発生する。`n:set`タグを使用すること。\n> ```jsp\n> <n:set var=\"rowCount\" value=\"${status.count}\" />\n> <n:write name=\"rowCount\" />\n> ```\n\n1行おきに背景色を変えるためのclass属性関連:\n\n| 属性名 | デフォルト値 | 説明 |\n|---|---|---|\n| varOddEvenName | `\"oddEvenCss\"` | ボディ行のclass属性を参照する変数名 |\n| oddValue | `\"nablarch_odd\"` | 奇数行のclass属性値 |\n| evenValue | `\"nablarch_even\"` | 偶数行のclass属性値 |\n\nユーザ検索の実装例:\n\n```jsp\n<nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                      searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"\n                      resultSetName=\"searchResult\">\n    <jsp:attribute name=\"headerRowFragment\">\n        <tr>\n            <th>ログインID</th>\n            <th>漢字氏名</th>\n            <th>カナ氏名</th>\n            <th>グループ</th>\n            <th>内線番号</th>\n            <th>メールアドレス</th>\n        </tr>\n    </jsp:attribute>\n    <jsp:attribute name=\"bodyRowFragment\">\n        <tr class=\"<n:write name='oddEvenCss' />\">\n            <td>[<n:write name=\"count\" />]<br/>[<n:write name=\"rowCount\" />]<br/><n:write name=\"row.loginId\" /></td>\n            <td><n:write name=\"row.kanjiName\" /></td>\n            <td><n:write name=\"row.kanaName\" /></td>\n            <td><n:write name=\"row.ugroupId\" />:<n:write name=\"row.ugroupName\" /></td>\n            <td><n:write name=\"row.extensionNumberBuilding\" />-<n:write name=\"row.extensionNumberPersonal\" /></td>\n            <td><n:write name=\"row.mailAddress\" /></td>\n        </tr>\n    </jsp:attribute>\n</nbs:listSearchResult>\n```",
+    "s2": "なし"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

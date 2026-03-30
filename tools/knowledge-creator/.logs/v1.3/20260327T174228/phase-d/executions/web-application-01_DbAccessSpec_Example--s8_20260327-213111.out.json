@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — 大量データの定義の注意書き",
+      "description": "The knowledge file adds the parenthetical \"（取得開始位置ではなく取得件数が基準）\" to the definition, but this phrasing has no basis in the source. The source's parenthetical is \"(検索対象のテーブルの件数ではない)\" — meaning the result count (not the table size) is what matters. The knowledge file replaces \"table count vs result count\" with \"starting position vs count\", which is a misrepresentation derived from a code example, not from the definition itself.",
+      "source_evidence": "大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "DbAccessSupport is referenced in the source code for this section (the class extends DbAccessSupport and uses getSqlPStatement which is inherited from it), but is absent from s3's hints array.",
+      "source_evidence": "public class CM311AC1Component extends DbAccessSupport { ... SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\"); }"
+    }
+  ]
+}

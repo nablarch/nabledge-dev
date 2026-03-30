@@ -1,0 +1,41 @@
+{
+  "file_id": "java-static-analysis-UnpublishedApi",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3",
+      "description": "The introductory explanation 'ClassC が ClassB を継承、ClassB が ClassA を継承の場合、ClassA.methodA は公開済み、ClassB.methodB は非公開' derives from the image InheritClasses.jpg, which is not readable from the RST text source. The RST only shows `.. image:: ./_image/InheritClasses.jpg` followed by the code example. The specific inheritance chain and which methods are public/private on which classes cannot be verified from the source text.",
+      "source_evidence": "Source: `下図のような継承関係を考える。` followed by `.. image:: ./_image/InheritClasses.jpg` — no textual description of ClassA/ClassB/ClassC inheritance or per-class method visibility."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3",
+      "description": "The code comments '(ClassAのmethodAが公開されているため)' and '(ClassBのmethodBが非公開のため)' are not present in the source. The source code example only has `// 使用可能` and `// 使用不可` without any explanatory reasons appended.",
+      "source_evidence": "Source: `hoge.methodA(); // 使用可能` and `hoge.methodB(); // 使用不可` — no parenthetical explanations in the original comments."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "前提条件 section (no corresponding section in knowledge file)",
+      "description": "The source has a 前提条件 section with the prerequisite 'Nablarch開発環境構築ガイドに従って開発環境を構築済みであること。' This is not covered anywhere in the knowledge file.",
+      "source_evidence": "Source section 前提条件: `* Nablarch開発環境構築ガイドに従って開発環境を構築済みであること。`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (warning text)",
+      "description": "The source warning explicitly states 'デフォルトの2つの設定ファイルとは別に' (two default config files), but the knowledge file renders this as 'デフォルトの設定ファイルとは別に', silently dropping the specific number '2つの'.",
+      "source_evidence": "Source bold text: `**デフォルトの2つの設定ファイルとは別に、自プロジェクト用の設定ファイルを設定ファイルディレクトリに配置し...**`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "Nablarch-specific PascalCase class names referenced in the section content are missing from the hints array: HttpResponse, HttpRequest, CodeUtil. These appear prominently in the config file examples and a user may search for them.",
+      "source_evidence": "Source examples include: `nablarch.common.code.CodeUtil`, `nablarch.fw.web.HttpResponse.HttpResponse()`, `nablarch.fw.web.HttpResponse.write(byte[])`, `nablarch.fw.web.HttpRequest.setParam(...)`"
+    }
+  ]
+}

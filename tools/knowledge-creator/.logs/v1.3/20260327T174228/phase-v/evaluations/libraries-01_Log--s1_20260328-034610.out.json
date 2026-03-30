@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-01_Log--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three residual findings are minor omissions that do not prevent users from accomplishing tasks with the logging framework. The core information is either already present in the knowledge file content or only peripherally missing. No finding rises to medium or high impact.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s3",
+      "impact": "low",
+      "justification": "「ログの出力先を変更できる」は独立した要求項目だが、知識ファイルのs3には「ログ毎にログレベルと出力先を設定可能」という内容が既に存在し、概念的に包含されている。エージェントがこの機能について質問に答える際に実質的な支障はない。Phase E ログでは s3 セクション本文が途中で切れており、修正が適用されたか確認できないが、影響は軽微なため未適用でも問題ない。"
+    },
+    {
+      "category": "omission",
+      "location": "s4 (ロガーファクトリの設定方法)",
+      "impact": "low",
+      "justification": "`nablarch.core.util.FileUtil#getResource(String)` への参照は、ファイルパス指定の詳細を知りたいユーザ向けの補足情報。知識ファイルのs4には「クラスパスとファイルシステム上のパスのどちらを指定してもよい」という実用上必要な情報は記載済み。ユーティリティクラス名がなくてもユーザはログ設定を正しく行える。Phase E でこのクラス名追記が見送られたのは、既存記述で実用上十分と判断されたためと推測される。"
+    },
+    {
+      "category": "hints_missing",
+      "location": "s4",
+      "impact": "low",
+      "justification": "`log.properties` はヒントに含まれていないが、s4 セクション本文には「未指定時はクラスパス直下の `log.properties` を使用」と明記されており、`nablarch.log.filePath` や `ロガーファクトリ設定` など関連ヒントで当セクションへの到達は可能。デフォルトファイル名を直接検索するユースケースは限定的で、影響は軽微。Phase E でヒント追加が行われなかったのは minor 判定のため修正優先度が低かったと考えられる。"
+    }
+  ]
+}

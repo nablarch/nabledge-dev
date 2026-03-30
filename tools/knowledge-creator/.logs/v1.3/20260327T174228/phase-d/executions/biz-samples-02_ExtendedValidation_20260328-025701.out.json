@@ -1,0 +1,13 @@
+{
+  "file_id": "biz-samples-02_ExtendedValidation",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 (メールアドレスバリデーション)",
+      "description": "The source h2 section 'メールアドレスバリデーション' contains well over 2000 characters of plain text and has an h3 subsection 'メールアドレス精査仕様' (underlined with ======). The knowledge file merges both into a single s2 section without splitting at the h3 boundary. Per V3 rules, when a source h2 has ≥2000 chars AND an h3 exists but the knowledge does not split, this should be reported. This also explains the automated warning 'Section count 5 < source headings 7' — the 7 counted headings include 'メールアドレス精査仕様' as a distinct h3.",
+      "source_evidence": "Source h3: 'メールアドレス精査仕様\\n==============================' containing all bullet-point validation rules for the full address, local part, and domain part — a substantial standalone subsection that the knowledge file folds into s2."
+    }
+  ]
+}

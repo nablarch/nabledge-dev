@@ -1,0 +1,349 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/02_FunctionDemandSpecifications/01_Core/04/04_Statement.rst`
+- Format: `rst`
+
+```
+Javaの実装例(SQL文指定の場合)
+-----------------------------
+
+.. code-block:: java
+
+    // ******** 注意 ********
+    // テーブルのスキーマ情報から動的にSQL文を組み立てる必要があるフレームワークの機能において、
+    // 下記のような実装を行う。
+    // 通常、SQLインジェクション対策のためSQL文を外部ファイル化するため、
+    // 各アプリケーション・プログラマはこのような実装を行わない。
+
+    // Statementの取得
+    AppDbConnection connection = DbConnectionContext.getConnection(transaction.getDbTransactionName());
+    SqlPStatement statement = connection.prepareStatement(
+            "SELECT "
+              + "USER_ID, "
+              + "NAME, "
+              + "TEL, "
+              + "AGE "
+          + "FROM "
+              + "USER_MTR "
+          + "WHERE "
+              + "USER_ID = ?");
+
+    // 条件を設定し、SQL文を実行
+    statement.setObject(1, "00001");
+    SqlResultSet resultSet = statement.retrieve();
+
+    // 検索結果を処理する。
+    for (SqlRow row : resultSet) {
+        String userId = row.getString("user_id");
+        String name = row.getString("name");
+        String tel = row.getString("tel");
+        String age = row.getString("age");
+    }
+
+
+設定ファイル例
+==============
+.. code-block:: xml
+
+    <!-- StatementFactoryの設定 -->
+    <component name="statementFactory"
+               class="nablarch.core.db.statement.BasicStatementFactory">
+        <property name="sqlStatementExceptionFactory">
+            <!-- BasicSqlStatementExceptionFactoryの設定　-->
+            <component class="nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory">
+                <!-- Oracleデータベースの場合の一意制約違反のエラーコード -->
+                <property name="duplicateErrorSqlState" value=""/>
+                <property name="duplicateErrorErrCode" value="1"/>
+            </component>
+        </property>
+        <property name="fetchSize" value="500"/>
+        <property name="queryTimeout" value="600" />
+        <!-- ResultSetConvertorの設定 -->
+
+        <!== SQLを外部ファイルからロードするための設定 -->
+        <property name="sqlLoader">
+            <component class="nablarch.core.db.statement.BasicSqlLoader">
+                <property name="fileEncoding" value="utf-8"/>
+                <property name="extension" value="sql"/>
+            </component>
+        </property>
+    </component>
+
+設定内容詳細
+------------
+\a) StatementFactoryの設定
+
+ ====================================== ========================================================================================================================
+ property名                             設定内容
+ ====================================== ========================================================================================================================
+ sqlStatementExceptionFactory(必須)     nablarch.core.db.statement.SqlStatementExceptionFactoryを実装したクラスの設定を行う。
+
+                                        本サンプルでは、「nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory」を設定している。
+
+ resultSetConvertor                     nablarch.core.db.statement.ResultSetConvertorを実装したクラスの設定を行う。
+
+                                        本サンプルでは、変換を行わないため設定を行っていない。
+                                        SELECT結果のカラムデータを変換する必要がある場合は、ResultSetConvertorの実装クラスを設定する。
+
+ fetchSize                              プリフェッチサイズを設定する。
+ 
+                                        本設定値を省略した場合は、デフォルトの設定値である10が適用される。
+
+                                        本設定値を変更することにより、データベースサーバとのラウンドトリップ数を削減でき性能改善が期待できる。
+                                        本設定値は、Statement単位で変更が可能となっている。個別のStatementで変更したい場合には、
+                                        SqlPStatement#setFetchSizeを呼び出し変更すること。
+
+                                        .. note::
+                                          SqlPStatement#setFetchSizeを呼び出した場合の変更後の値は、値が変更されたインスタンスでのみ有効となっている。
+
+                                          .. code-block:: java
+                                             
+                                             SqlPStatement statement1 = connection.prepareStatement("select * from test");
+                                             // statement1のfetchSizeは、100となる。
+                                             // この値は、再びsetFetchSizeが呼び出されるまで有効である。
+                                             statement1.setFetchSize(100);
+
+                                             // AppDbConnection#prepareStatementを呼び出した場合のfetchSizeの値は、設定ファイルの値となる。
+                                             // これは、同一のSQL文であっても同じ振る舞いとなる。
+                                             SqlPStatement statement2 = connection.prepareStatement("select * from test");
+
+
+                                          これは、 :ref:`statementReuse<db-dataSourceConnectionFactory-label>` の設定内容に関わらず、同一の振る舞いとなる。
+
+ queryTimeout                           クエリータイムアウトの秒数を設定する。
+ 
+                                        本設定値を省略した場合は、デフォルトの設定値である0（無制限）が適用される。
+
+                                        本設定値を変更することにより、SQLの実行結果を待っている途中で処理をタイムアウトさせることができる。
+                                        本設定値は、Statement単位で変更が可能となっている。個別のStatementで変更したい場合には、
+                                        SqlPStatement#setQueryTimeoutを呼び出し変更すること。
+
+                                        クエリータイムアウトの詳細は、JDKのJavaDoc(java.sql.Statement#setQueryTimeout(int))及び、
+                                        各データベースベンダーのドキュメントを参照すること。
+
+                                        .. note::
+                                          SqlPStatement#setQueryTimeoutを呼び出した場合の変更後の値は、値が変更されたインスタンスでのみ有効となっている。
+
+                                          .. code-block:: java
+                                             
+                                             SqlPStatement statement1 = connection.prepareStatement("select * from test");
+                                             // statement1のqueryTimeoutは、600となる。
+                                             // この値は、再びsetQueryTimeoutが呼び出されるまで有効である。
+                                             statement1.setQueryTimeout(600);
+
+                                             // AppDbConnection#prepareStatementを呼び出した場合のqueryTimeoutの値は、設定ファイルの値となる。
+                                             // これは、同一のSQL文であっても同じ振る舞いとなる。
+                                             SqlPStatement statement2 = connection.prepareStatement("select * from test");
+
+
+                                          これは、 :ref:`statementReuse<db-dataSourceConnectionFactory-label>` の設定内容に関わらず、同一の振る舞いとなる。
+
+ sqlLoader                              nablarch.core.cache.StaticDataLoaderを実装したクラスの設定を行う。
+
+                                        本サンプルでは、「nablarch.core.db.statement.BasicSqlLoader」を設定している。
+
+                                        BasicSqlLoader以外の実装クラスに差し替える場合には、下記仕様に準拠すること::
+
+                                          a) StaticDataLoaderのgeneric型は、Map<String, String>とすること。
+
+                                            例：implements StaticDataLoader<Map<String, String>>
+
+                                          b) StaticDataLoaderで定義されているgetValueメソッドでSQLの読み込み処理を行うこと。
+
+                                             getValueメソッド以外は、nullを返す実装とすること。
+
+
+                                          c) getValueで返却するデータの形式
+
+                                             a)で説明したように、Map<String, String>を返却すること。
+                                             返却するMapのKEY、VALUEには下記の値を格納すること。
+
+                                               KEY:SQL_ID
+                                               VALUE:SQL文
+
+ ====================================== ========================================================================================================================
+
+
+.. _db-basic-sqlstatementexceptionfactory-label:
+
+\b) BasicSqlStatementExceptionFactoryの設定
+
+ ====================================== ========================================================================================================================
+ property名                             設定内容
+ ====================================== ========================================================================================================================
+ 下記propertyのうちどちらか一方を必ず設定すること。
+ ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ duplicateErrorSqlState                 一意制約違反を示すSqlState(SQLException#getSqlStateで返却される値)を設定する。
+ duplicateErrorErrCode                  一意制約違反を示すErrCode(SQLException#getErrorCodeで返却される値)を設定する。
+ ====================================== ========================================================================================================================
+
+\c) BasicSqlLoaderの設定
+
+ ====================================== ========================================================================================================================
+ property名                             設定内容
+ ====================================== ========================================================================================================================
+ fileEncoding                           SQLファイルのエンコーディングを設定する。
+
+                                        本設定値を省略した場合は、JVMのデフォルトエンコーディングが使用される。
+
+ extension                              SQLファイルの拡張子を設定する。
+
+                                        本設定値を省略した場合は、デフォルトの拡張子である「sql」が使用される。
+
+ ====================================== ========================================================================================================================
+
+```
+
+## Knowledge File
+
+- ID: `libraries-04_Statement--s7`
+
+```json
+{
+  "id": "libraries-04_Statement--s7",
+  "title": "設定ファイル例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Javaの実装例(SQL文指定の場合)",
+      "hints": [
+        "AppDbConnection",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "DbConnectionContext",
+        "prepareStatement",
+        "SQL文直接指定",
+        "データベースアクセス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicStatementFactory",
+        "BasicSqlStatementExceptionFactory",
+        "BasicSqlLoader",
+        "StaticDataLoader",
+        "sqlStatementExceptionFactory",
+        "resultSetConvertor",
+        "fetchSize",
+        "queryTimeout",
+        "sqlLoader",
+        "duplicateErrorSqlState",
+        "duplicateErrorErrCode",
+        "fileEncoding",
+        "extension",
+        "一意制約違反",
+        "プリフェッチサイズ",
+        "クエリータイムアウト",
+        "SQLファイルロード"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "> **注意**: フレームワーク内部でテーブルのスキーマ情報から動的にSQL文を組み立てる必要がある場合の実装例。通常、各アプリケーション・プログラマはSQL文を外部ファイル化するためこのような実装は行わない。\n\n```java\nAppDbConnection connection = DbConnectionContext.getConnection(transaction.getDbTransactionName());\nSqlPStatement statement = connection.prepareStatement(\n        \"SELECT USER_ID, NAME, TEL, AGE FROM USER_MTR WHERE USER_ID = ?\");\nstatement.setObject(1, \"00001\");\nSqlResultSet resultSet = statement.retrieve();\nfor (SqlRow row : resultSet) {\n    String userId = row.getString(\"user_id\");\n    String name = row.getString(\"name\");\n    String tel = row.getString(\"tel\");\n    String age = row.getString(\"age\");\n}\n```",
+    "s2": "**クラス**: `nablarch.core.db.statement.BasicStatementFactory`\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n    <property name=\"sqlStatementExceptionFactory\">\n        <component class=\"nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory\">\n            <property name=\"duplicateErrorSqlState\" value=\"\"/>\n            <property name=\"duplicateErrorErrCode\" value=\"1\"/>\n        </component>\n    </property>\n    <property name=\"fetchSize\" value=\"500\"/>\n    <property name=\"queryTimeout\" value=\"600\" />\n    <property name=\"sqlLoader\">\n        <component class=\"nablarch.core.db.statement.BasicSqlLoader\">\n            <property name=\"fileEncoding\" value=\"utf-8\"/>\n            <property name=\"extension\" value=\"sql\"/>\n        </component>\n    </property>\n</component>\n```\n\n### a) BasicStatementFactory プロパティ\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| sqlStatementExceptionFactory | ○ | | `SqlStatementExceptionFactory` 実装クラスを設定する |\n| resultSetConvertor | | | `ResultSetConvertor` 実装クラスを設定する。SELECT結果のカラムデータ変換が不要な場合は省略可 |\n| fetchSize | | 10 | プリフェッチサイズ。Statement単位で `SqlPStatement#setFetchSize` で変更可 |\n| queryTimeout | | 0（無制限） | クエリータイムアウト秒数。Statement単位で `SqlPStatement#setQueryTimeout` で変更可 |\n| sqlLoader | | | `StaticDataLoader<Map<String, String>>` 実装クラスを設定する |\n\n> **注意**: `SqlPStatement#setFetchSize` または `SqlPStatement#setQueryTimeout` で変更した値は変更されたインスタンスでのみ有効。`AppDbConnection#prepareStatement` で新規取得した場合は設定ファイルの値に戻る。これは :ref:`statementReuse<db-dataSourceConnectionFactory-label>` の設定に関わらず同一の振る舞いとなる。\n\n### b) BasicSqlStatementExceptionFactory プロパティ\n\n**クラス**: `nablarch.core.db.statement.exception.BasicSqlStatementExceptionFactory`\n\n以下のどちらか一方を必ず設定すること。\n\n| プロパティ名 | 説明 |\n|---|---|\n| duplicateErrorSqlState | 一意制約違反を示すSqlState（`SQLException#getSqlState` の返却値） |\n| duplicateErrorErrCode | 一意制約違反を示すErrCode（`SQLException#getErrorCode` の返却値） |\n\n### c) BasicSqlLoader プロパティ\n\n**クラス**: `nablarch.core.db.statement.BasicSqlLoader`\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| fileEncoding | JVMデフォルトエンコーディング | SQLファイルのエンコーディング |\n| extension | sql | SQLファイルの拡張子 |\n\n`BasicSqlLoader` 以外の実装クラスに差し替える場合の要件:\n- `StaticDataLoader` のgeneric型は `Map<String, String>` とすること（例: `implements StaticDataLoader<Map<String, String>>`）\n- `getValue` メソッドでSQL読み込み処理を行い、それ以外のメソッドはnullを返すこと\n- `getValue` の返却Map: KEY=SQL_ID、VALUE=SQL文"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

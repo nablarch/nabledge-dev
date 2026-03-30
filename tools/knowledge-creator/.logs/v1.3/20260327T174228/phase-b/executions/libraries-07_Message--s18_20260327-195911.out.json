@@ -1,0 +1,64 @@
+{
+  "id": "libraries-07_Message--s18",
+  "title": "設定の記述",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "設定の記述",
+      "hints": [
+        "StringResourceHolder",
+        "BasicStringResourceLoader",
+        "BasicStaticDataCache",
+        "SimpleDbTransactionManager",
+        "messageResource",
+        "メッセージ設定",
+        "コンポーネント設定例",
+        "loadOnStartup"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "nablarch.core.message.StringResourceHolder の設定",
+      "hints": [
+        "StringResourceHolder",
+        "nablarch.core.message.StringResourceHolder",
+        "stringResourceCache",
+        "メッセージリソース設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "nablarch.core.cache.BasicStaticDataCache クラスの設定",
+      "hints": [
+        "BasicStaticDataCache",
+        "nablarch.core.cache.BasicStaticDataCache",
+        "StaticDataLoader",
+        "StringResource",
+        "静的データキャッシュ設定",
+        "メッセージキャッシュ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "nablarch.core.message.BasicStringResourceLoader クラスの設定",
+      "hints": [
+        "BasicStringResourceLoader",
+        "nablarch.core.message.BasicStringResourceLoader",
+        "dbManager",
+        "tableName",
+        "idColumnName",
+        "langColumnName",
+        "valueColumnName",
+        "メッセージローダー設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `nablarch.core.message.StringResourceHolder`, `nablarch.core.message.BasicStringResourceLoader`, `nablarch.core.cache.BasicStaticDataCache`\n\nメッセージ使用時は、リポジトリに `messageResource` というコンポーネント名で `MessageResource` クラスを登録する必要がある。\n\n```xml\n<component name=\"messageDbManager\" class=\"nablarch.core.db.transaction.SimpleDbTransactionManager\">\n  <property name=\"dbTransactionName\" value=\"message\"/>\n</component>\n\n<component name=\"stringResourceLoader\" class=\"nablarch.core.message.BasicStringResourceLoader\">\n  <property name=\"dbManager\" ref=\"messageDbManager\"/>\n  <property name=\"tableName\" value=\"TEST_MESSAGE\"/>\n  <property name=\"idColumnName\" value=\"MESSAGE_ID\"/>\n  <property name=\"langColumnName\" value=\"LANG\"/>\n  <property name=\"valueColumnName\" value=\"MESSAGE\"/>\n</component>\n\n<component name=\"stringResourceHolder\" class=\"nablarch.core.message.StringResourceHolder\">\n  <property name=\"stringResourceCache\">\n    <component class=\"nablarch.core.cache.BasicStaticDataCache\">\n      <!-- true: 初期化時一括ロード / false: オンデマンドロード -->\n      <property name=\"loadOnStartup\" value=\"true\"/>\n      <property name=\"loader\" ref=\"stringResourceLoader\"/>\n    </component>\n  </property>\n</component>\n```",
+    "s2": "**クラス**: `nablarch.core.message.StringResourceHolder`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| stringResourceCache | ○ | StringResourceインタフェースを実装したクラスを保持するStaticDataCacheを設定する |",
+    "s3": "**クラス**: `nablarch.core.cache.BasicStaticDataCache`\n\n設定内容は :doc:`./05_StaticDataCache` を参照。\n\n> **警告**: このプロパティに設定する StaticDataLoader は、必ず `BasicStringResourceLoader` クラスのように、`StringResource` インタフェースを実装したクラスを読み込むように実装すること。",
+    "s4": "**クラス**: `nablarch.core.message.BasicStringResourceLoader`\n\n| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| dbManager | ○ | メッセージのロード時に使用する `SimpleDbTransactionManager` クラスを指定する |\n| tableName | ○ | メッセージを永続化したテーブル名を指定する |\n| idColumnName | ○ | メッセージを永続化したテーブルのメッセージIDのカラム名を指定する |\n| langColumnName | ○ | メッセージを永続化したテーブルの言語のカラム名を指定する |\n| valueColumnName | ○ | メッセージを永続化したテーブルのメッセージのカラム名を指定する |"
+  }
+}

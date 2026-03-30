@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-08_complete",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 注意ブロック",
+      "description": "ソースのnoteでは「更新ユーザID(REGISTER_USER_ID)」と記載されているが、knowledge fileでは「更新ユーザID(UPDATED_USER_ID)」となっている。SQLではUPDATED_USER_IDが使われているが、noteテキスト自体の表現はREGISTER_USER_IDであり、knowledge fileはnoteの内容を変えている。",
+      "source_evidence": "更新ユーザID(REGISTER_USER_ID)と更新日付(UPDATE_DATE)も更新対象としている。（ソースnoteより）"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 注意ブロック",
+      "description": "ソースのnoteでは「更新日付(UPDATE_DATE)」と記載されているが、knowledge fileでは「更新日付(UPDATED_DATE)」となっている。",
+      "source_evidence": "更新ユーザID(REGISTER_USER_ID)と更新日付(UPDATE_DATE)も更新対象としている。（ソースnoteより）"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 注意ブロック「登録ユーザIDはリクエストのUSER_IDで更新」",
+      "description": "knowledge fileは「登録ユーザIDはリクエストのUSER_IDで更新」と記述しているが、ソースでは「事前準備データのUSER_ID欄に記載したユーザIDで更新される」としている。「リクエストの」という表現はソースに存在しない。",
+      "source_evidence": "事前準備データのUSER_ID欄に記載したユーザIDで更新される。（ソースnote「登録ユーザID・更新ユーザID」より）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — JSPの実装セクション",
+      "description": "ソースの「JSPの実装」サブセクションに記載されているJSPファイルのコピー元・コピー先（main/web/W11AC0203.jsp → main/web/ss11AC/W11AC0203.jsp）がknowledge fileに含まれていない。JSP作成手順の具体的なファイルパスは実装判断に必要な情報。",
+      "source_evidence": "コピー元: main/web/W11AC0203.jsp / コピー先: main/web/ss11AC/W11AC0203.jsp"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints",
+      "description": "s2のコード例で使用されているPascalCaseクラス名 `W11AC02Form` がhintsに含まれていない。",
+      "source_evidence": "W11AC02Form form = validateAndConvertForResister(req);"
+    }
+  ]
+}

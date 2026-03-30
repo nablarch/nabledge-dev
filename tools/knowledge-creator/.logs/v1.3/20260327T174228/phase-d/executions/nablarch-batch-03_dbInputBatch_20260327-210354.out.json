@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-03_dbInputBatch",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Missing class name `CommandLine` which appears in the `initialize` method signature in the source.",
+      "source_evidence": "protected void initialize(CommandLine command, ExecutionContext context)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "Missing class names `SystemAccountEntity` (used as condition object) and `SqlResultSet` (mentioned in source prose as the type given to DatabaseRecordReader).",
+      "source_evidence": "SystemAccountEntity condition = new SystemAccountEntity(); / 取得した`SqlResultSet`を`DatabaseRecordReader`に与えることで、リーダを作成することができる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "Missing class names that appear in the handle method code: `ExclusiveCtrlSystemAccountContext`, `CM311AC1Component`, `DeleteUserSendMessage`, and `Success`.",
+      "source_evidence": "new ExclusiveCtrlSystemAccountContext(inputData.getString(\"userId\")); / CM311AC1Component component = new CM311AC1Component(); / insertSendMessage(new DeleteUserSendMessage(userInfo)); / return new Success();"
+    }
+  ]
+}

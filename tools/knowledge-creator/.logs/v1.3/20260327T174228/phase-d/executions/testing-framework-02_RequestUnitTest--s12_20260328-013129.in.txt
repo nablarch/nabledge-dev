@@ -1,0 +1,548 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/05_UnitTestGuide/02_RequestUnitTest/index.rst`
+- Format: `rst`
+
+```
+固有の処理を追加する場合
+------------------------
+
+スーパクラスでは、どんなテストケースでも必要となる処理を定型化しているが、
+テストケースによっては固有の処理が必要な場合がある。
+(例えば、リクエストスコープにエンティティが格納されており、その内容を確認したい場合等)。
+
+
+シート固有の準備処理、結果確認処理が必要な場合は、\
+execute(String sheetName, Advice advice)を使用して、リクエスト送信前後に処理を挿し込むことができる。
+BasicAdviceクラスには以下のメソッドが用意されており、それぞれリクエスト送信前、送信後にコールバックされる。
+
+* void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+* void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)
+
+.. note::
+  これらのメソッド両方をオーバーライドする必要はない。必要なものだけをオーバーライドする。
+  また、これらのメソッド内に全ての処理を記述する必要はない。記述が長くなったり、
+  テストメソッド間で共通する処理がある場合は、プライベートメソッドに切り出すこと。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00102Normal() {
+        execute("testMenus00102Normal", new BasicAdvice() {
+            // 【説明】本メソッドはリクエスト送信前に呼び出される。
+            @Override
+            public void beforeExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに準備処理を記述する。
+            }
+
+            // 【説明】本メソッドはリクエスト送信後に呼び出される。
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                // 【説明】ここに結果確認処理を記述する。
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストスコープに複数種類の検索結果が格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに「ユーザグループ」と「ユースケース」の2種類の検索結果が含まれており、
+それぞれの検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+    
+    @Test
+    public void testMenus00103() {
+        execute("testMenus00103", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                
+                String messgae = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlResultSet actualGroup =(SqlResultSet) context.getRequestScopedVar("allGroup");
+                assertSqlResultSetEquals(message, sheetName, "expectedUgroup" + no, actualGroup);
+                        
+                // ユースケース検索結果の検証
+                SqlResultSet actualUseCase =(SqlResultSet) context.getRequestScopedVar("allUseCase");
+                assertSqlResultSetEquals(message, sheetName, "expectedUseCase" + no, actualUseCase);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストスコープに検索結果(SqlResultSet)ではなくFormやエンティティが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープにエンティティが格納されており、
+それぞれの検索結果が期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo,
+                    ExecutionContext context) {
+                String sheetName = testCaseInfo.getSheetName();
+                // システムアカウントを比較
+                // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                // 【説明】実際の値をリクエストスコープから取り出す
+                Object actualSystemAccount = context.getRequestScopedVar("systemAccount");
+                // 【説明】エンティティを比較するメソッドを呼び出す。
+                assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+
+                // ユーザを比較
+                String expectedUsersId = "users" + testCaseInfo.getTestCaseNo();
+                Object actualUsers = context.getRequestScopedVar("users");
+                assertEntity(sheetName, expectedUsersId, actualUsers);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+期待値は、エンティティのクラス単体テスト（\ :ref:`entityUnitTest_SetterGetterCase`\ ）と同様の書式で記述する。
+ただし、この場合はsetterの欄は不要である。
+
+.. image:: ./_image/assert_entity.png
+
+
+.. note::
+   リクエストスコープにFormが格納されている場合、別のFormを設定したプロパティでなければEntityの場合と同様にテストが出来る。
+   
+   別のFormを設定したプロパティの場合、そのFormを取得してEntityと同様にテストをすればよい。以下に例を示す。
+   
+   
+   .. code-block:: java
+   
+       @Test
+       public void testSampleNormal() {
+           execute("testSampleNormal", new BasicAdvice() {
+               @Override
+               public void afterExecute(TestCaseInfo testCaseInfo,
+                       ExecutionContext context) {
+                   String sheetName = testCaseInfo.getSheetName();
+                   // システムアカウントを比較
+                   // 【説明】期待値のID（接頭辞"systemAccount" + ケース番号）
+                   String expectedSystemAccountId = "systemAccount" + testCaseInfo.getTestCaseNo();
+                   // 【説明】Formをリクエストスコープから取り出す
+                   Object actualForm = context.getRequestScopedVar("form");
+                   // 【説明】Formのプロパティである別のFormを取得
+                   Object actualSystemAccount = actualForm.getSystemAccount();
+                   // 【説明】エンティティを比較するメソッドを呼び出す。
+                   assertEntity(sheetName, expectedSystemAccountId, actualSystemAccount);
+               }
+           });
+       }
+
+
+リクエストスコープにSqlResultSetではなくSqlRowが格納されている場合の例
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下の例では、リクエストスコープに、検索結果一覧(SqlResultSet)ではなく、
+検索結果1件分(SqlRow)がリクエストスコープに格納されており、
+その検索結果が期待通りであることを検証している。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String message = testCaseInfo.getTestCaseName();   // 【説明】比較失敗時のメッセージ
+                String sheetName = testCaseInfo.getSheetName();    // 【説明】シート名
+                String no = testCaseInfo.getTestCaseNo();          // 【説明】テストケース番号
+                
+                // グループ検索結果の検証
+                SqlRow actual =(SqlRow) context.getRequestScopedVar("user");
+                // 【説明】SqlRowを比較するメソッドを呼び出す。
+                assertSqlRowEquals(message, sheetName, "expectedUser" + no, actual);
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+リクエストパラメータの値を検証したい場合
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`ウィンドウスコープ <../../../../fw/reference/architectural_pattern/concept.html#windowscope>`_ の値をリセットするために、
+テスト対象機能にてリクエストパラメータを書き換える場合がある。
+
+以下の例では、テスト対象実行後のリクエストパラメータが期待通りであることを検証している。
+
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00302Normal() {
+        execute("testUsers00302Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+
+                HttpRequest request = testCaseInfo.getHttpRequest();   // 【説明】テスト実行後のHttpRequest
+                // リクエストパラメータがリセットされていること
+                assertEquals("", request.getParam("resetparameter"));
+            }
+        });
+    }
+
+
+
+その他の場合
+~~~~~~~~~~~~
+
+前述のように、SqlResultSetやSqlRow等のよく使用されるオブジェクトについては、
+Excelに記載した期待値と直接比較するメソッドが用意されているが、
+そうでない場合については、期待値を読み込む処理を記述する必要がある。
+
+具体的には、以下の手順で検証を行う。
+
+* テストデータをExcelファイルから取得
+* リクエストスコープ等から実際の値を取得
+* 自動テストフレームワークまたはJUnitのAPIを用いて結果検証を行う。
+
+.. code-block:: java
+        
+    @Test
+    public void testUsers00303Normal() {
+        execute("testUsers00303Normal", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                // 【説明】期待値をExcelファイルから取得
+                List<Map<String, String>> expected = getListMap("doRW25AA0303NormalEnd", "result_1");
+                // 【説明】テスト実行後のリクエストスコープから実際の値を取得
+                List<Map<String, String>> actual = context.getRequestScopedVar("pageData");
+                // 【説明】結果検証
+                assertListMapEquals(expected, actual);
+            }
+        });
+    }
+
+\    
+
+.. note::
+ テストデータの取得方法については、以下のリンク先を参照。
+  * 「\ :ref:`how_to_get_data_from_excel`\ 」
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+
+
+
+ダウンロードファイルのテスト
+============================
+
+ダウンロードファイルをテストする場合は、\
+:ref:`batch_request_test` と同じ方法でファイルの期待値をExcelファイルに記載してテストする。\
+以下にCSVファイルをダウンロードする場合のテスト例を示す。
+
+**期待するファイルの定義例**
+
+ ファイルパスにはダンプファイルを指定する。\
+ ダウンロード処理の場合は、ダウンロードされたファイルがダンプされ、\
+ 下記の命名規則でダンプファイルが出力される。\
+ ダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`html_dump_dir` を参照すること。
+
+  .. code-block:: bash
+
+   ダンプファイルの命名規則：
+     Excelファイルのシート名＋"_"＋テストケース名＋"_"＋ダウンロードされたファイル名
+
+ .. image:: ./_image/expected_download_csv.png
+    :scale: 60
+   
+**テストメソッドの実装例**
+
+ FileSupportクラスのassertFileメソッドを使用してダウンロードファイルのアサートを行う。
+
+ .. code-block:: java
+
+    private FileSupport fileSupport = new FileSupport(getClass());
+    
+    @Test
+    public void testRW11AC0104Download() {
+        execute("testRW11AC0104Download", new BasicAdvice() {
+            @Override
+            public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {
+                String msgOnFail = "ダウンロードしたユーザ一覧照会結果のCSVファイルのアサートに失敗しました。";
+                fileSupport.assertFile(msgOnFail, "testRW11AC0104Download");
+            }
+        });
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+--------------
+テスト起動方法
+--------------
+
+クラス単体テストと同様。通常のJUnitテストと同じように実行する。
+
+
+----------------------
+テスト結果確認（目視）
+----------------------
+
+１リクエスト毎にHTMLダンプファイルが出力される。ファイルをブラウザで開き、目視確認を行う。
+
+.. note::
+ リクエスト単体テストで生成されたHTMLファイルは自動テストフレームワークにて自動的にチェックされる。\
+ 自動テストフレームワークは、\ :doc:`../../08_TestTools/03_HtmlCheckTool/index`\ を用いて生成されたHTMLファイルをチェックする。
+ HTMLファイル内に構文エラー等の違反があった場合は、その違反内容に応じた例外が発生し、そのテストケースは失敗となる。\
+
+
+
+.. _html_dump_dir:
+
+HTMLダンプ出力結果
+==================
+
+テストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成され、その配下にHTMLダンプファイルが出力される。
+
+HTMLダンプ出力結果が格納されるディレクトリの詳細は、 :ref:`dump-dir-label` の項を参照すること。
+
+ .. image:: ./_image/htmlDumpDir.png
+
+
+
+
+----------------------------------------
+リクエスト単体テストクラス作成時の注意点
+----------------------------------------
+
+リクエスト単体テストでは、Web Frameworkのハンドラを経由して呼び出される点がクラス単体テストと異なる。
+この違いにより注意すべき点があるので、以下に記載する。
+
+ThreadContextへの値設定は不要
+=============================
+
+リクエスト単体テストでは、Web Frameworkのハンドラが作用する為、
+ThreadContextへの値設定はハンドラで実施される。
+よって、\ **テストクラスからThreadContextへの値を設定する必要はない。**
+
+リクエスト単体テストでのユーザID設定方法については、前述の\ :ref:`request_test_user_info`\ を参照。
+
+
+テストクラスでのトランザクション制御は不要
+==========================================
+
+クラス単体テストでは、Web Frameworkのハンドラが作用しない為、\
+テストクラス内で明示的にトランザクションコミットを行っていた。\
+リクエスト単体テストでは、トランザクション制御はハンドラで行われるので、\
+**テストクラス内で明示的にトランザクションコミットを行う必要はない。**
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-02_RequestUnitTest--s12`
+
+```json
+{
+  "id": "testing-framework-02_RequestUnitTest--s12",
+  "title": "リクエスト単体テスト",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "固有の処理を追加する場合",
+      "hints": [
+        "BasicAdvice",
+        "TestCaseInfo",
+        "ExecutionContext",
+        "beforeExecute",
+        "afterExecute",
+        "assertSqlResultSetEquals",
+        "assertSqlRowEquals",
+        "assertEntity",
+        "assertListMapEquals",
+        "HttpRequest",
+        "getListMap",
+        "SqlResultSet",
+        "SqlRow",
+        "getRequestScopedVar",
+        "リクエストスコープの検証",
+        "固有処理の追加"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ダウンロードファイルのテスト",
+      "hints": [
+        "FileSupport",
+        "assertFile",
+        "ダウンロードファイルのテスト",
+        "ダンプファイル"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テスト起動方法",
+      "hints": [
+        "テスト起動方法",
+        "JUnit実行",
+        "テスト実行方法"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テスト結果確認（目視）",
+      "hints": [
+        "HTMLダンプ",
+        "テスト結果確認",
+        "HtmlCheckTool",
+        "目視確認"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "HTMLダンプ出力結果",
+      "hints": [
+        "html_dump_dir",
+        "tmp/html_dump",
+        "HTMLダンプ出力結果",
+        "ダンプ出力先"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "リクエスト単体テストクラス作成時の注意点",
+      "hints": [
+        "ThreadContext",
+        "トランザクション制御",
+        "テストクラス作成注意点",
+        "ThreadContextへの値設定不要",
+        "トランザクションコミット不要",
+        "ハンドラ"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "シート固有の準備・結果確認処理が必要な場合は `execute(String sheetName, Advice advice)` を使用する。`BasicAdvice` をオーバーライドしてリクエスト送信前後に処理を挿入する。\n\n> **注意**: `beforeExecute` と `afterExecute` の両方をオーバーライドする必要はない。必要なものだけをオーバーライドする。長い処理やテストメソッド間で共通する処理はプライベートメソッドに切り出す。\n\n**クラス**: `BasicAdvice`\n\n| メソッド | タイミング |\n|---|---|\n| `void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` | リクエスト送信前 |\n| `void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context)` | リクエスト送信後 |\n\n```java\nexecute(\"sheetName\", new BasicAdvice() {\n    @Override\n    public void beforeExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 準備処理\n    }\n    @Override\n    public void afterExecute(TestCaseInfo testCaseInfo, ExecutionContext context) {\n        // 結果確認処理\n    }\n});\n```\n\n**TestCaseInfo API**:\n- `getTestCaseName()` - 比較失敗時メッセージ\n- `getSheetName()` - シート名\n- `getTestCaseNo()` - テストケース番号\n- `getHttpRequest()` - テスト実行後の `HttpRequest`\n\n**アサーションメソッド**:\n- `assertSqlResultSetEquals(message, sheetName, expectedId, actual)` - `SqlResultSet` 比較\n- `assertSqlRowEquals(message, sheetName, expectedId, actual)` - `SqlRow` 比較\n- `assertEntity(sheetName, expectedId, actual)` - エンティティ・Form比較。期待値書式は :ref:`entityUnitTest_SetterGetterCase` と同様（setterの欄不要）。![エンティティ比較期待値](assets/testing-framework-02_RequestUnitTest--s12/assert_entity.png)\n- `assertListMapEquals(expected, actual)` - `List<Map<String, String>>` 比較\n- `getListMap(sheetName, id)` - ExcelからList<Map>取得（:ref:`how_to_get_data_from_excel` 参照）\n\n`context.getRequestScopedVar(\"name\")` でリクエストスコープから値を取得する。FormがリクエストスコープにあるCase: 別のFormのプロパティも、そのFormを取得して `assertEntity` でテスト可能。\n\nリクエストパラメータ検証: `testCaseInfo.getHttpRequest()` で `HttpRequest` を取得し、`request.getParam(\"name\")` でパラメータ値を検証できる。",
+    "s2": ":ref:`batch_request_test` と同じ方法でExcelシートにファイルパス（ダンプファイル）を指定して期待値を記載する。\n\nダンプファイル命名規則: `Excelシート名_テストケース名_ダウンロードされたファイル名`\n\n![ダウンロードCSV期待値定義例](assets/testing-framework-02_RequestUnitTest--s12/expected_download_csv.png)\n\nダンプ出力先の詳細は :ref:`html_dump_dir` を参照。\n\n**クラス**: `FileSupport`\n\n`FileSupport.assertFile(message, testCaseName)` でダウンロードファイルのアサートを行う。\n\n```java\nprivate FileSupport fileSupport = new FileSupport(getClass());\n// afterExecute内で使用:\nfileSupport.assertFile(\"失敗時メッセージ\", \"testRW11AC0104Download\");\n```",
+    "s3": "リクエスト単体テストの起動はクラス単体テストと同様。通常のJUnitテストと同じように実行する。",
+    "s4": "1リクエストごとにHTMLダンプファイルが出力される。ファイルをブラウザで開き目視確認する。\n\n> **注意**: リクエスト単体テストで生成されたHTMLファイルは、自動テストフレームワークにより :doc:`../../08_TestTools/03_HtmlCheckTool/index` を使用して自動チェックされる。HTMLファイル内に構文エラー等の違反があった場合、例外が発生しそのテストケースは失敗となる。",
+    "s5": "テスト実行時、テスト用プロジェクトのルートディレクトリに `tmp/html_dump` ディレクトリが作成され、その配下にHTMLダンプファイルが出力される。\n\n格納ディレクトリの詳細は :ref:`dump-dir-label` を参照。\n\n![HTMLダンプ出力ディレクトリ](assets/testing-framework-02_RequestUnitTest--s12/htmlDumpDir.png)",
+    "s6": "リクエスト単体テストではWeb Frameworkのハンドラを経由して呼び出されるため、クラス単体テストと以下の点が異なる。\n\n## ThreadContextへの値設定は不要\n\nThreadContextへの値設定はハンドラで実施される。**テストクラスからThreadContextへの値を設定する必要はない。**\n\nユーザID設定方法については :ref:`request_test_user_info` を参照。\n\n## テストクラスでのトランザクション制御は不要\n\nトランザクション制御はハンドラで行われる。**テストクラス内で明示的にトランザクションコミットを行う必要はない。**"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 6 < source headings 7
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

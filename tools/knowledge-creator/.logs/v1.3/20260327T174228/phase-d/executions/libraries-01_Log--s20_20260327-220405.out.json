@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_Log--s20",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — section text and hints",
+      "description": "The full qualified class name `nablarch.core.log.basic.LogWriterSupport` is stated in both the section body and hints, but the source only mentions `LogWriterSupport` without any package prefix. The source says 「LogWriterSupportクラスを継承しているクラスでは」with no FQCN provided.",
+      "source_evidence": "Source: 「LogWriterSupportクラスを継承しているクラスでは、ログライタにおいてレベルに応じた出力制御を行うことができる。」— no package name given"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 障害ログ詳細 table",
+      "description": "The source failure table has a column with recommended message examples for each failure code (including the `{0}` placeholder format for lock file path). The knowledge file table omits this column entirely. These examples are useful for developers configuring failure notification messages. Also omitted is the column showing the default framework messages output when no failure code is configured.",
+      "source_evidence": "Source table column 4: 「障害コードに対応するメッセージの設定例（{0}にはロックファイルのパスが設定される）」e.g. 「ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 障害発生時の動作 footnote",
+      "description": "The footnote clarifying that '処理を終了' means the log write process ends and returns normally to the caller (not throwing an exception) is not included in the knowledge file. This clarifies a potentially ambiguous term in the failure behavior description.",
+      "source_evidence": "Source footnote [#c1]: 「処理を終了とは、ログ出力処理を終了し呼び出し元に処理を正常に処理を戻すことを意味する。」"
+    }
+  ]
+}

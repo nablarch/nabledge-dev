@@ -1,0 +1,14 @@
+{
+  "file_id": "biz-samples-03_ListSearchResult--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "The full RST source provided confirms that substantial sections are absent from the 9-section knowledge file. The source contains at least 6 additional sections with actionable implementation content: (1) ListSearchResult_Setting — configuration properties `nablarch.listSearch.maxResultCount` / `nablarch.listSearch.max` with default values 200/20; (2) 検索結果 — detailed table-element attributes (varRowName, varStatusName, varCountName, varRowCountName, varOddEvenName, oddValue, evenValue); (3) 検索結果の並び替え — full sort implementation including SQL, ListSearchInfo extension, and listSearchSortSubmit tag usage; (4) 1画面にすべての検索結果を一覧表示する場合 — no-paging implementation pattern; (5) デフォルトの検索条件で検索した結果を初期表示する場合 — default-condition initial display pattern using ListSearchInfoUtil; (6) complete tag reference tables for both listSearchResult and listSearchSortSubmit. The s2 overview promises sorting and full-list-display features but the knowledge file provides no guidance on how to implement them. Configuration properties needed to tune result limits are also absent. A developer relying solely on this knowledge file for list-search implementation would get incomplete, misleading coverage of the feature set.",
+  "findings_assessment": [
+    {
+      "category": "section_issue",
+      "location": "Overall structure — sections s1–s9 vs full RST source",
+      "impact": "medium",
+      "justification": "The full RST source (confirmed in this evaluation) contains at minimum six actionable sections not represented in the knowledge file: (1) ListSearchResult_Setting with configuration properties nablarch.listSearch.maxResultCount / nablarch.listSearch.max (defaults 200 / 20) — absent, so developers cannot discover how to tune search limits; (2) 検索結果 element detail — key JSP fragment attributes (varRowName, varStatusName, varCountName, varRowCountName, varOddEvenName, oddValue, evenValue) are entirely missing, leaving implementers without attribute names; (3) 検索結果の並び替え — sort implementation covering $sort SQL syntax, sortId validation, and listSearchSortSubmit tag usage is absent despite being advertised in s2; (4) 1画面にすべての検索結果を一覧表示する場合 — no-paging pattern (condition.setMax(condition.getMaxResultCount()), usePaging=false) is absent; (5) デフォルトの検索条件で検索した結果を初期表示する場合 — ListSearchInfoUtil.setDefaultCondition usage absent; (6) full tag reference tables for both listSearchResult and listSearchSortSubmit — dozens of attributes not covered by the abbreviated attribute tables in s7–s9. The Phase D check agent mislabeled the finding as 'minor' because it believed the source excerpt was truncated at the listSearchResultタグ attribute table; the Phase E fix agent therefore treated it as low-priority and left the file unchanged. In reality the full source was available and the omissions are extensive."
+    }
+  ]
+}

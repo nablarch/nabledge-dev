@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-07_FormTag--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s5 (入力データの保持)",
+      "description": "The source includes an important implementation note: 'ログイン情報など、全ての業務に渡って必要になる情報は、サーバ側(セッション)に保持するので、クライアント側に保持するデータと混同しないこと。' This tells developers that login information and data needed across all operations must be kept server-side (session), not in window scope. This is decision-necessary information distinguishing what belongs in client-side storage vs server-side storage.",
+      "source_evidence": "入力データの保持 section body: '尚、ログイン情報など、全ての業務に渡って必要になる情報は、サーバ側(セッション)に保持するので、クライアント側に保持するデータと混同しないこと。'"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s12 (hiddenタグの暗号化機能の処理イメージ)",
+      "description": "The source references image `WebView_HiddenEncryptionImage.jpg` to illustrate the encryption processing flow. This image is not referenced in s12, unlike the other two images in the file which are properly included as asset references (WebView_SampleUserRegistration.jpg in s10, WebView_HiddenEncryptionNoRequestIdsImage.jpg in s14).",
+      "source_evidence": "hiddenタグの暗号化機能の処理イメージ section: '.. image:: ./_images/WebView_HiddenEncryptionImage.jpg\\n   :scale: 60'"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s5 — properties table rows for derivedRequestIdPropName and derivedUserIdPropName",
+      "description": "The knowledge file adds `failureLogFormatter.derivedRequestIdPropName` and `failureLogFormatter.derivedUserIdPropName` to the properties description table with descriptions \"派生元リクエストIDのプロパティ名\" and \"派生元ユーザIDのプロパティ名\" respectively. In the source, these properties appear only in the config code example (`derivedRequestIdPropName=insertRequestId`, `derivedUserIdPropName=updatedUserId`) and are never listed or described in the source's properties description table. The descriptions are inferred from the property names, not explicitly stated in the source.",
+      "source_evidence": "Source properties table ends at `failureLogFormatter.fwFailureCodeFilePath`. The two derived-* properties appear only in the app-log.properties code block without accompanying descriptions."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 — hints array",
+      "description": "The PascalCase class names `FailureLogFormatter` and `FailureLogUtil` both appear explicitly in the s5 section content (\"FailureLogUtilはapp-log.propertiesを読み込みFailureLogFormatterオブジェクトを生成して...\") but neither is present in s5's hints. Only the camelCase property prefix `failureLogFormatter` is listed.",
+      "source_evidence": "s5 content opens with: \"`FailureLogUtil`はapp-log.propertiesを読み込み`FailureLogFormatter`オブジェクトを生成して個別項目のフォーマット処理を委譲する。\""
+    }
+  ]
+}

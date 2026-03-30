@@ -1,0 +1,34 @@
+{
+  "file_id": "web-application-07_insert--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 (JavaScriptを使用した二重サブミットの防止)",
+      "description": "The definition of when JavaScript-based double submit prevention applies is omitted: the source explains it prevents multiple submissions caused by a user accidentally double-clicking or repeatedly clicking when no server response returns. This context helps distinguish when to use JS-based prevention vs. token-based prevention.",
+      "source_evidence": "「ユーザが誤ってボタンをダブルクリックした場合やサーバ側からのレスポンスが返ってこないので何度も同じボタンをクリックした場合に、リクエストを2回以上サーバ側に送信するのを防止する機能である。」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "index s7 hints",
+      "description": "The hint `OutOfMemoryError` references a Java exception class name that does not appear in the source. The source only says 「メモリ不足」 (memory shortage) in Japanese, not the Java class name.",
+      "source_evidence": "Source warning says: 「メモリ不足、gc頻発による性能劣化の原因となることがある」 — no mention of OutOfMemoryError class."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s7 hints",
+      "description": "PascalCase class names `UsersEntity` and `UgroupSystemAccountEntity` appear in the method signature of `registerUser` in the source code but are absent from s7 hints.",
+      "source_evidence": "「void registerUser(SystemAccountEntity systemAccount, String plainPassword, UsersEntity users, UgroupSystemAccountEntity ugroupSystemAccount)」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index s8 hints",
+      "description": "PascalCase class names `HttpResponse`, `HttpRequest`, and `ExecutionContext` appear in the method signature of `doRW11AC0204` in the source code but are absent from s8 hints.",
+      "source_evidence": "「public HttpResponse doRW11AC0204(HttpRequest req, ExecutionContext ctx)」"
+    }
+  ]
+}

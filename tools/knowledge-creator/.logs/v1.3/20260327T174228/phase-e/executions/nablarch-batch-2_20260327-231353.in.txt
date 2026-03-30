@@ -1,0 +1,133 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "nablarch-batch-2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — answer section, first reason for using Entity",
+      "description": "The source gives two reasons for using Entity over per-field setString calls: (1) better maintainability and productivity, (2) inability to use Nablarch's common field setting feature. The knowledge file captures only reason (2). Reason (1) — '保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きい' — is omitted.",
+      "source_evidence": "なぜなら、保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きいからです。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？
+========================================================================================================================
+
+.. admonition:: question
+
+    データベースをインプットとして処理を行う場合で、インプットデータが処理済みの場合の処理の流れは以下のようになると思います。
+
+     #. 入力データを受け取る。
+     #. データを出力する。(テーブルへのINSERTやUPDATE)
+
+    このようなケースの場合、INSERTやUPDATE時にEntityは使用せずに1項目ずつsetStringやsetObjectを呼び出す想定でいます。
+    イメージ的には、以下のような実装を想定しています。
+    
+    これは、実装方法として正しいのでしょうか？
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityは使用せずに1項目ずつ値をバインドする。
+            SqlPStatement statement = getSqlPStatement("INSERT_SQL");
+            statement.setString(1, inputData.getString("id"));
+            statement.setString(2, inputData.getString("name"));
+            statement.setString(3, inputData.getString("kana_name"));
+            statement.setString(4, inputData.getString("tel"));
+            statement.executeUpdate();
+
+            return new Success();
+        }
+
+.. admonition:: answer
+
+    精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERTやUPDATE処理を行うようにしてください。
+
+    なぜなら、保守性や生産性の面で1項目ずつ値を設定するよりもEntityを使用したデータベース更新(INSERTやUPDATE)のほうがメリットが大きいからです。
+    また、1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能も使用することができなくなってしまいます。
+
+    上記の **question** にある実装を、Entityを使用した実装に置き換えると以下のようになります。
+
+    .. code-block:: java
+
+        @Override
+        public Result handle(SqlRow inputData, ExecutionContext ctx) {
+
+            // Entityを生成して、データベースの更新を行う。
+            ParameterizedSqlPStatement statement = getParameterizedSqlStatement("INSERT_SQL");
+            statement.executeUpdateByObject(new SampleEntity(inputData));
+
+            return new Success();
+        }
+
+.. admonition:: related information
+
+    * :doc:`6`
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "nablarch-batch-2",
+  "title": "データベースをインプットとするバッチ処理の場合で、精査が不要な場合でもEntityは作成する必要はありますか？",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースINSERT/UPDATE時のEntity使用方針",
+      "hints": [
+        "SqlRow",
+        "SqlPStatement",
+        "ParameterizedSqlPStatement",
+        "SampleEntity",
+        "executeUpdateByObject",
+        "バッチ処理",
+        "Entity使用",
+        "データベース更新",
+        "共通項目設定",
+        "INSERT",
+        "UPDATE"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "精査が不要な場合でも、基本的にはEntityを生成してデータベースへのINSERT/UPDATE処理を行うこと。\n\n1項目ずつ値を設定した場合、Nablarchのデータベースアクセス機能が提供する共通項目の設定機能が使用できなくなる。\n\n**非推奨（Entityなし）**:\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    SqlPStatement statement = getSqlPStatement(\"INSERT_SQL\");\n    statement.setString(1, inputData.getString(\"id\"));\n    statement.setString(2, inputData.getString(\"name\"));\n    statement.setString(3, inputData.getString(\"kana_name\"));\n    statement.setString(4, inputData.getString(\"tel\"));\n    statement.executeUpdate();\n    return new Success();\n}\n```\n\n**推奨（Entity使用）**:\n```java\n@Override\npublic Result handle(SqlRow inputData, ExecutionContext ctx) {\n    ParameterizedSqlPStatement statement = getParameterizedSqlStatement(\"INSERT_SQL\");\n    statement.executeUpdateByObject(new SampleEntity(inputData));\n    return new Success();\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

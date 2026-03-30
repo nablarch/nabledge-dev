@@ -1,0 +1,262 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "mom-messaging-02_basic-04_Explanation_real",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "`Throwable` is a PascalCase class name appearing in the `onError` method signature (`Throwable e`) in the クラス構造 section, but is absent from s3 hints.",
+      "source_evidence": ".. function:: ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+======================================================
+同期応答型メッセージ受信処理のアプリケーション構造
+======================================================
+
+本項では、同期応答型メッセージ受信処理で共通の基本的なクラス構造について説明する。
+
+概要
+====
+
+Nablarch Application Frameworkでは、複雑になりがちなメッセージング処理を簡潔かつ堅牢に作成できるように以下のような機能を備えている。
+
+* Nablarch共通の実装方法
+
+ 通常、メッセージング処理の実装を行う場合、MessageDrivenBeanに代表されるように、バッチやオンライン処理とは全く異なる業務実装を要求されることが多い。
+ Nablarchではこのような差異が抽象化されていて、バッチやオンライン処理と同様に「要求を受け取って応答を返却する」という同一のスタイルでコーディングができる。
+ 
+* 開始時、エラー発生時、終了時の各イベント時のコールバック
+
+ 各イベント発生時に、フレームワーク側からに対応するメソッドが起動される。
+ これにより、業務アプリケーションでのエラー処理漏れやリソース解放漏れを抑止できる。
+
+* 電文読み取り、書き込みの簡易化
+
+ 設計書から自動生成されたフォーマット定義ファイルを使用することにより、
+ 物理的なレイアウトを意識したプログラミングをしなくてよい。
+ 
+ 例えば、「レコード先頭xバイト目からxバイト分を半角数字として取得」するというような処理を
+ プログラム上でする必要が無く、単に引数で与えられた入力データからそのフィールド名を
+ 指定して取得するだけでよい。また、Entityに変換することで型安全なプログラミングが可能となる。
+ 
+* 障害発生時の処理
+
+ 障害発生時の考慮がフレームワーク側で行われいるため、業務処理ではビジネスロジックに注力できる。
+
+
+電文フォーマット定義ファイル
+=========================================
+標準的なアプリケーションでは、以下の3つのフォーマット定義ファイルを使用する。
+
+1. **ヘッダーフォーマット定義**
+
+  アプリケーション制御情報を含む共通データ領域のデータフォーマットを定義する。
+  リポジトリ定義ファイルにファイル名を指定する。
+  なお、ヘッダーフォーマット定義ファイルは要求・応答双方で同じものを使用する。
+
+
+2. **要求電文フォーマット定義**
+  
+  要求電文中の業務データ領域のデータフォーマットを定義する。
+  定義ファイルの名称は、
+
+    **(リクエストID) + "_RECEIVE.fmt"**
+
+  となる。
+
+3. **応答電文フォーマット定義**
+  
+  応答電文中の業務データ領域のデータフォーマットを定義する。
+  定義ファイルの名称は、
+
+    **(リクエストID) + "_SEND.fmt"**
+
+  となる。
+
+
+
+クラス構造
+==========
+
+
+.. image:: ./_image/class_diagram.png
+
+MessagingAction\ [#]_\ を継承し以下のメソッドを実装する。
+
+\
+
+==================================================================================================== ================================= ================================= ======
+メソッド                                                                                             概要                               起動タイミング                   要否 
+==================================================================================================== ================================= ================================= ======
+.. function:: ResponseMessage onReceive(RequestMessage request, ExecutionContext context)            電文受信時の処理を行う。           電文受信時                        必須
+.. function:: ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context) エラー発生時の処理を行う。\ [#]_   onReceiveメソッドでエラー発生時   必須
+==================================================================================================== ================================= ================================= ======
+
+
+\
+
+.. [#]  MessagingActionはDbAccessSupportを継承しているため、サブクラスでも
+ DbAccessSupportの機能を用いてデータベースアクセスを行うことができる。
+
+\
+
+.. [#] 
+ エラー発生時の処理は、メイン処理とは別のトランザクションで実行される。
+ これは、メイン処理でエラーが発生した場合、そのトランザクションはロールバックされて終了するからである。
+
+
+メソッド詳細
+============
+
+電文受信時のコールバック
+------------------------
+
+
+``onReceive``\ メソッドを実装する（必須）。
+
+処理対象リクエストIDの要求電文受信時にフレームワークにより起動される。\
+本メソッドでは、要求電文を引数として受け取り、処理結果の応答電文を戻り値として返却する。
+
+
+
+エラー発生時のコールバック
+--------------------------
+
+\ ``onError``\ メソッドを実装する（必須）。
+
+本メソッドは、メイン処理でエラー発生時のみ呼び出される。エラーが発生しなかった場合は起動されない。\
+メイン処理で発生した例外またはエラーは、本メソッドの引数で渡される。
+
+.. note::
+ 実装すべき処理の例を以下に示す。
+ 
+ * エラーが発生したレコードのステータスを異常終了に更新する。
+ * 相手先システムにエラーを通知する為、エラー電文を作成する。
+
+
+
+処理の流れ
+==========
+
+Nablarch Application Frameworkは、常駐して受信キューを監視する。
+要求電文が到達する毎に、以下の処理が実行される。
+
+ 
+#. Nablarch Application Frameworkはフレームワーク制御ヘッダのリクエストIDをもとに、業務アクションクラスを起動する。
+#. 業務アクションは、要求電文を受け取り業務処理を実行し、応答電文を戻り値として返却する。
+#. Nablarch Application Frameworkは、返却された応答電文を送信キューにPUTする。
+
+
+.. image:: ./_image/sequence.png
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "mom-messaging-02_basic-04_Explanation_real",
+  "title": "同期応答型メッセージ受信処理のアプリケーション構造",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "MessagingAction",
+        "同期応答型メッセージ受信処理",
+        "コールバック",
+        "フォーマット定義ファイル",
+        "障害発生時処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "電文フォーマット定義ファイル",
+      "hints": [
+        "RECEIVE.fmt",
+        "SEND.fmt",
+        "要求電文フォーマット定義",
+        "応答電文フォーマット定義",
+        "ヘッダーフォーマット定義",
+        "電文フォーマット定義ファイル",
+        "リクエストID"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "クラス構造",
+      "hints": [
+        "MessagingAction",
+        "DbAccessSupport",
+        "onReceive",
+        "onError",
+        "ResponseMessage",
+        "RequestMessage",
+        "ExecutionContext"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メソッド詳細",
+      "hints": [
+        "onReceive",
+        "onError",
+        "コールバック",
+        "電文受信時処理",
+        "エラー発生時処理"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "処理の流れ",
+      "hints": [
+        "受信キュー",
+        "送信キュー",
+        "リクエストID",
+        "電文受信処理フロー",
+        "業務アクション起動"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "同期応答型メッセージ受信処理の特徴:\n\n- バッチ・オンライン処理と同一スタイル（「要求を受け取って応答を返却する」）で実装可能\n- 各イベント（開始時・エラー発生時・終了時）でフレームワークが対応するコールバックメソッドを起動。業務アプリケーションでのエラー処理漏れ・リソース解放漏れを抑止\n- 設計書から自動生成されたフォーマット定義ファイルを使用することで、物理レイアウトを意識したプログラミングが不要。フィールド名を指定してデータを取得可能。Entityへの変換で型安全なプログラミングも可能\n- 障害発生時の考慮はフレームワーク側で実施。業務処理はビジネスロジックに注力可能",
+    "s2": "標準的なアプリケーションでは以下の3つのフォーマット定義ファイルを使用する。\n\n1. **ヘッダーフォーマット定義**: アプリケーション制御情報を含む共通データ領域のフォーマット。リポジトリ定義ファイルにファイル名を指定。要求・応答双方で同じものを使用。\n2. **要求電文フォーマット定義**: 要求電文中の業務データ領域のフォーマット。ファイル名 = `(リクエストID)_RECEIVE.fmt`\n3. **応答電文フォーマット定義**: 応答電文中の業務データ領域のフォーマット。ファイル名 = `(リクエストID)_SEND.fmt`",
+    "s3": "**クラス**: `MessagingAction` を継承して実装する。\n\n> **補足**: `MessagingAction` は `DbAccessSupport` を継承しているため、サブクラスでも `DbAccessSupport` の機能でDBアクセス可能。\n\n実装必須メソッド:\n\n| メソッド | 概要 | 起動タイミング | 要否 |\n|---|---|---|---|\n| `ResponseMessage onReceive(RequestMessage request, ExecutionContext context)` | 電文受信時の処理 | 電文受信時 | 必須 |\n| `ResponseMessage onError(Throwable e, RequestMessage request, ExecutionContext context)` | エラー発生時の処理 | onReceiveでエラー発生時 | 必須 |\n\n> **注意**: `onError` はメイン処理とは別のトランザクションで実行される。メイン処理でエラーが発生した場合、そのトランザクションはロールバックされて終了するため。",
+    "s4": "### 電文受信時のコールバック\n\n`onReceive` メソッドを実装（必須）。処理対象リクエストIDの要求電文受信時にフレームワークにより起動される。要求電文を引数として受け取り、処理結果の応答電文を戻り値として返却する。\n\n### エラー発生時のコールバック\n\n`onError` メソッドを実装（必須）。メイン処理でエラー発生時のみ呼び出される（エラーが発生しなかった場合は起動されない）。メイン処理で発生した例外またはエラーは引数で渡される。\n\n> **注意**: 実装すべき処理の例:\n> - エラーが発生したレコードのステータスを異常終了に更新する\n> - 相手先システムにエラーを通知するためエラー電文を作成する",
+    "s5": "フレームワークは常駐して受信キューを監視し、要求電文到達ごとに以下を実行する:\n\n1. フレームワーク制御ヘッダのリクエストIDをもとに業務アクションクラスを起動\n2. 業務アクションが要求電文を受け取り業務処理を実行し、応答電文を返却\n3. フレームワークが返却された応答電文を送信キューにPUT"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

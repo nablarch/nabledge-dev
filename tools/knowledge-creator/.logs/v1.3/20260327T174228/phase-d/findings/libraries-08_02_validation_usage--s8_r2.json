@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "sections s2, s4, s7",
+      "description": "Three sections contain only the placeholder text 'なし' (3 characters), which is well below the 50-character threshold. s2 captures the `.. _convert_property:` anchor, s4 captures the 入力値のトリム heading (no RST anchor present in source), and s7 captures the `.. _validation-message-creation:` anchor.",
+      "source_evidence": "Source has RST anchors `.. _convert_property:` and `.. _validation-message-creation:`, plus the heading '入力値のトリム' with no preceding anchor."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry s3 hints",
+      "description": "The hint `ValidationUtil` is absent from s3 hints, but the section content explicitly references `ValidationUtil.validateAndConvertRequest` in both prose and the code example.",
+      "source_evidence": "Source: `ValidationContext<Order> result = ValidationUtil.validateAndConvertRequest(\"form\", Order.class, req, \"insert\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index entry s6 hints",
+      "description": "The hint `ValidationContext` is absent from s6 hints, but the section code example uses `ValidationContext<UserEntity>` as the return type of `validateAndConvertRequest`.",
+      "source_evidence": "Source: `ValidationContext<UserEntity> context = ValidationUtil.validateAndConvertRequest(null, UserEntity.class, row, \"validateUserData\");`"
+    }
+  ]
+}

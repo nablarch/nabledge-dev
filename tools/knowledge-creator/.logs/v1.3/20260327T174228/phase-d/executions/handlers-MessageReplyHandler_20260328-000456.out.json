@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-MessageReplyHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 関連するハンドラ section (preceding the table)",
+      "description": "The source contains a general placement rule: \"応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。\" This is a critical constraint for handler chain design — any handler that needs to modify response message content must be placed after MessageReplyHandler. The knowledge file lists the three named handlers in the table but omits this general principle, which is necessary for users adding custom or other handlers that edit response messages.",
+      "source_evidence": "応答電文の内容を編集する必要のあるハンドラは、全てこのハンドラの後続に配置する必要がある。"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "mom-messaging-03_userQueryMessageAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "sections.s1 / index[0].hints",
+      "description": "Key ValidationUtil API method `validateAndConvertRequest` is missing from s1 hints. This is a named method call that users searching for validation usage patterns would likely query by name.",
+      "source_evidence": "Source: `ValidationUtil.validateAndConvertRequest(UserInfoTempEntity.class, userRecord, \"validateRegister\")`"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+================================
+同期応答型メッセージ受信処理
+================================
+
+:doc:`ユーザ情報登録サービス<01_userResisterMessageSpec>`\ を例に、同期応答型メッセージ受信処理の実装方法を説明する。
+
+.. image:: ./_image/userRegisterMessage.png
+
+
+電文受信時の処理
+======================
+
+サンプルでは、電文受信時に以下の処理を行う。
+
+ | ① 要求電文を精査しEntityへ変換する。
+ | ② Entity使用して要求電文の内容をデータベースに登録する。
+ | ③ 応答電文を作成し返却する。
+
+
+.. code-block:: java
+
+ public class RM11AC0101Action extends MessagingAction {
+  
+     /**
+      * データ部に格納された登録ユーザレコードの項目精査を行った後、
+      * データベースに登録する。
+      * 
+      * 精査エラーとなった場合は、処理をロールバックしてエラー応答を送信する。
+      * 
+      * @param request 要求電文オブジェクト
+      * @param context 実行コンテキスト
+      * @return 応答電文オブジェクト
+      */
+     @Override
+     protected ResponseMessage onReceive(RequestMessage   request,
+                                         ExecutionContext context) {
+  
+         // 【説明】要求電文を精査しEntityに変換する
+         UserInfoTempEntity entity = validate(request.getParamMap());
+  
+         // 【説明】Entityをデータベースに登録する
+         String userInfoId = registerRecord(entity);
+         
+         // 【説明】応答電文を作成する
+         Map<String, Object> resultRecord = new HashMap<String, Object>();
+         resultRecord.put("dataKbn",    "0");
+         resultRecord.put("userInfoId", userInfoId);
+  
+         // 【説明】応答電文を返却する
+         return request.reply()
+                       .setStatusCodeHeader("200")
+                       .addRecord(resultRecord);
+     }
+  
+     /**
+      * 登録ユーザレコードの精査を行う。
+      * 
+      * 精査に成功した場合は、エンティティオブジェクトを返却する。
+      * 精査エラーとなった場合は業務例外を送出する。
+      * 
+      * @param userRecord 精査対象のユーザレコード
+      * @return 精査済みエンティティオブジェクト
+      */
+     private UserInfoTempEntity validate(Map<String, Object> userRecord) {
+         ValidationContext<UserInfoTempEntity>
+             validationContext = ValidationUtil.validateAndConvertRequest(
+                 UserInfoTempEntity.class,
+                 userRecord,
+                 "validateRegister"
+             );
+
+         validationContext.abortIfInvalid();
+
+         return validationContext.createObject();
+     }
+
+
+エラー時の処理
+==============
+
+エラー時の処理では、発生したエラーに応じて応答電文を作成し返却している。
+
+.. code-block:: java
+
+    /**
+     * 業務処理がエラー終了した場合に送信する応答電文の内容を設定する。
+     * <p/>
+     * <b>処理結果コード/障害コード仕様</b>
+     * <pre>
+     * ==== =============== =============== ==================================================
+     * No   終了コード      障害コード      原因
+     * ==== =============== =============== ==================================================
+     * 1    200             (空白)          正常終了
+     * 2    400             NR11AA4001      要求電文のデータレコード部項目精査エラー
+     * 3    500             NR11AA5001      要求電文のデータレコード部レイアウト不正
+     * 4    500             NR11AA5000      その他の意図しないエラーにより業務処理が失敗した場合。
+     * ==== =============== =============== ===================================================
+     * </pre>
+     * @param e       発生した例外オブジェクト
+     * @param request 要求電文オブジェクト
+     * @param context 実行コンテキスト
+     * @return 応答電文オブジェクト
+     */
+    @Override
+    protected ResponseMessage onError(Throwable        e,
+                                      RequestMessage   request,
+                                      ExecutionContext context) {
+
+        String statusCode = "500";
+        String failureCode = "NR11AC5000";
+        
+        // 【説明】 要求電文のレイアウトが不正だった場合
+        if (e instanceof InvalidDataFormatException) {
+            statusCode = "500";
+            failureCode = "NR11AC5001";
+        }
+        
+        // 【説明】 要求電文のデータレコード精査エラーが発生した場合
+        if (e instanceof ApplicationException) {
+            statusCode = "400";
+            failureCode = "NR11AC4001";
+        }
+        
+        // 【説明】 応答電文（エラー）を作成する
+        Map<String, Object> resultRecord = new HashMap<String, Object>();
+        resultRecord.put("dataKbn",    0);
+        resultRecord.put("failureCode", failureCode);
+
+        // 【説明】 応答電文（エラー）を返却する
+        return request.reply()
+                      .setStatusCodeHeader(statusCode)
+                      .addRecord(resultRecord);
+    }
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "mom-messaging-03_userQueryMessageAction",
+  "title": "同期応答型メッセージ受信処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "電文受信時の処理",
+      "hints": [
+        "RM11AC0101Action",
+        "MessagingAction",
+        "ValidationUtil",
+        "UserInfoTempEntity",
+        "ValidationContext",
+        "onReceive",
+        "RequestMessage",
+        "ExecutionContext",
+        "ResponseMessage",
+        "同期応答型メッセージ受信処理",
+        "要求電文バリデーション",
+        "応答電文作成"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "エラー時の処理",
+      "hints": [
+        "InvalidDataFormatException",
+        "ApplicationException",
+        "onError",
+        "エラー応答",
+        "ステータスコード",
+        "障害コード",
+        "NR11AC4001",
+        "NR11AC5001",
+        "NR11AC5000",
+        "NR11AA4001",
+        "NR11AA5001",
+        "NR11AA5000"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス**: `RM11AC0101Action` (`MessagingAction` を継承)\n\n**`onReceive` メソッドの処理フロー**:\n1. `validate(request.getParamMap())` で要求電文を精査し `UserInfoTempEntity` に変換\n2. `registerRecord(entity)` でデータベースに登録\n3. `request.reply().setStatusCodeHeader(\"200\").addRecord(resultRecord)` で応答電文を返却\n\n**バリデーション処理 (`validate` メソッド)**:\n```java\nValidationContext<UserInfoTempEntity> validationContext =\n    ValidationUtil.validateAndConvertRequest(\n        UserInfoTempEntity.class, userRecord, \"validateRegister\");\nvalidationContext.abortIfInvalid();  // 精査エラー時に業務例外を送出\nreturn validationContext.createObject();\n```\n\n**応答電文フィールド**:\n- `dataKbn`: `\"0\"`（正常）\n- `userInfoId`: 登録ユーザID",
+    "s2": "**`onError` メソッドのエラー応答仕様**:\n\n| 終了コード | 障害コード | 原因 |\n|---|---|---|\n| 200 | (空白) | 正常終了 |\n| 400 | NR11AC4001 | 要求電文のデータレコード部項目精査エラー |\n| 500 | NR11AC5001 | 要求電文のデータレコード部レイアウト不正 |\n| 500 | NR11AC5000 | その他の意図しないエラー |\n\n例外の種別による分岐:\n- `InvalidDataFormatException` → ステータスコード `500` / 障害コード `NR11AC5001`\n- `ApplicationException` → ステータスコード `400` / 障害コード `NR11AC4001`\n- その他 → ステータスコード `500` / 障害コード `NR11AC5000`\n\n**エラー応答電文フィールド**:\n- `dataKbn`: `0`（エラー）\n- `failureCode`: 障害コード"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

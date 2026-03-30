@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-NablarchServletContextListener",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "The missing note creates a real risk of architectural misclassification. This knowledge file lives under the \"handlers-\" namespace and its s1 section uses \"ハンドラキュー構成\" as a hint, making the handler association strong. Without the explicit clarification that this class is NOT a handler, an AI answering questions like \"Webオンライン処理のハンドラキューに必要なコンポーネントは？\" could enumerate NablarchServletContextListener as a handler rather than as the listener that initializes the handler queue. This would produce incorrect setup guidance. The class name (\"Listener\") offers partial mitigation, which keeps this at medium rather than high.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s1 (概要)",
+      "impact": "medium",
+      "justification": "The knowledge file is filed under the handlers namespace and includes 'ハンドラキュー構成' as an index hint, creating a strong contextual association with handlers. Without the explicit note from the source ('このクラスはハンドラでは無いが、ハンドラ構成を説明する都合上ここであわせて解説する'), the AI has no signal to distinguish NablarchServletContextListener's role (a ServletContextListener that initializes the handler queue) from that of an actual handler. Queries about web online handler configuration could yield responses that incorrectly list this class as a handler component, misleading developers about the architecture. The class suffix 'Listener' provides partial mitigation but is insufficient on its own given the handler-centric framing of the file. Phase E logs are empty, indicating the fix phase was either not executed or produced no output, leaving the finding completely unresolved."
+    }
+  ]
+}

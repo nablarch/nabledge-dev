@@ -1,0 +1,600 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/CustomTag/inputAndOutput.rst`
+- Format: `rst`
+
+```
+入力/選択項目での初期値設定
+---------------------------
+
+以下のように、入力フォームの入力/選択項目で初期値を設定する方法を示す。
+
+* 入力フォームの初期値設定例
+
+  .. code-block:: html
+
+     <!-- 【説明】入力/選択項目以外は省略 -->
+
+     <!-- 【説明】テキストボックスの入力項目に、"sampleUser"が初期値として設定されている。 -->
+     <input type="text" name="W11AC02.name" value="sampleUser" size="22" maxlength="20" />
+
+     <!-- 【説明】セレクトボックスの選択項目に、"group2"と"group3"に対応するラベルが初期値として設定されている。 -->
+     <select name="W11AC02.user.groupIds">
+       <option value="group1">group1 - グループA</option>
+       <option value="group2" selected="selected">group2 - グループB</option>
+       <option value="group3" selected="selected">group3 - グループC</option>
+       <option value="group4">group4 - グループD</option>
+       <option value="group5">group5 - グループE</option>
+     </select>
+
+対象タグは以下の通り
+
+* :ref:`howto_single_input`
+* :ref:`code_select`
+
+入力/選択項目で初期値を設定する場合、
+JSPへ遷移する前にActionクラスでリクエストスコープにデータを設定する必要がある。
+その場合、カスタムタグの入力/選択項目のname属性で指定する値と、
+アクションでリクエストスコープに初期値を設定する際に使用する名前を合わせる。
+また、JSPでは処理を追加する必要は無いので、
+初期値設定が無い場合と同じコードを書けばよい。
+
+実装例として、 **登録画面** と **更新画面** での **単一項目** の初期値設定、 **複数選択項目** の初期値設定を以下に示す。
+
+
+**登録画面の例**
+
+Mapを使用して初期値を設定できる。
+この時、Mapのキーにプロパティ名を明示的に指定する必要がある。
+Mapを使用して、Actionクラスで単一入力項目の初期値を設定する例を示す。
+
+* Actionクラスの実装例
+
+  .. code-block:: java
+
+     public class W11AC02Action {
+
+         // 【説明】初期値の設定以外の箇所は省略
+         public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {
+
+             /* 【説明】
+                 入力項目のname属性（"W11AC02.effectiveDateFrom"）に対する初期値の設定
+                 システム使用開始日付に、現在の日付を設定する。
+                 Mapを使用して初期値を設定するので、明示的にキーにプロパティ名を指定する。 */
+             Map<String, String> map = new HashMap<String, String>();
+             map.put("effectiveDateFrom", new Date());
+             ctx.setRequestScopedVar("W11AC02", map);
+
+             return new HttpResponse("/ss11AC/W11AC0201.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  以下は、Actionで設定したデータとname属性の対応を説明するためのものである。
+  初期値設定のために特に必要な実装は無い。
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           入力項目以外は省略。
+           W11AC02.effectiveDateFromの値が初期値（現在日付）として入力フォームに表示される。 --%>
+     <n:text name="W11AC02.effectiveDateFrom" size="22" maxlength="20" />
+
+
+**更新画面の例**
+
+SqlRowやフォーム/エンティティを使用すると、Mapを使用せずに初期値を設定できる。
+Mapを使用せずに、Actionクラスで単一入力項目の初期値を設定する例を示す。
+
+* Actionクラスの実装例
+
+  .. code-block:: java
+
+     public class W11AC03Action {
+
+         // 【説明】初期値の設定以外の箇所は省略
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+
+             /* 【説明】
+                 リクエストに更新対象のプライマリキー(W11AC03.userId)が格納されているとする。
+                 フォームのプロパティとして取得したプライマリキーを使用して、更新対象のデータ（userInfo）を取得する。
+                 SqlResultSetの要素であるSqlRowにはプロパティ名が指定されているので、
+                 明示的にプロパティ名を指定する必要はない。
+                 そのため、SqlResultSetからSqlRowを取り出して、そのままリクエストに設定できる。 */
+             ValidationContext<W11AC03Form> formCtx =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             W11AC03Form form = formCtx.createObject();
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet userInfo = component.selectUserInfo(form);
+             ctx.setRequestScopedVar("W11AC03", userInfo.get(0));
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  以下は、Actionで設定したデータとname属性の対応を説明するためのものである。
+  初期値設定のために特に必要な実装は無い。
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           入力項目以外は省略。
+           user.nameの値が初期値として入力フォームに表示される。 --%>
+     <n:text name="W11AC03.name" size="22" maxlength="20" />
+
+
+**複数選択項目の例**
+
+複数選択項目に初期値を設定する場合、初期値だけでなく、選択候補となる選択項目のリストもリクエストスコープに設定する必要がある。
+実装例では、以下のテーブルからidとnameの組み合わせでデータを取得することを想定している。
+
+* 想定しているUSER_GROUPSテーブル
+
+  +-------+----------+
+  |id     |name      |
+  +=======+==========+
+  |group1 |グループA |
+  +-------+----------+
+  |group2 |グループB |
+  +-------+----------+
+  |group3 |グループC |
+  +-------+----------+
+  |group4 |グループD |
+  +-------+----------+
+  |group5 |グループE |
+  +-------+----------+
+
+* Actionクラスの実装例
+
+  .. code-block:: java
+
+     public class W11AC02Action {
+
+         // 【説明】初期値の設定以外の箇所は省略
+         public HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {
+
+             /* 【説明】
+                 selectタグで初期値設定するための前処理
+                 USER_GROUPSテーブルからidとnameの組でデータを取得し、
+                 selectタグで使用する選択項目リストとして設定。 */
+             CM311AC1Component component = new CM311AC1Component();
+             SqlResultSet ugroupList = component.selectUserGroups();
+             ctx.setRequestScopedVar("allGroups", ugroupList);
+
+             // 【説明】選択項目のname属性（"W11AC02.groupIds"）に対する複数の初期値（"group2"と"group3"）の設定
+             Map<String, String> form = new HashMap<String, String>();
+             String[] defaultGroups = {"group2", "group3"};
+             form.put("groupIds", defaultGroups);
+             ctx.setRequestScopedVar("W11AC02", form);
+
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+* JSPの実装例
+
+  以下は、Actionで設定したデータとname属性の対応を説明するためのものである。
+  初期値設定のために特に必要な実装は無い。
+
+  ファイル名：W11AC0301.jsp
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           選択項目以外は省略
+           ActionでW11AC02.groupIdsに設定された"group2"と"group3"が初期値として選択される。
+           選択される要素は、W11AC02.groupIdsに含まれる要素の値 = allGroups.idの値 となるラベル。 --%>
+     <n:select name="W11AC02.groupIds" multiple="true"
+            listName="allGroups" elementLabelProperty="name" elementValueProperty="id"
+            elementLabelPattern="$VALUE$ - $LABEL$" listFormat="ul" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`howto_output_for_confirmation_page`:
+
+--------------------------
+入力項目の確認画面用の出力
+--------------------------
+
+入力項目のカスタムタグを使用して、確認画面用の出力ができる。
+確認画面でconfirmationPageタグを使い、入力画面にフォワードする。
+
+入力項目タグは以下を参照。
+
+* :ref:`howto_single_input`
+* :ref:`code_select`
+
+詳細については、 Application Framework解説書の `入力項目の確認画面用の出力 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_FormTag.html#output-for-confirmation-page>`_ を参照。
+
+
+.. _`output_for_error`:
+
+----------------------------------------------
+エラーメッセージの表示、エラー項目のハイライト
+----------------------------------------------
+
+本フレームワークでは、単項目精査エラーや業務エラーなどが発生したときの、エラーメッセージ表示のために以下のタグを提供する。
+
+* errorsタグ
+* errorタグ
+
+また、エラーの原因となった入力項目をハイライト表示させる機能も提供している。
+詳細については、 Application Framework解説書の `エラー表示 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_DisplayTag.html#outpu-for-error>`_ を参照。
+
+
+.. _`custom_tag_message`:
+
+------------------------------------------------------------
+メッセージの表示
+------------------------------------------------------------
+国際化を行うアプリケーションにおいて1つのJSPファイルで多言語に対応する場合、\
+ユーザが選択した言語に応じて画面の文言を切り替える機能が必要となる。\
+本フレームワークでは、言語に応じた画面の文言切り替えのためにmessageタグを提供する。
+
+messageタグは、メッセージ機能を使用して管理されているメッセージを表示する。\
+このため、メッセージ機能が管理するテーブルに言語毎の文言を準備することで、画面の文言切り替えが可能となる。
+
+
+messageタグの実装例を下記に示す。\
+下記の実装例では、以下のテーブルを想定している。
+
+* 想定しているメッセージテーブル
+
+================= ========== =============================
+メッセージID      言語       メッセージ
+================= ========== =============================
+M7770001          en         User Registration
+M7770001          ja         ユーザ登録
+M7770099          en         Sample Application
+M7770099          ja         サンプルアプリケーション
+M7770008          en         {0}-{1}
+M7770008          ja         {0}-{1}
+================= ========== =============================
+
+* JSPの実装例
+
+ **スレッドコンテキストに設定されている言語に応じたメッセージを表示する場合**
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           messageId属性のみ指定する。 --%>
+     <n:message messageId="M7770001" />
+
+  .. code-block:: bash
+
+     # 【説明】スレッドコンテキストに設定された言語がenの場合。
+     User Registration
+
+     # 【説明】スレッドコンテキストに設定された言語がjaの場合。
+     ユーザ登録
+
+ **指定した言語に応じたメッセージを表示する場合**
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           language属性に言語を指定する。
+           常にlanguage属性に指定された言語に応じたメッセージが出力される。 --%>
+     <n:message messageId="M7770001" language="ja" />
+
+  .. code-block:: bash
+
+     # 【説明】スレッドコンテキストに設定された言語がenの場合。
+     ユーザ登録
+
+     # 【説明】スレッドコンテキストに設定された言語がjaの場合。
+     ユーザ登録
+
+ **埋め込み文字をフォーマットして表示する場合**
+
+  .. code-block:: jsp
+
+     <%-- 【説明】
+           JSP上で埋め込み文字を直接指定する場合はoption0～option9属性に指定すればよいが、
+           埋め込み文字もメッセージ機能で管理されたリソースから取得する場合は下記の手順で行う。
+           (1)var属性を指定してmessageタグを使用し埋め込み用の文言を取得する。
+           (2)取得した埋め込み用の文言をoption0～option9属性に指定する。--%>
+
+     <%-- 【説明】メッセージID:M7770008の埋め込み用の文言を取得する。--%>
+     <n:message var="title" messageId="M7770001" />
+     <n:message var="appName" messageId="M7770099" />
+
+     <%-- 【説明】埋め込み用の文言をoption0属性、option1属性に設定する。--%>
+     <n:message messageId="M7770008" option0="${title}" option1="${appName}" />
+
+  .. code-block:: bash
+
+     # 【説明】スレッドコンテキストに設定された言語がenの場合。
+     User Registration-Sample Application
+
+     # 【説明】スレッドコンテキストに設定された言語がjaの場合。
+     ユーザ登録-サンプルアプリケーション
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+.. _`change_output_format`:
+
+------------------------------
+出力フォーマットの変更方法
+------------------------------
+
+日付や金額の値などをフォーマットして出力したい場合、writeタグやtextタグのvalueFormat属性を指定する。
+
+詳細については、 Application Framework解説書の `値のフォーマット出力 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_DisplayTag.html#web-view-format>`_ を参照。
+
+
+.. _`howto_output_without_html_escape`:
+
+------------------------------------
+HTMLエスケープせずに値を出力する方法
+------------------------------------
+
+HTMLエスケープを行わず値をそのまま出力したい場合、prettyPrintタグまたはrawWriteタグを使用する。
+
+詳細については、Application Framework解説書の `HTMLエスケープせずに値を出力する方法 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_BasicRules.html#output-without-html-escape>`_ を参照。
+
+.. warning::
+   本機能は、HTMLのソースコードを表示したい場合など、HTMLエスケープをどうしても避けたい場合に使用する。
+   それ以外の場合は、HTMLエスケープを行うこと。
+
+
+.. _`for_not_encryption`:
+
+----------------------------
+hiddenタグの暗号化機能の解除
+----------------------------
+
+hiddenタグの値を改ざん又は参照させないために、hiddenタグの暗号化機能を提供している。
+本機能はデフォルトで使用されるため、使用しない場合はカスタムタグのデフォルト値を変更する必要がある。
+（ `カスタムタグのデフォルト値の設定 <../../../../fw/reference/02_FunctionDemandSpecifications/03_Common/07/07_HowToSettingCustomTag.html#webview-customtagconfig>`_ 参照)
+
+リポジトリへの登録例を以下に示す。
+
+* hiddenタグの暗号化機能を解除する設定例
+
+  ファイル名：tag.xml
+
+  .. code-block:: xml
+
+     <!-- 【説明】暗号化機能の設定以外は省略 -->
+     <component name="customTagConfig"
+                class="nablarch.common.web.tag.CustomTagConfig">
+         <!-- 【説明】
+               hiddenタグの暗号化機能の設定。
+                useHiddenEncryption="true"で暗号化を行う。（デフォルト）
+                useHiddenEncryption="false"で暗号化を行わない。 -->
+         <property name="useHiddenEncryption" value="false" />
+     </component>
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+```
+
+## Knowledge File
+
+- ID: `web-application-inputAndOutput--s8`
+
+```json
+{
+  "id": "web-application-inputAndOutput--s8",
+  "title": "Webアプリケーション 入力/出力",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "入力/選択項目での初期値設定",
+      "hints": [
+        "初期値設定",
+        "リクエストスコープ",
+        "Map",
+        "HashMap",
+        "SqlResultSet",
+        "SqlRow",
+        "setRequestScopedVar",
+        "ExecutionContext",
+        "n:text",
+        "n:select",
+        "multiple",
+        "複数選択項目",
+        "listName",
+        "elementLabelProperty",
+        "elementValueProperty",
+        "ValidationUtil",
+        "ValidationContext",
+        "elementLabelPattern",
+        "listFormat",
+        "HttpResponse",
+        "HttpRequest"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入力項目の確認画面用の出力",
+      "hints": [
+        "確認画面",
+        "confirmationPage",
+        "入力項目確認",
+        "フォワード"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "エラーメッセージの表示、エラー項目のハイライト",
+      "hints": [
+        "エラーメッセージ表示",
+        "エラー項目ハイライト",
+        "errorsタグ",
+        "errorタグ",
+        "単項目精査エラー",
+        "業務エラー"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "メッセージの表示",
+      "hints": [
+        "メッセージ表示",
+        "多言語対応",
+        "国際化",
+        "n:message",
+        "messageId",
+        "language",
+        "var",
+        "option0",
+        "option1",
+        "埋め込み文字"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "出力フォーマットの変更方法",
+      "hints": [
+        "出力フォーマット",
+        "valueFormat",
+        "writeタグ",
+        "textタグ",
+        "日付フォーマット",
+        "金額フォーマット"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "HTMLエスケープせずに値を出力する方法",
+      "hints": [
+        "HTMLエスケープなし",
+        "prettyPrint",
+        "rawWrite"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "hiddenタグの暗号化機能の解除",
+      "hints": [
+        "hiddenタグ暗号化",
+        "CustomTagConfig",
+        "nablarch.common.web.tag.CustomTagConfig",
+        "useHiddenEncryption"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "入力/選択項目に初期値を設定するには、JSP遷移前にActionクラスでリクエストスコープにデータを設定する必要がある。カスタムタグのname属性の値とリクエストスコープへの設定名を一致させること。JSP側では特別な実装は不要。\n\n**登録画面（Mapを使用する場合）**\n\nMapを使用する場合、Mapのキーにプロパティ名を明示的に指定する必要がある。\n\n```java\npublic HttpResponse doRW11AC0201(HttpRequest req, ExecutionContext ctx) {\n    Map<String, String> map = new HashMap<String, String>();\n    map.put(\"effectiveDateFrom\", new Date());\n    ctx.setRequestScopedVar(\"W11AC02\", map);\n    return new HttpResponse(\"/ss11AC/W11AC0201.jsp\");\n}\n```\n\n```jsp\n<n:text name=\"W11AC02.effectiveDateFrom\" size=\"22\" maxlength=\"20\" />\n```\n\n**更新画面（SqlRow/フォームを使用する場合）**\n\nSqlRowやフォーム/エンティティを使用するとMapを使わずに初期値設定できる。SqlResultSetの要素であるSqlRowはプロパティ名が設定済みのため、明示的なキー指定が不要。\n\n```java\npublic HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formCtx =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"selectUserInfo\");\n    W11AC03Form form = formCtx.createObject();\n    CM311AC1Component component = new CM311AC1Component();\n    SqlResultSet userInfo = component.selectUserInfo(form);\n    ctx.setRequestScopedVar(\"W11AC03\", userInfo.get(0));\n    return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n}\n```\n\n```jsp\n<n:text name=\"W11AC03.name\" size=\"22\" maxlength=\"20\" />\n```\n\n**複数選択項目の初期値設定**\n\n複数選択項目に初期値を設定する場合、初期値だけでなく選択候補となるリストもリクエストスコープに設定する必要がある。\n\n```java\n// 選択候補リストをリクエストスコープに設定\nSqlResultSet ugroupList = component.selectUserGroups();\nctx.setRequestScopedVar(\"allGroups\", ugroupList);\n\n// 複数の初期値（配列）を設定\nMap<String, String> form = new HashMap<String, String>();\nString[] defaultGroups = {\"group2\", \"group3\"};\nform.put(\"groupIds\", defaultGroups);\nctx.setRequestScopedVar(\"W11AC02\", form);\n```\n\n```jsp\n<n:select name=\"W11AC02.groupIds\" multiple=\"true\"\n       listName=\"allGroups\" elementLabelProperty=\"name\" elementValueProperty=\"id\"\n       elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\" />\n```",
+    "s2": "入力項目のカスタムタグを使用して確認画面用の出力ができる。確認画面では`confirmationPage`タグを使い、入力画面にフォワードする。\n\n対象タグ: :ref:`howto_single_input`、:ref:`code_select`",
+    "s3": "単項目精査エラーや業務エラーなどが発生したときのエラーメッセージ表示のために以下のタグを提供する:\n\n- `errors`タグ\n- `error`タグ\n\nエラーの原因となった入力項目をハイライト表示させる機能も提供している。",
+    "s4": "`n:message`タグはメッセージ機能で管理されているメッセージを表示する。メッセージ機能が管理するテーブルに言語毎の文言を準備することで、ユーザが選択した言語に応じた画面の文言切り替えが可能となる。\n\n**主要属性**:\n- `messageId`: 表示するメッセージID\n- `language`: 言語指定（省略時はスレッドコンテキストに設定された言語を使用）\n- `var`: 変数名（変数に格納して他のタグで参照可能）\n- `option0`〜`option9`: 埋め込み文字\n\n**スレッドコンテキストの言語でメッセージ表示**:\n```jsp\n<n:message messageId=\"M7770001\" />\n```\n\n**言語を指定してメッセージ表示（スレッドコンテキストの言語に関わらず指定言語で出力）**:\n```jsp\n<n:message messageId=\"M7770001\" language=\"ja\" />\n```\n\n**埋め込み文字をメッセージ機能から取得してフォーマット表示**:\n```jsp\n<%-- (1) var属性でメッセージを変数に格納 --%>\n<n:message var=\"title\" messageId=\"M7770001\" />\n<n:message var=\"appName\" messageId=\"M7770099\" />\n<%-- (2) 取得した文言をoption属性に指定 --%>\n<n:message messageId=\"M7770008\" option0=\"${title}\" option1=\"${appName}\" />\n```",
+    "s5": "日付や金額などをフォーマットして出力する場合、`write`タグや`text`タグの`valueFormat`属性を指定する。",
+    "s6": "HTMLエスケープを行わず値をそのまま出力する場合、`prettyPrint`タグまたは`rawWrite`タグを使用する。\n\n> **警告**: 本機能はHTMLのソースコードを表示したい場合など、HTMLエスケープをどうしても避けたい場合にのみ使用すること。それ以外の場合は必ずHTMLエスケープを行うこと。",
+    "s7": "hiddenタグの値の改ざん・参照防止のため、hiddenタグの暗号化機能をデフォルトで提供している。使用しない場合はカスタムタグのデフォルト値を変更する必要がある。\n\n**クラス**: `nablarch.common.web.tag.CustomTagConfig`\n\n| プロパティ名 | デフォルト値 | 説明 |\n|---|---|---|\n| useHiddenEncryption | true | hiddenタグの暗号化機能の有効（true）/無効（false） |\n\n暗号化を無効にする設定例（tag.xml）:\n```xml\n<component name=\"customTagConfig\"\n           class=\"nablarch.common.web.tag.CustomTagConfig\">\n    <property name=\"useHiddenEncryption\" value=\"false\" />\n</component>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 7 < source headings 13
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

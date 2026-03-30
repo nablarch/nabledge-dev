@@ -1,0 +1,499 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_ObjectSave--s4",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor クラス説明（最終warningブロック直前の箇条書き）",
+      "description": "VariableInSyntaxConvertor の説明に含まれる4つのSQL解析制約が未記載。SQLリテラル処理とコメント非対応の制約は実装判断に必須の情報。",
+      "source_evidence": "* リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない。\n* リテラル文字は、シングルクォート(\"'\")で囲われている。\n* リテラル文字のエスケープ文字は、シングルクォート(\"'\")である。\n* SQL文にコメントが存在しない。"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — VariableInSyntaxConvertor クラス説明（最終 .. warning:: ブロック）",
+      "description": "VariableInSyntaxConvertor に対する「SQL文の妥当性チェックを行わない、不正構文はSQL実行時エラー」という警告が未記載。同等の警告は VariableOrderBySyntaxConvertor には記載されているが、VariableInSyntaxConvertor 分が欠落している。",
+      "source_evidence": ".. warning::\n  本クラスでは、SQL文の妥当性のチェックは行わない。\n  このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+クラス定義
+^^^^^^^^^^
+\a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  BasicSqlParameterParserFactory        BasicSqlParameterParserを生成するSqlParameterParserFactoryの基本実装クラス。
+  ===================================== ====================================================================================================
+
+.. _sql-parameter-parser-label:
+
+\b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  BasicSqlParameterParser               .. _basic-sql-parameter-parser-label:
+
+
+                                        SqlParameterParserのBasic実装クラス。
+
+                                        本クラスでは、下記ルールにしたがいSQL文の解析、及びJDBC実行用のSQL文の変換処理を行う。
+
+                                        * 名前付きバインド変数は、コロン(":")で開始され英(大文字、小文字)数字、
+                                          アンダースコア("_")、パーセント("%")で構成されている。
+
+                                        * LIKE検索条件の構築
+
+                                          本機能でサポートする部分一致検索のパターンは下記の3パターンとなっている。
+
+                                          .. note::
+
+                                            \a) 前方一致検索
+
+                                              | バインド変数名の末尾にパーセントを付加する。
+                                              | 例：「:userName%」
+
+                                            \b) 後方一致検索の場合
+
+                                              | バインド変数名の先頭にパーセントを付加する。
+                                              | 例：「:%userName」
+
+                                            \c) 部分一致検索の場合
+
+                                              | バインド変数名の前後にパーセントを付加する。
+                                              | 例：「:%userName%」
+
+                                            .. warning::
+                                               後方、部分一致検索は、顧客要件で回避不可能である場合に、顧客と下記デメリットを合意した上で使用すること。
+
+                                               デメリット
+
+                                               ::
+
+                                                 後方、部分一致検索では、インデックスが使用されずにテーブルフルスキャンとなる。
+                                                 これにより、極端な性能劣化が発生する。
+
+                                        * Nablarchの拡張構文が埋め込まれたSQL文をJDBC標準のSQL文に変換する。
+
+                                          デフォルトでは、下記の拡張構文を変換する。
+
+                                          * :ref:`可変条件構文<variable_condition_syntax_convertor-label>`
+                                          * :ref:`可変IN構文<variable_in_syntax_convertor-label>`
+                                          * :ref:`可変ORDER BY構文<variable_order_by_syntax_convertor-label>`
+
+  ===================================== ====================================================================================================
+
+.. _sql-convertor-label:
+
+\c) nablarch.core.db.statement.SqlConvertorの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.sqlconvertorパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  SqlConvertorSupport                   SQL文の変換を行うクラスをサポートするクラス。
+
+                                        バインド変数に対応するフィールドの値を取得する機能を提供する。
+  VariableConditionSyntaxConvertor      .. _variable_condition_syntax_convertor-label:
+
+                                        SQL文の可変条件構文を変換するクラス。
+
+                                        可変条件(入力有無によって条件に含めるか否かの条件)は、
+                                        $if(フィールド名) {SQL文の条件}となっていること。
+
+                                        可変条件部分を本クラスでは、下記例のようにJDBC実行用のSQL文に変換を行う。
+
+                                        JDBC実行用SQLに変換後のSQL文が不正な場合は、SQL実行時エラーが発生する。
+                                        このため変換後のSQL文が、不正なSQL文とならないように本機能独自のSQL文を記述する必要がある。
+                                        特に、$if構文が使用できる箇所は条件部分(WHERE句)のみであるため、その他の部分で使用した場合には、
+                                        不正なSQL文が生成される原因となる。
+
+                                        以下に例を示す。
+
+                                          .. code-block :: java
+
+                                            public class UserMtr {
+                                                /** ユーザ名 */
+                                                private String userName;
+                                                /** ユーザ区分 */
+                                                private String userKbn;
+
+                                                // アクセスメソッドなどは省略
+                                            }
+
+                                            // 可変条件の部分は、$if(フィールド名) {SQL文の条件}形式で実装する。
+                                            // UserMtr#userNameがnull、空文字列以外(配列の場合は、サイズが1以上)の場合には、
+                                            // 「user_name = :user_name」が有効な条件となる。
+                                            // UserMtr#userKbnがnull、空文字列以外(配列の場合は、サイズが1以上)の場合には、
+                                            // 「user_kbn = ('1', '2')」が有効な条件となる。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                    + "USER_KBN "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "$if (userName) {USER_NAME = :user_name} "
+                                                    + "AND $if (userKbn) {USER_KBN IN ('1', '2')}"
+
+                                            //***********************************************************************
+                                            // 上記SQL文は、本クラスで、下記の形に変換される。
+                                            // 条件に含める場合(フィールドの値がnull以外かつ空文字列
+                                            // (配列の場合は、サイズが1以上)以外の場合条件を
+                                            // 「(0 = 1 or (user_name = ?))」形式に変換する。
+                                            // 0 = 1はfalseになるため、必ず(user_name = ?)が評価される。
+                                            //
+                                            // 条件に含めない場合(フィールドの値がnullまたは、
+                                            // 空文字列(配列の場合は、サイズが0)の場合条件を
+                                            // 「(0 = 0 or (user_name = ?))」形式に変換する。
+                                            // 0 = 0はtrueになるため、(user_name = ?)は評価されない。
+                                            //***********************************************************************
+                                              "SELECT "
+                                                + "USER_ID, "
+                                                + "USER_NAME, "
+                                                + "USER_KBN "
+                                            + "FROM "
+                                                + "USER_MTR"
+                                            + "WHERE (0 = 0 OR (USER_NAME = ?))"
+                                                + "AND (0 = 1) OR (USER_KBN IN ('1', '2'))"
+
+                                            //***********************************************************************
+                                            // 本クラスで「$if」構文を利用できる箇所は条件部分(WHERE句)のみとなっている。
+                                            // また、$ifをネストして利用することはできない。
+                                            // このような構文を利用した場合は、本クラスで生成されるJDBC実行用のSQLが
+                                            // 不正な構文となり、SQL実行時エラーが発生する。
+                                            // 以下が、NGとなるSQL文の例である。
+                                            //***********************************************************************
+
+                                            // SELECT句で、$if構文を使用しているため不正
+                                            "SELECT $if (user) {:user} FROM USER_MTR"
+
+                                            // WHERE句で$if構文を使用しているが、ネストしているため不正
+                                              "SELECT "
+                                                + "USER_ID "
+                                            + "FROM "
+                                                + "USER_MTR "
+                                            + "WHERE $if (user) {USER = :user $if(userId) {USER_ID = :userId}}"
+
+  VariableInSyntaxConvertor             .. _variable_in_syntax_convertor-label:
+
+                                        SQL文の可変IN構文を変換するクラス。
+
+                                        IN句の条件部分を動的に生成する場合は、バインド変数名の末尾を角括弧([])で終わらすこと。
+                                        角括弧で終了しているバインド変数名は、無条件にIN句の条件項目であると判断し
+                                        動的にIN句の構築を行う。
+
+                                        また、IN句のバインド変数名に対応するフィールドのデータタイプは
+                                        配列または、Collectionとして定義されている必要がある。
+                                        この配列(Collection)の要素数がIN句の条件数となる。
+
+                                        以下に例を示す。
+
+                                          .. code-block:: java
+
+                                            // IN句に対応するフィールドは、配列またはCollectionとして宣言すること。
+                                            public class UserSearchCondition {
+                                                /** ユーザ区分 */
+                                                private List userKbn;
+                                            }
+
+                                            // IN区のバインド変数名は、末尾に角括弧([])を付加する。
+                                            // IN句と可変条件を合わせて使用する場合には、
+                                            // 可変条件の条件部分には角括弧を付加せずに記述する。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                    + "USER_KBN "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "$if (userKbn) {USER_KBN IN (:userKbn[])}";
+
+                                            // 上記のSQL文に、['1', '2']をもつListを設定した場合。
+                                            // 条件部分は、「(0 = 1 OR (USER_KBN IN (?, ?)))」と変換される。
+
+                                            // 上記のSQL文に、サイズ0のListを設定した場合、
+                                            // 条件部分は、「(0 = 0 OR (USER_KBN IN (?)))」と変換される。
+                                            // この場合、条件部分には固定で"null"が設定される。
+
+                                        .. note ::
+
+                                          IN句の条件数は、データベースベンダーによって上限が設けられている。
+                                          各アプリケーションでは、この上限を超えることがないように設計を行うこと。
+
+                                        .. warning::
+                                          IN句の拡張構文は、本機能は、検索条件のオブジェクトにMapインタフェースの実装クラスを指定することは出来ない。 
+                                          なぜなら、Mapは値に対する型情報が存在しないため、IN句を構築する際に値が配列またはCollectionであることの
+                                          チェックが確実に行えないためである。
+
+                                          これは、テスト時に確実に型チェックを行えないことを意味し(例えば値がnullの場合は、その型が何かは実行時にはわからない)、 
+                                          予期せぬ不具合の温床となるため本フレームワークでは敢えてMapの使用を制限している。
+
+
+                                        .. warning ::
+
+                                          IN句の条件項目に設定する配列(Collection)がnullや要素数が0になる可能性がある場合は、
+                                          必ず可変条件と組み合わせて使用すること。
+                                          可変条件としなかった場合に、サイズ0の配列(Collection)やnullのオブジェクトを設定した場合、
+                                          条件が「IN (null)」となり、想定したデータが取得できない可能性がある。
+
+                                          ※IN句は、条件式(カッコの中)を空にすることはできないため、サイズ0の配列やnullが指定された場合は、
+                                          条件式を「IN (null)」とする仕様としている。
+
+                                        .. warning ::
+
+                                          IN句以外の箇所に、IN句用のバインド変数を設定しないこと。
+                                          IN句以外の箇所に指定されていた場合、不正なSQL文が生成されSQL実行時エラーとなる。
+
+                                          不正な例::
+
+                                            条件:USER_ID = :userId[]
+                                            フィールド値:["00001", "00002"]
+                                            生成されるSQL文:USER_ID = ?, ?
+
+                                        * リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない。
+                                        * リテラル文字は、シングルクォート("'")で囲われている。
+                                        * リテラル文字のエスケープ文字は、シングルクォート("'")である。
+                                        * SQL文にコメントが存在しない。
+
+                                        .. warning::
+
+                                          本クラスでは、SQL文の妥当性のチェックは行わない。
+                                          このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。
+  VariableOrderBySyntaxConvertor        .. _variable_order_by_syntax_convertor-label:
+
+                                        SQL文の可変ORDER BY構文を変換するクラス。
+
+                                        可変ORDER BY構文の仕様は下記のとおり。
+
+                                        書き方::
+
+                                          $sort(フィールド名) {(ケース1)(ケース2)・・・(ケースn)}
+
+                                          フィールド名: 検索条件オブジェクトからソートIDを取得する際に使用するフィールド名を表す。
+
+                                          ケース: ORDER BY句の切り替え候補を表す。
+                                                  候補を一意に識別するソートIDとORDER BY句に指定する文字列(以降はケース本体と称す)を記述する。
+                                                  どの候補にも一致しない場合に使用するデフォルトのケースには、ソートIDに"default"を指定する。
+
+                                        ケース部分の仕様は下記のとおり。
+
+                                        * 各ケースは、ソートIDとケース本体を半角丸括弧で囲んで表現する。
+                                        * ソートIDとケース本体は、半角スペースで区切る。
+                                        * ソートIDには半角スペースを使用不可とする。
+                                        * ケース本体には半角スペースを使用できる。
+                                        * 括弧開き以降で最初に登場する文字列をソートIDとする。
+                                        * ソートID以降で括弧閉じまでの間をケース本体とする。
+                                        * ソートIDおよびケース本体はトリミングする。
+
+                                        検索条件オブジェクトからフィールド名で指定された値を取得し、\
+                                        取得した値が一致するケースのケース本体をORDER BY句としてSQL文に追加する。
+                                        取得した値が一致するケースが存在しない、かつデフォルトのケースが存在する場合は、\
+                                        デフォルトのケース本体をORDER BY句としてSQL文に追加する。
+                                        取得した値が一致するケースが存在しない、かつデフォルトのケースも存在しない場合は、\
+                                        可変ORDER BY構文を削除しただけのSQL文を返す。
+
+                                        以下に例を示す。
+
+                                        .. code-block :: java
+
+                                            public class UserMtr {
+                                                /** ユーザ名 */
+                                                private String userName;
+                                                /** 可変ORDER BYのソートID */
+                                                private String sortId;
+
+                                                // アクセスメソッドなどは省略
+                                            }
+
+                                            // 可変ORDER BYの部分は、$sort(フィールド名) {(ケース1) (ケース2)・・・(ケースn)}形式で実装する。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "USER_NAME = :user_name "
+                                                + "$sort(sortId) {(1 USER_ID ASC) (2 USER_ID DESC) (3 USER_NAME ASC) (4 USER_NAME DESC) (default USER_ID)}";
+
+                                            //***********************************************************************
+                                            // 上記SQL文に対するORDER BY句の変換例を下記に示す。
+                                            //
+                                            // UserMtr#sortId -> 変換後のORDER BY句
+                                            // null -> ORDER BY USER_ID  ・・・(デフォルトのケースが使用される)
+                                            // 1    -> ORDER BY USER_ID ASC
+                                            // 2    -> ORDER BY USER_ID DESC
+                                            // 3    -> ORDER BY USER_NAME ASC
+                                            // 4    -> ORDER BY USER_NAME DESC
+                                            // 5    -> ORDER BY USER_ID  ・・・(デフォルトのケースが使用される)
+                                            //***********************************************************************
+
+                                        .. warning::
+
+                                          本クラスでは、SQL文の妥当性のチェックは行わない。
+                                          このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。
+  ===================================== ====================================================================================================
+
+.. _db-object-save-class-label:
+
+\d) nablarch.core.db.statement.AutoPropertyHandlerの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.autopropertyパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  FieldAnnotationHandlerSupport         フィールドのアノテーション情報を元に値を設定するクラスをサポートするクラス。
+  CurrentDateTimeAnnotationHandler      nablarch.core.db.statement.autoproperty.CurrentDateTimeアノテーションが
+                                        設定されているフィールドにシステム日時を設定するクラス。
+
+                                        システム日時は、下記ルールで設定される。
+
+                                         +--------------------------+----------------------------------------------------------+
+                                         | フィールドのデータ型     | 設定方法                                                 |
+                                         +==========================+==========================================================+
+                                         | java.sql.Date            | システム日時をjava.sql.Dateに変換して設定する。          |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | Timestamp                | システム日時をjava.sql.Timestampに変換して設定する。     |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | Time                     | システム日時をjava.sql.Timeに変換して設定する。          |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | String                   | CurrentDateTimeのformatプロパティに設定されている値で、  |
+                                         +--------------------------+ SimpleDateFormatを使用してフォーマットした値を設定する。 |
+                                         | Integer                  | formatプロパティが指定されていない場合は、               |
+                                         +--------------------------+ :ref:`設定ファイル<db-object-config-label>`              |
+                                         | Long                     | に記述されたデフォルトのフォーマットを使用する。         |
+                                         +--------------------------+----------------------------------------------------------+
+
+                                        .. note::
+                                          システム日時は、 :ref:`system-date-time-feature` を使用して取得する。
+
+  UserIdAnnotationHandler               nablarch.core.db.statement.autoproperty.UserIdアノテーションが
+                                        設定されているフィールドにユーザIDを設定するクラス。
+
+                                        ユーザIDは、ThreadContextから取得する。
+
+                                        .. note::
+                                         ThreadContextに設定されるユーザIDについては、 :ref:`thread-context-label` を参照
+
+                                        .. comment
+                                         TODO ばっちができたらこっちに戻す。
+                                         ThreadContextに設定されるユーザIDについては、 :ref:`thread-context-label` 、
+                                         :doc:`../../02_Fw/02_Batch/index` を参照
+
+  RequestIdAnnotationHandler            nablarch.core.db.statement.autoproperty.RequestIdアノテーションが
+                                        設定されているフィールドにリクエストIDを設定するクラス。
+
+                                        リクエストIDは、ThreadContextから取得する。
+
+                                        .. note::
+                                         ThreadContextに設定されるリクエストIDについては、 :ref:`thread-context-label` を参照
+
+                                        .. comment
+                                         TODO ばっちができたらこっちに戻す。
+                                         ThreadContextに設定されるリクエストIDについては、 :ref:`thread-context-label` 、
+                                         :doc:`../../02_Fw/02_Batch/index` を参照
+  ===================================== ====================================================================================================
+
+\e) オブジェクトのフィールドの値をデータベースに登録するためのクラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.autopropertyパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  FieldAndAnnotationLoader              オブジェクトに定義されたフィールド情報とフィールドのアノテーション情報をロードするクラス。
+
+                                        このクラスでロードした値は、オブジェクトのフィールドの値をSQL文のバインド変数にセットする際に
+                                        使用される。
+
+                                        なお、ロードした値は、 :doc:`../05_StaticDataCache` を使用してキャッシュされるため、
+                                        同一のクラスに対してフィールド情報の取得処理が複数回実行されることはない。
+                                        これにより、リフレクションを使用してフィールド情報を取得する再のコストを
+                                        軽減でき性能劣化を防止することができる。
+  ===================================== ====================================================================================================
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_ObjectSave--s4",
+  "title": "クラス定義",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "クラス定義",
+      "hints": [
+        "BasicSqlParameterParserFactory",
+        "BasicSqlParameterParser",
+        "SqlConvertorSupport",
+        "VariableConditionSyntaxConvertor",
+        "VariableInSyntaxConvertor",
+        "VariableOrderBySyntaxConvertor",
+        "FieldAnnotationHandlerSupport",
+        "CurrentDateTimeAnnotationHandler",
+        "UserIdAnnotationHandler",
+        "RequestIdAnnotationHandler",
+        "FieldAndAnnotationLoader",
+        "@CurrentDateTime",
+        "@UserId",
+        "@RequestId",
+        "SQL解析",
+        "LIKE検索",
+        "可変条件構文",
+        "可変IN構文",
+        "可変ORDER BY構文",
+        "自動プロパティ設定",
+        "バインド変数"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## a) SqlParameterParserFactory 実装クラス\n\n**クラス**: `nablarch.core.db.statement.BasicSqlParameterParserFactory`\n- `BasicSqlParameterParser` を生成する `SqlParameterParserFactory` の基本実装。\n\n## b) SqlParameterParser 実装クラス\n\n**クラス**: `nablarch.core.db.statement.BasicSqlParameterParser`\n\n名前付きバインド変数はコロン(`:`)で始まり、英数字・アンダースコア(`_`)・パーセント(`%`)で構成。\n\n**LIKE検索パターン**:\n- 前方一致: バインド変数名末尾に`%` 例: `:userName%`\n- 後方一致: バインド変数名先頭に`%` 例: `:%userName`\n- 部分一致: バインド変数名前後に`%` 例: `:%userName%`\n\n> **警告**: 後方・部分一致検索はインデックスが使用されずテーブルフルスキャンとなり、極端な性能劣化が発生する。顧客要件で回避不可能な場合のみ、顧客と合意の上で使用すること。\n\nNablarch拡張構文（JDBC標準SQLに変換）:\n- :ref:`可変条件構文<variable_condition_syntax_convertor-label>`\n- :ref:`可変IN構文<variable_in_syntax_convertor-label>`\n- :ref:`可変ORDER BY構文<variable_order_by_syntax_convertor-label>`\n\n## c) SqlConvertor 実装クラス\n\n**クラス**: `nablarch.core.db.statement.sqlconvertor.SqlConvertorSupport`\n- SQL変換クラスのサポートクラス。バインド変数に対応するフィールドの値取得機能を提供。\n\n**クラス**: `nablarch.core.db.statement.sqlconvertor.VariableConditionSyntaxConvertor`\n\n可変条件構文 `$if(フィールド名) {SQL条件}` をJDBC実行用SQLに変換する。\n\n- フィールド値がnull・空文字列以外（配列はサイズ1以上）の場合: `(0 = 1 OR (条件))` → 条件が有効\n- フィールド値がnull・空文字列（配列はサイズ0）の場合: `(0 = 0 OR (条件))` → 条件が無効\n\n> **警告**: `$if`構文が使用できるのはWHERE句のみ。`$if`のネストは不可。SELECT句での使用や`$if`のネストは不正なSQL文が生成されSQL実行時エラーとなる。\n\n```java\n// 使用例\nString sql = \"SELECT USER_ID FROM USER_MTR WHERE \"\n    + \"$if (userName) {USER_NAME = :user_name} \"\n    + \"AND $if (userKbn) {USER_KBN IN ('1', '2')}\";\n\n// NG: SELECT句での$if使用\n\"SELECT $if (user) {:user} FROM USER_MTR\"\n\n// NG: $ifのネスト\n\"SELECT USER_ID FROM USER_MTR WHERE $if (user) {USER = :user $if(userId) {USER_ID = :userId}}\"\n```\n\n**クラス**: `nablarch.core.db.statement.sqlconvertor.VariableInSyntaxConvertor`\n\nIN句の条件を動的生成する。バインド変数名の末尾を`[]`で終わらせること。対応フィールドのデータ型は配列またはCollectionであること。\n\n> **警告**: IN句拡張構文では検索条件オブジェクトにMapインタフェース実装クラスを指定できない。Mapは値の型情報がないため、IN句構築時に配列/Collectionであることのチェックが確実に行えないため。\n\n> **警告**: IN句のバインド変数に対応する配列（Collection）がnullや要素数0になる可能性がある場合は、必ず可変条件と組み合わせて使用すること。可変条件なしでサイズ0/nullを設定すると条件が`IN (null)`となり想定データが取得できない。\n\n> **警告**: IN句用のバインド変数（`[]`終わり）をIN句以外の箇所に指定しないこと。IN句以外に指定すると不正なSQL文が生成されSQL実行時エラーとなる。不正例: `USER_ID = :userId[]` → `USER_ID = ?, ?`\n\n> **注意**: IN句の条件数はデータベースベンダーによって上限がある。各アプリケーションでこの上限を超えないよう設計すること。\n\n```java\npublic class UserSearchCondition {\n    private List userKbn;  // 配列またはCollectionで宣言\n}\nString sql = \"SELECT USER_ID FROM USER_MTR WHERE \"\n    + \"$if (userKbn) {USER_KBN IN (:userKbn[])}\";\n// ['1','2']のList → (0 = 1 OR (USER_KBN IN (?, ?)))\n// サイズ0のList → (0 = 0 OR (USER_KBN IN (?))) ※nullが設定される\n```\n\n**クラス**: `nablarch.core.db.statement.sqlconvertor.VariableOrderBySyntaxConvertor`\n\n可変ORDER BY構文 `$sort(フィールド名) {(ソートID ケース本体)...}` をORDER BY句に変換する。\n\n- ソートIDに半角スペース使用不可。ケース本体には半角スペース使用可。\n- デフォルトケースにはソートIDに`default`を指定。\n- フィールド値と一致するソートIDのケース本体をORDER BY句に使用。\n- 一致するケースなし＋デフォルトあり → デフォルトのケース本体を使用。\n- 一致するケースなし＋デフォルトなし → 可変ORDER BY構文を削除したSQL文を返す。\n\n> **警告**: SQL文の妥当性チェックは行わない。不正な構文のSQL文があった場合、SQL実行時に例外が発生する。\n\n```java\nString sql = \"SELECT USER_ID, USER_NAME FROM USER_MTR WHERE USER_NAME = :user_name \"\n    + \"$sort(sortId) {(1 USER_ID ASC) (2 USER_ID DESC) (3 USER_NAME ASC) (4 USER_NAME DESC) (default USER_ID)}\";\n// sortId=null → ORDER BY USER_ID (デフォルト使用)\n// sortId=\"1\"  → ORDER BY USER_ID ASC\n// sortId=\"5\"  → ORDER BY USER_ID (デフォルト使用)\n```\n\n## d) AutoPropertyHandler 実装クラス\n\n**クラス**: `nablarch.core.db.statement.autoproperty.FieldAnnotationHandlerSupport`\n- フィールドのアノテーション情報を元に値を設定するクラスのサポートクラス。\n\n**クラス**: `nablarch.core.db.statement.autoproperty.CurrentDateTimeAnnotationHandler`\n\n`@CurrentDateTime` アノテーションが設定されたフィールドにシステム日時を設定する。\n\n| フィールドのデータ型 | 設定方法 |\n|---|---|\n| `java.sql.Date` | システム日時を`java.sql.Date`に変換して設定 |\n| `Timestamp` | システム日時を`java.sql.Timestamp`に変換して設定 |\n| `Time` | システム日時を`java.sql.Time`に変換して設定 |\n| `String`, `Integer`, `Long` | `CurrentDateTime`の`format`プロパティの値で`SimpleDateFormat`を使用してフォーマット。`format`未指定時は :ref:`設定ファイル<db-object-config-label>` のデフォルトフォーマットを使用 |\n\n> **注意**: システム日時は :ref:`system-date-time-feature` を使用して取得する。\n\n**クラス**: `nablarch.core.db.statement.autoproperty.UserIdAnnotationHandler`\n\n`@UserId` アノテーションが設定されたフィールドにユーザIDを設定する。ユーザIDはThreadContextから取得する。\n\n> **注意**: ThreadContextに設定されるユーザIDについては :ref:`thread-context-label` を参照。\n\n**クラス**: `nablarch.core.db.statement.autoproperty.RequestIdAnnotationHandler`\n\n`@RequestId` アノテーションが設定されたフィールドにリクエストIDを設定する。リクエストIDはThreadContextから取得する。\n\n> **注意**: ThreadContextに設定されるリクエストIDについては :ref:`thread-context-label` を参照。\n\n## e) フィールド値をDBに登録するためのクラス\n\n**クラス**: `nablarch.core.db.statement.autoproperty.FieldAndAnnotationLoader`\n\nオブジェクトに定義されたフィールド情報とアノテーション情報をロードする。ロードした値はSQL文のバインド変数セット時に使用される。ロードした値は :doc:`../05_StaticDataCache` を使用してキャッシュされるため、同一クラスへのフィールド情報取得処理が複数回実行されない。リフレクションのコストを軽減し性能劣化を防止する。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

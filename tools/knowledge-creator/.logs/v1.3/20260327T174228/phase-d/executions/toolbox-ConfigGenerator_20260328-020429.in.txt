@@ -1,0 +1,348 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/tool/03_ConfigGenerator/ConfigGenerator.rst`
+- Format: `rst`
+
+```
+.. _`config_generator`:
+
+==============================
+環境設定ファイル自動生成ツール
+==============================
+
+概要
+====
+
+本ツールは、下記のファイルからアプリケーションで使用する環境設定ファイル（*.config）作成する。
+
+ * アプリケーション設定一覧表
+ * 業務設定一覧表
+
+
+利用の準備
+==========
+
+自動生成ツールの設定ファイルに、利用に必要な設定を記述する。
+
+設定ファイルとその設定内容は下記の通り。
+
+
+入力元となる設計書に関する設定
+------------------------------
+
+入力元となる設計書に関する設定を行う。設計書のレイアウトや文言を変更しない限り、
+変更の必要はない。
+
+**コンポーネント : nablarch.tool.configgenerator.ConfigurationLoader**
+
+========================= ==================================================== =====================================
+ キー名                   設定内容                                             デフォルト値
+========================= ==================================================== =====================================
+keyColumnName             キーを記載したカラム名                               "キー"
+descColumnName            項目名を記載したカラム名                             "項目名"
+prefixRowIndex            プレフィックスを記載したセルの位置（行番号）\ [1]_\  2
+prefixColumnIndex         プレフィックスを記載したセルの位置（列番号）\ [1]_\  1
+outputFilePathRowIndex    ファイル出力先を記載したセルの位置（行番号）\ [1]_\  3
+outputFilePathColumnIndex ファイル出力先を記載したセルの位置（列番号）\ [1]_\  1
+headerRowIndex            見出し行の行番号 \ [1]_\                             6
+========================= ==================================================== =====================================
+
+.. [1] 0オリジンで記載する。
+
+
+設定例を以下に示す。
+
+
+.. code-block:: xml
+
+  <component name="configurationLoader"
+             class="nablarch.tool.configgenerator.ConfigurationLoader">
+    <!-- キーを記載したカラム名 -->
+    <property name="keyColumnName" value="キー"/>
+    <!-- 項目名を記載したカラム名 -->
+    <property name="descColumnName" value="項目名"/>
+    <!-- プレフィックスを記載したセルの位置 -->
+    <property name="prefixRowIndex" value="2"/>
+    <property name="prefixColumnIndex" value="1"/>
+    <!-- ファイル出力先を記載したセルの位置 -->
+    <property name="outputFilePathRowIndex" value="3"/>
+    <property name="outputFilePathColumnIndex" value="1"/>
+    <!-- 見出し行の行番号 -->
+    <property name="headerRowIndex" value="6"/>
+  </component>
+
+
+
+ファイル生成に関する設定
+------------------------
+
+ファイル生成に関する設定を行う。
+デフォルト値が無い項目については、各プロジェクトにて設定を行う必要がある。
+
+**コンポーネント : nablarch.tool.configgenerator.ConfigGenSettings**
+
+========================= ================================================ =========================== 
+キー名                    設定内容                                         デフォルト値               
+========================= ================================================ ===========================
+lineSeparator             出力ファイル改行（"CR","LF","CRLF"のいずれか）   CRLF                       
+outputEncoding            出力ファイルのファイルエンコーディング           UTF-8                      
+outputBaseDir             出力先ディレクトリ                               ./work                     
+systemSettingsFile(必須)  アプリケーション設定一覧表のパス                 無し                       
+appSettingsDir(必須)      業務設定一覧表の配置ディレクトリ                 無し                        
+importFileName(必須)      import用コンポーネント定義ファイルのファイル名   無し                        
+excludeSheetNames         読み込み除外シート名                             "表紙", "変更履歴", "目次" 
+========================= ================================================ ===========================
+
+            
+設定例を以下に示す。
+
+.. code-block:: xml
+
+  <component name="configGenSettings"
+             class="nablarch.tool.configgenerator.ConfigGenSettings">
+    <!-- 改行コード -->
+    <property name="lineSeparator" value="CRLF"/>
+    <!-- 出力ファイルの文字コード -->
+    <property name="outputEncoding" value="UTF-8"/>
+    <!-- 出力先ディレクトリ -->
+    <property name="outputBaseDir" value="./work/config/"/>
+    <!-- アプリケーション設定一覧表のパス -->
+    <property name="systemSettingsFile"
+              value="tool/configgenerator/resources/nablarch/tool/configgenerator/アプリケーション設定一覧表.xls" />
+    <!-- 業務設定一覧表の配置ディレクトリ -->
+    <property name="appSettingsDir"
+              value="tool/configgenerator/resources/nablarch/tool/configgenerator/app/"/>
+    <!-- import用コンポーネント定義ファイルのファイル名-->
+    <property name="importFileName" value="importConfig.xml" />
+    <!-- 読み込み除外シート名 -->
+    <property name="excludeSheetNames">
+      <list>
+        <value>表紙</value>
+        <value>変更履歴</value>
+        <value>目次</value>
+      </list>
+    </property>
+  </component>
+
+
+
+自動生成ツールの実行手順
+========================
+
+
+
+「処理方式名」「環境名」を事前に定義して実行する場合
+----------------------------------------------------
+
+configgen-build.xmlにtargetタグを追記し、generateマクロを起動する。
+処理方式名「画面オンライン」、環境名「本番環境」の例を以下に示す。
+
+.. code-block:: xml
+
+  <target name="画面オンライン-本番環境"
+          description="画面オンライン-本番環境の環境設定ファイルを生成する。"
+          depends="clean">
+    <generate processingScheme="画面オンライン"
+              envName="本番環境"/>
+  </target>
+
+対話形式で生成を実行する場合
+----------------------------
+
+以下のコマンドを投入する。
+
+.. code-block:: bash 
+
+ ant -f configgen-build.xml
+
+
+標準入力から「処理方式名」「環境名」を入力する。
+以下に実行例を示す。
+
+.. code-block:: bash 
+   
+ clean:
+  
+ generate-interactive:
+     [input] 処理方式名を入力して下さい。（例：画面オンライン）
+ 画面オンライン 
+     [input] 環境名を入力して下さい。（例：本番環境）
+ 本番環境
+ ＜中略＞
+ 
+ BUILD SUCCESSFUL
+ Total time: 18 seconds
+
+\ `ファイル生成に関する設定`_\ の出力ディレクトリにファイルが生成される。
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-ConfigGenerator`
+
+```json
+{
+  "id": "toolbox-ConfigGenerator",
+  "title": "環境設定ファイル自動生成ツール",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "環境設定ファイル自動生成",
+        "configファイル生成",
+        "アプリケーション設定一覧表",
+        "業務設定一覧表"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "利用の準備",
+      "hints": [
+        "ConfigurationLoader",
+        "ConfigGenSettings",
+        "nablarch.tool.configgenerator.ConfigurationLoader",
+        "nablarch.tool.configgenerator.ConfigGenSettings",
+        "keyColumnName",
+        "descColumnName",
+        "prefixRowIndex",
+        "prefixColumnIndex",
+        "outputFilePathRowIndex",
+        "outputFilePathColumnIndex",
+        "headerRowIndex",
+        "lineSeparator",
+        "outputEncoding",
+        "outputBaseDir",
+        "systemSettingsFile",
+        "appSettingsDir",
+        "importFileName",
+        "excludeSheetNames",
+        "設計書設定",
+        "ファイル生成設定"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "自動生成ツールの実行手順",
+      "hints": [
+        "configgen-build.xml",
+        "generateマクロ",
+        "ant実行",
+        "対話形式実行",
+        "環境設定ファイル生成手順",
+        "processingScheme",
+        "envName",
+        "BUILD SUCCESSFUL",
+        "処理方式名を入力",
+        "環境名を入力"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "アプリケーション設定一覧表と業務設定一覧表から、環境設定ファイル（*.config）を自動生成するツール。",
+    "s2": "## 入力元となる設計書に関する設定\n\n**クラス**: `nablarch.tool.configgenerator.ConfigurationLoader`\n\n設計書のレイアウトや文言を変更しない限り、変更不要。\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| keyColumnName | | \"キー\" | キーを記載したカラム名 |\n| descColumnName | | \"項目名\" | 項目名を記載したカラム名 |\n| prefixRowIndex | | 2 | プレフィックスを記載したセルの行番号（0オリジン） |\n| prefixColumnIndex | | 1 | プレフィックスを記載したセルの列番号（0オリジン） |\n| outputFilePathRowIndex | | 3 | ファイル出力先を記載したセルの行番号（0オリジン） |\n| outputFilePathColumnIndex | | 1 | ファイル出力先を記載したセルの列番号（0オリジン） |\n| headerRowIndex | | 6 | 見出し行の行番号（0オリジン） |\n\n```xml\n<component name=\"configurationLoader\"\n           class=\"nablarch.tool.configgenerator.ConfigurationLoader\">\n  <property name=\"keyColumnName\" value=\"キー\"/>\n  <property name=\"descColumnName\" value=\"項目名\"/>\n  <property name=\"prefixRowIndex\" value=\"2\"/>\n  <property name=\"prefixColumnIndex\" value=\"1\"/>\n  <property name=\"outputFilePathRowIndex\" value=\"3\"/>\n  <property name=\"outputFilePathColumnIndex\" value=\"1\"/>\n  <property name=\"headerRowIndex\" value=\"6\"/>\n</component>\n```\n\n## ファイル生成に関する設定\n\n**クラス**: `nablarch.tool.configgenerator.ConfigGenSettings`\n\n| プロパティ名 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| lineSeparator | | CRLF | 出力ファイル改行（\"CR\",\"LF\",\"CRLF\"のいずれか） |\n| outputEncoding | | UTF-8 | 出力ファイルエンコーディング |\n| outputBaseDir | | ./work | 出力先ディレクトリ |\n| systemSettingsFile | ○ | | アプリケーション設定一覧表のパス |\n| appSettingsDir | ○ | | 業務設定一覧表の配置ディレクトリ |\n| importFileName | ○ | | import用コンポーネント定義ファイルのファイル名 |\n| excludeSheetNames | | \"表紙\",\"変更履歴\",\"目次\" | 読み込み除外シート名 |\n\n```xml\n<component name=\"configGenSettings\"\n           class=\"nablarch.tool.configgenerator.ConfigGenSettings\">\n  <property name=\"lineSeparator\" value=\"CRLF\"/>\n  <property name=\"outputEncoding\" value=\"UTF-8\"/>\n  <property name=\"outputBaseDir\" value=\"./work/config/\"/>\n  <property name=\"systemSettingsFile\"\n            value=\"tool/configgenerator/resources/nablarch/tool/configgenerator/アプリケーション設定一覧表.xls\" />\n  <property name=\"appSettingsDir\"\n            value=\"tool/configgenerator/resources/nablarch/tool/configgenerator/app/\"/>\n  <property name=\"importFileName\" value=\"importConfig.xml\" />\n  <property name=\"excludeSheetNames\">\n    <list>\n      <value>表紙</value>\n      <value>変更履歴</value>\n      <value>目次</value>\n    </list>\n  </property>\n</component>\n```",
+    "s3": "## 処理方式名・環境名を事前定義して実行する場合\n\nconfiggen-build.xmlにtargetタグを追記し、generateマクロを起動する。\n\n```xml\n<target name=\"画面オンライン-本番環境\"\n        description=\"画面オンライン-本番環境の環境設定ファイルを生成する。\"\n        depends=\"clean\">\n  <generate processingScheme=\"画面オンライン\"\n            envName=\"本番環境\"/>\n</target>\n```\n\n## 対話形式で実行する場合\n\n```bash\nant -f configgen-build.xml\n```\n\n標準入力から「処理方式名」「環境名」を入力する。実行例：\n\n```\nclean:\n\ngenerate-interactive:\n    [input] 処理方式名を入力して下さい。（例：画面オンライン）\n画面オンライン\n    [input] 環境名を入力して下さい。（例：本番環境）\n本番環境\n＜中略＞\n\nBUILD SUCCESSFUL\nTotal time: 18 seconds\n```\n\n生成されたファイルは `configGenSettings` の `outputBaseDir` に出力される。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

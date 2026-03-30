@@ -1,0 +1,27 @@
+{
+  "file_id": "toolbox-01_JspGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — 使用禁止HTMLタグの属性定義",
+      "description": "The default list of prohibited HTML tag attributes (the `code-block:: bash` section) is entirely omitted. The source contains an explicit enumeration of ~60 tag/attribute pairs (e.g., applet, basefont, body,alink, body,background, body,bgcolor, ..., div,align) that represent the default behavior when no CSV file is specified. An AI answering questions such as 'which attributes are removed by default?' or 'why was table,bgcolor deleted?' cannot answer correctly without this list.",
+      "source_evidence": "Source code-block:: bash section listing applet, basefont, body,alink, body,background, body,bgcolor, body,link, body,text, body,vlink, br,clear, ... td,width, th,width, div,align"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s2 — 要求 second bullet",
+      "description": "The source requirement reads '不要なHTMLタグを変換時に削除できること' (can delete unnecessary HTML tags during conversion), but the knowledge file renders this as '不要なHTMLタグの属性を変換時に削除できる' (can delete attributes of unnecessary HTML tags). The addition of 'の属性' is not present in the source requirements section; it conflates the specification-level clarification into the requirements text, changing the literal meaning.",
+      "source_evidence": "Source 要求 section: '* 不要なHTMLタグを変換時に削除できること。'"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 — 前提条件",
+      "description": "Section content is only 26 characters ('開発環境構築ガイドに従って開発環境を構築済みであること。'), which is below the 50-character threshold. The source section is also brief, but the section could be flagged for review.",
+      "source_evidence": "Source 前提条件 section contains only: '* 開発環境構築ガイドに従って開発環境を構築済みであること。'"
+    }
+  ]
+}

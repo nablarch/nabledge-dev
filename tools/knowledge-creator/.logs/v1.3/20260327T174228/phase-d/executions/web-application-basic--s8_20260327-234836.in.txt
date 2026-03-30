@@ -1,0 +1,499 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/CustomTag/basic.rst`
+- Format: `rst`
+
+```
+ウィンドウスコープの使用法
+--------------------------
+
+本フレームワークでは、複数画面で引き継ぐデータをhiddenタグでクライアント側に保持する。
+例えば、入力データや更新対象データのプライマリキーなどである。
+その際に、ウィンドウスコープと呼ぶ変数スコープにデータを保持する。
+
+
+.. note::
+   ログイン情報など、全ての取引で使用される情報はセッションで保持する。
+
+
+windowScopePrefixes属性の使用方法
+=================================
+
+ウィンドウスコープを使用するには、formタグのwindowScopePrefixes属性にプレフィックスを指定すればよい。
+入力項目のname属性で使用したプレフィックスを指定すれば、ウィンドウスコープに入力データを設定できる。
+ウィンドウスコープに設定したデータは、画面をHTML出力する際にhiddenで出力される。
+
+ウィンドウスコープを使用して、登録画面から登録確認画面にデータを引き継ぐ例を示す。
+
+* JSPの実装例
+
+  登録画面の実装例（ファイル名：W11AC0201.jsp）
+
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           windowScopePrefixes属性の使用箇所以外は省略。
+           windowScopePrefixesの指定。
+           この例では、登録確認画面から登録画面へフォワードした際に、
+           W11AC02をプレフィックスに持つ入力項目がウィンドウスコープに設定される。
+           プレフィックスを複数指定する場合、,（カンマ）で区切ればよい。 --%>
+     <n:form name="insert" windowScopePrefixes="W11AC02">
+         <%-- 【説明】
+               ウィンドウスコープにデータを設定する入力項目。
+               name属性に、プレフィックス（W11AC02）を付けた値を指定する。
+               1つのプレフィックスを指定すると、そのプレフィックスを持つ複数の入力項目
+               （W11AC02.systemAccount.userId, W11AC02.systemUser.kanjiName）を設定可能。 --%>
+         <n:text name="W11AC02.systemAccount.userId" size="15" maxlength="10" />
+         <n:text name="W11AC02.systemUser.kanjiName" size="65" maxlength="25" />
+         <%-- 【説明】登録確認画面へ遷移するサブミットボタン --%>
+         <n:submit cssClass="buttons" type="button" name="confirm" value="確認" 
+                   uri="/action/ss11AC/W11AC02Action/RW11AC0202" />
+     </n:form>
+     
+     
+  登録確認画面の実装例（ファイル名：W11AC0202.jsp）
+     
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           confirmationPageタグを指定して、登録画面のjspへフォワードする。 --%>
+     <%@ taglib prefix="n" uri="http://tis.co.jp/nablarch" %>
+     <n:confirmationPage path="./W11AC0201.jsp" />
+     
+* Actionクラスの実装例
+
+  .. code-block:: java
+  
+     public class W11AC02Action {
+       /* 【説明】
+           登録確認画面へフォワードするメソッド。
+           ウィンドウスコープの処理以外は省略 */
+       public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {
+         /* 【説明】
+             入力データのバリデーションとエラー発生時の処理は省略。
+             本メソッドの中で、入力データのリクエストへの設定は行っていない */
+         
+         // 【説明】登録確認画面へフォワードする。
+         return new HttpResponse("/ss11AC/W11AC0202.jsp");
+       }
+     }
+     
+     
+登録画面で以下のデータを入力した時の、確認画面のHTML出力例を示す。
+
+  +-----------------------------+-------------+
+  |変数名                       |データ       |
+  +=============================+=============+
+  |W11AC02.systemAccount.userId |nablarch02   |
+  +-----------------------------+-------------+
+  |W11AC02.systemUser.kanjiName |名部良次郎   |
+  +-----------------------------+-------------+
+
+* HTMLの出力例
+
+  .. code-block:: html
+  
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           ウィンドウスコープのデータが、hiddenで出力される。
+           暗号化機能が使用される。 --%>
+     <input type="hidden" name="nablarch_hidden" value="QkyNL4ld+4izNDC5" />
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法
+===========================================================
+
+windowScopePrefixes属性に指定した複数のプレフィックスを使い分けることで、
+特定のデータだけを複数画面で引き継ぐことが出来る。
+
+以下の遷移を例に、JSPの実装例を示す。
+
+一覧照会画面（照会後）→更新画面→更新確認画面→更新完了画面
+
+
+* 一覧照会画面（照会後）のJSP
+    
+  更新画面に、検索条件（プレフィックスが11AC_W11AC01）と更新対象のプライマリキー（プレフィックスがW11AC03）が引き継がれる。
+
+  .. code-block:: jsp
+  
+    <%-- 【説明】
+          ウィンドウスコープの説明箇所以外は省略。
+          
+          ページング時の検索条件は、前回検索時の条件を使用する。
+          ウィンドウスコープを使用して前回検索時の条件を維持するため、
+          検索条件と検索結果一覧のフォームを分ける。 --%>
+    <n:form windowScopePrefixes="11AC_W11AC01">
+        <div class="search">
+            <table class="data conditionArea" width="100%">
+                <%-- 【説明】
+                      更新画面に引継がれる検索条件。
+                      更新完了画面からの遷移では、以前に入力した検索条件が初期値として設定される。 --%>
+                <tr>
+                    <th>ログインID</th>
+                    <td>
+                        <n:text name="11AC_W11AC01.loginId" size="25" maxlength="20" />
+                        <n:error name="11AC_W11AC01.loginId"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>漢字氏名</th>
+                    <td>
+                        <n:text name="11AC_W11AC01.kanjiName" size="25" maxlength="20" />
+                        <n:error name="11AC_W11AC01.kanjiName"/>
+                    </td>
+                </tr>
+                <%-- 【説明】ログインID、漢字氏名以外の検索条件は省略 --%>
+            </table>
+            <%-- 【説明】「検索」ボタンは省略 --%>
+        </div>
+        <div class="hrArea">
+        <hr />
+        </div>
+     </n:form>
+     
+     <%-- 【説明】
+          検索結果一覧のフォーム。 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01">
+        <div class="resultArea">
+        <%-- 【説明】
+              一覧表示用のカスタムタグ
+              検索結果の行データは"row"という変数名で扱える。 --%>
+        <nbs:listSearchResult listSearchInfoName="11AC_W11AC01"
+                            searchUri="/action/ss11AC/W11AC01Action/RW11AC0102"
+                            resultSetName="searchResult"
+                            resultSetCss="resultList" >
+            <%-- 【説明】一覧表示のヘッダ行は省略 --%>
+            <jsp:attribute name="bodyRowFragment">
+                <tr>
+                    <%-- 【説明】
+                          更新画面へ遷移するサブミットリンク
+                          「更新」リンクが、そのユーザの更新画面へのリンクとなっている。
+                          paramタグを使用して、更新情報の検索で使うプライマリキー（W11AC03.systemAccount.userId）をサブミットする。 --%>
+                    <td><n:submitLink uri="/action/ss11AC/W11AC03Action/RW11AC0301" name="showUpdate_${count}">
+                                    更新
+                                    <%-- 【説明】
+                                          更新画面に引継がれる更新対象のプライマリキー
+                                          検索結果の行データからユーザID(row.userId)を設定する。 --%>
+                                    <n:param paramName="W11AC03.systemAccount.userId" name="row.userId" />
+                                </n:submitLink></td>
+                </tr>
+            </jsp:attribute>
+        </nbs:listSearchResult>
+        </div>
+    </n:form>
+
+
+* Actionクラスの実装例
+
+  一覧照会画面（照会後）から更新画面への遷移を行う。
+  
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         /* 【説明】
+             データの引継ぎ以外は省略 。
+             Actionクラスで、検索条件に対する処理は行っていない。 */
+         public HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {
+             // 【説明】プライマリキーの精査
+             ValidationContext<W11AC03Form> userSearchFormContext =
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "selectUserInfo");
+             /* 【説明】
+                 エラー処理は省略。
+                 プライマリキーの取得。 */
+             String userId = userSearchFormContext.createObject().getSystemAccount().getUserId();
+             
+             // 【説明】プライマリキーで検索を行い、更新対象のデータを取得。
+             CM311AC1Component comp = new CM311AC1Component();
+             SqlResultSet sysAcct = comp.selectSystemAccount(userId);
+             SqlResultSet users = comp.selectUsers(userId);
+             SqlResultSet permissionUnit = comp.selectPermissionUnit(userId);
+             SqlResultSet ugroup = comp.selectUgroup(userId);
+             
+             /* 【説明】
+                 検索結果からFormを生成する。
+                 生成したFormを"W11AC03"という名前でリクエストスコープに設定し、更新画面へ遷移する。 */
+             W11AC03Form form = getWindowScopeObject(sysAcct, users, permissionUnit, ugroup);
+             ctx.setRequestScopedVar("W11AC03", form);
+             return new HttpResponse("/ss11AC/W11AC0301.jsp");
+         }
+     }
+
+
+* 更新画面のJSP
+
+  一覧照会画面から、検索条件（プレフィックスが11AC_W11AC01）と更新対象のプライマリキー（プレフィックスがW11AC03）を引き継ぐ。\
+  更新確認画面に、検索条件（プレフィックスが11AC_W11AC01）、更新対象のプライマリキーと更新データ（ともにプレフィックスがW11AC03）が引き継がれる。
+  
+  .. code-block:: jsp
+  
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           windowScopePrefixes属性で11AC_W11AC01とW11AC03を指定しているので、
+           一覧照会画面から検索条件と更新対象のプライマリキーを引き継ぐ。 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01,W11AC03">
+         <%-- 【説明】
+               ログインIDは更新できないので、表示だけ行う。
+               この場合、hiddenタグを使用してサブミットするパラメータを指定する。 --%>
+         <n:write  name="W11AC03.systemAccount.loginId" />
+         <n:hidden name="W11AC03.systemAccount.loginId" />
+         <%-- 【説明】一覧照会画面のW11AC03.systemAccount.userIdを元に検索した漢字氏名の表示。 --%>
+         <n:text name="W11AC03.users.kanjiName" size="52" maxlength="50" />
+         <%-- 【説明】確認画面へのサブミットボタン --%>
+         <n:submit cssClass="buttons" type="button" name="update" value="確認" uri="/action/ss11AC/W11AC03Action/RW11AC0302" />
+     </n:form>
+
+* Actionクラスの実装例
+
+  更新画面から更新確認画面への遷移を行う。
+  
+  .. code-block:: java
+
+     public class W11AC03Action {
+         /* 【説明】
+             データの引継ぎ以外は省略 。
+             Actionクラスで、検索条件に対する処理は行っていない。 */
+         public HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {
+             // 【説明】更新画面で入力したデータに対するバリデーション
+             ValidationContext<W11AC03Form> formContext = 
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             /* 【説明】
+                 エラー処理は省略。
+                 更新対象のプライマリキーと更新データ（ともにプレフィックスがW11AC03）は、ウィンドウスコープにより自動的に更新確認画面へ引き継がれる。
+                 明示的にリクエストにデータを設定する必要は無い。 */
+             return new HttpResponse("/ss11AC/W11AC0302.jsp");
+         }
+     }
+
+
+* 更新確認画面のJSP
+
+  更新画面から、検索条件（プレフィックスが11AC_W11AC01）、更新対象のプライマリキーと更新データ（ともにプレフィックスがW11AC03）を引き継ぐ。\
+  更新完了画面に、検索条件（プレフィックスが11AC_W11AC01）が引き継がれる。
+  
+  .. code-block:: jsp
+     
+     <%-- 【説明】
+           ウィンドウスコープの説明箇所以外は省略。
+           confirmationPageタグを指定すると、入力画面（更新画面）と同じ記述で確認項目の出力が出来る。 --%>
+     <n:confirmationPage />
+     <%-- 【説明】
+           更新画面からウィンドウスコープのデータ（プレフィックスが11AC_W11AC01,W11AC03）を引き継ぐ。
+           windowScopePrefixes属性で11AC_W11AC01とW11AC03を指定しているので、
+           検索条件、更新対象のプライマリキー、更新データを更新確認画面に引き継ぐ。 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01,W11AC03">
+         <%-- 【説明】更新対象データ --%>
+         <n:write  name="W11AC03.systemAccount.loginId"/>
+         <n:hidden name="W11AC03.systemAccount.loginId" />
+         <n:text name="W11AC03.users.kanjiName" size="52" maxlength="50" />
+         <%-- 【説明】完了画面へのサブミットボタン --%>
+         <n:submit cssClass="buttons" type="button" name="confirm" value="確定" 
+                   uri="/action/ss11AC/W11AC03Action/RW11AC0304" allowDoubleSubmission="false" />
+     </n:form>
+
+* Actionクラスの実装例
+
+  更新確認画面から更新完了画面への遷移を行う
+  
+  .. code-block:: java
+  
+     public class W11AC03Action {
+         
+         /* 【説明】
+             データの引継ぎ以外は省略。
+             Actionクラスで、検索条件に対する処理は行っていない。 */
+         public HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {
+             /* 【説明】更新データのバリデーション */
+             ValidationContext<W11AC03Form> formContext = 
+                 ValidationUtil.validateAndConvertRequest("W11AC03", W11AC03Form.class, req, "updateUser");
+             /* 【説明】
+                 エラー処理は省略。
+                 更新データをプロパティとするW11AC03Formの生成。 */
+             W11AC03Form form = formContext.createObject();
+             
+             // 【説明】更新処理は省略
+             
+             return new HttpResponse("/ss11AC/W11AC0303.jsp");
+         }
+     }
+  
+
+* 更新完了画面のJSP
+
+  更新確認画面から、検索条件（プレフィックスが11AC_W11AC01）を引き継ぐ。\
+  一覧照会画面へ遷移する際に、引き継いだ検索条件で検索を行う。
+  
+  .. code-block:: jsp
+  
+      <%-- 【説明】
+            ウィンドウスコープの説明箇所以外は省略。
+            一覧照会画面へ遷移した時に以前の条件で検索を行うため、11AC_W11AC01の値をウィンドウスコープに設定 --%>
+     <n:form windowScopePrefixes="11AC_W11AC01">
+         <%-- 【説明】
+               更新データの表示。
+               更新確認画面でウィンドウスコープに設定した値を参照。 --%>
+         <n:write name="W11AC03.systemAccount.loginId"/>
+         <n:write name="W11AC03.user.kanjiName"/>
+         <%-- 【説明】一覧検索を行うリクエストへのサブミット --%>
+         <n:submit cssClass="buttons" type="button" name="search" value="一覧照会画面へ" 
+                   uri="/action/ss11AC/W11AC01Action/RW11AC0102"/>
+     </n:form>
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-basic--s8`
+
+```json
+{
+  "id": "web-application-basic--s8",
+  "title": "ウィンドウスコープの使用法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "windowScopePrefixes属性の使用方法",
+      "hints": [
+        "windowScopePrefixes",
+        "n:form",
+        "n:confirmationPage",
+        "ウィンドウスコープ",
+        "複数画面データ引き継ぎ",
+        "hiddenタグ暗号化",
+        "nablarch_hidden",
+        "W11AC02Action"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "複数画面に跨る画面遷移時のwindowScopePrefixes属性の指定方法",
+      "hints": [
+        "windowScopePrefixes",
+        "n:param",
+        "n:confirmationPage",
+        "ウィンドウスコープ複数プレフィックス",
+        "検索条件引き継ぎ",
+        "ページング検索条件維持",
+        "複数画面遷移",
+        "allowDoubleSubmission",
+        "n:submitLink",
+        "ValidationUtil",
+        "W11AC03Action",
+        "W11AC03Form",
+        "ValidationContext"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ウィンドウスコープは、複数画面で引き継ぐデータをhiddenタグでクライアント側に保持する変数スコープ。入力データや更新対象データのプライマリキーなどに使用する。\n\n> **注意**: ログイン情報など全取引で使用される情報はセッションで保持する。\n\n`<n:form>` の `windowScopePrefixes` 属性にプレフィックスを指定する。入力項目の `name` 属性にそのプレフィックスを持つ値を設定すると、ウィンドウスコープに登録され、HTML出力時に暗号化された `<input type=\"hidden\">` として出力される。複数プレフィックスはカンマ（`,`）区切りで指定する。\n\nActionクラスではウィンドウスコープのデータをリクエストに明示的に設定する必要はない。\n\n**登録画面 JSP例（W11AC0201.jsp）**:\n```jsp\n<n:form name=\"insert\" windowScopePrefixes=\"W11AC02\">\n    <n:text name=\"W11AC02.systemAccount.userId\" size=\"15\" maxlength=\"10\" />\n    <n:text name=\"W11AC02.systemUser.kanjiName\" size=\"65\" maxlength=\"25\" />\n    <n:submit cssClass=\"buttons\" type=\"button\" name=\"confirm\" value=\"確認\"\n              uri=\"/action/ss11AC/W11AC02Action/RW11AC0202\" />\n</n:form>\n```\n\n**登録確認画面 JSP例（W11AC0202.jsp）**: `<n:confirmationPage>` タグで登録画面のJSPへフォワードする:\n```jsp\n<n:confirmationPage path=\"./W11AC0201.jsp\" />\n```\n\n**Action実装例（W11AC02Action）**: 確認画面へフォワードするだけでよい（入力データをリクエストに設定する必要はない）:\n```java\npublic class W11AC02Action {\n    public HttpResponse doRW11AC0202(HttpRequest req, ExecutionContext ctx) {\n        return new HttpResponse(\"/ss11AC/W11AC0202.jsp\");\n    }\n}\n```\n\n**HTML出力例**: ウィンドウスコープのデータは暗号化されたhiddenとして出力される:\n```html\n<input type=\"hidden\" name=\"nablarch_hidden\" value=\"QkyNL4ld+4izNDC5\" />\n```",
+    "s2": "`windowScopePrefixes` 属性に複数のプレフィックスを指定して使い分けることで、特定のデータだけを特定の画面に引き継ぐことができる。\n\n**遷移例**: 一覧照会画面（照会後）→ 更新画面 → 更新確認画面 → 更新完了画面\n\nページング時の検索条件を維持するため、検索条件フォームと検索結果一覧フォームを別のフォームに分ける。\n\n**一覧照会画面 JSP例**: 検索条件フォーム（`windowScopePrefixes=\"11AC_W11AC01\"`）と検索結果一覧フォームに分け、`<n:param>` タグで更新対象のプライマリキーを更新画面にサブミットする:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:text name=\"11AC_W11AC01.loginId\" size=\"25\" maxlength=\"20\" />\n    <n:text name=\"11AC_W11AC01.kanjiName\" size=\"25\" maxlength=\"20\" />\n</n:form>\n\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <nbs:listSearchResult listSearchInfoName=\"11AC_W11AC01\"\n                          searchUri=\"/action/ss11AC/W11AC01Action/RW11AC0102\" ...>\n        <n:submitLink uri=\"/action/ss11AC/W11AC03Action/RW11AC0301\" name=\"showUpdate_${count}\">\n            更新\n            <n:param paramName=\"W11AC03.systemAccount.userId\" name=\"row.userId\" />\n        </n:submitLink>\n    </nbs:listSearchResult>\n</n:form>\n```\n\n**更新画面遷移 Action例**: プライマリキーでデータを検索し、FormをリクエストスコープにセットしてJSPへ遷移する:\n```java\npublic HttpResponse doRW11AC0301(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> userSearchFormContext =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"selectUserInfo\");\n    String userId = userSearchFormContext.createObject().getSystemAccount().getUserId();\n    CM311AC1Component comp = new CM311AC1Component();\n    SqlResultSet sysAcct = comp.selectSystemAccount(userId);\n    SqlResultSet users = comp.selectUsers(userId);\n    SqlResultSet permissionUnit = comp.selectPermissionUnit(userId);\n    SqlResultSet ugroup = comp.selectUgroup(userId);\n    W11AC03Form form = getWindowScopeObject(sysAcct, users, permissionUnit, ugroup);\n    ctx.setRequestScopedVar(\"W11AC03\", form);\n    return new HttpResponse(\"/ss11AC/W11AC0301.jsp\");\n}\n```\n\n**更新画面 JSP例**: `windowScopePrefixes=\"11AC_W11AC01,W11AC03\"` で一覧照会画面から検索条件とプライマリキーを引き継ぎ、更新確認画面にも引き継ぐ。ログインIDは更新不可のため `<n:hidden>` でサブミット:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write  name=\"W11AC03.systemAccount.loginId\" />\n    <n:hidden name=\"W11AC03.systemAccount.loginId\" />\n    <n:text name=\"W11AC03.users.kanjiName\" size=\"52\" maxlength=\"50\" />\n    <n:submit cssClass=\"buttons\" type=\"button\" name=\"update\" value=\"確認\"\n              uri=\"/action/ss11AC/W11AC03Action/RW11AC0302\" />\n</n:form>\n```\n\n**更新確認画面遷移 Action例**: 更新対象のプライマリキーと更新データ（プレフィックス `W11AC03`）はウィンドウスコープにより自動的に引き継がれる。明示的なリクエストへのデータ設定は不要:\n```java\npublic HttpResponse doRW11AC0302(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formContext =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    return new HttpResponse(\"/ss11AC/W11AC0302.jsp\");\n}\n```\n\n**更新確認画面 JSP例**: `<n:confirmationPage />` タグで入力画面（更新画面）と同じ記述で確認項目を出力できる。`windowScopePrefixes=\"11AC_W11AC01,W11AC03\"` で引き継ぐが、更新完了画面には `11AC_W11AC01`（検索条件）のみ引き継ぐ:\n```jsp\n<n:confirmationPage />\n<n:form windowScopePrefixes=\"11AC_W11AC01,W11AC03\">\n    <n:write  name=\"W11AC03.systemAccount.loginId\"/>\n    <n:hidden name=\"W11AC03.systemAccount.loginId\" />\n    <n:text name=\"W11AC03.users.kanjiName\" size=\"52\" maxlength=\"50\" />\n    <n:submit cssClass=\"buttons\" type=\"button\" name=\"confirm\" value=\"確定\"\n              uri=\"/action/ss11AC/W11AC03Action/RW11AC0304\" allowDoubleSubmission=\"false\" />\n</n:form>\n```\n\n**更新完了画面遷移 Action例**: 更新データをバリデーションし、`formContext.createObject()` でFormを生成して更新処理を行い、更新完了画面（`W11AC0303.jsp`）へ遷移する:\n```java\npublic HttpResponse doRW11AC0304(HttpRequest req, ExecutionContext ctx) {\n    ValidationContext<W11AC03Form> formContext =\n        ValidationUtil.validateAndConvertRequest(\"W11AC03\", W11AC03Form.class, req, \"updateUser\");\n    W11AC03Form form = formContext.createObject();\n    return new HttpResponse(\"/ss11AC/W11AC0303.jsp\");\n}\n```\n\n**更新完了画面 JSP例**: 更新確認画面から検索条件（`11AC_W11AC01`）のみ引き継ぎ、一覧照会画面への遷移時に以前の検索条件で検索を行う:\n```jsp\n<n:form windowScopePrefixes=\"11AC_W11AC01\">\n    <n:write name=\"W11AC03.systemAccount.loginId\"/>\n    <n:write name=\"W11AC03.user.kanjiName\"/>\n    <n:submit cssClass=\"buttons\" type=\"button\" name=\"search\" value=\"一覧照会画面へ\"\n              uri=\"/action/ss11AC/W11AC01Action/RW11AC0102\"/>\n</n:form>\n```"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

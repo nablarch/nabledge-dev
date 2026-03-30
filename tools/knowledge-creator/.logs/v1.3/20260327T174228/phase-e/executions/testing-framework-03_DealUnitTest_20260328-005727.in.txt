@@ -1,0 +1,156 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "testing-framework-03_DealUnitTest",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1",
+      "description": "The sentence \"テストケース毎に以下の準備作業を行う。\" does not exist in the source. The source has two distinct sentences: (1) a global intro \"テストケース毎に以下の手順でテストを実施する。\" which introduces all three test phases (preparation, execution, evidence), and (2) a section-level intro inside テスト準備 \"テスト準備として以下の作業を行う。\" The knowledge file merges and rephrases these into a single sentence that incorrectly scopes the bullet list to preparation only, and introduces the word \"準備作業\" which does not appear in the source.",
+      "source_evidence": "Source intro: \"テストケース毎に以下の手順でテストを実施する。\" / Source テスト準備 section intro: \"テスト準備として以下の作業を行う。\""
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. _dealUnitTest:
+
+========================
+取引単体テストの実施方法
+========================
+
+取引単体テストでは、テスト対象のアプリケーションをアプリケーションサーバにデプロイし、\
+手動でアプリケーションを操作しテストを行う。
+
+同期応答メッセージ送信処理を伴う場合は、モックアップクラスを使用して行う。詳細は\ :ref:`dealUnitTest_send_sync`\を参照。
+
+テストケース毎に以下の手順でテストを実施する。
+
+テスト準備
+==========
+
+テスト準備として以下の作業を行う。
+
+* データベース準備（データ投入）
+* アプリケーションのデプロイ
+* アプリケーションサーバ起動
+
+
+テスト実施
+==========
+
+テストケースに従ってテストを実施する。
+
+.. note::
+ エビデンスのうちDBダンプはテスト実行前のものが必要であるため、\
+ テスト実施前に取得しておくこと。
+
+
+テスト結果エビデンスの収集
+==========================
+
+以下のエビデンスを取得する。
+
+* 画面ハードコピー
+* DBダンプ(テスト実行前および実行後)
+
+.. note::
+  画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。
+　
+
+
+テスト結果エビデンスの収集
+==========================
+
+以下のエビデンスを取得する。
+
+* 画面ハードコピー
+* DBダンプ(テスト実行前および実行後)
+
+.. note::
+  画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。
+　
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "testing-framework-03_DealUnitTest",
+  "title": "取引単体テストの実施方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テスト準備",
+      "hints": [
+        "取引単体テスト",
+        "アプリケーションサーバ",
+        "デプロイ",
+        "手動テスト",
+        "データベース準備",
+        "データ投入",
+        "テスト準備"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テスト実施",
+      "hints": [
+        "テスト実施",
+        "同期応答メッセージ送信処理",
+        "モックアップクラス",
+        "DBダンプ",
+        "テスト実行前"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テスト結果エビデンスの収集",
+      "hints": [
+        "テスト結果エビデンス",
+        "画面ハードコピー",
+        "DBダンプ",
+        "テスト補助ツール",
+        "画面ハードコピー取得ツール",
+        "DBダンプ取得ツール"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "取引単体テストでは、テスト対象のアプリケーションをアプリケーションサーバにデプロイし、手動でアプリケーションを操作しテストを行う。\n\nテストケース毎に以下の準備作業を行う。\n\n- データベース準備（データ投入）\n- アプリケーションのデプロイ\n- アプリケーションサーバ起動",
+    "s2": "テストケースに従ってテストを実施する。\n\n同期応答メッセージ送信処理を伴う場合は、モックアップクラスを使用する（詳細は :ref:`dealUnitTest_send_sync` を参照）。\n\n> **注意**: DBダンプはテスト実行前のものが必要であるため、テスト実施前に取得しておくこと。",
+    "s3": "以下のエビデンスを取得する。\n\n- 画面ハードコピー\n- DBダンプ（テスト実行前および実行後）\n\n> **注意**: 画面ハードコピー取得ツール、DBダンプ取得ツール等のテスト補助ツールについては現在検討中。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-04_Connection--s1",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The single residual finding concerns three missing hints in s5 (AppDbConnection, SystemRepository, OracleDataSource). AppDbConnection is already present in s1/s2/s3 hints, so retrieval is unaffected. SystemRepository appears only in a Java code comment block that the documentation itself explicitly marks as code application programmers should NOT write — it is illustrative only. OracleDataSource is a vendor-specific class used solely as a DataSource configuration example, not a Nablarch API. None of these omissions would cause a user query to miss critical information that is unavailable elsewhere in the file.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "index[id=s5].hints",
+      "impact": "low",
+      "justification": "AppDbConnection is already indexed in s1, s2, and s3 hints, so queries for it will still reach the file. SystemRepository appears only inside a code block that bears an explicit warning stating application programmers do not write this code — it is framework-internal example code and not a target for user queries. OracleDataSource is a third-party vendor class used only as a DataSource wiring example; users needing Oracle-specific DataSource details are directed to vendor JDBC documentation. The fix was not applied in Phase E — the s5 hints array in the Phase E output is byte-for-byte identical to the Phase D state — indicating the fix agent produced no change, likely because the agent concluded these additions were out of scope or already covered elsewhere. The omission does not block any realistic user query."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-02_04_Repository_override--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "sections.s17",
+      "description": "The sentence 「システムプロパティの設定は環境設定ファイルの設定より優先される（上書きされる）。」 is not stated in the source. The source only contains a code example with a comment illustrating a specific case; it does not contain an explicit general rule about priority/override behavior.",
+      "source_evidence": "Source contains only the Java code block with inline comments showing one specific output result. No generalizing statement about system property priority exists in the source section."
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s17",
+      "description": "The label 「**クラス**: `SystemRepository`」 added before the code block has no basis in the source. The source does not contain this label or any such metadata header.",
+      "source_evidence": "Source section contains only a code block under the heading 「設定したコンポーネントを取得する実装例」 with no class label or descriptor."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+設定したコンポーネントを取得する実装例
+----------------------------------------------------
+
+
+.. code-block:: java
+
+
+        // DIコンテナで "helloComponent" と名付けたコンポーネントを取得
+        HelloComponent helloComponent = (HelloComponent) SystemRepository.getObject("helloComponent");
+        // 環境設定ファイルに設定した "This is property file hello message!!" ではなく、
+        // システムプロパティに設定を記述した "This is system property hello message!!" がコンソールに表示される
+        helloComponent.printHello();
+
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-02_04_Repository_override--s17",
+  "title": "設定したコンポーネントを取得する実装例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s17",
+      "title": "設定したコンポーネントを取得する実装例",
+      "hints": [
+        "SystemRepository",
+        "HelloComponent",
+        "getObject",
+        "コンポーネント取得",
+        "DIコンテナ",
+        "システムプロパティ優先",
+        "環境設定ファイル上書き"
+      ]
+    }
+  ],
+  "sections": {
+    "s17": "**クラス**: `SystemRepository`\n\n```java\n// DIコンテナで \"helloComponent\" と名付けたコンポーネントを取得\nHelloComponent helloComponent = (HelloComponent) SystemRepository.getObject(\"helloComponent\");\n// 環境設定ファイルに設定した \"This is property file hello message!!\" ではなく、\n// システムプロパティに設定を記述した \"This is system property hello message!!\" がコンソールに表示される\nhelloComponent.printHello();\n```\n\nシステムプロパティの設定は環境設定ファイルの設定より優先される（上書きされる）。"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

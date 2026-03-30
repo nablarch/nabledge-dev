@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-inputAndOutput--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 — codeSelectタグ, codeRadioButtonsタグ, codeCheckboxesタグ",
+      "description": "The filtering mechanism for code selection tags is missing. The source JSP comments explain that: (1) `codeId` specifies the ID to look up in CODE_NAME table, and (2) `pattern` specifies a column name in CODE_PATTERN table, and only rows where that column's value = 1 are included in the selection list. This logic is documented identically for all three tags' JSP comments in the source but is absent from the knowledge file. Without it, a developer cannot understand what the `pattern` attribute does.",
+      "source_evidence": "JSP comment in codeSelectタグ section: 「CODE_NAMEテーブルの中で、以下の条件を満たすIDを持つ行から、選択項目リストを作成する。1. codeId属性で指定したID 2. CODE_PATTERNテーブルのうち、pattern属性で指定したカラム名の値が1」 (same text appears in codeRadioButtonsタグ and codeCheckboxesタグ JSP comments)"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s2 — コード値の表示方法",
+      "description": "Section s2 combines the entire コード値の表示方法 content (well over 2000 characters) which contains four distinct h3-level subsections in the source: codeSelectタグ, codeRadioButtonsタグ, codeCheckboxesタグ, and codeCheckboxタグ. Per V3 rules, an h2 with >= 2000 chars of plain text that has h3 children should be split into separate sections.",
+      "source_evidence": "Source RST h3 sections under コード値の表示方法: 「codeSelectタグ」(====), 「codeRadioButtonsタグ」(====), 「codeCheckboxesタグ」(====), 「codeCheckboxタグ」(====)"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "handlers-PermissionCheckHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — DataReadHandler row in related handlers table",
+      "description": "The DataReadHandler description omits the messaging architecture context. The source specifies this applies to ':doc:`../architectural_pattern/messaging`' and that FwHeaderReader parses '受信電文中のフレームワークヘッダ部' (framework header of received messages). Without this context, it is unclear when or why DataReadHandler is relevant to PermissionCheckHandler.",
+      "source_evidence": ":doc:`DataReadHandler` | :doc:`../architectural_pattern/messaging` では、 :doc:`../reader/FwHeaderReader` が受信電文中のフレームワークヘッダ部を解析する際に、**requestId** および **userId** ヘッダの値をスレッドコンテキストに設定する。"
+    }
+  ]
+}

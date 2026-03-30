@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_resident",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both findings are minor hints_missing issues. The actual section content is correct and complete. DataReadHandler is already present in both s1 and s3 hints, which covers the vast majority of queries about data reading behavior. Missing DataReader and NoMoreRecord as standalone hint keywords does not block retrieval for practical user queries.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "DataReader appears in s1 content as a conceptual term ('DataReaderの生成を行う'), but DataReadHandler is already in s1 hints. Users searching for data reader functionality will find s1 through DataReadHandler. DataReader as a bare class name is not a primary search term for this section's topic (basic structure overview)."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s3 hints",
+      "impact": "low",
+      "justification": "DataReader.NoMoreRecord appears in the 要求データなし flow step. DataReadHandler is already in s3 hints and would capture queries about data reading and the no-data scenario. NoMoreRecord is a specific constant name users would only search for if already familiar with the API; in that case, semantic content matching on the section text would still surface s3. The omission does not block retrieval for practical user queries. The D→E logs shown are for the batch_resident_thread_sync variant, not this file, so these hints were never targeted for fix in the improvement loop."
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_DbAccessSpec--s2",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — vulnerable SQL implementation code comment",
+      "description": "The code comment in the vulnerable implementation example was modified. The knowledge file has `// 入力値を直接連結 ← NG` but the source has `// 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。`. The annotation \"← NG\" is not present in the source.",
+      "source_evidence": "// 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SQLインジェクション対策について (footnote [#0])",
+      "description": "The footnote definition explaining what \"入力値\" means is omitted. Source defines it as: \"入力値とは、ユーザ入力値や外部システムからの連携データの事である。\" This clarifies the scope of input values subject to SQL injection risk.",
+      "source_evidence": ".. [#0] 入力値とは、ユーザ入力値や外部システムからの連携データの事である。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`PreparedStatement` is missing from s1 hints. It is a key class name explicitly mentioned in the SQLインジェクション対策 section as the standard (but insufficient) defense approach, and is referenced by name in the vulnerable code example via `connection.prepareStatement(sql)`.",
+      "source_evidence": "一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値をバインド変数化することと言われている。"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+注意点
+------
+データベース接続のプール機能について
+====================================
+| 本機能では、データベース接続のプール機能は提供しない。
+| 各プロジェクトでプール機能を使用したい場合には、下記のプール機能の有効化方法を参照し、プールの有効化作業を行うこと。
+
+**プール機能の有効化方法**
+
+\a) JNDI接続を使用する場合
+
+ | Webアプリケーションサーバに設定するデータベース接続のプール機能を有効にする。
+ | データベース接続の登録方法、プールの設定方法は、Webアプリケーションサーバのマニュアルを参照すること。
+
+\b) DataSource接続を使用する場合
+
+ | プール機能を有するDataSource実装クラスを使用する。
+
+ .. note::
+   例えばデータベースがOracleの場合、「oracle.jdbc.pool.OracleDataSource」や「oracle.ucp.jdbc.PoolDataSourceImpl」を使用して
+   プール用のプロパティを設定することにより、プール機能を使用することができる。
+
+ .. attention::
+   データベースベンダーによっては、プール機能を有するDataSourceが提供されていない可能性がある。詳細は各データベースベンダーのJDBCマニュアルを参照すること。
+
+.. _db-sql-injection-label:
+
+SQLインジェクション対策について
+=================================
+一般的にSQLインジェクションに対する対策は、PreparedStatementを使用して入力値 [#0]_ をバインド変数化することと言われている。
+ただし、この対策は各アプリケーションプログラマにルールを徹底させるものであり、対策としては不十分である。
+例えば、 :ref:`SQLインジェクションの脆弱性を含んだ実装<sql-injection-logic>` を業務ロジック内で行われた場合、問題を検出することが非常に困難である。
+
+この問題への対策として、本機能ではSQL文を外部ファイルに記述する機能を提供する。
+SQL文の外部化機能を使用した場合、業務ロジックではSQL文を参照することができないため、SQL文と入力値 [#0]_ とを文字列連結することを完全に防止することができる。
+これにより、アプリケーションプログラマが :ref:`SQLインジェクションの脆弱性を含んだ実装<sql-injection-logic>` を行うことを防ぐことができ、
+SQLインジェクション対策として最も有効な手段となる。
+
+※業務ロジックでSQL文実行時に使用する値は、SQL文ではなくSQL文を一意に識別するためのIDとなっている。
+
+* SQL文を外部ファイルに記述した場合の例
+
+  .. code-block:: java
+
+     private final String sqlResource = this.getClass().getName() + "#";
+
+     public List getUserName(String userId) {
+
+         // ステートメントを生成する際にSQL文ではなくSQLを識別するためのIDを指定する。
+         // このため、SQL文を直接編集（文字連結）することができないので、SQLインジェクション対策となる。
+         AppDbConnection connection = DbConnectionContext.getConnection();
+         connection.prepareStatementBySqlId(sqlResource + "SQL_ID");
+
+         // 以下省略
+     }
+
+詳細は、 :ref:`sql-gaibuka-label` を参照すること。
+
+.. _sql-injection-logic:
+
+* SQLインジェクションの脆弱性を含んだ実装の例
+
+  .. warning::
+
+    このような実装は、SQLインジェクションの可能性があるためすべきではない。
+
+  .. code-block:: java
+  
+     public List getUserName(String userId) {
+         // 入力値を連結しているため、SQLインジェクションの脆弱性を含んだ実装となる。
+         String sql = 
+              "SELECT "
+                + "USER_NAME"
+            + "FROM "
+                + "USER_MTR "
+            + "WHERE "
+                + "ID = " + userId;
+  
+         AppDbConnection connection = DbConnectionContext.getConnection();
+         connection.prepareStatement(sql);
+  
+         // 以下省略
+  
+     }
+  
+.. [#0] 入力値とは、ユーザ入力値や外部システムからの連携データの事である。
+
+
+----
+要求
+----
+実装済み
+========
+* データベースへの接続ができる。
+* SQL文の実行ができる。
+* SQL文の実行ログの出力ができる。
+* 各種リソース(Connection、Statement、ResultSet)の解放ができる。
+* バイナリ(LOBやBYTE型)型の検索、更新ができる。
+* プリフェッチ(SQLStatement#setFetchSize)ができる。
+* バッチ更新(SQLStatement#addBatch)ができる。
+* 重複エラー等をアプリケーションでハンドリングできる。
+* 共通項目(最終更新者、最終更新日時など)に設定する値を、自動で設定できる。
+* 条件が可変の場合のSQL文が生成できる。
+
+  * IN句の項目数が可変の場合のSQL文が生成できる。
+
+* LIKE検索時のエスケープ処理ができる。
+* SQL文を外部ファイルなどに定義でき、Javaコードとは分離できる。
+* データベースアクセス時にトランザクションタイムアウトチェックができる。
+
+
+未実装
+======
+* PL/SQLの実行ができる。
+* 1トランザクション内でのSQL文の実行回数がチェックできる。
+* テーブル更新順序がチェックできる。
+* テーブル更新順序に違反した場合の振る舞い(警告または例外)が指定できる。
+* SQL文の実行ログを指定機能(リクエストID)のみ出力する事ができる。
+* データベース接続パスワードを暗号化して管理できる。
+
+--------
+全体構造
+--------
+クラス図
+========
+本機能の全体構造図。各クラスの責務については、以降の章で解説を行う。
+
+.. image:: _images/04/DbAccessSpec_AllClassDesign.jpg
+   :scale: 40
+
+
+----------------
+各機能単位の構造
+----------------
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :glob:
+   
+   04/04_Connection
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :glob:
+   
+   04/04_Statement
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :glob:
+   
+   04/04_ObjectSave
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :glob:
+   
+   04/04_TransactionTimeout
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_DbAccessSpec--s2",
+  "title": "データベース接続のプール機能について",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "注意点",
+      "hints": [
+        "データベース接続プール機能",
+        "プール機能有効化",
+        "JNDI接続",
+        "DataSource接続",
+        "OracleDataSource",
+        "oracle.jdbc.pool.OracleDataSource",
+        "oracle.ucp.jdbc.PoolDataSourceImpl",
+        "SQLインジェクション対策",
+        "SQL外部ファイル化",
+        "prepareStatementBySqlId",
+        "AppDbConnection",
+        "DbConnectionContext"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "要求",
+      "hints": [
+        "実装済み機能一覧",
+        "未実装機能一覧",
+        "SQLStatement",
+        "setFetchSize",
+        "addBatch",
+        "バッチ更新",
+        "LIKE検索エスケープ",
+        "トランザクションタイムアウト",
+        "共通項目自動設定",
+        "IN句可変",
+        "PL/SQL"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "全体構造",
+      "hints": [
+        "クラス図",
+        "全体構造図",
+        "DBアクセス機能全体設計"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "各機能単位の構造",
+      "hints": [
+        "04_Connection",
+        "04_Statement",
+        "04_ObjectSave",
+        "04_TransactionTimeout",
+        "サブ機能構成",
+        "Connection機能",
+        "Statement機能",
+        "ObjectSave機能",
+        "TransactionTimeout機能",
+        "機能単位ドキュメント"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## データベース接続のプール機能について\n\n本機能ではDB接続プール機能を提供しない。プール機能を使用する場合は以下の方法で有効化する。\n\n**プール機能の有効化方法**\n\na) JNDI接続の場合: WebアプリケーションサーバのDB接続プール機能を有効にする。登録方法・プール設定はWebアプリケーションサーバのマニュアルを参照。\n\nb) DataSource接続の場合: プール機能を有するDataSource実装クラスを使用する。\n\n> **注意**: Oracleの場合、`oracle.jdbc.pool.OracleDataSource` または `oracle.ucp.jdbc.PoolDataSourceImpl` を使用してプール用プロパティを設定することでプール機能を利用できる。\n\n> **警告**: DBベンダーによってはプール機能を有するDataSourceが提供されていない可能性がある。各DBベンダーのJDBCマニュアルを参照すること。\n\n## SQLインジェクション対策について\n\n一般的なSQLインジェクション対策として、PreparedStatementを使用して入力値をバインド変数化する方法が知られている。ただし、この対策は各アプリケーションプログラマにルールを徹底させるものであり、対策としては不十分である。例えば、SQLインジェクションの脆弱性を含んだ実装を業務ロジック内で行われた場合、問題を検出することが非常に困難である。\n\nこの問題への対策として、本機能ではSQL文を外部ファイルに記述する機能を提供する。SQL文の外部化機能を使用した場合、業務ロジックではSQL文を参照できないため、SQL文と入力値の文字列連結を完全に防止できる。これがSQLインジェクション対策として最も有効な手段となる。業務ロジックでSQL実行時に使用する値はSQL文ではなく、SQL文を一意に識別するためのIDとなる。\n\n**正しい実装例（SQL外部ファイル化）**:\n\n```java\nprivate final String sqlResource = this.getClass().getName() + \"#\";\n\npublic List getUserName(String userId) {\n    // SQL文ではなくSQLを識別するためのIDを指定する\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatementBySqlId(sqlResource + \"SQL_ID\");\n    // 以下省略\n}\n```\n\n詳細は :ref:`sql-gaibuka-label` を参照。\n\n> **警告**: 入力値をSQL文に文字列連結する実装はSQLインジェクションの脆弱性があるため行ってはいけない（以下は脆弱な実装例）。\n\n```java\npublic List getUserName(String userId) {\n    String sql =\n         \"SELECT \" + \"USER_NAME\"\n       + \"FROM \" + \"USER_MTR \"\n       + \"WHERE \" + \"ID = \" + userId;  // 入力値を直接連結 ← NG\n    AppDbConnection connection = DbConnectionContext.getConnection();\n    connection.prepareStatement(sql);\n}\n```",
+    "s2": "## 実装済み\n\n- データベースへの接続\n- SQL文の実行\n- SQL文の実行ログ出力\n- 各種リソース（Connection、Statement、ResultSet）の解放\n- バイナリ（LOBやBYTE型）型の検索・更新\n- プリフェッチ（`SQLStatement#setFetchSize`）\n- バッチ更新（`SQLStatement#addBatch`）\n- 重複エラー等のアプリケーションハンドリング\n- 共通項目（最終更新者、最終更新日時など）への値の自動設定\n- 条件が可変の場合のSQL文生成（IN句の項目数が可変の場合を含む）\n- LIKE検索時のエスケープ処理\n- SQL文の外部ファイル定義（Javaコードとの分離）\n- データベースアクセス時のトランザクションタイムアウトチェック\n\n## 未実装\n\n- PL/SQLの実行\n- 1トランザクション内でのSQL文の実行回数チェック\n- テーブル更新順序チェック\n- テーブル更新順序違反時の振る舞い（警告または例外）の指定\n- SQL文の実行ログを指定機能（リクエストID）のみ出力\n- データベース接続パスワードの暗号化管理",
+    "s3": "## クラス図\n\n![DBアクセス機能全体構造クラス図](assets/libraries-04_DbAccessSpec--s2/DbAccessSpec_AllClassDesign.jpg)",
+    "s4": "本機能の各機能単位の詳細は以下の4つのサブ機能ドキュメントに分けて定義される。\n\n- 04/04_Connection\n- 04/04_Statement\n- 04/04_ObjectSave\n- 04/04_TransactionTimeout"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

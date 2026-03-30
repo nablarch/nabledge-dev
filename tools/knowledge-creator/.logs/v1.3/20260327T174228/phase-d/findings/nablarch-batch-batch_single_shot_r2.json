@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-batch_single_shot",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — エラー終了フロー step 3",
+      "description": "The parenthetical note '（全件正常終了フローの「業務コミット後」とは異なる）' appended to the BatchAction callback description is editorial commentary not present in the source. The source simply lists the four callback events for the error flow without comparing them to the normal flow.",
+      "source_evidence": "errorend BatchAction callback in source: '1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後' — no comparative note exists"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 主要処理フロー table, 全件正常終了 row",
+      "description": "The table overview for 全件正常終了 omits the first part of the source description: 'Javaコマンドからバッチプロセスを起動する。' The knowledge file only retains the second sentence about all records completing normally.",
+      "source_evidence": "Source table 概要 column for 全件正常終了: 'Javaコマンドからバッチプロセスを起動する。対象レコード全件に対する業務処理が正常終了し、プロセス自体も正常終了する。'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints array",
+      "description": "'DbConnectionManagementHandler_main' is missing from the s3 hints. The source HandlerQueue and all three main flows (normalend, errorend) reference this handler as a distinct entry separate from 'DbConnectionManagementHandler', but only the latter appears in the hints.",
+      "source_evidence": "HandlerQueue in source: '\"DbConnectionManagementHandler_main\"' listed separately from '\"DbConnectionManagementHandler\"'; appears in normalend and errorend flow steps"
+    }
+  ]
+}

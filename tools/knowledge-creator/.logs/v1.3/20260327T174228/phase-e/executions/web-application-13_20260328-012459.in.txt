@@ -1,0 +1,132 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — XML code block",
+      "description": "The source XML begins with the comment `<!-- 見やすさの問題で、ThreadContextHandlerへのその他の設定は省略しています。 -->`, which informs the reader that the configuration example is intentionally abbreviated (other ThreadContextHandler settings are omitted). The knowledge file omits this comment, removing the context that the XML snippet is incomplete.",
+      "source_evidence": "<!-- 見やすさの問題で、ThreadContextHandlerへのその他の設定は省略しています。 -->"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s1 — property table, cookieMaxAge row",
+      "description": "The knowledge file describes cookieMaxAge as `CookieのMax-Age値（秒）`, adding the unit `（秒）`. The source only shows the property name and its example value (`7776000`); no unit is stated anywhere in the source.",
+      "source_evidence": "<property name=\"cookieMaxAge\" value=\"7776000\" />"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+テストケース毎に言語を設定する方法を教えてください
+============================================================
+
+.. admonition:: question
+
+  ケースごとに言語を変更してリクエスト単体テストを実施したいです。
+  言語の変更（設定）方法を教えてください。
+
+
+.. admonition:: answer
+
+  Cookieに設定される言語を変更することにより、ケースごとに変更することが可能となります。
+
+  Cookieに言語を設定する方法::
+
+    リクエスト単体テスト用のテストデータシートに、Cookieに設定する値を準備することができます。
+    この機能を使用して、Cookieに言語を設定してテストを実施してください。
+    
+    Cookieに設定する際のCookie名称は、下記の設定ファイル例のCookie名称(プロパティ名がcookieNameのvalue値)を設定してください。
+
+
+  ※Cookieから言語を設定するためのハンドラーがリポジトリに設定されている必要があります。
+  以下に設定例を示します。（本設定は、各プロジェクトのアーキテクトが実施するものなので、個々の開発者が実施する必要はありません。)
+
+  .. code-block:: xml
+
+      <!-- 見やすさの問題で、ThreadContextHandlerへのその他の設定は省略しています。 -->
+
+      <component name="threadContextHandler"
+          class="nablarch.common.handler.threadcontext.ThreadContextHandler">
+        <property name="attributes">
+          <list>
+            <!-- 言語 -->
+            <component name="languageAttribute"
+                class="nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie">
+              <!-- 言語を保持しているCookie名称 -->
+              <property name="cookieName" value="lang" />
+              <property name="defaultLanguage" value="ja" />
+              <property name="supportedLanguages" value="ja,en" />
+              <property name="cookieMaxAge" value="7776000" />
+            </component>
+          </list>
+        </property>
+      </component>
+
+  Excelへの準備データの設定方法等は、以下のドキュメントを参照してください。
+    
+  * **[プログラミング・単体テストガイド]** -> **[単体テスト実施方法]** -> **[リクエスト単体テストの実施方法]**
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-13",
+  "title": "テストケース毎に言語を設定する方法を教えてください",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストケース毎に言語を設定する方法",
+      "hints": [
+        "LanguageAttributeInHttpCookie",
+        "ThreadContextHandler",
+        "cookieName",
+        "defaultLanguage",
+        "supportedLanguages",
+        "cookieMaxAge",
+        "言語設定",
+        "Cookie言語",
+        "リクエスト単体テスト",
+        "テストケース言語変更"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Cookieに設定される言語を変更することで、テストケースごとに言語を変更できる。\n\nリクエスト単体テスト用のテストデータシートでCookieに設定する値を準備できる。Cookie名称は設定ファイルの `cookieName` プロパティの値を使用すること。\n\n> **注意**: Cookieから言語を設定するためのハンドラーがリポジトリに設定されている必要がある。この設定は各プロジェクトのアーキテクトが実施するものであり、個々の開発者が実施する必要はない。\n\n**クラス**: `nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie`\n\n```xml\n<component name=\"threadContextHandler\"\n    class=\"nablarch.common.handler.threadcontext.ThreadContextHandler\">\n  <property name=\"attributes\">\n    <list>\n      <component name=\"languageAttribute\"\n          class=\"nablarch.common.web.handler.threadcontext.LanguageAttributeInHttpCookie\">\n        <property name=\"cookieName\" value=\"lang\" />\n        <property name=\"defaultLanguage\" value=\"ja\" />\n        <property name=\"supportedLanguages\" value=\"ja,en\" />\n        <property name=\"cookieMaxAge\" value=\"7776000\" />\n      </component>\n    </list>\n  </property>\n</component>\n```\n\n| プロパティ名 | 説明 |\n|---|---|\n| cookieName | 言語を保持しているCookie名称 |\n| defaultLanguage | デフォルト言語 |\n| supportedLanguages | サポートする言語一覧（カンマ区切り） |\n| cookieMaxAge | CookieのMax-Age値（秒） |"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

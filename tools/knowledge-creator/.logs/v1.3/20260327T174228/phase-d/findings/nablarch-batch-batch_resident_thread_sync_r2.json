@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-batch_resident_thread_sync",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — 常駐処理業務エラー (errorend flow) 説明文",
+      "description": "ソースのフロー表に「処理が完了していないレコードは、次回以降の実行タイミングで処理される」という記述があるが、知識ファイルには存在しない。エラー発生時のデータ回復挙動として、エラーレコード（エラーステータスになり再実行対象外）と未完了レコード（次回タイミングで処理される）の区別は実装上重要な情報。知識ファイルはエラーレコードの挙動のみ記述し、未完了レコードの挙動を省略している。",
+      "source_evidence": "「処理が完了していないレコードは、次回以降の実行タイミングで処理される。(ただし、エラーが発生したレコードはエラーステータスとなり、データメンテを行なわない限り再実行の対象とならない。)」"
+    },
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — 常駐処理正常実行 (normalend flow) ステップ18",
+      "description": "知識ファイルの normalend フロー最終ステップに「ProcessResidentHandler (outbound): → ① へ（次の実行タイミングまで待機）」とあるが、ソースの normalend フローの ProcessResidentHandler (outbound) にはこのアノテーションが存在しない。「→① へ」アノテーションは waitdata フローにのみ記述されている。",
+      "source_evidence": "ソース normalend フロー最終ステップ: `[\"ProcessResidentHandler\", \"outbound\"]`（アノテーションなし）。waitdata フローには `[\"ProcessResidentHandler\", \"outbound\", \"→① へ\"]` あり。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — forcestop・abort・retryerror フロー",
+      "description": "ソースの forcestop・abort・retryerror フローはいずれも最終ステップが「StatusCodeConvertHandler (outbound) → Main (outbound): 異常終了」の順だが、知識ファイルでは StatusCodeConvertHandler (outbound) ステップが省略され、GlobalErrorHandler の次に直接 Main (outbound) となっている。StatusCodeConvertHandler は終了コード変換を担うため、プロセス終了コードの挙動を正確に理解するために必要なステップ。",
+      "source_evidence": "forcestop: `[\"StatusCodeConvertHandler\", \"outbound\"], [\"Main\", \"outbound\", \"異常終了\"]`。abort・retryerror も同様の末尾ステップ構成。"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-01_UnitTestOutline--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2 (リクエスト単体テスト概要 overview paragraph)",
+      "description": "The introductory explanation of リクエスト単体テスト as a concept is entirely absent from the knowledge file. The source's リクエスト単体テスト概要 h3 section opens with: 「リクエスト単位のテスト。クラス単体テストでFormおよび一部のComponentの品質を確保したのち、それらのクラスを組み合わせ、ひとつの処理リクエストを受け取って正しく動作するかを確認する。処理リクエストの実体は、画面オンラインであればHTTPリクエスト、メッセージング処理では要求電文のように処理の形態ごとに異なるため、リクエスト単体テストの方式もそれぞれ異なっている。」 This defines what リクエスト単体テスト is, its dependency on prior クラス単体テスト completion, and why the method varies by processing form — all decision-necessary information for understanding the test framework.",
+      "source_evidence": "Source section 'リクエスト単体テスト概要' (immediately after the `.. _request_unit_test:` anchor): 「リクエスト単位のテスト。クラス単体テストでFormおよび一部のComponentの品質を確保したのち、それらのクラスを組み合わせ、ひとつの処理リクエストを受け取って正しく動作するかを確認する。処理リクエストの実体は、画面オンラインであればHTTPリクエスト、メッセージング処理では要求電文のように処理の形態ごとに異なるため、リクエスト単体テストの方式もそれぞれ異なっている。」"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "The s2 hints list includes 'class_unit_test' and 'deal_unit_test' (the RST anchor refs for the other two test types) but omits 'request_unit_test', which is the anchor ref for リクエスト単体テスト listed as one of the three test methods in the same section.",
+      "source_evidence": "Source lists `* :ref:`request_unit_test`` as one of the three test methods in the 単体テスト方法 section. The anchor `.. _request_unit_test:` appears before the リクエスト単体テスト概要 heading."
+    }
+  ]
+}

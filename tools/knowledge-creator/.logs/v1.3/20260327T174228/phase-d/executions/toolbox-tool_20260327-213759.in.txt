@@ -1,0 +1,187 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/tool/index.rst`
+- Format: `rst`
+
+```
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :numbered:
+
+   01_JspGenerator/01_JspGenerator
+   01_JspGenerator/02_SetUpJspGeneratorTool
+   02_EntityGenerator/01_EntityGenerator
+   03_ConfigGenerator/ConfigGenerator
+   05_ShellGenerator/ShellGenerator
+
+.. _nablarchToolBoxPage:
+
+============================================
+Nablarch Toolbox
+============================================
+
+| 本書では、アプリケーション開発時に使える便利なツールを紹介する。
+| Nablarch Toolbox には試作段階のツールが含まれる場合がある。
+
+ ===================================================================================================================================== ===================================================================================================================
+ ツール                                                                                                                                概要
+ ===================================================================================================================================== ===================================================================================================================
+ :ref:`entity_generator`                                                                                                               Formを自動生成する。
+ :ref:`jsp_generator`                                                                                                                  HTMLファイルを基にJSPファイルを自動生成する。
+ :ref:`config_generator`                                                                                                               環境設定ファイルを自動生成する。
+ :download:`SQL自動生成ツール<./tools/SQL自動生成ツール.xls>`                                                                          テーブル定義書を基にSQL文を自動生成する。
+ :download:`排他制御主キークラス自動生成ツール<./tools/排他制御主キークラス自動生成ツール.xls>`                                        テーブル定義書を基に排他制御主キークラスを自動生成する。なお、本ツールを使用するには、 :download:`物理型・Javaオブジェクトマッピング定義<./tools/物理型・Javaオブジェクトマッピング定義.xls>` が必要。
+ :download:`フォーマット定義ファイル自動生成ツール<./tools/フォーマット定義ファイル自動生成ツール.xls>`                                外部インタフェース設計書から、FWが使用するフォーマット定義ファイルを自動生成する。
+ :download:`リクエストテーブル登録用データ作成ツール<./tools/リクエストテーブル登録用データ作成ツール.xls>`                            リクエストID一覧からリクエストテーブルに登録するマスタデータのテーブル投入用シートを自動生成する。
+ :download:`コードテーブル登録用データ出力ツール<./tools/コードテーブル登録用データ出力ツール.xls>`                                    コード設計書からコードテーブルに登録するマスタデータのテーブル投入用シートを自動生成する。
+ :download:`メッセージテーブル登録用データ作成ツール<./tools/メッセージテーブル登録用データ作成ツール.xls>`                            メッセージ設計書からメッセージテーブルに登録するマスタデータのテーブル投入用シートを自動生成する。
+ :ref:`shell_generator`                                                                                                                ジョブスケジューラから起動されるShell Scriptと環境依存項目を設定したファイルを自動生成する。
+ :download:`テーブル定義書及びドメイン定義書出力手順<./tools/テーブル定義書およびドメイン定義書出力手順.xls>`                          ObjectBrowserのレポート出力機能を使ってテーブル定義書およびドメイン定義書を出力する手順を説明したドキュメント。
+ :download:`テーブル定義書ドメイン定義書 整合性チェックツール<./tools/テーブル定義書_ドメイン定義書_整合性チェックツール.xls>`         テーブル定義書記載のドメインがドメイン定義書に定義されていることや、桁数、データ型の整合性をチェックする。
+ :ref:`published_api`                                                                                                                  使用不許可APIチェックツールの設定ファイルとなる公開APIの一覧と、公開APIのJavadocを生成する。
+ ===================================================================================================================================== ===================================================================================================================
+
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-tool`
+
+```json
+{
+  "id": "toolbox-tool",
+  "title": "Nablarch Toolbox",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Nablarch Toolbox ツール一覧",
+      "hints": [
+        "entity_generator",
+        "jsp_generator",
+        "config_generator",
+        "shell_generator",
+        "published_api",
+        "ツール一覧",
+        "Form自動生成",
+        "JSP自動生成",
+        "環境設定ファイル自動生成",
+        "SQL自動生成",
+        "Shell Script自動生成",
+        "排他制御主キークラス自動生成",
+        "フォーマット定義ファイル自動生成",
+        "テーブル定義書",
+        "公開API"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "Nablarch Toolboxには試作段階のツールが含まれる場合がある。\n\n| ツール | 概要 |\n|---|---|\n| :ref:`entity_generator` | Formを自動生成する |\n| :ref:`jsp_generator` | HTMLファイルを基にJSPファイルを自動生成する |\n| :ref:`config_generator` | 環境設定ファイルを自動生成する |\n| :download:`SQL自動生成ツール<./tools/SQL自動生成ツール.xls>` | テーブル定義書を基にSQL文を自動生成する |\n| :download:`排他制御主キークラス自動生成ツール<./tools/排他制御主キークラス自動生成ツール.xls>` | テーブル定義書を基に排他制御主キークラスを自動生成する。本ツールを使用するには :download:`物理型・Javaオブジェクトマッピング定義<./tools/物理型・Javaオブジェクトマッピング定義.xls>` が必要 |\n| :download:`フォーマット定義ファイル自動生成ツール<./tools/フォーマット定義ファイル自動生成ツール.xls>` | 外部インタフェース設計書からFWが使用するフォーマット定義ファイルを自動生成する |\n| :download:`リクエストテーブル登録用データ作成ツール<./tools/リクエストテーブル登録用データ作成ツール.xls>` | リクエストID一覧からリクエストテーブルに登録するマスタデータのテーブル投入用シートを自動生成する |\n| :download:`コードテーブル登録用データ出力ツール<./tools/コードテーブル登録用データ出力ツール.xls>` | コード設計書からコードテーブルに登録するマスタデータのテーブル投入用シートを自動生成する |\n| :download:`メッセージテーブル登録用データ作成ツール<./tools/メッセージテーブル登録用データ作成ツール.xls>` | メッセージ設計書からメッセージテーブルに登録するマスタデータのテーブル投入用シートを自動生成する |\n| :ref:`shell_generator` | ジョブスケジューラから起動されるShell Scriptと環境依存項目を設定したファイルを自動生成する |\n| :download:`テーブル定義書及びドメイン定義書出力手順<./tools/テーブル定義書およびドメイン定義書出力手順.xls>` | ObjectBrowserのレポート出力機能を使ってテーブル定義書およびドメイン定義書を出力する手順を説明したドキュメント |\n| :download:`テーブル定義書ドメイン定義書 整合性チェックツール<./tools/テーブル定義書_ドメイン定義書_整合性チェックツール.xls>` | テーブル定義書記載のドメインがドメイン定義書に定義されていることや、桁数、データ型の整合性をチェックする |\n| :ref:`published_api` | 使用不許可APIチェックツールの設定ファイルとなる公開APIの一覧と、公開APIのJavadocを生成する |"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

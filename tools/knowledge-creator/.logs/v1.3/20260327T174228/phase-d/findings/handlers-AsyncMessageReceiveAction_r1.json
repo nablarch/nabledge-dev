@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-AsyncMessageReceiveAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s2 — 復路処理",
+      "description": "The knowledge file labels the return/success section as \"復路処理\", but the source explicitly uses \"**[往路処理]**\" for that section (with `.. _outbound:` as the RST anchor). The label \"復路処理\" does not appear anywhere in the source.",
+      "source_evidence": "Source: `.. _outbound:` followed by `**[往路処理]** **5. (正常終了)**`. The term \"復路処理\" is absent from the source."
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — receivedSequenceGenerator 備考",
+      "description": "The source備考 for `receivedSequenceGenerator` includes the text \"デフォルトはtrue(自動削除を実施)\" which is absent from the knowledge file's table entry for that property.",
+      "source_evidence": "Source table row: `受信電文連番発番用オブジェクト | receivedSequenceGenerator | IdGenerator | 任意指定。デバッグや障害解析用に無効化する。デフォルトはtrue(自動削除を実施)`"
+    }
+  ]
+}

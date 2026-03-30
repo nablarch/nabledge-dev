@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_02_validation_usage--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s8 (プロパティに紐付くメッセージの作成)",
+      "description": "Source explicitly states that normally `MessageUtil.createMessage` is used, but `ValidationUtil.createMessageForProperty` is used specifically when linking a message to a property. This is method-selection guidance (when to use X vs Y) that is missing from the knowledge file. The knowledge file only mentions `createMessageForProperty` without explaining that `MessageUtil.createMessage` is the alternative for non-property-linked messages.",
+      "source_evidence": "この機能を使用する際は、通常 MessageUtil.createMessage メソッドを使用するが、プロパティに紐付くメッセージを作成する場合は ValidationUtil.createMessageForProperty メソッドを使用する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s8 hints",
+      "description": "`MessageUtil` class is referenced in the source as the default message-creation method but is absent from the hints array for s8.",
+      "source_evidence": "通常 MessageUtil.createMessage メソッドを使用するが、プロパティに紐付くメッセージを作成する場合は ValidationUtil.createMessageForProperty メソッドを使用する。"
+    }
+  ]
+}

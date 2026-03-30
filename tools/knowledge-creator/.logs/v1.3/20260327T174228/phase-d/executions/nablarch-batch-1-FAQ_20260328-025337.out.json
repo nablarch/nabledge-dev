@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-1-FAQ",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — 条件を必要としないSQL文の場合の実装例 (Java code comment)",
+      "description": "The source includes a clarifying comment in the no-condition code example: '// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。' This is a recommendation that, in the no-condition case, the caller should specify an SQL statement that genuinely has no variable conditions (rather than reusing the GET_DELETE_USER_LIST SQL as is done in the example). The knowledge file omits this guidance, leaving the code example without the important caveat about correct usage.",
+      "source_evidence": "// SQL_IDは便宜上使い回しているが、本来は可変の条件がないSQL文を指定する。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "The PascalCase class `SystemAccountEntity` appears in the Java code example in s1 (used as the condition object) but is not listed in the hints array.",
+      "source_evidence": "SystemAccountEntity condition = new SystemAccountEntity();"
+    }
+  ]
+}

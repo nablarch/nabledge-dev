@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_FailureLog--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "The source states a positive requirement: 'リクエストIDには、業務コードなど、1次切り分け担当者を特定できるだけの情報を含める必要がある' (request ID MUST contain sufficient information to identify first-line support personnel). The knowledge file only describes the fallback case (use FailureLog_Contact when the request ID cannot contain such information), omitting the affirmative design constraint.",
+      "source_evidence": "運用オペレータは、障害通知ログのリクエストIDを参照し、1次切り分け担当者を特定することを想定しているため、リクエストIDには、業務コードなど、1次切り分け担当者を特定できるだけの情報(下記ノートを参照)を含める必要がある。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints",
+      "description": "'Log_BasicLogFormatter' is missing from s3 hints. The source references this as the source of common log output items (共通項目), which is important context for understanding the individual vs. common item distinction.",
+      "source_evidence": "障害ログの個別項目は下記となる。残りの項目は、 :ref:`Log_BasicLogFormatter` の設定で指定する共通項目となる。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s5 hints",
+      "description": "'AppLog_Config' is missing from s5 hints. The source explicitly refers to this section for how to specify the properties file path and change settings at runtime — both relevant configuration concerns.",
+      "source_evidence": "プロパティファイルのパス指定や実行時の設定値の変更方法は、 :ref:`AppLog_Config` を参照。"
+    }
+  ]
+}

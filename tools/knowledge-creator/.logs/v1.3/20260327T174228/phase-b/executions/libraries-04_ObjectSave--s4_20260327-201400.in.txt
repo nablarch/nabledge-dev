@@ -1,0 +1,884 @@
+You are an expert in converting Nablarch official documentation to AI-ready knowledge files.
+
+## Task
+
+Convert the source file below into a knowledge file (JSON) by following Work Steps 1–7 in order.
+
+## Source File Information
+
+- File ID: `libraries-04_ObjectSave--s4`
+- Format: `rst` (rst/md/xlsx)
+- Type: `component`
+- Category: `libraries`
+- Official Doc Base URL: ``
+
+## Source File Content
+
+```
+クラス定義
+^^^^^^^^^^
+\a) nablarch.core.db.statement.SqlParameterParserFactoryの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  BasicSqlParameterParserFactory        BasicSqlParameterParserを生成するSqlParameterParserFactoryの基本実装クラス。
+  ===================================== ====================================================================================================
+
+.. _sql-parameter-parser-label:
+
+\b) nablarch.core.db.statement.SqlParameterParserの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statementパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  BasicSqlParameterParser               .. _basic-sql-parameter-parser-label:
+
+
+                                        SqlParameterParserのBasic実装クラス。
+
+                                        本クラスでは、下記ルールにしたがいSQL文の解析、及びJDBC実行用のSQL文の変換処理を行う。
+
+                                        * 名前付きバインド変数は、コロン(":")で開始され英(大文字、小文字)数字、
+                                          アンダースコア("_")、パーセント("%")で構成されている。
+
+                                        * LIKE検索条件の構築
+
+                                          本機能でサポートする部分一致検索のパターンは下記の3パターンとなっている。
+
+                                          .. note::
+
+                                            \a) 前方一致検索
+
+                                              | バインド変数名の末尾にパーセントを付加する。
+                                              | 例：「:userName%」
+
+                                            \b) 後方一致検索の場合
+
+                                              | バインド変数名の先頭にパーセントを付加する。
+                                              | 例：「:%userName」
+
+                                            \c) 部分一致検索の場合
+
+                                              | バインド変数名の前後にパーセントを付加する。
+                                              | 例：「:%userName%」
+
+                                            .. warning::
+                                               後方、部分一致検索は、顧客要件で回避不可能である場合に、顧客と下記デメリットを合意した上で使用すること。
+
+                                               デメリット
+
+                                               ::
+
+                                                 後方、部分一致検索では、インデックスが使用されずにテーブルフルスキャンとなる。
+                                                 これにより、極端な性能劣化が発生する。
+
+                                        * Nablarchの拡張構文が埋め込まれたSQL文をJDBC標準のSQL文に変換する。
+
+                                          デフォルトでは、下記の拡張構文を変換する。
+
+                                          * :ref:`可変条件構文<variable_condition_syntax_convertor-label>`
+                                          * :ref:`可変IN構文<variable_in_syntax_convertor-label>`
+                                          * :ref:`可変ORDER BY構文<variable_order_by_syntax_convertor-label>`
+
+  ===================================== ====================================================================================================
+
+.. _sql-convertor-label:
+
+\c) nablarch.core.db.statement.SqlConvertorの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.sqlconvertorパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  SqlConvertorSupport                   SQL文の変換を行うクラスをサポートするクラス。
+
+                                        バインド変数に対応するフィールドの値を取得する機能を提供する。
+  VariableConditionSyntaxConvertor      .. _variable_condition_syntax_convertor-label:
+
+                                        SQL文の可変条件構文を変換するクラス。
+
+                                        可変条件(入力有無によって条件に含めるか否かの条件)は、
+                                        $if(フィールド名) {SQL文の条件}となっていること。
+
+                                        可変条件部分を本クラスでは、下記例のようにJDBC実行用のSQL文に変換を行う。
+
+                                        JDBC実行用SQLに変換後のSQL文が不正な場合は、SQL実行時エラーが発生する。
+                                        このため変換後のSQL文が、不正なSQL文とならないように本機能独自のSQL文を記述する必要がある。
+                                        特に、$if構文が使用できる箇所は条件部分(WHERE句)のみであるため、その他の部分で使用した場合には、
+                                        不正なSQL文が生成される原因となる。
+
+                                        以下に例を示す。
+
+                                          .. code-block :: java
+
+                                            public class UserMtr {
+                                                /** ユーザ名 */
+                                                private String userName;
+                                                /** ユーザ区分 */
+                                                private String userKbn;
+
+                                                // アクセスメソッドなどは省略
+                                            }
+
+                                            // 可変条件の部分は、$if(フィールド名) {SQL文の条件}形式で実装する。
+                                            // UserMtr#userNameがnull、空文字列以外(配列の場合は、サイズが1以上)の場合には、
+                                            // 「user_name = :user_name」が有効な条件となる。
+                                            // UserMtr#userKbnがnull、空文字列以外(配列の場合は、サイズが1以上)の場合には、
+                                            // 「user_kbn = ('1', '2')」が有効な条件となる。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                    + "USER_KBN "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "$if (userName) {USER_NAME = :user_name} "
+                                                    + "AND $if (userKbn) {USER_KBN IN ('1', '2')}"
+
+                                            //***********************************************************************
+                                            // 上記SQL文は、本クラスで、下記の形に変換される。
+                                            // 条件に含める場合(フィールドの値がnull以外かつ空文字列
+                                            // (配列の場合は、サイズが1以上)以外の場合条件を
+                                            // 「(0 = 1 or (user_name = ?))」形式に変換する。
+                                            // 0 = 1はfalseになるため、必ず(user_name = ?)が評価される。
+                                            //
+                                            // 条件に含めない場合(フィールドの値がnullまたは、
+                                            // 空文字列(配列の場合は、サイズが0)の場合条件を
+                                            // 「(0 = 0 or (user_name = ?))」形式に変換する。
+                                            // 0 = 0はtrueになるため、(user_name = ?)は評価されない。
+                                            //***********************************************************************
+                                              "SELECT "
+                                                + "USER_ID, "
+                                                + "USER_NAME, "
+                                                + "USER_KBN "
+                                            + "FROM "
+                                                + "USER_MTR"
+                                            + "WHERE (0 = 0 OR (USER_NAME = ?))"
+                                                + "AND (0 = 1) OR (USER_KBN IN ('1', '2'))"
+
+                                            //***********************************************************************
+                                            // 本クラスで「$if」構文を利用できる箇所は条件部分(WHERE句)のみとなっている。
+                                            // また、$ifをネストして利用することはできない。
+                                            // このような構文を利用した場合は、本クラスで生成されるJDBC実行用のSQLが
+                                            // 不正な構文となり、SQL実行時エラーが発生する。
+                                            // 以下が、NGとなるSQL文の例である。
+                                            //***********************************************************************
+
+                                            // SELECT句で、$if構文を使用しているため不正
+                                            "SELECT $if (user) {:user} FROM USER_MTR"
+
+                                            // WHERE句で$if構文を使用しているが、ネストしているため不正
+                                              "SELECT "
+                                                + "USER_ID "
+                                            + "FROM "
+                                                + "USER_MTR "
+                                            + "WHERE $if (user) {USER = :user $if(userId) {USER_ID = :userId}}"
+
+  VariableInSyntaxConvertor             .. _variable_in_syntax_convertor-label:
+
+                                        SQL文の可変IN構文を変換するクラス。
+
+                                        IN句の条件部分を動的に生成する場合は、バインド変数名の末尾を角括弧([])で終わらすこと。
+                                        角括弧で終了しているバインド変数名は、無条件にIN句の条件項目であると判断し
+                                        動的にIN句の構築を行う。
+
+                                        また、IN句のバインド変数名に対応するフィールドのデータタイプは
+                                        配列または、Collectionとして定義されている必要がある。
+                                        この配列(Collection)の要素数がIN句の条件数となる。
+
+                                        以下に例を示す。
+
+                                          .. code-block:: java
+
+                                            // IN句に対応するフィールドは、配列またはCollectionとして宣言すること。
+                                            public class UserSearchCondition {
+                                                /** ユーザ区分 */
+                                                private List userKbn;
+                                            }
+
+                                            // IN区のバインド変数名は、末尾に角括弧([])を付加する。
+                                            // IN句と可変条件を合わせて使用する場合には、
+                                            // 可変条件の条件部分には角括弧を付加せずに記述する。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                    + "USER_KBN "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "$if (userKbn) {USER_KBN IN (:userKbn[])}";
+
+                                            // 上記のSQL文に、['1', '2']をもつListを設定した場合。
+                                            // 条件部分は、「(0 = 1 OR (USER_KBN IN (?, ?)))」と変換される。
+
+                                            // 上記のSQL文に、サイズ0のListを設定した場合、
+                                            // 条件部分は、「(0 = 0 OR (USER_KBN IN (?)))」と変換される。
+                                            // この場合、条件部分には固定で"null"が設定される。
+
+                                        .. note ::
+
+                                          IN句の条件数は、データベースベンダーによって上限が設けられている。
+                                          各アプリケーションでは、この上限を超えることがないように設計を行うこと。
+
+                                        .. warning::
+                                          IN句の拡張構文は、本機能は、検索条件のオブジェクトにMapインタフェースの実装クラスを指定することは出来ない。 
+                                          なぜなら、Mapは値に対する型情報が存在しないため、IN句を構築する際に値が配列またはCollectionであることの
+                                          チェックが確実に行えないためである。
+
+                                          これは、テスト時に確実に型チェックを行えないことを意味し(例えば値がnullの場合は、その型が何かは実行時にはわからない)、 
+                                          予期せぬ不具合の温床となるため本フレームワークでは敢えてMapの使用を制限している。
+
+
+                                        .. warning ::
+
+                                          IN句の条件項目に設定する配列(Collection)がnullや要素数が0になる可能性がある場合は、
+                                          必ず可変条件と組み合わせて使用すること。
+                                          可変条件としなかった場合に、サイズ0の配列(Collection)やnullのオブジェクトを設定した場合、
+                                          条件が「IN (null)」となり、想定したデータが取得できない可能性がある。
+
+                                          ※IN句は、条件式(カッコの中)を空にすることはできないため、サイズ0の配列やnullが指定された場合は、
+                                          条件式を「IN (null)」とする仕様としている。
+
+                                        .. warning ::
+
+                                          IN句以外の箇所に、IN句用のバインド変数を設定しないこと。
+                                          IN句以外の箇所に指定されていた場合、不正なSQL文が生成されSQL実行時エラーとなる。
+
+                                          不正な例::
+
+                                            条件:USER_ID = :userId[]
+                                            フィールド値:["00001", "00002"]
+                                            生成されるSQL文:USER_ID = ?, ?
+
+                                        * リテラル部分に名前付きバインド変数と同じ形式の文字列が記述されていてもバインド変数として扱わない。
+                                        * リテラル文字は、シングルクォート("'")で囲われている。
+                                        * リテラル文字のエスケープ文字は、シングルクォート("'")である。
+                                        * SQL文にコメントが存在しない。
+
+                                        .. warning::
+
+                                          本クラスでは、SQL文の妥当性のチェックは行わない。
+                                          このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。
+  VariableOrderBySyntaxConvertor        .. _variable_order_by_syntax_convertor-label:
+
+                                        SQL文の可変ORDER BY構文を変換するクラス。
+
+                                        可変ORDER BY構文の仕様は下記のとおり。
+
+                                        書き方::
+
+                                          $sort(フィールド名) {(ケース1)(ケース2)・・・(ケースn)}
+
+                                          フィールド名: 検索条件オブジェクトからソートIDを取得する際に使用するフィールド名を表す。
+
+                                          ケース: ORDER BY句の切り替え候補を表す。
+                                                  候補を一意に識別するソートIDとORDER BY句に指定する文字列(以降はケース本体と称す)を記述する。
+                                                  どの候補にも一致しない場合に使用するデフォルトのケースには、ソートIDに"default"を指定する。
+
+                                        ケース部分の仕様は下記のとおり。
+
+                                        * 各ケースは、ソートIDとケース本体を半角丸括弧で囲んで表現する。
+                                        * ソートIDとケース本体は、半角スペースで区切る。
+                                        * ソートIDには半角スペースを使用不可とする。
+                                        * ケース本体には半角スペースを使用できる。
+                                        * 括弧開き以降で最初に登場する文字列をソートIDとする。
+                                        * ソートID以降で括弧閉じまでの間をケース本体とする。
+                                        * ソートIDおよびケース本体はトリミングする。
+
+                                        検索条件オブジェクトからフィールド名で指定された値を取得し、\
+                                        取得した値が一致するケースのケース本体をORDER BY句としてSQL文に追加する。
+                                        取得した値が一致するケースが存在しない、かつデフォルトのケースが存在する場合は、\
+                                        デフォルトのケース本体をORDER BY句としてSQL文に追加する。
+                                        取得した値が一致するケースが存在しない、かつデフォルトのケースも存在しない場合は、\
+                                        可変ORDER BY構文を削除しただけのSQL文を返す。
+
+                                        以下に例を示す。
+
+                                        .. code-block :: java
+
+                                            public class UserMtr {
+                                                /** ユーザ名 */
+                                                private String userName;
+                                                /** 可変ORDER BYのソートID */
+                                                private String sortId;
+
+                                                // アクセスメソッドなどは省略
+                                            }
+
+                                            // 可変ORDER BYの部分は、$sort(フィールド名) {(ケース1) (ケース2)・・・(ケースn)}形式で実装する。
+                                            String sql =
+                                                  "SELECT "
+                                                    + "USER_ID, "
+                                                    + "USER_NAME, "
+                                                + "FROM "
+                                                    + "USER_MTR "
+                                                + "WHERE "
+                                                    + "USER_NAME = :user_name "
+                                                + "$sort(sortId) {(1 USER_ID ASC) (2 USER_ID DESC) (3 USER_NAME ASC) (4 USER_NAME DESC) (default USER_ID)}";
+
+                                            //***********************************************************************
+                                            // 上記SQL文に対するORDER BY句の変換例を下記に示す。
+                                            //
+                                            // UserMtr#sortId -> 変換後のORDER BY句
+                                            // null -> ORDER BY USER_ID  ・・・(デフォルトのケースが使用される)
+                                            // 1    -> ORDER BY USER_ID ASC
+                                            // 2    -> ORDER BY USER_ID DESC
+                                            // 3    -> ORDER BY USER_NAME ASC
+                                            // 4    -> ORDER BY USER_NAME DESC
+                                            // 5    -> ORDER BY USER_ID  ・・・(デフォルトのケースが使用される)
+                                            //***********************************************************************
+
+                                        .. warning::
+
+                                          本クラスでは、SQL文の妥当性のチェックは行わない。
+                                          このため、不正な構文のSQL文があった場合には、SQL文実行時に例外が発生する。
+  ===================================== ====================================================================================================
+
+.. _db-object-save-class-label:
+
+\d) nablarch.core.db.statement.AutoPropertyHandlerの実装クラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.autopropertyパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  FieldAnnotationHandlerSupport         フィールドのアノテーション情報を元に値を設定するクラスをサポートするクラス。
+  CurrentDateTimeAnnotationHandler      nablarch.core.db.statement.autoproperty.CurrentDateTimeアノテーションが
+                                        設定されているフィールドにシステム日時を設定するクラス。
+
+                                        システム日時は、下記ルールで設定される。
+
+                                         +--------------------------+----------------------------------------------------------+
+                                         | フィールドのデータ型     | 設定方法                                                 |
+                                         +==========================+==========================================================+
+                                         | java.sql.Date            | システム日時をjava.sql.Dateに変換して設定する。          |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | Timestamp                | システム日時をjava.sql.Timestampに変換して設定する。     |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | Time                     | システム日時をjava.sql.Timeに変換して設定する。          |
+                                         +--------------------------+----------------------------------------------------------+
+                                         | String                   | CurrentDateTimeのformatプロパティに設定されている値で、  |
+                                         +--------------------------+ SimpleDateFormatを使用してフォーマットした値を設定する。 |
+                                         | Integer                  | formatプロパティが指定されていない場合は、               |
+                                         +--------------------------+ :ref:`設定ファイル<db-object-config-label>`              |
+                                         | Long                     | に記述されたデフォルトのフォーマットを使用する。         |
+                                         +--------------------------+----------------------------------------------------------+
+
+                                        .. note::
+                                          システム日時は、 :ref:`system-date-time-feature` を使用して取得する。
+
+  UserIdAnnotationHandler               nablarch.core.db.statement.autoproperty.UserIdアノテーションが
+                                        設定されているフィールドにユーザIDを設定するクラス。
+
+                                        ユーザIDは、ThreadContextから取得する。
+
+                                        .. note::
+                                         ThreadContextに設定されるユーザIDについては、 :ref:`thread-context-label` を参照
+
+                                        .. comment
+                                         TODO ばっちができたらこっちに戻す。
+                                         ThreadContextに設定されるユーザIDについては、 :ref:`thread-context-label` 、
+                                         :doc:`../../02_Fw/02_Batch/index` を参照
+
+  RequestIdAnnotationHandler            nablarch.core.db.statement.autoproperty.RequestIdアノテーションが
+                                        設定されているフィールドにリクエストIDを設定するクラス。
+
+                                        リクエストIDは、ThreadContextから取得する。
+
+                                        .. note::
+                                         ThreadContextに設定されるリクエストIDについては、 :ref:`thread-context-label` を参照
+
+                                        .. comment
+                                         TODO ばっちができたらこっちに戻す。
+                                         ThreadContextに設定されるリクエストIDについては、 :ref:`thread-context-label` 、
+                                         :doc:`../../02_Fw/02_Batch/index` を参照
+  ===================================== ====================================================================================================
+
+\e) オブジェクトのフィールドの値をデータベースに登録するためのクラス
+
+  ===================================== ====================================================================================================
+  クラス名                              概要
+  ===================================== ====================================================================================================
+  nablarch.core.db.statement.autopropertyパッケージ
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  FieldAndAnnotationLoader              オブジェクトに定義されたフィールド情報とフィールドのアノテーション情報をロードするクラス。
+
+                                        このクラスでロードした値は、オブジェクトのフィールドの値をSQL文のバインド変数にセットする際に
+                                        使用される。
+
+                                        なお、ロードした値は、 :doc:`../05_StaticDataCache` を使用してキャッシュされるため、
+                                        同一のクラスに対してフィールド情報の取得処理が複数回実行されることはない。
+                                        これにより、リフレクションを使用してフィールド情報を取得する再のコストを
+                                        軽減でき性能劣化を防止することができる。
+  ===================================== ====================================================================================================
+
+```
+
+
+
+---
+
+## Work Step 1: Identify the title
+
+Read the source and extract the document title.
+
+- RST: The first heading underlined with `=====`
+- MD: The first `#` heading
+- Excel: Use the filename as title
+
+Set this as the `title` field.
+
+---
+
+## Work Step 1.5: Check for no-knowledge-content source
+
+Evaluate whether this source file contains any Layer A or Layer B content (see Step 3 for layer definitions).
+
+If the source consists entirely of:
+- toctree directives and their entries
+- Title and heading underlines
+- RST labels (.. _label:)
+- Blank lines
+- Navigation links only (no explanatory text)
+
+Then set `no_knowledge_content: true`. In this case:
+- Set `index` to empty array `[]`
+- Set `sections` to empty object `{}`
+- Still set `id`, `title`, `official_doc_urls` normally
+- Skip Work Steps 2–6
+- Skip Work Steps 2–6
+
+If ANY Layer A or Layer B content exists, set `no_knowledge_content: false` and proceed normally.
+
+---
+
+## Expected Sections (if this file was split)
+
+- クラス定義
+
+The above list shows sections detected by the classification tool. If this list is not empty, you MUST generate ALL sections listed above. If empty, scan the source yourself in Step 2.
+
+---
+
+## Work Step 2: Build the section list
+
+If Expected Sections is provided above (not empty), use that list. You MUST generate ALL sections from that list — do not skip any.
+
+If Expected Sections is empty, scan the source and create a complete list of sections yourself:
+
+### 2-1. Count split-level headings
+
+| Format | Split-level heading | How to count |
+|---|---|---|
+| RST | h2 | Text line followed by `-----` underline (3+ dashes) |
+| MD | ## | Lines starting with `## ` (not `###` or deeper) |
+| Excel | (none) | Entire file = 1 section |
+
+### 2-2. Apply h3 promotion rule (RST only)
+
+For each h2 section, estimate the plain text character count. Exclude code blocks (between `.. code-block::` and next unindented line), directive lines (`.. xxx::`), indented directive body, heading underlines, and blank lines.
+
+| Condition | Action |
+|---|---|
+| h2 plain text ≥ 2000 chars AND h3 headings (`~~~~~` underline) exist in source | Split at h3. Each h3 becomes a separate section. |
+| h2 plain text ≥ 2000 chars AND no h3 headings exist | Keep as one section. Do NOT invent sub-sections. |
+| h2 plain text < 2000 chars | Keep as one section. Include h3 content inside the parent. |
+
+### 2-3. Section IDs are pre-assigned
+
+Section IDs (`s1`, `s2`, `s3`, ...) are assigned automatically by the classification script.
+Use sequential IDs starting from `s1` for the first section, `s2` for the second, and so on.
+Do NOT generate your own section IDs based on heading text.
+
+---
+
+## Work Step 3: Extract section content
+
+For each section from Step 2, extract the corresponding source content and convert to Markdown.
+
+### Step 3.1: Classify each sentence into Layer A, B, or C
+
+Classify each paragraph/sentence in the source into Layer A, B, or C. Write only A and B to the output. Remove all C.
+
+**Layer A — Decision Criteria (→ KEEP ALL)**
+
+Keep every sentence that an AI agent needs to make correct implementation decisions:
+- Technology selection rules ("use Y instead of X", "X is deprecated")
+- Constraints ("configure X before Y", "if X is not set, Z happens")
+- Content inside `.. important::`, `.. warning::`, `.. tip::` directives
+- Deprecation notices with alternatives ("this feature is deprecated; use X instead")
+- Pitfalls/traps ("X appears to work but causes Y problem")
+- Decision branches ("for case A use X; for case B use Y")
+
+**Layer B — Implementation Specs (→ KEEP, minimize)**
+
+Keep these with accuracy, write concisely:
+- Class names / fully-qualified names
+- Configuration property names, types, default values
+- XML config examples (minimum working configuration only)
+- Java/SQL code examples (minimum to show the pattern)
+- Maven dependency info (groupId/artifactId)
+- Method signatures, argument types, return types
+
+**Layer C — Everything Else (→ REMOVE)**
+
+If a sentence is neither Layer A nor Layer B, do not write it to output. This includes but is not limited to:
+- Lead-in sentences: "The following shows...", "This section describes..."
+- Referral sentences: "For details, see Javadoc", "See external site"
+- Background explanations: "The reason X is dangerous is..."
+- Gradual concept introductions: "First, you need to understand..."
+- RST markup: `.. image::`, `.. contents::`, `:java:extdoc:` link syntax (extract class name only)
+- Verbose preambles: "Refer to the following configuration file example given below" → keep only the XML
+- getting_started tutorials
+- Repetition of what was already written in overview
+
+### Step 3.2: Write retained content to Markdown
+
+Use Markdown conversion rules below for the output structure.
+Write Layer A content in Japanese, concisely.
+Compress Layer B from source's verbose prose.
+
+Do not add any information that is not in the source. Do not infer, guess, or supplement.
+
+**Example 1 — Compress handler description (Layer B)**:
+
+Source (5 lines):
+```
+This handler, in addition to repeatedly executing the processing of the
+subsequent handlers, performs transaction control, and commits the
+transaction at a certain number of repetitions, while the data to be
+processed is present in the data reader. By increasing the transaction
+commit interval, it is possible to improve the throughput of batch processing.
+```
+
+→ Output description (1 line):
+```
+"後続ハンドラの繰り返し実行＋トランザクション制御（一定件数ごとにコミット）。コミット間隔でスループット調整可能"
+```
+
+**Example 2 — Remove preamble, keep only XML (Layer C removal + Layer B retention)**:
+
+Source:
+```
+Configure the handler by referring to the configuration file example given below.
+.. code-block:: xml
+  <component class="nablarch.fw.handler.LoopHandler">
+    <property name="transactionFactory" ref="databaseTransactionFactory" />
+    <property name="transactionName" value="name" />
+  </component>
+```
+
+→ Output xml_example (preamble removed, XML only):
+```
+"<component class=\"nablarch.fw.handler.LoopHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>"
+```
+
+**Example 3 — Keep important/warning as-is (Layer A)**:
+
+Source:
+```
+.. important::
+  :ref:`transaction_management_handler` has to be configured to use this handler.
+  Since the transaction control is not implemented if the transaction control handler
+  is not configured, all subsequent changes to the database will be discarded.
+```
+
+→ Output warnings:
+```
+["TransactionManagementHandlerが未設定の場合、トランザクション制御が行われずDB変更がすべて破棄される"]
+```
+
+**Example 4 — Deprecated library (Layer A: keep decision + reason; Layer C: remove tutorial)**:
+
+Source:
+```
+.. important::
+ This function is **deprecated** because of the following reasons:
+ Uses :ref:`universal_dao` for exclusive control.
+
+ * Exclusive control of :ref:`universal_dao` can be used more easily than this function.
+ * If the primary key is defined as a non-string type, this function cannot be used
+   depending on the database.
+```
+
+→ Output notes:
+```
+["この機能は非推奨。代わりにUniversalDaoの排他制御を使うこと。理由: (1) UniversalDaoの方が簡易 (2) 主キーが文字列型以外の場合、DBによっては型不一致で実行時エラーが発生する"]
+```
+
+**Example 5 — Testing framework rules (Layer A/B only; Layer C tutorial removed)**:
+
+Source:
+```
+The test class should be created in such a way that the following conditions are met.
+
+* The test class package should be the same as the Action class to be tested.
+* Create a test class with a class name of <Action class name>RequestTest.
+* Inherits ``nablarch.test.core.batch.BatchRequestTestSupport``.
+
+For example, if the Action class to be tested is ``nablarch.sample.ss21AA.RM21AA001Action``,
+the test class would be as follows.
+
+.. code-block:: java
+
+  package nablarch.sample.ss21AA;
+  // ~ Middle is omitted ~
+  public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
+```
+
+→ Output description:
+```
+"テストクラス作成ルール: (1) テスト対象Actionと同一パッケージ (2) クラス名は{Action名}RequestTest (3) BatchRequestTestSupportを継承"
+```
+(The "For example..." paragraph and code example are Layer C — they illustrate the rules but add no new decision-relevant information. The rules themselves are Layer A.)
+
+### Category-specific additional rules
+
+Apply these in addition to the common rules above:
+
+- **testing-framework**: Remove tutorial-style step-by-step instructions (Layer C). Keep only test class naming rules, Excel format rules, and NTF API specs.
+- **guide/nablarch-patterns**: Most content is Layer A (decision criteria). Preserve over compress.
+- **adapters**: Prioritize accuracy for XML config examples. Keep tested library version info.
+- **libraries**: Keep deprecated features as Layer A in the form: "This feature is deprecated. Use X instead. Reason: ..."
+
+### Forbidden — Do NOT do any of these
+
+- Do NOT add explanatory preambles not in source (e.g., "以下の手順があります：", "以下の〜が用意されています：")
+- Do NOT infer default values, constraints, or behavior not stated in source
+- Do NOT add code examples not in source
+- Do NOT remove or modify URLs from source
+- Do NOT add "一般的には〜" or "通常は〜" style generalizations
+
+Decision criterion: "Can I point to a specific passage in the source for this sentence?" If NO → do not include it.
+
+### Markdown conversion rules
+
+**Classes/interfaces:**
+`**クラス名**: \`nablarch.common.handler.DbConnectionManagementHandler\``
+Multiple: `**クラス**: \`Class1\`, \`Class2\``
+Annotations: `**アノテーション**: \`@InjectForm\`, \`@OnError\``
+
+**Module dependencies:**
+```
+**モジュール**:
+\```xml
+<dependency>
+  <groupId>com.nablarch.framework</groupId>
+  <artifactId>nablarch-core-jdbc</artifactId>
+</dependency>
+\```
+```
+
+**Property tables:**
+```
+| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |
+|---|---|---|---|---|
+| connectionFactory | ConnectionFactory | ○ | | ファクトリクラス |
+```
+○ = required, empty = optional. Empty default = no default.
+
+**Alert directives:**
+| RST directive | Markdown |
+|---|---|
+| `.. important::` | `> **重要**: text` |
+| `.. tip::` | `> **補足**: text` |
+| `.. warning::` | `> **警告**: text` |
+| `.. note::` | `> **注意**: text` |
+
+**Process flow:** Use numbered list.
+
+**Handler configuration table:**
+```
+| No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
+|---|---|---|---|---|
+| 1 | ステータスコード変換ハンドラ | — | ステータスコード変換 | — |
+```
+
+**Feature comparison table:**
+Legend: ◎ = defined in spec, ○ = provided, △ = partially, × = not provided, — = N/A
+Footnotes immediately after the table: `[1] text`
+
+**Image handling:**
+| Image type | Action |
+|---|---|
+| Flow diagrams | Text alternative (numbered list) |
+| Architecture/configuration diagrams | Text alternative (definition list) |
+| Screen captures | Text alternative (step descriptions) |
+| Cannot be replaced with text | `![description](assets/libraries-04_ObjectSave--s4/filename.png)` |
+
+Office attachments → reference in `assets/libraries-04_ObjectSave--s4/`.
+
+---
+
+## Work Step 4: Preserve cross-references
+
+Scan each section's content and handle RST references as follows:
+
+```
+For each reference found in source:
+
+1. Is it :java:extdoc:`...` ?
+   → Extract the fully-qualified class name from the reference
+   → Convert to Javadoc URL: https://nablarch.github.io/docs/LATEST/javadoc/{package/path/ClassName}.html
+   → Add this URL to official_doc_urls (collected in Step 6)
+   → In section text, KEEP THE ORIGINAL RST SYNTAX: :java:extdoc:`ClassName<fully.qualified.ClassName>`
+   → The RST syntax will be converted to inline code in post-processing
+   → Note: We extract the URL now (for official_doc_urls) but preserve syntax for later conversion
+
+2. Is it an external URL (http:// or https://) ?
+   → Convert to Markdown link format: [text](url)
+
+3. Is it :ref:`label` or :ref:`display<label>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text (preserve EXACTLY as found in source)
+   → Do NOT normalize labels - keep underscores/hyphens as-is
+   → Do NOT convert to [display](#section-id) or [display](@label)
+   → Examples to preserve:
+     - :ref:`thread_context_handler` (keep underscore)
+     - :ref:`database-connection` (keep hyphen)
+     - :ref:`HTTPアクセスログ <http_access_log>` (keep exact format)
+   → These will be resolved in post-processing after all files are generated
+
+4. Is it :doc:`path` or :doc:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Do NOT convert to [display](@knowledge-file-id)
+   → Examples to preserve:
+     - :doc:`nablarch_batch/index`
+     - :doc:`モジュール一覧 <about_nablarch/mvn_module>`
+   → These will be resolved in post-processing
+
+5. Is it :download:`display<path>` ?
+   → KEEP THE ORIGINAL RST SYNTAX in section text
+   → Examples to preserve:
+     - :download:`デフォルト設定一覧.xlsx <デフォルト設定一覧.xlsx>`
+     - :download:`プロジェクト一括登録.csv<../downloads/project_upload/プロジェクト一括登録.csv>`
+   → These will be resolved in post-processing
+
+**Important**: Only convert external URLs (http://, https://). All RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) should be preserved as-is for mechanical post-processing.
+
+**Label Preservation Guidelines**:
+- Keep exact label names including underscores/hyphens as found in source
+- Do NOT normalize labels (Post-processing handles variants automatically)
+- Post-processing will match both `database_connection` and `database-connection` to the same target
+- Preserving exact source format prevents mismatches during link resolution
+
+**Malformed RST Handling**:
+If RST syntax appears incomplete or malformed, preserve it as-is:
+- Missing closing backtick: `:ref:`label` → keep as-is ( post-processing will handle or leave unchanged)
+- Typo in role name: `:reff:`label`` → keep as-is
+- Missing angle bracket: `:doc:`text <path` → keep as-is
+Post-processing will attempt to resolve recognizable patterns and preserve unrecognized syntax unchanged.
+```
+
+---
+
+## Work Step 5: Generate search hints
+
+For each section, extract hints by following substeps 5-1 through 5-7. Only include items that actually exist in that section.
+
+### 5-1. Class/interface names
+Scan for backtick-wrapped text matching `nablarch.xxx.XxxClass` (package-qualified) or PascalCase names (2+ words, e.g., `DbConnectionManagementHandler`). Add each to hints.
+
+### 5-2. Annotation names
+Scan for `@AnnotationName` patterns. Add each to hints.
+
+### 5-3. Exception class names
+Scan for names ending in `Exception`. Add each to hints.
+
+### 5-4. Property names
+From property tables (rows under `| プロパティ名 |` header), extract the first column values. Add each to hints.
+
+### 5-5. Functional keywords (Japanese)
+Write 2–5 Japanese keywords describing what this section enables. (e.g., "データベース接続管理", "トランザクション制御", "バリデーション")
+
+### 5-6. Toctree entries
+If the source section contains `.. toctree::` items, add each item name to hints.
+
+### 5-7. h3 heading keywords
+If this section contains consolidated h3 subsections (not split), extract key terms from h3 headings and add to hints.
+
+---
+
+## Work Step 6: Build official_doc_urls
+
+1. Start with `` as the first URL.
+2. Collect all Javadoc URLs extracted in Step 4.
+3. Combine into a single array, deduplicated, preserving order.
+
+---
+
+## Work Step 7: Assemble and output JSON
+
+Combine all results from Steps 1–6 into the output JSON.
+
+
+### Output JSON Schema
+
+```json
+{
+  "type": "object",
+  "required": ["id", "title", "no_knowledge_content", "official_doc_urls", "index", "sections"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Knowledge file identifier. Must equal FILE_ID."
+    },
+    "no_knowledge_content": {
+      "type": "boolean",
+      "description": "true if source has no Layer A/B content (toctree-only, navigation-only)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title from Step 1"
+    },
+    "official_doc_urls": {
+      "type": "array",
+      "description": "Official documentation URLs from Step 6",
+      "items": { "type": "string" }
+    },
+    "index": {
+      "type": "array",
+      "description": "Section table of contents with search hints",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "hints"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "hints": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
+```
+
+### Final self-checks before output
+
+- [ ] `id` equals `libraries-04_ObjectSave--s4`
+- [ ] Every `index[].id` has a matching key in `sections` and vice versa
+- [ ] Section IDs follow sequential format: `s1`, `s2`, `s3`, ... (starting from `s1`)
+- [ ] No section content is empty or under 50 characters (unless genuinely "なし")
+- [ ] No hints array is empty
+- [ ] All internal references `(#section-id)` point to existing section IDs in this file
+- [ ] RST cross-references (:ref:, :doc:, :download:, :java:extdoc:) are preserved as-is
+- [ ] No information was added that is not in the source
+- [ ] All URLs from source are preserved
+- [ ] If Expected Sections was provided, section count equals expected count
+- [ ] `no_knowledge_content` is set to `true` or `false`
+- [ ] If `no_knowledge_content: true`, `index` is `[]` and `sections` is `{}`
+- [ ] If `no_knowledge_content: false`, `index` and `sections` are non-empty
+
+Respond with the JSON matching the schema above. No explanation, no markdown fences, no other text.

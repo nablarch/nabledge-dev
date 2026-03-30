@@ -1,0 +1,20 @@
+{
+  "file_id": "toolbox-01_JspGenerator",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s3 — 使用禁止HTMLタグの属性定義 セクション（デフォルト定義一覧の直前ラベル）",
+      "description": "知識ファイルは「デフォルトの定義（CSVファイル未指定時の既定値）:」と記載しているが、ソースにこの括弧内の説明は存在しない。かつ意味が誤り。ソースの設定キー表では `invalid.html.csv.path` について「指定がない場合は使用禁止とするHTMLタグの属性削除を行わない」とあり、CSVファイルが未指定の場合は属性削除自体が行われない。以下に示すデフォルト定義はCSVファイルに記述する内容の推奨例（デフォルト定義）であり、「CSVファイル未指定時に自動適用される既定値」ではない。",
+      "source_evidence": "ソース: 「デフォルトの定義を下記に示す。」（括弧内説明なし） / 設定表: `invalid.html.csv.path` — 「指定がない場合は使用禁止とするHTMLタグの属性削除を行わない。」"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s4 — 前提条件",
+      "description": "セクション s4 のコンテンツが「開発環境構築ガイドに従って開発環境を構築済みであること。」の32文字のみで、50文字未満。",
+      "source_evidence": "ソースの「前提条件」セクションも同等の短い記述のみ（内容は正確に転写されている）。"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "libraries-01_FailureLog--s11",
+  "title": "プレースホルダのカスタマイズ方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "プレースホルダのカスタマイズ方法",
+      "hints": [
+        "FailureLogFormatter",
+        "DataItem",
+        "LogItem",
+        "FailureLogContext",
+        "CustomDataFailureLogFormatter",
+        "CustomDataItem",
+        "MaskingMapValueEditor",
+        "MapValueEditor",
+        "障害ログ プレースホルダ カスタマイズ",
+        "データマスキング",
+        "$data$ マスク処理",
+        "getLogItems オーバーライド",
+        "failureLogFormatter.className",
+        "障害解析ログ 出力例",
+        "MAIL_ADDRESS マスク",
+        "MOBILE_PHONE_NUMBER マスク"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## プレースホルダのカスタマイズ方法\n\n処理対象データ(`$data$`)の出力処理をカスタマイズするには、`FailureLogFormatter`の拡張と`LogItem`インタフェースの実装を行う。\n\n### DataItemの拡張例（Mapのマスク処理）\n\nフレームワーク提供の`DataItem`クラスを継承し、処理対象データがMap型の場合のみマスク処理を行う実装：\n\n```java\nprivate static final class CustomDataItem extends DataItem {\n    private static final char MASKING_CHAR = '*';\n    private static final Pattern[] MASKING_PATTERNS\n            = new Pattern[] { Pattern.compile(\".*MOBILE_PHONE_NUMBER.*\"),\n                              Pattern.compile(\".*MAIL.*\")};\n    private MapValueEditor mapValueEditor = new MaskingMapValueEditor(MASKING_CHAR, MASKING_PATTERNS);\n\n    @Override\n    public String get(FailureLogContext context) {\n        Object data = context.getData();\n        // Mapでない場合はデフォルト実装を呼び出す\n        if (!(data instanceof Map)) {\n            return super.get(context);\n        }\n        Map<String, String> editedMap = new TreeMap<String, String>();\n        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) data).entrySet()) {\n            String key = entry.getKey().toString();\n            editedMap.put(key, mapValueEditor.edit(key, entry.getValue()));\n        }\n        return editedMap.toString();\n    }\n}\n```\n\n### FailureLogFormatterの拡張例\n\n`getLogItems`メソッドをオーバーライドして`$data$`プレースホルダに`CustomDataItem`を設定する：\n\n```java\npublic class CustomDataFailureLogFormatter extends FailureLogFormatter {\n    @Override\n    protected Map<String, LogItem<FailureLogContext>> getLogItems(Map<String, String> props) {\n        Map<String, LogItem<FailureLogContext>> logItems = super.getLogItems(props);\n        // CustomDataItemで$data$を上書き設定する\n        logItems.put(\"$data$\", new CustomDataItem());\n        return logItems;\n    }\n}\n```\n\n### app-log.propertiesの設定例\n\n```properties\nfailureLogFormatter.className=nablarch.core.log.app.CustomDataFailureLogFormatter\nfailureLogFormatter.defaultFailureCode=MSG99999\nfailureLogFormatter.defaultMessage=an unexpected exception occurred.\nfailureLogFormatter.notificationFormat=fail_code = [$failureCode$] $message$\nfailureLogFormatter.analysisFormat=fail_code = [$failureCode$] $message$\\nInput Data :\\n$data$\n```\n\n### 障害解析ログの出力例\n\n`CustomDataItem`に定義したマスク対象パターン（`.*MOBILE_PHONE_NUMBER.*`、`.*MAIL.*`）にマッチするデータはマスクされて出力される。\n\n```\n2011-09-26 21:06:35.745 -FATAL- root [EXECUTION_ID_0000000123456789] boot_proc = [] proc_sys = [] req_id = [RB11AC0160] usr_id = [batchuser1] fail_code = [NB11AA0107] ユーザ情報の登録に失敗しました。\nInput Data :\n{EXTENSION_NUMBER_BUILDING=13, EXTENSION_NUMBER_PERSONAL=1235, INSERT_EXECUTION_ID=EXECUTION_ID_2000000123456789, INSERT_REQUEST_ID=RB11AC0140, KANA_NAME=ヤマモトタロウ, KANJI_NAME=山本太郎, LOGIN_ID=12345678901234567890, MAIL_ADDRESS=********************, MOBILE_PHONE_NUMBER_AREA_CODE=***, MOBILE_PHONE_NUMBER_CITY_CODE=****, MOBILE_PHONE_NUMBER_SBSCR_CODE=****, UPDATED_USER_ID=batch_user, USER_INFO_ID=00000000000000000113}\nStack Trace Information : \n[100 TransactionAbnormalEnd] ユーザ情報の登録に失敗しました。\n    at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:73)\n    at nablarch.sample.ss11AC.B11AC016Action.handle(B11AC016Action.java:1)\n    at nablarch.fw.action.BatchAction.handle(BatchAction.java:1)\n    # 以降のスタックトレースは省略。\n```"
+  }
+}

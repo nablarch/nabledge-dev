@@ -1,0 +1,27 @@
+{
+  "file_id": "testing-framework-01_entityUnitTest--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s1].hints",
+      "description": "テストケース表のカラム名 `title` と `description` がヒントに含まれていない。ソースのテーブルでは最初の列にこれらのカラム識別子が定義されており、ユーザーがこれらの名前でExcelシートのカラム構成を問い合わせた際にこのセクションが検索されない可能性がある。",
+      "source_evidence": "| title | テストケースのタイトル | / | description | テストケースの簡単な説明 |"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s3].hints",
+      "description": "`SystemAccountEntity` というPascalCaseクラス名がs3のヒントに含まれていない。s3のコード例では `Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;` としてこのクラスが使用されており、ヒントに含めるべきクラス名である。",
+      "source_evidence": "private static final Class<SystemAccountEntity> ENTITY_CLASS = SystemAccountEntity.class;"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s4].hints",
+      "description": "`SystemAccountEntity` というPascalCaseクラス名がs4のヒントに含まれていない。s4のコード例では `SystemAccountEntity.class`、`new SystemAccountEntity(params)`、`entity.getUsers()` など複数箇所でこのクラスが使用されている。`SystemAccountEntityTest`（テストクラス）はヒントに含まれているが、テスト対象エンティティクラス自体が欠けている。",
+      "source_evidence": "Class<?> entityClass = SystemAccountEntity.class; / SystemAccountEntity entity = new SystemAccountEntity(params);"
+    }
+  ]
+}

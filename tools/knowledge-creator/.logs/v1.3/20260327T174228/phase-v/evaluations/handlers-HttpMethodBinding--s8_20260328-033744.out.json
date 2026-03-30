@@ -1,0 +1,14 @@
+{
+  "file_id": "handlers-HttpMethodBinding--s8",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "The sole residual finding is the omission of \"基本的に\" (basically) from the request scope description. The knowledge file's definitive phrasing (\"ラッパーとして実装されている\") vs. the source's hedged phrasing (\"基本的に…ラッパーである\") conveys the same practical guidance. No Nablarch developer would use request scope differently based on this nuance, and the core facts — that it wraps HTTPServletRequest#getAttribute()/setAttribute() — are accurately preserved. The file is acceptable as-is.",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "sections.s1",
+      "impact": "low",
+      "justification": "Removing 'basically' (基本的に) from the wrapper description is a minor hedge-word omission. The source phrase implies possible additional behavior, but the knowledge file's definitive statement does not mislead developers in any actionable way — they would still correctly understand and use request scope identically. No incorrect API usage, wrong data placement, or missed constraints result from this phrasing difference. Why it persisted: Phase E returned the file unchanged, likely because the fix agent judged the 'basically' qualifier too subtle to require correction given that the core technical content (the HTTPServletRequest wrapper relationship) is faithfully conveyed."
+    }
+  ]
+}

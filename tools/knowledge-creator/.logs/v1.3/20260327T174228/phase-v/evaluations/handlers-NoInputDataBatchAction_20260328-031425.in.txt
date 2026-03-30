@@ -1,0 +1,338 @@
+You are a quality evaluator for Nablarch knowledge files used by AI agents in mission-critical enterprise system development.
+
+## Context
+
+Nabledge provides AI agents with Nablarch framework knowledge. The knowledge files are the ONLY information source for the agent.
+
+## Task
+
+Evaluate the following residual findings and determine their user impact.
+
+## File: `handlers-NoInputDataBatchAction`
+
+### Residual Findings
+
+```json
+[
+  {
+    "category": "omission",
+    "severity": "critical",
+    "location": "s1 — 概要",
+    "description": "The Java pseudocode block showing the framework call sequence (initialize → handle → commit → error/rollback → terminate) is entirely absent from the knowledge file. This code conveys decision-necessary implementation details: commit() is called after handle(), rollback() is called on exception, and the exact parameter signatures used in the call flow.",
+    "source_evidence": "initialize(command, ctx); ... result = handle(ctx); commit(); ... rollback(); error(e, ctx); ... terminate(result, ctx)"
+  },
+  {
+    "category": "omission",
+    "severity": "critical",
+    "location": "s1 — 概要 (note after code block)",
+    "description": "The note warning that the pseudocode is simplified for explanation and that the actual processing flow is entirely different (controlled by handler configuration, not the pseudocode logic) is missing. This caveat is important for AI not to misapply the call sequence as definitive behavior.",
+    "source_evidence": "このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。"
+  },
+  {
+    "category": "fabrication",
+    "severity": "critical",
+    "location": "s1 — handle() method description",
+    "description": "The knowledge file states the override details as '(オーバーロード: `BatchAction` の `handle(InputData data, ExecutionContext ctx)` をオーバーロードしたメソッド)', specifying the exact parent method signature `handle(InputData data, ExecutionContext ctx)`. The source only says '(オーバーロード)' with no elaboration on the parent method signature or its parameter types.",
+    "source_evidence": "Source: '引数は実行コンテキストのみとなる。(オーバーロード)' — no mention of InputData or the parent method signature"
+  },
+  {
+    "category": "hints_missing",
+    "severity": "minor",
+    "location": "s1 — hints",
+    "description": "PascalCase class names `CommandLine` and `ExecutionContext` appear in the source's code block within the 概要 section but are absent from s1's hints array.",
+    "source_evidence": "CommandLine command; // バッチ起動時のコマンドライン\nExecutionContext ctx; // 実行コンテキスト"
+  }
+]
+```
+
+### Source (RST)
+
+```
+.. include:: ../api/link.rst
+
+===========================================================================================
+入力データを使用しないバッチ処理用業務アクションハンドラのテンプレートクラス
+===========================================================================================
+
+**クラス名:** ``nablarch.fw.action.NoInputDataBatchAction``
+
+---------------------------
+概要
+---------------------------
+このクラスは :doc:`../architectural_pattern/batch_single_shot` において、
+一括データ削除を行うクリーニングバッチのように、単発の処理を実行するバッチを実装する場合に使用する
+アクションハンドラのテンプレートクラスである。
+
+具体的には、一度だけダミー読込みを行うデータリーダを使用することにより、
+一回だけアクションハンドラの処理を実行させるようにする。
+
++++++++++++++++++++++
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'handler'
+    , HandlerQueue = [
+        "NoInputDataBatchAction"
+      ];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++++
+
+本クラスを継承してアクションハンドラを実装するには、以下のテンプレートメソッドを必要に応じて実装する。
+
+  ====================  =============================================================================================
+  メソッド名            内容
+  ====================  =============================================================================================
+  handle()              | (必須実装)
+                        | このアクションハンドラで実行する業務処理を実装する。
+                          :doc:`BatchAction` とは異なり、データリーダーを使用せず、常に1度だけ呼ばれる。
+                          なお、引数は実行コンテキストのみとなる。(オーバーロード)
+                         
+  initialize()          | (任意実装)
+                        | バッチ処理の開始前に一度だけ呼ばれる。
+                        | デフォルトでは何もしない。
+
+  error()               | (任意実装)
+                        | 実行時例外/エラーの発生によってバッチがエラー終了した場合に
+                          一度だけコールバックされる。
+                          デフォルトでは何もしない。
+
+  terminate()           | (任意実装)
+                        | バッチ処理が全件終了もしくはエラーにより終了した後で
+                          一度だけコールバックされる。
+                          デフォルトでは何もしない。
+  
+  ====================  =============================================================================================
+
+以下のソースコードは、フレームワークが本クラスの各テンプレートメソッドを
+どのタイミングで呼び出すかを表したものである。
+
+  .. code-block:: java
+  
+    CommandLine      command;     // バッチ起動時のコマンドライン
+    ExecutionContext ctx;         // 実行コンテキスト
+ 
+    initialize(command, ctx);     // バッチ処理開始前に一度だけ呼ばれる。
+
+    Result result = null;
+
+    try {
+        result = handle(ctx);     // 業務処理を実行。
+        commit();                 // 業務トランザクションをコミット
+
+    } catch(e) {
+        rollback();               // 業務トランザクションをロールバック
+        error(e, ctx);            // バッチがエラー終了した場合に、一度だけ呼ばれる。
+
+    } finally {
+        terminate(result, ctx)    // バッチが終了した後、一度だけ呼ばれる。
+    }           
+
+  .. note::
+
+    このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、
+    ハンドラ構成によって制御されており、全く別物である。
+
+
+++++++++++++++++++++
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _callback:
+
+**[コールバック]**
+  **1. (バッチ処理開始前初期処理)**
+    :doc:`MultiThreadExecutionHandler` での処理開始時に **initialize()** を実行する。
+
+  **2. (データリーダ生成)**
+    続いて、 :doc:`MultiThreadExecutionHandler` のコールバックで、ダミーのデータリーダを作成して返す。
+    このデータリーダでは、1度だけダミーの読込みを行い、それ以降はデータリーダがクローズされた場合と同じ動作となる。
+    
+    これにより、アクションハンドラが1度だけ実行されるようにする。
+
+.. _inbound:
+
+**[往路処理]**
+  **3. (業務処理を実行)**
+     業務処理を実行する。
+
+
+.. _outbound:
+
+**[復路処理]**
+  **4. (正常終了)**
+    正常終了を表すマーカオブジェクト( `Result.Success`_ ) をリターンする。
+
+
+.. _error:
+
+**[例外処理]**
+  **4a. (エラー終了)**
+    業務処理に失敗した場合は、実行時例外を送出する。
+    
+**[コールバック]**
+  **5. (バッチエラー終了時)**
+    :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドがエラーにより停止した場合、
+    本ハンドラの **error()** を実行する。
+
+  **6. (バッチ終了時)**
+    :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドが終了した場合、
+    本ハンドラの **terminate()** を実行する。
+    (このコールバックは、バッチがエラー終了した場合でも、 **6.** の処理の後で呼ばれる。)
+
+
+```
+
+### Knowledge File (JSON)
+
+```
+{
+  "id": "handlers-NoInputDataBatchAction",
+  "title": "入力データを使用しないバッチ処理用業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "NoInputDataBatchAction",
+        "nablarch.fw.action.NoInputDataBatchAction",
+        "handle()",
+        "initialize()",
+        "error()",
+        "terminate()",
+        "バッチシングルショット",
+        "入力データなしバッチ",
+        "ダミーデータリーダ",
+        "テンプレートメソッド",
+        "BatchAction",
+        "オーバーロード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "initialize()",
+        "error()",
+        "terminate()",
+        "Result.Success",
+        "ダミーデータリーダ",
+        "バッチ処理フロー",
+        "コールバック処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.NoInputDataBatchAction`\n\n:doc:`../architectural_pattern/batch_single_shot` において、一括データ削除クリーニングバッチのように単発処理を実行するバッチを実装する場合に使用するアクションハンドラのテンプレートクラス。ダミーデータリーダーを使用することにより、アクションハンドラを1度だけ実行させる。\n\n継承して実装するテンプレートメソッド:\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| `handle(ctx)` | 必須 | 業務処理を実装。:doc:`BatchAction` と異なりデータリーダーを使用せず常に1度だけ呼ばれる。引数は実行コンテキストのみ。(オーバーロード: `BatchAction` の `handle(InputData data, ExecutionContext ctx)` をオーバーロードしたメソッド) |\n| `initialize(command, ctx)` | 任意 | バッチ処理開始前に一度だけ呼ばれる。デフォルト: 何もしない |\n| `error(e, ctx)` | 任意 | 実行時例外/エラーでバッチエラー終了した場合に一度だけコールバック。デフォルト: 何もしない |\n| `terminate(result, ctx)` | 任意 | バッチが全件終了またはエラー終了後に一度だけコールバック。デフォルト: 何もしない |",
+    "s2": "1. **[コールバック] バッチ処理開始前初期処理**: :doc:`MultiThreadExecutionHandler` での処理開始時に `initialize()` を実行\n2. **[コールバック] データリーダ生成**: :doc:`MultiThreadExecutionHandler` のコールバックでダミーデータリーダを作成。1度だけダミー読込みを行い、以降はデータリーダがクローズされた場合と同じ動作となる。これによりアクションハンドラが1度だけ実行される\n3. **[往路処理] 業務処理を実行**\n4. **[復路処理] 正常終了**: 正常終了を表すマーカオブジェクト `Result.Success` をリターン\n4a. **[例外処理] エラー終了**: 業務処理に失敗した場合は実行時例外を送出\n5. **[コールバック] バッチエラー終了時**: :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドがエラーにより停止した場合、`error()` を実行\n6. **[コールバック] バッチ終了時**: :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドが終了した場合、`terminate()` を実行(エラー終了でも 5. の処理の後で呼ばれる)"
+  }
+}
+```
+
+### Improvement Loop Logs
+
+--- Phase D logs ---
+{
+  "file_id": "handlers-NoInputDataBatchAction",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 概要",
+      "description": "The Java pseudocode block showing the framework call sequence (initialize → handle → commit → error/rollback → terminate) is entirely absent from the knowledge file. This code conveys decision-necessary implementation details: commit() is called after handle(), rollback() is called on exception, and the exact parameter signatures used in the call flow.",
+      "source_evidence": "initialize(command, ctx); ... result = handle(ctx); commit(); ... rollback(); error(e, ctx); ... terminate(result, ctx)"
+    },
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s1 — 概要 (note after code block)",
+      "description": "The note warning that the pseudocode is simplified for explanation and that the actual processing flow is entirely different (controlled by handler configuration, not the pseudocode logic) is missing. This caveat is important for AI not to misapply the call sequence as definitive behavior.",
+      "source_evidence": "このコードはあくまで説明用に単純化したものであり、実際の処理フローはこのようなロジックでは無く、ハンドラ構成によって制御されており、全く別物である。"
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — handle() method description",
+      "description": "The knowledge file states the override details as '(オーバーロード: `BatchAction` の `handle(InputData data, ExecutionContext ctx)` をオーバーロードしたメソッド)', specifying the exact parent method signature `handle(InputData data, ExecutionContext ctx)`. The source only says '(オーバーロード)' with no elaboration on the parent method signature or its parameter types.",
+      "source_evidence": "Source: '引数は実行コンテキストのみとなる。(オーバーロード)' — no mention of InputData or the parent method signature"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "PascalCase class names `CommandLine` and `ExecutionContext` appear in the source's code block within the 概要 section but are absent from s1's hints array.",
+      "source_evidence": "CommandLine command; // バッチ起動時のコマンドライン\nExecutionContext ctx; // 実行コンテキスト"
+    }
+  ]
+}
+--- Phase E logs ---
+{
+  "id": "handlers-NoInputDataBatchAction",
+  "title": "入力データを使用しないバッチ処理用業務アクションハンドラのテンプレートクラス",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "NoInputDataBatchAction",
+        "nablarch.fw.action.NoInputDataBatchAction",
+        "handle()",
+        "initialize()",
+        "error()",
+        "terminate()",
+        "バッチシングルショット",
+        "入力データなしバッチ",
+        "ダミーデータリーダ",
+        "テンプレートメソッド",
+        "BatchAction",
+        "オーバーロード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "initialize()",
+        "error()",
+        "terminate()",
+        "Result.Success",
+        "ダミーデータリーダ",
+        "バッチ処理フロー",
+        "コールバック処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.fw.action.NoInputDataBatchAction`\n\n:doc:`../architectural_pattern/batch_single_shot` において、一括データ削除クリーニングバッチのように単発処理を実行するバッチを実装する場合に使用するアクションハンドラのテンプレートクラス。ダミーデータリーダーを使用することにより、アクションハンドラを1度だけ実行させる。\n\n継承して実装するテンプレートメソッド:\n\n| メソッド名 | 必須/任意 | 内容 |\n|---|---|---|\n| `handle(ctx)` | 必須 | 業務処理を実装。:doc:`BatchAction` と異なりデータリーダーを使用せず常に1度だけ呼ばれる。引数は実行コンテキストのみ。(オーバーロード: `BatchAction` の `handle(InputData data, ExecutionContext ctx)` をオーバーロードしたメソッド) |\n| `initialize(command, ctx)` | 任意 | バッチ処理開始前に一度だけ呼ばれる。デフォルト: 何もしない |\n| `error(e, ctx)` | 任意 | 実行時例外/エラーでバッチエラー終了した場合に一度だけコールバック。デフォルト: 何もしない |\n| `terminate(result, ctx)` | 任意 | バッチが全件終了またはエラー終了後に一度だけコールバック。デフォルト: 何もしない |",
+    "s2": "1. **[コールバック] バッチ処理開始前初期処理**: :doc:`MultiThreadExecutionHandler` での処理開始時に `initialize()` を実行\n2. **[コールバック] データリーダ生成**: :doc:`MultiThreadExecutionHandler` のコールバックでダミーデータリーダを作成。1度だけダミー読込みを行い、以降はデータリーダがクローズされた場合と同じ動作となる。これによりアクションハンドラが1度だけ実行される\n3. **[往路処理] 業務処理を実行**\n4. **[復路処理] 正常終了**: 正常終了を表すマーカオブジェクト `Result.Success` をリターン\n4a. **[例外処理] エラー終了**: 業務処理に失敗した場合は実行時例外を送出\n5. **[コールバック] バッチエラー終了時**: :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドがエラーにより停止した場合、`error()` を実行\n6. **[コールバック] バッチ終了時**: :doc:`MultiThreadExecutionHandler` でバッチ処理実行用のサブスレッドが終了した場合、`terminate()` を実行(エラー終了でも 5. の処理の後で呼ばれる)"
+  }
+}
+
+## Evaluation Criteria
+
+For each finding, assess:
+1. **User Impact**: high / medium / low / none
+2. **Why it persisted**: Using the logs, explain why D→E did not resolve this.
+
+## Output
+
+Respond with JSON matching the provided schema.
+Set `needs_improvement` to `true` if ANY finding has `high` or `medium` impact.

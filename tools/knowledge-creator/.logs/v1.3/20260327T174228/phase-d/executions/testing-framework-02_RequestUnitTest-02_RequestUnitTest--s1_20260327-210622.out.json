@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-02_RequestUnitTest-02_RequestUnitTest--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 hints array",
+      "description": "The testShots table in the source defines 16 columns, but several property names are absent from s3 hints: `cookie`, `setUpTable`, `context`, `expectedContentLength`, `expectedContentType`, `expectedContentFileName`, `expectedMessage`, `responseMessage`. Users searching for any of these column names would land on s3 only if hints contain them.",
+      "source_evidence": "Source testShots table columns include: no, description, context, cookie, isValidToken, setUpTable, expectedStatusCode, expectedMessageId, expectedSearch, expectedTable, forwardUri, expectedContentLength, expectedContentType, expectedContentFileName, expectedMessage, responseMessage. Current s3 hints cover: testShots, setUpDb, isValidToken, expectedStatusCode, expectedMessageId, expectedSearch, expectedTable, forwardUri, LIST_MAP, requestParams, テストデータ記述, HTTPステータスコード302 303."
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s3",
+      "description": "Automated pre-check confirmed: 7 knowledge sections vs 11 source headings. Section s3 consolidates 6 source sub-sections (テストデータの書き方 intro + テストクラスで共通のデータベース初期値/setUpDb + テストケース一覧/testShots + ユーザ情報 + Cookie情報 + リクエストパラメータ) into a single large section. The source's テストデータの書き方 H2 is well over 2000 chars with multiple H3 sub-sections, yet s3 does not split these out. By contrast, ひとつのキーに対して複数の値を設定する場合, 期待する検索結果, and 期待するデータベースの状態 are correctly split into s4, s5, and s6.",
+      "source_evidence": "Source H2 sections with H3 sub-sections not split in knowledge file: テストクラスで共通のデータベース初期値 (======), テストケース一覧 (======), ユーザ情報 (======), Cookie情報 (======), リクエストパラメータ (======) — all under テストデータの書き方 (----). Knowledge file maps all of these into s3."
+    }
+  ]
+}

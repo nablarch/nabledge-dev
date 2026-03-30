@@ -1,0 +1,475 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/architectural_pattern/batch_resident.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+===============================
+常駐バッチ実行制御基盤
+===============================
+
+本節で解説する :doc:`batch_resident` では、一定間隔 [#wait]_ ごとに要求データを検索し、
+随時処理を行う常駐型プロセスを作成するための制御基盤を提供する。
+
+本実行制御基盤では、マルチスレッドで実行した場合、各スレッドが一定間隔で要求データの有無をチェックする。
+このため、幾つかのスレッドで処理遅延が発生した場合でも、残りのスレッドで随時要求データを処理することができる。
+
+.. note::
+  :doc:`batch_resident` のハンドラ構成は、Nablarchバージョン1.4.3で大きく変更している。
+  1.4.2以前のハンドラ構成については、 :doc:`batch_resident_thread_sync` を参照。
+  
+  :doc:`batch_resident_thread_sync` では、処理が遅いスレッドの終了を他のスレッドが待つことにより、 要求データの取り込み遅延が発生する。
+  このため、新規プロジェクトでは本ドキュメントに従い、新しいハンドラ構成にて常駐バッチを作成することを推奨する。
+
+.. [#wait]
+  要求データが存在しない場合に一定時間待機する。
+
++++++++++++++++++++++
+
+------------------------------
+基本構造
+------------------------------
+:doc:`batch_resident` の構造は、前半の **プロセス制御部分(メインスレッド)** と
+後半の **リクエスト処理部分(サブスレッド)** の2つに大きく別れる。
+
+1. プロセス制御部分(メインスレッド)
+
+  Javaコマンドから :doc:`../handler/Main` を実行することによって開始され、 `リポジトリ`_ の初期化処理を実行する。
+
+  初期化処理完了後、ハンドラキュー上のハンドラを順次実行し、 :doc:`業務アクションハンドラ<../handler/BatchAction>` の初期化処理とデータリーダの生成を行う。
+
+  :doc:`../handler/MultiThreadExecutionHandler` でサブスレッドを作成した後、サブスレッドが終了するまで待機する。
+
+
+2. リクエスト処理部分(サブスレッド)
+
+  プロセス制御部分で生成したデータリーダを使用し、要求管理テーブル(常駐バッチ処理のインプットとなるテーブル)の要求データを検索する。
+
+  要求管理テーブルに要求データ(未処理のデータ)が存在する場合には、
+  そのデータを読み込み :doc:`業務アクションハンドラ<../handler/BatchAction>` を実行する。
+  業務アクションハンドラでは、要求データを元に業務処理を行う。
+
+  業務アクションハンドラの処理が終了すると、 :doc:`../handler/RequestThreadLoopHandler` により、要求管理テーブルの検索処理に戻る。
+
+  以降、同様の処理を繰り返す。
+
+
+.. note::
+  実行する業務アクションハンドラの指定は、バッチプロセス起動時の引数で指定する。
+  詳細は、 :doc:`batch_single_shot` を参照すること。
+
++++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+業務アクションを実装するには、FW側で提供されるテンプレートクラスを継承して作成する。
+詳細は、 :doc:`../handler/BatchAction` を参照すること。
+
+++++++++++++++++++++
+
+--------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+--------------------------------------------------
+
+.. _flow-table:
+
++--------------------------+------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+| 区分                     | 種別       | 処理フロー名       | 概要                                                                           | 機能                 |
++==========================+============+====================+================================================================================+======================+
+| プロセス起動制御         | 正常フロー | 正常起動           | Javaコマンドからプロセスを起動し、                                             | .. _launch:          |
+|                          |            |                    | リクエストスレッドを初期化し、常駐処理を開始する。                             |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          |            |                    | 各スレッドは、要求データを検索する。                                           |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 異常フロー | 重複起動エラー     | プロセス起動時、すでに同一プロセスが                                           | .. _duplaunch:       |
+|                          |            |                    | 起動していた場合は異常終了する。                                               |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          |            |                    |                                                                                |                      |
++--------------------------+------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+| リクエストスレッド内制御 | 正常フロー | 要求データあり     | 要求管理テーブル上に未処理レコード(要求データ)が                               | .. _normalend:       |
+|                          |            |                    | 存在する場合、要求データを取得し業務処理を実行する。                           |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          |            |                    | .. note::                                                                      |                      |
+|                          |            |                    |                                                                                |                      |
+|                          |            |                    |  要求の2重取り込みを防止するために、現在処理中のデータをヒープ上で管理する。   |                      |
+|                          |            |                    |  これにより、処理の遅いスレッドが処理中のデータが未処理として要求管理テーブル  |                      |
+|                          |            |                    |  上に残り続けた場合でも、2重にデータが取り込まれることを防止できる。           |                      |
+|                          |            |                    |                                                                                |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 代替フロー | 要求データなし     | 要求管理テーブル上に未処理レコード(要求データ)が                               | .. _notfound:        |
+|                          |            |                    | 存在しない場合、一定時間待機後スレッドループの先頭に処理を戻す。               |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          |            |                    | スレッドループの先頭から処理を再実行することで、                               |                      |
+|                          |            |                    | プロセス管理テーブルの状態が確認され処理の停止や閉局状態への変更が可能となる。 |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 代替フロー | 閉局中処理待機     | バッチ処理のリクエストIDに対する業務機能が閉局中であった場合は、               | .. _notonservice:    |
+|                          |            |                    | 処理を行わず次の実行タイミングまで待機する。                                   |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 異常フロー | 業務エラー         | 処理中に実行時例外が送出された場合は、障害通知ログを出力した上で、             | .. _errorend:        |
+|                          |            |                    | リトライ可能例外を送出しリトライハンドラに処理を移譲する。                     |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
+|                          |            |                    | エラーが発生した要求データは、エラーステータスとなり                           |                      |
+|                          |            |                    | データメンテを行わない限り要求データとして処理されることはない。               |                      |
+|                          |            |                    |                                                                                |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 異常フロー | DB接続エラー       | DBに対する接続に失敗した場合は、再接続処理を行い                               | .. _connectionerror: |
+|                          |            |                    | 当該要求データを再度処理する。                                                 |                      |
+|                          |            |                    |                                                                                | `フローを表示`_      |
++--------------------------+------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|  プロセス停止制御        | 正常フロー | プロセス正常停止   | プロセス管理テーブルのフラグを変更する                                         | .. _termination:     |
+|                          |            |                    | ことで、リクエストスレッドでの新規処理                                         |                      |
+|                          |            |                    | 受付を停止する。その後、全スレッドの                                           | `フローを表示`_      |
+|                          |            |                    | 終了を待ってプロセスを正常終了させる。                                         |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 異常フロー | プロセス異常停止   | プロセスの継続に影響する致命的なエラーが                                       | .. _abort:           |
+|                          |            |                    | 発生した場合は、リクエストスレッドでの                                         |                      |
+|                          |            |                    | 新規処理の受付を停止した上で、全スレッド                                       | `フローを表示`_      |
+|                          |            |                    | の終了を待ってプロセスを異常終了させる。                                       |                      |
+|                          +------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+|                          | 異常フロー | DB接続リトライ失敗 | DBの接続リトライが上限回数に達しても                                           | .. _retryerror:      |
+|                          |            |                    | 成功しなかった場合は、プロセスを異常停止                                       |                      |
+|                          |            |                    | させる。                                                                       | `フローを表示`_      |
+|                          |            |                    |                                                                                |                      |
++--------------------------+------------+--------------------+--------------------------------------------------------------------------------+----------------------+
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. _フローを表示:
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'daemon batch'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "ThreadContextClearHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "RetryHandler"
+      , "DbConnectionManagementHandler_main"
+      , "TransactionManagementHandler_main"
+      , "RequestPathJavaPackageMapping"
+      , "MultiThreadExecutionHandler"
+      , "DbConnectionManagementHandler"
+      , "RequestThreadLoopHandler"
+      , "FileRecordWriterDisposeHandler"
+      , "ProcessStopHandler"
+      , "ServiceAvailabilityCheckHandler"
+      , "DataReadHandler"
+      , "TransactionManagementHandler"
+      , "BatchAction"
+      ]
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["Main",                                  "inbound"]
+        , ["ThreadContextHandler_main",             "inbound"]
+        , ["DbConnectionManagementHandler_main",    "inbound", "メインスレッドで使用するためのDB接続を生成する"]
+        , ["TransactionManagementHandler_main",     "inbound", "メインスレッドで使用するためのDBトランザクションを生成する"]
+        , ["RequestPathJavaPackageMapping",         "inbound", "起動引数-requestPathを元に業務アクションハンドラを生成する"]
+        , ["MultiThreadExecutionHandler",           "inbound", "処理開始前及びデータリーダ作成時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                           "callback", "以下のイベントでコールバックされる。<br/>"
+                                                          +  "1. リクエストスレッド起動前、2. データリーダ作成、3. リクエストスレッド終了後"]
+        , ["DbConnectionManagementHandler",         "inbound", "ここで取得したDB接続を以降の処理で使いまわす"]
+        , ["RequestThreadLoopHandler",              "inbound"]
+        , ["DataReadHandler",                       "inbound", "各リクエストスレッドは、ここで要求データの検索を行う。"
+                                                              + "以降は、要求データの取得→業務処理の実行を繰り返す"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからこのバッチのリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["StatusCodeConvertHandler",     "outbound"]
+        , ["Main",                         "outbound", "異常終了"]
+        ],
+
+        // 要求データあり
+        normalend: [
+          ["RequestThreadLoopHandler",           "inbound", "リクエストスレッド内での処理の起点"]
+        , ["DataReadHandler",                    "inbound"]
+        , ["TransactionManagementHandler",       "inbound"]
+        , ["BatchAction",                        "inbound"]
+        , ["BatchAction",                        "outbound"]
+        , ["TransactionManagementHandler",       "outbound", "コミット時に業務アクションへのコールバックを行う。"]
+        , ["BatchAction",                        "callback", "業務トランザクションコミット後のコールバック処理を行う。<br/>"
+                                                            + "処理例:要求データのステータスを処理済みに変更する。"]
+        , ["FileRecordWriterDisposeHandler",     "outbound", "現在のスレッドでファイル出力のために開かれたリソースを開放する。"]
+        , ["RequestThreadLoopHandler",           "outbound", "→① へ"]
+        ],
+
+        // 要求データなし
+        notfound: [
+          ["DataReadHandler",                    "inbound"]
+        , ["DataReadHandler",                    "outbound", "要求データが存在しない場合、"
+                                                            + "DataReader.NoMoreRecordをリターンする。"]
+        , ["RequestThreadLoopHandler",           "outbound", "→④ へ"]
+        , ["RequestThreadLoopHandler",           "inbound"]
+        , ["ProcessStopHandler",                 "inbound", "プロセス停止フラグ確認後、再び①へ戻る"]
+        ],
+
+        // 閉局中処理待機
+        notonservice: [
+          ["RequestThreadLoopHandler",           "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ServiceAvailabilityCheckHandler",    "inbound", "サービス閉局例外を送出する。"]
+        , ["RequestThreadLoopHandler",           "error",   "一定時間waitした後、→① へ"]
+        ],
+
+        // 常駐処理業務エラー
+        errorend: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["BatchAction",                   "inbound"]
+        , ["BatchAction",                   "error",  "業務処理をエラー終了させる場合は、実行時例外を送出する。"
+                                                    + "これにより、トランザクションがロールバックされ、障害ログが出力される。"]
+        , ["TransactionManagementHandler",  "error", "業務アクションをコールバックする。"]
+        , ["BatchAction",                   "callback", "業務トランザクションロールバック後のコールバック処理を行う。<br/>"
+                                                       + "処理例:要求データのステータスを処理失敗(エラー)に変更する。"]
+        , ["RequestThreadLoopHandler",      "error", "再送出された起因例外をここで障害ログとして出力した後、リトライ可能例外を送出する。"]
+        , ["RetryHandler",                  "error", "リトライ処理を行う。"]
+        , ["MultiThreadExecutionHandler",   "inbound", "リクエストスレッドを再作成し、要求データの監視を再開する。"]
+        ],
+
+        // コネクションエラー→リトライ
+        connectionerror: [
+          ["RequestThreadLoopHandler",            "inbound", "リクエストスレッド内での処理の起点"]
+        , ["BatchAction",                         "inbound",  "要求データ処理中にDB接続エラーが発生した場合、"
+                                                            + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["RequestThreadLoopHandler",            "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                        "error", "データリーダを破棄する。(DB接続エラーの場合、データリーダが使用しているDB接続も使用不可となるため)"]
+        , ["DbConnectionManagementHandler_main",  "inbound", "DB再接続"]
+        , ["MultiThreadExecutionHandler",         "inbound", "データリーダを再生成する。"]
+        , ["DbConnectionManagementHandler",       "inbound", "DB再接続"]
+        ],
+
+        // プロセス正常停止
+        termination: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ProcessStopHandler",            "inbound" ]
+        , ["RequestThreadLoopHandler",      "error",  "ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、"
+                                                    + "処理結果オブジェクトをリターンする。(ステータスコード:200)"]
+        , ["MultiThreadExecutionHandler",   "outbound"]
+        , ["StatusCodeConvertHandler",      "outbound", "ステータスコード:200 → 終了コード:0"]
+        , ["Main",                          "outbound", "正常終了"]
+        ],
+
+        // プロセス異常終了
+        abort: [
+          ["BatchAction",                        "inbound", "ここでリクエスト処理実行中に致命的なエラー(VM系のエラーや、"
+                                                          + "ProcessAbnormalEnd)が発生したとする。"]
+        , ["RequestThreadLoopHandler",           "error", "致命的エラーはここで例外を再送出し、リクエストスレッドを停止する。"]
+
+        , ["MultiThreadExecutionHandler",        "error"]
+        , ["BatchAction",                        "callback"]
+        , ["StatusCodeConvertHandler",           "outbound"]
+        , ["Main",                               "outbound", "異常終了"]
+        ],
+
+         // DB接続エラー
+        retryerror: [
+          ["BatchAction",               "inbound",  "リクエスト処理実行中にDB接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error", "リトライ回数が上限値を超過した場合は、例外を再送出し、リクエストスレッドを停止する。"]
+        , ["MultiThreadExecutionHandler",   "error"]
+        , ["GlobalErrorHandler",            "error"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        
+        ]
+
+      };
+
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+
+```
+
+## Knowledge File
+
+- ID: `nablarch-batch-batch_resident`
+
+```json
+{
+  "id": "nablarch-batch-batch_resident",
+  "title": "常駐バッチ実行制御基盤",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "基本構造",
+      "hints": [
+        "MultiThreadExecutionHandler",
+        "RequestThreadLoopHandler",
+        "BatchAction",
+        "DataReadHandler",
+        "常駐バッチ",
+        "マルチスレッド",
+        "プロセス制御部分",
+        "リクエスト処理部分",
+        "要求管理テーブル"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "BatchAction",
+        "業務アクションハンドラ",
+        "テンプレートクラス継承"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "Main",
+        "StatusCodeConvertHandler",
+        "ThreadContextClearHandler",
+        "GlobalErrorHandler",
+        "ThreadContextHandler_main",
+        "DuplicateProcessCheckHandler",
+        "RetryHandler",
+        "DbConnectionManagementHandler_main",
+        "TransactionManagementHandler_main",
+        "RequestPathJavaPackageMapping",
+        "MultiThreadExecutionHandler",
+        "DbConnectionManagementHandler",
+        "RequestThreadLoopHandler",
+        "FileRecordWriterDisposeHandler",
+        "ProcessStopHandler",
+        "ServiceAvailabilityCheckHandler",
+        "DataReadHandler",
+        "TransactionManagementHandler",
+        "BatchAction",
+        "ProcessStop",
+        "ProcessAbnormalEnd",
+        "Retryable",
+        "重複起動エラー",
+        "プロセス正常停止",
+        "DB接続リトライ失敗",
+        "常駐バッチハンドラ構成"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "常駐バッチは一定間隔ごとに要求データを検索し随時処理を行う常駐型プロセス。マルチスレッド実行時、各スレッドが一定間隔で要求データの有無をチェックするため、処理遅延が発生したスレッドがあっても残りのスレッドで随時処理を継続できる。\n\n> **注意**: Nablarchバージョン1.4.3でハンドラ構成が大きく変更された。1.4.2以前のハンドラ構成は:doc:`batch_resident_thread_sync`参照。旧ハンドラ構成では処理の遅いスレッドの終了を他スレッドが待つため要求データの取り込み遅延が発生する。新規プロジェクトでは新しいハンドラ構成を推奨。\n\n常駐バッチの構造は **プロセス制御部分(メインスレッド)** と **リクエスト処理部分(サブスレッド)** の2つに分かれる。\n\n**プロセス制御部分(メインスレッド)**\n\nJavaコマンドから:doc:`../handler/Main`を実行して開始。リポジトリ初期化後、ハンドラキューのハンドラを順次実行し、:doc:`業務アクションハンドラ<../handler/BatchAction>`の初期化とDataReaderの生成を行う。:doc:`../handler/MultiThreadExecutionHandler`でサブスレッドを作成後、サブスレッドが終了するまで待機する。\n\n**リクエスト処理部分(サブスレッド)**\n\nプロセス制御部分で生成したDataReaderで要求管理テーブルを検索する。未処理の要求データが存在する場合、そのデータを読み込み:doc:`業務アクションハンドラ<../handler/BatchAction>`を実行する。業務処理終了後、:doc:`../handler/RequestThreadLoopHandler`により要求管理テーブルの検索処理に戻り繰り返す。\n\n> **注意**: 業務アクションハンドラの指定はバッチプロセス起動時の引数で行う。詳細は:doc:`batch_single_shot`参照。",
+    "s2": "業務アクションを実装するには、FW側で提供されるテンプレートクラスを継承して作成する。詳細は:doc:`../handler/BatchAction`参照。",
+    "s3": "## 標準ハンドラキュー\n\n| No. | ハンドラ |\n|---|---|\n| 1 | Main |\n| 2 | StatusCodeConvertHandler |\n| 3 | ThreadContextClearHandler |\n| 4 | GlobalErrorHandler |\n| 5 | ThreadContextHandler_main |\n| 6 | DuplicateProcessCheckHandler |\n| 7 | RetryHandler |\n| 8 | DbConnectionManagementHandler_main |\n| 9 | TransactionManagementHandler_main |\n| 10 | RequestPathJavaPackageMapping |\n| 11 | MultiThreadExecutionHandler |\n| 12 | DbConnectionManagementHandler |\n| 13 | RequestThreadLoopHandler |\n| 14 | FileRecordWriterDisposeHandler |\n| 15 | ProcessStopHandler |\n| 16 | ServiceAvailabilityCheckHandler |\n| 17 | DataReadHandler |\n| 18 | TransactionManagementHandler |\n| 19 | BatchAction |\n\n## 処理フロー\n\n### 正常起動\n1. Main (inbound)\n2. ThreadContextHandler_main (inbound)\n3. DbConnectionManagementHandler_main: メインスレッドで使用するDB接続を生成\n4. TransactionManagementHandler_main: メインスレッドで使用するDBトランザクションを生成\n5. RequestPathJavaPackageMapping: 起動引数-requestPathを元に業務アクションハンドラを生成\n6. MultiThreadExecutionHandler: 処理開始前・データリーダ作成時にBatchActionへコールバック\n7. BatchAction (callback): リクエストスレッド起動前、データリーダ作成、リクエストスレッド終了後にコールバック\n8. DbConnectionManagementHandler: ここで取得したDB接続を以降の処理で使いまわす\n9. RequestThreadLoopHandler (inbound)\n10. DataReadHandler: 各リクエストスレッドは要求データを検索し、取得→業務処理実行を繰り返す\n\n### 重複起動エラー\n1. Main (inbound)\n2. ThreadContextHandler_main: 起動引数-requestPathからバッチのリクエストIDを決定\n3. DuplicateProcessCheckHandler: 同一プロセスが起動済みの場合に検出（起動停止時の終了コードを設定）\n4. GlobalErrorHandler (error): 障害ログを出力\n5. StatusCodeConvertHandler (outbound)\n6. Main (outbound): 異常終了\n\n### 要求データあり（正常フロー）\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. DataReadHandler (inbound)\n3. TransactionManagementHandler (inbound)\n4. BatchAction (inbound/outbound)\n5. TransactionManagementHandler (outbound): コミット時にBatchActionへコールバック\n6. BatchAction (callback): 業務トランザクションコミット後のコールバック（処理例: 要求データのステータスを処理済みに変更）\n7. FileRecordWriterDisposeHandler: 現在スレッドでファイル出力のために開かれたリソースを解放\n8. RequestThreadLoopHandler (outbound): ①へ\n\n> **注意**: 要求の2重取り込み防止のため、処理中データをヒープ上で管理する。処理が遅いスレッドが処理中のデータが未処理として要求管理テーブルに残り続けた場合でも、2重取り込みを防止できる。\n\n### 要求データなし（代替フロー）\n1. DataReadHandler (inbound)\n2. DataReadHandler (outbound): 要求データが存在しない場合、DataReader.NoMoreRecordをリターン\n3. RequestThreadLoopHandler (outbound): ④へ（スレッドループの先頭に戻る）\n4. RequestThreadLoopHandler (inbound)\n5. ProcessStopHandler: プロセス停止フラグ確認後、再び①へ\n\nスレッドループ先頭から処理を再実行することで、プロセス管理テーブルの状態が確認され、処理停止や閉局状態への変更が可能となる。\n\n### 閉局中処理待機（代替フロー）\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. ServiceAvailabilityCheckHandler: サービス閉局例外を送出\n3. RequestThreadLoopHandler (error): 一定時間wait後、①へ\n\n### 業務エラー（異常フロー）\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. TransactionManagementHandler (inbound)\n3. BatchAction: 業務処理をエラー終了させる場合は実行時例外を送出 → トランザクションロールバック・障害ログ出力\n4. TransactionManagementHandler (error): 業務アクションへコールバック\n5. BatchAction (callback): 業務トランザクションロールバック後のコールバック（処理例: 要求データのステータスを処理失敗に変更）\n6. RequestThreadLoopHandler (error): 起因例外を障害ログとして出力後、リトライ可能例外を送出\n7. RetryHandler (error): リトライ処理を実行\n8. MultiThreadExecutionHandler: リクエストスレッドを再作成し要求データ監視を再開\n\n> **注意**: エラーが発生した要求データはエラーステータスとなり、データメンテを行わない限り再処理されない。\n\n### DB接続エラー→リトライ（異常フロー）\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. BatchAction: 要求データ処理中にDB接続エラーが発生した場合、リトライ可能実行時例外（Retryableを実装した例外）を送出\n3. RequestThreadLoopHandler (error): リトライ可能例外をそのまま再送出\n4. RetryHandler (error): データリーダを破棄（DB接続エラーの場合、データリーダが使用しているDB接続も使用不可となるため）\n5. DbConnectionManagementHandler_main: DB再接続\n6. MultiThreadExecutionHandler: データリーダを再生成\n7. DbConnectionManagementHandler: DB再接続\n\n### プロセス正常停止（正常フロー）\n1. RequestThreadLoopHandler (inbound): リクエストスレッド内での処理の起点\n2. ProcessStopHandler (inbound): プロセス管理テーブルのフラグを確認\n3. RequestThreadLoopHandler (error): プロセス停止要求(ProcessStop)を捕捉 → INFOログ出力後、処理結果オブジェクトをリターン（ステータスコード:200）\n4. MultiThreadExecutionHandler (outbound)\n5. StatusCodeConvertHandler (outbound): ステータスコード200 → 終了コード0\n6. Main (outbound): 正常終了\n\n### プロセス異常停止（異常フロー）\n1. BatchAction: リクエスト処理実行中に致命的エラー（VM系エラーやProcessAbnormalEnd）が発生\n2. RequestThreadLoopHandler (error): 致命的エラーを再送出しリクエストスレッドを停止\n3. MultiThreadExecutionHandler (error)\n4. BatchAction (callback)\n5. StatusCodeConvertHandler (outbound)\n6. Main (outbound): 異常終了\n\n### DB接続リトライ失敗（異常フロー）\n1. BatchAction: リクエスト処理実行中にDB接続エラーが発生した場合、リトライ可能実行時例外（Retryableを実装した例外）を送出\n2. RequestThreadLoopHandler (error): リトライ可能例外をそのまま再送出\n3. RetryHandler (error): リトライ回数が上限値を超過した場合、例外を再送出しリクエストスレッドを停止\n4. MultiThreadExecutionHandler (error)\n5. GlobalErrorHandler (error)\n6. StatusCodeConvertHandler (outbound)\n7. Main (outbound): 異常終了"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

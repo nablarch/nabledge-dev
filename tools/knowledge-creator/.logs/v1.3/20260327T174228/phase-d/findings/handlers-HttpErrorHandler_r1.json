@@ -1,0 +1,20 @@
+{
+  "file_id": "handlers-HttpErrorHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "`GlobalErrorHandler` is a PascalCase class name referenced in s2 content (ThreadDeath and VirtualMachineError exception rows both mention that log output is handled by GlobalErrorHandler), but it is absent from s2 hints.",
+      "source_evidence": "ログ出力は :doc:`GlobalErrorHandler` で行われる。 (appears twice in the exception table for ThreadDeath and VirtualMachineError rows)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "`HttpResponse#getStatusCode` is a method reference used in step 2a of the outbound processing flow to determine the default page, but it is absent from s2 hints. The other two HttpResponse method references (`HttpResponse#setInputStream` and `HttpResponse#write`) are already included.",
+      "source_evidence": "`HttpResponse#getStatusCode()` の値に合致するデフォルトページへのコンテンツパスを設定してリターンする。"
+    }
+  ]
+}

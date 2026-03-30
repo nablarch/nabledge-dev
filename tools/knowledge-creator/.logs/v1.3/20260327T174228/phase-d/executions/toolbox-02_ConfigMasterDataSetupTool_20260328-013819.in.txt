@@ -1,0 +1,264 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/08_TestTools/02_MasterDataSetup/02_ConfigMasterDataSetupTool.rst`
+- Format: `rst`
+
+```
+=========================================
+マスタデータ投入ツール インストールガイド
+=========================================
+
+:doc:`index`\ のインストール方法について説明する。
+
+.. _master_data_setup_prerequisite:
+
+前提事項
+========
+
+* Eclipseがインストール済みであること
+* テーブルが作成済みであること
+* バックアップ用スキーマにテーブルが作成済みであること\ [#]_
+
+.. [#] 
+ バックアップ用スキーマおよびそのテーブルの作成については、\
+ 『\ :doc:`../../06_TestFWGuide/04_MasterDataRestore`\ 』の\ :ref:`master_data_backup_settings`\ を参照。
+
+
+
+提供方法
+========
+
+本ツールはNablarchのサンプルアプリケーションに同梱して提供する。本ツールのツール構成を下記に示す。
+
++-----------------------------------------+----------------------------------------+
+|ファイル名                               |説明                                    |
++=========================================+========================================+
+|master_data-build.properties             |環境設定用プロパティファイル            |
++-----------------------------------------+----------------------------------------+
+|master_data-build.xml                    |Antビルドファイル                       |
++-----------------------------------------+----------------------------------------+
+|master_data-log.properties               |ログ出力プロパティファイル              |
++-----------------------------------------+----------------------------------------+
+|MASTER_DATA.xls                          |マスタデータファイル                    |
++-----------------------------------------+----------------------------------------+
+
+
+プロパティファイルの書き換え
+----------------------------
+
+マスタデータ自動復旧機能が使用する、バックアップスキーマ名を設定する。
+
+
+.. code-block:: bash
+ 
+ # テスト用マスタデータバックアップスキーマ名
+ masterdata.test.backup-schema=nablarch_test_master
+
+
+その他の設定値については、ディレクトリ構造が変わらない限り修正の必要はない。
+
+
+配置
+----
+
+サンプルアプリケーションと同様に、<mainプロジェクト>/tool/db/data直下に配置する。
+
+.. _how_to_setup_ant_view_in_eclipse:
+
+
+Eclipseとの連携設定
+===================
+
+以下の設定をすることでEclipseから本ツールを起動することができる。
+
+
+Antビュー起動
+-------------
+
+ツールバーから、ウィンドウ(Window)→設定(Show View)を選択し、Antビューを開く。
+
+
+
+.. image:: ./_image/open_ant_view.png
+   :scale: 80
+
+ 
+ビルドファイル登録
+------------------
+
+＋印のアイコンを押下し、ビルドスクリプトを選択する。
+
+.. image:: ./_image/register_build_file.png
+   :scale: 100
+
+
+
+Antビルドファイル(master_data-build.xml)を選択する。
+
+.. image:: ./_image/select_build_file.png
+   :scale: 100
+
+
+Antビューに登録したビルドファイルが表示されることを確認する。
+
+.. image:: ./_image/build_file_in_view.png
+   :scale: 100
+ 
+
+```
+
+## Knowledge File
+
+- ID: `toolbox-02_ConfigMasterDataSetupTool`
+
+```json
+{
+  "id": "toolbox-02_ConfigMasterDataSetupTool",
+  "title": "マスタデータ投入ツール インストールガイド",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "前提事項",
+      "hints": [
+        "前提事項",
+        "インストール前提",
+        "Eclipse",
+        "バックアップスキーマ",
+        "マスタデータ投入ツール"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "提供方法",
+      "hints": [
+        "master_data-build.xml",
+        "master_data-build.properties",
+        "master_data-log.properties",
+        "MASTER_DATA.xls",
+        "masterdata.test.backup-schema",
+        "ファイル構成",
+        "バックアップスキーマ名設定",
+        "配置パス",
+        "提供方法"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Eclipseとの連携設定",
+      "hints": [
+        "Antビュー",
+        "Eclipse連携",
+        "ビルドファイル登録",
+        "master_data-build.xml",
+        "Eclipse設定",
+        "Antビュー起動"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 前提事項\n\n- Eclipseがインストール済みであること\n- テーブルが作成済みであること\n- バックアップ用スキーマにテーブルが作成済みであること",
+    "s2": "## 提供方法\n\n本ツールはNablarchのサンプルアプリケーションに同梱して提供する。\n\n| ファイル名 | 説明 |\n|---|---|\n| master_data-build.properties | 環境設定用プロパティファイル |\n| master_data-build.xml | Antビルドファイル |\n| master_data-log.properties | ログ出力プロパティファイル |\n| MASTER_DATA.xls | マスタデータファイル |\n\n### プロパティファイルの書き換え\n\nマスタデータ自動復旧機能が使用するバックアップスキーマ名（`masterdata.test.backup-schema`）を設定する:\n\n```bash\nmasterdata.test.backup-schema=nablarch_test_master\n```\n\nその他の設定値はディレクトリ構造が変わらない限り修正不要。\n\n### 配置\n\n`<mainプロジェクト>/tool/db/data` 直下に配置する。",
+    "s3": "## Eclipseとの連携設定\n\nEclipseのAntビューにビルドファイルを登録することで、Eclipseから本ツールを起動できる。\n\n### Antビュー起動\n\nツールバーから ウィンドウ(Window) → 設定(Show View) を選択してAntビューを開く。\n\n### ビルドファイル登録\n\n1. ＋印のアイコンを押下し、ビルドスクリプトを選択する。\n2. Antビルドファイル(`master_data-build.xml`)を選択する。\n3. Antビューに登録したビルドファイルが表示されることを確認する。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+- S9: Section count 3 < source headings 4
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

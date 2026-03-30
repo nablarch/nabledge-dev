@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-batch_single_shot",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s3 — エラー終了フロー",
+      "description": "BatchActionのコールバックイベント一覧がエラー終了フローで欠落している。ソースでは MultiThreadExecutionHandler inbound ステップに「以下のイベントでコールバックされる: 1.処理開始前、2.データリーダ作成、3.エラー終了後、4.全件終了後」と記載されている。全件正常終了フローでは「業務コミット後」が第3イベントとなっているのに対し、エラー終了フローでは「エラー終了後」となっており、BatchActionの実装において受け取るイベントが異なることを示す決定的な情報。knowledge fileの全件正常終了フローにはこの情報が含まれているが、エラー終了フローには含まれていない。",
+      "source_evidence": "errorend フロー: `[\"BatchAction\", \"callback\", \"以下のイベントでコールバックされる。<br/>1. 処理開始前、2. データリーダ作成、3. エラー終了後、4. 全件終了後\"]`（normalend の「3. 業務コミット後」と異なる）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3 — エラー終了フロー",
+      "description": "エラー終了フローの末尾にある MultiThreadExecutionHandler (errror/error) の「全件終了後に業務アクションへのコールバックを行う」ステップとその直後の BatchAction (callback) が knowledge file に記載されていない。",
+      "source_evidence": "errorend フロー末尾: `[\"MultiThreadExecutionHandler\", \"errror\", \"全件終了後に業務アクションへのコールバックを行う。\"]`, `[\"BatchAction\", \"callback\"]`"
+    }
+  ]
+}

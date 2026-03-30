@@ -1,0 +1,26 @@
+{
+  "file_id": "libraries-enterprise_messaging--s7",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "All three residual findings are minor. The knowledge file provides complete, accurate, and actionable information for all four messaging patterns and both provider configurations. The missing items (inheritance note, rationale for value=0, one hint entry) would not cause an AI agent to give incorrect or incomplete guidance to users.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s3 (JMS メッセージングプロバイダ)",
+      "impact": "low",
+      "justification": "All seven configurable properties for JndiLookingUpJmsMessagingProvider are already fully documented in the knowledge file table. The source comment ('その他のプロパティは親クラスと同じ') appears only in the XML configuration example and refers to properties that are already covered. An AI agent reading s3 has complete information about every settable property; not knowing the class has a parent named JmsMessagingProvider does not affect any practical configuration task. Why it persisted: Phase E output is byte-for-byte identical to Phase D input, meaning the fix process made no edits. The finding was correctly judged too minor to act on — all configuration data is present regardless of the inheritance note."
+    },
+    {
+      "category": "omission",
+      "location": "s4 (組込みメッセージングプロバイダ)",
+      "impact": "low",
+      "justification": "The knowledge file correctly shows defaultTimeToLive value='0' in the XML example. Omitting the rationale ('テスト用のため消さない') means a developer may not immediately understand why 0 was chosen, but this does not prevent correct use: the value is present in a copy-paste-ready example and the section already explains this provider is for test/development environments. A user configuring a test environment would copy the example as-is. Why it persisted: Phase E made no edits to the file (output equals Phase D input), indicating the fix agent treated this rationale note as below the threshold for modification."
+    },
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "DataRecordFormatter is the class returned by createFormatter() in the code examples, but the hint 'setFormatter' already in s1 covers the practical discovery path — users asking about body formatting would reach s1 via setFormatter. DataRecordFormatter itself is primarily documented in the record_format knowledge file; its appearance in messaging examples is incidental. An AI agent can answer message body formatting questions fully from s1 without this additional hint. Why it persisted: Phase E produced no changes to the file, suggesting the fix agent did not consider adding a single hint entry worth modifying an otherwise correct file."
+    }
+  ]
+}

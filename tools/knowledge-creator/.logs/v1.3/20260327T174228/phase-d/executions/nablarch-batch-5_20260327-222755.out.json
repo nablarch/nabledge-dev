@@ -1,0 +1,27 @@
+{
+  "file_id": "nablarch-batch-5",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table row for -classpath %CLASSPATH%",
+      "description": "The 'Eclipse' qualifier is dropped from the CLASSPATH description. Source specifies 'Eclipseでプロダクションコードに設定しているクラスパスを設定します', which tells users the classpath should be taken from Eclipse's production code configuration. The knowledge file only says 'プロダクションコードのクラスパス', losing the Eclipse-specific context.",
+      "source_evidence": "# %CLASSPATH% -> Eclipseでプロダクションコードに設定しているクラスパスを設定します。"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — table rows for -requestPath and -userId",
+      "description": "The `LIST_MAP=testShots` notation is simplified to just `testShots`. Source uses the specific form `「LIST_MAP=testShots」` which is the Nablarch test framework table reference syntax. Dropping `LIST_MAP=` loses the precise way users identify the test data table in their automated tests.",
+      "source_evidence": "# %requestPath% -> リクエストパスを設定します。(自動テストの「LIST_MAP=testShots」の「requestPath」カラムに設定した文字列となります)\n# %userId% -> ユーザIDを設定します。(「LIST_MAP=testShots」の「userId」カラムに設定した文字列となります)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints array",
+      "description": "`batchArgs` is missing from hints. It appears as a named parameter in both the command and the table (first column: `%batchArgs%`), and users may search by this parameter name.",
+      "source_evidence": "%batchArgs% -> バッチアプリケーションで必要となる引数やオプションを設定してください。"
+    }
+  ]
+}

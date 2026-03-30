@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-file_upload_utility",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s7",
+      "description": "Section s7 merges the RST h2 section 'ファイルをデータベースに登録する' (>2000 chars plain text) with all of its h3 subsections (フォーマット定義ファイルパスの指定, 精査エラー発生時のメッセージID指定, 精査処理を実装したクラス・メソッドの指定, データベース一括登録, データベース一括登録（独自実装）, plus h4 sub-subsections 形式エラー/精査エラー/ファイルが空の場合) into a single section without splitting. Per V3 rule, a large RST h2 with h3 subsections and >=2000 chars that is not split in the knowledge file should be reported.",
+      "source_evidence": "Source heading 'ファイルをデータベースに登録する' (=====) contains 6 named h3/h4 subsections spanning hundreds of lines of content with multiple code examples."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 hints",
+      "description": "s7 hints are missing several PascalCase class names and annotation names that appear in the section content: `MessageUtil` (used in 形式エラー and 精査エラー code examples), `MessageLevel` (used in same code examples), and `@OnError` (annotation on the main doSaveFile code example).",
+      "source_evidence": "Source 形式エラー section: `MessageUtil.createMessage(MessageLevel.ERROR, ...)`. Source code example: `@OnError(type = ApplicationException.class, path = \"/path/to/forward\")`. V4 rule requires PascalCase class names and @Annotation names from content to be included in hints."
+    }
+  ]
+}

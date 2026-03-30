@@ -1,0 +1,82 @@
+{
+  "id": "testing-framework-02_DbAccessTest--s14",
+  "title": "デフォルト値",
+  "no_knowledge_content": false,
+  "official_doc_urls": [
+    ""
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "関係のあるカラムのみを記載した場合（良い例）",
+      "hints": [
+        "EXPECTED_COMPLETE_TABLE",
+        "SETUP_TABLE",
+        "関係カラムのみ記述",
+        "期待値",
+        "準備データ",
+        "可読性",
+        "保守性"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "設定項目一覧",
+      "hints": [
+        "BasicDefaultValues",
+        "nablarch.test.core.db.BasicDefaultValues",
+        "charValue",
+        "numberValue",
+        "dateValue",
+        "デフォルト値設定",
+        "JDBCタイムスタンプ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "コンポーネント設定ファイルの記述例",
+      "hints": [
+        "BasicTestDataParser",
+        "nablarch.test.core.reader.BasicTestDataParser",
+        "testDataParser",
+        "BasicDefaultValues",
+        "XML設定",
+        "defaultValues"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "デフォルト値",
+      "hints": [
+        "デフォルト値",
+        "数値型デフォルト",
+        "文字列型デフォルト",
+        "日付型デフォルト",
+        "省略カラム",
+        "1970-01-01"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "注意点",
+      "hints": [
+        "setUpDb",
+        "assertTableEquals",
+        "assertSqlResultSetEquals",
+        "ThreadContext",
+        "Timestamp",
+        "EXPECTED_TABLE",
+        "using_ThreadContext",
+        "using_transactions",
+        "自動設定項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "期待値の記述では、`EXPECTED_TABLE` の代わりに `EXPECTED_COMPLETE_TABLE` を使用する。テストケースに関係するカラムのみを記述することで可読性・保守性が向上し、テーブル定義変更時も無関係なカラムの影響を受けない。\n\n**準備データ例 (SETUP_TABLE=SAMPLE_TABLE)**:\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|------|------|----------|------------|\n| 01   | 0001 | 20101231 | 0          |\n| 02   | 0002 | 20110101 | 0          |\n\n**期待値例 (EXPECTED_COMPLETE_TABLE=SAMPLE_TABLE)**:\n\n| PK_1 | PK_2 | 有効期限 | 削除フラグ |\n|------|------|----------|------------|\n| 01   | 0001 | 20101231 | 1          |\n| 02   | 0002 | 20110101 | 0          |",
+    "s2": "**クラス**: `nablarch.test.core.db.BasicDefaultValues`\n\n| 設定項目名 | 説明 | 設定値 |\n|---|---|---|\n| charValue | 文字列型のデフォルト値 | 1文字のASCII文字 |\n| numberValue | 数値型のデフォルト値 | 0または正の整数 |\n| dateValue | 日付型のデフォルト値 | JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff) |",
+    "s3": "```xml\n<!-- TestDataParser -->\n<component name=\"testDataParser\" class=\"nablarch.test.core.reader.BasicTestDataParser\">\n  <!-- データベースデフォルト値 -->\n  <property name=\"defaultValues\">\n    <component class=\"nablarch.test.core.db.BasicDefaultValues\">\n      <property name=\"charValue\" value=\"a\"/>\n      <property name=\"dateValue\" value=\"2000-01-01 12:34:56.123456789\"/>\n      <property name=\"numberValue\" value=\"1\"/>\n    </component>\n  </property>\n</component>\n```",
+    "s4": "コンポーネント設定ファイルで明示的に指定していない場合、以下のデフォルト値が使用される。\n\n| カラム | デフォルト値 |\n|---|---|\n| 数値型 | 0 |\n| 文字列型 | 半角スペース |\n| 日付型 | 1970-01-01 00:00:00.0 |",
+    "s5": "**setUpDbメソッド**:\n- Excelファイルに全カラムを記述する必要はない。省略されたカラムにはデフォルト値が設定される。\n- 1シート内に複数テーブルを記述可能。`setUpDb(String sheetName)` 実行時、指定シート内のデータタイプ `SETUP_TABLE` 全てが登録対象となる。\n\n**assertTableEqualsメソッド**:\n- 期待値で省略されたカラムは比較対象外となる。\n- レコードの順番が異なっていても主キーを突合して正しく比較できる。順序を意識した期待データ作成は不要。\n- 1シート内に複数テーブル記述可能。`assertTableEquals(String sheetName)` 実行時、指定シート内のデータタイプ `EXPECTED_TABLE` が全て比較される。\n- `java.sql.Timestamp` 型のフォーマットは `yyyy-mm-dd hh:mm:ss.fffffffff`（fffffffffはナノ秒）。ナノ秒が設定されていない場合でも0ナノ秒として表示される。Excelシートに期待値を記載する場合は末尾に小数点＋ゼロを付与する必要がある（例: `2010-01-01 12:34:56.0`）。\n\n**assertSqlResultSetEqualsメソッド**:\n- SELECT文で指定された全カラム名（別名）が比較対象。特定カラムを比較対象外にすることはできない。\n- レコードの順序が異なる場合は等価でないとみなす（アサート失敗）。理由: (1) SELECTカラムに主キーが含まれるとは限らない (2) ORDER BY指定がある場合が多く順序も厳密に比較する必要がある。\n\n**クラス単体テスト登録・更新系テスト**:\n- 自動設定項目を使用したDB登録・更新時、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前に設定すること（:ref:`using_ThreadContext`）。\n- デフォルト以外のトランザクションを使用する場合、本フレームワークにトランザクション制御を行わせる必要がある（:ref:`using_transactions`）。"
+  }
+}

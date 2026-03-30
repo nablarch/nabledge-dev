@@ -1,0 +1,100 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-05_FileDownload--s16",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0].hints (s1)",
+      "description": "PascalCase class names HttpRequest and ExecutionContext appear in the code example's method signature but are absent from the hints array.",
+      "source_evidence": "public HttpResponse doDownloadCharSequence(HttpRequest req, ExecutionContext context)"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+使用例
+------------------
+
+.. code-block:: java
+
+        /** 文字シーケンスをShift_JISのデータとしてダウンロードする。 */
+        public HttpResponse doDownloadCharSequence(HttpRequest req, ExecutionContext context) {
+  
+            HttpResponse res = new HttpResponse();
+  
+            // HttpResponseのsetContentTypeメソッドを使用して、Content-Typeを設定する。
+            res.setContentType("text/csv; charset=Shift_JIS");
+  
+            // HttpResponseのwriteメソッドを使用して、ダウンロードデータを生成する
+            res.write("ユーザID, ユーザ名\n");
+            res.write("0000001, nabla\n");
+            res.write("0000002, arch\n");
+            res.write("0000003, arch\n");
+  
+  
+            // ファイル名を設定する
+            res.setContentDisposition("サンプルCSVファイル.csv");
+            
+            return res;
+        }
+    
+  
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-05_FileDownload--s16",
+  "title": "使用例",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "使用例",
+      "hints": [
+        "HttpResponse",
+        "setContentType",
+        "setContentDisposition",
+        "write",
+        "ファイルダウンロード",
+        "Content-Type設定",
+        "CSV出力",
+        "文字シーケンスダウンロード"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`HttpResponse` を使ったCSVファイルのダウンロード実装例。\n\n- `setContentType(String)`: Content-Typeを設定する（例: `\"text/csv; charset=Shift_JIS\"`）\n- `write(String)`: ダウンロードデータを書き込む\n- `setContentDisposition(String)`: ダウンロードファイル名を設定する\n\n```java\npublic HttpResponse doDownloadCharSequence(HttpRequest req, ExecutionContext context) {\n    HttpResponse res = new HttpResponse();\n    res.setContentType(\"text/csv; charset=Shift_JIS\");\n    res.write(\"ユーザID, ユーザ名\\n\");\n    res.write(\"0000001, nabla\\n\");\n    res.write(\"0000002, arch\\n\");\n    res.write(\"0000003, arch\\n\");\n    res.setContentDisposition(\"サンプルCSVファイル.csv\");\n    return res;\n}\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

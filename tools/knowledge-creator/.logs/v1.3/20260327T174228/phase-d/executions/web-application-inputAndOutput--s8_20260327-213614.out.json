@@ -1,0 +1,20 @@
+{
+  "file_id": "web-application-inputAndOutput--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s6 hints",
+      "description": "The hint \"XSS\" appears in s6 hints but the source file does not mention XSS anywhere. The source only states that HTML escaping should be performed, and that the rawWrite/prettyPrint tags should only be used when HTML escaping must be avoided.",
+      "source_evidence": "本機能は、HTMLのソースコードを表示したい場合など、HTMLエスケープをどうしても避けたい場合に使用する。それ以外の場合は、HTMLエスケープを行うこと。 — no mention of XSS"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1) hints",
+      "description": "PascalCase class names `ValidationUtil` and `ValidationContext` appear in the update-screen code example in s1 but are absent from the hints array. Additionally, `n:select` attributes `elementLabelPattern` and `listFormat` appear in the multiple-selection JSP example but are not included in hints.",
+      "source_evidence": "ValidationContext<W11AC03Form> formCtx = ValidationUtil.validateAndConvertRequest(...); and <n:select ... elementLabelPattern=\"$VALUE$ - $LABEL$\" listFormat=\"ul\" />"
+    }
+  ]
+}

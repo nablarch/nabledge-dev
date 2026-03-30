@@ -1,0 +1,20 @@
+{
+  "file_id": "testing-framework-batch--s10",
+  "user_impact": "low",
+  "needs_improvement": false,
+  "reason": "Both residual findings have low user impact. The fabrication in s7 uses semantically appropriate wording (\"データベース出力結果\") that correctly describes the purpose of `expectedTable`, and the source text itself contains a copy-paste typo (\"ファイル出力結果\") in the database verification section — so the knowledge file is actually clearer than the source. The omission of the introductory sentence for '各種期待値' is minor because the ID-based linking mechanism is conveyed implicitly through the individual sub-sections (s2, s7, s8).",
+  "findings_assessment": [
+    {
+      "category": "fabrication",
+      "location": "s7",
+      "impact": "low",
+      "justification": "The knowledge file says 'データベース出力結果' where the source has a copy-paste typo 'ファイル出力結果'. While technically fabricated (not verbatim from source), the knowledge file's wording is semantically accurate for the `expectedTable` context and does not mislead users. A developer consulting this section will correctly understand that `expectedTable` verifies database state. Phase E did not fix this, likely because reverting to the source's typo would introduce confusion — the agent implicitly prioritized accuracy over literal fidelity."
+    },
+    {
+      "category": "omission",
+      "location": "各種期待値 introductory paragraph",
+      "impact": "low",
+      "justification": "The omitted sentence ('検索結果、データベースを期待値と比較する場合は、それぞれのデータとテストケース一覧とをIDで紐付けする。') is an overview of the ID-based linking mechanism. This mechanism is already described operationally in s2, s7, and s8, which each explain that a group ID recorded in the test case list column links to the expected data. A developer can infer the linking principle from these sections without the introductory sentence. Phase E left this unresolved, likely judging the concept sufficiently covered by the sub-sections."
+    }
+  ]
+}

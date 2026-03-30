@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-record_format--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SZ row, argument 4 description",
+      "description": "SZ型の引数4の説明が「負数時」のみで「最小桁バイトの上位4ビットパターン」という具体的な内容が省略されている。引数3の説明（「正数時最小桁バイト上位4ビットパターン」）は完全なのに対し、引数4が不完全で非対称になっている。",
+      "source_evidence": "引数4: 負数時の最小桁バイトの上位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — SP row, argument 4 description",
+      "description": "SP型の引数4の説明が「負数時」のみで「最下位4ビットパターン」という具体的な内容が省略されている。引数3の説明（「正数時最下位4ビットパターン」）は完全なのに対し、引数4が不完全で非対称になっている。",
+      "source_evidence": "引数4: 負数時の最下位4ビットパターン (16進表記の文字列[0-9A-F]、任意指定)"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 — hints",
+      "description": "固定長フィールドタイプ表の第1列（タイプ識別子）に含まれる基本的な識別子「X」「N」「Z」「P」「B」がhintsに含まれていない。XN、SZ、SP、X9、SX9 は列挙されているが、これら5つが欠けており非対称になっている。",
+      "source_evidence": "固定長データ形式のフィールドタイプ表の第1列: X, N, XN, Z, SZ, P, SP, B, X9, SX9"
+    }
+  ]
+}

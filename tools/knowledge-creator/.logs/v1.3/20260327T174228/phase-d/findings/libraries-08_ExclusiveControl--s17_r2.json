@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — バージョン番号の準備・更新チェック・更新チェックと更新",
+      "description": "The framework's automatic handling of version numbers across request lifecycle steps is not explicitly stated. The source code comments explain: (1) in prepareVersion — 'バージョン番号は、フレームワークにより、指定されたExecutionContextに設定される'; (2) in checkVersions/updateVersionsWithCheck — 'バージョン番号は、フレームワークにより、指定されたHttpRequestから取得する'. These explain why ExecutionContext is passed in step 1 and HttpRequest in steps 2/3, which is essential for understanding the multi-screen workflow.",
+      "source_evidence": "doUU00201 comment: '取得したバージョン番号は、フレームワークにより、指定されたExecutionContextに設定される'; doUU00202 comment: 'バージョン番号は、フレームワークにより、指定されたHttpRequestから取得する'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "`ApplicationException` is missing from s1 hints. It is directly referenced in s1 content (in the CommonExclusiveControlUtil wrapper class code example: `throw new ApplicationException(message)`). If s1 is retrieved independently, this class would not be discoverable via hints.",
+      "source_evidence": "CommonExclusiveControlUtil wrapper code: 'throw new ApplicationException(message);'"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "`n:errors` tag is missing from s2 hints. The source explicitly states 'n:errorsタグを使用して、画面上にエラーメッセージを表示することができる' as a key feature of OptimisticLockException integration, and this tag is captured in the s2 content.",
+      "source_evidence": "設定ファイルの定義: 'n:errorsタグを使用して、画面上にエラーメッセージを表示することができる'"
+    }
+  ]
+}

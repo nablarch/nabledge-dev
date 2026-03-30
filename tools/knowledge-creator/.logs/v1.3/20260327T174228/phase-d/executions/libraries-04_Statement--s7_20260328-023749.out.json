@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s7",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — 設定ファイル例 XML, BasicSqlStatementExceptionFactory コメント",
+      "description": "The XML configuration example in the source contains a comment `<!-- Oracleデータベースの場合の一意制約違反のエラーコード -->` indicating that the example values (`duplicateErrorSqlState=\"\"` and `duplicateErrorErrCode=\"1\"`) are Oracle-specific. This context is omitted from the knowledge file. Without it, users may not understand that `1` is Oracle's error code for unique constraint violations and that they need to configure a database-appropriate value.",
+      "source_evidence": "<!-- Oracleデータベースの場合の一意制約違反のエラーコード -->\n<property name=\"duplicateErrorSqlState\" value=\"\"/>\n<property name=\"duplicateErrorErrCode\" value=\"1\"/>"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s2].hints",
+      "description": "The s2 section content references `SqlPStatement` (via `SqlPStatement#setFetchSize` and `SqlPStatement#setQueryTimeout`) and `AppDbConnection` (via `AppDbConnection#prepareStatement`) as PascalCase class names. Neither is listed in the s2 hints array.",
+      "source_evidence": "SqlPStatement#setFetchSizeを呼び出した場合 / AppDbConnection#prepareStatementを呼び出した場合 (設定内容詳細 fetchSize/queryTimeout notes)"
+    }
+  ]
+}

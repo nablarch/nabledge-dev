@@ -1,0 +1,14 @@
+{
+  "file_id": "libraries-07_Message--s1",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Section s8 presents code containing ThreadContext.setLanguage() calls without any warning that this is framework-internal code. An AI agent relying solely on s8 could advise developers to call setLanguage() themselves — directly contradicting the source's explicit caution. The impact is medium rather than high because s7 (loaded in the same file) already establishes the general principle that ThreadContext language is managed by the framework, providing partial mitigation. However, s8 in isolation — which is the section most likely to be retrieved for オプションパラメータの国際化 queries — gives no such signal, creating a meaningful risk of incorrect guidance.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s8",
+      "impact": "medium",
+      "justification": "The source RST places an explicit 注意 block at the top of both code examples under オプションパラメータの国際化, stating that the code shown (including ThreadContext.setLanguage() calls) is performed by the framework and must NOT be written by application programmers. The knowledge file removes these warnings entirely and adds no compensating prose. As a result, the ThreadContext.setLanguage() calls appear to be normal, expected application code. An AI agent retrieving s8 for an internationalization question would have no basis to warn developers away from calling setLanguage() themselves — the opposite of what the source intends. Impact is medium (not high) because s7 already states the general rule that ThreadContext is managed by the framework, which partially compensates; but s8 in isolation is actively misleading. Phase E did not resolve this: the Phase E log output shows s8 content identical to the original — the fix agent produced the same JSON without reintroducing the warning, likely because the fix prompt either did not adequately target the inline comment-level omission or the generated fix was not persisted."
+    }
+  ]
+}

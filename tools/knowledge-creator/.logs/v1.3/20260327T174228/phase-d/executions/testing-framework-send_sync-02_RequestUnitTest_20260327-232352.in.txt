@@ -1,0 +1,431 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/05_UnitTestGuide/02_RequestUnitTest/send_sync.rst`
+- Format: `rst`
+
+```
+.. _`message_sendSyncMessage_test`:
+
+=============================================================================
+リクエスト単体テストの実施方法(同期応答メッセージ送信処理)
+=============================================================================
+
+
+出力ライブラリ(同期応答メッセージ送信処理)の構造とテスト範囲
+------------------------------------------------------------------------
+
+同期応答メッセージ送信処理のリクエスト単体テストは、当該処理に付与されたリクエストID\ [#]_\ 単位で行う。
+
+.. [#] 
+ ここで扱うリクエストIDとは、メッセージを送信する相手先システムの機能を一意に識別するために定義するIDのことを指すものであり、
+ 画面オンライン処理やバッチ処理で使用するリクエストIDとは意味が異なる点に注意すること。
+ このリクエストIDにもとづき、要求電文および応答電文のフォーマット、送信キュー名、受信キュー名が決定する。
+
+
+※本項では、Actionがキューへ送信するメッセージのことを「要求電文」、Actionがキューから受信するメッセージのことを「応答電文」と称す。
+
+リクエスト単体テスト実施時のイメージを以下に示す。
+
+.. image:: ./_image/send_sync_base.png
+.. image:: ./_image/hanrei.png
+
+
+| ①自動テストフレームワークは、Nablarch Application Frameworkを起動する。
+| ②Nablarch Application FrameworkはActionの入力となるパラメータ（画面ならばリクエスト、バッチならばファイルやDB）を読み込み、Actionを起動する。
+| ③ActionはNablarch Application Frameworkのメッセージ同期送信処理を実行する。Nablarch Application FrameworkはActionから受け取ったパラメータを要求電文に変換する。
+| ④自動テストフレームワークは、テストデータを元に要求電文をアサートする。（要求電文はキューにPUTしない）
+
+| ⑤自動テストフレームワークは、テストデータを元に応答電文を生成し、Actionへ返却する。（応答電文はキューからGETしない）
+
+
+.. note::
+ 自動テストフレームワークは、「送信キュー」「受信キュー」を使用せず、キューの手前で要求電文のアサートおよび、応答電文の生成を行う。
+ このため、特別なミドルウェアのインストールや環境設定は不要である。
+
+
+本自動テストフレームワークを用いて実施する同期応答メッセージ送信処理のリクエスト単体テストの特色と利点を以下に挙げる。
+
+
+1. 書きやすいテストデータ
+ 
+ 電文レイアウトはフィールド長が固定されていることがほとんどであり、固定長ファイル同様に
+ テストデータとしては記載しにくいが、本自動テストフレームワークでは、
+ Excelファイルを使用することで、外部インターフェース設計書のフォーマット定義に沿って
+ テストデータを記載できる。
+
+ また、同期応答メッセージ送信処理用のテストデータ書式が提供されており、これに準拠することで
+ テストデータを容易に作成することができる。
+ これらの特徴により、テストデータが作りやすくかつ保守しやすいものとなっている。
+
+2. メッセージ同期送信処理についてのテストコードを記載する必要がない
+
+ テストデータ（要求電文の期待値および応答電文）はExcelに記載することができ、自動テストフレームワークはそのテストデータをもとに要求電文のアサートおよび応答電文の返却を自動的に行う。
+
+ このような典型的な定型処理を実装したスーパークラスが提供されており、これを利用することで、 テスト準備、テスト対象の実行、テスト結果確認が可能である。
+ これにより、テストデータのみで、ほぼコーディングなしでテストが実行可能である。    
+ 
+ 
+テストの実施方法
+------------------------------------------------------------------------
+
+同期応答メッセージ送信処理のテストは、画面オンライン処理やバッチ処理などのテスト方式を踏襲して行われる。
+テストクラスの書き方や各種準備データの準備方法については、これらのテストの実施方法を参照すること。 \
+
+本項では、同期応答メッセージ送信処理個有の実施方法についてのみ解説する。
+
+
+
+.. _`send_sync_request_write_test_data`:
+
+--------------------
+テストデータの書き方
+--------------------
+
+テストデータを記載したExcelファイルは、クラス単体テストと同様に\
+テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
+
+テストデータの記述方法詳細については、「\ :ref:`how_to_write_excel`\ 」を参照。
+
+
+要求電文の期待値および、返却する応答電文（レスポンスメッセージ）の準備
+====================================================================================
+
+同期応答メッセージ送信処理を行う場合、リクエストIDごとに、要求電文および応答電文のヘッダ部とボディ部のフォーマットおよび、データを定義する。
+
+テストケースと要求電文の期待値および応答電文は、グループIDで対応付ける。
+具体的には、テストケースのexpectedMessageおよびresponseMessageのフィールドに記載されたグループIDが、
+対応する識別子を持つ表と対応することとなる。\
+
+なお、テストケース一覧にexpectedMessageおよびresponseMessageの欄がない場合には検証が行われない。
+また空欄で、かつメッセージ同期送信処理が行われた場合には、テストが失敗する。
+メッセージ同期送信処理を行う場合は、expectedMessageおよびresponseMessageを必ず記載すること。
+
+１つのテストケースで、同一グループIDかつ同一リクエストIDを持った電文が複数件送信される場合は、その件数分要求電文および応答電文のデータ行を記載すること。noの列の順番（連番）は送信される順番に一致する。
+
+テストケースの書き方についての詳細は、以下を参照すること。
+ * \ :ref:`画面オンライン処理のテストケース一覧<request_test_testcases>`\
+ * \ :ref:`バッチ処理のテストケース一覧<batch_test_testcases>`\ 
+    
+
+
+以下に、実際にExcelで書かれたテストデータを示す。（グループIDの関連も示す）
+
+.. _send_sync_test_data:
+
+.. image:: ./_image/send_sync.png
+    :scale: 80
+
+
+
+.. note::
+
+ Nablarchが標準で提供する同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通のフォーマットを使用するので、
+ テストデータも同様にヘッダ部のフォーマット定義をリクエスト単位で統一すること。
+ ボディ部については、要求電文と応答電文で異なるフォーマットを定義することができる。
+
+
+-----
+
+要求電文の期待値および、返却する応答電文の表は以下の書式で記載する。
+
+
++---------------------+--------------------------+------------------+--------------+
+|識別子               |                                                            |
++---------------------+--------------------------+------------------+--------------+
+|ディレクティブ行     | ディレクティブの設定値   |                                 |
++---------------------+--------------------------+------------------+--------------+
+|    ...  [#]_\       |    ...                   |                  |              |
++---------------------+--------------------------+------------------+--------------+
+|no                   |フィールド名称(1)         |フィールド名称(2) |...  [#]_\    |
+|                     +--------------------------+------------------+--------------+
+|                     |データ型(1)               |データ型(2)       |...           |
+|                     +--------------------------+------------------+--------------+
+|                     |フィールド長(1)           |フィールド長(2)   |...           |
+|                     +--------------------------+------------------+--------------+
+|                     |データ(1-1)               |データ(2-1)       |...           |
+|                     +--------------------------+------------------+--------------+
+|                     |データ(1-2)               |データ(2-2)       |...           |
+|                     +--------------------------+------------------+--------------+
+|                     |... \ [#]_\               |...               |...           |
++---------------------+--------------------------+------------------+--------------+
+
+
+.. [#] 
+ これより下側は、同様にディレクティブの数だけ続いていく。
+ 
+.. [#] 
+ これより右側は、同様にフィールドの数だけ続いていく。
+
+.. [#]
+ これより下側は、同様にデータの数だけ続いていく。
+
+\
+
+
+
+================= =================================================================================================================================================
+名称               説明
+================= =================================================================================================================================================
+識別子            電文の種類を示すIDを指定する。本項目が、テストケース一覧のexpectedMessageおよびresponseMessageに記載されたグループIDと紐付けられる。
+                  
+                  識別子の書式を以下に示す。
+                  
+                  * 要求電文の期待値のヘッダ … EXPECTED_REQUEST_HEADER_MESSAGES[グループID]=リクエストID
+                  * 要求電文の本文の期待値 … EXPECTED_REQUEST_BODY_MESSAGES[グループID]=リクエストID
+                  * 応答電文のヘッダ … RESPONSE_HEADER_MESSAGES[グループID]=リクエストID
+                  * 応答電文の本文 … RESPONSE_BODY_MESSAGES[グループID]=リクエストID
+ディレクティブ行  ディレクティブを記載する。ディレクティブ名のセルの右のセルに設定値を記載する（複数行指定可）。
+no                ディレクティブ行の下の行には必ず「no」を記載する。
+フィールド名称    フィールド名称を記載する。フィールドの数だけ記載する。
+データ型          そのフィールドのデータ型を記載する。フィールドの数だけ記載する。
+フィールド長      そのフィールドのフィールド長を記載する。フィールドの数だけ記載する。
+データ            そのフィールドに格納されるデータを記載する。複数レコード存在する場合は次の行に続けてデータを記載する。
+                  そのフィールドに格納されるデータを記載する。1テストケースにおいて同一リクエストIDで複数回同期送信する場合は、次の行に続けてデータを記載する。
+================= =================================================================================================================================================
+
+
+.. warning::
+ フィールド名称に\ **重複した名称は許容されない**\ 。例えば、「氏名」というフィールドが2つ以上存在してはならない。
+ （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）
+
+
+.. note::
+ フィールド名称、データ型、フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。\
+ （ペーストする際、「\ **行列を入れ替える**\ 」オプションにチェックすること）
+
+
+
+-----
+
+
+以下に具体的な要求電文の本文の期待値の記載例を示す。
+
+要求電文のヘッダの期待値および応答電文の本文・ヘッダについても、識別子を除く部分についてはここで記載する要求電文の本文の期待値と同様の記載方法となる。
+
+この例では、以下の仕様を満たす要求電文が送信されることを期待している。
+
+* リクエストIDは\ ``RM21AA0104``\
+* 文字コードは\ ``Windows-31J``\
+* レコード区切り文字は\ ``CRLF``\
+* レコード区分は\ ``1``\、\ ``ユーザIDは0000000001``\、\ ``ログインIDはnabura``\
+
+
+
+ .. image:: ./_image/send_sync_example.png
+    :scale: 80
+
+ 
+
+.. _`send_sync_failure_test`:
+
+ 
+障害系のテスト
+==============
+
+応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\ [#]_\ 。
+
+以下に、設定値と、障害系のテストの対応を示す。
+
+ +------------------------------+-------------------------------------------------------------+--------------------------------------------------+
+ | 最初のフィールドに設定する値 | 障害内容                                                    | 自動テストフレームワークの動作                   |
+ +==============================+=============================================================+==================================================+
+ |  ``errorMode:timeout``       | メッセージ送信中にタイムアウトエラーが発生する場合のテスト  | **MessageSendSyncTimeoutException**              |
+ |                              |                                                             | (**MessagingException** のサブクラス)を送出する。| 
+ +------------------------------+-------------------------------------------------------------+--------------------------------------------------+
+ |  ``errorMode:msgException``  | メッセージ送受信エラーが発生する場合のテスト                | **MessagingException** をスローする。            |
+ +------------------------------+-------------------------------------------------------------+--------------------------------------------------+
+ 
+この値は、応答電文の表の\ **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\ に記載すること。
+
+Excelで設定する場合のイメージを以下に示す。
+
+
+ .. image:: ./_image/send_sync_error.png
+    :scale: 60
+
+.. [#]
+ 業務アクション内で、明示的に **MessagingException** の制御を行っていないのであれば、
+ 個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。
+
+--------------
+テスト結果検証
+--------------
+
+要求電文の期待値を定義した場合、自動テストフレームワーク側で以下の検証が行われる。
+
+* 要求電文の内容の検証
+* 要求電文の送信件数の検証
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `testing-framework-send_sync-02_RequestUnitTest`
+
+```json
+{
+  "id": "testing-framework-send_sync-02_RequestUnitTest",
+  "title": "リクエスト単体テストの実施方法(同期応答メッセージ送信処理)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "出力ライブラリ(同期応答メッセージ送信処理)の構造とテスト範囲",
+      "hints": [
+        "同期応答メッセージ送信処理",
+        "リクエスト単体テスト",
+        "テストフレームワーク概要",
+        "キューを使わない自動テスト",
+        "Excelテストデータ",
+        "ミドルウェア不要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストデータの書き方",
+      "hints": [
+        "テストデータ書き方",
+        "expectedMessage",
+        "responseMessage",
+        "グループID",
+        "EXPECTED_REQUEST_HEADER_MESSAGES",
+        "EXPECTED_REQUEST_BODY_MESSAGES",
+        "RESPONSE_HEADER_MESSAGES",
+        "RESPONSE_BODY_MESSAGES",
+        "要求電文期待値",
+        "応答電文",
+        "外部インタフェース設計書",
+        "行列を入れ替える"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "障害系のテスト",
+      "hints": [
+        "障害系テスト",
+        "errorMode:timeout",
+        "errorMode:msgException",
+        "MessageSendSyncTimeoutException",
+        "MessagingException"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "テスト結果検証",
+      "hints": [
+        "テスト結果検証",
+        "要求電文アサート",
+        "送信件数検証"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "同期応答メッセージ送信処理のリクエスト単体テストは、リクエストID単位で行う。\n\n> **注意**: ここで扱うリクエストIDはメッセージ送信先システムの機能を一意に識別するIDであり、画面オンライン処理やバッチ処理で使用するリクエストIDとは意味が異なる。このリクエストIDに基づき、要求電文・応答電文のフォーマット、送信キュー名、受信キュー名が決定する。\n\nテスト実施時のフロー:\n1. 自動テストFWがNablarch Application Frameworkを起動\n2. Nablarch AFがActionの入力パラメータ（画面:リクエスト、バッチ:ファイル/DB）を読み込みActionを起動\n3. ActionがNablarch AFのメッセージ同期送信処理を実行し、パラメータを要求電文に変換\n4. 自動テストFWがテストデータを元に要求電文をアサート（キューにはPUTしない）\n5. 自動テストFWがテストデータを元に応答電文を生成しActionへ返却（キューからはGETしない）\n\n> **注意**: 自動テストFWは実際の「送信キュー」「受信キュー」を使用せず、キューの手前で要求電文アサートおよび応答電文生成を行う。特別なミドルウェアのインストールや環境設定は不要。\n\nテストの特徴:\n- Excelファイルを使用し、外部インターフェース設計書のフォーマット定義に沿ってテストデータを記載可能\n- 要求電文のアサートおよび応答電文の返却は自動テストFWが自動的に行うため、テストコードを別途記述する必要がない\n- 提供されるスーパークラスを継承するだけでテスト準備・実行・結果確認が可能",
+    "s2": "テストデータExcelファイルはテストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。\n\n## 要求電文の期待値と応答電文の準備\n\nリクエストIDごとに要求電文・応答電文のヘッダ部とボディ部のフォーマットおよびデータを定義する。\n\nテストケースの`expectedMessage`・`responseMessage`フィールドに記載されたグループIDが、対応する識別子を持つ表と対応する。\n\n> **警告**: テストケース一覧に`expectedMessage`/`responseMessage`欄がない場合は検証が行われない。欄が空欄でメッセージ同期送信処理が実行された場合はテストが失敗する。メッセージ同期送信処理を行う場合は`expectedMessage`と`responseMessage`を必ず記載すること。\n\n1テストケースで同一グループID・同一リクエストIDを持つ電文が複数件送信される場合は、件数分のデータ行を記載する。`no`列の順番（連番）は送信順序に対応する。\n\n識別子の書式:\n- 要求電文ヘッダの期待値: `EXPECTED_REQUEST_HEADER_MESSAGES[グループID]=リクエストID`\n- 要求電文ボディの期待値: `EXPECTED_REQUEST_BODY_MESSAGES[グループID]=リクエストID`\n- 応答電文ヘッダ: `RESPONSE_HEADER_MESSAGES[グループID]=リクエストID`\n- 応答電文ボディ: `RESPONSE_BODY_MESSAGES[グループID]=リクエストID`\n\n| 項目 | 説明 |\n|---|---|\n| 識別子 | 上記書式で記載。テストケースのグループIDと紐付く |\n| ディレクティブ行 | ディレクティブ名と設定値（複数行指定可） |\n| no | ディレクティブ行の直下に必ず「no」を記載 |\n| フィールド名称 | フィールドの数だけ記載（重複不可） |\n| データ型 | フィールドごとに記載 |\n| フィールド長 | フィールドごとに記載 |\n| データ | 複数レコードは次の行に続けて記載 |\n\n> **警告**: フィールド名称に重複した名称は許容されない。\n\n> **注意**: Nablarch標準の同期応答メッセージ送信機能では、要求電文と応答電文のヘッダ部は共通フォーマットを使用する。ヘッダ部フォーマット定義はリクエスト単位で統一すること。ボディ部は要求電文と応答電文で異なるフォーマットを定義可能。\n\n> **ヒント**: フィールド名称、データ型、フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。ペーストする際は「**行列を入れ替える**」オプションにチェックすること。\n\n![要求電文テストデータのExcel記載例](assets/testing-framework-send_sync-02_RequestUnitTest/send_sync_example.png)",
+    "s3": "応答電文の表の最初のフィールドに`errorMode:`から始まる特定の値を設定することで障害系のテストが行える。\n\n| 設定値 | 障害内容 | 自動テストFWの動作 |\n|---|---|---|\n| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生するケース | `MessageSendSyncTimeoutException`（`MessagingException`のサブクラス）を送出 |\n| `errorMode:msgException` | メッセージ送受信エラーが発生するケース | `MessagingException`をスロー |\n\nこの値は応答電文の表の**ヘッダおよび本文両方**の、`no`を除く最初のフィールドに記載すること。\n\n> **注意**: 業務アクション内で明示的に`MessagingException`の制御を行っていない場合、個別のリクエスト単体テストで障害系テストを行う必要はない。",
+    "s4": "要求電文の期待値を定義した場合、自動テストFWが以下を検証する:\n\n- 要求電文の内容\n- 要求電文の送信件数"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

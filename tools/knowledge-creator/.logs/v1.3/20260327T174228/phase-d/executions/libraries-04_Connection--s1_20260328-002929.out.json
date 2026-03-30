@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Connection--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[s5].hints",
+      "description": "PascalCase class names `SqlPStatement` and `SqlResultSet` appear in the Java code example in s5 but are absent from s5 hints.",
+      "source_evidence": "Source Java code: `SqlPStatement prepared = connection.prepareStatement(query);` and `SqlResultSet resultSet = new SimpleDbTransactionExecutor<SqlResultSet>(...)`"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "sections.s5",
+      "description": "The closing comment inside the Java code block explaining that `doTransaction()` invokes the `execute` method as a callback is omitted. This comment conveys the callback mechanism of the framework pattern.",
+      "source_evidence": "Source code comment before `}.doTransaction();`: 「// SimpleDbTransactionExecutorを実装したクラスのdoTransactionを実行する。\\n// これにより、上記で説明したexecuteメソッドがコールバックされSQL文を簡易的に実行することが可能となる。」"
+    }
+  ]
+}

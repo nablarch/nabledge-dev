@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-08_ExclusiveControl--s17",
+  "user_impact": "medium",
+  "needs_improvement": true,
+  "reason": "Finding 2 has medium impact: `CompositeKey` is a framework-provided class specifically for composite-key checkbox binding, and its omission leaves an implementer without knowledge that framework support exists for this exact scenario. Finding 1 is low impact as MessageUtil/MessageLevel/Message are generic messaging utilities incidentally used in an example, not exclusive-control-specific APIs.",
+  "findings_assessment": [
+    {
+      "category": "hints_missing",
+      "location": "s1 hints",
+      "impact": "low",
+      "justification": "MessageUtil, MessageLevel, and Message are generic Nablarch messaging utilities, not exclusive-control-specific. They appear incidentally in the CommonExclusiveControlUtil wrapper example as supporting infrastructure. Their absence from hints means the section won't surface when querying these class names, but users needing MessageUtil would consult message-related documentation rather than exclusive control docs. The section content itself already contains the code example showing their usage. Why it persisted: Phase E produced an identical JSON to Phase D — no modifications were applied to the hints array despite the finding being identified."
+    },
+    {
+      "category": "omission",
+      "location": "s1 — 一括更新処理における更新チェック（複合主キー）",
+      "impact": "medium",
+      "justification": "nablarch.common.web.compositekey.CompositeKey is a concrete framework class provided specifically to support composite-key checkbox input binding in batch update screens. The knowledge file describes the composite-key scenario and shows the Action-side loop pattern, but omits that a dedicated framework class handles the form-side parsing of composite key values from checkbox request parameters. An implementer following this knowledge would need to write custom form parsing logic, unaware that CompositeKey already solves this. WebView_CompositeKeyCheckboxTag and WebView_CompositeKeyRadioButtonTag are cross-referenced tag components that also go unmentioned. Why it persisted: Phase E produced an identical JSON to Phase D — the s1 section body was not updated to include the CompositeKey reference or the tag names despite the omission being flagged."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "file_id": "libraries-01_Log--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s3",
+      "description": "実装済み要求リストから「ログの出力先を変更できる」が欠落している。ソースの要求セクションには独立した箇条書き項目として存在する。",
+      "source_evidence": "* ログの出力先を変更できる。（要求 > 実装済み セクション内の独立した項目）"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s4 (ロガーファクトリの設定方法)",
+      "description": "プロパティファイルのファイルパス指定方法の詳細として `nablarch.core.util.FileUtil#getResource(String)` のJavadocを参照するよう記載されているが、知識ファイルにはこのクラス名および参照先への言及がない。",
+      "source_evidence": "ファイルパスの指定方法は、nablarch.core.util.FileUtil#getResource(String)のJavadocを参照すること。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "`nablarch.log.filePath` 未指定時のデフォルト設定ファイル名 `log.properties` がヒントに含まれていない。",
+      "source_evidence": "システムプロパティを指定しなかった場合は、クラスパス直下のlog.propertiesが使用される。"
+    }
+  ]
+}

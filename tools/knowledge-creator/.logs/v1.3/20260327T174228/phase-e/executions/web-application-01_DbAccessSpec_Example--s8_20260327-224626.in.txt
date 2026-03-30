@@ -1,0 +1,406 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "web-application-01_DbAccessSpec_Example--s8",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s1 — 大量データの定義の注意書き",
+      "description": "The knowledge file adds the parenthetical \"（取得開始位置ではなく取得件数が基準）\" to the definition, but this phrasing has no basis in the source. The source's parenthetical is \"(検索対象のテーブルの件数ではない)\" — meaning the result count (not the table size) is what matters. The knowledge file replaces \"table count vs result count\" with \"starting position vs count\", which is a misrepresentation derived from a code example, not from the definition itself.",
+      "source_evidence": "大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s3 — hints",
+      "description": "DbAccessSupport is referenced in the source code for this section (the class extends DbAccessSupport and uses getSqlPStatement which is inherited from it), but is absent from s3's hints array.",
+      "source_evidence": "public class CM311AC1Component extends DbAccessSupport { ... SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\"); }"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+大量データの検索機能
+--------------------
+大量データを取得 [#]_ する場合は、簡易検索機能ではなく本機能を使用してデータの検索処理を行う。
+
+大量データ取得用メソッド(\ *executeQuery*\ )を使用した場合であっても、簡易検索と同じようにデータベースからの検索結果を簡易的に扱えるオブジェクトを返却する。
+このため、アプリケーションではJDBCで提供される機能を使用することなく、データの取得を行うことができる。
+
+詳細は、下記の実装例を参照すること。
+
+
+.. [#]
+  大量データの取得とは、SELECT文の結果として取得されるデータ件数(検索対象のテーブルの件数ではない)が大量であることをさす。
+  
+  .. admonition:: 例
+
+   .. code-block:: java
+
+     // 大量データの取得に該当する例
+     statement.retrieve();                // この結果返却されるSqlResultSetのサイズが多い場合は、大量データとなる。
+     statement.retrieve(1, 10000000);     // 取得件数に1千万件を指定しているため、SqlResultSetのサイズが最大で1千万件となるため、大量データとなる。
+  
+     // 大量データに該当しない例
+     statement.retrieve(10000000, 20);    // 取得開始位置は1千万であるが、取得最大件数に20件を指定しているため(SqlResultSetのサイズは最大で20件のため)、大量データの取得とはならない。
+
+
+* SQLファイルの内容
+
+  ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+  .. code-block:: sql
+
+    --------------------------
+    -- ユーザ一覧を取得用
+    -- SQL_ID:GET_ALL_USER
+    --------------------------
+    GET_ALL_USER =
+    SELECT
+        USER_ID,
+        USER_NAME,
+        USER_NAME_KANA,
+        TEL,
+        MAIL_ADDRESS
+    FROM
+        USER_MST
+    ORDER BY
+        USER_ID
+
+* Javaの実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        public ResultSetIterator getAllUser() {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement statement = getSqlPStatement("GET_ALL_USER");
+
+            statement.setString(1, "00001");
+
+            // 【説明】executeQueryを呼びだすと、ResultSetIteratorが返却される
+            return statement.executeQuery();
+
+        }
+    }
+
+    // 【説明】ResultSetIteratorの使用例
+    //  ResultSetIteratorは、Iterableを実装しているため、簡易for文(for-each)を使用することが可能
+    for (SqlRow row : rs) {
+        String userId = row.getString("USER_ID");
+        String userName = row.getString("USER_NAME");
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. warning::
+  ResultSetIterator#iteratorの呼び出しは、複数回行うことができないため注意すること。
+
+  【NGとなる実装パターン】
+
+    .. code-block:: java
+
+      // 【説明】iteratorメソッドを2回呼び出しているためNG
+      ResultSetIterator rs = statement.executeQuery();
+      rs.iterator();
+      rs.iterator();
+
+      // 【説明】2回目のfor文で、2回目のiterator呼び出しが行われるため、NG
+      ResultSetIterator rs = statement.executeQuery();
+      for (SqlRow row : rs) {
+          // 【説明】処理
+      }
+
+      for (SqlRow row : rs) {
+          // 【説明】処理
+      }
+
+    (\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. _insert_update_delete:
+
+----------------------------
+更新(insert、update、delete)
+----------------------------
+
+.. _update_single_data:
+
+1件のデータを更新する場合
+=========================
+
+* SQLファイルの内容
+
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- ユーザ一登録用
+   -- SQL_ID:REGISTER_USER
+   --------------------------
+   REGISTER_USER =
+   INSERT INTO
+       USER_MST
+       (
+       USER_ID,
+       USER_NAME,
+       USER_NAME_KANA,
+       TEL,
+       MAIL_ADDRESS
+       )
+   VALUES
+       (
+       ?,
+       ?,
+       ?,
+       ?,
+       ?
+       )
+
+   --------------------------
+   -- ユーザ一更新用
+   -- SQL_ID:UPDATE_USER_NAME
+   --------------------------
+   UPDATE_USER_NAME =
+   UPDATE
+       USER_MST
+   SET
+       USER_NAME = ?
+   WHERE
+       USER_ID = ?
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        // 【説明】登録処理の例
+        public void registerUser(String userId, String userName, String userNameKana,
+                String tel, String mailAddress) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement statement = getSqlPStatement("REGISTER_USER");
+
+            statement.setString(1, userId);
+            statement.setString(2, userName);
+            statement.setString(3, userNameKana);
+            statement.setString(4, tel);
+            statement.setString(5, mailAddress);
+            statement.executeUpdate();
+        }
+
+        // 【説明】更新処理の例
+        public void updateUserName(String userId, String userName) {
+
+            SqlPStatement updateStatement = getSqlPStatement("UPDATE_USER_NAME");
+            updateStatement.setString(1, userName);
+            updateStatement.setString(2, userId);
+
+            int updCnt = updateStatement.executeUpdate();
+
+            if (updCnt != 1) {
+                // 更新対象が存在しない場合は、対象なしエラーを表示する
+            }
+        }
+    }
+
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+.. _executeBatch-label:
+
+複数件を一括で更新する場合
+==========================
+JDBCで提供されるバッチ実行機能(\ *executeBatch*\ )と同等の機能を使用した一括更新の実装例。
+
+同一テーブルへの更新(insert、update、delete)を繰り返し行う場合には、バッチ更新機能を使用すること。
+この機能を使用すると、データベースサーバとのラウンドトリップ回数を削減でき、性能改善が期待できる。
+
+.. warning::
+ | 下記実装例にあるように、大量のデータを一括で更新する場合には、適宜executeBatchを呼び出すこと。
+ | この処理を行わないと、メモリ不足が原因でOutOfMemoryErrorが発生したり、gcが頻発し逆に性能劣化の原因となることがある。
+
+* SQLファイルの内容
+
+ ファイル名:nablarch/sample/ss11AC/CM311AC1Component.sql
+
+ .. code-block:: sql
+
+   --------------------------
+   -- ユーザ一括登録用
+   -- SQL_ID:REGSITER_ALL_USER
+   --------------------------
+   REGSITER_ALL_USER =
+   INSERT INTO
+       USER
+       (
+       ID,
+       NAME
+       )
+   VALUES
+       (
+       ?,
+       ?
+       )
+
+
+* Java実装
+
+ .. code-block:: java
+
+    package nablarch.sample.ss11AC;
+
+    public class CM311AC1Component extends DbAccessSupport {
+
+        // 1回のexecuteBatchで更新する最大の件数
+        private static final int BATCH_EXECUTE_MAX_CNT = 1000;
+
+        // 【説明】本実装例では、更新対象のデータを作成する処理は省略している
+        public void registerAllUser(List<Map<String, ?>> users) {
+
+            // 【説明】SQL_IDを指定してStatementオブジェクトを取得する。
+            SqlPStatement batch = getSqlPStatement("REGSITER_ALL_USER");
+
+            // バッチ更新による一括登録
+            for (Map<String, ?> user : users) {
+                batch.setObject(1, user.get("ID"));
+                batch.setObject(2, user.get("NAME"));
+                batch.addBatch();
+
+                // 1000件単位で実行
+                if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {
+                    batch.executeBatch();
+                }
+            }
+
+            // 残りのデータがある場合には、実行
+            if (batch.getBatchSize() != 0) {
+                batch.executeBatch();
+            }
+
+        }
+    }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+.. note::
+ SQLファイルの記述ルールや、SQL_IDの指定方法の詳細は、 :ref:`retrieve-variable-label` を参照すること。
+
+
+.. _access_to_binary_data:
+
+--------------------------
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "web-application-01_DbAccessSpec_Example--s8",
+  "title": "大量データの検索機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "大量データの検索機能",
+      "hints": [
+        "DbAccessSupport",
+        "SqlPStatement",
+        "ResultSetIterator",
+        "SqlRow",
+        "executeQuery",
+        "大量データ検索",
+        "getSqlPStatement"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ResultSetIterator使用上の注意",
+      "hints": [
+        "ResultSetIterator",
+        "iterator",
+        "複数回呼び出し禁止",
+        "for-each",
+        "NG実装パターン"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "更新(insert、update、delete) - 1件のデータを更新する場合",
+      "hints": [
+        "SqlPStatement",
+        "executeUpdate",
+        "getSqlPStatement",
+        "REGISTER_USER",
+        "UPDATE_USER_NAME",
+        "1件更新",
+        "INSERT",
+        "UPDATE"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "複数件を一括で更新する場合",
+      "hints": [
+        "SqlPStatement",
+        "addBatch",
+        "executeBatch",
+        "getBatchSize",
+        "BATCH_EXECUTE_MAX_CNT",
+        "バッチ更新",
+        "一括更新",
+        "OutOfMemoryError"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "大量データを取得する場合は、簡易検索機能ではなく `executeQuery` を使用する。`executeQuery` は `ResultSetIterator` を返却し、JDBCの機能を直接使用せずにデータ取得が可能。\n\n> **注意**: 大量データの取得とは、SELECT文の結果として取得されるデータ件数が大量であることをさす（取得開始位置ではなく取得件数が基準）。例: `statement.retrieve(10000000, 20)` は大量データではない（取得最大件数が20件のため）。\n\n**SQLファイル例** (SQL_ID: GET_ALL_USER):\n\n```sql\nGET_ALL_USER =\nSELECT USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS\nFROM USER_MST\nORDER BY USER_ID\n```\n\n**Java実装例** (`DbAccessSupport` を継承したクラス):\n\n```java\npublic ResultSetIterator getAllUser() {\n    SqlPStatement statement = getSqlPStatement(\"GET_ALL_USER\");\n    statement.setString(1, \"00001\");\n    return statement.executeQuery();\n}\n\n// ResultSetIteratorはIterableを実装しているためfor-each使用可\nfor (SqlRow row : rs) {\n    String userId = row.getString(\"USER_ID\");\n    String userName = row.getString(\"USER_NAME\");\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`",
+    "s2": "> **警告**: `ResultSetIterator#iterator` の呼び出しは複数回行うことができない。\n\n**NGとなる実装パターン**:\n\n```java\n// iteratorメソッドを2回呼び出しているためNG\nResultSetIterator rs = statement.executeQuery();\nrs.iterator();\nrs.iterator();\n\n// 2回目のfor文で2回目のiterator呼び出しが行われるためNG\nResultSetIterator rs = statement.executeQuery();\nfor (SqlRow row : rs) { /* 処理 */ }\nfor (SqlRow row : rs) { /* 処理 */ }  // NG\n```",
+    "s3": "**SQLファイル例**:\n\n```sql\nREGISTER_USER =\nINSERT INTO USER_MST (USER_ID, USER_NAME, USER_NAME_KANA, TEL, MAIL_ADDRESS)\nVALUES (?, ?, ?, ?, ?)\n\nUPDATE_USER_NAME =\nUPDATE USER_MST SET USER_NAME = ? WHERE USER_ID = ?\n```\n\n**Java実装例**:\n\n```java\n// 登録処理\npublic void registerUser(String userId, String userName, String userNameKana,\n        String tel, String mailAddress) {\n    SqlPStatement statement = getSqlPStatement(\"REGISTER_USER\");\n    statement.setString(1, userId);\n    statement.setString(2, userName);\n    statement.setString(3, userNameKana);\n    statement.setString(4, tel);\n    statement.setString(5, mailAddress);\n    statement.executeUpdate();\n}\n\n// 更新処理\npublic void updateUserName(String userId, String userName) {\n    SqlPStatement updateStatement = getSqlPStatement(\"UPDATE_USER_NAME\");\n    updateStatement.setString(1, userName);\n    updateStatement.setString(2, userId);\n    int updCnt = updateStatement.executeUpdate();\n    if (updCnt != 1) {\n        // 更新対象が存在しない場合は対象なしエラーを表示する\n    }\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`",
+    "s4": "同一テーブルへの更新(insert、update、delete)を繰り返し行う場合には、バッチ更新機能(`executeBatch`)を使用する。データベースサーバとのラウンドトリップ回数を削減でき、性能改善が期待できる。\n\n> **警告**: 大量データを一括更新する場合には、適宜 `executeBatch` を呼び出すこと。これを行わないと `OutOfMemoryError` が発生したり、GCが頻発して性能劣化の原因となる。\n\n**SQLファイル例** (SQL_ID: REGSITER_ALL_USER):\n\n```sql\nREGSITER_ALL_USER =\nINSERT INTO USER (ID, NAME) VALUES (?, ?)\n```\n\n**Java実装例**:\n\n```java\nprivate static final int BATCH_EXECUTE_MAX_CNT = 1000;\n\npublic void registerAllUser(List<Map<String, ?>> users) {\n    SqlPStatement batch = getSqlPStatement(\"REGSITER_ALL_USER\");\n    for (Map<String, ?> user : users) {\n        batch.setObject(1, user.get(\"ID\"));\n        batch.setObject(2, user.get(\"NAME\"));\n        batch.addBatch();\n        if (batch.getBatchSize() == BATCH_EXECUTE_MAX_CNT) {\n            batch.executeBatch();\n        }\n    }\n    if (batch.getBatchSize() != 0) {\n        batch.executeBatch();\n    }\n}\n```\n\nSQLファイルの記述ルールやSQL_IDの指定方法: :ref:`retrieve-variable-label`"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

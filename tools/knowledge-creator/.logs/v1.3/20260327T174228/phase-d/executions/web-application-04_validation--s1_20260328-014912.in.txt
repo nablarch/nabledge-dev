@@ -1,0 +1,443 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation/04_validation.rst`
+- Format: `rst`
+
+```
+.. _how_to_validate:
+
+==============
+入力内容の精査
+==============
+
+------------------
+本項で説明する内容
+------------------
+
+説明内容
+========
+
+本項では、以下の内容を説明する。
+
+* データベースアクセスを伴わない単項目精査や項目間精査
+* 画面より入力された情報を持ったオブジェクトの取得
+* エラー(例外)発生時の処理
+
+作成内容
+========
+
+本項で作成するのは、下記画面遷移図の赤丸の部分である。ただし"戻る"遷移は対象外(戻る遷移については\ :ref:`screenTransition`\ 参照のこと)。
+
+.. image:: ./_image/04/screenTransition.png
+ :scale: 50
+
+編集するソースコードは以下のとおり。
+
+======================================================================================== ============== ========================================================================================================================
+名称(右クリック->保存でダウンロード)                                                     ステレオタイプ 処理内容
+======================================================================================== ============== ========================================================================================================================
+:download:`UsersEntity.java<./_source/download/UsersEntity.java>`\ など                  Form           データベースのテーブルに対応したクラス。データベースに設定する情報を保持する。
+                                                                                                        また、自クラスに設定したプロパティに関して業務処理に必要となる精査ロジックを保持する。
+
+:download:`W11AC02Form.java<./_source/download/W11AC02Form.java>`                        Form           画面/取引に対応したクラス。取引においてアプリケーションで使用するデータを保持する。
+                                                                                                        また、外部入力値の精査を実行するクラス。
+
+:download:`W11AC02Action.java<./_source/download/W11AC02Action.java>`                    Action         バリデーションの実行、画面入力値が設定されたオブジェクトの取得、例外処理を行う。
+                                                                                                        上記Formクラスのメソッドを呼び出し、結果をリクエストスコープに格納、JSPに遷移させる。
+
+:download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>`                              View           ユーザ情報登録画面の入力に誤りがあった場合、エラーメッセージを表示する。
+======================================================================================== ============== ========================================================================================================================
+
+ステレオタイプについては\ :ref:`stereoType`\ を参照。
+
+--------
+作成手順
+--------
+
+.. _04_formClassGenerate:
+
+Formの生成
+==========
+画面/取引に対応したFormクラスを新規に作成する。
+Formクラスには、画面から入力する値や取引で必要となる精査処理（単項目精査や項目間精査）を実装する。
+
+プロパティの追加
+----------------
+
+Formクラスには、画面からの入力値や取引で必要な値に対応するプロパティが必要である。\
+これらの値に対応するプロパティは、以下の指針に従ってFormクラスに追加する。
+
+ * プロパティがテーブルの項目に対応する場合、そのテーブルに対応するEntityクラスをFormクラスのプロパティとして追加する。
+ * プロパティがテーブルの項目に対応しない場合、そのプロパティを直接Formクラスに追加する。
+
+.. note::
+  テーブルと1対1に対応付けられたFormをEntityと呼ぶ。
+
+前者の例を挙げると、本サンプルで画面から入力する、"内線番号"はユーザテーブルの"内線番号（ビル番号）"と"内線番号（個人番号）"に対応している。\
+この場合、これらのプロパティは、UsersEntityクラスをFormクラスのプロパティとして追加する。\
+
+後者の例を挙げると、本サンプルで画面から入力する、"新(変更後)パスワード"と"パスワード(確認用)"は2つが平文で入力されるが、\
+システムアカウントテーブルには暗号化されたパスワードを格納するカラムだけがある。\
+この場合、これらのプロパティは、直接Formクラスのプロパティとして追加する。
+
+プロパティを追加する手順は以下のようになる。
+
+ :a: Formにプロパティ(メンバ変数、setter、getter)を追加する。
+ :b: FormのMapを引数にとるコンストラクタに、追加したプロパティの値を設定する処理を追加する。
+
+
+W11AC02Formにプロパティを追加した例を以下に示す。
+
+.. code-block:: java
+
+  /**
+   * ユーザ情報入力フォーム（登録機能）。
+   *
+   * @author Koichi Asano
+   * @since 1.1
+   */
+  public class W11AC02Form {
+
+      // 【説明】
+      //  以下3項目は、テーブルに対応したプロパティを保持
+      /**
+       * ユーザテーブルの情報。
+       */
+      private UsersEntity users;
+      /**
+       * システムアカウントテーブルの情報。
+       */
+      private SystemAccountEntity systemAccount;
+      /**
+       * グループシステムアカウントテーブルの情報。
+       */
+      private UgroupSystemAccountEntity ugroupSystemAccount;
+
+      // 【説明】
+      //  以下2項目は、テーブルに対応しないプロパティを保持
+      /** 新しいパスワード */
+      private String newPassword;
+
+      /** 確認用パスワード */
+      private String confirmPassword;
+
+      /**
+       * コンストラクタ。
+       */
+      public W11AC02Form() {
+      }
+
+      /**
+       * Mapを引数にとるコンストラクタ。
+       *
+       * @param params 項目名をキーとし、項目値を値とするMap
+       */
+      public W11AC02Form(Map<String, Object> params) {
+          // 【説明】
+          //  プロパティの値を設定する処理
+          users = (UsersEntity) params.get("users");
+          systemAccount = (SystemAccountEntity) params.get("systemAccount");
+          ugroupSystemAccount = (UgroupSystemAccountEntity) params.get("ugroupSystemAccount");
+          newPassword = (String) params.get("newPassword");
+          confirmPassword = (String) params.get("confirmPassword");
+      }
+
+      // 【説明】
+      //  プロパティに対するアクセスメソッド
+      //  setterには、精査用のアノテーションを付加する。
+      /**
+       * 新(変更後)パスワードを取得する。
+       *
+       * @return 新(変更後)パスワード
+       */
+      public String getNewPassword() {
+          return newPassword;
+      }
+
+      /**
+       * 新(変更後)パスワードを設定する。
+       *
+       * @param newPassword 設定する新(変更後)パスワード
+       */
+      @PropertyName("パスワード")
+      @Required
+      @SystemChar(charsetDef="asciiCharset")
+      @Length(max = 20)
+      public void setNewPassword(String newPassword) {
+          this.newPassword = newPassword;
+      }
+
+      /**
+       * 確認用パスワードを取得する。
+       *
+       * @return 確認用パスワード
+       */
+      public String getConfirmPassword() {
+          return confirmPassword;
+      }
+
+      /**
+       * 確認用パスワードを設定する。
+       *
+       * @param confirmPassword 設定する確認用パスワード
+       */
+      @PropertyName("パスワード")
+      @Required
+      @SystemChar(charsetDef="asciiCharset")
+      @Length(max = 20)
+      public void setConfirmPassword(String confirmPassword) {
+          this.confirmPassword = confirmPassword;
+      }
+
+      /**
+       * ユーザテーブルの情報を取得する。
+       * @return ユーザテーブルの情報
+       */
+      public UsersEntity getUsers() {
+          return users;
+      }
+
+      // 【説明】
+      //  @ValidationTargetを指定して、Entityクラスのプロパティが精査対象であることを示す。
+      //  精査時には、Entityクラス内で実装された精査処理を呼び出す。
+      /**
+       * ユーザテーブルの情報を設定する。
+       * @param users ユーザテーブルの情報
+       */
+      @ValidationTarget
+      public void setUsers(UsersEntity users) {
+          this.users = users;
+      }
+
+      /**
+       * システムアカウントテーブルの情報を取得する。
+       *
+       * @return システムアカウントテーブルの情報
+       */
+      public SystemAccountEntity getSystemAccount() {
+          return systemAccount;
+      }
+
+      /**
+       * システムアカウントテーブルの情報を設定する。。
+       *
+       * @param systemAccount システムアカウントテーブルの情報
+       */
+      @ValidationTarget
+      public void setSystemAccount(SystemAccountEntity systemAccount) {
+          this.systemAccount = systemAccount;
+      }
+
+      /**
+       * グループシステムアカウントテーブルの情報を取得する。
+       *
+       * @return グループシステムアカウントテーブルの情報
+       */
+      public UgroupSystemAccountEntity getUgroupSystemAccount() {
+          return ugroupSystemAccount;
+      }
+
+      /**
+       * グループシステムアカウントテーブルの情報を設定する。
+       *
+       * @param ugroupSystemAccountEntity グループシステムアカウントテーブルの情報
+       */
+      @ValidationTarget
+      public void setUgroupSystemAccount(
+              UgroupSystemAccountEntity ugroupSystemAccountEntity) {
+          this.ugroupSystemAccount = ugroupSystemAccountEntity;
+      }
+
+      // ～後略～
+  }
+
+(\ :ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>`\ 参照)
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-04_validation--s1`
+
+```json
+{
+  "id": "web-application-04_validation--s1",
+  "title": "入力内容の精査",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "",
+      "hints": [
+        "バリデーション",
+        "単項目精査",
+        "項目間精査",
+        "入力値取得",
+        "エラー処理",
+        "入力内容の精査"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "作成内容",
+      "hints": [
+        "W11AC02Form",
+        "W11AC02Action",
+        "W11AC0201.jsp",
+        "UsersEntity",
+        "Form",
+        "Action",
+        "View",
+        "ステレオタイプ"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "",
+      "hints": [
+        "Formクラス生成",
+        "Formの生成",
+        "精査処理",
+        "単項目精査",
+        "項目間精査"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "プロパティの追加",
+      "hints": [
+        "プロパティ追加",
+        "Entityクラス",
+        "テーブル対応プロパティ",
+        "テーブル非対応プロパティ",
+        "Mapコンストラクタ",
+        "プロパティ追加手順"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "プロパティの追加",
+      "hints": [
+        "@Required",
+        "@ValidationTarget",
+        "@PropertyName",
+        "@SystemChar",
+        "@Length",
+        "W11AC02Form",
+        "UsersEntity",
+        "setterアノテーション",
+        "Map引数コンストラクタ",
+        "SystemAccountEntity",
+        "UgroupSystemAccountEntity"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "本項で説明する内容：\n\n- データベースアクセスを伴わない単項目精査・項目間精査\n- 画面より入力された情報を持ったオブジェクトの取得\n- エラー（例外）発生時の処理",
+    "s2": "| ファイル | ステレオタイプ | 処理内容 |\n|---|---|---|\n| :download:`UsersEntity.java<./_source/download/UsersEntity.java>` など | Form | DBテーブルに対応したクラス。テーブルへ設定する情報を保持し、業務処理に必要な精査ロジックを保持する。 |\n| :download:`W11AC02Form.java<./_source/download/W11AC02Form.java>` | Form | 画面/取引に対応したクラス。取引で使用するデータを保持し、外部入力値の精査を実行する。 |\n| :download:`W11AC02Action.java<./_source/download/W11AC02Action.java>` | Action | バリデーション実行・入力値オブジェクト取得・例外処理を担当。Formクラスのメソッドを呼び出し、結果をリクエストスコープに格納してJSPへ遷移する。 |\n| :download:`W11AC0201.jsp<./_source/download/W11AC0201.jsp>` | View | ユーザ情報登録画面で入力誤りがあった場合にエラーメッセージを表示する。 |\n\nステレオタイプについては :ref:`stereoType` 参照。",
+    "s3": "画面/取引に対応したFormクラスを新規作成する。Formクラスには、画面入力値と取引に必要な精査処理（単項目精査・項目間精査）を実装する。",
+    "s4": "## プロパティ追加ルール\n\n- テーブル対応プロパティ: そのテーブルに対応するEntityクラスをFormクラスのプロパティとして追加する\n- テーブル非対応プロパティ: そのプロパティを直接Formクラスに追加する\n\n> **注意**: テーブルと1対1に対応付けられたFormをEntityと呼ぶ。\n\n## 判断基準の具体例\n\n**テーブル対応の例**: 画面から入力する「内線番号」はユーザテーブルの「内線番号（ビル番号）」「内線番号（個人番号）」に対応している。この場合、UsersEntityクラスをFormクラスのプロパティとして追加する。\n\n**テーブル非対応の例**: 画面から入力する「新(変更後)パスワード」と「パスワード(確認用)」は平文で入力されるが、システムアカウントテーブルには暗号化されたパスワードを格納するカラムだけがある。このため、これらのプロパティはEntityに対応付けられず、直接Formクラスのプロパティとして追加する。\n\n## 追加手順\n\na. Formにプロパティ（メンバ変数・setter・getter）を追加する\nb. FormのMapを引数にとるコンストラクタに、追加したプロパティの値設定処理を追加する",
+    "s5": "`@ValidationTarget` をEntityプロパティのsetterに指定することで、Entityクラスのプロパティが精査対象であることを示す。精査時にはEntityクラス内の精査処理が呼び出される。テーブル非対応プロパティのsetterには `@Required`、`@SystemChar`、`@Length` 等の精査アノテーションを直接付与する。\n\n**アノテーション**: `@PropertyName`, `@Required`, `@SystemChar`, `@Length`, `@ValidationTarget`\n\n```java\npublic class W11AC02Form {\n\n    private UsersEntity users;\n    private SystemAccountEntity systemAccount;\n    private UgroupSystemAccountEntity ugroupSystemAccount;\n    private String newPassword;\n    private String confirmPassword;\n\n    public W11AC02Form(Map<String, Object> params) {\n        users = (UsersEntity) params.get(\"users\");\n        systemAccount = (SystemAccountEntity) params.get(\"systemAccount\");\n        ugroupSystemAccount = (UgroupSystemAccountEntity) params.get(\"ugroupSystemAccount\");\n        newPassword = (String) params.get(\"newPassword\");\n        confirmPassword = (String) params.get(\"confirmPassword\");\n    }\n\n    @PropertyName(\"パスワード\")\n    @Required\n    @SystemChar(charsetDef=\"asciiCharset\")\n    @Length(max = 20)\n    public void setNewPassword(String newPassword) {\n        this.newPassword = newPassword;\n    }\n\n    @PropertyName(\"パスワード\")\n    @Required\n    @SystemChar(charsetDef=\"asciiCharset\")\n    @Length(max = 20)\n    public void setConfirmPassword(String confirmPassword) {\n        this.confirmPassword = confirmPassword;\n    }\n\n    @ValidationTarget\n    public void setUsers(UsersEntity users) {\n        this.users = users;\n    }\n\n    @ValidationTarget\n    public void setSystemAccount(SystemAccountEntity systemAccount) {\n        this.systemAccount = systemAccount;\n    }\n\n    @ValidationTarget\n    public void setUgroupSystemAccount(UgroupSystemAccountEntity ugroupSystemAccountEntity) {\n        this.ugroupSystemAccount = ugroupSystemAccountEntity;\n    }\n}\n```\n\n(:ref:`記載しているサンプルプログラムソースコードの注意事項 <sourceCode>` 参照)"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

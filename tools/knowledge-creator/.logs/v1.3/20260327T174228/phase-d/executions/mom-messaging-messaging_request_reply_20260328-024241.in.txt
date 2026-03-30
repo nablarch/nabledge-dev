@@ -1,0 +1,528 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/fw/architectural_pattern/messaging_request_reply.rst`
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+====================================================
+同期応答メッセージング実行制御基盤
+====================================================
+本節で解説する :doc:`messaging_request_reply` では、
+外部から送信された要求電文中のリクエストIDをもとに、実行する業務アプリケーションを決定し、
+その処理結果をもとに応答電文を作成して送信する制御基盤を提供する。
+
+オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。
+
+なお、電文の送受信処理の詳細については、
+:doc:`../core_library/enterprise_messaging` の項を参照すること。
+
+++++++++++++++++
+
+----------------
+基本構造
+----------------
+:doc:`messaging_request_reply` の構造は、前半の **プロセス制御部分** (メインスレッド)と
+後半の **リクエストスレッド** の2つに大きく分かれる。
+
+**プロセス制御部分** は、 Javaコマンドから :doc:`../handler/Main` を実行することによって開始され、
+`リポジトリ`_ の初期化処理の中でハンドラキューとデータリーダ(:doc:`../reader/FwHeaderReader`)を生成する。
+初期化処理完了後、ハンドラキュー上のハンドラを順次実行し、 :doc:`../handler/MultiThreadExecutionHandler`
+でリクエストスレッドを作成した後、その完了を待機する。
+
+**リクエストスレッド** では、メインスレッド側で作成したデータリーダを使用し、受信キュー上の要求電文を待機する。
+要求電文を受信したスレッドでは、まず、要求電文中の :ref:`フレームワーク制御ヘッダ<fw_header>` 中の
+**リクエストIDヘッダー** を読込み、その値に対応した業務処理を実装する
+:doc:`業務アクションハンドラ<../handler/MessagingAction>` を生成する。
+
+業務アクションハンドラでは、要求電文の内容をもとに業務処理を実行し、その処理結果から
+応答電文オブジェクトを作成してリターンする。
+リターンされた応答電文オブジェクトは、 :doc:`../handler/MessageReplyHandler` によって要求元に送信される。
+応答電文を送信した(正確にはローカル送信キューへのPUTが完了した)後、 
+:doc:`../handler/RequestThreadLoopHandler` により最初の要求電文待機処理に戻る。
+以降、同様の処理を繰り返す。
+
+  .. note::
+     :doc:`messaging` では、各リクエストスレッド上のループ処理を行うために、
+     :doc:`../handler/RequestThreadLoopHandler` を使用する。
+
+  .. note::
+    :doc:`batch` では、業務アクションハンドラがデータリーダを作成するが、
+    :doc:`messaging` では `リポジトリ`_ で初期化する。
+
++++++++++++++++++++
+
+------------------------------------------
+業務アクションハンドラの実装
+------------------------------------------
+業務アクションハンドラはFWが提供するテンプレートクラスを継承して作成する。
+詳細は以下のドキュメントを参照すること。
+
+  - :doc:`../handler/MessagingAction` 
+
+++++++++++++++++++++
+
+------------------------------------------------------
+標準ハンドラ構成と主要処理フロー
+------------------------------------------------------
+以下は、 :doc:`messaging_request_reply` の標準ハンドラ構成と、その上で発生しうる主要な処理フローを表したものである。
+
+.. _flow-table:
+  
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  | 区分                   | 種別       | 処理フロー名           | 概要                                      | 機能                    |
+  +========================+============+========================+===========================================+=========================+
+  | プロセス起動制御       | 正常フロー | 正常起動               | Javaコマンドからプロセスを起動し、        | .. _launch:             |
+  |                        |            |                        | リクエストスレッドを初期化する。          |                         |
+  |                        |            |                        | 各スレッドは受信キュー上で電文を待機する。| `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | 重複起動エラー         | プロセス起動時、既に同一プロセスが        | .. _duplaunch:          |
+  |                        |            |                        | 起動していた場合は異常終了する。          |                         |
+  |                        |            |                        |                                           | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  | リクエストスレッド内   | 正常フロー | 正常受信・正常応答     | 各リクエストスレッドは、受信電文の受付後、| .. _normalreply:        |
+  | 制御                   |            |                        | 電文中のリクエストIDヘッダをもとに実行する|                         |
+  |                        |            |                        | 業務処理を決定し処理を移譲する。          |                         |
+  |                        |            |                        | 業務処理結果の内容をもとに応答電文を      |                         |
+  |                        |            |                        | 構築し送信する。                          | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 再送応答               | 要求電文の再送要求フラグヘッダが設定されて| .. _resending:          |
+  |                        |            |                        | いた場合、送信済み電文テーブルの内容を参照|                         |
+  |                        |            |                        | し、該当する送信済み電文が存在した場合は、|                         |
+  |                        |            |                        | その内容をもとに応答を作成して送信する。  | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 受信待機タイムアウト   | 各リクエストスレッドは、受信キューでの    | .. _readtimeout:        |
+  |                        |            |                        | 待機状態が一定時間異常継続した場合は、    |                         |
+  |                        |            |                        | プロセス管理テーブルの状態を確認するために|                         |
+  |                        |            |                        | 待機を解除してスレッドループの先頭に戻る。| `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 業務処理エラー応答     | 業務処理でエラーが発生した場合、          | .. _errorreply:         |
+  |                        |            |                        | 業務トランザクションをロールバックし、    |                         |
+  |                        |            |                        | 業務側で作成した応答電文オブジェクトを    |                         |
+  |                        |            |                        | もとに電文を作成して送信する。            | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 認可エラー             | 要求電文中のリクエストID/ユーザIDヘッダの | .. _unauthorized:       |
+  |                        |            |                        | 値をもとに認可チェックを行い、            |                         |
+  |                        |            |                        | 権限が無い場合は、エラー応答を送信する。  | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | 開閉局エラー           | 要求電文中のリクエストIDに対する業務機能  | .. _notonservice:       |
+  |                        |            |                        | が閉局中であった場合は、                  |                         |
+  |                        |            |                        | エラー応答を送信する。                    | `フローを表示`_         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | DB/MQ接続エラー        | DB/MQに対する接続に失敗した場合は         | .. _connectionerror:    |
+  |                        |            |                        | 当該の要求電文に対するエラー応答を送信    |                         |
+  |                        |            |                        | した後、再接続処理を行う。                | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+  |  プロセス停止制御      | 正常フロー | プロセス正常停止       | プロセス管理テーブルのフラグを変更する    | .. _termination:        |
+  |                        |            |                        | ことで、リクエストスレッドでの新規処理    |                         |
+  |                        |            |                        | 受付を停止する。その後、全スレッドの      | `フローを表示`_         |
+  |                        |            |                        | 終了を待ってプロセスを正常終了させる。    |                         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 代替フロー | プロセス異常停止       | プロセスの継続に影響する致命的なエラーが  | .. _abort:              |
+  |                        |            |                        | 発生した場合は、リクエストスレッドでの    |                         |
+  |                        |            |                        | 新規処理の受付を停止した上で、全スレッド  | `フローを表示`_         |
+  |                        |            |                        | の終了を待ってプロセスを異常終了させる。  |                         |
+  |                        +------------+------------------------+-------------------------------------------+-------------------------+
+  |                        | 異常フロー | DB/MQ接続リトライ失敗  | DB/MQの接続リトライが上限回数に達しても   | .. _retryerror:         |
+  |                        |            |                        | 成功しなかった場合は、プロセスを異常停止  |                         |
+  |                        |            |                        | させる。                                  | `フローを表示`_         |
+  +------------------------+------------+------------------------+-------------------------------------------+-------------------------+
+ 
+.. raw:: html
+   :file: ../Handler.js
+
+.. _フローを表示:
+
+**標準ハンドラ構成** (説明文をクリックすると、その処理のステップレベルでの詳細が表示されます。)
+
+.. raw:: html
+
+  <script>
+  var Context      = 'messaging'
+    , HandlerQueue = [
+        "Main"
+      , "StatusCodeConvertHandler"
+      , "GlobalErrorHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_main"
+      , "DuplicateProcessCheckHandler"
+      , "MultiThreadExecutionHandler"
+      , "RetryHandler"
+      , "MessagingContextHandler"
+      , "DbConnectionManagementHandler"
+      , "RequestThreadLoopHandler"
+      , "ThreadContextClearHandler"
+      , "ThreadContextHandler_request"
+      , "ProcessStopHandler"
+      , "MessageReplyHandler"
+      , "DataReadHandler_messaging"
+      , "PermissionCheckHandler"
+      , "RequestPathJavaPackageMapping"
+      , "ServiceAvailabilityCheckHandler"
+      , "TransactionManagementHandler"
+      , "MessageResendHandler"
+      , "MessagingAction"
+      ]
+
+    , Flow = {
+
+        // 正常起動
+        launch: [
+          ["Main",                          "inbound"]
+        , ["ThreadContextHandler_main",     "inbound"]
+        , ["MultiThreadExecutionHandler",   "inbound"]
+        , ["DbConnectionManagementHandler", "inbound", "ここで取得したDB接続を、以降の処理で使いまわす。"]
+        , ["MessagingContextHandler",       "inbound", "ここで取得したMQ接続を、以降の処理で使いまわす。"]
+        , ["RequestThreadLoopHandler",      "inbound", "このハンドラ以降の処理をリクエスト毎にループする。"]
+        , ["DataReadHandler_messaging",     "inbound", "各リクエストスレッドはここで受信キュー上の要求電文を待機する。"
+                                                     + "以降は、要求電文の受信→業務処理の実行→応答電文の送信"
+                                                     + "を繰り返す。"]
+        ],
+
+        // 重複起動エラー
+        duplaunch: [
+          ["Main",                         "inbound"]
+        , ["ThreadContextHandler_main",    "inbound",  "起動引数-requestPathからリクエストIDを決定する。"]
+        , ["DuplicateProcessCheckHandler", "inbound",  "起動停止時の終了コードはこのハンドラに設定する。"]
+        , ["GlobalErrorHandler",           "error",    "ここで障害ログが出力される。"]
+        , ["StatusCodeConvertHandler",     "outbound"]
+        , ["Main",                         "outbound", "異常終了"]
+        ],
+
+        // 電文正常応答
+        normalreply: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessagingAction",               "inbound"]
+        , ["MessagingAction",               "outbound"]
+        , ["MessageResendHandler",          "outbound"]
+        , ["TransactionManagementHandler",  "outbound"]
+        , ["MessageReplyHandler",           "outbound"]
+        , ["RequestThreadLoopHandler",      "outbound", "→① へ"]
+        ],
+
+
+        // 再送応答
+        resending: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound", "再送応答時、ディスパッチされた業務アクションは実行されない。"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessageResendHandler",          "inbound"]
+        , ["TransactionManagementHandler",  "outbound"]
+        , ["MessageReplyHandler",           "outbound", "再送応答"]
+        , ["RequestThreadLoopHandler",      "outbound", "→① へ"]
+        ],
+
+        // 電文受信タイムアウト
+        readtimeout: [
+          ["DataReadHandler_messaging",     "inbound"]
+        , ["DataReadHandler_messaging",     "outbound","タイムアウト間隔を経過してもメッセージを受信できなかった場合、"
+                                                     + "DataReader.NoMoreRecord をリターンする。"]
+        , ["MessageReplyHandler",           "outbound","DataRecord.NoMoreRecord が返された場合は何もせずにリターンする。"]
+        , ["RequestThreadLoopHandler",      "outbound","→⑤ へ"]
+        , ["RequestThreadLoopHandler",      "inbound"]
+        , ["ProcessStopHandler",            "inbound", "プロセス停止フラグ確認後、再び① にもどる。"]
+        ],
+
+
+        // 電文エラー応答
+        errorreply: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["RequestPathJavaPackageMapping", "inbound"]
+        , ["TransactionManagementHandler",  "inbound"]
+        , ["MessagingAction",               "inbound"]
+        , ["MessagingAction",               "error",  "業務処理をエラー終了させる場合は、実行時例外を送出する。"
+                                                    + "これにより、トランザクションがロールバックされ、障害ログが出力される。"]
+        , ["TransactionManagementHandler",  "error", "業務アクションをコールバックし、その処理結果(エラー応答電文オブジェクト)を送出する。"
+                                                    +"また、この際、起因例外をネストさせる。"]
+        , ["TransactionManagementHandler",  "callback"]
+        , ["MessagingAction",               "callback"]
+        , ["MessageReplyHandler",           "error", "業務アクションが作成したエラー応答電文オブジェクトを送信した後、起因例外を再送出する。"]
+        , ["RequestThreadLoopHandler",      "error", "再送出された起因例外をここで障害ログとして出力した後、→① へ"]
+        ],　
+
+
+        // 認可エラー応答
+        unauthorized: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound"]
+        , ["DataReadHandler_messaging",     "inbound"]
+        , ["PermissionCheckHandler",        "inbound", "認可エラー(Result.Forbidden/ステータスコード:403)を送出する。"]
+        , ["MessageReplyHandler",           "error",   "業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。"]
+        , ["RequestThreadLoopHandler",      "error",   "再送出された起因例外をここで障害ログとして出力した後、→① へ"]
+        ],　
+
+
+        // 閉局エラー応答
+        notonservice: [
+          ["RequestThreadLoopHandler",        "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",    "inbound"]
+        , ["DataReadHandler_messaging",       "inbound"]
+        , ["ServiceAvailabilityCheckHandler", "inbound", "閉局エラー(Result.ServiceUnavailable/ステータスコード:503)を送出する。"]
+        , ["MessageReplyHandler",             "error",   "業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する。"]
+        , ["RequestThreadLoopHandler",        "error",   "INFOログを出力し、一定時間waitした後、→① へ"]
+        ],　
+
+
+        // DB/MQ接続エラー
+        connectionerror: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["MessagingAction",               "inbound",  "リクエスト処理実行中にDBもしくはMQ接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error"]
+        , ["MessagingContextHandler",       "inbound", "MQ再接続"]
+        , ["DbConnectionManagementHandler", "inbound", "DB再接続"]
+        ],　
+
+
+
+        // プロセス正常停止
+        termination: [
+          ["RequestThreadLoopHandler",      "inbound", "リクエストスレッド内での処理の起点"]
+        , ["ThreadContextHandler_request",  "inbound",  "ここで、リクエストIDの値が起動引数-requestPathで指定された値に戻される。"]
+        , ["ProcessStopHandler",            "inbound" ]
+        , ["RequestThreadLoopHandler",      "error",  "ここでプロセス停止要求(ProcessStop)を捕捉すると、INFOログを出力後、"
+                                                    + "処理結果オブジェクトをリターンする。(ステータスコード:200)"]
+        , ["MultiThreadExecutionHandler",   "outbound"]
+        , ["StatusCodeConvertHandler",      "outbound", "ステータスコード:200 → 終了コード:0"]
+        , ["Main",                          "outbound", "正常終了"]
+        ],
+
+
+        // プロセス異常終了
+        abort: [
+          ["MessagingAction",               "inbound",  "ここでリクエスト処理実行中に致命的なエラー(VM系のエラーや、"
+                                                      + "ProcessAbnormalEnd)が発生したとする。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "致命的エラーはここで例外を際送出し、リクエストスレッドを停止する。"]
+        , ["MultiThreadExecutionHandler",   "error"]
+        , ["GlobalErrorHandler",            "error"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        ],
+
+        // DB/MQ接続エラー
+        retryerror: [
+          ["MessagingAction",               "inbound",  "リクエスト処理実行中にDBもしくはMQ接続エラーが発生した場合、"
+                                                      + "リトライ可能実行時例外(Retryableを実装した例外)が送出される。"]
+        , ["MessageReplyHandler",           "error"]
+        , ["RequestThreadLoopHandler",      "error", "リトライ可能例外はそのまま再送出する。"]
+        , ["RetryHandler",                  "error", "リトライ回数が上限値を超過した場合は、例外を再送出し、リクエストスレッドを停止する。"]
+        , ["MultiThreadExecutionHandler",   "error"]
+        , ["GlobalErrorHandler",            "error"]
+        , ["StatusCodeConvertHandler",      "outbound"]
+        , ["Main",                          "outbound", "異常終了"]
+        
+        ]
+      };
+  </script>
+
+.. raw:: html
+   :file: handler_structure.html
+
+
+
+
+
+
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-messaging_request_reply`
+
+```json
+{
+  "id": "mom-messaging-messaging_request_reply",
+  "title": "同期応答メッセージング実行制御基盤",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "基本構造",
+      "hints": [
+        "Main",
+        "FwHeaderReader",
+        "MultiThreadExecutionHandler",
+        "MessagingAction",
+        "MessageReplyHandler",
+        "RequestThreadLoopHandler",
+        "プロセス制御部分",
+        "リクエストスレッド",
+        "受信キュー",
+        "フレームワーク制御ヘッダ",
+        "リクエストIDヘッダ",
+        "同期応答メッセージング",
+        "オーソリ業務",
+        "即時応答"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "業務アクションハンドラの実装",
+      "hints": [
+        "MessagingAction",
+        "業務アクションハンドラ",
+        "テンプレートクラス継承",
+        "MessagingAction実装"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "標準ハンドラ構成と主要処理フロー",
+      "hints": [
+        "Main",
+        "StatusCodeConvertHandler",
+        "GlobalErrorHandler",
+        "ThreadContextClearHandler",
+        "ThreadContextHandler_main",
+        "ThreadContextHandler_request",
+        "DuplicateProcessCheckHandler",
+        "MultiThreadExecutionHandler",
+        "RetryHandler",
+        "MessagingContextHandler",
+        "DbConnectionManagementHandler",
+        "RequestThreadLoopHandler",
+        "ProcessStopHandler",
+        "MessageReplyHandler",
+        "DataReadHandler_messaging",
+        "PermissionCheckHandler",
+        "RequestPathJavaPackageMapping",
+        "ServiceAvailabilityCheckHandler",
+        "TransactionManagementHandler",
+        "MessageResendHandler",
+        "ハンドラキュー",
+        "正常起動",
+        "重複起動エラー",
+        "正常受信・正常応答",
+        "再送応答",
+        "受信待機タイムアウト",
+        "業務処理エラー応答",
+        "認可エラー",
+        "開閉局エラー",
+        "DB/MQ接続エラー",
+        "プロセス正常停止",
+        "プロセス異常停止",
+        "DB/MQ接続リトライ失敗",
+        "Retryable",
+        "ProcessAbnormalEnd",
+        "ProcessStop"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "オーソリ業務のような、要求電文に対する即時応答を必要とする業務処理において使用される。\n\n:doc:`messaging_request_reply` の構造は **プロセス制御部分** (メインスレッド) と **リクエストスレッド** の2つに分かれる。\n\n**プロセス制御部分** (メインスレッド):\n- Javaコマンドから :doc:`../handler/Main` を実行して開始\n- リポジトリ初期化処理でハンドラキューとデータリーダ (:doc:`../reader/FwHeaderReader`) を生成\n- :doc:`../handler/MultiThreadExecutionHandler` でリクエストスレッドを作成後、完了を待機\n\n**リクエストスレッド**:\n- データリーダを使用し受信キュー上の要求電文を待機\n- 要求電文受信後、:ref:`フレームワーク制御ヘッダ<fw_header>` の **リクエストIDヘッダー** を読み込み、対応する :doc:`業務アクションハンドラ<../handler/MessagingAction>` を生成\n- 業務処理を実行し、応答電文オブジェクトを :doc:`../handler/MessageReplyHandler` によって要求元に送信\n- :doc:`../handler/RequestThreadLoopHandler` により最初の要求電文待機処理に戻り、以降繰り返す\n\n> **注意**: :doc:`messaging` では、リクエストスレッド上のループ処理に :doc:`../handler/RequestThreadLoopHandler` を使用する。\n\n> **注意**: :doc:`batch` では業務アクションハンドラがデータリーダを作成するが、:doc:`messaging` ではリポジトリで初期化する。",
+    "s2": "業務アクションハンドラはFWが提供するテンプレートクラスを継承して作成する。詳細は :doc:`../handler/MessagingAction` を参照。",
+    "s3": "## 処理フロー一覧\n\n| 区分 | 種別 | 処理フロー名 | 概要 |\n|---|---|---|---|\n| プロセス起動制御 | 正常フロー | 正常起動 | Javaコマンドからプロセスを起動し、リクエストスレッドを初期化する。各スレッドは受信キュー上で電文を待機する。|\n| プロセス起動制御 | 異常フロー | 重複起動エラー | プロセス起動時、既に同一プロセスが起動していた場合は異常終了する。|\n| リクエストスレッド内制御 | 正常フロー | 正常受信・正常応答 | 受信電文のリクエストIDヘッダをもとに業務処理を決定し委譲する。業務処理結果をもとに応答電文を構築し送信する。|\n| リクエストスレッド内制御 | 代替フロー | 再送応答 | 要求電文の再送要求フラグヘッダが設定されていた場合、送信済み電文テーブルを参照し、該当する送信済み電文が存在した場合はその内容をもとに応答を作成して送信する。|\n| リクエストスレッド内制御 | 代替フロー | 受信待機タイムアウト | 受信キューでの待機状態が一定時間継続した場合、プロセス管理テーブルの状態確認のため待機を解除してスレッドループの先頭に戻る。|\n| リクエストスレッド内制御 | 代替フロー | 業務処理エラー応答 | 業務処理でエラーが発生した場合、業務トランザクションをロールバックし、業務側で作成した応答電文オブジェクトをもとに電文を作成して送信する。|\n| リクエストスレッド内制御 | 代替フロー | 認可エラー | 要求電文中のリクエストID/ユーザIDヘッダの値をもとに認可チェックを行い、権限が無い場合はエラー応答を送信する。|\n| リクエストスレッド内制御 | 代替フロー | 開閉局エラー | 要求電文中のリクエストIDに対する業務機能が閉局中の場合はエラー応答を送信する。|\n| リクエストスレッド内制御 | 異常フロー | DB/MQ接続エラー | DB/MQへの接続失敗時、エラー応答を送信後に再接続処理を行う。|\n| プロセス停止制御 | 正常フロー | プロセス正常停止 | プロセス管理テーブルのフラグ変更で新規処理受付を停止する。全スレッドの終了を待ってプロセスを正常終了させる。|\n| プロセス停止制御 | 代替フロー | プロセス異常停止 | 致命的なエラーが発生した場合、新規処理受付を停止した上で、全スレッド終了を待ってプロセスを異常終了させる。|\n| プロセス停止制御 | 異常フロー | DB/MQ接続リトライ失敗 | DB/MQ接続リトライが上限回数に達しても成功しなかった場合はプロセスを異常停止させる。|\n\n## 標準ハンドラキュー\n\n1. Main\n2. StatusCodeConvertHandler\n3. GlobalErrorHandler\n4. ThreadContextClearHandler\n5. ThreadContextHandler_main\n6. DuplicateProcessCheckHandler\n7. MultiThreadExecutionHandler\n8. RetryHandler\n9. MessagingContextHandler\n10. DbConnectionManagementHandler\n11. RequestThreadLoopHandler\n12. ThreadContextClearHandler\n13. ThreadContextHandler_request\n14. ProcessStopHandler\n15. MessageReplyHandler\n16. DataReadHandler_messaging\n17. PermissionCheckHandler\n18. RequestPathJavaPackageMapping\n19. ServiceAvailabilityCheckHandler\n20. TransactionManagementHandler\n21. MessageResendHandler\n22. MessagingAction\n\n## 各処理フローの詳細\n\n**正常起動**:\n1. Main (inbound)\n2. ThreadContextHandler_main (inbound)\n3. MultiThreadExecutionHandler (inbound)\n4. DbConnectionManagementHandler (inbound) — 取得したDB接続を以降の処理で使いまわす\n5. MessagingContextHandler (inbound) — 取得したMQ接続を以降の処理で使いまわす\n6. RequestThreadLoopHandler (inbound) — このハンドラ以降の処理をリクエスト毎にループする\n7. DataReadHandler_messaging (inbound) — 各リクエストスレッドはここで受信キュー上の要求電文を待機する。以降は要求電文の受信→業務処理の実行→応答電文の送信を繰り返す\n\n**重複起動エラー**:\n1. Main (inbound)\n2. ThreadContextHandler_main (inbound) — 起動引数-requestPathからリクエストIDを決定する\n3. DuplicateProcessCheckHandler (inbound) — 起動停止時の終了コードはこのハンドラに設定する\n4. GlobalErrorHandler (error) — 障害ログが出力される\n5. StatusCodeConvertHandler (outbound)\n6. Main (outbound) — 異常終了\n\n**正常受信・正常応答**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. RequestPathJavaPackageMapping (inbound)\n5. TransactionManagementHandler (inbound)\n6. MessagingAction (inbound)\n7. MessagingAction (outbound)\n8. MessageResendHandler (outbound)\n9. TransactionManagementHandler (outbound)\n10. MessageReplyHandler (outbound)\n11. RequestThreadLoopHandler (outbound) — →① へ\n\n**再送応答**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. RequestPathJavaPackageMapping (inbound) — 再送応答時、ディスパッチされた業務アクションは実行されない\n5. TransactionManagementHandler (inbound)\n6. MessageResendHandler (inbound)\n7. TransactionManagementHandler (outbound)\n8. MessageReplyHandler (outbound) — 再送応答\n9. RequestThreadLoopHandler (outbound) — →① へ\n\n**受信待機タイムアウト**:\n1. DataReadHandler_messaging (inbound)\n2. DataReadHandler_messaging (outbound) — タイムアウト間隔を経過してもメッセージを受信できなかった場合、DataReader.NoMoreRecordをリターンする\n3. MessageReplyHandler (outbound) — DataRecord.NoMoreRecordが返された場合は何もせずにリターンする\n4. RequestThreadLoopHandler (outbound) — →⑤ へ\n5. RequestThreadLoopHandler (inbound)\n6. ProcessStopHandler (inbound) — プロセス停止フラグ確認後、再び① にもどる\n\n**業務処理エラー応答**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. RequestPathJavaPackageMapping (inbound)\n5. TransactionManagementHandler (inbound)\n6. MessagingAction (inbound)\n7. MessagingAction (error) — 業務処理をエラー終了させる場合は実行時例外を送出する。これによりトランザクションがロールバックされ、障害ログが出力される\n8. TransactionManagementHandler (error) — 業務アクションをコールバックし、その処理結果(エラー応答電文オブジェクト)を送出する。起因例外をネストさせる\n9. TransactionManagementHandler (callback)\n10. MessagingAction (callback)\n11. MessageReplyHandler (error) — 業務アクションが作成したエラー応答電文オブジェクトを送信後、起因例外を再送出する\n12. RequestThreadLoopHandler (error) — 再送出された起因例外を障害ログとして出力後、→① へ\n\n**認可エラー**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. PermissionCheckHandler (inbound) — 認可エラー(Result.Forbidden/ステータスコード:403)を送出する\n5. MessageReplyHandler (error) — 業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する\n6. RequestThreadLoopHandler (error) — 再送出された起因例外を障害ログとして出力後、→① へ\n\n**開閉局エラー**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound)\n3. DataReadHandler_messaging (inbound)\n4. ServiceAvailabilityCheckHandler (inbound) — 閉局エラー(Result.ServiceUnavailable/ステータスコード:503)を送出する\n5. MessageReplyHandler (error) — 業務処理は実行できないので、FW制御ヘッダ部のみを出力して送信し、認可エラーを再送出する\n6. RequestThreadLoopHandler (error) — INFOログを出力し、一定時間waitした後、→① へ\n\n**DB/MQ接続エラー**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. MessagingAction (inbound) — リクエスト処理実行中にDB/MQ接続エラーが発生した場合、リトライ可能実行時例外(Retryableを実装した例外)が送出される\n3. MessageReplyHandler (error)\n4. RequestThreadLoopHandler (error) — リトライ可能例外はそのまま再送出する\n5. RetryHandler (error)\n6. MessagingContextHandler (inbound) — MQ再接続\n7. DbConnectionManagementHandler (inbound) — DB再接続\n\n**プロセス正常停止**:\n1. RequestThreadLoopHandler (inbound) — リクエストスレッド内での処理の起点\n2. ThreadContextHandler_request (inbound) — リクエストIDの値が起動引数-requestPathで指定された値に戻される\n3. ProcessStopHandler (inbound)\n4. RequestThreadLoopHandler (error) — プロセス停止要求(ProcessStop)を捕捉するとINFOログを出力後、処理結果オブジェクトをリターンする(ステータスコード:200)\n5. MultiThreadExecutionHandler (outbound)\n6. StatusCodeConvertHandler (outbound) — ステータスコード:200 → 終了コード:0\n7. Main (outbound) — 正常終了\n\n**プロセス異常終了**:\n1. MessagingAction (inbound) — リクエスト処理実行中に致命的なエラー(VM系のエラーやProcessAbnormalEnd)が発生\n2. MessageReplyHandler (error)\n3. RequestThreadLoopHandler (error) — 致命的エラーはここで例外を再送出し、リクエストスレッドを停止する\n4. MultiThreadExecutionHandler (error)\n5. GlobalErrorHandler (error)\n6. StatusCodeConvertHandler (outbound)\n7. Main (outbound) — 異常終了\n\n**DB/MQ接続リトライ失敗**:\n1. MessagingAction (inbound) — リクエスト処理実行中にDB/MQ接続エラーが発生し、リトライ可能実行時例外(Retryableを実装した例外)が送出される\n2. MessageReplyHandler (error)\n3. RequestThreadLoopHandler (error) — リトライ可能例外はそのまま再送出する\n4. RetryHandler (error) — リトライ回数が上限値を超過した場合は例外を再送出し、リクエストスレッドを停止する\n5. MultiThreadExecutionHandler (error)\n6. GlobalErrorHandler (error)\n7. StatusCodeConvertHandler (outbound)\n8. Main (outbound) — 異常終了"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

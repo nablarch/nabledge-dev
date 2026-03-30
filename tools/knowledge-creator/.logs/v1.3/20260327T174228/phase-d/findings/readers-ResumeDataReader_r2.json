@@ -1,0 +1,27 @@
+{
+  "file_id": "readers-ResumeDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — レジューム処理の流れ (1回目の実行)",
+      "description": "The source explicitly notes that steps 1–3 of the first execution repeat for each record: \"（No1～3の処理を繰り返す）\". This loop annotation is absent from the knowledge file, making the first-run flow appear to be a single-pass sequence rather than a per-record loop.",
+      "source_evidence": "「（\\ **No1～3**\\ の処理を繰り返す）」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — レジューム処理の流れ (2回目の実行)",
+      "description": "The source notes that steps 2–5 of the second execution repeat until the end of the file: \"（ファイル終端まで\\ **No2～5**\\ の処理を繰り返す）\". The knowledge file describes the skip loop (step 3) but omits the outer repetition loop covering the main processing steps 2–5 through end-of-file.",
+      "source_evidence": "「（ファイル終端まで\\ **No2～5**\\ の処理を繰り返す）」"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s1 — note about resume point execution count",
+      "description": "The source qualifies the mismatch between execution count and physical records with \"データリーダの機能によっては\" (depending on the data reader's functionality). The knowledge file drops this qualifier, making the mismatch sound unconditional.",
+      "source_evidence": "「この実行回数は、データリーダの機能によってはファイルの物理的なレコードとは一致しない値となる。」"
+    }
+  ]
+}

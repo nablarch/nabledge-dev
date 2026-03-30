@@ -1,0 +1,20 @@
+{
+  "file_id": "about-nablarch-concept--s13",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "sections.s1",
+      "description": "The note states that `getStatusCode()` and `getMessage()` are not `@Published` and therefore \"アプリケーション開発者が業務コードから安全に呼び出せることが保証されているのは `isSuccess()` だけである\". The source only shows the `@Published` annotation on `isSuccess()` without any statement about what `@Published` implies for application developers or that the other methods are unsafe to call. This interpretation of `@Published` semantics is not present in this source file.",
+      "source_evidence": "Source shows `@Published` on `isSuccess()` only, with no explanation of what the annotation means or its implications for non-annotated methods."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "index[0] (s1)",
+      "description": "The hints for s1 are missing `getStatusCode`, `getMessage`, and `TransactionManagementHandler`. `getStatusCode()` and `getMessage()` are method names defined in the `Result` interface, which is the central API of this section. `TransactionManagementHandler` is explicitly referenced twice in s1 (for commit on normal end and rollback on abnormal end).",
+      "source_evidence": "Source defines `int getStatusCode()` and `String getMessage()` in the Result interface. Source mentions `TransactionManagementHandler` for both commit and rollback behaviors in the handler result tables."
+    }
+  ]
+}

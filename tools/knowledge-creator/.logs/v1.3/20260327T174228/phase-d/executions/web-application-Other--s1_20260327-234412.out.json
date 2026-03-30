@@ -1,0 +1,41 @@
+{
+  "file_id": "web-application-Other--s1",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s8",
+      "description": "Section s8 (コード値の取得方法) contains specific API method calls (`CodeUtil.getValues(\"GENDER\")`, `CodeUtil.getName(\"GENDER\", \"M\")`) and a JSP tag example (`n:codeSelect`). The source file is truncated before this section's content begins — no source text is available to confirm these method signatures or code patterns.",
+      "source_evidence": "Source file ends with the heading `other_example_code_get` (--------) but provides no content body. None of these method signatures appear anywhere in the visible source."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s9",
+      "description": "Section s9 (コード値を使ったバリデーション) contains `CodeUtil.contains(\"GENDER\", gender)` and the guidance 'アノテーションによるコード値バリデーションはEntityまたはFormに設定する'. The source file is truncated before this section's content, so there is no source basis for any of this content.",
+      "source_evidence": "Source file does not include content for the コード値を使ったバリデーション section. The heading is referenced only in the TOC (`other_example_code_validate`)."
+    },
+    {
+      "category": "fabrication",
+      "severity": "critical",
+      "location": "s10",
+      "description": "Section s10 (警告メッセージの表示方法) describes warning messages being notified via `throw new ApplicationException(message)` with `MessageLevel.WARN`. In the verifiable portions of this same source, `ApplicationException` is consistently used to halt execution on errors (s5, s6). A WARN-level message that throws an execution-halting exception is inconsistent with typical warning behavior. The source is truncated before this section, so no source basis exists — and the pattern contradicts established Nablarch usage shown elsewhere in the same document.",
+      "source_evidence": "Source truncated before s10 content. In visible source: s5 uses ApplicationException for ERROR-level business errors, s6 uses it for DB-access validation errors. No basis for WARN+throw pattern."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s4",
+      "description": "Method `getStringResource` is used in the code example (`MessageUtil.getStringResource(\"PRP0002\")`) but is absent from the hints array for s4.",
+      "source_evidence": "Source s4 code block: `StringResource nameResource = MessageUtil.getStringResource(\"PRP0002\");`"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s9",
+      "description": "Method `contains` (used as `CodeUtil.contains(...)` in the code example) is absent from s9 hints. It is the central API for this section.",
+      "source_evidence": "s9 code block in knowledge file: `if (!CodeUtil.contains(\"GENDER\", gender))`. Not reflected in hints: [\"CodeUtil\", \"コード値バリデーション\", \"codeId\", \"コードマスタ\", \"バリデーション\", \"精査\"]."
+    }
+  ]
+}

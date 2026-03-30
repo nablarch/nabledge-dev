@@ -1,0 +1,20 @@
+{
+  "file_id": "nablarch-batch-02_basic",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "s1 (概要)",
+      "description": "Source contains 10 `------` level headings (作業単位, DBを入力とするバッチを実装する場合, ファイルを入力とするバッチを実装する場合, フレームワーク動作イメージ, コマンドライン引数, 初期化処理, リーダ作成, 1作業単位毎の処理, エラー発生時の処理, 終了処理) but the knowledge file has only 9 sections. The `作業単位` subsection is merged into s1 rather than given its own section.",
+      "source_evidence": "Source heading: `作業単位\n--------` with content defining the concept of 作業単位 and providing the control-break example."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 (クラス構造)",
+      "description": "`ExecutionContext` is a PascalCase class name that appears in every method signature listed in the s2 tables (initialize, createReader, handle, transactionSuccess, transactionFailure, error, terminate, and the FileBatchAction methods), but is absent from the s2 hints array.",
+      "source_evidence": "Source method signatures: `void initialize(CommandLine command, ExecutionContext context)`, `DataReader<D> createReader(ExecutionContext context)`, `Result handle(D inputData, ExecutionContext context)`, etc."
+    }
+  ]
+}

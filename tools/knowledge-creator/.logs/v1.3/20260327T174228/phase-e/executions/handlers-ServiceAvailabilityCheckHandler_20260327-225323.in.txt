@@ -1,0 +1,219 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "handlers-ServiceAvailabilityCheckHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s1 hints",
+      "description": "Section s1 mentions FwHeaderReader in the DataReadHandler row of the related-handlers table, but 'FwHeaderReader' is absent from the s1 hints array.",
+      "source_evidence": ":doc:`../reader/FwHeaderReader` が **requestId** ヘッダの値をスレッドコンテキストに設定する"
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+.. include:: ../api/link.rst
+
+==========================================
+開閉局制御ハンドラ
+==========================================
+**クラス名:** ``nablarch.common.handler.ServiceAvailabilityCheckHandler``
+
+----------------------------------------------
+概要
+----------------------------------------------
+リクエストID単位での開閉局制御を行うハンドラ。
+
+開閉局機能の詳細については、
+:doc:`../02_FunctionDemandSpecifications/03_Common/05_ServiceAvailability`
+の章を参照すること。
+
+**ハンドラ処理概要**
+
+.. raw:: html
+   :file: ../Handler.js
+
+.. raw:: html
+
+  <script>
+  var Context      = 'web'
+    , HandlerQueue = ["ThreadContextHandler_request", "ForwardingHandler", "ServiceAvailabilityCheckHandler"];
+  </script>
+
+.. raw:: html
+   :file: ../architectural_pattern/handler_structure.html
+
+++++++++++++
+
+**関連するハンドラ**
+  
+  ==================================== ===============================================================================================
+  ハンドラ                              内容
+  ==================================== ===============================================================================================
+  :doc:`ThreadContextHandler`           本ハンドラではスレッドコンテキスト上に設定された :ref:`内部リクエストID<internal_request_id>`
+                                        をもとに開閉局判定を行なうため、
+                                        :doc:`ThreadContextHandler` を本ハンドラの上位に配置する必要がある。
+
+  :doc:`ForwardingHandler`              :doc:`../architectural_pattern/web_gui` において内部フォーワードが行われた際に、
+                                        開閉局の制御をフォーワード先のリクエストID (:ref:`内部リクエストID<internal_request_id>`)
+                                        で行う必要がある場合は、本ハンドラを :doc:`ForwardingHandler` より下位に配置する必要がある。  
+
+  :doc:`DataReadHandler`                :doc:`../architectural_pattern/messaging` では、
+                                        受信電文中のフレームワークヘッダ内に定義された **requestId** ヘッダの値を使用して
+                                        開閉局制御を行う。
+                                        (この場合、 :doc:`../reader/FwHeaderReader` が **requestId** ヘッダの値を
+                                        スレッドコンテキストに設定するので、 :doc:`ThreadContextHandler` は使用しなくてもよい)
+
+  ==================================== ===============================================================================================
+
+
+----------------------------------------------
+ハンドラ処理フロー
+----------------------------------------------
+
+.. _inbound:
+
+**[往路処理]**
+  **1. (リクエストIDの取得)**
+    スレッドコンテキストから :ref:`リクエストID<request_processing>` もしくは
+    :ref:`内部リクエストID<internal_request_id>` を取得する。
+
+  **2. (開閉局判定)**
+    本ハンドラに設定された **サービス開閉局判定オブジェクト** を使用して、
+    **1.** で取得したリクエストIDに対するサービスが開局中であることを確認する。
+
+  **2a. (閉局エラー)**
+    サービスが閉局中であった場合は、後続のハンドラを実行せず、
+    実行時例外 `Result.ServiceUnavailable`_ (**ステータスコード:503**)を送出して終了する。
+
+  **3. (後続ハンドラの実行)**
+    当該サービスが開局状態であれば、後続のハンドラを実行し、その結果を取得する。
+
+.. _outbound:
+
+**[復路処理]**
+  **4. (正常終了)**
+    **3.** で取得した処理結果をリターンし終了する。
+
+.. _error:
+
+**[例外処理]** 
+  **3a. (後続ハンドラの処理でエラー)**
+    後続ハンドラの実行中にエラーが発生した場合は、そのまま再送出して終了する。
+
++++++++++++++++++++++
+
+-----------------------------------------------
+設定項目・拡張ポイント
+-----------------------------------------------
+本ハンドラの設定項目の一覧は以下のとおり。
+
+なお、開閉局機能の設定内容の詳細については、
+:doc:`../02_FunctionDemandSpecifications/03_Common/05_ServiceAvailability`
+の章を参照すること。
+
+  ========================================== ======================== ============================ ==================================
+  設定項目                                   プロパティ名             データ型　                   備考
+  ========================================== ======================== ============================ ==================================
+  サービス開閉局判定コンポーネント           serviceAvailability      ServiceAvailability          必須指定
+  内部リクエストIDによる判定を行うかどうか   usesInternalRequestId    boolean                      任意指定 (デフォルト=false)
+  ========================================== ======================== ============================ ==================================
+
+**標準設定**
+  
+  .. code-block:: xml
+
+    <!-- サービス提供可否判定ハンドラ -->
+    <component
+      name="serviceAvailabilityCheckHandler"
+      class="nablarch.common.handler.ServiceAvailabilityCheckHandler">
+      <property name="serviceAvailability" ref="serviceAvailability" />
+      <property name="usesInternalRequestId" value="true" />
+    </component>
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "handlers-ServiceAvailabilityCheckHandler",
+  "title": "開閉局制御ハンドラ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "nablarch.common.handler.ServiceAvailabilityCheckHandler",
+        "ServiceAvailabilityCheckHandler",
+        "ThreadContextHandler",
+        "ForwardingHandler",
+        "DataReadHandler",
+        "開閉局制御",
+        "リクエストID単位",
+        "サービス開閉局"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ハンドラ処理フロー",
+      "hints": [
+        "Result.ServiceUnavailable",
+        "開閉局判定",
+        "503",
+        "往路処理",
+        "復路処理",
+        "例外処理",
+        "ハンドラ処理フロー"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定項目・拡張ポイント",
+      "hints": [
+        "serviceAvailability",
+        "usesInternalRequestId",
+        "ServiceAvailability",
+        "設定項目",
+        "開閉局制御設定"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `nablarch.common.handler.ServiceAvailabilityCheckHandler`\n\nリクエストID単位での開閉局制御を行うハンドラ。\n\n**関連するハンドラ**\n\n| ハンドラ | 内容 |\n|---|---|\n| :doc:`ThreadContextHandler` | 本ハンドラはスレッドコンテキスト上の :ref:`内部リクエストID<internal_request_id>` をもとに開閉局判定を行うため、:doc:`ThreadContextHandler` を本ハンドラの上位に配置する必要がある。 |\n| :doc:`ForwardingHandler` | :doc:`../architectural_pattern/web_gui` で内部フォーワード発生時に、フォーワード先のリクエストID (:ref:`内部リクエストID<internal_request_id>`) で開閉局制御が必要な場合は、本ハンドラを :doc:`ForwardingHandler` より下位に配置する必要がある。 |\n| :doc:`DataReadHandler` | メッセージング処理では、受信電文のフレームワークヘッダ内の **requestId** ヘッダ値で開閉局制御を行う。この場合 :doc:`../reader/FwHeaderReader` が requestId をスレッドコンテキストに設定するため、:doc:`ThreadContextHandler` は不要。 |",
+    "s2": "**[往路処理]**\n\n1. リクエストIDの取得: スレッドコンテキストから :ref:`リクエストID<request_processing>` もしくは :ref:`内部リクエストID<internal_request_id>` を取得する。\n2. 開閉局判定: 設定された **サービス開閉局判定オブジェクト** を使用して、取得したリクエストIDに対するサービスが開局中であることを確認する。\n   - 2a. 閉局エラー: サービスが閉局中の場合は、後続ハンドラを実行せず、実行時例外 `Result.ServiceUnavailable` (ステータスコード: 503) を送出して終了する。\n3. 後続ハンドラの実行: 開局状態であれば後続ハンドラを実行し、結果を取得する。\n\n**[復路処理]**\n\n4. 正常終了: 取得した処理結果をリターンして終了する。\n\n**[例外処理]**\n\n- 3a. 後続ハンドラの実行中にエラーが発生した場合は、そのまま再送出して終了する。",
+    "s3": "| プロパティ名 | 型 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|---|\n| serviceAvailability | ServiceAvailability | ○ | | サービス開閉局判定コンポーネント |\n| usesInternalRequestId | boolean | | false | 内部リクエストIDによる判定を行うかどうか |\n\n```xml\n<component\n  name=\"serviceAvailabilityCheckHandler\"\n  class=\"nablarch.common.handler.ServiceAvailabilityCheckHandler\">\n  <property name=\"serviceAvailability\" ref=\"serviceAvailability\" />\n  <property name=\"usesInternalRequestId\" value=\"true\" />\n</component>\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).

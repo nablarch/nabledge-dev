@@ -1,0 +1,359 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/04_Explanation_messaging/04_Explanation_send_sync/03_userSendSyncMessageAction.rst`
+- Format: `rst`
+
+```
+.. _userSendSyncMessageTitle:
+
+===========================
+同期応答メッセージ送信処理
+===========================
+
+:doc:`ユーザ情報登録サービス<01_userSendSyncMessageSpec>`\ を例に、同期応答メッセージ送信処理の実装方法を説明する。
+
+.. image:: ./_image/userSendSyncMessage.png
+
+------------------------------------------------------------
+アプリケーションプログラマが実装する成果物
+------------------------------------------------------------
+アプリケーションプログラマが作成する成果物は以下のとおりである。
+
+* 要求電文および応答電文のフォーマット定義ファイル
+* 同期応答メッセージ送信処理を行うActionクラス
+
+
+.. _send-sync-message-format-file:
+
+--------------------------------------
+フォーマット定義ファイル
+--------------------------------------
+
+フォーマット定義ファイルの配置場所と拡張子は、下記設定例のように、FilePathSettingクラスのコンポーネント定義により設定される。
+通常、この設定値はアーキテクトが設定するものでありアプリケーションプログラマが設定する必要はない。
+
+
+.. code-block:: xml
+  
+    <component name="filePathSetting"
+             class="nablarch.core.util.FilePathSetting" autowireType="None">
+       <property name="basePathSettings">
+         <map>
+           <!-- 実際のサンプルでは、以下のvalue属性の部分はプレースホルダになっているが、
+                                      ここでは説明を分かりやすくするため、直接パスをvalue属性に記載する。-->
+           <entry key="format" value="classpath:web/format" /> 
+         </map>
+       </property>
+       <property name="fileExtensions">
+         <map>
+           <!-- 拡張子を設定する -->
+           <entry key="format" value="fmt" />
+         </map>
+       </property>
+    </property>
+
+
+フォーマット定義ファイルの名前は以下の命名規約に従うこと。
+
+* 要求電文: リクエストID + “_SEND”
+
+* 応答電文: リクエストID + “_RECEIVE”
+
+
+
+
+参考として、サンプルで使用している要求電文と応答電文のフォーマット定義ファイルを以下に示す。
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+要求電文のフォーマット定義ファイル
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ファイルパス： web/format/RM11AC0201_SEND.fmt
+
+
+.. code-block:: bash
+
+  #-------------------------------------------------------------------------------
+  # ユーザ情報登録電文の業務データ部レイアウト定義
+  #-------------------------------------------------------------------------------
+  file-type:        "Fixed" # 固定長
+  text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+  record-length:    420     # 各レコードの長さ
+  record-separator: "\r\n"  # 改行コード
+   
+  [data]
+  1   dataKbn                     X(1)  "2"   # レコード区分(固定)
+  2   loginId                     X(20)       # ログインID
+  22  kanjiName                   N(100)      # 漢字氏名
+  122 kanaName                    N(100)      # カナ氏名
+  222 ?filler1                    X(50)       # 空白領域
+  272 mailAddress                 X(100)      # メールアドレス
+  372 extensionNumberBuilding     X(2)        # 内線番号（ビル番号）
+  374 extensionNumberPersonal     X(4)        # 内線番号（個人番号）
+  378 mobilePhoneNumberAreaCode   X(3)        # 携帯番号（市外）
+  381 mobilePhoneNumberCityCode   X(4)        # 携帯電話番号(市内)
+  385 mobilePhoneNumberSbscrCode  X(4)        # 携帯電話番号(加入)
+  389 ?filler2                    X(32)       # 空白領域
+
+
+
+.. warning::
+  
+   同期応答送信処理に使用するフォーマット定義ファイル(～_SEND.fmt)の
+   レコードタイプ名は"\ ``data``\ "固定である。
+   
+
+  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+応答電文のフォーマット定義ファイル
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ファイルパス： web/format/RM11AC0201_RECEIVE.fmt
+
+
+.. code-block:: bash
+
+  #-------------------------------------------------------------------------------
+  # ユーザ情報登録応答電文の業務データ部フォーマット定義
+  #-------------------------------------------------------------------------------
+  file-type:        "Fixed" # 固定長
+  text-encoding:    "MS932" # 文字列型フィールドの文字エンコーディング
+  record-length:    420     # 各レコードの長さ
+  record-separator: "\r\n"  # 改行コード
+  
+  [data]
+  1   dataKbn                     X(1)  "0"   # データ区分(固定)
+  2   userId                      X(10)       # 採番したユーザID
+  12  failureCode                 X(20)       # 障害事由コード
+  32  userInfoId                  X(20)       # 問い合わせID
+  52  ?filler                     X(369)      # 空白領域
+  
+
+------------------------------------------------------------
+同期応答メッセージ送信処理を行うActionクラス
+------------------------------------------------------------
+
+サンプルでは、同期応答メッセージ送信時に以下の処理を行う。
+
+| ① リクエストを精査しEntityへ変換する。
+| ② Entityの内容からSyncMessageオブジェクトを生成する。
+| ③ MessageSenderでメッセージを送信する。
+| ④ 応答電文のSyncMessageオブジェクトからデータを取得する。
+
+.. code-block:: java
+
+
+    /**
+     * ユーザ情報登録確認画面の「メッセージ送信」イベントの処理を行う。
+     * 
+     * @param req リクエストコンテキスト
+     * @param ctx HTTPリクエストの処理に関連するサーバ側の情報
+     * @return HTTPレスポンス
+     */
+    @OnError(type = ApplicationException.class, path = "forward://RW11AC0201")
+    @OnDoubleSubmission(path = "forward://RW11AC0201")
+    public HttpResponse doRW11AC0205(HttpRequest req, ExecutionContext ctx) {
+
+        // ①精査とエンティティ生成
+        W11AC02Form form = validateForSendUser(req);
+
+        // エンティティ取得
+        SystemAccountEntity systemAccount = form.getSystemAccount();
+        UsersEntity users = form.getUsers();
+
+        // ②要求電文のデータレコードの作成
+        Map<String, Object> dataRecord = new HashMap<String, Object>();
+        dataRecord.put("dataKbn", REQUEST_MESSAGE_DATA_KBN);
+        dataRecord.put("loginId", systemAccount.getLoginId());
+        dataRecord.put("kanjiName", users.getKanjiName());
+        dataRecord.put("kanaName", users.getKanaName());
+        dataRecord.put("mailAddress", users.getMailAddress());
+        dataRecord.put("extensionNumberBuilding", users.getExtensionNumberBuilding());
+        dataRecord.put("extensionNumberPersonal", users.getExtensionNumberPersonal());
+        dataRecord.put("mobilePhoneNumberAreaCode", users.getMobilePhoneNumberAreaCode());
+        dataRecord.put("mobilePhoneNumberCityCode", users.getMobilePhoneNumberCityCode());
+        dataRecord.put("mobilePhoneNumberSbscrCode", users.getMobilePhoneNumberSbscrCode());
+
+        // ③要求電文の送信
+        SyncMessage responseMessage
+            = MessageSender.sendSync(new SyncMessage("RM11AC0201").addDataRecord(dataRecord));
+
+        // ④応答電文からデータ取得
+        String userId = (String) responseMessage.getDataRecord().get("userId");
+        systemAccount.setUserId(userId); // 採番されたユーザIDの設定
+
+        // 引き継ぎ項目を格納
+        W11AC01SearchForm successionForm = new W11AC01SearchForm();
+        successionForm.setSystemAccount(systemAccount);
+        ctx.setRequestScopedVar("11AC_W11AC01", successionForm);
+
+        return new HttpResponse("/ss11AC/W11AC0203.jsp");
+    }
+
+
+
+タイムアウト時は、MessageSendSyncTimeoutException例外がスローされるので、
+必要に応じて例外をキャッチし、エラー画面への遷移を行うこと。
+
+
+
+```
+
+## Knowledge File
+
+- ID: `mom-messaging-03_userSendSyncMessageAction`
+
+```json
+{
+  "id": "mom-messaging-03_userSendSyncMessageAction",
+  "title": "同期応答メッセージ送信処理",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "アプリケーションプログラマが実装する成果物",
+      "hints": [
+        "成果物",
+        "フォーマット定義ファイル",
+        "Actionクラス",
+        "同期応答メッセージ送信処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "フォーマット定義ファイル",
+      "hints": [
+        "FilePathSetting",
+        "フォーマット定義ファイル命名規約",
+        "_SEND",
+        "_RECEIVE",
+        "レコードタイプ名 data 固定",
+        "固定長フォーマット",
+        "RM11AC0201_SEND.fmt",
+        "RM11AC0201_RECEIVE.fmt"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "同期応答メッセージ送信処理を行うActionクラス",
+      "hints": [
+        "SyncMessage",
+        "MessageSender",
+        "sendSync",
+        "MessageSendSyncTimeoutException",
+        "@OnError",
+        "@OnDoubleSubmission",
+        "同期応答メッセージ送信",
+        "タイムアウト",
+        "setRequestScopedVar",
+        "ExecutionContext",
+        "引き継ぎ項目"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "アプリケーションプログラマが作成する成果物:\n\n- 要求電文および応答電文のフォーマット定義ファイル\n- 同期応答メッセージ送信処理を行うActionクラス",
+    "s2": "フォーマット定義ファイルの配置場所と拡張子は `FilePathSetting` クラスのコンポーネント定義により設定される（通常はアーキテクトが設定）。\n\n**命名規約**:\n- 要求電文: リクエストID + `_SEND`（例: `RM11AC0201_SEND.fmt`）\n- 応答電文: リクエストID + `_RECEIVE`（例: `RM11AC0201_RECEIVE.fmt`）\n\n**クラス**: `nablarch.core.util.FilePathSetting`\n\n```xml\n<component name=\"filePathSetting\" class=\"nablarch.core.util.FilePathSetting\" autowireType=\"None\">\n  <property name=\"basePathSettings\">\n    <map>\n      <entry key=\"format\" value=\"classpath:web/format\" />\n    </map>\n  </property>\n  <property name=\"fileExtensions\">\n    <map>\n      <entry key=\"format\" value=\"fmt\" />\n    </map>\n  </property>\n</property>\n```\n\n> **警告**: 同期応答送信処理に使用するフォーマット定義ファイル（`～_SEND.fmt`）のレコードタイプ名は `data` 固定である。\n\n**要求電文フォーマット定義ファイル例** (`RM11AC0201_SEND.fmt`):\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    420\nrecord-separator: \"\\r\\n\"\n\n[data]\n1   dataKbn                     X(1)  \"2\"   # レコード区分(固定)\n2   loginId                     X(20)       # ログインID\n22  kanjiName                   N(100)      # 漢字氏名\n122 kanaName                    N(100)      # カナ氏名\n222 ?filler1                    X(50)       # 空白領域\n272 mailAddress                 X(100)      # メールアドレス\n372 extensionNumberBuilding     X(2)        # 内線番号（ビル番号）\n374 extensionNumberPersonal     X(4)        # 内線番号（個人番号）\n378 mobilePhoneNumberAreaCode   X(3)        # 携帯番号（市外）\n381 mobilePhoneNumberCityCode   X(4)        # 携帯電話番号(市内)\n385 mobilePhoneNumberSbscrCode  X(4)        # 携帯電話番号(加入)\n389 ?filler2                    X(32)       # 空白領域\n```\n\n**応答電文フォーマット定義ファイル例** (`RM11AC0201_RECEIVE.fmt`):\n```\nfile-type:        \"Fixed\"\ntext-encoding:    \"MS932\"\nrecord-length:    420\nrecord-separator: \"\\r\\n\"\n\n[data]\n1   dataKbn                     X(1)  \"0\"   # データ区分(固定)\n2   userId                      X(10)       # 採番したユーザID\n12  failureCode                 X(20)       # 障害事由コード\n32  userInfoId                  X(20)       # 問い合わせID\n52  ?filler                     X(369)      # 空白領域\n```",
+    "s3": "同期応答メッセージ送信処理の実装手順:\n\n1. リクエストを精査しEntityへ変換する\n2. EntityからSyncMessageオブジェクトを生成する\n3. `MessageSender.sendSync()` でメッセージを送信する\n4. 応答電文の `SyncMessage` オブジェクトからデータを取得する\n\n**クラス**: `SyncMessage`, `MessageSender`\n**アノテーション**: `@OnError`, `@OnDoubleSubmission`\n\n```java\n@OnError(type = ApplicationException.class, path = \"forward://RW11AC0201\")\n@OnDoubleSubmission(path = \"forward://RW11AC0201\")\npublic HttpResponse doRW11AC0205(HttpRequest req, ExecutionContext ctx) {\n\n    // ①精査とエンティティ生成\n    W11AC02Form form = validateForSendUser(req);\n    SystemAccountEntity systemAccount = form.getSystemAccount();\n    UsersEntity users = form.getUsers();\n\n    // ②要求電文のデータレコードの作成\n    Map<String, Object> dataRecord = new HashMap<String, Object>();\n    dataRecord.put(\"dataKbn\", REQUEST_MESSAGE_DATA_KBN);\n    dataRecord.put(\"loginId\", systemAccount.getLoginId());\n    dataRecord.put(\"kanjiName\", users.getKanjiName());\n    dataRecord.put(\"kanaName\", users.getKanaName());\n    dataRecord.put(\"mailAddress\", users.getMailAddress());\n    dataRecord.put(\"extensionNumberBuilding\", users.getExtensionNumberBuilding());\n    dataRecord.put(\"extensionNumberPersonal\", users.getExtensionNumberPersonal());\n    dataRecord.put(\"mobilePhoneNumberAreaCode\", users.getMobilePhoneNumberAreaCode());\n    dataRecord.put(\"mobilePhoneNumberCityCode\", users.getMobilePhoneNumberCityCode());\n    dataRecord.put(\"mobilePhoneNumberSbscrCode\", users.getMobilePhoneNumberSbscrCode());\n\n    // ③要求電文の送信\n    SyncMessage responseMessage\n        = MessageSender.sendSync(new SyncMessage(\"RM11AC0201\").addDataRecord(dataRecord));\n\n    // ④応答電文からデータ取得\n    String userId = (String) responseMessage.getDataRecord().get(\"userId\");\n    systemAccount.setUserId(userId); // 採番されたユーザIDの設定\n\n    // 引き継ぎ項目を格納\n    W11AC01SearchForm successionForm = new W11AC01SearchForm();\n    successionForm.setSystemAccount(systemAccount);\n    ctx.setRequestScopedVar(\"11AC_W11AC01\", successionForm);\n\n    return new HttpResponse(\"/ss11AC/W11AC0203.jsp\");\n}\n```\n\nタイムアウト時は `MessageSendSyncTimeoutException` がスローされるので、必要に応じてキャッチしてエラー画面へ遷移させること。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

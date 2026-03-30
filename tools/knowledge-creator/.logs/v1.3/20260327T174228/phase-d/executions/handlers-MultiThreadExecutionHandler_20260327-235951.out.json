@@ -1,0 +1,27 @@
+{
+  "file_id": "handlers-MultiThreadExecutionHandler",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "fabrication",
+      "severity": "minor",
+      "location": "s3 — settings table",
+      "description": "The knowledge file settings table includes a '必須' column that does not exist in the source table. The source table has four columns: 設定項目, プロパティ名, データ型, 備考. The '必須' column is an addition not present in the source.",
+      "source_evidence": "Source table columns: 設定項目 / プロパティ名 / データ型　/ 備考"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`BatchActionBase` is a central class in s2, referenced in three method signatures (initialize, error, terminate callbacks) that are core to the processing flow description, but it is absent from s2's hints. It only appears in s1 hints.",
+      "source_evidence": "BatchActionBase#initialize, BatchActionBase#error, BatchActionBase#terminate are all called out explicitly in the ハンドラ処理フロー section of the source."
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 — hints array",
+      "description": "`DataReaderFactory` appears in the execution context copy table within s2 as a named type, but is absent from s2's hints. It is only listed in s1 hints.",
+      "source_evidence": "Source execution context copy table row: データリーダファクトリ | `DataReaderFactory`_ | 現在のファクトリをそのまま設定する"
+    }
+  ]
+}

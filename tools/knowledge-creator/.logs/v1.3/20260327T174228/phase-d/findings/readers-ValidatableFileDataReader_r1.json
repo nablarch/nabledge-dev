@@ -1,0 +1,34 @@
+{
+  "file_id": "readers-ValidatableFileDataReader",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "critical",
+      "location": "s2: doHeader implementation in B11AC014Action code example",
+      "description": "The knowledge file's doHeader method omits the business date validation present in the source. The source checks inputData.getString(\"date\") against BusinessDateUtil.getDate() and throws TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate) if they differ. This removes the demonstration of BusinessDateUtil usage and the date-mismatch error handling pattern from the implementation example.",
+      "source_evidence": "String date = inputData.getString(\"date\"); String businessDate = BusinessDateUtil.getDate(); if (!businessDate.equals(date)) { throw new TransactionAbnormalEnd(102, HEADER_RECORD_ERROR_FAILURE_CODE, date, businessDate); }"
+    },
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2: onFileEnd implementation in FileLayoutValidatorAction",
+      "description": "The knowledge file's onFileEnd omits the writeLog calls that demonstrate logging the total and data record counts after successful validation. The source logs: writeLog(\"M000000002\", ctx.getLastRecordNumber()) and writeLog(\"M000000003\", dataRecordCount).",
+      "source_evidence": "writeLog(\"M000000002\", ctx.getLastRecordNumber()); writeLog(\"M000000003\", dataRecordCount);"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "FileLayoutValidatorAction (the inner class name used in the code example — appears in both getValidatorAction() return and the class declaration) is not included in s2 hints.",
+      "source_evidence": "private class FileLayoutValidatorAction implements ValidatableFileDataReader.FileValidatorAction { ... }"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s2 hints",
+      "description": "BusinessDateUtil is referenced in the source's doHeader implementation as a PascalCase utility class, but is absent from s2 hints. It is also omitted from the code example itself (covered separately above), but should appear in hints if the code example is corrected.",
+      "source_evidence": "String businessDate = BusinessDateUtil.getDate();"
+    }
+  ]
+}

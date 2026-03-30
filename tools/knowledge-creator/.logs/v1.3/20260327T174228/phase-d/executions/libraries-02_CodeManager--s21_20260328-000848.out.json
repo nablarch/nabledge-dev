@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-02_CodeManager--s21",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s7 — エンティティの実装 コード例",
+      "description": "The entity code example in s7 omits the class declaration (`public class Customer`) and the field declaration (`private String gender`), which are present in the source. The source shows the full class context to illustrate where the field and annotations are placed. The knowledge file only shows the annotated setter method, losing the relationship between the field declaration and its setter annotations.",
+      "source_evidence": "public class Customer {\n    // その他のプロパティは省略\n    private String gender;\n\n    @PropertyName(\"性別\")\n    @CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\n    public String setGender(String gender) { ... }\n}"
+    },
+    {
+      "category": "hints_missing",
+      "severity": "minor",
+      "location": "s7 — hints",
+      "description": "`@PropertyName` is an annotation used in the entity code example (alongside `@CodeValue`) but is not listed in s7's hints array.",
+      "source_evidence": "@PropertyName(\"性別\")\n@CodeValue(codeId=\"0001\", pattern=\"PATTERN1\")\npublic String setGender(String gender) {"
+    }
+  ]
+}

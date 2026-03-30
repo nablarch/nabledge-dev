@@ -1,0 +1,20 @@
+{
+  "file_id": "libraries-04_Statement--s7",
+  "needs_improvement": true,
+  "user_impact": "medium",
+  "reason": "Finding 1 (Oracle context omission) has medium impact: users on non-Oracle databases may blindly copy `duplicateErrorErrCode=\"1\"` without understanding it is Oracle-specific, leading to misconfigured unique-constraint exception handling in production. Finding 2 (missing hints) has low impact only. Because at least one finding is medium, needs_improvement is true.",
+  "findings_assessment": [
+    {
+      "category": "omission",
+      "location": "s2 — 設定ファイル例 XML, BasicSqlStatementExceptionFactory コメント",
+      "impact": "medium",
+      "justification": "The XML example shows `duplicateErrorErrCode=\"1\"` without indicating it is the Oracle error code for unique constraint violations. A developer on PostgreSQL, MySQL, or another database who copies this configuration will silently use the wrong error code, causing `DuplicateStatementException` to never be thrown on actual unique-constraint violations — a subtle but serious production bug. The property description table clarifies the semantics of the property but does not warn that the example value is vendor-specific. Why it persisted: the Phase E output is byte-for-byte identical to the Phase D input, indicating the fix agent made no edits to the file at all."
+    },
+    {
+      "category": "hints_missing",
+      "location": "index[s2].hints",
+      "impact": "low",
+      "justification": "Both `SqlPStatement` and `AppDbConnection` appear as class names in s2 prose (via `SqlPStatement#setFetchSize`, `SqlPStatement#setQueryTimeout`, `AppDbConnection#prepareStatement`). Their absence from s2 hints slightly reduces retrieval precision for queries that mention these class names — such queries might route to s1 instead. However, s2 already contains many other high-signal hints (`fetchSize`, `queryTimeout`, `BasicStatementFactory`, etc.) that would catch most relevant queries, so the practical retrieval degradation is minimal. Why it persisted: same reason as finding 1 — Phase E produced no changes to the file."
+    }
+  ]
+}

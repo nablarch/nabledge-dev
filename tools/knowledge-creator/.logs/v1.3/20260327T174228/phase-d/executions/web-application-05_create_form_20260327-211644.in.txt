@@ -1,0 +1,357 @@
+You are a validator for Nablarch knowledge files.
+Your role is to IDENTIFY problems only. Do NOT fix anything.
+
+Knowledge files are AI-ready transformations of source documentation, optimized for AI assistants to answer user questions. They should preserve all substantive information while omitting navigation elements redundant for AI use.
+
+Compare the knowledge file against the source file and report all findings.
+
+## Source File
+
+- Path: `.lw/nab-official/v1.3/document/guide/03_DevelopmentStep/05_create_form.rst`
+- Format: `rst`
+
+```
+.. _process_register_validate_form:
+
+Formクラスの実装
+============================================
+
+ユーザ登録画面に対応するFormクラスを以下のステップで実装する。
+
+.. contents::
+   :depth: 2
+   :local:
+   :backlinks: none
+
+
+Formクラスの精査処理実装は :ref:`Entityの精査処理実装フロー<03_04_entity_impl_flow>` と同じフローで行う。
+
+
+.. _set_property:
+
+Formクラスのプロパティの実装
+----------------------------------------------
+
+本機能で使用するFormクラスを作成し、プロパティを実装する。
+
+なお、Formクラスについては、コンストラクタ、ゲッター/セッターのテストはActionクラスの\
+リクエスト単体テストでカバーできるため、ここではテストを作成しない。
+
+================================= ============================================
+ソース格納フォルダ                クラス名                                    
+================================= ============================================
+main/java/nablarch/sample/ss11AC  W11AC02Form                                 
+================================= ============================================
+
+
+1. Formのプロパティとしてuser（型：UsersEntity）を実装
+
+2. コンストラクタを実装
+
+3. ゲッター/セッターを実装
+
+.. code-block:: java
+
+      /**
+       * ユーザ情報登録で使用するユーザ情報を保持するフォーム。
+       *
+       * @author Nablarch Taro
+       * @since 1.0
+       */
+      public class W11AC02Form {
+      
+          /**
+           * ユーザエンティティ
+           */
+          private UsersEntity user;
+      
+          /**
+           * Mapを引数に取るコンストラクタ。
+           *
+           * @param data 各プロパティのデータを保持したMap
+           */
+          public W11AC02Form(Map<String, Object> data) {
+              user = (UsersEntity) data.get("user");
+          }
+      
+          /**
+           * 登録対象のユーザ情報を取得する。
+           *
+           * @return 登録対象のユーザ情報
+           */
+          public UsersEntity getUser() {
+              return user;
+          }
+      
+          /**
+           * 登録対象のユーザ情報を設定する。
+           *
+           * @param user 登録対象のユーザ情報
+           */
+          public void setUser(UsersEntity user) {
+              this.user = user;
+          }
+      
+      }
+
+
+
+.. _form_validation:
+
+Formクラスの精査処理実装
+--------------------------------------------
+
+.. _form_validation_make_testdata:
+
+Formクラスに実装する精査処理の単体テストを作成
+********************************************************
+
+1) Form単体テストデータの作成
+   Formクラスに登録機能の精査処理を実装するために、精査処理の単体テストデータを作成する。
+
+   :ref:`Entity単体テストのテストデータ<03_04_create_entity_test_data>` と同じ観点で作成すればよい。
+
+   今回の場合は、 ``user`` プロパティに対して、「漢字氏名」と「カナ氏名」の精査が行われていることのみ確認できればよい。
+
+   ================================= ========================= =============================
+   データシート格納フォルダ          データシートファイル名    シート名
+   ================================= ========================= =============================
+   test/java/nablarch/sample/ss11AC  W11AC02FormTest.xlsx      testValidateForRegister
+   ================================= ========================= =============================
+
+   以下に、テストデータの例を示しておく。（詳細は、 :ref:`entityUnitTest` 参照）
+
+      .. image:: ./_images/form_test_validation_01.png
+         :scale: 40
+
+
+2) Form単体テストコードの作成
+
+   ================================= ========================= ========================
+   テストクラス格納フォルダ          テストクラス名            テストメソッド名
+   ================================= ========================= ========================
+   test/java/nablarch/sample/ss11AC  W11AC02FormTest           testValidateForRegister
+   ================================= ========================= ========================
+
+   .. code-block:: java
+
+      /**
+       * {@link W11AC02Form}のテスト。
+       *
+       * @author Nablarch Taro
+       * @since 1.0
+       */
+      public class W11AC02FormTest extends EntityTestSupport {
+      
+          /**
+           * {@link W11AC02Form#validateForRegister(nablarch.core.validation.ValidationContext)} のテスト。
+           */
+          @Test
+          public void testValidateForRegister() {
+              testValidateAndConvert(W11AC02Form.class, "testValidateForRegister", "register");
+          }
+      }
+
+
+Formクラスの単体テストを実行
+********************************************************
+ 
+単体テストを実行し、テストが失敗することを確認する。（精査メソッドを実装していない為）
+
+
+
+Formクラスに精査処理を実装
+********************************************************
+
+================================== ================ ====================
+ソース格納フォルダ                 クラス名         メソッド名
+================================== ================ ====================
+main/java/nablarch/sample/ss11AC   W11AC02Form      validateForRegister
+================================== ================ ====================
+
+1) 単項目精査を実施するプロパティに、精査用のアノテーションを付与
+
+   +------------+-------------------------------------------+
+   | プロパティ | アノテーション                            |
+   +============+===========================================+
+   | user       | nablarch.core.validation.ValidationTarget |
+   +------------+-------------------------------------------+
+
+2) 単項目精査を実行するメソッド(``ValidationUtil#validate(ValidationContext, String[])``)の引数として上記プロパティを指定
+
+   .. code-block:: java
+   
+      /**
+       * 登録対象のユーザ情報を設定する。
+       *
+       * @param user 登録対象のユーザ情報
+       */
+      // 【説明】①単項目精査を実施するプロパティ「user」に@ValidationTargetを付与
+      @ValidationTarget
+      public void setUser(UsersEntity user) {
+          this.user = user;
+      }
+   
+      /**
+       * ユーザ情報登録時に実施するバリデーション
+       *
+       * @param context バリデーションの実行に必要なコンテキスト
+       */
+      @ValidateFor("register")
+      public static void validateForRegister(ValidationContext<W11AC02Form> context) {
+   
+          // 【説明】②単項目精査対象項目変数のセット
+          // プロパティとして設定したエンティティ内の単項目精査を実行する。
+          ValidationUtil.validate(context, new String[] {"user"});
+      }
+
+
+
+.. _form_validation_execute_test:
+
+Formクラスの単体テストを実行
+********************************************************
+ 
+Form単体テストを実行し、UsersEntityの単項目精査呼び出しが行われていることを確認する。
+
+
+```
+
+## Knowledge File
+
+- ID: `web-application-05_create_form`
+
+```json
+{
+  "id": "web-application-05_create_form",
+  "title": "Formクラスの実装",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "Formクラスのプロパティの実装",
+      "hints": [
+        "W11AC02Form",
+        "UsersEntity",
+        "Formクラス実装",
+        "プロパティ定義",
+        "コンストラクタ",
+        "ゲッター/セッター"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Formクラスの精査処理実装",
+      "hints": [
+        "W11AC02Form",
+        "W11AC02FormTest",
+        "EntityTestSupport",
+        "ValidationUtil",
+        "ValidationContext",
+        "@ValidationTarget",
+        "@ValidateFor",
+        "バリデーション実装",
+        "単項目精査",
+        "テストデータ作成",
+        "精査処理"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "**クラス名**: `W11AC02Form`\n**ソース格納フォルダ**: `main/java/nablarch/sample/ss11AC`\n\n> **補足**: コンストラクタ、ゲッター/セッターのテストはActionクラスのリクエスト単体テストでカバーできるため、Formクラス単体ではテストを作成しない。\n\n実装手順:\n1. プロパティ `user`（型：`UsersEntity`）を実装\n2. Mapを引数に取るコンストラクタを実装\n3. ゲッター/セッターを実装\n\n```java\npublic class W11AC02Form {\n    private UsersEntity user;\n\n    public W11AC02Form(Map<String, Object> data) {\n        user = (UsersEntity) data.get(\"user\");\n    }\n\n    public UsersEntity getUser() {\n        return user;\n    }\n\n    public void setUser(UsersEntity user) {\n        this.user = user;\n    }\n}\n```",
+    "s2": "精査処理の実装フローは :ref:`Entityの精査処理実装フロー<03_04_entity_impl_flow>` と同じ。\n\n### 単体テストデータ・テストコード作成\n\nテストデータ:\n- ファイル: `test/java/nablarch/sample/ss11AC/W11AC02FormTest.xlsx`\n- シート名: `testValidateForRegister`\n- 確認内容: `user` プロパティの「漢字氏名」と「カナ氏名」の精査（詳細は :ref:`entityUnitTest` 参照）\n\nテストクラス:\n- 格納フォルダ: `test/java/nablarch/sample/ss11AC`\n- クラス名: `W11AC02FormTest`（`EntityTestSupport` 継承）\n- テストメソッド: `testValidateForRegister`\n\n```java\npublic class W11AC02FormTest extends EntityTestSupport {\n    @Test\n    public void testValidateForRegister() {\n        testValidateAndConvert(W11AC02Form.class, \"testValidateForRegister\", \"register\");\n    }\n}\n```\n\nテスト実行→失敗を確認（精査メソッド未実装のため）。\n\n### 精査処理実装\n\n**クラス**: `W11AC02Form`  \n**メソッド**: `validateForRegister`  \n**格納フォルダ**: `main/java/nablarch/sample/ss11AC`\n\n1. 単項目精査対象プロパティ `user` のセッターに `@ValidationTarget` を付与\n2. `ValidationUtil.validate(context, new String[] {\"user\"})` で単項目精査実行\n\n| プロパティ | アノテーション |\n|---|---|\n| user | `nablarch.core.validation.ValidationTarget` |\n\n```java\n@ValidationTarget\npublic void setUser(UsersEntity user) {\n    this.user = user;\n}\n\n@ValidateFor(\"register\")\npublic static void validateForRegister(ValidationContext<W11AC02Form> context) {\n    ValidationUtil.validate(context, new String[] {\"user\"});\n}\n```\n\nテスト再実行→`UsersEntity` の単項目精査呼び出しが行われていることを確認。"
+  }
+}
+```
+
+---
+
+## Content Quality Warnings (automated pre-check)
+
+The following content quality warnings were detected by automated checks before this AI review.
+Evaluate each warning against the source file and include it as a finding if the issue is real.
+If the source justifies the current state (e.g., the source section is genuinely short, or headings were intentionally merged), do NOT report it as a finding.
+
+なし
+
+## Validation Checklist
+
+### V1: Omission Check (severity: critical)
+
+Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**What counts as decision-necessary information:**
+- Constraints and prerequisites (ordering, required configurations, preconditions)
+- Warnings about incorrect behavior or failure modes
+- Recommendations and best practices
+- Deprecation notices and their alternatives
+- Technology selection guidance (when to use X vs Y)
+- Configuration properties, their types, defaults, and effects
+- API specifications (class names, method signatures, argument types)
+- Maven dependency info (groupId/artifactId)
+- Code examples that demonstrate correct usage patterns
+
+For each omission found, record:
+"OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
+
+**Acceptable omissions (DO NOT report as missing):**
+
+Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
+
+- Table of contents / navigation lists (e.g., "フォーム | :ref:`tag-form_tag`")
+- Lists of cross-references to other sections/files (e.g., "入力 | :ref:`tag-text_tag` | :ref:`tag-search_tag`...")
+- Standalone navigation sections that only list links without explanation
+- Introductory sentences that only reference other documents (e.g., "詳細については :ref:`tag` を参照すること")
+- Section overview paragraphs that only enumerate sub-sections without explanation
+
+**Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
+
+### V2: Fabrication Check (severity: critical)
+
+Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Check each of these:**
+- Every sentence in description fields — does the source say this?
+- Every item in warnings/notes arrays — does the source contain this warning or note?
+- Every property in setup/configuration — does the source define this property with this type and default?
+- Every code example — does the source contain this code, or is it a faithful minimal extraction of source code?
+- Every class name — does the source reference this exact class name?
+
+For each fabrication found, record:
+"FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+### V3: Section Issues (severity: minor)
+
+- Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
+- Check if any section has < 50 characters.
+- For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
+- Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
+
+### V4: Hints Completeness (severity: minor)
+
+For each section, check hints include:
+- PascalCase class names from content
+- @Annotation names
+- Property names from tables (first column)
+- XxxException names
+
+### V5: no_knowledge_content Validation (severity: critical)
+
+If the knowledge file has `no_knowledge_content: true`:
+- Read the entire source file
+- Confirm there is NO Layer A or Layer B content (see generate.md Step 3 for definitions)
+- If any decision-necessary information, configuration properties, API specs, code examples,
+  warnings, or constraints exist in the source → report as critical finding:
+  category: "no_knowledge_content_invalid", description: "no_knowledge_content=true but source contains Layer A/B content: {description}"
+
+If `no_knowledge_content: false`:
+- Skip this check (V1/V2 handle normal content validation)
+
+---
+
+## Output
+
+Respond with the findings as JSON matching the provided schema.
+If no issues found, set status to "clean" with empty findings array.
+Do NOT attempt to fix anything. Only identify and describe.

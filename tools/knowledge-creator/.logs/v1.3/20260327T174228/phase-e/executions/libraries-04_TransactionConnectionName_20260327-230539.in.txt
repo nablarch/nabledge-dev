@@ -1,0 +1,241 @@
+You are a fixer for Nablarch knowledge files.
+Apply fixes based on the validation findings below.
+
+## Findings
+
+```json
+{
+  "file_id": "libraries-04_TransactionConnectionName",
+  "status": "has_issues",
+  "findings": [
+    {
+      "category": "omission",
+      "severity": "minor",
+      "location": "s2 — トランザクション名の使用例コードブロック",
+      "description": "The source code comment explaining that `TransactionContext.getTransaction()` is primarily the framework's responsibility, and that application code should only use it when a transaction must be committed even in the event of an exception (abnormal termination), is absent from the knowledge file. This guidance tells developers when they should personally call `getTransaction()` versus relying on the framework.",
+      "source_evidence": "// 基本的にこの処理はフレームワークの責務である。\n// アプリケーションで、トランザクションが必要となるケースは、\n// 例外発生時(異常終了)であっても処理を確定する必要がある場合である。"
+    },
+    {
+      "category": "section_issue",
+      "severity": "minor",
+      "location": "Automated pre-check: Section count 2 < source headings 3",
+      "description": "The automated check flagged a heading count mismatch (2 knowledge sections vs 3 detected source headings). On manual inspection, the source contains exactly 2 h2-level headings (underlined with `---`): 'データベースコネクション名' and 'トランザクション名'. The third heading detected ('実装コードで見るトランザクション制御') is an h4 nested under an h3 under 'トランザクション名', and its content is correctly included within s2. This is a false positive from the automated tool; no actual content is missing.",
+      "source_evidence": "Source h2 headings: 'データベースコネクション名' (---) and 'トランザクション名' (---). 'JdbcTransactionを使用した場合...' uses === (h3) and '実装コードで見るトランザクション制御' uses --- but appears as h4 in context."
+    }
+  ]
+}
+```
+
+## Source File
+
+- Format: `rst`
+
+```
+==============================================
+データベースコネクション名とトランザクション名
+==============================================
+本章では、 :doc:`../03_TransactionManager` と :doc:`../04_DbAccessSpec` で触れた、データベースコネクション名とトランザクション名についての解説を行う。
+
+--------------------------
+データベースコネクション名
+--------------------------
+データベースコネクション名は、DbConnectionContextに設定するAppDbConnection(以降データベース接続)毎に設定する名前である。
+名前を分けて登録するケースは、主に以下の場合である。
+
+* データベースの接続先が異なる場合
+* 同一の接続先であるが、異なるトランザクション制御を行う場合。
+
+  (例えば、業務処理内で別トランザクションで処理を行う必要がある場合)
+
+
+この名前は、スレッド内ではユニークにする必要があり、アプリケーションでDbConnectionContextからデータベース接続を取得する際に使用する名前である。
+
+
+.. note::
+  DbConnectionContextには、無名のデータベース接続を１つだけ登録することができる。無名のデータベース接続は、アプリケーションから取得する際にも名前指定なしで取得することができる。
+  この無名のデータベース接続は、ビジネスロジックでメインで使用するデータベース接続に使用することを推奨する。
+  なぜなら、データベース接続を取得する際に名前を指定する必要がないため、名前の指定間違いによる不具合を防ぐことが出きるからである。
+  
+  ※無名の場合であっても、内部的には名前付きでデータベース接続が保持される。この名前は、「TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEY」の値となる。
+
+
+データベースコネクション名の使用例
+==================================
+
+.. code-block:: java
+
+  //***************************************************************************
+  // DbConnectionContextへの登録例
+  // この処理は、フレームワークの責務である。
+  //***************************************************************************
+
+  // 現在実行中のスレッドに、無名のデータベース接続を登録する。
+  // 内部的にデータベースコネクション名は「TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEY」として保持される。
+  // つまり、DbConnectionContext.setConnection(TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEY, connection1)と同義となる。
+  DbConnectionContext.setConnection(connection1);
+
+  //****************************************************************************
+  // 下記ロジックは、無名のデータベース接続を登録する事と同義である。
+  DbConnectionContext.setConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, connection1);
+  DbConnectionContext.setConnection("transaction", connection1);
+  //****************************************************************************
+
+  // 現在実行中のスレッドに、データベースコネクション名：user-schemaでデータベース接続を登録する。
+  DbConnectionContext.setConnection("user-schema", connection2);
+
+  // 同一スレッドで既に登録されている名前で登録を行った場合は、エラーとなる。
+  DbConnectionContext.setConnection("user-schema", connection3);        // 「user-schema」は既に登録されているのでエラー
+
+  //***************************************************************************
+  // ビジネスロジックでのAppDbConnectionの取得例
+  //***************************************************************************
+
+  // 無名のデータベース接続を取得する。
+  AppDbConnection connection1 = DbConnectionContext.getConnection();
+
+  // データベースコネクション名に「user-schema」を指定してデータベース接続を取得する。
+  AppDbConnection connection2 = DbConnectionContext.getConnection("user-schema");
+
+
+.. attention::
+  | TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEYの値は、「transaction」となっている。
+  | この名前(transaction)は、無名のデータベース接続の内部的な名前であるため、「transaction」と無名のデータベースコネクションは同義となる。
+  | 無名と「transaction」を同時に使用した場合の振る舞いは、下記実装を参照。
+
+  .. code-block:: java
+   
+     // 無名のコネクションは、「transaction」を指定して取得できる。
+     DbConnectionContext.setConnection(connection);
+     DbConnectionContext.getConnection("transaction");
+   
+     // 「transaction」で登録したコネクションは、無名で取得できる。
+     DbConnectionContext.setConnection("transaction", connection);
+     DbConnectionContext.getConnection();
+ 
+     // 無名が登録されている場合、「transaction」は登録できない。
+     DbConnectionContext.cetConnection(connection1);
+     DbConnectionContext.setConnection("transaction", connection);        // 「transaction」は既に登録されているのでエラー
+
+
+------------------
+トランザクション名
+------------------
+| トランザクション名は、TransactionContextに設定するTransaction(以降トランザクション)毎に設定する名前である。
+| この名前は、スレッド内ではユニークにする必要があり、アプリケーションでTransactionContextからトランザクションを取得する際に使用する名前である。
+
+
+トランザクション名の使用例
+==========================
+.. code-block :: java
+
+  //***************************************************************************
+  // TransactionContextへの登録例
+  // この処理は、フレームワークの責務である。
+  //***************************************************************************
+
+  // 現在実行中のスレッドに、トランザクション名：TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEYでトランザクションを登録する。
+  TransactionContext.setTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, transaction);
+
+  // 現在実行中のスレッドに、トランザクション名：user-schemaでトランザクションを登録する。
+  TransactionContext.setTransaction("user_schema", transaction2);
+
+  // 同一スレッドで既に登録されている名前で登録を行った場合は、エラーとなる。
+  TransactionContext.setTransaction("user_schema", transaction3);       // 「user_schema」は既に登録されているのでエラー
+
+  //***************************************************************************
+  // トランザクションの取得例
+  // 基本的にこの処理はフレームワークの責務である。
+  // アプリケーションで、トランザクションが必要となるケースは、
+  // 例外発生時(異常終了)であっても処理を確定する必要がある場合である。
+  //***************************************************************************
+  // トランザクション名に「TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY」を指定してトランザクションを取得する。
+  Transaction tran = TransactionContext.getTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);
+
+  // トランザクション名に「user-schema」を指定してトランザクションを取得する。
+  Transaction tran = TransactionContext.getTransaction("user-schema");
+
+JdbcTransactionを使用した場合のトランザクション名とデータベースコネクション名の関係
+===================================================================================
+本クラスを使用した場合、トランザクション名とデータベースコネクション名は1対1で紐付く仕様となっている。
+つまり、JdbcTransactionは、自身のトランザクション名と同一の名前でDbConnectionContextに登録されているデータベース接続を使用して、\
+トランザクション制御を行う仕様となっている。
+
+
+実装コードで見るトランザクション制御
+------------------------------------
+.. code-block :: java
+
+  // 無名のデータベース接続とトランザクションを登録
+  DbConnectionContext.setConnection(connection1);
+  TransactionContext.setTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, transaction1);
+
+  // user-schemaという名前でデータベース接続とトランザクションを登録
+  DbConnectionContext.setConnection("user-schema", connection2);
+  TransactionContext.setTransaction("user-schema", transaction2);
+
+  // このコミット処理は、connection1に対して実行される。
+  // connection2は、このトランザクション制御の影響を一切うけない。
+  Transaction tran1 = TransactionContext.getTransaction();
+  tran1.commit();
+
+
+```
+
+## Current Knowledge File
+
+```json
+{
+  "id": "libraries-04_TransactionConnectionName",
+  "title": "データベースコネクション名とトランザクション名",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "データベースコネクション名",
+      "hints": [
+        "DbConnectionContext",
+        "AppDbConnection",
+        "TransactionContext",
+        "DEFAULT_TRANSACTION_CONTEXT_KEY",
+        "データベースコネクション名",
+        "データベース接続管理",
+        "無名コネクション",
+        "コネクション登録"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "トランザクション名",
+      "hints": [
+        "TransactionContext",
+        "Transaction",
+        "JdbcTransaction",
+        "トランザクション名",
+        "トランザクション制御",
+        "データベースコネクション名との対応"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "`DbConnectionContext` に設定する `AppDbConnection`（データベース接続）ごとに設定する名前。スレッド内でユニークにする必要がある。\n\n**名前を分けて登録するケース:**\n- データベースの接続先が異なる場合\n- 同一接続先で異なるトランザクション制御が必要な場合（例: 業務処理内で別トランザクションが必要な場合）\n\n> **注意**: 無名のデータベース接続は1つだけ登録可能。ビジネスロジックのメインDB接続には無名を推奨（名前指定間違いによる不具合を防げる）。内部的には `TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEY`（値は `\"transaction\"`）として保持される。\n\n> **警告**: `TransactionContext#DEFAULT_TRANSACTION_CONTEXT_KEY` の値は `\"transaction\"`。無名と `\"transaction\"` は同義。無名が登録されている状態で `\"transaction\"` の登録を試みるとエラー。同一スレッドで既に登録されている名前で再登録するとエラー。\n\n**使用例:**\n\n```java\n// 無名のデータベース接続を登録（内部的にDEFAULT_TRANSACTION_CONTEXT_KEY=\"transaction\"として保持）\nDbConnectionContext.setConnection(connection1);\n// 上記と同義\nDbConnectionContext.setConnection(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, connection1);\nDbConnectionContext.setConnection(\"transaction\", connection1);\n\n// \"user-schema\" という名前でデータベース接続を登録\nDbConnectionContext.setConnection(\"user-schema\", connection2);\n\n// 同一スレッドで既に登録されている名前で登録するとエラー\nDbConnectionContext.setConnection(\"user-schema\", connection3); // エラー\n\n// 無名のデータベース接続を取得\nAppDbConnection connection1 = DbConnectionContext.getConnection();\n\n// \"user-schema\" でデータベース接続を取得\nAppDbConnection connection2 = DbConnectionContext.getConnection(\"user-schema\");\n```\n\n無名と `\"transaction\"` の関係:\n\n```java\n// 無名で登録したコネクションは \"transaction\" でも取得可能\nDbConnectionContext.setConnection(connection);\nDbConnectionContext.getConnection(\"transaction\");\n\n// \"transaction\" で登録したコネクションは無名でも取得可能\nDbConnectionContext.setConnection(\"transaction\", connection);\nDbConnectionContext.getConnection();\n\n// 無名が登録済みの場合、\"transaction\" での登録はエラー\nDbConnectionContext.setConnection(connection1);\nDbConnectionContext.setConnection(\"transaction\", connection); // エラー\n```",
+    "s2": "`TransactionContext` に設定する `Transaction` ごとに設定する名前。スレッド内でユニークにする必要がある。\n\n**使用例:**\n\n```java\n// DEFAULT_TRANSACTION_CONTEXT_KEY でトランザクションを登録\nTransactionContext.setTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, transaction);\n\n// \"user_schema\" でトランザクションを登録\nTransactionContext.setTransaction(\"user_schema\", transaction2);\n\n// 同一スレッドで既に登録されている名前で登録するとエラー\nTransactionContext.setTransaction(\"user_schema\", transaction3); // エラー\n\n// トランザクションを取得\nTransaction tran = TransactionContext.getTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY);\nTransaction tran = TransactionContext.getTransaction(\"user-schema\");\n```\n\n**JdbcTransaction使用時のトランザクション名とデータベースコネクション名の関係:**\n\n`JdbcTransaction` を使用した場合、トランザクション名とデータベースコネクション名は1対1で紐付く。`JdbcTransaction` は自身のトランザクション名と同一の名前で `DbConnectionContext` に登録されているデータベース接続を使用してトランザクション制御を行う。\n\n```java\n// 無名のデータベース接続とトランザクションを登録\nDbConnectionContext.setConnection(connection1);\nTransactionContext.setTransaction(TransactionContext.DEFAULT_TRANSACTION_CONTEXT_KEY, transaction1);\n\n// \"user-schema\" でデータベース接続とトランザクションを登録\nDbConnectionContext.setConnection(\"user-schema\", connection2);\nTransactionContext.setTransaction(\"user-schema\", transaction2);\n\n// このコミットは connection1 に対して実行。connection2 はこのトランザクション制御の影響を受けない。\nTransaction tran1 = TransactionContext.getTransaction();\ntran1.commit();\n```"
+  }
+}
+```
+
+## Instructions
+
+For each finding, apply the fix:
+- **omission**: Find the missing information in the source and add it to the correct section.
+- **fabrication**: Remove the content that has no corresponding source passage.
+- **hints_missing**: Add the missing terms to the section's hints array.
+- **section_issue**: Fix the section structure as described in the finding.
+- **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
+
+After all fixes, verify:
+- Every index[].id has a matching key in sections and vice versa
+- Section IDs follow sequential format: `s1`, `s2`, `s3`, ...
+- No section content is empty
+
+Respond with the entire corrected knowledge file as JSON matching the schema defined in generate.md (knowledge file structure with index[], sections{}, source{}, assets{} fields).
