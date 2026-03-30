@@ -121,9 +121,9 @@ xychart-beta
 ```mermaid
 xychart-beta
   title "Total SLOC Trend (all categories)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/23", "03/30"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30"]
   y-axis "Lines" 0 --> 15026
-  line [0, 789, 1503, 1293, 10339, 11613, 11704, 12521]
+  line [0, 789, 1503, 1293, 10339, 11613, 11613, 11704, 12521]
 ```
 
 ```mermaid
@@ -142,34 +142,36 @@ pie title Knowledge Creator SLOC
 ```mermaid
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
-  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/23", "03/30"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30"]
   y-axis "Lines" 0 --> 6881
-  line [0, 0, 0, 0, 3183, 4109, 4119, 4347]
-  line [0, 0, 0, 0, 4802, 5064, 5145, 5734]
+  line [0, 0, 0, 0, 3183, 4109, 4109, 4119, 4347]
+  line [0, 0, 0, 0, 4802, 5064, 5064, 5145, 5734]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
 
+> Traffic data collection started: week of 03/09
+
 ```mermaid
 xychart-beta
   title "Page Views (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
   y-axis "Views" 0 --> 503
-  bar [2, 278, 419]
+  bar [0, 0, 0, 0, 0, 2, 278, 419]
 ```
 
 ```mermaid
 xychart-beta
   title "Unique Visitors (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
   y-axis "Visitors" 0 --> 74
-  bar [1, 40, 61]
+  bar [0, 0, 0, 0, 0, 1, 40, 61]
 ```
 
 ```mermaid
 xychart-beta
   title "Unique Cloners (weekly)"
-  x-axis ["03/09", "03/16", "03/23"]
+  x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
   y-axis "Cloners" 0 --> 113
-  bar [10, 87, 94]
+  bar [0, 0, 0, 0, 0, 10, 87, 94]
 ```
