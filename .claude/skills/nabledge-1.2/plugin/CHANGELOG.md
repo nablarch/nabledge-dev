@@ -4,7 +4,12 @@ nabledge-1.2プラグインの主な変更内容を記録しています。
 
 フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づいています。
 
-## [Unreleased]
+## [0.1] - 2026-03-30
 
 ### 追加
-- nabledge-1.2 の初回リリース。Nablarch 1.x の公式ドキュメントをもとに生成した知識ファイル（291件）により、QA・コード分析機能が利用可能になりました。
+
+- Nablarch 1.2の全ドキュメントをカバーした知識ファイルを追加しました（291件）
+- 知識検索ワークフローを追加しました（Nablarchに関する質問に回答）
+- コード分析ワークフローを追加しました（プロジェクトコードの構造・依存関係を可視化）
+
+[0.1]: https://github.com/nablarch/nabledge/releases/tag/0.8
