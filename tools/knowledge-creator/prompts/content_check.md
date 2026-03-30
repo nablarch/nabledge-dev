@@ -34,7 +34,7 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 ## Validation Checklist
 
-### V1: Omission Check (severity: critical)
+### V1: Omission Check
 
 Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
 
@@ -52,6 +52,13 @@ Read the source file section by section. Identify every piece of information tha
 For each omission found, record:
 "OMISSION: {source heading or line description} — {what information is missing from knowledge file}"
 
+**Severity assignment (D-1 stability rule — applies to all checks in V1, V2):**
+- `critical`: The omission would directly cause an AI agent to give **incorrect** implementation advice — e.g., the AI would recommend a removed API, miss a required prerequisite, violate a constraint, or produce runtime errors.
+  Before assigning `critical`, state: "Without this, an AI would incorrectly advise: {specific wrong advice}."
+- `minor`: The omission makes the answer less complete but would not cause incorrect advice — e.g., a secondary usage example, a non-critical note, supplementary context.
+
+If you cannot clearly articulate which incorrect implementation decision would result from the omission, assign `minor`.
+
 **Acceptable omissions (DO NOT report as missing):**
 
 Knowledge files are optimized for AI assistants to answer questions. **Accept omission** of the following elements that serve only as navigation:
@@ -64,7 +71,7 @@ Knowledge files are optimized for AI assistants to answer questions. **Accept om
 
 **Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
 
-### V2: Fabrication Check (severity: critical)
+### V2: Fabrication Check
 
 Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
 
@@ -78,7 +85,16 @@ Read the knowledge file section by section. For every statement, confirm it has 
 For each fabrication found, record:
 "FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
 
-### V3: Section Issues (severity: minor)
+**Severity assignment — apply the D-1 stability rule (same criteria as V1):**
+- `critical`: The fabrication would directly cause an AI agent to give **incorrect** implementation advice — e.g., a fabricated constraint that rejects valid code, a fabricated class name that does not exist, a fabricated default value that conflicts with actual behavior, a fabricated rule that contradicts the source.
+  Before assigning `critical`, state: "An AI following this would incorrectly advise: {specific wrong advice}."
+- `minor`: The fabrication adds content not in the source but would not cause incorrect advice — e.g., a plausible paraphrase that is technically accurate, a minor extraneous detail.
+
+If you cannot clearly articulate which incorrect implementation decision would result from the fabrication, assign `minor`.
+
+### V3: Section Issues
+
+Severity: `minor` (all findings in this category are minor by definition)
 
 - Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
 - Check if any section has < 50 characters.
