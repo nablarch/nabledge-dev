@@ -153,7 +153,7 @@ else
 export UV_CA_BUNDLE="/usr/local/share/ca-certificates/ca.crt"
 export SSL_CERT_FILE="/usr/local/share/ca-certificates/ca.crt"
 export NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/ca.crt"
-export PATH="$HOME/venv/bin:$PATH"
+export PATH="$HOME/venv/bin:$HOME/.local/bin:$PATH"
 EOF
     print_status ok "Environment variables added"
     print_status info "Sourcing $BASHRC..."
@@ -168,7 +168,6 @@ if command -v uv &> /dev/null; then
 else
     print_status info "Installing uv..."
     if curl -LsSf https://astral.sh/uv/install.sh | sh; then
-        source "$HOME/.cargo/env" || true
         print_status ok "uv installed"
     else
         print_status error "Failed to install uv"
@@ -252,7 +251,7 @@ else
 
     # Install nvm
     if [ ! -d "$HOME/.nvm" ]; then
-        if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash; then
+        if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash; then
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             print_status ok "nvm installed"
@@ -290,8 +289,24 @@ else
     fi
 fi
 
+# Install GitHub Copilot CLI
+print_header "9. Installing GitHub Copilot CLI"
+
+if command -v copilot &> /dev/null; then
+    COPILOT_VER=$(copilot --version --no-auto-update 2>/dev/null | head -n 1 || echo "unknown")
+    print_status ok "GitHub Copilot CLI already installed ($COPILOT_VER)"
+else
+    print_status info "Installing GitHub Copilot CLI..."
+    if curl -fsSL https://gh.io/copilot-install | bash; then
+        print_status ok "GitHub Copilot CLI installed"
+    else
+        print_status error "Failed to install GitHub Copilot CLI"
+        exit 1
+    fi
+fi
+
 # Clone Nablarch official repositories
-print_header "9. Cloning Nablarch Official Repositories"
+print_header "10. Cloning Nablarch Official Repositories"
 
 NAB_OFFICIAL_V6_DIR=".lw/nab-official/v6"
 NAB_OFFICIAL_V5_DIR=".lw/nab-official/v5"
@@ -378,6 +393,110 @@ clone_or_update_repo "https://github.com/nablarch/nablarch-example-rest.git"  "$
 clone_or_update_repo "https://github.com/nablarch/nablarch-example-web.git"   "$NAB_OFFICIAL_V5_DIR" "v5-main"
 
 
+# Setup Nablarch 1.x documentation (SVN)
+print_header "11. Setting Up Nablarch 1.x Documentation (SVN)"
+
+SVN_BASE_URL="${SVN_BASE_URL:-}"
+SVN_USERNAME="${SVN_USERNAME:-}"
+SVN_PASSWORD="${SVN_PASSWORD:-}"
+
+if [ -z "$SVN_BASE_URL" ]; then
+    print_status info "Skipped (SVN_BASE_URL not set)."
+    print_status info "To set up Nablarch 1.x docs, re-run with:"
+    print_status info "  SVN_BASE_URL=<url> SVN_USERNAME=<user> SVN_PASSWORD=<pass> ./setup.sh"
+else
+    # Install svn if needed
+    if ! command -v svn &> /dev/null; then
+        print_status info "Installing subversion..."
+        sudo apt-get install -y subversion
+        print_status ok "subversion installed"
+    fi
+
+    # Build SVN auth options
+    SVN_AUTH_OPTS=()
+    [ -n "$SVN_USERNAME" ] && SVN_AUTH_OPTS+=(--username "$SVN_USERNAME")
+    [ -n "$SVN_PASSWORD" ] && SVN_AUTH_OPTS+=(--password "$SVN_PASSWORD" --no-auth-cache)
+
+    # Checkout or update a single SVN working copy
+    svn_checkout() {
+        local svn_url="$1"
+        local target_dir="$2"
+        local name
+        name=$(basename "$target_dir")
+
+        if [ -d "${target_dir}/.svn" ]; then
+            print_status info "Updating ${name}..."
+            if svn update "${SVN_AUTH_OPTS[@]}" --ignore-externals "$target_dir" 2>&1; then
+                print_status ok "${name} updated"
+            else
+                print_status warning "Failed to update ${name} (may not exist in this version)"
+                return 1
+            fi
+        else
+            print_status info "Checking out ${name}..."
+            mkdir -p "$(dirname "$target_dir")"
+            if svn checkout "${SVN_AUTH_OPTS[@]}" --ignore-externals "$svn_url" "$target_dir" 2>&1; then
+                print_status ok "${name} checked out"
+            else
+                print_status warning "Failed to checkout ${name} (may not exist in this version)"
+                return 1
+            fi
+        fi
+        return 0
+    }
+
+    # v1.4
+    print_status info "Checking out Nablarch v1.4 modules..."
+    V14_DIR=".lw/nab-official/v1.4"
+    mkdir -p "$V14_DIR"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.4_maintain" "${V14_DIR}/document"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/biz_sample/branches/1.4_maintain" "${V14_DIR}/biz_sample"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/nablarch_plugins_bundle/branches/1.4_maintain" "${V14_DIR}/ui_dev"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/workflow/branches/1.4_maintain" "${V14_DIR}/workflow"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/MessagingSimu/branches/1.4_maintain" "${V14_DIR}/MessagingSimu"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/db/branches/1.4_maintain" "${V14_DIR}/fw-integration-db"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/log4j/branches/1.4_maintain" "${V14_DIR}/fw-integration-log4j"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.4_maintain" "${V14_DIR}/fw-integration-mail"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.4_maintain" "${V14_DIR}/fw-integration-wmq"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.4_maintain" "${V14_DIR}/statistics_report"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/tutorial_project/branches/1.4_maintain" "${V14_DIR}/tutorial"
+
+    # v1.3
+    print_status info "Checking out Nablarch v1.3 modules..."
+    V13_DIR=".lw/nab-official/v1.3"
+    mkdir -p "$V13_DIR"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.3_maintain" "${V13_DIR}/document" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/biz_sample/branches/1.3_maintain" "${V13_DIR}/biz_sample" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/nablarch_plugins_bundle/branches/1.3_maintain" "${V13_DIR}/ui_dev" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/workflow/branches/1.3_maintain" "${V13_DIR}/workflow" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/MessagingSimu/branches/1.3_maintain" "${V13_DIR}/MessagingSimu" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/db/branches/1.3_maintain" "${V13_DIR}/fw-integration-db" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/log4j/branches/1.3_maintain" "${V13_DIR}/fw-integration-log4j" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.3_maintain" "${V13_DIR}/fw-integration-mail" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.3_maintain" "${V13_DIR}/fw-integration-wmq" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.3_maintain" "${V13_DIR}/statistics_report" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/tutorial/branches/1.3_maintain" "${V13_DIR}/tutorial" || true
+
+    # v1.2
+    print_status info "Checking out Nablarch v1.2 modules..."
+    V12_DIR=".lw/nab-official/v1.2"
+    mkdir -p "$V12_DIR"
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/06_Documentation/nablarch/branches/1.2_maintain" "${V12_DIR}/document" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/biz_sample/branches/1.2_maintain" "${V12_DIR}/biz_sample" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/nablarch_plugins_bundle/branches/1.2_maintain" "${V12_DIR}/ui_dev" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/workflow/branches/1.2_maintain" "${V12_DIR}/workflow" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/MessagingSimu/branches/1.2_maintain" "${V12_DIR}/MessagingSimu" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/db/branches/1.2_maintain" "${V12_DIR}/fw-integration-db" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/log4j/branches/1.2_maintain" "${V12_DIR}/fw-integration-log4j" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/mail/branches/1.2_maintain" "${V12_DIR}/fw-integration-mail" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/fw-integration/wmq/branches/1.2_maintain" "${V12_DIR}/fw-integration-wmq" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/statistics_report/branches/1.2_maintain" "${V12_DIR}/statistics_report" || true
+    svn_checkout "${SVN_BASE_URL}/Nablarch/02_ProjectOutput/05_SourceCode/sample/branches/1.2_maintain" "${V12_DIR}/tutorial" || true
+
+    print_status ok "SVN checkout completed"
+fi
+
+
 # Final summary
 print_header "Setup Completed Successfully!"
 
@@ -391,7 +510,6 @@ echo "  3. Load environment and start Claude Code:"
 echo "     source .env"
 echo "     claude"
 echo ""
-echo "  (Optional) To generate knowledge files for Nablarch 1.x (v1.4/1.3/1.2):"
-echo "     SVN_BASE_URL=<SVN_URL> SVN_USERNAME=<username> SVN_PASSWORD=<password> ./setup-svn.sh"
-echo "     # Then: ./tools/knowledge-creator/kc.sh gen 1.4"
+echo "  4. Verify test environments (optional):"
+echo "     bash tools/tests/test-setup.sh"
 echo ""
