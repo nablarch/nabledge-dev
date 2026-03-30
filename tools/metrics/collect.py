@@ -539,9 +539,17 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
     cur_kt = total(current["kc"]["scripts_test"])
     cur_kpr = current["kc"]["prompts"]
 
+    # Normalize x-axis to ISO week Monday (MM/DD) for consistency with DORA/Activity charts.
+    # Deduplicate by week label, keeping the latest entry per week (handles legacy non-Monday dates).
+    to_week_label = lambda d: week_label(iso_week_monday(datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc)))
+    seen: dict[str, dict] = {}
+    for h in history:  # oldest-first; later entries overwrite earlier ones in the same week
+        seen[to_week_label(h["date"])] = h
+    history = list(seen.values())
+    hist_labels = list(seen.keys())
+
     # --- Total SLOC trend ---
     if len(history) >= 2:
-        hist_labels = [h["date"][5:] for h in history]
         lines.append(mermaid_xychart_line("Total SLOC Trend (all categories)", hist_labels, "Lines", [h["total"] for h in history]))
         lines.append("")
 
@@ -560,7 +568,6 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
 
     # KC trend (prod vs test)
     if len(history) >= 2:
-        hist_labels = [h["date"][5:] for h in history]
         kc_prod_hist = [h["kc_prod"] for h in history]
         kc_test_hist = [h["kc_test"] for h in history]
         ymax = y_axis_max(kc_prod_hist + kc_test_hist)
@@ -943,10 +950,16 @@ def main() -> None:
     snapshot = load_sloc_snapshot(snapshot_path)
     sloc_previous = {k: v for k, v in snapshot.items() if k != "history"}
     sloc_history = snapshot.get("history", [])
-    # Upsert today's entry (remove any existing same-date entries, then append)
-    today_entry = sloc_flat(sloc_current, today)
-    sloc_history = [h for h in sloc_history if h["date"] != today]
-    sloc_history = (sloc_history + [today_entry])[-8:]
+    # Upsert this week's entry; normalize all entries to ISO week Monday key to deduplicate legacy data
+    sloc_monday = iso_week_monday(datetime.now(tz=timezone.utc)).strftime("%Y-%m-%d")
+    today_entry = sloc_flat(sloc_current, sloc_monday)
+    seen_by_monday: dict[str, dict] = {}
+    for h in sloc_history + [today_entry]:
+        monday_key = iso_week_monday(
+            datetime.strptime(h["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        ).strftime("%Y-%m-%d")
+        seen_by_monday[monday_key] = {**h, "date": monday_key}
+    sloc_history = list(seen_by_monday.values())[-8:]
     save_sloc_snapshot(snapshot_path, {**sloc_current, "history": sloc_history})
 
     print("[info] Rendering docs/metrics.md...", file=sys.stderr)

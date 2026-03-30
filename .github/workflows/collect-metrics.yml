@@ -29,7 +29,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          git add docs/metrics.md
+          git add docs/metrics.md tools/metrics/sloc-snapshot.json
+          [ -f tools/metrics/traffic-snapshot.json ] && git add tools/metrics/traffic-snapshot.json
           if git diff --staged --quiet; then
             echo "No changes to metrics.md, skipping PR creation."
             exit 0
