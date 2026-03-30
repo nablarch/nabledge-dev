@@ -2,6 +2,14 @@
 
 ## 2026-03-30
 
+### Phase D/E 根本原因 Issue 登録（#274）
+
+v1.2/v1.3/v1.4 の分析結果を集約した Issue #274 が登録された。
+今回の調査で特定した E-1〜E-3・D-1 を含み、v1.4 分析からの E-4・E-5 も追加。
+Success Criteria「Non-critical issues are tracked as GitHub Issues」の対応完了。
+
+---
+
 ### 重大指摘の残存原因調査（ログ実証）
 
 Phase D findings（r1/r2/r3）と Phase E execution logs（run 1/run 2）を全5ファイル分読み込み、事実を確認した。
