@@ -459,23 +459,16 @@ def save_traffic_snapshot(path: str, data: dict) -> None:
         json.dump(data, f, indent=2, sort_keys=True)
 
 
-def aggregate_traffic_weekly(daily_data: dict) -> tuple[list[str], list[int], list[int]]:
-    """Aggregate daily traffic data by ISO week. Returns (labels, counts, uniques)."""
-    from collections import defaultdict
-    weekly_counts: dict[str, int] = defaultdict(int)
-    weekly_uniques: dict[str, int] = defaultdict(int)
-    monday_by_label: dict[str, datetime] = {}
+def aggregate_traffic_by_week_label(daily_data: dict) -> tuple[dict[str, int], dict[str, int]]:
+    """Aggregate daily traffic data by ISO week label. Returns (counts_by_label, uniques_by_label)."""
+    counts: dict[str, int] = {}
+    uniques: dict[str, int] = {}
     for date_str, values in daily_data.items():
         dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        monday = iso_week_monday(dt)
-        label = week_label(monday)
-        weekly_counts[label] += values.get("count", 0)
-        weekly_uniques[label] += values.get("uniques", 0)
-        monday_by_label[label] = monday
-    sorted_labels = [week_label(m) for m in sorted(monday_by_label.values())]
-    counts = [weekly_counts[l] for l in sorted_labels]
-    uniques = [weekly_uniques[l] for l in sorted_labels]
-    return sorted_labels, counts, uniques
+        label = week_label(iso_week_monday(dt))
+        counts[label] = counts.get(label, 0) + values.get("count", 0)
+        uniques[label] = uniques.get(label, 0) + values.get("uniques", 0)
+    return counts, uniques
 
 
 def merge_traffic_snapshot(snapshot: dict, traffic_views: dict, traffic_clones: dict) -> dict:
@@ -864,16 +857,24 @@ def render_metrics_md(
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
 
-        if snap_views:
-            w_labels, w_counts, w_uniques = aggregate_traffic_weekly(snap_views)
-            lines.append(mermaid_xychart_bar("Page Views (weekly)", w_labels, "Views", w_counts))
+        # Annotation: earliest date of available traffic data
+        all_dates = sorted(list(snap_views.keys()) + list(snap_clones.keys()))
+        if all_dates:
+            earliest_dt = datetime.strptime(all_dates[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            data_start = week_label(iso_week_monday(earliest_dt))
+            lines.append(f"> Traffic data collection started: week of {data_start}")
             lines.append("")
-            lines.append(mermaid_xychart_bar("Unique Visitors (weekly)", w_labels, "Visitors", w_uniques))
+
+        if snap_views:
+            vc, vu = aggregate_traffic_by_week_label(snap_views)
+            lines.append(mermaid_xychart_bar("Page Views (weekly)", labels, "Views", [vc.get(l, 0) for l in labels]))
+            lines.append("")
+            lines.append(mermaid_xychart_bar("Unique Visitors (weekly)", labels, "Visitors", [vu.get(l, 0) for l in labels]))
             lines.append("")
 
         if snap_clones:
-            c_labels, _, c_uniques = aggregate_traffic_weekly(snap_clones)
-            lines.append(mermaid_xychart_bar("Unique Cloners (weekly)", c_labels, "Cloners", c_uniques))
+            _, cu = aggregate_traffic_by_week_label(snap_clones)
+            lines.append(mermaid_xychart_bar("Unique Cloners (weekly)", labels, "Cloners", [cu.get(l, 0) for l in labels]))
             lines.append("")
     elif traffic_snapshot is None:
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
