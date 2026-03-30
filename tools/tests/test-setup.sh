@@ -258,9 +258,17 @@ verify_env() {
             fail=1
         fi
 
-        # command file check
-        local cmd_status="ok"
-        [ ! -f "$cmd_file" ] && cmd_status="WARN: /n${v} command missing"
+        # command file check (CC only; GHC uses .github/prompts/ instead)
+        local cmd_status=""
+        if [ "$tool" = "ghc" ]; then
+            cmd_status="N/A (GHC)"
+        elif [ -f "$cmd_file" ]; then
+            cmd_status="ok"
+        else
+            echo "  [FAIL] ${label} nabledge-${v}: /n${v} command missing"
+            fail=1
+            cmd_status="FAIL"
+        fi
 
         # GHC prompt file check
         local ghc_status=""
@@ -269,7 +277,9 @@ verify_env() {
             if [ -f "$prompt_file" ]; then
                 ghc_status=", prompt ok"
             else
-                ghc_status=", WARN: n${v}.prompt.md missing"
+                echo "  [FAIL] ${label} nabledge-${v}: n${v}.prompt.md missing"
+                fail=1
+                ghc_status=", prompt FAIL"
             fi
         fi
 
