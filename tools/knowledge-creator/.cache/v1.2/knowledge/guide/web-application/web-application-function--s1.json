@@ -1,0 +1,58 @@
+{
+  "id": "web-application-function--s1",
+  "title": "ファイルダウンロードの実現方法",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "ファイルのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadButton",
+        "ファイルダウンロード"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "BLOB型カラムのダウンロード方法",
+      "hints": [
+        "StreamResponse",
+        "downloadLink",
+        "SqlRow",
+        "BLOBダウンロード",
+        "n:param",
+        "Blob"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "データレコードのダウンロード方法",
+      "hints": [
+        "DataRecordResponse",
+        "downloadSubmit",
+        "SqlResultSet",
+        "SqlRow",
+        "CSVダウンロード",
+        "データレコードダウンロード",
+        "フォーマット定義"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "別ウィンドウを開きダウンロードを開始したい場合",
+      "hints": [
+        "downloadSubmit",
+        "popupButton",
+        "別ウィンドウダウンロード",
+        "allowDoubleSubmission"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "ファイルダウンロードで使用するタグとユーティリティクラス:\n\n**タグ**: `downloadSubmit`, `downloadButton`, `downloadLink`\n\n**クラス**: `StreamResponse`, `DataRecordResponse`\n\n`downloadButton` タグと `StreamResponse` クラスを使用する。\n\nJSP:\n```jsp\n<n:downloadButton uri=\"/action/ss11AC/W11AC02Action/TempFile\" name=\"tempFile\">ダウンロード</n:downloadButton>\n```\n\nアクション:\n```java\nStreamResponse response = new StreamResponse(file, true);\n// 第2引数: リクエスト処理終了時にファイルを削除する場合はtrue、削除しない場合はfalse (フレームワークが削除)\nresponse.setContentType(\"text/plain; charset=UTF-8\");\nresponse.setContentDisposition(file.getName());\nreturn response;\n```",
+    "s2": "`downloadLink` タグと `StreamResponse(Blob)` を使用する。行データのパラメータ受け渡しに `n:param` タグを使用。\n\nJSP:\n```jsp\n<c:forEach var=\"record\" items=\"${records}\" varStatus=\"status\">\n    <n:set var=\"fileId\" name=\"record.fileId\" />\n    <n:downloadLink uri=\"/action/ss11AC/W11AC02Action/BlobColumn\" name=\"blobColumn_${status.index}\">\n        <n:write name=\"record.fileName\" />(<n:write name=\"fileId\" />)\n        <n:param paramName=\"fileId\" name=\"fileId\" />\n    </n:downloadLink>\n</c:forEach>\n```\n\nアクション:\n```java\nSqlRow record = getRecord(request);\nStreamResponse response = new StreamResponse((Blob) record.get(\"FILE_DATA\"));\nresponse.setContentType(\"image/jpeg\");\nresponse.setContentDisposition(record.getString(\"FILE_NAME\"));\nreturn response;\n```",
+    "s3": "`DataRecordResponse` クラスを使用する。フォーマット定義ファイルの作成が必要。フォーマット定義ファイルの配置場所はプロジェクトの実装方針に従う。\n\nフォーマット定義例 (N11AA001.fmt):\n```\nfile-type:        \"Variable\"\ntext-encoding:    \"Shift_JIS\"\nrecord-separator: \"\\n\"\nfield-separator:  \",\"\n\n[header]\n1   messageId    N \"メッセージID\"\n2   lang         N \"言語\"\n3   message      N \"メッセージ\"\n\n[data]\n1   messageId    X\n2   lang         X\n3   message      N\n```\n\nJSP (`downloadSubmit` タグ):\n```jsp\n<n:downloadSubmit type=\"button\" uri=\"/action/ss11AC/W11AC02Action/CsvDataRecord\"\n                  name=\"csvDataRecord\" value=\"ダウンロード\" />\n```\n\nアクション:\n```java\nSqlResultSet records = getRecords(request);\n// コンストラクタ引数: フォーマット定義のベースパス論理名, フォーマット定義のファイル名\nDataRecordResponse response = new DataRecordResponse(\"format\", \"N11AA001\");\nresponse.write(\"header\", Collections.<String, Object>emptyMap()); // 空のマップでデフォルトヘッダー使用\nfor (SqlRow record : records) {\n    response.write(\"data\", record);\n}\nresponse.setContentType(\"text/csv; charset=Shift_JIS\");\nresponse.setContentDisposition(\"メッセージ一覧.csv\");\nreturn response;\n```",
+    "s4": "別ウィンドウを開いてダウンロードを開始する実装。別ウィンドウを開くには `howto_open_multi_window` の実装方法を使用。\n\n親ウィンドウJSP:\n```jsp\n<n:popupButton uri=\"/action/ss11AC/W11AC02Action/ShowSub\" name=\"showSub\">ダウンロード</n:popupButton>\n```\n\n別ウィンドウJSP (onloadでダウンロードをサブミット):\n```jsp\n<body onload=\"doOnclick('submit');\">\n    <n:form name=\"downloadForm\">\n        <%-- ダウンロードボタンを表示したくない場合は、style=\"display: none;\" などCSSを使用する。 --%>\n        <n:downloadSubmit type=\"button\" uri=\"/action/ss11AC/W11AC02Action/TempFile\"\n                          name=\"submit\" value=\"ダウンロード\"\n                          allowDoubleSubmission=\"false\" />\n        <n:button uri=\"#\" name=\"close\" onclick=\"window.close();\" displayMethod=\"NORMAL\">閉じる</n:button>\n    </n:form>\n</body>\n```\n\nJavaScript (doOnclick関数):\n```javascript\nfunction doOnclick(name) {\n    var element = document.getElementsByName(name)[0];\n    if (element.fireEvent) { element.fireEvent(\"onclick\"); }\n    else if (document.createEvent) {\n        var evt = document.createEvent(\"MouseEvents\");\n        evt.initEvent(\"click\", false, true);\n        element.dispatchEvent(evt);\n    } else { element.onclick(); }\n}\n```"
+  }
+}
