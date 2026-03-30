@@ -1,0 +1,97 @@
+{
+  "id": "testing-framework-batch--s1",
+  "title": "リクエスト単体テストの実施方法(バッチ)",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "テストクラスの書き方",
+      "hints": [
+        "BatchRequestTestSupport",
+        "nablarch.test.core.batch.BatchRequestTestSupport",
+        "テストクラス作成",
+        "リクエスト単体テスト",
+        "バッチテスト"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "テストメソッド分割",
+      "hints": [
+        "テストメソッド分割",
+        "テストケース分割",
+        "バッチテスト設計",
+        "1テストケース1テストメソッド"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "hints": [
+        "testShots",
+        "LIST_MAP",
+        "setUpTable",
+        "setUpFile",
+        "expectedFile",
+        "expectedTable",
+        "expectedLog",
+        "diConfig",
+        "requestPath",
+        "userId",
+        "テストケース一覧",
+        "グループID",
+        "expectedMessage",
+        "responseMessage"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "コマンドライン引数",
+      "hints": [
+        "args[n]",
+        "コマンドライン引数",
+        "コマンドラインオプション",
+        "バッチ起動引数"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データベースの準備",
+      "hints": [
+        "データベース準備",
+        "グループID",
+        "setUpTable",
+        "データベース初期値"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "固定長ファイルの準備",
+      "hints": [
+        "SETUP_FIXED",
+        "固定長ファイル",
+        "setUpFile",
+        "TEST_X9",
+        "TEST_SX9",
+        "StringDataType",
+        "FixedLengthConvertorSetting",
+        "fixedLengthConvertorSetting",
+        "符号無数値",
+        "符号付数値",
+        "nablarch.test.core.file.StringDataType",
+        "外部インタフェース設計書",
+        "行列を入れ替える",
+        "マルチレイアウト"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "テストクラス作成ルール: (1) テスト対象Actionクラスと同一パッケージ (2) クラス名は `{Action名}RequestTest` (3) **クラス**: `nablarch.test.core.batch.BatchRequestTestSupport` を継承",
+    "s2": "原則1テストケース1テストメソッド。以下の条件を満たす場合は複数ケースを1テストメソッドにまとめてよい:\n- テストケース間の関連が強く、シートを分割すると可読性が劣化する場合（例: 入力ファイルのフォーマットチェック）\n- テストデータが少量で1シートに記述しても可読性・保守性に影響しない場合",
+    "s3": "Excelファイルはテストソースコードと同じディレクトリに同じ名前（拡張子のみ異なる）で格納する。\n\nテストケース一覧はLIST_MAPのデータタイプで記載し、IDは `testShots` とする。\n\n| カラム名 | 説明 | 必須 |\n|---|---|---|\n| no | テストケース番号（1からの連番） | ○ |\n| description | テストケースの説明 | ○ |\n| expectedStatusCode | 期待するステータスコード | ○ |\n| setUpTable | テスト前にDBに登録するデータの :ref:`グループID<tips_groupId>` | |\n| setUpFile | テスト前に入力用ファイルを作成するデータの :ref:`グループID<tips_groupId>` | |\n| expectedFile | 出力ファイルの比較用の期待データの :ref:`グループID<tips_groupId>` | |\n| expectedTable | DB内容比較用の期待テーブルの :ref:`グループID<tips_groupId>` | |\n| expectedLog | 期待するログメッセージを記載したLIST_MAPデータのID | |\n| diConfig | バッチ実行時のコンポーネント設定ファイルへのパス（ :ref:`about_commandline_argument` 参照） | ○ |\n| requestPath | バッチ実行時のリクエストパス（ :ref:`about_commandline_argument` 参照） | ○ |\n| userId | バッチ実行ユーザID（ :ref:`about_commandline_argument` 参照） | ○ |\n| expectedMessage | メッセージ同期送信時の期待する要求電文の :ref:`グループID<tips_groupId>` | |\n| responseMessage | メッセージ同期送信時の返却する応答電文の :ref:`グループID<tips_groupId>` | |\n\n> **注意**: setUpTable/setUpFile/expectedFile/expectedTableでデフォルトグループIDを使用する場合は `default` と記載する。デフォルトグループIDと個別グループIDの併用も可能（両方のデータが有効になる）。",
+    "s4": "バッチ起動時の引数指定は `args[n]`（nは0以上の整数）形式でカラムを追加する。\n\n> **警告**: 添字nは連続した整数でなければならない。\n\n定義済みカラム以外のカラムを追加すると、そのカラムはコマンドラインオプションとみなされる。例えばカラム名 `paramA`、値 `valueA` の場合、`-paramA=valueA` というコマンドラインオプションを指定したことになる。",
+    "s5": "テストケース一覧の `setUpTable` カラムにグループIDを記載することで、各テストケース実行前に自動テストフレームワークがデータベースにデータを投入する。グループIDによる対応付け方法はオンラインテストと同様（ :ref:`オンライン<request_test_testcases>` 参照）。デフォルトグループIDを使用する場合は `default` と記載する。デフォルトグループIDと個別グループIDの併用も可能で、両方のデータが有効になる。",
+    "s6": "テストデータに以下の書式で固定長ファイルの情報を記載すると、自動テストフレームワークがテスト実行前にファイルを作成する。\n\n**書式**: `SETUP_FIXED[グループID]=ファイルパス`\n\nグループIDはテストケース一覧の `setUpFile` カラムの値と紐付けられる。ファイルパスはカレントディレクトリからのパス（ファイル名含む）。ディレクティブ行でエンコーディング（`text-encoding`）やレコード区切り文字（`record-separator`）等を指定する。\n\nマルチレイアウトの場合、レコード種別の記述を連続で記載する。各レコード種別には「フィールド名称」「データ型」「フィールド長」「データ」を順に記述する。\n\n> **警告**: 1つのレコード種別においてフィールド名称に重複した名称は許容されない（例: 「氏名」フィールドが2つ以上は不可）。異なるレコード種別間での同一名称は問題ない。\n\n> **ヒント**: フィールド名称・データ型・フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。ペーストする際は「**行列を入れ替える**」オプションにチェックすること。\n\n**具体例** (`SETUP_FIXED=work/members.txt`、文字コード: `Windows-31J`、レコード区切り: `CRLF`):\n\n**ヘッダレコード** (1件):\n\n| フィールド名称 | データ型 | フィールド長 | データ |\n|---|---|---|---|\n| レコード区分 | 9 | 1 | 0 |\n| FILLER | X | 10 | |\n\n**データレコード** (2件):\n\n| フィールド名称 | データ型 | フィールド長 | データ(1件目) | データ(2件目) |\n|---|---|---|---|---|\n| レコード区分 | 9 | 1 | 1 | 1 |\n| 会員番号 | X | 10 | 0000000001 | 0000000002 |\n| 入会日 | 9 | 8 | 20100101 | 20100102 |\n\n**トレーラレコード** (1件):\n\n| フィールド名称 | データ型 | フィールド長 | データ |\n|---|---|---|---|\n| レコード区分 | 9 | 1 | 8 |\n| レコード件数 | 9 | 5 | 2 |\n| FILLER | X | 4 | |\n\n**エンドレコード** (1件):\n\n| フィールド名称 | データ型 | フィールド長 | データ |\n|---|---|---|---|\n| レコード区分 | 9 | 1 | 9 |\n| FILLER | X | 10 | |\n\n**符号無数値（X9）・符号付数値（SX9）使用時の注意**: テストデータには固定長ファイルから入出力する値をそのまま記載すること（パディング文字や符号も含む）。テスト用データタイプ（TEST_X9、TEST_SX9）の設定が必要。デフォルトの設定を省略すると上書きされるため、必ずデフォルト設定も含めること。\n\n```xml\n<component name=\"fixedLengthConvertorSetting\"\n    class=\"nablarch.core.dataformat.convertor.FixedLengthConvertorSetting\">\n  <property name=\"convertorTable\">\n    <map>\n      <entry key=\"X\" value=\"nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString\"/>\n      <entry key=\"N\" value=\"nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString\"/>\n      <entry key=\"XN\" value=\"nablarch.core.dataformat.convertor.datatype.ByteStreamDataString\"/>\n      <entry key=\"Z\" value=\"nablarch.core.dataformat.convertor.datatype.ZonedDecimal\"/>\n      <entry key=\"SZ\" value=\"nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal\"/>\n      <entry key=\"P\" value=\"nablarch.core.dataformat.convertor.datatype.PackedDecimal\"/>\n      <entry key=\"SP\" value=\"nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal\"/>\n      <entry key=\"B\" value=\"nablarch.core.dataformat.convertor.datatype.Bytes\"/>\n      <entry key=\"X9\" value=\"nablarch.core.dataformat.convertor.datatype.NumberStringDecimal\"/>\n      <entry key=\"SX9\" value=\"nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal\"/>\n      <entry key=\"pad\" value=\"nablarch.core.dataformat.convertor.value.Padding\"/>\n      <entry key=\"encoding\" value=\"nablarch.core.dataformat.convertor.value.UseEncoding\"/>\n      <entry key=\"_LITERAL_\" value=\"nablarch.core.dataformat.convertor.value.DefaultValue\"/>\n      <entry key=\"number\" value=\"nablarch.core.dataformat.convertor.value.NumberString\"/>\n      <entry key=\"signed_number\" value=\"nablarch.core.dataformat.convertor.value.SignedNumberString\"/>\n      <entry key=\"TEST_X9\" value=\"nablarch.test.core.file.StringDataType\"/>\n      <entry key=\"TEST_SX9\" value=\"nablarch.test.core.file.StringDataType\"/>\n    </map>\n  </property>\n</component>\n```"
+  }
+}

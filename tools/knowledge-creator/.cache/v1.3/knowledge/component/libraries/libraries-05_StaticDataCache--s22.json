@@ -1,0 +1,92 @@
+{
+  "id": "libraries-05_StaticDataCache--s22",
+  "title": "一括ロード",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "一括ロード",
+      "hints": [
+        "StaticDataLoader",
+        "loadAll",
+        "getId",
+        "generateIndexKey",
+        "getIndexNames",
+        "一括ロード",
+        "キャッシュ",
+        "インデックス"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ExampleDataをロードするクラス",
+      "hints": [
+        "ExampleDataLoader",
+        "StaticDataLoader",
+        "SimpleDbTransactionExecutor",
+        "AppDbConnection",
+        "SqlPStatement",
+        "SqlResultSet",
+        "SqlRow",
+        "IllegalArgumentException",
+        "一括ロード実装例"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "設定例",
+      "hints": [
+        "BasicStaticDataCache",
+        "loadOnStartup",
+        "BasicApplicationInitializer",
+        "Initializable",
+        "一括ロード設定",
+        "キャッシュ初期化設定"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "設定内容詳細",
+      "hints": [
+        "BasicStaticDataCache",
+        "nablarch.core.cache.BasicStaticDataCache",
+        "loader",
+        "loadOnStartup",
+        "プロパティ設定"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "nablarch.core.cache.BasicStaticDataCacheの設定",
+      "hints": [
+        "loader",
+        "loadOnStartup",
+        "BasicStaticDataCache",
+        "StaticDataLoader",
+        "プロパティ設定詳細",
+        "一括ロード設定"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "静的データの再読み込み",
+      "hints": [
+        "StaticDataCache",
+        "refresh",
+        "静的データ再読み込み",
+        "リロード",
+        "StaticDataUseExample",
+        "アプリ再起動なし更新"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "一括ロードでは `StaticDataLoader` インタフェースの以下の4メソッドを実装する必要がある。\n\n| メソッド名 | 用途 |\n|---|---|\n| loadAll | キャッシュするデータを取得する。フレームワークはこのメソッドで返される全てのデータをキャッシュの初期データとして保持する。 |\n| getId | データからデータのIDを取得する。返されるオブジェクトは `java.util.Map` のキーとして使用されるため、キャッシュ上で一意でなければならない。複合キーの場合は `equals` と `hashCode` を適切に実装したクラスのインスタンスを返す。 |\n| getIndexNames | 作成するインデックス名を全て取得する。フレームワークはこの戻り値から作成するインデックスを決定する。 |\n| generateIndexKey | インデックスのキーとなる値を生成する。`getId` がオブジェクトのキャッシュに使用されるのに対し、このメソッドはインデックス上のどのキーにオブジェクトが属するかを示すために使われる。 |",
+    "s2": "> **注意**: このコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。アプリケーション・プログラマはこのような実装を行わない。\n\n```java\npublic class ExampleDataLoader implements StaticDataLoader<ExampleData> {\n\n    public Object getId(ExampleData value) {\n        return value.getId();\n    }\n\n    public Object generateIndexKey(String indexName, ExampleData value) {\n        if (indexName.equals(\"name\")) {\n            return value.getName();\n        } else {\n            throw new IllegalArgumentException(\n                \"invalid indexName: indexName = \" + indexName);\n        }\n    }\n\n    public List<String> getIndexNames() {\n        List<String> indexNames = new ArrayList<String>();\n        indexNames.add(\"name\");\n        return indexNames;\n    }\n\n    public List<ExampleData> loadAll() {\n        return new SimpleDbTransactionExecutor<List<ExampleData>>(dbManager) {\n            @Override\n            public List<ExampleData> execute(AppDbConnection connection) {\n                SqlPStatement stmt = connection\n                    .prepareStatement(\"select id, name from example_data order by id\");\n                SqlResultSet results = stmt.retrieve();\n                List<ExampleData> objs = new ArrayList<ExampleData>();\n                for (SqlRow row : results) {\n                    objs.add(createData(row));\n                }\n                return objs;\n            }\n        }.doTransaction();\n    }\n}\n```",
+    "s3": "一括ロードを行う場合、`BasicStaticDataCache` の `loadOnStartup` プロパティに `true` を設定する必要がある。その他の設定方法はオンデマンドロード時と同様となる。\n\n```xml\n<component name=\"exampleDataCache\" class=\"nablarch.core.cache.BasicStaticDataCache\">\n    <property name=\"loader\">\n        <component class=\"nablarch.core.cache.example.ExampleDataLoader\" />\n    </property>\n    <property name=\"loadOnStartup\" value=\"true\"/>\n</component>\n\n<component name=\"staticDataUseExample\" class=\"nablarch.core.cache.example.StaticDataUseExample\">\n    <property name=\"cache\" ref=\"exampleDataCache\" />\n</component>\n```\n\n`BasicStaticDataCache` は初期化が必要なため :ref:`repository_initialize` に記述した `Initializable` インタフェースを実装している。以下のように `exampleDataCache` が初期化されるよう設定すること。\n\n```xml\n<component name=\"initializer\" class=\"nablarch.core.repository.initialization.BasicApplicationInitializer\">\n    <property name=\"initializeList\">\n        <list>\n            <component-ref name=\"exampleDataCache\"/>\n        </list>\n    </property>\n</component>\n```",
+    "s4": "**クラス**: `nablarch.core.cache.BasicStaticDataCache` の設定プロパティ。",
+    "s5": "| プロパティ名 | 必須 | 説明 |\n|---|---|---|\n| loader | ○ | 静的データをロードする `StaticDataLoader` インタフェースを実装したクラスのインスタンスを指定する。 |\n| loadOnStartup | | 一括ロードの要否を設定する。指定しなければ一括ロードしない。 |",
+    "s6": "静的データは元となるデータが更新された際に再読み込みが必要。アプリケーションの再起動が頻繁に行えない場合、`StaticDataCache` インタフェースの `refresh` メソッドを呼び出すことで再起動なしに再読み込みができる。\n\n> **注意**: このコードはプロジェクトのアーキテクトが作成するものである。通常、各アプリケーション・プログラマはこのような実装を行わない。\n\n```java\npublic class StaticDataUseExample {\n    private StaticDataCache<ExampleData> cache;\n\n    public void setCache(StaticDataCache<ExampleData> cache) {\n        this.cache = cache;\n    }\n\n    public void refreshAndGetValue(String name) {\n        // キャッシュをリロードする\n        cache.refresh();\n\n        // キャッシュから静的データを取得する\n        // 使用者は、静的データがキャッシュにあるかを意識する必要はない\n        List<ExampleData> objs = cache.getValues(\"name\", name);\n        for (ExampleData obj : objs) {\n            System.out.println(obj);\n        }\n    }\n}\n```"
+  }
+}

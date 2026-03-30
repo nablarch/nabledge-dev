@@ -1,0 +1,86 @@
+{
+  "id": "libraries-07_DisplayTag--s12",
+  "title": "codeSelectタグ、codeRadiobuttonsタグ、codeCheckboxesタグ、codeタグ",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "codeSelectタグ、codeRadiobuttonsタグ、codeCheckboxesタグ、codeタグ",
+      "hints": [
+        "codeSelect",
+        "codeRadioButtons",
+        "codeCheckboxes",
+        "code",
+        "共通属性",
+        "name",
+        "codeId",
+        "pattern",
+        "optionColumnName",
+        "labelPattern",
+        "listFormat",
+        "コード値表示",
+        "ラベルパターン"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "",
+      "hints": [
+        "共通属性使用例",
+        "CODE_PATTERN",
+        "CODE_NAME",
+        "コードテーブル",
+        "codeSelect",
+        "入力画面",
+        "確認画面",
+        "labelPattern使用例"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "codeRadiobuttonsタグ、codeCheckboxesタグ",
+      "hints": [
+        "codeRadioButtons",
+        "codeCheckboxes",
+        "nablarch_radio",
+        "nablarch_checkbox",
+        "id属性自動生成",
+        "tabindex",
+        "ラジオボタン",
+        "チェックボックス",
+        "labelタグ"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "codeSelectタグ",
+      "hints": [
+        "codeSelect",
+        "withNoneOption",
+        "noneOptionLabel",
+        "選択なしオプション",
+        "プルダウン"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "codeタグ",
+      "hints": [
+        "code",
+        "name属性省略",
+        "全コード値表示",
+        "表示専用タグ",
+        "コード値",
+        "コード値表示"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "## 共通属性\n\n4つのタグ（codeSelect/codeRadioButtons/codeCheckboxes/code）の共通属性:\n\n| 属性 | 必須 | デフォルト値 | 説明 |\n|---|---|---|---|\n| name | 選択項目のみ必須 | | 選択項目: 選択コード値をリクエストパラメータ/変数スコープから取得するname属性。表示項目: 変数スコープから取得する名前 |\n| codeId | ○ | | コードID |\n| pattern | | 指定なし | 使用するパターンのカラム名 |\n| optionColumnName | | | 取得するオプション名称のカラム名 |\n| labelPattern | | $NAME$ | ラベル整形パターン。プレースホルダ: `$NAME$`(コード名称)、`$SHORTNAME$`(略称)、`$OPTIONALNAME$`(オプション名称、optionColumnName指定必須)、`$VALUE$`(コード値) |\n| listFormat | | br | リスト表示フォーマット。`br`/`div`/`span`/`ul`/`ol`/`sp`(スペース区切り) |\n\n> **注意**: listFormatの適用範囲はタグにより異なる。codeSelectタグ: 確認画面のみ。codeRadioButtonsタグ・codeCheckboxesタグ: 入力・確認画面両方。codeタグ: 常に適用。",
+    "s2": "共通属性の使用例:\n\n**CODE_PATTERN テーブル例:**\n\n| ID | VALUE | PATTERN1 | PATTERN2 | PATTERN3 |\n|---|---|---|---|---|\n| 0001 | 01 | 1 | 0 | 0 |\n| 0001 | 02 | 1 | 0 | 0 |\n| 0002 | 01 | 1 | 0 | 0 |\n| 0002 | 02 | 1 | 0 | 0 |\n| 0002 | 03 | 0 | 1 | 0 |\n| 0002 | 04 | 0 | 1 | 0 |\n| 0002 | 05 | 1 | 0 | 0 |\n\n**CODE_NAME テーブル例:**\n\n| ID | VALUE | SORT_ORDER | LANG | NAME | SHORT_NAME | OPTION01 |\n|---|---|---|---|---|---|---|\n| 0001 | 01 | 1 | ja | 男性 | 男 | 0001-01-ja |\n| 0001 | 02 | 2 | ja | 女性 | 女 | 0001-02-ja |\n| 0002 | 01 | 1 | ja | 初期状態 | 初期 | 0002-01-ja |\n| 0002 | 02 | 2 | ja | 処理開始待ち | 待ち | 0002-02-ja |\n| 0002 | 03 | 3 | ja | 処理実行中 | 実行 | 0002-03-ja |\n| 0002 | 04 | 4 | ja | 処理実行完了 | 完了 | 0002-04-ja |\n| 0002 | 05 | 5 | ja | 処理結果確認完了 | 確認 | 0002-05-ja |\n| 0001 | 01 | 2 | en | Male | M | 0001-01-en |\n| 0001 | 02 | 1 | en | Female | F | 0001-02-en |\n| 0002 | 01 | 1 | en | Initial State | Initial | 0002-01-en |\n| 0002 | 02 | 2 | en | Waiting For Batch Start | Waiting | 0002-02-en |\n| 0002 | 03 | 3 | en | Batch Running | Running | 0002-03-en |\n| 0002 | 04 | 4 | en | Batch Execute Completed Checked | Completed | 0002-04-en |\n| 0002 | 05 | 5 | en | Batch Result Checked | Checked | 0002-05-en |\n\nJavaアクション実装例:\n\n```java\n// アクションの実装例\nBatchEntity batch = new BatchEntity();\nbatch.setStatus(\"03\"); // \"03\"を設定\ncontext.setRequestScopedVar(\"batch\", batch);\n```\n\nJSP使用例（codeSelectタグ）:\n\n```jsp\n<n:codeSelect name=\"batch.status\"\n              codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n              labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n              listFormat=\"div\" />\n```\n\nHTML出力例（入力画面）:\n\n```html\n<select name=\"batch.status\">\n    <option value=\"\">選択なし</option>\n    <option value=\"03\" selected=\"selected\">03:処理実行中-実行-0002-03-ja</option>\n    <option value=\"04\">04:処理実行完了-完了-0002-04-ja</option>\n</select>\n```\n\nHTML出力例（確認画面）:\n\n```html\n<div>03:処理実行中-実行-0002-03-ja</div>\n```",
+    "s3": "- 追加属性は共通属性( :ref:`WebView_CodeSelectCommon` )のみ\n- ラベル出力時、id属性は`nablarch_<radio|checkbox><連番>`形式で自動生成（連番=画面内出現順、1から）\n- tabindex属性の値はすべてのinputタグに出力される\n\nJSP使用例:\n\n```jsp\n<n:codeRadioButtons name=\"team.color\" tabindex=\"3\"\n          codeId=\"0001\" labelPattern=\"$VALUE$:$NAME$\" />\n<n:codeCheckboxes name=\"team.titles\" tabindex=\"5\"\n          codeId=\"0002\" labelPattern=\"$VALUE$:$NAME$\" />\n```\n\nHTML出力例（入力画面）:\n\n```html\n<input id=\"nablarch_radio1\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"001\"><label for=\"nablarch_radio1\">001:red</label><br>\n<input id=\"nablarch_radio2\" tabindex=\"3\" type=\"radio\" name=\"team.color\" value=\"002\"><label for=\"nablarch_radio2\">002:blue</label><br>\n...\n<input id=\"nablarch_checkbox1\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"01\"><label for=\"nablarch_checkbox1\">01:地区優勝</label><br>\n<input id=\"nablarch_checkbox2\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"02\"><label for=\"nablarch_checkbox2\">02:リーグ優勝</label><br>\n<input id=\"nablarch_checkbox3\" tabindex=\"5\" type=\"checkbox\" name=\"team.titles\" value=\"03\"><label for=\"nablarch_checkbox3\">03:ファイナル優勝</label><br>\n```",
+    "s4": "共通属性( :ref:`WebView_CodeSelectCommon` )に加えて以下の属性を追加:\n\n| 属性 | デフォルト値 | 説明 |\n|---|---|---|\n| withNoneOption | false | リスト先頭に「選択なし」オプションを追加するか。true=追加、false=追加しない |\n| noneOptionLabel | \"\" | withNoneOptionがtrueの場合のみ有効。「選択なし」オプションのラベル |\n\n使用例は :ref:`WebView_MultiSelectCustomTag` を参照。",
+    "s5": "- 追加属性は共通属性( :ref:`WebView_CodeSelectCommon` )のみ\n- name属性省略可。省略した場合はcodeIdとpatternで取得できる全コード値を表示\n- 表示専用タグのため、name属性指定時は変数スコープから値を取得する\n\nJavaアクション実装例:\n\n```java\n// アクションの実装例\nBatchEntity batch = new BatchEntity();\nbatch.setStatus(\"03\"); // \"03\"を設定\ncontext.setRequestScopedVar(\"batch\", batch);\n```\n\nJSP使用例:\n\n```jsp\n<%-- name属性を指定した場合 --%>\n<n:code name=\"batch.status\"\n        codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n\n<%-- name属性を省略した場合 --%>\n<n:code codeId=\"0002\" pattern=\"PATTERN2\" optionColumnName=\"OPTION01\"\n        labelPattern=\"$VALUE$:$NAME$-$SHORTNAME$-$OPTIONALNAME$\"\n        listFormat=\"div\" />\n```\n\nHTML出力例:\n\n```html\n<%-- name属性を指定した場合 --%>\n<div>03:処理実行中-実行-0002-03-ja</div>\n\n<%-- name属性を省略した場合 --%>\n<div>03:処理実行中-実行-0002-03-ja</div>\n<div>04:処理実行完了-完了-0002-04-ja</div>\n```"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "id": "libraries-08_ExclusiveControl--s1",
+  "title": "排他制御機能",
+  "no_knowledge_content": false,
+  "official_doc_urls": [],
+  "index": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "hints": [
+        "排他制御",
+        "悲観的ロック",
+        "楽観的ロック",
+        "同時更新防止",
+        "複数ユーザ",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "特徴",
+      "hints": [
+        "排他制御",
+        "実装負荷軽減",
+        "バージョン番号",
+        "フレームワーク自動処理"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "要求",
+      "hints": [
+        "排他制御",
+        "複数ユーザ",
+        "複数バッチ",
+        "同時更新防止"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "排他制御用テーブル",
+      "hints": [
+        "排他制御用テーブル",
+        "バージョン番号カラム",
+        "デッドロック防止",
+        "更新順序",
+        "ExclusiveControlUtil",
+        "排他制御専用テーブル",
+        "ロック範囲"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "悲観的ロックと楽観的ロックの動作イメージ",
+      "hints": [
+        "悲観的ロック動作",
+        "楽観的ロック動作",
+        "バージョン番号更新",
+        "ロック取得",
+        "動作イメージ",
+        "排他制御用テーブル",
+        "並行使用"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "構造",
+      "hints": [
+        "クラス図",
+        "ExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "HttpExclusiveControlUtil",
+        "ExclusiveControlContext"
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "インタフェース定義",
+      "hints": [
+        "ExclusiveControlManager",
+        "nablarch.common.exclusivecontrol.ExclusiveControlManager",
+        "排他制御インタフェース",
+        "カスタム実装"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "クラス定義",
+      "hints": [
+        "BasicExclusiveControlManager",
+        "ExclusiveControlUtil",
+        "ExclusiveControlContext",
+        "OptimisticLockException",
+        "Version",
+        "ExclusiveControlTable",
+        "HttpExclusiveControlUtil",
+        "主キークラス",
+        "UsersExclusiveControl",
+        "nablarch.common.exclusivecontrol",
+        "nablarch.common.web.exclusivecontrol"
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "悲観的ロック",
+      "hints": [
+        "ExclusiveControlUtil",
+        "updateVersion",
+        "悲観的ロック実装",
+        "排他制御",
+        "バッチ処理"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "楽観的ロック",
+      "hints": [
+        "HttpExclusiveControlUtil",
+        "prepareVersion",
+        "checkVersions",
+        "updateVersions",
+        "楽観的ロック実装",
+        "バージョン番号",
+        "シーケンス"
+      ]
+    }
+  ],
+  "sections": {
+    "s1": "データベースに格納したデータに対する排他制御機能。複数ユーザ（または複数バッチ）が同一データを同時更新することを防止する。\n\n悲観的ロックと楽観的ロックの2種類を提供する。\n\n| 手法 | 説明 | 使用場面 |\n|---|---|---|\n| 悲観的ロック | データ検索から更新までロックを取得し続け、更新完了でロックを解除する。ロック取得時間は長いが更新処理は確実に成功する | 検索から更新が1トランザクション（バッチ処理など）、または更新処理を失敗させたくない場合 |\n| 楽観的ロック | 検索時はロックを取得せず、更新時に他処理による更新をチェックし、更新済みなら更新を中止する | 検索時にロックを取得したくない画面処理（ユーザの操作待ち時間を少なくしたい場合） |",
+    "s2": "排他制御に必要なDBアクセスや、楽観的ロックに使用するバージョン番号の画面間引き継ぎ処理をフレームワークが担当する。排他制御機能の実装はフレームワークAPIの呼び出しのみに集約され、実装負荷が軽減される。",
+    "s3": "実装済みの要求:\n- 複数ユーザ（画面）が同一データを同時更新することを防ぐ\n- 複数バッチが同一データを同時更新することを防ぐ\n- バッチとユーザ（画面）が同一データを同時更新することを防ぐ",
+    "s4": "排他制御対象データにバージョン番号カラムを追加することで実現する。バージョン番号カラムが定義されたテーブルを「排他制御用テーブル」と呼ぶ。\n\n- 悲観的ロックと楽観的ロックは同じ排他制御用テーブルを使用するため、並行使用しても同一データの同時更新を防止できる\n- 排他制御用テーブルは排他制御を行う単位ごとに定義する\n- 競合が許容される最大の単位で定義することを推奨。ロック範囲を広げると更新処理が競合しやすくなり、処理遅延や更新失敗（楽観的ロック）を招く\n\n設計指針:\n- 業務的観点: 関連する処理（例: 売上処理と入金処理）をまとめた単位で定義する\n- テーブル設計の観点: 親子関係が明確な場合（ヘッダ部と明細部など）は親の単位で定義する\n\nバージョン番号カラム付きテーブルの例（カラム名・データ型は任意）:\n\n```sql\nCREATE TABLE USERS (\n    USER_ID CHAR(6) NOT NULL,\n    VERSION NUMBER(10) NOT NULL,\n    PRIMARY KEY (USER_ID)\n)\n```\n\n> **注意**: 排他制御専用テーブル（業務データテーブルと別テーブル）を使用する場合、業務データの追加・物理削除時に専用テーブルへの同様の操作も必要。`ExclusiveControlUtil` クラスがデータ追加・物理削除のAPIを提供する。\n\n## 更新順序の設計\n\nデッドロック防止のため各テーブルのロック順序を定める。RDBMSはレコード更新時に自動的にロックをかけるため、更新順序を定めないとデッドロックが発生しやすい。\n\n> **注意**: 排他制御用テーブルに限らず個別テーブルも更新順序を決める。複数の排他制御を行う場合は排他制御の実行順序も決める（例: ユーザ排他制御→残高排他制御）。\n\n一括削除など複数件を順次更新する場合は主キーのソート順を決めること（デッドロック防止）。ただし、コミット間隔が1件であることが保証されていて、かつソート処理の性能影響が大きい場合はソート不要。",
+    "s5": "**悲観的ロック**: 更新対象データ取得前に排他制御用テーブルのバージョン番号を更新することでロックを取得する。トランザクションのコミット/ロールバックまでロックが継続し、他の処理はロック解除まで待機する。\n\n**楽観的ロック**: データ取得時にバージョン番号を取得し、更新時に事前取得のバージョン番号が変更されていないかチェックする。変更されていた場合は更新を中止する。\n\n> **注**: 以下の図では、バッチは悲観的ロック、ユーザは楽観的ロックを使用して更新処理を行うものとする。\n\n![悲観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_PessimisticLockImage.jpg)\n![楽観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockImage.jpg)\n\n並行使用時の動作イメージ:\n\n![悲観的ロック→楽観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case1Image.jpg)\n![楽観的ロック(バージョン番号の取得)→悲観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case2Image.jpg)\n![楽観的ロック(バージョン番号の更新)→悲観的ロックの動作イメージ](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_Case3Image.jpg)",
+    "s6": "クラス図:\n\n![クラス図](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_ClassDiagram.jpg)\n\n**クラス**: `nablarch.common.exclusivecontrol.ExclusiveControlManager`, `nablarch.common.exclusivecontrol.BasicExclusiveControlManager`, `nablarch.common.exclusivecontrol.ExclusiveControlUtil`, `nablarch.common.exclusivecontrol.ExclusiveControlContext`, `nablarch.common.exclusivecontrol.OptimisticLockException`, `nablarch.common.exclusivecontrol.Version`, `nablarch.common.exclusivecontrol.ExclusiveControlTable`, `nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil`",
+    "s7": "**インタフェース**: `nablarch.common.exclusivecontrol.ExclusiveControlManager`\n\n排他制御（悲観的ロック・楽観的ロック）を管理するインタフェース。排他制御用テーブルを使用した排他制御機能、および排他制御用テーブルへの行データ追加・削除機能を提供する。各プロジェクトで独自の実装が必要な場合（SQL文を変更するなど）は本インタフェースを実装することで実現できる。",
+    "s8": "| クラス名 | 概要 |\n|---|---|\n| `nablarch.common.exclusivecontrol.BasicExclusiveControlManager` | `ExclusiveControlManager` の基本実装クラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlUtil` | 排他制御機能のユーティリティクラス。バッチ処理での悲観的ロック、および排他制御用テーブルへのデータ追加・物理削除に使用する。操作は `ExclusiveControlManager` に委譲する |\n| `nablarch.common.exclusivecontrol.ExclusiveControlContext` | 排他制御の実行に必要な情報（テーブルスキーマ情報と主キー条件）を保持するクラス |\n| `nablarch.common.exclusivecontrol.OptimisticLockException` | 楽観的ロックでバージョン番号が更新されている場合に発生する例外クラス |\n| `nablarch.common.exclusivecontrol.Version` | 排他制御用テーブルのバージョン番号を保持するクラス |\n| `nablarch.common.exclusivecontrol.ExclusiveControlTable` | 排他制御用テーブルのスキーマ情報とSQL文を保持するクラス。アクセスした情報をメモリ上にキャッシュする際に使用する |\n| `nablarch.common.web.exclusivecontrol.HttpExclusiveControlUtil` | 画面処理における排他制御（楽観的ロック）のユーティリティクラス |\n\n**主キークラス（`ExclusiveControlContext` のサブクラス）**: 排他制御用テーブルに対応して作成するクラス（設計書からの自動生成を想定）。バージョン番号検索に必要な情報を提供する。\n\n```java\npublic class UsersExclusiveControl extends ExclusiveControlContext {\n    private enum PK { USER_ID }\n\n    public UsersExclusiveControl(String userId) {\n        setTableName(\"USERS\");                 // テーブル名\n        setVersionColumnName(\"VERSION\");        // バージョン番号カラム名\n        setPrimaryKeyColumnNames(PK.values()); // 主キー列挙型\n        appendCondition(PK.USER_ID, userId);   // 主キー値\n    }\n}\n```",
+    "s9": "`ExclusiveControlUtil.updateVersion()` を呼び出すことで実現する。更新対象データを取得する前に呼び出し、排他制御用テーブルの対象データをロックする。\n\n```java\nExclusiveControlUtil.updateVersion(new UsersExclusiveControl(\"U00001\"));\n```\n\n> **注意**: バッチ処理で複数件更新する場合は、ロック時間を最小化して並列処理への影響を極小化すること。具体的には、前処理でロック対象の主キーのみを取得し、本処理で1件ずつ「ロック取得→データ取得→更新」の順に実装する。",
+    "s10": "楽観的ロックは以下の3メソッドで実現する（`HttpExclusiveControlUtil` クラス）:\n\n1. **`prepareVersion()`**: バージョン番号の準備。排他制御用テーブルのバージョン番号を取得する。\n2. **`checkVersions()`**: バージョン番号の更新チェック。画面間でバージョン番号を引き継ぐために必要。\n3. **`updateVersions()`**: バージョン番号の更新チェックと更新。\n\n> **注意**: `checkVersions()` を呼び出さないと画面間でバージョン番号が引き継がれない。\n\nシーケンス図:\n\n![バージョン番号の準備（prepareVersion）のシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence1.jpg)\n![バージョン番号の更新チェック（checkVersions）のシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence2.jpg)\n![バージョン番号の更新チェックと更新（updateVersions）のシーケンス](assets/libraries-08_ExclusiveControl--s1/ExclusiveControl_OptimisticLockSequence3.jpg)"
+  }
+}
