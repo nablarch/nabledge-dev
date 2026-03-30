@@ -39,6 +39,7 @@ Replace the following placeholders with actual content (using `{{variable}}` for
 ### Header Section
 
 - `{{target_name}}`: Name of analyzed code/feature (e.g., "LoginAction", "ログイン機能")
+- `{{output_path}}`: Output file path (e.g., ".nabledge/20260303/code-analysis-LoginAction.md")
 - `{{generation_date}}`: Current date in YYYY-MM-DD format (e.g., "2026-02-10")
 - `{{generation_time}}`: Current time in HH:MM:SS format (e.g., "14:30:15")
 - `{{DURATION_PLACEHOLDER}}`: Placeholder for analysis duration (replaced by sed after Write completes)

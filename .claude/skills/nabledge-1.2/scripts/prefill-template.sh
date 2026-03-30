@@ -1,6 +1,6 @@
 #!/bin/bash
 # Pre-fill deterministic placeholders in code analysis template
-# This script reduces LLM generation time by pre-filling 8 deterministic placeholders
+# This script reduces LLM generation time by pre-filling 9 deterministic placeholders
 
 set -e
 
@@ -329,6 +329,10 @@ sed -i "s/{{modules}}/$MODULES_ESC/g" "$TEMP_FILE"
 sed -i "s/{{generation_date}}/$GENERATION_DATE_ESC/g" "$TEMP_FILE"
 sed -i "s/{{generation_time}}/$GENERATION_TIME_ESC/g" "$TEMP_FILE"
 
+# Replace output_path placeholder
+OUTPUT_PATH_ESC=$(escape_sed "$OUTPUT_PATH")
+sed -i "s/{{output_path}}/$OUTPUT_PATH_ESC/g" "$TEMP_FILE"
+
 # For multi-line replacements, use a different approach
 # Replace source_files_links
 awk -v links="$SOURCE_FILES_LINKS" '{gsub(/\{\{source_files_links\}\}/, links); print}' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
@@ -358,8 +362,9 @@ fi
 
 echo "Pre-filled template written to: $OUTPUT_PATH"
 echo ""
-echo "Pre-filled placeholders (8/16):"
+echo "Pre-filled placeholders (9/17):"
 echo "  ✓ target_name: $TARGET_NAME"
+echo "  ✓ output_path: $OUTPUT_PATH"
 echo "  ✓ generation_date: $GENERATION_DATE"
 echo "  ✓ generation_time: $GENERATION_TIME"
 echo "  ✓ target_description: $TARGET_DESC"
@@ -368,7 +373,7 @@ echo "  ✓ source_files_links: $(echo "$SOURCE_FILES" | tr ',' '\n' | wc -l) fi
 echo "  ✓ knowledge_base_links: $(echo "$KNOWLEDGE_FILES" | tr ',' '\n' | wc -l) files"
 echo "  ✓ official_docs_links: $official_docs_count links"
 echo ""
-echo "Remaining placeholders for LLM (8/16):"
+echo "Remaining placeholders for LLM (8/17):"
 echo "  - analysis_duration (to be filled after Write completes)"
 echo "  - overview_content"
 echo "  - dependency_graph"

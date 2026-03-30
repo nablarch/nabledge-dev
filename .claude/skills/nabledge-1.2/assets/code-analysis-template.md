@@ -4,6 +4,7 @@
 **Target**: {{target_description}}
 **Modules**: {{modules}}
 **Analysis Duration**: {{DURATION_PLACEHOLDER}}
+**Output**: `{{output_path}}`
 
 ---
 
