@@ -958,7 +958,7 @@ def main() -> None:
         monday_key = iso_week_monday(
             datetime.strptime(h["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
         ).strftime("%Y-%m-%d")
-        seen_by_monday[monday_key] = h
+        seen_by_monday[monday_key] = {**h, "date": monday_key}
     sloc_history = list(seen_by_monday.values())[-8:]
     save_sloc_snapshot(snapshot_path, {**sloc_current, "history": sloc_history})
 
