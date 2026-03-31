@@ -79,7 +79,7 @@ class PhaseDContentCheck:
 
         return warnings
 
-    def _build_prompt(self, file_info, knowledge, source_content, warnings=None):
+    def _build_prompt(self, file_info, knowledge, source_content, warnings=None, prior_findings=None):
         prompt = self.prompt_template
         prompt = prompt.replace("{SOURCE_PATH}", file_info["source_path"])
         prompt = prompt.replace("{FORMAT}", file_info["format"])
@@ -92,6 +92,15 @@ class PhaseDContentCheck:
                                     "\n".join(f"- {w}" for w in warnings))
         else:
             prompt = prompt.replace("{CONTENT_WARNINGS}", "なし")
+        if prior_findings is not None:
+            findings_list = prior_findings.get("findings", [])
+            if findings_list:
+                lines = [json.dumps(f, ensure_ascii=False) for f in findings_list]
+                prompt = prompt.replace("{PRIOR_FINDINGS}", "\n".join(lines))
+            else:
+                prompt = prompt.replace("{PRIOR_FINDINGS}", "なし（前ラウンドはクリーン）")
+        else:
+            prompt = prompt.replace("{PRIOR_FINDINGS}", "なし（初回チェック）")
         return prompt
 
     def _detect_severity_flips(self, current_findings, prev_findings_path):
@@ -141,7 +150,12 @@ class PhaseDContentCheck:
             source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
 
         warnings = self._compute_content_warnings(knowledge, source, file_info["format"], file_info)
-        prompt = self._build_prompt(file_info, knowledge, source, warnings=warnings)
+        prior_findings = None
+        if self.round_num > 1:
+            prev_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num - 1}.json"
+            if os.path.exists(prev_path):
+                prior_findings = load_json(prev_path)
+        prompt = self._build_prompt(file_info, knowledge, source, warnings=warnings, prior_findings=prior_findings)
 
         try:
             result = self.run_claude(

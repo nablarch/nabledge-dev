@@ -32,12 +32,19 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 {CONTENT_WARNINGS}
 
+## Prior Round Findings
+
+The following findings were reported in the previous round.
+Use these as an anchor: do NOT report new findings for locations that were not flagged before, unless the knowledge file content at that location has changed since the previous round.
+
+{PRIOR_FINDINGS}
+
 ## General Rules
 
 **D-1: Severity stability rule**
 
 Apply severity criteria consistently across all checks (V1–V5).
-If you are re-checking a file in a later round, do not change a severity unless the content itself has changed.
+If a location was clean in the previous round and the knowledge file content at that location has not changed, do not report a new finding for it now.
 Justify every severity assignment in the description field using the criteria below (e.g., "critical: missing required configuration property").
 
 ## Validation Checklist
