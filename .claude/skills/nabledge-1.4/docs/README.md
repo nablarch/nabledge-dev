@@ -1,6 +1,6 @@
 # Nablarch 6 ドキュメント
 
-456 ページ
+455 ページ
 
 ## about
 
@@ -122,7 +122,6 @@
 - [データベースコネクション名とトランザクション名](component/libraries/libraries-04_TransactionConnectionName.md)
 - [トランザクションタイムアウト機能](component/libraries/libraries-04_TransactionTimeout.md)
 - [ファイルダウンロード](component/libraries/libraries-05_FileDownload.md)
-- [メッセージングログの出力](component/libraries/libraries-05_MessagingLog.md)
 - [開閉局](component/libraries/libraries-05_ServiceAvailability.md)
 - [静的データのキャッシュ](component/libraries/libraries-05_StaticDataCache.md)
 - [ファイルアップロード](component/libraries/libraries-06_FileUpload.md)

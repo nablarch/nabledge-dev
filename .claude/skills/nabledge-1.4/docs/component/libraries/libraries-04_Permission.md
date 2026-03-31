@@ -193,7 +193,7 @@ BasicPermissionFactoryクラスは初期化が必要なため :ref:`repository_i
 <details>
 <summary>keywords</summary>
 
-認可チェック, PermissionCheckHandler, ハンドラ, 認可処理, BasicPermissionFactory, WebFrontController, RequestHandlerEntry, GroupTableSchema, SystemAccountTableSchema, GroupSystemAccountTableSchema, PermissionUnitTableSchema, PermissionUnitRequestTableSchema, GroupAuthorityTableSchema, SystemAccountAuthorityTableSchema, BasicBusinessDateProvider, SimpleDbTransactionManager, BasicApplicationInitializer, permissionFactory, ignoreRequestIds, dbManager, groupTableSchema, systemAccountTableSchema, groupSystemAccountTableSchema, permissionUnitTableSchema, permissionUnitRequestTableSchema, groupAuthorityTableSchema, systemAccountAuthorityTableSchema, businessDateProvider, tableName, groupIdColumnName, userIdColumnName, userIdLockedColumnName, failedCountColumnName, effectiveDateFromColumnName, effectiveDateToColumnName, permissionUnitIdColumnName, requestIdColumnName, 認可チェック設定, スキーマ情報設定, BasicPermissionFactory設定, PermissionCheckHandler設定
+認可チェック, PermissionCheckHandler, ハンドラ, 認可処理, BasicPermissionFactory, WebFrontController, RequestHandlerEntry, GroupTableSchema, SystemAccountTableSchema, GroupSystemAccountTableSchema, PermissionUnitTableSchema, PermissionUnitRequestTableSchema, GroupAuthorityTableSchema, SystemAccountAuthorityTableSchema, BasicBusinessDateProvider, SimpleDbTransactionManager, BasicApplicationInitializer, BusinessDateProvider, Initializable, permissionFactory, ignoreRequestIds, dbManager, groupTableSchema, systemAccountTableSchema, groupSystemAccountTableSchema, permissionUnitTableSchema, permissionUnitRequestTableSchema, groupAuthorityTableSchema, systemAccountAuthorityTableSchema, businessDateProvider, tableName, groupIdColumnName, userIdColumnName, userIdLockedColumnName, failedCountColumnName, effectiveDateFromColumnName, effectiveDateToColumnName, permissionUnitIdColumnName, requestIdColumnName, 認可チェック設定, スキーマ情報設定, BasicPermissionFactory設定, PermissionCheckHandler設定
 
 </details>
 
@@ -250,7 +250,7 @@ BasicPermissionFactoryクラスは初期化が必要なため :ref:`repository_i
 
 > **注意**: 下記のコードはフレームワークが行う処理であり、通常のアプリケーションでは実装する必要がない。
 
-PermissionCheckHandlerにより、スレッドローカルにPermissionが保持されている。`nablarch.common.permission.PermissionUtil`からPermissionを取得し、リクエストIDを指定して認可判定を行う。
+PermissionCheckHandlerにより、スレッドローカルにPermissionが保持されている。PermissionUtilからPermissionを取得し、リクエストIDを指定して認可判定を行う。
 
 ```java
 // PermissionUtilからPermissionを取得する
@@ -284,7 +284,17 @@ if (permission.permit("リクエストID")) {
 - グループに認可単位を紐付け → グループ権限
 - ユーザに認可単位を直接紐付け → ユーザ権限
 
-> **注意**: グループ権限とユーザ権限が異なる場合は、双方の権限に紐づく認可単位が足し合わされる。
+グループ権限とユーザ権限の例:
+
+| ユーザ | 説明 |
+|---|---|
+| Aさん | 人事部グループに紐づいているので、社員登録・社員削除・社員検索・社員情報変更を使用できる。 |
+| Bさん | 社員グループに紐づいているので、社員検索・社員情報変更を使用できる。 |
+| Cさん | パートナーグループに紐づいているので、社員情報変更のみ使用できる。 |
+| Xさん | 部長グループと社員グループに紐づいているので、社員登録・社員削除・社員検索・社員情報変更を使用できる。 |
+| Yさん | 社員グループに紐づいているので、社員検索・社員情報変更を使用できる。さらにDさんは、社員登録認可単位に直接紐づいているので、社員登録も使用できる。 |
+
+> **注意**: Yさんのようにグループ権限とユーザ権限が異なる場合は、双方の権限に紐づく認可単位が足し合わされる。
 
 > **注意**: 通常はグループ権限を登録しユーザにグループを割り当てることで権限設定を行う。ユーザ権限はイレギュラーな権限付与に対応するために使用する。
 
@@ -304,12 +314,22 @@ if (permission.permit("リクエストID")) {
 | `nablarch.common.permission.Permission` | 認可インタフェース。認可判定の実現方法毎に実装クラスを作成する |
 | `nablarch.common.permission.PermissionFactory` | Permission生成インタフェース。認可情報の取得先毎に実装クラスを作成する |
 
-**実装クラス**:
+**Permissionの実装クラス**:
 
 | クラス名 | 概要 |
 |---|---|
 | `nablarch.common.permission.BasicPermission` | 保持しているリクエストIDを使用して認可を行うPermissionの基本実装クラス |
+
+**PermissionFactoryの実装クラス**:
+
+| クラス名 | 概要 |
+|---|---|
 | `nablarch.common.permission.BasicPermissionFactory` | BasicPermissionを生成するPermissionFactoryの基本実装クラス。DBのユーザ・グループ毎の認可単位テーブル構造からユーザに紐付く認可情報を取得する |
+
+**その他のクラス**:
+
+| クラス名 | 概要 |
+|---|---|
 | `nablarch.common.handler.PermissionCheckHandler` | 認可判定を行うハンドラ |
 | `nablarch.common.permission.PermissionUtil` | 権限管理に使用するユーティリティ |
 
@@ -395,6 +415,6 @@ PermissionCheckHandler, PermissionUtil, ignoreRequestIdsSetting, ThreadContextHa
 <details>
 <summary>keywords</summary>
 
-テーブル定義, グループ, グループID, システムアカウント, ユーザID, ユーザIDロック, グループシステムアカウント, 認可単位, 認可単位ID, 認可単位リクエスト, リクエストID, グループ権限, システムアカウント権限, BasicPermissionFactory
+テーブル定義, グループ, グループID, システムアカウント, ユーザID, ユーザIDロック, 有効日, グループシステムアカウント, 認可単位, 認可単位ID, 認可単位リクエスト, リクエストID, グループ権限, システムアカウント権限, BasicPermissionFactory
 
 </details>

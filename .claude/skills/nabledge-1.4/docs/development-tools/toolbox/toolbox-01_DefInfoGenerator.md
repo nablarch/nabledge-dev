@@ -521,10 +521,12 @@ define(function(){ return {"": ""
 
 定義データをJSON形式で出力する際の仕様。エスケープ処理の規則は「エスケープ処理」セクションを参照。設計書ごとにキャメル変換などは行わず、Apache POIで取得した値をそのまま出力する。
 
+そのため、セルの書式が数値型の場合に整数を指定しても自動的に".0"が付与される。整数をそのまま取得したい場合、当該セルの書式を標準や文字列にすること。
+
 <details>
 <summary>keywords</summary>
 
-コード設計書読込設定, CodeDefinitionFileLoader, nablarch.tool.definitioninfogenerator.loader.poi.CodeDefinitionFileLoader, codeDefinitionLoader, XlsColumnDefs, codeDesignColumnDefs, codeId, codeName, codeValue, PATTERN01, 定義データ出力仕様, エスケープ処理, JSON出力仕様, Apache POI, キャメル変換
+コード設計書読込設定, CodeDefinitionFileLoader, nablarch.tool.definitioninfogenerator.loader.poi.CodeDefinitionFileLoader, codeDefinitionLoader, XlsColumnDefs, codeDesignColumnDefs, codeId, codeName, codeValue, PATTERN01, 定義データ出力仕様, エスケープ処理, JSON出力仕様, Apache POI, キャメル変換, 数値型セル書式, .0付与
 
 </details>
 
@@ -541,7 +543,7 @@ define(function(){ return {"": ""
 - `\n`（改行LF）
 - `\r`（改行CR）
 
-> **注意**: `\r` と `\n` は除去される（エスケープ後の文字列から削除）。
+> **注意**: `\r` と `\n` は除去される。
 
 <details>
 <summary>keywords</summary>
