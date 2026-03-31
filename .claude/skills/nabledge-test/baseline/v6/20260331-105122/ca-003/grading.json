@@ -1,0 +1,196 @@
+{
+  "scenario_id": "ca-003",
+  "detection_items": [
+    {
+      "text": "Overview includes 'ExportProjectsInPeriodAction'",
+      "detected": true,
+      "evidence": "Found in section: '...`ExportProjectsInPeriodAction` は、業務日付を基準に期間内のプロジェクト情報を...'"
+    },
+    {
+      "text": "Overview includes 'BatchAction'",
+      "detected": true,
+      "evidence": "Found in section: '...バッチアクションクラス。\n\nNablarchの `BatchAction<SqlRow>` を継承し、DB to FILE...'"
+    },
+    {
+      "text": "Overview includes 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found in section: '...、DB to FILEパターンで実装されている。`DatabaseRecordReader` でSQLクエリ結果をレコード単位に読み込み、`...'"
+    },
+    {
+      "text": "Overview includes 'ObjectMapper'",
+      "detected": true,
+      "evidence": "Found in section: '...` でSQLクエリ結果をレコード単位に読み込み、`ObjectMapper` でCSVに書き出す。出力先ファイルパスは `F...'"
+    },
+    {
+      "text": "Overview includes 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found in section: '...athSetting` で管理され、業務日付は `BusinessDateUtil` から取得する。\n\n---\n...'"
+    },
+    {
+      "text": "Class diagram includes class 'ExportProjectsInPeriodAction'",
+      "detected": true,
+      "evidence": "Found in section: '...\n    class ExportProjectsInPeriodAction\n    class ProjectDto {\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'BatchAction'",
+      "detected": true,
+      "evidence": "Found in section: '... <<DTO>>\n    }\n    class BatchAction {\n        <<Nablarch>>\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found in section: '...blarch>>\n    }\n    class DatabaseRecordReader {\n        <<Nablarch>>\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'ObjectMapper'",
+      "detected": true,
+      "evidence": "Found in section: '...blarch>>\n    }\n    class ObjectMapper {\n        <<Nablarch>>\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found in section: '...blarch>>\n    }\n    class FilePathSetting {\n        <<Nablarch>>\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found in section: '...blarch>>\n    }\n    class BusinessDateUtil {\n        <<Nablarch>>\n ...'"
+    },
+    {
+      "text": "Class diagram includes class 'ProjectDto'",
+      "detected": true,
+      "evidence": "Found in section: '...InPeriodAction\n    class ProjectDto {\n        <<DTO>>\n    }\n...'"
+    },
+    {
+      "text": "Class diagram includes relationship 'ExportProjectsInPeriodAction --|> BatchAction'",
+      "detected": true,
+      "evidence": "Found in section: '... <<Nablarch>>\n    }\n\n    ExportProjectsInPeriodAction --|> BatchAction : extends\n    ExportProj...'"
+    },
+    {
+      "text": "Component Summary includes 'ExportProjectsInPeriodAction'",
+      "detected": true,
+      "evidence": "Found in section: '...------|--------------|\n| ExportProjectsInPeriodAction | 期間内プロジェクト一覧CSV出力バッチアクシ...'"
+    },
+    {
+      "text": "Component Summary includes 'ProjectDto'",
+      "detected": true,
+      "evidence": "Found in section: '...DateUtil, EntityUtil |\n| ProjectDto | CSVバインド用プロジェクト情報DTO | ...'"
+    },
+    {
+      "text": "Processing Flow includes 'initialize'",
+      "detected": true,
+      "evidence": "Found in section: '...バッチフレームワークが `initialize()` → `createReader()` → ...'"
+    },
+    {
+      "text": "Processing Flow includes 'createReader'",
+      "detected": true,
+      "evidence": "Found in section: '...ームワークが `initialize()` → `createReader()` → `handle()` (繰り返し) →...'"
+    },
+    {
+      "text": "Processing Flow includes 'handle'",
+      "detected": true,
+      "evidence": "Found in section: '...)` → `createReader()` → `handle()` (繰り返し) → `terminate()...'"
+    },
+    {
+      "text": "Processing Flow includes 'terminate'",
+      "detected": true,
+      "evidence": "Found in section: '...` → `handle()` (繰り返し) → `terminate()` の順でライフサイクルメソッドを呼び出す。\n...'"
+    },
+    {
+      "text": "Processing Flow includes 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found in section: '...\n2. **createReader()**: `BusinessDateUtil` で業務日付を取得し、`FIND_PROJECT...'"
+    },
+    {
+      "text": "Processing Flow includes 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found in section: '...。\n\n1. **initialize()**: `FilePathSetting` で出力先CSVファイルパスを解決し、`Obje...'"
+    },
+    {
+      "text": "Sequence diagram includes object 'ExportProjectsInPeriodAction'",
+      "detected": true,
+      "evidence": "Found in section: '...   participant Action as ExportProjectsInPeriodAction\n    participant FPS as F...'"
+    },
+    {
+      "text": "Sequence diagram includes object 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found in section: '...l\n    participant DBR as DatabaseRecordReader\n    participant SQL as S...'"
+    },
+    {
+      "text": "Sequence diagram includes object 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found in section: '...n\n    participant FPS as FilePathSetting\n    participant OMF as O...'"
+    },
+    {
+      "text": "Sequence diagram includes object 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found in section: '...y\n    participant BDU as BusinessDateUtil\n    participant DBR as D...'"
+    },
+    {
+      "text": "Sequence diagram includes message 'initialize'",
+      "detected": true,
+      "evidence": "Found in section: '...e over Framework,Action: initialize()\n    Framework->>Action...'"
+    },
+    {
+      "text": "Sequence diagram includes message 'createReader'",
+      "detected": true,
+      "evidence": "Found in section: '...e over Framework,Action: createReader()\n    Framework->>Action...'"
+    },
+    {
+      "text": "Sequence diagram includes message 'handle'",
+      "detected": true,
+      "evidence": "Found in section: '...e over Framework,Action: handle() - per record\n    loop ...'"
+    },
+    {
+      "text": "Sequence diagram includes message 'terminate'",
+      "detected": true,
+      "evidence": "Found in section: '...e over Framework,Action: terminate()\n    Framework->>Action...'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'BatchAction'",
+      "detected": true,
+      "evidence": "Found heading: '### BatchAction / DatabaseRecordReader'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'DatabaseRecordReader'",
+      "detected": true,
+      "evidence": "Found heading: '### BatchAction / DatabaseRecordReader'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'ObjectMapper'",
+      "detected": true,
+      "evidence": "Found heading: '### ObjectMapper / ObjectMapperFactory'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'FilePathSetting'",
+      "detected": true,
+      "evidence": "Found heading: '### FilePathSetting'"
+    },
+    {
+      "text": "Nablarch Framework Usage includes 'BusinessDateUtil'",
+      "detected": true,
+      "evidence": "Found heading: '### BusinessDateUtil'"
+    },
+    {
+      "text": "Output includes 'Component Summary'",
+      "detected": true,
+      "evidence": "Found in section: '...dencies (uses/creates).\n\n### Component Summary\n\n| Component | Role | Ty...'"
+    },
+    {
+      "text": "Output includes 'Nablarch Framework Usage'",
+      "detected": true,
+      "evidence": "Found in section: '...Nablarchアノテーションのみ）\n\n---\n\n## Nablarch Framework Usage\n\n### ObjectMapper / Obje...'"
+    },
+    {
+      "text": "Output includes '.nabledge/'",
+      "detected": true,
+      "evidence": "Output file created at .nabledge/20260331/code-analysis-ExportProjectsInPeriodAction.md"
+    }
+  ],
+  "summary": {
+    "detected": 37,
+    "not_detected": 0,
+    "total": 37,
+    "detection_rate": 1.0
+  }
+}

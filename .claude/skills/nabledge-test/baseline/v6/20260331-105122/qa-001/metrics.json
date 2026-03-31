@@ -1,0 +1,17 @@
+{
+  "total_duration_seconds": 54,
+  "steps": [
+    {"step": 0, "name": "Read SKILL.md and qa.md workflow", "duration_seconds": 8, "in_tokens_estimate": 800, "out_tokens_estimate": 100},
+    {"step": 1, "name": "Keyword extraction (in-memory)", "duration_seconds": 1, "in_tokens_estimate": 200, "out_tokens_estimate": 50},
+    {"step": 2, "name": "Full-text search (scripts/full-text-search.sh)", "duration_seconds": 5, "in_tokens_estimate": 300, "out_tokens_estimate": 200},
+    {"step": 3, "name": "Branch decision (has hits → section judgement)", "duration_seconds": 1, "in_tokens_estimate": 100, "out_tokens_estimate": 20},
+    {"step": 4, "name": "Section judgement Step 0: hints-based pre-filter", "duration_seconds": 8, "in_tokens_estimate": 500, "out_tokens_estimate": 1500},
+    {"step": 5, "name": "Section judgement Step A: bulk read (batch 1, 8 sections)", "duration_seconds": 12, "in_tokens_estimate": 500, "out_tokens_estimate": 6000},
+    {"step": 6, "name": "Section judgement Step A: bulk read (batch 2, 5 sections)", "duration_seconds": 9, "in_tokens_estimate": 500, "out_tokens_estimate": 3000},
+    {"step": 7, "name": "Section judgement Step B/C: relevance judgment and filtering", "duration_seconds": 3, "in_tokens_estimate": 10000, "out_tokens_estimate": 200},
+    {"step": 8, "name": "Generate answer (in-memory)", "duration_seconds": 7, "in_tokens_estimate": 12000, "out_tokens_estimate": 700}
+  ],
+  "tool_calls": {"Read": 4, "Bash": 6, "Grep": 0, "Write": 0},
+  "total_tool_calls": 10,
+  "response_chars": 2380
+}

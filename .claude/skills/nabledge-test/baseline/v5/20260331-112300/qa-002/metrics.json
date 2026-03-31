@@ -1,0 +1,76 @@
+{
+  "total_duration_seconds": 55,
+  "steps": [
+    {
+      "step": 0,
+      "name": "Read SKILL.md and workflow files",
+      "duration_seconds": 9,
+      "in_tokens_estimate": 800,
+      "out_tokens_estimate": 1200
+    },
+    {
+      "step": 1,
+      "name": "Keyword extraction (in-memory)",
+      "duration_seconds": 1,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 50
+    },
+    {
+      "step": 2,
+      "name": "Full-text search (scripts/full-text-search.sh)",
+      "duration_seconds": 4,
+      "in_tokens_estimate": 300,
+      "out_tokens_estimate": 200
+    },
+    {
+      "step": 3,
+      "name": "Branch decision - has hits, proceed to section judgement",
+      "duration_seconds": 1,
+      "in_tokens_estimate": 100,
+      "out_tokens_estimate": 20
+    },
+    {
+      "step": 4,
+      "name": "Section judgement - hints pre-filter",
+      "duration_seconds": 5,
+      "in_tokens_estimate": 400,
+      "out_tokens_estimate": 800
+    },
+    {
+      "step": 5,
+      "name": "Section judgement - bulk read sections (2 calls)",
+      "duration_seconds": 18,
+      "in_tokens_estimate": 500,
+      "out_tokens_estimate": 4000
+    },
+    {
+      "step": 6,
+      "name": "Section judgement - relevance rating and filtering",
+      "duration_seconds": 2,
+      "in_tokens_estimate": 4500,
+      "out_tokens_estimate": 200
+    },
+    {
+      "step": 7,
+      "name": "Assemble pointer JSON",
+      "duration_seconds": 1,
+      "in_tokens_estimate": 200,
+      "out_tokens_estimate": 150
+    },
+    {
+      "step": 8,
+      "name": "Generate answer (QA step 3)",
+      "duration_seconds": 14,
+      "in_tokens_estimate": 5000,
+      "out_tokens_estimate": 600
+    }
+  ],
+  "tool_calls": {
+    "Read": 5,
+    "Bash": 5,
+    "Grep": 0,
+    "Write": 0
+  },
+  "total_tool_calls": 10,
+  "response_chars": 1850
+}
