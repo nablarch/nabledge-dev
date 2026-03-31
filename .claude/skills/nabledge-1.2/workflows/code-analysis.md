@@ -173,7 +173,7 @@ cat .claude/skills/nabledge-1.2/assets/code-analysis-template.md \
 
 **Tool**: Bash (.claude/skills/nabledge-1.2/scripts/prefill-template.sh)
 
-**Action**: Execute prefill script to pre-populate 8 deterministic placeholders:
+**Action**: Execute prefill script to pre-populate 9 deterministic placeholders:
 
 ```bash
 # Execute prefill script (now calculates output path internally)

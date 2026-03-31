@@ -1,6 +1,6 @@
 #!/bin/bash
 # Pre-fill deterministic placeholders in code analysis template
-# This script reduces LLM generation time by pre-filling 8 deterministic placeholders
+# This script reduces LLM generation time by pre-filling 9 deterministic placeholders
 
 set -e
 
