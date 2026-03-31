@@ -4,10 +4,101 @@ Apply fixes to knowledge files based on validation findings.
 """
 
 import os
+import re
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from logger import get_logger
+
+
+def _extract_allowed_sections(findings):
+    """Return (section_ids, is_full_rebuild) from findings list.
+
+    section_ids: set of section IDs (e.g. {'s1', 's3'}) that Phase E is
+    allowed to modify.  Derived from the 'location' field of each finding.
+
+    is_full_rebuild: True when a no_knowledge_content_invalid finding is
+    present, meaning the entire file may be restructured.
+    """
+    section_ids = set()
+    is_full_rebuild = False
+
+    for f in findings:
+        cat = f.get("category", "")
+        if cat == "no_knowledge_content_invalid":
+            is_full_rebuild = True
+            break
+        loc = f.get("location", "")
+        # Extract sN identifiers from the location string
+        for m in re.findall(r'\bs(\d+)\b', loc):
+            section_ids.add(f"s{m}")
+
+    return section_ids, is_full_rebuild
+
+
+def _apply_diff_guard(input_knowledge, output_knowledge, allowed_sections,
+                      is_full_rebuild=False):
+    """Revert any changes outside the scope of the fix instruction.
+
+    For sections not listed in allowed_sections, the output is overwritten
+    with the input value — making collateral damage physically impossible.
+
+    Index hints follow the same rule: only entries whose section ID is in
+    allowed_sections may change.
+
+    Top-level metadata (id, title, official_doc_urls, no_knowledge_content)
+    is always restored from the input unless is_full_rebuild is True.
+
+    Returns the guarded knowledge object.
+    """
+    if is_full_rebuild:
+        # no_knowledge_content_invalid: allow the LLM to fully restructure
+        return output_knowledge
+
+    guarded = dict(output_knowledge)
+
+    # Protect metadata
+    for field in ("id", "title", "no_knowledge_content", "official_doc_urls"):
+        if field in input_knowledge:
+            guarded[field] = input_knowledge[field]
+
+    # Protect sections not in scope
+    input_sections = input_knowledge.get("sections", {})
+    output_sections = dict(output_knowledge.get("sections", {}))
+
+    # Revert out-of-scope sections to input values
+    for sid, content in input_sections.items():
+        if sid not in allowed_sections:
+            output_sections[sid] = content
+
+    # Remove any new sections added by the LLM that are not in scope
+    for sid in list(output_sections.keys()):
+        if sid not in input_sections and sid not in allowed_sections:
+            del output_sections[sid]
+
+    guarded["sections"] = output_sections
+
+    # Protect index hints for sections not in scope
+    input_index = {entry["id"]: entry for entry in input_knowledge.get("index", [])}
+    output_index = list(output_knowledge.get("index", []))
+    guarded_index = []
+
+    seen = set()
+    for entry in output_index:
+        sid = entry.get("id")
+        seen.add(sid)
+        if sid not in allowed_sections and sid in input_index:
+            guarded_index.append(dict(input_index[sid]))
+        else:
+            guarded_index.append(entry)
+
+    # Restore index entries removed by the LLM that are not in scope
+    for sid, entry in input_index.items():
+        if sid not in allowed_sections and sid not in seen:
+            guarded_index.append(dict(entry))
+
+    guarded["index"] = guarded_index
+    return guarded
 
 KNOWLEDGE_SCHEMA = {
     "type": "object",
@@ -92,6 +183,24 @@ class PhaseEFix:
                           f"({output_sec_chars:,} / {input_sec_chars:,} chars) - rejecting fix")
                     return {"status": "error", "id": file_id,
                             "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
+
+                # Diff guard: revert changes outside the scope of findings
+                finding_list = findings.get("findings", [])
+                allowed_sections, is_full_rebuild = _extract_allowed_sections(finding_list)
+                fixed = _apply_diff_guard(knowledge, fixed, allowed_sections,
+                                          is_full_rebuild=is_full_rebuild)
+
+                # Reject if no authorized sections actually changed
+                if not is_full_rebuild:
+                    input_sections = knowledge.get("sections", {})
+                    changed = sum(
+                        1 for sid in allowed_sections
+                        if input_sections.get(sid) != fixed.get("sections", {}).get(sid)
+                    )
+                    if changed == 0:
+                        self.logger.warning(f"    WARNING: {file_id}: diff guard found no changes in allowed sections")
+                        return {"status": "error", "id": file_id,
+                                "error": "Diff guard: no changes in allowed sections"}
 
                 write_json(
                     f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed

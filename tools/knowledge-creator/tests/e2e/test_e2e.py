@@ -302,20 +302,27 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
                 )
 
         elif "findings" in schema_str:
-            # Phase D: always has_issues
+            # Phase D: always has_issues, one finding per section so diff guard
+            # allows Phase E to fix all sections.
             counter["D"].append(file_id)
+            knowledge = expected_knowledge_cache.get(file_id, {})
+            section_ids = list(knowledge.get("sections", {}).keys()) or ["s1"]
+            findings = [
+                {
+                    "category": "omission",
+                    "severity": "minor",
+                    "location": sid,
+                    "description": "Missing detail",
+                }
+                for sid in section_ids
+            ]
             return subprocess.CompletedProcess(
                 args=["claude"],
                 returncode=0,
                 stdout=json.dumps({
                     "file_id": file_id,
                     "status": "has_issues",
-                    "findings": [{
-                        "category": "omission",
-                        "severity": "minor",
-                        "location": "s1",
-                        "description": "Missing detail",
-                    }],
+                    "findings": findings,
                 }),
                 stderr="",
             )
