@@ -51,52 +51,10 @@ NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
 
-VERSION_FILTER="${1:-}"
-if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|all)$ ]]; then
-    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, all"
-    exit 1
-fi
+OUTPUT_DIR="${NABLEDGE_DEV_ROOT}/.tmp/nabledge-test"
 
 # Returns 0 if the given version label should be processed
 should_run() { [ -z "$VERSION_FILTER" ] || [ "$1" = "$VERSION_FILTER" ]; }
-
-OUTPUT_DIR="${NABLEDGE_DEV_ROOT}/.tmp/nabledge-test"
-
-# Single temp dir for downloaded setup scripts
-TEMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TEMP_DIR"' EXIT
-
-echo "============================================================"
-echo "Nabledge Test Environment Setup"
-echo "============================================================"
-echo "Nabledge repository: ${NABLEDGE_REPO}"
-echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
-echo "Output directory:    ${OUTPUT_DIR}"
-echo "Version filter:      ${VERSION_FILTER:-all}"
-echo ""
-
-# Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
-# This ensures we use the same URL as users, and detects if the URL changes in the guide.
-echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
-GUIDE_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-CC.md"
-GUIDE_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-GHC.md"
-# Extract script filename from GUIDE (detects filename changes), then replace branch with NABLEDGE_BRANCH
-SETUP_CC_FILENAME=$(curl -sSfL "$GUIDE_CC_URL" | grep -m1 'curl -sSL.*setup-cc\.sh' | grep -oP 'setup-cc\.sh')
-SETUP_GHC_FILENAME=$(curl -sSfL "$GUIDE_GHC_URL" | grep -m1 'curl -sSL.*setup-ghc\.sh' | grep -oP 'setup-ghc\.sh')
-if [ -z "$SETUP_CC_FILENAME" ] || [ -z "$SETUP_GHC_FILENAME" ]; then
-    echo "ERROR: Could not extract setup script filenames from GUIDE files."
-    echo "  GUIDE-CC.md: ${GUIDE_CC_URL}"
-    echo "  GUIDE-GHC.md: ${GUIDE_GHC_URL}"
-    exit 1
-fi
-SETUP_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_CC_FILENAME}"
-SETUP_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_GHC_FILENAME}"
-echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
-echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
-curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
-curl -sSfL "$SETUP_GHC_URL" -o "$TEMP_DIR/setup-ghc.sh"
-echo "[Setup] Setup scripts downloaded."
-echo ""
 
 # ------------------------------------------------------------
 # Helper: setup one test environment
@@ -145,43 +103,6 @@ setup_env() {
     echo "[${target_dir}] Done."
     echo ""
 }
-
-# ------------------------------------------------------------
-# Set up all 10 environments
-# ------------------------------------------------------------
-
-HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
-HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
-HINT_V14="Run setup.sh (SVN section) to check out .lw/nab-official/v1.4/tutorial."
-HINT_V13="Run setup.sh (SVN section) to check out .lw/nab-official/v1.3/tutorial."
-HINT_V12="Run setup.sh (SVN section) to check out .lw/nab-official/v1.2/tutorial."
-
-rm -rf "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
-cd "$OUTPUT_DIR"
-
-should_run "v6"   && setup_env "v6/test-cc"    "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6"   "$HINT_V6"
-should_run "v6"   && setup_env "v6/test-ghc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "6"   "$HINT_V6"
-should_run "v5"   && setup_env "v5/test-cc"    "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "5"   "$HINT_V5"
-should_run "v5"   && setup_env "v5/test-ghc"   "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "5"   "$HINT_V5"
-should_run "v1.4" && setup_env "v1.4/test-cc"  "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.4" "$HINT_V14"
-should_run "v1.4" && setup_env "v1.4/test-ghc" "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.4" "$HINT_V14"
-should_run "v1.3" && setup_env "v1.3/test-cc"  "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.3" "$HINT_V13"
-should_run "v1.3" && setup_env "v1.3/test-ghc" "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.3" "$HINT_V13"
-should_run "v1.2" && setup_env "v1.2/test-cc"  "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.2" "$HINT_V12"
-should_run "v1.2" && setup_env "v1.2/test-ghc" "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.2" "$HINT_V12"
-# "all" uses the v6 project as base; all skill versions are installed by setup-cc.sh (-v all).
-should_run "all"  && setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "all" "$HINT_V6"
-should_run "all"  && setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
-
-# ------------------------------------------------------------
-# Verification
-# ------------------------------------------------------------
-echo "============================================================"
-echo "Verifying installations..."
-echo ""
-
-verify_fail=0
 
 # verify_env: static check for one test environment
 # Args:
@@ -289,70 +210,160 @@ verify_env() {
     if [ "$fail" -eq 1 ]; then verify_fail=1; fi
 }
 
-# verify_dynamic: dynamic check by running a knowledge search
-# CC environments use claude -p; GHC environments use copilot -p.
+# verify_dynamic: dynamic check by running knowledge search pipeline directly
+# Executes full-text-search.sh and read-sections.sh without LLM/CLI authentication.
 # Args:
 #   $1 - label (e.g. "v6/test-cc")
 #   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
-#   $3 - nabledge version to query (e.g. "6", "5", "1.4")
-#   $4 - test query to ask nabledge
-#   $5 - comma-separated keywords expected in the response
-#   $6 - tool type: "cc" or "ghc"
+#   $3 - nabledge version (e.g. "6", "5", "1.4")
+#   $4 - comma-separated keywords for full-text-search.sh
+#   $5 - comma-separated keywords expected in section content
+# Globals used:
+#   OUTPUT_DIR - base directory for test environments
+#   verify_fail - set to 1 if check fails
 verify_dynamic() {
     local label="$1"
     local project_dir="${OUTPUT_DIR}/$2"
     local v="$3"
-    local query="$4"
-    local keywords_str="$5"
-    local tool="$6"
+    local search_keywords_str="$4"
+    local expected_keywords_str="$5"
 
-    if [ "$tool" = "ghc" ]; then
-        if ! command -v copilot &>/dev/null; then
-            echo "  [FAIL] ${label} nabledge-${v}: copilot CLI not found"
-            verify_fail=1
-            return
-        fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
-        local output
-        output=$(cd "$project_dir" && copilot -p "nabledge-${v} \"${query}\"" 2>&1) || true
-    else
-        if ! command -v claude &>/dev/null; then
-            echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
-            verify_fail=1
-            return
-        fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p /n${v} (timeout: 120s)..."
-        local output
-        output=$(cd "$project_dir" && timeout 120 claude -p "/n${v} \"${query}\"" < /dev/null 2>&1) || true
+    local skill_dir="$project_dir/.claude/skills/nabledge-${v}"
+    local search_script="$skill_dir/scripts/full-text-search.sh"
+    local read_script="$skill_dir/scripts/read-sections.sh"
+
+    if [ ! -f "$search_script" ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: full-text-search.sh not found (skill not installed)"
+        verify_fail=1
+        return
     fi
-
-    local byte_count=${#output}
-    local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-    echo "$output" > "$log_file"
-
-    if [ "$byte_count" -lt 100 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check response too short (${byte_count} bytes, expected >= 100)"
-        echo "         Log: ${log_file}"
+    if [ ! -f "$read_script" ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: read-sections.sh not found (skill not installed)"
         verify_fail=1
         return
     fi
 
+    echo "  [RUN]  ${label} nabledge-${v}: running knowledge search pipeline (search: ${search_keywords_str})..."
+
+    # Run full-text-search.sh with search keywords
+    IFS=',' read -ra search_kws <<< "$search_keywords_str"
+    local search_results
+    search_results=$(bash "$search_script" "${search_kws[@]}" 2>&1)
+
+    if [ -z "$search_results" ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: full-text-search.sh returned 0 results (keywords: ${search_keywords_str})"
+        verify_fail=1
+        return
+    fi
+
+    # Convert file|section → file:section for read-sections.sh
+    local section_refs=()
+    while IFS= read -r line; do
+        [ -n "$line" ] && section_refs+=("${line/|/:}")
+    done <<< "$search_results"
+
+    # Read section content
+    local content
+    content=$(bash "$read_script" "${section_refs[@]}" 2>&1)
+
+    # Verify expected keywords appear in section content
     local missing_keywords=()
-    IFS=',' read -ra keywords <<< "$keywords_str"
-    for kw in "${keywords[@]}"; do
-        if ! echo "$output" | grep -q "$kw"; then
+    IFS=',' read -ra expected_kws <<< "$expected_keywords_str"
+    for kw in "${expected_kws[@]}"; do
+        if ! echo "$content" | grep -qF "$kw"; then
             missing_keywords+=("$kw")
         fi
     done
 
     if [ "${#missing_keywords[@]}" -gt 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check missing keywords: ${missing_keywords[*]} (output: ${byte_count} bytes)"
-        echo "         Log: ${log_file}"
+        echo "  [FAIL] ${label} nabledge-${v}: missing keywords in search results: ${missing_keywords[*]}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (output: ${byte_count} bytes, all keywords found)"
+        echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (all keywords found in knowledge content)"
     fi
 }
+
+# Guard: skip execution when sourced for unit testing
+if [[ "${NABLEDGE_TEST_SOURCE_ONLY:-}" != "1" ]]; then
+
+VERSION_FILTER="${1:-}"
+if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|all)$ ]]; then
+    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, all"
+    exit 1
+fi
+
+# Single temp dir for downloaded setup scripts
+TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
+
+echo "============================================================"
+echo "Nabledge Test Environment Setup"
+echo "============================================================"
+echo "Nabledge repository: ${NABLEDGE_REPO}"
+echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
+echo "Output directory:    ${OUTPUT_DIR}"
+echo "Version filter:      ${VERSION_FILTER:-all}"
+echo ""
+
+# Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
+# This ensures we use the same URL as users, and detects if the URL changes in the guide.
+echo "[Setup] Fetching setup script URLs from GUIDE files (branch: ${NABLEDGE_BRANCH})..."
+GUIDE_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-CC.md"
+GUIDE_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/plugins/nabledge-6/GUIDE-GHC.md"
+# Extract script filename from GUIDE (detects filename changes), then replace branch with NABLEDGE_BRANCH
+SETUP_CC_FILENAME=$(curl -sSfL "$GUIDE_CC_URL" | grep -m1 'curl -sSL.*setup-cc\.sh' | grep -oP 'setup-cc\.sh')
+SETUP_GHC_FILENAME=$(curl -sSfL "$GUIDE_GHC_URL" | grep -m1 'curl -sSL.*setup-ghc\.sh' | grep -oP 'setup-ghc\.sh')
+if [ -z "$SETUP_CC_FILENAME" ] || [ -z "$SETUP_GHC_FILENAME" ]; then
+    echo "ERROR: Could not extract setup script filenames from GUIDE files."
+    echo "  GUIDE-CC.md: ${GUIDE_CC_URL}"
+    echo "  GUIDE-GHC.md: ${GUIDE_GHC_URL}"
+    exit 1
+fi
+SETUP_CC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_CC_FILENAME}"
+SETUP_GHC_URL="https://raw.githubusercontent.com/${NABLEDGE_REPO}/${NABLEDGE_BRANCH}/${SETUP_GHC_FILENAME}"
+echo "[Setup] Setup CC script URL:  ${SETUP_CC_URL}"
+echo "[Setup] Setup GHC script URL: ${SETUP_GHC_URL}"
+curl -sSfL "$SETUP_CC_URL" -o "$TEMP_DIR/setup-cc.sh"
+curl -sSfL "$SETUP_GHC_URL" -o "$TEMP_DIR/setup-ghc.sh"
+echo "[Setup] Setup scripts downloaded."
+echo ""
+
+# ------------------------------------------------------------
+# Set up all 10 environments
+# ------------------------------------------------------------
+
+HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
+HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
+HINT_V14="Run setup.sh (SVN section) to check out .lw/nab-official/v1.4/tutorial."
+HINT_V13="Run setup.sh (SVN section) to check out .lw/nab-official/v1.3/tutorial."
+HINT_V12="Run setup.sh (SVN section) to check out .lw/nab-official/v1.2/tutorial."
+
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
+
+should_run "v6"   && setup_env "v6/test-cc"    "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6"   "$HINT_V6"
+should_run "v6"   && setup_env "v6/test-ghc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "6"   "$HINT_V6"
+should_run "v5"   && setup_env "v5/test-cc"    "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "5"   "$HINT_V5"
+should_run "v5"   && setup_env "v5/test-ghc"   "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "5"   "$HINT_V5"
+should_run "v1.4" && setup_env "v1.4/test-cc"  "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.4" "$HINT_V14"
+should_run "v1.4" && setup_env "v1.4/test-ghc" "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.4" "$HINT_V14"
+should_run "v1.3" && setup_env "v1.3/test-cc"  "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.3" "$HINT_V13"
+should_run "v1.3" && setup_env "v1.3/test-ghc" "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.3" "$HINT_V13"
+should_run "v1.2" && setup_env "v1.2/test-cc"  "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.2" "$HINT_V12"
+should_run "v1.2" && setup_env "v1.2/test-ghc" "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.2" "$HINT_V12"
+# "all" uses the v6 project as base; all skill versions are installed by setup-cc.sh (-v all).
+should_run "all"  && setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "all" "$HINT_V6"
+should_run "all"  && setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
+
+# ------------------------------------------------------------
+# Verification
+# ------------------------------------------------------------
+echo "============================================================"
+echo "Verifying installations..."
+echo ""
+
+verify_fail=0
 
 echo "[Static checks]"
 should_run "v6"   && verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"               "cc"
@@ -370,30 +381,38 @@ should_run "all"  && verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-b
 
 echo ""
 echo "[Dynamic checks]"
-# FIXME(#252): All dynamic checks are disabled because both Claude Code (claude -p) and
-# GitHub Copilot (copilot -p) do not work reliably in headless mode. Enable these once
-# headless execution is supported. See https://github.com/nablarch/nabledge-dev/issues/252
+
+# Dependency check: jq is required by full-text-search.sh and read-sections.sh
+if ! command -v jq &>/dev/null; then
+    echo "ERROR: jq is required for dynamic checks but was not found."
+    echo "  Install jq: sudo apt-get install jq  (or equivalent)"
+    exit 1
+fi
+
 # Queries and keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4/v1.3/v1.2)
-#should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+# v6/v5: qa-002 scenario (paging search)
+should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+# v1.4/v1.3/v1.2: qa-001 scenario (code list pulldown)
+should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+# "all" environments: test each installed version independently
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "findAllBySqlFile,Pagination" "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "n:codeSelect,codeId"         "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "n:codeSelect,codeId"         "n:codeSelect,codeId"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
@@ -425,3 +444,5 @@ should_run "v1.2" && echo "  v1.2/test-ghc/tutorial               - nabledge-1.2
 should_run "all"  && echo "  all/test-cc/nablarch-example-batch   - all versions x Claude Code"
 should_run "all"  && echo "  all/test-ghc/nablarch-example-batch  - all versions x GitHub Copilot"
 echo "============================================================"
+
+fi # end of NABLEDGE_TEST_SOURCE_ONLY guard
