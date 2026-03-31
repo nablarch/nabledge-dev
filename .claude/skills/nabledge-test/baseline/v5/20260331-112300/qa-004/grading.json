@@ -1,0 +1,19 @@
+{
+  "scenario_id": "qa-004",
+  "detection_items": [
+    {"text": "Response includes 'allowDoubleSubmission'", "detected": true, "evidence": "Found in response: 'allowDoubleSubmission=\"false\"'"},
+    {"text": "Response includes 'n:submit'", "detected": true, "evidence": "Found in response: 'n:submit / n:button / n:submitLink などのカスタムタグ'"},
+    {"text": "Response includes 'OnDoubleSubmission'", "detected": true, "evidence": "Found in response: '@OnDoubleSubmission(path = \"/WEB-INF/view/error/userError.jsp\")'"},
+    {"text": "Response includes 'n:form'", "detected": true, "evidence": "Found in response: '<n:form useToken=\"true\">'"},
+    {"text": "Response includes 'useToken'", "detected": true, "evidence": "Found in response: 'n:form タグの useToken 属性を true に指定'"},
+    {"text": "Response includes 'nablarch_token'", "detected": false, "evidence": "Not found in response (token mechanism described but hidden field name not mentioned)"},
+    {"text": "Response includes one of: '@UseToken', 'UseToken'", "detected": true, "evidence": "Found in response: '@UseToken インターセプタをトークン発行側のアクションに付与し'"},
+    {"text": "Response includes '二重サブミット防止'", "detected": true, "evidence": "Found in response: 'Nablarch 5 で二重サブミット防止を実装するには'"}
+  ],
+  "summary": {
+    "detected": 7,
+    "not_detected": 1,
+    "total": 8,
+    "detection_rate": 0.875
+  }
+}

@@ -2,7 +2,7 @@
   "metadata": {
     "version": "1.2.0",
     "created": "2026-03-30",
-    "updated": "2026-03-30",
+    "updated": "2026-03-31",
     "description": "Test scenarios for nabledge-1.2: Detects expected keywords/components in responses. No performance targets.",
     "total_scenarios": 7,
     "by_type": {
@@ -17,56 +17,53 @@
       "type": "qa",
       "benchmark": true,
       "question": "コードリストのプルダウン入力を実装するには？",
-      "expectations": [
-        "n:codeSelect",
-        "codeId",
-        "n:select",
-        "コード値"
-      ]
+      "expectations": {
+        "code_select_tag": ["n:codeSelect", "codeId"],
+        "general_select_tag": ["n:select"],
+        "concepts": ["コード値"]
+      }
     },
     {
       "id": "qa-002",
       "type": "qa",
       "question": "一覧検索でページングを実装するには？",
-      "expectations": [
-        "ListSearchInfo",
-        "search",
-        "DbAccessSupport",
-        "ページング"
-      ]
+      "expectations": {
+        "pagination_api": ["ListSearchInfo", "search", "DbAccessSupport"],
+        "concepts": ["ページング"]
+      }
     },
     {
       "id": "qa-003",
       "type": "qa",
       "question": "バッチのリクエスト単体テストで起動パラメータを指定するには？",
-      "expectations": [
-        "-requestPath",
-        "requestPath",
-        "BatchRequestTestSupport",
-        "リクエスト単体テスト"
-      ]
+      "expectations": {
+        "test_class": ["BatchRequestTestSupport"],
+        "test_params": [["requestPath", "-requestPath"]],
+        "concepts": ["リクエスト単体テスト"]
+      }
     },
     {
       "id": "qa-004",
       "type": "qa",
       "question": "二重サブミット防止の実装方法は？",
-      "expectations": [
-        "OnDoubleSubmission",
-        "token",
-        "useToken",
-        "doubleSubmission"
-      ]
+      "expectations": {
+        "server_annotation": ["OnDoubleSubmission"],
+        "token_form": ["useToken", "doubleSubmission"],
+        "token_annotation": [["@UseToken", "UseToken"]],
+        "concepts": ["二重サブミット防止"]
+      }
     },
     {
       "id": "qa-005",
       "type": "qa",
       "question": "相関バリデーションの実装方法は？",
-      "expectations": [
-        "ValidateFor",
-        "ValidationContext",
-        "Validation",
-        "相関バリデーション"
-      ]
+      "expectations": {
+        "annotation": ["@ValidateFor"],
+        "context_class": ["ValidationContext"],
+        "validation_logic": ["ValidationUtil"],
+        "context_methods": ["isValid", "addMessage"],
+        "concepts": ["相関バリデーション"]
+      }
     },
     {
       "id": "ca-001",

@@ -128,11 +128,17 @@ Store as `$PR_NUMBER` (5-digit zero-padded string) for use in subsequent steps.
 
 From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 
+`expectations` is an object with aspect keys. Each item in an aspect is either a string (AND: must appear) or an array of strings (OR: any one must appear). A single aspect can mix both types — each item is evaluated independently.
+
 ```json
 {
   "id": "qa-001",
-  "question": "バッチの起動方法を教えてください",
-  "expectations": ["keyword1", "keyword2", ...]
+  "question": "コード値のプルダウン入力を実装するには？",
+  "expectations": {
+    "code_select_tag": ["n:codeSelect", "codeId"],
+    "general_select_tag": ["n:select", ["elementValueProperty", "elementLabelProperty"]],
+    "concepts": ["コード値"]
+  }
 }
 ```
 
@@ -165,8 +171,13 @@ For code-analysis scenarios (ca-*), additional fields:
 For qa (qa-*):
 ```
 detection_items = []
-for keyword in scenario.expectations:
-    detection_items.append(f"Response includes '{keyword}'")
+for aspect, items in scenario.expectations.items():
+    for item in items:
+        if isinstance(item, list):
+            # OR condition: any one of these must appear in response
+            detection_items.append(f"Response includes one of: {', '.join(repr(k) for k in item)}")
+        else:
+            detection_items.append(f"Response includes '{item}'")
 ```
 
 For code-analysis (ca-*):
@@ -359,7 +370,12 @@ For each scenario, evaluate detection items against the response:
 
 ```python
 for item in detection_items:
-    if "includes" in item:
+    if "includes one of:" in item:
+        # OR condition: extract all quoted keywords, detected if any match
+        # Format: "Response includes one of: 'kw1', 'kw2'"
+        keywords = re.findall(r"'([^']+)'", item)
+        detected = any(k in response_text for k in keywords)
+    elif "includes" in item:
         keyword = extract_keyword(item)  # e.g., "DataReadHandler"
         detected = keyword in response_text
     elif "references" in item:

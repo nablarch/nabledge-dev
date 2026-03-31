@@ -106,8 +106,16 @@ def generate_individual_report(sc, metrics, grading, workspace, run_timestamp):
         exp_total, exp_summary = count_ca_expectations(expectations)
         exp_display = f"({exp_total} items): {exp_summary}"
     else:
-        exp_list = expectations if isinstance(expectations, list) else []
-        exp_display = f"({len(exp_list)}): " + ", ".join(f"`{e}`" for e in exp_list)
+        # QA object format: count items (OR groups count as 1)
+        total = sum(len(items) for items in expectations.values())
+        flat = []
+        for items in expectations.values():
+            for item in items:
+                if isinstance(item, list):
+                    flat.append(f"`{'`|`'.join(item)}`")
+                else:
+                    flat.append(f"`{item}`")
+        exp_display = f"({total}): " + ", ".join(flat)
 
     # Detection items
     detection_lines = []
@@ -223,6 +231,12 @@ def generate_step_table(results, type_name):
     for r in results:
         for step in r["metrics"].get("steps", []):
             sn = step.get("step", 0)
+            # Normalize string step keys to int to prevent TypeError in sorted()
+            if isinstance(sn, str):
+                try:
+                    sn = int(sn)
+                except (ValueError, TypeError):
+                    sn = 0
             if sn not in step_data:
                 step_data[sn] = {"durations": [], "in_tokens": [], "out_tokens": []}
                 step_names[sn] = step.get("name", f"Step {sn}")
