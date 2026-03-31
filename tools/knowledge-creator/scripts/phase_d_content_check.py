@@ -157,8 +157,8 @@ class PhaseDContentCheck:
                     prev_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num - 1}.json"
                     self._detect_severity_flips(findings, prev_path)
                 return findings
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.error(f"check_one failed for {file_id}: {e}")
 
         return {"file_id": file_id, "status": "error", "findings": []}
 

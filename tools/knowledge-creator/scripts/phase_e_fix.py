@@ -26,6 +26,7 @@ def _extract_allowed_sections(findings):
     for f in findings:
         cat = f.get("category", "")
         if cat == "no_knowledge_content_invalid":
+            # Full rebuild bypasses the guard entirely; section_ids are not needed
             is_full_rebuild = True
             break
         loc = f.get("location", "")
@@ -71,7 +72,8 @@ def _apply_diff_guard(input_knowledge, output_knowledge, allowed_sections,
         if sid not in allowed_sections:
             output_sections[sid] = content
 
-    # Remove any new sections added by the LLM that are not in scope
+    # Remove any new sections added by the LLM that were not in the input
+    # and are not in allowed_sections; new sections in scope are kept.
     for sid in list(output_sections.keys()):
         if sid not in input_sections and sid not in allowed_sections:
             del output_sections[sid]
@@ -209,7 +211,8 @@ class PhaseEFix:
         except Exception as e:
             return {"status": "error", "id": file_id, "error": str(e)}
 
-        return {"status": "error", "id": file_id}
+        # LLM returned non-zero exit code
+        return {"status": "error", "id": file_id, "error": "CC returned non-zero exit code"}
 
     def run(self, target_ids, round_num=1) -> dict:
         classified = load_json(self.ctx.classified_list_path)

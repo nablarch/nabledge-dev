@@ -32,6 +32,14 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 {CONTENT_WARNINGS}
 
+## General Rules
+
+**D-1: Severity stability rule**
+
+Apply severity criteria consistently across all checks (V1–V5).
+If you are re-checking a file in a later round, do not change a severity unless the content itself has changed.
+Justify every severity assignment in the description field using the criteria below (e.g., "critical: missing required configuration property").
+
 ## Validation Checklist
 
 ### V1: Omission Check
@@ -85,12 +93,6 @@ Read the knowledge file section by section. For every statement, confirm it has 
 
 For each fabrication found, record:
 "FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
-
-**D-1: Severity stability rule**
-
-Once you assign a severity to a finding, apply the same criteria consistently.
-If you are re-checking a file in a later round, do not change a severity unless the content itself has changed.
-Justify every severity assignment in the description field using the criteria above (e.g., "critical: missing required configuration property").
 
 ### V3: Section Issues (severity: minor)
 

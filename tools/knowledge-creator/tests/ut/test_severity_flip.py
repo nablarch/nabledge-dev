@@ -136,10 +136,9 @@ class TestSeverityFlipDetection:
         os.makedirs(os.path.dirname(src), exist_ok=True)
         with open(src, "w") as f:
             f.write("source content")
-        from common import write_json as wj
         kpath = f"{ctx.knowledge_cache_dir}/{file_info['output_path']}"
         os.makedirs(os.path.dirname(kpath), exist_ok=True)
-        wj(kpath, {"id": "wire-test", "title": "T", "no_knowledge_content": False,
+        write_json(kpath, {"id": "wire-test", "title": "T", "no_knowledge_content": False,
                    "official_doc_urls": [], "index": [], "sections": {"s1": "content"}})
 
         with caplog.at_level(logging.WARNING, logger="knowledge_creator"):
