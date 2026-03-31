@@ -94,6 +94,29 @@ class PhaseDContentCheck:
             prompt = prompt.replace("{CONTENT_WARNINGS}", "なし")
         return prompt
 
+    def _detect_severity_flips(self, current_findings, prev_findings_path):
+        """Log a warning for each finding whose severity changed since the previous round.
+
+        current_findings: findings dict for the current round
+        prev_findings_path: path to the previous round's findings JSON file
+        """
+        if not os.path.exists(prev_findings_path):
+            return
+
+        prev = load_json(prev_findings_path)
+        prev_map = {}
+        for f in prev.get("findings", []):
+            key = (f.get("location", ""), f.get("category", ""))
+            prev_map[key] = f.get("severity", "")
+
+        for f in current_findings.get("findings", []):
+            key = (f.get("location", ""), f.get("category", ""))
+            if key in prev_map and prev_map[key] != f.get("severity", ""):
+                self.logger.warning(
+                    f"Severity flip: {key[0]} [{key[1]}]: "
+                    f"{prev_map[key]} → {f.get('severity')}"
+                )
+
     def check_one(self, file_info) -> dict:
         file_id = file_info["id"]
         findings_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num}.json"
@@ -130,6 +153,9 @@ class PhaseDContentCheck:
             if result.returncode == 0:
                 findings = json.loads(result.stdout)
                 write_json(findings_path, findings)
+                if self.round_num > 1:
+                    prev_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num - 1}.json"
+                    self._detect_severity_flips(findings, prev_path)
                 return findings
         except Exception:
             pass
