@@ -32,15 +32,19 @@ gantt
     section 知識品質向上
     知識品質向上                   :active, 2026-03-29, 2026-04-25
 
+    section ワークフロー拡充（4月）
+    ワークフロー拡充（PJ伴走）        :2026-03-29, 2026-04-25
+
+    section Nablarch AI対応（4月）
+    Nablarch AI対応                :2026-03-29, 2026-04-25
+
     section GW
     GW                             :done, 2026-04-26, 2026-05-09
 
-    section ワークフロー拡充
-    ワークフロー拡充（PJ伴走）        :2026-03-29, 2026-04-25
+    section ワークフロー拡充（5月）
     ワークフロー拡充（PJ伴走）        :2026-05-10, 2026-05-31
 
-    section Nablarch AI対応
-    Nablarch AI対応                :2026-03-29, 2026-04-25
+    section Nablarch AI対応（5月）
     Nablarch AI対応                :2026-05-10, 2026-05-31
 
     section AI-Ready Nablarch/Nabledgeリリース
