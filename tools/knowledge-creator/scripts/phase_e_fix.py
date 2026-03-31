@@ -199,14 +199,21 @@ class PhaseEFix:
                 fixed = _apply_diff_guard(knowledge, fixed, allowed_sections,
                                           is_full_rebuild=is_full_rebuild)
 
-                # Reject if no authorized sections actually changed
+                # Reject if no authorized sections or index entries actually changed
                 if not is_full_rebuild:
                     input_sections = knowledge.get("sections", {})
-                    changed = sum(
+                    sections_changed = sum(
                         1 for sid in allowed_sections
                         if input_sections.get(sid) != fixed.get("sections", {}).get(sid)
                     )
-                    if changed == 0:
+                    # Also check index hints (hints_missing findings only touch index, not sections)
+                    input_index = {e["id"]: e for e in knowledge.get("index", []) if "id" in e}
+                    output_index = {e["id"]: e for e in fixed.get("index", []) if "id" in e}
+                    index_changed = sum(
+                        1 for sid in allowed_sections
+                        if input_index.get(sid) != output_index.get(sid)
+                    )
+                    if sections_changed == 0 and index_changed == 0:
                         self.logger.warning(f"    WARNING: {file_id}: diff guard found no changes in allowed sections")
                         return {"status": "error", "id": file_id,
                                 "error": "Diff guard: no changes in allowed sections"}
