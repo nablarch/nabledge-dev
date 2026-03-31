@@ -30,6 +30,29 @@ For each finding, apply the fix:
 - **section_issue**: Fix the section structure as described in the finding.
 - **no_knowledge_content_invalid**: The file was incorrectly marked as `no_knowledge_content: true` but the source has Layer A/B content. Set `no_knowledge_content: false`, then extract all Layer A/B content from the source into proper sections following the same rules as generate.md Steps 2-6. Build index[] and sections{} normally.
 
+**E-2: Verbatim extraction rule**
+
+When adding content to fix an omission, extract the exact wording from the source.
+Do not paraphrase, summarize, or expand beyond what the source says.
+Decision rule: if you cannot find the exact text in the source, do not add it.
+
+**E-5: No fabrication from patterns rule**
+
+Do not infer explicit rules, constraints, or requirements from patterns observed in code examples or implicit usage.
+Only state something as a rule if the source explicitly declares it as one (e.g., "must", "should", "required", "do not").
+If the source only shows an example without commentary, reproduce the example — do not convert it into a stated rule.
+
+**E-3: Preserve source notation**
+
+Do not correct RST special syntax, typos, or non-standard notation found in the source.
+If the source contains `.. code-block:: jave` (typo), preserve it as-is.
+Your role is to extract information faithfully, not to fix source errors.
+
+**Scope constraint**
+
+Only modify sections referenced in the findings above.
+Do not change sections that have no finding. Copy them exactly from the current knowledge file.
+
 After all fixes, verify:
 - Every index[].id has a matching key in sections and vice versa
 - Section IDs follow sequential format: `s1`, `s2`, `s3`, ...

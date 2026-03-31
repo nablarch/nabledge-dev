@@ -34,9 +34,13 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 ## Validation Checklist
 
-### V1: Omission Check (severity: critical)
+### V1: Omission Check
 
 Read the source file section by section. Identify every piece of information that an AI agent would need to make correct implementation decisions. For each one, confirm it exists in the knowledge file.
+
+**Severity assignment:**
+- **critical**: The missing information would cause an AI agent to give incorrect or incomplete implementation guidance (e.g., missing required configuration, missing constraint, missing API specification).
+- **minor**: The missing information is supplementary (e.g., optional usage notes, redundant examples, style preferences).
 
 **What counts as decision-necessary information:**
 - Constraints and prerequisites (ordering, required configurations, preconditions)
@@ -64,9 +68,13 @@ Knowledge files are optimized for AI assistants to answer questions. **Accept om
 
 **Rule:** If an element serves only as navigation and contains no substantive explanation, code examples, or constraints → **accept its omission**. The detailed content in target sections is sufficient for AI to answer questions.
 
-### V2: Fabrication Check (severity: critical)
+### V2: Fabrication Check
 
 Read the knowledge file section by section. For every statement, confirm it has a basis in the source file.
+
+**Severity assignment:**
+- **critical**: The fabricated content states an incorrect fact, rule, or constraint that an AI agent would follow when giving implementation guidance.
+- **minor**: The fabricated content is harmless (e.g., a generic introductory sentence, metadata that does not affect implementation decisions).
 
 **Check each of these:**
 - Every sentence in description fields — does the source say this?
@@ -77,6 +85,12 @@ Read the knowledge file section by section. For every statement, confirm it has 
 
 For each fabrication found, record:
 "FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
+
+**D-1: Severity stability rule**
+
+Once you assign a severity to a finding, apply the same criteria consistently.
+If you are re-checking a file in a later round, do not change a severity unless the content itself has changed.
+Justify every severity assignment in the description field using the criteria above (e.g., "critical: missing required configuration property").
 
 ### V3: Section Issues (severity: minor)
 
