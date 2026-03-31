@@ -48,6 +48,11 @@ Do not correct RST special syntax, typos, or non-standard notation found in the 
 If the source contains `.. code-block:: jave` (typo), preserve it as-is.
 Your role is to extract information faithfully, not to fix source errors.
 
+**E-4: Adjacent content preservation**
+
+When editing content within a section, copy all existing content outside the edited location exactly as it appears.
+Do not alter sentences, values, or terms that are not directly related to the finding being fixed.
+
 **Scope constraint**
 
 Only modify sections referenced in the findings above.

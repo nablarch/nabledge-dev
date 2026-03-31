@@ -31,8 +31,15 @@ def _extract_allowed_sections(findings):
             break
         loc = f.get("location", "")
         # Extract sN identifiers from the location string
-        for m in re.findall(r'\bs(\d+)\b', loc):
-            section_ids.add(f"s{m}")
+        extracted = [f"s{m}" for m in re.findall(r'\bs(\d+)\b', loc)]
+        if cat == "section_issue" and not extracted:
+            # section_issue describes structural changes (e.g. "S9: Section count 2 < source
+            # headings 3") that may not reference a specific sN location.  When no section
+            # ID can be parsed, we cannot safely scope the fix to individual sections, so
+            # treat this as a full rebuild to avoid the guard nullifying the fix.
+            is_full_rebuild = True
+            break
+        section_ids.update(extracted)
 
     return section_ids, is_full_rebuild
 

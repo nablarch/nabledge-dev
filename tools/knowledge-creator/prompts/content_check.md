@@ -94,7 +94,9 @@ Read the knowledge file section by section. For every statement, confirm it has 
 For each fabrication found, record:
 "FABRICATION: section {section_id} — {the statement in knowledge file} — no basis found in source"
 
-### V3: Section Issues (severity: minor)
+### V3: Section Issues
+
+All findings in this section are minor by definition.
 
 - Count split-level headings in source (RST: h2=text+------, MD: ##). Compare with knowledge section count.
 - Check if any section has < 50 characters.

@@ -93,6 +93,33 @@ class TestExtractAllowedSections:
         assert len(ids) == 0
         assert not is_full_rebuild
 
+    def test_section_issue_with_v3_description_location_triggers_full_rebuild(self):
+        """section_issue finding with V3-style location (no sN ID) must trigger full rebuild.
+
+        When LLM returns a location like "S9: Section count 2 < source headings 3",
+        the sN regex extracts nothing.  Without the full-rebuild fallback the diff guard
+        would block the structural fix entirely.  This test verifies the fallback fires.
+        """
+        from phase_e_fix import _extract_allowed_sections
+        findings = [
+            {"category": "section_issue", "severity": "minor",
+             "location": "S9: Section count 2 < source headings 3",
+             "description": "knowledge has 2 sections but source has 3 h2 headings"},
+        ]
+        ids, is_full_rebuild = _extract_allowed_sections(findings)
+        assert is_full_rebuild, "section_issue with no sN location must fall back to full rebuild"
+
+    def test_section_issue_with_sn_location_extracts_section_id(self):
+        """section_issue finding with a plain sN location is handled normally."""
+        from phase_e_fix import _extract_allowed_sections
+        findings = [
+            {"category": "section_issue", "severity": "minor",
+             "location": "s3", "description": "section too short"},
+        ]
+        ids, is_full_rebuild = _extract_allowed_sections(findings)
+        assert "s3" in ids
+        assert not is_full_rebuild
+
 
 # ---------------------------------------------------------------------------
 # _apply_diff_guard — reverts unscoped, keeps scoped
