@@ -2,7 +2,7 @@
   "metadata": {
     "version": "5.0.0",
     "created": "2026-03-13",
-    "updated": "2026-03-13",
+    "updated": "2026-03-31",
     "description": "Test scenarios for nabledge-5: Detects expected keywords/components in responses. No performance targets.",
     "total_scenarios": 7,
     "by_type": {
@@ -17,58 +17,56 @@
       "type": "qa",
       "benchmark": true,
       "question": "コード値のプルダウン入力を実装するには？",
-      "expectations": [
-        "n:select",
-        "n:optionItems",
-        "コードリスト",
-        "listId",
-        "codeId"
-      ]
+      "expectations": {
+        "code_select_tag": ["n:codeSelect", "codeId", "pattern"],
+        "general_select_tag": ["n:select", "listName", ["elementValueProperty", "elementLabelProperty"]],
+        "concepts": ["コード値", "withNoneOption"]
+      }
     },
     {
       "id": "qa-002",
       "type": "qa",
       "question": "UniversalDaoでページング検索を実装するには？",
-      "expectations": [
-        "findAllBySqlFile",
-        "page",
-        "per",
-        "Pagination",
-        "getPagination"
-      ]
+      "expectations": {
+        "pagination_api": ["UniversalDao", "page", "per", "findAllBySqlFile"],
+        "pagination_result": ["Pagination", "getPagination"],
+        "display": ["pageNumber", "listSearchResult"]
+      }
     },
     {
       "id": "qa-003",
       "type": "qa",
       "question": "バッチのリクエスト単体テストで起動パラメータを指定するには？",
-      "expectations": [
-        "-requestPath",
-        "requestPath",
-        "BatchRequestTestSupport",
-        "リクエスト単体テスト"
-      ]
+      "expectations": {
+        "test_class": ["BatchRequestTestSupport"],
+        "test_data": ["testShots", "diConfig", "userId", "expectedStatusCode"],
+        "test_params": [["requestPath", "-requestPath"], "args"],
+        "concepts": ["リクエスト単体テスト"]
+      }
     },
     {
       "id": "qa-004",
       "type": "qa",
       "question": "二重サブミット防止の実装方法は？",
-      "expectations": [
-        "OnDoubleSubmission",
-        "token",
-        "n:token",
-        "doubleSubmission"
-      ]
+      "expectations": {
+        "client_side": ["allowDoubleSubmission", "n:submit"],
+        "server_annotation": ["OnDoubleSubmission"],
+        "token_form": ["n:form", "useToken", "nablarch_token"],
+        "token_annotation": [["@UseToken", "UseToken"]],
+        "concepts": ["二重サブミット防止"]
+      }
     },
     {
       "id": "qa-005",
       "type": "qa",
       "question": "相関バリデーションの実装方法は？",
-      "expectations": [
-        "ValidateFor",
-        "ValidationContext",
-        "Validation",
-        "相関バリデーション"
-      ]
+      "expectations": {
+        "bean_validation": ["@AssertTrue", "Bean Validation"],
+        "nablarch_validation": ["ValidateFor", "ValidationContext"],
+        "null_check": ["StringUtil", "Objects.equals"],
+        "concepts": ["相関バリデーション"],
+        "caution": ["NullPointerException", "実行順序"]
+      }
     },
     {
       "id": "ca-001",
