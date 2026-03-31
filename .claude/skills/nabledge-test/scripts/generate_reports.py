@@ -234,6 +234,12 @@ def generate_step_table(results, type_name):
     for r in results:
         for step in r["metrics"].get("steps", []):
             sn = step.get("step", 0)
+            # Normalize string step keys to int to prevent TypeError in sorted()
+            if isinstance(sn, str):
+                try:
+                    sn = int(sn)
+                except (ValueError, TypeError):
+                    sn = 0
             if sn not in step_data:
                 step_data[sn] = {"durations": [], "in_tokens": [], "out_tokens": []}
                 step_names[sn] = step.get("name", f"Step {sn}")

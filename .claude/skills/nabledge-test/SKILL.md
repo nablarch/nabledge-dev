@@ -128,7 +128,7 @@ Store as `$PR_NUMBER` (5-digit zero-padded string) for use in subsequent steps.
 
 From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 
-**New format** (nabledge-5, nabledge-6): `expectations` is an object with aspect keys. Each item in an aspect is either a string (AND: must appear) or an array of strings (OR: any one must appear):
+**New format** (nabledge-5, nabledge-6): `expectations` is an object with aspect keys. Each item in an aspect is either a string (AND: must appear) or an array of strings (OR: any one must appear). A single aspect can mix both types — each item is evaluated independently.
 
 ```json
 {
@@ -142,7 +142,7 @@ From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 }
 ```
 
-**Legacy format** (nabledge-1.x): `expectations` is a flat array of strings:
+**Legacy format** (nabledge-1.x): `expectations` is a flat array of strings. New scenarios should always use the object format; the legacy format is retained only for nabledge-1.x compatibility.
 
 ```json
 {
