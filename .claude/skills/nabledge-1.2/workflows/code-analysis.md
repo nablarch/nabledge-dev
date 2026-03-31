@@ -214,7 +214,7 @@ echo "Output file: $OUTPUT_PATH"
 - Warns if not found (link omitted, processing continues)
 - Includes all matches if multiple files found (with path disambiguation in labels)
 
-**Pre-filled placeholders (9/16)**:
+**Pre-filled placeholders (9/17)**:
 - `{{target_name}}`: From target-name parameter
 - `{{generation_date}}`: Current date (auto-generated)
 - `{{generation_time}}`: Current time (auto-generated)
@@ -225,7 +225,7 @@ echo "Output file: $OUTPUT_PATH"
 - `{{knowledge_base_links}}`: Generated from knowledge-files parameter
 - `{{official_docs_links}}`: Automatically extracted from knowledge JSON files' `official_doc_urls` field
 
-**Output**: Template file with 9 placeholders pre-filled, 7 remaining for LLM
+**Output**: Template file with 9 placeholders pre-filled, 8 remaining for LLM
 
 **Error handling**: If script fails:
 - Check error message on stderr for specific issue
@@ -236,7 +236,7 @@ echo "Output file: $OUTPUT_PATH"
 **Validation**: After script completes, verify:
 - Output file was created at specified path
   - **If missing**: Check stderr for errors, report to user, HALT workflow
-- Script reported "9/16" placeholders filled
+- Script reported "9/17" placeholders filled
   - **If different**: Read output file to inspect which placeholders failed, report to user, HALT workflow
 - No error messages on stderr
   - **If errors present**: Report full stderr output to user, HALT workflow
@@ -519,10 +519,10 @@ mapper.close();
 
 1. **Read pre-filled template**: Use Read tool on the file created in Step 3.2
    - File path: `$OUTPUT_PATH` (captured from script output in Step 3.2)
-   - This file already contains 8/16 placeholders filled (deterministic content)
+   - This file already contains 9/17 placeholders filled (deterministic content)
 
 2. **Construct complete content**: Build the full document content in memory by:
-   - Keeping all pre-filled content from Step 3.2 (8 deterministic placeholders)
+   - Keeping all pre-filled content from Step 3.2 (9 deterministic placeholders)
    - Replacing 8 remaining placeholders with generated content (see list below)
    - Using refined skeletons from Step 3.3 for diagram placeholders
 
@@ -566,7 +566,7 @@ mapper.close();
 
 4. **Write complete file**: Use Write tool with full document content
    - File path: `$OUTPUT_PATH` (captured from Step 3.2)
-   - Content: Complete document with all 16 placeholders filled (8 pre-filled + 8 generated)
+   - Content: Complete document with all 17 placeholders filled (9 pre-filled + 8 generated)
    - This will overwrite the pre-filled template from Step 3.2 with the complete version
    - Write tool requires prior Read (already done in step 1)
 

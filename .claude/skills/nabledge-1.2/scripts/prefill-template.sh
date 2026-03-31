@@ -360,7 +360,7 @@ fi
 
 echo "Pre-filled template written to: $OUTPUT_PATH"
 echo ""
-echo "Pre-filled placeholders (9/16):"
+echo "Pre-filled placeholders (9/17):"
 echo "  ✓ target_name: $TARGET_NAME"
 echo "  ✓ generation_date: $GENERATION_DATE"
 echo "  ✓ generation_time: $GENERATION_TIME"
@@ -371,7 +371,7 @@ echo "  ✓ source_files_links: $(echo "$SOURCE_FILES" | tr ',' '\n' | wc -l) fi
 echo "  ✓ knowledge_base_links: $(echo "$KNOWLEDGE_FILES" | tr ',' '\n' | wc -l) files"
 echo "  ✓ official_docs_links: $official_docs_count links"
 echo ""
-echo "Remaining placeholders for LLM (7/16):"
+echo "Remaining placeholders for LLM (8/17):"
 echo "  - analysis_duration (to be filled after Write completes)"
 echo "  - overview_content"
 echo "  - dependency_graph"
