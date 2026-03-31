@@ -39,7 +39,7 @@
       "question": "バッチのリクエスト単体テストで起動パラメータを指定するには？",
       "expectations": {
         "test_class": ["BatchRequestTestSupport"],
-        "test_data": ["testShots", "diConfig", "userId", "expectedStatusCode"],
+        "test_data": ["testShots", "diConfig", "userId", "LIST_MAP"],
         "test_params": [["requestPath", "-requestPath"], "args"],
         "concepts": ["リクエスト単体テスト"]
       }
@@ -61,12 +61,11 @@
       "type": "qa",
       "question": "相関バリデーションの実装方法は？",
       "expectations": {
-        "annotation": ["@AssertTrue"],
-        "null_check": ["StringUtil", "isNullOrEmpty"],
-        "equality_check": ["Objects.equals"],
-        "framework": ["Bean Validation"],
-        "concepts": ["相関バリデーション"],
-        "caution": ["NullPointerException", "実行順序"]
+        "annotation": ["@ValidateFor"],
+        "context_class": ["ValidationContext"],
+        "validation_logic": ["ValidationUtil", "Objects.equals"],
+        "context_methods": ["isValid", "addMessage", "createObject"],
+        "concepts": ["相関バリデーション"]
       }
     },
     {
