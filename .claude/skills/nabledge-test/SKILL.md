@@ -142,16 +142,6 @@ From `.claude/skills/nabledge-test/scenarios/nabledge-<version>/scenarios.json`:
 }
 ```
 
-**Legacy format** (nabledge-1.x): `expectations` is a flat array of strings. New scenarios should always use the object format; the legacy format is retained only for nabledge-1.x compatibility.
-
-```json
-{
-  "id": "qa-001",
-  "question": "バッチの起動方法を教えてください",
-  "expectations": ["keyword1", "keyword2", ...]
-}
-```
-
 For code-analysis scenarios (ca-*), additional fields:
 ```json
 {
@@ -181,19 +171,13 @@ For code-analysis scenarios (ca-*), additional fields:
 For qa (qa-*):
 ```
 detection_items = []
-# New format: expectations is an object with aspect keys (nabledge-5, nabledge-6)
-if isinstance(scenario.expectations, dict):
-    for aspect, items in scenario.expectations.items():
-        for item in items:
-            if isinstance(item, list):
-                # OR condition: any one of these must appear in response
-                detection_items.append(f"Response includes one of: {', '.join(repr(k) for k in item)}")
-            else:
-                detection_items.append(f"Response includes '{item}'")
-# Legacy format: expectations is a flat array (nabledge-1.x)
-else:
-    for keyword in scenario.expectations:
-        detection_items.append(f"Response includes '{keyword}'")
+for aspect, items in scenario.expectations.items():
+    for item in items:
+        if isinstance(item, list):
+            # OR condition: any one of these must appear in response
+            detection_items.append(f"Response includes one of: {', '.join(repr(k) for k in item)}")
+        else:
+            detection_items.append(f"Response includes '{item}'")
 ```
 
 For code-analysis (ca-*):

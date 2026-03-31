@@ -105,8 +105,8 @@ def generate_individual_report(sc, metrics, grading, workspace, run_timestamp):
     if is_ca:
         exp_total, exp_summary = count_ca_expectations(expectations)
         exp_display = f"({exp_total} items): {exp_summary}"
-    elif isinstance(expectations, dict):
-        # New QA object format: count items (OR groups count as 1)
+    else:
+        # QA object format: count items (OR groups count as 1)
         total = sum(len(items) for items in expectations.values())
         flat = []
         for items in expectations.values():
@@ -116,9 +116,6 @@ def generate_individual_report(sc, metrics, grading, workspace, run_timestamp):
                 else:
                     flat.append(f"`{item}`")
         exp_display = f"({total}): " + ", ".join(flat)
-    else:
-        exp_list = expectations if isinstance(expectations, list) else []
-        exp_display = f"({len(exp_list)}): " + ", ".join(f"`{e}`" for e in exp_list)
 
     # Detection items
     detection_lines = []
