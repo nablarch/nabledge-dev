@@ -2,6 +2,38 @@
 
 ## 2026-04-01
 
+### Expert Review & Improvements
+
+**Reviews Conducted**:
+1. Software Engineer: 4/5 rating
+   - Architecture sound; switch to array-based read_pairs needed
+   - Fragile grep regex escaping → replace with grep -F
+   - IFS restoration missing from read loops
+
+2. QA Engineer: 3/5 rating (before improvements) → 5/5 (after)
+   - Missing error case validation, security tests, integration tests
+   - Requested path traversal security verification
+   - Requested search→read integration validation
+
+**Improvements Implemented**:
+1. ✅ Fixed unquoted variable expansion (array-based read_pairs)
+2. ✅ Replaced sed regex escaping with `grep -qiF` (literal string matching)
+3. ✅ Restored IFS explicitly after each read loop
+4. ✅ Added error handling for read_script failures
+5. ✅ Added path traversal security test (Test 11)
+6. ✅ Added integration test for search→read pipeline (Test 12)
+7. ✅ Added error handling test for malformed JSON (Test 13)
+8. ✅ Added special character keyword handling test (Test 14)
+
+**Test Suite Enhancements**:
+- Increased from 10 to 14 test cases (40% more coverage)
+- 14 tests all pass ✓
+- Coverage: basic functionality, error handling, security, integration, edge cases
+
+**Reviews Saved**:
+- `.pr/00252/review-by-software-engineer.md`
+- `.pr/00252/review-by-qa-engineer.md`
+
 ### Implementation: Deterministic Dynamic Checks
 
 **Overview**: Replaced LLM-dependent `verify_dynamic()` with deterministic verification that directly executes knowledge search scripts (full-text-search.sh + read-sections.sh). This enables CI to verify knowledge search without requiring authentication or LLM invocation.

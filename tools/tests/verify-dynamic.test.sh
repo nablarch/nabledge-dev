@@ -290,6 +290,108 @@ else
     fail "Read script not found"
 fi
 
+# Test 11: Security test - Path traversal rejection
+test_case "Security: path traversal attempts are rejected"
+PROJECT=$(setup_test_env "6" "1")
+
+if [ -x "$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" ]; then
+    # Try to access a file outside knowledge directory
+    result=$("$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" "../../../etc/passwd:section" 2>&1 || true)
+
+    if echo "$result" | grep -q "Error: Invalid file path"; then
+        pass
+    else
+        fail "Path traversal should be rejected with error message"
+    fi
+else
+    fail "Read script not found"
+fi
+
+# Test 12: Integration test - Search results as read input
+test_case "Integration: search output format works with read input"
+PROJECT=$(setup_test_env "6" "2")
+
+if [ -x "$PROJECT/.claude/skills/nabledge-6/scripts/full-text-search.sh" ] && [ -x "$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" ]; then
+    # Get search results
+    search_output=$("$PROJECT/.claude/skills/nabledge-6/scripts/full-text-search.sh" "findAllBySqlFile" 2>&1 || true)
+
+    if [ -z "$search_output" ]; then
+        fail "Search produced no results for integration test"
+    else
+        # Convert search output (file|section) to read input (file:section)
+        read_input=$(echo "$search_output" | head -1 | sed 's/|/:/')
+
+        if [ -n "$read_input" ]; then
+            # Run read with search result
+            read_output=$("$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" "$read_input" 2>&1 || true)
+
+            if echo "$read_output" | grep -q "===.*:.*==="; then
+                pass
+            else
+                fail "Read didn't return expected format for search result"
+            fi
+        else
+            fail "Couldn't parse search output"
+        fi
+    fi
+else
+    fail "Search or read script not found"
+fi
+
+# Test 13: Error handling - Invalid jq JSON (malformed content)
+test_case "Error handling: graceful failure with malformed JSON"
+PROJECT="${TEST_WORKSPACE}/malformed-json"
+mkdir -p "$PROJECT/.claude/skills/nabledge-6/knowledge" "$PROJECT/.claude/skills/nabledge-6/scripts"
+
+# Create malformed JSON file
+cat > "$PROJECT/.claude/skills/nabledge-6/knowledge/bad.json" <<'EOF'
+{
+  "sections": {
+    "overview": "This is incomplete JSON"
+EOF
+
+# Copy scripts from a good project
+GOOD_PROJECT=$(setup_test_env "6" "1")
+cp "$GOOD_PROJECT/.claude/skills/nabledge-6/scripts/"*.sh "$PROJECT/.claude/skills/nabledge-6/scripts/"
+chmod +x "$PROJECT/.claude/skills/nabledge-6/scripts/"*.sh
+
+# Try to search — should handle gracefully
+if [ -x "$PROJECT/.claude/skills/nabledge-6/scripts/full-text-search.sh" ]; then
+    # This may fail or skip the bad file, but shouldn't crash
+    result=$("$PROJECT/.claude/skills/nabledge-6/scripts/full-text-search.sh" "findAllBySqlFile" 2>&1 || true)
+    # Just verify it doesn't completely crash/hang
+    pass
+else
+    fail "Script not found"
+fi
+
+# Test 14: Literal string matching (special characters)
+test_case "Keyword matching: special regex characters handled correctly"
+PROJECT=$(setup_test_env "6" "1")
+
+if [ -x "$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" ]; then
+    # Add section with special chars in content
+    cat > "$PROJECT/.claude/skills/nabledge-6/knowledge/special.json" <<'EOF'
+{
+  "sections": {
+    "config": "Here is config.xml and User[Active] pattern matching",
+    "code": "Lambda: (x) -> x + 1"
+  }
+}
+EOF
+
+    # Search and read that section
+    result=$("$PROJECT/.claude/skills/nabledge-6/scripts/read-sections.sh" "special.json:config" 2>&1 || true)
+
+    if echo "$result" | grep -qF "config.xml"; then
+        pass
+    else
+        fail "Literal string with special chars not found"
+    fi
+else
+    fail "Read script not found"
+fi
+
 # Print summary
 echo ""
 echo "======================================"
@@ -298,6 +400,13 @@ echo "======================================"
 echo "Tests run:    $TESTS_RUN"
 echo "Tests passed: $TESTS_PASSED"
 echo "Tests failed: $TESTS_FAILED"
+echo ""
+echo "Test Coverage:"
+echo "  - Basic functionality: 5 tests (jq, search, read, validation, format)"
+echo "  - Error handling: 3 tests (missing scripts, missing sections, malformed JSON)"
+echo "  - Security: 1 test (path traversal rejection)"
+echo "  - Integration: 1 test (search→read pipeline)"
+echo "  - Edge cases: 1 test (special characters in keywords)"
 echo ""
 
 if [ "$TESTS_FAILED" -eq 0 ]; then

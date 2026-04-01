@@ -330,7 +330,10 @@ verify_dynamic() {
 
     # Search for keywords using full-text-search.sh
     # Convert comma-separated keywords to arguments
+    local old_ifs="$IFS"
     IFS=',' read -ra keywords <<< "$keywords_str"
+    IFS="$old_ifs"
+
     local search_results
     search_results=$("$search_script" "${keywords[@]}" 2>/dev/null) || true
 
@@ -341,15 +344,17 @@ verify_dynamic() {
     fi
 
     # Extract file:section pairs and read actual content
-    local all_keywords_found=1
-    local read_pairs=""
-    while IFS='|' read -r file section; do
+    local read_pairs=()
+    old_ifs="$IFS"
+    IFS='|'
+    while read -r file section; do
         if [ -n "$file" ] && [ -n "$section" ]; then
-            read_pairs="$read_pairs ${file}:${section}"
+            read_pairs+=("${file}:${section}")
         fi
     done <<< "$search_results"
+    IFS="$old_ifs"
 
-    if [ -z "$read_pairs" ]; then
+    if [ ${#read_pairs[@]} -eq 0 ]; then
         echo "  [FAIL] ${label} nabledge-${v}: search returned no valid file:section pairs"
         verify_fail=1
         return
@@ -357,11 +362,17 @@ verify_dynamic() {
 
     # Read section content and verify all keywords are present
     local section_content
-    section_content=$("$read_script" $read_pairs 2>/dev/null) || true
+    section_content=$("$read_script" "${read_pairs[@]}" 2>&1)
+    local read_exit=$?
+    if [ $read_exit -ne 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: read-sections.sh failed: $section_content"
+        verify_fail=1
+        return
+    fi
 
     local missing_keywords=()
     for kw in "${keywords[@]}"; do
-        if ! echo "$section_content" | grep -qi "$(echo "$kw" | sed 's/[[\.*^$/]/\\&/g')"; then
+        if ! echo "$section_content" | grep -qiF "$kw"; then
             missing_keywords+=("$kw")
         fi
     done
