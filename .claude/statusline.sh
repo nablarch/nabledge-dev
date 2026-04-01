@@ -32,12 +32,13 @@ fi
 
 # Context info
 context_info=""
-[ -n "$context_used" ] && context_info=" [ctx: ${context_used}%]"
+[ -n "$context_used" ] && context_info=" [${context_used}%]"
 
 # Model info
 model_info=""
 [ -n "$model" ] && model_info=" [${model}]"
 
-# Output
+# Output - order: directory → context % → model → branch
+# This ensures branch name stays visible on the right side when window resizes
 cwd_name=$(basename "$cwd")
-printf "\033[01;34m%s\033[00m%s%s%s" "$cwd_name" "$git_branch" "$model_info" "$context_info"
+printf "\033[01;34m%s\033[00m%s%s%s" "$cwd_name" "$context_info" "$model_info" "$git_branch"
