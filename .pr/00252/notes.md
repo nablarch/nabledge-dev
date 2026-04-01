@@ -1,5 +1,57 @@
 # Notes
 
+## 2026-04-01
+
+### Implementation: Deterministic Dynamic Checks
+
+**Overview**: Replaced LLM-dependent `verify_dynamic()` with deterministic verification that directly executes knowledge search scripts (full-text-search.sh + read-sections.sh). This enables CI to verify knowledge search without requiring authentication or LLM invocation.
+
+**Key Changes to `tools/tests/test-setup.sh`:**
+
+1. **New `verify_dynamic()` function** (replaces LLM-based version):
+   - Calls `full-text-search.sh` with comma-separated keywords to search for matching sections
+   - Calls `read-sections.sh` to fetch actual section content
+   - Validates all keywords exist in the retrieved content
+   - Returns [OK] if all keywords found, [FAIL] if not found
+   - No `claude -p` or `copilot -p` invocation; no LLM dependency
+   - Checks jq dependency with clear error message
+
+2. **Enabled all 20 dynamic checks**:
+   - v6 × 2 (cc/ghc)
+   - v5 × 2 (cc/ghc)
+   - v1.4 × 2 (cc/ghc)
+   - v1.3 × 2 (cc/ghc)
+   - v1.2 × 2 (cc/ghc)
+   - all × 2 (cc/ghc with multiple versions per environment)
+   - Total: 20 verify_dynamic calls (previously 0 active; all 20 were commented out)
+
+3. **Keywords** derived from nabledge-test benchmark scenarios:
+   - v6/v5: `findAllBySqlFile,page,per,Pagination,getPagination` (qa-002)
+   - v1.4/v1.3/v1.2: `n:codeSelect,codeId` (qa-001)
+
+**Unit Tests** (`tools/tests/verify-dynamic.test.sh`):
+- 10 test cases covering:
+  - Normal case: keywords found (5 tests)
+  - Zero hits: no search results
+  - Missing scripts: detection of missing/non-executable scripts (2 tests)
+  - Content validation: multiple keywords verified in content
+  - Format validation: search results in correct `file|section` format
+  - Section handling: SECTION_NOT_FOUND for missing sections
+
+**Verification**:
+- All 10 unit tests pass ✓
+- No external dependencies beyond jq (required by scripts, checked in verify_dynamic)
+- No credentials required (no ANTHROPIC_API_KEY, GITHUB_TOKEN, gh auth)
+- Deterministic: same input → same output (no LLM variability)
+
+**Success Criteria Met**:
+- ✅ Checks execute without LLM or CLI authentication
+- ✅ Verify knowledge search via direct script execution
+- ✅ Expected keywords validated against section content
+- ✅ All 20 version × tool combinations run as [RUN]
+- ✅ jq dependency checked with clear error
+- ✅ Unit tests exist for normal/0-hit/missing-keyword/script-missing cases
+
 ## 2026-03-31
 
 ### 検証: headless /n6 実行方式
