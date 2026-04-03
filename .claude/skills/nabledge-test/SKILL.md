@@ -385,16 +385,47 @@ for item in detection_items:
 
 **Code-analysis (ca-*)**:
 
-Each detection item is checked by examining the response text and output files:
-- "Overview includes 'X'" → check if keyword X appears within the `## Overview` section of the output
-- "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block in the output
-- "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block in the output
-- "Component Summary includes 'X'" → check if component name X appears within the `### Component Summary` section of the output
-- "Processing Flow includes 'X'" → check if keyword X appears within the `### Processing Flow` section of the output
-- "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block in the output
-- "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block in the output
-- "Nablarch Framework Usage includes 'X'" → check if class name X appears as a heading within the `## Nablarch Framework Usage` section of the output
+Each detection item is checked by examining response text and output files. **CRITICAL**: For section-based checks, always read from the actual output Markdown files (e.g., `code-analysis-*.md`), NOT just `response.md`. This ensures accurate detection even when the agent writes to external files.
+
+Search order:
+1. Read all `.md` files in the output directory (e.g., `code-analysis-*.md`)
+2. Fall back to `response.md` only if output files don't exist
+3. Concatenate all sources before performing detection
+
+Detection logic:
+- "Overview includes 'X'" → check if keyword X appears within the `## Overview` section (read from output files first)
+- "Class diagram includes class 'X'" → check if class name X appears within a `classDiagram` block (read from output files first)
+- "Class diagram includes relationship 'X'" → check if relationship string X appears within a `classDiagram` block (read from output files first)
+- "Component Summary includes 'X'" → check if component name X appears within the `### Component Summary` section (read from output files first)
+- "Processing Flow includes 'X'" → check if keyword X appears within the `### Processing Flow` section (read from output files first)
+- "Sequence diagram includes object 'X'" → check if participant/object X appears within a `sequenceDiagram` block (read from output files first)
+- "Sequence diagram includes message 'X'" → check if message/method call X appears within a `sequenceDiagram` block (read from output files first)
+- "Nablarch Framework Usage includes 'X'" → check if class name X appears as a heading within the `## Nablarch Framework Usage` section (read from output files first)
 - "Output includes 'X'" → check output files or response for X
+
+**Implementation for Code-Analysis scenarios**:
+
+When checking CA detection items:
+1. List all files in the output directory (e.g., `output/code-analysis-*.md`)
+2. If output files exist, read them; otherwise fall back to `response.md`
+3. For section-based items (Overview, Class diagram, etc.), extract the relevant section and perform keyword search
+4. Example extraction:
+   ```python
+   # Read all .md files from output directory
+   output_dir = Path(workspace) / scenario_id / "output"
+   output_text = ""
+   if output_dir.exists():
+       for f in sorted(output_dir.glob("*.md")):
+           with open(f) as file:
+               output_text += file.read() + "\n"
+   else:
+       # Fall back to response.md
+       with open(Path(workspace) / scenario_id / "response.md") as f:
+           output_text = f.read()
+   
+   # Extract section and check for keyword
+   # Example: for "Overview includes 'X'", extract text between "## Overview" and next heading
+   ```
 
 **Write grading.json**:
 
@@ -403,14 +434,14 @@ Each detection item is checked by examining the response text and output files:
   "scenario_id": "<id>",
   "detection_items": [
     {
-      "text": "Response includes 'DataReadHandler'",
+      "text": "Overview includes 'BusinessDateUtil'",
       "detected": true,
-      "evidence": "Found in response: 'DataReadHandler（nablarch.fw.handler.DataReadHandler）'"
+      "evidence": "Found in ## Overview section of code-analysis-*.md"
     },
     {
-      "text": "Response includes 'DataReader'",
+      "text": "Nablarch Framework Usage includes 'ParameterizedSqlPStatement'",
       "detected": false,
-      "evidence": "Not found in response text"
+      "evidence": "Not found as heading in ## Nablarch Framework Usage section"
     }
   ],
   "summary": {
