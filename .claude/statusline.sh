@@ -1,4 +1,6 @@
 #!/bin/bash
+# Requires: bash 4.0+ (for parameter expansion, here-strings, printf)
+# Compatible shells: bash 4.0+, zsh
 
 input=$(cat)
 
@@ -32,12 +34,15 @@ fi
 
 # Context info
 context_info=""
-[ -n "$context_used" ] && context_info=" [ctx: ${context_used}%]"
+[ -n "$context_used" ] && context_info=" [${context_used}%]"
 
 # Model info
 model_info=""
 [ -n "$model" ] && model_info=" [${model}]"
 
-# Output
+# Output format: directory | context % | model | branch
+# Priority-based truncation: branch on the right survives window resize
+# When terminal width shrinks, truncation occurs right-to-left, preserving
+# the directory name and branch identifier (most critical information)
 cwd_name=$(basename "$cwd")
-printf "\033[01;34m%s\033[00m%s%s%s" "$cwd_name" "$git_branch" "$model_info" "$context_info"
+printf "\033[01;34m%s\033[00m%s%s%s" "$cwd_name" "$context_info" "$model_info" "$git_branch"
