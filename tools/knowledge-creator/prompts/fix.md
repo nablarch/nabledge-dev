@@ -48,10 +48,23 @@ Do not correct RST special syntax, typos, or non-standard notation found in the 
 If the source contains `.. code-block:: jave` (typo), preserve it as-is.
 Your role is to extract information faithfully, not to fix source errors.
 
-**E-4: Adjacent content preservation**
+**E-4: Adjacent content preservation (CRITICAL)**
 
-When editing content within a section, copy all existing content outside the edited location exactly as it appears.
-Do not alter sentences, values, or terms that are not directly related to the finding being fixed.
+When editing content within a section to fix a finding, preserve all text outside the edited location exactly as it appears.
+Do not alter sentences, values, terms, or word order that are not directly related to the finding being fixed.
+
+Critical examples of WRONG edits:
+- Finding: `hints_missing: [Validator]`
+  - Source: "The **Validator** and **Processor** are used in validation."
+  - WRONG FIX: "The **Processor** is used in validation." (deleted "Validator" from adjacent text)
+  - CORRECT: "The **Validator** and **Processor** are used in validation. [Added hint: Validator]"
+
+- Finding: hints incomplete
+  - Source: "normal termination of the request"
+  - WRONG FIX: "abnormal termination of the request" (word inversion)
+  - CORRECT: Keep "normal termination" and add the missing hint or clarification separately
+
+Verify after editing: Read the fixed section aloud. Does it convey the same information as before, with only the targeted issue fixed?
 
 **Scope constraint**
 

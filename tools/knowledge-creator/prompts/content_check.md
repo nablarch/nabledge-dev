@@ -32,12 +32,45 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 {CONTENT_WARNINGS}
 
-## Prior Round Findings
+## Prior Round Findings and Exclusion Rules
 
-The following findings were reported in the previous round.
-Use these as an anchor: do NOT report new findings for locations that were not flagged before, unless the knowledge file content at that location has changed since the previous round.
+The following findings were reported in the previous round:
 
 {PRIOR_FINDINGS}
+
+**CRITICAL: Exclusion rule for this round**
+
+For each finding in the prior round, extract its `(location, category)` pair.
+Skip reporting a new finding if ALL of the following conditions are met:
+1. The `location` string matches a prior finding's location (exact match)
+2. The `category` matches a prior finding's category (exact match)
+3. The source content at that location has NOT changed since the previous round
+
+**How to determine if content has changed:**
+- For `hints_missing`: Content changes if the source text (not the hints array) has been modified. Adding hints to the knowledge file does NOT count as "content changed" — the source text is what matters.
+- For `section_count`: Content changes if the number of source sections/headings has changed.
+- For `cross_reference`: Content changes if the referenced target or source text has changed.
+- For all other categories: Apply the same principle: judge based on source content, not knowledge file content.
+
+**Example 1 (SKIP reporting):**
+```
+Prior finding: {location: "sections.s1 / index[0].hints", category: "hints_missing", description: "BusinessDateProvider missing"}
+Current cache: index[0].hints now contains BusinessDateProvider ✅
+Source s1 text: Unchanged (still mentions "nablarch.core.date.BusinessDateProvider")
+Action: SKIP this finding → Do NOT report it again
+```
+
+**Example 2 (REPORT new finding):**
+```
+Prior finding: {location: "sections.s1 / index[0].hints", category: "hints_missing", description: "BusinessDateProvider missing"}
+Current cache: index[0].hints now contains BusinessDateProvider ✅
+Source s1 text: NEW mention of "Initializable" added
+Action: REPORT if Initializable is missing from index[0].hints (different location in hints, or new requirement)
+```
+
+**Implementation:**
+Before generating findings, build a set of (location, category) pairs from prior_round_findings.
+Then, for each finding you identify, check if it matches this set. If it matches AND source content is unchanged, skip it.
 
 ## General Rules
 
@@ -46,6 +79,9 @@ Use these as an anchor: do NOT report new findings for locations that were not f
 Apply severity criteria consistently across all checks (V1–V5).
 If a location was clean in the previous round and the knowledge file content at that location has not changed, do not report a new finding for it now.
 Justify every severity assignment in the description field using the criteria below (e.g., "critical: missing required configuration property").
+
+**Severity defaults by check type:**
+- **V3 and V4 findings are minor by definition**: Section-level structural issues (count mismatches, sequential ID violations, incomplete hints) do not affect content correctness or usability. They are formatting/completeness issues.
 
 ## Validation Checklist
 
@@ -110,7 +146,7 @@ All findings in this section are minor by definition.
 - For RST: if h2 has >= 2000 chars plain text AND h3 exists but knowledge doesn't split → report.
 - Check that section IDs follow sequential format: `s1`, `s2`, `s3`, ... If any section ID is not in this format, report as issue.
 
-### V4: Hints Completeness (severity: minor)
+### V4: Hints Completeness
 
 For each section, check hints include:
 - PascalCase class names from content
