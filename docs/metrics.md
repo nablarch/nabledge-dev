@@ -1,6 +1,6 @@
 # Nabledge Dev Metrics
 
-> Last updated: 2026-03-30 (auto-generated weekly — [view source](tools/metrics/collect.py))
+> Last updated: 2026-04-04 (auto-generated weekly — [view source](tools/metrics/collect.py))
 
 ## DORA Scorecard
 
@@ -122,8 +122,8 @@ xychart-beta
 xychart-beta
   title "Total SLOC Trend (all categories)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30"]
-  y-axis "Lines" 0 --> 15026
-  line [0, 789, 1503, 1293, 10339, 11613, 11613, 11704, 12521]
+  y-axis "Lines" 0 --> 15028
+  line [0, 789, 1503, 1293, 10339, 11613, 11613, 11704, 12523]
 ```
 
 ```mermaid
@@ -135,7 +135,7 @@ pie title Nabledge v6 SLOC
 ```mermaid
 pie title Knowledge Creator SLOC
   "Production (.py)" : 4347
-  "Test (.py)" : 5734
+  "Test (.py)" : 5736
   "Prompts (.md)" : 509
 ```
 
@@ -143,9 +143,9 @@ pie title Knowledge Creator SLOC
 xychart-beta
   title "KC Scripts Trend (upper=Production  lower=Test)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23", "03/30"]
-  y-axis "Lines" 0 --> 6881
+  y-axis "Lines" 0 --> 6884
   line [0, 0, 0, 0, 3183, 4109, 4109, 4119, 4347]
-  line [0, 0, 0, 0, 4802, 5064, 5064, 5145, 5734]
+  line [0, 0, 0, 0, 4802, 5064, 5064, 5145, 5736]
 ```
 
 ## Nabledge Adoption (nablarch/nabledge)
@@ -156,22 +156,22 @@ xychart-beta
 xychart-beta
   title "Page Views (weekly)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
-  y-axis "Views" 0 --> 503
-  bar [0, 0, 0, 0, 0, 2, 278, 419]
+  y-axis "Views" 0 --> 515
+  bar [0, 0, 0, 0, 0, 2, 278, 429]
 ```
 
 ```mermaid
 xychart-beta
   title "Unique Visitors (weekly)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
-  y-axis "Visitors" 0 --> 74
-  bar [0, 0, 0, 0, 0, 1, 40, 61]
+  y-axis "Visitors" 0 --> 76
+  bar [0, 0, 0, 0, 0, 1, 40, 63]
 ```
 
 ```mermaid
 xychart-beta
   title "Unique Cloners (weekly)"
   x-axis ["02/02", "02/09", "02/16", "02/23", "03/02", "03/09", "03/16", "03/23"]
-  y-axis "Cloners" 0 --> 113
-  bar [0, 0, 0, 0, 0, 10, 87, 94]
+  y-axis "Cloners" 0 --> 130
+  bar [0, 0, 0, 0, 0, 10, 87, 108]
 ```
