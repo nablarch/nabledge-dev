@@ -1,5 +1,36 @@
 # Notes
 
+## 2026-04-03
+
+### 問題の再定義と方針転換
+
+**根本問題の再確認:**
+- 問題2のみに絞る：「セットアップ後、ユーザーが実際に /n6 コマンドで知識検索できるか確認する」
+- 以前の実装（決定論的チェック）は根本問題の解決ではなかった
+
+**修正対象:**
+1. issue #252: 成功基準を「全12組み合わせでの /n6 実行テスト」に変更
+2. PR #290: 実装を「test-setup.sh に CC/GHC CLI の /n6 実行テスト追加」に変更
+
+**次回作業（明日）:**
+1. test-setup.sh に [User Verification] セクション追加
+2. CC CLI での /n6 実行テスト実装（v6/v5/v1.4/v1.3/v1.2/all × cc/ghc）
+3. 全12組み合わせで動作確認
+4. ユーザーに実行依頼
+
+**実行コマンド（確定済み）:**
+
+CC:
+```bash
+claude -p '/n6 "ページング検索の実装方法は？"' --model haiku
+```
+
+GHC:
+```bash
+PROMPT="$(sed 's|$ARGUMENTS|ページング検索の実装方法は？|g' .github/prompts/n6.prompt.md)"
+copilot -p "$PROMPT" --model claude-haiku-4.5 --allow-tool Bash --autopilot
+```
+
 ## 2026-04-01
 
 ### Expert Review & Improvements
