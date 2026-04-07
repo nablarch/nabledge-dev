@@ -314,16 +314,16 @@ verify_dynamic() {
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
         local output
-        output=$(cd "$project_dir" && copilot -p "nabledge-${v} \"${query}\"" 2>&1) || true
+        output=$(cd "$project_dir" && timeout 120 copilot -p ".github/prompts/n${v}.prompt.md ${query}" --model claude-haiku-4.5 --allow-tool Bash --autopilot 2>&1) || true
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
             return
         fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p /n${v} (timeout: 120s)..."
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
         local output
-        output=$(cd "$project_dir" && timeout 120 claude -p "/n${v} \"${query}\"" < /dev/null 2>&1) || true
+        output=$(cd "$project_dir" && timeout 120 claude -p ".claude/commands/n${v}.md ${query}" --model haiku < /dev/null 2>&1) || true
     fi
 
     local byte_count=${#output}
@@ -370,30 +370,27 @@ should_run "all"  && verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-b
 
 echo ""
 echo "[Dynamic checks]"
-# FIXME(#252): All dynamic checks are disabled because both Claude Code (claude -p) and
-# GitHub Copilot (copilot -p) do not work reliably in headless mode. Enable these once
-# headless execution is supported. See https://github.com/nablarch/nabledge-dev/issues/252
 # Queries and keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4/v1.3/v1.2)
-#should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
+should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
+should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
+should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
+should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
