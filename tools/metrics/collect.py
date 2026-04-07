@@ -18,6 +18,9 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 
+# Japan Standard Time (JST)
+JST = timezone(timedelta(hours=9))
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -73,10 +76,10 @@ def gh_api_paginated(path: str, token: str | None = None) -> list:
 
 
 def iso_week_monday(dt: datetime) -> datetime:
-    """Return the Monday of the ISO week containing dt (UTC, midnight)."""
+    """Return the Monday of the ISO week containing dt (preserve timezone, midnight)."""
     day = dt.date()
     monday = day - timedelta(days=day.weekday())
-    return datetime(monday.year, monday.month, monday.day, tzinfo=timezone.utc)
+    return datetime(monday.year, monday.month, monday.day, tzinfo=dt.tzinfo)
 
 
 def week_label(monday: datetime) -> str:
@@ -140,7 +143,11 @@ def mermaid_xychart_line(title: str, x_labels: list[str], y_label: str, values: 
 # ---------------------------------------------------------------------------
 
 def get_weeks_since_first_commit(repo_root: str) -> list[datetime]:
-    """Return all complete ISO weeks from the first commit on main to last week."""
+    """Return all complete ISO weeks from the first commit on main to previous week (JST).
+
+    Returns weeks from the first commit up to (but not including) the current week.
+    Current week (in progress) is excluded to ensure complete data.
+    """
     # Use git log to find the oldest commit on origin/main (same as backfill_sloc.py)
     for ref in ["origin/main", "main"]:
         result = subprocess.run(
@@ -152,9 +159,11 @@ def get_weeks_since_first_commit(repo_root: str) -> list[datetime]:
             oldest_str = lines[-1].replace("Z", "+00:00")
             try:
                 first_date = datetime.fromisoformat(oldest_str)
+                # Convert to JST for consistent week calculation
+                first_date = first_date.astimezone(JST)
             except ValueError:
                 continue
-            now = datetime.now(tz=timezone.utc)
+            now = datetime.now(tz=JST)
             current_monday = iso_week_monday(now)
             start_monday = iso_week_monday(first_date)
             weeks = []
@@ -165,8 +174,8 @@ def get_weeks_since_first_commit(repo_root: str) -> list[datetime]:
             if weeks:
                 return weeks
             # weeks is empty when first commit is in the current week — fall through to fallback
-    # Fallback: last 8 weeks
-    now = datetime.now(tz=timezone.utc)
+    # Fallback: last 8 weeks (JST)
+    now = datetime.now(tz=JST)
     current_monday = iso_week_monday(now)
     return [current_monday - timedelta(weeks=i) for i in range(8, 0, -1)]
 
@@ -236,6 +245,8 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
       - change_failure_rate: % of PRs with bug label
       - mttr_hours: avg hours from bug issue open to close
       - issues_opened, issues_closed, prs_opened, prs_merged, contributors
+
+    Note: All datetime comparisons convert to JST for consistency.
     """
     results = []
 
@@ -243,10 +254,12 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
         week_end = monday + timedelta(weeks=1)
         label = week_label(monday)
 
-        # PRs merged this week
+        # PRs merged this week (convert to JST for comparison)
         week_prs = [
             pr for pr in merged_prs
-            if (dt := parse_gh_datetime(pr.get("merged_at"))) and monday <= dt < week_end
+            if (dt := parse_gh_datetime(pr.get("merged_at"))) and (
+                dt_jst := dt.astimezone(JST)
+            ) and monday <= dt_jst < week_end
         ]
 
         # Deployment frequency
@@ -271,7 +284,7 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
         failure_prs = [pr for pr in week_prs if has_failure_label(pr)]
         cfr = (len(failure_prs) / dep_freq * 100) if dep_freq > 0 else 0.0
 
-        # MTTR: bug-labeled issues opened and closed this week
+        # MTTR: bug-labeled issues opened and closed this week (JST)
         bug_issues_closed = []
         for issue in issues:
             labels = [lbl.get("name", "").lower() for lbl in issue.get("labels", [])]
@@ -279,19 +292,25 @@ def compute_weekly_metrics(weeks: list[datetime], merged_prs: list[dict], issues
                 continue
             closed_at = parse_gh_datetime(issue.get("closed_at"))
             created_at = parse_gh_datetime(issue.get("created_at"))
-            if closed_at and monday <= closed_at < week_end and created_at:
-                hours = (closed_at - created_at).total_seconds() / 3600
-                bug_issues_closed.append(hours)
+            if closed_at and created_at:
+                closed_at_jst = closed_at.astimezone(JST)
+                if monday <= closed_at_jst < week_end:
+                    hours = (closed_at - created_at).total_seconds() / 3600
+                    bug_issues_closed.append(hours)
         avg_mttr = sum(bug_issues_closed) / len(bug_issues_closed) if bug_issues_closed else 0.0
 
-        # Activity: issues opened/closed
+        # Activity: issues opened/closed (JST)
         issues_opened = sum(
             1 for i in issues
-            if (dt := parse_gh_datetime(i.get("created_at"))) and monday <= dt < week_end
+            if (dt := parse_gh_datetime(i.get("created_at"))) and (
+                dt_jst := dt.astimezone(JST)
+            ) and monday <= dt_jst < week_end
         )
         issues_closed = sum(
             1 for i in issues
-            if (dt := parse_gh_datetime(i.get("closed_at"))) and monday <= dt < week_end
+            if (dt := parse_gh_datetime(i.get("closed_at"))) and (
+                dt_jst := dt.astimezone(JST)
+            ) and monday <= dt_jst < week_end
         )
 
         # PRs opened this week (use created_at from merged_prs list as approximation;
@@ -460,11 +479,11 @@ def save_traffic_snapshot(path: str, data: dict) -> None:
 
 
 def aggregate_traffic_by_week_label(daily_data: dict) -> tuple[dict[str, int], dict[str, int]]:
-    """Aggregate daily traffic data by ISO week label. Returns (counts_by_label, uniques_by_label)."""
+    """Aggregate daily traffic data by ISO week label (JST). Returns (counts_by_label, uniques_by_label)."""
     counts: dict[str, int] = {}
     uniques: dict[str, int] = {}
     for date_str, values in daily_data.items():
-        dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=JST)
         label = week_label(iso_week_monday(dt))
         counts[label] = counts.get(label, 0) + values.get("count", 0)
         uniques[label] = uniques.get(label, 0) + values.get("uniques", 0)
@@ -532,9 +551,9 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
     cur_kt = total(current["kc"]["scripts_test"])
     cur_kpr = current["kc"]["prompts"]
 
-    # Normalize x-axis to ISO week Monday (MM/DD) for consistency with DORA/Activity charts.
+    # Normalize x-axis to ISO week Monday (MM/DD) for consistency with DORA/Activity charts (JST).
     # Deduplicate by week label, keeping the latest entry per week (handles legacy non-Monday dates).
-    to_week_label = lambda d: week_label(iso_week_monday(datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc)))
+    to_week_label = lambda d: week_label(iso_week_monday(datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=JST)))
     seen: dict[str, dict] = {}
     for h in history:  # oldest-first; later entries overwrite earlier ones in the same week
         seen[to_week_label(h["date"])] = h
@@ -857,10 +876,10 @@ def render_metrics_md(
         lines.append("## Nabledge Adoption (nablarch/nabledge)")
         lines.append("")
 
-        # Annotation: earliest date of available traffic data
+        # Annotation: earliest date of available traffic data (JST)
         all_dates = sorted(list(snap_views.keys()) + list(snap_clones.keys()))
         if all_dates:
-            earliest_dt = datetime.strptime(all_dates[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            earliest_dt = datetime.strptime(all_dates[0], "%Y-%m-%d").replace(tzinfo=JST)
             data_start = week_label(iso_week_monday(earliest_dt))
             lines.append(f"> Traffic data collection started: week of {data_start}")
             lines.append("")
@@ -922,7 +941,7 @@ def main() -> None:
     for w in weekly:
         w["prs_opened"] = prs_opened_by_week.get(w["label"], 0)
 
-    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(tz=JST).strftime("%Y-%m-%d")
 
     # --- nablarch/nabledge traffic (optional, accumulated in snapshot) ---
     traffic_snapshot_path = os.path.join(script_dir, "traffic-snapshot.json")
@@ -951,13 +970,13 @@ def main() -> None:
     snapshot = load_sloc_snapshot(snapshot_path)
     sloc_previous = {k: v for k, v in snapshot.items() if k != "history"}
     sloc_history = snapshot.get("history", [])
-    # Upsert this week's entry; normalize all entries to ISO week Monday key to deduplicate legacy data
-    sloc_monday = iso_week_monday(datetime.now(tz=timezone.utc)).strftime("%Y-%m-%d")
+    # Upsert this week's entry; normalize all entries to ISO week Monday key to deduplicate legacy data (JST)
+    sloc_monday = iso_week_monday(datetime.now(tz=JST)).strftime("%Y-%m-%d")
     today_entry = sloc_flat(sloc_current, sloc_monday)
     seen_by_monday: dict[str, dict] = {}
     for h in sloc_history + [today_entry]:
         monday_key = iso_week_monday(
-            datetime.strptime(h["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            datetime.strptime(h["date"], "%Y-%m-%d").replace(tzinfo=JST)
         ).strftime("%Y-%m-%d")
         seen_by_monday[monday_key] = {**h, "date": monday_key}
     sloc_history = list(seen_by_monday.values())

@@ -2,7 +2,7 @@ name: Collect Metrics
 
 on:
   schedule:
-    - cron: '0 15 * * 6'  # Sunday 00:00 JST (Saturday 15:00 UTC)
+    - cron: '0 19 * * 0'  # Monday 04:00 JST (Sunday 19:00 UTC) - adjusted to ensure complete previous week data
   workflow_dispatch:  # allow manual trigger
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "${BRANCH}"
-          git commit -m "chore: update metrics report"
+          git commit -m "chore: update metrics report ($(date +%Y%m%d))"
           if ! git push origin "${BRANCH}"; then
             echo "Branch ${BRANCH} already exists on remote. Checking for open PR..."
             if gh pr list --head "${BRANCH}" --state open --json number --jq '.[0].number' | grep -q .; then
