@@ -94,10 +94,73 @@ The prompt says "do NOT report" but should explicitly say:
    - Scenario: hints_missing in R1 → fixed in cache → R2 should not re-report
    - Verify: phase_d_content_check.py correctly skips prior findings
 
-### TODO
+## 2026-04-07
 
-- [ ] Update content_check.md Phase D prompt with explicit prior_round_findings exclusion logic
-- [ ] Add logic/documentation to clarify what "content change" means for each finding category
-- [ ] Add test case in test_severity_flip.py for prior_round_findings handling
-- [ ] Re-run v1.4 with fixed prompt to verify false positive is eliminated
-- [ ] Update PR task list after fix is confirmed
+### 根本原因（事実ベース）
+
+テスト実行 20260331T171824 でエラーが発生: `libraries-04_Permission--s10`
+
+**事実1: prior_round_findings は正しく渡されている**
+- R2 Phase D プロンプトに Prior Round Findings セクション (Line 413-419) が存在
+- BusinessDateProvider, Initializable のfindingsが含まれている
+
+**事実2: プロンプト指示は明確**
+- "Do NOT report new findings for locations that were not flagged before"
+- "If a location was clean and content has not changed, do not report"
+
+**事実3: 同じ findings が再報告されている（Prompt Compliance Failure）**
+- R1 findings: hints_missing (BusinessDateProvider), hints_missing (Initializable)
+- R2 findings: 全く同じfindings が再報告
+- LLM が prior_round_findings 指示を無視している
+
+**事実4: 知識ファイルは修正済み**
+- R2 Phase E の出力JSON (line 25-26):
+  - 'BusinessDateProvider' ✅ hints に含まれている
+  - 'Initializable' ✅ hints に含まれている
+- つまり R1 Phase E で修正が成功していた
+
+**事実5: ソースファイル（RST）は変わっていない**
+- source_evidence に記録されたテキスト内容は R1 → R2 で同じ
+- ソース側での追加・削除・変更がない
+
+### 発生メカニズム
+
+```
+R1 Phase D: findings を報告 (hints_missing 2件)
+  ↓ (prior_round_findings に記録される)
+R2 Phase D: 同じfindings を再報告 ← ❌ LLM が指示を無視
+  ↓ (Phase E が「修正が必要」と判定)
+R2 Phase E: hints を修正しようとするが、実際のキャッシュは既に修正済み
+  ↓
+diff guard が「変更がない」と検出 → ERROR: Diff guard: no changes in allowed sections
+  ↓
+キャッシュは修正済み状態で更新されない
+R3 Phase D: 既に修正済みなので clean
+```
+
+### あるべき姿
+
+R2 Phase D で：
+1. prior_round_findings に (hints_missing, sections.s1/.../index[0].hints) が存在
+2. 知識ファイル内容がR1から変わっていない
+3. ソースファイル（RST）も変わっていない
+4. → findings をスキップ（報告しない）
+5. 結果: R2 Phase D findings = 空（clean）
+
+### 対応案
+
+content_check.md の prior_round_findings ロジックを強化：
+
+1. **コンテンツ変更の定義を明確化**
+   - 「ソース変更」= RST に行が追加・削除・変更されること
+   - 「知識ファイル更新」≠ ソース変更（hints 追加等は修正によるもの）
+   - ソースが変わらない → prior_round_findings は完全スキップ
+
+2. **prior_round_findings チェックの明示化**
+   - location + category で完全一致するfindings を明示的にリスト化
+   - 一致したら必ずスキップ（条件なし）
+
+3. **具体例を追加**
+   - 「前回のR1: hints_missing で BusinessDateProvider を報告」
+   - 「今回のR2: ソースRST を見直す → BusinessDateProvider 関連の行は変わっていない」
+   - 「判断: 知識ファイルは修正済み、ソース変わらず → 報告しない」
