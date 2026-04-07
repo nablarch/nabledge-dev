@@ -218,9 +218,9 @@ echo "Output file: $OUTPUT_PATH"
 - `{{target_name}}`: From target-name parameter
 - `{{generation_date}}`: Current date (auto-generated)
 - `{{generation_time}}`: Current time (auto-generated)
-- `{{output_path}}`: Output file path (auto-generated)
 - `{{target_description}}`: From target-desc parameter
 - `{{modules}}`: From modules parameter
+- `{{output_path}}`: Output file path (auto-generated, e.g., `.nabledge/YYYYMMDD/code-analysis-<target>.md`)
 - `{{source_files_links}}`: Generated from source-files parameter
 - `{{knowledge_base_links}}`: Generated from knowledge-files parameter
 - `{{official_docs_links}}`: Automatically extracted from knowledge JSON files' `official_doc_urls` field
@@ -519,7 +519,7 @@ mapper.close();
 
 1. **Read pre-filled template**: Use Read tool on the file created in Step 3.2
    - File path: `$OUTPUT_PATH` (captured from script output in Step 3.2)
-   - This file already contains 8/16 placeholders filled (deterministic content)
+   - This file already contains 9/17 placeholders filled (deterministic content)
 
 2. **Construct complete content**: Build the full document content in memory by:
    - Keeping all pre-filled content from Step 3.2 (9 deterministic placeholders)
@@ -531,7 +531,7 @@ mapper.close();
    - `{{overview_content}}`: Overview section (generate)
    - `{{dependency_graph}}`: Mermaid classDiagram (refine skeleton from Step 3.3)
    - `{{component_summary_table}}`: Component table (generate)
-   - `{{flow_content}}`: Flow description (generate; include helper/private methods one level deep)
+   - `{{flow_content}}`: Flow description (generate) — include main flow methods AND helper/private methods called one level deep
    - `{{flow_sequence_diagram}}`: Mermaid sequenceDiagram (refine skeleton from Step 3.3)
    - `{{components_details}}`: Detailed analysis (generate)
    - `{{nablarch_usage}}`: Framework usage with important points (generate)
@@ -540,9 +540,9 @@ mapper.close();
    - `{{target_name}}`: Target code name
    - `{{generation_date}}`: Current date
    - `{{generation_time}}`: Current time
-   - `{{output_path}}`: Output file path
    - `{{target_description}}`: One-line description
    - `{{modules}}`: Affected modules
+   - `{{output_path}}`: Output file path
    - `{{source_files_links}}`: Source file links
    - `{{knowledge_base_links}}`: Knowledge base links
    - `{{official_docs_links}}`: Official docs links

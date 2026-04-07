@@ -220,7 +220,7 @@ echo "Output file: $OUTPUT_PATH"
 - `{{generation_time}}`: Current time (auto-generated)
 - `{{target_description}}`: From target-desc parameter
 - `{{modules}}`: From modules parameter
-- `{{output_path}}`: Output file path (auto-generated)
+- `{{output_path}}`: Output file path (auto-generated, e.g., `.nabledge/YYYYMMDD/code-analysis-<target>.md`)
 - `{{source_files_links}}`: Generated from source-files parameter
 - `{{knowledge_base_links}}`: Generated from knowledge-files parameter
 - `{{official_docs_links}}`: Automatically extracted from knowledge JSON files' `official_doc_urls` field

@@ -220,7 +220,7 @@ echo "Output file: $OUTPUT_PATH"
 - `{{generation_time}}`: Current time (auto-generated)
 - `{{target_description}}`: From target-desc parameter
 - `{{modules}}`: From modules parameter
-- `{{output_path}}`: Output file path (auto-generated)
+- `{{output_path}}`: Output file path (auto-generated, e.g., `.nabledge/YYYYMMDD/code-analysis-<target>.md`)
 - `{{source_files_links}}`: Generated from source-files parameter
 - `{{knowledge_base_links}}`: Generated from knowledge-files parameter
 - `{{official_docs_links}}`: Automatically extracted from knowledge JSON files' `official_doc_urls` field
@@ -531,7 +531,7 @@ mapper.close();
    - `{{overview_content}}`: Overview section (generate)
    - `{{dependency_graph}}`: Mermaid classDiagram (refine skeleton from Step 3.3)
    - `{{component_summary_table}}`: Component table (generate)
-   - `{{flow_content}}`: Flow description (generate; include helper/private methods one level deep)
+   - `{{flow_content}}`: Flow description (generate) — include main flow methods AND helper/private methods called one level deep
    - `{{flow_sequence_diagram}}`: Mermaid sequenceDiagram (refine skeleton from Step 3.3)
    - `{{components_details}}`: Detailed analysis (generate)
    - `{{nablarch_usage}}`: Framework usage with important points (generate)

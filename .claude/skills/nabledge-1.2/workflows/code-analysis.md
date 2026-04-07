@@ -531,8 +531,8 @@ mapper.close();
    - `{{overview_content}}`: Overview section (generate)
    - `{{dependency_graph}}`: Mermaid classDiagram (refine skeleton from Step 3.3)
    - `{{component_summary_table}}`: Component table (generate)
-   - `{{flow_content}}`: Flow description (generate) — include main flow methods AND helper/private methods called one level deep (e.g., `sendMailToRegisteredUser`, `checkLoginId`)
-   - `{{flow_sequence_diagram}}`: Mermaid sequenceDiagram (refine skeleton from Step 3.3) — use Java method names, not HTTP paths
+   - `{{flow_content}}`: Flow description (generate) — include main flow methods AND helper/private methods called one level deep
+   - `{{flow_sequence_diagram}}`: Mermaid sequenceDiagram (refine skeleton from Step 3.3)
    - `{{components_details}}`: Detailed analysis (generate)
    - `{{nablarch_usage}}`: Framework usage with important points (generate)
 
