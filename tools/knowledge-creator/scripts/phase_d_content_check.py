@@ -6,6 +6,7 @@ Does NOT fix anything - only reports findings.
 
 import os
 import json
+import hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics, count_source_headings
 from logger import get_logger
@@ -79,7 +80,81 @@ class PhaseDContentCheck:
 
         return warnings
 
-    def _build_prompt(self, file_info, knowledge, source_content, warnings=None):
+    def _compute_section_hash(self, section_text):
+        """Compute hash of section text for change detection."""
+        return hashlib.sha256(section_text.encode()).hexdigest()
+
+    def _load_prior_findings(self, file_id):
+        """Load findings from previous round if available."""
+        if self.round_num <= 1:
+            return None
+        prior_path = f"{self.ctx.findings_dir}/{file_id}_r{self.round_num - 1}.json"
+        if os.path.exists(prior_path):
+            return load_json(prior_path)
+        return None
+
+    def _lock_severity(self, findings, file_id, knowledge):
+        """Lock severity for findings when knowledge content unchanged since prior round.
+
+        For each finding, if the section was unchanged (hash matches), keep severity
+        from prior round. If section was modified (Phase E changed it), accept new severity.
+        """
+        prior = self._load_prior_findings(file_id)
+        if not prior or self.round_num <= 1:
+            return findings
+
+        # Build map of (location, category) -> prior_severity
+        prior_findings = prior.get("findings", [])
+        prior_map = {}
+        for pf in prior_findings:
+            key = (pf.get("location", ""), pf.get("category", ""))
+            prior_map[key] = pf.get("severity", "")
+
+        # Check if sections changed and lock severity if unchanged
+        for finding in findings:
+            location = finding.get("location", "")
+            category = finding.get("category", "")
+            key = (location, category)
+
+            # Only apply lock to non-structural findings
+            structural = {"section_issue", "no_knowledge_content_invalid"}
+            if category in structural:
+                continue
+
+            # Normalize location for lookup
+            section_id = location.lower().replace("sections.", "")
+
+            if key in prior_map:
+                # Get section from knowledge
+                section_text = knowledge.get("sections", {}).get(section_id, "")
+                current_hash = self._compute_section_hash(section_text)
+
+                # Try to find prior hash from prior findings
+                prior_hash = next(
+                    (pf.get("_section_hash", "") for pf in prior_findings
+                     if pf.get("location", "") == location and pf.get("category", "") == category),
+                    None
+                )
+
+                # If hashes match (unchanged), lock severity
+                if prior_hash and current_hash == prior_hash:
+                    old_severity = finding.get("severity", "")
+                    new_severity = prior_map[key]
+                    if old_severity != new_severity:
+                        self.logger.warning(
+                            f"[SEVERITY LOCK] {file_id} {location}/{category}: "
+                            f"locked {old_severity} -> {new_severity} (content unchanged)"
+                        )
+                        finding["severity"] = new_severity
+
+            # Always set _section_hash for next round comparison
+            section_id = location.lower().replace("sections.", "")
+            section_text = knowledge.get("sections", {}).get(section_id, "")
+            finding["_section_hash"] = self._compute_section_hash(section_text)
+
+        return findings
+
+    def _build_prompt(self, file_info, knowledge, source_content, warnings=None, prior_findings=None):
         prompt = self.prompt_template
         prompt = prompt.replace("{SOURCE_PATH}", file_info["source_path"])
         prompt = prompt.replace("{FORMAT}", file_info["format"])
@@ -92,6 +167,16 @@ class PhaseDContentCheck:
                                     "\n".join(f"- {w}" for w in warnings))
         else:
             prompt = prompt.replace("{CONTENT_WARNINGS}", "なし")
+
+        # Add prior findings section if available
+        if prior_findings and self.round_num > 1:
+            prior_text = "### Prior Round Findings (For reference, do NOT re-report unless still applicable)\n\n"
+            for finding in prior_findings:
+                prior_text += f"- {finding.get('category', '')}: {finding.get('location', '')} — {finding.get('description', '')}\n"
+            prompt = prompt.replace("{PRIOR_FINDINGS}",
+                                    prior_text)
+        else:
+            prompt = prompt.replace("{PRIOR_FINDINGS}", "(none)")
         return prompt
 
     def check_one(self, file_info) -> dict:
@@ -118,7 +203,12 @@ class PhaseDContentCheck:
             source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
 
         warnings = self._compute_content_warnings(knowledge, source, file_info["format"], file_info)
-        prompt = self._build_prompt(file_info, knowledge, source, warnings=warnings)
+
+        # Load prior findings for context (if round > 1)
+        prior = self._load_prior_findings(file_id)
+        prior_findings = prior.get("findings", []) if prior else None
+
+        prompt = self._build_prompt(file_info, knowledge, source, warnings=warnings, prior_findings=prior_findings)
 
         try:
             result = self.run_claude(
@@ -129,6 +219,12 @@ class PhaseDContentCheck:
             )
             if result.returncode == 0:
                 findings = json.loads(result.stdout)
+
+                # Apply severity lock for findings when knowledge unchanged
+                findings_list = findings.get("findings", [])
+                findings_list = self._lock_severity(findings_list, file_id, knowledge)
+                findings["findings"] = findings_list
+
                 write_json(findings_path, findings)
                 return findings
         except Exception:

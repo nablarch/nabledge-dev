@@ -32,6 +32,18 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 {CONTENT_WARNINGS}
 
+---
+
+## Prior Round Findings (context only)
+
+{PRIOR_FINDINGS}
+
+**Instructions:** These findings from the prior round are provided for context only. Do NOT re-report them unless:
+1. The issue still exists in the current knowledge file, AND
+2. The section content has not changed since the prior round
+
+If the section was modified by Phase E (fixes applied), re-evaluate it against the source to confirm whether the issue still exists.
+
 ## Validation Checklist
 
 ### V1: Omission Check (severity: critical)

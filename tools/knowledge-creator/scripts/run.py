@@ -485,6 +485,7 @@ def _run_pipeline(ctx, args):
             report["phase_b"] = b_result
 
     # Phase C/D/E loop
+    persistent_findings = {}  # (file_id, location, category) -> round_count
     for round_num in range(1, ctx.max_rounds + 1):
         logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")
 
@@ -541,12 +542,37 @@ def _run_pipeline(ctx, args):
                 logger.info(f"   ✨Round {round_num}: All checks passed!")
                 break
 
+            # Track persistent findings for retry limit
             if "E" in phases:
+                # Load findings from this round to identify persistent issues
+                from common import load_json
+                findings_data = load_json(f"{ctx.findings_dir}/findings_r{round_num}.json") if os.path.exists(f"{ctx.findings_dir}/findings_r{round_num}.json") else {}
+
+                # Check each file's findings
+                excluded_files = set()
+                for file_id in d_result.get("issue_file_ids", []):
+                    findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
+                    if os.path.exists(findings_file):
+                        findings_data_single = load_json(findings_file)
+                        for finding in findings_data_single.get("findings", []):
+                            key = (file_id, finding.get("location", ""), finding.get("category", ""))
+                            if key in persistent_findings:
+                                persistent_findings[key] += 1
+                                # If this finding persists for 2+ rounds, exclude from Phase E
+                                if persistent_findings[key] >= 2:
+                                    excluded_files.add(file_id)
+                                    logger.info(f"   [SKIP] {file_id}: {finding.get('category')} @ {finding.get('location')} (persistent for {persistent_findings[key]} rounds)")
+                            else:
+                                persistent_findings[key] = 1
+
+                # Filter Phase E targets
+                e_targets = [fid for fid in d_result.get("issue_file_ids", []) if fid not in excluded_files]
+
                 logger.info("\n🔧Phase E: Fix")
                 logger.info("   └─ Applying fixes to knowledge files...")
                 from phase_e_fix import PhaseEFix
                 e_result = PhaseEFix(ctx).run(
-                    target_ids=d_result["issue_file_ids"], round_num=round_num
+                    target_ids=e_targets, round_num=round_num
                 )
                 if e_result:
                     report["phase_e_rounds"].append({
