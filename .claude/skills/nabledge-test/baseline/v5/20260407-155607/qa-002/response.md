@@ -1,0 +1,1 @@
+UniversalDaoでページング検索を実装するには、`findAllBySqlFile` メソッドで検索SQL実行、結果を`Pagination`オブジェクトでラップして返します。JSP側で`pageNumber`などのプロパティを参照して表示。
