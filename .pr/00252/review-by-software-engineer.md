@@ -54,3 +54,11 @@
 
 - tools/tests/test-setup.sh (394 lines) - Bash script
 - tools/tests/verify-dynamic.test.sh (414 lines) - Bash script with test suite
+
+## Post-Review Finding
+
+### Critical: verify-dynamic.test.sh did not call verify_dynamic()
+
+The test file was titled "Unit tests for verify_dynamic function" but never sourced or called the actual function. All 14 tests created mock scripts and tested them directly, bypassing verify_dynamic's internal logic (IFS parsing, read_pairs construction, keyword validation loop).
+
+**Resolution**: Extracted verify_dynamic to `lib-verify-dynamic.sh`. Rewrote tests to source the library and call the real function with production scripts and test knowledge files. Test count reduced from 14 to 7, but every test now exercises the complete verify_dynamic pipeline.

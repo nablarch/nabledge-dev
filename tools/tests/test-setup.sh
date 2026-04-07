@@ -289,102 +289,9 @@ verify_env() {
     if [ "$fail" -eq 1 ]; then verify_fail=1; fi
 }
 
-# verify_dynamic: deterministic dynamic check by running knowledge search scripts directly
-# Executes full-text-search.sh and read-sections.sh to validate knowledge content.
-# No LLM or CLI authentication required.
-# Args:
-#   $1 - label (e.g. "v6/test-cc")
-#   $2 - project dir relative to OUTPUT_DIR (e.g. "v6/test-cc/nablarch-example-batch")
-#   $3 - nabledge version to query (e.g. "6", "5", "1.4")
-#   $4 - comma-separated keywords to search for
-verify_dynamic() {
-    local label="$1"
-    local project_dir="${OUTPUT_DIR}/$2"
-    local v="$3"
-    local keywords_str="$4"
-
-    # Check jq dependency
-    if ! command -v jq &>/dev/null; then
-        echo "  [FAIL] ${label} nabledge-${v}: jq not found (required for knowledge search scripts)"
-        verify_fail=1
-        return
-    fi
-
-    # Locate scripts (can be in v6, v5, v1.4, v1.3, or v1.2 directory)
-    local search_script="$project_dir/.claude/skills/nabledge-${v}/scripts/full-text-search.sh"
-    local read_script="$project_dir/.claude/skills/nabledge-${v}/scripts/read-sections.sh"
-
-    if [ ! -x "$search_script" ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: full-text-search.sh not found or not executable"
-        verify_fail=1
-        return
-    fi
-
-    if [ ! -x "$read_script" ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: read-sections.sh not found or not executable"
-        verify_fail=1
-        return
-    fi
-
-    echo "  [RUN]  ${label} nabledge-${v}: running deterministic knowledge search..."
-
-    # Search for keywords using full-text-search.sh
-    # Convert comma-separated keywords to arguments
-    local old_ifs="$IFS"
-    IFS=',' read -ra keywords <<< "$keywords_str"
-    IFS="$old_ifs"
-
-    local search_results
-    search_results=$("$search_script" "${keywords[@]}" 2>/dev/null) || true
-
-    if [ -z "$search_results" ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: no search results for keywords: ${keywords[*]}"
-        verify_fail=1
-        return
-    fi
-
-    # Extract file:section pairs and read actual content
-    local read_pairs=()
-    old_ifs="$IFS"
-    IFS='|'
-    while read -r file section; do
-        if [ -n "$file" ] && [ -n "$section" ]; then
-            read_pairs+=("${file}:${section}")
-        fi
-    done <<< "$search_results"
-    IFS="$old_ifs"
-
-    if [ ${#read_pairs[@]} -eq 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: search returned no valid file:section pairs"
-        verify_fail=1
-        return
-    fi
-
-    # Read section content and verify all keywords are present
-    local section_content
-    section_content=$("$read_script" "${read_pairs[@]}" 2>&1)
-    local read_exit=$?
-    if [ $read_exit -ne 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: read-sections.sh failed: $section_content"
-        verify_fail=1
-        return
-    fi
-
-    local missing_keywords=()
-    for kw in "${keywords[@]}"; do
-        if ! echo "$section_content" | grep -qiF "$kw"; then
-            missing_keywords+=("$kw")
-        fi
-    done
-
-    if [ "${#missing_keywords[@]}" -gt 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: missing keywords in content: ${missing_keywords[*]}"
-        verify_fail=1
-    else
-        local result_count=$(echo "$search_results" | wc -l)
-        echo "  [OK]   ${label} nabledge-${v}: deterministic check ok (${result_count} sections found, all keywords verified)"
-    fi
-}
+# verify_dynamic: sourced from lib-verify-dynamic.sh
+# Args: $1=label, $2=project_dir(absolute), $3=version, $4=keywords(comma-separated)
+source "${SCRIPT_DIR}/lib-verify-dynamic.sh"
 
 echo "[Static checks]"
 should_run "v6"   && verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"               "cc"
@@ -405,26 +312,26 @@ echo "[Dynamic checks]"
 # Keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4/v1.3/v1.2)
 # verify_dynamic now uses deterministic checks via full-text-search.sh and read-sections.sh
 # No LLM or CLI authentication required; runs in CI without credentials
-should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "n:codeSelect,codeId"
-should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "n:codeSelect,codeId"
-should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "n:codeSelect,codeId"
-should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "n:codeSelect,codeId"
-should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "n:codeSelect,codeId"
-should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "n:codeSelect,codeId"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "n:codeSelect,codeId"
+should_run "v6"   && verify_dynamic "v6/test-cc"    "${OUTPUT_DIR}/v6/test-cc/nablarch-example-batch"    "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v6"   && verify_dynamic "v6/test-ghc"   "${OUTPUT_DIR}/v6/test-ghc/nablarch-example-batch"   "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v5"   && verify_dynamic "v5/test-cc"    "${OUTPUT_DIR}/v5/test-cc/nablarch-example-batch"    "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v5"   && verify_dynamic "v5/test-ghc"   "${OUTPUT_DIR}/v5/test-ghc/nablarch-example-batch"   "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "${OUTPUT_DIR}/v1.4/test-cc/tutorial"                "1.4" "n:codeSelect,codeId"
+should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "${OUTPUT_DIR}/v1.4/test-ghc/tutorial"               "1.4" "n:codeSelect,codeId"
+should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "${OUTPUT_DIR}/v1.3/test-cc/tutorial"                "1.3" "n:codeSelect,codeId"
+should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "${OUTPUT_DIR}/v1.3/test-ghc/tutorial"               "1.3" "n:codeSelect,codeId"
+should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "${OUTPUT_DIR}/v1.2/test-cc/tutorial"                "1.2" "n:codeSelect,codeId"
+should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "${OUTPUT_DIR}/v1.2/test-ghc/tutorial"               "1.2" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-cc"   "${OUTPUT_DIR}/all/test-cc/nablarch-example-batch"   "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-cc"   "${OUTPUT_DIR}/all/test-cc/nablarch-example-batch"   "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-cc"   "${OUTPUT_DIR}/all/test-cc/nablarch-example-batch"   "1.4" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-cc"   "${OUTPUT_DIR}/all/test-cc/nablarch-example-batch"   "1.3" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-cc"   "${OUTPUT_DIR}/all/test-cc/nablarch-example-batch"   "1.2" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "${OUTPUT_DIR}/all/test-ghc/nablarch-example-batch"  "6"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-ghc"  "${OUTPUT_DIR}/all/test-ghc/nablarch-example-batch"  "5"   "findAllBySqlFile,page,per,Pagination,getPagination"
+should_run "all"  && verify_dynamic "all/test-ghc"  "${OUTPUT_DIR}/all/test-ghc/nablarch-example-batch"  "1.4" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "${OUTPUT_DIR}/all/test-ghc/nablarch-example-batch"  "1.3" "n:codeSelect,codeId"
+should_run "all"  && verify_dynamic "all/test-ghc"  "${OUTPUT_DIR}/all/test-ghc/nablarch-example-batch"  "1.2" "n:codeSelect,codeId"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
