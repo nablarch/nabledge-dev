@@ -464,8 +464,8 @@ Run the report generation script:
 python .claude/skills/nabledge-test/scripts/generate_reports.py \
   --workspace "${WORKSPACE}" \
   --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json" \
-  --output-dir ".pr/${PR_NUMBER}/nabledge-test/${RUN_TIMESTAMP_SHORT}/" \
-  --report-path ".pr/${PR_NUMBER}/nabledge-test/report-${RUN_TIMESTAMP_SHORT}.md" \
+  --output-dir ".tmp/nabledge-test/.pr/${PR_NUMBER}/${RUN_TIMESTAMP_SHORT}/" \
+  --report-path ".tmp/nabledge-test/.pr/${PR_NUMBER}/report-${RUN_TIMESTAMP_SHORT}.md" \
   --version "${VERSION}" \
   --branch "$(git rev-parse --abbrev-ref HEAD)" \
   --commit "$(git rev-parse --short HEAD)" \
