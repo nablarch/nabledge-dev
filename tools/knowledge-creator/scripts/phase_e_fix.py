@@ -53,11 +53,16 @@ HINTS_FIX_SCHEMA = {
 
 
 def _normalize_location(location):
-    """Normalize section location: uppercase and dotted prefixes to lowercase."""
+    """Extract section ID (sN) from location string.
+
+    Handles: 's1', 'S1', 'sections.s1', 'sections.s1 / index[0].hints', etc.
+    Returns lowercase section ID (e.g., 's1') or the lowercased original if no sN found.
+    """
     if isinstance(location, str):
-        # Remove 'sections.' prefix if present
-        if location.lower().startswith("sections."):
-            location = location[9:]
+        import re
+        match = re.search(r'\bs(\d+)\b', location, re.IGNORECASE)
+        if match:
+            return f"s{match.group(1)}"
         return location.lower()
     return location
 

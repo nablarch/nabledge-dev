@@ -321,15 +321,48 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
             )
 
         else:
-            # Phase E: fix
+            # Phase E: fix (handles per-section compound IDs like "file-id_ss1")
             counter["E"].append(file_id)
-            fixed = expected_fixed_cache[file_id]
-            return subprocess.CompletedProcess(
-                args=["claude"],
-                returncode=0,
-                stdout=json.dumps(fixed),
-                stderr="",
-            )
+            if "section_text" in schema_str:
+                # Per-section fix: extract original file_id, return fixed section text
+                # Compound ID format: "{original_id}_s{section_id}"
+                parts = file_id.rsplit("_s", 1)
+                original_id = parts[0] if len(parts) == 2 else file_id
+                section_id = parts[1] if len(parts) == 2 else "s1"
+                fixed = expected_fixed_cache.get(original_id, {})
+                section_text = fixed.get("sections", {}).get(section_id, f"fixed-{section_id}")
+                return subprocess.CompletedProcess(
+                    args=["claude"],
+                    returncode=0,
+                    stdout=json.dumps({"section_text": section_text}),
+                    stderr="",
+                )
+            elif "hints" in schema_str:
+                # Hints fix: return existing hints
+                parts = file_id.rsplit("_hints_", 1)
+                original_id = parts[0] if len(parts) == 2 else file_id
+                section_id = parts[1] if len(parts) == 2 else "s1"
+                fixed = expected_fixed_cache.get(original_id, {})
+                hints = []
+                for entry in fixed.get("index", []):
+                    if entry.get("id") == section_id:
+                        hints = entry.get("hints", [])
+                        break
+                return subprocess.CompletedProcess(
+                    args=["claude"],
+                    returncode=0,
+                    stdout=json.dumps({"hints": hints}),
+                    stderr="",
+                )
+            else:
+                # Full fix (structural findings)
+                fixed = expected_fixed_cache[file_id]
+                return subprocess.CompletedProcess(
+                    args=["claude"],
+                    returncode=0,
+                    stdout=json.dumps(fixed),
+                    stderr="",
+                )
 
     return mock_fn
 

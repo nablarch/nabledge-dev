@@ -82,6 +82,17 @@ class TestGroupFindingsBySection:
         assert "s1" in groups
         assert "s3" in groups
 
+    def test_complex_location_extracts_section_id(self):
+        """Complex location like 'sections.s1 / index[0].hints' must group under 's1'."""
+        from phase_e_fix import _group_findings_by_section
+        findings = [
+            {"category": "hints_missing", "severity": "minor",
+             "location": "sections.s1 / index[0].hints", "description": "missing hint"},
+        ]
+        groups, structural = _group_findings_by_section(findings)
+        assert "s1" in groups, f"Expected 's1' in groups but got {list(groups.keys())}"
+        assert len(structural) == 0
+
 
 class TestPerSectionFix:
 

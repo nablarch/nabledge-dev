@@ -6,6 +6,7 @@ Does NOT fix anything - only reports findings.
 
 import os
 import json
+import re
 import hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics, count_source_headings
@@ -84,6 +85,16 @@ class PhaseDContentCheck:
         """Compute hash of section text for change detection."""
         return hashlib.sha256(section_text.encode()).hexdigest()
 
+    @staticmethod
+    def _normalize_finding_location(location):
+        """Extract section ID from location string for consistent key matching."""
+        if isinstance(location, str):
+            match = re.search(r'\bs(\d+)\b', location, re.IGNORECASE)
+            if match:
+                return f"s{match.group(1)}"
+            return location.lower()
+        return location
+
     def _load_prior_findings(self, file_id):
         """Load findings from previous round if available."""
         if self.round_num <= 1:
@@ -101,28 +112,34 @@ class PhaseDContentCheck:
         """
         prior = self._load_prior_findings(file_id)
         if not prior or self.round_num <= 1:
+            for finding in findings:
+                location = finding.get("location", "")
+                section_id = self._normalize_finding_location(location)
+                section_text = knowledge.get("sections", {}).get(section_id, "")
+                finding["_section_hash"] = self._compute_section_hash(section_text)
             return findings
 
-        # Build map of (location, category) -> prior_severity
+        # Build map of (norm_location, category) -> prior_severity
         prior_findings = prior.get("findings", [])
         prior_map = {}
         for pf in prior_findings:
-            key = (pf.get("location", ""), pf.get("category", ""))
+            norm_loc = self._normalize_finding_location(pf.get("location", ""))
+            key = (norm_loc, pf.get("category", ""))
             prior_map[key] = pf.get("severity", "")
 
         # Check if sections changed and lock severity if unchanged
         for finding in findings:
             location = finding.get("location", "")
+            norm_loc = self._normalize_finding_location(location)
             category = finding.get("category", "")
-            key = (location, category)
+            key = (norm_loc, category)
 
             # Only apply lock to non-structural findings
             structural = {"section_issue", "no_knowledge_content_invalid"}
             if category in structural:
                 continue
 
-            # Normalize location for lookup
-            section_id = location.lower().replace("sections.", "")
+            section_id = norm_loc
 
             if key in prior_map:
                 # Get section from knowledge
@@ -132,7 +149,8 @@ class PhaseDContentCheck:
                 # Try to find prior hash from prior findings
                 prior_hash = next(
                     (pf.get("_section_hash", "") for pf in prior_findings
-                     if pf.get("location", "") == location and pf.get("category", "") == category),
+                     if self._normalize_finding_location(pf.get("location", "")) == norm_loc
+                     and pf.get("category", "") == category),
                     None
                 )
 
@@ -148,7 +166,7 @@ class PhaseDContentCheck:
                         finding["severity"] = new_severity
 
             # Always set _section_hash for next round comparison
-            section_id = location.lower().replace("sections.", "")
+            section_id = norm_loc
             section_text = knowledge.get("sections", {}).get(section_id, "")
             finding["_section_hash"] = self._compute_section_hash(section_text)
 

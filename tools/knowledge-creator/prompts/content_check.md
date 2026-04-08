@@ -44,6 +44,16 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 If the section was modified by Phase E (fixes applied), re-evaluate it against the source to confirm whether the issue still exists.
 
+## Reporting Standards
+
+**Only report findings with concrete evidence.**
+
+- Every finding must cite the specific source passage (or the verifiable absence of one) that proves the issue.
+- If the knowledge file conveys the same meaning as the source using different wording, treat it as accurate.
+- Before reporting a fabrication, re-read the entire source file to confirm the statement truly has no basis.
+- A valid finding is a specific, verifiable discrepancy between source and knowledge file. Include both the source text and the knowledge file text so a reviewer can independently confirm.
+- If all sections faithfully represent the source, return status "clean" with an empty findings array.
+
 ## Validation Checklist
 
 ### V1: Omission Check (severity: critical)

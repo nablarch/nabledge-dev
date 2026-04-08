@@ -344,6 +344,44 @@ def _partial_phase_a(ctx, source_paths):
     logger.info(f"   📑Partial Phase A: {len(old_entries)} old entries → {len(new_entries)} new entries")
 
 
+def _load_clean_history(ctx):
+    """Load clean history from disk. Returns {file_id: consecutive_critical_zero_count}."""
+    from common import load_json
+    path = f"{ctx.log_dir}/clean_history.json"
+    if os.path.exists(path):
+        return load_json(path)
+    return {}
+
+
+def _save_clean_history(ctx, history):
+    """Save clean history to disk."""
+    from common import write_json
+    path = f"{ctx.log_dir}/clean_history.json"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    write_json(path, history)
+
+
+def _is_confirmed_clean(history, file_id):
+    """True if file has 2+ consecutive rounds with critical 0."""
+    return history.get(file_id, 0) >= 2
+
+
+def _update_clean_history(history, file_id, findings_data):
+    """Update clean history for a file based on its findings.
+
+    critical finding -> reset to 0
+    no critical findings (clean or minor only) -> increment
+    """
+    has_critical = any(
+        f.get("severity") == "critical"
+        for f in findings_data.get("findings", [])
+    )
+    if has_critical:
+        history[file_id] = 0
+    else:
+        history[file_id] = history.get(file_id, 0) + 1
+
+
 def _run_pipeline(ctx, args):
     """Run the full pipeline for a single version context."""
     logger = get_logger()
@@ -520,6 +558,16 @@ def _run_pipeline(ctx, args):
                 effective_ids = effective_target
             else:
                 effective_ids = pass_ids
+
+            # Exclude files confirmed clean (2 consecutive critical-zero rounds)
+            clean_history = _load_clean_history(ctx)
+            if effective_ids is not None:
+                before = len(effective_ids)
+                effective_ids = [fid for fid in effective_ids if not _is_confirmed_clean(clean_history, fid)]
+                skipped = before - len(effective_ids)
+                if skipped > 0:
+                    logger.info(f"   ✅ {skipped} files confirmed clean (2 consecutive critical-zero), skipped")
+
             d_result = PhaseDContentCheck(ctx).run(
                 target_ids=effective_ids, round_num=round_num
             )
@@ -538,6 +586,20 @@ def _run_pipeline(ctx, args):
             }
             report["phase_d_rounds"].append(d_round)
 
+            # Update clean history based on this round's results
+            if effective_ids is not None:
+                issue_set = set(d_result.get("issue_file_ids", []))
+                for fid in effective_ids:
+                    if fid in issue_set:
+                        findings_file = f"{ctx.findings_dir}/{fid}_r{round_num}.json"
+                        if os.path.exists(findings_file):
+                            _update_clean_history(clean_history, fid, load_json(findings_file))
+                        else:
+                            _update_clean_history(clean_history, fid, {"findings": []})
+                    else:
+                        _update_clean_history(clean_history, fid, {"findings": []})
+                _save_clean_history(ctx, clean_history)
+
             if d_result["issues_count"] == 0:
                 logger.info(f"   ✨Round {round_num}: All checks passed!")
                 break
@@ -548,8 +610,7 @@ def _run_pipeline(ctx, args):
                 from common import load_json
                 findings_data = load_json(f"{ctx.findings_dir}/findings_r{round_num}.json") if os.path.exists(f"{ctx.findings_dir}/findings_r{round_num}.json") else {}
 
-                # Check each file's findings
-                excluded_files = set()
+                # Track persistent findings
                 for file_id in d_result.get("issue_file_ids", []):
                     findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
                     if os.path.exists(findings_file):
@@ -558,14 +619,25 @@ def _run_pipeline(ctx, args):
                             key = (file_id, finding.get("location", ""), finding.get("category", ""))
                             if key in persistent_findings:
                                 persistent_findings[key] += 1
-                                # If this finding persists for 2+ rounds, exclude from Phase E
-                                if persistent_findings[key] >= 2:
-                                    excluded_files.add(file_id)
-                                    logger.info(f"   [SKIP] {file_id}: {finding.get('category')} @ {finding.get('location')} (persistent for {persistent_findings[key]} rounds)")
                             else:
                                 persistent_findings[key] = 1
 
-                # Filter Phase E targets
+                # Exclude files where ALL findings are persistent (2+ rounds)
+                excluded_files = set()
+                for file_id in d_result.get("issue_file_ids", []):
+                    findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
+                    if os.path.exists(findings_file):
+                        findings_data_single = load_json(findings_file)
+                        file_findings = findings_data_single.get("findings", [])
+                        if file_findings and all(
+                            persistent_findings.get(
+                                (file_id, f.get("location", ""), f.get("category", "")), 0
+                            ) >= 2
+                            for f in file_findings
+                        ):
+                            excluded_files.add(file_id)
+                            logger.info(f"   [SKIP] {file_id}: all {len(file_findings)} findings persistent for 2+ rounds")
+
                 e_targets = [fid for fid in d_result.get("issue_file_ids", []) if fid not in excluded_files]
 
                 logger.info("\n🔧Phase E: Fix")

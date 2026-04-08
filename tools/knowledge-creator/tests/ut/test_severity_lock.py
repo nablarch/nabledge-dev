@@ -128,3 +128,47 @@ class TestSeverityLock:
 
         # Severity should be the new value (minor) because content changed
         assert result["findings"][0]["severity"] == "minor"
+
+    def test_section_hash_attached_in_round_1(self, ctx):
+        """Round 1 findings must have _section_hash for severity lock in round 2."""
+        from phase_d_content_check import PhaseDContentCheck
+        import subprocess
+
+        findings_r1 = {
+            "file_id": "hash-test", "status": "has_issues",
+            "findings": [
+                {"category": "omission", "severity": "critical",
+                 "location": "s1", "description": "r1 finding"},
+            ]
+        }
+
+        def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps(findings_r1), stderr=""
+            )
+
+        checker = PhaseDContentCheck(ctx, run_claude_fn=mock_fn)
+        checker.round_num = 1
+
+        file_info = {
+            "id": "hash-test",
+            "source_path": ".lw/nab-official/v6/nablarch-document/ja/hash-test.rst",
+            "output_path": "component/handlers/hash-test.json",
+            "format": "rst",
+        }
+        src = f"{ctx.repo}/{file_info['source_path']}"
+        os.makedirs(os.path.dirname(src), exist_ok=True)
+        with open(src, "w") as f:
+            f.write("source content")
+        kpath = f"{ctx.knowledge_cache_dir}/{file_info['output_path']}"
+        os.makedirs(os.path.dirname(kpath), exist_ok=True)
+        write_json(kpath, {"id": "hash-test", "title": "T", "no_knowledge_content": False,
+                   "official_doc_urls": [], "index": [], "sections": {"s1": "content"}})
+
+        result = checker.check_one(file_info)
+
+        assert "_section_hash" in result["findings"][0], (
+            "Round 1 finding must have _section_hash for severity lock in round 2"
+        )
+        assert len(result["findings"][0]["_section_hash"]) == 64  # sha256 hex
