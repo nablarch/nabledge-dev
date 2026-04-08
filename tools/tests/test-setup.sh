@@ -337,7 +337,7 @@ verify_dynamic() {
         local prompt
         prompt=$(sed "s|\$ARGUMENTS|${query}|g" "$cmd_file")
         local output
-        output=$(cd "$project_dir" && timeout 120 claude -p "$prompt" --model haiku < /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 120 claude -p '$prompt' --model haiku < /dev/null" /dev/null 2>&1) || true
     fi
 
     local byte_count=${#output}
