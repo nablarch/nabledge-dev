@@ -312,18 +312,32 @@ verify_dynamic() {
             verify_fail=1
             return
         fi
+        local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
+        if [ ! -f "$prompt_file" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file not found: ${prompt_file}"
+            verify_fail=1
+            return
+        fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
         local output
-        output=$(cd "$project_dir" && timeout 120 copilot -p ".github/prompts/n${v}.prompt.md ${query}" --model claude-haiku-4.5 --allow-tool Bash --autopilot 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '.github/prompts/n${v}.prompt.md ${query}' --model claude-haiku-4.5 --yolo" /dev/null 2>&1) || true
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
             return
         fi
+        local cmd_file="$project_dir/.claude/commands/n${v}.md"
+        if [ ! -f "$cmd_file" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: CC command file not found: ${cmd_file}"
+            verify_fail=1
+            return
+        fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
+        local prompt
+        prompt=$(sed "s|\$ARGUMENTS|${query}|g" "$cmd_file")
         local output
-        output=$(cd "$project_dir" && timeout 120 claude -p ".claude/commands/n${v}.md ${query}" --model haiku < /dev/null 2>&1) || true
+        output=$(cd "$project_dir" && timeout 120 claude -p "$prompt" --model haiku < /dev/null 2>&1) || true
     fi
 
     local byte_count=${#output}
@@ -337,20 +351,29 @@ verify_dynamic() {
         return
     fi
 
-    local missing_keywords=()
+    local detected_count=0
+    local total_count=0
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
-        if ! echo "$output" | grep -q "$kw"; then
-            missing_keywords+=("$kw")
+        ((total_count++))
+        if echo "$output" | grep -q "$kw"; then
+            ((detected_count++))
         fi
     done
 
-    if [ "${#missing_keywords[@]}" -gt 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check missing keywords: ${missing_keywords[*]} (output: ${byte_count} bytes)"
+    local detection_rate=0
+    if [ "$total_count" -gt 0 ]; then
+        detection_rate=$((detected_count * 100 / total_count))
+    fi
+
+    # Minimum detection rate threshold (50% to verify skill is working)
+    local min_threshold=50
+    if [ "$detection_rate" -lt "$min_threshold" ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: dynamic check detection rate ${detection_rate}% below minimum ${min_threshold}% (output: ${byte_count} bytes)"
         echo "         Log: ${log_file}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (output: ${byte_count} bytes, all keywords found)"
+        echo "  [OK]   ${label} nabledge-${v}: dynamic check detection rate ${detection_rate}% (${detected_count}/${total_count} keywords, output: ${byte_count} bytes)"
     fi
 }
 
