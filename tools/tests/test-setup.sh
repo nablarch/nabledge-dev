@@ -355,9 +355,9 @@ verify_dynamic() {
     local total_count=0
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
-        ((total_count++))
+        total_count=$((total_count + 1))
         if echo "$output" | grep -q "$kw"; then
-            ((detected_count++))
+            detected_count=$((detected_count + 1))
         fi
     done
 
