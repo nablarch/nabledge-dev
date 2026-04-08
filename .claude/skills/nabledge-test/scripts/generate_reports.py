@@ -93,7 +93,7 @@ def generate_individual_report(sc, metrics, grading, workspace, run_timestamp):
     sc_id = sc["id"]
     question = sc["question"]
     sc_type = sc.get("type", "qa")
-    expectations = sc.get("expectations", [])
+    expectations = sc.get("expectations", {})
 
     ts_display = run_timestamp_to_display(run_timestamp)
 
@@ -107,15 +107,20 @@ def generate_individual_report(sc, metrics, grading, workspace, run_timestamp):
         exp_display = f"({exp_total} items): {exp_summary}"
     else:
         # QA object format: count items (OR groups count as 1)
-        total = sum(len(items) for items in expectations.values())
-        flat = []
-        for items in expectations.values():
-            for item in items:
-                if isinstance(item, list):
-                    flat.append(f"`{'`|`'.join(item)}`")
-                else:
-                    flat.append(f"`{item}`")
-        exp_display = f"({total}): " + ", ".join(flat)
+        # Defensive: handle legacy list format or missing expectations
+        if isinstance(expectations, list):
+            flat = [f"`{e}`" for e in expectations]
+            exp_display = f"({len(expectations)}): " + ", ".join(flat)
+        else:
+            total = sum(len(items) for items in expectations.values())
+            flat = []
+            for items in expectations.values():
+                for item in items:
+                    if isinstance(item, list):
+                        flat.append(f"`{'`|`'.join(item)}`")
+                    else:
+                        flat.append(f"`{item}`")
+            exp_display = f"({total}): " + ", ".join(flat)
 
     # Detection items
     detection_lines = []
