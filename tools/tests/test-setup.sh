@@ -312,8 +312,28 @@ verify_dynamic() {
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
+        local ghc_marker="#runSubagent"
+        if ! grep -qF "$ghc_marker" "$prompt_file"; then
+            echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file missing marker: '${ghc_marker}'"
+            echo "         File: ${prompt_file}"
+            echo "         If n${v}.prompt.md format changed, update test-setup.sh accordingly."
+            verify_fail=1
+            return
+        fi
+        local ghc_prompt
+        ghc_prompt=$(sed -n "/^${ghc_marker}/,\$p" "$prompt_file" | sed "s|\$ARGUMENTS|${query}|g")
+        ghc_prompt="下記の指示に従って作業してください。
+${ghc_prompt}"
+        local ghc_prompt_file
+        ghc_prompt_file=$(mktemp "${OUTPUT_DIR}/ghc-prompt-XXXXXX.md")
+        echo "$ghc_prompt" > "$ghc_prompt_file"
+        local ghc_prompt_basename
+        ghc_prompt_basename=$(basename "$ghc_prompt_file")
+        # Copy temp prompt file into project dir so copilot can find it
+        cp "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
         local output
-        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '.github/prompts/n${v}.prompt.md ${query}' --model claude-haiku-4.5 --yolo" /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo" /dev/null 2>&1) || true
+        rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
@@ -327,8 +347,18 @@ verify_dynamic() {
             return
         fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
+        local cc_marker="Delegate the following task"
+        if ! grep -qF "$cc_marker" "$cmd_file"; then
+            echo "  [FAIL] ${label} nabledge-${v}: CC command file missing marker: '${cc_marker}'"
+            echo "         File: ${cmd_file}"
+            echo "         If n${v}.md format changed, update test-setup.sh accordingly."
+            verify_fail=1
+            return
+        fi
         local prompt
-        prompt=$(sed "s|\$ARGUMENTS|${query}|g" "$cmd_file")
+        prompt=$(sed -n "/^${cc_marker}/,\$p" "$cmd_file" | sed "s|\$ARGUMENTS|${query}|g")
+        prompt="下記の指示に従って作業してください。
+${prompt}"
         local output
         output=$(cd "$project_dir" && timeout 120 claude -p "$prompt" --model haiku --dangerously-skip-permissions < /dev/null 2>&1) || true
     fi
