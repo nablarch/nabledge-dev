@@ -124,6 +124,9 @@ class PhaseEFix:
         self.hints_fix_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/hints_fix.md"
         )
+        self.section_add_template = read_file(
+            f"{ctx.repo}/tools/knowledge-creator/prompts/section_add.md"
+        )
 
     def _build_full_prompt(self, findings, knowledge, source_content, fmt):
         """Build full knowledge fix prompt (for structural findings)."""
@@ -144,6 +147,22 @@ class PhaseEFix:
         prompt = prompt.replace("{SECTION_TEXT}", section_text)
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
         prompt = prompt.replace("{FORMAT}", fmt)
+        return prompt
+
+    def _build_section_add_prompt(self, findings, knowledge, source_content, fmt):
+        """Build section-add prompt for findings referencing non-existent sections.
+
+        Uses SECTION_ADD_SCHEMA so only new sections are returned, never overwriting
+        existing ones. This avoids E-1 through E-5 risks from full-knowledge fix.
+        """
+        existing_ids = sorted(knowledge.get("sections", {}).keys())
+        prompt = self.section_add_template
+        prompt = prompt.replace("{FINDINGS_JSON}",
+                                json.dumps(findings, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
+        prompt = prompt.replace("{FORMAT}", fmt)
+        prompt = prompt.replace("{EXISTING_SECTION_IDS}",
+                                ", ".join(existing_ids) if existing_ids else "(none)")
         return prompt
 
     def _build_hints_fix_prompt(self, findings, section_text, hints):
@@ -264,33 +283,27 @@ class PhaseEFix:
                             return {"status": "error", "id": file_id,
                                     "error": f"Failed to fix hints for section {section_id}"}
 
-            # If any findings referenced non-existent sections, fall back to full-knowledge fix
+            # If any findings referenced non-existent sections, use section-add fix.
+            # This avoids full-knowledge fix (KNOWLEDGE_SCHEMA) which risks E-1 through E-5.
             if fallback_findings:
-                prompt = self._build_full_prompt(fallback_findings, knowledge, source, file_info["format"])
+                prompt = self._build_section_add_prompt(
+                    fallback_findings, knowledge, source, file_info["format"]
+                )
                 try:
                     result = self.run_claude(
                         prompt=prompt,
-                        json_schema=KNOWLEDGE_SCHEMA,
+                        json_schema=SECTION_ADD_SCHEMA,
                         log_dir=self.ctx.phase_e_executions_dir,
-                        file_id=f"{file_id}_fallback",
+                        file_id=f"{file_id}_section_add",
                     )
                     if result.returncode == 0:
-                        fixed = json.loads(result.stdout)
-
-                        input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
-                        output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
-                        if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
-                            self.logger.warning(
-                                f"    WARNING: {file_id} fallback: output shrunk to "
-                                f"{output_sec_chars/input_sec_chars:.0%} - rejecting fix"
-                            )
-                            return {"status": "error", "id": file_id,
-                                    "error": f"Fallback output too small: {output_sec_chars}/{input_sec_chars} chars"}
-                        knowledge = fixed
+                        added = json.loads(result.stdout)
+                        new_sections = added.get("new_sections", {})
+                        knowledge.setdefault("sections", {}).update(new_sections)
                     else:
-                        return {"status": "error", "id": file_id, "error": "Fallback full-knowledge fix failed"}
+                        return {"status": "error", "id": file_id, "error": "Section-add fix failed"}
                 except Exception as e:
-                    return {"status": "error", "id": file_id, "error": f"Fallback: {e}"}
+                    return {"status": "error", "id": file_id, "error": f"Section-add: {e}"}
 
             # Save fixed knowledge
             write_json(
