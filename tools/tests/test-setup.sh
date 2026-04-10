@@ -18,8 +18,8 @@ set -e
 #   v1.3/test-ghc/ - nabledge-1.3 x GitHub Copilot
 #   v1.2/test-cc/  - nabledge-1.2 x Claude Code
 #   v1.2/test-ghc/ - nabledge-1.2 x GitHub Copilot
-#   all/test-cc/  - all versions x Claude Code
-#   all/test-ghc/ - all versions x GitHub Copilot
+#   upgrade/test-cc/  - nabledge-6+5 x Claude Code (version upgrade scenario)
+#   upgrade/test-ghc/ - nabledge-1.4+5 x GitHub Copilot (version upgrade scenario)
 #
 # Prerequisites:
 #   Run setup.sh first to populate .lw/nab-official/ with source projects.
@@ -30,7 +30,7 @@ set -e
 #   bash /path/to/tools/tests/test-setup.sh [version]
 #
 # Arguments (optional):
-#   version  Version to set up: v6, v5, v1.4, v1.3, v1.2, all (default: run all versions)
+#   version  Version to set up: v6, v5, v1.4, v1.3, v1.2, upgrade (default: run all versions)
 #
 # Environment variables (optional):
 #   NABLEDGE_REPO    GitHub repository (default: nablarch/nabledge)
@@ -49,8 +49,8 @@ NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
 
 VERSION_FILTER="${1:-}"
-if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|all)$ ]]; then
-    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, all"
+if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|upgrade)$ ]]; then
+    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, upgrade"
     exit 1
 fi
 
@@ -69,7 +69,7 @@ echo "============================================================"
 echo "Nabledge repository: ${NABLEDGE_REPO}"
 echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
 echo "Output directory:    ${OUTPUT_DIR}"
-echo "Version filter:      ${VERSION_FILTER:-all}"
+echo "Version filter:      ${VERSION_FILTER:-all versions}"
 echo ""
 
 # Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
@@ -163,9 +163,9 @@ should_run "v1.3" && setup_env "v1.3/test-cc"  "$V6_PROJECT_SRC"  "nablarch-exam
 should_run "v1.3" && setup_env "v1.3/test-ghc" "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.3" "$HINT_V6"
 should_run "v1.2" && setup_env "v1.2/test-cc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "1.2" "$HINT_V6"
 should_run "v1.2" && setup_env "v1.2/test-ghc" "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.2" "$HINT_V6"
-# "all" uses the v6 project as base; all skill versions are installed by setup-cc.sh (-v all).
-should_run "all"  && setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "all" "$HINT_V6"
-should_run "all"  && setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
+# "upgrade" uses the v6 project as base; two skill versions are installed by setup-cc.sh for version upgrade scenario.
+should_run "upgrade"  && setup_env "upgrade/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6,5"   "$HINT_V6"
+should_run "upgrade"  && setup_env "upgrade/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.4,5" "$HINT_V6"
 
 # ------------------------------------------------------------
 # Verification
@@ -400,6 +400,26 @@ ${prompt}"
     fi
 }
 
+# _scenario_field: read a field from nabledge-test scenarios.json (single source of truth)
+# Args:
+#   $1 - nabledge version (e.g. "6", "5", "1.4")
+#   $2 - scenario id (e.g. "qa-001", "qa-002")
+#   $3 - field: "question" or "keywords" (all expectation keywords, comma-separated)
+_scenario_field() {
+    local v="$1"
+    local scenario_id="$2"
+    local field="$3"
+    python3 -c "
+import json
+d = json.load(open('${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-test/scenarios/nabledge-${v}/scenarios.json'))
+s = next(x for x in d['scenarios'] if x['id'] == '${scenario_id}')
+if '${field}' == 'question':
+    print(s['question'])
+else:
+    print(','.join(kw for aspect in s['expectations'].values() for kw in aspect))
+"
+}
+
 echo "[Static checks]"
 should_run "v6"   && verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"               "cc"
 should_run "v6"   && verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"               "ghc"
@@ -411,32 +431,31 @@ should_run "v1.3" && verify_env "v1.3/test-cc"  "v1.3/test-cc/nablarch-example-b
 should_run "v1.3" && verify_env "v1.3/test-ghc" "v1.3/test-ghc/nablarch-example-batch" "1.3"             "ghc"
 should_run "v1.2" && verify_env "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-batch"  "1.2"             "cc"
 should_run "v1.2" && verify_env "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2"             "ghc"
-should_run "all"  && verify_env "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6,5,1.4,1.3,1.2" "cc"
-should_run "all"  && verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4,1.3,1.2" "ghc"
+should_run "upgrade"  && verify_env "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6,5"   "cc"
+should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4,5" "ghc"
 
 echo ""
 echo "[Dynamic checks]"
-# Queries and keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4/v1.3/v1.2)
-should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/nablarch-example-batch" "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/nablarch-example-batch" "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+# Questions and keywords come from nabledge-test scenarios (single source of truth, no double management)
+Q_V6=$(  _scenario_field 6   qa-002 question); KW_V6=$( _scenario_field 6   qa-002 keywords)
+Q_V5=$(  _scenario_field 5   qa-002 question); KW_V5=$( _scenario_field 5   qa-002 keywords)
+Q_V14=$( _scenario_field 1.4 qa-001 question); KW_V14=$(_scenario_field 1.4 qa-001 keywords)
+Q_V13=$( _scenario_field 1.3 qa-001 question); KW_V13=$(_scenario_field 1.3 qa-001 keywords)
+Q_V12=$( _scenario_field 1.2 qa-001 question); KW_V12=$(_scenario_field 1.2 qa-001 keywords)
+should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "$Q_V6"  "$KW_V6"  "cc"
+should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "ghc"
+should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "$Q_V5"  "$KW_V5"  "cc"
+should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "$Q_V5"  "$KW_V5"  "ghc"
+should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/nablarch-example-batch"  "1.4" "$Q_V14" "$KW_V14" "cc"
+should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/nablarch-example-batch" "1.4" "$Q_V14" "$KW_V14" "ghc"
+should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/nablarch-example-batch"  "1.3" "$Q_V13" "$KW_V13" "cc"
+should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/nablarch-example-batch" "1.3" "$Q_V13" "$KW_V13" "ghc"
+should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-batch"  "1.2" "$Q_V12" "$KW_V12" "cc"
+should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2" "$Q_V12" "$KW_V12" "ghc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "cc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "5"   "$Q_V5"  "$KW_V5"  "cc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4" "$Q_V14" "$KW_V14" "ghc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "5"   "$Q_V5"  "$KW_V5"  "ghc"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
@@ -465,6 +484,6 @@ should_run "v1.3" && echo "  v1.3/test-cc/nablarch-example-batch  - nabledge-1.3
 should_run "v1.3" && echo "  v1.3/test-ghc/nablarch-example-batch - nabledge-1.3 x GitHub Copilot"
 should_run "v1.2" && echo "  v1.2/test-cc/nablarch-example-batch  - nabledge-1.2 x Claude Code"
 should_run "v1.2" && echo "  v1.2/test-ghc/nablarch-example-batch - nabledge-1.2 x GitHub Copilot"
-should_run "all"  && echo "  all/test-cc/nablarch-example-batch   - all versions x Claude Code"
-should_run "all"  && echo "  all/test-ghc/nablarch-example-batch  - all versions x GitHub Copilot"
+should_run "upgrade"  && echo "  upgrade/test-cc/nablarch-example-batch   - nabledge-6+5 x Claude Code (version upgrade)"
+should_run "upgrade"  && echo "  upgrade/test-ghc/nablarch-example-batch  - nabledge-1.4+5 x GitHub Copilot (version upgrade)"
 echo "============================================================"
