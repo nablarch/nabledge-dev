@@ -51,6 +51,19 @@ HINTS_FIX_SCHEMA = {
     }
 }
 
+# Schema for section-add fix: outputs only new sections (never overwrites existing ones).
+# TODO: implement _build_section_add_prompt and replace fallback full-knowledge fix.
+SECTION_ADD_SCHEMA = {
+    "type": "object",
+    "required": ["new_sections"],
+    "properties": {
+        "new_sections": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        }
+    }
+}
+
 
 def _normalize_location(location):
     """Extract section ID (sN) from location string.
