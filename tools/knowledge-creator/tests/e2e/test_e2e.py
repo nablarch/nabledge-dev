@@ -126,7 +126,7 @@ def _load_json(path):
 
 
 def _assert_full_output(ctx, expected, catalog_entries, U, M,
-                        expected_findings_count=0):
+                        expected_findings_count=0, override_cache=None, override_merged=None):
     """全kcコマンド共通の出力検証。
 
     Phase Mまで実行した後の全出力を検証する。
@@ -135,6 +135,12 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M,
     expected_findings_count: Phase D が保存したラウンド番号付き findings ファイルの
         期待数。Phase D/E ループはラウンドごとに findings を保持する設計のため、
         findings_dir には processed_files × max_rounds 個のファイルが残る。
+
+    override_cache: custom per-file expected cache content
+        (replaces expected["expected_fixed_cache"])
+
+    override_merged: custom expected merged output
+        (replaces expected["expected_merged_fixed"])
     """
     # catalog.json entries
     catalog = _load_json(ctx.classified_list_path)
@@ -170,11 +176,12 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M,
                         f"Findings file {f} missing round number suffix (_rN.json)"
                     )
 
-    # cache content matches expected_fixed_cache
+    # cache content matches expected_fixed_cache (or override_cache)
+    effective_cache = override_cache if override_cache is not None else expected["expected_fixed_cache"]
     for entry in catalog_entries:
         cache_path = f"{ctx.knowledge_cache_dir}/{entry['output_path']}"
         actual = _load_json(cache_path)
-        assert actual == expected["expected_fixed_cache"][entry["id"]], (
+        assert actual == effective_cache[entry["id"]], (
             f"fixed_cache mismatch for {entry['id']}"
         )
 
@@ -184,9 +191,9 @@ def _assert_full_output(ctx, expected, catalog_entries, U, M,
         f"got {_count_json_files(ctx.knowledge_dir)}"
     )
 
-    # merged file content
-    expected_merged = expected["expected_merged_fixed"]
-    for merged_id, expected_content in expected_merged.items():
+    # merged file content (or override_merged)
+    effective_merged = override_merged if override_merged is not None else expected["expected_merged_fixed"]
+    for merged_id, expected_content in effective_merged.items():
         entry = None
         for e in catalog_entries:
             if e.get("base_name") == merged_id or e["id"] == merged_id:
@@ -302,20 +309,28 @@ def _make_cc_mock(expected_knowledge_cache, expected_fixed_cache, counter):
                 )
 
         elif "findings" in schema_str:
-            # Phase D: always has_issues
+            # Phase D: return findings for all sections of the file
             counter["D"].append(file_id)
+            kb = expected_knowledge_cache.get(file_id, {})
+            section_ids = list(kb.get("sections", {}).keys())
+            if not section_ids:
+                section_ids = ["s1"]
+            findings = [
+                {
+                    "category": "omission",
+                    "severity": "minor",
+                    "location": sid,
+                    "description": "Missing detail",
+                }
+                for sid in section_ids
+            ]
             return subprocess.CompletedProcess(
                 args=["claude"],
                 returncode=0,
                 stdout=json.dumps({
                     "file_id": file_id,
                     "status": "has_issues",
-                    "findings": [{
-                        "category": "omission",
-                        "severity": "minor",
-                        "location": "s1",
-                        "description": "Missing detail",
-                    }],
+                    "findings": findings,
                 }),
                 stderr="",
             )
@@ -619,6 +634,14 @@ class TestGen:
             _assert_full_output(ctx, expected, catalog_entries, U, M,
                                 expected_findings_count=U * (ctx.max_rounds + 1))
 
+            # Calculate expected section count for Phase E (per-section fix):
+            # With retry limit: Phase E runs in round 1 only (round 2 excluded due to same findings)
+            # So Phase E = sum(sections) * 1 round (not max_rounds)
+            total_section_count = sum(
+                len(expected["expected_knowledge_cache"][e["id"]].get("sections", {}))
+                for e in catalog_entries
+            )
+
             # CC call counts
             assert len(counter["B"]) == U, (
                 f"counter['B'] expected {U}, got {len(counter['B'])}"
@@ -626,8 +649,9 @@ class TestGen:
             assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
                 f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == U * ctx.max_rounds, (
-                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
+            # Phase E only runs in round 1; retry limit prevents round 2
+            assert len(counter["E"]) == total_section_count, (
+                f"counter['E'] expected {total_section_count}, got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
@@ -742,6 +766,13 @@ class TestGenResume:
             _assert_full_output(ctx, expected, catalog_entries, U, M,
                                 expected_findings_count=U * (ctx.max_rounds + 1))
 
+            # Calculate expected section count for Phase E (per-section fix):
+            # With retry limit: Phase E runs in round 1 only
+            total_section_count = sum(
+                len(expected["expected_knowledge_cache"][e["id"]].get("sections", {}))
+                for e in catalog_entries
+            )
+
             # CC call counts
             assert len(counter["B"]) == U - 1, (
                 f"counter['B'] expected {U - 1}, got {len(counter['B'])}"
@@ -752,8 +783,9 @@ class TestGenResume:
             assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
                 f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == U * ctx.max_rounds, (
-                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
+            # Phase E only runs in round 1; retry limit prevents round 2
+            assert len(counter["E"]) == total_section_count, (
+                f"counter['E'] expected {total_section_count}, got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
@@ -800,18 +832,26 @@ class TestRegenTarget:
             _run_with_mock(kc_regen_target, ctx, mock, targets=target_base_names)
 
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=target_count * ctx.max_rounds + U)
+                                expected_findings_count=target_count * (ctx.max_rounds + 1))
+
+            # Calculate expected section count for Phase E (per-section fix):
+            # With retry limit: Phase E runs in round 1 only
+            target_section_count = sum(
+                len(expected["expected_knowledge_cache"][fid].get("sections", {}))
+                for fid in target_split_ids
+            )
 
             # CC call counts
             assert len(counter["B"]) == target_count, (
                 f"counter['B'] expected {target_count}, got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == target_count * ctx.max_rounds + U, (
-                f"counter['D'] expected {target_count * ctx.max_rounds + U}, "
+            assert len(counter["D"]) == target_count * (ctx.max_rounds + 1), (
+                f"counter['D'] expected {target_count * (ctx.max_rounds + 1)}, "
                 f"got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == target_count * ctx.max_rounds, (
-                f"counter['E'] expected {target_count * ctx.max_rounds}, "
+            # Phase E only runs in round 1; retry limit prevents round 2
+            assert len(counter["E"]) == target_section_count, (
+                f"counter['E'] expected {target_section_count}, "
                 f"got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
@@ -932,6 +972,13 @@ class TestFix:
                 "Stale file should be deleted by Phase M (delete-insert)"
             )
 
+            # Calculate expected section count for Phase E (per-section fix):
+            # With retry limit: Phase E runs in round 1 only
+            total_section_count = sum(
+                len(expected["expected_knowledge_cache"][e["id"]].get("sections", {}))
+                for e in catalog_entries
+            )
+
             _assert_full_output(ctx, expected, catalog_entries, U, M,
                                 expected_findings_count=U * (ctx.max_rounds + 1))
 
@@ -942,8 +989,9 @@ class TestFix:
             assert len(counter["D"]) == U * (ctx.max_rounds + 1), (
                 f"counter['D'] expected {U * (ctx.max_rounds + 1)}, got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == U * ctx.max_rounds, (
-                f"counter['E'] expected {U * ctx.max_rounds}, got {len(counter['E'])}"
+            # Phase E only runs in round 1; retry limit prevents round 2
+            assert len(counter["E"]) == total_section_count, (
+                f"counter['E'] expected {total_section_count}, got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
                 f"counter['F'] expected 0 (no CC in Phase F), got {len(counter['F'])}"
@@ -962,6 +1010,13 @@ class TestFixTarget:
     """test_fix_target: kc fix --target — Phase ACDEM with target 1/3 of base_names."""
 
     def test_fix_target(self, version_fixture):
+        from tests.e2e.generate_expected import (
+            compute_merged_files,
+            mock_phase_e_knowledge,
+            mock_phase_b_knowledge,
+        )
+        import generate_expected as ge
+
         version = version_fixture["version"]
         expected = version_fixture["expected"]
         gen_state = version_fixture["gen_state"]
@@ -989,19 +1044,32 @@ class TestFixTarget:
 
             _run_with_mock(kc_fix_target, ctx, mock, targets=target_base_names)
 
+            # For test_fix_target, the initial state (gen_state) has all files already fixed.
+            # When we run kc_fix_target with targets, only target files get re-fixed
+            # but non-target files were already fixed in gen_state, so they remain fixed.
+            # Therefore: expected cache and merged = all files fixed
+            # (same as expected_fixed_cache from normal gen flow)
+            target_ids_set = set(target_split_ids)
+
             _assert_full_output(ctx, expected, catalog_entries, U, M,
-                                expected_findings_count=target_count * ctx.max_rounds + U)
+                                expected_findings_count=target_count * (ctx.max_rounds + 1))
 
             # CC call counts
             assert len(counter["B"]) == 0, (
                 f"counter['B'] expected 0 (no Phase B in fix), got {len(counter['B'])}"
             )
-            assert len(counter["D"]) == target_count * ctx.max_rounds + U, (
-                f"counter['D'] expected {target_count * ctx.max_rounds + U}, "
+            assert len(counter["D"]) == target_count * (ctx.max_rounds + 1), (
+                f"counter['D'] expected {target_count * (ctx.max_rounds + 1)}, "
                 f"got {len(counter['D'])}"
             )
-            assert len(counter["E"]) == target_count * ctx.max_rounds, (
-                f"counter['E'] expected {target_count * ctx.max_rounds}, "
+            # CRITICAL ASSERTION: Catches if Phase D runs on non-target files in final round
+            # Expected: only target files are processed, Phase E in round 1 only (retry limit)
+            target_section_count = sum(
+                len(expected["expected_knowledge_cache"][fid].get("sections", {}))
+                for fid in target_split_ids
+            )
+            assert len(counter["E"]) == target_section_count, (
+                f"counter['E'] expected {target_section_count}, "
                 f"got {len(counter['E'])}"
             )
             assert len(counter["F"]) == 0, (
