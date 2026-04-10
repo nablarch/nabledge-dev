@@ -321,7 +321,13 @@ verify_dynamic() {
             return
         fi
         local ghc_prompt
-        ghc_prompt=$(sed -n "/^${ghc_marker}/,\$p" "$prompt_file" | sed "s|\$ARGUMENTS|${query}|g")
+        ghc_prompt=$(sed -n "/^${ghc_marker}/,\$p" "$prompt_file")
+        ghc_prompt="${ghc_prompt//\$ARGUMENTS/$query}"
+        if [ -z "$ghc_prompt" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
+            verify_fail=1
+            return
+        fi
         ghc_prompt="下記の指示に従って作業してください。
 ${ghc_prompt}"
         local ghc_prompt_file
@@ -356,10 +362,17 @@ ${ghc_prompt}"
             return
         fi
         local prompt
-        prompt=$(sed -n "/^${cc_marker}/,\$p" "$cmd_file" | sed "s|\$ARGUMENTS|${query}|g")
+        prompt=$(sed -n "/^${cc_marker}/,\$p" "$cmd_file")
+        prompt="${prompt//\$ARGUMENTS/$query}"
+        if [ -z "$prompt" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
+            verify_fail=1
+            return
+        fi
         prompt="下記の指示に従って作業してください。
 ${prompt}"
         local output
+        # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
         output=$(cd "$project_dir" && timeout 120 claude -p "$prompt" --model haiku --dangerously-skip-permissions < /dev/null 2>&1) || true
     fi
 
@@ -389,7 +402,10 @@ ${prompt}"
         detection_rate=$((detected_count * 100 / total_count))
     fi
 
-    # Minimum detection rate threshold (50% to verify skill is working)
+    # Minimum detection rate threshold: 50% of scenario keywords must appear in the response.
+    # Based on nabledge-test baselines: skills reliably hit 50%+ when knowledge is correctly
+    # installed and the skill is responding to the query (not all keywords appear in every
+    # valid answer, so 100% is not required).
     local min_threshold=50
     if [ "$detection_rate" -lt "$min_threshold" ]; then
         echo "  [FAIL] ${label} nabledge-${v}: dynamic check detection rate ${detection_rate}% below minimum ${min_threshold}% (output: ${byte_count} bytes)"
@@ -410,13 +426,19 @@ _scenario_field() {
     local scenario_id="$2"
     local field="$3"
     python3 -c "
-import json
-d = json.load(open('${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-test/scenarios/nabledge-${v}/scenarios.json'))
-s = next(x for x in d['scenarios'] if x['id'] == '${scenario_id}')
-if '${field}' == 'question':
-    print(s['question'])
-else:
-    print(','.join(kw for aspect in s['expectations'].values() for kw in aspect))
+import json, sys
+path = '${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-test/scenarios/nabledge-${v}/scenarios.json'
+try:
+    d = json.load(open(path))
+    s = next((x for x in d['scenarios'] if x['id'] == '${scenario_id}'), None)
+    if not s:
+        print('ERROR: scenario ${scenario_id} not found in ' + path, file=sys.stderr); sys.exit(1)
+    if '${field}' == 'question':
+        print(s['question'])
+    else:
+        print(','.join(kw for aspect in s['expectations'].values() for kw in aspect))
+except Exception as e:
+    print('ERROR: ' + str(e), file=sys.stderr); sys.exit(1)
 "
 }
 
