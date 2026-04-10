@@ -155,7 +155,7 @@ class PhaseDContentCheck:
                 )
 
                 # If hashes match (unchanged), lock severity
-                if prior_hash and current_hash == prior_hash:
+                if prior_hash is not None and prior_hash and current_hash == prior_hash:
                     old_severity = finding.get("severity", "")
                     new_severity = prior_map[key]
                     if old_severity != new_severity:

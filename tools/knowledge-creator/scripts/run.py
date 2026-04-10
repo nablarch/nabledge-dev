@@ -611,13 +611,19 @@ def _run_pipeline(ctx, args):
                 from common import load_json
                 findings_data = load_json(f"{ctx.findings_dir}/findings_r{round_num}.json") if os.path.exists(f"{ctx.findings_dir}/findings_r{round_num}.json") else {}
 
+                import re as _re
+
+                def _norm_loc(raw):
+                    m = _re.search(r'\bs(\d+)\b', raw, _re.IGNORECASE)
+                    return f"s{m.group(1)}" if m else raw.lower()
+
                 # Track persistent findings
                 for file_id in d_result.get("issue_file_ids", []):
                     findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
                     if os.path.exists(findings_file):
                         findings_data_single = load_json(findings_file)
                         for finding in findings_data_single.get("findings", []):
-                            key = (file_id, finding.get("location", ""), finding.get("category", ""))
+                            key = (file_id, _norm_loc(finding.get("location", "")), finding.get("category", ""))
                             if key in persistent_findings:
                                 persistent_findings[key] += 1
                             else:
@@ -632,7 +638,7 @@ def _run_pipeline(ctx, args):
                         file_findings = findings_data_single.get("findings", [])
                         if file_findings and all(
                             persistent_findings.get(
-                                (file_id, f.get("location", ""), f.get("category", "")), 0
+                                (file_id, _norm_loc(f.get("location", "")), f.get("category", "")), 0
                             ) >= 2
                             for f in file_findings
                         ):
