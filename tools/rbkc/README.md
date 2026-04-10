@@ -286,8 +286,11 @@ files[295,]{title,type,category,processing_patterns,path}:
 | RST | Markdown |
 |-----|----------|
 | `.. code-block:: java` | ` ```java ... ``` ` |
-| `.. list-table::` | `\| col \| col \|` (Markdown table) |
+| `.. list-table::` | `\| col \| col \|` (Markdown table)。`:class:` は無視 |
+| `.. csv-table::` | `.. list-table::` と同様に Markdown table 変換 |
+| `.. table::` | inner content を grid/simple table として変換 |
 | admonition (`.. note::`, `.. warning::`, `.. important::`, `.. tip::`, `.. caution::`, `.. attention::`, `.. danger::`, `.. error::`, `.. hint::`, `.. seealso::`) | `> **{Type}:** ...` |
+| `.. admonition:: {title}` | `> **{title}:** ...` |
 | `.. image:: path` | `![](assets/{id}/filename)` |
 | `.. figure:: path` | `![caption](assets/{id}/filename)` |
 | `.. deprecated::` | `> **Deprecated:** ...` |
@@ -295,10 +298,17 @@ files[295,]{title,type,category,processing_patterns,path}:
 | `.. versionchanged::` | `> **Version Changed:** ...` |
 | `.. toctree::` | no-knowledge-content 検知; それ以外は除外 |
 | `.. contents::` | 除外（自動生成目次） |
+| `.. raw::` | 空出力（no-knowledge-content 対象ファイルに限定）|
+| `.. include::` | 空出力（`links.lst` 等の参照定義ファイルのため変換不要）|
+| `.. function::` | シグネチャをコードブロックとして変換 |
+| `.. literalinclude::` | `.. code-block::` と同様に変換 |
+| `.. class::` | 空出力（CSS クラス指定）|
+| `.. rubric::` | 小見出しとして変換 |
 | `*emphasis*` | `*emphasis*` (同じ) |
 | `**strong**` | `**strong**` (同じ) |
 | `` ``code`` `` | `` `code` `` |
-| RST grid/simple tables | Markdown tables |
+| RST simple table (`==== ====`) | Markdown table |
+| RST grid table (`+----+----+`) | HTML `<table>` (rowspan 対応。`docutils.core.publish_doctree` で `morerows` 属性を取得) |
 
 **未知ディレクティブの方針:**
 
@@ -337,25 +347,33 @@ files[295,]{title,type,category,processing_patterns,path}:
 
 レコード単位でセクション化。検索時に必要なレコードだけを取得できる。
 
-**Release Notes** (`nablarch6*-releasenote.xlsx`, 4 files):
+**Release Notes** (`nablarch6*-releasenote.xlsx`, 4 files in v6; 21 files in v5):
+
+実際のシート構造（I-07 調査結果）:
+- Row 1-2: タイトルと説明（スキップ）
+- Row 4: カラムヘッダー（コンテンツ / No. / 分類 / リリース区分 / タイトル / 概要 / 参照先 ...）
+- Row 5: サブヘッダー（モジュール / Nablarch 等、マージセルあり）
+- Row 6 以降: **カテゴリ行**（col A のみに分類名、No. は空）と**データ行**が交互に出現
 
 | 項目 | ルール |
 |------|--------|
-| セクション | 各レコード（行）= 1セクション |
+| セクション | データ行のみを対象（カテゴリ行はスキップ） |
 | タイトル | ファイル名からバージョン識別（`nablarch6u2-releasenote` → "Nablarch 6u2 リリースノート"） |
-| セクションタイトル | モジュール名またはキーカラムの値 |
-| コンテンツ | 各レコードのカラムをkey-value形式で記述 |
+| セクションタイトル | No. + タイトルカラムの値 |
+| コンテンツ | 各データ行のカラムをkey-value形式で記述 |
 | ヒント | モジュール名、バージョン番号、変更種別 |
 
 **Security Check Table** (`Nablarch機能のセキュリティ対応表.xlsx`, 1 file):
 
+実際のシート構造（I-07 調査結果）: 4シート（改訂履歴 / 1.概要 / 2.チェックリスト / 3.PCIDSS対応表）。主要シートは「2.チェックリスト」で、1脆弱性に対して複数行（対策の性質ごと）、マージセルあり。
+
 | 項目 | ルール |
 |------|--------|
-| セクション | 各レコード（行）= 1セクション（機能単位） |
+| セクション | 脆弱性ごとにグループ化（col A の脆弱性名でグルーピング）= 1セクション |
 | タイトル | "Nablarch機能のセキュリティ対応表" |
-| セクションタイトル | 機能名（行の先頭カラム） |
-| コンテンツ | その機能のセキュリティ対策をkey-value形式で記述 |
-| ヒント | 機能名、セキュリティ対策名 |
+| セクションタイトル | 脆弱性の種類（グループの先頭行の col B） |
+| コンテンツ | その脆弱性に対する対策の性質・実施項目をkey-value形式で記述 |
+| ヒント | 脆弱性名、対策の性質 |
 
 #### Hints Strategy
 
@@ -371,16 +389,48 @@ files[295,]{title,type,category,processing_patterns,path}:
 - セクション見出しテキスト
 - 太字テキスト（`**keyword**`）
 
-**Stage 2: 既存KC知識ファイルからのヒント移植**
+**Stage 2: KC キャッシュからのヒント移植**
 
-既存のAI生成知識ファイル（`.claude/skills/nabledge-6/knowledge/`）からセマンティックヒントを抽出し、対応するセクションにマッピング:
+KC 生成時の中間ファイル（`tools/knowledge-creator/.cache/{version}/knowledge/`）からセマンティックヒントを直接マッピング:
 
-1. 既存知識ファイルの `index[].hints` を読み込み
-2. ファイルID + セクションタイトルで対応関係を特定
-3. Stage 1 で抽出済みのヒントに、セマンティックヒント（日本語キーワード等）をマージ
-4. 重複排除して出力
+1. RST h2/h3 セクション見出しテキストを取得
+2. `.cache/{version}/knowledge/{file_id}--sXX.json` の `index[].title` と突合
+3. 一致したセクションの `hints` を取得
+4. Stage 1 で抽出済みのヒントにマージして重複排除
 
-これにより、KCで既に投資したAIヒントをルールベースで再利用できる。
+**なぜキャッシュを使うか**: キャッシュの `index[].title` には RST 見出しテキストがそのまま格納されているため、RST セクション → KC ヒントの対応が一意に決まる（マッチ率: 実質 100%）。統合済みの最終知識ファイルとの突合（section_title 完全一致）は 48.5% しかマッチしないため使わない。
+
+全バージョンのキャッシュ: v6（421件）、v5（544件）、v1.4（553件）、v1.3（387件）、v1.2（371件）。
+
+キャッシュにエントリが存在しないセクションは Stage 1 のみで出力（エラーにしない）。
+
+#### Multi-version Support
+
+v6 を一次実装ターゲットとし、v5 および v1.x は段階的に対応する。
+
+| バージョン | RST | MD | Excel | 追加実装 |
+|-----------|-----|-----|-------|----------|
+| v6 | 334ファイル | 3ファイル | .xlsx（5ファイル） | なし（一次実装） |
+| v5 | 431ファイル | 3ファイル（v6と同一） | .xlsx（21ファイル） | なし（v6実装がそのまま適用） |
+| v1.4 | 464ファイル | なし | .xls（変換対象なし） | v1.x固有ディレクティブ（下記） |
+| v1.3 | 380ファイル | なし | .xls（変換対象なし） | なし（v1.4実装がそのまま適用） |
+| v1.2 | 298ファイル | なし | .xls（変換対象なし） | なし（v1.3実装がそのまま適用） |
+
+**v1.x 固有ディレクティブ**（v6/v5 には存在しない）:
+
+| ディレクティブ | 出現数（v1.4） | 対応方針 |
+|---|---|---|
+| `.. raw:: html` | 167 | 空出力（内容はJS/CSS参照のみで知識として不要）|
+| `.. admonition::` | 94 | `> **{title}:** ...`（カスタムタイトル付き admonition）|
+| `.. include::` | 67 | 空出力（`links.lst` 参照定義ファイルのため変換不要）|
+| `.. function::` | 49 | シグネチャをコードブロックとして変換 |
+| `.. attention::` | 13 | `> **Attention:** ...` |
+| `.. literalinclude::` | 12 | `.. code-block::` と同様に変換 |
+| `.. hint::` | 3 | `> **Hint:** ...` |
+| `.. class::` | 3 | 空出力 |
+| `.. rubric::` | 1 | 小見出しとして変換 |
+
+これらのディレクティブは共通変換ルールに含めることで v6/v5 でも安全に処理できる（v6/v5 に出現しても空出力や適切な変換が適用される）。
 
 #### Incremental Update (differ)
 
@@ -457,11 +507,12 @@ No AI/API dependencies.
 
 | Phase | Scope | Files |
 |-------|-------|-------|
-| 1 | 既存KC知識ファイルからのヒント抽出・保存 | hints.py |
-| 2 | RST converter (section detection, structural conversion) | rst.py, convert.py |
+| 1 | KC キャッシュからのヒントマッピング構築（`.cache/{version}/knowledge/` → RST見出し → hints の辞書） | hints.py |
+| 2 | RST converter (section detection, structural conversion, overline 対応) | rst.py, convert.py |
 | 3 | Hints extraction (Stage 1: mechanical) + Stage 2 マージ | hints.py |
 | 4 | Cross-reference resolution + asset copying | resolver.py |
 | 5 | MD converter | md.py |
-| 6 | Excel converters (record-level sections) | xlsx_releasenote.py, xlsx_security.py |
+| 6 | Excel converters (release notes + security table) | xlsx_releasenote.py, xlsx_security.py |
 | 7 | Index + browsable docs generation | index.py, docs.py |
 | 8 | CLI + create/update/delete operations | rbkc.sh, run.py, scan.py, classify.py, differ.py |
+| 9 | v1.x 固有ディレクティブ対応（admonition, include, function, literalinclude 等） | rst.py |

@@ -128,22 +128,6 @@ All 10 v6 investigations must complete before implementation starts. Each task f
 - [ ] Document dimensions that differ
 - [ ] Record in investigation-items.md
 
-### Deliverables (after all investigations complete)
-
-#### Update RBKC README
-
-**Steps:**
-- [ ] Incorporate all findings: limitations, per-version support policy
-- [ ] Add comparison section: RBKC vs AI-based KC
-- [ ] Update tools/rbkc/README.md
-
-#### Create task file and implementation issues
-
-**Steps:**
-- [ ] Write implementation steps with effort estimates based on findings
-- [ ] Create implementation issue(s) on GitHub
-- [ ] Close or finalize this feasibility PR
-
 ## Done
 
 - [x] Place RBKC design draft (`tools/rbkc/README.md`)
@@ -151,3 +135,6 @@ All 10 v6 investigations must complete before implementation starts. Each task f
 - [x] Enumerate all design elements as specs, derive investigation items (`.pr/00297/investigation-items.md`)
 - [x] Add "detail files via link" guideline to `work-notes.md` rule
 - [x] Expert review (Technical Writer, 4/5)
+- [x] All investigations complete (I-01 through I-14)
+- [x] Update RBKC README with investigation findings (directive table, grid table rowspan, Stage 2 via .cache, multi-version support, Excel structure)
+- [x] Create implementation issue #299
