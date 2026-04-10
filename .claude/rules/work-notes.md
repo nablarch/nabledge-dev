@@ -56,6 +56,31 @@ Free-form markdown with chronological entries. Use timestamps for multiple work 
 - [ ] Follow-up task
 ```
 
+## Detail Files
+
+For detailed artifacts that would bloat notes.md (investigation results, design outputs, analysis data, etc.), create separate files in the same `.pr/xxxxx/` directory and link from notes.md.
+
+**When to use a separate file:**
+- Investigation items and results (e.g., `investigation-items.md`)
+- Design decisions with large tables or diagrams
+- Analysis data or structured output that is referenced but not narrative
+
+**Example:**
+
+```markdown
+### Investigation: RBKC feasibility
+
+Ran 12 investigation scripts against v6 source data before implementation.
+
+→ Details: [investigation-items.md](investigation-items.md)
+
+Key findings that shaped the design:
+- RST directive coverage: 3 unknown directives found → added to converter
+- Stage 2 hint match rate: 40% → decided to drop Stage 2, use Stage 1 only
+```
+
+Keep notes.md as a narrative log. Put structured data in the linked file.
+
 ## Example
 
 Good example (captures context):
