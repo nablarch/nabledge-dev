@@ -198,9 +198,13 @@ class PhaseEFix:
 
         # Per-section fix: process each section independently
         try:
+            fallback_findings = []  # findings for non-existent sections → full-knowledge fix
             for section_id, section_findings in section_groups.items():
                 section_text = knowledge["sections"].get(section_id, "")
                 if not section_text:
+                    # Section doesn't exist — per-section fix cannot add new sections.
+                    # Accumulate for full-knowledge fix fallback.
+                    fallback_findings.extend(section_findings)
                     continue
 
                 # Separate hints_missing from other findings
@@ -246,6 +250,34 @@ class PhaseEFix:
                         else:
                             return {"status": "error", "id": file_id,
                                     "error": f"Failed to fix hints for section {section_id}"}
+
+            # If any findings referenced non-existent sections, fall back to full-knowledge fix
+            if fallback_findings:
+                prompt = self._build_full_prompt(fallback_findings, knowledge, source, file_info["format"])
+                try:
+                    result = self.run_claude(
+                        prompt=prompt,
+                        json_schema=KNOWLEDGE_SCHEMA,
+                        log_dir=self.ctx.phase_e_executions_dir,
+                        file_id=f"{file_id}_fallback",
+                    )
+                    if result.returncode == 0:
+                        fixed = json.loads(result.stdout)
+
+                        input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
+                        output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
+                        if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
+                            self.logger.warning(
+                                f"    WARNING: {file_id} fallback: output shrunk to "
+                                f"{output_sec_chars/input_sec_chars:.0%} - rejecting fix"
+                            )
+                            return {"status": "error", "id": file_id,
+                                    "error": f"Fallback output too small: {output_sec_chars}/{input_sec_chars} chars"}
+                        knowledge = fixed
+                    else:
+                        return {"status": "error", "id": file_id, "error": "Fallback full-knowledge fix failed"}
+                except Exception as e:
+                    return {"status": "error", "id": file_id, "error": f"Fallback: {e}"}
 
             # Save fixed knowledge
             write_json(
