@@ -587,6 +587,7 @@ def _run_pipeline(ctx, args):
             report["phase_d_rounds"].append(d_round)
 
             # Update clean history based on this round's results
+            from common import load_json
             if effective_ids is not None:
                 issue_set = set(d_result.get("issue_file_ids", []))
                 for fid in effective_ids:
@@ -664,7 +665,7 @@ def _run_pipeline(ctx, args):
         and len(report.get("phase_e_rounds", [])) == len(report.get("phase_d_rounds", []))
     )
     if loop_ended_with_fix and "D" in phases:
-        final_result = _run_final_verification(ctx, ctx.max_rounds, phases)
+        final_result = _run_final_verification(ctx, ctx.max_rounds, phases, effective_target)
         report["final_verification"] = final_result
 
     # Phase M (replaces G+F in default flow)
@@ -706,7 +707,7 @@ def _run_pipeline(ctx, args):
     logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
 
 
-def _run_final_verification(ctx, max_rounds, phases):
+def _run_final_verification(ctx, max_rounds, phases, target_ids=None):
     """最終検証: CDE ループ後に C→D を 1 回実行。E（修正）は呼ばない。"""
     logger = get_logger()
     final_round = max_rounds + 1
@@ -718,7 +719,7 @@ def _run_final_verification(ctx, max_rounds, phases):
     if "C" in phases:
         logger.info("\n✅Phase C: Structure Check (Final)")
         from phase_c_structure_check import PhaseCStructureCheck
-        c_result = PhaseCStructureCheck(ctx).run()
+        c_result = PhaseCStructureCheck(ctx).run(target_ids=target_ids)
         result["phase_c"] = {
             "total": c_result.get("total", 0),
             "pass": c_result.get("pass", 0),
@@ -729,8 +730,15 @@ def _run_final_verification(ctx, max_rounds, phases):
         logger.info("\n🔍Phase D: Content Check (Final)")
         from phase_d_content_check import PhaseDContentCheck
         pass_ids = c_result.get("pass_ids") if c_result else None
+        if target_ids and pass_ids is not None:
+            target_set = set(target_ids)
+            effective_ids = [fid for fid in pass_ids if fid in target_set]
+        elif target_ids:
+            effective_ids = target_ids
+        else:
+            effective_ids = pass_ids
         d_result = PhaseDContentCheck(ctx).run(
-            target_ids=pass_ids, round_num=final_round
+            target_ids=effective_ids, round_num=final_round
         )
         findings_summary = _aggregate_findings(ctx, round_num=final_round)
         result["phase_d"] = {
