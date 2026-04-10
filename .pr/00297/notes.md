@@ -10,7 +10,7 @@
 
 最初は「怪しそうなところを経験的にピックアップ」するアプローチをとったが、漏れのない網羅性を確保できない。READMEの全設計要素を仕様として91件列挙し、「実際に動かさないと分からない」43件を抽出してから12件の調査タスクに整理する方針に切り替えた。
 
-→ 詳細: [investigation-items.md](investigation-items.md)
+→ 詳細: [investigation-items.md](investigation-items.md)（v6: I-01〜I-09/I-12 が未着手、v5/v1.x は v6 完了後）
 
 ### Learning: 先行調査で確定済みの事項
 
