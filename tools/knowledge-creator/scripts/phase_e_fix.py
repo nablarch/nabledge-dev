@@ -6,6 +6,7 @@ Per-section fix strategy: only pass target section to LLM, avoid mutations to ot
 
 import os
 import json
+import re
 import hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
@@ -230,14 +231,25 @@ class PhaseEFix:
 
         # Per-section fix: process each section independently
         try:
-            fallback_findings = []  # findings for non-existent sections → full-knowledge fix
+            fallback_findings = []  # findings for non-existent sections → section-add fix
+            knowledge_sections = knowledge.get("sections", {})
             for section_id, section_findings in section_groups.items():
-                section_text = knowledge["sections"].get(section_id, "")
+                section_text = knowledge_sections.get(section_id, "")
                 if not section_text:
                     # Section doesn't exist — per-section fix cannot add new sections.
-                    # Accumulate for full-knowledge fix fallback.
                     fallback_findings.extend(section_findings)
                     continue
+
+                # Route findings that mention any missing section to section-add.
+                # e.g., location "sections s13-s22 (missing)" mentions s22 which may not exist.
+                to_add = [f for f in section_findings
+                          if any(f"s{n}" not in knowledge_sections
+                                 for n in re.findall(r'\bs(\d+)\b', f.get("location", ""), re.IGNORECASE))]
+                to_fix = [f for f in section_findings if f not in to_add]
+                fallback_findings.extend(to_add)
+                if not to_fix:
+                    continue
+                section_findings = to_fix
 
                 # Separate hints_missing from other findings
                 hints_findings = [f for f in section_findings if f.get("category") == "hints_missing"]

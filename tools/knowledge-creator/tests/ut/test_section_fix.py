@@ -306,3 +306,58 @@ class TestMissingSectionFix:
         # New sections must be added
         assert "s3" in saved["sections"], "s3 was not added to knowledge"
         assert "s4" in saved["sections"], "s4 was not added to knowledge"
+
+    def test_range_location_with_missing_sections_uses_section_add(self, ctx):
+        """Phase D often reports missing sections with a range location like 'sections s1-s4 (missing)'.
+
+        When the location mentions any section that doesn't exist in the knowledge file,
+        the finding must be routed to section-add (not per-section fix).
+
+        Real-world example: location='sections s13-s22 (missing)' where s13-s16 exist
+        but s17-s22 do not. Without this fix, _normalize_location returns 's13' (exists),
+        so per-section fix runs on s13 — cramming s17-s22 into s13 instead of adding them.
+        """
+        from phase_e_fix import PhaseEFix, KNOWLEDGE_SCHEMA, SECTION_FIX_SCHEMA, SECTION_ADD_SCHEMA
+
+        input_knowledge = _make_knowledge()  # has s1 and s2 only
+        file_info, kpath = self._setup_file(ctx, "range-location-test", input_knowledge)
+
+        os.makedirs(ctx.findings_dir, exist_ok=True)
+        write_json(f"{ctx.findings_dir}/range-location-test_r1.json", {
+            "file_id": "range-location-test",
+            "status": "has_issues",
+            "findings": [{"category": "omission", "severity": "critical",
+                          "location": "sections s1-s4 (missing)",
+                          "description": "s3 and s4 are missing from the knowledge file"}]
+        })
+
+        schemas_used = []
+
+        def mock_fn(prompt, json_schema=None, log_dir=None, file_id=None, **kwargs):
+            schemas_used.append(json_schema)
+            return subprocess.CompletedProcess(
+                args=["claude"], returncode=0,
+                stdout=json.dumps({"new_sections": {"s3": "added s3", "s4": "added s4"}}),
+                stderr=""
+            )
+
+        fixer = PhaseEFix(ctx, run_claude_fn=mock_fn)
+        fixer.round_num = 1
+        result = fixer.fix_one(file_info)
+
+        assert result["status"] == "fixed"
+
+        # Must NOT use full-knowledge fix or per-section fix
+        assert KNOWLEDGE_SCHEMA not in schemas_used, \
+            "Full-knowledge fix was used — E-1 risk"
+        assert SECTION_FIX_SCHEMA not in schemas_used, \
+            "Per-section fix was used for a range-with-missing-sections location — s13 cramming bug"
+
+        # Must use section-add
+        assert SECTION_ADD_SCHEMA in schemas_used, \
+            "section-add was not triggered for range location with missing sections"
+
+        # Existing sections must be unchanged
+        saved = load_json(kpath)
+        assert saved["sections"]["s1"] == "original s1 content here that is long enough"
+        assert saved["sections"]["s2"] == "original s2 content here that is long enough"
