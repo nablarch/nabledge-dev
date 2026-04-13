@@ -127,12 +127,14 @@ xychart-beta
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'pie1': '#FF9800'}}}%%
 pie title Nabledge v6 SLOC
   "Scripts (.sh)" : 951
   "Prompts (.md)" : 1010
 ```
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'pie3': '#FF9800'}}}%%
 pie title Knowledge Creator SLOC
   "Production (.py)" : 4347
   "Test (.py)" : 5736
