@@ -22,7 +22,7 @@ pie title Knowledge Creator SLOC
 `Prompts (.md)` should be the same orange (`#FF9800`) in both charts.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'pie1': '#4CAF50', 'pie2': '#FF9800'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'pie1': '#FF9800', 'pie2': '#4CAF50'}}}%%
 pie title Nabledge v6 SLOC
   "Scripts (.sh)" : 951
   "Prompts (.md)" : 1010
