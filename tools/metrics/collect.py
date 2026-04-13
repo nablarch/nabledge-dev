@@ -23,6 +23,13 @@ JST = timezone(timedelta(hours=9))
 
 
 # ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+# Shared color for "Prompts (.md)" slices — kept consistent across all SLOC pie charts.
+PROMPTS_COLOR = "#FF9800"
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -528,10 +535,30 @@ def _delta_str(current: int, previous: int) -> str:
     return "—"
 
 
-def _pie_chart(title: str, slices: list[tuple[str, int]]) -> str:
-    """Render a Mermaid pie chart. slices = [(label, value), ...]"""
-    inner = "\n".join(f'  "{label}" : {value}' for label, value in slices if value > 0)
-    return f"```mermaid\npie title {title}\n{inner}\n```"
+def _pie_chart(title: str, slices: list[tuple[str, int]],
+               colors: dict[str, str] | None = None) -> str:
+    """Render a Mermaid pie chart. slices = [(label, value), ...]
+
+    colors: optional {label: hex_color} mapping. When provided, an %%{init}%%
+    block is prepended with explicit themeVariables. Mermaid assigns pie1/pie2/...
+    by descending slice size, so ranks are computed from sorted values here.
+    """
+    active = [(label, value) for label, value in slices if value > 0]
+    inner = "\n".join(f'  "{label}" : {value}' for label, value in active)
+
+    if colors:
+        ranked = sorted(active, key=lambda x: x[1], reverse=True)
+        pie_vars = ", ".join(
+            f"'pie{i + 1}': '{colors[label]}'"
+            for i, (label, _) in enumerate(ranked)
+            if label in colors
+        )
+        theme_vars = "{" + pie_vars + "}"
+        init = f"%%{{init: {{'theme': 'base', 'themeVariables': {theme_vars}}}}}%%\n" if pie_vars else ""
+    else:
+        init = ""
+
+    return f"```mermaid\n{init}pie title {title}\n{inner}\n```"
 
 
 def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> list[str]:
@@ -568,14 +595,14 @@ def render_sloc_section(current: dict, previous: dict, history: list[dict]) -> l
     lines.append(_pie_chart("Nabledge v6 SLOC", [
         ("Scripts (.sh)", cur_ns),
         ("Prompts (.md)", cur_np),
-    ]))
+    ], colors={"Prompts (.md)": PROMPTS_COLOR}))
     lines.append("")
 
     lines.append(_pie_chart("Knowledge Creator SLOC", [
         ("Production (.py)", cur_kp),
         ("Test (.py)", cur_kt),
         ("Prompts (.md)", cur_kpr),
-    ]))
+    ], colors={"Prompts (.md)": PROMPTS_COLOR}))
     lines.append("")
 
     # KC trend (prod vs test)
