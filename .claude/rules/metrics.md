@@ -6,3 +6,11 @@
 
 When fixing `tools/metrics/collect.py`, run `collect.py` locally only to verify output.
 Do not stage or commit the resulting `docs/metrics.md` changes.
+
+If `docs/metrics.md` is accidentally modified and needs to be restored, use:
+
+```bash
+git checkout origin/main -- docs/metrics.md
+```
+
+Do NOT use `git checkout main --` — the local `main` branch may be behind `origin/main`.
