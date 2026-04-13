@@ -58,6 +58,12 @@ class TestPieChartWithColors:
         assert "'pie2': '#aaaaaa'" in result  # A(10) is smaller → pie2
         assert "'pie1'" not in result          # B has no color entry
 
+    def test_no_match_produces_no_init_block(self):
+        # colors dict has no key matching any active slice label
+        result = _pie_chart("My Chart", [("A", 10), ("B", 20)],
+                            colors={"Z": "#ff0000"})
+        assert "%%{init" not in result
+
 
 class TestPromtsColorConsistency:
     """Verify both SLOC pie charts assign the same color to Prompts (.md)."""

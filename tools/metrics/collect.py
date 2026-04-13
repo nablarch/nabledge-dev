@@ -27,8 +27,6 @@ JST = timezone(timedelta(hours=9))
 # ---------------------------------------------------------------------------
 
 # Shared color for "Prompts (.md)" slices — kept consistent across all SLOC pie charts.
-# Mermaid assigns pie1/pie2/... by descending slice size, so callers must compute the
-# correct pie# rank per chart and map this color to that rank.
 PROMPTS_COLOR = "#FF9800"
 
 # ---------------------------------------------------------------------------
@@ -555,7 +553,8 @@ def _pie_chart(title: str, slices: list[tuple[str, int]],
             for i, (label, _) in enumerate(ranked)
             if label in colors
         )
-        init = f"%%{{init: {{'theme': 'base', 'themeVariables': {{{pie_vars}}}}}}}%%\n"
+        theme_vars = "{" + pie_vars + "}"
+        init = f"%%{{init: {{'theme': 'base', 'themeVariables': {theme_vars}}}}}%%\n" if pie_vars else ""
     else:
         init = ""
 
