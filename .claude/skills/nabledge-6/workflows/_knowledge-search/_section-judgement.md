@@ -28,20 +28,12 @@ Caller converts to pointer JSON.
 
 **Action**: Retrieve index.hints for candidate sections and perform a quick relevance check against search keywords. Exclude clearly irrelevant sections before reading their content.
 
-**Command**:
+**Command** (execute from project root, do NOT use cd prefix):
 ```bash
-KNOWLEDGE_DIR=".claude/skills/nabledge-6/knowledge"
-
-for pair in "component/libraries/libraries-universal_dao.json:s3" \
-            "component/libraries/libraries-universal_dao.json:s1" \
-            "component/libraries/libraries-database.json:s2"; do
-  file="${pair%%:*}"
-  section="${pair##*:}"
-  hints=$(jq -r --arg sec "$section" \
-    '.index[] | select(.id == $sec) | .hints | join(",")' \
-    "$KNOWLEDGE_DIR/$file" 2>/dev/null)
-  echo "$file:$section|$hints"
-done
+bash .claude/skills/nabledge-6/scripts/get-hints.sh \
+  "component/libraries/libraries-universal_dao.json:s3" \
+  "component/libraries/libraries-universal_dao.json:s1" \
+  "component/libraries/libraries-database.json:s2"
 ```
 
 **Judgment rules** (agent matches against search keywords in memory):
@@ -59,7 +51,7 @@ done
 
 **Command**:
 ```bash
-bash scripts/read-sections.sh \
+bash .claude/skills/nabledge-6/scripts/read-sections.sh \
   "features/libraries/universal-dao.json:s3" \
   "features/libraries/universal-dao.json:s1" \
   "features/libraries/database-access.json:s2"

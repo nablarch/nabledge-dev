@@ -23,15 +23,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Action** - Store start time with unique session ID in output directory:
 ```bash
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-OUTPUT_DIR="$REPO_ROOT/.nabledge/$(date '+%Y%m%d')"
-mkdir -p "$OUTPUT_DIR"
-UNIQUE_ID="$(date '+%s%3N')-$$"
-echo "$UNIQUE_ID" > "$OUTPUT_DIR/.nabledge-code-analysis-id"
-date '+%s' > "$OUTPUT_DIR/.nabledge-code-analysis-start-$UNIQUE_ID"
-echo "Start time recorded: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "Session ID: $UNIQUE_ID"
-echo "Output directory: $OUTPUT_DIR"
+bash .claude/skills/nabledge-6/scripts/record-start.sh
 ```
 
 **Output example**:
@@ -65,7 +57,7 @@ Output directory: .nabledge/20260210
    - Specific feature (e.g., "login feature")
    - Package (e.g., "under web.action")
 
-2. **Ask clarifying questions** if scope is unclear
+2. **Ask for target** if not specified in user request — use AskUserQuestion: "解析対象のクラスまたはファイルを指定してください (例: ImportZipCodeFileAction)"
 
 3. **Find target files** using Glob or Grep
 
@@ -527,7 +519,7 @@ mapper.close();
    - Using refined skeletons from Step 3.3 for diagram placeholders
 
    **Placeholders to fill** (LLM-generated content):
-   - `{{DURATION_PLACEHOLDER}}`: Leave as-is (filled after Write completes in Step 5)
+   - `{{DURATION_PLACEHOLDER}}`: Leave as-is (filled after Write completes in Step 5). **CRITICAL: Write the literal string `{{DURATION_PLACEHOLDER}}` exactly as-is. Do NOT replace it with a variable name or value — Step 5 bash command performs the substitution.**
    - `{{overview_content}}`: Overview section (generate)
    - `{{dependency_graph}}`: Mermaid classDiagram (refine skeleton from Step 3.3)
    - `{{component_summary_table}}`: Component table (generate)
@@ -565,7 +557,7 @@ mapper.close();
    - Mermaid diagrams refined from skeletons (not regenerated)
 
 4. **Write complete file**: Use Write tool with full document content
-   - File path: `$OUTPUT_PATH` (captured from Step 3.2)
+   - File path: actual expanded path captured from Step 3.2 output (e.g., `.nabledge/20260414/code-analysis-ImportZipCodeFileAction.md`). DO NOT pass the variable name `$OUTPUT_PATH` literally — use the actual path string.
    - Content: Complete document with all 17 placeholders filled (9 pre-filled + 8 generated)
    - This will overwrite the pre-filled template from Step 3.2 with the complete version
    - Write tool requires prior Read (already done in step 1)
@@ -585,49 +577,12 @@ mapper.close();
 
    Execute single bash script to fill duration placeholder:
    ```bash
-   # Set output directory path
-   REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-   OUTPUT_DIR="$REPO_ROOT/.nabledge/YYYYMMDD"  # Replace with actual date
-
-   # Retrieve session ID from Step 0
-   UNIQUE_ID=$(cat "$OUTPUT_DIR/.nabledge-code-analysis-id" 2>/dev/null || echo "")
-
-   # Get current time
-   end_time=$(date '+%s')
-
-   # Calculate duration with error handling
-   START_TIME_FILE="$OUTPUT_DIR/.nabledge-code-analysis-start-$UNIQUE_ID"
-   if [ -z "$UNIQUE_ID" ] || [ ! -f "$START_TIME_FILE" ]; then
-     echo "WARNING: Start time file not found. Duration will be set to 'unknown'."
-     duration_text="unknown"
-   else
-     start_time=$(cat "$START_TIME_FILE")
-     duration_seconds=$((end_time - start_time))
-
-     # Format duration text
-     if [ $duration_seconds -lt 60 ]; then
-       duration_text="approx. ${duration_seconds}s"
-     else
-       minutes=$((duration_seconds / 60))
-       seconds=$((duration_seconds % 60))
-       duration_text="approx. ${minutes}m ${seconds}s"
-     fi
-   fi
-
-   # Replace duration placeholder in the output file
-   sed -i "s/{{DURATION_PLACEHOLDER}}/$duration_text/g" "$OUTPUT_DIR/code-analysis-<target>.md"
-
-   # Clean up temp files
-   rm -f "$START_TIME_FILE"
-   rm -f "$OUTPUT_DIR/.nabledge-code-analysis-id"
-
-   # Output for user
-   echo "Duration: $duration_text"
+   bash .claude/skills/nabledge-6/scripts/finalize-output.sh "<target-name>" "YYYYMMDD"
    ```
 
    **Replace in command**:
-   - `YYYYMMDD`: Actual date directory
-   - `<target>`: Actual target name
+   - `<target-name>`: Actual target name (e.g., `ImportZipCodeFileAction`)
+   - `YYYYMMDD`: Actual date directory (e.g., `20260210`)
 
    **IMPORTANT**:
    - Execute immediately after Step 4 with no other operations between them
