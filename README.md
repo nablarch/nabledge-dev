@@ -69,11 +69,11 @@ flowchart LR
 # 全バージョン
 bash tools/tests/test-setup.sh
 
-# バージョン指定（v6 / v5 / v1.4 / all）
+# バージョン指定（v6 / v5 / v1.4 / upgrade）
 bash tools/tests/test-setup.sh v6
 ```
 
-スクリプトは `.tmp/nabledge-test/` に環境を構築し、静的チェックを実行します。
+スクリプトは `.tmp/nabledge-test/` に環境を構築し、静的チェックと動的チェックを実行します。
 
 **静的チェック**（ファイル構成の検証）
 
@@ -83,11 +83,9 @@ bash tools/tests/test-setup.sh v6
 - `/n{v}` コマンドファイルが存在すること（CC/GHC 共通）
 - `n{v}.prompt.md` が存在すること（GHC のみ）
 
-**動的チェック**（知識検索の動作検証）— 現在無効
+**動的チェック**（知識検索の動作検証）
 
-CC（`claude -p`）・GHC（`copilot -p`）ともにヘッドレスモードで安定動作しないため、現在コメントアウトされています。[#252](https://github.com/nablarch/nabledge-dev/issues/252) で対応予定。
-
-ランタイム検証は、構築済み環境を Claude Code または GitHub Copilot で開き、`/n6`（または `/n5`、`/n1.4`）を手動実行して確認してください。
+CC（`claude -p`）・GHC（`copilot -p`）をヘッドレスモードで実行し、`SKILL.md` が読み込まれたかを検証します。
 
 ### リリース手順
 

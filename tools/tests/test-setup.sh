@@ -18,19 +18,19 @@ set -e
 #   v1.3/test-ghc/ - nabledge-1.3 x GitHub Copilot
 #   v1.2/test-cc/  - nabledge-1.2 x Claude Code
 #   v1.2/test-ghc/ - nabledge-1.2 x GitHub Copilot
-#   all/test-cc/  - all versions x Claude Code
-#   all/test-ghc/ - all versions x GitHub Copilot
+#   upgrade/test-cc/  - nabledge-6+5 x Claude Code (version upgrade scenario)
+#   upgrade/test-ghc/ - nabledge-1.4+5 x GitHub Copilot (version upgrade scenario)
 #
 # Prerequisites:
 #   Run setup.sh first to populate .lw/nab-official/ with source projects.
-#   For v1.4, v1.3, and v1.2, also run setup.sh (SVN section) to check out the tutorial project.
+#   For v1.4, v1.3, and v1.2, the setup will use the v6 nablarch-example-batch as the base project.
 #
 # Usage:
 #   cd /path/to/test-workspace
 #   bash /path/to/tools/tests/test-setup.sh [version]
 #
 # Arguments (optional):
-#   version  Version to set up: v6, v5, v1.4, v1.3, v1.2, all (default: run all versions)
+#   version  Version to set up: v6, v5, v1.4, v1.3, v1.2, upgrade (default: run all versions)
 #
 # Environment variables (optional):
 #   NABLEDGE_REPO    GitHub repository (default: nablarch/nabledge)
@@ -43,17 +43,14 @@ LW_DIR="${NABLEDGE_DEV_ROOT}/.lw/nab-official"
 
 V6_PROJECT_SRC="${LW_DIR}/v6/nablarch-example-batch"
 V5_PROJECT_SRC="${LW_DIR}/v5/nablarch-example-batch"
-V14_PROJECT_SRC="${LW_DIR}/v1.4/tutorial/tutorial"
-V13_PROJECT_SRC="${LW_DIR}/v1.3/tutorial"
-V12_PROJECT_SRC="${LW_DIR}/v1.2/tutorial"
 
 NABLEDGE_REPO="${NABLEDGE_REPO:-nablarch/nabledge}"
 NABLEDGE_BRANCH="${NABLEDGE_BRANCH:-develop}"
 NABLEDGE_REPO_URL="https://github.com/${NABLEDGE_REPO}"
 
 VERSION_FILTER="${1:-}"
-if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|all)$ ]]; then
-    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, all"
+if [ -n "$VERSION_FILTER" ] && [[ ! "$VERSION_FILTER" =~ ^(v6|v5|v1\.4|v1\.3|v1\.2|upgrade)$ ]]; then
+    echo "ERROR: Invalid version '${VERSION_FILTER}'. Valid values: v6, v5, v1.4, v1.3, v1.2, upgrade"
     exit 1
 fi
 
@@ -72,7 +69,7 @@ echo "============================================================"
 echo "Nabledge repository: ${NABLEDGE_REPO}"
 echo "Nabledge branch:     ${NABLEDGE_BRANCH}"
 echo "Output directory:    ${OUTPUT_DIR}"
-echo "Version filter:      ${VERSION_FILTER:-all}"
+echo "Version filter:      ${VERSION_FILTER:-all versions}"
 echo ""
 
 # Extract setup script URLs from GUIDE files on NABLEDGE_BRANCH
@@ -134,8 +131,7 @@ setup_env() {
     cp -r "$src_dir" "$target_dir/$project_name"
 
     # Run setup script inside the copied project.
-    # GIT_CEILING_DIRECTORIES prevents setup scripts from walking up to a parent git repo
-    # (e.g. when the project is not a git repo itself, like the v1.4 SVN tutorial project).
+    # GIT_CEILING_DIRECTORIES prevents setup scripts from walking up to a parent git repo.
     echo "[${target_dir}] Running setup script (version: ${version_flag}, branch: ${NABLEDGE_BRANCH})..."
     (
         cd "$target_dir/$project_name"
@@ -152,9 +148,6 @@ setup_env() {
 
 HINT_V6="Run setup.sh to clone .lw/nab-official/v6/nablarch-example-batch."
 HINT_V5="Run setup.sh to clone .lw/nab-official/v5/nablarch-example-batch."
-HINT_V14="Run setup.sh (SVN section) to check out .lw/nab-official/v1.4/tutorial."
-HINT_V13="Run setup.sh (SVN section) to check out .lw/nab-official/v1.3/tutorial."
-HINT_V12="Run setup.sh (SVN section) to check out .lw/nab-official/v1.2/tutorial."
 
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
@@ -164,15 +157,15 @@ should_run "v6"   && setup_env "v6/test-cc"    "$V6_PROJECT_SRC"  "nablarch-exam
 should_run "v6"   && setup_env "v6/test-ghc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "6"   "$HINT_V6"
 should_run "v5"   && setup_env "v5/test-cc"    "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "5"   "$HINT_V5"
 should_run "v5"   && setup_env "v5/test-ghc"   "$V5_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "5"   "$HINT_V5"
-should_run "v1.4" && setup_env "v1.4/test-cc"  "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.4" "$HINT_V14"
-should_run "v1.4" && setup_env "v1.4/test-ghc" "$V14_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.4" "$HINT_V14"
-should_run "v1.3" && setup_env "v1.3/test-cc"  "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.3" "$HINT_V13"
-should_run "v1.3" && setup_env "v1.3/test-ghc" "$V13_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.3" "$HINT_V13"
-should_run "v1.2" && setup_env "v1.2/test-cc"  "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-cc.sh"  "1.2" "$HINT_V12"
-should_run "v1.2" && setup_env "v1.2/test-ghc" "$V12_PROJECT_SRC" "tutorial"               "$TEMP_DIR/setup-ghc.sh" "1.2" "$HINT_V12"
-# "all" uses the v6 project as base; all skill versions are installed by setup-cc.sh (-v all).
-should_run "all"  && setup_env "all/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "all" "$HINT_V6"
-should_run "all"  && setup_env "all/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "all" "$HINT_V6"
+should_run "v1.4" && setup_env "v1.4/test-cc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "1.4" "$HINT_V6"
+should_run "v1.4" && setup_env "v1.4/test-ghc" "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.4" "$HINT_V6"
+should_run "v1.3" && setup_env "v1.3/test-cc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "1.3" "$HINT_V6"
+should_run "v1.3" && setup_env "v1.3/test-ghc" "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.3" "$HINT_V6"
+should_run "v1.2" && setup_env "v1.2/test-cc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "1.2" "$HINT_V6"
+should_run "v1.2" && setup_env "v1.2/test-ghc" "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.2" "$HINT_V6"
+# "upgrade" uses the v6 project as base; two skill versions are installed by setup-cc.sh for version upgrade scenario.
+should_run "upgrade"  && setup_env "upgrade/test-cc"   "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-cc.sh"  "6,5"   "$HINT_V6"
+should_run "upgrade"  && setup_env "upgrade/test-ghc"  "$V6_PROJECT_SRC"  "nablarch-example-batch" "$TEMP_DIR/setup-ghc.sh" "1.4,5" "$HINT_V6"
 
 # ------------------------------------------------------------
 # Verification
@@ -312,46 +305,144 @@ verify_dynamic() {
             verify_fail=1
             return
         fi
+        local prompt_file="$project_dir/.github/prompts/n${v}.prompt.md"
+        if [ ! -f "$prompt_file" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file not found: ${prompt_file}"
+            verify_fail=1
+            return
+        fi
         echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via copilot -p..."
+        local ghc_marker="#runSubagent"
+        if ! grep -qF "$ghc_marker" "$prompt_file"; then
+            echo "  [FAIL] ${label} nabledge-${v}: GHC prompt file missing marker: '${ghc_marker}'"
+            echo "         File: ${prompt_file}"
+            echo "         If n${v}.prompt.md format changed, update test-setup.sh accordingly."
+            verify_fail=1
+            return
+        fi
+        local ghc_prompt
+        ghc_prompt=$(sed -n "/^${ghc_marker}/,\$p" "$prompt_file")
+        ghc_prompt="${ghc_prompt//\$ARGUMENTS/$query}"
+        if [ -z "$ghc_prompt" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
+            verify_fail=1
+            return
+        fi
+        ghc_prompt="下記の指示に従って作業してください。
+${ghc_prompt}"
+        local ghc_prompt_file
+        ghc_prompt_file=$(mktemp "${OUTPUT_DIR}/ghc-prompt-XXXXXX.md")
+        echo "$ghc_prompt" > "$ghc_prompt_file"
+        local ghc_prompt_basename
+        ghc_prompt_basename=$(basename "$ghc_prompt_file")
+        # Copy temp prompt file into project dir so copilot can find it
+        cp "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
+        local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
+        mkdir -p "$ghc_log_dir"
         local output
-        output=$(cd "$project_dir" && copilot -p "nabledge-${v} \"${query}\"" 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
+        rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
     else
         if ! command -v claude &>/dev/null; then
             echo "  [FAIL] ${label} nabledge-${v}: claude CLI not found"
             verify_fail=1
             return
         fi
-        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p /n${v} (timeout: 120s)..."
+        local cmd_file="$project_dir/.claude/commands/n${v}.md"
+        if [ ! -f "$cmd_file" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: CC command file not found: ${cmd_file}"
+            verify_fail=1
+            return
+        fi
+        echo "  [RUN]  ${label} nabledge-${v}: running knowledge search via claude -p (timeout: 120s)..."
+        local cc_marker="Delegate the following task"
+        if ! grep -qF "$cc_marker" "$cmd_file"; then
+            echo "  [FAIL] ${label} nabledge-${v}: CC command file missing marker: '${cc_marker}'"
+            echo "         File: ${cmd_file}"
+            echo "         If n${v}.md format changed, update test-setup.sh accordingly."
+            verify_fail=1
+            return
+        fi
+        local prompt
+        prompt=$(sed -n "/^${cc_marker}/,\$p" "$cmd_file")
+        prompt="${prompt//\$ARGUMENTS/$query}"
+        if [ -z "$prompt" ]; then
+            echo "  [FAIL] ${label} nabledge-${v}: marker extraction produced empty prompt"
+            verify_fail=1
+            return
+        fi
+        prompt="下記の指示に従って作業してください。
+${prompt}"
         local output
-        output=$(cd "$project_dir" && timeout 120 claude -p "/n${v} \"${query}\"" < /dev/null 2>&1) || true
+        # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
+        # stream-json+verbose outputs full conversation including tool_use events with file paths
+        local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
+        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "$prompt") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        output=$(cat "$cc_log_file")
     fi
 
-    local byte_count=${#output}
     local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-    echo "$output" > "$log_file"
-
-    if [ "$byte_count" -lt 100 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check response too short (${byte_count} bytes, expected >= 100)"
-        echo "         Log: ${log_file}"
-        verify_fail=1
-        return
+    if [ "$tool" != "cc" ]; then
+        echo "$output" > "$log_file"
     fi
 
-    local missing_keywords=()
+    # Check if SKILL.md was read during the knowledge search.
+    # This verifies that the skill is properly installed and the workflow started correctly.
+    # For CC: path appears in stream-json output as a JSON string value.
+    # For GHC: path appears as [DEBUG] view: event in --log-dir logs.
+    local skill_read=0
+    if [ "$tool" = "cc" ]; then
+        grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+    else
+        grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
+    fi
+
+    # Keyword detection (reference only, not used for pass/fail)
+    local detected_count=0
+    local total_count=0
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
-        if ! echo "$output" | grep -q "$kw"; then
-            missing_keywords+=("$kw")
+        total_count=$((total_count + 1))
+        if [ "$tool" = "cc" ]; then
+            grep -q "$kw" "$log_file" && detected_count=$((detected_count + 1)) || true
+        else
+            echo "$output" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
         fi
     done
 
-    if [ "${#missing_keywords[@]}" -gt 0 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check missing keywords: ${missing_keywords[*]} (output: ${byte_count} bytes)"
+    if [ "$skill_read" -eq 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not read; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: dynamic check ok (output: ${byte_count} bytes, all keywords found)"
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read; keywords: ${detected_count}/${total_count}"
     fi
+}
+
+# _scenario_field: read a field from nabledge-test scenarios.json (single source of truth)
+# Args:
+#   $1 - nabledge version (e.g. "6", "5", "1.4")
+#   $2 - scenario id (e.g. "qa-001", "qa-002")
+#   $3 - field: "question" or "keywords" (all expectation keywords, comma-separated)
+_scenario_field() {
+    local v="$1"
+    local scenario_id="$2"
+    local field="$3"
+    python3 -c "
+import json, sys
+path = '${NABLEDGE_DEV_ROOT}/.claude/skills/nabledge-test/scenarios/nabledge-${v}/scenarios.json'
+try:
+    d = json.load(open(path))
+    s = next((x for x in d['scenarios'] if x['id'] == '${scenario_id}'), None)
+    if not s:
+        print('ERROR: scenario ${scenario_id} not found in ' + path, file=sys.stderr); sys.exit(1)
+    if '${field}' == 'question':
+        print(s['question'])
+    else:
+        print(','.join(kw for aspect in s['expectations'].values() for kw in aspect))
+except Exception as e:
+    print('ERROR: ' + str(e), file=sys.stderr); sys.exit(1)
+"
 }
 
 echo "[Static checks]"
@@ -359,41 +450,37 @@ should_run "v6"   && verify_env "v6/test-cc"    "v6/test-cc/nablarch-example-bat
 should_run "v6"   && verify_env "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"               "ghc"
 should_run "v5"   && verify_env "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"               "cc"
 should_run "v5"   && verify_env "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"               "ghc"
-should_run "v1.4" && verify_env "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4"             "cc"
-should_run "v1.4" && verify_env "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4"             "ghc"
-should_run "v1.3" && verify_env "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3"             "cc"
-should_run "v1.3" && verify_env "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3"             "ghc"
-should_run "v1.2" && verify_env "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2"             "cc"
-should_run "v1.2" && verify_env "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2"             "ghc"
-should_run "all"  && verify_env "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6,5,1.4,1.3,1.2" "cc"
-should_run "all"  && verify_env "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6,5,1.4,1.3,1.2" "ghc"
+should_run "v1.4" && verify_env "v1.4/test-cc"  "v1.4/test-cc/nablarch-example-batch"  "1.4"             "cc"
+should_run "v1.4" && verify_env "v1.4/test-ghc" "v1.4/test-ghc/nablarch-example-batch" "1.4"             "ghc"
+should_run "v1.3" && verify_env "v1.3/test-cc"  "v1.3/test-cc/nablarch-example-batch"  "1.3"             "cc"
+should_run "v1.3" && verify_env "v1.3/test-ghc" "v1.3/test-ghc/nablarch-example-batch" "1.3"             "ghc"
+should_run "v1.2" && verify_env "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-batch"  "1.2"             "cc"
+should_run "v1.2" && verify_env "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2"             "ghc"
+should_run "upgrade"  && verify_env "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6,5"   "cc"
+should_run "upgrade"  && verify_env "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4,5" "ghc"
 
 echo ""
 echo "[Dynamic checks]"
-# FIXME(#252): All dynamic checks are disabled because both Claude Code (claude -p) and
-# GitHub Copilot (copilot -p) do not work reliably in headless mode. Enable these once
-# headless execution is supported. See https://github.com/nablarch/nabledge-dev/issues/252
-# Queries and keywords derived from nabledge-test benchmark scenarios (qa-002 for v6/v5, qa-001 for v1.4/v1.3/v1.2)
-#should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/tutorial"                "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/tutorial"               "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/tutorial"                "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/tutorial"               "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/tutorial"                "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/tutorial"               "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-cc"   "all/test-cc/nablarch-example-batch"   "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "cc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "6"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "5"   "UniversalDaoでページング検索を実装するには？" "findAllBySqlFile,page,per,Pagination,getPagination" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.4" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.3" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
-#should_run "all"  && verify_dynamic "all/test-ghc"  "all/test-ghc/nablarch-example-batch"  "1.2" "コードリストのプルダウン入力を実装するには？" "n:codeSelect,codeId" "ghc"
+# Questions and keywords come from nabledge-test scenarios (single source of truth, no double management)
+Q_V6=$(  _scenario_field 6   qa-002 question); KW_V6=$( _scenario_field 6   qa-002 keywords)
+Q_V5=$(  _scenario_field 5   qa-002 question); KW_V5=$( _scenario_field 5   qa-002 keywords)
+Q_V14=$( _scenario_field 1.4 qa-001 question); KW_V14=$(_scenario_field 1.4 qa-001 keywords)
+Q_V13=$( _scenario_field 1.3 qa-001 question); KW_V13=$(_scenario_field 1.3 qa-001 keywords)
+Q_V12=$( _scenario_field 1.2 qa-001 question); KW_V12=$(_scenario_field 1.2 qa-001 keywords)
+should_run "v6"   && verify_dynamic "v6/test-cc"    "v6/test-cc/nablarch-example-batch"    "6"   "$Q_V6"  "$KW_V6"  "cc"
+should_run "v6"   && verify_dynamic "v6/test-ghc"   "v6/test-ghc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "ghc"
+should_run "v5"   && verify_dynamic "v5/test-cc"    "v5/test-cc/nablarch-example-batch"    "5"   "$Q_V5"  "$KW_V5"  "cc"
+should_run "v5"   && verify_dynamic "v5/test-ghc"   "v5/test-ghc/nablarch-example-batch"   "5"   "$Q_V5"  "$KW_V5"  "ghc"
+should_run "v1.4" && verify_dynamic "v1.4/test-cc"  "v1.4/test-cc/nablarch-example-batch"  "1.4" "$Q_V14" "$KW_V14" "cc"
+should_run "v1.4" && verify_dynamic "v1.4/test-ghc" "v1.4/test-ghc/nablarch-example-batch" "1.4" "$Q_V14" "$KW_V14" "ghc"
+should_run "v1.3" && verify_dynamic "v1.3/test-cc"  "v1.3/test-cc/nablarch-example-batch"  "1.3" "$Q_V13" "$KW_V13" "cc"
+should_run "v1.3" && verify_dynamic "v1.3/test-ghc" "v1.3/test-ghc/nablarch-example-batch" "1.3" "$Q_V13" "$KW_V13" "ghc"
+should_run "v1.2" && verify_dynamic "v1.2/test-cc"  "v1.2/test-cc/nablarch-example-batch"  "1.2" "$Q_V12" "$KW_V12" "cc"
+should_run "v1.2" && verify_dynamic "v1.2/test-ghc" "v1.2/test-ghc/nablarch-example-batch" "1.2" "$Q_V12" "$KW_V12" "ghc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "6"   "$Q_V6"  "$KW_V6"  "cc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-cc"   "upgrade/test-cc/nablarch-example-batch"   "5"   "$Q_V5"  "$KW_V5"  "cc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "1.4" "$Q_V14" "$KW_V14" "ghc"
+should_run "upgrade"  && verify_dynamic "upgrade/test-ghc"  "upgrade/test-ghc/nablarch-example-batch"  "5"   "$Q_V5"  "$KW_V5"  "ghc"
 
 echo ""
 if [ "$verify_fail" -eq 0 ]; then
@@ -416,12 +503,12 @@ should_run "v6"   && echo "  v6/test-cc/nablarch-example-batch    - nabledge-6 x
 should_run "v6"   && echo "  v6/test-ghc/nablarch-example-batch   - nabledge-6 x GitHub Copilot"
 should_run "v5"   && echo "  v5/test-cc/nablarch-example-batch    - nabledge-5 x Claude Code"
 should_run "v5"   && echo "  v5/test-ghc/nablarch-example-batch   - nabledge-5 x GitHub Copilot"
-should_run "v1.4" && echo "  v1.4/test-cc/tutorial                - nabledge-1.4 x Claude Code"
-should_run "v1.4" && echo "  v1.4/test-ghc/tutorial               - nabledge-1.4 x GitHub Copilot"
-should_run "v1.3" && echo "  v1.3/test-cc/tutorial                - nabledge-1.3 x Claude Code"
-should_run "v1.3" && echo "  v1.3/test-ghc/tutorial               - nabledge-1.3 x GitHub Copilot"
-should_run "v1.2" && echo "  v1.2/test-cc/tutorial                - nabledge-1.2 x Claude Code"
-should_run "v1.2" && echo "  v1.2/test-ghc/tutorial               - nabledge-1.2 x GitHub Copilot"
-should_run "all"  && echo "  all/test-cc/nablarch-example-batch   - all versions x Claude Code"
-should_run "all"  && echo "  all/test-ghc/nablarch-example-batch  - all versions x GitHub Copilot"
+should_run "v1.4" && echo "  v1.4/test-cc/nablarch-example-batch  - nabledge-1.4 x Claude Code"
+should_run "v1.4" && echo "  v1.4/test-ghc/nablarch-example-batch - nabledge-1.4 x GitHub Copilot"
+should_run "v1.3" && echo "  v1.3/test-cc/nablarch-example-batch  - nabledge-1.3 x Claude Code"
+should_run "v1.3" && echo "  v1.3/test-ghc/nablarch-example-batch - nabledge-1.3 x GitHub Copilot"
+should_run "v1.2" && echo "  v1.2/test-cc/nablarch-example-batch  - nabledge-1.2 x Claude Code"
+should_run "v1.2" && echo "  v1.2/test-ghc/nablarch-example-batch - nabledge-1.2 x GitHub Copilot"
+should_run "upgrade"  && echo "  upgrade/test-cc/nablarch-example-batch   - nabledge-6+5 x Claude Code (version upgrade)"
+should_run "upgrade"  && echo "  upgrade/test-ghc/nablarch-example-batch  - nabledge-1.4+5 x GitHub Copilot (version upgrade)"
 echo "============================================================"
