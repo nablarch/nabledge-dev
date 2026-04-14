@@ -1,0 +1,253 @@
+"""E2E tests for Phase 8: CLI operations (create/update/delete/verify).
+
+Uses a small subset of real v6 source files to keep tests fast.
+"""
+from __future__ import annotations
+
+import json
+import shutil
+from pathlib import Path
+
+import pytest
+
+_REPO_ROOT = Path(__file__).parents[4]  # repo root
+
+# 3 real source files used as test fixtures
+_TEST_SOURCES = [
+    # RST → component/libraries
+    ".lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/libraries/database/universal_dao.rst",
+    # XLSX release note → releases/releases
+    ".lw/nab-official/v6/nablarch-document/ja/releases/nablarch6-releasenote.xlsx",
+    # XLSX security → check/security-check
+    ".lw/nab-official/v6/nablarch-system-development-guide/Sample_Project/設計書/Nablarch機能のセキュリティ対応表.xlsx",
+]
+
+
+@pytest.fixture()
+def workspace(tmp_path):
+    """Workspace with output and state directories."""
+    return {
+        "output": tmp_path / "knowledge",
+        "state": tmp_path / "state",
+    }
+
+
+# ---------------------------------------------------------------------------
+# create tests
+# ---------------------------------------------------------------------------
+
+class TestCreate:
+    @pytest.fixture()
+    def after_create(self, workspace):
+        from scripts.run import create
+        create(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=workspace["output"],
+            state_dir=workspace["state"],
+            files=_TEST_SOURCES,
+        )
+        return workspace
+
+    def test_json_files_created(self, after_create):
+        """create writes one JSON file per source file."""
+        json_files = list(after_create["output"].rglob("*.json"))
+        assert len(json_files) == 3
+
+    def test_rst_json_structure(self, after_create):
+        """RST-converted JSON has id, title, no_knowledge_content, sections."""
+        # universal_dao.rst → component/libraries/libraries-universal-dao.json
+        json_files = list(after_create["output"].rglob("*universal*dao*.json"))
+        assert json_files, "universal_dao JSON not found"
+        data = json.loads(json_files[0].read_text(encoding="utf-8"))
+        assert "id" in data
+        assert "title" in data
+        assert "no_knowledge_content" in data
+        assert "sections" in data
+        assert isinstance(data["sections"], list)
+        assert len(data["sections"]) > 0
+
+    def test_sections_have_required_fields(self, after_create):
+        """Each section has id, title, content, hints."""
+        json_files = list(after_create["output"].rglob("*universal*dao*.json"))
+        data = json.loads(json_files[0].read_text(encoding="utf-8"))
+        for sec in data["sections"]:
+            assert "id" in sec
+            assert "title" in sec
+            assert "content" in sec
+            assert "hints" in sec
+
+    def test_xlsx_releasenote_json_created(self, after_create):
+        """Release note XLSX creates a JSON file."""
+        json_files = list(after_create["output"].rglob("*releasenote*.json"))
+        assert json_files, "Release note JSON not found"
+
+    def test_xlsx_security_json_created(self, after_create):
+        """Security table XLSX creates a JSON file."""
+        json_files = list(after_create["output"].rglob("*security*.json"))
+        assert json_files, "Security table JSON not found"
+
+    def test_snapshot_saved(self, after_create):
+        """Snapshot is saved in state dir."""
+        snapshot_path = after_create["state"] / "6" / "snapshot.json"
+        assert snapshot_path.exists()
+        snap = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        assert "files" in snap
+        assert len(snap["files"]) == 3
+
+
+# ---------------------------------------------------------------------------
+# update tests
+# ---------------------------------------------------------------------------
+
+class TestUpdate:
+    @pytest.fixture()
+    def after_create(self, workspace):
+        from scripts.run import create
+        create(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=workspace["output"],
+            state_dir=workspace["state"],
+            files=_TEST_SOURCES,
+        )
+        return workspace
+
+    def test_update_unchanged_files_not_rewritten(self, after_create):
+        """update does not re-write unchanged files (mtime stays the same)."""
+        from scripts.run import update
+        output = after_create["output"]
+        json_files_before = {p: p.stat().st_mtime for p in output.rglob("*.json")}
+
+        update(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=output,
+            state_dir=after_create["state"],
+            files=_TEST_SOURCES,
+        )
+
+        json_files_after = {p: p.stat().st_mtime for p in output.rglob("*.json")}
+        # No file should have been modified
+        for path, mtime_before in json_files_before.items():
+            assert json_files_after.get(path) == mtime_before, (
+                f"{path.name} was re-written but source didn't change"
+            )
+
+    def test_update_changed_file_rewritten(self, after_create, tmp_path):
+        """update re-writes only the changed source file."""
+        from scripts.run import update
+        output = after_create["output"]
+        state = after_create["state"]
+
+        # Find the universal_dao JSON and record its mtime
+        ud_json = list(output.rglob("*universal*dao*.json"))[0]
+        mtime_before = ud_json.stat().st_mtime
+
+        # Simulate a source change by manipulating the snapshot hash
+        snap_path = state / "6" / "snapshot.json"
+        snap = json.loads(snap_path.read_text(encoding="utf-8"))
+        # Find the universal_dao entry and corrupt its hash
+        for src_path, entry in snap["files"].items():
+            if "universal_dao" in src_path:
+                snap["files"][src_path]["sha256"] = "corrupted_hash_000"
+                break
+        snap_path.write_text(json.dumps(snap), encoding="utf-8")
+
+        update(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=output,
+            state_dir=state,
+            files=_TEST_SOURCES,
+        )
+
+        mtime_after = ud_json.stat().st_mtime
+        assert mtime_after > mtime_before, "universal_dao JSON should have been updated"
+
+
+# ---------------------------------------------------------------------------
+# delete tests
+# ---------------------------------------------------------------------------
+
+class TestDelete:
+    def test_delete_removes_orphaned_json(self, workspace):
+        """delete removes JSON files whose source is no longer in the file list."""
+        from scripts.run import create, delete
+
+        # Create with all 3 files
+        create(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=workspace["output"],
+            state_dir=workspace["state"],
+            files=_TEST_SOURCES,
+        )
+        assert len(list(workspace["output"].rglob("*.json"))) == 3
+
+        # Delete with only 2 files (remove the security table)
+        files_without_security = [f for f in _TEST_SOURCES if "セキュリティ" not in f]
+        delete(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=workspace["output"],
+            state_dir=workspace["state"],
+            files=files_without_security,
+        )
+
+        remaining = list(workspace["output"].rglob("*.json"))
+        assert len(remaining) == 2, f"Expected 2 remaining JSON, got {len(remaining)}"
+        names = [p.stem for p in remaining]
+        assert not any("security" in n for n in names), (
+            "Security JSON should have been deleted"
+        )
+
+
+# ---------------------------------------------------------------------------
+# verify tests
+# ---------------------------------------------------------------------------
+
+class TestVerify:
+    @pytest.fixture()
+    def after_create(self, workspace):
+        from scripts.run import create
+        create(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=workspace["output"],
+            state_dir=workspace["state"],
+            files=_TEST_SOURCES,
+        )
+        return workspace
+
+    def test_verify_passes_for_consistent_output(self, after_create):
+        """verify returns True when JSON output matches source."""
+        from scripts.run import verify
+        ok = verify(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=after_create["output"],
+            files=_TEST_SOURCES,
+        )
+        assert ok is True
+
+    def test_verify_fails_for_corrupted_json(self, after_create):
+        """verify returns False when JSON content doesn't match source."""
+        from scripts.run import verify
+        output = after_create["output"]
+
+        # Corrupt one JSON file
+        json_files = list(output.rglob("*universal*dao*.json"))
+        corrupted_path = json_files[0]
+        data = json.loads(corrupted_path.read_text(encoding="utf-8"))
+        # Remove all sections to simulate a corrupted file
+        data["sections"] = []
+        corrupted_path.write_text(json.dumps(data), encoding="utf-8")
+
+        ok = verify(
+            version="6",
+            repo_root=_REPO_ROOT,
+            output_dir=output,
+            files=_TEST_SOURCES,
+        )
+        assert ok is False
