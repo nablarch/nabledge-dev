@@ -48,7 +48,7 @@ else
 fi
 
 # Replace placeholder in output file
-OUTPUT_FILE="$OUTPUT_DIR/code-analysis-$(echo "$TARGET_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-').md"
+OUTPUT_FILE="$OUTPUT_DIR/code-analysis-${TARGET_NAME}.md"
 if [ -f "$OUTPUT_FILE" ]; then
   sed -i "s|{{DURATION_PLACEHOLDER}}|${duration_text}|g" "$OUTPUT_FILE"
 else
