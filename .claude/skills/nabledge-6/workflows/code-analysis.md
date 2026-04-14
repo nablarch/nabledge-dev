@@ -17,6 +17,23 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 ## Process flow
 
+### Confirm analysis target (required before Step 0)
+
+**Tool**: AskUserQuestion
+
+Check whether the user's invocation explicitly names a specific class or file.
+
+- If specified → save as `target` and proceed to Step 0
+- If not specified → ask now, do not proceed until the user answers:
+
+  "解析対象のクラスまたはファイルを指定してください (例: ImportZipCodeFileAction)"
+
+  Save the user's answer as `target`.
+
+**Do NOT infer or assume a target from context, history, or file system.**
+
+---
+
 ### Step 0: Record start time (CRITICAL)
 
 **Tool**: Bash
@@ -48,18 +65,18 @@ Output directory: .nabledge/20260210
 
 ### Step 1: Identify target and analyze dependencies
 
-**Tools**: AskUserQuestion (if needed), Read, Glob, Grep
+**Prerequisite**: `target` must be set from the "Confirm analysis target" step above.
+
+**Tools**: Read, Glob, Grep
 
 **Action**:
 
-1. **Parse user request** to understand target scope:
+1. **Parse `target`** to understand target scope:
    - Specific class (e.g., "LoginAction")
    - Specific feature (e.g., "login feature")
    - Package (e.g., "under web.action")
 
-2. **Ask for target** if not specified in user request — use AskUserQuestion: "解析対象のクラスまたはファイルを指定してください (例: ImportZipCodeFileAction)"
-
-3. **Find target files** using Glob or Grep
+2. **Find target files** using Glob or Grep
 
 4. **Read target files** and extract dependencies:
    - Imports → External dependencies
