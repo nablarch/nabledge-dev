@@ -166,6 +166,9 @@ for v in "${VERSIONS[@]}"; do
     fi
 
     echo "nabledge-${v} installed successfully!"
+
+    # Add script permission patterns to .claude/settings.json
+    add_skill_permissions "$v"
 done
 
 # Report errors
@@ -174,6 +177,36 @@ if [ ${#install_errors[@]} -gt 0 ]; then
     echo "Error: Installation failed for: ${install_errors[*]}"
     exit 1
 fi
+
+# Add script permission patterns to .claude/settings.json
+add_skill_permissions() {
+    local v="$1"
+    local settings_file="$PROJECT_ROOT/.claude/settings.json"
+
+    echo "Adding script permissions for nabledge-${v}..."
+
+    # Create settings.json if it doesn't exist
+    if [ ! -f "$settings_file" ]; then
+        echo '{}' > "$settings_file"
+    fi
+
+    local tmp
+    tmp=$(mktemp)
+    jq --arg v "$v" '
+        .permissions //= {} |
+        .permissions.allow //= [] |
+        .permissions.allow = (.permissions.allow + [
+            "Bash(bash scripts/full-text-search.sh *)",
+            "Bash(bash scripts/read-sections.sh *)",
+            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/full-text-search.sh *)"),
+            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/read-sections.sh *)"),
+            ("Bash(.claude/skills/nabledge-" + $v + "/scripts/generate-mermaid-skeleton.sh *)"),
+            ("Bash(.claude/skills/nabledge-" + $v + "/scripts/prefill-template.sh *)")
+        ] | unique)
+    ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
+
+    echo "Permissions configured for nabledge-${v} scripts."
+}
 
 # Function to show completion message
 show_completion_message() {
