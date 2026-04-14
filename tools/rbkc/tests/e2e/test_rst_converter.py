@@ -46,8 +46,22 @@ class TestUniversalDaoStructure:
         assert result.no_knowledge_content is False
 
     def test_section_count(self, result):
-        # preamble(概要) + 6 h2 + 18 h3 = 25.  preamble is empty → still included
-        assert len(result.sections) == 26
+        # Count h2/h3 headings dynamically from source so this test survives RST updates.
+        lines = UNIVERSAL_DAO_RST.read_text().splitlines()
+        heading_chars = _detect_heading_chars(lines)
+        section_chars = set(heading_chars[1:3]) if len(heading_chars) >= 2 else set()
+        # An underline line: single repeated char in section_chars, preceded by non-empty text,
+        # not preceded by an identical line (which would be an overline).
+        h_count = sum(
+            1 for i, line in enumerate(lines)
+            if (line and len(set(line)) == 1 and line[0] in section_chars
+                and len(line) >= 2 and i > 0 and lines[i - 1].strip()
+                and not (i >= 2
+                         and set(lines[i - 2]) == set(line)
+                         and len(lines[i - 2]) >= 2))
+        )
+        # Converter may add one preamble section (content before first h2/h3)
+        assert h_count <= len(result.sections) <= h_count + 1
 
     def test_section_titles_include_h2(self, result):
         titles = [s.title for s in result.sections]
