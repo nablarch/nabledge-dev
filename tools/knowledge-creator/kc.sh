@@ -21,7 +21,7 @@ if [ -z "$COMMAND" ] || [ -z "$VERSION" ]; then
     echo "  --resume          中断再開（genのみ、削除なし）"
     echo "  --target FILE_ID  対象ファイル指定（複数可）"
     echo "  --yes             確認プロンプトをスキップ"
-    echo "  --max-rounds N    CDEループ回数（default: 1）"
+    echo "  --max-rounds N    CDEループ回数（default: 2）"
     echo "  --concurrency N   並列数（default: 4）"
     echo "  --test FILE       テストファイル指定"
     exit 1

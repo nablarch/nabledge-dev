@@ -1,10 +1,13 @@
 """Phase E: Fix
 
 Apply fixes to knowledge files based on validation findings.
+Per-section fix strategy: only pass target section to LLM, avoid mutations to other sections.
 """
 
 import os
 import json
+import re
+import hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from common import load_json, write_json, read_file, run_claude as _default_run_claude, aggregate_cc_metrics
 from logger import get_logger
@@ -33,6 +36,78 @@ KNOWLEDGE_SCHEMA = {
     }
 }
 
+SECTION_FIX_SCHEMA = {
+    "type": "object",
+    "required": ["section_text"],
+    "properties": {
+        "section_text": {"type": "string"}
+    }
+}
+
+HINTS_FIX_SCHEMA = {
+    "type": "object",
+    "required": ["hints"],
+    "properties": {
+        "hints": {"type": "array", "items": {"type": "string"}}
+    }
+}
+
+# Schema for section-add fix: outputs only new sections (never overwrites existing ones).
+# TODO: implement _build_section_add_prompt and replace fallback full-knowledge fix.
+SECTION_ADD_SCHEMA = {
+    "type": "object",
+    "required": ["new_sections"],
+    "properties": {
+        "new_sections": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+        }
+    }
+}
+
+
+def _normalize_location(location):
+    """Extract section ID (sN) from location string.
+
+    Handles: 's1', 'S1', 'sections.s1', 'sections.s1 / index[0].hints', etc.
+    Returns lowercase section ID (e.g., 's1') or the lowercased original if no sN found.
+    """
+    if isinstance(location, str):
+        import re
+        match = re.search(r'\bs(\d+)\b', location, re.IGNORECASE)
+        if match:
+            return f"s{match.group(1)}"
+        return location.lower()
+    return location
+
+
+def _group_findings_by_section(findings):
+    """Group findings by section ID.
+
+    Returns:
+        (section_groups, structural_findings)
+        - section_groups: dict of section_id -> list of findings
+        - structural_findings: list of findings that affect entire file
+    """
+    section_groups = {}
+    structural_findings = []
+
+    structural_categories = {"section_issue", "no_knowledge_content_invalid"}
+
+    for finding in findings:
+        category = finding.get("category", "")
+        location = finding.get("location", "")
+
+        if category in structural_categories:
+            structural_findings.append(finding)
+        else:
+            section_id = _normalize_location(location)
+            if section_id not in section_groups:
+                section_groups[section_id] = []
+            section_groups[section_id].append(finding)
+
+    return section_groups, structural_findings
+
 
 class PhaseEFix:
     def __init__(self, ctx, run_claude_fn=None):
@@ -40,18 +115,65 @@ class PhaseEFix:
         self.run_claude = run_claude_fn or _default_run_claude
         self.logger = get_logger()
         self.round_num = 1  # default; overridden by run()
-        self.prompt_template = read_file(
+        # Load prompt templates
+        self.full_fix_template = read_file(
             f"{ctx.repo}/tools/knowledge-creator/prompts/fix.md"
         )
+        self.section_fix_template = read_file(
+            f"{ctx.repo}/tools/knowledge-creator/prompts/section_fix.md"
+        )
+        self.hints_fix_template = read_file(
+            f"{ctx.repo}/tools/knowledge-creator/prompts/hints_fix.md"
+        )
+        self.section_add_template = read_file(
+            f"{ctx.repo}/tools/knowledge-creator/prompts/section_add.md"
+        )
 
-    def _build_prompt(self, findings, knowledge, source_content, fmt):
-        prompt = self.prompt_template
+    def _build_full_prompt(self, findings, knowledge, source_content, fmt):
+        """Build full knowledge fix prompt (for structural findings)."""
+        prompt = self.full_fix_template
         prompt = prompt.replace("{FINDINGS_JSON}",
                                 json.dumps(findings, ensure_ascii=False, indent=2))
         prompt = prompt.replace("{KNOWLEDGE_JSON}",
                                 json.dumps(knowledge, ensure_ascii=False, indent=2))
         prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
         prompt = prompt.replace("{FORMAT}", fmt)
+        return prompt
+
+    def _build_section_fix_prompt(self, findings, section_text, source_content, fmt):
+        """Build per-section fix prompt for omission/fabrication findings."""
+        prompt = self.section_fix_template
+        prompt = prompt.replace("{FINDINGS_JSON}",
+                                json.dumps(findings, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{SECTION_TEXT}", section_text)
+        prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
+        prompt = prompt.replace("{FORMAT}", fmt)
+        return prompt
+
+    def _build_section_add_prompt(self, findings, knowledge, source_content, fmt):
+        """Build section-add prompt for findings referencing non-existent sections.
+
+        Uses SECTION_ADD_SCHEMA so only new sections are returned, never overwriting
+        existing ones. This avoids E-1 through E-5 risks from full-knowledge fix.
+        """
+        existing_ids = sorted(knowledge.get("sections", {}).keys())
+        prompt = self.section_add_template
+        prompt = prompt.replace("{FINDINGS_JSON}",
+                                json.dumps(findings, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{SOURCE_CONTENT}", source_content)
+        prompt = prompt.replace("{FORMAT}", fmt)
+        prompt = prompt.replace("{EXISTING_SECTION_IDS}",
+                                ", ".join(existing_ids) if existing_ids else "(none)")
+        return prompt
+
+    def _build_hints_fix_prompt(self, findings, section_text, hints):
+        """Build hints fix prompt for hints_missing findings."""
+        prompt = self.hints_fix_template
+        prompt = prompt.replace("{FINDINGS_JSON}",
+                                json.dumps(findings, ensure_ascii=False, indent=2))
+        prompt = prompt.replace("{SECTION_TEXT}", section_text)
+        prompt = prompt.replace("{CURRENT_HINTS}",
+                                json.dumps(hints, ensure_ascii=False, indent=2))
         return prompt
 
     def fix_one(self, file_info) -> dict:
@@ -62,7 +184,8 @@ class PhaseEFix:
         if not os.path.exists(findings_path):
             return {"status": "skip", "id": file_id}
 
-        findings = load_json(findings_path)
+        findings_data = load_json(findings_path)
+        findings = findings_data.get("findings", [])
         knowledge = load_json(f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}")
         source = read_file(f"{self.ctx.repo}/{file_info['source_path']}")
 
@@ -72,35 +195,136 @@ class PhaseEFix:
             sr = file_info["section_range"]
             source = "\n".join(lines[sr["start_line"]:sr["end_line"]])
 
-        prompt = self._build_prompt(findings, knowledge, source, file_info["format"])
+        # Group findings by section
+        section_groups, structural_findings = _group_findings_by_section(findings)
 
-        try:
-            result = self.run_claude(
-                prompt=prompt,
-                json_schema=KNOWLEDGE_SCHEMA,
-                log_dir=self.ctx.phase_e_executions_dir,
-                file_id=file_id,
-            )
-            if result.returncode == 0:
-                fixed = json.loads(result.stdout)
-
-                # Guard: output must not shrink drastically
-                input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
-                output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
-                if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
-                    self.logger.warning(f"    WARNING: {file_id}: output shrunk to {output_sec_chars/input_sec_chars:.0%} "
-                          f"({output_sec_chars:,} / {input_sec_chars:,} chars) - rejecting fix")
-                    return {"status": "error", "id": file_id,
-                            "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
-
-                write_json(
-                    f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
+        # If there are structural findings, use full knowledge fix (existing behavior)
+        if structural_findings:
+            prompt = self._build_full_prompt(findings, knowledge, source, file_info["format"])
+            try:
+                result = self.run_claude(
+                    prompt=prompt,
+                    json_schema=KNOWLEDGE_SCHEMA,
+                    log_dir=self.ctx.phase_e_executions_dir,
+                    file_id=file_id,
                 )
-                return {"status": "fixed", "id": file_id}
+                if result.returncode == 0:
+                    fixed = json.loads(result.stdout)
+
+                    # Guard: output must not shrink drastically
+                    input_sec_chars = sum(len(v) for v in knowledge.get("sections", {}).values())
+                    output_sec_chars = sum(len(v) for v in fixed.get("sections", {}).values())
+                    if input_sec_chars > 0 and output_sec_chars < input_sec_chars * 0.5:
+                        self.logger.warning(f"    WARNING: {file_id}: output shrunk to {output_sec_chars/input_sec_chars:.0%} "
+                              f"({output_sec_chars:,} / {input_sec_chars:,} chars) - rejecting fix")
+                        return {"status": "error", "id": file_id,
+                                "error": f"Output too small: {output_sec_chars}/{input_sec_chars} chars"}
+
+                    write_json(
+                        f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", fixed
+                    )
+                    return {"status": "fixed", "id": file_id}
+            except Exception as e:
+                return {"status": "error", "id": file_id, "error": str(e)}
+
+            return {"status": "error", "id": file_id}
+
+        # Per-section fix: process each section independently
+        try:
+            fallback_findings = []  # findings for non-existent sections → section-add fix
+            knowledge_sections = knowledge.get("sections", {})
+            for section_id, section_findings in section_groups.items():
+                section_text = knowledge_sections.get(section_id, "")
+                if not section_text:
+                    # Section doesn't exist — per-section fix cannot add new sections.
+                    fallback_findings.extend(section_findings)
+                    continue
+
+                # Route findings that mention any missing section to section-add.
+                # e.g., location "sections s13-s22 (missing)" mentions s22 which may not exist.
+                to_add = [f for f in section_findings
+                          if any(f"s{n}" not in knowledge_sections
+                                 for n in re.findall(r'\bs(\d+)\b', f.get("location", ""), re.IGNORECASE))]
+                to_fix = [f for f in section_findings if f not in to_add]
+                fallback_findings.extend(to_add)
+                if not to_fix:
+                    continue
+                section_findings = to_fix
+
+                # Separate hints_missing from other findings
+                hints_findings = [f for f in section_findings if f.get("category") == "hints_missing"]
+                content_findings = [f for f in section_findings if f.get("category") != "hints_missing"]
+
+                # Fix content (omission/fabrication)
+                if content_findings:
+                    prompt = self._build_section_fix_prompt(
+                        content_findings, section_text, source, file_info["format"]
+                    )
+                    result = self.run_claude(
+                        prompt=prompt,
+                        json_schema=SECTION_FIX_SCHEMA,
+                        log_dir=self.ctx.phase_e_executions_dir,
+                        file_id=f"{file_id}_s{section_id}",
+                    )
+                    if result.returncode == 0:
+                        fixed_section = json.loads(result.stdout)
+                        knowledge["sections"][section_id] = fixed_section.get("section_text", section_text)
+                    else:
+                        return {"status": "error", "id": file_id,
+                                "error": f"Failed to fix section {section_id}"}
+
+                # Fix hints
+                if hints_findings:
+                    # Find index entry for this section
+                    index_entry = next((e for e in knowledge["index"] if e["id"] == section_id), None)
+                    if index_entry:
+                        current_hints = index_entry.get("hints", [])
+                        prompt = self._build_hints_fix_prompt(
+                            hints_findings, section_text, current_hints
+                        )
+                        result = self.run_claude(
+                            prompt=prompt,
+                            json_schema=HINTS_FIX_SCHEMA,
+                            log_dir=self.ctx.phase_e_executions_dir,
+                            file_id=f"{file_id}_hints_{section_id}",
+                        )
+                        if result.returncode == 0:
+                            fixed_hints = json.loads(result.stdout)
+                            index_entry["hints"] = fixed_hints.get("hints", current_hints)
+                        else:
+                            return {"status": "error", "id": file_id,
+                                    "error": f"Failed to fix hints for section {section_id}"}
+
+            # If any findings referenced non-existent sections, use section-add fix.
+            # This avoids full-knowledge fix (KNOWLEDGE_SCHEMA) which risks E-1 through E-5.
+            if fallback_findings:
+                prompt = self._build_section_add_prompt(
+                    fallback_findings, knowledge, source, file_info["format"]
+                )
+                try:
+                    result = self.run_claude(
+                        prompt=prompt,
+                        json_schema=SECTION_ADD_SCHEMA,
+                        log_dir=self.ctx.phase_e_executions_dir,
+                        file_id=f"{file_id}_section_add",
+                    )
+                    if result.returncode == 0:
+                        added = json.loads(result.stdout)
+                        new_sections = added.get("new_sections", {})
+                        knowledge.setdefault("sections", {}).update(new_sections)
+                    else:
+                        return {"status": "error", "id": file_id, "error": "Section-add fix failed"}
+                except Exception as e:
+                    return {"status": "error", "id": file_id, "error": f"Section-add: {e}"}
+
+            # Save fixed knowledge
+            write_json(
+                f"{self.ctx.knowledge_cache_dir}/{file_info['output_path']}", knowledge
+            )
+            return {"status": "fixed", "id": file_id}
+
         except Exception as e:
             return {"status": "error", "id": file_id, "error": str(e)}
-
-        return {"status": "error", "id": file_id}
 
     def run(self, target_ids, round_num=1) -> dict:
         classified = load_json(self.ctx.classified_list_path)

@@ -49,6 +49,19 @@ cd tools/knowledge-creator
 # Logs are gitignored and will be regenerated on next execution
 ```
 
+## Execution Reports
+
+Reports in `tools/knowledge-creator/reports/` are **git-tracked** as a record for later situation analysis.
+
+**Commit policy**: Only commit reports that are consistent with the current cache state.
+- A report is consistent when the cache files updated by that run have not been reverted
+- If a run's cache is reverted (e.g., due to side effects), delete the corresponding reports before committing
+
+**File set per run** (all 3 must be committed together):
+- `{run_id}.md` - Summary report
+- `{run_id}-files.md` - Per-file report
+- `{run_id}.json` - JSON data
+
 ## Execution Logs
 
 Each Phase B/D/E/F execution saves metrics to `executions/` directory:

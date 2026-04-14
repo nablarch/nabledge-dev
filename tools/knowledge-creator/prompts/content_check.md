@@ -32,6 +32,28 @@ If the source justifies the current state (e.g., the source section is genuinely
 
 {CONTENT_WARNINGS}
 
+---
+
+## Prior Round Findings (context only)
+
+{PRIOR_FINDINGS}
+
+**Instructions:** These findings from the prior round are provided for context only. Do NOT re-report them unless:
+1. The issue still exists in the current knowledge file, AND
+2. The section content has not changed since the prior round
+
+If the section was modified by Phase E (fixes applied), re-evaluate it against the source to confirm whether the issue still exists.
+
+## Reporting Standards
+
+**Only report findings with concrete evidence.**
+
+- Every finding must cite the specific source passage (or the verifiable absence of one) that proves the issue.
+- If the knowledge file conveys the same meaning as the source using different wording, treat it as accurate.
+- Before reporting a fabrication, re-read the entire source file to confirm the statement truly has no basis.
+- A valid finding is a specific, verifiable discrepancy between source and knowledge file. Include both the source text and the knowledge file text so a reviewer can independently confirm.
+- If all sections faithfully represent the source, return status "clean" with an empty findings array.
+
 ## Validation Checklist
 
 ### V1: Omission Check (severity: critical)

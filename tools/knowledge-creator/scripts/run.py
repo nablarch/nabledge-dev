@@ -344,6 +344,44 @@ def _partial_phase_a(ctx, source_paths):
     logger.info(f"   📑Partial Phase A: {len(old_entries)} old entries → {len(new_entries)} new entries")
 
 
+def _load_clean_history(ctx):
+    """Load clean history from disk. Returns {file_id: consecutive_critical_zero_count}."""
+    from common import load_json
+    path = f"{ctx.log_dir}/clean_history.json"
+    if os.path.exists(path):
+        return load_json(path)
+    return {}
+
+
+def _save_clean_history(ctx, history):
+    """Save clean history to disk."""
+    from common import write_json
+    path = f"{ctx.log_dir}/clean_history.json"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    write_json(path, history)
+
+
+def _is_confirmed_clean(history, file_id):
+    """True if file has 2+ consecutive rounds with critical 0."""
+    return history.get(file_id, 0) >= 2
+
+
+def _update_clean_history(history, file_id, findings_data):
+    """Update clean history for a file based on its findings.
+
+    critical finding -> reset to 0
+    no critical findings (clean or minor only) -> increment
+    """
+    has_critical = any(
+        f.get("severity") == "critical"
+        for f in findings_data.get("findings", [])
+    )
+    if has_critical:
+        history[file_id] = 0
+    else:
+        history[file_id] = history.get(file_id, 0) + 1
+
+
 def _run_pipeline(ctx, args):
     """Run the full pipeline for a single version context."""
     logger = get_logger()
@@ -485,6 +523,7 @@ def _run_pipeline(ctx, args):
             report["phase_b"] = b_result
 
     # Phase C/D/E loop
+    persistent_findings = {}  # (file_id, location, category) -> round_count
     for round_num in range(1, ctx.max_rounds + 1):
         logger.info(f"\n🔄Round {round_num}/{ctx.max_rounds}")
 
@@ -519,6 +558,16 @@ def _run_pipeline(ctx, args):
                 effective_ids = effective_target
             else:
                 effective_ids = pass_ids
+
+            # Exclude files confirmed clean (2 consecutive critical-zero rounds)
+            clean_history = _load_clean_history(ctx)
+            if effective_ids is not None:
+                before = len(effective_ids)
+                effective_ids = [fid for fid in effective_ids if not _is_confirmed_clean(clean_history, fid)]
+                skipped = before - len(effective_ids)
+                if skipped > 0:
+                    logger.info(f"   ✅ {skipped} files confirmed clean (2 consecutive critical-zero), skipped")
+
             d_result = PhaseDContentCheck(ctx).run(
                 target_ids=effective_ids, round_num=round_num
             )
@@ -537,16 +586,72 @@ def _run_pipeline(ctx, args):
             }
             report["phase_d_rounds"].append(d_round)
 
+            # Update clean history based on this round's results
+            from common import load_json
+            if effective_ids is not None:
+                issue_set = set(d_result.get("issue_file_ids", []))
+                for fid in effective_ids:
+                    if fid in issue_set:
+                        findings_file = f"{ctx.findings_dir}/{fid}_r{round_num}.json"
+                        if os.path.exists(findings_file):
+                            _update_clean_history(clean_history, fid, load_json(findings_file))
+                        else:
+                            _update_clean_history(clean_history, fid, {"findings": []})
+                    else:
+                        _update_clean_history(clean_history, fid, {"findings": []})
+                _save_clean_history(ctx, clean_history)
+
             if d_result["issues_count"] == 0:
                 logger.info(f"   ✨Round {round_num}: All checks passed!")
                 break
 
+            # Track persistent findings for retry limit
             if "E" in phases:
+                # Load findings from this round to identify persistent issues
+                from common import load_json
+                findings_data = load_json(f"{ctx.findings_dir}/findings_r{round_num}.json") if os.path.exists(f"{ctx.findings_dir}/findings_r{round_num}.json") else {}
+
+                import re as _re
+
+                def _norm_loc(raw):
+                    m = _re.search(r'\bs(\d+)\b', raw, _re.IGNORECASE)
+                    return f"s{m.group(1)}" if m else raw.lower()
+
+                # Track persistent findings
+                for file_id in d_result.get("issue_file_ids", []):
+                    findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
+                    if os.path.exists(findings_file):
+                        findings_data_single = load_json(findings_file)
+                        for finding in findings_data_single.get("findings", []):
+                            key = (file_id, _norm_loc(finding.get("location", "")), finding.get("category", ""))
+                            if key in persistent_findings:
+                                persistent_findings[key] += 1
+                            else:
+                                persistent_findings[key] = 1
+
+                # Exclude files where ALL findings are persistent (2+ rounds)
+                excluded_files = set()
+                for file_id in d_result.get("issue_file_ids", []):
+                    findings_file = f"{ctx.findings_dir}/{file_id}_r{round_num}.json"
+                    if os.path.exists(findings_file):
+                        findings_data_single = load_json(findings_file)
+                        file_findings = findings_data_single.get("findings", [])
+                        if file_findings and all(
+                            persistent_findings.get(
+                                (file_id, _norm_loc(f.get("location", "")), f.get("category", "")), 0
+                            ) >= 2
+                            for f in file_findings
+                        ):
+                            excluded_files.add(file_id)
+                            logger.info(f"   [SKIP] {file_id}: all {len(file_findings)} findings persistent for 2+ rounds")
+
+                e_targets = [fid for fid in d_result.get("issue_file_ids", []) if fid not in excluded_files]
+
                 logger.info("\n🔧Phase E: Fix")
                 logger.info("   └─ Applying fixes to knowledge files...")
                 from phase_e_fix import PhaseEFix
                 e_result = PhaseEFix(ctx).run(
-                    target_ids=d_result["issue_file_ids"], round_num=round_num
+                    target_ids=e_targets, round_num=round_num
                 )
                 if e_result:
                     report["phase_e_rounds"].append({
@@ -566,7 +671,7 @@ def _run_pipeline(ctx, args):
         and len(report.get("phase_e_rounds", [])) == len(report.get("phase_d_rounds", []))
     )
     if loop_ended_with_fix and "D" in phases:
-        final_result = _run_final_verification(ctx, ctx.max_rounds, phases)
+        final_result = _run_final_verification(ctx, ctx.max_rounds, phases, effective_target)
         report["final_verification"] = final_result
 
     # Phase M (replaces G+F in default flow)
@@ -608,7 +713,7 @@ def _run_pipeline(ctx, args):
     logger.info(f"\n   📄 Reports saved: {ctx.reports_dir}/{ctx.run_id}.*")
 
 
-def _run_final_verification(ctx, max_rounds, phases):
+def _run_final_verification(ctx, max_rounds, phases, target_ids=None):
     """最終検証: CDE ループ後に C→D を 1 回実行。E（修正）は呼ばない。"""
     logger = get_logger()
     final_round = max_rounds + 1
@@ -620,7 +725,7 @@ def _run_final_verification(ctx, max_rounds, phases):
     if "C" in phases:
         logger.info("\n✅Phase C: Structure Check (Final)")
         from phase_c_structure_check import PhaseCStructureCheck
-        c_result = PhaseCStructureCheck(ctx).run()
+        c_result = PhaseCStructureCheck(ctx).run(target_ids=target_ids)
         result["phase_c"] = {
             "total": c_result.get("total", 0),
             "pass": c_result.get("pass", 0),
@@ -631,8 +736,15 @@ def _run_final_verification(ctx, max_rounds, phases):
         logger.info("\n🔍Phase D: Content Check (Final)")
         from phase_d_content_check import PhaseDContentCheck
         pass_ids = c_result.get("pass_ids") if c_result else None
+        if target_ids and pass_ids is not None:
+            target_set = set(target_ids)
+            effective_ids = [fid for fid in pass_ids if fid in target_set]
+        elif target_ids:
+            effective_ids = target_ids
+        else:
+            effective_ids = pass_ids
         d_result = PhaseDContentCheck(ctx).run(
-            target_ids=pass_ids, round_num=final_round
+            target_ids=effective_ids, round_num=final_round
         )
         findings_summary = _aggregate_findings(ctx, round_num=final_round)
         result["phase_d"] = {

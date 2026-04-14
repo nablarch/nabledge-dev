@@ -487,7 +487,7 @@ class PhaseFFinalize:
             title = re.sub(r"^#+\s*", "", first_line)
             tree.setdefault(type_, {}).setdefault(category, []).append((rel, title))
 
-        lines = ["# Nablarch 6 ドキュメント", "", f"{len(md_files)} ページ", ""]
+        lines = [f"# Nablarch {self.ctx.version} ドキュメント", "", f"{len(md_files)} ページ", ""]
         for type_, cats in sorted(tree.items()):
             lines.append(f"## {type_}")
             lines.append("")
