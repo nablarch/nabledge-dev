@@ -112,11 +112,11 @@ Output directory: .nabledge/20260210
    - Include class names, Japanese feature names, and related technical terms
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
 
-2. **Execute full-text search**:
-   ```bash
-   bash .claude/skills/nabledge-6/scripts/full-text-search.sh \
-     "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
+2. **Execute full-text search** (run exactly as written — path must be relative, not absolute):
    ```
+   bash .claude/skills/nabledge-6/scripts/full-text-search.sh "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
+   ```
+   > **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
    - Output: Scored and ranked candidate sections (max 15 results)
 
 3. **Execute section judgement**:
@@ -233,20 +233,17 @@ After the script completes, find the `Output: <path>` line in the result and sav
 
 **Action**: Generate diagram skeletons to reduce LLM workload:
 
-**Class Diagram Skeleton**:
-```bash
-bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
-  --source-files "<file1.java,file2.java>" \
-  --diagram-type class
+**Class Diagram Skeleton** (run exactly as written — path must be relative, not absolute):
+```
+bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<file1.java,file2.java>" --diagram-type class
 ```
 
-**Sequence Diagram Skeleton**:
-```bash
-bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
-  --source-files "<main-file.java>" \
-  --diagram-type sequence \
-  --main-class "<MainClass>"
+**Sequence Diagram Skeleton** (run exactly as written — path must be relative, not absolute):
 ```
+bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<main-file.java>" --diagram-type sequence --main-class "<MainClass>"
+```
+
+> **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
 
 **Output**: Mermaid diagram syntax with:
 - Class diagram: class names, basic relationships (extends, implements, uses)

@@ -28,13 +28,12 @@ Caller converts to pointer JSON.
 
 **Action**: Retrieve index.hints for candidate sections and perform a quick relevance check against search keywords. Exclude clearly irrelevant sections before reading their content.
 
-**Command** (execute from project root, do NOT use cd prefix):
-```bash
-bash .claude/skills/nabledge-6/scripts/get-hints.sh \
-  "component/libraries/libraries-universal_dao.json:s3" \
-  "component/libraries/libraries-universal_dao.json:s1" \
-  "component/libraries/libraries-database.json:s2"
+**Command** (run exactly as written — path must be relative, not absolute):
 ```
+bash .claude/skills/nabledge-6/scripts/get-hints.sh "component/libraries/libraries-universal_dao.json:s3" "component/libraries/libraries-universal_dao.json:s1" "component/libraries/libraries-database.json:s2"
+```
+
+> **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
 
 **Judgment rules** (agent matches against search keywords in memory):
 - hints contains one or more search keywords (partial match, case-insensitive) → **keep as candidate**
@@ -49,13 +48,12 @@ bash .claude/skills/nabledge-6/scripts/get-hints.sh \
 
 **Action**: Read candidate section content in bulk. Retrieve all section content in a single tool call. Split into 2-3 calls if there are many candidates (max ~10 sections per call).
 
-**Command**:
-```bash
-bash .claude/skills/nabledge-6/scripts/read-sections.sh \
-  "features/libraries/universal-dao.json:s3" \
-  "features/libraries/universal-dao.json:s1" \
-  "features/libraries/database-access.json:s2"
+**Command** (run exactly as written — path must be relative, not absolute):
 ```
+bash .claude/skills/nabledge-6/scripts/read-sections.sh "features/libraries/universal-dao.json:s3" "features/libraries/universal-dao.json:s1" "features/libraries/database-access.json:s2"
+```
+
+> **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
 
 **Output**: Body text of each section
 

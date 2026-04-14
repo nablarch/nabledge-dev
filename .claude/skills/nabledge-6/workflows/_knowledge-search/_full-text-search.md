@@ -27,10 +27,12 @@ Each line: `relative-file-path|section-id`
 
 **Action**: Execute `scripts/full-text-search.sh` and pass the keyword list as arguments.
 
-**Command**:
-```bash
+**Command** (run exactly as written — path must be relative, not absolute):
+```
 bash .claude/skills/nabledge-6/scripts/full-text-search.sh "paging" "paging" "UniversalDao"
 ```
+
+> **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
 
 **Search rules**:
 
