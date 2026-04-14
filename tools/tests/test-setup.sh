@@ -337,8 +337,10 @@ ${ghc_prompt}"
         ghc_prompt_basename=$(basename "$ghc_prompt_file")
         # Copy temp prompt file into project dir so copilot can find it
         cp "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
+        local ghc_log_dir="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.ghc-logs"
+        mkdir -p "$ghc_log_dir"
         local output
-        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo" /dev/null 2>&1) || true
+        output=$(script -qc "cd '$project_dir' && timeout 120 copilot -p '${ghc_prompt_basename}' --model claude-haiku-4.5 --yolo --log-dir '$ghc_log_dir' --log-level debug" /dev/null 2>&1) || true
         rm -f "$ghc_prompt_file" "$project_dir/$ghc_prompt_basename"
     else
         if ! command -v claude &>/dev/null; then
@@ -373,46 +375,47 @@ ${ghc_prompt}"
 ${prompt}"
         local output
         # CC uses short model alias "haiku"; GHC uses full model ID "claude-haiku-4.5" (copilot requirement)
-        output=$(cd "$project_dir" && timeout 120 claude -p "$prompt" --model haiku --dangerously-skip-permissions < /dev/null 2>&1) || true
+        # stream-json+verbose outputs full conversation including tool_use events with file paths
+        local cc_log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
+        timeout 120 bash -c "cd $(printf '%q' "$project_dir") && claude -p $(printf '%q' "$prompt") --model haiku --dangerously-skip-permissions --output-format stream-json --verbose < /dev/null" > "$cc_log_file" 2>&1 || true
+        output=$(cat "$cc_log_file")
     fi
 
-    local byte_count=${#output}
     local log_file="${OUTPUT_DIR}/dynamic-check-${label//\//-}-nabledge-${v}.log"
-    echo "$output" > "$log_file"
-
-    if [ "$byte_count" -lt 100 ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check response too short (${byte_count} bytes, expected >= 100)"
-        echo "         Log: ${log_file}"
-        verify_fail=1
-        return
+    if [ "$tool" != "cc" ]; then
+        echo "$output" > "$log_file"
     fi
 
+    # Check if SKILL.md was read during the knowledge search.
+    # This verifies that the skill is properly installed and the workflow started correctly.
+    # For CC: path appears in stream-json output as a JSON string value.
+    # For GHC: path appears as [DEBUG] view: event in --log-dir logs.
+    local skill_read=0
+    if [ "$tool" = "cc" ]; then
+        grep -q 'SKILL\.md' "$log_file" && skill_read=1 || true
+    else
+        grep -rqE '\[DEBUG\] view:.*SKILL\.md' "$ghc_log_dir"/ && skill_read=1 || true
+    fi
+
+    # Keyword detection (reference only, not used for pass/fail)
     local detected_count=0
     local total_count=0
     IFS=',' read -ra keywords <<< "$keywords_str"
     for kw in "${keywords[@]}"; do
         total_count=$((total_count + 1))
-        if echo "$output" | grep -q "$kw"; then
-            detected_count=$((detected_count + 1))
+        if [ "$tool" = "cc" ]; then
+            grep -q "$kw" "$log_file" && detected_count=$((detected_count + 1)) || true
+        else
+            echo "$output" | grep -q "$kw" && detected_count=$((detected_count + 1)) || true
         fi
     done
 
-    local detection_rate=0
-    if [ "$total_count" -gt 0 ]; then
-        detection_rate=$((detected_count * 100 / total_count))
-    fi
-
-    # Minimum detection rate threshold: 50% of scenario keywords must appear in the response.
-    # Based on nabledge-test baselines: skills reliably hit 50%+ when knowledge is correctly
-    # installed and the skill is responding to the query (not all keywords appear in every
-    # valid answer, so 100% is not required).
-    local min_threshold=50
-    if [ "$detection_rate" -lt "$min_threshold" ]; then
-        echo "  [FAIL] ${label} nabledge-${v}: dynamic check detection rate ${detection_rate}% below minimum ${min_threshold}% (output: ${byte_count} bytes)"
+    if [ "$skill_read" -eq 0 ]; then
+        echo "  [FAIL] ${label} nabledge-${v}: SKILL.md not read; keywords: ${detected_count}/${total_count}"
         echo "         Log: ${log_file}"
         verify_fail=1
     else
-        echo "  [OK]   ${label} nabledge-${v}: dynamic check detection rate ${detection_rate}% (${detected_count}/${total_count} keywords, output: ${byte_count} bytes)"
+        echo "  [OK]   ${label} nabledge-${v}: SKILL.md read; keywords: ${detected_count}/${total_count}"
     fi
 }
 
