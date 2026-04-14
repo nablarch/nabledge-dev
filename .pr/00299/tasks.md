@@ -2,7 +2,7 @@
 
 **PR**: (TBD)
 **Issue**: #299
-**Updated**: 2026-04-10
+**Updated**: 2026-04-14
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認
 
@@ -120,16 +120,21 @@ RSTをセクション分割し、各要素をMarkdownに変換する。
 
 ---
 
-### Phase 8: CLI + create/update/delete operations
+### Phase 8: CLI + create/update/delete/verify operations
 
-**Files**: `rbkc.sh`, `scripts/run.py`, `scripts/scan.py`, `scripts/classify.py`, `scripts/differ.py`
+**Files**: `rbkc.sh`, `scripts/run.py`, `scripts/scan.py`, `scripts/classify.py`, `scripts/differ.py`, `scripts/verify.py`
 
 **Steps:**
 - [ ] `rbkc create {version}`: scan → classify → convert → write
 - [ ] `rbkc update {version}`: SHA-256スナップショット差分 → 変更分のみ再変換
 - [ ] `rbkc delete {version}`: スナップショットにあって現在のソースにないファイルの出力を削除
+- [ ] `rbkc verify {version}`: 生成済み知識ファイルJSONとソースファイルのコンテンツを突き合わせ、不一致を検出して報告
+  - ソースのテキスト・見出し・コードブロック・テーブルセルがJSONに過不足なく含まれているか検証
+  - リンクはURL・表示テキストが等価であることを確認（フォーマットの違いは許容）
+  - 不一致があればファイルパスと差分を出力してexit 1
 - [ ] スナップショット保存: `.state/{version}/snapshot.json`
 - [ ] E2E test: create（全件）、update（1ファイル変更）、delete（1ファイル削除）
+- [ ] E2E test: verify（正常系: 一致）、verify（異常系: 不一致検出 → exit 1）
 
 ---
 
