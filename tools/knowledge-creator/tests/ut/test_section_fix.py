@@ -361,3 +361,9 @@ class TestMissingSectionFix:
         saved = load_json(kpath)
         assert saved["sections"]["s1"] == "original s1 content here that is long enough"
         assert saved["sections"]["s2"] == "original s2 content here that is long enough"
+
+        # New sections must be added
+        assert saved["sections"].get("s3") == "added s3", \
+            "s3 was not merged into knowledge file from new_sections"
+        assert saved["sections"].get("s4") == "added s4", \
+            "s4 was not merged into knowledge file from new_sections"
