@@ -132,7 +132,7 @@ add_skill_permissions() {
             ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/get-hints.sh *)"),
             ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/record-start.sh)"),
             ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/finalize-output.sh *)"),
-            ("Bash(.claude/skills/nabledge-" + $v + "/scripts/generate-mermaid-skeleton.sh *)"),
+            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/generate-mermaid-skeleton.sh *)"),
             ("Bash(OUTPUT_PATH=*)")
         ] | unique)
     ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"

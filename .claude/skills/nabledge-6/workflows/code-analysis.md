@@ -170,7 +170,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 ```bash
 # Execute prefill script (now calculates output path internally)
 # Capture output path from the script's final "Output: <path>" line
-OUTPUT_PATH=$(.claude/skills/nabledge-6/scripts/prefill-template.sh \
+OUTPUT_PATH=$(bash .claude/skills/nabledge-6/scripts/prefill-template.sh \
   --target-name "<target-name>" \
   --target-desc "<one-line-description>" \
   --modules "<module1, module2>" \
@@ -241,14 +241,14 @@ echo "Output file: $OUTPUT_PATH"
 
 **Class Diagram Skeleton**:
 ```bash
-.claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
+bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
   --source-files "<file1.java,file2.java>" \
   --diagram-type class
 ```
 
 **Sequence Diagram Skeleton**:
 ```bash
-.claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
+bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh \
   --source-files "<main-file.java>" \
   --diagram-type sequence \
   --main-class "<MainClass>"
