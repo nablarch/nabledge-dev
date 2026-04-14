@@ -3,6 +3,7 @@ name: nabledge-6
 description: Provides Nablarch 6 framework knowledge and code analysis capabilities. Use when developing Nablarch applications, implementing features, reviewing code, or answering questions about Nablarch 6.
 user-invocable: false
 disable-model-invocation: true
+allowed-tools: Bash
 ---
 
 # Nabledge-6: Nablarch 6 Knowledge Base
