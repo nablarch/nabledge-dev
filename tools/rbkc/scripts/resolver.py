@@ -30,8 +30,8 @@ class AssetRef:
 # Label map
 # ---------------------------------------------------------------------------
 
-# Matches ``.. _label:`` and ``.. _`label with spaces`:``
-_LABEL_RE = re.compile(r"^\.\. _`?([^:`\n]+?)`?\s*:\s*$", re.MULTILINE)
+# Matches ``.. _label:`` and ``.. _`label with spaces`:`` (with optional indentation)
+_LABEL_RE = re.compile(r"^\s*\.\. _`?([^:`\n]+?)`?\s*:\s*$", re.MULTILINE)
 
 
 def build_label_map(

@@ -41,6 +41,14 @@ class TestBuildLabelMap:
         label_map = build_label_map(tmp_path)
         assert "label with spaces" in label_map
 
+    def test_indented_label(self, tmp_path):
+        """Labels may be indented (e.g. inside a directive body in v6 source)."""
+        (tmp_path / "page.rst").write_text(
+            ".. deprecated::\n\n   .. _`indented-label`:\n\n   Content.\n"
+        )
+        label_map = build_label_map(tmp_path)
+        assert "indented-label" in label_map
+
     def test_custom_path_to_id(self, tmp_path):
         subdir = tmp_path / "sub"
         subdir.mkdir()
