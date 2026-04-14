@@ -5,6 +5,7 @@ from scripts.converters.rst import (
     _is_underline,
     _parse_grid_table,
     _parse_simple_table,
+    _parse_simple_table_cjk,
     convert,
 )
 
@@ -180,3 +181,62 @@ class TestSimpleTableEdgeCases:
 
     def test_empty_block(self):
         assert _parse_simple_table([]) == []
+
+    def test_cjk_falls_back_to_cjk_parser(self):
+        """CJK content triggers CJK-safe fallback — no raw code block."""
+        block = [
+            "======================================================================== ===============================================================",
+            "用途                                                                     セッションストア",
+            "======================================================================== ===============================================================",
+            "入力～確認～完了画面間で入力情報の保持(複数タブでの画面操作を許容しない) DBストア",
+            "認証情報の保持                                                           HTTPセッションストア",
+            "======================================================================== ===============================================================",
+        ]
+        result = _parse_simple_table(block)
+        md = "\n".join(result)
+        assert "```" not in md
+        assert "|" in md
+        assert "DBストア" in md
+        assert "HTTPセッションストア" in md
+
+
+# ---------------------------------------------------------------------------
+# CJK-safe simple table parser
+# ---------------------------------------------------------------------------
+
+class TestSimpleTableCjk:
+    def test_two_col_cjk_content(self):
+        """Japanese content in column 1, ref-style content in column 2."""
+        block = [
+            "======================================================================== ===============================================================",
+            "用途                                                                     セッションストア",
+            "======================================================================== ===============================================================",
+            "入力～確認～完了画面間で入力情報の保持(複数タブでの画面操作を許容しない) DBストア",
+            "認証情報の保持                                                           HTTPセッションストア",
+            "======================================================================== ===============================================================",
+        ]
+        result = _parse_simple_table_cjk(block)
+        md = "\n".join(result)
+        assert "|" in md
+        assert "DBストア" in md
+        assert "HTTPセッションストア" in md
+        assert "認証情報の保持" in md
+
+    def test_header_separator_detected(self):
+        """Second === separator marks end of header rows."""
+        block = [
+            "======= =======",
+            "Col1    Col2",
+            "======= =======",
+            "R1C1    R1C2",
+            "======= =======",
+        ]
+        result = _parse_simple_table_cjk(block)
+        md = "\n".join(result)
+        # Header row + separator + data row
+        assert "Col1" in md
+        assert "R1C1" in md
+        assert "---" in md  # Markdown header separator
+
+    def test_empty_block(self):
+        assert _parse_simple_table_cjk([]) == []

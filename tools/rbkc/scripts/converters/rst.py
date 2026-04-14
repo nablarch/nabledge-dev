@@ -413,8 +413,84 @@ def _rows_to_md_table(rows: list[list[str]], header_count: int, file_id: str = "
 
 
 # ---------------------------------------------------------------------------
-# Simple table parser (via docutils)
+# Simple table parser (via docutils, with CJK-safe fallback)
 # ---------------------------------------------------------------------------
+
+def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
+    """CJK-safe simple table parser using display-width column splitting.
+
+    Fallback for when docutils SimpleTableParser fails due to CJK characters
+    whose display width (2) mismatches their Python string length (1).
+    """
+    if not block:
+        return []
+
+    import unicodedata
+
+    def _dw(c: str) -> int:
+        return 2 if unicodedata.east_asian_width(c) in ("W", "F") else 1
+
+    # Find first separator line to determine column boundaries.
+    # = and space are each 1 display column, so char positions == display positions.
+    first_sep = next(
+        (ln.rstrip() for ln in block if ln.strip() and all(c in "= " for c in ln.strip())),
+        None,
+    )
+    if not first_sep:
+        return ["```"] + block + ["```"]
+
+    # Column 2, 3, ... start at the display position of the first = after a gap.
+    col_starts: list[int] = []  # display positions where each column (except first) begins
+    in_eq = True
+    disp = 0
+    for c in first_sep:
+        if c == "=" and not in_eq:
+            col_starts.append(disp)
+            in_eq = True
+        elif c == " ":
+            in_eq = False
+        disp += 1  # = and space are 1 display column each
+
+    if not col_starts:
+        return ["```"] + block + ["```"]
+
+    ncols = len(col_starts) + 1
+
+    def split_row(line: str) -> list[str]:
+        cells: list[list[str]] = [[] for _ in range(ncols)]
+        d = 0
+        ci = 0
+        for ch in line:
+            if ci < len(col_starts) and d >= col_starts[ci]:
+                ci += 1
+            cells[ci].append(ch)
+            d += _dw(ch)
+        return ["".join(cell).strip() for cell in cells]
+
+    rows: list[list[str]] = []
+    sep_count = 0
+    head_count: int | None = None
+
+    for line in block:
+        s = line.rstrip()
+        if not s:
+            continue
+        stripped = s.lstrip()
+        if stripped and all(c in "= " for c in stripped):
+            sep_count += 1
+            if sep_count == 2 and head_count is None:
+                head_count = len(rows)
+        else:
+            cells = split_row(s)
+            # Skip rows that are entirely empty (e.g., option-only cells like :ref: refs)
+            if any(c for c in cells):
+                rows.append(cells)
+
+    if head_count is None:
+        head_count = 0
+
+    return _rows_to_md_table(rows, head_count, file_id)
+
 
 def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
     """Convert RST simple table to Markdown table using docutils SimpleTableParser."""
@@ -426,7 +502,7 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
         parser = SimpleTableParser()
         tabledata = parser.parse(sl)
     except Exception:
-        return ["```"] + block + ["```"]
+        return _parse_simple_table_cjk(block, file_id)
 
     colspecs, headrows, bodyrows = tabledata
 
@@ -779,24 +855,27 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
 
         # Simple table (starts with === ===)
         if re.match(r"^={3,}(\s+={3,})+\s*$", stripped):
-            # Collect table block: lines until we exit the table
+            # Collect table block.  A blank line after a separator row ends the table.
             table_block = [line]
             j = i + 1
+            last_was_sep = True  # first line is a separator
             while j < len(lines):
                 tl = lines[j]
                 ts = tl.strip()
-                if ts and all(c in "= " for c in ts) and ts.startswith("="):
+                is_sep = bool(ts) and all(c in "= " for c in ts) and ts.startswith("=")
+                if is_sep:
                     table_block.append(tl)
+                    last_was_sep = True
                     j += 1
                 elif not ts:
-                    # Blank line may end table
-                    if j + 1 < len(lines) and lines[j + 1].strip():
-                        table_block.append(tl)
-                        j += 1
-                    else:
+                    if last_was_sep:
+                        # Blank line after separator = end of table
                         break
+                    table_block.append(tl)
+                    j += 1
                 else:
                     table_block.append(tl)
+                    last_was_sep = False
                     j += 1
             i = j
             # Strip leading indent
