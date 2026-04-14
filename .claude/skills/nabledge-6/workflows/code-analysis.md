@@ -17,6 +17,13 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 ## Process flow
 
+> **Command execution rules (apply to every Bash command in this workflow)**
+> - Copy the command exactly as written — do not modify paths, flags, or structure
+> - Do not absolutize relative paths (`.claude/` must stay as `.claude/`)
+> - Do not append pipes, redirects, or output limits (`2>/dev/null`, `| head`, etc.)
+>
+> Modifying any command breaks permission matching and causes an authorization error.
+
 ### Confirm analysis target (required before Step 0)
 
 **Tool**: AskUserQuestion
@@ -38,8 +45,10 @@ Check whether the user's invocation explicitly names a specific class or file.
 
 **Tool**: Bash
 
-**Action** - Store start time with unique session ID in output directory:
-```bash
+**Action** - Store start time with unique session ID in output directory.
+
+Execute verbatim:
+```run-verbatim
 bash .claude/skills/nabledge-6/scripts/record-start.sh
 ```
 
@@ -129,11 +138,10 @@ Output directory: .nabledge/20260210
    - Include class names, Japanese feature names, and related technical terms
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
 
-2. **Execute full-text search** (run exactly as written — path must be relative, not absolute):
-   ```
+2. **Execute full-text search**. Execute verbatim:
+   ```run-verbatim
    bash .claude/skills/nabledge-6/scripts/full-text-search.sh "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
    ```
-   > **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
    - Output: Scored and ranked candidate sections (max 15 results)
 
 3. **Execute section judgement**:
@@ -184,9 +192,8 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 
 **Action**: Execute prefill script to pre-populate 9 deterministic placeholders.
 
-Run on a **single line** (no backslash line continuation, no pipes):
-
-```
+Execute verbatim (single line, no backslash continuation):
+```run-verbatim
 bash .claude/skills/nabledge-6/scripts/prefill-template.sh --target-name "<target-name>" --target-desc "<one-line-description>" --modules "<module1, module2>" --source-files "File1.java,File2.java" --knowledge-files "libraries-universal_dao,libraries-data_bind"
 ```
 
@@ -250,17 +257,15 @@ After the script completes, find the `Output: <path>` line in the result and sav
 
 **Action**: Generate diagram skeletons to reduce LLM workload:
 
-**Class Diagram Skeleton** (run exactly as written — path must be relative, not absolute):
-```
+**Class Diagram Skeleton**. Execute verbatim:
+```run-verbatim
 bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<file1.java,file2.java>" --diagram-type class
 ```
 
-**Sequence Diagram Skeleton** (run exactly as written — path must be relative, not absolute):
-```
+**Sequence Diagram Skeleton**. Execute verbatim:
+```run-verbatim
 bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<main-file.java>" --diagram-type sequence --main-class "<MainClass>"
 ```
-
-> **Note**: Do not expand `.claude/` to an absolute path — this breaks permission matching.
 
 **Output**: Mermaid diagram syntax with:
 - Class diagram: class names, basic relationships (extends, implements, uses)
@@ -583,8 +588,8 @@ mapper.close();
 
    **CRITICAL SEQUENCING**: Execute time calculation and file update in a single Bash tool call using `&&` to ensure no operations occur between them.
 
-   Execute single bash script to fill duration placeholder:
-   ```bash
+   Execute verbatim:
+   ```run-verbatim
    bash .claude/skills/nabledge-6/scripts/finalize-output.sh "<target-name>" "YYYYMMDD"
    ```
 
