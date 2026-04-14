@@ -41,37 +41,39 @@ v1.x テスト環境が SVN 由来の tutorial ディレクトリを使用して
 93d12e86 fix: unify v1.x test environment base project to v6's nablarch-example-batch (#252)
 ```
 
-## 残りの作業（明日再開）
+## 2026-04-10 セッション
 
-### 未実施項目（PR本体にまだ含まれていないもの）
+### 状況
 
-- ベースライン削除（v1.2, v1.3, v1.4, v5 の古い実行結果）
-- nabledge-test SKILL.md の更新
-- workflow コード分析テンプレート削除
-- スクリプト側の prefill-template.sh 修正
+実装・Expert Review・PR作成はすべて完了済み (PR #296)。
 
-### 推定される次ステップ
+残り1つ: **`bash tools/tests/test-setup.sh` を実行して全体を実証確認してからマージ**。
 
-1. **検証実行**: `bash tools/tests/test-setup.sh` で全20行の動的チェック実行
-   - 各バージョン CC/GHC のペアが [OK] または detection rate 50%以上を確認
-   
-2. **PR本文作成**:
-   ```
-   ## Summary
-   - v1.x テスト環境を tutorial (SVN) から v6 の nablarch-example-batch に統一
-   - CC/GHC プロジェクトルート判定の問題を解決
-   - 動的チェックはナレッジ検索のみ（読み取り専用）なので v6 ベース使用で十分
-   
-   ## Tasks
-   - [x] tools/tests/test-setup.sh v1.x パス統一
-   - [ ] 検証実行（setup.sh → test-setup.sh）
-   - [ ] PR本文作成＆expert review
-   ```
+### 問題: test-setup.sh が GitHub ネットワーク問題でハング
 
-3. **Expert Review**: Software Engineer として品質確認
-   - 設定の一貫性
-   - エラーハンドリング
-   - テスト環境の完全性
+`git sparse-checkout set` のblob fetch（1009 objects、setup-cc.sh内の2回目のgit操作）が途中（17%や92%等）でハングする。
+
+- `git ls-remote` での疎通確認: OK
+- こちら環境（同WSL）での再現: 発生しない（3秒で完了）
+- → GitHubのCDNノードまたはIPレートリミットの可能性
+
+**対処**: 時間をおいて再実行、またはMTU低下で改善する場合あり:
+```bash
+sudo ip link set dev eth0 mtu 1200
+```
+
+### 次ステップ（再開時）
+
+1. `bash tools/tests/test-setup.sh` を実行 — 全12環境の静的チェック＋動的チェックが全 [OK] を確認
+2. 問題なければ `/bb` でマージ
+
+### メモ: 旧 notes の「未実施項目」について
+
+2026-04-08 時点で記載していた以下はいずれも issue #252 のスコープ外:
+- ベースライン削除（別issue）
+- nabledge-test SKILL.md 更新（別issue）
+- workflow コード分析テンプレート削除（別issue）
+- prefill-template.sh 修正（別issue）
 
 ## 技術背景
 
