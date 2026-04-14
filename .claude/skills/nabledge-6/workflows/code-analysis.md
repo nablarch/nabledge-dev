@@ -163,23 +163,17 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 
 #### 3.2: Pre-fill deterministic placeholders
 
-**Tool**: Bash (.claude/skills/nabledge-6/scripts/prefill-template.sh)
+**Tool**: Bash
 
-**Action**: Execute prefill script to pre-populate 9 deterministic placeholders:
+**Action**: Execute prefill script to pre-populate 9 deterministic placeholders.
 
-```bash
-# Execute prefill script (now calculates output path internally)
-# Capture output path from the script's final "Output: <path>" line
-OUTPUT_PATH=$(bash .claude/skills/nabledge-6/scripts/prefill-template.sh \
-  --target-name "<target-name>" \
-  --target-desc "<one-line-description>" \
-  --modules "<module1, module2>" \
-  --source-files "File1.java,File2.java" \
-  --knowledge-files "libraries-universal_dao,libraries-data_bind" \
-  | grep "^Output: " | cut -d' ' -f2)
+Run on a **single line** (no backslash line continuation, no pipes):
 
-echo "Output file: $OUTPUT_PATH"
 ```
+bash .claude/skills/nabledge-6/scripts/prefill-template.sh --target-name "<target-name>" --target-desc "<one-line-description>" --modules "<module1, module2>" --source-files "File1.java,File2.java" --knowledge-files "libraries-universal_dao,libraries-data_bind"
+```
+
+After the script completes, find the `Output: <path>` line in the result and save that path as `OUTPUT_PATH`.
 
 **Parameters**:
 - `target-name`: Target code name (e.g., "LoginAction")
