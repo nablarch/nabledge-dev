@@ -45,7 +45,7 @@ _ADMONITIONS = {
 }
 
 # Directives whose block body is silently skipped
-_SKIP_DIRECTIVES = {"contents", "raw", "include", "class"}
+_SKIP_DIRECTIVES = {"raw", "include", "class"}
 
 # Characters that RST uses for underlines (Sphinx subset)
 _UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
@@ -839,6 +839,19 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
                 output.append("```")
                 output.append(sig)
                 output.append("```")
+                # Preserve body (param/return descriptions) as prose
+                for bl in block:
+                    stripped = bl.strip()
+                    if not stripped:
+                        continue
+                    # Strip RST field list marker: :param type name: desc → desc
+                    m = re.match(r"^:[^:]+:\s*(.*)", stripped)
+                    if m:
+                        desc = m.group(1).strip()
+                        if desc:
+                            output.append(desc)
+                    else:
+                        output.append(stripped)
                 continue
 
             # --- rubric ---
