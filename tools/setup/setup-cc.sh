@@ -127,14 +127,14 @@ add_skill_permissions() {
         .permissions //= {} |
         .permissions.allow //= [] |
         .permissions.allow = (.permissions.allow + [
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/find-file.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/full-text-search.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/read-sections.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/get-hints.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/record-start.sh)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/finalize-output.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/generate-mermaid-skeleton.sh *)"),
-            ("Bash(bash .claude/skills/nabledge-" + $v + "/scripts/prefill-template.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/find-file.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/full-text-search.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/read-sections.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/get-hints.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/record-start.sh)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/finalize-output.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/generate-mermaid-skeleton.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/prefill-template.sh *)"),
             "Write(.nabledge/**)"
         ] | unique)
     ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"

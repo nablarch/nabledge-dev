@@ -18,10 +18,8 @@ Analyze existing code, trace dependencies, generate structured documentation.
 ## Process flow
 
 > **Bash usage: restricted commands only**
-> For file operations (search, read, grep), always use Glob, Grep, and Read tools — never Bash.
-> - Do not use `find`, `ls`, or shell `grep` as Bash commands — use Glob and Grep tools instead
+> For file operations (search, read, grep), always use Bash scripts via run-verbatim — never raw `find`, `ls`, or `grep` commands.
 > - Copy approved commands exactly as written — do not modify paths, flags, or structure
-> - Do not absolutize relative paths (`.claude/` must stay as `.claude/`)
 > - Do not append pipes, redirects, or output limits (`2>/dev/null`, `| head`, etc.)
 >
 > Modifying any command breaks permission matching and causes an authorization error.
