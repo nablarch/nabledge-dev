@@ -76,7 +76,7 @@ Output directory: .nabledge/20260210
 
 **Prerequisite**: `target` must be set from the "Confirm analysis target" step above.
 
-**Tools**: Bash (find-file.sh), Read
+**Tools**: Bash (find-file.sh, read-file.sh)
 
 **Action**:
 
@@ -91,7 +91,11 @@ Output directory: .nabledge/20260210
    ```
    Replace `<TargetClass>` with the actual class name from `target`. Add more patterns if multiple files are needed (e.g., `"*Form.java"`).
 
-   After finding paths, use Read to read each file.
+3. **Read target files** — Execute verbatim (pass paths from step 2):
+   ```run-verbatim
+   bash .claude/skills/nabledge-6/scripts/read-file.sh "<path/to/file.java>"
+   ```
+   Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh.
 
 4. **Read target files** and extract dependencies:
    - Imports → External dependencies

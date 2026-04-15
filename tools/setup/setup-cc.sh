@@ -128,6 +128,7 @@ add_skill_permissions() {
         .permissions.allow //= [] |
         .permissions.allow = (.permissions.allow + [
             ("Bash(bash *nabledge-" + $v + "/scripts/find-file.sh *)"),
+            ("Bash(bash *nabledge-" + $v + "/scripts/read-file.sh *)"),
             ("Bash(bash *nabledge-" + $v + "/scripts/full-text-search.sh *)"),
             ("Bash(bash *nabledge-" + $v + "/scripts/read-sections.sh *)"),
             ("Bash(bash *nabledge-" + $v + "/scripts/get-hints.sh *)"),
