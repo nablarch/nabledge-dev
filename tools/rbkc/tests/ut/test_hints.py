@@ -2,7 +2,7 @@
 import json
 import pytest
 from pathlib import Path
-from scripts.hints import build_hints_index, lookup_hints
+from scripts.hints import build_hints_index, lookup_hints, _map_step_a
 
 
 # ---------------------------------------------------------------------------
@@ -162,3 +162,46 @@ class TestLookupHints:
         result = lookup_hints(hints_map, "x", "y")
         assert result is not None
         assert isinstance(result, list)
+
+
+# ---------------------------------------------------------------------------
+# _map_step_a — substring match must respect pointer order
+# ---------------------------------------------------------------------------
+
+class TestMapStepAPointer:
+    def test_substring_match_does_not_reuse_past_expected(self):
+        """Substring match must search from pointer, not from index 0.
+
+        Scenario: expected = ["セクションA", "詳細"]
+        kc_index = [
+            {"title": "セクションAの詳細", "hints": ["H1"]},
+                # substring "セクションA" → pointer advances to 1
+            {"title": "セクションAの概要", "hints": ["H2"]},
+                # BUG (before fix): "セクションA" is STILL a substring even though
+                # pointer is now 1.  Without the fix, H2 is mistakenly assigned to
+                # the already-consumed "セクションA" instead of the current "詳細".
+        ]
+        Expected with fix: H2 → "詳細" (fallback to pointer=1), not back to "セクションA".
+        """
+        expected = ["セクションA", "詳細"]
+        kc_index = [
+            {"title": "セクションAの詳細", "hints": ["H1"]},
+            {"title": "セクションAの概要", "hints": ["H2"]},
+        ]
+        result = _map_step_a(kc_index, expected)
+        assert "H1" in result["セクションA"]
+        # H2 must NOT go back to the already-consumed "セクションA"
+        assert "H2" not in result["セクションA"]
+        # H2 should fall through to "詳細" (pointer=1 fallback)
+        assert "H2" in result["詳細"]
+
+    def test_substring_match_at_pointer_zero_works(self):
+        """Substring match at the start of expected list still works."""
+        expected = ["概要", "詳細"]
+        kc_index = [
+            {"title": "概要セクション", "hints": ["A"]},
+            {"title": "詳細説明",       "hints": ["B"]},
+        ]
+        result = _map_step_a(kc_index, expected)
+        assert "A" in result["概要"]
+        assert "B" in result["詳細"]

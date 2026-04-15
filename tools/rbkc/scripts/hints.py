@@ -51,8 +51,10 @@ def _map_step_a(
             except ValueError:
                 pass
         else:
-            # 2. Substring match: find longest Expected that is substring of kc_title
-            matches = [e for e in expected if e and e in kc_title]
+            # 2. Substring match: find longest Expected (from pointer onward) that is
+            # a substring of kc_title.  Searching from pointer prevents re-using
+            # sections that have already been consumed.
+            matches = [e for e in expected[pointer:] if e and e in kc_title]
             if matches:
                 target = max(matches, key=len)
                 # Advance pointer past matched expected
