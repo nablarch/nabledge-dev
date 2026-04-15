@@ -47,68 +47,41 @@ Agent(
 
 ### Phase 10: verify の完全チェック化
 
-#### 調査結果（実施済み）
+#### verify の検証仕様
 
-**バグ発見: preamble消滅バグ (rst.py)**
+ソース → 生成物の**完全性**を確認する。ルールベース変換でソース以外のコンテンツは入らないため、逆方向（生成物 → ソース）のチェックは不要。
 
-`_split_sections` の `_flush()` に論理バグがある。
-RST ファイルの h1 前に `.. _label:` が存在する場合（v6では225/334ファイル=67%）、
-h1〜最初のh2間のpreamble内容（概要テキスト、外部URLなど）が消滅する。
+バグが見つかった場合は verify が FAIL を出す → 修正タスクを追加して対処する。
 
-**原因**:
-`_flush()` の `elif current_lines and not preamble_lines:` 分岐が、
-h1 前の `.. _label:` 行を `preamble_lines` に格納した時点で
-`not preamble_lines` が False になり、実際のpreamble内容（h1後〜h2前）が捨てられる。
+**コンテンツ（全フォーマット共通: RST / MD / Excel）**
 
-**影響**: v6で65個の外部URLが消滅する（SC「リンクはターゲットURLを変えない」に直接違反）。
+| # | チェック対象 | 内容 |
+|---|------------|------|
+| A | `sections[].title` | ソースの見出しと完全一致 |
+| B | `sections[].content` | ソースのテキストと完全一致（リンク表示テキスト含む、リンクマークアップ除く） |
 
-**修正**: `_flush()` を以下のように変更する:
-```python
-# Before (buggy):
-elif current_lines and not preamble_lines:
-    preamble_lines = current_lines
+**リンク（全フォーマット共通）**
 
-# After (fixed):
-elif current_lines:
-    preamble_lines.extend(current_lines)   # append, don't replace
-```
+| # | チェック対象 | 内容 |
+|---|------------|------|
+| C | 内部リンク | 生成されたリンクURLに実際にアクセスして目的のページ（タイトル一致）か確認 |
+| D | 外部URL | ソースの `https?://` URL と JSON の URL が文字列完全一致 |
 
-**verify の正しいアプローチ**
+**網羅性**
 
-ルールベース変換なので、**再変換diffが最も完全なチェック**。
+| # | チェック対象 | 内容 |
+|---|------------|------|
+| F | index.toon | 全JSONファイルのエントリが存在する |
+| H | 閲覧用 MD | 全JSONファイルに対応するMDファイルが存在する |
 
-- 再変換: `convert(source, file_id)` を実行（file_idはJSON内の"id"フィールドから取得）
-- JSON の `title` / `sections[].title` / `sections[].content` と比較
-- 一致 → ソースとJSONは意味的に同一
-- 不一致 → コンバータのバグ or ソース変更後に再生成していない
-
-さらに **外部URLの独立チェック** を追加（コンバータのバグをダブルチェック）:
-- ソースの `https?://` URLをすべて抽出
-- JSONテキストに全URL存在すること確認
-- これにより「リンクはターゲットURLを変えない」SC を直接検証する
+閲覧用 MD にも A〜D を適用する（JSON と同じ基準）。
 
 #### Steps
 
-**Step 1: preamble消滅バグ修正（rst.py）**
-- [ ] `scripts/converters/rst.py` の `_flush()` を修正（`extend` に変更）
-- [ ] `test_preamble_becomes_overview_section` を pre-h1 ラベルありケースで拡充
-- [ ] 修正後 `pytest` 全通過確認
-
-**Step 2: verify を再変換diff + URL独立チェックに置き換え**
-- [ ] `verify_file(source_path, json_path, fmt)` の RST/MD ロジックを書き換え:
-  1. JSON の "id" フィールドから file_id を取得
-  2. `convert(source_text, file_id)` を実行（fresh result）
-  3. `fresh.title` vs `data["title"]`、`fresh.no_knowledge_content` vs `data["no_knowledge_content"]` を比較
-  4. `len(fresh.sections)` vs `len(data["sections"])` を比較
-  5. 各セクションの `title` と `content` を比較（strip後一致）
-  6. 独立チェック: ソースの `https?://` URL全件が JSON テキストに存在すること
-- [ ] 既存の `_verify_rst_md` テストを新ロジックに合わせて更新
-- [ ] 新規テスト: pre-h1 ラベルありRST → preamble内容とURLが verify を通過
+- [ ] `scripts/verify.py` を上記 A〜D・F・H の仕様で全面書き換え
+- [ ] テスト: 各チェック項目を網羅するテストを追加/更新
 - [ ] `pytest` 全通過確認
-
-**Step 3: コミット**
-- [ ] `fix: restore preamble content lost when pre-h1 RST label exists` でコミット
-- [ ] `feat: replace verify with re-conversion diff + URL presence check` でコミット
+- [ ] コミット
 
 ---
 
