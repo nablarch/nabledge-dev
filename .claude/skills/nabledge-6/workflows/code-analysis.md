@@ -17,8 +17,10 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 ## Process flow
 
-> **Command execution rules (apply to every Bash command in this workflow)**
-> - Copy the command exactly as written — do not modify paths, flags, or structure
+> **Bash usage: restricted commands only**
+> For file operations (search, read, grep), always use Glob, Grep, and Read tools — never Bash.
+> - Do not use `find`, `ls`, or shell `grep` as Bash commands — use Glob and Grep tools instead
+> - Copy approved commands exactly as written — do not modify paths, flags, or structure
 > - Do not absolutize relative paths (`.claude/` must stay as `.claude/`)
 > - Do not append pipes, redirects, or output limits (`2>/dev/null`, `| head`, etc.)
 >
@@ -76,7 +78,7 @@ Output directory: .nabledge/20260210
 
 **Prerequisite**: `target` must be set from the "Confirm analysis target" step above.
 
-**Tools**: Read, Glob, Grep
+**Tools**: Glob, Grep, Read (no Bash in this step)
 
 **Action**:
 
