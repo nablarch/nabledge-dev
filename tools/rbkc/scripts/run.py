@@ -32,7 +32,7 @@ from pathlib import Path
 
 from scripts.classify import FileInfo, classify_sources
 from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
-from scripts.hints import build_hints_index, extract_hints, lookup_hints, merge_hints
+from scripts.hints import build_hints_index, lookup_hints
 from scripts.scan import scan_sources
 from scripts.verify import verify_file
 
@@ -63,7 +63,8 @@ def _hints_index(repo_root: Path, version: str):
     """Load hints index for the given version (cached once per process call)."""
     try:
         cache_dir = repo_root / "tools/knowledge-creator/.cache" / f"v{version}" / "knowledge"
-        return build_hints_index(cache_dir)
+        catalog_path = repo_root / "tools/knowledge-creator/.cache" / f"v{version}" / "catalog.json"
+        return build_hints_index(cache_dir, catalog_path, repo_root)
     except Exception:
         return {}
 
@@ -84,15 +85,12 @@ def _convert_and_write(fi: FileInfo, output_dir: Path, hints_idx: dict) -> None:
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
         sid = f"s{idx}"
-        # Extract hints from section content
-        raw_hints = extract_hints(sec.content)
-        stage2 = lookup_hints(hints_idx, fi.file_id, sec.title)
-        final_hints = merge_hints(raw_hints, stage2)
+        hints = lookup_hints(hints_idx, fi.file_id, sec.title)
         sections.append({
             "id": sid,
             "title": sec.title,
             "content": sec.content,
-            "hints": final_hints,
+            "hints": hints,
         })
 
     data = {
