@@ -245,6 +245,19 @@ def _extract_js_strings(text: str) -> str:
     return "".join(parts).strip()
 
 
+# Matches one or more quoted JS strings optionally joined by +
+_JS_QUOTED_VALUE_RE = re.compile(r'"[^"]*"(?:\s*\+\s*"[^"]*")*')
+
+
+def _extract_js_field(entry: str, field: str) -> str:
+    """Extract the quoted string value for *field* from a JS object entry."""
+    idx = entry.find(f"{field}:")
+    if idx < 0:
+        return ""
+    m = _JS_QUOTED_VALUE_RE.search(entry, idx + len(field) + 1)
+    return _extract_js_strings(m.group(0)) if m else ""
+
+
 def _parse_handler_js(js_content: str, handler_stem: str) -> list[dict]:
     """Extract handler behavior entries from Handler.js content.
 
@@ -272,8 +285,8 @@ def _parse_handler_js(js_content: str, handler_stem: str) -> list[dict]:
             i += 1
         entry = js_content[start : i + 1]
 
-        name = _extract_js_strings(re.search(r"name:\s*(.*?)(?=\n|,\s*\n)", entry, re.DOTALL).group(1)) if re.search(r"name:", entry) else ""
-        pkg = _extract_js_strings(re.search(r"package:\s*(.*?)(?=\n|,\s*\n)", entry, re.DOTALL).group(1)) if re.search(r"package:", entry) else ""
+        name = _extract_js_field(entry, "name")
+        pkg = _extract_js_field(entry, "package")
 
         # Extract behavior block
         bm = re.search(r"behavior:\s*\{(.*?)\}", entry, re.DOTALL)
@@ -687,8 +700,7 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
     # Simplified approach: each content line with at least one non-empty cell
     # is treated as a row; empty cells in continuation lines are merged up.
     html: list[str] = ["<table>"]
-    header_done = False
-    first_group = True
+    body_open = False  # track whether <tbody> is currently open
 
     for is_header, content_lines in groups:
         if not content_lines:
@@ -710,13 +722,17 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
         if not rows:
             continue
 
-        if first_group:
-            html.append("<thead>" if is_header else "<tbody>")
-            first_group = False
-        elif is_header and not header_done:
+        if is_header:
+            # Close any open body section before emitting header
+            if body_open:
+                html.append("</tbody>")
+                body_open = False
             html.append("<thead>")
-        elif not is_header and not header_done:
-            html.append("<tbody>")
+        else:
+            # Open body section only once (multiple body groups share one <tbody>)
+            if not body_open:
+                html.append("<tbody>")
+                body_open = True
 
         tag = "th" if is_header else "td"
         ncols = max(len(r) for r in rows)
@@ -730,11 +746,8 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 
         if is_header:
             html.append("</thead>")
-            header_done = True
 
-    if not header_done:
-        html.append("</tbody>")
-    else:
+    if body_open:
         html.append("</tbody>")
 
     html.append("</table>")
@@ -841,8 +854,16 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             if directive in ("code-block", "code", "sourcecode"):
                 lang = inline_arg or ""
                 block, i = _read_block(lines, i + 1)
-                # Strip option lines (:emphasize-lines:, :linenos:, etc.)
-                content_lines = [l for l in block if not l.strip().startswith(":")]
+                # Strip known RST code-block option lines (:linenos: etc.).
+                # Use a whitelist of known Sphinx code-block options to avoid
+                # stripping code content that starts with ':' (e.g. YAML tags).
+                _CODE_OPT_RE = re.compile(
+                    r"^:(?:linenos|emphasize-lines|caption|name|force|"
+                    r"number-lines|dedent|tab-width|encoding|"
+                    r"start-after|end-before|start-at|end-at|"
+                    r"language|class|linenothreshold)(?::\s.*|:\s*$|\s*$)"
+                )
+                content_lines = [_l for _l in block if not _CODE_OPT_RE.match(_l.strip())]
                 # Strip leading/trailing blank lines from block
                 while content_lines and not content_lines[0].strip():
                     content_lines.pop(0)
@@ -995,10 +1016,15 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                 output.append(f"**{title}**")
                 continue
 
-            # --- Unknown directive: raise error ---
-            raise ValueError(
-                f"Unknown RST directive: {directive!r} in file_id={file_id!r}"
+            # --- Unknown directive: skip block with warning ---
+            block, i = _read_block(lines, i + 1)
+            import sys
+            print(
+                f"Warning: unknown RST directive {directive!r} skipped"
+                f" in file_id={file_id!r}",
+                file=sys.stderr,
             )
+            continue
 
         # Simple table (starts with === ===)
         if re.match(r"^={3,}(\s+={3,})+\s*$", stripped):

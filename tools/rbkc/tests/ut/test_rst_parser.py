@@ -4,6 +4,7 @@ from scripts.converters.rst import (
     _detect_heading_chars,
     _is_underline,
     _parse_grid_table,
+    _parse_handler_js,
     _parse_simple_table,
     _parse_simple_table_cjk,
     convert,
@@ -482,3 +483,173 @@ class TestSimpleTableCjk:
 
     def test_empty_block(self):
         assert _parse_simple_table_cjk([]) == []
+
+
+# ---------------------------------------------------------------------------
+# Issue 1: _parse_handler_js — None safety (re.search result used without guard)
+# ---------------------------------------------------------------------------
+
+class TestParseHandlerJsNullSafety:
+    def test_inline_entry_no_crash(self):
+        """name/package on same line as braces (no trailing newline) must not crash."""
+        # Compact JS without newlines after each field — lookahead (?=\n|,\\s*\\n) fails
+        js = 'H: { name: "テスト", package: "foo.bar", behavior: { inbound: "入力処理" } }'
+        # Must not raise AttributeError
+        result = _parse_handler_js(js, "H")
+        assert len(result) == 1
+        assert result[0]["name"] == "テスト"
+        assert result[0]["package"] == "foo.bar"
+
+    def test_package_field_missing_no_crash(self):
+        """Entry without package field returns empty string, not crash."""
+        js = 'H: {\n  name: "テスト"\n, behavior: { inbound: "入力" }\n}'
+        result = _parse_handler_js(js, "H")
+        assert len(result) == 1
+        assert result[0]["package"] == ""
+
+    def test_name_field_missing_no_crash(self):
+        """Entry without name field returns empty string, not crash."""
+        js = 'H: {\n  package: "foo"\n, behavior: { inbound: "入力" }\n}'
+        result = _parse_handler_js(js, "H")
+        assert len(result) == 1
+        assert result[0]["name"] == ""
+
+
+# ---------------------------------------------------------------------------
+# Issue 3: Unknown directive — must skip (not raise ValueError)
+# ---------------------------------------------------------------------------
+
+class TestUnknownDirectiveSkip:
+    def test_unknown_directive_does_not_raise(self):
+        """Unknown RST directives are skipped with a warning, not raised."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. mycustomdir:: arg\n"
+            "   body line\n"
+            "\n"
+            "Normal text.\n"
+        )
+        # Must not raise ValueError
+        result = convert(rst, "test-file")
+        full_content = " ".join(s.content for s in result.sections)
+        assert "Normal text." in full_content
+
+    def test_content_after_unknown_directive_preserved(self):
+        """Text following an unknown directive is still output."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            ".. specialblock::\n"
+            "\n"
+            "After directive.\n"
+        )
+        result = convert(rst, "test-file")
+        assert "After directive." in result.sections[0].content
+
+
+# ---------------------------------------------------------------------------
+# Issue 5: _parse_grid_table — <tbody> must be present after </thead>
+# ---------------------------------------------------------------------------
+
+class TestGridTableTbody:
+    def test_header_table_has_tbody(self):
+        """Table with header separator (=) must wrap body rows in <tbody>."""
+        block = [
+            "+--------+--------+",
+            "| Head A | Head B |",
+            "+========+========+",
+            "| Cell 1 | Cell 2 |",
+            "+--------+--------+",
+        ]
+        html = "\n".join(_parse_grid_table(block))
+        assert "<tbody>" in html
+        assert "</tbody>" in html
+
+    def test_tbody_comes_after_thead(self):
+        """<tbody> must appear after </thead>, not before."""
+        block = [
+            "+--------+--------+",
+            "| Head A | Head B |",
+            "+========+========+",
+            "| Cell 1 | Cell 2 |",
+            "+--------+--------+",
+        ]
+        html = "\n".join(_parse_grid_table(block))
+        assert html.index("<tbody>") > html.index("</thead>")
+
+    def test_no_header_table_has_tbody(self):
+        """Table without header separator must still have <tbody>."""
+        block = [
+            "+--------+--------+",
+            "| Cell 1 | Cell 2 |",
+            "+--------+--------+",
+        ]
+        html = "\n".join(_parse_grid_table(block))
+        assert "<tbody>" in html
+        assert "</tbody>" in html
+        assert "<thead>" not in html
+
+    def test_tbody_not_duplicated_for_no_header_table(self):
+        """No-header table should have exactly one <tbody> opening tag."""
+        block = [
+            "+--------+--------+",
+            "| Cell 1 | Cell 2 |",
+            "+--------+--------+",
+            "| Cell 3 | Cell 4 |",
+            "+--------+--------+",
+        ]
+        html = "\n".join(_parse_grid_table(block))
+        assert html.count("<tbody>") == 1
+
+
+# ---------------------------------------------------------------------------
+# Issue 11: code-block option lines — must not strip code content starting with ':'
+# ---------------------------------------------------------------------------
+
+class TestCodeBlockOptionFilter:
+    def test_rst_option_lines_stripped(self):
+        """RST directive options (:linenos: etc.) are stripped from code output."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. code-block:: python\n"
+            "   :linenos:\n"
+            "   :emphasize-lines: 1\n"
+            "\n"
+            "   def foo():\n"
+            "       pass\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert ":linenos:" not in content
+        assert ":emphasize-lines:" not in content
+        assert "def foo():" in content
+
+    def test_code_line_starting_with_colon_preserved(self):
+        """Code content lines starting with ':' must not be stripped."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. code-block:: yaml\n"
+            "\n"
+            "   :tag: value\n"
+            "   normal: data\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert ":tag: value" in content
+        assert "normal: data" in content
