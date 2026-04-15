@@ -44,13 +44,17 @@ def _derive_type_category(rel_path: Path) -> tuple[str, str]:
 
 
 def _collect_hints(data: dict) -> str:
-    """Aggregate all hints from all sections, deduplicated, space-joined."""
+    """Aggregate all hints from all sections, deduplicated, space-joined.
+
+    Commas inside individual hints are replaced with the Japanese comma (、)
+    so they do not break the TOON field-delimiter (ASCII comma).
+    """
     seen: list[str] = []
     seen_set: set[str] = set()
     for section in data.get("sections", []):
         for h in section.get("hints", []):
             if h and h not in seen_set:
-                seen.append(h)
+                seen.append(h.replace(",", "、"))
                 seen_set.add(h)
     return " ".join(seen)
 
