@@ -72,7 +72,7 @@ NABLEDGE_BRANCH=0.2 bash setup.sh -v 6
 
 nabledge-6 が実行するコマンドのうち、`scripts/` 配下のスクリプト（`find-file.sh`、`read-file.sh` など）はインストール時に `.claude/settings.json` へ自動承認ルールが設定されるため、確認プロンプトなしで実行されます。
 
-それ以外の汎用シェルコマンド（`find | xargs grep` など）は Claude Code のデフォルト動作で承認が必要になる場合があります。通常の動作ではすべての操作がスクリプト経由で実行されるため、手動承認が求められることはありません。
+それ以外の汎用シェルコマンド（`find | xargs grep` など）は Claude Code のデフォルト動作で承認が必要になる場合があります。nabledge-6 はすべての操作をスクリプト経由で実行するよう設計していますが、汎用コマンドが使われるケースも起こり得ます。その場合は `.claude/settings.json` の `permissions.allow` に同様のパターンを追加することをご検討ください。
 
 ## トラブルシューティング
 
