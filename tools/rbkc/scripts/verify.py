@@ -254,9 +254,9 @@ def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
     Returns:
         List of issue strings. Empty = OK.
     """
+    if data.get("no_knowledge_content"):
+        return []
     if not data.get("sections"):
-        if data.get("no_knowledge_content"):
-            return []
         return ["sections list is empty but no_knowledge_content is not set"]
 
     # For RST, strip directive lines before token extraction

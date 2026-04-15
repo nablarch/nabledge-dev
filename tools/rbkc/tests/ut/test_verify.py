@@ -244,6 +244,19 @@ class TestCheckB_Content:
         issues = check_content("some source text here for testing", data, "rst")
         assert len(issues) > 0
 
+    def test_toctree_only_with_flag_and_nonempty_sections_passes(self):
+        """B8: no_knowledge_content=True with non-empty (but empty-content) sections → PASS.
+
+        Toctree-only index.rst files produce sections with empty content but are
+        still a non-empty list. Check B must skip the entire check when the flag is set.
+        """
+        # Simulates: about_nablarch/index.rst → title "Nablarchについて", toctree only
+        source_text = "Nablarchについて\n====================\n\n.. toctree::\n   concept\n   license\n"
+        # JSON produced by RBKC: one section with empty content, no_knowledge_content=True
+        data = _make_data(sections=[_make_section("概要", "")], no_knowledge_content=True)
+        issues = check_content(source_text, data, "rst")
+        assert issues == []
+
 
 # ---------------------------------------------------------------------------
 # Check C: internal links

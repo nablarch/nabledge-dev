@@ -308,10 +308,14 @@ def verify(
             all_ok = False
 
         # Per-file docs MD checks (A, B, C, D)
-        docs_md_path = docs_dir / Path(fi.output_path).with_suffix(".md")
-        for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
-            print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
-            all_ok = False
+        # Skip docs MD content checks for no_knowledge_content files: their
+        # docs MD is a stub title header — toctree paths would inflate token count.
+        json_data = json.loads(json_path.read_text(encoding="utf-8")) if json_path.exists() else {}
+        if not json_data.get("no_knowledge_content"):
+            docs_md_path = docs_dir / Path(fi.output_path).with_suffix(".md")
+            for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
+                print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
+                all_ok = False
 
     # Coverage checks (F, H) — only when verifying all files
     if files is None:
