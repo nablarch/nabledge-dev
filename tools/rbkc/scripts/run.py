@@ -32,7 +32,10 @@ from pathlib import Path
 
 from scripts.classify import FileInfo, classify_sources
 from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
+from scripts.docs import generate_docs
 from scripts.hints import build_hints_index, lookup_hints
+from scripts.index import generate_index
+from scripts.resolver import collect_asset_refs, copy_assets
 from scripts.scan import scan_sources
 from scripts.verify import (
     verify_file,
@@ -139,7 +142,9 @@ def create(
 ) -> int:
     """Create all knowledge JSON files for the given version.
 
-    Scans source files, converts them, writes JSON, and saves a snapshot.
+    Pre-cleans output/docs/assets directories, converts all sources, copies
+    assets, generates index.toon, generates browsable docs, and saves a
+    snapshot.
 
     Args:
         version: Nablarch version string.
@@ -151,12 +156,33 @@ def create(
     Returns:
         Number of files created.
     """
+    import shutil
+
+    docs_dir = output_dir.parent / "docs"
+    index_path = output_dir / "index.toon"
+
+    # Pre-clean: remove all previous output so stale files don't persist.
+    # This also removes assets/ (output_dir/assets/) as a subdirectory of
+    # output_dir.  update() and delete() do NOT pre-clean, so stale assets
+    # can accumulate there; a subsequent create() will clear them.
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    if docs_dir.exists():
+        shutil.rmtree(docs_dir)
+
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
     hints_idx = _hints_index(repo_root, version)
 
+    all_asset_refs = []
     for fi in file_infos:
         _convert_and_write(fi, output_dir, hints_idx)
+        if fi.format == "rst":
+            all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
+
+    copy_assets(all_asset_refs, output_dir)
+    generate_index(output_dir, version, index_path)
+    generate_docs(output_dir, docs_dir)
 
     snap = make_snapshot(file_infos, repo_root, version)
     save_snapshot(snap, _snapshot_path(state_dir, version))
@@ -189,12 +215,19 @@ def update(
     added, modified, _deleted = diff_snapshot(old_snap, new_snap)
     changed_keys = set(added + modified)
 
+    changed_asset_refs = []
     count = 0
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
             _convert_and_write(fi, output_dir, hints_idx)
+            if fi.format == "rst":
+                changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1
+
+    copy_assets(changed_asset_refs, output_dir)
+    generate_index(output_dir, version, output_dir / "index.toon")
+    generate_docs(output_dir, output_dir.parent / "docs")
 
     # Update snapshot to reflect current state
     save_snapshot(new_snap, snap_path)
@@ -235,6 +268,9 @@ def delete(
                 json_path.unlink()
                 count += 1
 
+    generate_index(output_dir, version, output_dir / "index.toon")
+    generate_docs(output_dir, output_dir.parent / "docs")
+
     # Update snapshot
     save_snapshot(new_snap, snap_path)
     return count
@@ -272,7 +308,7 @@ def verify(
             all_ok = False
 
         # Per-file docs MD checks (A, B, C, D)
-        docs_md_path = docs_dir / fi.output_path.with_suffix(".md")
+        docs_md_path = docs_dir / Path(fi.output_path).with_suffix(".md")
         for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
             print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
             all_ok = False
