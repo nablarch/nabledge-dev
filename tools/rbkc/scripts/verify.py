@@ -32,9 +32,11 @@ _MAX_SAMPLE = 100
 def _extract_text_tokens(text: str) -> list[str]:
     """Extract significant (non-trivial) words from plain text."""
     # CJK/Kana: ≥2 chars (2-kanji words are common in Japanese)
+    # Start CJK range at \u4e00 (CJK Unified Ideographs) — not \u3000 which
+    # includes ideographic spaces and punctuation that are not word tokens.
     # ASCII/other word chars: ≥3 chars (filter out trivial tokens like "to", "in")
     tokens = re.findall(
-        r"[\u3000-\u9fff\u30a0-\u30ff\u3040-\u309f]{2,}|\w{3,}",
+        r"[\u4e00-\u9fff\u3400-\u4dbf\u30a0-\u30ff\u3040-\u309f]{2,}|\w{3,}",
         text,
     )
     return list(dict.fromkeys(tokens))  # deduplicate, preserve order
