@@ -1,4 +1,4 @@
-"""Unit tests for verify.py — Phase 11 verification checks."""
+"""Unit tests for verify.py — Phase 12 verification checks."""
 from __future__ import annotations
 
 import json
@@ -13,6 +13,11 @@ from scripts.verify import (
     check_external_urls,
     check_index_coverage,
     check_docs_coverage,
+    check_docs_md_titles,
+    check_docs_md_content,
+    check_docs_md_links,
+    check_docs_md_urls,
+    verify_docs_md,
 )
 
 
@@ -258,12 +263,17 @@ class TestCheckC_InternalLinks:
         issues = check_internal_links(data, tmp_path / "test.json", tmp_path)
         assert issues == []
 
-    def test_asset_link_skipped(self, tmp_path):
-        """assets/ links are skipped (assets copy not implemented)."""
+    def test_asset_link_no_longer_skipped(self, tmp_path):
+        """assets/ links are NOT skipped — existence is checked (B1 regression test).
+
+        Note: TestCheckC_AssetsNotSkipped below also tests this with more specific
+        assertions. This test remains as an in-class regression marker.
+        """
         content = "See ![image](assets/diagram.png) for illustration."
         data = _make_data(sections=[_make_section("Section", content)])
+        # No assets/ file exists → should FAIL (not silently pass)
         issues = check_internal_links(data, tmp_path / "test.json", tmp_path)
-        assert issues == []
+        assert len(issues) > 0
 
     def test_existing_relative_link_passes(self, tmp_path):
         """Relative link pointing to an existing file → PASS."""
@@ -440,3 +450,396 @@ class TestCheckH_DocsCoverage:
         issues = check_docs_coverage(knowledge_dir, docs_dir)
         assert len(issues) > 0
         assert any("docs" in issue.lower() for issue in issues)
+
+
+# ---------------------------------------------------------------------------
+# B1: Check C — assets/ links must NOT be skipped
+# ---------------------------------------------------------------------------
+
+class TestCheckC_AssetsNotSkipped:
+    def test_asset_link_missing_file_fails(self, tmp_path):
+        """assets/ link to non-existent file → FAIL (must not be skipped)."""
+        content = "See ![image](assets/diagram.png) for illustration."
+        data = _make_data(sections=[_make_section("Section", content)])
+        # No assets/diagram.png exists in tmp_path
+        issues = check_internal_links(data, tmp_path / "test.json", tmp_path)
+        assert len(issues) > 0
+        assert any("diagram.png" in issue for issue in issues)
+
+    def test_asset_link_existing_file_passes(self, tmp_path):
+        """assets/ link to an existing file → PASS."""
+        assets_dir = tmp_path / "assets"
+        assets_dir.mkdir()
+        (assets_dir / "diagram.png").write_bytes(b"")  # empty placeholder
+        content = "See ![image](assets/diagram.png) for illustration."
+        data = _make_data(sections=[_make_section("Section", content)])
+        issues = check_internal_links(data, tmp_path / "test.json", tmp_path)
+        assert issues == []
+
+
+# ---------------------------------------------------------------------------
+# B2: Check A/B/C/D for docs MD
+# ---------------------------------------------------------------------------
+
+class TestCheckDocsMdTitles:
+    def test_rst_all_source_headings_in_docs_md(self):
+        """All RST h2/h3 headings must appear as ##/### in docs MD."""
+        source_text = """\
+========
+Doc Title
+========
+
+Introduction
+------------
+
+Intro content.
+
+Details
+-------
+
+Detail content.
+"""
+        docs_md_text = """\
+# Doc Title
+
+## Introduction
+
+Intro content.
+
+## Details
+
+Detail content.
+"""
+        issues = check_docs_md_titles(source_text, docs_md_text, "rst")
+        assert issues == []
+
+    def test_rst_missing_heading_in_docs_md_fails(self):
+        """RST heading absent from docs MD → FAIL."""
+        source_text = """\
+========
+Doc Title
+========
+
+Introduction
+------------
+
+Content.
+
+Missing Section
+---------------
+
+This section is missing from docs MD.
+"""
+        docs_md_text = """\
+# Doc Title
+
+## Introduction
+
+Content.
+"""
+        issues = check_docs_md_titles(source_text, docs_md_text, "rst")
+        assert any("Missing Section" in issue for issue in issues)
+
+    def test_md_all_headings_in_docs_md(self):
+        """All MD ## headings must appear in docs MD."""
+        source_text = """\
+# Title
+
+## Introduction
+
+Content.
+
+## Details
+
+More content.
+"""
+        docs_md_text = """\
+# Title
+
+## Introduction
+
+Content.
+
+## Details
+
+More content.
+"""
+        issues = check_docs_md_titles(source_text, docs_md_text, "md")
+        assert issues == []
+
+    def test_md_missing_heading_in_docs_md_fails(self):
+        """MD heading absent from docs MD → FAIL."""
+        source_text = """\
+# Title
+
+## Introduction
+
+Content.
+
+## Missing Section
+
+Not in docs MD.
+"""
+        docs_md_text = """\
+# Title
+
+## Introduction
+
+Content.
+"""
+        issues = check_docs_md_titles(source_text, docs_md_text, "md")
+        assert any("Missing Section" in issue for issue in issues)
+
+    def test_xlsx_always_passes(self):
+        """XLSX format skips title check → PASS."""
+        issues = check_docs_md_titles("", "# Title\n", "xlsx")
+        assert issues == []
+
+
+class TestCheckDocsMdContent:
+    def test_sufficient_coverage_passes(self):
+        """Source token coverage >= 70% in docs MD → PASS."""
+        tokens = [f"token{i:03d}" for i in range(20)]
+        source_text = " ".join(tokens)
+        docs_md_text = "## Section\n\n" + " ".join(tokens) + "\n"
+        issues = check_docs_md_content(source_text, docs_md_text, "rst")
+        assert issues == []
+
+    def test_insufficient_coverage_fails(self):
+        """Source token coverage < 70% in docs MD → FAIL."""
+        tokens = [f"token{i:03d}" for i in range(10)]
+        source_text = " ".join(tokens)
+        # Only 2 out of 10 tokens in docs MD
+        docs_md_text = "## Section\n\ntoken000 token001\n"
+        issues = check_docs_md_content(source_text, docs_md_text, "rst")
+        assert len(issues) > 0
+        assert any("coverage" in issue.lower() or "Coverage" in issue for issue in issues)
+
+    def test_xlsx_always_passes(self):
+        """XLSX format skips content check → PASS."""
+        issues = check_docs_md_content("any source text", "any docs text", "xlsx")
+        assert issues == []
+
+
+class TestCheckDocsMdLinks:
+    def test_no_links_passes(self, tmp_path):
+        """Docs MD without links → PASS."""
+        md_path = tmp_path / "docs" / "cat" / "file.md"
+        md_path.parent.mkdir(parents=True)
+        issues = check_docs_md_links("No links here.", md_path)
+        assert issues == []
+
+    def test_https_link_skipped(self, tmp_path):
+        """https:// links are external — skip."""
+        md_path = tmp_path / "docs" / "cat" / "file.md"
+        md_path.parent.mkdir(parents=True)
+        issues = check_docs_md_links("See [docs](https://example.com/page).", md_path)
+        assert issues == []
+
+    def test_existing_relative_link_passes(self, tmp_path):
+        """Relative link to existing file (docs MD-relative) → PASS."""
+        docs_dir = tmp_path / "docs"
+        (docs_dir / "cat").mkdir(parents=True)
+        # Create the target file
+        target = docs_dir / "cat" / "other.md"
+        target.write_text("# Other\n", encoding="utf-8")
+        md_path = docs_dir / "cat" / "file.md"
+        issues = check_docs_md_links("See [other](other.md) here.", md_path)
+        assert issues == []
+
+    def test_missing_relative_link_fails(self, tmp_path):
+        """Relative link to non-existent file (docs MD-relative) → FAIL."""
+        md_path = tmp_path / "docs" / "cat" / "file.md"
+        md_path.parent.mkdir(parents=True)
+        issues = check_docs_md_links("See [missing](missing.md) here.", md_path)
+        assert len(issues) > 0
+        assert any("missing.md" in issue for issue in issues)
+
+    def test_asset_link_via_relative_path_checked(self, tmp_path):
+        """docs MD asset link (e.g., ../../../knowledge/assets/x.png) → checked."""
+        docs_dir = tmp_path / "docs" / "cat"
+        docs_dir.mkdir(parents=True)
+        knowledge_assets = tmp_path / "knowledge" / "assets"
+        knowledge_assets.mkdir(parents=True)
+        (knowledge_assets / "diagram.png").write_bytes(b"")
+        md_path = docs_dir / "file.md"
+        # Relative path from docs/cat/ to knowledge/assets/
+        link = "../../../knowledge/assets/diagram.png"
+        # Wait, the relative path depends on the actual directory structure
+        # docs/cat/file.md → ../../knowledge/assets/diagram.png
+        link = "../../knowledge/assets/diagram.png"
+        issues = check_docs_md_links(f"See ![img]({link}) here.", md_path)
+        assert issues == []
+
+
+class TestCheckDocsMdUrls:
+    def test_url_in_docs_md_passes(self):
+        """URL in source that also appears in docs MD → PASS."""
+        source_text = "See https://example.com/page for details."
+        docs_md_text = "See [page](https://example.com/page) for details."
+        issues = check_docs_md_urls(source_text, docs_md_text)
+        assert issues == []
+
+    def test_url_missing_from_docs_md_fails(self):
+        """URL in source absent from docs MD → FAIL."""
+        source_text = "See https://example.com/important for details."
+        docs_md_text = "Content without the URL."
+        issues = check_docs_md_urls(source_text, docs_md_text)
+        assert len(issues) > 0
+        assert any("https://example.com/important" in issue for issue in issues)
+
+    def test_no_urls_in_source_passes(self):
+        """Source with no URLs → PASS."""
+        issues = check_docs_md_urls("Plain text.", "Content here.")
+        assert issues == []
+
+    def test_rst_definition_only_url_skipped(self):
+        """RST hyperlink definition (.. _Name: URL) only → skip."""
+        source_text = "Some text.\n\n.. _Example: https://example.com/page\n"
+        docs_md_text = "Some text."
+        issues = check_docs_md_urls(source_text, docs_md_text)
+        assert issues == []
+
+    def test_inline_rst_url_checked(self):
+        """RST inline URL `text <URL>`_ must be checked against docs MD."""
+        source_text = "See `Example <https://example.com/inline>`_ for details.\n"
+        # URL is not in docs MD
+        docs_md_text = "See Example for details."
+        issues = check_docs_md_urls(source_text, docs_md_text)
+        assert len(issues) > 0
+        assert any("https://example.com/inline" in issue for issue in issues)
+
+
+class TestVerifyDocsMd:
+    def _write_source(self, path: Path, text: str):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def _write_docs_md(self, path: Path, text: str):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def test_source_not_found_fails(self, tmp_path):
+        """Missing source file → FAIL."""
+        docs_md = tmp_path / "docs" / "file.md"
+        self._write_docs_md(docs_md, "# Title\n")
+        issues = verify_docs_md(tmp_path / "source.rst", docs_md, "rst")
+        assert any("Source file not found" in issue for issue in issues)
+
+    def test_docs_md_not_found_fails(self, tmp_path):
+        """Missing docs MD → FAIL."""
+        source = tmp_path / "source.rst"
+        self._write_source(source, "Title\n=====\n\nContent.\n")
+        issues = verify_docs_md(source, tmp_path / "docs" / "file.md", "rst")
+        assert any("docs MD" in issue or "not found" in issue for issue in issues)
+
+    def test_valid_rst_passes(self, tmp_path):
+        """Valid RST source with matching docs MD → PASS."""
+        source = tmp_path / "source.rst"
+        source_text = """\
+========
+My Title
+========
+
+Introduction
+------------
+
+This is introduction content with keywords here.
+
+Details
+-------
+
+More detailed content for details section testing.
+"""
+        self._write_source(source, source_text)
+        docs_md = tmp_path / "docs" / "file.md"
+        docs_md_text = """\
+# My Title
+
+## Introduction
+
+This is introduction content with keywords here.
+
+## Details
+
+More detailed content for details section testing.
+"""
+        self._write_docs_md(docs_md, docs_md_text)
+        issues = verify_docs_md(source, docs_md, "rst")
+        assert issues == []
+
+
+# ---------------------------------------------------------------------------
+# B3: FAIL output uses relative path (tested via run.verify integration)
+# ---------------------------------------------------------------------------
+
+class TestFailOutputRelativePath:
+    """Verify that run.verify() outputs repo-relative source paths in FAIL lines."""
+
+    def test_verify_fail_message_uses_relative_path(self, tmp_path, capsys):
+        """FAIL output must include repo-relative path, not just filename."""
+        import sys
+        from scripts.run import verify
+
+        # Set up a minimal repo structure
+        repo_root = tmp_path
+        version = "6"
+        skill_dir = repo_root / ".claude" / "skills" / f"nabledge-{version}"
+        output_dir = skill_dir / "knowledge"
+        output_dir.mkdir(parents=True)
+
+        # Create a source RST file with content
+        source_dir = repo_root / ".lw" / "nab-official" / "v6" / "nablarch-document" / "ja" / "cat"
+        source_dir.mkdir(parents=True)
+        source_file = source_dir / "guide.rst"
+        source_file.write_text(
+            "Title\n=====\n\nContent here for testing source file.\n",
+            encoding="utf-8",
+        )
+
+        # Create a mapping file for classify_sources
+        mappings_dir = repo_root / "tools" / "rbkc" / "mappings"
+        mappings_dir.mkdir(parents=True)
+
+        # Create a minimal JSON that will FAIL (missing content)
+        json_path = output_dir / "cat" / "guide.json"
+        json_path.parent.mkdir(parents=True)
+        json_path.write_text(
+            json.dumps({"id": "cat-guide", "title": "Guide", "no_knowledge_content": False,
+                        "sections": []}),
+            encoding="utf-8",
+        )
+
+        # Patch classify_sources to return a controlled FileInfo
+        from scripts.classify import FileInfo
+        from unittest.mock import patch
+
+        fi = FileInfo(
+            source_path=source_file,
+            file_id="cat-guide",
+            output_path=Path("cat/guide.json"),
+            format="rst",
+            type="component",
+            category="cat",
+        )
+        with patch("scripts.run.scan_sources", return_value=[source_file]):
+            with patch("scripts.run.classify_sources", return_value=[fi]):
+                with patch("scripts.run._hints_index", return_value={}):
+                    result = verify(version, repo_root, output_dir)
+
+        captured = capsys.readouterr()
+        assert result is False
+        # FAIL line for source files must use repo-relative path
+        # (excludes "FAIL index.toon:" and "FAIL docs:" global check lines)
+        source_fail_lines = [
+            line for line in captured.err.splitlines()
+            if line.startswith("FAIL") and not line.startswith("FAIL index.toon:")
+            and not line.startswith("FAIL docs:")
+        ]
+        assert len(source_fail_lines) > 0
+        for line in source_fail_lines:
+            # Must NOT be just the filename (e.g. "FAIL guide.rst:")
+            assert "FAIL guide.rst:" not in line, f"FAIL line uses only filename: {line!r}"
+            # Must include directory components (slash in the path portion)
+            path_part = line.split("FAIL ")[1].split(":")[0]
+            assert "/" in path_part, f"FAIL line has no directory component: {line!r}"

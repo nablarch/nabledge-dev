@@ -305,7 +305,8 @@ def check_internal_links(
 
     Skips:
     - https?:// (external links)
-    - assets/ (asset copy not implemented)
+
+    For assets/ links: resolves as knowledge_dir / url (i.e., knowledge/assets/xxx).
 
     Returns:
         List of issue strings. Empty = OK.
@@ -318,10 +319,7 @@ def check_internal_links(
         # Skip external links
         if re.match(r"https?://", url):
             continue
-        # Skip assets/ links
-        if url.startswith("assets/"):
-            continue
-        # Resolve relative to knowledge_dir
+        # Resolve relative to knowledge_dir (assets/ is a subdir of knowledge_dir)
         target = (knowledge_dir / url).resolve()
         if not target.exists():
             issues.append(f"Internal link target not found: {url!r}")
@@ -445,6 +443,170 @@ def check_docs_coverage(knowledge_dir: Path, docs_dir: Path) -> list[str]:
         md_path = docs_dir / rel.with_suffix(".md")
         if not md_path.exists():
             issues.append(f"Missing docs MD file: {rel.with_suffix('.md')}")
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check A/B/C/D for docs MD files (B2 fix)
+# ---------------------------------------------------------------------------
+
+def check_docs_md_titles(source_text: str, docs_md_text: str, fmt: str) -> list[str]:
+    """Check A for docs MD: source headings present as ##/### in docs MD.
+
+    For RST: h2/h3 headings must appear as ## or ### headings in docs MD.
+    For MD: ## and ### headings must appear in docs MD.
+    For XLSX: skip (always passes).
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    if fmt == "xlsx":
+        return []
+
+    if fmt == "rst":
+        source_headings = _extract_rst_section_headings(source_text)
+    elif fmt == "md":
+        source_headings = _extract_md_section_headings(source_text)
+    else:
+        return []
+
+    if not source_headings:
+        return []
+
+    # Extract ##/### headings from docs MD
+    docs_md_headings: set[str] = set()
+    for line in docs_md_text.splitlines():
+        m = re.match(r"^#{2,3}\s+(.+)", line.rstrip())
+        if m:
+            docs_md_headings.add(m.group(1).strip())
+
+    issues = []
+    for heading in source_headings:
+        if heading not in docs_md_headings:
+            issues.append(f"Source heading not found in docs MD: {heading!r}")
+    return issues
+
+
+def check_docs_md_content(source_text: str, docs_md_text: str, fmt: str) -> list[str]:
+    """Check B for docs MD: source token coverage >= 70% in docs MD text.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    if fmt == "xlsx":
+        return []
+
+    if fmt == "rst":
+        source_clean = re.sub(r"^\.\.\s+\w+.*$", "", source_text, flags=re.MULTILINE)
+    else:
+        source_clean = source_text
+
+    source_tokens = _extract_text_tokens(source_clean)
+
+    if len(source_tokens) > _MAX_SAMPLE:
+        step = len(source_tokens) // _MAX_SAMPLE
+        source_tokens = source_tokens[::step][:_MAX_SAMPLE]
+
+    if not source_tokens:
+        return []
+
+    found = sum(1 for t in source_tokens if t in docs_md_text)
+    coverage = found / len(source_tokens)
+
+    if coverage < _MIN_TOKEN_COVERAGE:
+        return [
+            f"Token coverage too low: {found}/{len(source_tokens)} "
+            f"({coverage:.0%} < {_MIN_TOKEN_COVERAGE:.0%}) — "
+            f"docs MD may be missing significant content from source"
+        ]
+    return []
+
+
+def check_docs_md_links(docs_md_text: str, docs_md_path: Path) -> list[str]:
+    """Check C for docs MD: relative links resolve to real files (docs MD-relative).
+
+    Skips https?:// links.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    issues = []
+    for m in _MD_LINK_RE.finditer(docs_md_text):
+        url = m.group(1).strip()
+        # Skip external links
+        if re.match(r"https?://", url):
+            continue
+        # Resolve relative to the docs MD file's directory
+        target = (docs_md_path.parent / url).resolve()
+        if not target.exists():
+            issues.append(f"Docs MD link target not found: {url!r}")
+    return issues
+
+
+def check_docs_md_urls(source_text: str, docs_md_text: str) -> list[str]:
+    """Check D for docs MD: https?:// URLs in source text appear in docs MD.
+
+    RST hyperlink target definitions (.. _Name: URL) that are not
+    referenced inline are skipped (same logic as check_external_urls).
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    inline_re = re.compile(r"`[^`]+<(https?://[^>]+)>`_")
+    def_urls = {m.group(1) for m in _RST_HYPERLINK_DEF_RE.finditer(source_text)}
+    inline_urls = {m.group(1) for m in inline_re.finditer(source_text)}
+    definition_only_urls = def_urls - inline_urls
+
+    all_source_urls = set(_URL_RE.findall(source_text))
+    urls_to_check = all_source_urls - definition_only_urls
+
+    if not urls_to_check:
+        return []
+
+    issues = []
+    for url in sorted(urls_to_check):
+        if url not in docs_md_text:
+            issues.append(f"External URL in source not found in docs MD: {url!r}")
+    return issues
+
+
+def verify_docs_md(source_path: Path, docs_md_path: Path, fmt: str) -> list[str]:
+    """Verify a docs MD file against its source (checks A, B, C, D for docs MD).
+
+    Args:
+        source_path: Path to the original source file.
+        docs_md_path: Path to the generated docs MD file.
+        fmt: File format — 'rst', 'md', or 'xlsx'.
+
+    Returns:
+        List of issue strings. Empty list means the file passes verification.
+    """
+    if not source_path.exists():
+        return [f"Source file not found: {source_path}"]
+    if not docs_md_path.exists():
+        return [f"docs MD not found: {docs_md_path}"]
+    if fmt not in ("rst", "md", "xlsx"):
+        return [f"Unknown format: {fmt}"]
+
+    if fmt == "xlsx":
+        return []
+
+    source_text = source_path.read_text(encoding="utf-8", errors="replace")
+    docs_md_text = docs_md_path.read_text(encoding="utf-8")
+    issues = []
+
+    # Check A: source headings present in docs MD
+    issues.extend(check_docs_md_titles(source_text, docs_md_text, fmt))
+
+    # Check B: token coverage in docs MD
+    issues.extend(check_docs_md_content(source_text, docs_md_text, fmt))
+
+    # Check C: relative links in docs MD resolve
+    issues.extend(check_docs_md_links(docs_md_text, docs_md_path))
+
+    # Check D: external URLs in source appear in docs MD
+    issues.extend(check_docs_md_urls(source_text, docs_md_text))
+
     return issues
 
 

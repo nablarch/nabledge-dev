@@ -34,7 +34,12 @@ from scripts.classify import FileInfo, classify_sources
 from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.hints import build_hints_index, lookup_hints
 from scripts.scan import scan_sources
-from scripts.verify import verify_file, check_index_coverage, check_docs_coverage
+from scripts.verify import (
+    verify_file,
+    verify_docs_md,
+    check_index_coverage,
+    check_docs_coverage,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -243,8 +248,9 @@ def verify(
 ) -> bool:
     """Verify that knowledge JSON files match their source documents.
 
-    Runs per-file checks (A, B, C, D) for each source file, and global
-    coverage checks (F, H) when verifying all files (files is None).
+    Runs per-file checks (A, B, C, D) for each source file and the
+    corresponding docs MD, and global coverage checks (F, H) when
+    verifying all files (files is None).
 
     Returns:
         True if all files pass verification, False if any issues found.
@@ -252,16 +258,24 @@ def verify(
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
 
+    docs_dir = output_dir.parent / "docs"
     all_ok = True
 
-    # Per-file checks (A, B, C, D)
     for fi in file_infos:
+        # B3: use repo-relative source path in FAIL lines
+        source_rel = str(fi.source_path.relative_to(repo_root))
         json_path = output_dir / fi.output_path
-        issues = verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir)
-        if issues:
+
+        # Per-file JSON checks (A, B, C, D)
+        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir):
+            print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
-            for issue in issues:
-                print(f"FAIL {fi.source_path.name}: {issue}", file=sys.stderr)
+
+        # Per-file docs MD checks (A, B, C, D)
+        docs_md_path = docs_dir / fi.output_path.with_suffix(".md")
+        for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
+            print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
+            all_ok = False
 
     # Coverage checks (F, H) — only when verifying all files
     if files is None:
@@ -270,7 +284,6 @@ def verify(
             print(f"FAIL index.toon: {issue}", file=sys.stderr)
             all_ok = False
 
-        docs_dir = output_dir.parent / "docs"
         for issue in check_docs_coverage(output_dir, docs_dir):
             print(f"FAIL docs: {issue}", file=sys.stderr)
             all_ok = False
