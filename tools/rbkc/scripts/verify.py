@@ -332,7 +332,7 @@ def check_internal_links(
 # ---------------------------------------------------------------------------
 
 # Matches bare https?:// URLs and RST inline URL `text <URL>`_
-_URL_RE = re.compile(r"https?://[^\s>\)\]\"']+")
+_URL_RE = re.compile(r"https?://[^\s>\)\]\"'\x60]+")
 
 # RST external hyperlink target definition: .. _Name: URL
 # These are reference definitions only and their URLs are skipped

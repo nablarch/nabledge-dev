@@ -901,7 +901,19 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                 body_parts = []
                 if inline_arg:
                     body_parts.append(inline_arg)
-                body_parts.extend(l.strip() for l in block if l.strip() and not l.strip().startswith(":"))
+                _FIELD_RE = re.compile(r"^:([^:]+):\s*(.*)")
+                for l in block:
+                    stripped = l.strip()
+                    if not stripped:
+                        continue
+                    m = _FIELD_RE.match(stripped)
+                    if m:
+                        # Field list entry: preserve value part (drop bare option-only lines)
+                        value = m.group(2).strip()
+                        if value:
+                            body_parts.append(value)
+                    else:
+                        body_parts.append(stripped)
                 body = " ".join(body_parts)
                 body = _convert_inline(body, file_id, targets)
                 output.append(f"> **{label}:** {body}")
@@ -911,7 +923,19 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             if directive == "admonition":
                 block, i = _read_block(lines, i + 1)
                 label = inline_arg or "Note"
-                body_parts = [l.strip() for l in block if l.strip() and not l.strip().startswith(":")]
+                _FIELD_RE = re.compile(r"^:([^:]+):\s*(.*)")
+                body_parts = []
+                for l in block:
+                    stripped = l.strip()
+                    if not stripped:
+                        continue
+                    m = _FIELD_RE.match(stripped)
+                    if m:
+                        value = m.group(2).strip()
+                        if value:
+                            body_parts.append(value)
+                    else:
+                        body_parts.append(stripped)
                 body = " ".join(body_parts)
                 body = _convert_inline(body, file_id, targets)
                 output.append(f"> **{label}:** {body}")

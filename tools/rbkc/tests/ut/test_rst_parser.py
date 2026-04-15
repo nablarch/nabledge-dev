@@ -612,6 +612,65 @@ class TestGridTableTbody:
 # Issue 11: code-block option lines — must not strip code content starting with ':'
 # ---------------------------------------------------------------------------
 
+class TestAdmonitionFieldList:
+    """Field list entries inside admonitions must not be silently dropped."""
+
+    def test_field_list_value_preserved_in_important(self):
+        """URLs in :XML: / :JSON: field list inside .. important:: must appear in output."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. important::\n"
+            "\n"
+            "  代替機能\n"
+            "    :XML: `Jakarta XML Binding <https://jakarta.ee/specifications/xml-binding/>`_ を推奨する。\n"
+            "    :JSON: `Jackson <https://github.com/FasterXML/jackson>`_ が広く使われている。\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert "https://jakarta.ee/specifications/xml-binding/" in content
+        assert "https://github.com/FasterXML/jackson" in content
+
+    def test_field_list_value_preserved_in_note(self):
+        """Field list values inside .. note:: admonition are preserved."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. note::\n"
+            "\n"
+            "  :Key: Some important value here.\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert "Some important value here." in content
+
+    def test_directive_options_still_stripped(self):
+        """Bare option lines (no value after colon) are still stripped from admonitions."""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            ".. deprecated:: 1.0\n"
+            "\n"
+            "  Use new API instead.\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        # "1.0" is the inline_arg, body is prose — no stray option lines
+        assert "Use new API instead." in content
+
+
 class TestCodeBlockOptionFilter:
     def test_rst_option_lines_stripped(self):
         """RST directive options (:linenos: etc.) are stripped from code output."""

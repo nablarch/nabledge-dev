@@ -346,6 +346,16 @@ class TestCheckD_ExternalURLs:
         assert len(issues) > 0
         assert any("https://example.com/inline" in issue for issue in issues)
 
+    def test_backtick_wrapped_url_not_captured_with_backtick(self):
+        """URL inside backtick literal `https://example.com` → captured without trailing backtick."""
+        # Source has URL in backtick literal — regex must not include the trailing backtick
+        source_text = "Use `https://example.com/path` for reference.\n"
+        data = _make_data(sections=[
+            _make_section("Section", "Use https://example.com/path for reference.")
+        ])
+        issues = check_external_urls(source_text, data)
+        assert issues == []
+
 
 # ---------------------------------------------------------------------------
 # Check F: index.toon coverage
