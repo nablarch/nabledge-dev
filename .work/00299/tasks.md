@@ -41,115 +41,86 @@ Agent(
 
 チェック結果で "Needs Fix" が出た場合は修正してから次フェーズへ進む。
 
-## In Progress
-
-### ギャップ対応: 既完了フェーズの補完テスト
-
-Phase 4コミット前に実施する。
-
-#### Gap 1: Phase 2 — `test_section_count` マジックナンバー修正
-
-`tests/e2e/test_rst_converter.py:50` の `assert len(result.sections) == 26` が brittle。
-universal_dao.rst が更新されると意味不明な失敗になる。
-
-**Fix**: RST ソースの見出し数を動的にカウントして比較に変える。
-
-```python
-def test_section_count(self, result):
-    # Count expected sections from source: h2 + h3 headings + preamble
-    lines = UNIVERSAL_DAO_RST.read_text().splitlines()
-    heading_chars = _detect_heading_chars(lines)
-    # h2 = heading_chars[1], h3 = heading_chars[2]
-    section_chars = set(heading_chars[1:3]) if len(heading_chars) >= 2 else set()
-    expected = sum(
-        1 for i, line in enumerate(lines)
-        if line and set(line) <= section_chars and len(line) >= 2
-        and i > 0 and lines[i-1].strip()
-    ) + 1  # +1 for preamble section
-    assert len(result.sections) == expected
-```
-
-あるいはシンプルに `>= 20` の下限チェックに変えてもよい（要判断）。
-
-- [x] `test_section_count` を動的カウントまたは下限チェックに修正
-
-#### Gap 2: Phase 1 — 実KCキャッシュに対するE2Eテスト
-
-合成フィクスチャのみでは実データとの構造差を検知できない。
-実キャッシュパス: `tools/knowledge-creator/.cache/v6/knowledge/`
-
-追加テスト（`tests/e2e/` に `test_hints_e2e.py` として追加）:
-- `build_hints_index` が非空の辞書を返す
-- 既知のfile_id（例: `about-nablarch-about_nablarch`）が存在する
-- split suffixを含むファイルがベースidにマージされている（`--s` がキーに含まれない）
-- `lookup_hints` で既知のsection title（例: `Nablarchのライセンスについて`）が正しいhintsを返す
-
-- [x] `tests/e2e/test_hints_e2e.py` を作成して実キャッシュE2Eテストを追加
-
-#### Gap 3: Phase 2+3 — パイプライン統合テスト
-
-RST → `convert()` → `extract_hints()` → `merge_hints()` の連鎖が未検証。
-各ステップ単体は通っても結合で壊れる可能性がある。
-
-追加テスト（`tests/e2e/test_pipeline_e2e.py` として追加）:
-- `universal_dao.rst` を `convert()` → 各セクションの `content` に対して `extract_hints()` を実行
-- 既知のクラス名（例: `UniversalDao`, `BasicDaoContextFactory`）が少なくとも1セクションで抽出される
-- Stage 2マージ（`lookup_hints` 経由）によってStage 1単体より hints数が増える
-
-- [x] `tests/e2e/test_pipeline_e2e.py` を作成してパイプライン統合テストを追加
-
 ---
 
 ## Not Started
 
-### ~~Phase 4: Cross-reference resolution + asset copying~~ — DONE
+### Phase 10: verify の完全チェック化
 
-Phase 4 implementation is complete and all 113 tests pass (run from repo root).
-Untracked files: `scripts/resolver.py`, `tests/e2e/test_resolver.py`, `tests/ut/test_resolver.py`
+現在の `scripts/verify.py` はトークンサンプリング（最大100個、70%カバレッジ閾値）のみ。
+ルールベース変換なので、変換ルールから導出できる構造的チェックに置き換える。
 
-**Note on scope**: `:ref:`/`:doc:` resolution to Markdown links is handled in the RST converter
-(Phase 2) as plain-text stripping. The resolver handles label map building, asset collection,
-and copying. This is sufficient for knowledge file generation (links resolved at browsable-docs
-generation time, not in the JSON content).
+**調査: 意図的除去・変換対象の確定**
+
+`rst.py` が意図的に除去または変換する要素を網羅的にリストアップし、
+「除去後の残り全トークンはJSONに100%現れる」という基準を確立する。
+
+除去対象（出力なし）:
+- `toctree`, `contents`, `raw`, `include`, `class` ディレクティブのブロック
+- `no_knowledge_content=true` のファイル（セクション全体が空）
+
+変換対象（テキストは保持、形式のみ変更）:
+- `note`/`warning` 等のアドモニション → blockquote
+- `code-block` / `literalinclude` → fenced code
+- `:ref:`, `:doc:` → プレーンテキスト
+- RST テーブル → Markdown テーブル
+
+**verify の更新内容**:
+
+1. **セクション数チェック**: ソースのh2/h3見出し数 = JSONの `sections` 数
+   （`no_knowledge_content=true` は除外）
+2. **セクションタイトルチェック**: 各JSONセクションのタイトルがソース見出しと完全一致
+3. **トークンカバレッジ**: サンプリング廃止 → 除去対象を除外した全トークンで100%チェック
+4. **XLSX**: sections数 > 0（既存）をそのまま維持
 
 **Steps:**
-- [x] 全RSTファイルから `.. _label:` 定義を収集してラベルマップを構築 (`build_label_map`)
-- [x] 参照画像を `assets/{id}/` にコピー (`collect_asset_refs` + `copy_assets`)
-- [x] `:download:` → `[text](assets/{id}/filename)` + ファイルコピー
-- [x] Unit test: ラベルマップ・アセット収集・コピーの全ケース
-- [x] E2E test: v6実データ (mail.rst) でのアセット収集・コピー、全v6ラベルマップ
-- [x] **Commit** the 3 untracked files
-- [x] **サブエージェント品質チェック**: Pass（条件付き）— Medium: インデントラベル見逃し修正済み、path_to_id衝突はPhase 8で対処
+- [ ] 調査: `rst.py` の除去・変換要素を網羅的にリストアップ、除外ルール確定
+- [ ] `scripts/verify.py` 更新: セクション数チェック実装
+- [ ] `scripts/verify.py` 更新: セクションタイトル完全一致チェック実装
+- [ ] `scripts/verify.py` 更新: 除去対象除外 + 100%トークンカバレッジに変更
+- [ ] テスト更新: 新チェックに合わせてテスト追加/修正
+- [ ] コミット
 
 ---
 
-### ~~Phase 5: MD converter~~ — DONE
+### Phase 11: 統合検証 — v6
 
-committed `232df686`
+**前提**: Phase 10 (verify完全チェック化) 完了後に実施。
 
----
+**Steps:**
+- [ ] `bash rbkc.sh create 6` を実行（出力先: `.claude/skills/nabledge-6/knowledge/`）
+- [ ] `bash rbkc.sh verify 6` を実行 — FAIL 0件であること
+- [ ] nabledge-test v6 を実行して品質劣化なし（ベースライン比）を確認
+- [ ] コミット（生成済み知識ファイルをコミット）
 
-### ~~Phase 6: Excel converters~~ — DONE
-
-committed `edce71eb`
-
----
-
-### ~~Phase 7: Index + browsable docs generation~~ — DONE
-
-committed `dc019759`
+v6 検証通過後 → Phase 12 (v5) へ
 
 ---
 
-### ~~Phase 8: CLI + create/update/delete/verify operations~~ — DONE
+### Phase 12: 統合検証 — v5
 
-committed `5baf7a6d`
+**前提**: Phase 11 (v6) 通過後に実施。
+
+**Steps:**
+- [ ] `bash rbkc.sh create 5` を実行（出力先: `.claude/skills/nabledge-5/knowledge/`）
+- [ ] `bash rbkc.sh verify 5` を実行 — FAIL 0件であること
+- [ ] nabledge-test v5 を実行して品質劣化なし（ベースライン比）を確認
+- [ ] コミット
+
+v5 検証通過後 → Phase 13 (v1.4/1.3/1.2) へ
 
 ---
 
-### ~~Phase 9: v1.x固有ディレクティブ対応~~ — DONE
+### Phase 13: 統合検証 — v1.4 / v1.3 / v1.2
 
-committed `bc632d0f`
+**前提**: Phase 12 (v5) 通過後に実施。
+
+**Steps:**
+- [ ] `bash rbkc.sh create 1.4` → `bash rbkc.sh verify 1.4` — FAIL 0件
+- [ ] `bash rbkc.sh create 1.3` → `bash rbkc.sh verify 1.3` — FAIL 0件
+- [ ] `bash rbkc.sh create 1.2` → `bash rbkc.sh verify 1.2` — FAIL 0件
+- [ ] nabledge-test v1.4 / v1.3 / v1.2 を実行して品質劣化なし（ベースライン比）を確認
+- [ ] コミット（全3バージョンの生成済み知識ファイル）
 
 ---
 
@@ -158,3 +129,10 @@ committed `bc632d0f`
 - [x] Phase 1: KC cache → hints mapping (`scripts/hints.py`) — committed `f78304b4`
 - [x] Phase 2: RST converter with full directive support — committed `5913ff6e`, `1b62c4c4`, `9cbbc729`
 - [x] Phase 3: Hints extraction Stage 1 + Stage 2 merge — committed `ac294cdb`
+- [x] Gap fill: Phase 2 `test_section_count` 修正 + Phase 1/3 E2Eテスト追加 — committed `010d0c2f`
+- [x] Phase 4: Cross-reference resolution + asset copying — committed `9336f900`, `87654126`
+- [x] Phase 5: MD converter — committed `232df686`
+- [x] Phase 6: Excel converters — committed `edce71eb`
+- [x] Phase 7: Index + browsable docs generation — committed `dc019759`
+- [x] Phase 8: CLI + create/update/delete/verify operations — committed `5baf7a6d`
+- [x] Phase 9: v1.x固有ディレクティブ対応 — committed `bc632d0f`
