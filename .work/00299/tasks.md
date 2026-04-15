@@ -51,8 +51,6 @@ Agent(
 
 ソース → 生成物の**完全性**を確認する。ルールベース変換でソース以外のコンテンツは入らないため、逆方向（生成物 → ソース）のチェックは不要。
 
-バグが見つかった場合は verify が FAIL を出す → 修正タスクを追加して対処する。
-
 **コンテンツ（全フォーマット共通: RST / MD / Excel）**
 
 | # | チェック対象 | 内容 |
@@ -76,10 +74,23 @@ Agent(
 
 閲覧用 MD にも A〜D を適用する（JSON と同じ基準）。
 
-#### Steps
+#### Steps（TDD）
 
-- [ ] `scripts/verify.py` を上記 A〜D・F・H の仕様で全面書き換え
-- [ ] テスト: 各チェック項目を網羅するテストを追加/更新
+**Unit tests（RED → 実装 → GREEN）**
+- [ ] A: タイトル完全一致チェックのユニットテスト作成 → RED確認
+- [ ] B: テキスト完全一致チェックのユニットテスト作成 → RED確認
+- [ ] C: 内部リンク到達確認のユニットテスト作成（HTTPモック）→ RED確認
+- [ ] D: 外部URL完全一致チェックのユニットテスト作成 → RED確認
+- [ ] F: index.toon 網羅性チェックのユニットテスト作成 → RED確認
+- [ ] H: 閲覧用MD 網羅性チェックのユニットテスト作成 → RED確認
+- [ ] `scripts/verify.py` を A〜D・F・H の仕様で全面書き換え → GREEN確認
+
+**E2E tests（RED → 実装 → GREEN）**
+- [ ] v6 実データ（`universal_dao.rst` 等）を使った E2E テスト作成 → RED確認
+- [ ] Excel 実データを使った E2E テスト作成 → RED確認
+- [ ] E2E GREEN確認
+
+**完了確認**
 - [ ] `pytest` 全通過確認
 - [ ] コミット
 
@@ -89,9 +100,11 @@ Agent(
 
 **前提**: Phase 10 (verify完全チェック化) 完了後に実施。
 
+verify FAIL が出たらバグ修正タスクを追加し、FAIL 0件になるまで 生成→検証→バグ修正 を繰り返す。
+
 **Steps:**
 - [ ] `bash rbkc.sh create 6` を実行（出力先: `.claude/skills/nabledge-6/knowledge/`）
-- [ ] `bash rbkc.sh verify 6` を実行 — FAIL 0件であること
+- [ ] `bash rbkc.sh verify 6` を実行 — FAIL 0件になるまでバグ修正ループ
 - [ ] nabledge-test v6 を実行して品質劣化なし（ベースライン比）を確認
 - [ ] コミット（生成済み知識ファイルをコミット）
 
@@ -105,7 +118,7 @@ v6 検証通過後 → Phase 12 (v5) へ
 
 **Steps:**
 - [ ] `bash rbkc.sh create 5` を実行（出力先: `.claude/skills/nabledge-5/knowledge/`）
-- [ ] `bash rbkc.sh verify 5` を実行 — FAIL 0件であること
+- [ ] `bash rbkc.sh verify 5` を実行 — FAIL 0件になるまでバグ修正ループ
 - [ ] nabledge-test v5 を実行して品質劣化なし（ベースライン比）を確認
 - [ ] コミット
 
@@ -118,9 +131,9 @@ v5 検証通過後 → Phase 13 (v1.4/1.3/1.2) へ
 **前提**: Phase 12 (v5) 通過後に実施。
 
 **Steps:**
-- [ ] `bash rbkc.sh create 1.4` → `bash rbkc.sh verify 1.4` — FAIL 0件
-- [ ] `bash rbkc.sh create 1.3` → `bash rbkc.sh verify 1.3` — FAIL 0件
-- [ ] `bash rbkc.sh create 1.2` → `bash rbkc.sh verify 1.2` — FAIL 0件
+- [ ] `bash rbkc.sh create 1.4` → `bash rbkc.sh verify 1.4` — FAIL 0件になるまでバグ修正ループ
+- [ ] `bash rbkc.sh create 1.3` → `bash rbkc.sh verify 1.3` — FAIL 0件になるまでバグ修正ループ
+- [ ] `bash rbkc.sh create 1.2` → `bash rbkc.sh verify 1.2` — FAIL 0件になるまでバグ修正ループ
 - [ ] nabledge-test v1.4 / v1.3 / v1.2 を実行して品質劣化なし（ベースライン比）を確認
 - [ ] コミット（全3バージョンの生成済み知識ファイル）
 
