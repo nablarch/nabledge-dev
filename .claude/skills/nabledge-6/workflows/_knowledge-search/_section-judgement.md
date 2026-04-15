@@ -4,7 +4,9 @@ Read candidate section content and judge relevance to the search query. Common w
 
 ## Input
 
-- List of candidate sections (file, section_id)
+- List of candidate sections in `file:section_id` format (colon-separated)
+  - **Note**: `full-text-search.sh` outputs `file|section_id` (pipe-separated). Convert `|` to `:` before passing here.
+  - Example: `component/libraries/libraries-universal_dao.json|s3` → `component/libraries/libraries-universal_dao.json:s3`
 - Search keyword list (in caller's memory; used in Step 0)
 
 ## Output
