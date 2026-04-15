@@ -45,7 +45,7 @@ _ADMONITIONS = {
 }
 
 # Directives whose block body is silently skipped
-_SKIP_DIRECTIVES = {"raw", "include"}
+_SKIP_DIRECTIVES = {"include"}
 
 # Characters that RST uses for underlines (Sphinx subset)
 _UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
@@ -233,6 +233,73 @@ def _split_sections(
             sections.insert(0, (_PREAMBLE_TITLE, preamble_lines))
 
     return title, sections
+
+
+# ---------------------------------------------------------------------------
+# Handler.js parser (v1.x raw :file: support)
+# ---------------------------------------------------------------------------
+
+def _extract_js_strings(text: str) -> str:
+    """Join concatenated JS string literals: "a" + "b" -> "ab"."""
+    parts = re.findall(r'"([^"]*)"', text)
+    return "".join(parts).strip()
+
+
+def _parse_handler_js(js_content: str, handler_stem: str) -> list[dict]:
+    """Extract handler behavior entries from Handler.js content.
+
+    Finds all entries whose key starts with *handler_stem* (exact or with _suffix).
+    Returns list of dicts with keys: key, name, package, inbound, outbound, error.
+    """
+    results = []
+    pattern = re.compile(
+        r"^(" + re.escape(handler_stem) + r"(?:_\w+)?)\s*:\s*\{",
+        re.MULTILINE,
+    )
+    for m in pattern.finditer(js_content):
+        key = m.group(1)
+        # Extract the entry block by counting braces
+        depth = 0
+        start = m.end() - 1  # points at opening {
+        i = start
+        while i < len(js_content):
+            if js_content[i] == "{":
+                depth += 1
+            elif js_content[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        entry = js_content[start : i + 1]
+
+        name = _extract_js_strings(re.search(r"name:\s*(.*?)(?=\n|,\s*\n)", entry, re.DOTALL).group(1)) if re.search(r"name:", entry) else ""
+        pkg = _extract_js_strings(re.search(r"package:\s*(.*?)(?=\n|,\s*\n)", entry, re.DOTALL).group(1)) if re.search(r"package:", entry) else ""
+
+        # Extract behavior block
+        bm = re.search(r"behavior:\s*\{(.*?)\}", entry, re.DOTALL)
+        behavior_text = bm.group(1) if bm else ""
+
+        def _get_field(field: str) -> str:
+            # Stop at next field (comma at start of line) or closing brace
+            fm = re.search(
+                field + r":\s*(.*?)(?=\n\s*,\s*(?:outbound|error|inbound)|\s*\})",
+                behavior_text,
+                re.DOTALL,
+            )
+            if not fm:
+                return ""
+            return _extract_js_strings(fm.group(1))
+
+        results.append({
+            "key": key,
+            "name": name,
+            "package": pkg,
+            "inbound": _get_field("inbound"),
+            "outbound": _get_field("outbound"),
+            "error": _get_field("error"),
+        })
+
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -678,7 +745,7 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 # Content converter
 # ---------------------------------------------------------------------------
 
-def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str, str] | None = None) -> str:
+def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str, str] | None = None, source_dir: "Path | None" = None) -> str:
     """Convert RST content lines to Markdown."""
     lines = [l.rstrip("\n") for l in raw_lines]
     output: list[str] = []
@@ -733,6 +800,28 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- contents ---
             if directive == "contents":
                 block, i = _read_block(lines, i + 1)
+                continue
+
+            # --- raw directive ---
+            if directive == "raw":
+                block, i = _read_block(lines, i + 1)
+                # Check for :file: option pointing to Handler.js
+                file_opt = next(
+                    (b.strip()[len(":file:"):].strip() for b in block if b.strip().startswith(":file:")),
+                    None,
+                )
+                if file_opt and file_opt.endswith(".js") and source_dir is not None:
+                    js_path = (source_dir / file_opt).resolve()
+                    if js_path.exists():
+                        handler_stem = file_id.split("-")[-1] if "-" in file_id else file_id
+                        entries = _parse_handler_js(js_path.read_text(encoding="utf-8"), handler_stem)
+                        for entry in entries:
+                            if entry["name"]:
+                                output.append(f"**{entry['name']}** ({entry['package']})")
+                            for field in ("inbound", "outbound", "error"):
+                                val = entry[field]
+                                if val:
+                                    output.append(f"{field}: {val}")
                 continue
 
             # --- skip directives ---
@@ -981,7 +1070,7 @@ def _detect_no_knowledge_content(sections: list[Section]) -> bool:
 # Public API
 # ---------------------------------------------------------------------------
 
-def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None = None) -> RSTResult:
+def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None = None, source_path: "Path | None" = None) -> RSTResult:
     """Convert RST *source* to :class:`RSTResult`.
 
     Args:
@@ -989,6 +1078,8 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
         file_id: Knowledge file id (used for asset paths).  May be empty.
         extra_targets: Additional named hyperlink targets (e.g. from included link.rst).
             Maps {name: url}.  Merged with targets found in *source*.
+        source_path: Path to the RST source file.  Used to resolve relative
+            :file: references (e.g. Handler.js) in raw directives.
 
     Returns:
         :class:`RSTResult` with title, no_knowledge_content flag, and sections.
@@ -996,6 +1087,9 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
     Raises:
         ValueError: An unknown RST directive is encountered.
     """
+    from pathlib import Path as _Path
+    source_dir = source_path.parent if source_path is not None else None
+
     lines = source.splitlines(keepends=True)
     heading_chars = _detect_heading_chars([l.rstrip("\n") for l in lines])
     title, raw_sections = _split_sections([l.rstrip("\n") for l in lines], heading_chars)
@@ -1007,7 +1101,7 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
 
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
-        md = _convert_content(sec_lines, file_id, targets or None)
+        md = _convert_content(sec_lines, file_id, targets or None, source_dir)
         sections.append(Section(title=sec_title, content=md))
 
     no_knowledge = _detect_no_knowledge_content(sections)

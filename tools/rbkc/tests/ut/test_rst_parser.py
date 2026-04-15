@@ -280,6 +280,76 @@ class TestNamedLinkResolution:
 
 
 # ---------------------------------------------------------------------------
+# raw :file: Handler.js
+# ---------------------------------------------------------------------------
+
+_HANDLER_JS = """\
+var Handler = {
+ForwardingHandler: {
+  name: "内部フォーワードハンドラ"
+, package: "nablarch.fw.web.handler"
+, behavior: {
+    inbound:  ""
+  , outbound: "遷移先に内部フォーワードパスが指定されていた場合、"
+            + "HTTPリクエストオブジェクトのリクエストURIを内部フォーワードパスに書き換えた後、"
+            + "後続のハンドラを再実行する。 "
+  , error:    ""
+  }
+}
+};
+"""
+
+
+class TestRawFileHandlerJs:
+    def test_handler_behavior_in_content(self, tmp_path):
+        """.. raw:: html :file: ../Handler.js の動作説明が content に含まれる。"""
+        handler_dir = tmp_path / "handler"
+        handler_dir.mkdir()
+        fw_dir = tmp_path
+        (fw_dir / "Handler.js").write_text(_HANDLER_JS, encoding="utf-8")
+
+        rst = (
+            "ForwardingHandler\n"
+            "=================\n"
+            "\n"
+            "ハンドラ処理概要\n"
+            "----------------\n"
+            "\n"
+            ".. raw:: html\n"
+            "   :file: ../Handler.js\n"
+        )
+        rst_path = handler_dir / "ForwardingHandler.rst"
+        rst_path.write_text(rst, encoding="utf-8")
+
+        result = convert(rst, "ForwardingHandler", source_path=rst_path)
+        content = " ".join(s.content for s in result.sections)
+        assert "内部フォーワードハンドラ" in content
+        assert "HTTPリクエストオブジェクト" in content
+
+    def test_handler_behavior_empty_string_skipped(self, tmp_path):
+        """behavior が空文字のフィールドは出力されない。"""
+        (tmp_path / "Handler.js").write_text(_HANDLER_JS, encoding="utf-8")
+        rst_dir = tmp_path / "handler"
+        rst_dir.mkdir()
+
+        rst = (
+            "ForwardingHandler\n"
+            "=================\n"
+            "\n"
+            ".. raw:: html\n"
+            "   :file: ../Handler.js\n"
+        )
+        rst_path = rst_dir / "ForwardingHandler.rst"
+        rst_path.write_text(rst, encoding="utf-8")
+
+        result = convert(rst, "ForwardingHandler", source_path=rst_path)
+        content = result.sections[0].content
+        # inbound/error are empty string → should not appear as label
+        assert "inbound:" not in content
+        assert "error:" not in content
+
+
+# ---------------------------------------------------------------------------
 # Grid table edge cases
 # ---------------------------------------------------------------------------
 
