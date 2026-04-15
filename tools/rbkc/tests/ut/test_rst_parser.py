@@ -129,6 +129,66 @@ class TestSectionSplitting:
 
 
 # ---------------------------------------------------------------------------
+# Footnote handling
+# ---------------------------------------------------------------------------
+
+class TestFootnoteHandling:
+    def test_footnote_inline_text_in_content(self):
+        """.. [N] テキスト がセクション content に含まれることを確認。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Main text.\n"
+            "\n"
+            ".. [1] First footnote.\n"
+        )
+        result = convert(rst, "t")
+        assert len(result.sections) == 1
+        assert "First footnote." in result.sections[0].content
+
+    def test_footnote_multiline_in_content(self):
+        """複数行にわたる脚注本文が content に含まれることを確認。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Main text.\n"
+            "\n"
+            ".. [2] Line one of footnote.\n"
+            "   Line two of footnote.\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert "Line one of footnote." in content
+        assert "Line two of footnote." in content
+
+    def test_footnote_in_section_appended_to_that_section(self):
+        """セクション内の脚注は、そのセクションの content に追記される。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Section A\n"
+            "---------\n"
+            "\n"
+            "Body text.\n"
+            "\n"
+            ".. [1] Footnote for section A.\n"
+            "\n"
+            "Section B\n"
+            "---------\n"
+            "\n"
+            "Other text.\n"
+        )
+        result = convert(rst, "t")
+        sec_a = next(s for s in result.sections if s.title == "Section A")
+        sec_b = next(s for s in result.sections if s.title == "Section B")
+        assert "Footnote for section A." in sec_a.content
+        assert "Footnote for section A." not in sec_b.content
+
+
+# ---------------------------------------------------------------------------
 # Grid table edge cases
 # ---------------------------------------------------------------------------
 
