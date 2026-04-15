@@ -21,21 +21,14 @@ Each line: `relative-file-path|section-id`
 
 ## Steps
 
-> **Command execution rules (apply to every Bash command in this workflow)**
-> - Copy the command exactly as written — do not modify paths, flags, or structure
-> - Do not absolutize relative paths (`.claude/` must stay as `.claude/`)
-> - Do not append pipes, redirects, or output limits (`2>/dev/null`, `| head`, etc.)
->
-> Modifying any command breaks permission matching and causes an authorization error.
-
 ### Step 1: Run full-text search
 
 **Tool**: Bash (`scripts/full-text-search.sh`)
 
 **Action**: Execute `scripts/full-text-search.sh` and pass the keyword list as arguments.
 
-Execute verbatim:
-```run-verbatim
+**Command**:
+```bash
 bash .claude/skills/nabledge-6/scripts/full-text-search.sh "paging" "paging" "UniversalDao"
 ```
 

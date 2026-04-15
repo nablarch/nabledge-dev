@@ -32,31 +32,6 @@ curl -sSL https://raw.githubusercontent.com/nablarch/nabledge/main/setup-ghc.sh 
 
 **注**: チームメンバーは VS Code を再起動する必要があります。
 
-## スクリプト実行の確認プロンプトについて
-
-Nabledge スキルの実行中、内部で使用しているシェルスクリプトの実行許可を GitHub Copilot が都度確認することがあります。
-
-### 確認プロンプトを抑制する（任意）
-
-プロジェクトの `.vscode/settings.json` に以下を追加すると、Nabledge スキルが使用するスクリプトが自動的に許可されます：
-
-```json
-{
-  "chat.tools.terminal.autoApprove": {
-    "/\\.claude\\/skills\\/nabledge-[^/]+\\/scripts\\//": true,
-    "jq": true,
-    "cat": true,
-    "head": true,
-    "tail": true,
-    "grep": true,
-    "find": true,
-    "wc": true
-  }
-}
-```
-
-> **注意**: `jq`、`cat`、`grep` などの汎用コマンドは Nabledge スキル以外の操作でも自動許可されます。プロジェクトのセキュリティポリシーに応じて適用を判断してください。
-
 ## 使い方
 
 ### `/n6` プロンプト

@@ -18,11 +18,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 ## Process flow
 
 > **Bash usage: restricted commands only**
-> For file operations (search, read, grep), always use Bash scripts via run-verbatim — never raw `find`, `ls`, or `grep` commands.
-> - Copy approved commands exactly as written — do not modify paths, flags, or structure
-> - Do not append pipes, redirects, or output limits (`2>/dev/null`, `| head`, etc.)
->
-> Modifying any command breaks permission matching and causes an authorization error.
+> For file operations (search, read, grep), always use Bash scripts — never raw `find`, `ls`, or `grep` commands.
 
 ### Confirm analysis target (required before Step 0)
 
@@ -47,8 +43,7 @@ Check whether the user's invocation explicitly names a specific class or file.
 
 **Action** - Store start time with unique session ID in output directory.
 
-Execute verbatim:
-```run-verbatim
+```bash
 bash .claude/skills/nabledge-6/scripts/record-start.sh
 ```
 
@@ -85,14 +80,14 @@ Output directory: .nabledge/20260210
    - Specific feature (e.g., "login feature")
    - Package (e.g., "under web.action")
 
-2. **Find target files** — Execute verbatim:
-   ```run-verbatim
+2. **Find target files**:
+   ```bash
    bash .claude/skills/nabledge-6/scripts/find-file.sh "<TargetClass>.java"
    ```
    Replace `<TargetClass>` with the actual class name from `target`. Add more patterns if multiple files are needed (e.g., `"*Form.java"`).
 
-3. **Read target files** — Execute verbatim (pass paths from step 2):
-   ```run-verbatim
+3. **Read target files** (pass paths from step 2):
+   ```bash
    bash .claude/skills/nabledge-6/scripts/read-file.sh "<path/to/file.java>"
    ```
    Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh.
@@ -148,8 +143,8 @@ Output directory: .nabledge/20260210
    - Include class names, Japanese feature names, and related technical terms
    - Example: ["UniversalDao", "ExecutionContext", "ValidationUtil", "validation", "transaction"]
 
-2. **Execute full-text search**. Execute verbatim:
-   ```run-verbatim
+2. **Execute full-text search**:
+   ```bash
    bash .claude/skills/nabledge-6/scripts/full-text-search.sh "UniversalDao" "ExecutionContext" "ValidationUtil" "validation" "transaction"
    ```
    - Output: Scored and ranked candidate sections (max 15 results)
@@ -202,8 +197,7 @@ cat .claude/skills/nabledge-6/assets/code-analysis-template.md \
 
 **Action**: Execute prefill script to pre-populate 9 deterministic placeholders.
 
-Execute verbatim (single line, no backslash continuation):
-```run-verbatim
+```bash
 bash .claude/skills/nabledge-6/scripts/prefill-template.sh --target-name "<target-name>" --target-desc "<one-line-description>" --modules "<module1, module2>" --source-files "File1.java,File2.java" --knowledge-files "libraries-universal_dao,libraries-data_bind"
 ```
 
@@ -267,13 +261,13 @@ After the script completes, find the `Output: <path>` line in the result and sav
 
 **Action**: Generate diagram skeletons to reduce LLM workload:
 
-**Class Diagram Skeleton**. Execute verbatim:
-```run-verbatim
+**Class Diagram Skeleton**:
+```bash
 bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<file1.java,file2.java>" --diagram-type class
 ```
 
-**Sequence Diagram Skeleton**. Execute verbatim:
-```run-verbatim
+**Sequence Diagram Skeleton**:
+```bash
 bash .claude/skills/nabledge-6/scripts/generate-mermaid-skeleton.sh --source-files "<main-file.java>" --diagram-type sequence --main-class "<MainClass>"
 ```
 
@@ -598,8 +592,7 @@ mapper.close();
 
    **CRITICAL SEQUENCING**: Execute time calculation and file update in a single Bash tool call using `&&` to ensure no operations occur between them.
 
-   Execute verbatim:
-   ```run-verbatim
+   ```bash
    bash .claude/skills/nabledge-6/scripts/finalize-output.sh "<target-name>" "YYYYMMDD"
    ```
 
