@@ -22,12 +22,12 @@ class SourceFile:
 
 
 def _load_mappings(version: str, repo_root: Path) -> dict:
-    """Load KC mapping file for the given version."""
-    mapping_path = repo_root / "tools/knowledge-creator/mappings" / f"v{version}.json"
+    """Load RBKC mapping file for the given version."""
+    mapping_path = repo_root / "tools/rbkc/mappings" / f"v{version}.json"
     if not mapping_path.exists():
         raise FileNotFoundError(
             f"Mapping file not found: {mapping_path}\n"
-            f"Create tools/knowledge-creator/mappings/v{version}.json to support this version."
+            f"Create tools/rbkc/mappings/v{version}.json to support this version."
         )
     return json.loads(mapping_path.read_text(encoding="utf-8"))
 
