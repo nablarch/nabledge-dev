@@ -60,13 +60,21 @@ def _converter_for(fmt: str, filename: str):
 
 
 def _hints_index(repo_root: Path, version: str):
-    """Load hints index for the given version (cached once per process call)."""
+    """Load hints index for the given version.
+
+    Returns an empty dict when the KC cache does not exist (expected in
+    fresh setups).  Re-raises unexpected errors (e.g. corrupt JSON) after
+    printing a warning so the caller can decide how to proceed.
+    """
     try:
-        cache_dir = repo_root / "tools/knowledge-creator/.cache" / f"v{version}" / "knowledge"
+        cache_dir = repo_root / "tools/knowledge-creator/.cache" / f"v{version}"
         catalog_path = repo_root / "tools/knowledge-creator/.cache" / f"v{version}" / "catalog.json"
         return build_hints_index(cache_dir, catalog_path, repo_root)
-    except Exception:
+    except FileNotFoundError:
         return {}
+    except Exception as exc:
+        print(f"Warning: hints index failed for v{version}: {exc}", file=sys.stderr)
+        raise
 
 
 # ---------------------------------------------------------------------------
