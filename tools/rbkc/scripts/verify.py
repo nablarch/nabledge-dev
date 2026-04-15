@@ -1,19 +1,29 @@
-"""Knowledge file verifier for RBKC.
+"""Knowledge file verifier for RBKC — Phase 11.
 
-Checks that a generated knowledge JSON file faithfully represents its
-source document.  Detects content loss or corruption.
+Checks that generated knowledge JSON files faithfully represent their
+source documents and that coverage requirements are met.
 
-**Verification strategy**:
-- For RST/MD: extract key text tokens from source and check they appear
-  in the combined section content of the JSON.
-- For XLSX: verify that the section count is non-zero (basic sanity check).
+Verification strategy (per-file):
+    A. Section titles: source headings are present in JSON sections
+    B. Token coverage: ≥70% of sampled source tokens appear in JSON content
+    C. Internal links: relative links in JSON content resolve to real files
+    D. External URLs: https?:// URLs in source text appear in JSON content
 
-The goal is not perfect semantic equivalence but practical protection
-against accidental data loss or format errors.
+Verification strategy (global):
+    F. index.toon coverage: all JSON entries exist (excl. no_knowledge_content)
+    H. Docs (MD) coverage: every JSON has a corresponding MD file
 
 Public API:
-    verify_file(source_path, json_path, format) -> list[str]
-        Returns list of issue strings.  Empty = OK.
+    check_titles(source_text, data, fmt) -> list[str]          # Check A
+    check_content(source_text, data, fmt) -> list[str]         # Check B
+    check_internal_links(data, json_path, knowledge_dir) -> list[str]  # Check C
+    check_external_urls(source_text, data) -> list[str]        # Check D
+    check_index_coverage(knowledge_dir, index_path) -> list[str]  # Check F
+    check_docs_coverage(knowledge_dir, docs_dir) -> list[str]  # Check H
+
+    verify_file(source_path, json_path, fmt, knowledge_dir=None) -> list[str]
+
+    _extract_text_tokens(text) -> list[str]   # kept for backward compatibility
 """
 from __future__ import annotations
 
@@ -22,19 +32,30 @@ import re
 from pathlib import Path
 
 
-# Minimum fraction of sampled tokens that must appear in JSON content
-_MIN_TOKEN_COVERAGE = 0.7
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 
-# Max tokens to sample from source (keep test fast)
+_MIN_TOKEN_COVERAGE = 0.7
 _MAX_SAMPLE = 100
 
+# RST underline characters (from rst converter)
+_UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
+
+# Synthetic preamble title used by RST converter
+_PREAMBLE_TITLE = "概要"
+
+
+# ---------------------------------------------------------------------------
+# Token extraction (public — kept for backward compatibility)
+# ---------------------------------------------------------------------------
 
 def _extract_text_tokens(text: str) -> list[str]:
-    """Extract significant (non-trivial) words from plain text."""
-    # CJK/Kana: ≥2 chars (2-kanji words are common in Japanese)
-    # Start CJK range at \u4e00 (CJK Unified Ideographs) — not \u3000 which
-    # includes ideographic spaces and punctuation that are not word tokens.
-    # ASCII/other word chars: ≥3 chars (filter out trivial tokens like "to", "in")
+    """Extract significant (non-trivial) words from plain text.
+
+    CJK/Kana: ≥2 chars; ASCII: ≥3 chars.
+    Ranges start at U+4E00 (not U+3000) to exclude ideographic spaces/punctuation.
+    """
     tokens = re.findall(
         r"[\u4e00-\u9fff\u3400-\u4dbf\u30a0-\u30ff\u3040-\u309f]{2,}|\w{3,}",
         text,
@@ -42,8 +63,136 @@ def _extract_text_tokens(text: str) -> list[str]:
     return list(dict.fromkeys(tokens))  # deduplicate, preserve order
 
 
+# ---------------------------------------------------------------------------
+# RST heading detection (independent implementation, mirrors rst converter)
+# ---------------------------------------------------------------------------
+
+def _is_underline(line: str) -> bool:
+    """Return True if *line* is a valid RST underline (all same char, ≥3)."""
+    s = line.rstrip("\n").rstrip()
+    if len(s) < 3:
+        return False
+    c = s[0]
+    if c not in _UNDERLINE_CHARS:
+        return False
+    return all(x == c for x in s)
+
+
+def _detect_rst_heading_chars(lines: list[str]) -> list[str]:
+    """Return RST heading underline chars in order of first appearance."""
+    chars: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Overline style: underline / title / underline
+        if (
+            i + 2 < len(lines)
+            and _is_underline(line)
+            and lines[i + 1].strip()
+            and not _is_underline(lines[i + 1])
+            and _is_underline(lines[i + 2])
+            and line.rstrip()[0] == lines[i + 2].rstrip()[0]
+        ):
+            c = line.rstrip()[0]
+            if c not in chars:
+                chars.append(c)
+            i += 3
+            continue
+        # Underline-only style: title / underline
+        if (
+            i + 1 < len(lines)
+            and line.strip()
+            and not _is_underline(line)
+            and _is_underline(lines[i + 1])
+            # Exclude: this title line is itself preceded by an overline
+            and not (i > 0 and _is_underline(lines[i - 1])
+                     and lines[i - 1].rstrip()[0] == lines[i + 1].rstrip()[0])
+        ):
+            c = lines[i + 1].rstrip()[0]
+            if c not in chars:
+                chars.append(c)
+            i += 2
+            continue
+        i += 1
+    return chars
+
+
+def _extract_rst_section_headings(source_text: str) -> list[str]:
+    """Extract h2/h3 section heading texts from RST source.
+
+    Returns a list of heading texts (not including h1 title).
+    "概要" (preamble) is excluded — it is synthetic and has no source heading.
+    """
+    lines = source_text.splitlines()
+    heading_chars = _detect_rst_heading_chars(lines)
+    if not heading_chars:
+        return []
+
+    h1_char = heading_chars[0]
+    section_chars = set(heading_chars[1:3]) if len(heading_chars) >= 2 else set()
+    if not section_chars:
+        return []
+
+    headings: list[str] = []
+    found_h1 = False
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Overline heading
+        if (
+            i + 2 < len(lines)
+            and _is_underline(line)
+            and lines[i + 1].strip()
+            and not _is_underline(lines[i + 1])
+            and _is_underline(lines[i + 2])
+            and line.rstrip()[0] == lines[i + 2].rstrip()[0]
+        ):
+            c = line.rstrip()[0]
+            text = lines[i + 1].strip()
+            if c == h1_char and not found_h1:
+                found_h1 = True
+            elif c in section_chars:
+                headings.append(text)
+            i += 3
+            continue
+        # Underline-only heading
+        if (
+            i + 1 < len(lines)
+            and line.strip()
+            and not _is_underline(line)
+            and _is_underline(lines[i + 1])
+            and not (i > 0 and _is_underline(lines[i - 1])
+                     and lines[i - 1].rstrip()[0] == lines[i + 1].rstrip()[0])
+        ):
+            c = lines[i + 1].rstrip()[0]
+            if c in heading_chars:
+                text = line.strip()
+                if c == h1_char and not found_h1:
+                    found_h1 = True
+                elif c in section_chars:
+                    headings.append(text)
+                i += 2
+                continue
+        i += 1
+    return headings
+
+
+def _extract_md_section_headings(source_text: str) -> list[str]:
+    """Extract ## and ### headings from Markdown source text."""
+    headings = []
+    for line in source_text.splitlines():
+        m = re.match(r"^#{2,3}\s+(.+)", line.rstrip())
+        if m:
+            headings.append(m.group(1).strip())
+    return headings
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _json_text(data: dict) -> str:
-    """Concatenate all section content from a knowledge JSON."""
+    """Concatenate all section titles and content from a knowledge JSON."""
     parts = []
     for sec in data.get("sections", []):
         if sec.get("title"):
@@ -53,18 +202,69 @@ def _json_text(data: dict) -> str:
     return " ".join(parts)
 
 
-def _verify_rst_md(source_path: Path, data: dict) -> list[str]:
-    """Verify RST or MD source against knowledge JSON."""
+def _json_section_titles(data: dict) -> set[str]:
+    """Return the set of section titles in a knowledge JSON."""
+    return {sec["title"] for sec in data.get("sections", []) if sec.get("title")}
+
+
+# ---------------------------------------------------------------------------
+# Check A: Section titles
+# ---------------------------------------------------------------------------
+
+def check_titles(source_text: str, data: dict, fmt: str) -> list[str]:
+    """Check A: source headings are present in JSON sections.
+
+    For RST: h2/h3 headings must all appear in JSON section titles.
+    For MD: ## and ### headings must all appear in JSON section titles.
+    For XLSX: skip (always passes).
+
+    '概要' in JSON does not require a matching source heading (it is synthetic).
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    if fmt == "xlsx":
+        return []
+
+    if fmt == "rst":
+        source_headings = _extract_rst_section_headings(source_text)
+    elif fmt == "md":
+        source_headings = _extract_md_section_headings(source_text)
+    else:
+        return []
+
+    if not source_headings:
+        return []
+
+    json_titles = _json_section_titles(data)
     issues = []
+    for heading in source_headings:
+        if heading not in json_titles:
+            issues.append(f"Source heading not found in JSON sections: {heading!r}")
+    return issues
 
+
+# ---------------------------------------------------------------------------
+# Check B: Token coverage
+# ---------------------------------------------------------------------------
+
+def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
+    """Check B: source token coverage >= 70% in JSON content.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
     if not data.get("sections"):
-        if not data.get("no_knowledge_content"):
-            issues.append("sections list is empty but no_knowledge_content is not set")
-        return issues
+        if data.get("no_knowledge_content"):
+            return []
+        return ["sections list is empty but no_knowledge_content is not set"]
 
-    source_text = source_path.read_text(encoding="utf-8", errors="replace")
-    # For RST, strip directive lines to get prose tokens
-    source_clean = re.sub(r"^\.\.\s+\w+.*$", "", source_text, flags=re.MULTILINE)
+    # For RST, strip directive lines before token extraction
+    if fmt == "rst":
+        source_clean = re.sub(r"^\.\.\s+\w+.*$", "", source_text, flags=re.MULTILINE)
+    else:
+        source_clean = source_text
+
     source_tokens = _extract_text_tokens(source_clean)
 
     # Sample tokens evenly across the source
@@ -73,51 +273,232 @@ def _verify_rst_md(source_path: Path, data: dict) -> list[str]:
         source_tokens = source_tokens[::step][:_MAX_SAMPLE]
 
     if not source_tokens:
-        return issues  # nothing to check
+        return []
 
     json_text = _json_text(data)
     found = sum(1 for t in source_tokens if t in json_text)
     coverage = found / len(source_tokens)
 
     if coverage < _MIN_TOKEN_COVERAGE:
-        issues.append(
+        return [
             f"Token coverage too low: {found}/{len(source_tokens)} "
             f"({coverage:.0%} < {_MIN_TOKEN_COVERAGE:.0%}) — "
             f"JSON may be missing significant content from source"
-        )
+        ]
+    return []
 
-    return issues
+
+# ---------------------------------------------------------------------------
+# Check C: Internal links
+# ---------------------------------------------------------------------------
+
+# Markdown link pattern: [text](url)
+_MD_LINK_RE = re.compile(r"\[(?:[^\]]*)\]\(([^)]+)\)")
 
 
-def _verify_xlsx(source_path: Path, data: dict) -> list[str]:
-    """Verify XLSX source against knowledge JSON."""
+def check_internal_links(
+    data: dict,
+    json_path: Path,
+    knowledge_dir: Path,
+) -> list[str]:
+    """Check C: relative links in JSON content resolve to real files.
+
+    Skips:
+    - https?:// (external links)
+    - assets/ (asset copy not implemented)
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
     issues = []
-    if not data.get("sections") and not data.get("no_knowledge_content"):
-        issues.append("XLSX knowledge file has no sections")
+    all_content = _json_text(data)
+
+    for m in _MD_LINK_RE.finditer(all_content):
+        url = m.group(1).strip()
+        # Skip external links
+        if re.match(r"https?://", url):
+            continue
+        # Skip assets/ links
+        if url.startswith("assets/"):
+            continue
+        # Resolve relative to knowledge_dir
+        target = (knowledge_dir / url).resolve()
+        if not target.exists():
+            issues.append(f"Internal link target not found: {url!r}")
+
     return issues
 
 
-def verify_file(source_path: Path, json_path: Path, fmt: str) -> list[str]:
-    """Verify a knowledge JSON file against its source.
+# ---------------------------------------------------------------------------
+# Check D: External URLs
+# ---------------------------------------------------------------------------
+
+# Matches bare https?:// URLs and RST inline URL `text <URL>`_
+_URL_RE = re.compile(r"https?://[^\s>\)\]\"']+")
+
+# RST external hyperlink target definition: .. _Name: URL
+# These are reference definitions only and their URLs are skipped
+_RST_HYPERLINK_DEF_RE = re.compile(
+    r"^\.\.\s+_[^:]+:\s+(https?://\S+)\s*$",
+    re.MULTILINE,
+)
+
+
+def check_external_urls(source_text: str, data: dict) -> list[str]:
+    """Check D: https?:// URLs in source text appear in JSON content.
+
+    RST hyperlink target definitions (.. _Name: URL) that are not
+    referenced inline are skipped.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    # Collect URLs that appear ONLY as RST hyperlink definitions (not inline)
+    definition_only_urls: set[str] = set()
+    inline_re = re.compile(r"`[^`]+<(https?://[^>]+)>`_")
+
+    # Gather all definition URLs
+    def_urls = {m.group(1) for m in _RST_HYPERLINK_DEF_RE.finditer(source_text)}
+    # Gather all inline URLs
+    inline_urls = {m.group(1) for m in inline_re.finditer(source_text)}
+    # Bare URLs not preceded by < (excluding inline URL tails)
+    # A URL is definition-only if it appears in a def but NOT inline
+    definition_only_urls = def_urls - inline_urls
+
+    # Collect all URLs from source
+    all_source_urls = set(_URL_RE.findall(source_text))
+
+    # Remove definition-only URLs from check set
+    urls_to_check = all_source_urls - definition_only_urls
+
+    if not urls_to_check:
+        return []
+
+    json_text = _json_text(data)
+    issues = []
+    for url in sorted(urls_to_check):
+        if url not in json_text:
+            issues.append(f"External URL in source not found in JSON content: {url!r}")
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check F: index.toon coverage
+# ---------------------------------------------------------------------------
+
+def check_index_coverage(knowledge_dir: Path, index_path: Path) -> list[str]:
+    """Check F: all JSON files have entries in index.toon.
+
+    JSON files with no_knowledge_content=True are excluded.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    if not index_path.exists():
+        return [f"index.toon not found: {index_path}"]
+
+    # Parse index.toon entries (last field of comma-separated line = relative path)
+    indexed_paths: set[str] = set()
+    index_text = index_path.read_text(encoding="utf-8")
+    for line in index_text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or stripped.startswith("files["):
+            continue
+        parts = [p.strip() for p in stripped.split(",")]
+        if len(parts) >= 5:
+            rel_path = parts[-1].strip()
+            if rel_path.endswith(".json"):
+                indexed_paths.add(rel_path)
+
+    # Find all JSON files in knowledge_dir (excluding index.toon itself)
+    issues = []
+    for json_path in sorted(knowledge_dir.rglob("*.json")):
+        rel = json_path.relative_to(knowledge_dir).as_posix()
+        # Check if no_knowledge_content
+        try:
+            file_data = json.loads(json_path.read_text(encoding="utf-8"))
+            if file_data.get("no_knowledge_content"):
+                continue
+        except Exception:
+            pass
+        if rel not in indexed_paths:
+            issues.append(f"JSON file not in index.toon: {rel}")
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check H: Docs (MD) coverage
+# ---------------------------------------------------------------------------
+
+def check_docs_coverage(knowledge_dir: Path, docs_dir: Path) -> list[str]:
+    """Check H: every JSON file has a corresponding MD file in docs_dir.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    if not docs_dir.exists():
+        return [f"docs directory not found: {docs_dir}"]
+
+    issues = []
+    for json_path in sorted(knowledge_dir.rglob("*.json")):
+        rel = json_path.relative_to(knowledge_dir)
+        md_path = docs_dir / rel.with_suffix(".md")
+        if not md_path.exists():
+            issues.append(f"Missing docs MD file: {rel.with_suffix('.md')}")
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Per-file verifier (public API)
+# ---------------------------------------------------------------------------
+
+def verify_file(
+    source_path: Path,
+    json_path: Path,
+    fmt: str,
+    knowledge_dir: Path | None = None,
+) -> list[str]:
+    """Verify a knowledge JSON file against its source (checks A, B, C, D).
 
     Args:
         source_path: Path to the original source file.
         json_path: Path to the generated knowledge JSON.
         fmt: File format — 'rst', 'md', or 'xlsx'.
+        knowledge_dir: Root of knowledge directory (for internal link resolution).
+                       If None, check C is skipped.
 
     Returns:
-        List of issue strings.  Empty list means the file passes verification.
+        List of issue strings. Empty list means the file passes verification.
     """
     if not source_path.exists():
         return [f"Source file not found: {source_path}"]
     if not json_path.exists():
         return [f"JSON file not found: {json_path}"]
+    if fmt not in ("rst", "md", "xlsx"):
+        return [f"Unknown format: {fmt}"]
 
     data = json.loads(json_path.read_text(encoding="utf-8"))
 
-    if fmt in ("rst", "md"):
-        return _verify_rst_md(source_path, data)
-    elif fmt == "xlsx":
-        return _verify_xlsx(source_path, data)
-    else:
-        return [f"Unknown format: {fmt}"]
+    if fmt == "xlsx":
+        issues = []
+        if not data.get("sections") and not data.get("no_knowledge_content"):
+            issues.append("XLSX knowledge file has no sections")
+        return issues
+
+    source_text = source_path.read_text(encoding="utf-8", errors="replace")
+    issues = []
+
+    # Check A: section titles
+    issues.extend(check_titles(source_text, data, fmt))
+
+    # Check B: token coverage
+    issues.extend(check_content(source_text, data, fmt))
+
+    # Check C: internal links (only when knowledge_dir is provided)
+    if knowledge_dir is not None:
+        issues.extend(check_internal_links(data, json_path, knowledge_dir))
+
+    # Check D: external URLs
+    issues.extend(check_external_urls(source_text, data))
+
+    return issues

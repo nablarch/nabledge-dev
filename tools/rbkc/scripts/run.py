@@ -34,7 +34,7 @@ from scripts.classify import FileInfo, classify_sources
 from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.hints import build_hints_index, lookup_hints
 from scripts.scan import scan_sources
-from scripts.verify import verify_file
+from scripts.verify import verify_file, check_index_coverage, check_docs_coverage
 
 
 # ---------------------------------------------------------------------------
@@ -243,8 +243,8 @@ def verify(
 ) -> bool:
     """Verify that knowledge JSON files match their source documents.
 
-    Checks each source file against its corresponding JSON output for
-    content consistency.
+    Runs per-file checks (A, B, C, D) for each source file, and global
+    coverage checks (F, H) when verifying all files (files is None).
 
     Returns:
         True if all files pass verification, False if any issues found.
@@ -253,13 +253,27 @@ def verify(
     file_infos = classify_sources(sources, version, repo_root)
 
     all_ok = True
+
+    # Per-file checks (A, B, C, D)
     for fi in file_infos:
         json_path = output_dir / fi.output_path
-        issues = verify_file(fi.source_path, json_path, fi.format)
+        issues = verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir)
         if issues:
             all_ok = False
             for issue in issues:
                 print(f"FAIL {fi.source_path.name}: {issue}", file=sys.stderr)
+
+    # Coverage checks (F, H) — only when verifying all files
+    if files is None:
+        index_path = output_dir / "index.toon"
+        for issue in check_index_coverage(output_dir, index_path):
+            print(f"FAIL index.toon: {issue}", file=sys.stderr)
+            all_ok = False
+
+        docs_dir = output_dir.parent / "docs"
+        for issue in check_docs_coverage(output_dir, docs_dir):
+            print(f"FAIL docs: {issue}", file=sys.stderr)
+            all_ok = False
 
     return all_ok
 
