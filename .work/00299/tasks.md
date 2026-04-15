@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-15
+**Updated**: 2026-04-15 (session 2)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → **サブエージェント品質チェック**
 
@@ -44,154 +44,6 @@ Agent(
 ---
 
 ## Not Started
-
-### Phase 10: コンバータ修正
-
-調査で判明したコンバータの欠陥を修正する。全修正 TDD で実施。
-
-#### 10-1: preamble 消滅バグ修正（rst.py）
-
-h1 前に `.. _label:` がある場合（v6: 225/334ファイル）、h1〜最初のh2 間のコンテンツが消える。
-
-`_flush()` の `elif current_lines and not preamble_lines:` を `elif current_lines:` に変更し `extend` で追記。
-
-**Steps（TDD）:**
-- [ ] テスト: pre-h1 ラベルありRSTでpreamble内容が保持されることを確認 → RED
-- [ ] `scripts/converters/rst.py` `_flush()` 修正 → GREEN
-- [ ] `pytest` 全通過確認 → コミット
-
----
-
-#### 10-2: 脚注（`.. [N]`）の出力（全バージョン）
-
-脚注に知識コンテンツが含まれる（v6/v5: 92-97件、v1.x: 46-57件）。現在全件スキップされている。
-脚注は本文の補足情報として当該セクションの `content` に追記する。
-
-**Steps（TDD）:**
-- [ ] テスト: 脚注コンテンツが `content` に含まれることを確認 → RED
-- [ ] `scripts/converters/rst.py` 脚注処理実装 → GREEN
-- [ ] `pytest` 全通過確認 → コミット
-
----
-
-#### 10-3: `class` ディレクティブのコンテンツ出力（v1.x）
-
-`class` ディレクティブのブロックに API 説明が含まれる（v1.x: 4件）。現在スキップされている。
-ブロックコンテンツを通常テキストとして出力する。
-
-**Steps（TDD）:**
-- [ ] テスト: `class` ディレクティブのブロックが `content` に含まれることを確認 → RED
-- [ ] `scripts/converters/rst.py` `_SKIP_DIRECTIVES` から `class` を除外し本文出力 → GREEN
-- [ ] `pytest` 全通過確認 → コミット
-
----
-
-#### 10-4: 名前付きリンク参照の URL 解決（全バージョン）
-
-`` `Name`_ `` 形式の参照について、ターゲット定義（同ファイル内 `.. _Name: url` または `.. include::` 経由の link.rst）からURLを解決して `[Name](URL)` に変換する。
-
-現状: `` `Name`_ `` → プレーンテキスト（URLが消える）
-あるべき姿: `` `Name`_ `` → `[Name](URL)`
-
-影響範囲:
-- 同ファイル内ターゲット: v6/v5 で外部URL 39-40件
-- include ファイル内ターゲット: v1.x link.rst で 51件実際使用（Javadoc + 解説書リンク）
-
-**Steps（TDD）:**
-- [ ] テスト: 同ファイル内ターゲット定義 → `[Name](URL)` に変換されることを確認 → RED
-- [ ] テスト: include 経由ターゲット定義 → `[Name](URL)` に変換されることを確認 → RED
-- [ ] `scripts/converters/rst.py` ターゲット収集 + 参照解決ロジック実装 → GREEN
-- [ ] `pytest` 全通過確認 → コミット
-
----
-
-#### 10-5: raw `:file:` 参照の処理（v1.x）
-
-v1.x の raw ディレクティブが `:file: ../Handler.js` 形式でJSファイルを参照している。
-Handler.js に各ハンドラの動作説明（inbound/outbound/error、96件）が含まれており、本文には一切記述がない。
-
-Handler.js の構造:
-```javascript
-HandlerName: {
-  name: "日本語名"
-, package: "nablarch.fw.handler"
-, behavior: {
-    inbound:  "動作説明"
-  , outbound: "動作説明"
-  , error:    "エラー時の動作説明"
-  }
-}
-```
-
-JSをパースし、ハンドラ名・日本語名・パッケージ・動作説明を当該セクションの `content` に追記する。
-また、同様の `:file:` 参照が他にないか調査して対処する。
-
-**Steps（TDD）:**
-- [ ] `:file:` 参照を使うrawブロックの種類を全バージョンで調査
-- [ ] テスト: Handler.js の動作説明が `content` に含まれることを確認 → RED
-- [ ] `scripts/converters/rst.py` raw `:file:` パーサー実装 → GREEN
-- [ ] `pytest` 全通過確認 → コミット
-
----
-
-#### 10-6: hints の修正（Stage 1 削除・Stage 2 マッピング戦略を刷新）
-
-**Stage 1 削除**: Route 1（全文検索）が primary なので、content に含まれる PascalCase 等は不要。
-
-**Stage 2 マッピング戦略**: 調査により以下が判明した。
-
-- KC は `catalog.json` の `section_range.sections`（Expected Sections）を受け取り、その順にセクションを生成する
-- KC のセクション ID は常に `s1` からのローカル連番（catalog のグローバル ID と一致しない）
-- KC タイトルは Expected Sections のタイトルと原則一致するが、大きいセクション（≥2000文字 + h3あり）は h3 に分割して別タイトルになることがある
-- catalog に `section_range.sections` がないファイル（v1.x で多い）は KC が独自にセクション検出した
-
-これを踏まえ、以下の 2 ステップ戦略でマッピングする。
-
-**ステップ A: Expected Sections ありのファイル（catalog に `section_range.sections` がある）**
-
-catalog から Expected Sections（空見出しを除外した RST h2 見出しリスト）を取得し、KC index を順番に走査して割り当てる:
-
-1. KC タイトルが Expected に**直接一致** → そのまま割り当て、ポインタを進める
-2. KC タイトルが Expected にないが、Expected のいずれかが KC タイトルに**部分文字列として含まれる** → 最長一致の Expected に割り当て（h3 分割ケース）
-3. 上記どちらにも該当しない → 現在のポインタが示す Expected に割り当て
-4. ポインタが末尾を超えた場合 → 最後の Expected に割り当て（破棄しない）
-
-検証結果（全バージョン）:
-- 割り当てができる: 94〜97%
-- ヒント 0 になる 107 件は KC に対応エントリがないため対応不要（確認済み）
-
-**ステップ B: Expected Sections なしのファイル（catalog に `section_range.sections` がない）**
-
-KC セクション本文と RST ソースの各セクション本文をキーワード重複率で照合し、**重複率 ≥ 25% の最近傍 RST セクション**（= RBKC のセクションタイトル）に割り当てる。
-
-- RST のセクション境界: オーバーライン付きでない見出しアンダーライン（`----`, `====` 等）で検出
-- 重複率 = KC 本文のキーワードのうち RST セクション本文に出現する割合
-- 閾値未満は破棄
-
-検証結果（全バージョン）:
-- v6: 100%, v5: 100%, v1.4: 99%, v1.3: 94%, v1.2: 94%
-- 未マッチは内容が薄いセクション（`エラー発生時の処理`、`終了処理` 等）
-
-**実装変更箇所**:
-
-- `scripts/hints.py`
-  - `build_hints_index(cache_dir, catalog_path)` に変更（catalog_path を追加）
-  - ステップ A: catalog の Expected Sections を使った走査ロジック
-  - ステップ B: KC 本文と RST 本文のキーワードオーバーラップ（RST ソースパスは caller から渡す）
-  - 戻り値: `{base_file_id: {rst_heading: hints_list}}`（キーは RST 見出しのまま）
-- `scripts/run.py`
-  - `_hints_index()` に catalog_path を渡すよう修正
-  - `lookup_hints(hints_idx, fi.file_id, sec.title)` の呼び出しはそのまま
-
-**Steps（TDD）:**
-- [ ] テスト: Stage 1 ロジックが呼ばれないことを確認
-- [ ] テスト: ステップ A（直接一致・substring・末尾超え）が正しく動作することを確認 → RED
-- [ ] テスト: ステップ B（コンテンツオーバーラップ）が正しく動作することを確認 → RED
-- [ ] `scripts/hints.py` Stage 1 削除、ステップ A・B 実装 → GREEN
-- [ ] `scripts/run.py` 呼び出し側を合わせて修正
-- [ ] `pytest` 全通過確認 → コミット
-
----
 
 ### Phase 11: verify の完全チェック化
 
@@ -314,3 +166,5 @@ v5 検証通過後 → Phase 14 (v1.4/1.3/1.2) へ
 - [x] Phase 7: Index + browsable docs generation — committed `dc019759`
 - [x] Phase 8: CLI + create/update/delete/verify operations — committed `5baf7a6d`
 - [x] Phase 9: v1.x固有ディレクティブ対応 — committed `bc632d0f`
+- [x] Phase 10: コンバータ修正 (10-1〜10-6) — committed `54fe3ef8`, `d5a6961d`, `cd856500`, `d2303716`, `7eac70f6`, `10b239b1`
+- [x] Test fix: update pipeline E2E test for Phase 10-6 hints API change — committed `88a8c7a6`
