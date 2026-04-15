@@ -189,6 +189,41 @@ class TestFootnoteHandling:
 
 
 # ---------------------------------------------------------------------------
+# class directive handling
+# ---------------------------------------------------------------------------
+
+class TestClassDirective:
+    def test_class_directive_block_in_content(self):
+        """.. class:: ディレクティブのブロックが content に含まれることを確認。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            ".. class:: some-class\n"
+            "\n"
+            "   API description here.\n"
+        )
+        result = convert(rst, "t")
+        assert "API description here." in result.sections[0].content
+
+    def test_class_directive_block_multiline(self):
+        """複数行の class ディレクティブブロックが content に含まれることを確認。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            ".. class:: highlight\n"
+            "\n"
+            "   Line one.\n"
+            "   Line two.\n"
+        )
+        result = convert(rst, "t")
+        content = result.sections[0].content
+        assert "Line one." in content
+        assert "Line two." in content
+
+
+# ---------------------------------------------------------------------------
 # Grid table edge cases
 # ---------------------------------------------------------------------------
 

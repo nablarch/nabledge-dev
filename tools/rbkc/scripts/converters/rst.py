@@ -45,7 +45,7 @@ _ADMONITIONS = {
 }
 
 # Directives whose block body is silently skipped
-_SKIP_DIRECTIVES = {"raw", "include", "class"}
+_SKIP_DIRECTIVES = {"raw", "include"}
 
 # Characters that RST uses for underlines (Sphinx subset)
 _UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
@@ -705,6 +705,14 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
             # --- skip directives ---
             if directive in _SKIP_DIRECTIVES:
                 block, i = _read_block(lines, i + 1)
+                continue
+
+            # --- class directive — output block as plain text ---
+            if directive == "class":
+                block, i = _read_block(lines, i + 1)
+                for bl in block:
+                    if bl.strip():
+                        output.append(bl)
                 continue
 
             # --- code-block / code / sourcecode ---
