@@ -80,6 +80,10 @@ Output directory: .nabledge/20260210
 
 **Tools**: Glob, Grep, Read (no Bash in this step)
 
+> **Path rule for Glob and Grep**: Search relative to the current working directory.
+> - Use patterns only (e.g., `**/ZipCodeData.java`) — do NOT pass a `path` argument
+> - If a path argument is needed, use `.` (current directory) — never an absolute path or parent directory
+
 **Action**:
 
 1. **Parse `target`** to understand target scope:
@@ -87,7 +91,7 @@ Output directory: .nabledge/20260210
    - Specific feature (e.g., "login feature")
    - Package (e.g., "under web.action")
 
-2. **Find target files** using Glob or Grep
+2. **Find target files** using Glob or Grep — search without a path argument (searches from cwd)
 
 4. **Read target files** and extract dependencies:
    - Imports → External dependencies
