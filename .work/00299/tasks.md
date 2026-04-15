@@ -47,39 +47,68 @@ Agent(
 
 ### Phase 10: verify の完全チェック化
 
-現在の `scripts/verify.py` はトークンサンプリング（最大100個、70%カバレッジ閾値）のみ。
-ルールベース変換なので、変換ルールから導出できる構造的チェックに置き換える。
+#### 調査結果（実施済み）
 
-**調査: 意図的除去・変換対象の確定**
+**バグ発見: preamble消滅バグ (rst.py)**
 
-`rst.py` が意図的に除去または変換する要素を網羅的にリストアップし、
-「除去後の残り全トークンはJSONに100%現れる」という基準を確立する。
+`_split_sections` の `_flush()` に論理バグがある。
+RST ファイルの h1 前に `.. _label:` が存在する場合（v6では225/334ファイル=67%）、
+h1〜最初のh2間のpreamble内容（概要テキスト、外部URLなど）が消滅する。
 
-除去対象（出力なし）:
-- `toctree`, `contents`, `raw`, `include`, `class` ディレクティブのブロック
-- `no_knowledge_content=true` のファイル（セクション全体が空）
+**原因**:
+`_flush()` の `elif current_lines and not preamble_lines:` 分岐が、
+h1 前の `.. _label:` 行を `preamble_lines` に格納した時点で
+`not preamble_lines` が False になり、実際のpreamble内容（h1後〜h2前）が捨てられる。
 
-変換対象（テキストは保持、形式のみ変更）:
-- `note`/`warning` 等のアドモニション → blockquote
-- `code-block` / `literalinclude` → fenced code
-- `:ref:`, `:doc:` → プレーンテキスト
-- RST テーブル → Markdown テーブル
+**影響**: v6で65個の外部URLが消滅する（SC「リンクはターゲットURLを変えない」に直接違反）。
 
-**verify の更新内容**:
+**修正**: `_flush()` を以下のように変更する:
+```python
+# Before (buggy):
+elif current_lines and not preamble_lines:
+    preamble_lines = current_lines
 
-1. **セクション数チェック**: ソースのh2/h3見出し数 = JSONの `sections` 数
-   （`no_knowledge_content=true` は除外）
-2. **セクションタイトルチェック**: 各JSONセクションのタイトルがソース見出しと完全一致
-3. **トークンカバレッジ**: サンプリング廃止 → 除去対象を除外した全トークンで100%チェック
-4. **XLSX**: sections数 > 0（既存）をそのまま維持
+# After (fixed):
+elif current_lines:
+    preamble_lines.extend(current_lines)   # append, don't replace
+```
 
-**Steps:**
-- [ ] 調査: `rst.py` の除去・変換要素を網羅的にリストアップ、除外ルール確定
-- [ ] `scripts/verify.py` 更新: セクション数チェック実装
-- [ ] `scripts/verify.py` 更新: セクションタイトル完全一致チェック実装
-- [ ] `scripts/verify.py` 更新: 除去対象除外 + 100%トークンカバレッジに変更
-- [ ] テスト更新: 新チェックに合わせてテスト追加/修正
-- [ ] コミット
+**verify の正しいアプローチ**
+
+ルールベース変換なので、**再変換diffが最も完全なチェック**。
+
+- 再変換: `convert(source, file_id)` を実行（file_idはJSON内の"id"フィールドから取得）
+- JSON の `title` / `sections[].title` / `sections[].content` と比較
+- 一致 → ソースとJSONは意味的に同一
+- 不一致 → コンバータのバグ or ソース変更後に再生成していない
+
+さらに **外部URLの独立チェック** を追加（コンバータのバグをダブルチェック）:
+- ソースの `https?://` URLをすべて抽出
+- JSONテキストに全URL存在すること確認
+- これにより「リンクはターゲットURLを変えない」SC を直接検証する
+
+#### Steps
+
+**Step 1: preamble消滅バグ修正（rst.py）**
+- [ ] `scripts/converters/rst.py` の `_flush()` を修正（`extend` に変更）
+- [ ] `test_preamble_becomes_overview_section` を pre-h1 ラベルありケースで拡充
+- [ ] 修正後 `pytest` 全通過確認
+
+**Step 2: verify を再変換diff + URL独立チェックに置き換え**
+- [ ] `verify_file(source_path, json_path, fmt)` の RST/MD ロジックを書き換え:
+  1. JSON の "id" フィールドから file_id を取得
+  2. `convert(source_text, file_id)` を実行（fresh result）
+  3. `fresh.title` vs `data["title"]`、`fresh.no_knowledge_content` vs `data["no_knowledge_content"]` を比較
+  4. `len(fresh.sections)` vs `len(data["sections"])` を比較
+  5. 各セクションの `title` と `content` を比較（strip後一致）
+  6. 独立チェック: ソースの `https?://` URL全件が JSON テキストに存在すること
+- [ ] 既存の `_verify_rst_md` テストを新ロジックに合わせて更新
+- [ ] 新規テスト: pre-h1 ラベルありRST → preamble内容とURLが verify を通過
+- [ ] `pytest` 全通過確認
+
+**Step 3: コミット**
+- [ ] `fix: restore preamble content lost when pre-h1 RST label exists` でコミット
+- [ ] `feat: replace verify with re-conversion diff + URL presence check` でコミット
 
 ---
 
