@@ -134,26 +134,60 @@ JSをパースし、ハンドラ名・日本語名・パッケージ・動作説
 
 ---
 
-#### 10-6: hints の修正（Stage 1 削除・Stage 2 コンテンツオーバーラップ＋位置ベースへ変更）
+#### 10-6: hints の修正（Stage 1 削除・Stage 2 マッピング戦略を刷新）
 
 **Stage 1 削除**: Route 1（全文検索）が primary なので、content に含まれる PascalCase 等は不要。
 
-**Stage 2 マッピング戦略**: タイトルベースは KC（AI生成タイトル）と RBKC（RST見出し）が一致せず機能しない。単純な位置ベースも RBKC と KC のセクション数が 82.3% のファイルで不一致のため機能しない。
+**Stage 2 マッピング戦略**: 調査により以下が判明した。
 
-事前検証の結果、以下の組み合わせ戦略で全バージョンの 83〜93% のヒントをマッピング可能と確認済み:
+- KC は `catalog.json` の `section_range.sections`（Expected Sections）を受け取り、その順にセクションを生成する
+- KC のセクション ID は常に `s1` からのローカル連番（catalog のグローバル ID と一致しない）
+- KC タイトルは Expected Sections のタイトルと原則一致するが、大きいセクション（≥2000文字 + h3あり）は h3 に分割して別タイトルになることがある
+- catalog に `section_range.sections` がないファイル（v1.x で多い）は KC が独自にセクション検出した
 
-1. RBKC セクションからコンテンツが空のもの（コンテナセクション）を除外
-2. フィルタ後の数が KC エントリ数と一致 → **位置ベース**でマッピング
-3. 不一致 → KC 各セクションを「キーワード重複率 ≥ 25%」で最近傍 RBKC セクションに割り当て（**コンテンツオーバーラップ**）
-4. マッピングできなかった KC ヒントは破棄
+これを踏まえ、以下の 2 ステップ戦略でマッピングする。
 
-カバー率実績（Phase 10-5 の Handler.js 修正前の数値、修正後はさらに向上見込み）:
-- v6: 92.4%, v5: 92.6%, v1.4: 82.9%, v1.3: 88.0%, v1.2: 87.6%
+**ステップ A: Expected Sections ありのファイル（catalog に `section_range.sections` がある）**
+
+catalog から Expected Sections（空見出しを除外した RST h2 見出しリスト）を取得し、KC index を順番に走査して割り当てる:
+
+1. KC タイトルが Expected に**直接一致** → そのまま割り当て、ポインタを進める
+2. KC タイトルが Expected にないが、Expected のいずれかが KC タイトルに**部分文字列として含まれる** → 最長一致の Expected に割り当て（h3 分割ケース）
+3. 上記どちらにも該当しない → 現在のポインタが示す Expected に割り当て
+4. ポインタが末尾を超えた場合 → 最後の Expected に割り当て（破棄しない）
+
+検証結果（全バージョン）:
+- 割り当てができる: 94〜97%
+- ヒント 0 になる 107 件は KC に対応エントリがないため対応不要（確認済み）
+
+**ステップ B: Expected Sections なしのファイル（catalog に `section_range.sections` がない）**
+
+KC セクション本文と RST ソースの各セクション本文をキーワード重複率で照合し、**重複率 ≥ 25% の最近傍 RST セクション**（= RBKC のセクションタイトル）に割り当てる。
+
+- RST のセクション境界: オーバーライン付きでない見出しアンダーライン（`----`, `====` 等）で検出
+- 重複率 = KC 本文のキーワードのうち RST セクション本文に出現する割合
+- 閾値未満は破棄
+
+検証結果（全バージョン）:
+- v6: 100%, v5: 100%, v1.4: 99%, v1.3: 94%, v1.2: 94%
+- 未マッチは内容が薄いセクション（`エラー発生時の処理`、`終了処理` 等）
+
+**実装変更箇所**:
+
+- `scripts/hints.py`
+  - `build_hints_index(cache_dir, catalog_path)` に変更（catalog_path を追加）
+  - ステップ A: catalog の Expected Sections を使った走査ロジック
+  - ステップ B: KC 本文と RST 本文のキーワードオーバーラップ（RST ソースパスは caller から渡す）
+  - 戻り値: `{base_file_id: {rst_heading: hints_list}}`（キーは RST 見出しのまま）
+- `scripts/run.py`
+  - `_hints_index()` に catalog_path を渡すよう修正
+  - `lookup_hints(hints_idx, fi.file_id, sec.title)` の呼び出しはそのまま
 
 **Steps（TDD）:**
 - [ ] テスト: Stage 1 ロジックが呼ばれないことを確認
-- [ ] テスト: コンテンツオーバーラップ＋位置ベースで正しいヒントが割り当てられることを確認（実KCキャッシュ使用）→ RED
-- [ ] `scripts/hints.py` Stage 1 削除、Stage 2 を新マッピング戦略に変更（KC キャッシュのコンテンツも保持するよう `build_hints_index` を拡張）
+- [ ] テスト: ステップ A（直接一致・substring・末尾超え）が正しく動作することを確認 → RED
+- [ ] テスト: ステップ B（コンテンツオーバーラップ）が正しく動作することを確認 → RED
+- [ ] `scripts/hints.py` Stage 1 削除、ステップ A・B 実装 → GREEN
 - [ ] `scripts/run.py` 呼び出し側を合わせて修正
 - [ ] `pytest` 全通過確認 → コミット
 
