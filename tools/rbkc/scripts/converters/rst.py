@@ -147,9 +147,9 @@ def _split_sections(
         nonlocal current_title, current_lines, preamble_lines
         if current_title is not None:
             sections.append((current_title, current_lines))
-        elif current_lines and not preamble_lines:
-            # First flush with no section title → content between h1 and first h2/h3
-            preamble_lines = current_lines
+        elif current_lines:
+            # Content before first section title → h1〜h2 preamble (extend so pre-h1 content is preserved)
+            preamble_lines.extend(current_lines)
         current_title = None
         current_lines = []
 

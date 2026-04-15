@@ -87,6 +87,27 @@ class TestSectionSplitting:
         overview = next(s for s in result.sections if s.title == "概要")
         assert "Intro paragraph." in overview.content
 
+    def test_preamble_preserved_when_pre_h1_label_exists(self):
+        """h1 前に .. _label: がある場合、h1〜最初のh2 間のコンテンツが消えないことを確認。"""
+        rst = (
+            ".. _my-label:\n"
+            "\n"
+            "Title\n"
+            "=====\n"
+            "\n"
+            "Intro paragraph.\n"
+            "\n"
+            "Section A\n"
+            "---------\n"
+            "\n"
+            "Body.\n"
+        )
+        result = convert(rst, "t")
+        titles = [s.title for s in result.sections]
+        assert "概要" in titles
+        overview = next(s for s in result.sections if s.title == "概要")
+        assert "Intro paragraph." in overview.content
+
     def test_h4_kept_as_subheading_in_section(self):
         rst = "Title\n=====\n\nH2\n---\n\nH3\n~~~\n\nH4\n^^^\n\nContent.\n"
         result = convert(rst, "t")
