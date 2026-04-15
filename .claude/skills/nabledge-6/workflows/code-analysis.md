@@ -78,11 +78,7 @@ Output directory: .nabledge/20260210
 
 **Prerequisite**: `target` must be set from the "Confirm analysis target" step above.
 
-**Tools**: Glob, Grep, Read (no Bash in this step)
-
-> **Path rule for Glob and Grep**: Search relative to the current working directory.
-> - Use patterns only (e.g., `**/ZipCodeData.java`) — do NOT pass a `path` argument
-> - If a path argument is needed, use `.` (current directory) — never an absolute path or parent directory
+**Tools**: Bash (find-file.sh), Read
 
 **Action**:
 
@@ -91,7 +87,13 @@ Output directory: .nabledge/20260210
    - Specific feature (e.g., "login feature")
    - Package (e.g., "under web.action")
 
-2. **Find target files** using Glob or Grep — search without a path argument (searches from cwd)
+2. **Find target files** — Execute verbatim:
+   ```run-verbatim
+   bash .claude/skills/nabledge-6/scripts/find-file.sh "<TargetClass>.java"
+   ```
+   Replace `<TargetClass>` with the actual class name from `target`. Add more patterns if multiple files are needed (e.g., `"*Form.java"`).
+
+   After finding paths, use Read to read each file.
 
 4. **Read target files** and extract dependencies:
    - Imports → External dependencies
