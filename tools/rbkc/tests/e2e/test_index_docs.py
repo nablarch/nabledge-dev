@@ -70,6 +70,30 @@ def knowledge_dir(tmp_path):
         "sections": [],
     })
 
+    # File with assets/ links in content — used to test path rewriting in docs MD
+    _write_knowledge(kd, "component/handlers/handlers-asset-handler.json", {
+        "id": "handlers-asset-handler",
+        "title": "アセットリンクテスト",
+        "no_knowledge_content": False,
+        "sections": [
+            {
+                "id": "s1",
+                "title": "概要",
+                "content": (
+                    "説明文です。\n"
+                    "![図](assets/handlers-asset-handler/diagram.png)\n"
+                    "[設定ファイル](assets/handlers-asset-handler/config.xml)"
+                ),
+                "hints": [],
+            },
+        ],
+    })
+    # Create the actual asset files so resolved links can be verified as existing
+    asset_dir = kd / "assets" / "handlers-asset-handler"
+    asset_dir.mkdir(parents=True, exist_ok=True)
+    (asset_dir / "diagram.png").write_bytes(b"")
+    (asset_dir / "config.xml").write_bytes(b"")
+
     return kd
 
 
@@ -95,9 +119,9 @@ class TestGenerateIndex:
         assert first_line.startswith("#")
 
     def test_entry_count_in_header(self, index_path):
-        """Header line contains entry count (2, not 3 — no_knowledge excluded)."""
+        """Header line contains entry count (3, not 4 — no_knowledge excluded)."""
         text = index_path.read_text(encoding="utf-8")
-        assert "files[2," in text
+        assert "files[3," in text
 
     def test_no_knowledge_excluded(self, index_path):
         """Files with no_knowledge_content=True are excluded."""
@@ -196,3 +220,31 @@ class TestGenerateDocs:
         assert "# README" in text
         # Should not have section headings
         assert "## " not in text
+
+    def test_asset_links_rewritten_to_resolve_from_docs_md(self, docs_dir, knowledge_dir):
+        """assets/ links in docs MD are rewritten so they resolve relative to the docs MD file.
+
+        The docs MD lives at docs/component/handlers/handlers-asset-handler.md.
+        The assets live at knowledge/assets/handlers-asset-handler/.
+        The rewritten link must point to an existing file when resolved from the docs MD location.
+        """
+        import re
+        md = docs_dir / "component/handlers/handlers-asset-handler.md"
+        assert md.exists()
+        text = md.read_text(encoding="utf-8")
+
+        # Extract all relative link targets (not https://)
+        links = [m.group(1) for m in re.finditer(r'\[.*?\]\(([^)]+)\)', text)
+                 if not m.group(1).startswith("http")]
+        links += [m.group(1) for m in re.finditer(r'!\[.*?\]\(([^)]+)\)', text)
+                  if not m.group(1).startswith("http")]
+
+        assert links, "Expected at least one asset link in docs MD"
+
+        # Every relative link must resolve to an existing file from the docs MD directory
+        for link in links:
+            target = (md.parent / link).resolve()
+            assert target.exists(), (
+                f"Asset link {link!r} in docs MD does not resolve to an existing file "
+                f"(resolved to {target})"
+            )

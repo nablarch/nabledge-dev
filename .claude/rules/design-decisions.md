@@ -5,10 +5,6 @@ and present the findings to the user before proceeding. Do not decide unilateral
 
 ## Expert by Artifact Type
 
-See `.claude/rules/expert-review.md` for the full expert-to-artifact mapping.
-
-For design decisions, the primary experts are:
-
 | Artifact | Expert |
 |----------|--------|
 | Source code (*.py, *.js, *.java, etc.) | Software Engineer |
@@ -27,21 +23,8 @@ For design decisions, the primary experts are:
 ```
 You are a {Expert Role}. A design decision needs your input.
 
-## Project Quality Standard
-
-Nabledge provides knowledge about Nablarch, a mission-critical enterprise framework used in
-large-scale financial systems. The same quality standard applies here.
-
-- If there is even a 1% risk, eliminate it — do not accept it
-- "Good enough" does not exist; quality is binary: correct or not correct
-- verify is the quality gate for RBKC output — never weaken it to make output pass
-- 100% content coverage is the target; missing content is a bug to fix, not a reason to lower thresholds
-
 ## Context
 {Brief description of the feature or component}
-
-## Non-Negotiable Constraints
-{List constraints that must not be compromised — e.g., quality standards, existing design decisions, project invariants}
 
 ## Options
 {Option A}: {description and trade-offs}
@@ -49,7 +32,6 @@ large-scale financial systems. The same quality standard applies here.
 
 ## Your Task
 Evaluate each option from a {Expert Role} perspective and recommend one.
-Your recommendation must respect the project quality standard and non-negotiable constraints above.
 Provide specific reasoning. Keep your response concise (under 300 words).
 ```
 
