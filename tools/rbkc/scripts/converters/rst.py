@@ -236,10 +236,36 @@ def _split_sections(
 
 
 # ---------------------------------------------------------------------------
+# Hyperlink target collector
+# ---------------------------------------------------------------------------
+
+def _collect_targets(lines: list[str]) -> dict[str, str]:
+    """Collect named hyperlink target definitions from RST lines.
+
+    Returns {name: url} for lines like:
+        .. _Name: https://...
+        .. _`Name with spaces`: https://...
+    """
+    targets: dict[str, str] = {}
+    for line in lines:
+        stripped = line.strip()
+        # Backtick-quoted name: .. _`Name`: url
+        m = re.match(r"\.\.\s+_`([^`]+)`:\s*(https?://\S+)", stripped)
+        if m:
+            targets[m.group(1)] = m.group(2)
+            continue
+        # Plain name: .. _Name: url
+        m = re.match(r"\.\.\s+_([A-Za-z0-9][^:]*?):\s*(https?://\S+)", stripped)
+        if m:
+            targets[m.group(1).strip()] = m.group(2)
+    return targets
+
+
+# ---------------------------------------------------------------------------
 # Inline markup converter
 # ---------------------------------------------------------------------------
 
-def _convert_inline(text: str, file_id: str = "") -> str:
+def _convert_inline(text: str, file_id: str = "", targets: dict[str, str] | None = None) -> str:
     """Convert RST inline markup to Markdown."""
 
     # :java:extdoc:`ClassName <fqcn>`  →  `ClassName`
@@ -286,8 +312,15 @@ def _convert_inline(text: str, file_id: str = "") -> str:
     # Anonymous hyperlink reference: `text`__  →  text
     text = re.sub(r"`([^`]+)`__", r"\1", text)
 
-    # Hyperlink reference: `text`_  →  text (target handled separately)
-    text = re.sub(r"`([^`]+)`_", r"\1", text)
+    # Hyperlink reference: `text`_  →  [text](url) if target known, else plain text
+    if targets:
+        def _resolve_named_ref(m: re.Match) -> str:
+            name = m.group(1)
+            url = targets.get(name) or targets.get(name.lower())
+            return f"[{name}]({url})" if url else name
+        text = re.sub(r"`([^`]+)`_(?!_)", _resolve_named_ref, text)
+    else:
+        text = re.sub(r"`([^`]+)`_", r"\1", text)
 
     return text
 
@@ -645,7 +678,7 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 # Content converter
 # ---------------------------------------------------------------------------
 
-def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
+def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str, str] | None = None) -> str:
     """Convert RST content lines to Markdown."""
     lines = [l.rstrip("\n") for l in raw_lines]
     output: list[str] = []
@@ -760,7 +793,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
                     body_parts.append(inline_arg)
                 body_parts.extend(l.strip() for l in block if l.strip() and not l.strip().startswith(":"))
                 body = " ".join(body_parts)
-                body = _convert_inline(body, file_id)
+                body = _convert_inline(body, file_id, targets)
                 output.append(f"> **{label}:** {body}")
                 continue
 
@@ -770,7 +803,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
                 label = inline_arg or "Note"
                 body_parts = [l.strip() for l in block if l.strip() and not l.strip().startswith(":")]
                 body = " ".join(body_parts)
-                body = _convert_inline(body, file_id)
+                body = _convert_inline(body, file_id, targets)
                 output.append(f"> **{label}:** {body}")
                 continue
 
@@ -869,7 +902,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
             # --- rubric ---
             if directive == "rubric":
                 block, i = _read_block(lines, i + 1)
-                title = _convert_inline(inline_arg, file_id)
+                title = _convert_inline(inline_arg, file_id, targets)
                 output.append(f"**{title}**")
                 continue
 
@@ -923,7 +956,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "") -> str:
             continue
 
         # Regular paragraph / list item / other content
-        converted = _convert_inline(stripped, file_id)
+        converted = _convert_inline(stripped, file_id, targets)
         output.append(converted)
         i += 1
 
@@ -948,12 +981,14 @@ def _detect_no_knowledge_content(sections: list[Section]) -> bool:
 # Public API
 # ---------------------------------------------------------------------------
 
-def convert(source: str, file_id: str = "") -> RSTResult:
+def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None = None) -> RSTResult:
     """Convert RST *source* to :class:`RSTResult`.
 
     Args:
         source: Full RST file content.
         file_id: Knowledge file id (used for asset paths).  May be empty.
+        extra_targets: Additional named hyperlink targets (e.g. from included link.rst).
+            Maps {name: url}.  Merged with targets found in *source*.
 
     Returns:
         :class:`RSTResult` with title, no_knowledge_content flag, and sections.
@@ -965,9 +1000,14 @@ def convert(source: str, file_id: str = "") -> RSTResult:
     heading_chars = _detect_heading_chars([l.rstrip("\n") for l in lines])
     title, raw_sections = _split_sections([l.rstrip("\n") for l in lines], heading_chars)
 
+    # Collect named hyperlink targets from the whole source (first pass)
+    targets = _collect_targets([l.rstrip("\n") for l in lines])
+    if extra_targets:
+        targets.update(extra_targets)
+
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
-        md = _convert_content(sec_lines, file_id)
+        md = _convert_content(sec_lines, file_id, targets or None)
         sections.append(Section(title=sec_title, content=md))
 
     no_knowledge = _detect_no_knowledge_content(sections)

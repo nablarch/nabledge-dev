@@ -224,6 +224,62 @@ class TestClassDirective:
 
 
 # ---------------------------------------------------------------------------
+# Named link resolution
+# ---------------------------------------------------------------------------
+
+class TestNamedLinkResolution:
+    def test_same_file_target_resolved_to_markdown_link(self):
+        """同ファイル内の .. _Name: url が `Name`_ を [Name](URL) に変換する。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "See `APILink`_ for details.\n"
+            "\n"
+            ".. _APILink: https://example.com/api\n"
+        )
+        result = convert(rst, "t")
+        assert "[APILink](https://example.com/api)" in result.sections[0].content
+
+    def test_backtick_quoted_target_resolved(self):
+        """バッククォートで囲まれた名前のターゲット定義が解決される。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "See `My API`_ for details.\n"
+            "\n"
+            ".. _`My API`: https://example.com/myapi\n"
+        )
+        result = convert(rst, "t")
+        assert "[My API](https://example.com/myapi)" in result.sections[0].content
+
+    def test_extra_targets_from_include_resolved(self):
+        """extra_targets パラメータ経由のターゲット（include ファイル由来）が解決される。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "See `JavaDoc`_ for reference.\n"
+        )
+        extra = {"JavaDoc": "https://javadoc.example.com/"}
+        result = convert(rst, "t", extra_targets=extra)
+        assert "[JavaDoc](https://javadoc.example.com/)" in result.sections[0].content
+
+    def test_unresolved_named_ref_becomes_plain_text(self):
+        """ターゲット定義がない `Name`_ はプレーンテキストになる（URLなし）。"""
+        rst = (
+            "Title\n"
+            "=====\n"
+            "\n"
+            "See `Unknown`_ for details.\n"
+        )
+        result = convert(rst, "t")
+        assert "Unknown" in result.sections[0].content
+        assert "](http" not in result.sections[0].content
+
+
+# ---------------------------------------------------------------------------
 # Grid table edge cases
 # ---------------------------------------------------------------------------
 
