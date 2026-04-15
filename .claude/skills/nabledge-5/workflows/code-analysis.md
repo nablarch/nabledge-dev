@@ -13,7 +13,7 @@ Analyze existing code, trace dependencies, generate structured documentation.
 
 **Output**: Documentation file (Markdown + Mermaid diagrams) in .nabledge/YYYYMMDD/
 
-**Tools**: Read, Glob, Grep, Bash with jq, Write
+**Tools**: Read, Bash with jq, Write
 
 ## Process flow
 
@@ -90,7 +90,7 @@ Output directory: .nabledge/20260210
    ```bash
    bash .claude/skills/nabledge-5/scripts/read-file.sh "<path/to/file.java>"
    ```
-   Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh.
+   Replace `<path/to/file.java>` with the actual path(s) returned by find-file.sh. Pass paths exactly as output (e.g., `./src/main/java/Foo.java`) — do not modify or normalize the path.
 
 4. **Read target files** and extract dependencies:
    - Imports → External dependencies
@@ -151,6 +151,7 @@ Output directory: .nabledge/20260210
 
 3. **Execute section judgement**:
    - Read `workflows/_knowledge-search/_section-judgement.md`
+   - Before passing candidates: convert pipe separators to colons (`file|section_id` → `file:section_id`)
    - Follow the workflow with candidate sections from step 2
    - Output: Filtered sections (High and Partial relevance only)
 
@@ -598,7 +599,7 @@ mapper.close();
 
    **Replace in command**:
    - `<target-name>`: Actual target name (e.g., `ImportZipCodeFileAction`)
-   - `YYYYMMDD`: Actual date directory (e.g., `20260210`)
+   - `YYYYMMDD`: Date portion from `$OUTPUT_PATH` captured in Step 3.2 (e.g., if `OUTPUT_PATH` is `.nabledge/20260210/code-analysis-Foo.md`, pass `20260210`)
 
    **IMPORTANT**:
    - Execute immediately after Step 4 with no other operations between them
