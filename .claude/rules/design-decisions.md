@@ -5,6 +5,10 @@ and present the findings to the user before proceeding. Do not decide unilateral
 
 ## Expert by Artifact Type
 
+See `.claude/rules/expert-review.md` for the full expert-to-artifact mapping.
+
+For design decisions, the primary experts are:
+
 | Artifact | Expert |
 |----------|--------|
 | Source code (*.py, *.js, *.java, etc.) | Software Engineer |

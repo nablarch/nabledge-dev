@@ -90,9 +90,7 @@ accuracy was maintained while time and cost dropped meaningfully.
 
 ### Problem: section anchors broken after rename
 
-**Symptom**: GUIDE links returned 404 after the file rename.
-**Cause**: docs/README.md still referenced the old path.
-**Solution**: Added README regeneration to the verify pipeline.
+Initially changed to .pr/ but user noted this is user-facing and would break existing workflows. Reverted to work/YYYYMMDD/ to avoid impact.
 ```
 
 Bad example (duplicates git log):

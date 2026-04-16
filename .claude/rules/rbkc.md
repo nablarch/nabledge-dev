@@ -8,16 +8,6 @@ verify is the final quality assurance mechanism for RBKC output. It must be kept
 - When verify reports a FAIL, the fix belongs in RBKC, not in verify
 - Never weaken verify's detection to make RBKC output pass
 
-## All source code changes use TDD
-
-Any change to RBKC source code (converters, verify, run.py, etc.) must follow TDD:
-
-1. Write a failing test that captures the expected behavior (RED)
-2. Implement the minimum code to make it pass (GREEN)
-3. Confirm all existing tests still pass
-
-Never implement first and write tests after.
-
 ## Rules for changing verify
 
 verify changes require explicit user approval before implementation.
