@@ -47,6 +47,99 @@ _PREAMBLE_TITLE = "概要"
 
 
 # ---------------------------------------------------------------------------
+# Phase 17-A: MD syntax stripping and RST line classification
+# ---------------------------------------------------------------------------
+
+# Inline role pattern: :role:`display<target>` or :role:`text`
+# Handles both :role:`text` and :namespace:role:`text` (e.g. :java:extdoc:`...`)
+_INLINE_ROLE_RE = re.compile(r":(?:[a-z][a-z_-]*:)+`([^`<]*?)(?:<[^>]*>)?`")
+
+
+def strip_md_syntax(text: str) -> str:
+    """Remove Markdown formatting syntax from text, preserving content tokens.
+
+    Removes: ## headings, | table syntax, **bold**, `code`, [text](url) links,
+    - bullet list markers, and other common MD syntax markers.
+
+    Returns plain text suitable for token comparison.
+    """
+    lines = []
+    for line in text.splitlines():
+        # Remove ## heading markers
+        stripped = re.sub(r"^#{1,6}\s+", "", line)
+        # Remove table separator rows (|---|---|)
+        stripped = re.sub(r"^[|\s-]+$", "", stripped) if re.match(r"^[\s|:-]+$", stripped) else stripped
+        # Remove leading - for bullet lists (but preserve text after)
+        stripped = re.sub(r"^\s*[-*+]\s+", " ", stripped)
+        # Remove | table pipes (preserve cell content)
+        stripped = stripped.replace("|", " ")
+        # Remove ** bold/italic markers
+        stripped = re.sub(r"\*{1,3}", "", stripped)
+        # Remove [text](url) link syntax — keep link text
+        stripped = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", stripped)
+        # Remove `code` backtick markers
+        stripped = stripped.replace("`", "")
+        lines.append(stripped)
+    return "\n".join(lines)
+
+
+def classify_line(line: str, in_toctree: bool = False) -> str:
+    """Classify an RST source line into a syntax category or 'content'.
+
+    Categories:
+        section_decoration  RST underline/overline (===, ---, ~~~, etc.)
+        rst_label           .. _label: reference target definition
+        directive_decl      .. directive:: declaration line
+        directive_option    :option: value lines (indented directive options)
+        toctree_entry       indented path-like entries under toctree/toclist
+        content             normal text line (including inline roles, blank lines)
+
+    Args:
+        line: Source line text.
+        in_toctree: If True, indented non-option lines are classified as
+                    toctree_entry (context passed by caller tracking toctree blocks).
+
+    Returns:
+        Category string.
+    """
+    stripped = line.rstrip()
+    raw = stripped.lstrip()
+
+    # Blank / whitespace-only → content
+    if not raw:
+        return "content"
+
+    # Section decoration: all same underline char, length >= 3
+    if _is_underline(stripped):
+        return "section_decoration"
+
+    # RST label: .. _name: (with optional leading whitespace)
+    if re.match(r"^\.\.\s+_[^:]+:\s*$", raw):
+        return "rst_label"
+
+    # Directive declaration: .. word:: (may have arguments after ::)
+    if re.match(r"^\.\.\s+[\w-]+::(\s|$)", raw):
+        return "directive_decl"
+
+    # Directive option: :word: (indented, starts with colon-word-colon)
+    if re.match(r"^\s{1,}:[a-z][a-z_-]*:", line):
+        return "directive_option"
+
+    # Toctree entry: indented line inside toctree/toclist context
+    # (caller tracks whether we're inside a toctree directive)
+    if in_toctree and re.match(r"^\s+\S", line) and not re.match(r"^\s+:[a-z]", line):
+        return "toctree_entry"
+
+    # Fallback: path-like indented lines (contain / without being directive options)
+    if re.match(r"^\s+\S", line) and not re.match(r"^\s+:[a-z]", line):
+        path_candidate = raw
+        if "/" in path_candidate or path_candidate.endswith((".rst", ".md")):
+            return "toctree_entry"
+
+    return "content"
+
+
+# ---------------------------------------------------------------------------
 # Token extraction (public — kept for backward compatibility)
 # ---------------------------------------------------------------------------
 
@@ -192,8 +285,10 @@ def _extract_md_section_headings(source_text: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _json_text(data: dict) -> str:
-    """Concatenate all section titles and content from a knowledge JSON."""
+    """Concatenate title, all section titles and content from a knowledge JSON."""
     parts = []
+    if data.get("title"):
+        parts.append(data["title"])
     for sec in data.get("sections", []):
         if sec.get("title"):
             parts.append(sec["title"])
@@ -249,43 +344,98 @@ def check_titles(source_text: str, data: dict, fmt: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
-    """Check B: source token coverage >= 70% in JSON content.
+    """Check B: content tokens in RST source are present in JSON (diff-based).
+
+    Algorithm:
+        1. Build JSON content token set (after strip_md_syntax to remove MD formatting)
+        2. For each RST source token NOT in the JSON token set:
+           a. If ALL occurrences in the source are on syntax lines → OK
+              (toctree entries, directive options, RST labels, etc.)
+           b. If ANY occurrence is on a content line → FAIL
+              (RBKC missed converting this content token)
+
+    For MD format: uses line-level classification (# headings are syntax, content otherwise).
+    For XLSX format: always passes (no text content to verify).
 
     Returns:
-        List of issue strings. Empty = OK.
+        List of issue strings (missing content tokens). Empty = OK.
     """
+    if fmt == "xlsx":
+        return []
     if data.get("no_knowledge_content"):
         return []
-    if not data.get("sections"):
-        return ["sections list is empty but no_knowledge_content is not set"]
 
-    # For RST, strip directive lines before token extraction
-    if fmt == "rst":
-        source_clean = re.sub(r"^\.\.\s+\w+.*$", "", source_text, flags=re.MULTILINE)
-    else:
-        source_clean = source_text
+    # Build JSON token set (strip MD formatting first)
+    json_raw = _json_text(data)
+    json_clean = strip_md_syntax(json_raw)
+    json_tokens = set(_extract_text_tokens(json_clean))
 
-    source_tokens = _extract_text_tokens(source_clean)
+    # URL pattern — URLs are checked by Check D, skip their tokens here
+    _URL_STRIP_RE = re.compile(r"https?://\S+")
 
-    # Sample tokens evenly across the source
-    if len(source_tokens) > _MAX_SAMPLE:
-        step = len(source_tokens) // _MAX_SAMPLE
-        source_tokens = source_tokens[::step][:_MAX_SAMPLE]
+    # Toctree directive names that introduce toctree entry blocks
+    _TOCTREE_DECL_RE = re.compile(r"^\.\.\s+toc(?:tree|list)::")
 
-    if not source_tokens:
-        return []
+    # Classify each source line with toctree context tracking
+    lines = source_text.splitlines()
+    line_categories: list[str] = []
+    in_toctree = False
+    toctree_indent: int | None = None
 
-    json_text = _json_text(data)
-    found = sum(1 for t in source_tokens if t in json_text)
-    coverage = found / len(source_tokens)
+    for line in lines:
+        raw = line.lstrip()
 
-    if coverage < _MIN_TOKEN_COVERAGE:
-        return [
-            f"Token coverage too low: {found}/{len(source_tokens)} "
-            f"({coverage:.0%} < {_MIN_TOKEN_COVERAGE:.0%}) — "
-            f"JSON may be missing significant content from source"
-        ]
-    return []
+        # Detect start of toctree/toclist directive
+        if _TOCTREE_DECL_RE.match(raw):
+            in_toctree = True
+            toctree_indent = len(line) - len(raw)
+            line_categories.append("directive_decl")
+            continue
+
+        # Inside toctree: check if still in the indented block
+        if in_toctree:
+            if not raw:
+                # Blank line: stay in toctree (blank lines allowed between entries)
+                line_categories.append("content")
+                continue
+            current_indent = len(line) - len(line.lstrip())
+            if current_indent > (toctree_indent or 0):
+                # Still inside toctree block
+                cat = classify_line(line, in_toctree=True)
+                line_categories.append(cat)
+                continue
+            else:
+                # Dedented: toctree block ended
+                in_toctree = False
+                toctree_indent = None
+
+        line_categories.append(classify_line(line, in_toctree=False))
+
+    # For each source line on a content line, extract tokens
+    # Build: token → set of categories where it appears
+    token_categories: dict[str, set[str]] = {}
+    for line, cat in zip(lines, line_categories):
+        # For content lines: strip inline RST roles to display text and remove URLs
+        if cat == "content":
+            effective = _INLINE_ROLE_RE.sub(r"\1", line)
+            effective = _URL_STRIP_RE.sub("", effective)
+        else:
+            effective = line
+        for tok in _extract_text_tokens(effective):
+            token_categories.setdefault(tok, set()).add(cat)
+
+    # Find tokens that appear on content lines but are missing from JSON
+    issues = []
+    for token, categories in sorted(token_categories.items()):
+        if token in json_tokens:
+            continue
+        if "content" in categories:
+            issues.append(
+                f"Content token missing from JSON: {token!r} "
+                f"(appears on content line in source)"
+            )
+
+    return issues
 
 
 # ---------------------------------------------------------------------------
@@ -488,7 +638,11 @@ def check_docs_md_titles(source_text: str, docs_md_text: str, fmt: str) -> list[
 
 
 def check_docs_md_content(source_text: str, docs_md_text: str, fmt: str) -> list[str]:
-    """Check B for docs MD: source token coverage >= 70% in docs MD text.
+    """Check B for docs MD: content tokens in source are present in docs MD (diff-based).
+
+    Uses the same diff-based algorithm as check_content():
+    - RST syntax lines (toctree entries, directive options, labels) are excluded
+    - Content line tokens missing from docs MD text → FAIL
 
     Returns:
         List of issue strings. Empty = OK.
@@ -496,30 +650,65 @@ def check_docs_md_content(source_text: str, docs_md_text: str, fmt: str) -> list
     if fmt == "xlsx":
         return []
 
-    if fmt == "rst":
-        source_clean = re.sub(r"^\.\.\s+\w+.*$", "", source_text, flags=re.MULTILINE)
-    else:
-        source_clean = source_text
+    # Build docs MD token set (strip MD formatting first)
+    docs_clean = strip_md_syntax(docs_md_text)
+    docs_tokens = set(_extract_text_tokens(docs_clean))
 
-    source_tokens = _extract_text_tokens(source_clean)
+    # URL pattern — URLs are checked by Check D, skip their tokens here
+    _URL_STRIP_RE = re.compile(r"https?://\S+")
 
-    if len(source_tokens) > _MAX_SAMPLE:
-        step = len(source_tokens) // _MAX_SAMPLE
-        source_tokens = source_tokens[::step][:_MAX_SAMPLE]
+    # Toctree directive names that introduce toctree entry blocks
+    _TOCTREE_DECL_RE = re.compile(r"^\.\.\s+toc(?:tree|list)::")
 
-    if not source_tokens:
-        return []
+    # Classify each source line with toctree context tracking
+    lines = source_text.splitlines()
+    line_categories: list[str] = []
+    in_toctree = False
+    toctree_indent: int | None = None
 
-    found = sum(1 for t in source_tokens if t in docs_md_text)
-    coverage = found / len(source_tokens)
+    for line in lines:
+        raw = line.lstrip()
+        if _TOCTREE_DECL_RE.match(raw):
+            in_toctree = True
+            toctree_indent = len(line) - len(raw)
+            line_categories.append("directive_decl")
+            continue
+        if in_toctree:
+            if not raw:
+                line_categories.append("content")
+                continue
+            current_indent = len(line) - len(line.lstrip())
+            if current_indent > (toctree_indent or 0):
+                cat = classify_line(line, in_toctree=True)
+                line_categories.append(cat)
+                continue
+            else:
+                in_toctree = False
+                toctree_indent = None
+        line_categories.append(classify_line(line, in_toctree=False))
 
-    if coverage < _MIN_TOKEN_COVERAGE:
-        return [
-            f"Token coverage too low: {found}/{len(source_tokens)} "
-            f"({coverage:.0%} < {_MIN_TOKEN_COVERAGE:.0%}) — "
-            f"docs MD may be missing significant content from source"
-        ]
-    return []
+    # Find tokens on content lines missing from docs MD
+    token_categories: dict[str, set[str]] = {}
+    for line, cat in zip(lines, line_categories):
+        if cat == "content":
+            effective = _INLINE_ROLE_RE.sub(r"\1", line)
+            effective = _URL_STRIP_RE.sub("", effective)
+        else:
+            effective = line
+        for tok in _extract_text_tokens(effective):
+            token_categories.setdefault(tok, set()).add(cat)
+
+    issues = []
+    for token, categories in sorted(token_categories.items()):
+        if token in docs_tokens:
+            continue
+        if "content" in categories:
+            issues.append(
+                f"Content token missing from docs MD: {token!r} "
+                f"(appears on content line in source)"
+            )
+
+    return issues
 
 
 def check_docs_md_links(docs_md_text: str, docs_md_path: Path) -> list[str]:

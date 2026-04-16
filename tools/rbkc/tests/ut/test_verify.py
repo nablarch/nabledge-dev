@@ -18,6 +18,8 @@ from scripts.verify import (
     check_docs_md_links,
     check_docs_md_urls,
     verify_docs_md,
+    strip_md_syntax,
+    classify_line,
 )
 
 
@@ -222,15 +224,16 @@ class TestCheckB_Content:
         assert issues == []
 
     def test_insufficient_coverage_fails(self):
-        """Token coverage < 70% must fail."""
+        """Content tokens missing from JSON must cause FAIL (diff-based check)."""
         # Build source text with 10 distinct tokens
         tokens = [f"token{i:03d}" for i in range(10)]
         source_text = " ".join(tokens)
-        # Put only 2 out of 10 tokens in JSON — coverage = 20%
+        # Put only 2 out of 10 tokens in JSON — 8 tokens will be reported as missing
         data = _make_data(sections=[_make_section("Section", "token000 token001")])
         issues = check_content(source_text, data, "rst")
         assert len(issues) > 0
-        assert any("coverage" in issue.lower() or "Coverage" in issue for issue in issues)
+        # New diff-based format: "Content token missing from JSON: 'tokenXXX' ..."
+        assert any("missing" in issue.lower() for issue in issues)
 
     def test_no_sections_with_flag_passes(self):
         """no_knowledge_content=True with empty sections → PASS."""
@@ -621,7 +624,7 @@ Content.
 
 class TestCheckDocsMdContent:
     def test_sufficient_coverage_passes(self):
-        """Source token coverage >= 70% in docs MD → PASS."""
+        """Source content tokens present in docs MD → PASS."""
         tokens = [f"token{i:03d}" for i in range(20)]
         source_text = " ".join(tokens)
         docs_md_text = "## Section\n\n" + " ".join(tokens) + "\n"
@@ -629,14 +632,30 @@ class TestCheckDocsMdContent:
         assert issues == []
 
     def test_insufficient_coverage_fails(self):
-        """Source token coverage < 70% in docs MD → FAIL."""
+        """Content tokens missing from docs MD → FAIL (diff-based check)."""
         tokens = [f"token{i:03d}" for i in range(10)]
         source_text = " ".join(tokens)
         # Only 2 out of 10 tokens in docs MD
         docs_md_text = "## Section\n\ntoken000 token001\n"
         issues = check_docs_md_content(source_text, docs_md_text, "rst")
         assert len(issues) > 0
-        assert any("coverage" in issue.lower() or "Coverage" in issue for issue in issues)
+        # New diff-based format: "Content token missing from docs MD: 'tokenXXX' ..."
+        assert any("missing" in issue.lower() for issue in issues)
+
+    def test_toctree_token_does_not_fail(self):
+        """Token in toctree entry → PASS (syntax line, not content)."""
+        source_text = (
+            "Contents\n"
+            "========\n"
+            "\n"
+            ".. toctree::\n"
+            "   architecture\n"
+            "   feature_details\n"
+        )
+        # docs MD has no 'architecture' but that's OK (it's a toctree entry)
+        docs_md_text = "# Contents\n\nSome overview text.\n"
+        issues = check_docs_md_content(source_text, docs_md_text, "rst")
+        assert issues == []
 
     def test_xlsx_always_passes(self):
         """XLSX format skips content check → PASS."""
@@ -866,3 +885,316 @@ class TestFailOutputRelativePath:
             # Must include directory components (slash in the path portion)
             path_part = line.split("FAIL ")[1].split(":")[0]
             assert "/" in path_part, f"FAIL line has no directory component: {line!r}"
+
+
+# ---------------------------------------------------------------------------
+# Phase 17-A: strip_md_syntax
+# ---------------------------------------------------------------------------
+
+class TestStripMdSyntax:
+    def test_heading_markers_removed(self):
+        """## and ### heading markers are removed, leaving heading text."""
+        text = "## Introduction\n### Sub-section\n"
+        result = strip_md_syntax(text)
+        assert "##" not in result
+        assert "Introduction" in result
+        assert "Sub-section" in result
+
+    def test_table_pipes_removed(self):
+        """| table | syntax | → pipes removed, cell text preserved."""
+        text = "| col1 | col2 |\n|------|------|\n| val1 | val2 |\n"
+        result = strip_md_syntax(text)
+        assert "|" not in result
+        assert "col1" in result
+        assert "val1" in result
+
+    def test_bold_markers_removed(self):
+        """**bold** → bold text preserved, markers removed."""
+        text = "This is **important** text."
+        result = strip_md_syntax(text)
+        assert "**" not in result
+        assert "important" in result
+
+    def test_bullet_list_markers_removed(self):
+        """- list item → dash removed, text preserved."""
+        text = "- first item\n- second item\n"
+        result = strip_md_syntax(text)
+        assert result.count("-") == 0 or "first item" in result
+        assert "first item" in result
+        assert "second item" in result
+
+    def test_inline_code_markers_removed(self):
+        """`code` → backticks removed, code text preserved."""
+        text = "Use `MyClass` to do this."
+        result = strip_md_syntax(text)
+        assert "`" not in result
+        assert "MyClass" in result
+
+    def test_link_syntax_removed(self):
+        """[text](url) → link syntax removed, link text preserved."""
+        text = "See [related page](other/page.json) for details."
+        result = strip_md_syntax(text)
+        assert "[" not in result
+        assert "related page" in result
+
+    def test_plain_text_unchanged(self):
+        """Plain text without MD syntax passes through unchanged."""
+        text = "UniversalDao pagination setup"
+        result = strip_md_syntax(text)
+        assert "UniversalDao" in result
+        assert "pagination" in result
+
+
+# ---------------------------------------------------------------------------
+# Phase 17-A: classify_line
+# ---------------------------------------------------------------------------
+
+class TestClassifyLine:
+    def test_section_decoration_underline(self):
+        """RST underline-only lines → section_decoration."""
+        assert classify_line("========") == "section_decoration"
+        assert classify_line("--------") == "section_decoration"
+        assert classify_line("~~~~~~~~") == "section_decoration"
+
+    def test_rst_label(self):
+        """.. _label: → rst_label."""
+        assert classify_line(".. _my-label:") == "rst_label"
+        assert classify_line(".. _some_target:") == "rst_label"
+
+    def test_directive_decl(self):
+        """.. directive:: → directive_decl."""
+        assert classify_line(".. toctree::") == "directive_decl"
+        assert classify_line(".. code-block:: java") == "directive_decl"
+        assert classify_line(".. note::") == "directive_decl"
+
+    def test_directive_option(self):
+        """:option: lines (indented) → directive_option."""
+        assert classify_line("   :maxdepth: 2") == "directive_option"
+        assert classify_line("   :caption: Contents") == "directive_option"
+
+    def test_toctree_entry(self):
+        """Indented path-like entries under toctree → toctree_entry."""
+        assert classify_line("   feature/overview") == "toctree_entry"
+        assert classify_line("   ./subdir/page") == "toctree_entry"
+
+    def test_content_line(self):
+        """Normal text lines → content."""
+        assert classify_line("This is regular text.") == "content"
+        assert classify_line("UniversalDao provides pagination support.") == "content"
+        assert classify_line("") == "content"
+
+    def test_inline_role_is_content(self):
+        """:ref:`target` inline role on a content line → content."""
+        assert classify_line("See :ref:`some-label` for details.") == "content"
+
+    def test_blank_line_is_content(self):
+        """Blank line → content (not a syntax line)."""
+        assert classify_line("") == "content"
+        assert classify_line("   ") == "content"
+
+
+# ---------------------------------------------------------------------------
+# Phase 17-A: check_content diff-based rewrite
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Phase 17-A: _json_text title inclusion
+# ---------------------------------------------------------------------------
+
+class TestJsonText:
+    def test_title_included_in_json_text(self):
+        """data['title'] must be included in the returned text."""
+        from scripts.verify import _json_text
+        data = {
+            "id": "test",
+            "title": "UniversalDaoTitle",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "Section", "content": "content here", "hints": []},
+            ],
+        }
+        result = _json_text(data)
+        assert "UniversalDaoTitle" in result
+
+    def test_sections_still_included(self):
+        """Section titles and content are still included after title fix."""
+        from scripts.verify import _json_text
+        data = {
+            "id": "test",
+            "title": "MyTitle",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "MySection", "content": "MyContent", "hints": []},
+            ],
+        }
+        result = _json_text(data)
+        assert "MyTitle" in result
+        assert "MySection" in result
+        assert "MyContent" in result
+
+    def test_no_title_field(self):
+        """If data has no 'title', no error is raised."""
+        from scripts.verify import _json_text
+        data = {
+            "id": "test",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "Section", "content": "content", "hints": []},
+            ],
+        }
+        result = _json_text(data)  # must not raise
+        assert "Section" in result
+
+
+class TestCheckContentDiffBased:
+    """Tests for the new diff-based check_content() implementation.
+
+    New behavior:
+    1. Build JSON content token set (after strip_md_syntax)
+    2. For each RST token NOT in JSON tokens:
+       a. If all occurrences are on syntax lines → OK (expected RST syntax)
+       b. If any occurrence is on a content line → FAIL (RBKC missed content)
+    """
+
+    def _make_data(self, sections, no_knowledge_content=False):
+        return {
+            "id": "test",
+            "title": "Doc Title",
+            "no_knowledge_content": no_knowledge_content,
+            "sections": sections,
+        }
+
+    def test_syntax_only_token_does_not_fail(self):
+        """Token that appears only in RST syntax lines (toctree entry) → PASS.
+
+        'maxdepth' appears only in ':maxdepth: 2' (directive option) — not in content.
+        JSON doesn't have 'maxdepth' but that's OK.
+        """
+        source_text = (
+            "My Document\n"
+            "===========\n"
+            "\n"
+            ".. toctree::\n"
+            "   :maxdepth: 2\n"
+            "\n"
+            "   feature/overview\n"
+        )
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "概要", "content": "Overview of the document.", "hints": []},
+        ], no_knowledge_content=True)
+        issues = check_content(source_text, data, "rst")
+        assert issues == [], f"Expected no issues but got: {issues}"
+
+    def test_content_token_missing_from_json_fails(self):
+        """Token on a content line not present in JSON → FAIL.
+
+        'UniversalDao' appears in a regular content line in RST but is absent from JSON.
+        """
+        source_text = (
+            "My Document\n"
+            "===========\n"
+            "\n"
+            "Introduction\n"
+            "------------\n"
+            "\n"
+            "UniversalDao provides pagination support for database queries.\n"
+        )
+        # JSON missing 'UniversalDao'
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "Introduction",
+             "content": "Provides pagination support for database queries.", "hints": []},
+        ])
+        issues = check_content(source_text, data, "rst")
+        assert len(issues) > 0
+        assert any("UniversalDao" in issue for issue in issues)
+
+    def test_content_token_present_in_json_passes(self):
+        """Token on a content line that IS present in JSON → PASS."""
+        source_text = (
+            "My Document\n"
+            "===========\n"
+            "\n"
+            "Introduction\n"
+            "------------\n"
+            "\n"
+            "UniversalDao provides pagination support.\n"
+        )
+        # title matches RST h1 so h1 tokens are in json_tokens
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "Introduction",
+             "content": "UniversalDao provides pagination support.", "hints": []},
+        ])
+        # Override default title to match RST h1
+        data["title"] = "My Document"
+        issues = check_content(source_text, data, "rst")
+        assert issues == []
+
+    def test_no_knowledge_content_flag_skips_check(self):
+        """no_knowledge_content=True → always PASS regardless of content."""
+        source_text = "My Doc\n======\n\nSomeSpecialToken is very important here.\n"
+        data = self._make_data(sections=[], no_knowledge_content=True)
+        issues = check_content(source_text, data, "rst")
+        assert issues == []
+
+    def test_toctree_path_token_does_not_fail(self):
+        """Indented toctree path entry tokens → PASS (toctree_entry lines are syntax).
+
+        'feature' from '   feature/overview' should not trigger FAIL.
+        """
+        source_text = (
+            "Contents\n"
+            "========\n"
+            "\n"
+            ".. toctree::\n"
+            "   feature/overview\n"
+            "   feature/details\n"
+        )
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "概要", "content": "", "hints": []},
+        ], no_knowledge_content=True)
+        issues = check_content(source_text, data, "rst")
+        assert issues == []
+
+    def test_rst_label_token_does_not_fail(self):
+        """RST label definition token → PASS (rst_label lines are syntax)."""
+        source_text = (
+            "My Document\n"
+            "===========\n"
+            "\n"
+            ".. _UniqueLabelToken:\n"
+            "\n"
+            "Section\n"
+            "-------\n"
+            "\n"
+            "Content here.\n"
+        )
+        # JSON has section content but not the label name itself
+        # title matches RST h1 so 'Document' token is covered
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "Section", "content": "Content here.", "hints": []},
+        ])
+        data["title"] = "My Document"
+        issues = check_content(source_text, data, "rst")
+        assert issues == []
+
+    def test_md_format_content_check(self):
+        """MD format: token on content line missing from JSON → FAIL."""
+        source_text = (
+            "# My Document\n"
+            "\n"
+            "## Introduction\n"
+            "\n"
+            "UniversalDao provides pagination.\n"
+        )
+        # JSON missing 'UniversalDao'
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "Introduction", "content": "Provides pagination.", "hints": []},
+        ])
+        issues = check_content(source_text, data, "md")
+        assert len(issues) > 0
+        assert any("UniversalDao" in issue for issue in issues)
+
+    def test_xlsx_always_passes(self):
+        """XLSX format → always PASS."""
+        issues = check_content("any content", self._make_data(sections=[]), "xlsx")
+        assert issues == []
