@@ -3,7 +3,6 @@ name: sv
 description: Save session state before ending — update tasks.md, clean working tree, output handoff summary
 argument-hint: [PR number]
 allowed-tools: Bash, Read, Edit, Write, Glob, Grep
-# Note: AskUserQuestion is intentionally excluded — sv runs without prompting.
 ---
 
 Save session state before ending a work session. Pair with `/re` which resumes from the saved state.
@@ -25,7 +24,7 @@ issue_number=$(echo "$current_branch" | grep -oE '^[0-9]+')
 Read the current task file:
 
 ```bash
-cat .work/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
+cat .pr/$(printf '%05d' $issue_number)/tasks.md 2>/dev/null
 ```
 
 Update to reflect the exact state at end of this session:
@@ -35,8 +34,7 @@ Update to reflect the exact state at end of this session:
 - For the current in-progress task, record:
   - Which steps are done vs remaining
   - Any decisions made this session
-  - Blockers: mark as `[BLOCKED: reason]` on the step line so `/re` can detect them
-  - Decisions needed: mark as `[DECISION: question]` on the step line
+  - Any blockers or next action needed
 - Update `**Updated**: {YYYY-MM-DD}` to today's date
 
 **Do not overwrite — update in place.**
