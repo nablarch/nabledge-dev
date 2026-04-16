@@ -1,0 +1,25 @@
+{
+  "id": "testing-framework-02-requestunittest-rest",
+  "title": "リクエスト単体テストの実施方法",
+  "no_knowledge_content": false,
+  "sections": [
+    {
+      "id": "s1",
+      "title": "前提条件",
+      "content": "RESTfulウェブサービス実行基盤向けのテストでは、他の実行基盤向けテスティングフレームワークに加え\n依存するモジュールを追加する必要がある。\n詳細は 自動テストフレームワークの使用方法 参照。",
+      "hints": []
+    },
+    {
+      "id": "s2",
+      "title": "テストクラスの書き方",
+      "content": "* フレームワークで用意されたテストクラスのスーパークラスを継承する。\n* JUnit4のアノテーションを使用する (テストメソッドに @Test アノテーションを付与する)\n* 事前準備補助機能 を使ってリクエストを生成する\n* リクエストを送信 する\n* 結果を確認 する\n\n```java\nimport nablarch.fw.web.HttpResponse;\nimport nablarch.fw.web.RestMockHttpRequest;\nimport nablarch.test.core.http.RestTestSupport;\nimport org.json.JSONException;\nimport org.junit.Test;\nimport org.skyscreamer.jsonassert.JSONAssert;\nimport org.skyscreamer.jsonassert.JSONCompareMode;\n\nimport static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;\nimport static org.hamcrest.Matchers.hasSize;\nimport static org.junit.Assert.assertThat;\n\npublic class SampleTest extends RestTestSupport { //RestTestSupportを継承する\n    @Test  //アノテーションを付与する\n    public void プロジェクト一覧が取得できること() throws JSONException {\n        String message = \"プロジェクト一覧取得\";\n\n        RestMockHttpRequest request = get(\"/projects\");               //リクエストを生成する\n        HttpResponse response = sendRequest(request);                 //リクエストを送信する\n        assertStatusCode(message, HttpResponse.Status.OK, response);  //結果を確認する\n\n        assertThat(response.getBodyString(), hasJsonPath(\"$\", hasSize(10)));    //json-path-assertを使ったレスポンスボディの検証\n\n        JSONAssert.assertEquals(message, readTextResource(\"プロジェクト一覧が取得できること.json\")\n                , response.getBodyString(), JSONCompareMode.LENIENT);                  //JSONAssertを使ったレスポンスボディの検証\n    }\n}\n```\n\n# フレームワークで用意されたテストクラスのスーパークラスを継承する\n\nテストクラスのスーパークラスとして `nablarch.test.core.http.RestTestSupport` クラスを継承する。\nテストデータの投入とデータベースのアサートが不要な場合は `nablarch.test.core.http.SimpleRestTestSupport` クラスを継承する。\nその場合は以下の テストデータの書き方 は読み飛ばして良い。\n\nそれぞれのスーパークラスの詳細は 自動テストフレームワークの使用方法 参照。\n\n# JUnit4のアノテーションを使用する\nテスティングフレームワークはJUnit4をベースとしているため、テスト対象メソッドに `@Test` アノテーションを付与する。\n\n# 事前準備補助機能を使ってリクエストを生成する\nスーパークラスに用意された 事前準備補助機能 を使ってリクエストを生成する。\n\n# リクエストを送信する\nスーパークラスに用意された リクエスト送信メソッド を呼び出すことでリクエストを送信する。\n\n# 結果を確認する\nステータスコードは、スーパークラスに用意された メソッド を呼び出すことで検証する。\nレスポンスボディについては任意のライブラリを使用してアプリケーションに合わせて検証する。",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "テストデータの書き方",
+      "content": "how_to_write_excel に記載された方法で、テストデータを記述できる。\nただし、RESTfulウェブサービス実行基盤向けのテストで自動的に読み込まれるデータは以下のみとなる。\n\n* テストクラスで共通のデータベース初期値\n* テストメソッド毎のデータベース初期値\n\n> **Important:** RESTfulウェブサービス実行基盤以外のテストの場合テストクラス一つにつきExcelファイルが必ず一つ必要であったが、 RESTfulウェブサービス実行基盤向けのテストではExcelファイルが存在しない場合でも、エラーとはならず単にデータベースへの データ投入がスキップされるだけとなっている。\n> **Important:** 上記以外のテストデータをExcelファイルに記載可能だが、記載した場合は `how_to_get_data_from_excel` に記載の方法で、テストクラスに値を取得する処理を記述する必要がある。 テストクラスの記述量を減らすためにスーパークラス `RestTestSupport` では以下のメソッドを 提供する。 .. code-block:: java List<Map<String, String>> getListMap(String sheetName, String id) List<Map<String, String[]>> getListParamMap(String sheetName, String id) Map<String, String[]> getParamMap(String sheetName, String id)\n# テストクラスで共通のデータベース初期値\n\nrequest_test_setup_db 参照。\n\n# テストメソッド毎のデータベース初期値\n\nテストデータを記載したExcelファイルに\\ **テストメソッドの名前**\\ でシートを用意し、\n\\ **SETUP_TABLES**\\のデータタイプでデータベース初期値を記載する。\nここに記載されたデータは、フレームワークによりテストメソッド実行時に投入される。",
+      "hints": []
+    }
+  ]
+}

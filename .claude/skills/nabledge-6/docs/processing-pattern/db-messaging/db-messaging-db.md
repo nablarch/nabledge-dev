@@ -1,3 +1,5 @@
 # テーブルをキューとして使ったメッセージング
 
-**公式ドキュメント**: [テーブルをキューとして使ったメッセージング](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/index.html)
+## 概要
+
+本章ではNablarchアプリケーションフレームワークを使用してテーブルをキューとして使ったメッセージングを開発するために必要となる情報を提供する。

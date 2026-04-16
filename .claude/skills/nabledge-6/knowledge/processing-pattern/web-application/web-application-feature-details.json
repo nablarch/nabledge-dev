@@ -1,0 +1,139 @@
+{
+  "id": "web-application-feature-details",
+  "title": "機能詳細",
+  "no_knowledge_content": false,
+  "sections": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "content": "",
+      "hints": []
+    },
+    {
+      "id": "s2",
+      "title": "Nablarchの初期化",
+      "content": "Nablarchの初期化を行うためには、 システムリポジトリのロードの為の設定\n及び ハンドラキューの設定(構築) が必要となる。",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "入力値のチェック",
+      "content": "* 入力値のチェック\n* エラーメッセージの画面表示",
+      "hints": []
+    },
+    {
+      "id": "s4",
+      "title": "データベースアクセス",
+      "content": "* データベースアクセス",
+      "hints": []
+    },
+    {
+      "id": "s5",
+      "title": "排他制御",
+      "content": "排他制御は、以下の2種類の方法を提供しているが、\nUniversalDaoを推奨する理由 に記載がある通り、\nuniversal_dao の使用を推奨する。\n\n* exclusive_control\n* universal_dao\n\n* universal_dao_jpa_optimistic_lock\n* universal_dao_jpa_pessimistic_lock",
+      "hints": []
+    },
+    {
+      "id": "s6",
+      "title": "ファイルアップロード",
+      "content": "* multipart_handler-read_upload_file",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "ファイルダウンロード",
+      "content": "ファイルダウンロードは、以下の2種類の方法を提供しているが、\nデータバインドを推奨する理由 に記載がある通り、\ndata_bind の使用を推奨する。\n\n* データバインド機能を使用したファイルダウンロード\n* 汎用データフォーマット機能を使用したファイルダウンロード\n\n大量データのダウンロード時には、 universal_dao-lazy_load を参照し、\nデータベースの検索結果をヒープ上に展開しないように注意すること。",
+      "hints": []
+    },
+    {
+      "id": "s8",
+      "title": "URIとアクションクラスのマッピング",
+      "content": "以下の2種類の方法を提供しているが、\nルーティングアダプタが推奨である理由 に記載がある通り、 router_adaptor の使用を推奨する。\n\n* router_adaptor\n* http_request_java_package_mapping",
+      "hints": []
+    },
+    {
+      "id": "s9",
+      "title": "2重サブミット防止",
+      "content": "* 2重サブミット防止\n\nまた、JSP以外のテンプレートエンジンを使用している場合は use_token_interceptor も参照すること。",
+      "hints": []
+    },
+    {
+      "id": "s10",
+      "title": "入力データの保持",
+      "content": "* session_store",
+      "hints": []
+    },
+    {
+      "id": "s11",
+      "title": "ページネーション",
+      "content": "データベースから範囲を指定して検索する方法は、 database_management を参照。\n\nクライアントサイドについては、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。",
+      "hints": []
+    },
+    {
+      "id": "s12",
+      "title": "画面の作成",
+      "content": "* JSPを使用する場合\n\n* JSPのtaglibを使用した画面開発\n* jsp_session\n\n* JSP以外のテンプレートエンジンを使用する場合\n\n* Thymeleafを使用した画面開発\n* view_other",
+      "hints": []
+    },
+    {
+      "id": "s13",
+      "title": "国際化対応",
+      "content": "静的リソースの多言語化対応については以下を参照。\n\n* メッセージの多言語化\n* コード名称の多言語化\n\n画面表示する文言の言語を切り替えるには、以下の2通りの方法を提供しているが、\nメッセージタグでの国際化対応 を使用した場合、\n画面レイアウトが崩れる可能性がある。\nそのため、レイアウト崩れを許容できる場合のみ、 メッセージタグでの国際化対応 を使用すること。\n\n* メッセージタグでの国際化対応\n* 言語ごとにリソースのパスを切り替える",
+      "hints": []
+    },
+    {
+      "id": "s14",
+      "title": "認証",
+      "content": "認証については、プロジェクト要件により仕様が異なるため、フレークワークとしては提供していない。\nプロジェクト要件に合わせてPJで実装する。\n\n認証情報の保持については、以下を参照。\n\n* session_store-authentication_data",
+      "hints": []
+    },
+    {
+      "id": "s15",
+      "title": "認可チェック",
+      "content": "* permission_check",
+      "hints": []
+    },
+    {
+      "id": "s16",
+      "title": "ステータスコード",
+      "content": "* [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)",
+      "hints": []
+    },
+    {
+      "id": "s17",
+      "title": "エラー時の画面遷移とステータスコード",
+      "content": "* ステータスコードに対応したデフォルトの遷移先ページを設定する\n* ハンドラで例外クラスに対応したエラーページに遷移させる\n* アクションでエラー時の遷移先を指定する\n\n* 例外クラスに対応した遷移先を定義する (on_error_interceptor 、 on_errors_interceptor)\n* 1つの例外に対して複数の遷移先を定義する\n* [ステータスコードの使い分け(外部サイト)](https://qiita.com/kawasima/items/e48180041ace99842779)",
+      "hints": []
+    },
+    {
+      "id": "s18",
+      "title": "MOMメッセージ送信",
+      "content": "* 同期応答メッセージ送信",
+      "hints": []
+    },
+    {
+      "id": "s19",
+      "title": "Webアプリケーションのスケールアウト設計",
+      "content": "* stateless_web_app",
+      "hints": []
+    },
+    {
+      "id": "s20",
+      "title": "CSRF対策",
+      "content": "* CSRF対策",
+      "hints": []
+    },
+    {
+      "id": "s21",
+      "title": "ウェブアプリケーションとRESTfulウェブサービスの併用",
+      "content": "* 委譲するWebフロントコントローラの名前を変更する",
+      "hints": []
+    },
+    {
+      "id": "s22",
+      "title": "Content Security Policy(CSP)対応",
+      "content": "* Content Security Policy(CSP)対応",
+      "hints": []
+    }
+  ]
+}

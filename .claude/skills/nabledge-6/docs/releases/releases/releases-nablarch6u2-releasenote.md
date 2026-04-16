@@ -1,283 +1,340 @@
 # Nablarch 6u2 リリースノート
 
-**公式ドキュメント**: [1](https://nablarch.github.io/docs/6u2/doc/migration/index.html) [2](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/nablarch/platform.html) [3](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/database/universal_dao.html#id43) [4](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/bean_util.html) [5](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/configuration/index.html) [6](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/handlers/web/secure_handler.html#content-security-policy) [7](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Web.html) [8](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/slf4j_adaptor.html) [9](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/log_adaptor.html) [10](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/doma_adaptor.html) [11](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/jaxrs_adaptor.html) [12](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/micrometer_adaptor.html) [13](https://nablarch.github.io/docs/6u2/doc/application_framework/cloud_native/distributed_tracing/aws_distributed_tracing.html) [14](https://nablarch.github.io/docs/6u2/doc/examples/index.html) [15](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/validation/bean_validation.html) [16](https://nablarch.github.io/docs/6u2/publishedApi/nablarch-all/publishedApiDoc/programmer/nablarch/core/date/SystemTimeUtil.html) [17](https://nablarch.github.io/docs/6u2/doc/index.html)
+## No.1 Jakarta EE 10対応
 
-## 6u2 変更点（5u25からの移行）
+**リリース区分**: 変更  **分類**: 全般
 
-## システムへの影響がある変更
+Jakarta EE 10に対応しました。
+これにより、Jakarta EE 10に対応しているアプリケーションサーバ上で動作するようになりました。
 
-> **重要**: 以下の変更はシステムへの影響があります。移行時に対処が必要です。
+参照先: https://nablarch.github.io/docs/6u2/doc/migration/index.html
 
-**Jakarta EE 10対応・Java 17必須（No.1, 3）**: Jakarta EE 10に対応したアプリケーションサーバで動作させる必要があります。Jakarta EE 10への移行に伴い、パッケージ名や依存関係などを変更する必要があります。また、実行環境のJavaバージョンを17にする必要があります。詳細は[マイグレーションガイド](https://nablarch.github.io/docs/6u2/doc/migration/index.html)を参照。
+## No.2 Java EEの仕様名等をJakarta EEのものに変更
 
-## アプリケーションフレームワークの変更
+**リリース区分**: 変更  **分類**: 全般
 
-| No. | 分類 | 概要 | 修正後バージョン |
-|---|---|---|---|
-| 1 | 全般 | Jakarta EE 10対応 | ※モジュールバージョン一覧（アプリケーションフレームワーク）参照 |
-| 2 | 全般 | Java EEの仕様名等をJakarta EEに変更 | nablarch-common-dao 2.2.0, nablarch-fw-messaging-mom 2.0.1, nablarch-fw-web 2.2.0, nablarch-fw-web-tag 2.1.0 |
-| 3 | 稼働環境 | 動作に必要なJavaバージョンを17に変更 | — |
-| 4 | 公開API | 公開APIの追加 | nablarch-core 2.2.0, nablarch-core-beans 2.2.0, nablarch-core-jdbc 2.2.0, nablarch-core-message 2.1.0, nablarch-core-transaction 2.1.0, nablarch-fw-jaxrs 2.2.0, nablarch-fw-messaging 2.1.0, nablarch-testing 2.2.0, nablarch-jackson-adaptor 2.1.0, nablarch-lettuce-adaptor 2.2.0, nablarch-micrometer-adaptor 2.1.0, nablarch-router-adaptor 2.1.0 |
-| 5 | システム日時 | `SystemTimeUtil`でLocalDateTime型取得に対応 | nablarch-core 2.1.0 |
-| 6 | ユニバーサルDAO | エンティティ生成でLocalDateTime/LocalDate型に対応 | nablarch-common-dao 2.1.0 |
-| 7 | BeanUtil | Javaレコードに対応（レコードオブジェクトの生成・値コピーが可能） | nablarch-core-beans 2.1.0 |
-| 8 | BeanUtil | JSR310アダプタの機能をフレームワーク本体に統合。JSR310アダプタなしでBeanUtilからJSR310使用可。後方互換維持 | nablarch-common-dao 2.2.0, nablarch-core-beans 2.2.0, nablarch-jsr310-adaptor 2.1.0 |
-| 9 | Toolbox | 業務画面JSP検証ツール削除（UI開発基盤はNablarch 6で非提供） | nablarch-toolbox 2.1.0 |
-| 10 | デフォルト設定 | Jetty一時ディレクトリのデフォルト値を「work」から「target/tmp」に変更（`nablarch.httpTestConfiguration.tempDirectory`プロパティ）。Mavenのcleanで削除されるようtargetディレクトリ配下に変更 | nablarch-default-configration 6u2 |
+Jakarta EE 10対応に伴い、Java EEの仕様名及び関連する記載を、Jakarta EEのものに変更しました。
 
-解説書の変更（No.11-14）:
-- Java標準APIのJavadocリンクをJava 17に変更（[解説書トップ](https://nablarch.github.io/docs/6u2/doc/index.html)）
-- テスト環境アプリケーションサーバ更新: WebSphere Application Server Liberty 24.0.0.8, Open Liberty 24.0.0.8, Red Hat JBoss EAP 8.0.0, WildFly 33.0.0.Final, Apache Tomcat 10.1.17（[稼働環境](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/nablarch/platform.html)）
-- AWS分散トレーシング依存ライブラリをJakarta EE対応バージョンに修正: AWS X-Ray SDK 2.15.0, Jersey 3.1.1（[参照](https://nablarch.github.io/docs/6u2/doc/application_framework/cloud_native/distributed_tracing/aws_distributed_tracing.html)）
-- ウェブ・RESTfulウェブサービスプロジェクトの疎通確認手順から不要な"compile"実行手順を削除。"compile"は"jetty:run"実行時に合わせて実行されるため、明示的に実行する必要がない（[参照](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Web.html)）
+## No.3 必要Javaバージョンの変更
 
-## ブランクプロジェクトの変更
+**リリース区分**: 変更  **分類**: 稼働環境
 
-- SpotBugs 4.8.6、FindSecurityBugs 1.13.0に更新
-- デフォルトTomcat 10コンテナイメージを`10.1.28-jdk17-temurin`に更新
-- Maven Archetype Plugin 3.2.1に更新（警告解消、バッチファイル削除）（[参照](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Web.html)）
-- Jacksonを2.17.1に更新（RESTfulウェブサービス）
-- Logback 1.5.6、SLF4J 2.0.11に更新（Jakarta Batch）。不要依存（slf4j-nablarch-adaptor, nablarch-jboss-logging-adaptor）削除
-- JBeret 2.1.4.Finalに更新（Jakarta Batch）
-- Mavenプラグイン各種更新: maven-source-plugin 3.3.1, maven-javadoc-plugin 3.10.0, maven-compiler-plugin 3.13.0, maven-surefire-plugin 3.5.0, jacoco-maven-plugin 0.8.12, jib-maven-plugin 3.4.3, jetty-ee10-maven-plugin 12.0.12 など
-- 不要なMavenプラグイン設定削除（maven-failsafe-plugin, maven-dependency-plugin, wagon-webdav-jackrabbit）
-- maven-clean-pluginによるwork/jsp削除設定を削除（No.10のJetty一時ディレクトリ変更に伴い不要になったため）
+No.1 の対応に伴い、動作に必要なJavaのバージョンを 17 に変更しました。
 
-## アダプタの変更
+## No.4 公開APIの追加
 
-| No. | 分類 | 概要 | 修正後バージョン |
-|---|---|---|---|
-| 24 | 全般 | Nablarch 6対応（依存関係変更） | ※モジュールバージョン一覧（アダプタ）参照 |
-| 25 | SLF4Jアダプタ | SLF4J 2.0以降でも使用できるようSLF4J 2.0.11に更新 | slf4j-nablarch-adaptor 2.1.0 |
-| 26 | logアダプタ | SLF4J 2.0以降対応（SLF4J 2.0.11に更新） | nablarch-slf4j-adaptor 2.1.0 |
-| 27 | logアダプタ | JBoss Logging 3.6.0.Finalに更新 | nablarch-jboss-logging-adaptor 2.1.0 |
-| 28 | Domaアダプタ | Java 17以降サポートのためDoma 2.66.0に更新。Doma 2.44.0より`Daoアノテーションのconfig属性`と`SingletonConfigアノテーション`が非推奨（以前の実装は継続利用可） | nablarch-doma-adaptor 2.1.0 |
-| 29 | JAX-RSアダプタ | Jackson 2.17.1に更新 | nablarch-jaxrs-adaptor 2.1.0 |
+**リリース区分**: 変更  **分類**: 公開API
 
-## Nablarch 6で提供しない機能（削除済み）
+解説書で案内しているAPIの中で公開APIになっていないものがあったため、公開APIを追加しました。
 
-以下はNablarch 6では提供しないため解説書から削除されました:
-- ETL基盤
-- 帳票ライブラリ
-- ワークフローライブラリ
-- UI開発基盤（業務画面JSP検証ツール含む）
+## No.5 システム日時をLocalDateTime型で取得できる機能を追加
 
-## テスティングフレームワーク
+**リリース区分**: 変更  **分類**: システム日時
 
-- Nablarch 6で開発したアプリケーションのテストに対応（Jetty 12使用）
-- JUnit 5を5.11.0に更新: nablarch-testing-junit5 2.1.0
+SystemTimeUtilを用いたシステム日時の取得で、従来の Date 型に加え、Java 8で導入されたDate and Time APIの LocalDateTime型での取得に対応しました。
 
-## Example
+参照先: https://nablarch.github.io/docs/6u2/publishedApi/nablarch-all/publishedApiDoc/programmer/nablarch/core/date/SystemTimeUtil.html
 
-| No. | 分類 | 概要 | 修正後バージョン |
-|---|---|---|---|
-| 30 | 全般 | Nablarch 6を使用するように修正 | ※モジュールバージョン一覧（Example）参照 |
-| 31 | RESTfulウェブサービス | Jerseyを3.1.8に、Jacksonを2.17.1に更新 | nablarch-example-rest 6u2 |
-| 32 | MOMによるメッセージング | ActiveMQ Artemisを2.37.0に更新。nablarch-example-mom-testing-commonで使用していた非推奨APIを代替APIに変更。対象: nablarch-example-mom-testing-common, nablarch-example-mom-delayed-send, nablarch-example-mom-sync-send-batch, nablarch-example-mom-delayed-receive, nablarch-example-mom-sync-receive | nablarch-example-mom-testing-common 6u2, nablarch-example-mom-delayed-send 6u2, nablarch-example-mom-sync-send-batch 6u2, nablarch-example-mom-delayed-receive 6u2, nablarch-example-mom-sync-receive 6u2 |
+## No.6 ユニバーサルDAOのエンティティ生成機能をDate and Time APIに対応
 
-## 実装サンプル集
+**リリース区分**: 変更  **分類**: ユニバーサルDAO
 
-- Nablarch 6対応（nablarch-biz-sample-all 3.0.0）。ソースコードをnablarch-biz-sample-allリポジトリに集約（[参照](https://nablarch.github.io/docs/6u2/doc/examples/index.html)）
+ユニバーサルDAOで検索結果をマッピングするBeanに使用できるデータタイプとして、Java 8で導入されたDate and Time APIの LocalDateTime型とLocalDate型に対応しました。
 
-## Nablarch開発標準
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/database/universal_dao.html#id43
 
-- Jakarta EE 10対応による修正（Java EEの仕様名等をJakarta EEに変更）: nablarch-development-standards 2.3
-- ドメイン定義書サンプルのバリデーション記載をBean Validationに変更（Nablarch Validationから変更）
-- JSP自動生成ツール・業務画面JSP検証ツールの記載削除
+## No.7 BeanUtilをレコードに対応
 
-<details>
-<summary>keywords</summary>
+**リリース区分**: 変更  **分類**: BeanUtil
 
-5u25からの変更点, Jakarta EE 10対応, Java 17必須, BeanUtil, SystemTimeUtil, LocalDateTime, LocalDate, ユニバーサルDAO, JSR310アダプタ, SLF4Jアダプタ, Domaアダプタ, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, UI開発基盤削除, nablarch-fw-web, nablarch-core-beans, nablarch.httpTestConfiguration.tempDirectory
+BeanUtilの対象として、Java 16で導入されたレコードを使用できるように対応しました。これにより、レコードオブジェクトの生成や、レコードオブジェクトからの値のコピーができるようになります。
 
-</details>
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/bean_util.html
 
-## 6u2 変更点（6u1からの移行）
+## No.8 JSR310アダプタの標準機能への取り込み
 
-## システムへの影響がある変更
+**リリース区分**: 変更  **分類**: BeanUtil
 
-> **重要**: 以下の変更はシステムへの影響があります。移行時に対処が必要です。
+JSR310(Date and Time API)アダプタで提供されている機能をフレームワーク本体に取り込みました。これにより、JSR310アダプタを使用せずとも、BeanUtilでJSR310を使用可能になりました。
+JSR310アダプタは後方互換を維持するために残しており、処理は本体へ委譲するように変更しています。JSR310アダプタを使用している場合でも設定変更なく今まで通り使用できますので、影響はありません。
 
-**Micrometerアダプタ OTLP対応（No.21）**: Micrometerライブラリを1.13.0にバージョンアップ。`micrometer-registry-datadog`、`micrometer-registry-cloudwatch2`、`micrometer-registry-statsd`を依存関係に追加している場合、バージョンの整合性が取れなくなり動作しなくなる可能性があります。バージョンアップ手順に従ってライブラリのバージョンを更新してください（[Micrometerアダプタ解説書](https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/micrometer_adaptor.html)）。
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/bean_util.html
 
-## アプリケーションフレームワークの変更
+## No.9 業務画面JSP検証ツールの削除
 
-| No. | 分類 | 概要 | 修正後バージョン |
-|---|---|---|---|
-| 1 | 公開API | 公開APIの追加 | nablarch-core 2.2.0, nablarch-core-beans 2.2.0, nablarch-core-jdbc 2.2.0, nablarch-core-message 2.1.0, nablarch-core-transaction 2.1.0, nablarch-fw-jaxrs 2.2.0, nablarch-fw-messaging 2.1.0, nablarch-testing 2.2.0, nablarch-jackson-adaptor 2.1.0, nablarch-lettuce-adaptor 2.2.0, nablarch-micrometer-adaptor 2.1.0, nablarch-router-adaptor 2.1.0 |
-| 2 | BeanUtil | JSR310アダプタの機能をフレームワーク本体に統合（後方互換維持） | nablarch-common-dao 2.2.0, nablarch-core-beans 2.2.0, nablarch-jsr310-adaptor 2.1.0 |
-| 3 | Toolbox | 業務画面JSP検証ツール削除 | nablarch-toolbox 2.1.0 |
-| 4 | CSP対応 | CSPのscript-srcにnonceを使用したポリシーを設定可能に。セキュアハンドラでCSP用nonceを生成でき、Content-Security-PolicyヘッダやJSP内に埋め込み可能（[解説書](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/handlers/web/secure_handler.html#content-security-policy)） | nablarch-fw-web 2.2.0, nablarch-fw-web-tag 2.1.0 |
-| 5 | デフォルト設定 | Jetty一時ディレクトリのデフォルト値を「work」から「target/tmp」に変更（`nablarch.httpTestConfiguration.tempDirectory`プロパティ）。Mavenのcleanで削除されるようtargetディレクトリ配下に変更（[解説書](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/configuration/index.html)） | nablarch-default-configration 6u2 |
+**リリース区分**: 削除  **分類**: Toolbox
 
-解説書の変更（No.6-10）:
-- Java標準APIのJavadocリンクをJava 17に変更
-- テスト環境アプリケーションサーバ更新: WebSphere Application Server Liberty 24.0.0.8, Open Liberty 24.0.0.8, Red Hat JBoss EAP 8.0.0, WildFly 33.0.0.Final, Apache Tomcat 10.1.17
-- テスト環境データベース更新（Oracle Database 23c→23ai名称変更含む）: Oracle Database 12c/19c/21c/23ai, IBM Db2 10.5/11.5, SQL Server 2017/2019/2022, PostgreSQL 10.0/11.5/12.2/13.2/14.0/15.2/16.2
-- マイグレーションガイドに6u2のリリース内容を反映（Nablarch 6の正式リリースは6u2から）（[参照](https://nablarch.github.io/docs/6u2/doc/migration/index.html)）
-- Bean Validationの使用方法に「バリデーションの明示的な実行」「バリデーションエラー時に任意の処理を行いたい」を追加（[参照](https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/libraries/validation/bean_validation.html)）
+UI開発基盤はNablarch 6では提供しない方針であるため、UI開発基盤に依存する業務画面JSP検証ツールを削除しました。
 
-## アダプタの変更
+## No.10 Jettyの一時ディレクトリのデフォルト値を変更
 
-| No. | 分類 | 概要 | 修正後バージョン | システムへの影響 |
-|---|---|---|---|---|
-| 21 | Micrometerアダプタ | Micrometer 1.13.0に更新、OTLP用レジストリファクトリ追加 | nablarch-micrometer-adaptor 1.3.0 | **あり**（上記参照） |
-| 22 | logアダプタ | JBoss Logging 3.6.0.Finalに更新 | nablarch-jboss-logging-adaptor 2.1.0 | なし |
-| 23 | Domaアダプタ | Doma 2.66.0に更新。Doma 2.44.0より`Daoアノテーションのconfig属性`と`SingletonConfigアノテーション`が非推奨（以前の実装は継続利用可） | nablarch-doma-adaptor 2.1.0 | なし |
-| 24 | JAX-RSアダプタ | Jackson 2.17.1に更新 | nablarch-jaxrs-adaptor 2.1.0 | なし |
-| 25 | Micrometerアダプタ解説書 | DataDogの利用手順にサイトの設定案内を追加 | nablarch-micrometer-adaptor 1.3.0 | なし |
+**リリース区分**: 変更  **分類**: デフォルト設定一覧
 
-## ブランクプロジェクトの変更
+JettyがJSPをコンパイルする際などに使用する一時ディレクトリは nablarch.httpTestConfiguration.tempDirectory プロパティで設定します。このプロパティのデフォルト値を「work」から「target/tmp」に変更しました。
+この一時ディレクトリに出力される内容は利用者が気にすべきものではないため、Mavenのcleanで削除されるようにtargetディレクトリ配下としています。
 
-- SpotBugs 4.8.6、FindSecurityBugs 1.13.0に更新
-- デフォルトTomcat 10コンテナイメージを`10.1.28-jdk17-temurin`に更新
-- Maven Archetype Plugin 3.2.1に更新（バッチファイル削除）
-- Webアプリケーション: JSTLの除外設定を追加（Jettyプラグイン起動時の警告ログ解消）
-- maven-clean-pluginによるwork/jsp削除設定を削除（No.5のJetty一時ディレクトリ変更に伴い不要になったため）
-- Jacksonを2.17.1に更新（RESTfulウェブサービス）
-- Logback 1.5.6、SLF4J 2.0.11に更新（Jakarta Batch）
-- JBeret 2.1.4.Finalに更新（Jakarta Batch）
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/configuration/index.html
 
-## テスティングフレームワーク
+## No.11 Java標準APIのJavadocリンク先をJava 17のJavadocに変更
 
-- Java EEの仕様名等をJakarta EEに変更: nablarch-testing 2.2.0
-- Jetty 12を12.0.12に更新、不要なecjライブラリを削除: nablarch-testing 2.2.0, nablarch-testing-jetty12 1.1.0
-- JUnit 5を5.11.0に更新: nablarch-testing-junit5 2.1.0
+**リリース区分**: 変更  **分類**: 全般
 
-## Example
+解説書内にあるJava標準APIのJavadocリンク先を、稼働環境にあわせてJava 17のJavadocに変更しました。
 
-| No. | 分類 | 概要 | 修正後バージョン |
-|---|---|---|---|
-| 26 | ウェブアプリケーション | No.4のCSP対応を取り込み、script-srcでnonceを使用する例に変更 | nablarch-example-web 6u2 |
-| 27 | RESTfulウェブサービス | Jerseyを3.1.8に、Jacksonを2.17.1に更新 | nablarch-example-rest 6u2 |
-| 28 | MOMによるメッセージング | ActiveMQ Artemisを2.37.0に更新。nablarch-example-mom-testing-commonで使用していた非推奨APIを代替APIに変更。対象: nablarch-example-mom-testing-common, nablarch-example-mom-delayed-send, nablarch-example-mom-sync-send-batch, nablarch-example-mom-delayed-receive, nablarch-example-mom-sync-receive | nablarch-example-mom-testing-common 6u2, nablarch-example-mom-delayed-send 6u2, nablarch-example-mom-sync-send-batch 6u2, nablarch-example-mom-delayed-receive 6u2, nablarch-example-mom-sync-receive 6u2 |
+参照先: https://nablarch.github.io/docs/6u2/doc/index.html
 
-## 実装サンプル集
+## No.12 テスト環境のアプリケーションサーバを更新
 
-- Nablarch 6対応。ソースコードをnablarch-biz-sample-allリポジトリに集約
+**リリース区分**: 変更  **分類**: 稼動環境
 
-## Nablarch開発標準
+テスト環境のアプリケーションサーバを以下の通り更新しました。赤字部分が変更箇所になります。
+・WebSphere Application Server Liberty 24.0.0.8
+・Open Liberty 24.0.0.8
+・Red Hat JBoss Enterprise Application Platform 8.0.0
+・WildFly 33.0.0.Final
+・Apache Tomcat 10.1.17
 
-- Jakarta EE 10対応による修正（Java EEの仕様名等をJakarta EEに変更）: nablarch-development-standards 2.3
-- JSP自動生成ツールの記載削除（OSSとして非公開のため）
-- ドメイン定義書サンプルのバリデーション記載をBean Validationに変更
-- 業務画面JSP検証ツールの記載削除
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/nablarch/platform.html
 
-<details>
-<summary>keywords</summary>
+## No.13 分散トレーシングの依存ライブラリのバージョンを変更
 
-6u1からの変更点, CSP nonce対応, Bean Validation, Micrometerアダプタ, OTLP, マイグレーションガイド, テスト環境データベース, Oracle 23ai, JBoss Logging, Domaアダプタ, nablarch-micrometer-adaptor, nablarch-testing-jetty12, nablarch.httpTestConfiguration.tempDirectory
+**リリース区分**: 変更  **分類**: AWSにおける分散トレーシング
 
-</details>
+AWSにおける分散トレーシングの実装例として案内している依存ライブラリ（AWS X-Ray SDK、Jersey）がJakarta EE未対応のバージョンだったため、Jakarta EE対応済のバージョンに修正し、あわせてコード例の修正を行いました。
+修正後のバージョンは以下の通りです。
+AWS X-Ray SDK：2.15.0
+Jersey：3.1.1
 
-## バージョンアップ手順
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/cloud_native/distributed_tracing/aws_distributed_tracing.html
 
-## 5系からバージョンアップする場合
+## No.14 ウェブ、RESTfulウェブサービスプロジェクトの疎通確認で不要な手順を削除
 
-[解説書のNablarch 5から6への移行ガイド](https://nablarch.github.io/docs/6u2/doc/migration/index.html)を参照。
+**リリース区分**: 変更  **分類**: ブランクプロジェクト
 
-## 6u1からバージョンアップする場合
+ウェブプロジェクト、RESTfulウェブサービスプロジェクトの疎通確認では、"compile"を実行後、"jetty:run"を実行するよう案内していました。
+"compile"は"jetty:run"を実行する際に合わせて実行され、明示的に実行する必要がないため、削除しました。
 
-1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`6u2`に書き換える
-2. Micrometerアダプタを利用しており、`pom.xml`の`<dependencies>`に以下が指定されている場合、バージョンを`1.13.0`に書き換える:
-   - `micrometer-registry-datadog`
-   - `micrometer-registry-cloudwatch2`
-   - `micrometer-registry-statsd`
-3. Mavenのビルドを再実行する
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Web.html
 
-<details>
-<summary>keywords</summary>
+## No.15 静的解析ツールのバージョン更新
 
-バージョンアップ手順, nablarch-bom, pom.xml, micrometer-registry-datadog, micrometer-registry-cloudwatch2, micrometer-registry-statsd, 5系からの移行, 6u1からの移行
+**リリース区分**: 変更  **分類**: 全般
 
-</details>
+SpotBugsのバージョンを 4.8.6 に、FindSecurityBugsのバージョンを 1.13.0 に更新しました。
 
-## モジュールバージョン一覧
+## No.16 デフォルトのTomcat 10のコンテナイメージの更新
 
-6u2に対応するモジュールおよびバージョンの一覧です（内部向けモジュールを除く）。
+**リリース区分**: 変更  **分類**: 全般
 
-| 種類 | Group ID | Artifact ID | バージョン |
-|---|---|---|---|
-| ブランクプロジェクト | com.nablarch.archetype | nablarch-single-module-archetype | 6u2 |
-| Example | com.nablarch.example | nablarch-example-web | 6u2 |
-| Example | com.nablarch.example | nablarch-example-thymeleaf-web | 6u2 |
-| Example | com.nablarch.example | nablarch-example-rest | 6u2 |
-| Example | com.nablarch.example | nablarch-example-http-messaging-send | 6u2 |
-| Example | com.nablarch.example | nablarch-example-http-messaging | 6u2 |
-| Example | com.nablarch.example | nablarch-example-batch-ee | 6u2 |
-| Example | com.nablarch.example | nablarch-example-batch | 6u2 |
-| Example | com.nablarch.example | nablarch-example-mom-delayed-send | 6u2 |
-| Example | com.nablarch.example | nablarch-example-mom-sync-send-batch | 6u2 |
-| Example | com.nablarch.example | nablarch-example-mom-delayed-receive | 6u2 |
-| Example | com.nablarch.example | nablarch-example-mom-sync-receive | 6u2 |
-| Example | com.nablarch.example | nablarch-example-db-queue | 6u2 |
-| Example | com.nablarch.example | nablarch-example-mom-testing-common | 6u2 |
-| 実装サンプル集 | com.nablarch.applib | nablarch-biz-sample-all | 3.0.0 |
-| アプリケーションフレームワーク | com.nablarch.configuration | nablarch-main-default-configuration | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.configuration | nablarch-testing-default-configuration | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-backward-compatibility | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-auth | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-auth-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-code | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-code-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-dao | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-databind | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-date | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-encryption | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-exclusivecontrol | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-exclusivecontrol-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-idgenerator | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-idgenerator-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-common-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-applog | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-beans | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-dataformat | 2.0.1 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-jdbc | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-message | 2.1.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-repository | 2.0.1 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-transaction | 2.1.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-validation | 2.0.1 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-core-validation-ee | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-batch | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-batch-ee | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-jaxrs | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-messaging | 2.1.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-messaging-http | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-messaging-mom | 2.0.1 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-standalone | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web | 2.2.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web-dbstore | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web-doublesubmit-jdbc | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web-extension | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web-hotdeploy | 2.0.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-fw-web-tag | 2.1.0 |
-| アプリケーションフレームワーク | com.nablarch.framework | nablarch-mail-sender | 2.0.0 |
-| テスティングフレームワーク | com.nablarch.framework | nablarch-testing | 2.2.0 |
-| テスティングフレームワーク | com.nablarch.framework | nablarch-testing-jetty12 | 1.1.0 |
-| テスティングフレームワーク | com.nablarch.framework | nablarch-testing-rest | 2.0.0 |
-| アダプタ | com.nablarch.integration | nablarch-jersey-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-resteasy-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-jackson-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-jboss-logging-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-router-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-slf4j-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-doma-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-jsr310-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-mail-sender-freemarker-adaptor | 2.0.0 |
-| アダプタ | com.nablarch.integration | nablarch-mail-sender-thymeleaf-adaptor | 2.0.0 |
-| アダプタ | com.nablarch.integration | nablarch-mail-sender-velocity-adaptor | 2.0.0 |
-| アダプタ | com.nablarch.integration | nablarch-web-thymeleaf-adaptor | 2.0.0 |
-| アダプタ | com.nablarch.integration | nablarch-lettuce-adaptor | 2.2.0 |
-| アダプタ | com.nablarch.integration | nablarch-micrometer-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | slf4j-nablarch-adaptor | 2.1.0 |
-| アダプタ | com.nablarch.integration | nablarch-wmq-adaptor | 2.1.0 |
-| 開発ツール | com.nablarch.tool | nablarch-toolbox | 2.1.0 |
+デフォルトで指定しているTomcat 10のコンテナイメージを 10.1.28-jdk17-temurin に更新しました。
 
-<details>
-<summary>keywords</summary>
+## No.17 Mavenプラグインのバージョン更新
 
-モジュールバージョン, 6u2, com.nablarch.framework, com.nablarch.integration, com.nablarch.example, nablarch-testing-jetty12, nablarch-biz-sample-all, アーティファクトID, 依存関係バージョン
+**リリース区分**: 変更  **分類**: 全般
 
-</details>
+以下のMavenプラグインを記載のバージョンに更新しました。
+・maven-source-plugin：3.3.1
+・maven-javadoc-plugin：3.10.0
+・maven-gpg-plugin：3.2.5
+・maven-compilier-plugin：3.13.0
+・maven-surefire-plugin：3.5.0
+・maven-antrun-plugin：3.1.0
+・maven-war-plugin：3.4.0
+・maven-assembly-plugin：3.7.1
+・maven-jar-plugin：3.4.2
+・maven-resources-plugin：3.3.1
+・maven-release-plugin：3.1.1
+・maven-deploy-plugin：3.1.3
+・maven-install-plugin：3.1.3
+・jacoco-maven-plugin：0.8.12
+・build-helper-maven-plugin：3.6.0
+・jib-maven-plugin：3.4.3
+・jetty-ee10-maven-plugin：12.0.12
+
+## No.18 不要なMavenプラグイン設定の削除
+
+**リリース区分**: 変更  **分類**: 全般
+
+以下のMavenプラグインは使用しないため、設定を削除しました。
+・maven-failsafe-plugin
+・maven-dependency-plugin
+・wagon-webdav-jackrabbit
+
+## No.19 Maven Archetype Plugin 3.xに対応
+
+**リリース区分**: 変更  **分類**: 全般
+
+これまでブランクプロジェクト作成時に警告が出力されていましたが、使用するMaven Archetype Pluginのバージョンを 3.2.1 に更新し、警告が出力されないように対応しました。
+
+これにより、ブランクプロジェクト作成時に過去のバージョンのMaven Archetype Pluginを指定する必要がなくなったため、ブランクプロジェクト作成用のバッチファイルは削除しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/application_framework/blank_project/setup_blankProject/setup_Web.html
+※その他のブランクプロジェクトの初期セットアップ手順も同様
+
+## No.20 maven-clean-plugin 設定の削除
+
+**リリース区分**: 削除  **分類**: ウェブアプリケーション
+
+No.10の変更に伴い、maven-clean-plugin による work/jsp 削除が不要になったため、maven-clean-pluginの設定を削除しました。
+
+## No.21 Jacksonのバージョン更新
+
+**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+
+Jacksonのバージョンを 2.17.1 に更新しました。
+
+## No.22 Logback、SLF4Jのバージョン更新
+
+**リリース区分**: 変更  **分類**: Jakarta Batchに準拠したバッチアプリケーション
+
+Logbackのバージョンを 1.5.6 に、SLF4Jのバージョンを 2.0.11 に更新しました。
+また、あわせて以下の不要な依存関係を削除しました。
+・slf4j-nablarch-adaptor
+・nablarch-jboss-logging-adaptor
+
+## No.23 JBeretに関連するライブラリのバージョン更新
+
+**リリース区分**: 変更  **分類**: Jakarta Batchに準拠したバッチアプリケーション
+
+JBeretのバージョンを 2.1.4.Final に更新しました。
+また、JBeretに必要なライブラリが不足していたため、合わせて依存関係の定義を修正しました。
+
+## No.24 Nablarch 6 対応
+
+**リリース区分**: 変更  **分類**: 全般
+
+Nablarch 6と組み合わせて使用できるように依存関係を変更しました。
+
+## No.25 SLF4Jのバージョン更新
+
+**リリース区分**: 変更  **分類**: SLF4Jアダプタ
+
+SLF4Jは 2.0 からロギング実装を検索する仕組みが変更されており、SLF4Jアダプタはこの仕組みに対応していないため、SLF4J 2.0以降のバージョンではログ出力ができませんでした。
+SLF4Jの2.0以降でもSL4Jアダプタが使用できるように、依存するSLF4Jのバージョンを 2.0.11 に更新しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/slf4j_adaptor.html
+
+## No.26 SLF4Jのバージョン更新
+
+**リリース区分**: 変更  **分類**: logアダプタ
+
+SLF4Jが2.0以降でもlogアダプタが使用できるように、依存するSLF4Jのバージョンを 2.0.11 に更新しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/log_adaptor.html
+
+## No.27 JBoss Loggingのバージョン更新
+
+**リリース区分**: 変更  **分類**: logアダプタ
+
+JBoss Loggingのバージョンを 3.6.0.Final に更新しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/log_adaptor.html
+
+## No.28 Domaのバージョン更新
+
+**リリース区分**: 変更  **分類**: Domaアダプタ
+
+Java 17以降をサポートするにあたり、Domaのバージョンを 2.66.0 に更新しました。
+これに伴い、Doma 2.44.0 より以下のAPIが非推奨になったため、解説書で案内している実装例を変更しました。
+・Daoアノテーションのconfig属性
+・SingletonConfigアノテーション
+（以前に案内していた、上記の非推奨となったAPIを使用した実装も引き続き利用できます）
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/doma_adaptor.html
+
+## No.29 Jacksonのバージョン更新
+
+**リリース区分**: 変更  **分類**: Jakarta RESTful Web Servicesアダプタ
+
+Jacksonのバージョンを 2.17.1 に更新しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/application_framework/adaptors/jaxrs_adaptor.html
+
+## No.30 Nablarch 6 対応
+
+**リリース区分**: 変更  **分類**: 全般
+
+Nablarch 6を使用するように修正しました。
+
+## No.31 Jersey、Jacksonのバージョン更新
+
+**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+
+Jerseyのバージョンを 3.1.8 に、Jacksonのバージョン 2.17.1 に更新しました。
+
+## No.32 ActiveMQ Artemisのバージョン更新
+
+**リリース区分**: 変更  **分類**: MOMによるメッセージング
+
+ActiveMQ Artemisのバージョンを 2.37.0 に更新しました。
+また、 nablarch-example-mom-testing-common で使用していたActiveMQ ArtemisのAPIが非推奨になったため、代替APIを使うように変更しました。
+
+## No.33 解説書からの削除
+
+**リリース区分**: 削除  **分類**: 全般
+
+ETL基盤はNablarch 6では提供しない方針であるため、解説書から削除しました。
+
+## No.34 解説書からの削除
+
+**リリース区分**: 削除  **分類**: 全般
+
+帳票ライブラリはNablarch 6では提供しない方針であるため、解説書から削除しました。
+
+## No.35 解説書からの削除
+
+**リリース区分**: 削除  **分類**: 全般
+
+ワークフローライブラリはNablarch 6では提供しない方針であるため、解説書から削除しました。
+
+## No.36 解説書からの削除
+
+**リリース区分**: 削除  **分類**: 全般
+
+UI開発基盤はNablarch 6では提供しない方針であるため、解説書から削除しました。
+
+## No.37 Nablarch 6 対応
+
+**リリース区分**: 変更  **分類**: 全般
+
+Nablarch 6で開発したアプリケーションのテストに対応しました。
+これに伴い、Jetty 12を使用するように変更しました。
+
+## No.38 Junit 5のバージョン更新
+
+**リリース区分**: 変更  **分類**: 全般
+
+JUnit 5のバージョンを 5.11.0 に更新しました。
+
+## No.39 Nablarch 6 対応
+
+**リリース区分**: 変更  **分類**: 全般
+
+Nablarch 6 を使用するように修正しました。
+合わせて、ソースコードの公開先を nablarch-biz-sample-all リポジトリに集約しました。
+
+参照先: https://nablarch.github.io/docs/6u2/doc/examples/index.html
+
+## No.40 Jakarta EE 10対応による修正
+
+**リリース区分**: 追加  **分類**: 全般
+
+Jakarta EE 10対応に伴い、Java EEの仕様名や関連する記載をJakarta EEのものに変更しました。変更しない方が望ましいと判断した箇所については、Jakarta EEにおける仕様の省略名の読み替えを追記しました。
+
+## No.41 JSP自動生成ツールの記載削除
+
+**リリース区分**: 削除  **分類**: 標準WBS
+
+UI開発基盤はNablarch 6では提供しない方針であるため、UI開発基盤の使用が前提であるJSP自動生成ツールの記載を削除しました。
+
+## No.42 Bean Validationを使用する記載に修正
+
+**リリース区分**: 変更  **分類**: ドメイン定義書サンプル
+
+「2.1. Nablarch標準提供バリデーション」にはNablarch Validationを記載していましたが、現在の推奨であるBean Validationに変更しました。
+
+## No.43 業務画面JSP検証ツールの記載削除
+
+**リリース区分**: 削除  **分類**: 開発プロセス支援ツール
+
+No.9 の変更に伴い、業務画面JSP検証ツールの記載を削除しました。
