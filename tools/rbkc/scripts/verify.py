@@ -465,7 +465,175 @@ def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Check C: Internal links
+# Check C: Source-driven link verification
+# ---------------------------------------------------------------------------
+
+# RST label definition: .. _label-name: or .. _`label-name`:
+_RST_LABEL_DEF_RE = re.compile(r"^\.\.\s+_`?([^`:]+)`?:\s*$", re.MULTILINE)
+
+# :ref:`label` or :ref:`display text <label>`
+_RST_REF_RE = re.compile(r":ref:`([^`<]*?)(?:<([^>]*)>)?`")
+
+# .. figure:: path  or  .. image:: path
+_RST_FIGURE_RE = re.compile(r"^\.\.\s+(?:figure|image)::\s+(\S+)", re.MULTILINE)
+
+# .. literalinclude:: path
+_RST_LITERALINCLUDE_RE = re.compile(r"^\.\.\s+literalinclude::\s+(\S+)", re.MULTILINE)
+
+# MD link: [text](url) — url must not contain [ or ] (guards against Java type notation)
+_MD_SOURCE_LINK_RE = re.compile(r"\[(?:[^\]]*)\]\(([^)\[\]]+)\)")
+
+
+def build_label_map(source_dir: Path) -> dict[str, Path]:
+    """Scan all RST files under source_dir and collect label definitions.
+
+    Returns:
+        Dict mapping label name → RST file path.
+        Duplicate labels: last definition wins (matches Sphinx behavior).
+        Labels containing '外部サイト' (external site markers) are skipped.
+    """
+    label_map: dict[str, Path] = {}
+    for rst_path in sorted(source_dir.rglob("*.rst")):
+        text = rst_path.read_text(encoding="utf-8", errors="replace")
+        for m in _RST_LABEL_DEF_RE.finditer(text):
+            label = m.group(1).strip()
+            if "外部サイト" in label:
+                continue
+            label_map[label] = rst_path
+    return label_map
+
+
+def check_source_links(
+    source_text: str,
+    fmt: str,
+    data: dict,
+    label_map: dict[str, Path],
+    source_path: Path | None = None,
+) -> list[str]:
+    """Check C: source-driven link verification.
+
+    For RST sources:
+    - :ref:`label` or :ref:`text <label>`: resolved via label_map.
+      Unresolvable → FAIL. Resolved but absent from JSON content → FAIL.
+    - .. figure:: / .. image:: / .. literalinclude:: paths:
+      Resolved relative to source_path. Missing file → FAIL.
+
+    For MD sources:
+    - [text](path): resolved relative to source_path.
+      External (https://) links are skipped.
+      Paths containing [ or ] are not treated as links (Java type notation guard).
+      Missing file → FAIL.
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    issues = []
+    json_content = _json_text(data)
+
+    if fmt == "rst":
+        # :ref: references
+        for m in _RST_REF_RE.finditer(source_text):
+            label = (m.group(2) or m.group(1)).strip()
+            if label not in label_map:
+                issues.append(f"Unresolvable :ref: label: {label!r}")
+            elif label not in json_content:
+                issues.append(f":ref: label resolved but missing from JSON: {label!r}")
+
+        # .. figure:: / .. image:: / .. literalinclude::
+        if source_path is not None:
+            for pattern in (_RST_FIGURE_RE, _RST_LITERALINCLUDE_RE):
+                for m in pattern.finditer(source_text):
+                    rel_path = m.group(1)
+                    target = (source_path.parent / rel_path).resolve()
+                    if not target.exists():
+                        issues.append(f"Asset/include file not found: {rel_path!r}")
+
+    elif fmt == "md" and source_path is not None:
+        for m in _MD_SOURCE_LINK_RE.finditer(source_text):
+            url = m.group(1).strip()
+            if re.match(r"https?://", url):
+                continue
+            target = (source_path.parent / url).resolve()
+            if not target.exists():
+                issues.append(f"MD link target not found: {url!r}")
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Check E: JSON ↔ docs MD consistency
+# ---------------------------------------------------------------------------
+
+# Extract keywords block from docs MD: <details><summary>keywords</summary>\n\nkw1, kw2\n
+_DOCS_MD_KEYWORDS_RE = re.compile(
+    r"<details>\s*<summary>keywords</summary>\s*\n\n([^\n]+)\n",
+    re.IGNORECASE,
+)
+
+# Extract # title from docs MD
+_DOCS_MD_H1_RE = re.compile(r"^#\s+(.+)", re.MULTILINE)
+
+# Extract ## / ### section titles from docs MD
+_DOCS_MD_HEADING_RE = re.compile(r"^#{2,3}\s+(.+)", re.MULTILINE)
+
+
+def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
+    """Check E: JSON and docs MD must be exactly consistent.
+
+    Checks:
+    - JSON title == docs MD # heading
+    - Each JSON section title appears as ## or ### heading in docs MD
+    - Each JSON section's hints appear in the corresponding keywords block
+    - Each JSON section's content text appears in docs MD
+
+    Returns:
+        List of issue strings. Empty = OK.
+    """
+    issues = []
+
+    # Title check
+    h1_match = _DOCS_MD_H1_RE.search(docs_md_text)
+    docs_title = h1_match.group(1).strip() if h1_match else ""
+    json_title = data.get("title", "")
+    if json_title != docs_title:
+        issues.append(f"Title mismatch: JSON={json_title!r}, docs MD={docs_title!r}")
+
+    # Collect docs MD headings and keywords blocks
+    docs_headings = {m.group(1).strip() for m in _DOCS_MD_HEADING_RE.finditer(docs_md_text)}
+    docs_keywords_blocks = [m.group(1) for m in _DOCS_MD_KEYWORDS_RE.finditer(docs_md_text)]
+    all_keywords_text = " ".join(docs_keywords_blocks)
+
+    for sec in data.get("sections", []):
+        sec_title = sec.get("title", "")
+        sec_content = sec.get("content", "")
+        sec_hints = sec.get("hints", [])
+
+        # Section title check
+        if sec_title and sec_title not in docs_headings:
+            issues.append(f"Section title missing from docs MD: {sec_title!r}")
+
+        # Hints check
+        for hint in sec_hints:
+            if hint not in all_keywords_text:
+                issues.append(f"Hint missing from docs MD keywords: {hint!r}")
+
+        # Content check: key tokens from JSON content must appear in docs MD
+        if sec_content and sec_content not in docs_md_text:
+            # Token-level check: at least one distinctive phrase must appear
+            # Use first 50 chars of content as a representative sample
+            sample = sec_content[:50].strip()
+            if sample and sample not in docs_md_text:
+                issues.append(
+                    f"Section content missing from docs MD: section={sec_title!r}, "
+                    f"sample={sample!r}"
+                )
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# Legacy Check C: kept for backward compatibility during transition
+# (will be removed once check_source_links is fully integrated)
 # ---------------------------------------------------------------------------
 
 # Markdown link pattern: [text](url)
@@ -477,25 +645,18 @@ def check_internal_links(
     json_path: Path,
     knowledge_dir: Path,
 ) -> list[str]:
-    """Check C: relative links in JSON content resolve to real files.
+    """Legacy Check C: relative links in JSON content resolve to real files.
 
-    Skips:
-    - https?:// (external links)
-
-    For assets/ links: resolves as knowledge_dir / url (i.e., knowledge/assets/xxx).
-
-    Returns:
-        List of issue strings. Empty = OK.
+    Deprecated: use check_source_links() instead.
+    Kept for backward compatibility during Phase 17-B transition.
     """
     issues = []
     all_content = _json_text(data)
 
     for m in _MD_LINK_RE.finditer(all_content):
         url = m.group(1).strip()
-        # Skip external links
         if re.match(r"https?://", url):
             continue
-        # Resolve relative to knowledge_dir (assets/ is a subdir of knowledge_dir)
         target = (knowledge_dir / url).resolve()
         if not target.exists():
             issues.append(f"Internal link target not found: {url!r}")

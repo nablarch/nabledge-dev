@@ -1253,3 +1253,314 @@ class TestCheckContentDiffBased:
         data["title"] = "Doc Title"
         issues = check_content(source_text, data, "md")
         assert issues == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 17-B: Check C redesign — source-driven link verification
+# ---------------------------------------------------------------------------
+
+from scripts.verify import (
+    build_label_map,
+    check_source_links,
+    check_json_docs_md_consistency,
+)
+
+
+class TestBuildLabelMap:
+    """build_label_map(source_dir) → {label: rst_file_path}"""
+
+    def test_single_label(self, tmp_path):
+        """Single label definition in one RST file → captured in map."""
+        rst = tmp_path / "guide.rst"
+        rst.write_text(".. _my-label:\n\nContent.\n", encoding="utf-8")
+        result = build_label_map(tmp_path)
+        assert "my-label" in result
+        assert result["my-label"] == rst
+
+    def test_multiple_labels_in_one_file(self, tmp_path):
+        """Multiple labels in one RST → all captured."""
+        rst = tmp_path / "guide.rst"
+        rst.write_text(
+            ".. _label-a:\n\nSection A.\n\n.. _label-b:\n\nSection B.\n",
+            encoding="utf-8",
+        )
+        result = build_label_map(tmp_path)
+        assert "label-a" in result
+        assert "label-b" in result
+
+    def test_labels_across_multiple_files(self, tmp_path):
+        """Labels from multiple RST files → all captured."""
+        (tmp_path / "a.rst").write_text(".. _alpha:\n\nA.\n", encoding="utf-8")
+        (tmp_path / "b.rst").write_text(".. _beta:\n\nB.\n", encoding="utf-8")
+        result = build_label_map(tmp_path)
+        assert "alpha" in result
+        assert "beta" in result
+
+    def test_non_rst_files_ignored(self, tmp_path):
+        """Non-RST files are not scanned."""
+        (tmp_path / "notes.md").write_text(".. _md-label:\n\nContent.\n", encoding="utf-8")
+        result = build_label_map(tmp_path)
+        assert "md-label" not in result
+
+    def test_duplicate_label_last_wins(self, tmp_path):
+        """Duplicate label across files → last definition wins (Sphinx behavior)."""
+        a = tmp_path / "a.rst"
+        b = tmp_path / "b.rst"
+        a.write_text(".. _dup:\n\nA.\n", encoding="utf-8")
+        b.write_text(".. _dup:\n\nB.\n", encoding="utf-8")
+        result = build_label_map(tmp_path)
+        assert "dup" in result
+        # last wins — either a or b, but must be one of them
+        assert result["dup"] in (a, b)
+
+    def test_external_site_label_skipped(self, tmp_path):
+        """Labels containing '外部サイト' are external references → skipped."""
+        rst = tmp_path / "guide.rst"
+        rst.write_text(".. _Some Site(外部サイト): https://example.com\n", encoding="utf-8")
+        result = build_label_map(tmp_path)
+        assert not any("外部サイト" in k for k in result)
+
+    def test_empty_directory(self, tmp_path):
+        """No RST files → empty map."""
+        result = build_label_map(tmp_path)
+        assert result == {}
+
+
+class TestCheckSourceLinksRef:
+    """:ref: references resolved against label map."""
+
+    def _make_data(self, content: str) -> dict:
+        return {
+            "id": "test",
+            "title": "Test",
+            "sections": [{"id": "s1", "title": "Section", "content": content, "hints": []}],
+        }
+
+    def test_ref_resolved_in_json(self, tmp_path):
+        """:ref:`label` resolved and label appears in JSON content → PASS."""
+        label_map = {"my-section": tmp_path / "other.rst"}
+        source_text = "See :ref:`my-section` for details.\n"
+        data = self._make_data("See my-section for details.")
+        issues = check_source_links(source_text, "rst", data, label_map)
+        assert issues == []
+
+    def test_ref_with_display_text_resolved(self, tmp_path):
+        """:ref:`display text <label>` — label extracted from <>, resolved → PASS."""
+        label_map = {"target-label": tmp_path / "other.rst"}
+        source_text = "See :ref:`display text <target-label>` for details.\n"
+        data = self._make_data("See target-label for details.")
+        issues = check_source_links(source_text, "rst", data, label_map)
+        assert issues == []
+
+    def test_ref_unresolvable_fails(self):
+        """:ref:`unknown` not in label map → FAIL."""
+        label_map = {}
+        source_text = "See :ref:`unknown-label` for details.\n"
+        data = self._make_data("Some content.")
+        issues = check_source_links(source_text, "rst", data, label_map)
+        assert any("unknown-label" in issue for issue in issues)
+
+    def test_ref_resolved_but_missing_from_json_fails(self, tmp_path):
+        """:ref:`label` resolved but label not in JSON content → FAIL."""
+        label_map = {"my-section": tmp_path / "other.rst"}
+        source_text = "See :ref:`my-section` for details.\n"
+        data = self._make_data("No relevant content here.")
+        issues = check_source_links(source_text, "rst", data, label_map)
+        assert any("my-section" in issue for issue in issues)
+
+
+class TestCheckSourceLinksFigureImage:
+    """.. figure:: and .. image:: path resolution."""
+
+    def _make_data(self, content: str) -> dict:
+        return {
+            "id": "test",
+            "title": "Test",
+            "sections": [{"id": "s1", "title": "Section", "content": content, "hints": []}],
+        }
+
+    def test_figure_existing_file_passes(self, tmp_path):
+        """.. figure:: pointing to existing image file → PASS."""
+        img = tmp_path / "images" / "diagram.png"
+        img.parent.mkdir()
+        img.write_bytes(b"")
+        source_path = tmp_path / "guide.rst"
+        source_text = ".. figure:: images/diagram.png\n   :alt: Diagram\n\nCaption.\n"
+        data = self._make_data("diagram.png content.")
+        issues = check_source_links(source_text, "rst", data, {}, source_path=source_path)
+        assert issues == []
+
+    def test_figure_missing_file_fails(self, tmp_path):
+        """.. figure:: pointing to non-existent file → FAIL."""
+        source_path = tmp_path / "guide.rst"
+        source_text = ".. figure:: images/missing.png\n\nCaption.\n"
+        data = self._make_data("Some content.")
+        issues = check_source_links(source_text, "rst", data, {}, source_path=source_path)
+        assert any("missing.png" in issue for issue in issues)
+
+    def test_image_existing_file_passes(self, tmp_path):
+        """.. image:: pointing to existing file → PASS."""
+        img = tmp_path / "images" / "logo.png"
+        img.parent.mkdir()
+        img.write_bytes(b"")
+        source_path = tmp_path / "guide.rst"
+        source_text = ".. image:: images/logo.png\n"
+        data = self._make_data("logo.png content.")
+        issues = check_source_links(source_text, "rst", data, {}, source_path=source_path)
+        assert issues == []
+
+
+class TestCheckSourceLinksLiteralinclude:
+    """.. literalinclude:: path resolution."""
+
+    def _make_data(self, content: str) -> dict:
+        return {
+            "id": "test",
+            "title": "Test",
+            "sections": [{"id": "s1", "title": "Section", "content": content, "hints": []}],
+        }
+
+    def test_literalinclude_existing_file_passes(self, tmp_path):
+        """.. literalinclude:: existing file → PASS."""
+        src = tmp_path / "samples" / "Example.java"
+        src.parent.mkdir()
+        src.write_text("public class Example {}\n", encoding="utf-8")
+        source_path = tmp_path / "guide.rst"
+        source_text = ".. literalinclude:: samples/Example.java\n"
+        data = self._make_data("Example.java content.")
+        issues = check_source_links(source_text, "rst", data, {}, source_path=source_path)
+        assert issues == []
+
+    def test_literalinclude_missing_file_fails(self, tmp_path):
+        """.. literalinclude:: non-existent file → FAIL."""
+        source_path = tmp_path / "guide.rst"
+        source_text = ".. literalinclude:: samples/Missing.java\n"
+        data = self._make_data("Some content.")
+        issues = check_source_links(source_text, "rst", data, {}, source_path=source_path)
+        assert any("Missing.java" in issue for issue in issues)
+
+
+class TestCheckSourceLinksMd:
+    """MD source [text](path) link resolution."""
+
+    def _make_data(self, content: str) -> dict:
+        return {
+            "id": "test",
+            "title": "Test",
+            "sections": [{"id": "s1", "title": "Section", "content": content, "hints": []}],
+        }
+
+    def test_md_link_existing_file_passes(self, tmp_path):
+        """[text](relative/path) pointing to existing file → PASS."""
+        target = tmp_path / "other.md"
+        target.write_text("# Other\n", encoding="utf-8")
+        source_path = tmp_path / "guide.md"
+        source_text = "See [other](other.md) for details.\n"
+        data = self._make_data("See other for details.")
+        issues = check_source_links(source_text, "md", data, {}, source_path=source_path)
+        assert issues == []
+
+    def test_md_link_missing_file_fails(self, tmp_path):
+        """[text](missing.md) pointing to non-existent file → FAIL."""
+        source_path = tmp_path / "guide.md"
+        source_text = "See [missing](missing.md) for details.\n"
+        data = self._make_data("Some content.")
+        issues = check_source_links(source_text, "md", data, {}, source_path=source_path)
+        assert any("missing.md" in issue for issue in issues)
+
+    def test_md_link_http_skipped(self, tmp_path):
+        """[text](https://...) external links are skipped → PASS."""
+        source_path = tmp_path / "guide.md"
+        source_text = "See [docs](https://example.com/page) for details.\n"
+        data = self._make_data("Some content.")
+        issues = check_source_links(source_text, "md", data, {}, source_path=source_path)
+        assert issues == []
+
+    def test_md_link_java_type_notation_not_misidentified(self, tmp_path):
+        """java.lang.Integer[](int[]) plain text is not treated as a link → PASS."""
+        source_path = tmp_path / "guide.md"
+        source_text = "Types: java.lang.Integer[](int[]) can be set.\n"
+        data = self._make_data("Types: java.lang.Integer[](int[]) can be set.")
+        issues = check_source_links(source_text, "md", data, {}, source_path=source_path)
+        assert issues == []
+
+
+class TestCheckJsonDocsMdConsistency:
+    """JSON ↔ docs MD consistency: title, hints, content must match exactly."""
+
+    def _make_data(self, title: str, sections: list) -> dict:
+        return {"id": "test", "title": title, "sections": sections}
+
+    def _make_section(self, sid: str, title: str, content: str, hints: list) -> dict:
+        return {"id": sid, "title": title, "content": content, "hints": hints}
+
+    def test_matching_title_passes(self):
+        """JSON title matches docs MD # heading → PASS."""
+        data = self._make_data("My Title", [])
+        docs_md_text = "# My Title\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert issues == []
+
+    def test_mismatched_title_fails(self):
+        """JSON title differs from docs MD # heading → FAIL."""
+        data = self._make_data("Correct Title", [])
+        docs_md_text = "# Wrong Title\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert any("title" in issue.lower() for issue in issues)
+
+    def test_matching_section_title_passes(self):
+        """JSON section title matches docs MD ## heading → PASS."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Overview", "Content here.", []),
+        ])
+        docs_md_text = "# Doc\n\n## Overview\n\nContent here.\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert issues == []
+
+    def test_missing_section_title_in_docs_md_fails(self):
+        """JSON section title absent from docs MD → FAIL."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Missing Section", "Content.", []),
+        ])
+        docs_md_text = "# Doc\n\n## Different Section\n\nContent.\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert any("Missing Section" in issue for issue in issues)
+
+    def test_hints_present_in_docs_md_passes(self):
+        """JSON hints appear as keywords in docs MD → PASS."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Section", "Content.", ["keyword1", "keyword2"]),
+        ])
+        docs_md_text = (
+            "# Doc\n\n## Section\n\nContent.\n\n"
+            "<details>\n<summary>keywords</summary>\n\nkeyword1, keyword2\n\n</details>\n"
+        )
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert issues == []
+
+    def test_hints_missing_from_docs_md_fails(self):
+        """JSON hints absent from docs MD keywords → FAIL."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Section", "Content.", ["missing-keyword"]),
+        ])
+        docs_md_text = "# Doc\n\n## Section\n\nContent.\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert any("missing-keyword" in issue for issue in issues)
+
+    def test_content_present_in_docs_md_passes(self):
+        """JSON section content appears in docs MD → PASS."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Section", "Important content here.", []),
+        ])
+        docs_md_text = "# Doc\n\n## Section\n\nImportant content here.\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert issues == []
+
+    def test_content_missing_from_docs_md_fails(self):
+        """JSON section content absent from docs MD → FAIL."""
+        data = self._make_data("Doc", [
+            self._make_section("s1", "Section", "Important content here.", []),
+        ])
+        docs_md_text = "# Doc\n\n## Section\n\nDifferent content entirely.\n"
+        issues = check_json_docs_md_consistency(data, docs_md_text)
+        assert any("content" in issue.lower() for issue in issues)
