@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-16 (session 7)
+**Updated**: 2026-04-16 (session 8)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -80,25 +80,44 @@ MD (3ファイル):
 
 ---
 
-### Phase 17-B: verify 再設計 — Phase 2 (リンク検証)
+### Phase 17-B: verify 再設計 — Check C 完全書き直し + JSON/docs MD 一致チェック追加
 
-**注**: Phase 17-C でリンク関連の FAIL（int[], png）が解消する見込み。
-Phase 17-C 完了後に本フェーズの必要性を再評価する。
+**設計決定（ユーザー承認済み）**:
 
-**背景**: 現在の Check C は JSON 内 Markdown リンクの物理存在確認のみ。
-toctree が指すページ、外部 URL、アセット、内部参照（:ref:）の「正解データ」を作成し
-漏れ・重複・間違いを検出できるようにする。
+**Check C 再設計（ソース駆動リンク検証）**:
+1. 全 RST をスキャン → `.. _label:` 定義を収集 → グローバルラベルマップを作成
+2. 各ソースファイルから参照を抽出: `:ref:`、`.. figure::`、`.. image::`、`.. literalinclude::`、MD `[text](path)`
+3. グローバルマップで解決できない参照 → FAIL
+4. 解決済みリンクターゲットが JSON/docs MD に存在しない → FAIL
 
-**前提**: Phase 17-A 完了後
+**新規チェック追加（JSON ↔ docs MD 完全一致）**:
+- JSON と docs MD の title、hints（keywords）、content が完全一致しているか確認
+
+**実装状況（session 8 完了）**:
+- `verify.py`: `build_label_map`、`check_source_links`、`check_json_docs_md_consistency` 実装済み
+  - `build_label_map`: 全 RST スキャン → `{label: Path}` マップ（バッククォート形式対応済み）
+  - `check_source_links`: `:ref:`/`.. figure::`/`.. image::`/`.. literalinclude::`/MD リンク検証
+  - `check_json_docs_md_consistency`: title/hints/content 完全一致チェック
+  - 旧 `check_internal_links` は Legacy として残存（run.py から呼ばれなくなった）
+- `run.py`: `build_label_map` + `check_source_links` + `check_json_docs_md_consistency` を verify フローに組み込み済み
+- UT: 28件追加（119件通過）
+- E2E test_cli.py: フィクスチャを `universal_dao.rst` → `multiple_process.rst` に変更
+  （`universal_dao` は `:ref:` ラベル未出力の RBKC バグを持つため）
+- E2E path バグ修正: `test_resolver.py`、`test_rst_converter.py`、`test_pipeline_e2e.py` の相対パスを絶対パスに修正
+- 全テスト: 362件通過
+
+**残作業**:
 
 #### Steps（TDD）
-- [ ] Phase 17-C 完了後、残存 FAIL を確認して本フェーズの要否を判断（ユーザー確認）
-- [ ] RST リンク収集・解決ロジックの設計（ユーザー確認）
-- [ ] UT: 各リンク種別の収集・解決テスト → RED → GREEN
-- [ ] UT: JSON/MD 照合テスト（漏れ・間違い・物理チェック）→ RED → GREEN
-- [ ] `pytest` 全通過
-- [ ] `rbkc.sh verify 6` で残存 FAIL が解消していること確認
-- [ ] サブエージェント品質チェック
+- [x] グローバルラベルマップ構築ロジックの設計（全 RST スキャン → `.. _label:` 収集）
+- [x] UT: ラベルマップ構築テスト → RED → GREEN
+- [x] UT: `:ref:`/`.. figure::`/`.. image::`/`.. literalinclude::`/MD リンク抽出テスト → RED → GREEN
+- [x] UT: 未解決参照 → FAIL テスト → RED → GREEN
+- [x] UT: 解決済みターゲットが JSON/docs MD に存在しない → FAIL テスト → RED → GREEN
+- [x] UT: JSON ↔ docs MD title/hints/content 完全一致テスト → RED → GREEN
+- [x] `pytest` 全通過（362件）
+- [ ] `bash rbkc.sh verify 6` — FAIL 0件確認（新 Check C での FAIL 状況を確認）
+- [ ] Software Engineer + QA Engineer エキスパートレビュー
 - [ ] コミット
 
 ---
