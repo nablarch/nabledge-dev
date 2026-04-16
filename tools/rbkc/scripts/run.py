@@ -42,6 +42,9 @@ from scripts.verify import (
     verify_docs_md,
     check_index_coverage,
     check_docs_coverage,
+    build_label_map,
+    check_source_links,
+    check_json_docs_md_consistency,
 )
 
 
@@ -297,6 +300,13 @@ def verify(
     docs_dir = output_dir.parent / "docs"
     all_ok = True
 
+    # Build global RST label map once for Check C source-driven link verification
+    from scripts.scan import _source_roots
+    label_map: dict = {}
+    for src_root in _source_roots(version, repo_root):
+        if src_root.exists():
+            label_map.update(build_label_map(src_root))
+
     for fi in file_infos:
         # B3: use repo-relative source path in FAIL lines
         source_rel = str(fi.source_path.relative_to(repo_root))
@@ -307,15 +317,32 @@ def verify(
             print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
 
+        json_data = json.loads(json_path.read_text(encoding="utf-8")) if json_path.exists() else {}
+
+        # Check C (new): source-driven link verification
+        if not json_data.get("no_knowledge_content"):
+            source_text = fi.source_path.read_text(encoding="utf-8", errors="replace")
+            for issue in check_source_links(
+                source_text, fi.format, json_data, label_map, source_path=fi.source_path
+            ):
+                print(f"FAIL {source_rel}: [Check C] {issue}", file=sys.stderr)
+                all_ok = False
+
         # Per-file docs MD checks (A, B, C, D)
         # Skip docs MD content checks for no_knowledge_content files: their
         # docs MD is a stub title header — toctree paths would inflate token count.
-        json_data = json.loads(json_path.read_text(encoding="utf-8")) if json_path.exists() else {}
         if not json_data.get("no_knowledge_content"):
             docs_md_path = docs_dir / Path(fi.output_path).with_suffix(".md")
             for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
                 print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
                 all_ok = False
+
+            # Check E: JSON ↔ docs MD consistency
+            if docs_md_path.exists():
+                docs_md_text = docs_md_path.read_text(encoding="utf-8")
+                for issue in check_json_docs_md_consistency(json_data, docs_md_text):
+                    print(f"FAIL {source_rel}: [JSON↔MD] {issue}", file=sys.stderr)
+                    all_ok = False
 
     # Coverage checks (F, H) — only when verifying all files
     if files is None:
