@@ -44,6 +44,14 @@ Launch both as subagents in separate contexts (see `.claude/rules/design-decisio
 
 If either review returns **Needs Fix**, address the issues before continuing.
 
+## Fix Problems Immediately
+
+When a problem is found — test failure, bug, incorrect behavior, rule violation — fix it immediately. Do not defer it as "out of scope" or "tracked separately."
+
+- No problem is too small to fix now
+- Deferring problems creates debt that compounds; immediate fixes keep the codebase clean
+- This applies to pre-existing failures discovered during work, not just new ones
+
 ## Tests Must Pass Before PR
 
 All automated tests must pass before creating a PR. Fix all failures — including pre-existing ones — before requesting review.

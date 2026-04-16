@@ -5,6 +5,8 @@
 verify is the final quality assurance mechanism for RBKC output. It must be kept completely independent from RBKC implementation concerns.
 
 - verify checks whether the generated output is correct, using only the source and the output — it does not need to know how RBKC works internally
+- verify must never import from or depend on RBKC implementation modules (converters, resolver, hints, run, etc.)
+- verify's logic must be derivable from source format specifications (RST, Markdown, Excel) alone — not from how RBKC happens to work
 - When verify reports a FAIL, the fix belongs in RBKC, not in verify
 - Never weaken verify's detection to make RBKC output pass
 
