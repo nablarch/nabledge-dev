@@ -5,7 +5,8 @@ import pytest
 
 from scripts.resolver import AssetRef, build_label_map, collect_asset_refs, copy_assets
 
-V6_DOC_ROOT = Path(".lw/nab-official/v6/nablarch-document/ja")
+_REPO_ROOT = Path(__file__).parents[4]
+V6_DOC_ROOT = _REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"
 
 
 # ---------------------------------------------------------------------------

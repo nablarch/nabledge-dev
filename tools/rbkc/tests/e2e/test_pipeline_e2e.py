@@ -14,8 +14,9 @@ import pytest
 from scripts.converters.rst import convert
 from scripts.hints import build_hints_index, lookup_hints
 
-V6_DOC_ROOT = Path(".lw/nab-official/v6/nablarch-document/ja")
-V6_CACHE_ROOT = Path("tools/knowledge-creator/.cache/v6")
+_REPO_ROOT = Path(__file__).parents[4]
+V6_DOC_ROOT = _REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"
+V6_CACHE_ROOT = _REPO_ROOT / "tools/knowledge-creator/.cache/v6"
 UNIVERSAL_DAO_RST = (
     V6_DOC_ROOT
     / "application_framework/application_framework/libraries/database/universal_dao.rst"

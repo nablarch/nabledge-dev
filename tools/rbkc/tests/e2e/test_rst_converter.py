@@ -15,7 +15,8 @@ from scripts.converters.rst import (
 )
 
 # Path to the v6 Nablarch official documentation root (ja)
-V6_DOC_ROOT = Path(".lw/nab-official/v6/nablarch-document/ja")
+_REPO_ROOT = Path(__file__).parents[4]
+V6_DOC_ROOT = _REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"
 UNIVERSAL_DAO_RST = (
     V6_DOC_ROOT
     / "application_framework/application_framework/libraries/database/universal_dao.rst"

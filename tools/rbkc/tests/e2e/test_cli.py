@@ -13,9 +13,13 @@ import pytest
 _REPO_ROOT = Path(__file__).parents[4]  # repo root
 
 # 3 real source files used as test fixtures
+# NOTE: RST fixture must not contain :ref: cross-references or .. figure::/.. image::
+# directives pointing to files not present in the repo. This avoids Check C FAIL
+# for RBKC bugs that are tracked separately (e.g., :ref: label emission).
+# multiple_process.rst: 95 lines, no :ref:, no figure/image/literalinclude.
 _TEST_SOURCES = [
-    # RST → component/libraries
-    ".lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/libraries/database/universal_dao.rst",
+    # RST → processing-pattern/db-messaging
+    ".lw/nab-official/v6/nablarch-document/ja/application_framework/application_framework/messaging/db/feature_details/multiple_process.rst",
     # XLSX release note → releases/releases
     ".lw/nab-official/v6/nablarch-document/ja/releases/nablarch6-releasenote.xlsx",
     # XLSX security → check/security-check
@@ -59,9 +63,9 @@ class TestCreate:
 
     def test_rst_json_structure(self, after_create):
         """RST-converted JSON has id, title, no_knowledge_content, sections."""
-        # universal_dao.rst → component/libraries/libraries-universal-dao.json
-        json_files = list(after_create["output"].rglob("*universal*dao*.json"))
-        assert json_files, "universal_dao JSON not found"
+        # multiple_process.rst → processing-pattern/db-messaging/db-messaging-multiple-process.json
+        json_files = list(after_create["output"].rglob("*multiple*process*.json"))
+        assert json_files, "multiple_process JSON not found"
         data = json.loads(json_files[0].read_text(encoding="utf-8"))
         assert "id" in data
         assert "title" in data
@@ -72,7 +76,7 @@ class TestCreate:
 
     def test_sections_have_required_fields(self, after_create):
         """Each section has id, title, content, hints."""
-        json_files = list(after_create["output"].rglob("*universal*dao*.json"))
+        json_files = list(after_create["output"].rglob("*multiple*process*.json"))
         data = json.loads(json_files[0].read_text(encoding="utf-8"))
         for sec in data["sections"]:
             assert "id" in sec
@@ -228,16 +232,16 @@ class TestUpdate:
         output = after_create["output"]
         state = after_create["state"]
 
-        # Find the universal_dao JSON and record its mtime
-        ud_json = list(output.rglob("*universal*dao*.json"))[0]
-        mtime_before = ud_json.stat().st_mtime
+        # Find the multiple_process JSON and record its mtime
+        mp_json = list(output.rglob("*multiple*process*.json"))[0]
+        mtime_before = mp_json.stat().st_mtime
 
         # Simulate a source change by manipulating the snapshot hash
         snap_path = state / "6" / "snapshot.json"
         snap = json.loads(snap_path.read_text(encoding="utf-8"))
-        # Find the universal_dao entry and corrupt its hash
+        # Find the multiple_process entry and corrupt its hash
         for src_path, entry in snap["files"].items():
-            if "universal_dao" in src_path:
+            if "multiple_process" in src_path:
                 snap["files"][src_path]["sha256"] = "corrupted_hash_000"
                 break
         snap_path.write_text(json.dumps(snap), encoding="utf-8")
@@ -250,8 +254,8 @@ class TestUpdate:
             files=_TEST_SOURCES,
         )
 
-        mtime_after = ud_json.stat().st_mtime
-        assert mtime_after > mtime_before, "universal_dao JSON should have been updated"
+        mtime_after = mp_json.stat().st_mtime
+        assert mtime_after > mtime_before, "multiple_process JSON should have been updated"
 
 
 # ---------------------------------------------------------------------------
@@ -353,7 +357,7 @@ class TestVerify:
         output = after_create["output"]
 
         # Corrupt one JSON file
-        json_files = list(output.rglob("*universal*dao*.json"))
+        json_files = list(output.rglob("*multiple*process*.json"))
         corrupted_path = json_files[0]
         data = json.loads(corrupted_path.read_text(encoding="utf-8"))
         # Remove all sections to simulate a corrupted file
