@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-16 (session 5)
+**Updated**: 2026-04-16 (session 6)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -10,42 +10,56 @@
 
 ## In Progress
 
-なし
+### Phase 17-A: verify コンテンツチェック 再設計（全バージョン対象）
 
----
+**背景**:
+現在の実装は「RST トークンの 70% が JSON に存在するか」を判定。
+RST syntax 要素（`:maxdepth:`、toctree パス等）が混入して偽陽性が発生。
+RBKC は変換ツール（要約不可）なのでコンテンツは 100% JSON に存在すべき。
+→ 根本的にアプローチが違うため全面書き直し。
 
-## Not Started
+**新方式（diff ベース）**:
+```
+1. JSON（MD形式削除）のコンテンツトークン集合を作る
+2. RST トークン − JSON コンテンツトークン = 残りトークン
+3. 残りトークンの各トークンについて:
+     RST 上の全出現行が RST syntax 行のみ → OK（expected: toctree, directive 等）
+     コンテンツ行に出現 → FAIL（RBKC の変換漏れ）
+```
 
-### Phase 17-A: verify 再設計 — Phase 1 (コンテンツ完全一致)
+**実装関数（新規）**:
+- `strip_md_syntax(text)` — JSON の MD 形式（`##`, `|`, `-`, `**` 等）を削除
+- `classify_line(line) → (category, effective_text)` — RST 行を分類
+  - syntax 行: section_decoration / rst_label / directive_decl / directive_option / toctree_entry
+  - content 行: それ以外（インラインロールは display text のみ保持）
+- `check_content()` — 全面書き直し（既存実装は全廃）
+- `_json_text()` — `data["title"]` を含めるよう修正
 
-**背景**: 現在の Check B はトークンサンプリングによる 70% カバレッジ判定。
-RST ディレクティブ・ラベル・toctree エントリが「コンテンツ」として誤抽出され偽陽性が発生している（24件 JSON token coverage FAIL）。
+**strip_role_syntax の注意点**:
+- `:ref:`display<target>`` → `display`（display text はコンテンツ）
+- `:ref:`target`` （`<>` なし）→ `target` をそのまま保持（plain text はコンテンツ）
+- `:role:`text`` → `text`（同上）
 
-**目標**: RST 書式を除去した「知識コンテンツ」だけを比較し、100% 一致を保証する。
+**全バージョン全量調査結果**（新方式仮適用、全 1,477 RST ファイル）:
+| バージョン | RST files | 残りトークン（全量） | うち RBKC 変換漏れ |
+|---|---|---|---|
+| v6 | 333 | 14,973 | 調査済み（16 files に集中） |
+| v5 | 430 | 52,250 | 調査済み（91 files） |
+| v1.4 | 121 | 5,824 | 調査済み（15 files） |
+| v1.3 | 300 | 26,304 | 調査済み（107 files） |
+| v1.2 | 293 | 26,263 | 調査済み（109 files） |
 
-#### クリーニング対象（コンテンツではない RST 構文）
-- セクション装飾行（`===`, `---`, `~~~` 等）
-- RST ラベル定義（`.. _web_application:`）
-- ディレクティブ宣言行（`.. toctree::`, `.. code-block:: java`）
-- ディレクティブオプション行（`:maxdepth: 2`, `:caption:` 等）
-- toctree エントリのパス名（`architecture`, `getting_started/index` 等）→ Phase 17-B のリンクリストへ回す
-
-#### 残す（= Phase 1 チェック対象）
-- 本文段落
-- セクション見出しテキスト
-- コードブロック本体
-- admonition 本体
-- テーブルセル内テキスト
-- **リンクラベル**（`Nablarchガイド <https://...>`_ の "Nablarchガイド"、`:ref:` のラベルテキスト等）
+注: RBKC 変換漏れは verify 修正後に別フェーズで修正する。
 
 #### Steps（TDD）
-- [ ] 対象ファイル調査: 24件 JSON token coverage FAIL のソースをサンプリングし、誤抽出トークンのパターンを確認
-- [ ] UT: RST クリーニング関数のテスト（ラベル・toctree・ディレクティブ除去、リンクラベル保持）→ RED
-- [ ] 実装 → GREEN
-- [ ] 100% カバレッジ判定への変更 + テスト → RED → GREEN
+- [ ] ユーザー承認（verify 変更のため必須）
+- [ ] UT: `strip_md_syntax()` テスト → RED → 実装 → GREEN
+- [ ] UT: `classify_line()` テスト → RED → 実装 → GREEN
+- [ ] UT: `check_content()` diff ベース判定テスト → RED → 実装 → GREEN
+- [ ] UT: `_json_text()` title 追加テスト → RED → 実装 → GREEN
 - [ ] `pytest` 全通過
-- [ ] `rbkc.sh create 6` + `rbkc.sh verify 6` で対象 FAIL が解消していること確認
-- [ ] サブエージェント品質チェック
+- [ ] 全バージョン verify 実行 — 現在の偽陽性 FAIL が解消、RBKC 変換漏れ FAIL は残ること確認
+- [ ] Software Engineer + QA Engineer エキスパートレビュー
 - [ ] コミット
 
 ---

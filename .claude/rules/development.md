@@ -12,6 +12,21 @@ All source code changes must follow TDD:
 
 Never implement first and write tests after.
 
+## Design Before Implementation
+
+Before implementing, always design first. Before designing, investigate.
+
+**Investigation rules:**
+- Cover all cases exhaustively — do not rely on sampling alone
+- Write scripts to verify findings empirically, not by reading code alone
+- Always check the official reference/documentation to confirm how a construct behaves — never assume
+- Base all decisions on facts, not inference; eliminate ambiguity before proceeding
+
+**Design rules:**
+- Design before writing any code
+- Have the design reviewed by a Software Engineer expert before implementation
+- The goal is to prevent rework: ambiguous or assumption-based designs cause costly mistakes
+
 ## Design and Implementation Decisions
 
 When multiple approaches exist, consult the appropriate expert before proceeding.
