@@ -43,6 +43,12 @@ _MAX_SAMPLE = 100
 _UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
 
 # Synthetic preamble title used by RST converter
+
+# Toctree directive names that introduce toctree entry blocks
+_TOCTREE_DECL_RE = re.compile(r"^\.\.\s+toc(?:tree|list)::")
+
+# URL pattern — URLs are checked by Check D, skip their tokens in content checks
+_URL_STRIP_RE = re.compile(r"https?://\S+")
 _PREAMBLE_TITLE = "概要"
 
 
@@ -343,40 +349,18 @@ def check_titles(source_text: str, data: dict, fmt: str) -> list[str]:
 # Check B: Token coverage
 # ---------------------------------------------------------------------------
 
-def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
-    """Check B: content tokens in RST source are present in JSON (diff-based).
+def _classify_source_lines(source_text: str) -> list[str]:
+    """Classify each line in RST/MD source text with toctree context tracking.
 
-    Algorithm:
-        1. Build JSON content token set (after strip_md_syntax to remove MD formatting)
-        2. For each RST source token NOT in the JSON token set:
-           a. If ALL occurrences in the source are on syntax lines → OK
-              (toctree entries, directive options, RST labels, etc.)
-           b. If ANY occurrence is on a content line → FAIL
-              (RBKC missed converting this content token)
+    Returns a list of category strings (one per line) using classify_line().
+    Tracks toctree/toclist directive context so that bare path entries like
+    'architecture' (no / suffix) are correctly classified as toctree_entry
+    rather than content.
 
-    For MD format: uses line-level classification (# headings are syntax, content otherwise).
-    For XLSX format: always passes (no text content to verify).
-
-    Returns:
-        List of issue strings (missing content tokens). Empty = OK.
+    toctree_indent records the indentation of the '.. toctree::' line itself.
+    Entries are always more indented than the directive declaration, so
+    `current_indent > toctree_indent` reliably identifies toctree body lines.
     """
-    if fmt == "xlsx":
-        return []
-    if data.get("no_knowledge_content"):
-        return []
-
-    # Build JSON token set (strip MD formatting first)
-    json_raw = _json_text(data)
-    json_clean = strip_md_syntax(json_raw)
-    json_tokens = set(_extract_text_tokens(json_clean))
-
-    # URL pattern — URLs are checked by Check D, skip their tokens here
-    _URL_STRIP_RE = re.compile(r"https?://\S+")
-
-    # Toctree directive names that introduce toctree entry blocks
-    _TOCTREE_DECL_RE = re.compile(r"^\.\.\s+toc(?:tree|list)::")
-
-    # Classify each source line with toctree context tracking
     lines = source_text.splitlines()
     line_categories: list[str] = []
     in_toctree = False
@@ -411,11 +395,21 @@ def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
 
         line_categories.append(classify_line(line, in_toctree=False))
 
-    # For each source line on a content line, extract tokens
-    # Build: token → set of categories where it appears
+    return line_categories
+
+
+def _build_token_categories(source_text: str) -> dict[str, set[str]]:
+    """Extract content tokens from source text, keyed by line category.
+
+    Returns a dict mapping each token to the set of line categories where
+    it appears. URLs are stripped from content lines (covered by Check D).
+    Inline RST roles are reduced to their display text.
+    """
+    lines = source_text.splitlines()
+    line_categories = _classify_source_lines(source_text)
+
     token_categories: dict[str, set[str]] = {}
     for line, cat in zip(lines, line_categories):
-        # For content lines: strip inline RST roles to display text and remove URLs
         if cat == "content":
             effective = _INLINE_ROLE_RE.sub(r"\1", line)
             effective = _URL_STRIP_RE.sub("", effective)
@@ -423,6 +417,38 @@ def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
             effective = line
         for tok in _extract_text_tokens(effective):
             token_categories.setdefault(tok, set()).add(cat)
+
+    return token_categories
+
+
+def check_content(source_text: str, data: dict, fmt: str) -> list[str]:
+    """Check B: content tokens in RST source are present in JSON (diff-based).
+
+    Algorithm:
+        1. Build JSON content token set (after strip_md_syntax to remove MD formatting)
+        2. For each RST source token NOT in the JSON token set:
+           a. If ALL occurrences in the source are on syntax lines → OK
+              (toctree entries, directive options, RST labels, etc.)
+           b. If ANY occurrence is on a content line → FAIL
+              (RBKC missed converting this content token)
+
+    For MD format: uses line-level classification (# headings are syntax, content otherwise).
+    For XLSX format: always passes (no text content to verify).
+
+    Returns:
+        List of issue strings (missing content tokens). Empty = OK.
+    """
+    if fmt == "xlsx":
+        return []
+    if data.get("no_knowledge_content"):
+        return []
+
+    # Build JSON token set (strip MD formatting first)
+    json_raw = _json_text(data)
+    json_clean = strip_md_syntax(json_raw)
+    json_tokens = set(_extract_text_tokens(json_clean))
+
+    token_categories = _build_token_categories(source_text)
 
     # Find tokens that appear on content lines but are missing from JSON
     issues = []
@@ -654,49 +680,7 @@ def check_docs_md_content(source_text: str, docs_md_text: str, fmt: str) -> list
     docs_clean = strip_md_syntax(docs_md_text)
     docs_tokens = set(_extract_text_tokens(docs_clean))
 
-    # URL pattern — URLs are checked by Check D, skip their tokens here
-    _URL_STRIP_RE = re.compile(r"https?://\S+")
-
-    # Toctree directive names that introduce toctree entry blocks
-    _TOCTREE_DECL_RE = re.compile(r"^\.\.\s+toc(?:tree|list)::")
-
-    # Classify each source line with toctree context tracking
-    lines = source_text.splitlines()
-    line_categories: list[str] = []
-    in_toctree = False
-    toctree_indent: int | None = None
-
-    for line in lines:
-        raw = line.lstrip()
-        if _TOCTREE_DECL_RE.match(raw):
-            in_toctree = True
-            toctree_indent = len(line) - len(raw)
-            line_categories.append("directive_decl")
-            continue
-        if in_toctree:
-            if not raw:
-                line_categories.append("content")
-                continue
-            current_indent = len(line) - len(line.lstrip())
-            if current_indent > (toctree_indent or 0):
-                cat = classify_line(line, in_toctree=True)
-                line_categories.append(cat)
-                continue
-            else:
-                in_toctree = False
-                toctree_indent = None
-        line_categories.append(classify_line(line, in_toctree=False))
-
-    # Find tokens on content lines missing from docs MD
-    token_categories: dict[str, set[str]] = {}
-    for line, cat in zip(lines, line_categories):
-        if cat == "content":
-            effective = _INLINE_ROLE_RE.sub(r"\1", line)
-            effective = _URL_STRIP_RE.sub("", effective)
-        else:
-            effective = line
-        for tok in _extract_text_tokens(effective):
-            token_categories.setdefault(tok, set()).add(cat)
+    token_categories = _build_token_categories(source_text)
 
     issues = []
     for token, categories in sorted(token_categories.items()):

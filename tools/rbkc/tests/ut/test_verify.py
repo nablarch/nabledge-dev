@@ -214,7 +214,7 @@ This section is not in JSON.
 
 class TestCheckB_Content:
     def test_sufficient_coverage_passes(self):
-        """Token coverage >= 70% must pass."""
+        """All content tokens present in JSON → PASS."""
         # Build source text with many distinct tokens
         tokens = [f"token{i:03d}" for i in range(20)]
         source_text = " ".join(tokens)
@@ -624,7 +624,7 @@ Content.
 
 class TestCheckDocsMdContent:
     def test_sufficient_coverage_passes(self):
-        """Source content tokens present in docs MD → PASS."""
+        """All source content tokens present in docs MD → PASS."""
         tokens = [f"token{i:03d}" for i in range(20)]
         source_text = " ".join(tokens)
         docs_md_text = "## Section\n\n" + " ".join(tokens) + "\n"
@@ -992,6 +992,17 @@ class TestClassifyLine:
         assert classify_line("") == "content"
         assert classify_line("   ") == "content"
 
+    def test_plain_name_with_in_toctree_is_toctree_entry(self):
+        """Plain indented name with in_toctree=True → toctree_entry."""
+        assert classify_line("   architecture", in_toctree=True) == "toctree_entry"
+        assert classify_line("   feature_details", in_toctree=True) == "toctree_entry"
+        assert classify_line("   modulename", in_toctree=True) == "toctree_entry"
+
+    def test_plain_indented_name_without_context_is_content(self):
+        """Plain indented name without toctree context and no / → content."""
+        assert classify_line("   architecture", in_toctree=False) == "content"
+        assert classify_line("   modulename", in_toctree=False) == "content"
+
 
 # ---------------------------------------------------------------------------
 # Phase 17-A: check_content diff-based rewrite
@@ -1197,4 +1208,48 @@ class TestCheckContentDiffBased:
     def test_xlsx_always_passes(self):
         """XLSX format → always PASS."""
         issues = check_content("any content", self._make_data(sections=[]), "xlsx")
+        assert issues == []
+
+    def test_content_line_after_toctree_block_is_checked(self):
+        """Token on content line after toctree block ends → FAIL if missing from JSON."""
+        source_text = (
+            "Contents\n"
+            "========\n"
+            "\n"
+            ".. toctree::\n"
+            "   some/page\n"
+            "   other_module\n"
+            "\n"
+            "UniqueMissingToken appears here after toctree ends.\n"
+        )
+        # JSON has no 'UniqueMissingToken'
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "Contents",
+             "content": "Some content without the token.", "hints": []},
+        ])
+        data["title"] = "Contents"
+        issues = check_content(source_text, data, "rst")
+        assert any("UniqueMissingToken" in i for i in issues)
+
+    def test_md_heading_line_is_syntax(self):
+        """MD ## heading line tokens → not flagged even if missing from JSON.
+
+        In MD format, ## headings are syntax. A token appearing only in a heading
+        should not be a FAIL (the heading text is also in JSON via check_titles).
+        """
+        source_text = (
+            "# Doc Title\n"
+            "\n"
+            "## UniqueSectionHeaderToken\n"
+            "\n"
+            "Content here.\n"
+        )
+        # JSON has no 'UniqueSectionHeaderToken' as a token, only as a section title
+        # But section title IS in JSON sections, so it won't be in content FAIL
+        data = self._make_data(sections=[
+            {"id": "s1", "title": "UniqueSectionHeaderToken",
+             "content": "Content here.", "hints": []},
+        ])
+        data["title"] = "Doc Title"
+        issues = check_content(source_text, data, "md")
         assert issues == []
