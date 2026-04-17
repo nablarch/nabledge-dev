@@ -1,277 +1,127 @@
 # 一括更新機能の作成
 
-## 概要
-
-Exampleアプリケーションを元に一括更新機能を解説する。
-
-作成する機能の説明
-1. メニューの一括更新リンクを押下し、一括更新画面へ遷移する。
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-menu.png)
-2. プロジェクト全件検索の結果が表示される。
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-list.png)
-3. 当該ページで更新する項目を書き換えて、更新ボタンを押下する(ページをまたいだ更新はできない)。
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-list_changed.png)
-4. 更新確認画面が表示されるので、確定ボタンを押下する。
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-confirm.png)
-5. データベースが更新され、更新完了画面が表示される。
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-complete.png)
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/project_bulk_update/index.html) [2](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Required.html) [3](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/core/validation/ee/Domain.html) [4](https://nablarch.github.io/docs/LATEST/javadoc/jakarta/validation/Valid.html) [5](https://nablarch.github.io/docs/LATEST/javadoc/nablarch/common/dao/UniversalDao.html) [6](https://nablarch.github.io/docs/LATEST/javadoc/jakarta/persistence/OptimisticLockException.html)
 
 ## 一括更新機能の作成
 
-一括更新機能の作成方法を解説する。
+## フォームの作成
 
-#. フォームの作成
-#. 画面に更新対象を受け渡すBeanの作成
-#. 一括更新画面を表示する業務アクションメソッドの作成
-#. 一括更新画面JSPの作成
-#. 更新内容を確認する業務アクションメソッドの作成
-#. 確認画面JSPの作成
-#. データベースを一括更新する業務アクションメソッドの作成
-#. 完了画面の作成
+複数プロジェクトの一括更新では2種類のフォームを使用する。
 
+**プロジェクト1件分フォーム** (`InnerProjectForm`): 各プロジェクトの更新値を受け付ける。入れ子フォームにも [Bean Validation](../../component/libraries/libraries-bean_validation.md) を実行するため、`@Required` や `@Domain` 等のバリデーションアノテーションを付与する。
 
-フォームの作成
-検索条件を受け付けるフォームと、更新内容を受け付けるフォームをそれぞれ作成する。
-
-検索フォームの作成
-検索フォームの実装は、 検索機能の作成：フォームの作成 と同様であるためそちらを参照。
-
-更新フォームの作成
-複数のプロジェクトの更新情報を一括で送信するため、フォームを2種類作成する。
-
-#. プロジェクト１つ分の更新情報を受け付けるフォーム
-#. プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
-
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-form.png)
-
-業務アクションで取得した更新対象リストを画面へ受け渡すBeanの作成
-業務アクションで取得した更新対象リストを画面へ受け渡すBeanを作成する。このBeanは一括更新画面と確認画面で持ちまわすため、 セッションストア に登録する。
-
-ProjectListDto.java
 ```java
-public class ProjectListDto implements Serializable {
-
-    /** プロジェクトリスト */
-    private List<Project> projectList = new ArrayList<>();
-
-    // ゲッタ及びセッタは省略
+public class InnerProjectForm implements Serializable {
+    @Required
+    @Domain("projectName")
+    private String projectName;
+    // 他プロパティ省略
 }
 ```
-この実装のポイント
-* 配列やコレクション型を セッションストア に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
-そのBeanを セッションストア に登録すること。詳細は セッションストア使用上の制約 を参照。
 
+**親フォーム** (`ProjectBulkForm`): `@Valid` を付与することで入れ子フォームも [Bean Validation](../../component/libraries/libraries-bean_validation.md) の対象になる。
 
-一括更新画面を表示する業務アクションメソッドの作成
-データベースから対象プロジェクトを取得し、一括更新画面に表示する業務アクションメソッドを作成する。
-
-ProjectBulkAction.java
 ```java
-@InjectForm(form = ProjectSearchForm.class, prefix = "searchForm",  name = "searchForm")
+public class ProjectBulkForm implements Serializable {
+    @Valid
+    private List<InnerProjectForm> projectList = new ArrayList<>();
+}
+```
+
+## セッションストア登録用Bean
+
+**クラス**: `ProjectListDto` — 更新対象リストを一括更新画面・確認画面で持ちまわすため :ref:`セッションストア<session_store>` に登録する。
+
+```java
+public class ProjectListDto implements Serializable {
+    private List<Project> projectList = new ArrayList<>();
+}
+```
+
+> **重要**: 配列やコレクション型を :ref:`セッションストア<session_store>` に登録する場合は、Serializableなbeanのプロパティとして定義し、そのbeanをセッションストアに登録すること。詳細は [セッションストア使用上の制約](../../component/libraries/libraries-session_store.md) を参照。
+
+## 一括更新画面表示アクション
+
+確認画面から戻った際に同条件でページング・再検索できるよう、検索条件を :ref:`セッションストア<session_store>` に登録して持ちまわす。
+
+**アノテーション**: `@InjectForm`, `@OnError`
+
+```java
+@InjectForm(form = ProjectSearchForm.class, prefix = "searchForm", name = "searchForm")
 @OnError(type = ApplicationException.class, path = "forward://initialize")
 public HttpResponse list(HttpRequest request, ExecutionContext context) {
-
     ProjectSearchForm searchForm = context.getRequestScopedVar("searchForm");
-
-    // 検索実行
-    ProjectSearchDto projectSearchDto
-        = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);
+    ProjectSearchDto projectSearchDto = BeanUtil.createAndCopy(ProjectSearchDto.class, searchForm);
     EntityList<Project> projectList = searchProject(projectSearchDto, context);
     ProjectListDto projectListDto = new ProjectListDto();
     projectListDto.setProjectList(projectList);
     SessionUtil.put(context, "projectListDto", projectListDto);
-
-    // 更新対象を画面に引き渡す
     context.setRequestScopedVar("bulkForm", projectListDto);
-
-    // 検索条件を保存
     SessionUtil.put(context, "projectSearchDto", projectSearchDto);
-
     return new HttpResponse("/WEB-INF/view/projectBulk/update.jsp");
 }
 ```
-この実装のポイント
-* 検索メソッドの実装方法に関しては 検索機能の作成：業務アクションの実装 と同様であるためそちらを参照。
-* 確認画面から一括更新画面へ戻った際に、同条件でページングや再検索ができるように
-検索条件を セッションストア に登録して持ちまわす。
 
+## 一括更新画面JSP
 
-一括更新画面JSPの作成
-検索結果の表示と複数のプロジェクトの情報を編集する、一括更新画面のJSPを作成する。
+- :ref:`セッションストア<session_store>` に登録したオブジェクトはJSPでリクエストスコープと同様に扱える。
+- 配列型・`List` 型プロパティの要素は `プロパティ名[index]` 形式でアクセスする（:ref:`tag-access_rule` 参照）。
 
-/src/main/webapp/WEB-INF/projectBulk/update.jsp
 ```jsp
-<!-- 顧客検索結果の表示部分 -->
-<n:form>
-    <!-- 現在の検索結果の表示に使用した検索条件をパラメータとして持つURIを、
-         変数としてpageスコープに登録する。
-         この変数は、<app:listSearchResult>タグのページング用のURIとして使用される。-->
-    <c:url value="list" var="uri">
-        <!-- セッションストア上のprojectSearchDtoから検索条件を取得する -->
-        <c:param name="searchForm.clientId" value="${projectSearchDto.clientId}"/>
-        <c:param name="searchForm.clientName" value="${projectSearchDto.clientName}"/>
-        <c:param name="searchForm.projectName" value="${projectSearchDto.projectName}"/>
-        <!-- 以降も同様に検索条件パラメータであるため省略 -->
-
-    </c:url>
-    <app:listSearchResult>
-    <!-- listSearchResultの属性値は省略 -->
-        <jsp:attribute name="headerRowFragment">
-            <tr>
-                <th>プロジェクトID</th>
-                <th>プロジェクト名</th>
-                <th>プロジェクト種別</th>
-                <th>開始日</th>
-                <th>終了日</th>
-            </tr>
-        </jsp:attribute>
-        <jsp:attribute name="bodyRowFragment">
-            <tr class="info">
-                <td>
-                    <!-- プロジェクトIDをパラメータとするリンクを表示する -->
-                    <n:a href="show/${row.projectId}">
-                        <n:write name="bulkForm.projectList[${status.index}].projectId"/>
-                    </n:a>
-                    <n:plainHidden name="bulkForm.projectList[${status.index}].projectId"/>
-                </td>
-                <td>
-                    <div class="form-group">
-                        <n:text name="bulkForm.projectList[${status.index}].projectName"
-                                maxlength="64" cssClass="form-control form-control-lg"
-                                errorCss="input-error"/>
-                        <n:error errorCss="message-error"
-                                name="bulkForm.projectList[${status.index}].projectName" />
-                    </div>
-                </td>
-                <!-- その他の編集項目は省略 -->
-
-            </tr>
-        </jsp:attribute>
-    </app:listSearchResult>
-    <div class="title-nav page-footer">
-        <div class="button-nav">
-            <n:button id="bottomUpdateButton" uri="/action/projectBulk/confirmOfUpdate"
-                disabled="${isUpdatable}" cssClass="btn btn-lg btn-success">
-                    更新</n:button>
-            <n:a id="bottomCreateButton" type="button" uri="/action/project"
-                cssClass="btn btn-lg btn-light" value="新規登録"></n:a>
-        </div>
-    </div>
-</n:form>
+<n:text name="bulkForm.projectList[${status.index}].projectName"
+        maxlength="64" cssClass="form-control form-control-lg" errorCss="input-error"/>
+<n:plainHidden name="bulkForm.projectList[${status.index}].projectId"/>
 ```
-この実装のポイント
-* 検索結果を表示するJSPの作成方法は 検索機能の作成：検索結果表示部分の作成 と同様であるため、そちらを参照。
-* 確認画面から一括更新画面に戻った際に、同条件での再検索やページングが行えるように、 セッションストア から取得した検索条件を元に検索条件パラメータを構成する。
-JSPでは、 セッションストア に登録したオブジェクトは、リクエストスコープに登録したオブジェクトと同様に扱うことができる。
-* 配列型、もしくは `List` 型プロパティの要素は、 `プロパティ名[index]` 形式でアクセスできる。
-詳細は tag-access_rule 参照。
 
+## 更新確認アクション
 
-更新内容を確認する業務アクションメソッドの作成
-更新内容を確認する業務アクションメソッドを作成する。
+更新情報は :ref:`セッションストア<session_store>` に保持する。
 
-ProjectBulkAction.java
+**アノテーション**: `@InjectForm`, `@OnError`
+
 ```java
 @InjectForm(form = ProjectBulkForm.class, prefix = "bulkForm", name = "bulkForm")
 @OnError(type = ApplicationException.class, path = "/WEB-INF/view/projectBulk/update.jsp")
 public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext context) {
-
     ProjectBulkForm form = context.getRequestScopedVar("bulkForm");
     ProjectListDto dto = SessionUtil.get(context, "projectListDto");
-
-    // 更新内容をセッションに上書き
     final List<InnerProjectForm> innerForms = form.getProjectList();
-    dto.getProjectList()
-       .forEach(project ->
-               innerForms.stream()
-                         .filter(innerForm ->
-                                 Objects.equals(innerForm.getProjectId(), project.getProjectId()
-                                                                                 .toString()))
-                         .findFirst()
-                         .ifPresent(innerForm -> BeanUtil.copy(innerForm, project)));
-
+    dto.getProjectList().forEach(project ->
+        innerForms.stream()
+            .filter(innerForm -> Objects.equals(innerForm.getProjectId(),
+                                               project.getProjectId().toString()))
+            .findFirst()
+            .ifPresent(innerForm -> BeanUtil.copy(innerForm, project)));
     return new HttpResponse("/WEB-INF/view/projectBulk/confirmOfUpdate.jsp");
 }
 ```
-この実装のポイント
-* 更新する情報は セッションストア に保持する。
 
+## 確認画面JSP
 
-確認画面JSPの作成
-変更後のプロジェクト情報を表示する画面のJSPを作成する。
+確認画面では `<n:form useToken="true">` を使用して二重送信防止トークンを設定する。
 
-/src/main/webapp/WEB-INF/projectBulk/confirmOfUpdate.jsp
 ```jsp
-<section>
-    <div class="title-nav">
-        <span>プロジェクト検索一覧更新画面</span>
-        <div class="button-nav">
-            <n:form useToken="true">
-              <!-- ボタン部分は省略 -->
-            </n:form>
-        </div>
-    </div>
-    <h2 class="font-group my-3">プロジェクト変更一覧</h2>
-    <div>
-        <table class="table table-striped table-hover">
-            <tr>
-                <th>プロジェクトID</th>
-                <th>プロジェクト名</th>
-                <th>プロジェクト種別</th>
-                <th>開始日</th>
-                <th>終了日</th>
-            </tr>
-            <c:forEach var="row" items="${projectListDto.projectList}">
-                <tr class="<n:write name='oddEvenCss' />">
-                    <td>
-                        <n:write name="row.projectId" />
-                    </td>
-                    <!-- 他項目は省略 -->
-                </tr>
-            </c:forEach>
-        </table>
-    </div>
-</section>
+<n:form useToken="true">
+    <!-- ボタン部分は省略 -->
+</n:form>
 ```
 
-データベースを一括更新する業務アクションメソッドの作成
-対象プロジェクトを一括で更新する。
+## 一括更新実行アクション
 
-ProjectBulkAction.java
+**アノテーション**: `@OnDoubleSubmission`
+
 ```java
 @OnDoubleSubmission
 public HttpResponse update(HttpRequest request, ExecutionContext context) {
-
-  ProjectListDto projectListDto = SessionUtil.get(context, "projectListDto");
-  projectListDto.getProjectList().forEach(UniversalDao::update);
-
-  return new HttpResponse(303, "redirect://completeOfUpdate");
+    ProjectListDto projectListDto = SessionUtil.get(context, "projectListDto");
+    projectListDto.getProjectList().forEach(UniversalDao::update);
+    return new HttpResponse(303, "redirect://completeOfUpdate");
 }
 ```
-この実装のポイント
-* 基本的な実装方法は  更新機能の作成：データベースを更新する業務アクションメソッドの作成 と同様である。
-* `UniversalDao#update` を更新件数分実行する。
-排他制御エラーが発生した場合は全件の更新がロールバックされる。
 
-> **Tip:** Exampleアプリケーションでは独自のエラー制御ハンドラを追加しているため、排他制御エラーにより `OptimisticLockException` が発生した場合、 排他制御エラー画面へ遷移する。ハンドラによるエラー制御の作成方法は、 ハンドラで例外クラスに対応したエラーページに遷移させる を参照。
-* `UniversalDao` には、エンティティのリストを引数に取る
-`UniversalDao#batchUpdate` メソッドも用意されているが、
-このメソッドは バッチ実行 での使用を想定したものであり、排他制御を行わない。
-排他制御が必要である場合は、 `UniversalDao#update`
-を使用すること。
+> **重要**: `UniversalDao#batchUpdate` はバッチ実行用であり排他制御を行わない。排他制御が必要な場合は `UniversalDao#update` を使用すること。排他制御エラー（`OptimisticLockException`）発生時は全件の更新がロールバックされる。
 
-
-完了画面の表示
-完了画面の実装方法は 更新機能の作成：更新完了画面の作成 と同様であるためそちらを参照。
-
-一括更新機能の解説は以上。
-
-Getting Started TOPページへ
+> **Tip**: 独自のエラー制御ハンドラを追加することで、`OptimisticLockException` 発生時に排他制御エラー画面へ遷移させることができる。ハンドラによるエラー制御の作成方法は [ハンドラで例外クラスに対応したエラーページに遷移させる](web-application-forward_error_page.md) を参照。
 
 <details>
 <summary>keywords</summary>

@@ -1,18 +1,21 @@
 {
   "id": "mom-messaging-architecture",
   "title": "アーキテクチャ概要",
-  "no_knowledge_content": false,
-  "sections": [
+  "official_doc_urls": [
+    "https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/mom/architecture.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/reader/FwHeaderReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/reader/MessageReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/ResponseMessage.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/StatusCodeConvertHandler.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/handler/ProcessStopHandler.ProcessStop.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/DataReader.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/MessagingAction.html",
+    "https://nablarch.github.io/docs/LATEST/javadoc/nablarch/fw/messaging/action/AsyncMessageReceiveAction.html"
+  ],
+  "index": [
     {
       "id": "s1",
-      "title": "概要",
-      "content": "MOMメッセージングでは、外部から送信される要求電文に対し、\n電文中のリクエストIDに対応するアクションを実行する機能を提供する。\nなお、ここでは、MOMメッセージングに使うメッセージキューのことをMQと称す。\n\nMOMメッセージングは、以下の2つに分かれる。\n\n同期応答メッセージング\n業務処理の実行結果をもとに、要求電文に対する応答電文を作成してMQに送信する。\nオーソリ業務のような即時応答を必要とする場合に使用する。\n\n応答不要メッセージング\n応答電文の送信は行わず、MQから受信した要求電文の内容をDB上のテーブルに格納する。\n業務処理は、このテーブルを入力とする後続バッチによって実行する。\nバッチについては、 db_messaging を参照すること。\n\n> **Tip:** 応答不要メッセージングは、電文の内容をテーブルに格納するという、極めて単純な処理となるため、 フレームワークが提供するアクションクラスをそのまま使用できる。 その場合、必要な情報を設定するだけでよく、コーディングは不要である。\n> **Important:** MOMメッセージングで扱える形式は、 data_format の固定長データのみである。\nMOMメッセージングでは、メッセージの送受信にライブラリのMOMメッセージング機能を使用している。\n詳細は mom_system_messaging を参照。",
-      "hints": []
-    },
-    {
-      "id": "s2",
       "title": "MOMメッセージングの構成",
-      "content": "MOMメッセージングの構成は、 nablarch_batch とまったく同じである。\nnablarch_batch-structure を参照。",
       "hints": [
         "MOMメッセージング",
         "同期応答メッセージング",
@@ -26,9 +29,8 @@
       ]
     },
     {
-      "id": "s3",
+      "id": "s2",
       "title": "要求電文によるアクションとリクエストIDの指定",
-      "content": "MOMメッセージングでは、要求電文中の特定のフィールドをリクエストIDとして使用する。\nこの場合、ウェブアプリケーションなどのリクエストパスとは異なり、リクエストIDには階層構造が含まれないので、\nrequest_path_java_package_mapping を使用し、アクションクラスのパッケージやクラス名のサフィックスを設定で指定し、\nリクエストIDに対応するクラスにディスパッチを行う。\n\nリクエストIDは要求電文中のフレームワーク制御ヘッダ部に含める必要がある。\n詳細は、  フレームワーク制御ヘッダ を参照。",
       "hints": [
         "リクエストID",
         "フレームワーク制御ヘッダ",
@@ -38,9 +40,8 @@
       ]
     },
     {
-      "id": "s4",
+      "id": "s3",
       "title": "MOMメッセージングの処理の流れ",
-      "content": "MOMメッセージングが要求電文を受信し、応答電文を返却するまでの処理の流れを以下に示す。\n応答不要メッセージングでは、応答電文を返却しない点のみ異なる。\n\n![](assets/mom-messaging-architecture/mom_messaging-flow.png)\n1. 共通起動ランチャ(Main) がハンドラキュー(handler queue)を実行する。\n2. データリーダ(\n`FwHeaderReader`\n/\n`MessageReader`\n)がメッセージキューを監視し、受信した電文を読み込み、要求電文を1件ずつ提供する。\n3. ハンドラキューに設定された\nnablarch_batch-structure が、\n要求電文の特定フィールドに含まれるリクエストIDを元に処理すべきアクションクラス(action class)を特定し、\nハンドラキューの末尾に追加する。\n4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して、\n要求電文1件ごとの業務ロジック(business logic) を実行する。\n5. アクションクラス(action class)は、応答電文を表す\n`ResponseMessage` を返却する。\n6. プロセス停止要求があるまで2～5を繰り返す。\n7. ハンドラキューに設定された\n`ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler)` が、\n処理結果のステータスコードをプロセス終了コードに変換し、\nMOMメッセージングの処理結果としてプロセス終了コードが返される。",
       "hints": [
         "FwHeaderReader",
         "MessageReader",
@@ -52,9 +53,8 @@
       ]
     },
     {
-      "id": "s5",
+      "id": "s4",
       "title": "MOMメッセージングで使用するハンドラ",
-      "content": "Nablarchでは、MOMメッセージングを構築するために必要なハンドラを標準で幾つか提供している。\nプロジェクトの要件に従い、ハンドラキューを構築すること。\n(要件によっては、プロジェクトカスタムなハンドラを作成することになる)\n\n各ハンドラの詳細は、リンク先を参照すること。\n\nリクエストやレスポンスの変換を行うハンドラ\n* status_code_convert_handler\n* data_read_handler\n\nプロセスの実行制御を行うハンドラ\n* duplicate_process_check_handler\n* multi_thread_execution_handler\n* retry_handler\n* request_thread_loop_handler\n* process_stop_handler\n* request_path_java_package_mapping\n\nメッセージングに関連するハンドラ\n* messaging_context_handler\n* message_reply_handler\n* message_resend_handler\n\n\nデータベースに関連するハンドラ\n* database_connection_management_handler\n* transaction_management_handler\n\nエラー処理に関するハンドラ\n* global_error_handler\n\nその他\n* thread_context_handler\n* thread_context_clear_handler\n* ServiceAvailabilityCheckHandler",
       "hints": [
         "ハンドラキュー",
         "最小ハンドラ構成",
@@ -68,21 +68,8 @@
       ]
     },
     {
-      "id": "s6",
-      "title": "同期応答メッセージングの最小ハンドラ構成",
-      "content": "同期応答メッセージングを構築する際の、必要最小限のハンドラキューを以下に示す。\nこれをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。\n\n| No. | ハンドラ | スレッド | 往路処理 | 復路処理 | 例外処理 |\n|---|---|---|---|---|---|\n| 1 | status_code_convert_handler | メイン |  | ステータスコードをプロセス終了コードに変換する。 |  |\n| 2 | global_error_handler | メイン |  |  | 実行時例外、またはエラーの場合、ログ出力を行う。 |\n| 3 | multi_thread_execution_handler | メイン | サブスレッドを作成し、後続ハンドラの処理を並行実行する。 | 全スレッドの正常終了まで待機する。 | 処理中のスレッドが完了するまで待機し起因例外を再送出する。 |\n| 4 | retry_handler | サブ |  |  | リトライ可能な実行時例外を捕捉し、かつリトライ上限に達していなければ後続のハンドラを再実行する。 |\n| 5 | messaging_context_handler | サブ | MQ接続を取得する。 | MQ接続を解放する。 |  |\n| 6 | database_connection_management_handler | サブ | DB接続を取得する。 | DB接続を解放する。 |  |\n| 7 | request_thread_loop_handler | サブ | 後続のハンドラを繰り返し実行する。 | ハンドラキューの内容を復旧しループを継続する。 | プロセス停止要求か致命的なエラーが発生した場合のみループを停止する。 |\n| 8 | thread_context_clear_handler | サブ |  | thread_context_handler でスレッドローカル上に設定した値を全て削除する。 |  |\n| 9 | thread_context_handler | サブ | コマンドライン引数からリクエストID、ユーザID等のスレッドコンテキスト変数を初期化する。 |  |  |\n| 10 | process_stop_handler | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( `ProcessStop` )を送出する。 |  |  |\n| 11 | message_reply_handler | サブ |  | 後続ハンドラから返される応答電文の内容をもとに電文を作成してMQに送信する。 | エラーの内容をもとに電文を作成してMQに送信する。 |\n| 12 | data_read_handler | サブ | データリーダを使用して要求電文を1件読み込み、後続ハンドラの引数として渡す。 また 実行時ID を採番する。 |  | 読み込んだ電文をログ出力した後、元例外を再送出する。 |\n| 13 | request_path_java_package_mapping | サブ | 要求電文に含まれるリクエストIDをもとに呼び出すアクションを決定する。 |  |  |\n| 14 | transaction_management_handler | サブ | トランザクションを開始する。 | トランザクションをコミットする。 | トランザクションをロールバックする。 |",
-      "hints": []
-    },
-    {
-      "id": "s7",
-      "title": "応答不要メッセージングの最小ハンドラ構成",
-      "content": "応答不要メッセージングを構築する際の、必要最小限のハンドラキューを以下に示す。\nこれをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。\n\n応答不要メッセージングの最小ハンドラ構成は、以下のハンドラを除けば同期応答メッセージングと同じである。\n\n* message_reply_handler\n* message_resend_handler\n\n> **Important:** 応答不要メッセージングでは、電文の保存に失敗した場合にエラー応答を送信できないので、 取得した電文を一旦キューに戻した後で既定回数に達するまでリトライする。 このため、DBに対する登録処理とキューに対する操作を1つのトランザクションとして扱う必要がある(2相コミット制御)。 具体的には、 transaction_management_handler の設定を変更し、2相コミットに対応した実装に差し替える必要がある。 Nablarchでは、IBM MQ を使用した2相コミット用のアダプタを予め提供している。 詳細は、 webspheremq_adaptor を参照。\n| No. | ハンドラ | スレッド | 往路処理 | 復路処理 | 例外処理 |\n|---|---|---|---|---|---|\n| 1 | status_code_convert_handler | メイン |  | ステータスコードをプロセス終了コードに変換する。 |  |\n| 2 | global_error_handler | メイン |  |  | 実行時例外、またはエラーの場合、ログ出力を行う。 |\n| 3 | multi_thread_execution_handler | メイン | サブスレッドを作成し、後続ハンドラの処理を並行実行する。 | 全スレッドの正常終了まで待機する。 | 処理中のスレッドが完了するまで待機し起因例外を再送出する。 |\n| 4 | retry_handler | サブ |  |  | リトライ可能な実行時例外を捕捉し、かつリトライ上限に達していなければ後続のハンドラを再実行する。 |\n| 5 | messaging_context_handler | サブ | MQ接続を取得する。 | MQ接続を解放する。 |  |\n| 6 | database_connection_management_handler | サブ | DB接続を取得する。 | DB接続を解放する。 |  |\n| 7 | request_thread_loop_handler | サブ | 後続のハンドラを繰り返し実行する。 | ハンドラキューの内容を復旧しループを継続する。 | プロセス停止要求か致命的なエラーが発生した場合のみループを停止する。 |\n| 8 | thread_context_clear_handler | サブ |  | thread_context_handler でスレッドローカル上に設定した値を全て削除する。 |  |\n| 9 | thread_context_handler | サブ | コマンドライン引数からリクエストID、ユーザID等のスレッドコンテキスト変数を初期化する。 |  |  |\n| 10 | process_stop_handler | サブ | リクエストテーブル上の処理停止フラグがオンであった場合は、後続ハンドラの処理は行なわずにプロセス停止例外( `ProcessStop` )を送出する。 |  |  |\n| 11 | transaction_management_handler | サブ | トランザクションを開始する。 | トランザクションをコミットする。 | トランザクションをロールバックする。 |\n| 12 | data_read_handler | サブ | データリーダを使用して要求電文を1件読み込み、後続ハンドラの引数として渡す。 また 実行時ID を採番する。 |  | 読み込んだ電文をログ出力した後、元例外を再送出する。 |\n| 13 | request_path_java_package_mapping | サブ | 要求電文に含まれるリクエストIDをもとに呼び出すアクションを決定する。 |  |  |",
-      "hints": []
-    },
-    {
-      "id": "s8",
+      "id": "s5",
       "title": "MOMメッセージングで使用するデータリーダ",
-      "content": "Nablarchでは、MOMメッセージングを構築するために必要なデータリーダを標準で幾つか提供している。\n各データリーダの詳細は、リンク先を参照すること。\n\n* `FwHeaderReader (電文からフレームワーク制御ヘッダの読み込み)`\n* `MessageReader (MQから電文の読み込み)`\n\n> **Tip:** 上記のデータリーダでプロジェクトの要件を満たせない場合は、 extdoc:`DataReader <nablarch.fw.DataReader>` インタフェースを実装したクラスを プロジェクトで作成して対応する。",
       "hints": [
         "FwHeaderReader",
         "MessageReader",
@@ -92,9 +79,8 @@
       ]
     },
     {
-      "id": "s9",
+      "id": "s6",
       "title": "MOMメッセージングで使用するアクション",
-      "content": "Nablarchでは、MOMメッセージングを構築するために必要なアクションクラスを標準で幾つか提供している。\n各アクションクラスの詳細は、リンク先を参照すること。\n\n* `MessagingAction (同期応答メッセージング用アクションのテンプレートクラス)`\n* `AsyncMessageReceiveAction (応答不要メッセージングのアクションクラス)`",
       "hints": [
         "MessagingAction",
         "AsyncMessageReceiveAction",
@@ -103,5 +89,13 @@
         "応答不要メッセージング"
       ]
     }
-  ]
+  ],
+  "sections": {
+    "s1": "MOMメッセージングは、外部からの要求電文に対し電文中のリクエストIDに対応するアクションを実行する（MQはメッセージキューの略称）。\n\n**同期応答メッセージング**: 業務処理の実行結果をもとに応答電文を作成してMQに送信する。オーソリ業務のような即時応答が必要な場合に使用する。\n\n**応答不要メッセージング**: 応答電文を送信せず、MQから受信した要求電文の内容をDBテーブルに格納する。業務処理はこのテーブルを入力とする後続バッチ（:ref:`db_messaging`）で実行する。\n\n> **補足**: 応答不要メッセージングはフレームワーク提供のアクションクラスをそのまま使用でき、コーディングは不要。\n\n> **重要**: MOMメッセージングで扱える形式は、[data_format](../../component/libraries/libraries-data_format.json#s1) の固定長データのみである。\n\nメッセージの送受信には [mom_system_messaging](../../component/libraries/libraries-mom_system_messaging.json#s1) を使用する。MOMメッセージングの構成は [nablarch_batch](../nablarch-batch/nablarch-batch-nablarch_batch.json) とまったく同じである（[nablarch_batch-structure](../nablarch-batch/nablarch-batch-architecture.json#s1) 参照）。",
+    "s2": "要求電文中の特定フィールドをリクエストIDとして使用する。ウェブアプリケーションのリクエストパスとは異なり、リクエストIDには階層構造が含まれない。\n\n[request_path_java_package_mapping](../../component/handlers/handlers-request_path_java_package_mapping.json#s1) を使用し、アクションクラスのパッケージやクラス名のサフィックスを設定でリクエストIDに対応するクラスへディスパッチする。\n\nリクエストIDは要求電文中のフレームワーク制御ヘッダ部に含める必要がある（[フレームワーク制御ヘッダ](../../component/libraries/libraries-mom_system_messaging.json) 参照）。",
+    "s3": "応答不要メッセージングは応答電文を返却しない点のみ異なる。\n\n1. :ref:`共通起動ランチャ(Main) <main>` がハンドラキューを実行する。\n2. `FwHeaderReader` / `MessageReader` がMQを監視し、受信電文を1件ずつ提供する。\n3. ハンドラキューが要求電文の特定フィールドのリクエストIDをもとにアクションクラスを特定し、ハンドラキュー末尾に追加する。\n4. アクションクラスがフォーム/エンティティクラスを使用して業務ロジックを実行する。\n5. アクションクラスが `ResponseMessage` を返却する。\n6. プロセス停止要求があるまで2〜5を繰り返す。\n7. `StatusCodeConvertHandler` がステータスコードをプロセス終了コードに変換し、処理結果として返す。",
+    "s4": "## 利用可能なハンドラ\n\n**リクエスト/レスポンス変換**:\n- [status_code_convert_handler](../../component/handlers/handlers-status_code_convert_handler.json#s1)\n- [data_read_handler](../../component/handlers/handlers-data_read_handler.json#s2)\n\n**プロセス実行制御**:\n- [duplicate_process_check_handler](../../component/handlers/handlers-duplicate_process_check_handler.json#s1)\n- [multi_thread_execution_handler](../../component/handlers/handlers-multi_thread_execution_handler.json#s2)\n- [retry_handler](../../component/handlers/handlers-retry_handler.json#s1)\n- [request_thread_loop_handler](../../component/handlers/handlers-request_thread_loop_handler.json#s1)\n- [process_stop_handler](../../component/handlers/handlers-process_stop_handler.json#s1)\n- [request_path_java_package_mapping](../../component/handlers/handlers-request_path_java_package_mapping.json#s1)\n\n**メッセージング関連**:\n- [messaging_context_handler](../../component/handlers/handlers-messaging_context_handler.json#s1)\n- [message_reply_handler](../../component/handlers/handlers-message_reply_handler.json#s1)\n- [message_resend_handler](../../component/handlers/handlers-message_resend_handler.json#s1)\n\n**DB関連**:\n- [database_connection_management_handler](../../component/handlers/handlers-database_connection_management_handler.json#s1)\n- [transaction_management_handler](../../component/handlers/handlers-transaction_management_handler.json#s1)\n\n**エラー処理**:\n- [global_error_handler](../../component/handlers/handlers-global_error_handler.json#s1)\n\n**その他**:\n- [thread_context_handler](../../component/handlers/handlers-thread_context_handler.json#s2)\n- [thread_context_clear_handler](../../component/handlers/handlers-thread_context_clear_handler.json#s1)\n- :ref:`ServiceAvailabilityCheckHandler`\n\n## 同期応答メッセージングの最小ハンドラ構成\n\n| No. | ハンドラ | スレッド | 往路処理 | 復路処理 | 例外処理 |\n|---|---|---|---|---|---|\n| 1 | [status_code_convert_handler](../../component/handlers/handlers-status_code_convert_handler.json#s1) | メイン | — | ステータスコードをプロセス終了コードに変換する | — |\n| 2 | [global_error_handler](../../component/handlers/handlers-global_error_handler.json#s1) | メイン | — | — | 実行時例外/エラーの場合、ログ出力する |\n| 3 | [multi_thread_execution_handler](../../component/handlers/handlers-multi_thread_execution_handler.json#s2) | メイン | サブスレッドを作成し後続ハンドラを並行実行 | 全スレッドの正常終了まで待機 | 処理中スレッドの完了まで待機し起因例外を再送出 |\n| 4 | [retry_handler](../../component/handlers/handlers-retry_handler.json#s1) | サブ | — | — | リトライ可能な実行時例外を捕捉し、リトライ上限未達なら後続ハンドラを再実行 |\n| 5 | [messaging_context_handler](../../component/handlers/handlers-messaging_context_handler.json#s1) | サブ | MQ接続を取得 | MQ接続を解放 | — |\n| 6 | [database_connection_management_handler](../../component/handlers/handlers-database_connection_management_handler.json#s1) | サブ | DB接続を取得 | DB接続を解放 | — |\n| 7 | [request_thread_loop_handler](../../component/handlers/handlers-request_thread_loop_handler.json#s1) | サブ | 後続ハンドラを繰り返し実行 | ハンドラキューを復旧しループ継続 | プロセス停止要求か致命的エラーの場合のみループ停止 |\n| 8 | [thread_context_clear_handler](../../component/handlers/handlers-thread_context_clear_handler.json#s1) | サブ | — | [thread_context_handler](../../component/handlers/handlers-thread_context_handler.json#s2) でスレッドローカルに設定した値を全削除 | — |\n| 9 | [thread_context_handler](../../component/handlers/handlers-thread_context_handler.json#s2) | サブ | コマンドライン引数からリクエストID・ユーザID等のスレッドコンテキスト変数を初期化 | — | — |\n| 10 | [process_stop_handler](../../component/handlers/handlers-process_stop_handler.json#s1) | サブ | リクエストテーブルの停止フラグがオンの場合、後続ハンドラを実行せず `ProcessStop` を送出 | — | — |\n| 11 | [message_reply_handler](../../component/handlers/handlers-message_reply_handler.json#s1) | サブ | — | 後続ハンドラの応答電文をもとにMQへ送信 | エラー内容をもとにMQへ送信 |\n| 12 | [data_read_handler](../../component/handlers/handlers-data_read_handler.json#s2) | サブ | データリーダで要求電文を1件読み込み後続ハンドラへ渡す。実行時IDを採番 | — | 読み込んだ電文をログ出力後、元例外を再送出 |\n| 13 | [request_path_java_package_mapping](../../component/handlers/handlers-request_path_java_package_mapping.json#s1) | サブ | リクエストIDをもとに呼び出すアクションを決定 | — | — |\n| 14 | [transaction_management_handler](../../component/handlers/handlers-transaction_management_handler.json#s1) | サブ | トランザクションを開始 | トランザクションをコミット | トランザクションをロールバック |\n\n## 応答不要メッセージングの最小ハンドラ構成\n\n同期応答メッセージングから [message_reply_handler](../../component/handlers/handlers-message_reply_handler.json#s1) と [message_resend_handler](../../component/handlers/handlers-message_resend_handler.json#s1) を除いた構成。\n\n> **重要**: 応答不要メッセージングでは、電文保存失敗時にエラー応答を送信できないため、取得電文をキューに戻して既定回数リトライする。DBへの登録処理とキュー操作を1つのトランザクション（2相コミット制御）として扱う必要がある。[transaction_management_handler](../../component/handlers/handlers-transaction_management_handler.json#s1) を2相コミット対応実装に差し替えること。NablarchではIBM MQ用の2相コミットアダプタを提供（[webspheremq_adaptor](../../component/adapters/adapters-webspheremq_adaptor.json#s1) 参照）。\n\n| No. | ハンドラ | スレッド | 往路処理 | 復路処理 | 例外処理 |\n|---|---|---|---|---|---|\n| 1 | [status_code_convert_handler](../../component/handlers/handlers-status_code_convert_handler.json#s1) | メイン | — | ステータスコードをプロセス終了コードに変換する | — |\n| 2 | [global_error_handler](../../component/handlers/handlers-global_error_handler.json#s1) | メイン | — | — | 実行時例外/エラーの場合、ログ出力する |\n| 3 | [multi_thread_execution_handler](../../component/handlers/handlers-multi_thread_execution_handler.json#s2) | メイン | サブスレッドを作成し後続ハンドラを並行実行 | 全スレッドの正常終了まで待機 | 処理中スレッドの完了まで待機し起因例外を再送出 |\n| 4 | [retry_handler](../../component/handlers/handlers-retry_handler.json#s1) | サブ | — | — | リトライ可能な実行時例外を捕捉し、リトライ上限未達なら後続ハンドラを再実行 |\n| 5 | [messaging_context_handler](../../component/handlers/handlers-messaging_context_handler.json#s1) | サブ | MQ接続を取得 | MQ接続を解放 | — |\n| 6 | [database_connection_management_handler](../../component/handlers/handlers-database_connection_management_handler.json#s1) | サブ | DB接続を取得 | DB接続を解放 | — |\n| 7 | [request_thread_loop_handler](../../component/handlers/handlers-request_thread_loop_handler.json#s1) | サブ | 後続ハンドラを繰り返し実行 | ハンドラキューを復旧しループ継続 | プロセス停止要求か致命的エラーの場合のみループ停止 |\n| 8 | [thread_context_clear_handler](../../component/handlers/handlers-thread_context_clear_handler.json#s1) | サブ | — | [thread_context_handler](../../component/handlers/handlers-thread_context_handler.json#s2) でスレッドローカルに設定した値を全削除 | — |\n| 9 | [thread_context_handler](../../component/handlers/handlers-thread_context_handler.json#s2) | サブ | コマンドライン引数からリクエストID・ユーザID等のスレッドコンテキスト変数を初期化 | — | — |\n| 10 | [process_stop_handler](../../component/handlers/handlers-process_stop_handler.json#s1) | サブ | リクエストテーブルの停止フラグがオンの場合、後続ハンドラを実行せず `ProcessStop` を送出 | — | — |\n| 11 | [transaction_management_handler](../../component/handlers/handlers-transaction_management_handler.json#s1) | サブ | トランザクションを開始 | トランザクションをコミット | トランザクションをロールバック |\n| 12 | [data_read_handler](../../component/handlers/handlers-data_read_handler.json#s2) | サブ | データリーダで要求電文を1件読み込み後続ハンドラへ渡す。実行時IDを採番 | — | 読み込んだ電文をログ出力後、元例外を再送出 |\n| 13 | [request_path_java_package_mapping](../../component/handlers/handlers-request_path_java_package_mapping.json#s1) | サブ | リクエストIDをもとに呼び出すアクションを決定 | — | — |",
+    "s5": "- `FwHeaderReader`: 電文からフレームワーク制御ヘッダを読み込む\n- `MessageReader`: MQから電文を読み込む\n\n> **補足**: 上記で要件を満たせない場合は、`DataReader` インタフェースを実装したクラスをプロジェクトで作成する。",
+    "s6": "- `MessagingAction`: 同期応答メッセージング用アクションのテンプレートクラス\n- `AsyncMessageReceiveAction`: 応答不要メッセージングのアクションクラス"
+  }
 }

@@ -1,72 +1,83 @@
 # Apache Mavenについて
 
-## 概要
+**公式ドキュメント**: [Apache Mavenについて](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/blank_project/maven.html)
 
-Nablarchはモジュール管理に [Apache Maven(外部サイト、英語)](https://maven.apache.org/) (以下Maven)を使用することを推奨している。
+## Maven概要・リポジトリ・インストール
 
-ブランクプロジェクトの生成についてもMavenを使用するため、インストール方法を含む最低限知っておくべき内容を記載する。
+Nablarchはモジュール管理にApache Mavenの使用を推奨している。ブランクプロジェクトの生成もMavenを使用する。
 
+MavenはApache Software Foundationで開発しているビルドツールである。ビルドや単体テストの実行を、簡単な設定ファイル（pom.xmlと呼ばれる）で実現することができる。
 
-# Mavenとは
-
-Mavenとは、Apache Software Foudationで開発しているビルドツールである。Mavenは、ビルドや単体テストの実行を、簡単な設定ファイル(pom.xmlと呼ばれる)で実現することが出来る。
-
-
-以下の特徴を持っている。
+**Mavenの特徴:**
 
 | 特徴 | 説明 |
 |---|---|
-| ブランクプロジェクトの生成機能 | アーキタイプと呼ばれるテンプレートに沿ったブランクプロジェクトの生成機能が存在する。\|br\| Nablarchのプロジェクトもこの機能で生成することが出来る。 |
-| 依存関係の管理機能 | プロジェクトの依存するライブラリを、リポジトリから自動的にダウンロードする機能がある。 |
-| モデルベースビルド | あらかじめ定義されているWAR、JARといったモデルについて、スクリプトを書くことなく生成することが出来る。 |
-| プラグインによる機能拡張が容易 | 多数のプラグインが公開されている。プラグインは、組み込むことでプロジェクトのコンパイル時等に自動的に実行できる。\|br\| また、プラグイン単独で起動させることも可能である。 |
-# Mavenリポジトリ
+| ブランクプロジェクトの生成 | アーキタイプを使用してNablarchプロジェクトを生成できる |
+| 依存関係の管理 | 依存ライブラリをリポジトリから自動ダウンロード |
+| モデルベースビルド | WAR/JARをスクリプトなしで生成 |
+| プラグインによる機能拡張 | プラグインをコンパイル時等に自動実行、または単独起動が可能 |
 
-Mavenは、依存するライブラリをMavenリポジトリから取得する。
+**Mavenリポジトリの種類:**
 
-以下にNablarchを使用した開発で登場するリポジトリを示す。
-
-![](../../../knowledge/assets/blank-project-maven/maven_repo.png)
 | 名称 | 説明 |
 |---|---|
-| Local Repository | mvnコマンド\ [#mvn_command]_\ を実行するマシン上に自動的に作られるリポジトリ。\|br\| 他のリポジトリから取得したjarをキャッシュするのが主な役割である。 |
-| Project Local Repository | 各プロジェクト毎のjarを格納するリポジトリ。\|br\| 以下の用途に使用する。各プロジェクトで作成する。 * 複数のモジュールに分けて開発する際に、共通部品となるモジュールを格納する。 * プロプライエタリなライブラリを格納する。一般的には、プロプライエタリなRDBMSのJDBCドライバが該当する。 |
-| Maven Central Repository | Nablarchが依存するモジュール、Mavenの各種プラグイン、各種OSSが格納されているリポジトリ。 |
-| 3rd Party Repository | プロダクト独自のMavenリポジトリ。 gsp-dba-maven-pluginが使用するjarが格納されている http://maven.seasar.org/maven2/ (外部サイト)等が該当する。 |
-``mvn`` は、Mavenの実行に使用するコマンドである。
-> **Tip:** Project Local Repositoryの管理に使用するリポジトリ管理ツール(Artifactory等)には、別のリポジトリへのプロキシとなる機能が存在する。 プロキシ機能を使用することで、mvnコマンドを実行するマシンからインターネットに直接できない環境であっても、Project Local Repository経由でモジュールの取得ができる。
-# Mavenのインストール方法
+| Local Repository | mvnコマンドを実行するマシン上に自動作成されるキャッシュリポジトリ |
+| Project Local Repository | プロジェクト固有のjar格納（共通部品、プロプライエタリなライブラリ等） |
+| Maven Central Repository | Nablarchが依存するモジュールおよび各種OSSを格納 |
+| 3rd Party Repository | プロダクト独自のMavenリポジトリ（例: gsp-dba-maven-pluginが使用するjar: http://maven.seasar.org/maven2/ ） |
 
-以下参照してインストールを行う。インストールするバージョンは、 firstStepPreamble を参照。
+> **補足**: Project Local Repositoryの管理ツール（Artifactory等）にはプロキシ機能がある。mvnコマンドを実行するマシンがインターネットに直接接続できない環境でも、Project Local Repository経由でモジュールを取得できる。
+
+**インストール:**
+
+インストールするバージョンは :ref:`firstStepPreamble` を参照。
 
 | サイト | URL |
 |---|---|
-| ダウンロード元 | https://maven.apache.org/download.cgi (外部サイト、英語) |
-| インストール方法 | https://maven.apache.org/install.html (外部サイト、英語) |
+| ダウンロード元 | [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi) |
+| インストール方法 | [https://maven.apache.org/install.html](https://maven.apache.org/install.html) |
 
-インストール方法にも記載があるが、以下の環境変数を設定すること。
+インストール後に以下の環境変数を設定すること:
 
-| 環境変数          説明 |  |
+| 環境変数 | 説明 |
 |---|---|
-| JAVA_HOME | JDKのインストールされているディレクトリを設定する。 |
-| PATH | mavenをインストールしたディレクトリのbinディレクトリをパスに追加する。 |
+| JAVA_HOME | JDKのインストールされているディレクトリを設定 |
+| PATH | mavenのインストールディレクトリのbinをパスに追加 |
 
+<details>
+<summary>keywords</summary>
 
+Apache Maven, ブランクプロジェクト生成, アーキタイプ, Mavenリポジトリ, Local Repository, Project Local Repository, Maven Central Repository, 3rd Party Repository, インストール, JAVA_HOME, PATH, pom.xml
 
-# Mavenの設定
+</details>
 
-Mavenには以下のとおり設定する必要がある。
+## Return code is: 503エラー
 
-* Project Local Repositoryと3rd Party RepositoryのリポジトリのURL設定。Mavenは初期状態ではMaven Central RepositoryのURLしか保持していないためである。
+503エラーが返る場合、Mavenリポジトリに到達できていないことが多い。`repository`の設定や`proxy`の設定が誤っていないか確認すること。
 
-設定は、<ホームディレクトリ>/.m2/settings.xmlに行う。
+```text
+[ERROR] Failed to execute goal on project myapp-batch: Could not resolve dependencies for project com.example:myapp-batch:jar:0.1.0: Failed to collect dependencies at com.nablarch.profile:nablarch-batch:jar:1.0.4 -> com.nablarch.framework:nablarch-fw-batch:jar:1.0.0: Failed to read artifact descriptor for com.nablarch.framework:nablarch-fw-batch:jar:1.0.0: Could not transfer artifact com.nablarch.framework:nablarch-fw-batch:pom:1.0.0 from/to nablarch-example-release (http://nablarch.intra.tis.co.jp/repository/nablarch-release): Failed to transfer file: http://nablarch.intra.tis.co.jp/repository/nablarch-release/com/nablarch/framework/nablarch-fw-batch/1.0.0/nablarch-fw-batch-1.0.0.pom. Return code is: 503 , ReasonPhrase:Service Unavailable. -> [Help 1]
+```
 
-> **Important:** mavenの設定ファイルは、<Mavenのインストール先>/conf/settings.xml にも存在する。 こちらに設定を書いても良いが、両方の設定ファイルを併用すると、どちらのファイルの設定が有効になっているのか分からなくなり混乱の元になる。設定ファイルはどちらかのみ使うこと。
-以下に、Project Local Repositoryの設定例を示す。
+<details>
+<summary>keywords</summary>
+
+503エラー, Service Unavailable, 依存関係解決エラー, Mavenリポジトリ接続失敗, Return code is: 503, nablarch-example-release
+
+</details>
+
+## Mavenの設定とゴール
+
+**Mavenの設定 (`~/.m2/settings.xml`):**
+
+Mavenの初期状態はMaven Central RepositoryのURLのみ保持している。Project Local RepositoryおよびThird Party RepositoryのURLを `<ホームディレクトリ>/.m2/settings.xml` に設定する必要がある。
+
+> **重要**: `<Mavenのインストール先>/conf/settings.xml` にも設定ファイルが存在する。両方の設定ファイルを併用すると混乱の元となるため、どちらか一方のみ使うこと。
+
+Project Local Repositoryの設定例:
 
 ```xml
 <settings>
-  <!-- 中略 -->
   <profiles>
     <profile>
       <id>my-repository</id>
@@ -74,111 +85,88 @@ Mavenには以下のとおり設定する必要がある。
         <repository>
           <id>my-repository-release</id>
           <url><!-- Project Local Release Repository の URL --></url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
         </repository>
         <repository>
           <id>my-repository-snapshot</id>
           <url><!-- Project Local Snapshot Repository の URL --></url>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
         </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>my-repository-release</id>
           <url><!-- Project Local Release Repository の URL --></url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
         </pluginRepository>
         <pluginRepository>
           <id>my-repository-snapshot</id>
           <url><!-- Project Local Snapshot Repository の URL --></url>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
         </pluginRepository>
       </pluginRepositories>
     </profile>
   </profiles>
-
-  <!-- 上記のリポジトリ設定を有効化する。 -->
   <activeProfiles>
     <activeProfile>my-repository</activeProfile>
   </activeProfiles>
-  <!-- 中略 -->
 </settings>
 ```
-> **Tip:** プロキシを使用するようにMavenを設定している場合は、必要に応じてnonProxyHosts(除外設定)を記述すること。 (Project Local Repositoryがローカルネットワーク環境にある場合、除外設定が必要となる) .. code-block:: xml <settings> <!-- 中略 --> <proxies> <proxy> <id>proxy1</id> <active>true</active> <protocol>http</protocol> <host><!-- プロキシサーバのホスト --></host> <port><!-- プロキシサーバのポート--></port> <nonProxyHosts>localhost|127.0.0.1|<!-- Project Local Repository --></nonProxyHosts> </proxy> <proxy> <id>proxy2</id> <active>true</active> <protocol>https</protocol> <host><!-- プロキシサーバのホスト --></host> <port><!-- プロキシサーバのポート--></port> <nonProxyHosts>localhost|127.0.0.1|<!-- Project Local Repository --></nonProxyHosts> </proxy> </proxies> <!-- 中略 --> </settings>
-# Mavenのゴール
 
-Mavenを実行する際は、ゴールを指定する。コマンド例は以下のようになる。
+> **補足**: プロキシを使用する場合、Project Local Repositoryがローカルネットワーク環境にあるときは `nonProxyHosts`（除外設定）を記述すること。
 
-```bat
-mvn clean
+```xml
+<settings>
+  <proxies>
+    <proxy>
+      <id>proxy1</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host><!-- プロキシサーバのホスト --></host>
+      <port><!-- プロキシサーバのポート--></port>
+      <nonProxyHosts>localhost|127.0.0.1|<!-- Project Local Repository --></nonProxyHosts>
+    </proxy>
+    <proxy>
+      <id>proxy2</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host><!-- プロキシサーバのホスト --></host>
+      <port><!-- プロキシサーバのポート--></port>
+      <nonProxyHosts>localhost|127.0.0.1|<!-- Project Local Repository --></nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
 ```
-使用頻度の高いゴールを以下に示す (表内のリンクは、全て英語の外部サイトへのリンク)。
 
+**Mavenのゴール:**
 
 | ゴール | 説明 |
 |---|---|
-| [archetype:generate](https://maven.apache.org/archetype/maven-archetype-plugin/generate-mojo.html) | ブランクプロジェクトを生成する際に使用する。どのようなプロジェクトを生成するかは実行時引数で指定する。 |
-| [clean](https://maven.apache.org/plugins/maven-clean-plugin/) | ビルドに使用するワークディレクトリ(targetディレクトリ)を削除する。 |
-| [Install](https://maven.apache.org/plugins/maven-install-plugin/) | モジュールをビルドし、ローカルリポジトリにインストールする。 |
-| [test](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) | ユニットテストを実行する。 |
-| [package](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) | warまたはjarを生成する。どちらが生成されるかは、設定ファイル(pom.xml)で決定される。なお、test等、warファイル生成に必要なゴールもあわせて実行される。 |
-| [dependency:tree](https://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html) | 依存するモジュールをツリー表示する。 |
-> **Tip:** ゴール全般については、[Introduction to the Build Lifecycle(外部サイト、英語)](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html) を参照。
-
-# Mavenのよくあるトラブル
-
-## Return code is: 503 , ReasonPhrase:Service Unavailable.が返ってくる
-
-以下のように「Return code is: 503」のエラーがコンソールに出力されることがある。
-
-```text
-[ERROR] Failed to execute goal on project myapp-batch: Could not resolve dependencies for project com.example:myapp-batch:jar:0.1.0: Failed to collect dependencies at com.nablarch.profile:nablarch-batch:jar:1.0.4 -> com.nablarch.framework:nablarch-fw-batch:jar:1.0.0: Failed to read artifact descriptor for com.nablarch.framework:nablarch-fw-batch:jar:1.0.0: Could not transfer artifact com.nablarch.framework:nablarch-fw-batch:pom:1.0.0 from/to nablarch-example-release (http://nablarch.intra.tis.co.jp/repository/nablarch-release): Failed to transfer file: http://nablarch.intra.tis.co.jp/repository/nablarch-release/com/nablarch/framework/nablarch-fw-batch/1.0.0/nablarch-fw-batch-1.0.0.pom. Return code is: 503 , ReasonPhrase:Service Unavailable. -> [Help 1]
-```
-この場合、Mavenリポジトリに到達できていないことが多い。
-
-repositoryの設定や、proxyの設定が誤っていないか確認すること。
+| [archetype:generate](https://maven.apache.org/archetype/maven-archetype-plugin/generate-mojo.html) | ブランクプロジェクト生成。実行時引数でプロジェクト種別を指定 |
+| [clean](https://maven.apache.org/plugins/maven-clean-plugin/) | ビルドのワークディレクトリ（targetディレクトリ）を削除 |
+| [Install](https://maven.apache.org/plugins/maven-install-plugin/) | モジュールをビルドしてローカルリポジトリにインストール |
+| [test](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) | ユニットテストを実行 |
+| [package](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference) | warまたはjarを生成（pom.xmlで決定）。test等の必要なゴールもあわせて実行 |
+| [dependency:tree](https://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html) | 依存するモジュールをツリー表示 |
 
 <details>
 <summary>keywords</summary>
 
-Apache Maven, ブランクプロジェクト生成, アーキタイプ, Mavenリポジトリ, Local Repository, Project Local Repository, Maven Central Repository, 3rd Party Repository, インストール, JAVA_HOME, PATH, pom.xml, 503エラー, Service Unavailable, 依存関係解決エラー, Mavenリポジトリ接続失敗, Return code is: 503, nablarch-example-release, settings.xml, Mavenの設定, nonProxyHosts, プロキシ設定, pluginRepositories, Mavenゴール, archetype:generate, clean, install, test, package, dependency:tree, .m2
+settings.xml, Mavenの設定, nonProxyHosts, プロキシ設定, pluginRepositories, Mavenゴール, archetype:generate, clean, install, test, package, dependency:tree, .m2
 
 </details>
 
 ## mvnコマンドの結果が期待と異なる
 
-mvnコマンドの結果が期待と異なる場合(warに想定外のファイルが含まれる等)は、IDEを終了し、「mvn clean」を実行してから、本来実行したかったゴールを実行することで解決することがある。
+warに想定外のファイルが含まれる等、mvnコマンドの結果が期待と異なる場合は、IDEを終了し「`mvn clean`」を実行してから本来実行したかったゴールを実行することで解決することがある。
 
-これは、以下の２つが原因となっていることが多いためである。
-
-* IDEが自動的にビルドした結果を使用してしまっている。
-* 前回のビルド結果を参照してしまっている。
-
-
-
-.. |br| raw:: html
-
-<br />
+原因:
+- IDEが自動的にビルドした結果を使用してしまっている
+- 前回のビルド結果を参照してしまっている
 
 <details>
 <summary>keywords</summary>

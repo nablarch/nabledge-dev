@@ -1,33 +1,32 @@
 # 登録機能の作成(ハンズオン形式)
 
-## 概要
+**公式ドキュメント**: [登録機能の作成(ハンズオン形式)](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/web/getting_started/client_create/index.html)
 
-Nablarchを使用したウェブアプリケーションでの登録機能の開発方法を、
-Exampleアプリケーションへ顧客情報の登録機能の実装を実際に行いながら解説する。
+## 作成する機能の説明
 
-作成する機能の説明
 1. ヘッダメニューの「顧客登録」リンクを押下する。
+2. 顧客登録画面が表示される。
+3. 顧客名に全角文字列を入力し、業種プルダウンで任意の値を選択して「登録」ボタンを押下する。
+4. 登録確認画面が表示される。
+5. 「確定」ボタンを押下し、データベースに顧客を登録して完了画面を表示する。
 
-![](../../../knowledge/assets/web-application-getting-started-client-create/header_menu.png)
+<details>
+<summary>keywords</summary>
+
+顧客登録, 入力画面, 確認画面, 完了画面, 全角文字列, 業種, プルダウン, 登録フロー
+
+</details>
 
 ## 顧客登録機能の仕様
 
-顧客登録機能の各処理と、URL及び業務アクションメソッドのマッピングを以下に示す。
-
-![](../../../knowledge/assets/web-application-getting-started-client-create/client_create.png)
-| NO. | 処理名 | URL | Action | HTTPメソッド |
+| No. | 処理名 | URL | Action | HTTPメソッド |
 |---|---|---|---|---|
 | 1 | 初期表示 | /action/client/ | ClientAction#input | GET |
 | 2 | 登録内容の確認 | /action/client/confirm | ClientAction#confirm | POST |
 | 3 | 登録画面に戻る | /action/client/back | ClientAction#back | POST |
 | 4 | 登録処理の実行 | /action/client/create | ClientAction#create | POST |
 
-使用するテーブルの定義を以下に示す。
-
-![](../../../knowledge/assets/web-application-getting-started-client-create/client_table.png)
-----
-
-登録機能の解説は以下4章で構成される。
+![テーブル定義](../../../knowledge/processing-pattern/web-application/assets/web-application-getting-started-client-create/client_table.png)
 
 <details>
 <summary>keywords</summary>

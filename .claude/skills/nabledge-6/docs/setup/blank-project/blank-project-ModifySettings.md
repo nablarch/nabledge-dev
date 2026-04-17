@@ -1,9 +1,3 @@
 # 初期セットアップ後に必要となる設定変更
 
-## 概要
-
-ここでは、初期セットアップの完了後に必要となる設定変更に関して記述する。
-
-.. tip ::
-
-Nablarchの設定の基本的な考え方は、 ../setting_guide/index を参照。
+**公式ドキュメント**: [初期セットアップ後に必要となる設定変更](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/blank_project/ModifySettings.html)

@@ -1,5 +1,3 @@
 # 分散トレーシング
 
-## 概要
-
-本章では、Nablarchで作ったアプリケーションで、クラウド上で分散トレーシングを実現する方法について説明する。
+**公式ドキュメント**: [分散トレーシング](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/cloud_native/distributed_tracing/index.html)

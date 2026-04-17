@@ -1,259 +1,208 @@
 # Nablarch 6u3 リリースノート
 
-## No.1 親クラス・インタフェースでのリソース定義に対応
-(No.24.OpenAPI対応に伴う変更)
+**公式ドキュメント**: [1](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html) [2](https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/router_adaptor.html) [3](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/bean_util.html) [4](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_format.html) [5](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/validation/bean_validation.html) [6](https://nablarch.github.io/docs/6u3/javadoc/nablarch/fw/reader/ResumeDataReader.html) [7](https://nablarch.github.io/docs/6u3/javadoc/nablarch/common/idgenerator/FastTableIdGenerator.html) [8](https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/Base64Util.html) [9](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/utility.html) [10](https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/annotation/Published.html) [11](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/blank_project/setup_containerBlankProject/setup_ContainerWeb.html) [12](https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/jaxrs_adaptor.html) [13](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html) [14](https://nablarch.github.io/docs/6u3/doc/biz_samples/03/index.html) [15](https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html) [16](https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html) [17](https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html#id6) [18](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/SessionStoreHandler.html#session-store-handler-constraint) [19](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/csrf_token_verification_handler.html#id4) [20](https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/multipart_handler.html)
 
-**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+## 6u3 変更一覧
 
-OpenAPIドキュメントから生成したインタフェースを使用してアクションクラスを実装できるように、インターフェースや親クラスでのリソース定義を引き継ぐように対応しました。
+## 6u3 変更一覧（6u2からの変更点）
 
-@PathなどのJakarta RESTful Web Servicesのアノテーションを使ってアクションクラスを実装している場合に、以下の条件でアクションクラスが実装しているインターフェースや親クラスのリソース定義を引き継ぎます。
-　・アクションクラスが親クラスを継承またはインターフェースを実装している
-　・親クラスまたはインターフェースに@Pathアノテーションが注釈されている
-　・親クラスまたはインターフェースにHTTPメソッドが定義されている
+| No. | 分類 | 種別 | タイトル | 修正バージョン | システム影響 |
+|---|---|---|---|---|---|
+| 1 | RESTfulウェブサービス | 変更 | 親クラス・インタフェースでのリソース定義に対応 | nablarch-fw-jaxrs 2.2.0, nablarch-router-adaptor 2.2.0 | なし |
+| 2 | RESTfulウェブサービス | 変更 | EntityResponseの型パラメータ追加 | nablarch-fw-jaxrs 2.2.0 | あり（開発） |
+| 3 | BeanUtil | 変更 | Date and Time APIサポート拡充（OffsetDateTime追加） | nablarch-core-beans 2.3.0 | なし |
+| 4 | RESTfulウェブサービス | 変更 | マルチパート用BodyConverter追加 | nablarch-fw-jaxrs 2.2.0 | なし |
+| 5 | BeanUtil | 変更 | MapからBeanへ移送するメソッドのパフォーマンス改善 | nablarch-core-beans 2.3.0 | なし |
+| 6 | 汎用データフォーマット | 不具合修正 | JSONの読み取りに失敗する問題を修正 | nablarch-core-dataformat 2.0.3 | あり（本番） |
+| 7 | Bean Validation | 変更 | BeanValidationStrategyのバリデーション処理カスタマイズ対応 | nablarch-fw-web 2.3.0 | なし |
+| 8 | 公開API | 変更 | 公開APIの追加 | nablarch-common-dao 2.3.0, nablarch-common-databind 2.1.0 | なし |
+| 9 | Nablarchバッチ | 変更 | ResumeDataReaderのJavadoc改善 | nablarch-fw-batch 2.0.1 | なし |
+| 10 | サロゲートキーの採番 | 変更 | TableIdGenerator/FastTableIdGeneratorのJavadoc改善 | nablarch-common-idgenerator-jdbc 2.0.1 | なし |
+| 11 | 汎用ユーティリティ | 変更 | Base64UtilのJavadoc・解説書改善 | nablarch-core 2.2.1 | なし |
+| 12 | 公開API | 変更 | PublishedアノテーションのJavadoc改善 | nablarch-core 2.2.1 | なし |
+| 13 | コンポーネントの初期化 | 変更 | 初期化が必要なコンポーネントへの説明追記（解説書） | nablarch-document 6u3 | なし |
+| 14 | RESTfulウェブサービス | 変更 | マルチパートリクエストのサポート（ブランクプロジェクト） | nablarch-single-module-archetype 6u3 | なし |
+| 15 | ウェブ/REST | 変更 | Tomcatベースイメージの更新 | nablarch-single-module-archetype 6u3 | なし |
+| 16 | 全般 | 変更 | gsp-dba-maven-plugin 5.2.0へ更新（ブランクプロジェクト） | nablarch-single-module-archetype 6u3 | なし |
+| 17 | 全般 | 変更 | 使用不許可APIツールのバージョン更新（ブランクプロジェクト） | nablarch-single-module-archetype 6u3 | なし |
+| 18 | Jakarta RESTful Web Servicesアダプタ | 変更 | Date and Time APIのサポート | nablarch-jaxrs-adaptor 2.2.0, nablarch-jersey-adaptor 2.2.0, nablarch-resteasy-adaptor 2.2.0, nablarch-jackson-adaptor 2.2.0 | なし |
+| 19 | Jakarta RESTful Web Servicesアダプタ | 変更 | マルチパートリクエストのサポート | nablarch-jaxrs-adaptor 2.2.0, nablarch-jersey-adaptor 2.2.0, nablarch-resteasy-adaptor 2.2.0, nablarch-jackson-adaptor 2.2.0 | あり |
+| 20 | ウェブアプリケーション(JSP) | 変更 | jQuery 3.7.1・jQuery UI 1.14・Bootstrap 5.3.3へバージョンアップ、Material Design for Bootstrap廃止 | nablarch-example-web 6u3 | なし |
+| 21 | RESTfulウェブサービス(Example) | 変更 | マルチパートリクエストのサポート | nablarch-example-rest 6u3 | なし |
+| 22 | 全般(Example) | 変更 | gsp-dba-maven-plugin 5.2.0へ更新 | 各example 6u3 | なし |
+| 23 | 実装サンプル集 | 変更 | タグファイルのスタイル適用設定修正（ページングCSSが常に適用されるよう修正） | nablarch-biz-sample-all 3.1.0 | なし |
+| 24 | Nablarch OpenAPI Generator | 追加 | Nablarch OpenAPI Generatorのリリース | nablarch-openapi-generator 1.0.0 | なし |
+| 25 | SQL Executor | 変更 | 解説書の手順と実際のモジュール構成の差異を修正 | sql-executor 1.3.1 | なし |
+| 26 | 使用不許可APIチェックツール | 不具合修正 | Java21でjava.lang.Objectのメソッドが許可できない問題を修正 | nablarch-unpublished-api-checker 1.0.1 | なし |
 
-また、本対応にはルーティングアダプタも修正する必要があったため、合わせて対応しました。
+### システム影響ありの変更詳細
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html
+**No.2 EntityResponseの型パラメータ追加（開発への影響）**
 
-## No.2 EntityResponseの型パラメータ追加
-(No.24.OpenAPI対応に伴う変更)
+`EntityResponse`に型パラメータを追加。既存コードで型未指定の場合、コンパイル時に以下の警告が出力される:
+`[INFO] (該当クラス)の操作は、未チェックまたは安全ではありません。`
 
-**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+> **重要**: 動作への影響はないが、`EntityResponse`を使用している箇所で明示的に型を指定すると警告は解消される。
 
-OpenAPIドキュメントとのマッピングに対応するため、EntityResponseに型パラメータを追加しました。
-これにより、どのようなエンティティの型をレスポンスとしているかをより明確に表現できるようになりました。
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html
+**No.6 JSONの読み取りに失敗する問題を修正（本番への影響）**
 
-## No.3 Date and Time APIサポート拡充
-(No.24.OpenAPI対応に伴う変更)
+起因バージョン: nablarch-core-dataformat 1.3.1（5u19相当）
 
-**リリース区分**: 変更  **分類**: BeanUtil
+JSON値（`""` で囲われた項目）がJSON構文の区切り文字（`:`, `[`, `{`, `,`）のみで、かつその後にデータが続く場合、値と区切り文字の区別ができず解析が失敗していた問題を修正。
 
-OpenAPIドキュメントとのマッピングに対応するため、Date and Time APIのサポートを拡充し、OffsetDateTimeのサポートを追加しました。
+例（修正前はNG、修正後はOK）: `{"key1": ":", "key2": "value2"}`
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/bean_util.html
+> **重要**: このようなJSONを読み込めるようになることでシステム影響がある場合は、値の確認をして受け入れないようにするなどの修正を行うこと。
 
-## No.4 マルチパート用のBodyConverter追加
-(No.24.OpenAPI対応に伴う変更)
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_format.html
 
-**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+**No.19 マルチパートリクエストのサポート（設定変更が必要）**
 
-OpenAPIドキュメントとのマッピングに対応するため、Content-Typeがmultipart/form-dataのリクエストに対応するBodyConverterを追加しました。
+> **重要**: 6u2以前からのバージョンアップで本機能を使用する場合は、設定変更が必要。詳細はマルチパートリクエストのサポート対応セクションを参照。
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/jaxrs_adaptor.html
 
-## No.5 MapからBeanへ移送するメソッドのパフォーマンス改善
+### その他の注意事項
 
-**リリース区分**: 変更  **分類**: BeanUtil
+**No.1 親クラス・インタフェースでのリソース定義の継承条件**
 
-MapからBeanへ移送する際、ネストしたオブジェクト数が多い場合に処理が遅くなる事象が発生していたので、修正しました。
+以下の条件をすべて満たす場合にアクションクラスがインタフェース/親クラスのリソース定義を引き継ぐ:
+1. アクションクラスが親クラスを継承またはインタフェースを実装している
+2. 親クラスまたはインタフェースに`@Path`アノテーションが注釈されている
+3. 親クラスまたはインタフェースにHTTPメソッドが定義されている
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/bean_util.html
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web_service/rest/feature_details/resource_signature.html, https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/router_adaptor.html
 
-## No.6 JSONの読み取りに失敗する問題を修正
+**No.13 初期化が必要なコンポーネントへの説明追記**
 
-**リリース区分**: 不具合  **分類**: 汎用データフォーマット
+初期化が必要であるにも関わらず解説書への記載がなかったコンポーネントに対して、初期化が必要な旨や設定例を追記。対象コンポーネントは以下の通り:
 
-JSON内に含まれる値（""で囲われた項目）がJSON構文で意味を持つ区切り文字（:、[、{、, の4つ）のみで、かつその後にデータが続く場合、値とJSON構文の区切り文字の区別ができずに失敗していました。
+- Nablarchが提供するライブラリ: コード管理、サロゲートキーの採番、日付管理、メール送信、サービス提供可否チェック
+- Nablarchの提供する標準ハンドラ: プロセス停止制御ハンドラ
+- アダプタ: IBM MQアダプタ
 
-①NGになる例（":"の後にデータが続く）：
-  {"key1": ":", "key2": "value2"}
+**No.18 Jakarta RESTful Web ServicesアダプタのDate and Time APIサポート**
 
-②OKになる例（":"の後にデータが続かない）：
-  {"key1": ":"}
+> **重要**: `JaxRsHandlerListFactory`を独自に実装している場合、バージョンアップだけでは本機能は使用できない。`nablarch-jersey-adaptor`および`nablarch-resteasy-adaptor`の実装を参考にすること。
 
-NGになっていた例も、正常に値として解析できるように修正しました。
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/jaxrs_adaptor.html
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/data_io/data_format.html
+**No.20 jQuery・Bootstrapバージョンアップ及びMaterial Design for Bootstrap廃止**
 
-## No.7 BeanValidationStrategyのバリデーション処理をカスタマイズできるように修正
+Bootstrapのバージョンアップ（Bootstrap 5.3.3）に伴って、Material Design for Bootstrap（MDB）の使用を廃止し、画面デザインを調整。
 
-**リリース区分**: 変更  **分類**: Bean Validation
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html
 
-BeanValidationStrategyをカスタマイズしやすくなるよう、公開APIを見直しました。
-それに伴い、バリデーションエラーのメッセージをソートするsortMessagesメソッドをオーバーライド可能にするため、static修飾子を除去しました。
+**No.11 Base64Utilの位置づけ**
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/validation/bean_validation.html
+`Base64Util`はRFC4648の「4. Base 64 Encoding」に準拠している。Java8以降の標準APIで代替可能であり、後方互換のために存在する。現在`Base64Util`を使用している箇所を標準APIに置換する必要はない。
 
-## No.8 公開APIの追加
+参照: https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/Base64Util.html, https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/utility.html
 
-**リリース区分**: 変更  **分類**: 公開API
+**No.15 Tomcatベースイメージの更新**
 
-解説書で継承を案内しているAPIの中で公開APIになっていないものがあったため、公開APIを追加しました。
+10.1.33以前のApache Tomcatに脆弱性が検出されたため、ブランクプロジェクトのデフォルトのTomcatベースイメージを`tomcat:10.1.34-jdk17-temurin`に更新。
 
-## No.9 ResumeDataReaderのJavadoc改善
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/blank_project/setup_containerBlankProject/setup_ContainerWeb.html
 
-**リリース区分**: 変更  **分類**: Nablarchバッチアプリケーション
+**No.26 使用不許可APIチェックツールのJava21対応**
 
-ResumeDataReaderが内部的に使用するResumePointManagerは初期化が必要ですが、
-この点をResumeDataReaderに関する説明から読み取りづらかったため、ResumeDataReaderのJavadocに追記しました。
+Java21でバイトコードが変わったことにより、インタフェースから`java.lang.Object`のメソッドを呼んでいる場合に設定ファイルで許可指定しても許可されない不具合を修正（`nablarch-unpublished-api-checker 1.0.1`、起因: 1.0.0）。
 
-参照先: https://nablarch.github.io/docs/6u3/javadoc/nablarch/fw/reader/ResumeDataReader.html
+参照: https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html#id6
 
-## No.10 TableIdGeneratorのJavadoc改善
+**No.7 BeanValidationStrategyのカスタマイズ対応**
 
-**リリース区分**: 変更  **分類**: サロゲートキーの採番
+`sortMessages`メソッドをオーバーライド可能にするためstatic修飾子を除去。
 
-採番の際に独立したトランザクションを用いるFastTableIdGeneratorは初期化が必要ですが、Javadoc上でそれがわからなかったため、その旨を追記しました。
-また類似のコンポーネントであるTableIdGeneratorのJavadocにも、記述を合わせるため同様の更新を行っています。
+参照: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/libraries/validation/bean_validation.html
 
-参照先: https://nablarch.github.io/docs/6u3/javadoc/nablarch/common/idgenerator/FastTableIdGenerator.html
+**No.24 Nablarch OpenAPI Generator**
 
-## No.11 Base64UtilのJavadoc・解説書改善
+OpenAPIドキュメントからアプリケーションのコード生成をサポートするツール`nablarch-openapi-generator 1.0.0`をリリース。
 
-**リリース区分**: 変更  **分類**: 汎用ユーティリティ
+参照: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html
 
-Base64UtilはRFC4648の「4. Base 64 Encoding」に準拠していますが、Javadoc上で明記できていなかったため、その旨を追記しました。
+<details>
+<summary>keywords</summary>
 
-また、Java8以降ではBase64エンコーディングを行う標準APIが提供されており、Base64Utilを使用せずとも同様の処理を行えます。
-Base64Utilを使用する必要性が小さくなったため、Javadocで標準APIを案内し、Base64Utilは後方互換性のための位置付けとしました。
-そのため、Base64Utilは後方互換のために存在していることを解説書に追記しました。
-※現在Base64Utilを使用している個所を標準APIに置換する必要はありません。
+6u3, リリースノート, EntityResponse, 型パラメータ, BeanUtil, OffsetDateTime, マルチパート, BodyConverter, JSON読み取り, BeanValidationStrategy, sortMessages, Nablarch OpenAPI Generator, nablarch-openapi-generator, 使用不許可APIチェック, Java21, Tomcat脆弱性, Base64Util, RFC4648, JaxRsHandlerListFactory, nablarch-fw-jaxrs, nablarch-core-beans, nablarch-core-dataformat, nablarch-fw-web, nablarch-unpublished-api-checker, ResumeDataReader, ResumePointManager, FastTableIdGenerator, TableIdGenerator, Published, nablarch-router-adaptor, nablarch-fw-batch, nablarch-common-idgenerator-jdbc, nablarch-common-dao, nablarch-common-databind, sql-executor, jQuery, Bootstrap, nablarch-jaxrs-adaptor, nablarch-jersey-adaptor, nablarch-resteasy-adaptor, nablarch-jackson-adaptor, @Path, gsp-dba-maven-plugin, nablarch-core, nablarch-biz-sample-all
 
-参照先: https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/Base64Util.html
+</details>
 
-## No.12 PublishedアノテーションのJavadoc改善
+## バージョンアップ手順
 
-**リリース区分**: 変更  **分類**: 公開API
+## バージョンアップ手順
 
-PublishedアノテーションのJavadocで、オーバーライド可能なメソッドは公開APIとしていることについて追記しました。
+1. `pom.xml`の`<dependencyManagement>`セクションに指定されている`nablarch-bom`のバージョンを`6u3`に書き換える
+2. Mavenのビルドを再実行する
 
-参照先: https://nablarch.github.io/docs/6u3/javadoc/nablarch/core/util/annotation/Published.html
+<details>
+<summary>keywords</summary>
 
-## No.13 初期化が必要なコンポーネントに対する説明の改善
+バージョンアップ, nablarch-bom, pom.xml, dependencyManagement, 6u3, Mavenビルド
 
-**リリース区分**: 変更  **分類**: コンポーネントの初期化
+</details>
 
-コンポーネントとして使用することを想定して提供しているクラスのうち、初期化が必要であるにも関わらず解説書への記載がないものがあったので、初期化が必要な旨や設定例を追記しました。
+## マルチパートリクエストのサポート対応（6u2からの移行手順）
 
-・Nablarchが提供するライブラリ
-　・コード管理
-　・サロゲートキーの採番
-　・日付管理
-　・メール送信
-　・サービス提供可否チェック
-・Nablarchの提供する標準ハンドラ
-　・プロセス停止制御ハンドラ
-・アダプタ
-　・IBM MQアダプタ
+## マルチパートリクエストのサポート対応（6u2からの移行手順）
 
-## No.14 マルチパートリクエストのサポート
+### 対象システム
 
-**リリース区分**: 変更  **分類**: RESTfulウェブサービス
+以下の条件をすべて満たすシステムが対象:
+- Nablarch 6u2以前からのバージョンアップであること
+- Jakarta RESTful Web ServicesアダプタのJerseyJaxRsHandlerListFactoryまたはResteasyJaxRsHandlerListFactoryを使用していること（RESTfulウェブサービスのブランクプロジェクトはデフォルトでJerseyJaxRsHandlerListFactoryを使用）
+- Nablarchの標準機能を使用してRESTfulウェブサービスでマルチパートリクエストを扱いたい
 
-No.4およびNo.19で対応したマルチパートリクエストのサポートを取り込み、マルチパートリクエストに対応しました。
+### 変更手順
 
-## No.15 Tomcatベースイメージの更新
+**1. コンポーネント定義ファイルへのファイルパス設定・ファイルアップロード機能設定の追加**
 
-**リリース区分**: 変更  **分類**: ウェブアプリケーション
-RESTfulウェブサービス
+`src/main/resources/rest-component-configuration.xml`に以下を追加:
 
-10.1.33以前のApache Tomcatに脆弱性が検出されたため、ブランクプロジェクトのデフォルトのTomcatのベースイメージを以下に更新しました。
+```xml
+<!-- ファイルパス設置 -->
+<import file="nablarch/webui/filepath-for-webui.xml" />
 
-　tomcat:10.1.34-jdk17-temurin
+<!-- ファイルアップロード機能設定 -->
+<import file="nablarch/webui/multipart.xml" />
+```
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/blank_project/setup_containerBlankProject/setup_ContainerWeb.html
+**2. ハンドラキューへのマルチパートリクエストハンドラの追加**
 
-## No.16 gsp-dba-maven-pluginのバージョン更新
+`src/main/resources/rest-component-configuration.xml`のハンドラキュー（webFrontController）に以下を追加:
 
-**リリース区分**: 変更  **分類**: 全般
+```xml
+<component-ref name="multipartHandler"/>
+```
 
-以下のMavenプラグインを記載のバージョンに更新しました。
-・gsp-dba-maven-plugin：5.2.0
+> **重要**: 追加位置は、セッション変数保存ハンドラおよびCSRFトークン検証ハンドラの制約事項を確認して決定すること:
+> - https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/SessionStoreHandler.html#session-store-handler-constraint
+> - https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/csrf_token_verification_handler.html#id4
+>
+> 環境ごとにハンドラキューを上書きしている場合は、そちらのハンドラキュー定義にも反映すること。
 
-## No.17 使用不許可APIツールのバージョン更新
+**3. ファイルアップロード用プロパティの設定**
 
-**リリース区分**: 変更  **分類**: 全般
+`src/main/resources/common.properties`に追加:
+- `nablarch.uploadSettings.contentLengthLimit`
 
-No.26の対応に伴い、使用不許可APIツールのバージョンを以下に更新しました。
-・nablarch-unpublished-api-checker 1.0.1
+`src/env/[環境別]/resources/env.properties`に追加:
+- `nablarch.filePathSetting.basePathSettings.format`
+- `nablarch.filePathSetting.basePathSettings.output`
+- `nablarch.uploadSettings.autoCleaning`
+- `nablarch.filePathSetting.basePathSettings.uploadFileTmpDir`
 
-## No.18 Date and Time APIのサポート
-(No.24.OpenAPI対応に伴う変更)
+> **注意**: `nablarch.filePathSetting.basePathSettings.format`は汎用データフォーマットのフォーマット定義ファイル用のパス設定。汎用データフォーマットを使用しない場合はダミー値でよい。
 
-**リリース区分**: 変更  **分類**: Jakarta RESTful Web Servicesアダプタ
+設定内容の詳細: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/handlers/web/multipart_handler.html
 
-OpenAPIドキュメントとのマッピングに対応するため、Jackson Java 8 Date/timeモジュールを追加してDate and Time APIを扱えるようになりました。
+<details>
+<summary>keywords</summary>
 
-※JaxRsHandlerListFactory を独自に実装している場合、バージョンアップだけでは本機能は使用できません。本機能を使用したい場合は、nablarch-jersey-adaptorおよびnablarch-resteasy-adaptorの実装を参考にしてください。
+マルチパート, multipart, JerseyJaxRsHandlerListFactory, ResteasyJaxRsHandlerListFactory, multipartHandler, rest-component-configuration.xml, ファイルアップロード, filepath-for-webui.xml, multipart.xml, contentLengthLimit, uploadFileTmpDir, RESTfulウェブサービス, 6u2からのバージョンアップ, autoCleaning, webFrontController, nablarch.filePathSetting.basePathSettings.output
 
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/jaxrs_adaptor.html
-
-## No.19 マルチパートリクエストのサポート
-(No.24.OpenAPI対応に伴う変更)
-
-**リリース区分**: 変更  **分類**: Jakarta RESTful Web Servicesアダプタ
-
-No.4で追加したマルチパート用のBodyConverterをnablarch-jersey-adaptorおよびnablarch-resteasy-adaptorに追加しました。
-
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/adaptors/jaxrs_adaptor.html
-
-## No.20 jQuery、Bootstrapのバージョンアップ
-
-**リリース区分**: 変更  **分類**: ウェブアプリケーション (JSP)
-
-jQueryおよびjQeuryに依存していたライブラリのバージョンを以下の通り更新しました。
-・jQuery 3.7.1
-・jQuery UI 1.14
-・Bootstrap 5.3.3
-また、Bootstrapのバージョンアップに伴ってMaterial Design for Bootstrapの使用を廃止し、画面デザインを調整しました。
-
-参照先: https://nablarch.github.io/docs/6u3/doc/application_framework/application_framework/web/index.html
-
-## No.21 マルチパートリクエストのサポート
-(No.24.OpenAPI対応に伴う変更)
-
-**リリース区分**: 変更  **分類**: RESTfulウェブサービス
-
-No.4およびNo.19で対応したnablarch-fw-jaxrsおよびnablarch-jaxrs-adaptorの変更内容を取り込み、マルチパートリクエストに対応しました。
-
-## No.22 gsp-dba-maven-pluginのバージョン更新
-
-**リリース区分**: 変更  **分類**: 全般
-
-以下のMavenプラグインを記載のバージョンに更新しました。
-・gsp-dba-maven-plugin：5.2.0
-
-## No.23 タグファイルのスタイル適用設定修正
-
-**リリース区分**: 変更  **分類**: 検索結果の一覧表示
-
-ページングの現在表示中のページ番号部分に対して、カスタムタグで指定したスタイルが適用されていなかったため、表示中かどうかに関わらず設定したCSSが適用されるように修正しました。
-
-参照先: https://nablarch.github.io/docs/6u3/doc/biz_samples/03/index.html
-
-## No.24 Nablarch OpenAPI Generatorのリリース
-
-**リリース区分**: 追加  **分類**: Nablarch OpenAPI Generator
-
-OpenAPIドキュメントからアプリケーションのコード生成をサポートするツールである Nablarch OpenAPI Generator をリリースしました。
-
-参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/NablarchOpenApiGenerator/NablarchOpenApiGenerator.html
-
-## No.25 解説書の手順と実際のモジュールの構成差異を修正
-
-**リリース区分**: 変更  **分類**: SQL Executor
-
-ツールの提供状態として設定すべき項目に不足があり、また解説書で案内している設定ファイル名と実際のファイル名に乖離がありました。
-このため解説書どおりに実行しても起動できないという問題が発生しており、解説書記載の手順で実行できるように設定ファイルの見直しを行いました。
-
-参照先: https://nablarch.github.io/docs/6u3/doc/development_tools/toolbox/SqlExecutor/SqlExecutor.html
-
-## No.26 Java21でjava.lang.Objectのメソッドが許可できない場合がある問題に対応
-
-**リリース区分**: 不具合  **分類**: 使用不許可APIチェックツール
-
-Java21でバイトコードが変わったことにより、インタフェースからjava.lang.Objectのメソッドを呼んでいる場合、設定ファイルで指定しても許可されないという不具合があったため対応しました。
-
-例) 
-■使用不許可APIツールの設定ファイル
-java.lang.Object
-
-■解析対象のjavaファイル
-// toStringメソッドは本来許可されるはずだが不許可になる
-Map<String, String> headers = request.headers();
-headers.toString();
-
-参照先: https://nablarch.github.io/docs/LATEST/doc/development_tools/java_static_analysis/index.html#id6
+</details>
