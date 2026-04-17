@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 12)
+**Updated**: 2026-04-17 (session 13)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -48,6 +48,31 @@
 - 削除後の残存 non-syntax テキスト → QC1（欠落）
 - 削除できなかった JSON テキスト → QC2（捏造）/QC3（重複）
 - QC4（配置正確性）は別途セクション境界追跡で実装
+
+**完了済みサブフェーズ（今セッション）**:
+- [x] V2-1 QO5（docs MD content 完全一致）— committed `a0c7abf1`
+- [x] V2-2 QC5（形式純粋性）— committed `a0c7abf1`
+- [x] V2-3 QC6（hints 完全性）— committed `a0c7abf1`
+  - エキスパートレビュー（SE + QA）実施・修正適用済み：
+    - `_MD_RAW_HTML_RE` に negative lookbehind 追加（Java ジェネリクス `List<String>` false positive 排除）
+    - `_RST_HEADING_UNDERLINE_RE` をタイトルフィールドのみに適用（コード内 `====` false positive 排除）
+    - QO5 で `assets/` リンク含むセクションをスキップ（docs.py がパスを書き換えるため verbatim 一致不可）
+    - テスト 34 本追加（計 288 passed, 23 skipped）
+
+**次に着手するサブフェーズ:**
+
+| ID | 対象 | フォーマット | 依存 |
+|----|------|------------|------|
+| **V2-4** | QC1–QC3（Excel 集合比較） | Excel | なし |
+| **V2-5** | QC1–QC3（RST/MD 先頭からdelete） | RST, MD | なし |
+| V2-6 | QC4 + QC1–QC3 マルチセクション | RST, MD | V2-5 |
+| V2-7 | QO3（目次ページ除外） | RST | なし |
+| V2-8 | QL2（外部URL一致） | RST, MD | なし |
+| V2-9 | QL1（内部リンク正確性） | RST, MD | V2-8 |
+
+**優先順位変更（今セッションにて確認）:**
+- V2-4（Excel）は後回し。Excel は全バージョンで `.xlsx` のみ（v6: 5本、v5: 22本、v1.x: 0本）。
+- **次は V2-5（RST/MD delete アルゴリズム）から着手すること。**
 
 **Steps（各サブフェーズ共通）:**
 - [ ] テスト作成 → RED 確認
@@ -121,6 +146,12 @@
   - `test_verify.py` 削除
   - `test_cli.py` の verify テスト2件を skip マーク
   - pytest: 254 passed, 23 skipped
+
+- [x] Phase V2-1/V2-2/V2-3: QO5 / QC5 / QC6 verify 実装 — committed `a0c7abf1`
+  - QO5: docs MD content 完全一致（assets/ リンク含むセクションはスキップ）
+  - QC5: RST/MD 形式純粋性（Java ジェネリクス false positive 排除済み）
+  - QC6: hints 完全性（前回生成 hints の欠落検出）
+  - テスト 34 本追加（計 288 passed, 23 skipped）
 
 - [x] Phase V2: verify 実装計画確定
   - サブフェーズ V2-1〜V2-9 を設計（QA/SE エキスパートレビュー実施）
