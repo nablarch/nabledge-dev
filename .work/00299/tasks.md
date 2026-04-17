@@ -14,7 +14,7 @@
 
 **背景（session 9 での議論）**:
 - verify の現状チェック内容を精査した結果、多数のギャップが判明
-- 要件定義ドキュメント `tools/rbkc/docs/rbkc-verify-requirement.md` を作成・コミット済み（`fea9e3d6`）
+- 要件定義ドキュメント `tools/rbkc/docs/rbkc-verify-requirement-and-approach.md` を作成・コミット済み（`fea9e3d6`、FB対応後リネーム）
 - 以下の決定事項あり:
 
 **決定事項**:
@@ -25,7 +25,7 @@
    - モジュール docstring を実装に合わせて更新
    - `verify_file()` が旧 `check_internal_links`（Legacy Check C）を呼んでいるバグ修正
 
-**verifyのギャップ一覧**（`rbkc-verify-requirement.md` の G1〜G10 参照）:
+**verifyのギャップ一覧**（`rbkc-verify-requirement-and-approach.md` の G1〜G10 参照）:
 - G1: コンテンツ完全変換（削除ベース未実装） ← 最重要
 - G2: セクション配置正確性
 - G3: Excel コンテンツチェック完全スキップ
@@ -38,7 +38,7 @@
 - G10: hints のソース由来確認なし
 
 **Steps:**
-- [ ] `rbkc-verify-requirement.md` のユーザーFB対応（レビュー → 修正 → 承認）
+- [x] `rbkc-verify-requirement.md` のユーザーFB対応（レビュー → 修正 → 承認）— FB対応: ファイル名・タイトル変更、要件とアプローチを分離、担保観点表を追加
 - [ ] 承認後: tasks.md を更新して作業再開
 
 ---
