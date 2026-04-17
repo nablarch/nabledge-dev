@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 13)
+**Updated**: 2026-04-17 (session 14)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -73,6 +73,14 @@
 **優先順位変更（今セッションにて確認）:**
 - V2-4（Excel）は後回し。Excel は全バージョンで `.xlsx` のみ（v6: 5本、v5: 22本、v1.x: 0本）。
 - **次は V2-5（RST/MD delete アルゴリズム）から着手すること。**
+
+**テストスキップ問題（次セッションで対処）:**
+- 現在 23 件スキップあり。内訳：
+  - 2件: `test_cli.py::TestVerify` — Phase V1 で `@pytest.mark.skip` を付けた。V3 完了後に書き直す
+  - 8件: `test_hints_e2e.py` — `V6_CACHE_ROOT = Path("tools/knowledge-creator/.cache/v6")` が相対パス。pytest の実行ディレクトリ（`tools/rbkc/`）から解決できない。`Path(__file__).parents[N]` 形式に修正すれば解消
+  - 13件: `test_md_converter.py` — 同様に `.lw/nab-official/v6/...` が相対パス。同じ修正で解消
+- **開発ルール（`.claude/rules/development.md`）にスキップ禁止ルールを追記すること**
+- 修正は次セッション冒頭に実施すること（V2-5 着手前）
 
 **Steps（各サブフェーズ共通）:**
 - [ ] テスト作成 → RED 確認
