@@ -8,11 +8,11 @@ RBKC（RST/Markdown/Excel → JSON 知識ファイル変換）の出力品質を
 
 ### 1-2. 検証対象
 
-| ソースフォーマット | 出力形式 |
-|-----------------|---------|
-| RST | JSON + docs MD |
-| Markdown | JSON + docs MD |
-| Excel | JSON + docs MD |
+| ソースフォーマット | 資料 | 出力形式 |
+|-----------------|------|---------|
+| RST | Nablarch 解説書 | JSON + docs MD |
+| Markdown | Nablarch システム開発ガイド | JSON + docs MD |
+| Excel | セキュリティ対応表、リリースノート | JSON + docs MD |
 
 ### 1-3. スコープ外
 
