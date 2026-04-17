@@ -38,6 +38,7 @@
 - G10: hints のソース由来確認なし
 
 **Steps:**
+- [ ] `rbkc-verify-requirement.md` のユーザーFB対応（レビュー → 修正 → 承認）
 - [ ] verify リファクタリング（デッドコード削除、docstring 修正、verify_file バグ修正）— TDD
 - [ ] verify 削除ベース再設計: G1（RST/MD） — TDD
 - [ ] verify 削除ベース再設計: G3（Excel） — TDD
