@@ -10,6 +10,15 @@
 
 ## In Progress
 
+### Phase 17-R2: verify 実装タスクを新設計に合わせて更新
+
+**背景**: Phase 17-R で `rbkc-verify-quality-design.md` が確定した（QC1–QC6 / QL1–QL2 / QO1–QO5）。現在の Phase 17-B / 17-C のタスクは旧 G1〜G10 ベースで書かれており、新設計と対応が取れていない。
+
+**Steps:**
+- [ ] `rbkc-verify-quality-design.md` の各観点（QC1–QC6 / QL1–QL2 / QO1–QO5）を Phase 17-B / 17-C に対応付ける
+- [ ] 未実装観点（❌）を実装フェーズとして tasks.md に追加・整理する
+- [ ] 旧 G1〜G10 の記述を削除またはマッピング表に置き換える
+
 ---
 
 ### Phase 17-C: 残存 FAIL の個別修正（v6）
