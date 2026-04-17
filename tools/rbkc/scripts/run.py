@@ -33,7 +33,7 @@ from pathlib import Path
 from scripts.classify import FileInfo, classify_sources
 from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.docs import generate_docs
-from scripts.hints import build_hints_index, lookup_hints
+from scripts.hints import build_hints_index, lookup_hints as _lookup_hints_kc
 from scripts.index import generate_index
 from scripts.resolver import collect_asset_refs, copy_assets
 from scripts.scan import scan_sources
@@ -70,6 +70,71 @@ def _converter_for(fmt: str, filename: str):
     raise ValueError(f"Unknown format: {fmt!r}")
 
 
+def load_existing_hints(output_dir: Path) -> dict[str, dict[str, list[str]]]:
+    """Load hints from existing RBKC-format knowledge JSON files.
+
+    Reads all JSON files under *output_dir* that use RBKC format (sections as
+    a list of dicts). KC-format files (sections as a dict) are skipped.
+
+    Returns:
+        {file_id: {section_title: hints}} — empty dict if directory is absent
+        or contains no RBKC-format files.
+    """
+    if not output_dir.exists():
+        return {}
+
+    result: dict[str, dict[str, list[str]]] = {}
+    for json_path in output_dir.rglob("*.json"):
+        try:
+            data = json.loads(json_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        file_id = data.get("id", "")
+        sections = data.get("sections", [])
+
+        # Skip KC-format files (sections is a dict, not a list)
+        if not isinstance(sections, list):
+            continue
+
+        section_hints: dict[str, list[str]] = {}
+        for sec in sections:
+            if not isinstance(sec, dict):
+                continue
+            title = sec.get("title", "")
+            hints = sec.get("hints", [])
+            if isinstance(hints, list):
+                section_hints[title] = hints
+
+        if file_id:
+            result[file_id] = section_hints
+
+    return result
+
+
+def lookup_hints_with_fallback(
+    existing_hints: dict[str, dict[str, list[str]]],
+    kc_hints_idx: dict[str, dict[str, list[str]]],
+    file_id: str,
+    section_title: str,
+) -> list[str]:
+    """Return hints for a section, preferring existing RBKC hints over KC index.
+
+    Args:
+        existing_hints: From load_existing_hints() — hints from prior RBKC run.
+        kc_hints_idx: From _hints_index() — hints derived from KC cache.
+        file_id: Knowledge file identifier.
+        section_title: Section title to look up.
+
+    Returns:
+        List of hints. Prefers existing_hints if the file_id is present there.
+        Falls back to kc_hints_idx otherwise.
+    """
+    if file_id in existing_hints:
+        return existing_hints[file_id].get(section_title, [])
+    return _lookup_hints_kc(kc_hints_idx, file_id, section_title)
+
+
 def _hints_index(repo_root: Path, version: str):
     """Load hints index for the given version.
 
@@ -92,8 +157,22 @@ def _hints_index(repo_root: Path, version: str):
 # JSON writer
 # ---------------------------------------------------------------------------
 
-def _convert_and_write(fi: FileInfo, output_dir: Path, hints_idx: dict) -> None:
-    """Convert one source file and write its knowledge JSON to *output_dir*."""
+def _convert_and_write(
+    fi: FileInfo,
+    output_dir: Path,
+    hints_idx: dict,
+    existing_hints: dict | None = None,
+) -> None:
+    """Convert one source file and write its knowledge JSON to *output_dir*.
+
+    Args:
+        fi: FileInfo for the source file.
+        output_dir: Output directory for knowledge JSON files.
+        hints_idx: KC cache hints index from _hints_index().
+        existing_hints: Existing RBKC hints from load_existing_hints().
+                        When provided, hints are looked up with carry-over
+                        semantics (existing_hints preferred over hints_idx).
+    """
     convert = _converter_for(fi.format, fi.source_path.name)
 
     if fi.format in ("rst", "md"):
@@ -104,7 +183,10 @@ def _convert_and_write(fi: FileInfo, output_dir: Path, hints_idx: dict) -> None:
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
         sid = f"s{idx}"
-        hints = lookup_hints(hints_idx, fi.file_id, sec.title)
+        if existing_hints is not None:
+            hints = lookup_hints_with_fallback(existing_hints, hints_idx, fi.file_id, sec.title)
+        else:
+            hints = _lookup_hints_kc(hints_idx, fi.file_id, sec.title)
         sections.append({
             "id": sid,
             "title": sec.title,
@@ -164,6 +246,10 @@ def create(
     docs_dir = output_dir.parent / "docs"
     index_path = output_dir / "index.toon"
 
+    # Load existing hints BEFORE cleaning output directory.
+    # create() pre-cleans output_dir with rmtree, so hints must be captured first.
+    existing_hints = load_existing_hints(output_dir)
+
     # Pre-clean: remove all previous output so stale files don't persist.
     # This also removes assets/ (output_dir/assets/) as a subdirectory of
     # output_dir.  update() and delete() do NOT pre-clean, so stale assets
@@ -179,7 +265,7 @@ def create(
 
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, hints_idx)
+        _convert_and_write(fi, output_dir, hints_idx, existing_hints)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
@@ -210,6 +296,9 @@ def update(
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
     hints_idx = _hints_index(repo_root, version)
+    # Load existing hints before reconverting so carry-over is preserved for
+    # files whose source changed (same as create() semantics).
+    existing_hints = load_existing_hints(output_dir)
 
     snap_path = _snapshot_path(state_dir, version)
     old_snap = load_snapshot(snap_path)
@@ -223,7 +312,7 @@ def update(
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
-            _convert_and_write(fi, output_dir, hints_idx)
+            _convert_and_write(fi, output_dir, hints_idx, existing_hints)
             if fi.format == "rst":
                 changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1
