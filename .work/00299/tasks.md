@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 11)
+**Updated**: 2026-04-17 (session 12)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -10,52 +10,9 @@
 
 ## In Progress
 
-### Phase V0: RBKC hints — 既存ヒントをそのまま持ち越す
-
-**背景**: 現在 hints.py は KC キャッシュから hints を生成しているが、既存の知識ファイルにはすでに質の高い hints が存在する。新 verify でも hints 完全性（QC6）をチェックするため、既存 hints を RBKC 出力に確実に引き継ぐ必要がある。
-
-**方針**: `rbkc create` の各フォーマット変換パスで、既存知識ファイルが存在する場合はそのセクションの `hints` を出力 JSON にそのままコピーする。
-
-**Steps:**
-- [ ] 既存知識ファイルの hints 構造を調査（どのフォーマットで hints が存在するか確認）
-- [ ] `run.py` または converters の hints 引き継ぎロジックを TDD で実装
-  - [ ] テスト作成 → RED 確認
-  - [ ] 実装 → GREEN 確認
-  - [ ] 全テスト通過確認（`pytest`）
-- [ ] Software Engineer + QA Engineer エキスパートレビュー
-- [ ] コミット
-
----
-
-### Phase V1: 既存 verify を削除してプッシュ
-
-**背景**: 現在の `verify.py` と `tests/ut/test_verify.py` は旧設計（Check A/B/C/D/E/F/H）ベースで書かれており、新設計（QC1–QC6 / QL1–QL2 / QO1–QO5）と対応が取れていない。作り直しのためまず削除する。
-
-**Steps:**
-- [ ] `tools/rbkc/scripts/verify.py` の内容を削除（空ファイルまたはスタブに置き換え）
-- [ ] `tools/rbkc/tests/ut/test_verify.py` を削除
-- [ ] `verify.py` を参照している他モジュール（`run.py` 等）の import エラーがないことを確認
-- [ ] `pytest` 実行 — verify テスト以外が全通過することを確認
-- [ ] コミット → プッシュ
-
----
-
-### Phase V2: verify 実装計画 → エキスパートレビュー → ユーザー確認
-
-**背景**: `rbkc-verify-quality-design.md` の各観点（QC1–QC6 / QL1–QL2 / QO1–QO5）を TDD で実装するための詳細計画を立て、実施前にレビューを受ける。
-
-**Steps:**
-- [ ] `rbkc-verify-quality-design.md` を読み込み、実装サブフェーズ（V2-1, V2-2, ...）に分解して計画を作成
-  - 各サブフェーズに: 対象観点、テストケース案、実装方針を記載
-  - 依存関係と実装順序を明示する
-- [ ] QA Engineer エキスパートレビュー（テストケース網羅性・設計妥当性）
-- [ ] Software Engineer エキスパートレビュー（アーキテクチャ・実装可能性）
-
----
-
 ### Phase V3: verify TDD 実装
 
-**前提**: Phase V2 でユーザー承認済みの計画に従って実施。
+**前提**: V0/V1/V2 完了済み（下記 Done 参照）
 
 **実装観点（`rbkc-verify-quality-design.md` の ❌ 項目）**:
 
@@ -71,6 +28,26 @@
 | QL2 | 外部リンクの一致 | ❌ | ❌ | — |
 | QO3 | 目次ページの除外 | ❌ | — | — |
 | QO5 | docs MD 整合性（content 完全一致） | ❌ | ❌ | ❌ |
+
+**サブフェーズ計画（V2 で確定済み）**:
+
+| ID | 対象 | フォーマット | 依存 |
+|----|------|------------|------|
+| V2-1 | QO5（docs MD content 完全一致） | RST, MD, Excel | なし |
+| V2-2 | QC5（形式純粋性） | RST, MD | なし |
+| V2-3 | QC6（hints 完全性） | RST, MD, Excel | なし |
+| V2-4 | QC1–QC3（Excel 集合比較） | Excel | なし |
+| V2-5 | QC1–QC3（RST/MD 先頭からdelete） | RST, MD | なし |
+| V2-6 | QC4 + QC1–QC3 マルチセクション | RST, MD | V2-5 |
+| V2-7 | QO3（目次ページ除外） | RST | なし |
+| V2-8 | QL2（外部URL一致） | RST, MD | なし |
+| V2-9 | QL1（内部リンク正確性） | RST, MD | V2-8 |
+
+**アルゴリズム確定事項（V2 議論済み）**:
+- QC1–QC3/QC4 の delete algorithm: JSON テキストを先頭から順に検索・削除。先頭からなので重複文字列も問題なし。
+- 削除後の残存 non-syntax テキスト → QC1（欠落）
+- 削除できなかった JSON テキスト → QC2（捏造）/QC3（重複）
+- QC4（配置正確性）は別途セクション境界追跡で実装
 
 **Steps（各サブフェーズ共通）:**
 - [ ] テスト作成 → RED 確認
@@ -133,12 +110,28 @@
 
 ## Done
 
-- [x] Phase 17-R: verify 品質保証設計ドキュメント作成・レビュー完了
+- [x] Phase V0: hints carry-over 実装 — committed `d155c92e`
+  - `load_existing_hints(output_dir)` + `lookup_hints_with_fallback()` を run.py に追加
+  - `create()` が rmtree する前に既存 RBKC 形式ファイルから hints を保存し新規生成時に引き継ぐ
+  - `update()` も同様に carry-over 対応
+  - テスト: 17件追加（TestLoadExistingHints）
+
+- [x] Phase V1: 旧 verify 削除・スタブ化 — committed `2727facc`
+  - `verify.py` を空スタブに置き換え（run.py の import は維持）
+  - `test_verify.py` 削除
+  - `test_cli.py` の verify テスト2件を skip マーク
+  - pytest: 254 passed, 23 skipped
+
+- [x] Phase V2: verify 実装計画確定
+  - サブフェーズ V2-1〜V2-9 を設計（QA/SE エキスパートレビュー実施）
+  - delete algorithm の方針確定: 先頭から順に削除するだけ→重複文字列問題なし
+  - 計画は In Progress の Phase V3 に記載済み
+
+- [x] Phase 17-R: verify 品質保証設計ドキュメント作成・レビュー完了（旧 Phase 17-B/17-C/17-A の verify コードは新設計で作り直し）
   - `tools/rbkc/docs/rbkc-verify-quality-design.md` を新規作成（旧 requirement-and-approach.md を全面リファクタリング）
   - QA エキスパートレビュー2回実施、指摘事項をすべて反映
-  - 最終状態: QC1–QC6 / QL1–QL2 / QO1–QO5 の全観点定義済み、検証方法・マトリクス整合済み
-  - committed `d020efd2` 〜 `2464a55c`（本セッション分）
-  - **次のステップ**: 本ドキュメントを仕様として Phase 17-C / 17-B / 18 以降の実装を進める
+  - 最終状態: QC1–QC6 / QL1–QL2 / QO1–QO5 の全観点定義済み
+  - committed `d020efd2` 〜 `2464a55c`
 
 - [x] Phase 1: KC cache → hints mapping (`scripts/hints.py`) — committed `f78304b4`
 - [x] Phase 2: RST converter with full directive support — committed `5913ff6e`, `1b62c4c4`, `9cbbc729`
