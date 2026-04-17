@@ -39,16 +39,7 @@
 
 **Steps:**
 - [ ] `rbkc-verify-requirement.md` のユーザーFB対応（レビュー → 修正 → 承認）
-- [ ] verify リファクタリング（デッドコード削除、docstring 修正、verify_file バグ修正）— TDD
-- [ ] verify 削除ベース再設計: G1（RST/MD） — TDD
-- [ ] verify 削除ベース再設計: G3（Excel） — TDD
-- [ ] G2 セクション配置正確性 — TDD
-- [ ] G4〜G10 残ギャップ実装 — TDD（各ギャップをユーザーと優先度確認してから着手）
-- [ ] E2E テスト削減: コンバータ出力アサートテスト削除、test_cli.py を最低限ゴールデンパスのみに絞る
-- [ ] `pytest` 全通過
-- [ ] `bash rbkc.sh verify 6` FAIL 0件確認
-- [ ] Software Engineer + QA Engineer エキスパートレビュー
-- [ ] コミット
+- [ ] 承認後: tasks.md を更新して作業再開
 
 ---
 
