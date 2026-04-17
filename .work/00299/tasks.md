@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 10)
+**Updated**: 2026-04-17 (session 11)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -10,100 +10,88 @@
 
 ## In Progress
 
-### Phase 17-R2: verify 実装タスクを新設計に合わせて更新
+### Phase V0: RBKC hints — 既存ヒントをそのまま持ち越す
 
-**背景**: Phase 17-R で `rbkc-verify-quality-design.md` が確定した（QC1–QC6 / QL1–QL2 / QO1–QO5）。現在の Phase 17-B / 17-C のタスクは旧 G1〜G10 ベースで書かれており、新設計と対応が取れていない。
+**背景**: 現在 hints.py は KC キャッシュから hints を生成しているが、既存の知識ファイルにはすでに質の高い hints が存在する。新 verify でも hints 完全性（QC6）をチェックするため、既存 hints を RBKC 出力に確実に引き継ぐ必要がある。
+
+**方針**: `rbkc create` の各フォーマット変換パスで、既存知識ファイルが存在する場合はそのセクションの `hints` を出力 JSON にそのままコピーする。
 
 **Steps:**
-- [ ] `rbkc-verify-quality-design.md` の各観点（QC1–QC6 / QL1–QL2 / QO1–QO5）を Phase 17-B / 17-C に対応付ける
-- [ ] 未実装観点（❌）を実装フェーズとして tasks.md に追加・整理する
-- [ ] 旧 G1〜G10 の記述を削除またはマッピング表に置き換える
-
----
-
-### Phase 17-C: 残存 FAIL の個別修正（v6）
-
-**前提**: Phase 17-A 完了済み
-
-**現状（Phase 17-A 適用後）**:
-- FAIL: 20ファイル / 440件
-- カテゴリ別内訳:
-
-| カテゴリ | ファイル数 | 詳細 |
-|---------|----------|------|
-| Content token missing from JSON | 18 | RBKC 変換漏れ（下記参照） |
-| Internal link target not found | 2 | `int[]` ×4 / `nablarch-async-pattern.png` ×2 |
-
-**FAIL ファイル一覧**（20ファイル）:
-
-```
-RST (17ファイル):
-  application_framework/adaptors/micrometer_adaptor.rst
-  application_framework/batch/nablarch_batch/feature_details/nablarch_batch_retention_state.rst
-  application_framework/cloud_native/containerize/index.rst
-  application_framework/cloud_native/distributed_tracing/aws_distributed_tracing.rst
-  application_framework/libraries/code.rst
-  application_framework/libraries/repository.rst  ← int[] 偽陽性もあり
-  application_framework/libraries/tag.rst
-  application_framework/web/getting_started/client_create/client_create1.rst
-  application_framework/web/getting_started/client_create/client_create2.rst
-  application_framework/web/getting_started/client_create/client_create3.rst
-  application_framework/web/getting_started/client_create/client_create4.rst
-  application_framework/web/getting_started/client_create/index.rst
-  application_framework/web/getting_started/project_bulk_update/index.rst
-  biz_samples/04/0401_ExtendedDataFormatter.rst
-  testing_framework/.../01_entityUnitTestWithBeanValidation.rst
-  testing_framework/.../02_entityUnitTestWithNablarchValidation.rst
-  testing_framework/.../06_TestFWGuide/01_Abstract.rst
-
-MD (3ファイル):
-  nablarch-patterns/Nablarchでの非同期処理.md  ← png 未コピーもあり
-  nablarch-patterns/Nablarchアンチパターン.md
-  nablarch-patterns/Nablarchバッチ処理パターン.md
-```
-
-**個別対応方針**:
-
-1. **`int[]` 偽陽性** (repository.rst, 4件):
-   - `[int[]](int[])` という Markdown リンクを Check C が誤検出
-   - verify 変更のためユーザー事前承認必要
-   - 修正: Check C の URL パターンで `[]` を含む識別子をスキップ
-
-2. **`nablarch-async-pattern.png` 未コピー** (Nablarchでの非同期処理.md, 2件):
-   - resolver が `.md` ソースの画像パスを処理していない可能性
-   - 原因調査 → TDD で修正
-
-3. **Content token missing from JSON** (18ファイル):
-   - RBKC 変換漏れ（RST → JSON で落とされたトークン）
-   - 各ファイルを調査して converter/run.py の修正箇所を特定
-   - 修正は converter 側（verify は変更しない）
-
-#### Steps
-- [ ] `int[]` 偽陽性修正: ユーザー承認 → UT → RED → 実装 → GREEN
-- [ ] `nablarch-async-pattern.png` 未コピー修正: 原因調査 → TDD で修正
-- [ ] Content token missing 18ファイルを調査・分類
-  - [ ] 共通パターンの特定（同じ converter バグが複数ファイルに出ているか）
-  - [ ] converter/run.py 修正 → TDD で対応
-- [ ] `pytest` 全通過
-- [ ] `bash rbkc.sh verify 6` FAIL 0件確認
+- [ ] 既存知識ファイルの hints 構造を調査（どのフォーマットで hints が存在するか確認）
+- [ ] `run.py` または converters の hints 引き継ぎロジックを TDD で実装
+  - [ ] テスト作成 → RED 確認
+  - [ ] 実装 → GREEN 確認
+  - [ ] 全テスト通過確認（`pytest`）
 - [ ] Software Engineer + QA Engineer エキスパートレビュー
 - [ ] コミット
 
 ---
 
-### Phase 17-B: verify 再設計 — Check C 完全書き直し + JSON/docs MD 一致チェック追加
+### Phase V1: 既存 verify を削除してプッシュ
 
-**実装済み（session 8）**:
-- `build_label_map`、`check_source_links`、`check_json_docs_md_consistency` 実装・テスト済み
-- 全テスト: 362件通過
-- committed `8242620e`, `5f1dcbdf`, `41c943a0`
+**背景**: 現在の `verify.py` と `tests/ut/test_verify.py` は旧設計（Check A/B/C/D/E/F/H）ベースで書かれており、新設計（QC1–QC6 / QL1–QL2 / QO1–QO5）と対応が取れていない。作り直しのためまず削除する。
 
-**残作業（Phase 17-R の後に実施）**:
+**Steps:**
+- [ ] `tools/rbkc/scripts/verify.py` の内容を削除（空ファイルまたはスタブに置き換え）
+- [ ] `tools/rbkc/tests/ut/test_verify.py` を削除
+- [ ] `verify.py` を参照している他モジュール（`run.py` 等）の import エラーがないことを確認
+- [ ] `pytest` 実行 — verify テスト以外が全通過することを確認
+- [ ] コミット → プッシュ
 
-#### Steps
-- [ ] `bash rbkc.sh verify 6` — FAIL 0件確認
+---
+
+### Phase V2: verify 実装計画 → エキスパートレビュー → ユーザー確認
+
+**背景**: `rbkc-verify-quality-design.md` の各観点（QC1–QC6 / QL1–QL2 / QO1–QO5）を TDD で実装するための詳細計画を立て、実施前にレビューを受ける。
+
+**Steps:**
+- [ ] `rbkc-verify-quality-design.md` を読み込み、実装サブフェーズ（V2-1, V2-2, ...）に分解して計画を作成
+  - 各サブフェーズに: 対象観点、テストケース案、実装方針を記載
+  - 依存関係と実装順序を明示する
+- [ ] QA Engineer エキスパートレビュー（テストケース網羅性・設計妥当性）
+- [ ] Software Engineer エキスパートレビュー（アーキテクチャ・実装可能性）
+
+---
+
+### Phase V3: verify TDD 実装
+
+**前提**: Phase V2 でユーザー承認済みの計画に従って実施。
+
+**実装観点（`rbkc-verify-quality-design.md` の ❌ 項目）**:
+
+| ID | 観点 | RST | MD | Excel |
+|----|------|:---:|:---:|:----:|
+| QC1 | 完全性 | ❌ | ❌ | ❌ |
+| QC2 | 正確性 | ❌ | ❌ | ❌ |
+| QC3 | 非重複性 | ❌ | ❌ | ❌ |
+| QC4 | 配置正確性 | ❌ | ❌ | — |
+| QC5 | 形式純粋性 | ❌ | ❌ | — |
+| QC6 | hints 完全性 | ❌ | ❌ | ❌ |
+| QL1 | 内部リンクの正確性 | ❌ | ❌ | — |
+| QL2 | 外部リンクの一致 | ❌ | ❌ | — |
+| QO3 | 目次ページの除外 | ❌ | — | — |
+| QO5 | docs MD 整合性（content 完全一致） | ❌ | ❌ | ❌ |
+
+**Steps（各サブフェーズ共通）:**
+- [ ] テスト作成 → RED 確認
+- [ ] 実装 → GREEN 確認
+- [ ] 全テスト通過確認（`pytest`）
 - [ ] Software Engineer + QA Engineer エキスパートレビュー
 - [ ] コミット
+
+---
+
+### Phase V4: v6 で生成 + 検証 → verify 動作確認
+
+**前提**: Phase V3 完了
+
+**Steps:**
+- [ ] `bash rbkc.sh create 6` — v6 知識ファイルを生成
+- [ ] `bash rbkc.sh verify 6` — FAIL 件数を確認・記録
+- [ ] FAIL が出た場合: 原因分析 → RBKC 側（verify ではなく converter/run.py 等）を修正
+  - 各 FAIL について修正を TDD で実施
+  - 修正後 verify を再実行して FAIL 0件になるまで繰り返す
+- [ ] FAIL 0件確認 → コミット
 
 ---
 
@@ -172,10 +160,9 @@ MD (3ファイル):
 - [x] docs.py: assets/ リンクを docs MD の位置から相対解決 — committed `008e8420`
   - → verify FAIL: 351件 → 50件（docs MD assets link 301件解消）
 - [x] Rules整理: development.md追加、work-log/rbkc/pr.md更新 — committed `aa08f489`
-- [x] Phase 17-A: verify コンテンツチェック 再設計（diff ベース全面書き直し）
-  - `strip_md_syntax()`, `classify_line()`, `_classify_source_lines()`, `_build_token_categories()` 新規
-  - `check_content()`, `check_docs_md_content()` 全面書き直し
-  - `_json_text()` に `data["title"]` 追加、`_INLINE_ROLE_RE` を名前空間ロール対応
-  - テスト: 60件 → 91件（31件追加）
-  - verify FAIL: 50ファイル → **20ファイル**（偽陽性解消、本物の変換漏れのみ残存）
-  - committed `ff956aa8`, `37067033`
+- [x] Phase 17-R: verify 品質保証設計ドキュメント作成・レビュー完了（旧 Phase 17-B/17-C/17-A の verify コードは新設計で作り直し）
+  - `tools/rbkc/docs/rbkc-verify-quality-design.md` を新規作成（旧 requirement-and-approach.md を全面リファクタリング）
+  - QA エキスパートレビュー2回実施、指摘事項をすべて反映
+  - 最終状態: QC1–QC6 / QL1–QL2 / QO1–QO5 の全観点定義済み
+  - **既存 verify.py（Phase 11〜17-A で実装済み）は Phase V1 で削除・作り直しへ**
+  - committed `d020efd2` 〜 `2464a55c`
