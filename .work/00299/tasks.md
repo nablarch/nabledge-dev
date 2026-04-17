@@ -2,44 +2,13 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 9)
+**Updated**: 2026-04-17 (session 10)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
 ---
 
 ## In Progress
-
-### Phase 17-R: verify 要件整理・リファクタリング
-
-**背景（session 9 での議論）**:
-- verify の現状チェック内容を精査した結果、多数のギャップが判明
-- 要件定義ドキュメント `tools/rbkc/docs/rbkc-verify-requirement-and-approach.md` を作成・コミット済み（`fea9e3d6`、FB対応後リネーム）
-- 以下の決定事項あり:
-
-**決定事項**:
-1. **verify の基本アルゴリズムを削除ベースに再設計**: JSON content をソースから順番に削除し、残りが構文要素だけかチェック（現状のトークン集合差分より精度が高い）
-2. **E2Eテスト削減**: コンバータ出力をアサートするE2Eテストは verify で担保できるため削除。test_cli.py は CLI が呼び出せるレベルの最低限のゴールデンパステストのみ残す
-3. **verify.py リファクタリング**: 以下のコードクオリティ問題を修正
-   - `_MIN_TOKEN_COVERAGE = 0.7`、`_MAX_SAMPLE = 100` デッドコード削除
-   - モジュール docstring を実装に合わせて更新
-   - `verify_file()` が旧 `check_internal_links`（Legacy Check C）を呼んでいるバグ修正
-
-**verifyのギャップ一覧**（`rbkc-verify-requirement-and-approach.md` の G1〜G10 参照）:
-- G1: コンテンツ完全変換（削除ベース未実装） ← 最重要
-- G2: セクション配置正確性
-- G3: Excel コンテンツチェック完全スキップ
-- G4: JSON ゴーストセクション検知なし
-- G5: RST 構文残存チェックなし
-- G6: no_knowledge_content 誤分類検知なし
-- G7: Check E content が先頭50文字サンプルのみ
-- G8: index.toon フォーマット検証なし
-- G9: docs MD `<details>` 構造検証なし
-- G10: hints のソース由来確認なし
-
-**Steps:**
-- [x] `rbkc-verify-requirement.md` のユーザーFB対応（レビュー → 修正 → 承認）— FB対応: ファイル名・タイトル変更、要件とアプローチを分離、担保観点表を追加
-- [ ] 承認後: tasks.md を更新して作業再開
 
 ---
 
@@ -166,6 +135,13 @@ MD (3ファイル):
 ---
 
 ## Done
+
+- [x] Phase 17-R: verify 品質保証設計ドキュメント作成・レビュー完了
+  - `tools/rbkc/docs/rbkc-verify-quality-design.md` を新規作成（旧 requirement-and-approach.md を全面リファクタリング）
+  - QA エキスパートレビュー2回実施、指摘事項をすべて反映
+  - 最終状態: QC1–QC6 / QL1–QL2 / QO1–QO5 の全観点定義済み、検証方法・マトリクス整合済み
+  - committed `d020efd2` 〜 `2464a55c`（本セッション分）
+  - **次のステップ**: 本ドキュメントを仕様として Phase 17-C / 17-B / 18 以降の実装を進める
 
 - [x] Phase 1: KC cache → hints mapping (`scripts/hints.py`) — committed `f78304b4`
 - [x] Phase 2: RST converter with full directive support — committed `5913ff6e`, `1b62c4c4`, `9cbbc729`
