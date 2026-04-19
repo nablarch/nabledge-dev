@@ -9,7 +9,8 @@ import pytest
 
 from scripts.hints import build_hints_index, lookup_hints
 
-V6_CACHE_ROOT = Path("tools/knowledge-creator/.cache/v6")
+_REPO_ROOT = Path(__file__).parents[4]
+V6_CACHE_ROOT = _REPO_ROOT / "tools/knowledge-creator/.cache/v6"
 
 
 @pytest.fixture(scope="module")

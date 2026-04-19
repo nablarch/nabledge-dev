@@ -5,7 +5,8 @@ import pytest
 
 from scripts.converters.md import convert
 
-V6_GUIDE_ROOT = Path(
+_REPO_ROOT = Path(__file__).parents[4]
+V6_GUIDE_ROOT = _REPO_ROOT / (
     ".lw/nab-official/v6/nablarch-system-development-guide"
     "/Nablarchシステム開発ガイド/docs/nablarch-patterns"
 )
