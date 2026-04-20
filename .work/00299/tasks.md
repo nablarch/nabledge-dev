@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 18)
+**Updated**: 2026-04-20 (session 19)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -74,8 +74,13 @@
 
 | ID | 対象 | フォーマット | 依存 |
 |----|------|------------|------|
-| V2-4 | QC1–QC3（Excel sequential-delete） | Excel | V2-4-pre |
 | V2-4-pre | Excel mapping 追加 + scan 拡張 | 設定・scan.py | なし |
+| V2-4 | QC1–QC3（Excel sequential-delete） | Excel | V2-4-pre |
+
+**設計書更新状況（session 19）**:
+- `rbkc-verify-quality-design.md` の Excel 検証セクションを集合比較 → sequential-delete に更新済み（未コミット）
+- xls（`.xlsx` と `.xls` 両対応）の記述追加済み（未コミット）
+- 旧テスト `TestVerifyFileExcelQC` のクラス見出しコメントを更新済み（旧実装はまだ残存、TDD作り直し未着手）
 
 **V2-4-pre タスク詳細（V2-4 の前提）:**
 

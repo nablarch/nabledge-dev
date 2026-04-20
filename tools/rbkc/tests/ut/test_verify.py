@@ -1480,11 +1480,11 @@ class TestCheckSourceLinks:
 
 
 # ---------------------------------------------------------------------------
-# V2-4: Excel QC1/QC2/QC3 — set-comparison via verify_file
+# V2-4: Excel QC1/QC2/QC3 — sequential-delete via verify_file (placeholder)
 # ---------------------------------------------------------------------------
 
 class TestVerifyFileExcelQC:
-    """verify_file for xlsx: QC1/QC2/QC3 via set-comparison."""
+    """verify_file for xlsx: QC1/QC2/QC3 via sequential-delete algorithm."""
 
     def _make_xlsx(self, tmpdir, rows: list[list]) -> "Path":
         """Create a minimal xlsx file with given rows in sheet1."""
