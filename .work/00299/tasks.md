@@ -64,6 +64,10 @@
 - [x] V2-5b テスト補完＋バグ修正 — committed `d35e55f7`（336 passed, 2 skipped）
   - SE + QA エキスパートレビュー実施・全指摘修正済み
 
+**完了済みサブフェーズ（続き2）**:
+- [x] V2-4 QC1–QC3（Excel sequential-delete）— committed `11671303`（SE + QA エキスパートレビュー実施・全指摘修正済み）
+- [x] V2-4-pre Excel mapping 追加 + scan 拡張 + xls コンバータ — committed `dfd6039f`, `9c86f0d4`, `3ee1b910`（SE + QA エキスパートレビュー実施・全指摘修正済み）
+
 **完了済みサブフェーズ（続き）**:
 - [x] V2-6 QC4（配置正確性）— committed `131bce43`（SE + QA エキスパートレビュー実施・全指摘修正適用済み）
 - [x] V2-7 QO3（目次ページ除外）— **実装不要**（設計書の注記: QC1/QC2のスコープで扱う、独立した品質観点を設けない）
@@ -100,14 +104,14 @@
 | v1.2 | `*-releasenote-detail.xls` (1.2.0, 1.2.1, 1.2.2) | `all-releasenote/nablarch-1.2-all-releasenote/1.2.0/, 1.2.1/, 1.2.2/` | xls、mapping空+scan対象外→要追加 |
 
 作業内容:
-- [ ] `scan.py` の `_source_roots` に `all-releasenote/nablarch-{version}-all-releasenote/` を各バージョンのルートとして追加
-- [ ] `scan.py` の xlsx スキャンに `.xls` 拡張子も追加（xls対応）
-- [ ] `tools/rbkc/mappings/v1.4.json` に xlsx_patterns 追加（`-releasenote.xlsx` endswith）
-- [ ] `tools/rbkc/mappings/v1.3.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）
-- [ ] `tools/rbkc/mappings/v1.2.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）
-- [ ] `tools/rbkc/mappings/v5.json` に all-releasenote スキャン対応（`-releasenote.xlsx` pattern は既存、ディレクトリ追加のみ）
-- [ ] xls コンバータ実装（`xlsx_releasenote.py` の xls 対応、または専用コンバータ）
-- [ ] TDD: テスト → RED → 実装 → GREEN → 全テスト通過 → エキスパートレビュー
+- [x] `scan.py` の `_source_roots` に `all-releasenote/nablarch-{version}-all-releasenote/` を各バージョンのルートとして追加 — committed `dfd6039f`
+- [x] `scan.py` の xlsx スキャンに `.xls` 拡張子も追加（xls対応）— committed `dfd6039f`
+- [x] `tools/rbkc/mappings/v1.4.json` に xlsx_patterns 追加（`-releasenote.xlsx` endswith）— committed `9c86f0d4`
+- [x] `tools/rbkc/mappings/v1.3.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）— committed `9c86f0d4`
+- [x] `tools/rbkc/mappings/v1.2.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）— committed `9c86f0d4`
+- [x] `tools/rbkc/mappings/v5.json` に all-releasenote スキャン対応（`-releasenote.xlsx` pattern は既存、ディレクトリ追加のみ）— scan.py の all-releasenote root 追加で対応済み
+- [x] xls コンバータ実装（`xlsx_releasenote.py` の xls 対応）— committed `3ee1b910`
+- [x] TDD: テスト → RED → 実装 → GREEN → 全テスト通過 → エキスパートレビュー
 
 **開発ルール追記（完了済み）:**
 - [x] `.claude/rules/development.md` にテスト作成観点（バグ露呈ケース・エッジケース必須）を追記
