@@ -30,19 +30,19 @@ import json
 import sys
 from pathlib import Path
 
-from scripts.classify import FileInfo, classify_sources
-from scripts.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
-from scripts.docs import generate_docs
-from scripts.hints import build_hints_index, lookup_hints as _lookup_hints_kc
-from scripts.index import generate_index
-from scripts.resolver import collect_asset_refs, copy_assets
-from scripts.scan import scan_sources
-from scripts.verify import (
+from scripts.create.classify import FileInfo, classify_sources
+from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
+from scripts.create.docs import generate_docs
+from scripts.create.hints import build_hints_index, lookup_hints as _lookup_hints_kc
+from scripts.create.index import generate_index
+from scripts.create.resolver import collect_asset_refs, copy_assets
+from scripts.create.scan import scan_sources
+from scripts.common.labels import build_label_map
+from scripts.verify.verify import (
     verify_file,
     verify_docs_md,
     check_index_coverage,
     check_docs_coverage,
-    build_label_map,
     check_source_links,
     check_json_docs_md_consistency,
 )
@@ -55,17 +55,17 @@ from scripts.verify import (
 def _converter_for(fmt: str, filename: str):
     """Return the appropriate convert() function for the given format/filename."""
     if fmt == "rst":
-        from scripts.converters.rst import convert
+        from scripts.create.converters.rst import convert
         return convert
     if fmt == "md":
-        from scripts.converters.md import convert
+        from scripts.create.converters.md import convert
         return convert
     if fmt == "xlsx":
         if filename.endswith("-releasenote.xlsx") or "releasenote" in filename:
-            from scripts.converters.xlsx_releasenote import convert
+            from scripts.create.converters.xlsx_releasenote import convert
             return convert
         # Default xlsx: security table
-        from scripts.converters.xlsx_security import convert
+        from scripts.create.converters.xlsx_security import convert
         return convert
     raise ValueError(f"Unknown format: {fmt!r}")
 
@@ -390,7 +390,7 @@ def verify(
     all_ok = True
 
     # Build global RST label map once for Check C source-driven link verification
-    from scripts.scan import _source_roots
+    from scripts.create.scan import _source_roots
     label_map: dict = {}
     for src_root in _source_roots(version, repo_root):
         if src_root.exists():

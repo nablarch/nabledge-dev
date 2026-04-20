@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.converters.md import convert
+from scripts.create.converters.md import convert
 
 _REPO_ROOT = Path(__file__).parents[4]
 V6_GUIDE_ROOT = _REPO_ROOT / (

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.resolver import AssetRef, build_label_map, collect_asset_refs, copy_assets
+from scripts.create.resolver import AssetRef, build_label_map, collect_asset_refs, copy_assets
 
 
 # ---------------------------------------------------------------------------

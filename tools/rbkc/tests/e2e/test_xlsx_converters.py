@@ -30,22 +30,22 @@ _V5_SECURITY = _ROOT / ".lw/nab-official/v5/nablarch-system-development-guide/Sa
 class TestReleasenoteConverter:
     @pytest.fixture(scope="class")
     def result_v6(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V6_RELEASENOTE)
 
     @pytest.fixture(scope="class")
     def result_v6u1(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V6U1_RELEASENOTE)
 
     @pytest.fixture(scope="class")
     def result_v5u14(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V5U14_RELEASENOTE)
 
     @pytest.fixture(scope="class")
     def result_v5u26(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V5U26_RELEASENOTE)
 
     def test_title_extracted(self, result_v6):
@@ -115,12 +115,12 @@ class TestReleasenoteConverter:
 class TestSecurityConverter:
     @pytest.fixture(scope="class")
     def result_v6(self):
-        from scripts.converters.xlsx_security import convert
+        from scripts.create.converters.xlsx_security import convert
         return convert(_V6_SECURITY)
 
     @pytest.fixture(scope="class")
     def result_v5(self):
-        from scripts.converters.xlsx_security import convert
+        from scripts.create.converters.xlsx_security import convert
         return convert(_V5_SECURITY)
 
     def test_section_count_v6(self, result_v6):
@@ -175,22 +175,22 @@ class TestSecurityConverter:
 class TestXlsReleasenoteConverter:
     @pytest.fixture(scope="class")
     def result_v13(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V13_XLS)
 
     @pytest.fixture(scope="class")
     def result_v13_1(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V13_1_XLS)
 
     @pytest.fixture(scope="class")
     def result_v12(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V12_XLS)
 
     @pytest.fixture(scope="class")
     def result_v12_1(self):
-        from scripts.converters.xlsx_releasenote import convert
+        from scripts.create.converters.xlsx_releasenote import convert
         return convert(_V12_1_XLS)
 
     def test_title_extracted_v13(self, result_v13):

@@ -1,7 +1,7 @@
 """Unit tests for Phase 5: Markdown converter."""
 import pytest
 
-from scripts.converters.md import convert
+from scripts.create.converters.md import convert
 
 
 # ---------------------------------------------------------------------------

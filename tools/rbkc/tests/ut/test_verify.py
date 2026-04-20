@@ -12,7 +12,7 @@ class TestCheckJsonDocsMdConsistency:
     """QO5: JSON sections content must appear verbatim in docs MD."""
 
     def _check(self, data, docs_md_text):
-        from scripts.verify import check_json_docs_md_consistency
+        from scripts.verify.verify import check_json_docs_md_consistency
         return check_json_docs_md_consistency(data, docs_md_text)
 
     def _make_data(self, sections):
@@ -127,7 +127,7 @@ class TestCheckFormatPurity:
     """QC5: Format-specific syntax must not remain in JSON content/title."""
 
     def _check(self, data, fmt):
-        from scripts.verify import check_format_purity
+        from scripts.verify.verify import check_format_purity
         return check_format_purity(data, fmt)
 
     def _make_data(self, sections, title="テスト"):
@@ -298,7 +298,7 @@ class TestCheckHintsCompleteness:
     """QC6: Hints from previous run must all be present in current output."""
 
     def _check(self, data, prev_hints):
-        from scripts.verify import check_hints_completeness
+        from scripts.verify.verify import check_hints_completeness
         return check_hints_completeness(data, prev_hints)
 
     def _make_data(self, file_id, sections):
@@ -396,7 +396,7 @@ class TestVerifyFileContentRstMd:
     """QC1/QC2/QC3: RST/MD content verified via sequential-delete algorithm."""
 
     def _check(self, source_text, data, fmt):
-        from scripts.verify import check_content_completeness
+        from scripts.verify.verify import check_content_completeness
         return check_content_completeness(source_text, data, fmt)
 
     def _make_data(self, file_id, sections):
@@ -660,7 +660,7 @@ class TestVerifyFileContentQC4:
     """QC4: Content from source section A must not appear in a different JSON section."""
 
     def _check(self, source_text, data, fmt):
-        from scripts.verify import check_content_completeness
+        from scripts.verify.verify import check_content_completeness
         return check_content_completeness(source_text, data, fmt)
 
     def _make_data(self, file_id, sections):
@@ -847,7 +847,7 @@ class TestCheckExternalUrls:
     """QL2: External URLs in source must appear in JSON content/title."""
 
     def _check(self, source_text, data, fmt):
-        from scripts.verify import check_external_urls
+        from scripts.verify.verify import check_external_urls
         return check_external_urls(source_text, data, fmt)
 
     def _make_data(self, sections, title="テスト"):
@@ -1097,7 +1097,7 @@ class TestBuildLabelMap:
     """build_label_map: RST label → section title mapping."""
 
     def _build(self, rst_text: str, filename: str = "test.rst") -> dict:
-        from scripts.verify import build_label_map
+        from scripts.verify.verify import build_label_map
         import tempfile, os
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, filename)
@@ -1130,7 +1130,7 @@ class TestBuildLabelMap:
 
     def test_multiple_rst_files_combined(self):
         """Labels from multiple .rst files are merged into one map."""
-        from scripts.verify import build_label_map
+        from scripts.verify.verify import build_label_map
         import tempfile, os
         from pathlib import Path
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1146,7 +1146,7 @@ class TestBuildLabelMap:
 
     def test_nonrst_files_ignored(self):
         """Non-.rst files in the directory are ignored."""
-        from scripts.verify import build_label_map
+        from scripts.verify.verify import build_label_map
         import tempfile, os
         from pathlib import Path
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1164,7 +1164,7 @@ class TestBuildLabelMap:
 
     def test_nested_subdirectory_labels_included(self):
         """Labels in .rst files inside subdirectories are found recursively."""
-        from scripts.verify import build_label_map
+        from scripts.verify.verify import build_label_map
         import tempfile, os
         from pathlib import Path
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1187,7 +1187,7 @@ class TestCheckSourceLinks:
 
     def _check(self, source_text: str, fmt: str, data: dict,
                label_map: dict | None = None, source_path=None) -> list[str]:
-        from scripts.verify import check_source_links
+        from scripts.verify.verify import check_source_links
         return check_source_links(source_text, fmt, data, label_map or {}, source_path)
 
     def _make_data(self, sections, title="テスト") -> dict:
@@ -1509,7 +1509,7 @@ class TestVerifyFileExcelQC:
     def _check(self, xlsx_path, json_data: dict) -> list[str]:
         import json, tempfile
         from pathlib import Path
-        from scripts.verify import verify_file
+        from scripts.verify.verify import verify_file
         with tempfile.TemporaryDirectory() as tmpdir:
             json_path = Path(tmpdir) / "test.json"
             json_path.write_text(json.dumps(json_data, ensure_ascii=False), encoding="utf-8")
@@ -1650,7 +1650,7 @@ class TestVerifyFileExcelQC:
     def test_pass_fmt_not_xlsx_returns_empty(self, tmp_path):
         """verify_file with fmt != 'xlsx' returns empty list without reading files."""
         import json
-        from scripts.verify import verify_file
+        from scripts.verify.verify import verify_file
         json_path = tmp_path / "test.json"
         json_path.write_text(json.dumps({"id": "x", "title": "T", "no_knowledge_content": False, "sections": []}))
         assert verify_file(tmp_path / "test.rst", json_path, "rst") == []

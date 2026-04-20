@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.converters.rst import convert
+from scripts.create.converters.rst import convert
 
 _REPO_ROOT = Path(__file__).parents[4]
 _V14_BASE = _REPO_ROOT / ".lw/nab-official/v1.4"
@@ -55,7 +55,7 @@ def _all_content(result) -> str:
 class TestAdmonitionDirective:
     @pytest.fixture(scope="class")
     def result(self):
-        pytest.importorskip("scripts.converters.rst")
+        pytest.importorskip("scripts.create.converters.rst")
         if not _ADMONITION_FILE.exists():
             pytest.skip("v1.4 source not available")
         return convert(

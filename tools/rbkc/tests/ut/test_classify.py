@@ -5,8 +5,8 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.classify import classify_sources, FileInfo, _parent_prefix
-from scripts.scan import SourceFile
+from scripts.create.classify import classify_sources, FileInfo, _parent_prefix
+from scripts.create.scan import SourceFile
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class TestAutoDisambiguation:
                 "rst",
             ),
         ]
-        with patch("scripts.classify._load_mappings", return_value=_mock_mappings()):
+        with patch("scripts.create.classify._load_mappings", return_value=_mock_mappings()):
             result = classify_sources(sources, "6", tmp_path)
 
         assert len(result) == 2
@@ -112,7 +112,7 @@ class TestAutoDisambiguation:
                 "rst",
             ),
         ]
-        with patch("scripts.classify._load_mappings", return_value=_mock_mappings()):
+        with patch("scripts.create.classify._load_mappings", return_value=_mock_mappings()):
             result = classify_sources(sources, "6", tmp_path)
 
         ids = {fi.file_id for fi in result}
@@ -130,7 +130,7 @@ class TestAutoDisambiguation:
                 "rst",
             ),
         ]
-        with patch("scripts.classify._load_mappings", return_value=_mock_mappings()):
+        with patch("scripts.create.classify._load_mappings", return_value=_mock_mappings()):
             result = classify_sources(sources, "6", tmp_path)
 
         assert len(result) == 1
@@ -155,7 +155,7 @@ class TestAutoDisambiguation:
                 "rst",
             ),
         ]
-        with patch("scripts.classify._load_mappings", return_value=_mock_mappings()):
+        with patch("scripts.create.classify._load_mappings", return_value=_mock_mappings()):
             result = classify_sources(sources, "6", tmp_path)
 
         assert len(result) == 3
@@ -189,6 +189,6 @@ class TestIrresolvableCollision:
                 "rst",
             ),
         ]
-        with patch("scripts.classify._load_mappings", return_value=_mock_mappings()):
+        with patch("scripts.create.classify._load_mappings", return_value=_mock_mappings()):
             with pytest.raises(ValueError, match="output_path collision"):
                 classify_sources(sources, "6", tmp_path)

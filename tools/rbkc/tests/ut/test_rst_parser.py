@@ -1,6 +1,6 @@
 """Unit tests for RST parser edge cases — Phase 2."""
 import pytest
-from scripts.converters.rst import (
+from scripts.create.converters.rst import (
     _detect_heading_chars,
     _is_underline,
     _parse_grid_table,

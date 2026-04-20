@@ -104,7 +104,7 @@ def knowledge_dir(tmp_path):
 class TestGenerateIndex:
     @pytest.fixture()
     def index_path(self, knowledge_dir, tmp_path):
-        from scripts.index import generate_index
+        from scripts.create.index import generate_index
         out = tmp_path / "index.toon"
         generate_index(knowledge_dir, version="6", output_path=out)
         return out
@@ -163,7 +163,7 @@ class TestGenerateIndex:
 class TestGenerateDocs:
     @pytest.fixture()
     def docs_dir(self, knowledge_dir, tmp_path):
-        from scripts.docs import generate_docs
+        from scripts.create.docs import generate_docs
         out = tmp_path / "docs"
         generate_docs(knowledge_dir, docs_dir=out)
         return out

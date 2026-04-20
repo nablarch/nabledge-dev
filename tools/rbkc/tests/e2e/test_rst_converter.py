@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.converters.rst import (
+from scripts.create.converters.rst import (
     RSTResult,
     Section,
     _detect_heading_chars,

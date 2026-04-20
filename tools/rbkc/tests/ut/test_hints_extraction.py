@@ -2,7 +2,7 @@
 import json
 import pytest
 from pathlib import Path
-from scripts.hints import build_hints_index, lookup_hints
+from scripts.create.hints import build_hints_index, lookup_hints
 
 
 # ---------------------------------------------------------------------------
@@ -12,14 +12,14 @@ from scripts.hints import build_hints_index, lookup_hints
 class TestStage1Deleted:
     def test_extract_hints_removed_from_module(self):
         """extract_hints はモジュールから削除されている。"""
-        import scripts.hints as hints_mod
+        import scripts.create.hints as hints_mod
         assert not hasattr(hints_mod, "extract_hints"), (
             "extract_hints should be removed (Stage 1 deleted)"
         )
 
     def test_merge_hints_removed_from_module(self):
         """merge_hints はモジュールから削除されている。"""
-        import scripts.hints as hints_mod
+        import scripts.create.hints as hints_mod
         assert not hasattr(hints_mod, "merge_hints"), (
             "merge_hints should be removed (no longer needed)"
         )

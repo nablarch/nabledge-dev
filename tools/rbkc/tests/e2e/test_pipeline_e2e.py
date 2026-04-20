@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.converters.rst import convert
-from scripts.hints import build_hints_index, lookup_hints
+from scripts.create.converters.rst import convert
+from scripts.create.hints import build_hints_index, lookup_hints
 
 _REPO_ROOT = Path(__file__).parents[4]
 V6_DOC_ROOT = _REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"

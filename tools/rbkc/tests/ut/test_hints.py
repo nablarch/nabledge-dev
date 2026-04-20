@@ -2,7 +2,7 @@
 import json
 import pytest
 from pathlib import Path
-from scripts.hints import build_hints_index, lookup_hints, _map_step_a
+from scripts.create.hints import build_hints_index, lookup_hints, _map_step_a
 
 
 # ---------------------------------------------------------------------------

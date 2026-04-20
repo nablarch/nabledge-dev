@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.hints import build_hints_index, lookup_hints
+from scripts.create.hints import build_hints_index, lookup_hints
 
 _REPO_ROOT = Path(__file__).parents[4]
 V6_CACHE_ROOT = _REPO_ROOT / "tools/knowledge-creator/.cache/v6"

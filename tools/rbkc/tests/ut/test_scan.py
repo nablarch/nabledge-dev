@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.scan import scan_sources, SourceFile
+from scripts.create.scan import scan_sources, SourceFile
 
 
 def _make_repo(tmp_path: Path, version: str) -> Path:

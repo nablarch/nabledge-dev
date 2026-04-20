@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.resolver import AssetRef, build_label_map, collect_asset_refs, copy_assets
+from scripts.create.resolver import AssetRef, build_label_map, collect_asset_refs, copy_assets
 
 _REPO_ROOT = Path(__file__).parents[4]
 V6_DOC_ROOT = _REPO_ROOT / ".lw/nab-official/v6/nablarch-document/ja"

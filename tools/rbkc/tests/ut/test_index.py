@@ -2,7 +2,7 @@
 import json
 import pytest
 from pathlib import Path
-from scripts.index import _collect_hints, generate_index
+from scripts.create.index import _collect_hints, generate_index
 
 
 # ---------------------------------------------------------------------------

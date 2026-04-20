@@ -64,3 +64,11 @@ A test suite that only covers the happy path is incomplete. The question to ask 
 ## Tests Must Pass Before PR
 
 All automated tests must pass before creating a PR. Fix all failures — including pre-existing ones — before requesting review.
+
+## No Test Skipping
+
+Do not use `pytest.mark.skip`, `pytest.mark.skipif`, or `pytest.importorskip` to bypass tests.
+
+- If a test requires an external resource that may be absent, either make it a proper conditional skip with a comment explaining the exact condition, or restructure the test to not depend on the resource
+- `pytest.importorskip` on internal modules is not allowed — if the module path changes, fix the import, do not skip
+- Tests that are skipped silently hide regressions; every skip must be treated as a failure to investigate
