@@ -121,6 +121,29 @@
 
 ---
 
+### Phase V2-4-post: Excel コンバーター修正（verify 通過のため）
+
+**前提**: V2-4（Excel QC1–QC3 verify 実装）完了後に着手
+
+**背景**: V2-4 の verify 実装で「Excel のあるべき変換ルール」が確定する。verify が通るように生成側（Excel コンバーター）を修正する。
+
+**確認観点（V2-4 完了時に判明する）:**
+
+- [ ] `xlsx_releasenote.py`: section title がソースセル値から構成されているか（`No.{no} {title_text}` 形式でセル値を使用しているか）
+- [ ] `xlsx_releasenote.py`: section content に含まれる Markdown 構文（`**リリース区分**:` 等）が QC2 に引っかからないか
+- [ ] `xlsx_security.py`: section title がソースセル値から構成されているか（`{no}. {name}` 形式でセル値を使用しているか）
+- [ ] `xlsx_security.py`: section content に含まれる Markdown テーブル記号・強調記号が QC2 に引っかからないか
+- [ ] xls 対応コンバーター: 同様の確認
+
+**Steps:**
+- [ ] `bash rbkc.sh verify 6` を実行して Excel 由来ファイルの FAIL を確認
+- [ ] 各 FAIL について原因を分析（コンバーターのバグか、設計書の許容構文要素リスト漏れか）
+- [ ] コンバーター修正が必要な場合: TDD で修正（テスト → RED → 実装 → GREEN）
+- [ ] 設計書の許容構文要素リスト追加が必要な場合: ユーザー確認 → 設計書更新 → 実装
+- [ ] 全 FAIL 解消確認
+
+---
+
 ### Phase V4: v6 で生成 + 検証 → verify 動作確認
 
 **前提**: Phase V3 完了
