@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 19)
+**Updated**: 2026-04-20 (session 20)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -125,26 +125,44 @@
 
 ---
 
-### Phase V2-4-post: Excel コンバーター修正（verify 通過のため）
+### Phase V2-4-post: Excel コンバーター修正 + RST :ref: コンバーター修正（verify 通過のため）
 
 **前提**: V2-4（Excel QC1–QC3 verify 実装）完了後に着手
 
-**背景**: V2-4 の verify 実装で「Excel のあるべき変換ルール」が確定する。verify が通るように生成側（Excel コンバーター）を修正する。
+**背景**: V2-4 の verify 実装で「Excel のあるべき変換ルール」が確定する。verify が通るように生成側（Excel コンバーター・RST コンバーター）を修正する。
 
-**確認観点（V2-4 完了時に判明する）:**
+**session 20 調査結果 — `bash rbkc.sh verify 6` で 4811 FAIL（全件 FAIL）:**
 
-- [ ] `xlsx_releasenote.py`: section title がソースセル値から構成されているか（`No.{no} {title_text}` 形式でセル値を使用しているか）
-- [ ] `xlsx_releasenote.py`: section content に含まれる Markdown 構文（`**リリース区分**:` 等）が QC2 に引っかからないか
-- [ ] `xlsx_security.py`: section title がソースセル値から構成されているか（`{no}. {name}` 形式でセル値を使用しているか）
-- [ ] `xlsx_security.py`: section content に含まれる Markdown テーブル記号・強調記号が QC2 に引っかからないか
-- [ ] xls 対応コンバーター: 同様の確認
+| タイプ | 件数 | 原因ファイル |
+|--------|------|-------------|
+| QC1（欠落） | 2726 | リリースノート xlsx（ヘッダー行セルがJSONに未収録） |
+| QC2（捏造） | 1504 | セキュリティ表 xlsx（Markdown固定テーブルヘッダーがソースに存在しない） |
+| QL1（内部リンク） | 543 | RST の `:ref:`label`` がラベル名のまま出力され、ラベルの解決が未実装 |
+| QC3（重複） | 38 | セル値が重複してJSONに現れている |
+
+**確認観点（分析済み）:**
+
+- [ ] `xlsx_releasenote.py`:
+  - 問題: ヘッダー行（Row1〜4: `■Nablarch 6u1 リリースノート`、`コンテンツ`、`No.`、`リリース\n区分` 等）が `_is_data_row` のスキップ対象でJSONに未収録 → QC1
+  - 問題: `**リリース区分**: {kubun}` の固定文字列がQC2の対象になる可能性（Markdown許容構文リストで除外済みのため現時点では未FAIL）
+  - 対応: ヘッダー行セルをJSONに含めるか、ヘッダー行をソーストークンの除外対象にするか要検討 → ユーザー確認必要
+- [ ] `xlsx_security.py`:
+  - 問題: `| 対策の性質 | 実施項目 | 番号 | 対応Nablarch機能 | 対応状況 |` の固定ヘッダー行がJSONに追加されているが、このテキストはExcelソースに存在しない → QC2
+  - 対応: テーブルヘッダーをソースのセル値から構築するか、Markdown許容構文リストに追加するか要検討 → ユーザー確認必要
+- [ ] RST コンバーター (`rst.py`):
+  - 問題: `:ref:\`label\`` → `label`（ラベル名のまま）、`:ref:\`text <label>\`` → `text` に変換
+  - verify QL1 は「ラベルが指すセクションタイトル」がJSONに含まれるかを検証 → FAIL正当
+  - 対応: `label_map` を使ってラベルをセクションタイトルに解決するよう RST コンバーターを修正
+  - 注意: RST コンバーターは verify とは独立しており、`build_label_map` を直接使えない。コンバーター実行時にlabel_mapを渡す仕組みが必要 → 設計検討必要
 
 **Steps:**
-- [ ] `bash rbkc.sh verify 6` を実行して Excel 由来ファイルの FAIL を確認
-- [ ] 各 FAIL について原因を分析（コンバーターのバグか、設計書の許容構文要素リスト漏れか）
-- [ ] コンバーター修正が必要な場合: TDD で修正（テスト → RED → 実装 → GREEN）
-- [ ] 設計書の許容構文要素リスト追加が必要な場合: ユーザー確認 → 設計書更新 → 実装
-- [ ] 全 FAIL 解消確認
+- [ ] ユーザーとの設計合意（上記3点）
+  - Excel ヘッダー行の扱い: コンバーターで含めるか、verifyで除外するか
+  - セキュリティ表テーブルヘッダー: ソースから構築するか、許容リストに追加するか
+  - RST :ref: 解決: コンバーターにlabel_map渡すアーキテクチャ設計
+- [ ] Excel コンバーター修正（TDD）
+- [ ] RST :ref: 解決修正（TDD）
+- [ ] `bash rbkc.sh verify 6` で FAIL 0件確認
 
 ---
 
