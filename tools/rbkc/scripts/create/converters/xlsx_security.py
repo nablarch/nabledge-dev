@@ -125,16 +125,14 @@ def _group_to_section(group: _VulnGroup) -> Section:
 
     parts: list[str] = []
 
-    # Measure table
+    # Measure table (data rows only; no fixed header — header text not in Excel source)
     if group.rows:
-        header = "| 対策の性質 | 実施項目 | 番号 | 対応Nablarch機能 | 対応状況 |"
-        separator = "|---|---|---|---|---|"
         rows = [
             f"| {_esc(r.nature)} | {_esc(r.action)} | {_esc(r.action_no)}"
             f" | {_esc(r.feature)} | {_esc(r.status)} |"
             for r in group.rows
         ]
-        parts.append("\n".join([header, separator] + rows))
+        parts.append("\n".join(rows))
 
     # Explanations collected from all rows in the group
     for note in group.notes:
