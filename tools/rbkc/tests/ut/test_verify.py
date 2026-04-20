@@ -837,3 +837,253 @@ class TestVerifyFileContentQC4:
         qc4 = [i for i in issues if "QC4" in i]
         assert len(qc4) >= 1
         assert any("'s2'" in i for i in qc4)
+
+
+# ---------------------------------------------------------------------------
+# QL2: 外部URL一致
+# ---------------------------------------------------------------------------
+
+class TestCheckExternalUrls:
+    """QL2: External URLs in source must appear in JSON content/title."""
+
+    def _check(self, source_text, data, fmt):
+        from scripts.verify import check_external_urls
+        return check_external_urls(source_text, data, fmt)
+
+    def _make_data(self, sections, title="テスト"):
+        return {
+            "id": "test-file",
+            "title": title,
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+
+    # --- PASS cases ---
+
+    def test_pass_rst_url_in_content(self):
+        """RST: URL in source appears in JSON content → no issues."""
+        source = "概要\n====\n\n詳細は `公式サイト <https://nablarch.github.io/docs/>`_ を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_md_url_in_content(self):
+        """MD: URL in source appears in JSON content → no issues."""
+        source = "## 概要\n\n詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_pass_no_urls_in_source(self):
+        """Source has no external URLs → no issues."""
+        source = "概要\n====\n\n内部の説明文です。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "内部の説明文です。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        """no_knowledge_content=True → skip QL2 entirely."""
+        source = "https://example.com の情報です。\n"
+        data = {
+            "id": "test-file",
+            "title": "テスト",
+            "no_knowledge_content": True,
+            "sections": [],
+        }
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_url_in_rst_hyperlink_target(self):
+        """RST: URL from hyperlink target definition appears in JSON → no issues."""
+        source = "概要\n====\n\n詳細は ExternalSite_ を参照。\n\n.. _ExternalSite: https://example.com/docs\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細は [ExternalSite](https://example.com/docs) を参照。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_multiple_urls_all_present(self):
+        """Multiple URLs in source, all in JSON → no issues."""
+        source = (
+            "概要\n====\n\n"
+            "`サイトA <https://example.com/a>`_ と `サイトB <https://example.com/b>`_ を参照。\n"
+        )
+        data = self._make_data([
+            {
+                "id": "s1",
+                "title": "概要",
+                "content": "[サイトA](https://example.com/a) と [サイトB](https://example.com/b) を参照。",
+                "hints": [],
+            },
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_url_with_query_and_fragment(self):
+        """URL with query params and fragment: all characters preserved in match."""
+        source = "概要\n====\n\n`参照 <https://example.com/path?q=1#section>`_ を確認。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/path?q=1#section) を確認。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    # --- FAIL cases ---
+
+    def test_fail_ql2_url_missing_from_json(self):
+        """Source URL not in any JSON field → FAIL QL2."""
+        source = "概要\n====\n\n`公式サイト <https://nablarch.github.io/docs/>`_ を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "公式サイトを参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert len(issues) == 1
+        assert "QL2" in issues[0]
+        assert "https://nablarch.github.io/docs/" in issues[0]
+
+    def test_fail_ql2_multiple_urls_one_missing(self):
+        """One of multiple source URLs missing from JSON → FAIL for that URL only."""
+        source = (
+            "概要\n====\n\n"
+            "`サイトA <https://example.com/a>`_ と `サイトB <https://example.com/b>`_ を参照。\n"
+        )
+        data = self._make_data([
+            {
+                "id": "s1",
+                "title": "概要",
+                "content": "[サイトA](https://example.com/a) とサイトBを参照。",
+                "hints": [],
+            },
+        ])
+        issues = self._check(source, data, "rst")
+        ql2_issues = [i for i in issues if "QL2" in i]
+        assert len(ql2_issues) == 1
+        assert "https://example.com/b" in ql2_issues[0]
+
+    def test_fail_ql2_all_urls_missing(self):
+        """All source URLs missing from JSON → FAIL for each."""
+        source = (
+            "概要\n====\n\n"
+            "`サイトA <https://example.com/a>`_ と `サイトB <https://example.com/b>`_ を参照。\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "サイトAとサイトBを参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        ql2_issues = [i for i in issues if "QL2" in i]
+        assert len(ql2_issues) == 2
+
+    def test_fail_ql2_url_truncated_in_json(self):
+        """URL in JSON is truncated (not complete match) → FAIL QL2."""
+        source = "概要\n====\n\n`参照 <https://example.com/full/path>`_ を確認。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/full) を確認。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        ql2_issues = [i for i in issues if "QL2" in i]
+        assert len(ql2_issues) >= 1
+        assert "https://example.com/full/path" in ql2_issues[0]
+
+    def test_fail_ql2_md_url_missing(self):
+        """MD source URL missing from JSON → FAIL QL2."""
+        source = "## 概要\n\n[公式サイト](https://nablarch.github.io/docs/) を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "公式サイトを参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "md")
+        ql2_issues = [i for i in issues if "QL2" in i]
+        assert len(ql2_issues) == 1
+        assert "https://nablarch.github.io/docs/" in ql2_issues[0]
+
+    def test_fail_ql2_identifies_url_in_message(self):
+        """FAIL message contains the missing URL."""
+        source = "概要\n====\n\n`サイト <https://example.com/specific/path>`_ を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "サイトを参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("https://example.com/specific/path" in i for i in issues)
+
+    # --- Edge cases: RST target definition lines ---
+
+    def test_pass_rst_unreferenced_named_target_no_false_positive(self):
+        """RST unreferenced named target URL not in JSON → PASS (target def line excluded)."""
+        source = "概要\n====\n\n内部の説明文です。\n\n.. _Unused: https://example.com/unreferenced\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "内部の説明文です。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_rst_anonymous_target_no_false_positive(self):
+        """RST anonymous target (`__ url`) URL not in JSON → PASS (target def line excluded)."""
+        source = "概要\n====\n\n詳細は `こちら`__ を参照。\n\n__ https://example.com/anon\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細はこちらを参照。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    # --- Edge cases: trailing punctuation ---
+
+    def test_pass_url_with_trailing_period_in_source(self):
+        """Bare URL followed by sentence period: period must not be part of extracted URL."""
+        source = "概要\n====\n\n詳細は https://example.com/path. を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細は https://example.com/path を参照。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_url_with_trailing_comma_in_source(self):
+        """Bare URL followed by comma: comma must not be part of extracted URL."""
+        source = "概要\n====\n\nhttps://example.com/a, https://example.com/b を参照。\n"
+        data = self._make_data([
+            {
+                "id": "s1",
+                "title": "概要",
+                "content": "https://example.com/a, https://example.com/b を参照。",
+                "hints": [],
+            },
+        ])
+        assert self._check(source, data, "rst") == []
+
+    # --- Edge cases: exact URL matching (set comparison) ---
+
+    def test_fail_ql2_url_with_extra_suffix_in_json(self):
+        """Source URL is prefix of JSON URL → FAIL QL2 (substring match would pass incorrectly)."""
+        source = "概要\n====\n\n`サイト <https://example.com/path>`_ を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "[サイト](https://example.com/path-extended) を参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        ql2_issues = [i for i in issues if "QL2" in i]
+        assert len(ql2_issues) == 1
+        assert "https://example.com/path" in ql2_issues[0]
+
+    # --- Edge cases: deduplication ---
+
+    def test_pass_duplicate_url_in_source_missing_from_json_reported_once(self):
+        """Duplicate URLs in source: missing URL reported only once."""
+        source = (
+            "概要\n====\n\n"
+            "`リンク1 <https://example.com/page>`_ と `リンク2 <https://example.com/page>`_ を参照。\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "リンク1とリンク2を参照。", "hints": []},
+        ])
+        ql2_issues = [i for i in self._check(source, data, "rst") if "QL2" in i]
+        assert len(ql2_issues) == 1
+
+    # --- Edge cases: xlsx skip, HTTP URL ---
+
+    def test_xlsx_format_skipped(self):
+        """xlsx format: check skipped regardless of URL presence."""
+        source = "https://example.com/should-be-ignored\n"
+        data = self._make_data([{"id": "s1", "title": "概要", "content": "何もなし。", "hints": []}])
+        assert self._check(source, data, "xlsx") == []
+
+    def test_fail_ql2_http_url_missing(self):
+        """HTTP (non-HTTPS) URL missing from JSON → FAIL QL2."""
+        source = "概要\n====\n\n`旧サイト <http://example.com/old>`_ を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "旧サイトを参照。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QL2" in i and "http://example.com/old" in i for i in issues)

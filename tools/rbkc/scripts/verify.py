@@ -7,6 +7,8 @@ Public API:
     check_json_docs_md_consistency(data, docs_md_text) -> list[str]  # QO5
     check_format_purity(data, fmt) -> list[str]                      # QC5
     check_hints_completeness(data, prev_hints) -> list[str]          # QC6
+    check_content_completeness(source_text, data, fmt) -> list[str]  # QC1/QC2/QC3/QC4
+    check_external_urls(source_text, data, fmt) -> list[str]         # QL2
     verify_file(source_path, json_path, fmt, knowledge_dir) -> list[str]
     verify_docs_md(source_path, docs_md_path, fmt) -> list[str]
     check_index_coverage(knowledge_dir, index_path) -> list[str]
@@ -372,6 +374,76 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
             if not _is_md_syntax_line(line, in_frontmatter=False):
                 issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
 
+    return issues
+
+
+# ---------------------------------------------------------------------------
+# QL2: 外部URL一致
+# ---------------------------------------------------------------------------
+
+_URL_RAW_RE = re.compile(r'https?://[^\s\'"<>)\]]+')
+# RST hyperlink target definition lines: ".. _Name: url" or "__ url"
+# These lines are dropped by the RST converter (they are markup, not content).
+_RST_TARGET_LINE_RE = re.compile(r'^(?:\.\.?\s+_|__\s+https?://)')
+# Trailing sentence punctuation that is not part of URLs
+_URL_TRAILING_PUNCT_RE = re.compile(r'[.,;:]+$')
+
+
+def _extract_urls_from_source(source_text: str, fmt: str = "") -> list[str]:
+    """Extract external URLs from source, excluding RST target definition lines."""
+    urls = []
+    for line in source_text.splitlines():
+        if fmt == "rst" and _RST_TARGET_LINE_RE.match(line.strip()):
+            continue
+        for url in _URL_RAW_RE.findall(line):
+            url = _URL_TRAILING_PUNCT_RE.sub('', url)
+            if url:
+                urls.append(url)
+    return urls
+
+
+def _collect_json_urls(data: dict) -> set[str]:
+    """Collect all external URLs from JSON title and sections."""
+    text_parts = [data.get("title", "")]
+    for section in data.get("sections", []):
+        text_parts.append(section.get("title", ""))
+        text_parts.append(section.get("content", ""))
+    combined = "\n".join(text_parts)
+    urls = set()
+    for url in _URL_RAW_RE.findall(combined):
+        urls.add(_URL_TRAILING_PUNCT_RE.sub('', url))
+    return urls
+
+
+def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
+    """QL2: Verify all external URLs in source appear in JSON content/title.
+
+    Args:
+        source_text: Original source file text.
+        data: Knowledge JSON dict.
+        fmt: Source format ('rst', 'md', or 'xlsx').
+
+    Returns:
+        List of FAIL messages for each URL missing from JSON.
+    """
+    if fmt == "xlsx":
+        return []
+    if data.get("no_knowledge_content"):
+        return []
+
+    source_urls = _extract_urls_from_source(source_text, fmt)
+    if not source_urls:
+        return []
+
+    json_urls = _collect_json_urls(data)
+    issues = []
+    seen: set[str] = set()
+    for url in source_urls:
+        if url in seen:
+            continue
+        seen.add(url)
+        if url not in json_urls:
+            issues.append(f"[QL2] external URL missing from JSON: {url}")
     return issues
 
 
