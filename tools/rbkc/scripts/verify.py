@@ -448,35 +448,81 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Stubs for future phases
+# Excel QC1/QC2/QC3: sequential-delete algorithm
 # ---------------------------------------------------------------------------
 
-def _collect_xlsx_cell_tokens(xlsx_path) -> list[str]:
-    """Extract all non-empty cell values from an xlsx file as a flat list of strings."""
-    import openpyxl
-    wb = openpyxl.load_workbook(str(xlsx_path), data_only=True)
-    tokens = []
-    for ws in wb.worksheets:
-        for row in ws.iter_rows(values_only=True):
-            for cell in row:
-                if cell is None:
-                    continue
-                val = str(cell).strip()
-                if val:
-                    tokens.append(val)
-    return tokens
+_MD_SYNTAX_RE = re.compile(
+    r'\|[-:]+\|(?:[-:]+\|)*'       # table separator row: |---|---|
+    r'|\|'                          # table cell delimiter
+    r'|\*\*|\*|__(?![\w])|(?<![\w])__'  # bold/italic markers
+    r'|^#+\s*'                      # heading markers
+    r'|^>\s*'                       # blockquote markers
+    r'|^\d+\.\s+'                   # numbered list markers (1. 2. ...)
+    r'|`'                           # backtick (inline code)
+    , re.MULTILINE
+)
+
+
+def _build_xlsx_source_tokens(source_path) -> list[str]:
+    """Extract non-empty cell values from xlsx/xls in row-major order."""
+    ext = Path(source_path).suffix.lower()
+    if ext == ".xls":
+        import xlrd
+        wb = xlrd.open_workbook(str(source_path))
+        tokens = []
+        for sheet in wb.sheets():
+            for rx in range(sheet.nrows):
+                for cx in range(sheet.ncols):
+                    val = str(sheet.cell_value(rx, cx)).strip()
+                    if val:
+                        tokens.append(val)
+        return tokens
+    else:
+        import openpyxl
+        wb = openpyxl.load_workbook(str(source_path), data_only=True)
+        tokens = []
+        for ws in wb.worksheets:
+            for row in ws.iter_rows(values_only=True):
+                for cell in row:
+                    if cell is None:
+                        continue
+                    val = str(cell).strip()
+                    if val:
+                        tokens.append(val)
+        return tokens
+
+
+def _build_json_text(data: dict) -> str:
+    """Build flat JSON text: title + all section titles + all section contents."""
+    parts: list[str] = [data.get("title", "")]
+    for section in data.get("sections", []):
+        title = section.get("title", "")
+        content = section.get("content", "")
+        if title:
+            parts.append(title)
+        if content:
+            parts.append(content)
+    return "\n".join(p for p in parts if p)
+
+
+def _strip_md_syntax(text: str) -> str:
+    """Remove Markdown structural syntax from JSON text for QC2 residual check."""
+    return _MD_SYNTAX_RE.sub(" ", text)
 
 
 def verify_file(source_path, json_path, fmt, knowledge_dir=None):
-    """QC1/QC2/QC3 for Excel sources via set-comparison.
+    """QC1/QC2/QC3 for Excel sources via sequential-delete algorithm.
 
-    For RST/MD formats: not yet implemented (stub returns []).
+    Direction: each source cell value is deleted from the JSON text in order.
+    - QC1: cell value not found in JSON text → missing
+    - QC2: text remaining in JSON after all deletions → fabricated
+    - QC3: cell value found only in already-consumed region → duplicate
 
     Args:
-        source_path: Path to the source file (xlsx, rst, or md).
+        source_path: Path to the source file (xlsx or xls).
         json_path: Path to the generated knowledge JSON file.
         fmt: Source format ('rst', 'md', or 'xlsx').
-        knowledge_dir: Unused for Excel checks.
+        knowledge_dir: Unused.
 
     Returns:
         List of FAIL messages. Empty if all checks pass.
@@ -493,41 +539,66 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None):
     if data.get("no_knowledge_content"):
         return []
 
-    # Collect source tokens from xlsx
-    source_tokens = _collect_xlsx_cell_tokens(source_path)
+    source_tokens = _build_xlsx_source_tokens(source_path)
     if not source_tokens:
         return []
-    source_set = set(source_tokens)
 
-    # Collect JSON tokens: title + all section titles + contents, split by whitespace
-    json_parts: list[str] = [data.get("title", "")]
-    for section in data.get("sections", []):
-        json_parts.append(section.get("title", ""))
-        json_parts.append(section.get("content", ""))
-    json_text = " ".join(json_parts)
-    # JSON tokens: split on whitespace, deduplicate for QC2 check
-    json_tokens_all = [t for t in json_text.split() if t]
-    json_set = set(json_tokens_all)
+    json_text = _build_json_text(data)
+    if not json_text.strip():
+        return []
 
     issues: list[str] = []
+    consumed: list[tuple[int, int]] = []
+    search_start = 0
 
-    # QC1: source tokens missing from JSON
-    for token in sorted(source_set - json_set):
-        issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
+    def _in_consumed(pos: int, length: int) -> bool:
+        end = pos + length
+        for s, e in consumed:
+            if pos < e and end > s:
+                return True
+        return False
 
-    # QC2: JSON tokens absent from source
-    for token in sorted(json_set - source_set):
-        issues.append(f"[QC2] JSON token not found in Excel source: {token!r}")
-
-    # QC3: duplicate tokens in JSON text
-    seen: set[str] = set()
-    for token in json_tokens_all:
-        if token in source_set:
-            if token in seen:
-                issues.append(f"[QC3] JSON token duplicated: {token!r}")
-                seen.discard(token)  # Report once per duplication
+    for token in source_tokens:
+        idx = json_text.find(token, search_start)
+        if idx != -1:
+            consumed.append((idx, idx + len(token)))
+            search_start = idx + len(token)
+        else:
+            prev_idx = json_text.find(token)
+            if prev_idx == -1:
+                issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
+            elif _in_consumed(prev_idx, len(token)):
+                issues.append(f"[QC3] Excel cell value duplicated in JSON: {token!r}")
             else:
-                seen.add(token)
+                issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
+
+    # QC2: residual JSON text after removing all consumed regions
+    if consumed:
+        consumed.sort()
+        merged: list[list[int]] = []
+        for s, e in consumed:
+            if merged and s <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], e)
+            else:
+                merged.append([s, e])
+        parts: list[str] = []
+        prev = 0
+        for s, e in merged:
+            parts.append(json_text[prev:s])
+            prev = e
+        parts.append(json_text[prev:])
+        residual = "".join(parts)
+    else:
+        residual = json_text
+
+    # Strip Markdown structural syntax before QC2 residual check.
+    # Skip single-character tokens: Markdown stripping may leave isolated punctuation
+    # (e.g. ':', '(', ')') that are structural separators, not fabricated content.
+    residual_plain = _strip_md_syntax(residual)
+    for token in residual_plain.split():
+        t = token.strip()
+        if t and len(t) >= 2:
+            issues.append(f"[QC2] JSON token not found in Excel source: {token!r}")
 
     return issues
 

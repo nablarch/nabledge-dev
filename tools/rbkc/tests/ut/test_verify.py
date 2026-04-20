@@ -1526,10 +1526,10 @@ class TestVerifyFileExcelQC:
     # --- PASS cases ---
 
     def test_pass_all_cells_in_json(self, tmp_path):
-        """All source cell values appear in JSON → no issues."""
+        """All source cell values appear in JSON (title + section title + content) → no issues."""
         xlsx_path = self._make_xlsx(tmp_path, [["ファイルタイトル", "セルA", "セルB"], ["セルC", "セルD"]])
         data = self._make_data([
-            {"id": "s1", "title": "セクション見出し", "content": "セルA セルB セルC セルD", "hints": []},
+            {"id": "s1", "title": "セルA", "content": "セルB セルC セルD", "hints": []},
         ], title="ファイルタイトル")
         issues = self._check(xlsx_path, data)
         assert [i for i in issues if "QC" in i] == []
@@ -1538,7 +1538,7 @@ class TestVerifyFileExcelQC:
         """Empty/whitespace-only cells are not required in JSON."""
         xlsx_path = self._make_xlsx(tmp_path, [["値A", None, "  ", "値B"]])
         data = self._make_data([
-            {"id": "s1", "title": "値A", "content": "値B", "hints": []},
+            {"id": "s1", "title": "値B", "content": "", "hints": []},
         ], title="値A")
         assert [i for i in self._check(xlsx_path, data) if "QC" in i] == []
 
@@ -1585,10 +1585,73 @@ class TestVerifyFileExcelQC:
     # --- FAIL QC3 ---
 
     def test_fail_qc3_duplicate_token_in_json(self, tmp_path):
-        """Same token appears multiple times in JSON → FAIL QC3."""
+        """Cell appears once in source but twice in JSON → FAIL QC2 (residual after delete)."""
         xlsx_path = self._make_xlsx(tmp_path, [["唯一のセル"]])
         data = self._make_data([
             {"id": "s1", "title": "唯一のセル", "content": "唯一のセル 唯一のセル", "hints": []},
         ], title="唯一のセル")
         issues = self._check(xlsx_path, data)
-        assert any("QC3" in i and "唯一のセル" in i for i in issues)
+        # Source has "唯一のセル" once; JSON has it 3 times (title + section title + content×2).
+        # After deleting source tokens from JSON, residual "唯一のセル" occurrences → QC2.
+        assert any(("QC2" in i or "QC3" in i) and "唯一のセル" in i for i in issues)
+
+    def test_pass_cell_value_with_spaces(self, tmp_path):
+        """Cell value is matched as a whole string, not split by word."""
+        xlsx_path = self._make_xlsx(tmp_path, [["テスト"], ["システム開発ガイド"], ["セキュリティ対応表"]])
+        data = self._make_data([
+            {"id": "s1", "title": "システム開発ガイド", "content": "セキュリティ対応表", "hints": []},
+        ], title="テスト")
+        issues = self._check(xlsx_path, data)
+        assert [i for i in issues if "QC" in i] == []
+
+    def test_fail_qc1_cell_value_partial_not_accepted(self, tmp_path):
+        """Cell value must appear in full — partial word match is not enough."""
+        xlsx_path = self._make_xlsx(tmp_path, [["システム開発ガイド"]])
+        data = self._make_data([
+            {"id": "s1", "title": "テスト", "content": "システム開発", "hints": []},
+        ], title="テスト")
+        issues = self._check(xlsx_path, data)
+        assert any("QC1" in i and "システム開発ガイド" in i for i in issues)
+
+    def test_fail_qc3_cell_consumed_by_earlier_token(self, tmp_path):
+        """Cell value found only in already-consumed region → QC3."""
+        # Source tokens: "AB", "AB" (duplicate cell)
+        # JSON text: "AB" (appears once)
+        # First "AB" is consumed, second "AB" finds only consumed region → QC3.
+        xlsx_path = self._make_xlsx(tmp_path, [["AB", "AB"]])
+        data = self._make_data([
+            {"id": "s1", "title": "AB", "content": "", "hints": []},
+        ], title="テスト")
+        issues = self._check(xlsx_path, data)
+        assert any("QC3" in i and "AB" in i for i in issues)
+
+    def test_pass_markdown_syntax_in_content_not_qc2(self, tmp_path):
+        """Markdown table/bold syntax in JSON content does not trigger QC2."""
+        xlsx_path = self._make_xlsx(tmp_path, [["対策", "実施項目", "対応状況"]])
+        content = "| 対策 | 実施項目 | 対応状況 |\n|---|---|---|\n| 根本的解決 | 実施する | 〇 |"
+        data = self._make_data([
+            {"id": "s1", "title": "対策", "content": content, "hints": []},
+        ], title="テスト")
+        # "根本的解決", "実施する", "〇" are in content but not in source cells.
+        # Only markdown structure tokens (|, ---, etc.) should be stripped.
+        # This test confirms table delimiters don't cause QC2.
+        issues = self._check(xlsx_path, data)
+        qc2_table_issues = [i for i in issues if "QC2" in i and ("|" in i or "---" in i)]
+        assert qc2_table_issues == []
+
+    def test_pass_empty_xlsx_no_source_tokens(self, tmp_path):
+        """xlsx with all empty cells → no source tokens → skip QC checks."""
+        xlsx_path = self._make_xlsx(tmp_path, [[None, None], ["", "  "]])
+        data = self._make_data([
+            {"id": "s1", "title": "何か", "content": "内容", "hints": []},
+        ], title="タイトル")
+        assert self._check(xlsx_path, data) == []
+
+    def test_pass_fmt_not_xlsx_returns_empty(self, tmp_path):
+        """verify_file with fmt != 'xlsx' returns empty list without reading files."""
+        import json
+        from scripts.verify import verify_file
+        json_path = tmp_path / "test.json"
+        json_path.write_text(json.dumps({"id": "x", "title": "T", "no_knowledge_content": False, "sections": []}))
+        assert verify_file(tmp_path / "test.rst", json_path, "rst") == []
+        assert verify_file(tmp_path / "test.md", json_path, "md") == []
