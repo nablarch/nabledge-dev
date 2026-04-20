@@ -448,7 +448,7 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Stubs for future phases (V2-4 through V2-9)
+# Stubs for future phases
 # ---------------------------------------------------------------------------
 
 def verify_file(source_path, json_path, fmt, knowledge_dir=None):
@@ -471,11 +471,229 @@ def check_docs_coverage(knowledge_dir, docs_dir):
     return []
 
 
-def build_label_map(source_dir):
-    """Stub — not yet implemented."""
-    return {}
+# ---------------------------------------------------------------------------
+# QL1: 内部リンクの正確性
+# ---------------------------------------------------------------------------
+
+_RST_LABEL_DEF_RE = re.compile(r'^\.\.\s+_([a-zA-Z0-9_-]+):')
+_RST_HEADING_CHARS = set('=-~^"\'`#*+<>')
 
 
-def check_source_links(source_text, fmt, data, label_map, source_path=None):
-    """Stub — not yet implemented."""
-    return []
+def _is_heading_underline(line: str) -> bool:
+    s = line.strip()
+    return len(s) >= 2 and all(c in _RST_HEADING_CHARS for c in s)
+
+
+def build_label_map(source_dir) -> dict[str, str]:
+    """QL1: Build a map of {rst_label: section_title} from all .rst files under source_dir.
+
+    Supports stacked labels (multiple consecutive `.. _label:` lines before one heading):
+    all labels in the stack are mapped to the same section title.
+
+    Args:
+        source_dir: Path to directory containing RST source files (searched recursively).
+
+    Returns:
+        Dict mapping RST label names to the section title they point to.
+    """
+    label_map: dict[str, str] = {}
+    for rst_file in Path(source_dir).rglob("*.rst"):
+        try:
+            text = rst_file.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        lines = text.splitlines()
+        pending_labels: list[str] = []
+        for i, line in enumerate(lines):
+            m = _RST_LABEL_DEF_RE.match(line.strip())
+            if m:
+                pending_labels.append(m.group(1))
+                continue
+            if pending_labels:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                # First non-blank line after label(s): heading text if followed by underline
+                next_non_blank_idx = next(
+                    (j for j in range(i + 1, len(lines)) if lines[j].strip()), None
+                )
+                if next_non_blank_idx is not None and _is_heading_underline(lines[next_non_blank_idx]):
+                    for lbl in pending_labels:
+                        label_map[lbl] = stripped
+                pending_labels = []
+    return label_map
+
+
+# RST :ref: patterns
+_RST_REF_DISPLAY_RE = re.compile(r':ref:`([^<`]+?)\s*<([^>]+)>`')
+_RST_REF_PLAIN_RE = re.compile(r':ref:`([^`]+)`')
+
+# RST figure/image directive
+_RST_FIGURE_RE = re.compile(r'^\.\.\s+figure::\s*(\S+)')
+_RST_IMAGE_RE = re.compile(r'^\.\.\s+image::\s*(\S+)')
+_RST_IMAGE_ALT_RE = re.compile(r':alt:\s*(.+)')
+_RST_LITERALINCLUDE_RE = re.compile(r'^\.\.\s+literalinclude::\s*(\S+)')
+
+# MD internal link: [text](path) where path is not http/https
+_MD_INTERNAL_LINK_RE = re.compile(r'\[([^\]]+)\]\((?!https?://)([^)]+)\)')
+
+
+def _json_text(data: dict) -> str:
+    """Concatenate all JSON text fields for substring search."""
+    parts = [data.get("title", "")]
+    for section in data.get("sections", []):
+        parts.append(section.get("title", ""))
+        parts.append(section.get("content", ""))
+    return "\n".join(parts)
+
+
+def _read_rst_block(lines: list[str], start: int) -> list[str]:
+    """Read indented block lines starting from line index start."""
+    block = []
+    for i in range(start, len(lines)):
+        line = lines[i]
+        if line.strip() == "":
+            block.append(line)
+        elif line.startswith(" ") or line.startswith("\t"):
+            block.append(line)
+        else:
+            break
+    return block
+
+
+def check_source_links(
+    source_text: str,
+    fmt: str,
+    data: dict,
+    label_map: dict,
+    source_path=None,
+) -> list[str]:
+    """QL1: Verify internal links in source are correctly reflected in JSON.
+
+    For RST:
+    - :ref:`label` / :ref:`text <label>`: label title (or display text) must appear in JSON
+    - .. figure:: path: caption (or filename) must appear in JSON
+    - .. image:: path: alt text (or filename) must appear in JSON
+    - .. literalinclude:: path: placeholder comment must appear in JSON
+
+    For MD:
+    - [text](path) where path is not http/https: link text must appear in JSON
+
+    Args:
+        source_text: Original source file text.
+        fmt: Source format ('rst', 'md', or 'xlsx').
+        data: Knowledge JSON dict.
+        label_map: {label: section_title} from build_label_map.
+        source_path: Unused (reserved for future use).
+
+    Returns:
+        List of FAIL messages. Empty if all internal links are correctly reflected.
+    """
+    if fmt == "xlsx":
+        return []
+    if data.get("no_knowledge_content"):
+        return []
+
+    json_full = _json_text(data)
+    issues: list[str] = []
+
+    if fmt == "rst":
+        lines = source_text.splitlines()
+
+        # :ref: display-text form: check display text appears in JSON; deduplicate
+        seen_display: set[str] = set()
+        for m in _RST_REF_DISPLAY_RE.finditer(source_text):
+            display_text = m.group(1).strip()
+            if display_text and display_text not in seen_display:
+                seen_display.add(display_text)
+                if display_text not in json_full:
+                    issues.append(f"[QL1] :ref: display text missing from JSON: {display_text!r}")
+
+        # :ref:`label` (plain form) — check label title appears in JSON; deduplicate
+        seen_labels: set[str] = set()
+        for line in lines:
+            for m in _RST_REF_PLAIN_RE.finditer(line):
+                # Skip display-text form (already handled above)
+                if "<" in m.group(1):
+                    continue
+                label = m.group(1).strip()
+                if label in seen_labels:
+                    continue
+                seen_labels.add(label)
+                title = label_map.get(label)
+                if title is None:
+                    continue  # Unknown label: cannot verify cross-file ref
+                if title not in json_full:
+                    issues.append(
+                        f"[QL1] :ref:`{label}` target title missing from JSON: {title!r}"
+                    )
+
+        # figure / image / literalinclude checks
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            fm = _RST_FIGURE_RE.match(line.strip())
+            if fm:
+                path = fm.group(1)
+                filename = Path(path).name
+                block = _read_rst_block(lines, i + 1)
+                caption = ""
+                for bl in block:
+                    s = bl.strip()
+                    # Skip option lines (:key: value) and nested directives (.. foo::)
+                    if s and not s.startswith(":") and not s.startswith(".."):
+                        caption = s
+                        break
+                check_text = caption if caption else filename
+                if check_text and check_text not in json_full:
+                    issues.append(
+                        f"[QL1] figure caption/filename missing from JSON: {check_text!r}"
+                    )
+                i += 1
+                continue
+
+            im = _RST_IMAGE_RE.match(line.strip())
+            if im:
+                path = im.group(1)
+                filename = Path(path).name
+                block = _read_rst_block(lines, i + 1)
+                alt = ""
+                for bl in block:
+                    am = _RST_IMAGE_ALT_RE.match(bl.strip())
+                    if am:
+                        alt = am.group(1).strip()
+                        break
+                check_text = alt if alt else filename
+                if check_text and check_text not in json_full:
+                    issues.append(
+                        f"[QL1] image alt/filename missing from JSON: {check_text!r}"
+                    )
+                i += 1
+                continue
+
+            lm = _RST_LITERALINCLUDE_RE.match(line.strip())
+            if lm:
+                path = lm.group(1)
+                placeholder = f"# (literalinclude: {path})"
+                if placeholder not in json_full:
+                    issues.append(
+                        f"[QL1] literalinclude placeholder missing from JSON: {path!r}"
+                    )
+                i += 1
+                continue
+
+            i += 1
+
+    elif fmt == "md":
+        seen_link_texts: set[str] = set()
+        for m in _MD_INTERNAL_LINK_RE.finditer(source_text):
+            link_text = m.group(1).strip()
+            if not link_text or link_text in seen_link_texts:
+                continue
+            seen_link_texts.add(link_text)
+            if link_text not in json_full:
+                issues.append(
+                    f"[QL1] internal link text missing from JSON: {link_text!r}"
+                )
+
+    return issues

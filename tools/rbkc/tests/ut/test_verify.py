@@ -1087,3 +1087,393 @@ class TestCheckExternalUrls:
         ])
         issues = self._check(source, data, "rst")
         assert any("QL2" in i and "http://example.com/old" in i for i in issues)
+
+
+# ---------------------------------------------------------------------------
+# QL1: 内部リンクの正確性
+# ---------------------------------------------------------------------------
+
+class TestBuildLabelMap:
+    """build_label_map: RST label → section title mapping."""
+
+    def _build(self, rst_text: str, filename: str = "test.rst") -> dict:
+        from scripts.verify import build_label_map
+        import tempfile, os
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, filename)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(rst_text)
+            from pathlib import Path
+            return build_label_map(Path(tmpdir))
+
+    def test_single_label_with_heading(self):
+        """Label immediately followed by heading → mapped to that title."""
+        rst = ".. _my-label:\n\nMy Section\n==========\n"
+        result = self._build(rst)
+        assert result.get("my-label") == "My Section"
+
+    def test_multiple_labels_same_file(self):
+        """Multiple labels in one file are all mapped."""
+        rst = (
+            ".. _label-a:\n\nSection A\n=========\n\n"
+            ".. _label-b:\n\nSection B\n---------\n"
+        )
+        result = self._build(rst)
+        assert result.get("label-a") == "Section A"
+        assert result.get("label-b") == "Section B"
+
+    def test_label_without_following_heading_not_mapped(self):
+        """Label not followed by a heading is ignored."""
+        rst = ".. _orphan-label:\n\nThis is just a paragraph.\n"
+        result = self._build(rst)
+        assert "orphan-label" not in result
+
+    def test_multiple_rst_files_combined(self):
+        """Labels from multiple .rst files are merged into one map."""
+        from scripts.verify import build_label_map
+        import tempfile, os
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for name, label, title in [
+                ("a.rst", "label-a", "Section A"),
+                ("b.rst", "label-b", "Section B"),
+            ]:
+                with open(os.path.join(tmpdir, name), "w", encoding="utf-8") as f:
+                    f.write(f".. _{label}:\n\n{title}\n{'='*len(title)}\n")
+            result = build_label_map(Path(tmpdir))
+        assert result.get("label-a") == "Section A"
+        assert result.get("label-b") == "Section B"
+
+    def test_nonrst_files_ignored(self):
+        """Non-.rst files in the directory are ignored."""
+        from scripts.verify import build_label_map
+        import tempfile, os
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with open(os.path.join(tmpdir, "notes.txt"), "w") as f:
+                f.write(".. _should-not-appear:\n\nHeading\n=======\n")
+            result = build_label_map(Path(tmpdir))
+        assert result == {}
+
+    def test_stacked_labels_all_mapped(self):
+        """Two consecutive labels before one heading → both labels mapped to same title."""
+        rst = ".. _alias-old:\n.. _alias-new:\n\nShared Section\n==============\n"
+        result = self._build(rst)
+        assert result.get("alias-old") == "Shared Section"
+        assert result.get("alias-new") == "Shared Section"
+
+    def test_nested_subdirectory_labels_included(self):
+        """Labels in .rst files inside subdirectories are found recursively."""
+        from scripts.verify import build_label_map
+        import tempfile, os
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subdir = os.path.join(tmpdir, "sub")
+            os.makedirs(subdir)
+            with open(os.path.join(subdir, "deep.rst"), "w", encoding="utf-8") as f:
+                f.write(".. _deep-label:\n\nDeep Section\n============\n")
+            result = build_label_map(Path(tmpdir))
+        assert result.get("deep-label") == "Deep Section"
+
+    def test_label_directly_adjacent_to_heading_no_blank_line(self):
+        """Label immediately before heading with no blank line: heading is still mapped."""
+        rst = ".. _no-blank:\nSection Title\n=============\n"
+        result = self._build(rst)
+        assert result.get("no-blank") == "Section Title"
+
+
+class TestCheckSourceLinks:
+    """check_source_links: QL1 verification of internal links."""
+
+    def _check(self, source_text: str, fmt: str, data: dict,
+               label_map: dict | None = None, source_path=None) -> list[str]:
+        from scripts.verify import check_source_links
+        return check_source_links(source_text, fmt, data, label_map or {}, source_path)
+
+    def _make_data(self, sections, title="テスト") -> dict:
+        return {
+            "id": "test-file",
+            "title": title,
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+
+    # --- RST :ref: ---
+
+    def test_pass_rst_ref_label_title_in_json(self):
+        """:ref:`label` where label maps to a title that appears in JSON → PASS."""
+        source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細はMy Sectionを参照。", "hints": []},
+        ])
+        label_map = {"my-label": "My Section"}
+        assert self._check(source, "rst", data, label_map) == []
+
+    def test_fail_rst_ref_label_title_missing_from_json(self):
+        """:ref:`label` where label title is absent from JSON → FAIL QL1."""
+        source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細を参照。", "hints": []},
+        ])
+        label_map = {"my-label": "My Section"}
+        issues = self._check(source, "rst", data, label_map)
+        assert any("QL1" in i and "my-label" in i for i in issues)
+
+    def test_pass_rst_ref_display_text_form(self):
+        """:ref:`display text <label>` — display text appears in JSON → PASS."""
+        source = "概要\n====\n\n:ref:`こちら <my-label>` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "こちらを参照。", "hints": []},
+        ])
+        label_map = {"my-label": "My Section"}
+        assert self._check(source, "rst", data, label_map) == []
+
+    def test_fail_rst_ref_display_text_missing_from_json(self):
+        """:ref:`display text <label>` — display text absent from JSON → FAIL QL1."""
+        source = "概要\n====\n\n:ref:`こちら <my-label>` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "参照してください。", "hints": []},
+        ])
+        label_map = {"my-label": "My Section"}
+        issues = self._check(source, "rst", data, label_map)
+        assert any("QL1" in i for i in issues)
+
+    def test_pass_rst_ref_unknown_label_skipped(self):
+        """:ref:`unknown-label` not in label_map → skip (cannot verify)."""
+        source = "概要\n====\n\n詳細は :ref:`unknown-label` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "詳細を参照。", "hints": []},
+        ])
+        assert self._check(source, "rst", data, {}) == []
+
+    def test_fail_rst_ref_two_refs_on_same_line_one_missing(self):
+        """Two :ref: on same line; one title absent from JSON → FAIL QL1 only for missing."""
+        source = "概要\n====\n\n:ref:`label-a` と :ref:`label-b` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "Section A を参照。", "hints": []},
+        ])
+        label_map = {"label-a": "Section A", "label-b": "Section B"}
+        issues = self._check(source, "rst", data, label_map)
+        assert any("QL1" in i and "label-b" in i for i in issues)
+        assert not any("label-a" in i for i in issues)
+
+    def test_pass_rst_ref_same_label_repeated_reported_once(self):
+        """Same :ref:`label` appears twice; reported at most once even if title missing."""
+        source = "概要\n====\n\n:ref:`my-label` と :ref:`my-label` を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "他の説明。", "hints": []},
+        ])
+        label_map = {"my-label": "My Section"}
+        issues = [i for i in self._check(source, "rst", data, label_map) if "my-label" in i]
+        assert len(issues) == 1
+
+    # --- RST figure ---
+
+    def test_pass_rst_figure_caption_in_json(self):
+        """figure directive with caption that appears in JSON → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. figure:: _images/diagram.png\n\n"
+            "   システム構成図\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "システム構成図", "hints": []},
+        ])
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_figure_caption_missing_from_json(self):
+        """figure directive with caption absent from JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. figure:: _images/diagram.png\n\n"
+            "   システム構成図\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "概要説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "figure" in i for i in issues)
+
+    def test_pass_rst_figure_no_caption_filename_in_json(self):
+        """figure without caption: filename appears in JSON → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. figure:: _images/diagram.png\n\n"
+            "   :align: center\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "diagram.png の説明。", "hints": []},
+        ])
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_figure_no_caption_filename_missing(self):
+        """figure without caption and filename not in JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. figure:: _images/diagram.png\n\n"
+            "   :align: center\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "figure" in i for i in issues)
+
+    def test_fail_rst_figure_options_only_filename_missing(self):
+        """figure with only option lines and filename not in JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. figure:: _images/diagram.png\n\n"
+            "   :align: center\n"
+            "   :width: 100%\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "figure" in i for i in issues)
+
+    # --- RST image ---
+
+    def test_pass_rst_image_alt_in_json(self):
+        """image directive with alt text that appears in JSON → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/logo.png\n"
+            "   :alt: ロゴ画像\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "ロゴ画像の説明。", "hints": []},
+        ])
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_image_alt_missing_from_json(self):
+        """image directive with alt text absent from JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/logo.png\n"
+            "   :alt: ロゴ画像\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "image" in i for i in issues)
+
+    def test_pass_rst_image_no_alt_filename_in_json(self):
+        """image without alt: filename appears in JSON → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/logo.png\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "logo.png の説明。", "hints": []},
+        ])
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_image_no_alt_filename_missing_from_json(self):
+        """image without alt and filename absent from JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/logo.png\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "image" in i for i in issues)
+
+    # --- RST literalinclude ---
+
+    def test_pass_rst_literalinclude_placeholder_in_json(self):
+        """literalinclude directive: placeholder text in JSON → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. literalinclude:: _code/example.java\n"
+            "   :language: java\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要",
+             "content": "```java\n# (literalinclude: _code/example.java)\n```",
+             "hints": []},
+        ])
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_literalinclude_placeholder_missing_from_json(self):
+        """literalinclude placeholder absent from JSON → FAIL QL1."""
+        source = (
+            "概要\n====\n\n"
+            ".. literalinclude:: _code/example.java\n"
+            "   :language: java\n"
+        )
+        data = self._make_data([
+            {"id": "s1", "title": "概要", "content": "コードの説明のみ。", "hints": []},
+        ])
+        issues = self._check(source, "rst", data)
+        assert any("QL1" in i and "literalinclude" in i for i in issues)
+
+    # --- MD internal links ---
+
+    def test_pass_md_internal_link_text_in_json(self):
+        """MD [text](#anchor) — link text appears in JSON → PASS."""
+        source = "# 概要\n\n## セクション\n\n詳細は [こちらを参照](#details) してください。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "セクション",
+             "content": "詳細はこちらを参照してください。", "hints": []},
+        ])
+        assert self._check(source, "md", data) == []
+
+    def test_fail_md_internal_link_text_missing_from_json(self):
+        """MD [text](#anchor) — link text absent from JSON → FAIL QL1."""
+        source = "# 概要\n\n## セクション\n\n詳細は [こちらを参照](#details) してください。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "セクション",
+             "content": "詳細を参照。", "hints": []},
+        ])
+        issues = self._check(source, "md", data)
+        assert any("QL1" in i for i in issues)
+
+    def test_pass_md_external_link_not_checked_by_ql1(self):
+        """MD [text](https://...) — external link skipped (covered by QL2)."""
+        source = "# 概要\n\n## セクション\n\n詳細は [公式サイト](https://example.com) で確認。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "セクション",
+             "content": "詳細は公式サイトで確認。", "hints": []},
+        ])
+        assert self._check(source, "md", data) == []
+
+    def test_pass_md_relative_path_link_text_in_json(self):
+        """MD [text](../other.md) — relative path link text in JSON → PASS."""
+        source = "# 概要\n\n## セクション\n\n詳細は [設定ガイド](../config.md) を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "セクション",
+             "content": "詳細は設定ガイドを参照。", "hints": []},
+        ])
+        assert self._check(source, "md", data) == []
+
+    def test_fail_md_relative_path_link_text_missing(self):
+        """MD [text](../other.md) — relative path link text absent from JSON → FAIL QL1."""
+        source = "# 概要\n\n## セクション\n\n詳細は [設定ガイド](../config.md) を参照。\n"
+        data = self._make_data([
+            {"id": "s1", "title": "セクション",
+             "content": "詳細を参照。", "hints": []},
+        ])
+        issues = self._check(source, "md", data)
+        assert any("QL1" in i for i in issues)
+
+    # --- No-knowledge / xlsx skip ---
+
+    def test_no_knowledge_content_skipped(self):
+        """no_knowledge_content=True → skip all checks."""
+        source = "概要\n====\n\n.. figure:: _images/x.png\n\n   キャプション\n"
+        data = {
+            "id": "test-file", "title": "テスト",
+            "no_knowledge_content": True, "sections": [],
+        }
+        assert self._check(source, "rst", data) == []
+
+    def test_xlsx_format_skipped(self):
+        """xlsx format → skip all checks."""
+        source = "Some text with internal links"
+        data = self._make_data([{"id": "s1", "title": "概要", "content": "text", "hints": []}])
+        assert self._check(source, "xlsx", data) == []
