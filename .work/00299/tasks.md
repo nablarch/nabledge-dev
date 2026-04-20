@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 20)
+**Updated**: 2026-04-20 (session 21)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -144,24 +144,38 @@
 
 - [ ] `xlsx_releasenote.py`:
   - 問題: ヘッダー行（Row1〜4: `■Nablarch 6u1 リリースノート`、`コンテンツ`、`No.`、`リリース\n区分` 等）が `_is_data_row` のスキップ対象でJSONに未収録 → QC1
-  - 問題: `**リリース区分**: {kubun}` の固定文字列がQC2の対象になる可能性（Markdown許容構文リストで除外済みのため現時点では未FAIL）
-  - 対応: ヘッダー行セルをJSONに含めるか、ヘッダー行をソーストークンの除外対象にするか要検討 → ユーザー確認必要
+  - **設計合意済み（session 21）**: コンバーターがヘッダー行セルをJSONに含めるよう修正（案A）
 - [ ] `xlsx_security.py`:
   - 問題: `| 対策の性質 | 実施項目 | 番号 | 対応Nablarch機能 | 対応状況 |` の固定ヘッダー行がJSONに追加されているが、このテキストはExcelソースに存在しない → QC2
-  - 対応: テーブルヘッダーをソースのセル値から構築するか、Markdown許容構文リストに追加するか要検討 → ユーザー確認必要
+  - **設計合意済み（session 21）**: コンバーターの固定テーブルヘッダーをソースセル値から構築するよう修正（案A）
 - [ ] RST コンバーター (`rst.py`):
   - 問題: `:ref:\`label\`` → `label`（ラベル名のまま）、`:ref:\`text <label>\`` → `text` に変換
   - verify QL1 は「ラベルが指すセクションタイトル」がJSONに含まれるかを検証 → FAIL正当
-  - 対応: `label_map` を使ってラベルをセクションタイトルに解決するよう RST コンバーターを修正
-  - 注意: RST コンバーターは verify とは独立しており、`build_label_map` を直接使えない。コンバーター実行時にlabel_mapを渡す仕組みが必要 → 設計検討必要
+  - **設計合意済み（session 21）**: `build_label_map` を `scripts/common/` に移動し、コンバーターと verify 両方が参照する
+  - アーキテクチャ: `scripts/common/labels.py` に `build_label_map` を移動。`convert(text, file_id, label_map=None)` で引数渡し。呼び出し元 `run.py` が事前に `build_label_map` を呼ぶ
+
+**ディレクトリ構造（session 21 合意）:**
+
+```
+scripts/
+  common/             # create/verify 共通ロジック
+    __init__.py
+    labels.py         # build_label_map（verify.py から移動）
+  converters/         # 現状維持
+  run.py
+  verify.py
+  ...（その他は現状維持）
+```
+
+- `create/`・`verify/` へのフル分離は現時点では行わない（`build_label_map` 1件のための最小対応）
+- `common/` の命名は Python 慣習に沿った選択
 
 **Steps:**
-- [ ] ユーザーとの設計合意（上記3点）
-  - Excel ヘッダー行の扱い: コンバーターで含めるか、verifyで除外するか
-  - セキュリティ表テーブルヘッダー: ソースから構築するか、許容リストに追加するか
-  - RST :ref: 解決: コンバーターにlabel_map渡すアーキテクチャ設計
-- [ ] Excel コンバーター修正（TDD）
-- [ ] RST :ref: 解決修正（TDD）
+- [ ] `scripts/common/labels.py` 作成 + `build_label_map` 移動（TDD）
+- [ ] RST コンバーター `:ref:` 解決修正（`convert` に `label_map` 引数追加、TDD）
+- [ ] `run.py` 修正（create/verify で `build_label_map` を呼んで渡す）
+- [ ] Excel リリースノート コンバーター修正（ヘッダー行含める、TDD）
+- [ ] Excel セキュリティ表 コンバーター修正（固定ヘッダー除去、TDD）
 - [ ] `bash rbkc.sh verify 6` で FAIL 0件確認
 
 ---
