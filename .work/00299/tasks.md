@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 22)
+**Updated**: 2026-04-20 (session 22, reorganized)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -16,65 +16,73 @@
 
 ## In Progress
 
-### Phase V2-4-post: コンバーター修正 + リファクタリング（verify 通過のため）
-
-**完了済みステップ:**
-- [x] ディレクトリ構造リファクタリング（scripts/common/, scripts/create/, scripts/verify/）— committed `139e18e4`
-- [x] create側テスト削除（verify がカバー）、スキップ禁止ルール追加 — committed `2f5993ae`
-- [x] `xlsx_security.py` 固定ヘッダー除去（QC2 修正）— committed `514e81a8`
-- [x] 旧 scripts/ パス削除（classify.py, converters/, differ.py 等）— committed `514e81a8`
-
-**残りステップ:**
-- [ ] verify の全量スキップ確認・修正（下記参照）
-- [ ] KC 知識ファイル・docs MD を knowledge/ から削除して push（ヒント抽出確認後）
-- [ ] xlsx_releasenote.py ヘッダー行修正（QC1 修正）
-- [ ] RST コンバーター `:ref:` 解決修正（QL1 修正）
-- [ ] `bash rbkc.sh create 6` → `bash rbkc.sh verify 6` で FAIL 0件確認
-- [ ] SE + QA エキスパートレビュー
-- [ ] コミット
+以下 3 フェーズは独立して先行実施可能（V4 より前に全て完了させる）。
 
 ---
 
 ### Phase V-skip: verify のスキップ全量確認・修正
 
-**背景**: `run.py` の verify() 内で `json_path.exists()` が False の場合に空 dict でサイレント続行していることが判明（line 409）。スキップ禁止ルール違反。
+**目的**: verify が JSON/MD ファイル未存在を見逃さず、必ず FAIL を報告すること。
 
-**確認対象**: `run.py` および `verify/verify.py` 全体で exists チェック・continue・空返却でスキップしている箇所を網羅的に洗い出す。
-
-**修正方針**: JSON ファイルが存在しない = `rbkc create` が未実行または失敗 → FAIL として報告するべき。
+**判明している違反箇所（run.py）**:
+- line 409: `json_path.exists() else {}` — JSON 未存在をサイレントに空 dict で続行
+- line 430: `if docs_md_path.exists():` — docs MD 未存在を検証せずスキップ
 
 **Steps:**
-- [ ] `run.py` verify() 内の `json_path.exists()` 条件を全量確認
-  - `if json_path.exists() else {}` パターン → FAIL 報告に変更
-  - `if docs_md_path.exists():` パターン → FAIL 報告に変更
-- [ ] `verify/verify.py` 内の `continue` / 空返却パターンを全量確認し、正当なもの以外は FAIL 報告に変更
+- [ ] `run.py` verify() の上記2箇所を FAIL 報告に修正
+- [ ] `verify/verify.py` 内の `continue` / 空リスト返却パターンを全量確認し、正当でないものを FAIL 報告に修正
+  - 正当なスキップ例: `no_knowledge_content=True` ファイルの特定チェック除外
+  - 違反例: ファイル未存在・パース失敗の黙認
 - [ ] pytest GREEN 確認
 - [ ] コミット
 
 ---
 
-### Phase V-hints: ヒント全量確認（KC knowledge → hints 抽出漏れなし）
+### Phase V-hints: ヒント全量確認 → KC ファイル削除
 
-**背景**: knowledge/ ディレクトリに KC 形式ファイルが残存。これを削除する前に、KC キャッシュ（`.cache/v6/`）からのヒント抽出が全ファイル分カバーされているか確認が必要。
+**目的**: KC キャッシュからのヒント抽出が全ファイルをカバーしていることを確認してから、knowledge/ の KC 形式ファイルを削除する。
+
+**背景**: knowledge/ には KC 形式（sections が dict）のファイルが残存。`rbkc create` 前に削除する必要があるが、ヒントの引き継ぎが確実でないと品質が下がる。
 
 **Steps:**
-- [ ] KC キャッシュ（`.cache/v6/catalog.json`）に記載された全ファイルリストと、ヒントインデックス（`build_hints_index` の出力）の対応を比較
-  - カバー率 100% でなければ原因を調査・修正
-- [ ] 確認後、knowledge/ 内の KC 形式ファイル（sections が dict）および docs/ の KC 由来 MD ファイルを削除
-- [ ] push
+- [ ] `build_hints_index` の出力ファイル一覧と KC キャッシュ（`.cache/v6/catalog.json`）の全 file_id を比較
+  - カバー率を確認。100% でなければ原因調査・修正
+- [ ] knowledge/ 内の KC 形式ファイル（sections が dict）をリストアップして削除
+- [ ] docs/ 内の KC 由来 MD ファイルを削除（knowledge/ に対応するもの）
+- [ ] コミット・push
+
+---
+
+### Phase V2-4-post: コンバーター修正（QC1・QL1 残件）
+
+**目的**: `rbkc verify 6` が FAIL 0件になるよう、残りのコンバーターバグを修正する。
+
+**完了済み（このフェーズ内）**:
+- [x] ディレクトリ構造リファクタリング（scripts/common/, create/, verify/）— `139e18e4`
+- [x] create 側テスト削除・スキップ禁止ルール追加 — `2f5993ae`
+- [x] `xlsx_security.py` 固定ヘッダー除去（QC2 解消）— `514e81a8`
+- [x] 旧 scripts/ パス削除 — `514e81a8`
+
+**残件（QC1・QL1）**:
+- [ ] `xlsx_releasenote.py` ヘッダー行修正（QC1 解消）
+  - Row 1（タイトル）・Row 2（説明文）・Row 4（列ヘッダー行）の有効セルを JSON に含める
+- [ ] RST コンバーター `:ref:` 解決修正（QL1 解消）
+  - `convert(text, file_id, label_map=None)` に引数追加
+  - `:ref:\`label\`` → `label_map[label]` のセクションタイトルに解決
+  - `run.py` の create パスで `build_label_map` を呼んで渡す
+- [ ] SE + QA エキスパートレビュー
+- [ ] コミット
 
 ---
 
 ### Phase V4: v6 create + verify FAIL 0件
 
-**前提**: V2-4-post・V-skip・V-hints 完了後
+**前提**: V-skip・V-hints・V2-4-post の全残件完了後
 
 **Steps:**
 - [ ] `bash rbkc.sh create 6` — RBKC 形式で v6 知識ファイルを全量生成
 - [ ] `bash rbkc.sh verify 6` — FAIL 件数を確認・記録
-- [ ] FAIL が出た場合: 原因分析 → RBKC 側（converter/run.py 等）を修正
-  - 各 FAIL について修正を TDD で実施
-  - 修正後 verify を再実行して FAIL 0件になるまで繰り返す
+- [ ] FAIL が出た場合: 原因分析 → RBKC 側（converter/run.py 等）を修正（TDD）→ 再 verify
 - [ ] FAIL 0件確認 → コミット
 
 ---
@@ -116,9 +124,6 @@
 ---
 
 ## Done
-
-- [x] ディレクトリ構造リファクタリング（scripts/common/, create/, verify/）— committed `139e18e4`
-- [x] create 側テスト削除（verify が quality gate）、スキップ禁止ルール追加 — committed `2f5993ae`
 
 - [x] Phase V0: hints carry-over 実装 — committed `d155c92e`
   - `load_existing_hints(output_dir)` + `lookup_hints_with_fallback()` を run.py に追加
