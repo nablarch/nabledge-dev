@@ -451,9 +451,85 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 # Stubs for future phases
 # ---------------------------------------------------------------------------
 
+def _collect_xlsx_cell_tokens(xlsx_path) -> list[str]:
+    """Extract all non-empty cell values from an xlsx file as a flat list of strings."""
+    import openpyxl
+    wb = openpyxl.load_workbook(str(xlsx_path), data_only=True)
+    tokens = []
+    for ws in wb.worksheets:
+        for row in ws.iter_rows(values_only=True):
+            for cell in row:
+                if cell is None:
+                    continue
+                val = str(cell).strip()
+                if val:
+                    tokens.append(val)
+    return tokens
+
+
 def verify_file(source_path, json_path, fmt, knowledge_dir=None):
-    """Stub — QC1-QC4 RST/MD (V2-5/V2-6), QC1-QC3 Excel (V2-4) not yet implemented."""
-    return []
+    """QC1/QC2/QC3 for Excel sources via set-comparison.
+
+    For RST/MD formats: not yet implemented (stub returns []).
+
+    Args:
+        source_path: Path to the source file (xlsx, rst, or md).
+        json_path: Path to the generated knowledge JSON file.
+        fmt: Source format ('rst', 'md', or 'xlsx').
+        knowledge_dir: Unused for Excel checks.
+
+    Returns:
+        List of FAIL messages. Empty if all checks pass.
+    """
+    if fmt != "xlsx":
+        return []
+
+    if not Path(json_path).exists():
+        return []
+
+    import json as _json
+    data = _json.loads(Path(json_path).read_text(encoding="utf-8"))
+
+    if data.get("no_knowledge_content"):
+        return []
+
+    # Collect source tokens from xlsx
+    source_tokens = _collect_xlsx_cell_tokens(source_path)
+    if not source_tokens:
+        return []
+    source_set = set(source_tokens)
+
+    # Collect JSON tokens: title + all section titles + contents, split by whitespace
+    json_parts: list[str] = [data.get("title", "")]
+    for section in data.get("sections", []):
+        json_parts.append(section.get("title", ""))
+        json_parts.append(section.get("content", ""))
+    json_text = " ".join(json_parts)
+    # JSON tokens: split on whitespace, deduplicate for QC2 check
+    json_tokens_all = [t for t in json_text.split() if t]
+    json_set = set(json_tokens_all)
+
+    issues: list[str] = []
+
+    # QC1: source tokens missing from JSON
+    for token in sorted(source_set - json_set):
+        issues.append(f"[QC1] Excel cell value missing from JSON: {token!r}")
+
+    # QC2: JSON tokens absent from source
+    for token in sorted(json_set - source_set):
+        issues.append(f"[QC2] JSON token not found in Excel source: {token!r}")
+
+    # QC3: duplicate tokens in JSON text
+    seen: set[str] = set()
+    for token in json_tokens_all:
+        if token in source_set:
+            if token in seen:
+                issues.append(f"[QC3] JSON token duplicated: {token!r}")
+                seen.discard(token)  # Report once per duplication
+            else:
+                seen.add(token)
+
+    return issues
 
 
 def verify_docs_md(source_path, docs_md_path, fmt):

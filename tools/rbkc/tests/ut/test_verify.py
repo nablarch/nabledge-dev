@@ -1477,3 +1477,118 @@ class TestCheckSourceLinks:
         source = "Some text with internal links"
         data = self._make_data([{"id": "s1", "title": "概要", "content": "text", "hints": []}])
         assert self._check(source, "xlsx", data) == []
+
+
+# ---------------------------------------------------------------------------
+# V2-4: Excel QC1/QC2/QC3 — set-comparison via verify_file
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileExcelQC:
+    """verify_file for xlsx: QC1/QC2/QC3 via set-comparison."""
+
+    def _make_xlsx(self, tmpdir, rows: list[list]) -> "Path":
+        """Create a minimal xlsx file with given rows in sheet1."""
+        import openpyxl
+        from pathlib import Path
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        for row in rows:
+            ws.append(row)
+        path = Path(tmpdir) / "test.xlsx"
+        wb.save(str(path))
+        return path
+
+    def _make_json(self, tmpdir, data: dict) -> "Path":
+        """Write JSON data to a temp file."""
+        import json
+        from pathlib import Path
+        path = Path(tmpdir) / "test.json"
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return path
+
+    def _check(self, xlsx_path, json_data: dict) -> list[str]:
+        import json, tempfile
+        from pathlib import Path
+        from scripts.verify import verify_file
+        with tempfile.TemporaryDirectory() as tmpdir:
+            json_path = Path(tmpdir) / "test.json"
+            json_path.write_text(json.dumps(json_data, ensure_ascii=False), encoding="utf-8")
+            return verify_file(xlsx_path, json_path, "xlsx")
+
+    def _make_data(self, sections, title="ファイルタイトル") -> dict:
+        return {
+            "id": "test-file",
+            "title": title,
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+
+    # --- PASS cases ---
+
+    def test_pass_all_cells_in_json(self, tmp_path):
+        """All source cell values appear in JSON → no issues."""
+        xlsx_path = self._make_xlsx(tmp_path, [["ファイルタイトル", "セルA", "セルB"], ["セルC", "セルD"]])
+        data = self._make_data([
+            {"id": "s1", "title": "セクション見出し", "content": "セルA セルB セルC セルD", "hints": []},
+        ], title="ファイルタイトル")
+        issues = self._check(xlsx_path, data)
+        assert [i for i in issues if "QC" in i] == []
+
+    def test_pass_empty_cells_ignored(self, tmp_path):
+        """Empty/whitespace-only cells are not required in JSON."""
+        xlsx_path = self._make_xlsx(tmp_path, [["値A", None, "  ", "値B"]])
+        data = self._make_data([
+            {"id": "s1", "title": "値A", "content": "値B", "hints": []},
+        ], title="値A")
+        assert [i for i in self._check(xlsx_path, data) if "QC" in i] == []
+
+    def test_pass_no_knowledge_content_skipped(self, tmp_path):
+        """no_knowledge_content=True → skip all QC checks."""
+        xlsx_path = self._make_xlsx(tmp_path, [["セルA"]])
+        data = {
+            "id": "test-file", "title": "捏造タイトル",
+            "no_knowledge_content": True, "sections": [],
+        }
+        assert self._check(xlsx_path, data) == []
+
+    # --- FAIL QC1 ---
+
+    def test_fail_qc1_cell_missing_from_json(self, tmp_path):
+        """Source cell value absent from JSON → FAIL QC1."""
+        xlsx_path = self._make_xlsx(tmp_path, [["存在するセル", "欠落セル"]])
+        data = self._make_data([
+            {"id": "s1", "title": "存在するセル", "content": "存在するセル", "hints": []},
+        ], title="存在するセル")
+        issues = self._check(xlsx_path, data)
+        assert any("QC1" in i and "欠落セル" in i for i in issues)
+
+    def test_fail_qc1_multiple_missing_cells(self, tmp_path):
+        """Multiple missing cells → multiple QC1 issues."""
+        xlsx_path = self._make_xlsx(tmp_path, [["A"], ["B"], ["C"]])
+        data = self._make_data([
+            {"id": "s1", "title": "A", "content": "A", "hints": []},
+        ], title="A")
+        issues = [i for i in self._check(xlsx_path, data) if "QC1" in i]
+        assert len(issues) >= 2
+
+    # --- FAIL QC2 ---
+
+    def test_fail_qc2_token_in_json_not_in_source(self, tmp_path):
+        """JSON contains token absent from source → FAIL QC2."""
+        xlsx_path = self._make_xlsx(tmp_path, [["本物のセル"]])
+        data = self._make_data([
+            {"id": "s1", "title": "本物のセル", "content": "本物のセル 捏造トークン", "hints": []},
+        ], title="本物のセル")
+        issues = self._check(xlsx_path, data)
+        assert any("QC2" in i and "捏造トークン" in i for i in issues)
+
+    # --- FAIL QC3 ---
+
+    def test_fail_qc3_duplicate_token_in_json(self, tmp_path):
+        """Same token appears multiple times in JSON → FAIL QC3."""
+        xlsx_path = self._make_xlsx(tmp_path, [["唯一のセル"]])
+        data = self._make_data([
+            {"id": "s1", "title": "唯一のセル", "content": "唯一のセル 唯一のセル", "hints": []},
+        ], title="唯一のセル")
+        issues = self._check(xlsx_path, data)
+        assert any("QC3" in i and "唯一のセル" in i for i in issues)
