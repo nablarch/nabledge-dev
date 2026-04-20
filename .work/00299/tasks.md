@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 21)
+**Updated**: 2026-04-20 (session 22)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -16,191 +16,62 @@
 
 ## In Progress
 
-### Phase V3: verify TDD 実装
+### Phase V2-4-post: コンバーター修正 + リファクタリング（verify 通過のため）
 
-**前提**: V0/V1/V2 完了済み（下記 Done 参照）
+**完了済みステップ:**
+- [x] ディレクトリ構造リファクタリング（scripts/common/, scripts/create/, scripts/verify/）— committed `139e18e4`
+- [x] create側テスト削除（verify がカバー）、スキップ禁止ルール追加 — committed `2f5993ae`
+- [x] `xlsx_security.py` 固定ヘッダー除去（QC2 修正）— 未コミット
 
-**実装観点（`rbkc-verify-quality-design.md` の ❌ 項目）**:
-
-| ID | 観点 | RST | MD | Excel |
-|----|------|:---:|:---:|:----:|
-| QC1 | 完全性 | ❌ | ❌ | ❌ |
-| QC2 | 正確性 | ❌ | ❌ | ❌ |
-| QC3 | 非重複性 | ❌ | ❌ | ❌ |
-| QC4 | 配置正確性 | ❌ | ❌ | — |
-| QC5 | 形式純粋性 | ❌ | ❌ | — |
-| QC6 | hints 完全性 | ❌ | ❌ | ❌ |
-| QL1 | 内部リンクの正確性 | ❌ | ❌ | — |
-| QL2 | 外部リンクの一致 | ❌ | ❌ | — |
-| QO3 | 目次ページの除外 | ❌ | — | — |
-| QO5 | docs MD 整合性（content 完全一致） | ❌ | ❌ | ❌ |
-
-**サブフェーズ計画（V2 で確定済み）**:
-
-| ID | 対象 | フォーマット | 依存 |
-|----|------|------------|------|
-| V2-1 | QO5（docs MD content 完全一致） | RST, MD, Excel | なし |
-| V2-2 | QC5（形式純粋性） | RST, MD | なし |
-| V2-3 | QC6（hints 完全性） | RST, MD, Excel | なし |
-| V2-4 | QC1–QC3（Excel 集合比較） | Excel | なし |
-| V2-5 | QC1–QC3（RST/MD 先頭からdelete） | RST, MD | なし |
-| V2-6 | QC4 + QC1–QC3 マルチセクション | RST, MD | V2-5 |
-| V2-7 | QO3（目次ページ除外） | RST | なし |
-| V2-8 | QL2（外部URL一致） | RST, MD | なし |
-| V2-9 | QL1（内部リンク正確性） | RST, MD | V2-8 |
-
-**アルゴリズム確定事項（V2 議論済み）**:
-- QC1–QC3/QC4 の delete algorithm: JSON テキストを先頭から順に検索・削除。先頭からなので重複文字列も問題なし。
-- 削除後の残存 non-syntax テキスト → QC1（欠落）
-- 削除できなかった JSON テキスト → QC2（捏造）/QC3（重複）
-- QC4（配置正確性）は別途セクション境界追跡で実装
-
-**完了済みサブフェーズ**:
-- [x] V2-1 QO5（docs MD content 完全一致）— committed `a0c7abf1`
-- [x] V2-2 QC5（形式純粋性）— committed `a0c7abf1`
-- [x] V2-3 QC6（hints 完全性）— committed `a0c7abf1`（SE + QA エキスパートレビュー実施・修正適用済み）
-- [x] E2E テストスキップ修正 — committed `91796838`（322 passed, 2 skipped）
-- [x] V2-5 QC1–QC3（RST/MD delete アルゴリズム）— committed `13d3b6bb`
-- [x] V2-5b テスト補完＋バグ修正 — committed `d35e55f7`（336 passed, 2 skipped）
-  - SE + QA エキスパートレビュー実施・全指摘修正済み
-
-**完了済みサブフェーズ（続き2）**:
-- [x] V2-4 QC1–QC3（Excel sequential-delete）— committed `11671303`（SE + QA エキスパートレビュー実施・全指摘修正済み）
-- [x] V2-4-pre Excel mapping 追加 + scan 拡張 + xls コンバータ — committed `dfd6039f`, `9c86f0d4`, `3ee1b910`（SE + QA エキスパートレビュー実施・全指摘修正済み）
-
-**完了済みサブフェーズ（続き）**:
-- [x] V2-6 QC4（配置正確性）— committed `131bce43`（SE + QA エキスパートレビュー実施・全指摘修正適用済み）
-- [x] V2-7 QO3（目次ページ除外）— **実装不要**（設計書の注記: QC1/QC2のスコープで扱う、独立した品質観点を設けない）
-- [x] V2-8 QL2（外部URL一致）— committed `43fb4d3f`（SE + QA エキスパートレビュー実施・全指摘修正適用済み）
-- [x] V2-9 QL1（内部リンク正確性）— committed `2b421497`（SE + QA エキスパートレビュー実施・全指摘修正適用済み）
-
-**次に着手するサブフェーズ:**
-
-| ID | 対象 | フォーマット | 依存 |
-|----|------|------------|------|
-| V2-4-pre | Excel mapping 追加 + scan 拡張 | 設定・scan.py | なし |
-| V2-4 | QC1–QC3（Excel sequential-delete） | Excel | V2-4-pre |
-
-**設計書更新状況（session 19）**:
-- `rbkc-verify-quality-design.md` の Excel 検証セクションを集合比較 → sequential-delete に更新済み（未コミット）
-- xls（`.xlsx` と `.xls` 両対応）の記述追加済み（未コミット）
-- 旧テスト `TestVerifyFileExcelQC` のクラス見出しコメントを更新済み（旧実装はまだ残存、TDD作り直し未着手）
-
-**V2-4-pre タスク詳細（V2-4 の前提）:**
-
-スコープ確定（2026-04-20 調査済み）:
-
-| バージョン | ファイル | ディレクトリ | 備考 |
-|-----------|---------|------------|------|
-| v6 | `Nablarch機能のセキュリティ対応表.xlsx` | `nablarch-system-development-guide/` | mapping済み |
-| v6 | `*-releasenote.xlsx` | `nablarch-document/ja/releases/` | mapping済み |
-| v5 | `Nablarch機能のセキュリティ対応表.xlsx` | `nablarch-system-development-guide/` | mapping済み |
-| v5 | `*-releasenote.xlsx` (u6–u26) | `nablarch-document/ja/releases/` | mapping済み |
-| v5 | `nablarch5-releasenote.xlsx`, `nablarch5u1–u5-releasenote.xlsx` | `all-releasenote/nablarch-5-all-releasenote/` | scan対象外→要追加 |
-| v1.4 | `nablarch-1.4.*-releasenote.xlsx` (14件) | `all-releasenote/nablarch-1.4-all-releasenote/` | mapping空+scan対象外→要追加 |
-| v1.3 | `nablarch-1.3.2–1.3.7-releasenote.xlsx` (6件) | `all-releasenote/nablarch-1.3-all-releasenote/` | mapping空+scan対象外→要追加 |
-| v1.3 | `*-releasenote-detail.xls` (1.3.0, 1.3.1) | `all-releasenote/nablarch-1.3-all-releasenote/1.3.0/, 1.3.1/` | xls、mapping空+scan対象外→要追加 |
-| v1.2 | `nablarch-1.2.3–1.2.8-releasenote.xlsx` (6件) | `all-releasenote/nablarch-1.2-all-releasenote/` | mapping空+scan対象外→要追加 |
-| v1.2 | `*-releasenote-detail.xls` (1.2.0, 1.2.1, 1.2.2) | `all-releasenote/nablarch-1.2-all-releasenote/1.2.0/, 1.2.1/, 1.2.2/` | xls、mapping空+scan対象外→要追加 |
-
-作業内容:
-- [x] `scan.py` の `_source_roots` に `all-releasenote/nablarch-{version}-all-releasenote/` を各バージョンのルートとして追加 — committed `dfd6039f`
-- [x] `scan.py` の xlsx スキャンに `.xls` 拡張子も追加（xls対応）— committed `dfd6039f`
-- [x] `tools/rbkc/mappings/v1.4.json` に xlsx_patterns 追加（`-releasenote.xlsx` endswith）— committed `9c86f0d4`
-- [x] `tools/rbkc/mappings/v1.3.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）— committed `9c86f0d4`
-- [x] `tools/rbkc/mappings/v1.2.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）— committed `9c86f0d4`
-- [x] `tools/rbkc/mappings/v5.json` に all-releasenote スキャン対応（`-releasenote.xlsx` pattern は既存、ディレクトリ追加のみ）— scan.py の all-releasenote root 追加で対応済み
-- [x] xls コンバータ実装（`xlsx_releasenote.py` の xls 対応）— committed `3ee1b910`
-- [x] TDD: テスト → RED → 実装 → GREEN → 全テスト通過 → エキスパートレビュー
-
-**開発ルール追記（完了済み）:**
-- [x] `.claude/rules/development.md` にテスト作成観点（バグ露呈ケース・エッジケース必須）を追記
-
-**Steps（各サブフェーズ共通）:**
-- [ ] テスト作成 → RED 確認
-- [ ] 実装 → GREEN 確認
-- [ ] 全テスト通過確認（`pytest`）
-- [ ] Software Engineer + QA Engineer エキスパートレビュー
+**残りステップ:**
+- [ ] verify の全量スキップ確認・修正（下記参照）
+- [ ] KC 知識ファイル・docs MD を knowledge/ から削除して push（ヒント抽出確認後）
+- [ ] xlsx_releasenote.py ヘッダー行修正（QC1 修正）
+- [ ] RST コンバーター `:ref:` 解決修正（QL1 修正）
+- [ ] `bash rbkc.sh create 6` → `bash rbkc.sh verify 6` で FAIL 0件確認
+- [ ] SE + QA エキスパートレビュー
 - [ ] コミット
 
 ---
 
-### Phase V2-4-post: Excel コンバーター修正 + RST :ref: コンバーター修正（verify 通過のため）
+### Phase V-skip: verify のスキップ全量確認・修正
 
-**前提**: V2-4（Excel QC1–QC3 verify 実装）完了後に着手
+**背景**: `run.py` の verify() 内で `json_path.exists()` が False の場合に空 dict でサイレント続行していることが判明（line 409）。スキップ禁止ルール違反。
 
-**背景**: V2-4 の verify 実装で「Excel のあるべき変換ルール」が確定する。verify が通るように生成側（Excel コンバーター・RST コンバーター）を修正する。
+**確認対象**: `run.py` および `verify/verify.py` 全体で exists チェック・continue・空返却でスキップしている箇所を網羅的に洗い出す。
 
-**session 20 調査結果 — `bash rbkc.sh verify 6` で 4811 FAIL（全件 FAIL）:**
-
-| タイプ | 件数 | 原因ファイル |
-|--------|------|-------------|
-| QC1（欠落） | 2726 | リリースノート xlsx（ヘッダー行セルがJSONに未収録） |
-| QC2（捏造） | 1504 | セキュリティ表 xlsx（Markdown固定テーブルヘッダーがソースに存在しない） |
-| QL1（内部リンク） | 543 | RST の `:ref:`label`` がラベル名のまま出力され、ラベルの解決が未実装 |
-| QC3（重複） | 38 | セル値が重複してJSONに現れている |
-
-**確認観点（分析済み）:**
-
-- [ ] `xlsx_releasenote.py`:
-  - 問題: ヘッダー行（Row1〜4: `■Nablarch 6u1 リリースノート`、`コンテンツ`、`No.`、`リリース\n区分` 等）が `_is_data_row` のスキップ対象でJSONに未収録 → QC1
-  - **設計合意済み（session 21）**: コンバーターがヘッダー行セルをJSONに含めるよう修正（案A）
-- [ ] `xlsx_security.py`:
-  - 問題: `| 対策の性質 | 実施項目 | 番号 | 対応Nablarch機能 | 対応状況 |` の固定ヘッダー行がJSONに追加されているが、このテキストはExcelソースに存在しない → QC2
-  - **設計合意済み（session 21）**: コンバーターの固定テーブルヘッダーをソースセル値から構築するよう修正（案A）
-- [ ] RST コンバーター (`rst.py`):
-  - 問題: `:ref:\`label\`` → `label`（ラベル名のまま）、`:ref:\`text <label>\`` → `text` に変換
-  - verify QL1 は「ラベルが指すセクションタイトル」がJSONに含まれるかを検証 → FAIL正当
-  - **設計合意済み（session 21）**: `build_label_map` を `scripts/common/` に移動し、コンバーターと verify 両方が参照する
-  - アーキテクチャ: `scripts/common/labels.py` に `build_label_map` を移動。`convert(text, file_id, label_map=None)` で引数渡し。呼び出し元 `run.py` が事前に `build_label_map` を呼ぶ
-
-**ディレクトリ構造（session 21 合意）:**
-
-```
-scripts/
-  common/             # create/verify 共通ロジック（新規）
-    __init__.py
-    labels.py         # build_label_map（verify.py から移動）
-  create/             # create 専用（新規）
-    __init__.py
-    classify.py       # scripts/classify.py から移動
-    converters/       # scripts/converters/ から移動
-    differ.py         # scripts/differ.py から移動
-    docs.py           # scripts/docs.py から移動
-    hints.py          # scripts/hints.py から移動
-    index.py          # scripts/index.py から移動
-    resolver.py       # scripts/resolver.py から移動
-    scan.py           # scripts/scan.py から移動
-  verify/             # verify 専用（新規）
-    __init__.py
-    verify.py         # scripts/verify.py から移動（build_label_map 除く）
-  run.py              # 現状維持（import パス更新）
-```
-
-- `common/` は create/verify 両方が参照可
-- `create/` は `common/` のみ参照可（`verify/` 参照禁止）
-- `verify/` は `common/` のみ参照可（`create/` 参照禁止）
-- テスト (`tests/ut/`, `tests/e2e/`) の import パスも合わせて更新
+**修正方針**: JSON ファイルが存在しない = `rbkc create` が未実行または失敗 → FAIL として報告するべき。
 
 **Steps:**
-- [ ] ディレクトリ作成・ファイル移動 + import パス全更新（TDD: 移動後に全テスト GREEN 確認）
-- [ ] `scripts/common/labels.py` に `build_label_map` 移動（verify.py から切り出し）
-- [ ] RST コンバーター `:ref:` 解決修正（`convert` に `label_map` 引数追加、TDD）
-- [ ] `run.py` 修正（create/verify で `build_label_map` を呼んで渡す）
-- [ ] Excel リリースノート コンバーター修正（ヘッダー行含める、TDD）
-- [ ] Excel セキュリティ表 コンバーター修正（固定ヘッダー除去、TDD）
-- [ ] `bash rbkc.sh verify 6` で FAIL 0件確認
+- [ ] `run.py` verify() 内の `json_path.exists()` 条件を全量確認
+  - `if json_path.exists() else {}` パターン → FAIL 報告に変更
+  - `if docs_md_path.exists():` パターン → FAIL 報告に変更
+- [ ] `verify/verify.py` 内の `continue` / 空返却パターンを全量確認し、正当なもの以外は FAIL 報告に変更
+- [ ] pytest GREEN 確認
+- [ ] コミット
 
 ---
 
-### Phase V4: v6 で生成 + 検証 → verify 動作確認
+### Phase V-hints: ヒント全量確認（KC knowledge → hints 抽出漏れなし）
 
-**前提**: Phase V3 完了
+**背景**: knowledge/ ディレクトリに KC 形式ファイルが残存。これを削除する前に、KC キャッシュ（`.cache/v6/`）からのヒント抽出が全ファイル分カバーされているか確認が必要。
 
 **Steps:**
-- [ ] `bash rbkc.sh create 6` — v6 知識ファイルを生成
+- [ ] KC キャッシュ（`.cache/v6/catalog.json`）に記載された全ファイルリストと、ヒントインデックス（`build_hints_index` の出力）の対応を比較
+  - カバー率 100% でなければ原因を調査・修正
+- [ ] 確認後、knowledge/ 内の KC 形式ファイル（sections が dict）および docs/ の KC 由来 MD ファイルを削除
+- [ ] push
+
+---
+
+### Phase V4: v6 create + verify FAIL 0件
+
+**前提**: V2-4-post・V-skip・V-hints 完了後
+
+**Steps:**
+- [ ] `bash rbkc.sh create 6` — RBKC 形式で v6 知識ファイルを全量生成
 - [ ] `bash rbkc.sh verify 6` — FAIL 件数を確認・記録
-- [ ] FAIL が出た場合: 原因分析 → RBKC 側（verify ではなく converter/run.py 等）を修正
+- [ ] FAIL が出た場合: 原因分析 → RBKC 側（converter/run.py 等）を修正
   - 各 FAIL について修正を TDD で実施
   - 修正後 verify を再実行して FAIL 0件になるまで繰り返す
 - [ ] FAIL 0件確認 → コミット
@@ -209,7 +80,7 @@ scripts/
 
 ### Phase 18: 統合検証 — v6 完了
 
-**前提**: Phase 17-C 完了（`rbkc.sh verify 6` FAIL 0件）+ Phase 17-B 判断済み
+**前提**: Phase V4 完了
 
 **Steps:**
 - [ ] nabledge-test v6 実行 — ベースライン比で劣化なし確認
@@ -244,6 +115,9 @@ scripts/
 ---
 
 ## Done
+
+- [x] ディレクトリ構造リファクタリング（scripts/common/, create/, verify/）— committed `139e18e4`
+- [x] create 側テスト削除（verify が quality gate）、スキップ禁止ルール追加 — committed `2f5993ae`
 
 - [x] Phase V0: hints carry-over 実装 — committed `d155c92e`
   - `load_existing_hints(output_dir)` + `lookup_hints_with_fallback()` を run.py に追加
