@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-17 (session 14)
+**Updated**: 2026-04-20 (session 15)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -55,55 +55,24 @@
 - 削除できなかった JSON テキスト → QC2（捏造）/QC3（重複）
 - QC4（配置正確性）は別途セクション境界追跡で実装
 
-**完了済みサブフェーズ（今セッション）**:
+**完了済みサブフェーズ**:
 - [x] V2-1 QO5（docs MD content 完全一致）— committed `a0c7abf1`
 - [x] V2-2 QC5（形式純粋性）— committed `a0c7abf1`
-- [x] V2-3 QC6（hints 完全性）— committed `a0c7abf1`
-  - エキスパートレビュー（SE + QA）実施・修正適用済み：
-    - `_MD_RAW_HTML_RE` に negative lookbehind 追加（Java ジェネリクス `List<String>` false positive 排除）
-    - `_RST_HEADING_UNDERLINE_RE` をタイトルフィールドのみに適用（コード内 `====` false positive 排除）
-    - QO5 で `assets/` リンク含むセクションをスキップ（docs.py がパスを書き換えるため verbatim 一致不可）
-    - テスト 34 本追加（計 288 passed, 23 skipped）
-- [x] E2E テストスキップ修正 — `test_hints_e2e.py`/`test_md_converter.py` 相対パスを `Path(__file__).parents[4]` に修正（21件スキップ解消、322 passed, 2 skipped）
-- [x] V2-5 QC1–QC3（RST/MD delete アルゴリズム）— 実装済み、エキスパートレビュー済み（未コミット）
-  - バグ5件検出（偽陰性2件、偽陽性3件）→ 修正前にテスト追加が必要
-  - admonition ラベル（`Note:`等）の strip も実装が必要
+- [x] V2-3 QC6（hints 完全性）— committed `a0c7abf1`（SE + QA エキスパートレビュー実施・修正適用済み）
+- [x] E2E テストスキップ修正 — committed `91796838`（322 passed, 2 skipped）
+- [x] V2-5 QC1–QC3（RST/MD delete アルゴリズム）— committed `13d3b6bb`
+- [x] V2-5b テスト補完＋バグ修正 — committed `d35e55f7`（336 passed, 2 skipped）
+  - SE + QA エキスパートレビュー実施・全指摘修正済み
 
 **次に着手するサブフェーズ:**
 
 | ID | 対象 | フォーマット | 依存 |
 |----|------|------------|------|
-| **V2-5b** | V2-5 テスト補完＋バグ修正 | RST, MD | なし（V2-5 実装済み） |
-| V2-6 | QC4 + QC1–QC3 マルチセクション | RST, MD | V2-5b |
+| **V2-6** | QC4 + QC1–QC3 マルチセクション | RST, MD | V2-5b ✅ |
 | V2-7 | QO3（目次ページ除外） | RST | なし |
 | V2-8 | QL2（外部URL一致） | RST, MD | なし |
 | V2-9 | QL1（内部リンク正確性） | RST, MD | V2-8 |
 | V2-4 | QC1–QC3（Excel 集合比較） | Excel | なし（後回し） |
-
-**V2-5x: test_verify.py 全量エキスパートレビュー（V2-5b と並行 or 先行）:**
-
-- [ ] `test_verify.py` 全テストクラス（QO5/QC5/QC6/QC1–QC3）を QA エキスパートレビュー
-  - 観点: バグ露呈ケース漏れ・エッジケース漏れ・アサーション品質
-- [ ] レビュー結果に基づきテスト追加・修正
-- [ ] 全テスト通過確認
-
-**V2-5b: テスト補完＋バグ修正 詳細（次に着手）:**
-
-テスト追加（RED → GREEN で確認）:
-- [ ] `test_pass_bold_stripped`: `**text**` → `text` として検索
-- [ ] `test_pass_single_emphasis_stripped`: `*text*` → `text` として検索
-- [ ] `test_pass_admonition_label_stripped`: `> **Note:** メモ。` → `メモ。` として検索（ラベルはソースにない）
-- [ ] `test_pass_toctree_entries_not_qc1`: toctree 子エントリ（インデント行）が QC1 を出さない
-- [ ] `test_pass_substitution_def_not_qc1`: `.. |name| replace::` が QC1 を出さない
-- [ ] `test_pass_md_frontmatter_body_not_qc1`: frontmatter 本文行が QC1 を出さない
-- [ ] `test_fail_qc2_fabricated_title`: JSON タイトルがソースにない → QC2
-- [ ] `test_fail_qc1_multiple_gaps`: 複数欠落が全件報告される（break なし確認）
-
-バグ修正:
-- [ ] `_strip_md_syntax_to_plain_lines`: 単一 `*` / `_` を除去、admonition ラベル（`**Label:**`）を除去
-- [ ] `_is_rst_syntax_line`: toctree 子エントリ（インデント非フィールド行）、substitution def を許容
-- [ ] `_is_md_syntax_line`: frontmatter 本文行を許容（in_frontmatter 状態追跡）
-- [ ] `check_content_completeness`: `break` 削除、タイトル未検出時 QC2 を出す
 
 **開発ルール追記（完了済み）:**
 - [x] `.claude/rules/development.md` にテスト作成観点（バグ露呈ケース・エッジケース必須）を追記
