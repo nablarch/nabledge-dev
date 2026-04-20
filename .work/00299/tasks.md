@@ -158,20 +158,33 @@
 
 ```
 scripts/
-  common/             # create/verify 共通ロジック
+  common/             # create/verify 共通ロジック（新規）
     __init__.py
     labels.py         # build_label_map（verify.py から移動）
-  converters/         # 現状維持
-  run.py
-  verify.py
-  ...（その他は現状維持）
+  create/             # create 専用（新規）
+    __init__.py
+    classify.py       # scripts/classify.py から移動
+    converters/       # scripts/converters/ から移動
+    differ.py         # scripts/differ.py から移動
+    docs.py           # scripts/docs.py から移動
+    hints.py          # scripts/hints.py から移動
+    index.py          # scripts/index.py から移動
+    resolver.py       # scripts/resolver.py から移動
+    scan.py           # scripts/scan.py から移動
+  verify/             # verify 専用（新規）
+    __init__.py
+    verify.py         # scripts/verify.py から移動（build_label_map 除く）
+  run.py              # 現状維持（import パス更新）
 ```
 
-- `create/`・`verify/` へのフル分離は現時点では行わない（`build_label_map` 1件のための最小対応）
-- `common/` の命名は Python 慣習に沿った選択
+- `common/` は create/verify 両方が参照可
+- `create/` は `common/` のみ参照可（`verify/` 参照禁止）
+- `verify/` は `common/` のみ参照可（`create/` 参照禁止）
+- テスト (`tests/ut/`, `tests/e2e/`) の import パスも合わせて更新
 
 **Steps:**
-- [ ] `scripts/common/labels.py` 作成 + `build_label_map` 移動（TDD）
+- [ ] ディレクトリ作成・ファイル移動 + import パス全更新（TDD: 移動後に全テスト GREEN 確認）
+- [ ] `scripts/common/labels.py` に `build_label_map` 移動（verify.py から切り出し）
 - [ ] RST コンバーター `:ref:` 解決修正（`convert` に `label_map` 引数追加、TDD）
 - [ ] `run.py` 修正（create/verify で `build_label_map` を呼んで渡す）
 - [ ] Excel リリースノート コンバーター修正（ヘッダー行含める、TDD）
