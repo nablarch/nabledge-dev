@@ -10,6 +10,10 @@ import pytest
 
 # Paths to actual Excel files
 _ROOT = Path(__file__).parents[4]  # repo root
+_V13_XLS = _ROOT / ".lw/nab-official/all-releasenote/nablarch-1.3-all-releasenote/1.3.0/nablarch_toolbox-1.3.0-releasenote-detail.xls"
+_V13_1_XLS = _ROOT / ".lw/nab-official/all-releasenote/nablarch-1.3-all-releasenote/1.3.1/nablarch_ライブラリ-1.3.1-releasenote-detail.xls"
+_V12_XLS = _ROOT / ".lw/nab-official/all-releasenote/nablarch-1.2-all-releasenote/1.2.0/nablarch_toolbox-1.2.0-releasenote-detail.xls"
+_V12_1_XLS = _ROOT / ".lw/nab-official/all-releasenote/nablarch-1.2-all-releasenote/1.2.1/nablarch_ライブラリ-1.2.1-releasenote-detail.xls"
 _V6_RELEASENOTE = _ROOT / ".lw/nab-official/v6/nablarch-document/ja/releases/nablarch6-releasenote.xlsx"
 _V6U1_RELEASENOTE = _ROOT / ".lw/nab-official/v6/nablarch-document/ja/releases/nablarch6u1-releasenote.xlsx"
 # nablarch5u14 has no "XuYY変更点" line → header ends at row 2, data at row 5
@@ -162,3 +166,77 @@ class TestSecurityConverter:
     def test_title_extracted(self, result_v6):
         """Document title is extracted."""
         assert result_v6.title  # non-empty
+
+
+# ---------------------------------------------------------------------------
+# XLS (legacy) release note converter tests
+# ---------------------------------------------------------------------------
+
+class TestXlsReleasenoteConverter:
+    @pytest.fixture(scope="class")
+    def result_v13(self):
+        from scripts.converters.xlsx_releasenote import convert
+        return convert(_V13_XLS)
+
+    @pytest.fixture(scope="class")
+    def result_v13_1(self):
+        from scripts.converters.xlsx_releasenote import convert
+        return convert(_V13_1_XLS)
+
+    @pytest.fixture(scope="class")
+    def result_v12(self):
+        from scripts.converters.xlsx_releasenote import convert
+        return convert(_V12_XLS)
+
+    @pytest.fixture(scope="class")
+    def result_v12_1(self):
+        from scripts.converters.xlsx_releasenote import convert
+        return convert(_V12_1_XLS)
+
+    def test_title_extracted_v13(self, result_v13):
+        """Title extracted from first row, '■' stripped."""
+        assert result_v13.title
+        assert "■" not in result_v13.title
+
+    def test_sections_exist_v13(self, result_v13):
+        """v1.3.0 xls has at least 1 data section."""
+        assert len(result_v13.sections) >= 1
+
+    def test_section_title_contains_no_v13(self, result_v13):
+        """Section title contains No. prefix."""
+        assert result_v13.sections[0].title.startswith("No.")
+
+    def test_section_content_nonempty_v13(self, result_v13):
+        """Section content is non-empty."""
+        assert result_v13.sections[0].content.strip()
+
+    def test_category_rows_not_sections(self, result_v13):
+        """Category-separator rows ('Toolbox', '開発ガイド') do not become sections."""
+        titles = [s.title for s in result_v13.sections]
+        assert not any(t in ("Toolbox", "開発ガイド", "ライブラリ") for t in titles)
+
+    def test_sections_exist_v12(self, result_v12):
+        """v1.2.0 xls has at least 1 data section."""
+        assert len(result_v12.sections) >= 1
+
+    def test_no_knowledge_content_false(self, result_v13):
+        """XLS release notes always have knowledge content."""
+        assert result_v13.no_knowledge_content is False
+
+    def test_impact_ari_included_in_content(self, result_v13_1):
+        """Rows with impact='あり' have detail text in content."""
+        contents = " ".join(s.content for s in result_v13_1.sections)
+        assert "影響:" in contents
+
+    def test_impact_nashi_not_in_content(self, result_v13):
+        """Rows with impact='なし' do not have '影響:' in content."""
+        for sec in result_v13.sections:
+            assert "影響: なし" not in sec.content
+
+    def test_sections_exist_v12_1(self, result_v12_1):
+        """v1.2.1 xls has at least 1 section."""
+        assert len(result_v12_1.sections) >= 1
+
+    def test_no_section_title_is_empty(self, result_v13):
+        """All section titles are non-empty."""
+        assert all(s.title.strip() for s in result_v13.sections)
