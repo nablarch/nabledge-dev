@@ -32,16 +32,31 @@ def _load_mappings(version: str, repo_root: Path) -> dict:
     return json.loads(mapping_path.read_text(encoding="utf-8"))
 
 
+def _all_releasenote_root(version: str, repo_root: Path) -> Path | None:
+    """Return the all-releasenote directory for the given version, or None if absent."""
+    # version "5" → "nablarch-5-all-releasenote", "1.4" → "nablarch-1.4-all-releasenote"
+    dir_name = f"nablarch-{version}-all-releasenote"
+    root = repo_root / ".lw/nab-official/all-releasenote" / dir_name
+    return root if root.exists() else None
+
+
 def _source_roots(version: str, repo_root: Path) -> list[Path]:
     """Return source directory roots for the given version."""
+    roots: list[Path] = []
     if version in ("5", "6"):
-        return [
+        roots = [
             repo_root / f".lw/nab-official/v{version}/nablarch-document/ja",
             repo_root / f".lw/nab-official/v{version}/nablarch-system-development-guide",
         ]
-    # v1.x versions
-    v_dir = repo_root / f".lw/nab-official/v{version}"
-    return sorted(d for d in v_dir.iterdir() if d.is_dir())
+    else:
+        # v1.x versions
+        v_dir = repo_root / f".lw/nab-official/v{version}"
+        roots = sorted(d for d in v_dir.iterdir() if d.is_dir())
+    # Add all-releasenote root for all versions (v5, v1.x)
+    all_rn = _all_releasenote_root(version, repo_root)
+    if all_rn is not None:
+        roots = list(roots) + [all_rn]
+    return roots
 
 
 def _rel_for_classify(path: Path, version: str) -> str:
@@ -91,7 +106,7 @@ def scan_sources(
                 fmt = "rst"
             elif suffix == ".md":
                 fmt = "md"
-            elif suffix == ".xlsx":
+            elif suffix in (".xlsx", ".xls"):
                 fmt = "xlsx"
             else:
                 continue
@@ -124,7 +139,7 @@ def scan_sources(
                 if path.name in md_files:
                     result.append(SourceFile(path=path, format="md", filename=path.name))
 
-            elif suffix == ".xlsx":
+            elif suffix in (".xlsx", ".xls"):
                 if path.name in xlsx_exact:
                     result.append(SourceFile(path=path, format="xlsx", filename=path.name))
                 elif any(path.name.endswith(p["endswith"]) for p in xlsx_patterns):
