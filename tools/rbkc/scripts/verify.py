@@ -190,6 +190,131 @@ def check_hints_completeness(
 
 
 # ---------------------------------------------------------------------------
+# QC1/QC2/QC3: Content completeness — sequential-delete algorithm (RST/MD)
+# ---------------------------------------------------------------------------
+
+def _strip_md_syntax_to_plain_lines(text: str) -> list[str]:
+    """Strip Markdown syntax from JSON content, return non-empty plain-text lines."""
+    result = []
+    in_fence = False
+    for line in text.split('\n'):
+        if re.match(r'^\s*```', line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            if line.strip():
+                result.append(line)
+            continue
+        l = re.sub(r'^#+\s*', '', line)
+        l = re.sub(r'^>\s?', '', l)
+        l = re.sub(r'\*\*|__', '', l)
+        if l.strip():
+            result.append(l)
+    return result
+
+
+def _is_rst_syntax_line(line: str) -> bool:
+    s = line.strip()
+    if not s:
+        return True
+    if re.match(r"^[=\-~^\"'`#*+<>]{4,}\s*$", s):
+        return True
+    if re.match(r'^\.\.\s*(\S.*::|$)', s):
+        return True
+    if re.match(r'^\.\.\s+_[a-zA-Z0-9_-]+:', s):
+        return True
+    if re.match(r'^:[a-zA-Z][a-zA-Z0-9_.-]*:`', s):
+        return True
+    if re.match(r'^\s+:[a-zA-Z]', line):
+        return True
+    return False
+
+
+def _is_md_syntax_line(line: str) -> bool:
+    s = line.strip()
+    if not s:
+        return True
+    if re.match(r'^---+\s*$', s):
+        return True
+    if re.match(r'^```', s):
+        return True
+    if re.match(r'^<!--', s):
+        return True
+    if re.match(r'^#+\s*', s):
+        return True
+    return False
+
+
+def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[str]:
+    """QC1/QC2/QC3: Verify JSON content covers source via sequential-delete algorithm."""
+    if data.get("no_knowledge_content"):
+        return []
+
+    sections = data.get("sections", [])
+    if not sections:
+        return []
+
+    search_units: list[tuple[str, str, bool]] = []
+    for sec in sections:
+        title = sec.get("title", "")
+        content = sec.get("content", "")
+        sid = sec.get("id", "?")
+        if title:
+            search_units.append((title, sid, False))
+        if content:
+            if fmt in ("rst", "md"):
+                for line in _strip_md_syntax_to_plain_lines(content):
+                    search_units.append((line, sid, True))
+            else:
+                search_units.append((content, sid, True))
+
+    if not search_units:
+        return []
+
+    issues: list[str] = []
+    consumed: list[tuple[int, int]] = []
+    current_pos = 0
+
+    for unit, sid, is_content in search_units:
+        idx = source_text.find(unit, current_pos)
+        if idx != -1:
+            consumed.append((idx, idx + len(unit)))
+            current_pos = idx + len(unit)
+        elif is_content:
+            if source_text.find(unit) == -1:
+                issues.append(f"[QC2] section '{sid}': fabricated content: {unit[:50]!r}")
+            else:
+                issues.append(f"[QC3] section '{sid}': duplicate content: {unit[:50]!r}")
+
+    # QC1: check residual source for non-syntax content
+    if consumed:
+        consumed.sort()
+        merged: list[list[int]] = []
+        for s, e in consumed:
+            if merged and s <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], e)
+            else:
+                merged.append([s, e])
+        parts: list[str] = []
+        prev = 0
+        for s, e in merged:
+            parts.append(source_text[prev:s])
+            prev = e
+        parts.append(source_text[prev:])
+        remaining = ''.join(parts)
+    else:
+        remaining = source_text
+
+    is_syntax = _is_rst_syntax_line if fmt == "rst" else _is_md_syntax_line
+    for line in remaining.split('\n'):
+        if not is_syntax(line):
+            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+            break
+
+    return issues
+
+
+# ---------------------------------------------------------------------------
 # Stubs for future phases (V2-4 through V2-9)
 # ---------------------------------------------------------------------------
 

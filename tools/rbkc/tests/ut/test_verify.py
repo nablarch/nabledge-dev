@@ -386,3 +386,149 @@ class TestCheckHintsCompleteness:
         issues = self._check(data, prev_hints)
         assert len(issues) == 1
         assert "詳細" in issues[0]
+
+
+# ---------------------------------------------------------------------------
+# QC1-QC3: RST/MD コンテンツ完全性・正確性・非重複性 (delete algorithm)
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileContentRstMd:
+    """QC1/QC2/QC3: RST/MD content verified via sequential-delete algorithm."""
+
+    def _check(self, source_text, data, fmt):
+        from scripts.verify import check_content_completeness
+        return check_content_completeness(source_text, data, fmt)
+
+    def _make_data(self, file_id, sections):
+        return {
+            "id": file_id,
+            "title": "テストタイトル",
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+
+    # --- PASS cases ---
+
+    def test_pass_single_section_content_present(self):
+        """All section content appears in source → no issues."""
+        source = "概要\n====\n\n概要の説明文です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要の説明文です。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_multiple_sections_all_present(self):
+        """All sections present in correct order → no issues."""
+        source = "概要\n====\n\n概要の内容。\n\n設定方法\n========\n\n設定の内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要の内容。", "hints": []},
+            {"id": "s2", "title": "設定方法", "content": "設定の内容。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_no_knowledge_content_skipped(self):
+        """no_knowledge_content=True → skip check entirely."""
+        source = "目次\n====\n\n.. toctree::\n\n   chapter1\n"
+        data = {
+            "id": "f",
+            "title": "目次",
+            "no_knowledge_content": True,
+            "sections": [],
+        }
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_empty_sections_list(self):
+        """No sections → nothing to verify → no issues."""
+        source = "概要\n====\n\n内容。\n"
+        data = self._make_data("f", [])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_whitespace_normalization(self):
+        """Source with extra blank lines matches normalized JSON content → no issues."""
+        source = "概要\n====\n\n行1\n\n行2\n"
+        data = self._make_data("f", [
+            # JSON content has single blank line normalized
+            {"id": "s1", "title": "概要", "content": "行1\n\n行2", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_md_format(self):
+        """MD source content present in JSON → no issues."""
+        source = "# タイトル\n\n## 概要\n\nMarkdown の説明です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "Markdown の説明です。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_pass_syntax_only_remaining(self):
+        """After deletion, only RST syntax markers remain → no QC1 issues."""
+        source = "概要\n====\n\n内容テキスト。\n\n.. code-block:: java\n\n  code\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "内容テキスト。\n\n```java\n  code\n```", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    # --- QC1 FAIL: content missing from JSON ---
+
+    def test_fail_qc1_content_missing(self):
+        """Source has text not in any JSON section → FAIL QC1."""
+        source = "概要\n====\n\n重要な説明があります。追加情報も存在します。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "重要な説明があります。", "hints": []},
+            # "追加情報も存在します。" is not captured
+        ])
+        issues = self._check(source, data, "rst")
+        assert len(issues) >= 1
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_qc1_section_entirely_missing(self):
+        """Entire section content absent from JSON → FAIL QC1."""
+        source = "概要\n====\n\n概要内容。\n\n詳細\n====\n\n詳細内容が欠落。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            # 詳細 section missing entirely
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC1" in i for i in issues)
+
+    # --- QC2 FAIL: fabricated content in JSON ---
+
+    def test_fail_qc2_fabricated_content(self):
+        """JSON has content not in source → FAIL QC2."""
+        source = "概要\n====\n\n実際の内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "実際の内容。\n捏造された追加情報。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC2" in i for i in issues)
+
+    def test_fail_qc2_completely_different_content(self):
+        """JSON content entirely absent from source → FAIL QC2."""
+        source = "概要\n====\n\n本物の内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "全く別の内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC2" in i for i in issues)
+
+    # --- QC3 FAIL: duplicate content in JSON ---
+
+    def test_fail_qc3_duplicate_section_content(self):
+        """Same content appears in two JSON sections → second one FAIL QC3."""
+        source = "概要\n====\n\n共有テキスト内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "共有テキスト内容。", "hints": []},
+            {"id": "s2", "title": "別セクション", "content": "共有テキスト内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC3" in i for i in issues)
+
+    # --- Edge cases ---
+
+    def test_pass_title_is_not_checked_as_content(self):
+        """Section titles should not be separately counted as missing content."""
+        source = "概要\n====\n\n内容テキスト。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
