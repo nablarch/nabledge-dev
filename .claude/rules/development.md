@@ -52,6 +52,15 @@ When a problem is found — test failure, bug, incorrect behavior, rule violatio
 - Deferring problems creates debt that compounds; immediate fixes keep the codebase clean
 - This applies to pre-existing failures discovered during work, not just new ones
 
+## Test Writing: Required Coverage
+
+Every test class must include:
+
+- **Bug-revealing cases**: Input that exercises each specific failure mode (wrong output, missed detection, false alarm). If a bug can occur, write a test that catches it.
+- **Edge cases**: Boundary values, empty inputs, single-element collections, whitespace/encoding edge cases, overlapping patterns, and any input the spec explicitly lists as allowed or disallowed.
+
+A test suite that only covers the happy path is incomplete. The question to ask when writing tests: *"What input would make this function produce wrong output?"* — write that as a test.
+
 ## Tests Must Pass Before PR
 
 All automated tests must pass before creating a PR. Fix all failures — including pre-existing ones — before requesting review.
