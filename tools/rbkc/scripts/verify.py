@@ -257,7 +257,7 @@ def _is_md_syntax_line(line: str, in_frontmatter: bool = False) -> bool:
 
 
 def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[str]:
-    """QC1/QC2/QC3: Verify JSON content covers source via sequential-delete algorithm."""
+    """QC1/QC2/QC3/QC4: Verify JSON content covers source via sequential-delete algorithm."""
     if data.get("no_knowledge_content"):
         return []
 
@@ -286,19 +286,33 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
     consumed: list[tuple[int, int]] = []
     current_pos = 0
 
+    def _in_consumed(pos: int, length: int) -> bool:
+        end = pos + length
+        for s, e in consumed:
+            if pos < e and end > s:
+                return True
+        return False
+
     for unit, sid, is_content in search_units:
         idx = source_text.find(unit, current_pos)
         if idx != -1:
             consumed.append((idx, idx + len(unit)))
             current_pos = idx + len(unit)
         else:
+            prev_idx = source_text.find(unit)
             if not is_content:
-                # Title not found → fabricated title
-                issues.append(f"[QC2] section '{sid}': fabricated title: {unit[:50]!r}")
-            elif source_text.find(unit) == -1:
+                if prev_idx == -1:
+                    issues.append(f"[QC2] section '{sid}': fabricated title: {unit[:50]!r}")
+                elif _in_consumed(prev_idx, len(unit)):
+                    issues.append(f"[QC3] section '{sid}': duplicate title: {unit[:50]!r}")
+                else:
+                    issues.append(f"[QC4] section '{sid}': misplaced title: {unit[:50]!r}")
+            elif prev_idx == -1:
                 issues.append(f"[QC2] section '{sid}': fabricated content: {unit[:50]!r}")
-            else:
+            elif _in_consumed(prev_idx, len(unit)):
                 issues.append(f"[QC3] section '{sid}': duplicate content: {unit[:50]!r}")
+            else:
+                issues.append(f"[QC4] section '{sid}': misplaced content: {unit[:50]!r}")
 
     # QC1: check residual source for non-syntax content
     if consumed:

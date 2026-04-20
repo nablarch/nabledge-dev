@@ -650,3 +650,190 @@ class TestVerifyFileContentRstMd:
         ])
         issues = self._check(source, data, "md")
         assert any("QC1" in i for i in issues)
+
+
+# ---------------------------------------------------------------------------
+# QC4: 配置正確性 (multi-section)
+# ---------------------------------------------------------------------------
+
+class TestVerifyFileContentQC4:
+    """QC4: Content from source section A must not appear in a different JSON section."""
+
+    def _check(self, source_text, data, fmt):
+        from scripts.verify import check_content_completeness
+        return check_content_completeness(source_text, data, fmt)
+
+    def _make_data(self, file_id, sections):
+        return {
+            "id": file_id,
+            "title": "テストタイトル",
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+
+    # --- PASS cases ---
+
+    def test_pass_two_sections_correct_order(self):
+        """Two sections in correct source order → no issues."""
+        source = "概要\n====\n\n概要内容。\n\n詳細\n====\n\n詳細内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_three_sections_correct_order(self):
+        """Three sections in correct source order → no issues."""
+        source = "A\n====\n\nA内容。\n\nB\n====\n\nB内容。\n\nC\n====\n\nC内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
+            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
+            {"id": "s3", "title": "C", "content": "C内容。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_md_two_sections_correct_order(self):
+        """MD: two sections in correct order → no issues."""
+        source = "# タイトル\n\n## 概要\n\n概要内容。\n\n## 詳細\n\n詳細内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    # --- QC4 FAIL cases ---
+
+    def test_fail_qc4_content_appears_before_previous_section(self):
+        """JSON section 2 content found before section 1 in source → FAIL QC4."""
+        # Source order: 詳細 → 概要
+        # JSON order:   概要 → 詳細  (reversed)
+        source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_section_title_reversed(self):
+        """JSON section title found before previous section title → FAIL QC4."""
+        source = "B\n====\n\nB内容。\n\nA\n====\n\nA内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
+            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_md_content_reversed(self):
+        """MD: JSON section order reversed vs source → FAIL QC4."""
+        source = "# タイトル\n\n## 詳細\n\n詳細内容。\n\n## 概要\n\n概要内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "md")
+        assert any("QC4" in i for i in issues)
+
+    def test_fail_qc4_identifies_section_in_message(self):
+        """QC4 FAIL message identifies which section (by ID) has misplaced content."""
+        source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc4_issues = [i for i in issues if "QC4" in i]
+        assert len(qc4_issues) >= 1
+        # section ID 's2' must appear in at least one QC4 message (not just unit text)
+        assert any("'s2'" in i for i in qc4_issues)
+
+    def test_fail_qc4_title_and_content_both_reported(self):
+        """Both the misplaced section title and its content lines each fire QC4."""
+        source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc4_issues = [i for i in issues if "QC4" in i]
+        assert len(qc4_issues) >= 2
+
+    def test_fail_qc4_three_sections_middle_misplaced(self):
+        """Three sections (A, B, C in source), JSON has A, C, B → C and B are QC4."""
+        # Source: A → B → C
+        # JSON:   A → C → B  (C and B are out of order)
+        source = "A\n====\n\nA内容。\n\nB\n====\n\nB内容。\n\nC\n====\n\nC内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
+            {"id": "s3", "title": "C", "content": "C内容。", "hints": []},
+            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc4_issues = [i for i in issues if "QC4" in i]
+        assert len(qc4_issues) >= 1
+        # B (section s2) should be reported as misplaced
+        assert any("'s2'" in i for i in qc4_issues)
+
+    # --- Distinguish QC3 vs QC4 ---
+
+    def test_qc3_not_qc4_for_duplicate_consumed(self):
+        """Content that was already consumed (duplicate) → QC3, not QC4."""
+        source = "概要\n====\n\n共有テキスト。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "共有テキスト。", "hints": []},
+            {"id": "s2", "title": "別セクション", "content": "共有テキスト。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC3" in i for i in issues)
+        assert not any("QC4" in i for i in issues)
+
+    def test_qc4_not_qc3_for_reversed_unique_content(self):
+        """Content reversed in source order (not duplicate) → QC4, not QC3."""
+        source = "B\n====\n\nBのみの内容。\n\nA\n====\n\nAのみの内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "A", "content": "Aのみの内容。", "hints": []},
+            {"id": "s2", "title": "B", "content": "Bのみの内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc3 = [i for i in issues if "QC3" in i]
+        qc4 = [i for i in issues if "QC4" in i]
+        assert len(qc4) >= 1
+        assert len(qc3) == 0
+
+    def test_qc3_not_qc4_for_substring_in_consumed(self):
+        """Content that is a substring of already-consumed text → QC3, not QC4."""
+        # Source has "AB内容。"; s1 consumes it; s2 claims "B内容。" (substring)
+        # prev_idx of "B内容。" falls inside the consumed range → QC3
+        source = "概要\n====\n\nAB内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "AB内容。", "hints": []},
+            {"id": "s2", "title": "別セクション", "content": "B内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        assert any("QC3" in i for i in issues)
+        assert not any("QC4" in i for i in issues)
+
+    def test_pass_title_only_section_no_qc4_when_correct_order(self):
+        """Sections with no content (title only): correct order → no QC4."""
+        source = "概要\n====\n\n詳細\n====\n\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc4 = [i for i in issues if "QC4" in i]
+        assert len(qc4) == 0
+
+    def test_fail_qc4_title_only_sections_reversed(self):
+        """Sections with no content, reversed title order → QC4 on misplaced title."""
+        # Source: 詳細 → 概要; JSON: 概要 → 詳細 (reversed)
+        source = "詳細\n====\n\n概要\n====\n\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "", "hints": []},
+            {"id": "s2", "title": "詳細", "content": "", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc4 = [i for i in issues if "QC4" in i]
+        assert len(qc4) >= 1
+        assert any("'s2'" in i for i in qc4)
