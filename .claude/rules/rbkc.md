@@ -10,6 +10,19 @@ verify is the final quality assurance mechanism for RBKC output. It must be kept
 - When verify reports a FAIL, the fix belongs in RBKC, not in verify
 - Never weaken verify's detection to make RBKC output pass
 
+## Test coverage policy
+
+**verify (scripts/verify/verify.py)**
+- All logic must have unit tests.
+- Every new check added to verify requires a corresponding test before implementation (TDD).
+
+**create-side (converters, resolver, hints, run, etc.)**
+- No tests needed. verify passing is sufficient — it is the quality gate for output correctness.
+
+**CLI layer (rbkc.sh, run.py argument parsing, command dispatch)**
+- Tests required only here, because verify does not exercise CLI code paths.
+- Examples: argument validation, command routing, error handling for missing files or invalid input.
+
 ## Rules for changing verify
 
 verify changes require explicit user approval before implementation.

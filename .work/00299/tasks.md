@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 22, reorganized)
+**Updated**: 2026-04-20 (session 23)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -64,8 +64,14 @@
 - [x] 旧 scripts/ パス削除 — `514e81a8`
 
 **残件（QC1・QL1）**:
+- [ ] 不要テスト削除（ルール変更に伴う整理）
+  - `tests/ut/test_run.py` の create-side ロジックテスト（`TestLoadExistingHints` 等）を削除
+  - `tests/e2e/test_cli.py` の `TestCreate` / `TestUpdate` / `TestDelete` クラスを削除
+  - CLI 層テスト（verify が pass するかどうかを確認する `TestVerify` クラス）は残す
+  - 1 failed テストが現在あるので先に修正してから削除
 - [ ] `xlsx_releasenote.py` ヘッダー行修正（QC1 解消）
-  - Row 1（タイトル）・Row 2（説明文）・Row 4（列ヘッダー行）の有効セルを JSON に含める
+  - 根本原因: タイトル(`■`除去)・説明行・ヘッダー行・Col B/H/I/J/K/L/N・全シートが未収録
+  - 修正: 全シートの全セル値を JSON に含める（セクション構造は現状維持）
 - [ ] RST コンバーター `:ref:` 解決修正（QL1 解消）
   - `convert(text, file_id, label_map=None)` に引数追加
   - `:ref:\`label\`` → `label_map[label]` のセクションタイトルに解決
