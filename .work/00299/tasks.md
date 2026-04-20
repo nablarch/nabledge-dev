@@ -21,7 +21,8 @@
 **完了済みステップ:**
 - [x] ディレクトリ構造リファクタリング（scripts/common/, scripts/create/, scripts/verify/）— committed `139e18e4`
 - [x] create側テスト削除（verify がカバー）、スキップ禁止ルール追加 — committed `2f5993ae`
-- [x] `xlsx_security.py` 固定ヘッダー除去（QC2 修正）— 未コミット
+- [x] `xlsx_security.py` 固定ヘッダー除去（QC2 修正）— committed `514e81a8`
+- [x] 旧 scripts/ パス削除（classify.py, converters/, differ.py 等）— committed `514e81a8`
 
 **残りステップ:**
 - [ ] verify の全量スキップ確認・修正（下記参照）
