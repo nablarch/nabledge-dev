@@ -74,7 +74,35 @@
 
 | ID | 対象 | フォーマット | 依存 |
 |----|------|------------|------|
-| V2-4 | QC1–QC3（Excel 集合比較） | Excel | なし（後回し） |
+| V2-4 | QC1–QC3（Excel sequential-delete） | Excel | V2-4-pre |
+| V2-4-pre | Excel mapping 追加 + scan 拡張 | 設定・scan.py | なし |
+
+**V2-4-pre タスク詳細（V2-4 の前提）:**
+
+スコープ確定（2026-04-20 調査済み）:
+
+| バージョン | ファイル | ディレクトリ | 備考 |
+|-----------|---------|------------|------|
+| v6 | `Nablarch機能のセキュリティ対応表.xlsx` | `nablarch-system-development-guide/` | mapping済み |
+| v6 | `*-releasenote.xlsx` | `nablarch-document/ja/releases/` | mapping済み |
+| v5 | `Nablarch機能のセキュリティ対応表.xlsx` | `nablarch-system-development-guide/` | mapping済み |
+| v5 | `*-releasenote.xlsx` (u6–u26) | `nablarch-document/ja/releases/` | mapping済み |
+| v5 | `nablarch5-releasenote.xlsx`, `nablarch5u1–u5-releasenote.xlsx` | `all-releasenote/nablarch-5-all-releasenote/` | scan対象外→要追加 |
+| v1.4 | `nablarch-1.4.*-releasenote.xlsx` (14件) | `all-releasenote/nablarch-1.4-all-releasenote/` | mapping空+scan対象外→要追加 |
+| v1.3 | `nablarch-1.3.2–1.3.7-releasenote.xlsx` (6件) | `all-releasenote/nablarch-1.3-all-releasenote/` | mapping空+scan対象外→要追加 |
+| v1.3 | `*-releasenote-detail.xls` (1.3.0, 1.3.1) | `all-releasenote/nablarch-1.3-all-releasenote/1.3.0/, 1.3.1/` | xls、mapping空+scan対象外→要追加 |
+| v1.2 | `nablarch-1.2.3–1.2.8-releasenote.xlsx` (6件) | `all-releasenote/nablarch-1.2-all-releasenote/` | mapping空+scan対象外→要追加 |
+| v1.2 | `*-releasenote-detail.xls` (1.2.0, 1.2.1, 1.2.2) | `all-releasenote/nablarch-1.2-all-releasenote/1.2.0/, 1.2.1/, 1.2.2/` | xls、mapping空+scan対象外→要追加 |
+
+作業内容:
+- [ ] `scan.py` の `_source_roots` に `all-releasenote/nablarch-{version}-all-releasenote/` を各バージョンのルートとして追加
+- [ ] `scan.py` の xlsx スキャンに `.xls` 拡張子も追加（xls対応）
+- [ ] `tools/rbkc/mappings/v1.4.json` に xlsx_patterns 追加（`-releasenote.xlsx` endswith）
+- [ ] `tools/rbkc/mappings/v1.3.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）
+- [ ] `tools/rbkc/mappings/v1.2.json` に xlsx_patterns 追加（`-releasenote.xlsx`, `-releasenote-detail.xls` 対応）
+- [ ] `tools/rbkc/mappings/v5.json` に all-releasenote スキャン対応（`-releasenote.xlsx` pattern は既存、ディレクトリ追加のみ）
+- [ ] xls コンバータ実装（`xlsx_releasenote.py` の xls 対応、または専用コンバータ）
+- [ ] TDD: テスト → RED → 実装 → GREEN → 全テスト通過 → エキスパートレビュー
 
 **開発ルール追記（完了済み）:**
 - [x] `.claude/rules/development.md` にテスト作成観点（バグ露呈ケース・エッジケース必須）を追記
