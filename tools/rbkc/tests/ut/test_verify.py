@@ -532,3 +532,121 @@ class TestVerifyFileContentRstMd:
             {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
         ])
         assert self._check(source, data, "rst") == []
+
+    def test_pass_bold_stripped(self):
+        """**text** in JSON content is stripped to 'text' before source matching."""
+        source = "概要\n====\n\nキーワードが重要です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "**キーワード**が重要です。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_single_emphasis_stripped(self):
+        """*text* in JSON content is stripped to 'text' before source matching."""
+        source = "概要\n====\n\nキーワードが重要です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "*キーワード*が重要です。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_admonition_label_stripped(self):
+        """'> **Note:** text' → label stripped; body 'text' searched in source (MD)."""
+        source = "# 概要\n\nメモの内容です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "> **Note:** メモの内容です。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_pass_toctree_entries_not_qc1(self):
+        """Indented toctree child entries in RST source → treated as syntax, not QC1."""
+        source = "目次\n====\n\n通常テキスト。\n\n.. toctree::\n\n   chapter1\n   chapter2\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "目次", "content": "通常テキスト。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_substitution_def_not_qc1(self):
+        """RST substitution definitions '.. |name| replace:: ...' → syntax, not QC1."""
+        source = "概要\n====\n\n内容テキスト。\n\n.. |NB| replace:: Nablarch\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_md_frontmatter_body_not_qc1(self):
+        """Frontmatter body lines (between '---') in MD source → syntax, not QC1."""
+        source = "---\ntitle: テスト\ndate: 2026-01-01\n---\n\n# 概要\n\n内容テキスト。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_fail_qc2_fabricated_title(self):
+        """JSON section title absent from source → QC2 (fabricated) with title in message."""
+        source = "概要\n====\n\n内容テキスト。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "存在しないタイトル", "content": "内容テキスト。", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc2_issues = [i for i in issues if "QC2" in i]
+        assert len(qc2_issues) >= 1
+        assert any("存在しないタイトル" in i for i in qc2_issues)
+
+    def test_fail_qc1_multiple_gaps(self):
+        """Multiple uncaptured source lines → all reported (no early break)."""
+        source = "概要\n====\n\n欠落行1\n欠落行2\n欠落行3\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "", "hints": []},
+        ])
+        issues = self._check(source, data, "rst")
+        qc1_issues = [i for i in issues if "QC1" in i]
+        assert len(qc1_issues) >= 2, f"Expected >=2 QC1 issues, got: {qc1_issues}"
+
+    def test_pass_snake_case_not_mangled(self):
+        """snake_case identifiers in JSON content are not mangled by underscore stripping."""
+        source = "概要\n====\n\ndo_something_else を使用します。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "do_something_else を使用します。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_directive_body_captured_not_swallowed(self):
+        """RST directive body content (note:: body) is real content, must be captured."""
+        source = "概要\n====\n\n.. note::\n\n   重要な注記内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "重要な注記内容。", "hints": []},
+        ])
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_admonition_japanese_label_stripped(self):
+        """'> **注意:** text' → Japanese admonition label stripped before source match (MD)."""
+        source = "# 概要\n\nメモの内容です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "> **注意:** メモの内容です。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_pass_admonition_lowercase_label_stripped(self):
+        """'> **note:** text' → lowercase admonition label stripped before source match (MD)."""
+        source = "# 概要\n\nメモの内容です。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "> **note:** メモの内容です。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_pass_md_hr_not_frontmatter(self):
+        """MD horizontal rule '---' in body is not mistaken for frontmatter boundary."""
+        source = "# 概要\n\n最初の内容。\n\n---\n\n区切り後の内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "最初の内容。\n\n---\n\n区切り後の内容。", "hints": []},
+        ])
+        assert self._check(source, data, "md") == []
+
+    def test_fail_qc1_md_content_after_hr_not_captured(self):
+        """If content after HR is not in JSON, QC1 is reported (HR does not swallow it)."""
+        source = "# 概要\n\n最初の内容。\n\n---\n\n欠落した内容。\n"
+        data = self._make_data("f", [
+            {"id": "s1", "title": "概要", "content": "最初の内容。", "hints": []},
+        ])
+        issues = self._check(source, data, "md")
+        assert any("QC1" in i for i in issues)

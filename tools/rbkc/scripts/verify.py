@@ -207,7 +207,13 @@ def _strip_md_syntax_to_plain_lines(text: str) -> list[str]:
             continue
         l = re.sub(r'^#+\s*', '', line)
         l = re.sub(r'^>\s?', '', l)
-        l = re.sub(r'\*\*|__', '', l)
+        # Strip admonition labels like "**Note:**" / "**注意:**" before bold removal
+        l = re.sub(r'^\*\*[^\*]+[：:]\*\*\s*', '', l)
+        # Strip bold (**text**) and italic (*text*), but not snake_case underscores
+        l = re.sub(r'\*\*(.+?)\*\*', r'\1', l)
+        l = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', l)
+        l = re.sub(r'(?<![a-zA-Z0-9_])__(.+?)__(?![a-zA-Z0-9_])', r'\1', l)
+        l = re.sub(r'(?<![a-zA-Z0-9_])_([^_\s][^_]*)_(?![a-zA-Z0-9_])', r'\1', l)
         if l.strip():
             result.append(l)
     return result
@@ -223,6 +229,9 @@ def _is_rst_syntax_line(line: str) -> bool:
         return True
     if re.match(r'^\.\.\s+_[a-zA-Z0-9_-]+:', s):
         return True
+    # Substitution definitions: ".. |name| replace:: ..."
+    if re.match(r'^\.\.\s+\|', s):
+        return True
     if re.match(r'^:[a-zA-Z][a-zA-Z0-9_.-]*:`', s):
         return True
     if re.match(r'^\s+:[a-zA-Z]', line):
@@ -230,11 +239,13 @@ def _is_rst_syntax_line(line: str) -> bool:
     return False
 
 
-def _is_md_syntax_line(line: str) -> bool:
+def _is_md_syntax_line(line: str, in_frontmatter: bool = False) -> bool:
     s = line.strip()
     if not s:
         return True
     if re.match(r'^---+\s*$', s):
+        return True
+    if in_frontmatter:
         return True
     if re.match(r'^```', s):
         return True
@@ -280,8 +291,11 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
         if idx != -1:
             consumed.append((idx, idx + len(unit)))
             current_pos = idx + len(unit)
-        elif is_content:
-            if source_text.find(unit) == -1:
+        else:
+            if not is_content:
+                # Title not found → fabricated title
+                issues.append(f"[QC2] section '{sid}': fabricated title: {unit[:50]!r}")
+            elif source_text.find(unit) == -1:
                 issues.append(f"[QC2] section '{sid}': fabricated content: {unit[:50]!r}")
             else:
                 issues.append(f"[QC3] section '{sid}': duplicate content: {unit[:50]!r}")
@@ -305,11 +319,44 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
     else:
         remaining = source_text
 
-    is_syntax = _is_rst_syntax_line if fmt == "rst" else _is_md_syntax_line
-    for line in remaining.split('\n'):
-        if not is_syntax(line):
-            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
-            break
+    # Directives whose indented body is structure (not content to capture)
+    _RST_STRUCTURAL_DIRECTIVES = re.compile(
+        r'^\.\.\s+(toctree|include|image|figure|raw|csv-table|list-table'
+        r'|class|only|ifconfig|replace|unicode|date|contents|sectnum'
+        r'|header|footer|rubric|meta|compound|container|math'
+        r'|code-block|code|sourcecode|highlight|parsed-literal'
+        r'|literalinclude|testsetup|testcleanup|doctest)\s*::'
+    )
+
+    if fmt == "rst":
+        in_structural_directive = False
+        for line in remaining.split('\n'):
+            s = line.strip()
+            if s and re.match(r'\.\.\s+\S', s):
+                in_structural_directive = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
+            if not s:
+                continue
+            if in_structural_directive and re.match(r'^\s+\S', line):
+                continue
+            if not _is_rst_syntax_line(line):
+                issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+    else:
+        # Frontmatter only exists if source_text starts with '---'
+        has_frontmatter = bool(re.match(r'^---+\s*$', source_text.split('\n')[0]))
+        in_frontmatter = False
+        frontmatter_seen = False
+        for line in remaining.split('\n'):
+            s = line.strip()
+            if has_frontmatter and not frontmatter_seen and re.match(r'^---+\s*$', s):
+                in_frontmatter = True
+                frontmatter_seen = True
+                continue
+            if in_frontmatter:
+                if re.match(r'^---+\s*$', s):
+                    in_frontmatter = False
+                continue
+            if not _is_md_syntax_line(line, in_frontmatter=False):
+                issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
 
     return issues
 
