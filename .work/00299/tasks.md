@@ -204,13 +204,17 @@
   - **heading match (全レベル) = 813件 (72%)** — 全レベル見出し抽出で決定論的に救える
   - dash split = 22件、paren strip = 16件
   - **fabricated = 285件 (hints loss 3241件)** — h1-only 155件 / non-h1-only 130件
-  - 最大ロスは 5 版合計 hints 66K 中 約5%（95% 保存は余裕で達成、100% は R8 の効果次第）
-- [DECISION: §B-10 3点の判断要] 目標 hints 保存率 / h1-only fabricated の扱い / 非 h1-only fabricated の扱い
-- [ ] §4-2 R1〜R9 を裏取り結果を踏まえて簡略化（cache.title 一部活用 or 捨てる方針決定）
-- [ ] §5/§6 を更新（受容範囲・未解決リスク）
-- [ ] xlsx の全バージョン hints 集計
-- [ ] 設計書ユーザー承認
+- [x] R8/R9 計測（xlsx 除く）: `.pr/00299/measure_r8_r9.py` → R8 救済率は 24% (31/130 件) と低く、R9 fallback size は中央値 1K字 / p90 5〜14K字 と妥当
+- [x] 設計方針ユーザー承認（2026-04-21 session 34）: 保存率 100% / h1-only + 非 h1-only ともに R9 (h1 集約) / R8 は不採用 / xlsx は Phase 21-C まで `__file__` key
+- [x] §4-2 簡略化: R1〜R6 に整理（R3 全レベル照合 / R8 削除 / R9 → R6 に改番）
+- [x] §5/§6 更新（受容範囲・未解決リスク）
+- [ ] xlsx の全バージョン hints 集計（Phase 21-C 対応の参考値）
+- [ ] 設計書最終承認（見直し完了版）
 - [ ] TDD: `.pr/00299/generate_hints.py` 実装
+  - [ ] 全レベル見出し抽出（RST h1/h2/h3/h4、MD `#`〜`####`）
+  - [ ] R1〜R6 各ルールの単体テスト
+  - [ ] 正規化関数の境界値テスト（NFKC、空白、括弧）
+  - [ ] smoke test: 全 5 版 ERR 0件、R6 ≤ 2%、hints 保存率 100%
 - [ ] 全 5 版 hints/v{V}.json 再生成
 - [ ] verify で hints FAIL 0 件確認（Phase 21-D 完了後）
 - [ ] コミット
