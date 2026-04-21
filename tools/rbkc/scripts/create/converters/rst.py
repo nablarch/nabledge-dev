@@ -68,13 +68,16 @@ def _is_underline(line: str) -> bool:
     return all(x == c for x in s)
 
 
-def _detect_heading_chars(lines: list[str]) -> list[str]:
-    """Return heading underline characters in order of first appearance.
+def _detect_heading_chars(lines: list[str]) -> list[tuple[bool, str]]:
+    """Return heading keys in order of first appearance.
 
-    Both overline (char + text + char) and underline-only (text + char) styles
-    are recognised, matching Sphinx behaviour.
+    A heading key is a ``(is_overline, char)`` tuple so that Sphinx's rule
+    of distinguishing overline+underline from underline-only (even when the
+    same underline char is used) is preserved.  Example: ``(True, '-')`` for
+    an overline-dash h1 is a different level from ``(False, '-')`` for an
+    underline-only dash h2 further down the same file.
     """
-    chars: list[str] = []
+    keys: list[tuple[bool, str]] = []
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -87,9 +90,9 @@ def _detect_heading_chars(lines: list[str]) -> list[str]:
             and _is_underline(lines[i + 2])
             and line.rstrip()[0] == lines[i + 2].rstrip()[0]
         ):
-            c = line.rstrip()[0]
-            if c not in chars:
-                chars.append(c)
+            key = (True, line.rstrip()[0])
+            if key not in keys:
+                keys.append(key)
             i += 3
             continue
         # Underline-only style: title / underline (but not the underline of overline)
@@ -102,13 +105,13 @@ def _detect_heading_chars(lines: list[str]) -> list[str]:
             and not (i > 0 and _is_underline(lines[i - 1])
                      and lines[i - 1].rstrip()[0] == lines[i + 1].rstrip()[0])
         ):
-            c = lines[i + 1].rstrip()[0]
-            if c not in chars:
-                chars.append(c)
+            key = (False, lines[i + 1].rstrip()[0])
+            if key not in keys:
+                keys.append(key)
             i += 2
             continue
         i += 1
-    return chars
+    return keys
 
 
 # ---------------------------------------------------------------------------
@@ -117,7 +120,7 @@ def _detect_heading_chars(lines: list[str]) -> list[str]:
 
 def _split_sections(
     lines: list[str],
-    heading_chars: list[str],
+    heading_keys: list[tuple[bool, str]],
 ) -> tuple[str, list[str], list[tuple[str, list[str]]]]:
     """Parse *lines* into title + preamble + raw section line groups.
 
@@ -125,15 +128,20 @@ def _split_sections(
     preamble → lines between h1 and first h2/h3 (or all lines when no h1)
     h2/h3 → each starts a new section; content up to next h2/h3 belongs to it.
 
+    ``heading_keys`` is a list of ``(is_overline, char)`` tuples in order of
+    first appearance (h1, h2, h3, …).  Using tuples lets Sphinx's rule that
+    overline+underline is a distinct level from underline-only apply even when
+    both use the same underline character.
+
     Returns:
         (title, preamble_lines, [(section_title, raw_lines), ...])
     """
-    if not heading_chars:
+    if not heading_keys:
         return "", list(lines), []
 
-    h1_char = heading_chars[0]
+    h1_key = heading_keys[0]
     # h2 and h3 (indices 1 and 2) are section boundaries; h4+ stay as sub-headings
-    section_chars = set(heading_chars[1:3]) if len(heading_chars) >= 2 else set()
+    section_keys = set(heading_keys[1:3]) if len(heading_keys) >= 2 else set()
 
     title = ""
     sections: list[tuple[str, list[str]]] = []
@@ -165,22 +173,22 @@ def _split_sections(
             and _is_underline(lines[i + 2])
             and line.rstrip()[0] == lines[i + 2].rstrip()[0]
         ):
-            c = line.rstrip()[0]
+            key = (True, line.rstrip()[0])
             text = lines[i + 1].strip()
-            if c == h1_char and not found_h1:
+            if key == h1_key and not found_h1:
                 title = text
                 found_h1 = True
                 preamble_lines = current_lines
                 current_lines = []
                 i += 3
                 continue
-            if c in section_chars:
+            if key in section_keys:
                 _flush()
                 current_title = text
                 i += 3
                 continue
             # h4+: keep as sub-heading in current section
-            level = heading_chars.index(c) if c in heading_chars else len(heading_chars)
+            level = heading_keys.index(key) if key in heading_keys else len(heading_keys)
             current_lines.append(f"{'#' * (level + 1)} {text}")
             i += 3
             continue
@@ -194,23 +202,23 @@ def _split_sections(
             and not (i > 0 and _is_underline(lines[i - 1])
                      and lines[i - 1].rstrip()[0] == lines[i + 1].rstrip()[0])
         ):
-            c = lines[i + 1].rstrip()[0]
-            if c in heading_chars:
+            key = (False, lines[i + 1].rstrip()[0])
+            if key in heading_keys:
                 text = line.strip()
-                if c == h1_char and not found_h1:
+                if key == h1_key and not found_h1:
                     title = text
                     found_h1 = True
                     preamble_lines = current_lines
                     current_lines = []
                     i += 2
                     continue
-                if c in section_chars:
+                if key in section_keys:
                     _flush()
                     current_title = text
                     i += 2
                     continue
                 # h4+: keep as sub-heading
-                level = heading_chars.index(c)
+                level = heading_keys.index(key)
                 current_lines.append(f"{'#' * (level + 1)} {text}")
                 i += 2
                 continue
@@ -1192,9 +1200,9 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
         source = re.sub(r":ref:`([^`]+)`", _presolve_ref, source)
 
     lines = source.splitlines(keepends=True)
-    heading_chars = _detect_heading_chars([l.rstrip("\n") for l in lines])
+    heading_keys = _detect_heading_chars([l.rstrip("\n") for l in lines])
     title, preamble_lines, raw_sections = _split_sections(
-        [l.rstrip("\n") for l in lines], heading_chars
+        [l.rstrip("\n") for l in lines], heading_keys
     )
 
     # Collect named hyperlink targets from the whole source (first pass)

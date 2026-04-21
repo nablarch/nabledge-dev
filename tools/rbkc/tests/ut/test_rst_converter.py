@@ -105,3 +105,60 @@ class TestTopLevelContent:
         assert result.title == "Title"
         assert "前書き" in result.content
         assert [s.title for s in result.sections] == ["SectionA", "SectionB"]
+
+
+class TestOverlineVsUnderlineOnlyDistinction:
+    """Sphinx levels (overline+underline, same char) and (underline-only, same char)
+    as *different* heading levels.  The RBKC converter must follow this rule — a
+    `-` overline-style h1 and a `-` underline-only h2 must not collide.
+    """
+
+    def test_overline_dash_h1_and_underline_dash_h2_are_different_levels(self):
+        source = (
+            "----------\n"
+            "タイトル\n"
+            "----------\n"
+            "\n"
+            "前書き。\n"
+            "\n"
+            "セクションA\n"
+            "----------\n"
+            "\n"
+            "A本文。\n"
+            "\n"
+            "セクションB\n"
+            "----------\n"
+            "\n"
+            "B本文。\n"
+        )
+        result = convert(source, "setup_Web")
+        assert result.title == "タイトル"
+        assert "前書き" in result.content
+        assert [s.title for s in result.sections] == ["セクションA", "セクションB"]
+
+    def test_overline_dash_h1_and_tilde_h3_nested(self):
+        """Overline-dash h1 + underline-only dash h2 + underline-only tilde h3.
+
+        Reproduces the structure of setup_Web.rst where h3 subsections live
+        inside an h2 that shares its underline char with the h1's overline char.
+        """
+        source = (
+            "----------\n"
+            "タイトル\n"
+            "----------\n"
+            "\n"
+            "前書き。\n"
+            "\n"
+            "セクションA\n"
+            "----------\n"
+            "\n"
+            "A本文。\n"
+            "\n"
+            "サブA1\n"
+            "~~~~~~\n"
+            "\n"
+            "サブA1本文。\n"
+        )
+        result = convert(source, "setup_Web")
+        assert result.title == "タイトル"
+        assert [s.title for s in result.sections] == ["セクションA", "サブA1"]
