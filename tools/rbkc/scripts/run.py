@@ -226,6 +226,7 @@ def _convert_and_write(
     data = {
         "id": fi.file_id,
         "title": result.title,
+        "content": getattr(result, "content", ""),
         "no_knowledge_content": result.no_knowledge_content,
         "sections": sections,
     }

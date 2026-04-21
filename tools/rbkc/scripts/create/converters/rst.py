@@ -30,6 +30,7 @@ class Section:
 class RSTResult:
     title: str
     no_knowledge_content: bool
+    content: str = ""   # Markdown — text between h1 and the first h2/h3
     sections: list[Section] = field(default_factory=list)
 
 
@@ -50,8 +51,6 @@ _SKIP_DIRECTIVES = {"include"}
 # Characters that RST uses for underlines (Sphinx subset)
 _UNDERLINE_CHARS = set("=-~^+#*_.:`!\"'")
 
-# Preamble section title (content between h1 and first section heading)
-_PREAMBLE_TITLE = "概要"
 
 
 # ---------------------------------------------------------------------------
@@ -119,18 +118,18 @@ def _detect_heading_chars(lines: list[str]) -> list[str]:
 def _split_sections(
     lines: list[str],
     heading_chars: list[str],
-) -> tuple[str, list[tuple[str, list[str]]]]:
-    """Parse *lines* into title + raw section line groups.
+) -> tuple[str, list[str], list[tuple[str, list[str]]]]:
+    """Parse *lines* into title + preamble + raw section line groups.
 
     h1 → title string
+    preamble → lines between h1 and first h2/h3 (or all lines when no h1)
     h2/h3 → each starts a new section; content up to next h2/h3 belongs to it.
-    Preamble (between h1 and first h2/h3) → section titled _PREAMBLE_TITLE.
 
     Returns:
-        (title, [(section_title, raw_lines), ...])
+        (title, preamble_lines, [(section_title, raw_lines), ...])
     """
     if not heading_chars:
-        return "", [(_PREAMBLE_TITLE, lines)]
+        return "", list(lines), []
 
     h1_char = heading_chars[0]
     # h2 and h3 (indices 1 and 2) are section boundaries; h4+ stay as sub-headings
@@ -223,16 +222,11 @@ def _split_sections(
     trailing_lines = list(current_lines)
     _flush()
 
-    # If no h2/h3 sections were found, treat all post-title content as one section
-    if not sections and trailing_lines:
-        sections = [(_PREAMBLE_TITLE, trailing_lines)]
-    else:
-        # Prepend preamble as first section (if non-empty after stripping)
-        preamble_content = [l for l in preamble_lines if l.strip()]
-        if preamble_content:
-            sections.insert(0, (_PREAMBLE_TITLE, preamble_lines))
+    # If no h2/h3 sections were found, post-title content becomes preamble
+    if not sections:
+        preamble_lines = preamble_lines + trailing_lines
 
-    return title, sections
+    return title, preamble_lines, sections
 
 
 # ---------------------------------------------------------------------------
@@ -1153,13 +1147,15 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
 # No-knowledge-content detection
 # ---------------------------------------------------------------------------
 
-def _detect_no_knowledge_content(sections: list[Section]) -> bool:
-    """Return True if no section has any meaningful content.
+def _detect_no_knowledge_content(preamble_content: str, sections: list[Section]) -> bool:
+    """Return True if the file has no meaningful content.
 
-    A file is no-knowledge-content when all its sections (after directive
-    processing) contain only whitespace.  Typical cases: toctree-only files,
-    navigation indices, label-only stub pages.
+    A file is no-knowledge-content when its preamble is empty and every
+    section (after directive processing) contains only whitespace.
+    Typical cases: toctree-only files, navigation indices, label-only stub pages.
     """
+    if preamble_content.strip():
+        return False
     return all(not s.content.strip() for s in sections)
 
 
@@ -1203,22 +1199,27 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
 
     lines = source.splitlines(keepends=True)
     heading_chars = _detect_heading_chars([l.rstrip("\n") for l in lines])
-    title, raw_sections = _split_sections([l.rstrip("\n") for l in lines], heading_chars)
+    title, preamble_lines, raw_sections = _split_sections(
+        [l.rstrip("\n") for l in lines], heading_chars
+    )
 
     # Collect named hyperlink targets from the whole source (first pass)
     targets = _collect_targets([l.rstrip("\n") for l in lines])
     if extra_targets:
         targets.update(extra_targets)
 
+    preamble_md = _convert_content(preamble_lines, file_id, targets or None, source_dir)
+
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
         md = _convert_content(sec_lines, file_id, targets or None, source_dir)
         sections.append(Section(title=sec_title, content=md))
 
-    no_knowledge = _detect_no_knowledge_content(sections)
+    no_knowledge = _detect_no_knowledge_content(preamble_md, sections)
 
     return RSTResult(
         title=title,
         no_knowledge_content=no_knowledge,
+        content=preamble_md,
         sections=sections,
     )
