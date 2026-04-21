@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 33)
+**Updated**: 2026-04-21 (session 34)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -200,10 +200,15 @@
 - [x] 5 バージョン全量マッピング可能性検証（P1〜P4 集計）
 - [x] P4 現物調査（cache.title の source 実見出しマッチ率計測）
 - [x] 設計書付録 B（5 バージョン裏取り結果）追記
-- [ ] P4 真の不整合 255 件を `—` / 創作 / 括弧 の 3 パターンに分類（次セッション）
-- [ ] 目標 hints 保存率をユーザーと合意
+- [x] P4 分類（全 5 版）: `.pr/00299/classify_p4.py` で集計 → 設計書 §B-8 に結果追記（2026-04-21 session 34）
+  - **heading match (全レベル) = 813件 (72%)** — 全レベル見出し抽出で決定論的に救える
+  - dash split = 22件、paren strip = 16件
+  - **fabricated = 285件 (hints loss 3241件)** — h1-only 155件 / non-h1-only 130件
+  - 最大ロスは 5 版合計 hints 66K 中 約5%（95% 保存は余裕で達成、100% は R8 の効果次第）
+- [DECISION: §B-10 3点の判断要] 目標 hints 保存率 / h1-only fabricated の扱い / 非 h1-only fabricated の扱い
 - [ ] §4-2 R1〜R9 を裏取り結果を踏まえて簡略化（cache.title 一部活用 or 捨てる方針決定）
 - [ ] §5/§6 を更新（受容範囲・未解決リスク）
+- [ ] xlsx の全バージョン hints 集計
 - [ ] 設計書ユーザー承認
 - [ ] TDD: `.pr/00299/generate_hints.py` 実装
 - [ ] 全 5 版 hints/v{V}.json 再生成
