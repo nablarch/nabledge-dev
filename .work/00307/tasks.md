@@ -5,46 +5,80 @@
 **PR**: 未作成
 **Updated**: 2026-04-22
 
-**Note**: このセッションでは #307 本体の進捗はなく、PR #308（.pr/→.work/ rename含むルール整備）をmergeして本branchを `origin/main` にrebaseしただけ。
+## 計測設計（ユーザー合意済み）
+
+3段階の粒度で計測し、各段階を**別コンテキスト**で独立判定する（バイアス排除）。
+
+| 段階 | 実行 | 判定方法 | 判定コンテキスト |
+|------|------|----------|----------------|
+| ① キーワード抽出 | AIでキーワード抽出 | script: `expected_keywords` 一致率 | メインで完結 |
+| ② 検索まで | ① + `keyword-search.sh` | LLM judge: 検索結果が適切か | 別sub-agent |
+| ③ フル | n6 skill 丸ごと | LLM judge: 最終回答が適切か | 別sub-agent |
+
+**効率化**:
+- ②実行時に①の抽出キーワードも記録 → AIコール1回で①②両方の計測データ取得
+- ①はscript判定のみなのでほぼノーコスト
+- ②③はそれぞれ isolated sub-agent で flat に judge
+
+**スケーリング**:
+1. 3-5件（パターン網羅: QA/CA/benchmark）で ①②③ 動作確認・判定基準調整
+2. 問題なければ 15件
+3. 問題なければ 30件で確定ベースライン
 
 ## In Progress
 
-### ベンチマーク1件を1分以内で動かす
+### 計測ハーネス再設計（3段階対応）
 
-**Status**: `review-04` with current flow を試したら 13 turns / $0.39 / **452 秒 (7.5分)** で異常に遅い。1件を高速に動かす形を確立してから30件に進む方針。
-
-**仮説（notes.md より）**:
-1. セッション毎に system prompt + tool 定義を毎回 cache-create（hello world でも cache_creation=32822 tokens）
-2. ツール実行が逐次でターン数が多い
-3. Sonnet の thinking 時間
-4. 1 turn あたり約35秒 = 通常 5-10秒より異常に遅い
+**Status**: 現状の `tools/benchmark/run.py` は「フロー全体を1エージェントで動かす」前提の scaffolding のみ。3段階対応へ再設計が必要。
 
 **Steps:**
-- [ ] `claude -p --output-format stream-json --verbose --max-turns 15 --allowedTools Bash --permission-mode bypassPermissions "簡単な検索クエリ"` を 60-90秒で kill して turn 毎の内訳を確認
-- [ ] `--bare` オプションで CLAUDE.md / hooks / plugin sync / auto-memory を切って overhead が減るか試す
-- [ ] 初期 `cache_creation_input_tokens=32822` の正体を確認（system prompt か tool schema か）
-- [ ] `prompts/search_current.md` を圧縮して効果を見る
-- [ ] `--max-turns` を 30→10 に減らして forced early termination の挙動を見る
-- [ ] `run.py` / `prompts/` を調整し、`--flow current --scenario review-04` が1分以内で動くことを確認
+- [ ] シナリオJSON拡張: 各シナリオに `expected_keywords`（①用）、`expected_answer` or 判定基準（②③用）を追加
+- [ ] `run.py` を3段階対応に再設計:
+  - Stage1: AI でキーワード抽出だけ実行 → script で expected_keywords と比較
+  - Stage2: keyword-search.sh を Stage1 のキーワードで実行 → 検索結果を sub-agent で judge
+  - Stage3: n6 skill フル実行 → 最終回答を sub-agent で judge
+- [ ] judge prompt を作成（`prompts/judge_stage2.md` / `prompts/judge_stage3.md`）
+- [ ] 3件（QA/CA/benchmarkから1本ずつ）で動作確認・判定基準調整
+- [ ] time/cost/accuracy を `summary.json` に出力する構造を決定
 
 **Context**:
-- 現行 v6 検索フロー: Step 1 キーワード抽出(AI) → Step 2 全文検索(script) → Step 3 分岐判断(AI) → Step 4-5 ファイル/セクション選択(AI, route 2) → Step 6 セクション判定(AI) ← 削除対象 → Step 7 pointer JSON
-- `claude -p --output-format json` で `duration_ms`/`num_turns`/`total_cost_usd`/`usage` 取得可
-- `--json-schema` は最低 `--max-turns 2` 必要
-- ベンチマークツール設計: nabledge-6 スキル経由ではなく `tools/benchmark/prompts/` 内に検索エージェントを定義して `claude -p` 起動（skill overhead 回避、新旧切り替え容易） — ただし「スキル自体を叩いた方が本物の計測」という反論もあり得る、ユーザーに要確認
+- 前セッションで 1件を current flow で走らせたら 452秒 (7.5分) / $0.39 / 13 turns と異常に遅い → 段階分割で原因切り分け可能に
+- ③ が一番コストかかるので、①②で問題なければ ③ に進む運用
+
+### 計測速度の調査（必要なら）
+
+**Status**: ③ フル実行が遅すぎる場合のみ調査。①②が速ければ後回し。
+
+**Steps:**
+- [ ] `claude -p --output-format stream-json --verbose` で turn 毎の内訳確認
+- [ ] 初期 `cache_creation_input_tokens=32822` の正体を確認（system prompt か tool schema か）
+- [ ] `--max-turns` チューニング
 
 ## Not Started
+
+### パターン網羅3-5件で ①②③ 動作確認
+
+**Steps:**
+- [ ] QA/CA/benchmark から代表3件選定
+- [ ] 3件で ①②③ 全段階実行、accuracy/time/cost を観察
+- [ ] 判定基準の妥当性を検証、必要なら evaluator prompt 調整
+
+### 15件で中間確認
+
+**Steps:**
+- [ ] ①②③ 全段階実行
+- [ ] 異常値・分散を確認
 
 ### 30件ベースライン測定
 
 **Steps:**
-- [ ] `--flow current` で30件実行し `.results/{timestamp}/` に保存
-- [ ] `summary.json` に accuracy/time(mean,median)/cost(mean,median) 出力
+- [ ] ①②③ 全段階実行し `.results/{timestamp}/` に保存
+- [ ] `summary.json` に段階別 accuracy/time(mean,median)/cost(mean,median) 出力
 - [ ] 妥当な結果なら `tools/benchmark/baseline/{timestamp}/` にコピーして git コミット（A案、ユーザー確認済み）
 
 ### 検索フロー改修（全5バージョン: 1.2 / 1.3 / 1.4 / 5 / 6）
 
-**設計（自分で決めた、ユーザーへの暗黙承認 — stop されていないが再確認推奨）**:
+**設計（ユーザー承認済み）**:
 - `_section-judgement.md` 削除
 - `_knowledge-search.md` から route 2（`_file-search.md`/`_section-search.md`/`_index-based-search.md`/`_knowledge-search/_full-text-search.md` 薄ラッパー）削除
 - 新フロー: `質問 → AIキーワード抽出 → keyword-search.sh（スコア順）→ 上位10件本文読み込み → AI回答生成`
@@ -64,10 +98,10 @@
 - [ ] `plugin/GUIDE-GHC.md` に同じく追記（全5バージョン）
 - [ ] 既存の「知識検索」「コード分析」の user-facing interface は不変なので記述の整合性チェックのみ
 
-### 改修後30件再測定 + ベースライン比較
+### 改修後 ①②③ 再測定 + ベースライン比較
 
 **Steps:**
-- [ ] `--flow new` で30件実行
+- [ ] 改修後の ①②③ で30件実行
 - [ ] baseline と比較（accuracy 維持 + time/cost 削減か？）
 - [ ] 改善/同等 → 採用
 - [ ] 後退 → 原因分析してユーザーに改善案提示
@@ -88,13 +122,4 @@
 - [x] 30件シナリオを `.work/00307/scenarios-all-30.json` と `tools/benchmark/scenarios/qa-v6.json` に配置
 - [x] `tools/benchmark/` scaffolding（`run.py` / `prompts/search_current.md` / `prompts/search_new.md` / `scenarios/qa-v6.json`）
 - [x] 1件実行検証（`review-04` with current flow）— 動くが遅い（13 turns / $0.39 / 452秒）
-
-## ユーザーへの要確認ポイント
-
-再開時に最初に擦り合わせるべき事項:
-
-1. **ベンチマーク設計**: `claude -p` で独自検索エージェントを起動する方式で良いか？それとも nabledge-6 skill 自体を叩く方が「本物の計測」として妥当か？
-2. **フロー簡素化方針**（暗黙承認中）:
-   - `_section-judgement.md` / route 2 削除
-   - `full-text-search.sh` → `keyword-search.sh` リネームで新エントリーポイント公開
-   - ヒット0件はAIフォールバックなしで「情報なし」終了
+- [x] 計測設計合意: 3段階（①抽出/②検索/③フル）× 別コンテキスト独立判定
