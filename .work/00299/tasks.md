@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 30)
+**Updated**: 2026-04-21 (session 31)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -158,7 +158,7 @@
   - L1: `index[]` は `sections[]` から決定論的生成（不変条件として明記）
   - L2: top-level content に hints 付与しない
   - xlsx のシート単位ファイル分割 + 行単位 section 化は Phase 21-C へスコープ明示
-- [ ] ユーザー最終承認（Plan C 設計確定版）
+- [x] ユーザー最終承認（Plan C 設計確定版）— 2026-04-21 session 31
 - [ ] verify 変更提案: top-level content を QC スコープに追加等、別途ユーザー承認プロセスで確定（rbkc.md ルール）
 - [ ] TDD: rst converter — `_PREAMBLE_TITLE` 廃止、preamble を top-level content に移す（RED → 実装 → GREEN）
 - [ ] TDD: md converter — 同様（title="" preamble を top-level content に）
