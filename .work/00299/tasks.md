@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 38)
+**Updated**: 2026-04-22 (session 38, Phase 21-I complete)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -16,34 +16,18 @@
 
 ---
 
-## 現状サマリー（2026-04-22 session 38 冒頭で計測）
+## 現状サマリー（session 38 Phase 21-I 完了後）
 
-`bash rbkc.sh verify 6` → **FAIL 合計 453件**
+`bash rbkc.sh verify 6` → **FAIL 合計 139件**（QL1 314件解消済み）
 
 | カテゴリ | 件数 | 受け皿 Phase |
 |---|---|---|
-| QL1（`:ref:` 解決失敗 / image alt 未検出） | 314 | Phase 21-I |
 | hints `file entry not matched by any knowledge section` | 74 | Phase 21-J |
 | hints `docs MD hints differ from hints file` | 65 | Phase 21-J |
 
 ---
 
 ## In Progress
-
-### Phase 21-I: QL1 回帰 314件の解消
-
-**背景**: Phase 21-D の top-level content / hints 導入によって JSON 構造が変化した結果、`:ref:` の target title / display text / image alt が JSON から検出されなくなっている可能性が高い。Phase 21-D 前には QL1 FAIL = 0 件だったので回帰。
-
-**Steps:**
-- [ ] 典型 3〜5 件の FAIL を手で追跡し、どこに本来格納されるべきか設計書（`rbkc-json-schema-design.md` / `rbkc-verify-quality-design.md`）と照合
-- [ ] 回帰原因を確定（例: `check_external_urls` が top-level content を走査していない / converter が ref 解決時に top-level へ移した text を失っている 等）
-- [ ] ユーザーに原因と修正方針を提示・承認
-- [ ] TDD: RED を確認する最小 fixture を用意 → 実装 → GREEN
-- [ ] rbkc create 6 → verify 6 で QL1 FAIL 0 件確認
-- [ ] サブエージェント品質チェック (SE + QA)
-- [ ] コミット
-
----
 
 ### Phase 21-J: hints mismatch 139件の解消
 
@@ -151,6 +135,7 @@
 - [x] Phase 21-E（旧 file=[] 46件）: Phase 21-D で大半解消。残存は Phase 21-J に統合してクローズ
 - [x] Phase 21-F（旧値不一致 4件）: Phase 21-D で解消。Phase 21-J に統合してクローズ
 - [x] Phase 21-H: hints file 生成ロジックの再設計（R1〜R6 ルールで 5 版 hints/v{V}.json を ゼロベース再生成、同名見出し対応の配列スキーマ化）— commits `9ffefa08` / `5adf4404` / `60b16f98` / `ca7a924f` / `f7a4db40` / `fbd2b52f` / `8ed9aa0c` / `c286de77` / `83031d95` / `d015c03e` / `80a3ed48`（verify GREEN 確認は 21-J にバトン）
+- [x] Phase 21-I: QL1 回帰 314件解消 — `_json_text()` に top-level content 追加（設計書 `rbkc-verify-quality-design.md:170` 通りに修正、false-positive fix）。TDD: RED 3件 → GREEN、regression/MD top-level/`_json_text()` 直接テスト 5件追加（合計244 PASS）。SE 5/5 / QA 5/5（追試対応後）
 
 - [x] Phase V-skip: verify() FAIL on missing JSON/docs MD — committed `86dd660e`
 - [x] Phase V-hints: KC-format files deleted from nabledge-6 — committed `c92accc4`
