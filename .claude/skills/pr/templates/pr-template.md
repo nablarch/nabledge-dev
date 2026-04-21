@@ -11,10 +11,8 @@ Closes #[ISSUE_NUMBER]
 [Describe the solution strategy addressing the Situation and Pain from the issue. Explain WHY this approach was chosen, any alternatives considered, and trade-offs made.]
 
 ## Tasks
-[List implementation tasks completed as checkboxes]
-- [x] Task 1
-- [x] Task 2
-- [x] Task 3
+
+See [tasks.md](.pr/[ISSUE_NUMBER_5DIGIT]/tasks.md).
 
 ## Expert Review
 
@@ -46,8 +44,8 @@ This template is used for all PRs following issue-driven development:
 
 When generating PR body from this template:
 - `[ISSUE_NUMBER]` → Actual issue number
+- `[ISSUE_NUMBER_5DIGIT]` → 5-digit zero-padded issue number (e.g., 42 → 00042)
 - `[Describe the solution...]` → Generated approach description addressing Situation/Pain from issue
-- `[List implementation...]` → Generated task list
 - `[Criterion X from issue]` → Extracted from issue body
 - `[How this was verified]` → Evidence from implementation
 
@@ -60,10 +58,8 @@ Closes #42
 Implemented session-based authentication using JWT tokens. Chose this approach for stateless authentication and better scalability compared to server-side sessions.
 
 ## Tasks
-- [x] Create login form component
-- [x] Implement JWT token generation
-- [x] Add authentication middleware
-- [x] Write integration tests
+
+See [tasks.md](.pr/00042/tasks.md).
 
 ## Expert Review
 

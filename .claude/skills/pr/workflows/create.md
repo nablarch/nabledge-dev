@@ -216,16 +216,13 @@ Replace each placeholder in the loaded template:
   to server-side sessions.
   ```
 
-**Step 3: Replace [List implementation...]**
-- Extract task list from commit messages (subjects)
-- Format as checkbox list with all items checked
-- Example output:
+**Step 3: Replace Tasks section**
+- Replace the Tasks section body with a link to the PR's task file:
   ```
-  - [x] Create login form component
-  - [x] Implement JWT token generation
-  - [x] Add authentication middleware
-  - [x] Write integration tests
+  See [tasks.md](.pr/[ISSUE_NUMBER_5DIGIT]/tasks.md).
   ```
+- `[ISSUE_NUMBER_5DIGIT]` is the issue number zero-padded to 5 digits (e.g., 42 → 00042)
+- The task list is maintained in `.pr/{00000}/tasks.md` per `.claude/rules/work-log.md`; the PR body only links to it (DRY)
 
 **Step 4: Replace Expert Review Section**
 
@@ -283,10 +280,8 @@ Implemented session-based authentication using JWT tokens. Chose this approach
 for stateless authentication and better scalability compared to server-side sessions.
 
 ## Tasks
-- [x] Create login form component
-- [x] Implement JWT token generation
-- [x] Add authentication middleware
-- [x] Write integration tests
+
+See [tasks.md](.pr/00042/tasks.md).
 
 ## Expert Review
 
@@ -322,10 +317,8 @@ Closes #42
 Implemented session-based authentication using JWT tokens. Chose this approach for stateless authentication and better scalability compared to server-side sessions.
 
 ## Tasks
-- [x] Create login form component
-- [x] Implement JWT token generation
-- [x] Add authentication middleware
-- [x] Write integration tests
+
+See [tasks.md](.pr/00042/tasks.md).
 
 ## Expert Review
 
