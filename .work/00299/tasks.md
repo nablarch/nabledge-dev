@@ -149,7 +149,8 @@
 **Steps:**
 - [x] 調査: 現状の JSON スキーマと全 converter / verify / docs / hints ロジックの一覧化 — `.pr/00299/investigation-21d.md` 参照
 - [x] 調査: nabledge-test のセクション検索ロジックへの影響確認 — 影響なし（scoring は keyword detection）
-- [ ] 設計書更新: `tools/rbkc/docs/rbkc-verify-quality-design.md` と新規 `tools/rbkc/docs/rbkc-json-schema-design.md`（仮）に新スキーマを定義
+- [x] 調査: nabledge スキル本体（nabledge-6/5/1.4/1.3/1.2）のスキーマ依存確認 — scripts/workflows に影響あり。本 Phase で同時改修
+- [x] 設計書作成: `tools/rbkc/docs/rbkc-json-schema-design.md` 新規作成 + `rbkc-verify-quality-design.md` 更新
 - [ ] 設計レビュー: Software Engineer サブエージェントによる設計レビュー、ユーザー承認
 - [ ] TDD: rst converter — h2/h3 なしケースで top-level content、section 空のテスト → RED → 実装 → GREEN
 - [ ] TDD: rst converter — h2/h3 ありケースで h1 直下本文を top-level content、以下 h2/h3 を section に
