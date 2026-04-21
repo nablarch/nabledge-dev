@@ -30,17 +30,23 @@
 
 ---
 
-### Phase 21-B: hints が JSON に入っていない（file_id 不一致）
+### Phase 21-B: hints の永続化と完全一致チェック
 
-**問題**: KC cache の file_id（例: `adapters-doma_adaptor`）と RBKC 生成時の file_id（例: `adapters-doma-adaptor`）が不一致のため、341ファイル中 224ファイルで hints lookup がミスヒット → hints が空になっている。
+**問題1**: KC cache の hints が RBKC 側に永続化されていない。`.cache` は削除される前提のため、`rbkc create` 時に `tools/rbkc/hints/v{version}.json` として保存する必要がある。
 
-**最終チェック基準（verify に実装）**:
-元のヒント全量・JSONヒント全量・MDヒント全量が論理的なファイル単位で完全一致すること
+**問題2**: KC cache の file_id（例: `adapters-doma_adaptor`）と RBKC 生成時の file_id（例: `adapters-doma-adaptor`）が不一致のため、341ファイル中 224ファイルで hints lookup がミスヒット → hints が空。
+
+**チェック基準（verify に実装）**:
+1. hints ファイル全量 ＝ KC cache ヒント全量（完全一致）
+2. hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量（完全一致）
 
 **Steps:**
-- [ ] 全容把握: file_id 不一致の全パターン調査（どのような変換ルールのズレか）
+- [ ] 全容把握: file_id 不一致の全パターン調査（変換ルールのズレを特定）
+- [ ] 設計: hints 永続化ファイルのフォーマット決定、ユーザー承認
+- [ ] TDD: `rbkc create` 時に `tools/rbkc/hints/v{version}.json` へ保存（RED → GREEN）
 - [ ] 修正: file_id 正規化ロジックを hints lookup に追加（TDD: RED → GREEN）
-- [ ] verify 更新: 元ヒント全量＝JSONヒント全量＝MDヒント全量の完全一致チェック実装（TDD）
+- [ ] verify 追加1: hints ファイル全量 ＝ KC cache ヒント全量 の完全一致チェック（TDD）
+- [ ] verify 追加2: hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量 の完全一致チェック（TDD）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] コミット
 
