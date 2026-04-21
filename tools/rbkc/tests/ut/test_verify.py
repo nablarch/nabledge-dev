@@ -1,15 +1,15 @@
-"""Unit tests for verify.py — QO5, QC5, QC6, QC1-QC3(Excel), QC1-QC4(RST/MD), QO3, QL2, QL1."""
+"""Unit tests for verify.py — QO2, QC5, QC6, QC1-QC3(Excel), QC1-QC4(RST/MD), QL2, QL1."""
 from __future__ import annotations
 
 import pytest
 
 
 # ---------------------------------------------------------------------------
-# QO5: docs MD content 完全一致
+# QO2: docs MD content 完全一致
 # ---------------------------------------------------------------------------
 
 class TestCheckJsonDocsMdConsistency:
-    """QO5: JSON sections content must appear verbatim in docs MD."""
+    """QO2: JSON sections content must appear verbatim in docs MD."""
 
     def _check(self, data, docs_md_text):
         from scripts.verify.verify import check_json_docs_md_consistency
@@ -71,7 +71,7 @@ class TestCheckJsonDocsMdConsistency:
         docs_md = "# テストタイトル\n\n## 概要\n\n全く別の内容。\n"
         issues = self._check(data, docs_md)
         assert len(issues) == 1
-        assert "QO5" in issues[0]
+        assert "QO2" in issues[0]
         assert "概要" in issues[0]
 
     def test_fail_content_partially_missing(self):
@@ -82,7 +82,7 @@ class TestCheckJsonDocsMdConsistency:
         docs_md = "# テストタイトル\n\n## 概要\n\n前半の内容。\n"
         issues = self._check(data, docs_md)
         assert len(issues) == 1
-        assert "QO5" in issues[0]
+        assert "QO2" in issues[0]
 
     def test_fail_multiple_sections_one_missing(self):
         """One of multiple sections missing → FAIL for that section only."""
@@ -393,7 +393,12 @@ class TestCheckHintsCompleteness:
 # ---------------------------------------------------------------------------
 
 class TestVerifyFileContentRstMd:
-    """QC1/QC2/QC3: RST/MD content verified via sequential-delete algorithm."""
+    """QC1/QC2/QC3: RST/MD content verified via sequential-delete algorithm.
+
+    Test setups use empty top-level title/content to isolate section-level
+    behavior. Top-level field coverage is exercised in
+    ``TestCheckContentCompletenessTopLevel``.
+    """
 
     def _check(self, source_text, data, fmt):
         from scripts.verify.verify import check_content_completeness
@@ -402,7 +407,8 @@ class TestVerifyFileContentRstMd:
     def _make_data(self, file_id, sections):
         return {
             "id": file_id,
-            "title": "テストタイトル",
+            "title": "",
+            "content": "",
             "no_knowledge_content": False,
             "sections": sections,
         }
@@ -666,7 +672,8 @@ class TestVerifyFileContentQC4:
     def _make_data(self, file_id, sections):
         return {
             "id": file_id,
-            "title": "テストタイトル",
+            "title": "",
+            "content": "",
             "no_knowledge_content": False,
             "sections": sections,
         }
@@ -1833,3 +1840,191 @@ class TestCheckHintsFileConsistency:
         self._write_docs_md(dd, "file1", {"概要": []})
         self._write_hints_file(hf, {})  # file1 not in hints file → expect empty
         assert self._check(kd, dd, hf) == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 21-D: top-level content coverage in verify checks
+# ---------------------------------------------------------------------------
+
+class TestCheckContentCompletenessTopLevel:
+    """QC1–QC4: top-level title and top-level content must be included in the
+    sequential-delete algorithm (Phase 21-D schema change).
+
+    Design: extraction order is
+      top-level title → top-level content → sections[0].title → sections[0].content → ...
+    """
+
+    def _check(self, source_text, data, fmt):
+        from scripts.verify.verify import check_content_completeness
+        return check_content_completeness(source_text, data, fmt)
+
+    def test_pass_top_level_content_matched_before_sections(self):
+        """h1 title and top-level content present in source before first h2 → no FAIL."""
+        source = "全体像\n======\n\n前書きの段落です。\n\n詳細\n====\n\n詳細の内容。\n"
+        data = {
+            "id": "f",
+            "title": "全体像",
+            "content": "前書きの段落です。",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+            ],
+        }
+        assert self._check(source, data, "rst") == []
+
+    def test_pass_top_level_content_only_no_sections(self):
+        """File with only h1 + preamble (no h2/h3) → top-level content captured, sections=[]."""
+        source = "全体像\n======\n\n唯一の段落です。\n"
+        data = {
+            "id": "f",
+            "title": "全体像",
+            "content": "唯一の段落です。",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        assert self._check(source, data, "rst") == []
+
+    def test_fail_qc1_top_level_content_missing(self):
+        """Source preamble absent from JSON top-level content → QC1."""
+        source = "全体像\n======\n\nこの前書きはJSONに入っていない。\n\n詳細\n====\n\n詳細の内容。\n"
+        data = {
+            "id": "f",
+            "title": "全体像",
+            "content": "",  # preamble not captured
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+            ],
+        }
+        issues = self._check(source, data, "rst")
+        assert any("QC1" in i for i in issues)
+
+    def test_fail_qc2_top_level_content_fabricated(self):
+        """JSON top-level content absent from source → QC2."""
+        source = "全体像\n======\n\n本当の内容。\n"
+        data = {
+            "id": "f",
+            "title": "全体像",
+            "content": "捏造された段落。",  # not in source
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        issues = self._check(source, data, "rst")
+        assert any("QC2" in i for i in issues)
+
+    def test_pass_md_top_level_content(self):
+        """Markdown: h1 + preamble + sections → all matched."""
+        source = "# 全体像\n\n前書きの段落です。\n\n## 詳細\n\n詳細の内容。\n"
+        data = {
+            "id": "f",
+            "title": "全体像",
+            "content": "前書きの段落です。",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+            ],
+        }
+        assert self._check(source, data, "md") == []
+
+
+class TestCheckFormatPurityTopLevel:
+    """QC5: top-level content must also be checked for residual source-format syntax."""
+
+    def _check(self, data, fmt):
+        from scripts.verify.verify import check_format_purity
+        return check_format_purity(data, fmt)
+
+    def test_rst_fail_role_in_top_level_content(self):
+        """Top-level content with RST role syntax → QC5 FAIL."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "See :ref:`link-target` for details.",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        issues = self._check(data, "rst")
+        assert any("QC5" in i for i in issues)
+
+    def test_md_fail_raw_html_in_top_level_content(self):
+        """Top-level content with raw HTML → QC5 FAIL."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "Line1<br>Line2",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        issues = self._check(data, "md")
+        assert any("QC5" in i for i in issues)
+
+    def test_rst_pass_clean_top_level_content(self):
+        """Top-level content with no format syntax → no issues."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "プレーンな段落。",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        assert self._check(data, "rst") == []
+
+
+class TestCheckJsonDocsMdConsistencyTopLevel:
+    """QO2 (formerly QO5): top-level content must also appear verbatim in docs MD under h1."""
+
+    def _check(self, data, docs_md_text):
+        from scripts.verify.verify import check_json_docs_md_consistency
+        return check_json_docs_md_consistency(data, docs_md_text)
+
+    def test_pass_top_level_content_present_under_h1(self):
+        """Top-level content present verbatim under h1 → no issues."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "前書きの段落です。",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        docs_md = "# T\n\n前書きの段落です。\n"
+        assert self._check(data, docs_md) == []
+
+    def test_fail_top_level_content_missing_from_docs_md(self):
+        """Top-level content not present in docs MD → QO2 FAIL."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "この段落はdocsに無い。",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        docs_md = "# T\n\n全く別の文章。\n"
+        issues = self._check(data, docs_md)
+        assert any("QO2" in i or "top-level" in i.lower() or "content" in i.lower() for i in issues)
+        assert len(issues) >= 1
+
+    def test_pass_empty_top_level_content_skipped(self):
+        """Empty top-level content → nothing to check."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "A", "content": "A本文。", "hints": []},
+            ],
+        }
+        docs_md = "# T\n\n## A\n\nA本文。\n"
+        assert self._check(data, docs_md) == []
+
+    def test_pass_top_level_content_with_assets_link_skipped(self):
+        """Top-level content containing assets/ link is skipped (docs.py rewrites path)."""
+        data = {
+            "id": "f",
+            "title": "T",
+            "content": "説明\n![図](assets/my-file/diagram.png)",
+            "no_knowledge_content": False,
+            "sections": [],
+        }
+        docs_md = "# T\n\n説明\n![図](../../knowledge/assets/my-file/diagram.png)\n"
+        assert self._check(data, docs_md) == []

@@ -30,7 +30,7 @@ from scripts.common.labels import build_label_map, _RST_LABEL_DEF_RE, _RST_HEADI
 # ---------------------------------------------------------------------------
 
 def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
-    """QO5: Verify each section's content appears verbatim in docs MD.
+    """QO2: Verify top-level content and each section's content appear verbatim in docs MD.
 
     Args:
         data: Knowledge JSON dict.
@@ -43,6 +43,15 @@ def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
         return []
 
     issues = []
+
+    # Top-level content (Phase 21-D schema): must appear verbatim under h1.
+    top_content = data.get("content", "")
+    if top_content and "assets/" not in top_content:
+        if top_content not in docs_md_text:
+            issues.append(
+                "[QO2] top-level content: not found verbatim in docs MD"
+            )
+
     for section in data.get("sections", []):
         content = section.get("content", "")
         title = section.get("title", "")
@@ -56,7 +65,7 @@ def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
             continue
         if content not in docs_md_text:
             issues.append(
-                f"[QO5] section '{title}': content not found verbatim in docs MD"
+                f"[QO2] section '{title}': content not found verbatim in docs MD"
             )
     return issues
 
@@ -138,6 +147,14 @@ def check_format_purity(data: dict, fmt: str) -> list[str]:
         issues.extend(_check_rst_syntax(title, f"{file_id}/title", is_title=True))
     elif fmt == "md":
         issues.extend(_check_md_syntax(title, f"{file_id}/title"))
+
+    # Check top-level content (Phase 21-D schema)
+    top_content = data.get("content", "")
+    if top_content:
+        if fmt == "rst":
+            issues.extend(_check_rst_syntax(top_content, f"{file_id}/content", is_title=False))
+        elif fmt == "md":
+            issues.extend(_check_md_syntax(top_content, f"{file_id}/content"))
 
     # Check each section's title and content
     for section in data.get("sections", []):
@@ -262,15 +279,34 @@ def _is_md_syntax_line(line: str, in_frontmatter: bool = False) -> bool:
 
 
 def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[str]:
-    """QC1/QC2/QC3/QC4: Verify JSON content covers source via sequential-delete algorithm."""
+    """QC1/QC2/QC3/QC4: Verify JSON content covers source via sequential-delete algorithm.
+
+    Extraction order (Phase 21-D):
+      top-level title → top-level content → sections[0].title → sections[0].content → ...
+    """
     if data.get("no_knowledge_content"):
         return []
 
     sections = data.get("sections", [])
-    if not sections:
+    top_title = data.get("title", "")
+    top_content = data.get("content", "")
+
+    # If there is nothing at the top level and no sections, there is nothing to verify.
+    if not sections and not top_title and not top_content:
         return []
 
     search_units: list[tuple[str, str, bool]] = []
+
+    # Top-level title and content first (Phase 21-D schema).
+    if top_title:
+        search_units.append((top_title, "__top__", False))
+    if top_content:
+        if fmt in ("rst", "md"):
+            for line in _strip_md_syntax_to_plain_lines(top_content):
+                search_units.append((line, "__top__", True))
+        else:
+            search_units.append((top_content, "__top__", True))
+
     for sec in sections:
         title = sec.get("title", "")
         content = sec.get("content", "")
