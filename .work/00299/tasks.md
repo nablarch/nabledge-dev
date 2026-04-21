@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 32)
+**Updated**: 2026-04-21 (session 33)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -171,6 +171,44 @@
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
 - [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
+
+---
+
+### Phase 21-H: hints file 生成ロジックの再設計（セッション 33 で着手）
+
+**背景**: Phase 21-B で生成した `tools/rbkc/hints/v6.json` は「KC の file_id から出発して section を引き当てる」ロジックで作ったが、セクションタイトル側が KC キャッシュの AI 生成タイトル（ソース非忠実）に引きずられており、Phase 21-D のソース忠実スキーマと噛み合わない。hints file 生成を**ゼロベースで見直し**、ソース RST を真実ソースとしてマッピングし直す。
+
+**設計書**: `tools/rbkc/docs/rbkc-hints-file-design.md`（セッション 33 で新規作成・追記中）
+- §1〜§9: 基本設計（R1〜R9 フォールバック）
+- **付録 A: KC パイプライン全体調査結果**（catalog/cache/knowledge 3 者の対応関係、実装ソース読んで確定）
+- **付録 B: 5 バージョン裏取り結果**（P1〜P4 集計、真の不整合 255 件の正体）
+
+**裏取り結果サマリー（付録 B）**:
+- 決定論的に解決: v6/v5 93%, v1.x 97% → P1+P2+P3
+- 残り P4 (sid 不整合) 合計 1082 件: cache.title の source 実見出しマッチで 70-86% 救える見込み
+- **真の不整合 255 件**（5 版合計）: `—` 連結 / AI 創作 / 括弧注釈 の 3 パターン
+
+**未決事項（ユーザー判断要）**:
+1. hints 保存率目標: 100% 固執か、95% 許容か
+2. AI 創作 section（getting_started 系）の扱い: h1 集約 or 捨てる
+3. `—` 連結分解ロジックを機械処理するか手動補正にするか
+
+**Steps:**
+- [x] KC の catalog 作成ロジック調査（step2_classify.py: h2 は `-----`, h3 は `^~+*.=`, 400行超で展開）
+- [x] KC の全パイプライン調査（Phase A→B→M の流れ、catalog/cache/knowledge の対応）
+- [x] 設計書付録 A（KC パイプライン調査）追記
+- [x] 5 バージョン全量マッピング可能性検証（P1〜P4 集計）
+- [x] P4 現物調査（cache.title の source 実見出しマッチ率計測）
+- [x] 設計書付録 B（5 バージョン裏取り結果）追記
+- [ ] P4 真の不整合 255 件を `—` / 創作 / 括弧 の 3 パターンに分類（次セッション）
+- [ ] 目標 hints 保存率をユーザーと合意
+- [ ] §4-2 R1〜R9 を裏取り結果を踏まえて簡略化（cache.title 一部活用 or 捨てる方針決定）
+- [ ] §5/§6 を更新（受容範囲・未解決リスク）
+- [ ] 設計書ユーザー承認
+- [ ] TDD: `.pr/00299/generate_hints.py` 実装
+- [ ] 全 5 版 hints/v{V}.json 再生成
+- [ ] verify で hints FAIL 0 件確認（Phase 21-D 完了後）
+- [ ] コミット
 
 ---
 
