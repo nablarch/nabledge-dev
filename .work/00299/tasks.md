@@ -22,9 +22,9 @@
 `docs.py` の `generate_docs()` にREADME生成ロジックが存在しない。
 
 **Steps:**
-- [ ] TDD: README生成テスト作成（RED）
-- [ ] `generate_docs()` にREADME生成追加（GREEN）
-- [ ] verify更新: README.md の存在・内容チェック追加
+- [ ] verify に README.md 存在チェック追加 → verify FAIL 確認（RED）
+- [ ] `generate_docs()` に README 生成追加 → verify GREEN 確認
+- [ ] サブエージェント品質チェック
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] コミット
 
@@ -43,10 +43,11 @@
 **Steps:**
 - [ ] 全容把握: file_id 不一致の全パターン調査（変換ルールのズレを特定）
 - [ ] 設計: hints 永続化ファイルのフォーマット決定、ユーザー承認
-- [ ] TDD: `rbkc create` 時に `tools/rbkc/hints/v{version}.json` へ保存（RED → GREEN）
-- [ ] 修正: file_id 正規化ロジックを hints lookup に追加（TDD: RED → GREEN）
-- [ ] verify 追加1: hints ファイル全量 ＝ KC cache ヒント全量 の完全一致チェック（TDD）
-- [ ] verify 追加2: hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量 の完全一致チェック（TDD）
+- [ ] verify チェック1追加: hints ファイル全量 ＝ KC cache ヒント全量 → verify FAIL 確認（RED）
+- [ ] `rbkc create` 時に `tools/rbkc/hints/v{version}.json` へ保存 → verify GREEN 確認
+- [ ] verify チェック2追加: hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量 → verify FAIL 確認（RED）
+- [ ] file_id 正規化ロジック追加 → rbkc create 6 → verify GREEN 確認
+- [ ] サブエージェント品質チェック
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] コミット
 
