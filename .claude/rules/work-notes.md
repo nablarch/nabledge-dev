@@ -111,6 +111,5 @@ Create notes.md when:
 - You make non-obvious decisions
 - You encounter and solve problems
 - You learn something worth documenting
-- There are follow-up tasks
 
 Not every PR needs extensive notes. Simple, straightforward changes may not need notes at all.
