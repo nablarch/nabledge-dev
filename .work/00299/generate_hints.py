@@ -55,15 +55,22 @@ def _first_nonspace(s: str) -> str:
 def parse_rst_headings(path: Path) -> list[tuple[int, str, int]]:
     """RST: return list of (level, title, line_no).
 
-    Level is assigned by first-occurrence order of adornment characters
-    (matches docutils behaviour: any char works, order defines hierarchy).
+    Level is assigned by first-occurrence order of (is_overline, char) pairs.
+    Sphinx/docutils treats overline+underline as a distinct hierarchy slot
+    from underline-only, even when both use the same adornment character.
+    This mirrors the converter's `_detect_heading_chars` behaviour in
+    tools/rbkc/scripts/create/converters/rst.py (keys are (is_overline, char)
+    tuples). Collapsing by char alone — as this function previously did —
+    misclassifies underline-only headings that share a char with an earlier
+    overline heading (e.g. CustomizeDB: overline '-' is h3, underline-only
+    '-' is h4), producing hints-file entries that do not match JSON sections.
     """
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     except FileNotFoundError:
         return []
 
-    char_levels: dict[str, int] = {}
+    key_levels: dict[tuple[bool, str], int] = {}
     next_level = 1
     headings: list[tuple[int, str, int]] = []
 
@@ -80,23 +87,23 @@ def parse_rst_headings(path: Path) -> list[tuple[int, str, int]]:
                 and line[0] == under_line[0]
                 and line[0] == _first_nonspace(line)
             ):
-                char = line.strip()[0]
-                if char not in char_levels:
-                    char_levels[char] = next_level
+                key = (True, line.strip()[0])
+                if key not in key_levels:
+                    key_levels[key] = next_level
                     next_level += 1
-                headings.append((char_levels[char], title_line.strip(), i + 1))
+                headings.append((key_levels[key], title_line.strip(), i + 1))
                 i += 3
                 continue
         # plain underline: title followed by adornment
         if i + 1 < len(lines) and _is_adorn_line(lines[i + 1]) and line.strip():
             if not line.lstrip().startswith(".."):
                 under = lines[i + 1]
-                char = under.strip()[0]
+                key = (False, under.strip()[0])
                 if len(under.strip()) >= len(line.strip()):
-                    if char not in char_levels:
-                        char_levels[char] = next_level
+                    if key not in key_levels:
+                        key_levels[key] = next_level
                         next_level += 1
-                    headings.append((char_levels[char], line.strip(), i))
+                    headings.append((key_levels[key], line.strip(), i))
                     i += 2
                     continue
         i += 1
