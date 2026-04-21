@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 38, Phase 21-I complete)
+**Updated**: 2026-04-22 (session 38, scope pivot: RBKC drops hints)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -16,36 +16,80 @@
 
 ---
 
-## 現状サマリー（session 38 Phase 21-I 完了後）
+## 方針転換（session 38 合意）
 
-`bash rbkc.sh verify 6` → **FAIL 合計 139件**（QL1 314件解消済み）
+**RBKC は "ルールベースで content のみ生成" に責務を限定する。**
+
+**背景**:
+- hints は機械抽出しても本文検索で同等にヒットするため価値が低い（本文にない別名・略語・類義語こそ価値、それは AI でしか取れない）
+- KC catalog は h4 まで section 化、RBKC converter は h2/h3 のみ section 化 → 粒度不整合に起因する mismatch が Phase 21-D 以降ずっと続いている
+- hints を RBKC から外すことで、粒度不整合問題は本 PR から消える
+
+**本 PR で扱うこと**:
+- RBKC は JSON / docs MD / 索引を content（タイトル + 本文）のみで生成
+- JSON の `hints` フィールドは出力しない（空でも出さない）
+- docs MD の `<details><summary>keywords</summary>` ブロックは出さない
+- verify の hints 関連チェック（QC6 完全一致・`_parse_docs_md_hints` 等）は削除
+
+**本 PR で扱わないこと（別 Issue 管轄）**:
+- AI 生成 hints (`hints/v*.json`) の人間レビュー・マージ
+- 別 Issue に以下を資産として渡す:
+  - 現状の `hints/v6.json`（他バージョン含む）
+  - `.work/00299/generate_hints.py` と周辺スクリプト
+  - KC catalog との粒度差の背景
+
+---
+
+## 現状サマリー（session 38 方針転換時点）
+
+`bash rbkc.sh verify 6` → **FAIL 合計 139件**（全て hints 関連、Phase 21-K 完了後に自動解消予定）
 
 | カテゴリ | 件数 | 受け皿 Phase |
 |---|---|---|
-| hints `file entry not matched by any knowledge section` | 74 | Phase 21-J |
-| hints `docs MD hints differ from hints file` | 65 | Phase 21-J |
+| hints `file entry not matched by any knowledge section` | 74 | Phase 21-K（削除で解消） |
+| hints `docs MD hints differ from hints file` | 65 | Phase 21-K（削除で解消） |
 
 ---
 
 ## In Progress
 
-### Phase 21-J: hints mismatch 139件の解消
+### Phase 21-K: hints スコープアウト — 設計書とコードを "content のみ" に整える
 
-**背景**: Phase 21-H で hints file を R1〜R6 ルールでゼロベース再生成したが、verify に残る FAIL が 139 件ある。内訳:
-- 74件 = hints file にあるが JSON section.title に一致する section が無い（`file entry not matched`）
-- 65件 = 一致するが docs MD 側に hints ブロックが出ていない／値が違う（`docs MD hints differ`）
+**目的**: 後続タスク（統合検証など）で「ここは hints あるんだっけ？」と判断に迷わないように、設計書とコードから hints 関連を削除して基盤を整える。hints 資産は別 Issue 用にブランチ外の形で保全する。
 
-両者は同根（title マッチング or hints 注入の取りこぼし）の可能性が高い。
+#### Step K-1: 別 Issue 用の資産棚卸し（削除前に固定）
 
-**Steps:**
-- [ ] 74件を 10 件サンプルし、hints file の title と JSON 側 section title のペアを出力
-- [ ] 65件を 10 件サンプルし、JSON section / docs MD セクション / hints file の三者を突き合わせ
-- [ ] ミスマッチの全パターンを分類（例: 正規化差分 / section 構造差分 / 同名見出しの round-robin 取りこぼし 等）
-- [ ] ユーザーに分類結果と修正方針を提示・承認
-- [ ] TDD: 該当パターンを再現する最小 fixture → 実装（converter or hints.py or docs.py どこに帰属するか確定してから）→ GREEN
-- [ ] rbkc create 6 → verify 6 で hints FAIL 0 件確認
-- [ ] サブエージェント品質チェック (SE + QA)
-- [ ] コミット
+- [ ] `hints/v6.json` / `v5.json` / `v1.4.json` / `v1.3.json` / `v1.2.json` の現状を別 Issue 用資料として `.work/00299/handoff-hints/` にコピー
+- [ ] `.work/00299/generate_hints.py` / `extract_hints.py` も同ディレクトリに保全
+- [ ] 別 Issue 用の引き継ぎメモ `.work/00299/handoff-hints/README.md` 作成（背景・粒度差問題・AI hints の価値判断の要約）
+- [ ] コミット・プッシュ（「hints 別 Issue 引き継ぎ資産を保全」）
+
+#### Step K-2: 設計書を "content のみ" に更新
+
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` — QC6 / hints 関連検査項目を削除、マトリクスも hints 行削除
+- [ ] `tools/rbkc/docs/rbkc-json-schema-design.md` — `hints` フィールドの記述を削除（top-level / section 両方）
+- [ ] `.claude/rules/rbkc.md` — Hints files セクション（`rbkc hints` / `hints/v{V}.json` / 三者一致ルール）を削除。「RBKC は content のみ扱う、hints は別 Issue」と明記
+- [ ] コミット・プッシュ（「docs: scope RBKC to content-only」）
+
+#### Step K-3: コードから hints を削除
+
+- [ ] `tools/rbkc/scripts/create/converters/rst.py` / `md.py` / `xlsx_*.py` — hints 抽出・出力ロジックを削除
+- [ ] `tools/rbkc/scripts/create/hints.py` — ファイル削除（または空化）、`run.py` / `create_pipeline` から呼び出し削除
+- [ ] `tools/rbkc/scripts/create/docs.py` — `<details>keywords</summary>` ブロック出力を削除
+- [ ] `tools/rbkc/scripts/verify/verify.py` — `check_hints_*` / `_parse_docs_md_hints` / `check_hints_file_consistency` / `_json_text` から hints を参照する箇所を削除
+- [ ] `tools/rbkc/scripts/run.py` — hints 関連配線（もしあれば）を削除
+- [ ] `tools/rbkc/hints/` ディレクトリ削除（Step K-1 で別 Issue 資産に保全済み）
+- [ ] `tools/rbkc/rbkc.sh` — `hints` サブコマンドがあれば削除
+- [ ] 影響ユニットテスト削除/更新
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — FAIL 0件確認（5バージョン全て）
+- [ ] サブエージェント品質チェック (SE + QA) — 削除漏れ・残骸なきこと
+- [ ] コミット・プッシュ（「feat(rbkc): drop hints scope — content only」）
+
+#### Step K-4: 別 Issue 起票
+
+- [ ] GitHub Issue を作成: 「AI 生成 hints の品質レビュー・マージ（全5バージョン）」
+- [ ] 本 PR `.work/00299/handoff-hints/` へのリンクと背景要約を記載
+- [ ] このタスクファイルから該当 Issue 番号を参照
 
 ---
 
@@ -59,8 +103,8 @@
 - 設計書マトリクス 4章 の ❌ は「verify が検証していない」状態を正しく示していた
 
 **このフェーズの前提**:
-- Phase 21-I / 21-J を先に完了させ、現在検知されている FAIL を全て解消してから配線する
-- そうしないと、配線直後に 21-I/21-J 由来の FAIL が大量に QC2 として顕在化して切り分け困難になる
+- Phase 21-K（hints スコープアウト）を先に完了させ、現在検知されている FAIL を全て解消してから配線する
+- そうしないと、配線直後に既存 FAIL が大量に QC2 として顕在化して切り分け困難になる
 
 **Steps:**
 - [ ] 調査: verify.py 内の各 check_* 関数と設計書マトリクスとの対応を整理（どの関数がどの QC/QL/QO に対応するか）
@@ -93,7 +137,7 @@
 
 ### Phase 18: 統合検証 — v6 完了
 
-**前提**: Phase 21-I / 21-J / 21-G 完了後
+**前提**: Phase 21-K / 21-G 完了後
 
 **Steps:**
 - [ ] nabledge-test v6 実行 — ベースライン比で劣化なし確認
@@ -136,6 +180,7 @@
 - [x] Phase 21-F（旧値不一致 4件）: Phase 21-D で解消。Phase 21-J に統合してクローズ
 - [x] Phase 21-H: hints file 生成ロジックの再設計（R1〜R6 ルールで 5 版 hints/v{V}.json を ゼロベース再生成、同名見出し対応の配列スキーマ化）— commits `9ffefa08` / `5adf4404` / `60b16f98` / `ca7a924f` / `f7a4db40` / `fbd2b52f` / `8ed9aa0c` / `c286de77` / `83031d95` / `d015c03e` / `80a3ed48`（verify GREEN 確認は 21-J にバトン）
 - [x] Phase 21-I: QL1 回帰 314件解消 — `_json_text()` に top-level content 追加（設計書 `rbkc-verify-quality-design.md:170` 通りに修正、false-positive fix）。TDD: RED 3件 → GREEN、regression/MD top-level/`_json_text()` 直接テスト 5件追加（合計244 PASS）。SE 5/5 / QA 5/5（追試対応後）
+- [x] Phase 21-J: hints mismatch 139件分析 — 根本原因は KC catalog（h4 まで section 化）と RBKC converter（h2/h3 のみ section）の粒度不整合。ユーザー判断により方針転換（session 38）し、hints は RBKC 本 PR から外して別 Issue 管轄に。受け皿は Phase 21-K
 
 - [x] Phase V-skip: verify() FAIL on missing JSON/docs MD — committed `86dd660e`
 - [x] Phase V-hints: KC-format files deleted from nabledge-6 — committed `c92accc4`
