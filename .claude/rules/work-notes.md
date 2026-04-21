@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Record decisions, learnings, and context that cannot be found in commit history. Focus on **why** and **how**, not **what** (git log shows what changed).
+Record **decisions and their background** — the why and how that cannot be found in commit history. Keep it concise: one entry per decision or problem solved.
 
 ## Location
 
@@ -17,9 +17,9 @@ Record only what is NOT obvious from commit history:
 - Alternative approaches considered and why rejected
 - Problems encountered and how solved
 - Insights and learnings
-- Follow-up tasks or known issues
 
 **DO NOT record**:
+- Task lists or in-progress work tracking — use `tasks.md` for that
 - List of changed files (use `git diff --stat`)
 - What was changed (use `git log` and `git show`)
 - Basic description of changes (use commit messages)
@@ -50,10 +50,6 @@ Free-form markdown with chronological entries. Use timestamps for multiple work 
 ### Learning
 
 [Insight gained]
-
-### TODO
-
-- [ ] Follow-up task
 ```
 
 ## Detail Files
@@ -94,10 +90,6 @@ User pointed out work is organized by PRs, not issues. PRs always exist, issues 
 ### Problem: nabledge-6 output path
 
 Initially changed to .pr/ but user noted this is user-facing and would break existing workflows. Reverted to work/YYYYMMDD/ to avoid impact.
-
-### TODO
-
-- Issue #40: Consider .nabledge/YYYYMMDD/ for nabledge-6 output (avoids conflict with project work/ directories)
 ```
 
 Bad example (duplicates git log):
