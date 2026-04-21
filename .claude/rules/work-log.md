@@ -23,6 +23,15 @@ See `.claude/rules/work-notes.md` for notes.md format and guidelines.
 - PR body links to tasks.md instead of duplicating the task list (DRY)
 - Break complex tasks into steps with enough detail that work can resume without additional context
 
+### Update and push immediately
+
+tasks.md changes must be committed and pushed as soon as they happen — do not batch them with later work.
+
+- **When tasks change** (added / split / reordered / scope updated): commit and push tasks.md immediately, before starting the work
+- **When a task completes** (step checked off, task moved to Done): commit and push tasks.md immediately, before moving to the next task
+- Never leave tasks.md with uncommitted changes between work sessions
+- A single commit per tasks.md update is fine — use a concise message like `docs: update tasks.md — {what changed}`
+
 ### Format
 
 ```markdown
