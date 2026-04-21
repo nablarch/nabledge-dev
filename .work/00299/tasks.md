@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 29)
+**Updated**: 2026-04-21 (session 30)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -152,16 +152,22 @@
 - [x] 調査: nabledge スキル本体（nabledge-6/5/1.4/1.3/1.2）のスキーマ依存確認 — scripts/workflows に影響あり。本 Phase で同時改修
 - [x] 設計書作成: `tools/rbkc/docs/rbkc-json-schema-design.md` 新規作成
 - [x] Plan C 確定（flat 維持 + top-level content 追加 + `概要` 固定値廃止 + v5 KC 欠損フィールド復元）— `16cfbc0d`
-- [ ] 設計レビュー: Software Engineer サブエージェントによる Plan C 設計レビュー、ユーザー承認
-- [ ] verify 変更提案: QC1-6 スコープ拡張、QC6 id ベース照合等を別途ユーザー承認プロセスで確定（rbkc.md ルール）
-- [ ] TDD: rst converter — h2/h3 なしケースで top-level content、section 空のテスト → RED → 実装 → GREEN
-- [ ] TDD: rst converter — h2/h3 ありケースで h1 直下本文を top-level content、以下 h2/h3 を section に
-- [ ] TDD: md converter — 同様
-- [ ] TDD: xlsx converter — top-level content の扱いを整理（シート構造に応じた設計）
-- [ ] TDD: docs.py — 新スキーマに対応した MD 出力
-- [ ] TDD: hints.py / extract_hints.py — ファイルレベル + section レベル hints に対応
-- [ ] TDD: verify（QC1–QC6, QO1, QO5, check_hints_file_consistency）— 新スキーマ対応
-- [ ] hints ファイル v6.json 再生成
+- [x] SE サブエージェントレビュー実施、指摘反映 — `e3450c84`
+  - H1: h4 以降 `####` 深度保持 / H2: hints key は title ベース維持 / M1: xlsx `title: ""`
+  - M3: `read-sections.sh` の jq バグを本 PR で 5 版同時修正（cross-version 必須）
+  - L1: `index[]` は `sections[]` から決定論的生成（不変条件として明記）
+  - L2: top-level content に hints 付与しない
+  - xlsx のシート単位ファイル分割 + 行単位 section 化は Phase 21-C へスコープ明示
+- [ ] ユーザー最終承認（Plan C 設計確定版）
+- [ ] verify 変更提案: top-level content を QC スコープに追加等、別途ユーザー承認プロセスで確定（rbkc.md ルール）
+- [ ] TDD: rst converter — `_PREAMBLE_TITLE` 廃止、preamble を top-level content に移す（RED → 実装 → GREEN）
+- [ ] TDD: md converter — 同様（title="" preamble を top-level content に）
+- [ ] TDD: xlsx converter — `title: ""`、全内容を top-level content へ、`sections: []`
+- [ ] TDD: docs.py — 新テンプレート（top-level content 出力、sections==[] なら `##` 出さない）
+- [ ] TDD: hints.py / extract_hints.py — title ベース key 維持、`概要` 廃止対応
+- [ ] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）
+- [ ] TDD: verify（スキーマ変更分のみ。本格改修は別途承認プロセス）
+- [ ] hints ファイル v6.json 再生成（`概要` エントリを h1 title / h2 title ベースに再マップ）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
 - [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
