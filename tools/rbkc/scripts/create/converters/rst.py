@@ -454,6 +454,37 @@ def _read_block(lines: list[str], start: int) -> tuple[list[str], int]:
     return block, i
 
 
+def _read_options(lines: list[str], start: int, directive_indent: int) -> tuple[list[str], int]:
+    """Read RST directive option lines only (lines starting with ':' and indented > directive).
+
+    Stops at the first non-blank line that is not a directive option or is not more
+    indented than the directive itself.  Used for image/figure to avoid consuming
+    sibling content as block body.
+
+    Returns (option_lines, next_i).
+    """
+    i = start
+    while i < len(lines) and not lines[i].strip():
+        i += 1
+
+    options: list[str] = []
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip():
+            i += 1
+            continue
+        line_indent = len(line) - len(line.lstrip())
+        if line_indent <= directive_indent:
+            break
+        stripped = line.strip()
+        if not stripped.startswith(":"):
+            break
+        options.append(stripped)
+        i += 1
+
+    return options, i
+
+
 # ---------------------------------------------------------------------------
 # List-table / csv-table parser
 # ---------------------------------------------------------------------------
@@ -954,11 +985,12 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- image ---
             if directive == "image":
                 path = inline_arg
-                block, i = _read_block(lines, i + 1)
+                directive_indent = len(indent_str)
+                options, i = _read_options(lines, i + 1, directive_indent)
                 filename = PurePosixPath(path).name
                 alt = ""
-                for bl in block:
-                    am = re.match(r":alt:\s*(.+)", bl.strip())
+                for opt in options:
+                    am = re.match(r":alt:\s*(.+)", opt)
                     if am:
                         alt = am.group(1).strip()
                 asset_path = f"assets/{file_id}/{filename}" if file_id else filename
@@ -968,6 +1000,8 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- figure ---
             if directive == "figure":
                 path = inline_arg
+                directive_indent = len(indent_str)
+                # Use _read_block for figure: caption may be non-option indented text
                 block, i = _read_block(lines, i + 1)
                 filename = PurePosixPath(path).name
                 # Caption is the first non-option line in the block
