@@ -18,6 +18,7 @@ Public API:
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -637,6 +638,110 @@ def check_docs_coverage(knowledge_dir, docs_dir):
             issues.append(
                 f"[docs] README.md count mismatch: declares {declared} ページ but found {actual} .md files"
             )
+    return issues
+
+
+_KEYWORDS_RE = re.compile(
+    r'<details>\s*<summary>keywords</summary>\s*(.*?)\s*</details>',
+    re.DOTALL,
+)
+
+
+def _parse_docs_md_hints(docs_md_text: str) -> dict[str, list[str]]:
+    """Extract section title → hints from docs MD keywords blocks.
+
+    Returns {section_title: [hint, ...]} for each <details> block.
+    Section title is the last ## heading before the block.
+    """
+    result: dict[str, list[str]] = {}
+    current_section = ""
+    for line in docs_md_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            current_section = stripped[3:].strip()
+
+    # Use regex to find all keywords blocks with their preceding sections
+    lines = docs_md_text.splitlines()
+    current_section = ""
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith("## "):
+            current_section = line[3:].strip()
+        elif line == "<details>":
+            # Look for <summary>keywords</summary> on next line
+            if i + 1 < len(lines) and lines[i + 1].strip() == "<summary>keywords</summary>":
+                # Collect lines until </details>
+                j = i + 2
+                while j < len(lines) and lines[j].strip() != "</details>":
+                    j += 1
+                # Lines between <summary> and </details>, skip blank lines
+                content_lines = [l.strip() for l in lines[i + 2:j] if l.strip()]
+                hints = []
+                for cline in content_lines:
+                    hints.extend(h.strip() for h in cline.split(",") if h.strip())
+                if current_section:
+                    result[current_section] = hints
+                i = j
+        i += 1
+    return result
+
+
+def check_hints_file_consistency(output_dir, docs_dir, hints_file) -> list[str]:
+    """Check three-way consistency: hints/vN.json == knowledge JSON hints == docs MD hints.
+
+    Returns empty list if hints_file does not exist (skip check in KC-free environments).
+    """
+    hints_file = Path(hints_file)
+    if not hints_file.exists():
+        return []
+
+    data = json.loads(hints_file.read_text(encoding="utf-8"))
+    hints_idx: dict[str, dict[str, list[str]]] = data.get("hints", {})
+
+    issues: list[str] = []
+    output_dir = Path(output_dir)
+    docs_dir = Path(docs_dir)
+
+    for json_path in sorted(output_dir.rglob("*.json")):
+        try:
+            kdata = json.loads(json_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        if kdata.get("no_knowledge_content"):
+            continue
+
+        file_id = kdata.get("id", "")
+        if not file_id:
+            continue
+
+        expected = hints_idx.get(file_id, {})
+
+        # Check 1: JSON hints == hints file
+        for sec in kdata.get("sections", []):
+            title = sec.get("title", "")
+            json_hints = sec.get("hints", [])
+            expected_hints = expected.get(title, [])
+            if json_hints != expected_hints:
+                issues.append(
+                    f"[hints] {file_id} § '{title}': JSON hints differ from hints file"
+                    f" (json={json_hints[:3]}… file={expected_hints[:3]}…)"
+                )
+
+        # Check 2: docs MD hints == hints file
+        rel_path = json_path.relative_to(output_dir)
+        docs_md_path = docs_dir / rel_path.with_suffix(".md")
+        if docs_md_path.exists():
+            md_hints = _parse_docs_md_hints(docs_md_path.read_text(encoding="utf-8"))
+            for title, expected_hints in expected.items():
+                md_h = md_hints.get(title, [])
+                if md_h != expected_hints:
+                    issues.append(
+                        f"[hints] {file_id} § '{title}': docs MD hints differ from hints file"
+                        f" (md={md_h[:3]}… file={expected_hints[:3]}…)"
+                    )
+
     return issues
 
 

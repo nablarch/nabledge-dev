@@ -211,12 +211,15 @@ def build_hints_index(
         raise FileNotFoundError(f"Knowledge cache directory not found: {knowledge_dir}")
 
     # Load catalog index if provided
-    catalog_index: dict[str, dict] = {}  # base_name → catalog entry
+    catalog_index: dict[str, dict] = {}  # base_name → catalog entry (part-1 only)
     if catalog_path and catalog_path.exists():
         catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
         for entry in catalog_data.get("files", []):
             base_name = entry.get("base_name") or _base_file_id(entry.get("id", ""))
-            if base_name:
+            if base_name and base_name not in catalog_index:
+                # Keep only the first (part-1) entry per base_name.
+                # Part-1 holds the RST-aligned section_range.sections; later parts
+                # carry KC-level titles that must not become hint index keys.
                 catalog_index[base_name] = entry
 
     # Collect all KC knowledge files, grouped by base_id
@@ -240,6 +243,10 @@ def build_hints_index(
         kc_index = kc_data["index"]
         kc_sections = kc_data["sections"]
 
+        # Normalize KC base_id to RBKC file_id format: replace _ with -
+        # KC filenames preserve underscores; RBKC _generate_id() replaces _ with -.
+        out_id = base_id.replace("_", "-")
+
         cat_entry = catalog_index.get(base_id)
 
         if cat_entry is None:
@@ -251,7 +258,7 @@ def build_hints_index(
                 if title not in section_map:
                     section_map[title] = []
                 section_map[title].extend(hints)
-            result[base_id] = section_map
+            result[out_id] = section_map
             continue
 
         expected_raw = cat_entry.get("section_range", {}).get("sections", [])
@@ -259,7 +266,7 @@ def build_hints_index(
 
         if expected:
             # Step A: catalog Expected Sections → KC index mapping
-            result[base_id] = _map_step_a(kc_index, expected)
+            result[out_id] = _map_step_a(kc_index, expected)
         elif repo_root is not None:
             # Step B: content overlap with RST source
             source_path_str = cat_entry.get("source_path", "")
@@ -268,7 +275,7 @@ def build_hints_index(
                 rst_sections = _extract_rst_sections(
                     rst_path.read_text(encoding="utf-8", errors="replace")
                 )
-                result[base_id] = _map_step_b(kc_index, kc_sections, rst_sections)
+                result[out_id] = _map_step_b(kc_index, kc_sections, rst_sections)
             else:
                 # RST not found → KC title fallback
                 section_map = {}
@@ -277,7 +284,7 @@ def build_hints_index(
                     if title not in section_map:
                         section_map[title] = []
                     section_map[title].extend(entry.get("hints", []))
-                result[base_id] = section_map
+                result[out_id] = section_map
         else:
             # No repo_root → KC title fallback
             section_map = {}
@@ -286,7 +293,7 @@ def build_hints_index(
                 if title not in section_map:
                     section_map[title] = []
                 section_map[title].extend(entry.get("hints", []))
-            result[base_id] = section_map
+            result[out_id] = section_map
 
     return result
 

@@ -45,6 +45,7 @@ from scripts.verify.verify import (
     check_docs_coverage,
     check_source_links,
     check_json_docs_md_consistency,
+    check_hints_file_consistency,
 )
 
 
@@ -118,21 +119,41 @@ def lookup_hints_with_fallback(
     file_id: str,
     section_title: str,
 ) -> list[str]:
-    """Return hints for a section, preferring existing RBKC hints over KC index.
+    """Return hints for a section, preferring hints_idx over existing RBKC hints.
 
     Args:
         existing_hints: From load_existing_hints() — hints from prior RBKC run.
-        kc_hints_idx: From _hints_index() — hints derived from KC cache.
+        kc_hints_idx: Hints index — from hints/v{version}.json (authoritative) or KC cache.
         file_id: Knowledge file identifier.
         section_title: Section title to look up.
 
     Returns:
-        List of hints. Prefers existing_hints if the file_id is present there.
-        Falls back to kc_hints_idx otherwise.
+        List of hints. Checks kc_hints_idx first (authoritative hints file), then
+        falls back to existing_hints (carry-over from prior RBKC run).
     """
+    kc_result = _lookup_hints_kc(kc_hints_idx, file_id, section_title)
+    if kc_result:
+        return kc_result
     if file_id in existing_hints:
         return existing_hints[file_id].get(section_title, [])
-    return _lookup_hints_kc(kc_hints_idx, file_id, section_title)
+    return []
+
+
+def hints_path(repo_root: Path, version: str) -> Path:
+    """Return the path to the persistent hints file for the given version."""
+    return repo_root / "tools/rbkc/hints" / f"v{version}.json"
+
+
+def load_hints_file(repo_root: Path, version: str) -> dict[str, dict[str, list[str]]]:
+    """Load hints from hints/v{version}.json.
+
+    Returns an empty dict when the file does not exist.
+    """
+    path = hints_path(repo_root, version)
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data.get("hints", {})
 
 
 def _hints_index(repo_root: Path, version: str):
@@ -269,7 +290,8 @@ def create(
 
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
-    hints_idx = _hints_index(repo_root, version)
+    # Prefer persistent hints file over KC cache (KC cache may not exist at create time)
+    hints_idx = load_hints_file(repo_root, version) or _hints_index(repo_root, version)
 
     # Build RST label map for :ref: resolution in converters
     from scripts.create.scan import _source_roots
@@ -310,7 +332,8 @@ def update(
     """
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
-    hints_idx = _hints_index(repo_root, version)
+    # Prefer persistent hints file over KC cache (KC cache may not exist at update time)
+    hints_idx = load_hints_file(repo_root, version) or _hints_index(repo_root, version)
     # Load existing hints before reconverting so carry-over is preserved for
     # files whose source changed (same as create() semantics).
     existing_hints = load_existing_hints(output_dir)
@@ -473,6 +496,10 @@ def verify(
 
         for issue in check_docs_coverage(output_dir, docs_dir):
             print(f"FAIL docs: {issue}", file=sys.stderr)
+            all_ok = False
+
+        for issue in check_hints_file_consistency(output_dir, docs_dir, hints_path(repo_root, version)):
+            print(f"FAIL hints: {issue}", file=sys.stderr)
             all_ok = False
 
     return all_ok

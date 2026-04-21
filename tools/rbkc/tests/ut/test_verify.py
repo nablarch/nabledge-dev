@@ -1729,3 +1729,107 @@ class TestCheckDocsCoverage:
         (sub / "file1.md").write_text("# f1\n")
         (docs_dir / "README.md").write_text("# header\n\n## section\n")
         assert self._check(tmp_path / "knowledge", docs_dir) == []
+
+
+# ---------------------------------------------------------------------------
+# check_hints_file_consistency: hints/vN.json == JSON hints == docs MD hints
+# ---------------------------------------------------------------------------
+
+class TestCheckHintsFileConsistency:
+    """Three-way hints consistency: hints/vN.json == knowledge JSON == docs MD."""
+
+    def _check(self, output_dir, docs_dir, hints_file):
+        from scripts.verify.verify import check_hints_file_consistency
+        return check_hints_file_consistency(output_dir, docs_dir, hints_file)
+
+    def _write_json(self, output_dir, file_id, sections):
+        """Write a minimal knowledge JSON with hints."""
+        import json
+        path = output_dir / f"{file_id}.json"
+        data = {
+            "id": file_id,
+            "title": file_id,
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    def _write_docs_md(self, docs_dir, file_id, section_hints_map):
+        """Write docs MD with keywords blocks for each section."""
+        lines = [f"# {file_id}", ""]
+        for title, hints in section_hints_map.items():
+            lines += [f"## {title}", ""]
+            if hints:
+                lines += [
+                    "<details>",
+                    "<summary>keywords</summary>",
+                    "",
+                    ", ".join(hints),
+                    "",
+                    "</details>",
+                    "",
+                ]
+        (docs_dir / f"{file_id}.md").write_text("\n".join(lines), encoding="utf-8")
+
+    def _write_hints_file(self, path, hints_dict):
+        import json
+        path.write_text(json.dumps({"version": "6", "hints": hints_dict}), encoding="utf-8")
+
+    def test_pass_all_consistent(self, tmp_path):
+        """JSON hints == docs MD hints == hints file → no issues."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["h1", "h2"]}])
+        self._write_docs_md(dd, "file1", {"概要": ["h1", "h2"]})
+        self._write_hints_file(hf, {"file1": {"概要": ["h1", "h2"]}})
+        assert self._check(kd, dd, hf) == []
+
+    def test_pass_no_hints_file(self, tmp_path):
+        """hints file absent → skip check (no false positive)."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"  # not created
+        assert self._check(kd, dd, hf) == []
+
+    def test_fail_json_hints_differ_from_hints_file(self, tmp_path):
+        """JSON has different hints than hints file → FAIL."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["wrong"]}])
+        self._write_docs_md(dd, "file1", {"概要": ["h1"]})
+        self._write_hints_file(hf, {"file1": {"概要": ["h1"]}})
+        issues = self._check(kd, dd, hf)
+        assert any("file1" in i for i in issues)
+
+    def test_fail_docs_md_hints_differ_from_hints_file(self, tmp_path):
+        """docs MD has different hints than hints file → FAIL."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["h1"]}])
+        self._write_docs_md(dd, "file1", {"概要": ["wrong"]})
+        self._write_hints_file(hf, {"file1": {"概要": ["h1"]}})
+        issues = self._check(kd, dd, hf)
+        assert any("file1" in i for i in issues)
+
+    def test_pass_empty_hints_all_consistent(self, tmp_path):
+        """All hints empty and consistent → no issues."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": []}])
+        self._write_docs_md(dd, "file1", {"概要": []})
+        self._write_hints_file(hf, {})  # file1 not in hints file → expect empty
+        assert self._check(kd, dd, hf) == []
