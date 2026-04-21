@@ -20,8 +20,8 @@ from generate_hints import (
 
 def analyze(version: str) -> dict:
     cache_dir = REPO_ROOT / "tools/knowledge-creator/.cache" / f"v{version}"
-    _, catalog_by_base, source_by_base, format_by_base = load_catalog_grouped(cache_dir)
-    cache_by_base = load_cache_by_base(cache_dir)
+    _, catalog_by_base, source_by_base, format_by_base, id_to_base = load_catalog_grouped(cache_dir)
+    cache_by_base = load_cache_by_base(cache_dir, id_to_base)
 
     h1_only_r6 = 0  # R6 triggered on source with only 1 heading (h1-only)
     multi_r6 = 0    # R6 triggered on multi-heading source (real concern)
@@ -35,7 +35,7 @@ def analyze(version: str) -> dict:
             continue
         cache_entries = cache_by_base.get(base, [])
         cache_index = merge_cache_index(cache_entries)
-        section_map = merge_section_maps(entries)
+        section_map, _ever_empty = merge_section_maps(entries)
         source_path = REPO_ROOT / source_by_base[base]
         source_headings = parse_source_headings(source_path, fmt)
 
