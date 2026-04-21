@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 25)
+**Updated**: 2026-04-21 (session 26)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -67,12 +67,116 @@
 - [x] `tools/rbkc/hints/v6.json` 生成（339 file_ids, 1179 sections, 12595 hints）
 - [x] `lookup_hints_with_fallback` 優先順位修正（hints_idx 優先）
 - [x] rbkc create 6 実行（341 files）
-- [ ] verify FAIL 190件を分析・解消（docs MD hints 未記入 + catalog mapping mismatch）
-  - [DECISION: docs MD に hints ブロックを書くのは create ではなく hints ファイルにセクションがある場合のみ？それとも空でも書くべき？]
-  - verify の check_hints_file_consistency の期待動作を確認 — hints ファイルにあるが JSON/MD にないセクションは FAIL か？
+- [x] verify FAIL 190件を分析 — 根本原因 = Phase 21-D / 21-E / 21-F に分割（下記）
+- [ ] Phase 21-D / 21-E / 21-F 完了後に本 Phase の GREEN を再確認
 - [ ] サブエージェント品質チェック
-- [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] コミット（Phase 21-B）
+
+**Phase 21-B verify FAIL 190件 分析結果（事実）**:
+
+1. **md=[] 140件**: RBKC converter の `_PREAMBLE_TITLE = "概要"` 固定値が RST h1 title と不一致
+   - 例: RST h1 `全体像` → hints ファイル key `全体像` / RBKC JSON section title `概要`
+   - h2/h3 が無い RST では RBKC は固定値 `概要` を使うが、hints ファイル側は h1 title を key にしている
+   - 影響範囲: v6=119/413(28%), v5=181/515(35%), v1.4=198/553(35%), v1.3=260/387(67%), v1.2=246/372(66%)
+   - → Phase 21-D で解消
+
+2. **file=[] 46件**: RBKC JSON の section title が hints ファイルに存在しない
+   - 主に migration 系。catalog Step A の Expected Sections マッピング精度問題
+   - → Phase 21-E で解消
+
+3. **値のみ不一致 4件**: 同一 section title で hints 値が異なる
+   - 例: adapters-doma-adaptor 他
+   - → Phase 21-F で解消
+
+**Phase 21-B で判明した既存 verify の重大問題（Phase 21-G で対応）**:
+- QC1/QC2/QC3/QC4 (`check_content_completeness`) は実装済みだが、`run.py` verify パイプラインに配線されていない
+- `verify_file` は `fmt != "xlsx"` で即 return — RST/MD では何もしない
+- 設計書マトリクスの QC2=❌ が "現状 verify は QC2 を検証していない" を意味していた（「未実装」ではなく「未検証」）
+- 本来 `概要` 固定値問題は QC2 (fabricated title) として直接検知されるべきだったが、配線漏れのため hints FAIL 経由で間接的に見えていた
+- → Phase 21-G で解消
+
+---
+
+### Phase 21-D: h2/h3 なし RST の preamble section title を h1 title に合わせる（md=[] 140件解消）
+
+**問題（事実）**:
+- `scripts/create/converters/rst.py:54` の `_PREAMBLE_TITLE = "概要"` が、h2/h3 が無い RST で唯一のセクション title として使われている
+- RST ソースには `概要` という文字列は存在しない（h1 は例えば `全体像`）
+- 結果: hints ファイル（h1 title を key）と RBKC JSON（`概要` を key）が食い違い、md=[] 140件の verify FAIL が発生
+
+**あるべき姿**:
+- h2/h3 が全く無い RST = ファイル全体が 1 セクション → その section title は h1 title と同じ
+- h2/h3 がある RST の preamble（h1 と最初の h2 の間） → 現状通り `概要`（ソースに実テキストが無い導入部なので妥当）
+
+**影響範囲（全バージョン）**: v6=119, v5=181, v1.4=198, v1.3=260, v1.2=246 ファイル
+
+**Steps:**
+- [ ] 調査: h2/h3 なし RST で preamble title を h1 title に変える前提で、副作用の洗い出し（例: docs MD 表示、QO1 チェック、既存テストへの影響）
+- [ ] 修正方針をユーザーに提示・承認
+- [ ] rst converter 修正 TDD: `_split_sections` で sections が空のケースの section title を h1 title にするテスト追加 → RED → 実装 → GREEN
+- [ ] 既存の `_PREAMBLE_TITLE = "概要"` を維持する箇所（h2/h3 ある RST の preamble）のテスト追加・確認
+- [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
+- [ ] rbkc create 6 → verify 6 の md=[] FAIL が 140→0 に減ることを確認
+- [ ] コミット
+
+---
+
+### Phase 21-E: catalog Step A マッピング精度向上（file=[] 46件解消）
+
+**問題（事実）**:
+- RBKC JSON の section title が hints ファイルに存在しない 46 件
+- 例: `migration-migration § 'タグライブラリのネームスペースをJakarta EE 10のネームスペースに変更する'`
+- KC catalog の Expected Sections に対する RBKC JSON 側 section title の対応付けが取れていない
+
+**Steps:**
+- [ ] 全容把握: file=[] 46件の file_id / section_title 一覧を取得
+- [ ] ケース分類: 真の新規セクション / h3→h2 昇格 / 表記揺れ / その他
+- [ ] ケース別の方針をユーザーに提示・承認
+- [ ] 修正 TDD: ケースごとにテスト → 実装
+- [ ] サブエージェント品質チェック
+- [ ] rbkc create 6 → verify 6 の file=[] FAIL が 46→0 に減ることを確認
+- [ ] コミット
+
+---
+
+### Phase 21-F: 同一 section title の hints 値不一致を解消（4件）
+
+**問題（事実）**:
+- section title は一致するが hints 値が異なる 4 件
+- 例: `adapters-doma-adaptor § 'ロガーを切り替える'`, `adapters-micrometer-adaptor § '設定ファイル'`, `testing-framework-01-Abstract § '自動テストフレームワークの構成'`, `testing-framework-02-entityUnitTestWithNablarchValidation § 'テストメソッドの作成方法'`
+
+**Steps:**
+- [ ] 調査: 4件のそれぞれで JSON / docs MD / hints ファイルの値を比較し原因を特定（ロード順？エンコード？部分一致？）
+- [ ] 原因ごとの修正方針をユーザーに提示・承認
+- [ ] 修正 TDD
+- [ ] サブエージェント品質チェック
+- [ ] rbkc create 6 → verify 6 の該当 FAIL が 0 になることを確認
+- [ ] コミット
+
+---
+
+### Phase 21-G: verify パイプラインの配線漏れを解消（QC1/QC2/QC3/QC4 等）
+
+**問題（事実）**:
+- `scripts/verify/verify.py` に実装された RST/MD 用チェック (`check_content_completeness`, `check_format_purity`, `check_hints_completeness`, `check_external_urls`) が、`scripts/run.py` の verify オーケストレーションから一切呼ばれていない
+- `verify_file()` は `fmt != "xlsx"` で即 return — RST/MD では完全に noop
+- そのため、本来 QC2 (fabricated title) として直接検知されるべき問題（例: `概要` 固定値）が hints FAIL 経由でしか見えていなかった
+- 設計書マトリクス 4章 の ❌ は「verify が検証していない」状態を正しく示していた
+
+**このフェーズの前提**:
+- Phase 21-D / 21-E / 21-F を先に完了させ、現在検知されている FAIL を全て解消してから配線する
+- そうしないと、配線直後に 21-D/21-E/21-F 由来の FAIL が大量に QC2 として顕在化して切り分け困難になる
+
+**Steps:**
+- [ ] 調査: verify.py 内の各 check_* 関数と設計書マトリクスとの対応を整理（どの関数がどの QC/QL/QO に対応するか）
+- [ ] 調査: run.py から呼ばれていない check_* 関数を列挙
+- [ ] 配線計画をユーザーに提示・承認（どの check を RST/MD/Excel それぞれで実行するか）
+- [ ] TDD: 配線後に特定の既知不正ケース（テスト fixture）で RED を確認
+- [ ] run.py に check_* 関数群を配線
+- [ ] サブエージェント品質チェック
+- [ ] rbkc create 6 → verify 6 FAIL 0件を確認（新たに顕在化する FAIL があれば個別 Phase 化）
+- [ ] 設計書 rbkc-verify-quality-design.md のマトリクスを ❌→✅ に更新（配線済みの項目のみ）
+- [ ] コミット
 
 ---
 
