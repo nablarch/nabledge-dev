@@ -458,8 +458,11 @@ def _read_options(lines: list[str], start: int, directive_indent: int) -> tuple[
     """Read RST directive option lines only (lines starting with ':' and indented > directive).
 
     Stops at the first non-blank line that is not a directive option or is not more
-    indented than the directive itself.  Used for image/figure to avoid consuming
+    indented than the directive itself.  Used for image directives to avoid consuming
     sibling content as block body.
+
+    Note: only single-line option values are supported; multi-line continuations are
+    not present in the Nablarch v6 corpus so this limitation is acceptable.
 
     Returns (option_lines, next_i).
     """
