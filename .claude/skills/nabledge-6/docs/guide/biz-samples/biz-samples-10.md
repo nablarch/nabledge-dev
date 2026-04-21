@@ -1,0 +1,13 @@
+# ログ集計サンプルの使用方法
+
+## 概要
+
+本ドキュメントでは、ログ集計のサンプル実装 [#statistics]_ の使用方法を説明する。
+
+.. [#statistics]
+
+ログ集計機能とは、アプリケーションやデータベースの状態などを元に、アクセス状況や処理時間などを求める機能である。
+
+## 提供サンプル一覧
+
+[ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-statistics-report)

@@ -1,0 +1,73 @@
+{
+  "id": "libraries-bean-util",
+  "title": "BeanUtil",
+  "no_knowledge_content": false,
+  "sections": [
+    {
+      "id": "s1",
+      "title": "概要",
+      "content": "Java Beansに関する以下機能を提供する。また、Java16より標準化されたレコードをJava Beansと同様に取り扱うことができる。\n詳細は BeanUtilでレコードを使用する を参照。\n\n* プロパティに対する値の設定と取得\n* 他のJava Beansへの値の移送\n* Java Beansとjava.util.Mapとの間での値の移送",
+      "hints": []
+    },
+    {
+      "id": "s2",
+      "title": "モジュール一覧",
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-beans</artifactId>\n</dependency>\n```",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "使用方法",
+      "content": "`BeanUtil` が提供するAPIを使用して、任意のJava Beansに対する操作が実現できる。\n\nBeanUtilの使用例を以下に示す。\n\nBean定義\n```java\npublic class User {\n    private Long id;\n    private String name;\n    private Date birthDay;\n    private Address address;\n    // getter & setterは省略\n}\n\npublic class Address {\n    private String postNo;\n    // getter & setterは省略\n}\n\npublic class UserDto {\n    private String name;\n    private String birthDay;\n    // getter & setterは省略\n}\n```\nBeanUtilの使用例\n幾つかのAPIの使用例を以下に示す。\n詳細は、BeanUtilの `Javadoc` を参照。\n\n```java\nfinal User user = new User();\nuser.setId(1L);\nuser.setName(\"名前\");\nuser.setBirthDay(new Date());\n\nfinal Address address = new Address();\naddress.setPostNo(\"1234\");\nuser.setAddress(address);\n\n\n// プロパティ名を指定して値を取得する(1が取得できる)。\n// 値はgetter経由で取得される。\nfinal Long id = (Long) BeanUtil.getProperty(user, \"id\");\n\n// プロパティ名を指定して値を設定する(nameプロパティの値が「新しい名前」に変更される)\n// 値はsetter経由で設定される。\nBeanUtil.setProperty(user, \"name\", \"新しい名前\");\n\n// 他のBeanを作成しつつ値の移送する。\n// Userのプロパティ名と一致するUserDtoのプロパティに対して値が移送される。\n// 値の移送はgetter及びsetterを使用して行われる。\n// 移送先に存在しないプロパティは無視される。\n// 移送先のプロパティの型が異なる場合は、ConversionUtilにより型変換が行われる。\nfinal UserDto dto = BeanUtil.createAndCopy(UserDto.class, user);\n\n// プロパティの値をMapに移送する。\n// Mapのキーは、プロパティ名で値がgetterで取得した値となる。\n// ネストしたBeanの値はキー名が「.」で区切られて移送される(Map -> Mapとネストはしない)\n// 例えば、address.postNoとなる。\nfinal Map<String, Object> map = BeanUtil.createMapAndCopy(user);\nfinal String postNo = (String) map.get(\"address.postNo\");     // 1234が取得できる。\n\n// Mapの値をBeanに移送する。\n// Mapのキーと一致するプロパティのsetterを使用してMapの値を移送する。\n// ネストしたBeanに値を移送する場合は、Mapのキー名が「.」で区切られている必要がある。(Map -> Mapとネストしたものは扱えない)\n// 例えば、address.postNoとキー名を定義することで、User.addressのpostNoプロパティに値が設定される。\nfinal Map<String, Object> userMap = new HashMap<String, Object>();\nuserMap.put(\"id\", 1L);\nuserMap.put(\"address.postNo\", 54321);\nfinal User user = BeanUtil.createAndCopy(User.class, userMap);\nfinal String postNo2 = user.getAddress()\n                      .getPostNo();             // 54321が取得できる。\n```\n> **Important:** BeanUtilはList型の型パラメータに対応していない。List型の型パラメータを使いたい場合は具象クラスでgetterをオーバーライドして対応すること。 .. code-block:: java public class ItemsForm<D extends Serializable> { private List<D> items; public List<D> getItems() { return items; } public void setItems(List<D> items) { this.items = items; } } public class Item implements Serializable { // プロパティは省略 } // 具象クラスでオーバーライドしない場合。 // BeanUtil.createAndCopy(BadSampleForm.class, map)を呼び出すと、 // List型の型パラメータに対応していないため実行時例外が発生する。 public class BadSampleForm extends ItemsForm<Item> { } // 具象クラスでオーバーライドした場合。 // BeanUtil.createAndCopy(GoodSampleForm.class, map)が正常に動作する。 public static class GoodSampleForm extends ItemsForm<Item> { @Override public List<Item> getItems() { return super.getItems(); } }",
+      "hints": []
+    },
+    {
+      "id": "s4",
+      "title": "BeanUtilの型変換ルール",
+      "content": "`BeanUtil` では、Java BeansオブジェクトやMapオブジェクトから\n別のJava Beansオブジェクトにデータ移行する際にプロパティを型変換している。\n\nなお、MapオブジェクトからJava Beansオブジェクトにデータ移行する場合、\nMapオブジェクトのキーに `.` が含まれていればそのプロパティをネストオブジェクトとして扱う。\n\n型変換ルールについては、 `nablarch.core.beans.converter` パッケージ配下に配置されている\n`Converter` 実装クラスをそれぞれ参照すること。\n\n> **Important:** デフォルトで提供する型変換ルールでは、精度の小さい型へ変換した場合(例えばLongからIntegerへの変換)で、変換先の精度を超えるような値を指定しても正常に処理を終了する。 このため、BeanUtilを使用してコピーする際には、コピーする値がシステムで許容されているかどうかを 入力値のチェック によって事前に検証しておく必要がある。 検証しなかった場合、不正な値がシステムに取り込まれ障害の原因となる可能性がある。\n> **Important:** 型変換ルールはアプリケーション共通の設定となる。 特定の処理のみ異なる型変換ルールを適用したい場合は、 BeanUtil呼び出し時に許容するフォーマットを設定する を参照し、 特定のプロパティや型に対して `Converter` 実装を適用し対応すること。",
+      "hints": []
+    },
+    {
+      "id": "s5",
+      "title": "型変換ルールを追加する",
+      "content": "型変換ルールを追加するには、以下の手順が必要となる。\n\n1. 必要に応じて以下のインタフェースを実装し型変換処理を実現する。\n\n* `Converter`\n* `ExtensionConverter`\n\n2. `ConversionManager` の実装クラスを作成する。\n今回は標準の型変換ルールに追加でルールを設定するため、 `ConversionManager` をプロパティとして持つ、\n`ConversionManager` の実装クラスを作成する。\n\n```java\npublic class SampleConversionManager implements ConversionManager {\n\n    private ConversionManager delegateManager;\n\n    @Override\n    public Map<Class<?>, Converter<?>> getConverters() {\n        Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();\n\n        // 標準のコンバータ\n        converters.putAll(delegateManager.getConverters());\n\n        // 今回作成したコンバータ\n        converters.put(BigInteger.class, new CustomConverter());\n\n        return Collections.unmodifiableMap(converters);\n    }\n\n    @Override\n    public List<ExtensionConverter<?>> getExtensionConvertor() {\n        final List<ExtensionConverter<?>> extensionConverters =\n            new ArrayList<ExtensionConverter<?>>(delegateManager.getExtensionConvertor());\n        extensionConverters.add(new CustomExtensionConverter());\n        return extensionConverters;\n    }\n\n    public void setDelegateManager(ConversionManager delegateManager) {\n        this.delegateManager = delegateManager;\n    }\n}\n```\n3. コンポーネント設定ファイルに、 `ConversionManager` の実装クラスを設定する。\n\nポイント\n* コンポーネント名は **conversionManager** とすること。\n\n```xml\n<component name=\"conversionManager\" class=\"sample.SampleConversionManager\">\n  <property name=\"delegateManager\">\n    <component class=\"nablarch.core.beans.BasicConversionManager\" />\n  </property>\n</component>\n```",
+      "hints": []
+    },
+    {
+      "id": "s6",
+      "title": "型変換時に許容するフォーマットを指定する",
+      "content": "型変換時には、許容するフォーマットを指定することで日付や数値のフォーマットを解除できる。\n例えば、カンマ編集されたString型の値(1,000,000)を数値型(1000000)に変換できる。\n\n許容するフォーマットは、以下の3種類の指定方法がある。優先順位は上に記載したものが高くなる。\n\n* BeanUtil呼び出し時に設定\n* プロパティ単位にアノテーションで設定\n* デフォルト設定(システム共通設定)",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "デフォルト(システム共通)の許容するフォーマットを設定する",
+      "content": "フォーマットのデフォルト設定は、コンポーネント設定ファイルに設定する。\n\n例えば、画面上で入力される数値についてはカンマ編集されているものも許容する場合には、デフォルト設定しておくことで個別指定が不要となる。\n\n以下に設定方法を示す。\n\nポイント\n* コンポーネント名を **conversionManager** で `BasicConversionManager` を定義する。\n* `datePatterns` プロパティに許容する日付及び日時形式のフォーマットを設定する。\n* `numberPatterns` プロパティに許容する数値形式のフォーマット定義を設定する。\n* 複数のフォーマットを許容する場合は複数設定する。\n\n設定例\n```xml\n<component name=\"conversionManager\" class=\"nablarch.core.beans.BasicConversionManager\">\n  <!-- 日付及び日時の許容するフォーマットを指定する -->\n  <property name=\"datePatterns\">\n    <list>\n      <value>yyyy/MM/dd</value>\n      <value>yyyy-MM-dd</value>\n    </list>\n  </property>\n  <!-- 数値の許容するフォーマットを指定する -->\n  <property name=\"numberPatterns\">\n    <list>\n      <value>#,###</value>\n    </list>\n  </property>\n</component>\n```\n> **Important:** `yyyy/MM/dd` と `yyyy/MM/dd HH:mm:ss` の用に日付と日時のフォーマットを指定した場合、 日時形式の値も `yyyy/MM/dd` パース出来てしまうため時間情報が欠落してしまうケースがある。 このため、デフォルト指定では日付のフォーマットのみを指定し、日時形式の項目については プロパティ単位にアノテーションで設定 を使用してデフォルト設定をオーバライドするなどの対応が必要となる。",
+      "hints": []
+    },
+    {
+      "id": "s8",
+      "title": "コピー対象のプロパティに対して許容するフォーマットを設定する",
+      "content": "特定機能だけ デフォルト設定 を適用せずに異なるフォーマットを指定したい場合がある。\nこの場合は、コピー対象のBean(コピー元またはコピー先)の該当プロパティに対応したフィールドに対してアノテーションを指定し許容するフォーマットを上書きする。\n\nアノテーションは、コピー元とコピー先のどちらに指定しても動作するが、基本的に許容するフォーマットはString型のプロパティに対応するフィールドに指定するのが好ましい。\nなぜなら、フォーマットした値を持つのはString型のプロパティであり、そのプロパティに対して許容するフォーマットが指定されていることが自然であるためである。\nもし、コピー元とコピー先の両方に指定されている場合は、コピー元の設定を使用する。\n\n例えば、デフォルト設定では日付のフォーマットを指定している場合で、特定機能のみ日時フォーマットを許容する場合に使用するとよい。\n\n以下に実装例を示す。\n\nポイント\n* コピー元(コピー先)のプロパティに対応したフィールドに対して `CopyOption` アノテーションを設定する。\n* CopyOptionの `datePattern` に許容する日付及び日時のフォーマットを指定する。\n* CopyOptionの `numberPattern` に許容する数値のフォーマットを指定する。\n\n実装例\n```java\npublic class Bean {\n    // 許容する日時フォーマットを指定する\n    @CopyOption(datePattern = \"yyyy/MM/dd HH:mm:ss\")\n    private String timestamp;\n\n    // 許容する数値フォーマットを指定する\n    @CopyOption(numberPattern = \"#,###\")\n    private String number;\n\n    // setter及びgetterは省略\n}\n```",
+      "hints": []
+    },
+    {
+      "id": "s9",
+      "title": "BeanUtil呼び出し時に許容するフォーマットを設定する",
+      "content": "特定機能だけ デフォルト設定 を適用せずに異なるフォーマットを指定したいが、\nOSSなどを用いてBeanを自動生成している場合に プロパティ単位にアノテーションで設定 が使用できない場合がある。\nまた、特定プロパティのみ異なる型変換ルールを適用したい場合がある。\n\nこのような場合は、 `BeanUtil` 呼び出し時に、許容するフォーマットや型変換ルールを設定し対応する。\n\n以下に実装例を示す。\n\nポイント\n* `CopyOptions` を使用してプロパティに対して設定する。\n`CopyOptions` の構築方法は、 `CopyOptions.Builder` を参照。\n* 生成した `CopyOptions` を使用して `BeanUtil` を呼び出す。\n\n実装例\n```java\nfinal CopyOptions copyOptions = CopyOptions.options()\n        // timestampプロパティに対して許容するフォーマットを指定\n        .datePatternByName(\"timestamp\", \"yyyy年MM月dd日 HH時mm分ss秒\")\n        // customプロパティに対してCustomDateConverterを適用\n        .converterByName(\"custom\", Date.class, new CustomDateConverter())\n        .build();\n\n // CopyOptionsを指定してBeanUtilを呼び出す。\n final DestBean copy = BeanUtil.createAndCopy(DestBean.class, bean, copyOptions);\n```",
+      "hints": []
+    },
+    {
+      "id": "s10",
+      "title": "BeanUtilでレコードを使用する",
+      "content": "BeanUtilでは、Java16より標準化されたレコードをJava Beansと同様に取り扱うことができる。\n\n注意点として、一度生成したレコードは後から変更することができない。\nそのため、 `BeanUtil.setProperty` や\n`BeanUtil.copy` といったメソッドの引数に、変更対象のオブジェクトとしてレコードを渡した場合は実行時例外が発生する。",
+      "hints": []
+    },
+    {
+      "id": "s11",
+      "title": "使用方法",
+      "content": "Java Beansに対する操作 に準ずる。\n\n> **Important:** BeanUtilはList型の型パラメータを含むレコードに対応していない。レコードは継承することができないため、 List型の型パラメータは最初から具象型を設定して、レコードを定義すること。 .. code-block:: java public class Item implements Serializable { // プロパティは省略 } // List型の型パラメータに具象型を設定していない場合。 // BeanUtil.createAndCopy(BadSampleRecord.class, map)を呼び出すと、 // List型の型パラメータに対応していないため実行時例外が発生する。 public class BadSampleRecord<T>(List<T> items) {} // List型の型パラメータに具象型を設定した場合。 // BeanUtil.createAndCopy(GoodSampleRecord.class, map)が正常に動作する。 public record GoodSampleRecord(List<Item> items) {}",
+      "hints": []
+    }
+  ]
+}

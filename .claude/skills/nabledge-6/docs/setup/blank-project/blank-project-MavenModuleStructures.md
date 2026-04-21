@@ -1,0 +1,736 @@
+# Mavenアーキタイプの構成
+
+## 概要
+
+本章では、Nablarchの提供するMavenアーキタイプの構成と、各ディレクトリ・ファイルの概要を記載する。
+
+## 全体構成の概要
+
+Nablarchでは、以下のアーキタイプを提供している。なお、アーキタイプのグループIDはすべて `com.nablarch.archetype` である。
+
+| アーティファクトID | 説明 |
+|---|---|
+| nablarch-web-archetype | ウェブアプリケーション実行制御基盤を使用する場合のアーキタイプ |
+| nablarch-jaxrs-archetype | RESTfulウェブサービス実行制御基盤を使用する場合のアーキタイプ |
+| nablarch-batch-ee-archetype | Jakarta Batchに準拠したバッチアプリケーションフレームワークを使用する場合のアーキタイプ |
+| nablarch-batch-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用する場合のアーキタイプ |
+| nablarch-batch-dbless-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用するがDBに接続しない場合のアーキタイプ |
+| nablarch-container-web-archetype | `nablarch-web-archetype` のDockerコンテナ版アーキタイプ |
+| nablarch-container-jaxrs-archetype | `nablarch-jaxrs-archetype` のDockerコンテナ版アーキタイプ |
+| nablarch-container-batch-archetype | `nablarch-batch-archetype` のDockerコンテナ版アーキタイプ |
+| nablarch-container-batch-dbless-archetype | `nablarch-batch-dbless-archetype` のDockerコンテナ版アーキタイプ |
+nablarch-web-archetypeとnablarch-batch-archetypeのアーキタイプを使用し、
+プロジェクト生成中に入力する `artifactId` に、 `pj-web` , `pj-batch` をそれぞれ指定した場合、以下のような構成となる。
+
+
+![](../../../knowledge/assets/blank-project-MavenModuleStructures/maven_archetype.png)
+| Mavenプロジェクト名 | パッケージング | 用途 |
+|---|---|---|
+| pj-web | war | ウェブアプリケーション実行制御基盤を使用するアプリケーションを開発する。 最終的に、warファイルとしてアプリケーションサーバにデプロイされる単位で作成する。 |
+| pj-batch | jar | Nablarch独自のバッチアプリケーション実行制御基盤を使用するアプリケーションを開発する。 |
+> **Tip:** 自動生成エンティティは [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) を使用した場合に生成される。 使用する場合は、../addin_gsp に記載されている設定を行う必要がある。
+
+## 各構成要素の詳細
+
+上記 `pj-web` 、`pj-batch` と同様に、下表の通りにプロジェクトを作成したものとして各構成要素についての詳細を記載する。
+
+| Mavenプロジェクト名 | 生成元のMaven archetype |
+|---|---|
+| pj-jaxrs | nablarch-jaxrs-archetype |
+| pj-batch-dbless | nablarch-batch-dbless-archetype |
+| pj-batch-ee | nablarch-batch-ee-archetype |
+| pj-container-web | nablarch-container-web-archetype |
+| pj-container-jaxrs | nablarch-container-jaxrs-archetype |
+| pj-container-batch | nablarch-container-batch-archetype |
+| pj-container-batch-dbless | nablarch-container-batch-dbless-archetype |
+
+# nablarch-archetype-parent(親プロジェクト)
+
+## 概要
+
+nablarch-archetype-parentは、各アーキタイプから作成したプロジェクトの親となるプロジェクトである。
+
+このプロジェクトを利用者が直接書き換えることは無い。
+
+本プロジェクトには、主に以下の設定が記述されている。
+
+* 各種Mavenプラグインのバージョン
+* 各種ツールが使用するファイルのパス
+
+## nablarch-archetype-parentの所在
+
+アーキタイプから生成したプロジェクトを一度でもビルドしたことがあれば、以下の階層下にnablarch-archetype-parentのpom.xmlがキャッシュされている。
+nablarch-archetype-parentに記載された設定を確認したい場合は、キャッシュされたpom.xmlを確認すると良い。
+
+```text
+<ホームディレクトリ>/.m2/repository/com/nablarch/archetype/
+```
+# pj-webプロジェクト
+
+ウェブアプリケーションのwarファイルとしてパッケージングされるプロジェクト。
+
+## プロジェクトの構成
+
+```text
+myapp-web
+|
+|   pom.xml                     … Mavenの設定ファイル
+|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)
+|
++---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。
+|
++---h2
+|   +---bin                     … H2の起動に使用するファイルが格納されている。
+|   |
+|   \---db
+|           SAMPLE.mv.db        … H2のデータファイル。
+|           SAMPLE.mv.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.mv.db」にコピーして使用する。
+|
++---src
+|   +---env                     … 環境別の設定ファイルが格納されている。
+|   |
+|   +---main
+|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。
+|   |   |
+|   |   +---resources           … 直下には開発環境・本番環境で共に使用する設定ファイルが格納されている。
+|   |   |   |
+|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。
+|   |   |   |
+|   |   |   \---net             … ルーティングアダプタ用設定ファイルが格納されている。
+|   |   |
+|   |   \---webapp
+|   |       +---images          … 疎通確認用の画像ファイルが格納されている。
+|   |       |
+|   |       \---WEB-INF         … web.xmlが格納されている。
+|   |            |
+|   |            +---errorPages … エラー画面のサンプルが格納されている。
+|   |            |
+|   |            \---test       … 疎通確認画面用のファイルが格納されている。
+|   |
+|   \---test
+|       +---java                … 疎通テスト用のユニットテストが格納されている。
+|       |
+|       \---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。
+|           |
+|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。
+|           |
+|           \---nablarch        … HTMLチェックツール用のデータが格納されている。
+|
++---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。
+|
++---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。
+|
+\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。
+```
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## ツールの設定
+
+toolsフォルダには、Mavenと連携させて使用するツールの設定ファイルが含まれている。
+以下に主なディレクトリとファイルを示す。
+
+| ディレクトリまたはファイル | 説明 |
+|---|---|
+| nablarch-tools.xml | Jakarta Server Pages静的解析ツールを実行する際に使用する設定ファイル |
+| static-analysis/jspanalysis | Jakarta Server Pages静的解析ツールの設定ファイルが格納されている。 |
+# pj-jaxrsプロジェクト
+
+RESTfulウェブサービスアプリケーションのwarファイルとしてパッケージングされるプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+ビルド設定, pom.xml変更, Mavenプラグイン追加, 依存ライブラリ変更, モジュール個別設定
+
+</details>
+
+## プロジェクトの構成
+
+Webと同一であるため省略。
+
+
+# pj-batch-eeプロジェクト
+
+Jakarta Batchに準拠したバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## プロジェクトの構成
+
+(ディレクトリ及びファイルの説明は、Web、batchに存在しない要素についてのみ記載)
+
+```text
+myapp-batch-ee
+|
+|   pom.xml
+|   README.md
+|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル
+|
++---db
+|
++---h2
+|   +---bin
+|   |
+|   \---db
+|           SAMPLE.mv.db
+|           SAMPLE.mv.db.org
+|
++---src
+|   +---env
+|   |
+|   +---main
+|   |   +---java
+|   |   |
+|   |   \---resources
+|   |       |   batch-boot.xml              … バッチ起動時に使用する設定ファイル。
+|   |       |
+|   |       +---entity
+|   |       |
+|   |       \---META-INF
+|   |           |   beans.xml               … Jakarta Contexts and Dependency Injectionを有効化するために必要なファイル。
+|   |           |
+|   |           \---batch-jobs
+|   |                   sample-batchlet.xml … batchlet方式の疎通確認用アプリケーションのジョブファイル。
+|   |                   sample-chunk.xml    … chunk方式の疎通確認用アプリケーションのジョブファイル。
+|   |
+|   \---test
+|       +---java
+|       |
+|       \---resources
+|           |
+|           +---data
+|
++---testdata                                … 開発時にETL機能の入力・出力ファイルを格納するための作業用ディレクトリ。
+|
+\---work
+```
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## 本番環境へのリリースについて
+
+バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、
+バッチアプリケーションの実行可能jarと依存ライブラリが格納されている。
+
+そのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。
+
+1. zipファイルを任意のディレクトリに解凍する。
+2. 以下のコマンドでバッチを実行する。
+
+```bash
+java -jar <実行可能jarファイル名> <ジョブ名>
+```
+# pj-batchプロジェクト
+
+Nablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+本番リリース, バッチリリース, zipファイル, 実行可能jar, java -jar, -diConfig, -requestPath, -userId, 依存ライブラリ, target配下
+
+</details>
+
+## プロジェクトの構成
+
+(ディレクトリ及びファイルの説明は、Webに存在しない要素についてのみ記載)
+
+```text
+myapp-batch
+|
+|   pom.xml
+|   README.md
+|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル
+|
++---db
+|
++---h2
+|   +---bin
+|   |
+|   \---db
+|           SAMPLE.mv.db
+|           SAMPLE.mv.db.org
+|
++---src
+|   +---env
+|   |
+|   +---main
+|   |   +---java
+|   |   |
+|   |   +---resources
+|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。
+|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。
+|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。
+|   |   |   |
+|   |   |   \---entity
+|   |   |
+|   |   \---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。
+|   |
+|   \---test
+|       +---java
+|       |
+|       \---resources
+|           |
+|           \---data
+|
+\---work
+```
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## 本番環境へのリリースについて
+
+バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、
+バッチアプリケーションの実行可能jarと依存ライブラリが格納されている。
+
+そのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。
+
+1. zipファイルを任意のディレクトリに解凍する。
+2. 以下のコマンドでバッチを実行する。
+
+```bash
+java -jar <実行可能jarファイル名> ^
+    -diConfig <コンポーネント設定ファイル> ^
+    -requestPath <リクエストパス> ^
+    -userId <ユーザID>
+```
+# pj-batch-dblessプロジェクト
+
+DBに接続しないNablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+本番リリース, バッチリリース, zipファイル, 実行可能jar, java -jar, -diConfig, -requestPath, -userId, 依存ライブラリ, target配下
+
+</details>
+
+## プロジェクトの構成
+
+pj-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## 本番環境へのリリースについて
+
+バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、
+バッチアプリケーションの実行可能jarと依存ライブラリが格納されている。
+
+そのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。
+
+1. zipファイルを任意のディレクトリに解凍する。
+2. 以下のコマンドでバッチを実行する。
+
+```bash
+java -jar <実行可能jarファイル名> ^
+    -diConfig <コンポーネント設定ファイル> ^
+    -requestPath <リクエストパス> ^
+    -userId <ユーザID>
+```
+
+# pj-container-webプロジェクト
+
+ウェブアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+本番リリース, バッチリリース, zipファイル, 実行可能jar, java -jar, -diConfig, -requestPath, -userId, 依存ライブラリ, target配下
+
+</details>
+
+## プロジェクトの構成
+
+```text
+myapp-container-web
+|
+|   pom.xml                     … Mavenの設定ファイル
+|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)
+|
++---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。
+|
++---h2
+|   +---bin                     … H2の起動に使用するファイルが格納されている。
+|   |
+|   \---db
+|           SAMPLE.h2.db        … H2のデータファイル。
+|           SAMPLE.h2.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.h2.db」にコピーして使用する。
+|
++---src
+|   +---main
+|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。
+|   |   |
+|   |   +---resources           … 直下には設定ファイルが格納されている。
+|   |   |   |
+|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。
+|   |   |   |
+|   |   |   \---net             … ルーティングアダプタ用設定ファイルが格納されている。
+|   |   |
+|   |   +---jib                 … コンテナイメージ上に配置するファイルが格納されている。
+|   |   |
+|   |   \---webapp
+|   |       +---images          … 疎通確認用の画像ファイルが格納されている。
+|   |       |
+|   |       \---WEB-INF         … web.xmlが格納されている。
+|   |            |
+|   |            +---errorPages … エラー画面のサンプルが格納されている。
+|   |            |
+|   |            \---test       … 疎通確認画面用のファイルが格納されている。
+|   |
+|   |
+|   \---test
+|       +---java                … 疎通テスト用のユニットテストが格納されている。
+|       |
+|       \---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。
+|           |
+|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。
+|           |
+|           \---nablarch        … HTMLチェックツール用のデータが格納されている。
+|
++---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。
+|
++---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。
+|
+\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。
+```
+src/main/jib について
+`src/main/jib` に配置したディレクトリやファイルは、そのままコンテナ上に配置される。
+たとえば、 `src/main/jib/var/foo.txt` というファイルを配置した状態でコンテナイメージをビルドすると、コンテナ上の `/var/foo.txt` にファイルが配置される。
+詳細は [Jibのドキュメントを参照](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#adding-arbitrary-files-to-the-image) (外部サイト、英語)。
+
+ブランクプロジェクトでは、Tomcatのログ出力を全て標準出力にするために、Tomcatの設定ファイルがいくつか配置されている。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## ツールの設定
+
+Webと同一であるため省略。
+
+
+# pj-container-jaxrsプロジェクト
+
+RESTfulウェブサービスアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+ビルド設定, pom.xml変更, Mavenプラグイン追加, 依存ライブラリ変更, モジュール個別設定
+
+</details>
+
+## プロジェクトの構成
+
+コンテナ版Webと同一であるため省略。
+
+# pj-container-batchプロジェクト
+
+NablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## プロジェクトの構成
+
+(ディレクトリ及びファイルの説明は、コンテナ版Webに存在しない要素についてのみ記載)
+
+```text
+myapp-container-batch
+|
+|   pom.xml
+|   README.md
+|
++---db
+|
+|
++---h2
+|   +---bin
+|   |
+|   \---db
+|           SAMPLE.mv.db
+|           SAMPLE.mv.db.org
+|
++---src
+|   +---main
+|   |   +---java
+|   |   |
+|   |   +---jib
+|   |   |
+|   |   +---resources
+|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。
+|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。
+|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。
+|   |   |   |
+|   |   |   \---entity
+|   |   |
+|   |   \---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。
+|   |
+|   \---test
+|       +---java
+|       |
+|       \---resources
+|           |
+|           \---data
+|
+\---work
+```
+# pj-container-batch-dblessプロジェクト
+
+DBに接続しないNablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## プロジェクトの構成
+
+pj-container-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。
+
+
+# 各プロジェクト共通の設定
+
+各Mavenプロジェクトそれぞれで下記のように設定している。
+
+* プロファイルの定義
+* ビルドフェーズで実行するゴールの追加
+* コンパイルに関する設定。以下のような設定が存在する。
+
+* 使用するJavaのバージョン
+* ファイルエンコーディング
+* JDBCドライバ
+* アーキタイプから生成したプロジェクトに組み込まれているツール に記載されているツールの設定。以下のような設定が存在する。
+
+* [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するデータベース接続設定（JDBC接続URLやデータベーススキーマなど）
+* カバレッジ設定
+
+
+以下に個々の詳細を示す。
+
+<details>
+<summary>keywords</summary>
+
+pj-container-web, コンテナWebプロジェクト, Tomcat, Dockerイメージ, src/main/jib, jibディレクトリ, コンテナ配置, 標準出力, Tomcatログ, Jibプラグイン, pj-container-jaxrs, RESTfulウェブサービス, JAX-RS, コンテナJAX-RSプロジェクト, Tomcat, Dockerイメージ, pj-container-batch, コンテナバッチプロジェクト, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, 都度起動バッチ, メール送信バッチ, テーブルキューメッセージング, scripts, シェルスクリプト, Linuxサーバ, pj-container-batch-dbless, DBなしバッチ, DB非接続バッチ, コンテナバッチdbless
+
+</details>
+
+## プロファイル一覧
+
+定義されているプロファイルの詳細については、各プロジェクトの `pom.xml` を参照。
+
+以下に定義されているプロファイルを示す。
+
+| プロファイル名 | 概要 |
+|---|---|
+| dev | 開発環境用及び、ユニットテスト実行用のプロファイル。src/env/dev/resourcesディレクトリのリソースを使用する。 |
+| prod | 本番環境用のプロファイル。src/env/prod/resourcesディレクトリのリソースを使用する。 |
+> **Tip:** `pom.xml` 中のdevプロファイルにactiveByDefault要素が記述されており、デフォルトでdevプロファイルが使用されるようになっている。
+> **Note:** コンテナ用のプロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。 したがって、コンテナ用のプロジェクトにはプロファイルが定義されていない。 詳しくは コンテナの本番環境設定 を参照。
+
+<details>
+<summary>keywords</summary>
+
+プロファイル, dev, prod, mvn package, activeByDefault, コンテナ環境変数, 本番用WAR, -P prod, -DskipTests
+
+</details>
+
+## プロファイルの使い方
+
+これらのプロファイルは環境に応じた成果物を作成する際に使用する。
+
+例えば、本番環境用のWARファイルを作成したい場合、
+`pj-web`\ モジュール配下で、本番環境用プロファイルを指定してmvnコマンドを実行する。
+
+以下にコマンドの例を示す。
+
+```bash
+mvn package -P prod -DskipTests=true
+```
+.. tip ::
+
+上記コマンドでは、ユニットテストのスキップを指定している。
+
+「mvn package」実行時には、デフォルトではユニットテストも併せて行われるが、本番環境用のプロファイルではユニットテストの実行に失敗するためである。
+
+## ビルドフェーズに追加されているゴール一覧
+
+Mavenのデフォルトのビルドフェーズ定義に加えて、以下のゴールが実行されるように設定されている。
+
+設定の詳細については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照のこと。
+
+
+| ビルドフェーズ | ゴール | 概要 |
+|---|---|---|
+| initialize | jacoco:prepare-agent | JaCoCoの実行時エージェントを準備する。 |
+| pre-integration-test | jacoco:prepare-agent-integration | 結合試験用にJaCoCoの実行時エージェントを準備する。 |
+> **Tip:** gsp-dba-maven-pluginの実行はMavenのビルドフェーズに紐づかないため、エンティティの自動生成など、gsp-dba-maven-pluginで実装されているゴールを実行したい場合は、ゴールを手動で実行すること。
+
+<details>
+<summary>keywords</summary>
+
+JaCoCo, jacoco:prepare-agent, jacoco:prepare-agent-integration, ビルドフェーズ, gsp-dba-maven-plugin, カバレッジ, initialize, pre-integration-test
+
+</details>
+
+## コンパイルに関する設定
+
+設定内容については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照。
+
+<details>
+<summary>keywords</summary>
+
+コンパイル設定, pom.xml, Javaバージョン, エンコーディング, JDBCドライバ
+
+</details>
+
+## ツールの設定
+
+ツールの設定は、`pom.xml` (各プロジェクト及び、 nablarch-archetype-parent(親プロジェクト) )に記載されている。
+親プロジェクトに記載されているツールについては、 アーキタイプから生成したプロジェクトに組み込まれているツール を参照。
+
+
+# ビルド設定
+
+以下のような場合は、各モジュールのpom.xmlを変更する。
+
+* モジュール個別で使用する依存ライブラリを追加・変更する。例えば、使用するNablarchのバージョンを変更するために、nablarch-bomのバージョンを修正する場合が該当する。
+* モジュール個別で使用するMavenプラグインを追加・変更する。
+
+<details>
+<summary>keywords</summary>
+
+ビルド設定, pom.xml変更, Mavenプラグイン追加, 依存ライブラリ変更, モジュール個別設定
+
+</details>
+
+## 使用するNablarchのバージョンを変更する場合の例
+
+以下にNablarch6u2を使用する場合の設定例を示す。
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.nablarch.profile</groupId>
+      <artifactId>nablarch-bom</artifactId>
+
+      <!--
+      使用するNablarchのバージョンと対応したバージョンを指定する。
+      この例は6u2を指定している。
+      -->
+      <version>6u2</version>
+
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+    …
+</dependencyManagement>
+```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-bom, Nablarchバージョン変更, dependencyManagement, 6u2, com.nablarch.profile
+
+</details>
+
+## 依存ライブラリ追加の例
+
+以下に\ `pj-web`\ モジュールで暗号化ユーティリティを使用するために、nablarch-common-encryptionへの依存を追加する場合の例を示す。
+
+なお、依存を追加する場合にはscopeの設定を適切に行うこと。scopeの設定を怠ると、ユニットテストでのみ使用するはずのモジュールが本番でも使用されるといった問題が起きる可能性がある。
+
+```xml
+<dependencies>
+…
+  <dependency>
+    <groupId>com.nablarch.framework</groupId>
+    <artifactId>nablarch-common-encryption</artifactId>
+  </dependency>
+…
+</dependencies>
+```
+Nablarchのライブラリの場合、pom.xmlにバージョン番号は通常指定しなくても良い(nablarch-bomに対するバージョン指定により、個々のライブラリのバージョンが決定するため)。
+
+<details>
+<summary>keywords</summary>
+
+依存ライブラリ追加, nablarch-common-encryption, scope, Maven依存性, com.nablarch.framework
+
+</details>
+
+## 【参考】プロジェクト分割方針
+
+# 推奨するプロジェクト構成の方針
+
+以下に推奨するプロジェクト構成の方針を示す。
+
+* 作成するアプリケーションが１つの場合(ウェブのみ、バッチのみ等)は、それぞれ単体のプロジェクトで構成する。
+* 社内用と社外用で２つのウェブアプリケーションを作成するようなケースでは、無理に１つのMavenプロジェクトにまとめず、個別にMavenプロジェクトを作ること。
+* 複数のアプリケーションが存在し、共通化したいライブラリが存在する場合は、共通ライブラリを配置するMavenプロジェクトを作る。
+* 実行制御基盤を追加した際は、実行制御基盤毎にMavenプロジェクトを作る。例えば、メッセージング実行制御基盤を使用したアプリケーションを追加する場合は、新しくMavenプロジェクトを作る。
+* 必要以上にプロジェクトは分割しない。詳細は、 プロジェクトを過度に分割した場合の問題点 を参照。
+
+.. tip ::
+
+プロジェクトを分割する際には、リソースの重複が無い様に注意すること。
+
+例えば、[gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するedmファイルを複数のMavenプロジェクトに混在させると、重複したEntityクラスが複数のMavenプロジェクトに存在することになる。
+
+
+
+# プロジェクトを過度に分割した場合の問題点
+
+プロジェクトを過度に分割した場合の問題点を以下に示す。
+
+* ビルド及びデプロイの手順が複雑になる。
+* 結合テスト以降で、どのモジュールを組み合わせてテストしたか管理が複雑になる。
+
+一般的には、Mavenプロジェクトは少ないほうが開発をスムーズに進めることが出来る。
+
+.. |br| raw:: html
+
+<br />
+
+<details>
+<summary>keywords</summary>
+
+プロジェクト過度分割, ビルド手順複雑化, 結合テスト管理, プロジェクト分割問題点, 推奨プロジェクト構成, 共通ライブラリ, 実行制御基盤, gsp-dba-maven-plugin, edmファイル, プロジェクト分割方針, nablarch-web-archetype, nablarch-jaxrs-archetype, nablarch-batch-ee-archetype, nablarch-batch-archetype, nablarch-batch-dbless-archetype, nablarch-container-web-archetype, nablarch-container-jaxrs-archetype, nablarch-container-batch-archetype, nablarch-container-batch-dbless-archetype, com.nablarch.archetype, Mavenアーキタイプ種別, pj-web, pj-batch, warパッケージング, jarパッケージング, gsp-dba-maven-plugin, プロジェクト全体構成, pj-jaxrs, pj-batch-dbless, pj-batch-ee, pj-container-web, pj-container-jaxrs, pj-container-batch, pj-container-batch-dbless, アーキタイプ対応表, nablarch-archetype-parent, 親プロジェクト, Mavenプラグインバージョン, ツールファイルパス設定, nablarch-archetype-parent, .m2/repository, pom.xmlキャッシュ, com.nablarch.archetype, pj-web, WEB-INF, web.xml, src/env, src/main/resources, ルーティングアダプタ, HTMLチェックツール, H2, ディレクトリ構成, nablarch-tools.xml, Jakarta Server Pages静的解析, static-analysis/jspanalysis, JSP静的解析ツール, pj-jaxrs, RESTfulウェブサービス, JAX-RS, warパッケージング, pj-batch-ee, Jakarta Batch, batch-boot.xml, beans.xml, batchlet, chunk, distribution.xml, META-INF/batch-jobs, Contexts and Dependency Injection, pj-batch-ee, バッチリリース, zipデプロイ, 実行可能jar, ジョブ名指定, pj-batch, batch-boot.xml, mail-sender-boot.xml, resident-batch-boot.xml, シェルスクリプト, メール送信バッチ, テーブルキューメッセージング, pj-batch, バッチリリース, -diConfig, -requestPath, -userId, 実行可能jar, コンポーネント設定ファイル, pj-batch-dbless, DB接続なし, DBレスバッチ, nablarch-batch-dbless-archetype
+
+</details>

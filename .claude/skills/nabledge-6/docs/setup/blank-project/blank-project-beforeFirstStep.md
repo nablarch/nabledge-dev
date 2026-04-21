@@ -1,0 +1,165 @@
+# 初期セットアップの前に
+
+## 概要
+
+## ブランクプロジェクト（プロジェクトのひな形）について
+
+<details>
+<summary>keywords</summary>
+
+ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ
+
+</details>
+
+## ブランクプロジェクトの種類
+
+初期セットアップでは、以下のブランクプロジェクトの作成方法を示す。
+
+* ウェブプロジェクト
+* RESTfulウェブサービスプロジェクト
+* Jakarta Batchに準拠したバッチプロジェクト
+* Nablarchバッチプロジェクト
+* コンテナ用ウェブプロジェクト
+* コンテナ用RESTfulウェブサービスプロジェクト
+* コンテナ用Nablarchバッチプロジェクト
+
+<details>
+<summary>keywords</summary>
+
+ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧
+
+</details>
+
+## ブランクプロジェクトの設計思想と留意事項
+
+初期セットアップで作成するブランクプロジェクトは、初期構築の容易さを重視している。そのため、1プロジェクトで各アプリケーションをビルドできるように、全てのソースファイルとリソースファイルを1プロジェクトに配置している。
+また、最小ハンドラ構成で動作するように、コンポーネントの定義やコンポーネントの依存関係が定義されている。
+
+初期セットアップを終えた後(直後でなくとも良い)に、アーキテクトはプロジェクト構成を検討する必要がある。
+例えば、以下の場合は共通部品を配置するプロジェクトの要否を検討したほうが良い。
+
+* システムを構成するアプリケーションが複数(ウェブアプリケーションとバッチアプリケーション等)存在する。
+* アプリケーション間で共通の部品(例えば、Entityクラス)が存在する。
+
+
+プロジェクト構成を検討する際には、 【参考】プロジェクト分割方針 を参照してからプロジェクト構成を検討すること。
+
+<details>
+<summary>keywords</summary>
+
+プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト
+
+</details>
+
+## 初期セットアップの前提
+
+実行環境に以下のソフトウェアがインストールされている前提とする。
+
+全プロジェクトで共通
+* Maven 3.9.9以上
+
+ウェブ、RESTfulウェブサービス、Jakarta Batchに準拠したバッチ、Nablarchバッチ
+* JDK17以上
+
+コンテナ用ウェブ、コンテナ用RESTfulウェブサービス、コンテナ用Nablarchバッチ
+* JDK17以上
+* Docker Desktop 2.2.0.0 以上
+
+以下は、初期セットアップでは事前準備不要である。
+
+| ソフトウェア | 説明 |
+|---|---|
+| APサーバ | ウェブプロジェクト及び RESTfulウェブサービスプロジェクトの疎通確認時にJetty12を使用する。手順中で、mvnコマンドからjetty-ee10-maven-pluginを実行し、jetty-ee10-maven-pluginに組み込まれているJetty12へアプリケーションをデプロイ、起動するため、事前準備は不要である。 |
+| DBサーバ | アーキタイプには疎通確認用にH2 Database Engine(以下H2)を組み込んであるため、別途インストールの必要はない。 |
+
+<details>
+<summary>keywords</summary>
+
+Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア
+
+</details>
+
+## Mavenの設定
+
+初期セットアップの前に、Nablarchと関連モジュールが使用可能なMavenリポジトリに接続できるように、Mavenのsettings.xmlに対して設定する。
+
+まだ設定していない場合は、 Mavenの設定 を参照して設定すること。
+
+.. important ::
+
+以降の手順で、Maven関連と思われるトラブルに遭遇した場合は、 Mavenのよくあるトラブル を参照すること。
+
+<details>
+<summary>keywords</summary>
+
+Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定
+
+</details>
+
+## 使用するNablarchのバージョンの指定
+
+Nablarchでは、Mavenのbomの仕組みを使用して、Nablarchフレームワークを構成する各モジュールのバージョンを定義している。
+
+Mavenコマンドを使用してブランクプロジェクトを生成する際には、使用するNablarchのバージョンとして、nablarch-bomのバージョンを指定する必要がある。
+
+nablarch-bom内の定義（抜粋）
+
+```xml
+<dependencyManagement>
+  <dependencies>
+
+    <dependency>
+      <groupId>com.nablarch.framework</groupId>
+      <artifactId>nablarch-core</artifactId>
+      <version>1.2.2</version> <!-- nablarch-coreモジュールのバージョンの定義 -->
+    </dependency>
+
+    <dependency>
+      <groupId>com.nablarch.framework</groupId>
+      <artifactId>nablarch-core-applog</artifactId>
+      <version>1.0.1</version> <!-- nablarch-core-applogモジュールのバージョンの定義 -->
+    </dependency>
+```
+指定したバージョンは、生成されたブランクプロジェクトのpom.xmlに以下のように反映される。
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.nablarch.profile</groupId>
+      <artifactId>nablarch-bom</artifactId>
+      <version>6</version> <!-- 指定したバージョン -->
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core
+
+</details>
+
+## 初期セットアップを行う際の共通的な注意点
+
+初期セットアップを行う際、以下の点に注意すること。
+
+* ブランクプロジェクトを作成するディレクトリのパスには、マルチバイト文字を含めないこと。
+マルチバイト文字が含まれていると正常に動作しないmavenプラグインが存在するため、エラーが発生する可能性がある。
+* 「mvn archetype:generate」を実行する際は、コマンドラインから実行すること。eclipse4.4.2から実行した場合、意図しないファイルが出力される。
+* 作成したブランクプロジェクトをeclipseで開くとMavenのライフサイクルに関するエラーが出力されることがある。
+
+* エラーメッセージの例：Plugin execution not covered by lifecycle configuration
+* このエラーが発生した場合はeclipseがプラグインのインストールを提案するので、提案に従いプラグインをインストールすることで解消される。
+* ネットワーク環境が不安定な場合は各開発者がプラグインのインストールで時間を要する可能性があるので、
+予めプラグインをインストールしたeclipseを配付する等の対応を検討すること。
+
+<details>
+<summary>keywords</summary>
+
+マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル
+
+</details>
