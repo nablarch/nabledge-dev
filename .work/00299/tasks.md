@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 35)
+**Updated**: 2026-04-21 (session 36)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -212,13 +212,17 @@
 - [x] 設計書最終承認（見直し完了版）— session 35 承認 `f7a4db40`
 - [x] TDD: `.pr/00299/generate_hints.py` 実装
   - [x] 全レベル見出し抽出（RST h1/h2/h3/h4、MD `#`〜`####`）
-  - [x] R1〜R6 + R2' 各ルールの単体テスト（39 tests, all GREEN）
-  - [x] 正規化関数の境界値テスト（NFKC、空白、括弧）
-  - [x] smoke test: 全 5 版 ERR 0件、R6 ≤ 1%、hints 保存率 100%
-  - [x] R2' ルール追加（catalog に sid なしを R6 から分離、R6 を純化）
-- [x] 全 5 版 hints/v{V}.json 再生成
-- [ ] SE/QA サブエージェントレビュー
-- [ ] verify で hints FAIL 0 件確認（Phase 21-D 完了後）
+  - [x] R1〜R6 + R2' 各ルールの単体テスト（58 tests, all GREEN）
+  - [x] 正規化関数の境界値テスト（NFKC、空白、括弧、NFKC+paren combo）
+  - [x] smoke test: 全 5 版 ERR 0件、hints 保存率 100%
+  - [x] R2' ルール追加（catalog に sid なしを R6 から分離）
+  - [x] SE/QA 指摘反映（1回目）: V1/V2/V4 post-check、ever_empty 伝播、orphan/R2 ERR
+  - [x] 同名見出し対応: hints file スキーマを配列 `[{title,hints}]` に変更（§6 問題 5 解決）
+  - [x] SE/QA 指摘反映（2回目）: round-robin overflow→h1 reclassify as R6、_normalized_match empty 対策、RST underline 長さ strict、R1 dead-code 除去、rule priority tests、NFKC combo tests
+  - [x] R6% 目標値削除（数字遊びを排除）、unmapped-v{V}.json に全 R6/R2/R2' entry を出力
+- [x] 全 5 版 hints/v{V}.json 再生成（v6=296files, v5=406, v1.4=402, v1.3=263, v1.2=255）
+- [x] unmapped-v{6,5,1.4,1.3,1.2}.json 出力（後から個別監査用、コミット対象）
+- [ ] verify で hints FAIL 0 件確認（Phase 21-D 完了後・スキーマ対応済み後）
 - [ ] コミット
 
 ---
