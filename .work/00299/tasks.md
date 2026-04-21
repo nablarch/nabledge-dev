@@ -210,12 +210,14 @@
 - [x] §5/§6 更新（受容範囲・未解決リスク）
 - [x] xlsx の全バージョン hints 集計（Phase 21-C 対応の参考値）— `.pr/00299/measure_xlsx_hints.py` 実行、設計書 §B-11 に追記。v6=221, v5=1158, v1.x=0 hints
 - [x] 設計書最終承認（見直し完了版）— session 35 承認 `f7a4db40`
-- [ ] TDD: `.pr/00299/generate_hints.py` 実装
-  - [ ] 全レベル見出し抽出（RST h1/h2/h3/h4、MD `#`〜`####`）
-  - [ ] R1〜R6 各ルールの単体テスト
-  - [ ] 正規化関数の境界値テスト（NFKC、空白、括弧）
-  - [ ] smoke test: 全 5 版 ERR 0件、R6 ≤ 2%、hints 保存率 100%
-- [ ] 全 5 版 hints/v{V}.json 再生成
+- [x] TDD: `.pr/00299/generate_hints.py` 実装
+  - [x] 全レベル見出し抽出（RST h1/h2/h3/h4、MD `#`〜`####`）
+  - [x] R1〜R6 + R2' 各ルールの単体テスト（39 tests, all GREEN）
+  - [x] 正規化関数の境界値テスト（NFKC、空白、括弧）
+  - [x] smoke test: 全 5 版 ERR 0件、R6 ≤ 1%、hints 保存率 100%
+  - [x] R2' ルール追加（catalog に sid なしを R6 から分離、R6 を純化）
+- [x] 全 5 版 hints/v{V}.json 再生成
+- [ ] SE/QA サブエージェントレビュー
 - [ ] verify で hints FAIL 0 件確認（Phase 21-D 完了後）
 - [ ] コミット
 
