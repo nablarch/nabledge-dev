@@ -179,9 +179,9 @@
 - [x] TDD: verify — `check_hints_file_consistency` に top-level hints チェック + `__file__` sentinel 対応
 - [x] hints file v6.json は既存のまま（Phase 21-H で生成済み配列形式）
 - [x] rbkc create 6 実行（341 files）+ verify 6 で xlsx sentinel hints FAIL が 10 件 → 0 件に解消
-- [ ] 残 453 FAIL は Phase 21-E/21-F/21-G スコープ（本セッション範囲外）
-- [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
-- [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
+- [x] 残 453 FAIL は Phase 21-E/21-F/21-G スコープ（本セッション範囲外と確認）
+- [x] サブエージェント品質チェック (Software Engineer + QA Engineer) — SE M1 (shared FILE_SENTINEL), QA H1/H2/L1 反映
+- [x] コミット: `603c5ade` (rst overline) / `23bb7e5f` (schema) / `4b6531fe` (regen) / `49e467e2` (tasks/reviews)
 
 ---
 
