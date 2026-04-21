@@ -6,7 +6,7 @@ Record **decisions and their background** — the why and how that cannot be fou
 
 ## Location
 
-`.pr/xxxxx/notes.md` where xxxxx is 5-digit PR number
+`.work/xxxxx/notes.md` where xxxxx is the 5-digit zero-padded issue number
 
 ## Content
 
@@ -54,7 +54,7 @@ Free-form markdown with chronological entries. Use timestamps for multiple work 
 
 ## Detail Files
 
-For detailed artifacts that would bloat notes.md (investigation results, design outputs, analysis data, etc.), create separate files in the same `.pr/xxxxx/` directory and link from notes.md.
+For detailed artifacts that would bloat notes.md (investigation results, design outputs, analysis data, etc.), create separate files in the same `.work/xxxxx/` directory and link from notes.md.
 
 **When to use a separate file:**
 - Investigation items and results (e.g., `investigation-items.md`)
@@ -83,13 +83,16 @@ Good example (captures context):
 ```markdown
 ## 2026-02-19
 
-### Decision: .pr/ instead of .issues/
+### Decision: keyword-only search flow
 
-User pointed out work is organized by PRs, not issues. PRs always exist, issues may not. Shorter name (.pr/ vs .prs/) is clearer.
+Removed the AI judgment step from knowledge-search. Benchmarks showed
+accuracy was maintained while time and cost dropped meaningfully.
 
-### Problem: nabledge-6 output path
+### Problem: section anchors broken after rename
 
-Initially changed to .pr/ but user noted this is user-facing and would break existing workflows. Reverted to work/YYYYMMDD/ to avoid impact.
+**Symptom**: GUIDE links returned 404 after the file rename.
+**Cause**: docs/README.md still referenced the old path.
+**Solution**: Added README regeneration to the verify pipeline.
 ```
 
 Bad example (duplicates git log):
@@ -102,7 +105,7 @@ Bad example (duplicates git log):
 
 ## What Changed
 
-Directory structure changed from work/YYYYMMDD/ to .pr/xxxxx/
+Renamed foo.py to bar.py and updated all imports.
 ```
 
 ## When to Create

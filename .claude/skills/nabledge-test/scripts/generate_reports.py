@@ -6,8 +6,8 @@ Usage:
     python generate_reports.py \
         --workspace .tmp/nabledge-test/run-20260307-120822 \
         --scenarios .claude/skills/nabledge-test/scenarios/nabledge-6/scenarios.json \
-        --output-dir .pr/00129/nabledge-test/202603071208/ \
-        --report-path .pr/00129/nabledge-test/report-202603071208.md \
+        --output-dir .work/00129/nabledge-test/202603071208/ \
+        --report-path .work/00129/nabledge-test/report-202603071208.md \
         --version 6 \
         --branch 129-measurement-baseline-workflow \
         --commit 15e7eb5 \

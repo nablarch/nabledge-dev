@@ -12,14 +12,14 @@ Closes #[ISSUE_NUMBER]
 
 ## Tasks
 
-See [tasks.md](.pr/[ISSUE_NUMBER_5DIGIT]/tasks.md).
+See [tasks.md](.work/[ISSUE_NUMBER_5DIGIT]/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](../.pr/[ISSUE_NUMBER]/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/[ISSUE_NUMBER]/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](.work/[ISSUE_NUMBER_5DIGIT]/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](.work/[ISSUE_NUMBER_5DIGIT]/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -59,14 +59,14 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 ## Tasks
 
-See [tasks.md](.pr/00042/tasks.md).
+See [tasks.md](.work/00042/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](../.pr/42/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](../.pr/42/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](.work/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 

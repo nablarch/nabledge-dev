@@ -16,13 +16,13 @@ Closes #{issue_number}
 
 ## Tasks
 
-See [tasks.md](.pr/{00000}/tasks.md).
+See [tasks.md](.work/{00000}/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Expert Role](https://github.com/{owner}/{repo}/blob/{branch}/.pr/{00000}/review-by-{expert-role}.md) - Rating: X/5
+- [Expert Role](https://github.com/{owner}/{repo}/blob/{branch}/.work/{00000}/review-by-{expert-role}.md) - Rating: X/5
 
 ## Success Criteria Check
 
@@ -48,7 +48,7 @@ Apply labels matching the issue (see `.claude/rules/issues.md` for label definit
 ## Expert Review Requirement
 
 Expert review (`.claude/rules/expert-review.md`) must be completed before PR creation.
-Save results to `.pr/{00000}/review-by-{expert-role}.md` and link from PR body.
+Save results to `.work/{00000}/review-by-{expert-role}.md` and link from PR body.
 
 ## Markdown in gh CLI Commands
 

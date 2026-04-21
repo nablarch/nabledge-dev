@@ -69,7 +69,7 @@ For each commit, determine user impact by checking whether changed files fall un
 - `.claude/rules/`, `.claude/skills/nabledge-test/` — dev-only
 - `README.md`, `CLAUDE.md`, `docs/` — dev repo files
 
-Output findings as a work log in `.pr/{issue_number}/notes.md` and confirm with the user before proceeding.
+Output findings as a work log in `.work/{issue_number}/notes.md` and confirm with the user before proceeding.
 
 ### Step 2: Review and Revise CHANGELOG
 

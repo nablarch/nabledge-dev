@@ -219,10 +219,10 @@ Replace each placeholder in the loaded template:
 **Step 3: Replace Tasks section**
 - Replace the Tasks section body with a link to the PR's task file:
   ```
-  See [tasks.md](.pr/[ISSUE_NUMBER_5DIGIT]/tasks.md).
+  See [tasks.md](.work/[ISSUE_NUMBER_5DIGIT]/tasks.md).
   ```
 - `[ISSUE_NUMBER_5DIGIT]` is the issue number zero-padded to 5 digits (e.g., 42 → 00042)
-- The task list is maintained in `.pr/{00000}/tasks.md` per `.claude/rules/work-log.md`; the PR body only links to it (DRY)
+- The task list is maintained in `.work/{00000}/tasks.md` per `.claude/rules/work-log.md`; the PR body only links to it (DRY)
 
 **Step 4: Replace Expert Review Section**
 
@@ -230,13 +230,13 @@ Generate absolute GitHub URLs for expert review files:
 
 **URL Format**:
 ```
-https://github.com/{owner}/{repo}/blob/{current_branch}/.pr/{pr_number}/review-by-{expert-role}.md
+https://github.com/{owner}/{repo}/blob/{current_branch}/.work/{issue_number_5digit}/review-by-{expert-role}.md
 ```
 
 Where:
 - `{owner}/{repo}`: From `gh repo view --json nameWithOwner -q .nameWithOwner`
 - `{current_branch}`: Current branch name
-- `{pr_number}`: Issue number (5-digit zero-padded, e.g., "00042")
+- `{issue_number_5digit}`: Issue number, 5-digit zero-padded (e.g., "00042")
 - `{expert-role}`: Expert role in lowercase with hyphens (e.g., "software-engineer")
 
 Example:
@@ -245,8 +245,8 @@ Example:
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [Prompt Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-prompt-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-prompt-engineer.md) - Rating: 5/5
 ```
 
 **Step 5: Replace Success Criteria Section**
@@ -281,14 +281,14 @@ for stateless authentication and better scalability compared to server-side sess
 
 ## Tasks
 
-See [tasks.md](.pr/00042/tasks.md).
+See [tasks.md](.work/00042/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -318,14 +318,14 @@ Implemented session-based authentication using JWT tokens. Chose this approach f
 
 ## Tasks
 
-See [tasks.md](.pr/00042/tasks.md).
+See [tasks.md](.work/00042/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 

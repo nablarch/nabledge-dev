@@ -98,7 +98,7 @@ EOF
    - Launch expert review agents for each selected expert
    - Launch developer agent to evaluate improvement suggestions
    - Implement approved improvements
-   - Save review results to `.pr/{issue_number}/review-by-{expert_role}.md`
+   - Save review results to `.work/{issue_number}/review-by-{expert_role}.md`
    - Prepare Expert Review links for PR body
 
 9. Create PR: Use Skill tool - `Skill(skill: "pr", args: "create")`
