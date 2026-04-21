@@ -1779,8 +1779,20 @@ class TestCheckHintsFileConsistency:
         (docs_dir / f"{file_id}.md").write_text("\n".join(lines), encoding="utf-8")
 
     def _write_hints_file(self, path, hints_dict):
+        """Write hints file in array form.
+
+        Accepts either:
+        * {file_id: [{"title", "hints"}, ...]}  (array form, used as-is)
+        * {file_id: {title: hints}}             (dict form, normalized to array)
+        """
         import json
-        path.write_text(json.dumps({"version": "6", "hints": hints_dict}), encoding="utf-8")
+        normalized: dict[str, list[dict]] = {}
+        for fid, entries in hints_dict.items():
+            if isinstance(entries, dict):
+                normalized[fid] = [{"title": t, "hints": h} for t, h in entries.items()]
+            else:
+                normalized[fid] = entries
+        path.write_text(json.dumps({"version": "6", "hints": normalized}), encoding="utf-8")
 
     def test_pass_all_consistent(self, tmp_path):
         """JSON hints == docs MD hints == hints file → no issues."""
@@ -1840,6 +1852,306 @@ class TestCheckHintsFileConsistency:
         self._write_docs_md(dd, "file1", {"概要": []})
         self._write_hints_file(hf, {})  # file1 not in hints file → expect empty
         assert self._check(kd, dd, hf) == []
+
+    def test_pass_same_title_twice_positionally_aligned(self, tmp_path):
+        """Same title appearing twice in both JSON and hints file → positional align OK."""
+        import json as _json
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        # JSON with two sections of same title (h2 + h3 case)
+        self._write_json(kd, "file1", [
+            {"id": "s1", "title": "使用方法", "content": "", "hints": ["first"]},
+            {"id": "s2", "title": "使用方法", "content": "", "hints": ["second"]},
+        ])
+        # docs MD: two blocks with same title
+        (dd / "file1.md").write_text(
+            "# file1\n\n"
+            "## 使用方法\n\n<details>\n<summary>keywords</summary>\n\nfirst\n\n</details>\n\n"
+            "## 使用方法\n\n<details>\n<summary>keywords</summary>\n\nsecond\n\n</details>\n",
+            encoding="utf-8",
+        )
+        # hints file in array form
+        hf.write_text(_json.dumps({
+            "version": "6",
+            "hints": {
+                "file1": [
+                    {"title": "使用方法", "hints": ["first"]},
+                    {"title": "使用方法", "hints": ["second"]},
+                ],
+            },
+        }), encoding="utf-8")
+        # Check 1 (JSON ↔ hints file positional) must pass.
+        issues = self._check(kd, dd, hf)
+        # Filter out the docs-MD-side check (parser collapses same-title)
+        json_issues = [i for i in issues if "JSON hints differ" in i or "not matched" in i]
+        assert json_issues == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 21-D (session 37): top-level hints three-way consistency
+# ---------------------------------------------------------------------------
+
+
+class TestCheckHintsFileConsistencyTopLevelHints:
+    """Top-level hints three-way consistency: JSON `hints` ↔ hints file head ↔ docs MD file block."""
+
+    def _check(self, output_dir, docs_dir, hints_file):
+        from scripts.verify.verify import check_hints_file_consistency
+        return check_hints_file_consistency(output_dir, docs_dir, hints_file)
+
+    def _write_json_with_top_hints(self, output_dir, file_id, top_hints, sections):
+        import json
+        data = {
+            "id": file_id,
+            "title": file_id,
+            "content": "",
+            "hints": top_hints,
+            "no_knowledge_content": False,
+            "sections": sections,
+        }
+        (output_dir / f"{file_id}.json").write_text(json.dumps(data), encoding="utf-8")
+
+    def _write_docs_md_with_top_hints(self, docs_dir, file_id, top_hints, section_hints_map):
+        lines = [f"# {file_id}", ""]
+        if top_hints:
+            lines += [
+                "<details>",
+                "<summary>keywords</summary>",
+                "",
+                ", ".join(top_hints),
+                "",
+                "</details>",
+                "",
+            ]
+        for title, hints in section_hints_map.items():
+            lines += [f"## {title}", ""]
+            if hints:
+                lines += [
+                    "<details>",
+                    "<summary>keywords</summary>",
+                    "",
+                    ", ".join(hints),
+                    "",
+                    "</details>",
+                    "",
+                ]
+        (docs_dir / f"{file_id}.md").write_text("\n".join(lines), encoding="utf-8")
+
+    def _write_hints_file(self, path, entries_by_file):
+        import json
+        path.write_text(
+            json.dumps({"version": "6", "hints": entries_by_file}),
+            encoding="utf-8",
+        )
+
+    def test_pass_all_top_level_consistent(self, tmp_path):
+        """JSON top-level hints == docs MD file-level block == hints file head entry."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json_with_top_hints(
+            kd, "file1", ["fk1", "fk2"],
+            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
+        )
+        self._write_docs_md_with_top_hints(
+            dd, "file1", ["fk1", "fk2"],
+            {"概要": ["s1k"]},
+        )
+        self._write_hints_file(hf, {
+            "file1": [
+                {"title": "file1", "hints": ["fk1", "fk2"]},
+                {"title": "概要", "hints": ["s1k"]},
+            ],
+        })
+        assert self._check(kd, dd, hf) == []
+
+    def test_fail_json_top_hints_differ_from_hints_file(self, tmp_path):
+        """JSON top-level hints ≠ hints file head entry → FAIL."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        # JSON stores wrong top-level hints
+        self._write_json_with_top_hints(
+            kd, "file1", ["wrong"],
+            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
+        )
+        self._write_docs_md_with_top_hints(
+            dd, "file1", ["fk1"],
+            {"概要": ["s1k"]},
+        )
+        self._write_hints_file(hf, {
+            "file1": [
+                {"title": "file1", "hints": ["fk1"]},
+                {"title": "概要", "hints": ["s1k"]},
+            ],
+        })
+        issues = self._check(kd, dd, hf)
+        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
+
+    def test_fail_docs_md_missing_top_hints_block(self, tmp_path):
+        """docs MD lacks the file-level keywords block but hints file expects it → FAIL."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json_with_top_hints(
+            kd, "file1", ["fk1"],
+            [{"id": "s1", "title": "概要", "content": "", "hints": []}],
+        )
+        # docs MD without top-level hints block
+        self._write_docs_md_with_top_hints(
+            dd, "file1", [],
+            {"概要": []},
+        )
+        self._write_hints_file(hf, {
+            "file1": [
+                {"title": "file1", "hints": ["fk1"]},
+            ],
+        })
+        issues = self._check(kd, dd, hf)
+        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
+
+    def test_fail_json_missing_top_hints_field(self, tmp_path):
+        """JSON output lacks `hints` field altogether → FAIL."""
+        import json as _json
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        # Legacy JSON with no `hints` field
+        (kd / "file1.json").write_text(_json.dumps({
+            "id": "file1",
+            "title": "file1",
+            "content": "",
+            "no_knowledge_content": False,
+            "sections": [],
+        }), encoding="utf-8")
+        # hints file expects file-level hints
+        self._write_hints_file(hf, {
+            "file1": [{"title": "file1", "hints": ["fk1"]}],
+        })
+        issues = self._check(kd, dd, hf)
+        assert any("top-level" in i.lower() or "hints" in i.lower() for i in issues), issues
+
+    def test_pass_when_hints_file_uses_file_sentinel_for_xlsx(self, tmp_path):
+        """xlsx: hints file head entry title is "__file__" sentinel; JSON title is "".
+
+        Verify must treat "__file__" as the file-level entry regardless of JSON
+        top-level title value (Phase 21-D session 37 / schema design §3-4).
+        """
+        import json as _json
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        # xlsx-style JSON: title is ""
+        (kd / "xls.json").write_text(_json.dumps({
+            "id": "xls",
+            "title": "",
+            "content": "rows",
+            "hints": ["セキュリティ", "CVE"],
+            "no_knowledge_content": False,
+            "sections": [],
+        }), encoding="utf-8")
+        # docs MD: top-level keywords block (no ## sections)
+        (dd / "xls.md").write_text(
+            "# \n\n<details>\n<summary>keywords</summary>\n\nセキュリティ, CVE\n\n</details>\n\nrows\n",
+            encoding="utf-8",
+        )
+        self._write_hints_file(hf, {
+            "xls": [{"title": "__file__", "hints": ["セキュリティ", "CVE"]}],
+        })
+        assert self._check(kd, dd, hf) == []
+
+    def test_fail_xlsx_json_top_hints_differ_when_sentinel_used(self, tmp_path):
+        """xlsx: JSON top-level hints ≠ __file__ sentinel entry's hints → FAIL."""
+        import json as _json
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        (kd / "xls.json").write_text(_json.dumps({
+            "id": "xls",
+            "title": "",
+            "content": "rows",
+            "hints": ["wrong"],
+            "no_knowledge_content": False,
+            "sections": [],
+        }), encoding="utf-8")
+        (dd / "xls.md").write_text(
+            "# \n\n<details>\n<summary>keywords</summary>\n\nwrong\n\n</details>\n\nrows\n",
+            encoding="utf-8",
+        )
+        self._write_hints_file(hf, {
+            "xls": [{"title": "__file__", "hints": ["セキュリティ"]}],
+        })
+        issues = self._check(kd, dd, hf)
+        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
+
+    def test_pass_when_hints_file_has_no_file_level_entry(self, tmp_path):
+        """hints file head entry title != top-level title → no top-level hints expected."""
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        self._write_json_with_top_hints(
+            kd, "file1", [],
+            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
+        )
+        self._write_docs_md_with_top_hints(
+            dd, "file1", [],
+            {"概要": ["s1k"]},
+        )
+        # hints file head entry is a section title, not the file-level title
+        self._write_hints_file(hf, {
+            "file1": [
+                {"title": "概要", "hints": ["s1k"]},
+            ],
+        })
+        assert self._check(kd, dd, hf) == []
+
+    def test_fail_stray_docs_md_top_hints_without_hints_file_expectation(self, tmp_path):
+        """docs MD has a top-level keywords block, but hints file has no file-level entry → FAIL.
+
+        Three-way consistency must catch drift in either direction.  A stray
+        top-level block in docs MD — without a corresponding hints file entry
+        or JSON top-level hints — is a correctness bug that must surface.
+        """
+        kd = tmp_path / "knowledge"
+        kd.mkdir()
+        dd = tmp_path / "docs"
+        dd.mkdir()
+        hf = tmp_path / "v6.json"
+        # JSON has no top-level hints (empty)
+        self._write_json_with_top_hints(
+            kd, "file1", [],
+            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
+        )
+        # docs MD has a stray top-level keywords block
+        self._write_docs_md_with_top_hints(
+            dd, "file1", ["stray1", "stray2"],
+            {"概要": ["s1k"]},
+        )
+        # hints file has no file-level entry — head is a section entry
+        self._write_hints_file(hf, {
+            "file1": [
+                {"title": "概要", "hints": ["s1k"]},
+            ],
+        })
+        issues = self._check(kd, dd, hf)
+        assert any("top-level" in i.lower() or "stray" in i.lower() or "__file__" in i for i in issues), issues
 
 
 # ---------------------------------------------------------------------------

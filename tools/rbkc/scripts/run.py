@@ -33,10 +33,11 @@ from pathlib import Path
 from scripts.create.classify import FileInfo, classify_sources
 from scripts.create.differ import diff_snapshot, load_snapshot, make_snapshot, save_snapshot
 from scripts.create.docs import generate_docs
-from scripts.create.hints import build_hints_index, lookup_hints as _lookup_hints_kc
+from scripts.create.hints import build_hints_index
 from scripts.create.index import generate_index
 from scripts.create.resolver import collect_asset_refs, copy_assets
 from scripts.create.scan import scan_sources
+from scripts.common.constants import FILE_SENTINEL
 from scripts.common.labels import build_label_map
 from scripts.verify.verify import (
     verify_file,
@@ -71,20 +72,22 @@ def _converter_for(fmt: str, filename: str):
     raise ValueError(f"Unknown format: {fmt!r}")
 
 
-def load_existing_hints(output_dir: Path) -> dict[str, dict[str, list[str]]]:
-    """Load hints from existing RBKC-format knowledge JSON files.
+def load_existing_hints(output_dir: Path) -> dict[str, list[dict]]:
+    """Load hints from existing RBKC-format knowledge JSON files (array form).
 
     Reads all JSON files under *output_dir* that use RBKC format (sections as
-    a list of dicts). KC-format files (sections as a dict) are skipped.
+    a list of dicts). KC-format files (sections as a dict) are skipped.  The
+    returned form matches the hints-file schema so both sources feed the same
+    positional pop() pipeline.
 
     Returns:
-        {file_id: {section_title: hints}} — empty dict if directory is absent
-        or contains no RBKC-format files.
+        {file_id: [{"title", "hints"}, ...]} preserving section order.  Empty
+        dict if directory is absent or contains no RBKC-format files.
     """
     if not output_dir.exists():
         return {}
 
-    result: dict[str, dict[str, list[str]]] = {}
+    result: dict[str, list[dict]] = {}
     for json_path in output_dir.rglob("*.json"):
         try:
             data = json.loads(json_path.read_text(encoding="utf-8"))
@@ -98,45 +101,80 @@ def load_existing_hints(output_dir: Path) -> dict[str, dict[str, list[str]]]:
         if not isinstance(sections, list):
             continue
 
-        section_hints: dict[str, list[str]] = {}
+        entries: list[dict] = []
         for sec in sections:
             if not isinstance(sec, dict):
                 continue
             title = sec.get("title", "")
             hints = sec.get("hints", [])
             if isinstance(hints, list):
-                section_hints[title] = hints
+                entries.append({"title": title, "hints": hints})
 
         if file_id:
-            result[file_id] = section_hints
+            result[file_id] = entries
 
     return result
 
 
-def lookup_hints_with_fallback(
-    existing_hints: dict[str, dict[str, list[str]]],
-    kc_hints_idx: dict[str, dict[str, list[str]]],
-    file_id: str,
-    section_title: str,
-) -> list[str]:
-    """Return hints for a section, preferring hints_idx over existing RBKC hints.
+def _pop_hints_for_title(pending: list[dict], section_title: str) -> list[str]:
+    """Pop the head entry of *pending* if its title matches *section_title*.
 
-    Args:
-        existing_hints: From load_existing_hints() — hints from prior RBKC run.
-        kc_hints_idx: Hints index — from hints/v{version}.json (authoritative) or KC cache.
-        file_id: Knowledge file identifier.
-        section_title: Section title to look up.
+    Hints files use array form (`[{"title", "hints"}, ...]`) so that same-title
+    sections (e.g. h2 `使用方法` and h3 `使用方法`) can have independent hints
+    aligned to source-appearance order.  Callers iterate sections in order and
+    consume the head entry when its title matches.
 
     Returns:
-        List of hints. Checks kc_hints_idx first (authoritative hints file), then
-        falls back to existing_hints (carry-over from prior RBKC run).
+        The hints list of the consumed entry, or [] when pending is empty or
+        the head title differs.  A mismatch leaves *pending* untouched so the
+        positional alignment between source sections and hints entries is
+        preserved — surfacing drift instead of silently skipping.
     """
-    kc_result = _lookup_hints_kc(kc_hints_idx, file_id, section_title)
-    if kc_result:
-        return kc_result
-    if file_id in existing_hints:
-        return existing_hints[file_id].get(section_title, [])
+    if not pending:
+        return []
+    head = pending[0]
+    if head.get("title", "") != section_title:
+        return []
+    pending.pop(0)
+    hints = head.get("hints", [])
+    return hints if isinstance(hints, list) else []
+
+
+def _pop_top_level_hints(pending: list[dict], top_title: str) -> list[str]:
+    """Pop the head entry when it represents the file-level hint entry.
+
+    The head entry is the file-level entry if either:
+    - its ``title`` is the literal ``"__file__"`` sentinel (xlsx: JSON title
+      is empty, so the hints file uses the sentinel to mark file-level hints);
+    - its ``title`` equals the JSON top-level title (rst/md h1).
+
+    Returns:
+        The popped hints list, or [] when no file-level entry is present.
+    """
+    if not pending:
+        return []
+    head_title = pending[0].get("title", "")
+    if head_title == FILE_SENTINEL or head_title == top_title:
+        head = pending.pop(0)
+        hints = head.get("hints", [])
+        return hints if isinstance(hints, list) else []
     return []
+
+
+def _normalize_kc_to_array(
+    kc_hints: dict[str, dict[str, list[str]]],
+) -> dict[str, list[dict]]:
+    """Convert legacy KC-cache dict form to array form used by the hints file.
+
+    KC cache yields `{file_id: {title: hints}}` because it indexes by section
+    title (no same-title support).  We wrap each entry as `{"title", "hints"}`
+    to match the hints file's array schema, preserving the dict insertion order.
+    """
+    result: dict[str, list[dict]] = {}
+    for file_id, title_map in kc_hints.items():
+        entries = [{"title": t, "hints": list(h)} for t, h in title_map.items()]
+        result[file_id] = entries
+    return result
 
 
 def hints_path(repo_root: Path, version: str) -> Path:
@@ -144,9 +182,10 @@ def hints_path(repo_root: Path, version: str) -> Path:
     return repo_root / "tools/rbkc/hints" / f"v{version}.json"
 
 
-def load_hints_file(repo_root: Path, version: str) -> dict[str, dict[str, list[str]]]:
-    """Load hints from hints/v{version}.json.
+def load_hints_file(repo_root: Path, version: str) -> dict[str, list[dict]]:
+    """Load hints from hints/v{version}.json (array form).
 
+    The file schema is `{"version", "hints": {file_id: [{"title", "hints"}, ...]}}`.
     Returns an empty dict when the file does not exist.
     """
     path = hints_path(repo_root, version)
@@ -190,10 +229,10 @@ def _convert_and_write(
     Args:
         fi: FileInfo for the source file.
         output_dir: Output directory for knowledge JSON files.
-        hints_idx: KC cache hints index from _hints_index().
-        existing_hints: Existing RBKC hints from load_existing_hints().
-                        When provided, hints are looked up with carry-over
-                        semantics (existing_hints preferred over hints_idx).
+        hints_idx: Array-form hints index — either hints/v{version}.json or
+                   KC cache normalized via _normalize_kc_to_array().
+        existing_hints: Array-form existing RBKC hints from load_existing_hints().
+                        Used as a fallback when hints_idx has no entry.
         label_map: RST label→title map for :ref: resolution.
     """
     convert = _converter_for(fi.format, fi.source_path.name)
@@ -209,13 +248,27 @@ def _convert_and_write(
     else:
         result = convert(fi.source_path, fi.file_id)
 
+    # Pick primary hints source (hints file / KC cache) per file_id, falling
+    # back to prior-run hints only when the primary has nothing for this file.
+    primary_pending = list(hints_idx.get(fi.file_id, [])) if hints_idx else []
+    fallback_pending: list[dict] = []
+    if not primary_pending and existing_hints is not None:
+        fallback_pending = list(existing_hints.get(fi.file_id, []))
+
+    # Phase 21-D (session 37): the head entry is the file-level hint entry
+    # when its title matches the JSON top-level title OR equals the "__file__"
+    # sentinel (used for xlsx where JSON title is "").  Pop it into top-level
+    # `hints`.  Otherwise top-level `hints` = [].
+    top_hints = _pop_top_level_hints(primary_pending, result.title)
+    if not top_hints and fallback_pending:
+        top_hints = _pop_top_level_hints(fallback_pending, result.title)
+
     sections = []
     for idx, sec in enumerate(result.sections, start=1):
         sid = f"s{idx}"
-        if existing_hints is not None:
-            hints = lookup_hints_with_fallback(existing_hints, hints_idx, fi.file_id, sec.title)
-        else:
-            hints = _lookup_hints_kc(hints_idx, fi.file_id, sec.title)
+        hints = _pop_hints_for_title(primary_pending, sec.title)
+        if not hints and fallback_pending:
+            hints = _pop_hints_for_title(fallback_pending, sec.title)
         sections.append({
             "id": sid,
             "title": sec.title,
@@ -223,12 +276,32 @@ def _convert_and_write(
             "hints": hints,
         })
 
+    # index[] is deterministically derived from top-level hints + sections[]
+    # (see rbkc-json-schema-design.md §2-2 / §2-3). __file__ entry is prepended
+    # only when the file has top-level hints, since it represents the file-level
+    # search unit.
+    index_entries: list[dict] = []
+    if top_hints:
+        index_entries.append({
+            "id": "__file__",
+            "title": result.title,
+            "hints": top_hints,
+        })
+    for sec in sections:
+        index_entries.append({
+            "id": sec["id"],
+            "title": sec["title"],
+            "hints": sec["hints"],
+        })
+
     data = {
         "id": fi.file_id,
         "title": result.title,
         "content": getattr(result, "content", ""),
+        "hints": top_hints,
         "no_knowledge_content": result.no_knowledge_content,
         "sections": sections,
+        "index": index_entries,
     }
 
     out_path = output_dir / fi.output_path
@@ -291,8 +364,8 @@ def create(
 
     sources = scan_sources(version, repo_root, files)
     file_infos = classify_sources(sources, version, repo_root)
-    # Prefer persistent hints file over KC cache (KC cache may not exist at create time)
-    hints_idx = load_hints_file(repo_root, version) or _hints_index(repo_root, version)
+    # Prefer persistent hints file (array form) over KC cache (normalized to array form)
+    hints_idx = load_hints_file(repo_root, version) or _normalize_kc_to_array(_hints_index(repo_root, version))
 
     # Build RST label map for :ref: resolution in converters
     from scripts.create.scan import _source_roots

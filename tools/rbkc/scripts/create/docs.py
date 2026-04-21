@@ -84,6 +84,16 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     """Full MD for normal knowledge files."""
     lines = [f"# {data.get('title', '')}", ""]
 
+    top_hints = data.get("hints", [])
+    if top_hints:
+        lines.append("<details>")
+        lines.append("<summary>keywords</summary>")
+        lines.append("")
+        lines.append(", ".join(top_hints))
+        lines.append("")
+        lines.append("</details>")
+        lines.append("")
+
     top_content = data.get("content", "")
     if top_content:
         lines.append(_rewrite_asset_links(top_content, docs_md_path, knowledge_dir))
