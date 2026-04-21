@@ -19,6 +19,13 @@
 
 * `nablarch.fw.handler.ProcessResidentHandler`
 
+<details>
+<summary>keywords</summary>
+
+プロセス常駐化ハンドラ, ProcessResidentHandler, 常駐起動型バッチ, 定期監視, データソース監視, 一定間隔繰り返し実行, 後続ハンドラキュー, ProcessResidentHandler, nablarch.fw.handler.ProcessResidentHandler, プロセス常駐化ハンドラ, 常駐起動型バッチ
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -28,12 +35,26 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven
+
+</details>
+
 ## 制約
 
 本ハンドラは、リトライハンドラよりも後ろに設定すること
 本ハンドラで実行時例外を捕捉した場合、リトライ可能例外( `RetryableException` )でラップしてから再送出し、
 プロセスの継続制御を リトライハンドラ に委譲する。
 このため、このハンドラはリトライハンドラより後に設定する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+ProcessResidentHandler, RetryableException, リトライハンドラ設定順序, retry_handler, 制約, ハンドラ設定順
+
+</details>
 
 ## データの監視間隔を設定する
 
@@ -51,6 +72,13 @@
   <!-- その他のプロパティは省略 -->
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デフォルト1000ms
+
+</details>
 
 ## プロセス常駐化ハンドラの終了方法
 
@@ -80,6 +108,13 @@
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, process_stop_handler, 常駐ハンドラ終了
+
+</details>
+
 ## 後続ハンドラで発生した例外の扱い
 
 このハンドラでは、後続のハンドラで発生した例外の種類に応じて、処理を継続するか、終了するかが切り替わる。
@@ -107,3 +142,10 @@
 
 上記以外の例外
 例外情報をログに記録し、リトライ可能例外 ( `RetryableException` )でラップし再送出する。
+
+<details>
+<summary>keywords</summary>
+
+ServiceUnavailable, RetryableException, ProcessAbnormalEnd, abnormalEndExceptions, RetryUtil, 例外ハンドリング, サービス閉塞中, リトライ可能例外, プロセス異常終了
+
+</details>

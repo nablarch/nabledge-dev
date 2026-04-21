@@ -13,13 +13,28 @@
       "id": "s2",
       "title": "ハンドラクラス名",
       "content": "* `nablarch.fw.hotdeploy.HotDeployHandler`",
-      "hints": []
+      "hints": [
+        "HotDeployHandler",
+        "nablarch.fw.hotdeploy.HotDeployHandler",
+        "ホットデプロイ",
+        "クラス再ロード",
+        "開発環境専用",
+        "本番環境禁止",
+        "リクエスト単体テスト"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web-hotdeploy</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-fw-web-hotdeploy",
+        "com.nablarch.framework",
+        "モジュール",
+        "Maven依存関係",
+        "制約",
+        "ホットデプロイハンドラ制約"
+      ]
     },
     {
       "id": "s4",
@@ -31,7 +46,14 @@
       "id": "s5",
       "title": "ホットデプロイ対象のパッケージを指定する",
       "content": "ホットデプロイ対象となるパッケージは、`targetPackages` プロパティに設定する。\n\n設定例を以下に示す。\n\n```xml\n<component class=\"nablarch.fw.hotdeploy.HotDeployHandler\">\n  <property name=\"targetPackages\">\n    <list>\n      <value>please.change.me.web.action</value>\n      <value>please.change.me.web.form</value>\n    </list>\n  </property>\n</component>\n```\n> **Important:** 以下に示す理由により、エンティティクラスはホットデプロイ対象にしてはならない。 * リクエスト毎に対象パッケージ内の全てのクラスが再ロードされるため、 エンティティクラスのような頻繁に変更されないクラスもホットデプロイ対象にしてしまうとレスポンス速度の低下につながる恐れがある。 * リクエスト毎にクラスローダが変わるため、 session_store を使用した場合などでエンティティクラスのキャストに失敗する場合がある。",
-      "hints": []
+      "hints": [
+        "targetPackages",
+        "ホットデプロイ対象パッケージ",
+        "エンティティクラス除外",
+        "クラスローダ",
+        "session_store",
+        "キャスト失敗"
+      ]
     }
   ]
 }

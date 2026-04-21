@@ -11,6 +11,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+静的データキャッシュ, ヒープキャッシュ, Full GC, キャッシュ機能, マルチスレッド同期不要
+
+</details>
+
 ## 任意のデータをキャッシュできる
 
 この機能が提供するインタフェースを実装することで、容易に任意のデータをキャッシュできる。
@@ -30,7 +37,21 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-core, モジュール依存関係, com.nablarch.framework
+
+</details>
+
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue, BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング
+
+</details>
 
 ## 任意のデータをキャッシュする
 

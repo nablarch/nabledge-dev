@@ -45,3 +45,10 @@ LettuceRedisClient については 構成ごとに用意されたクライアン
   <property name="key" ref="pingtest" />
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+RedisHealthChecker, LettuceRedisClient, HealthChecker, HealthCheckEndpointHandler, healthCheckers, client, key, Redisヘルスチェック, ヘルスチェック設定, Lettuceアダプタ
+
+</details>

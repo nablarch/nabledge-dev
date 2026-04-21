@@ -13,19 +13,38 @@
       "id": "s2",
       "title": "インターセプタクラス名",
       "content": "* `nablarch.fw.web.interceptor.OnErrors`",
-      "hints": []
+      "hints": [
+        "OnErrors",
+        "nablarch.fw.web.interceptor.OnErrors",
+        "例外インターセプタ",
+        "レスポンス指定",
+        "業務アクション例外処理"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-fw-web",
+        "モジュール依存関係"
+      ]
     },
     {
       "id": "s4",
       "title": "OnErrorsを使用する",
       "content": "`OnErrors` アノテーションを、\n業務アクションのリクエストを処理するメソッドに対して設定する。\n\nそれぞれの例外に対するレスポンスの指定は、 `OnError` を使用して行う。\n\n業務アクションのメソッド内で以下の例外を送出する場合の実装例を示す。\n\n* `ApplicationException` (業務エラー)\n* `AuthenticationException` (認証エラー)\n* `UserLockedException` (アカウントロックエラー。 `AuthenticationException` のサブクラス)\n\n```java\n@OnErrors({\n        @OnError(type = UserLockedException.class, path = \"/WEB-INF/view/login/locked.jsp\"),\n        @OnError(type = AuthenticationException.class, path = \"/WEB-INF/view/login/index.jsp\"),\n        @OnError(type = ApplicationException.class, path = \"/WEB-INF/view/login/index.jsp\")\n})\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理は省略\n}\n```\n> **Important:** extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` の定義順に例外を処理するため、 継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。",
-      "hints": []
+      "hints": [
+        "@OnErrors",
+        "@OnError",
+        "nablarch.fw.web.interceptor.OnError",
+        "UserLockedException",
+        "AuthenticationException",
+        "ApplicationException",
+        "例外ハンドリング",
+        "継承関係",
+        "サブクラス優先定義"
+      ]
     }
   ]
 }

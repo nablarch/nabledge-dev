@@ -25,19 +25,57 @@
       "id": "s4",
       "title": "ステータスコード",
       "content": "`RestTestSupport` にある下記のメソッドを呼び出すことで、\\\nレスポンスのHTTPステータスコードが想定通りであることを確認する。\n\n```java\nvoid assertStatusCode(String message, HttpResponse.Status expected, HttpResponse response);\n```\n引数には、以下の値を引き渡す。\n\n* アサート失敗時のメッセージ\n* 期待するステータス( `HttpResponse.Status` のEnum)\n* 内蔵サーバから返却された `HttpResponse` インスタンス\n\n\n期待するステータスコードとレスポンスのステータスコードが一致しなかった場合\\\nアサート失敗となる。",
-      "hints": []
+      "hints": [
+        "RestTestSupport",
+        "assertStatusCode",
+        "HttpResponse.Status",
+        "HttpResponse",
+        "ステータスコード確認",
+        "HTTPレスポンス検証"
+      ]
     },
     {
       "id": "s5",
       "title": "レスポンスボディ",
       "content": "レスポンスボディの検証についてはフレームワークでは仕組みを用意していない。\n各プロジェクトの要件に合わせて [JSONAssert(外部サイト、英語)](https://jsonassert.skyscreamer.org/) や\n[json-path-assert(外部サイト、英語)](https://github.com/json-path/JsonPath/tree/master/json-path-assert) 、\n[XMLUnit(外部サイト、英語)](https://github.com/xmlunit/user-guide/wiki) などのライブラリを使用すること。\n\n> **Tip:** \\ RESTfulウェブサービスのブランクプロジェクト\\ を作成した場合 上記の [JSONAssert(外部サイト、英語)](https://jsonassert.skyscreamer.org/) 、 [json-path-assert(外部サイト、英語)](https://github.com/json-path/JsonPath/tree/master/json-path-assert) 、 [XMLUnit(外部サイト、英語)](https://github.com/xmlunit/user-guide/wiki) がpom.xmlに記載されている。 必要に応じてライブラリの削除や差し替えを行うこと。\n**レスポンスボディ検証の補助機能**\n\nレスポンスボディの検証をする際に、期待されるボディをJSONファイルやXMLファイルとして用意したい場合がある。\nJSONAssertのように外部ライブラリが期待値として `String` しか引数に受け付けない場合に対応するため\n`RestTestSupport` にはファイルを読み込み `String` に変換するメソッドを用意している。\n\n```java\nString readTextResource(String fileName)\n```\nこのメソッドでは、以下のようにテストクラスと同じ名前のディレクトリにあるリソースから\n引数で指定したファイル名でファイルを読み込み `String` に変換する。\n\n<table>\n<thead>\n<tr>\n  <th>ファイルの種類</th>\n  <th>配置ディレクトリ</th>\n  <th>ファイル名</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>テストクラスソースファイル</td>\n  <td><PROJECT_ROOT>/test/java/com/example/</td>\n  <td>SampleTest.java</td>\n</tr>\n<tr>\n  <td>レスポンスボディの期待値ファイル</td>\n  <td><PROJECT_ROOT>/test/resources/com/example/SampleTest</td>\n  <td>response.json(引数のfileNameに指定)</td>\n</tr>\n</tbody>\n</table>",
-      "hints": []
+      "hints": [
+        "RestTestSupport",
+        "readTextResource",
+        "JSONAssert",
+        "json-path-assert",
+        "XMLUnit",
+        "レスポンスボディ検証",
+        "JSONアサート"
+      ]
     },
     {
       "id": "s6",
       "title": "各種設定値",
       "content": "環境設定に依存する設定値については、コンポーネント設定ファイルで変更できる。\\\n設定可能な項目を以下に示す。\n\n# コンポーネント設定ファイル設定項目一覧\n\n<table>\n<thead>\n<tr>\n  <th>設定項目名</th>\n  <th>説明</th>\n  <th>デフォルト値</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>webBaseDir</td>\n  <td>ウェブアプリケーションのルートディレクトリ\\ [#]_\\</td>\n  <td>src/main/webapp</td>\n</tr>\n<tr>\n  <td>webFrontControllerKey</td>\n  <td>Webフロントコントローラーのリポジトリキー\\ [#]_\\</td>\n  <td>webFrontController</td>\n</tr>\n</tbody>\n</table>\n\n.. [#]\nPJ共通のwebモジュールが存在する場合、このプロパティにカンマ区切りでディレクトリを設定する。\n複数指定された場合、先頭から順にリソースが読み込まれる。\n\n以下に例を示す。\n\n```xml\n<component name=\"restTestConfiguration\" class=\"nablarch.test.core.http.RestTestConfiguration\">\n  <property name=\"webBaseDir\" value=\"/path/to/web-a/,/path/to/web-common\"/>\n```\nこの場合、web-a、web-commonの順にリソースが探索される。\n\n.. [#]\nウェブアプリケーション実行基盤とウェブサービス実行基盤をひとつのWarで実行する場合など\nWebフロントコントローラー をデフォルトの\"webFrontController\"以外の名前で\nコンポーネント登録する場合がある。\nそのような場合は、このプロパティにウェブサービスで使用するWebフロントコントローラーのリポジトリキーを設定することで\n内蔵サーバで実行されるハンドラを制御できる。\n\n以下に例を示す。\n\nウェブアプリケーション実行基盤用のWebフロントコントローラー( `webFrontController` )と\nウェブサービス実行基盤用のWebフロントコントローラー( `jaxrsController` )が登録されているコンポーネント定義。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\"/>\n      <component class=\"nablarch.fw.handler.GlobalErrorHandler\"/>\n      <component class=\"nablarch.common.handler.threadcontext.ThreadContextClearHandler\"/>\n      <component class=\"nablarch.fw.web.handler.HttpResponseHandler\"/>\n      ・\n      ・\n      ・\n      (略)\n    </list>\n  </property>\n</component>\n\n<component name=\"jaxrsController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <component class=\"nablarch.fw.web.handler.HttpCharacterEncodingHandler\"/>\n      <component class=\"nablarch.fw.handler.GlobalErrorHandler\"/>\n      <component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\"/>\n      ・\n      ・\n      ・\n      (略)\n    </list>\n  </property>\n</component>\n```\nデフォルト設定でRESTfulウェブサービス実行基盤向けテスティングフレームワークを使用すると\n\"webFrontController\"が使用されるため、ウェブアプリケーション向けのWebフロントコントローラーが実行される。\n以下のように設定を上書きすることでウェブサービス向けのWebフロントコントローラーを使用できる。\n\n```xml\n<import file=\"nablarch/test/rest-request-test.xml\"/>\n<!--  デフォルトのコンポーネント定義をimport後に上書きする。-->\n<component name=\"restTestConfiguration\" class=\"nablarch.test.core.http.RestTestConfiguration\">\n  <property name=\"webFrontControllerKey\" value=\"jaxrsController\"/>\n```",
-      "hints": []
+      "hints": [
+        "SimpleRestTestSupport",
+        "RestTestSupport",
+        "RestMockHttpRequest",
+        "DbAccessTestSupport",
+        "HttpServer",
+        "HttpRequest",
+        "nablarch-testing-rest",
+        "nablarch-testing-jetty12",
+        "nablarch-testing-default-configuration",
+        "リクエスト単体テスト",
+        "内蔵サーバ",
+        "RESTfulウェブサービステスト",
+        "sendRequest",
+        "RestTestConfiguration",
+        "webBaseDir",
+        "webFrontControllerKey",
+        "nablarch.test.core.http.RestTestConfiguration",
+        "Webフロントコントローラー設定",
+        "jaxrsController",
+        "rest-request-test.xml",
+        "WebFrontController",
+        "nablarch.fw.web.servlet.WebFrontController"
+      ]
     }
   ]
 }

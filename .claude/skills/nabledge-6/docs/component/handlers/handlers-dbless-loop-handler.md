@@ -13,6 +13,13 @@
 
 * `nablarch.fw.handler.DbLessLoopHandler`
 
+<details>
+<summary>keywords</summary>
+
+ループ制御ハンドラ, DbLessLoopHandler, 繰り返し実行, データリーダ, 後続ハンドラ, DBなしバッチ, 処理対象データ, DbLessLoopHandler, nablarch.fw.handler.DbLessLoopHandler, ループ制御ハンドラ, DBなしバッチ, 繰り返し実行, データリーダ, loop_handler
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -21,6 +28,13 @@
   <artifactId>nablarch-fw-standalone</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, com.nablarch.framework, Maven依存関係, モジュール
+
+</details>
 
 ## 制約
 

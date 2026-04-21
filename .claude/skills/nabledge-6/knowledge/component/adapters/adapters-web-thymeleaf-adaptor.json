@@ -13,13 +13,29 @@
       "id": "s2",
       "title": "モジュール一覧",
       "content": "```xml\n<!-- ウェブアプリケーション Thymeleafアダプタ -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-web-thymeleaf-adaptor</artifactId>\n</dependency>\n```\n> **Tip:** Thymeleafのバージョン3.1.1.RELEASEを使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
-      "hints": []
+      "hints": [
+        "nablarch-web-thymeleaf-adaptor",
+        "com.nablarch.integration",
+        "Thymeleafアダプタ",
+        "モジュール依存関係",
+        "テンプレートエンジン"
+      ]
     },
     {
       "id": "s3",
       "title": "ウェブアプリケーション Thymeleafアダプタを使用するための設定を行う",
       "content": "本アダプタを使用するためには、コンポーネント設定ファイルで\n`ThymeleafResponseWriter` を\\\n`HttpResponseHandler` へ設定する。\n\n`ThymeleafResponseWriter` にはThymeleafが提供する `TemplateEngine` を設定する必要がある。\n\nコンポーネント設定ファイルの設定例を以下に示す。\n\n```xml\n<component name=\"templateEngine\" class=\"org.thymeleaf.TemplateEngine\" autowireType=\"None\">\n  <property name=\"templateResolver\">\n    <component class=\"org.thymeleaf.templateresolver.ClassLoaderTemplateResolver\">\n      <property name=\"prefix\" value=\"template/\"/>\n    </component>\n  </property>\n</component>\n\n<component name=\"thymeleafResponseWriter\"\n           class=\"nablarch.fw.web.handler.responsewriter.thymeleaf.ThymeleafResponseWriter\"\n           autowireType=\"None\">\n  <property name=\"templateEngine\" ref=\"templateEngine\" />\n</component>\n\n<component name=\"httpResponseHandler\"\n           class=\"nablarch.fw.web.handler.HttpResponseHandler\">\n  <property name=\"customResponseWriter\" ref=\"thymeleafResponseWriter\"/>\n  <!-- その他の設定は省略 -->\n</component>\n```\n> **Tip:** `ITemplateResolver` インタフェースの実装クラスに、 `org.thymeleaf.templateresolver.ServletContextTemplateResolver` が存在するが、 以下の理由により、システムリポジトリ にコンポーネントとして登録できない。 * コンストラクタ引数に `jakarta.servlet.ServletContext` が必須である(デフォルトコンストラクタを持たない)。 * システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず、ファクトリ によるオブジェクト生成もできない。 このため、 `ServletContextTemplateResolver` ではなく、 `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。",
-      "hints": []
+      "hints": [
+        "ThymeleafResponseWriter",
+        "HttpResponseHandler",
+        "TemplateEngine",
+        "ITemplateResolver",
+        "ClassLoaderTemplateResolver",
+        "ServletContextTemplateResolver",
+        "templateEngine",
+        "customResponseWriter",
+        "Thymeleaf設定"
+      ]
     },
     {
       "id": "s4",
@@ -31,7 +47,22 @@
       "id": "s5",
       "title": "テンプレートエンジンを使用する",
       "content": "テンプレートエンジンを使用するには、テンプレートファイルを作成、配置する必要がある。\n\nテンプレートファイルを配置する場所は `TemplateEngine` の設定によって異なる。\n前節で示した設定例の場合、テンプレートファイルはクラスパスからロードされる。\nまた、 `ClassLoaderTemplateResolver` のプロパティ `prefix` に `template/` \\\nというようにプレフィックスが設定されているので、\nクラスパス上の `template` ディレクトリ配下にテンプレートファイルを配置することになる。\n\n配置したテンプレートを使ってレスポンスを出力するには、テンプレートファイルへのパスを指定した `HttpResponse` を\\\nアクションクラスの戻り値として返却する。\n\n例えば、 `src/main/resources/template` 配下に、`index.html` というテンプレートファイルを配置したとする。\nこの場合、このテンプレートファイルはクラスパス上では `template/index.html` に位置するので、\nアクションクラスで、このパスを指定した `HttpResponse` を返却する。\n\n先の設定例のように、プレフィックスの指定をしている場合は、プレフィックスを省略したパスを指定する。\n\n```java\nreturn new HttpResponse(\"index.html\");\n```\nプレフィックスを指定しない場合は、パスを省略せずそのまま指定する。\n\n```java\nreturn new HttpResponse(\"template/index.html\");\n```\nこれにより、配置したテンプレートファイルを用いてレスポンスが出力される。",
-      "hints": []
+      "hints": [
+        "ThymeleafResponseWriter",
+        "HttpResponse",
+        "pathPattern",
+        "処理対象判定",
+        "サーブレットフォワード",
+        ".html",
+        "コンテンツパス",
+        "サフィックス省略",
+        "TemplateEngine",
+        "ClassLoaderTemplateResolver",
+        "HttpResponse",
+        "prefix",
+        "テンプレートファイル配置",
+        "テンプレートパス指定"
+      ]
     }
   ]
 }

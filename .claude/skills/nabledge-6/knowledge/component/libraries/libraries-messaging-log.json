@@ -13,13 +13,46 @@
       "id": "s2",
       "title": "メッセージングログの出力方針",
       "content": "メッセージングログは、アプリケーション全体のログ出力を行うアプリケーションログに出力する。\n\n| ログレベル | ロガー名 |\n|---|---|\n| INFO | MESSAGING |\n上記出力方針に対するログ出力の設定例を下記に示す。\n\nlog.propertiesの設定例\n```properties\nwriterNames=appLog\n\n# アプリケーションログの出力先\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.encoding=UTF-8\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=MESSAGING,ROO\n\n# アプリケーションログの設定\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\n# メッセージングログの設定\nloggers.MESSAGING.nameRegex=MESSAGING\nloggers.MESSAGING.level=INFO\nloggers.MESSAGING.writerNames=appLog\n```\napp-log.propertiesの設定例\n```properties\n# MessagingLogFormatter\n#messagingLogFormatter.className=\n#messagingLogFormatter.maskingChar=\n#messagingLogFormatter.maskingPatterns=\n# MOMメッセージング用フォーマット\nmessagingLogFormatter.sentMessageFormat=@@@@ SENT MESSAGE @@@@\\\n                                          \\n\\tthread_name    = [$threadName$]\\\n                                          \\n\\tmessage_id     = [$messageId$]\\\n                                          \\n\\tdestination    = [$destination$]\\\n                                          \\n\\tcorrelation_id = [$correlationId$]\\\n                                          \\n\\treply_to       = [$replyTo$]\\\n                                          \\n\\ttime_to_live   = [$timeToLive$]\\\n                                          \\n\\tmessage_body   = [$messageBody$]\nmessagingLogFormatter.receivedMessageFormat=@@@@ RECEIVED MESSAGE @@@@\\\n                                              \\n\\tthread_name    = [$threadName$]\\\n                                              \\n\\tmessage_id     = [$messageId$]\\\n                                              \\n\\tdestination    = [$destination$]\\\n                                              \\n\\tcorrelation_id = [$correlationId$]\\\n                                              \\n\\treply_to       = [$replyTo$]\\\n                                              \\n\\tmessage_body   = [$messageBody$]\n# HTTPメッセージング用フォーマット\nmessagingLogFormatter.httpSentMessageFormat=@@@@ HTTP SENT MESSAGE @@@@\\\n                                              \\n\\tthread_name    = [$threadName$]\\\n                                              \\n\\tmessage_id     = [$messageId$]\\\n                                              \\n\\tdestination    = [$destination$]\\\n                                              \\n\\tcorrelation_id = [$correlationId$]\\\n                                              \\n\\tmessage_header = [$messageHeader$]\\\n                                              \\n\\tmessage_body   = [$messageBody$]\nmessagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\\\n                                                  \\n\\tthread_name    = [$threadName$]\\\n                                                  \\n\\tmessage_id     = [$messageId$]\\\n                                                  \\n\\tdestination    = [$destination$]\\\n                                                  \\n\\tcorrelation_id = [$correlationId$]\\\n                                                  \\n\\tmessage_header = [$messageHeader$]\\\n                                                  \\n\\tmessage_body   = [$messageBody$]\n```",
-      "hints": []
+      "hints": [
+        "メッセージングログ出力方針",
+        "ログレベル INFO",
+        "ロガー名 MESSAGING",
+        "アプリケーションログ出力",
+        "log.properties設定",
+        "メッセージングログ設定例"
+      ]
     },
     {
       "id": "s3",
       "title": "使用方法",
       "content": "",
-      "hints": []
+      "hints": [
+        "MessagingLogFormatter",
+        "messagingLogFormatter.className",
+        "messagingLogFormatter.maskingPatterns",
+        "messagingLogFormatter.maskingChar",
+        "messagingLogFormatter.sentMessageFormat",
+        "messagingLogFormatter.receivedMessageFormat",
+        "messagingLogFormatter.httpSentMessageFormat",
+        "messagingLogFormatter.httpReceivedMessageFormat",
+        "メッセージマスキング設定",
+        "MOMメッセージングフォーマット",
+        "HTTPメッセージングフォーマット",
+        "メッセージボディISO-8859-1",
+        "MessagingJsonLogFormatter",
+        "JSON構造化ログ",
+        "messagingLogFormatter.structuredMessagePrefix",
+        "messagingLogFormatter.sentMessageTargets",
+        "messagingLogFormatter.receivedMessageTargets",
+        "messagingLogFormatter.httpSentMessageTargets",
+        "messagingLogFormatter.httpReceivedMessageTargets",
+        "messagingLogFormatter.sentMessageLabel",
+        "messagingLogFormatter.receivedMessageLabel",
+        "messagingLogFormatter.httpSentMessageLabel",
+        "messagingLogFormatter.httpReceivedMessageLabel",
+        "JsonLogFormatter",
+        "メッセージングログJSON形式出力"
+      ]
     },
     {
       "id": "s4",

@@ -13,7 +13,17 @@
       "id": "s2",
       "title": "機能概要",
       "content": "",
-      "hints": []
+      "hints": [
+        "@CheckRole",
+        "CheckRole",
+        "認可チェック",
+        "ロールベースアクセス制御",
+        "ロール割り当て",
+        "permission_check",
+        "認可判定",
+        "BasicRoleEvaluator",
+        "使い分け"
+      ]
     },
     {
       "id": "s3",
@@ -37,13 +47,43 @@
       "id": "s6",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth-session</artifactId>\n</dependency>\n<!-- デフォルトコンフィグレーションを利用する場合 -->\n<dependency>\n  <groupId>com.nablarch.configuration</groupId>\n  <artifactId>nablarch-main-default-configuration</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-common-auth",
+        "nablarch-common-auth-session",
+        "nablarch-main-default-configuration",
+        "モジュール",
+        "依存関係"
+      ]
     },
     {
       "id": "s7",
       "title": "使用方法",
       "content": "",
-      "hints": []
+      "hints": [
+        "@CheckRole",
+        "CheckRole",
+        "BasicRoleEvaluator",
+        "SessionStoreUserRoleResolver",
+        "CheckRoleUtil",
+        "checkRole",
+        "checkRoleAllOf",
+        "checkRoleAnyOf",
+        "CheckRoleLogger",
+        "SessionStoreUserRoleUtil",
+        "SessionUtil",
+        "Forbidden",
+        "BasicApplicationInitializer",
+        "userRoleResolver",
+        "targetPackage",
+        "targetClassPattern",
+        "interceptorsOrder",
+        "anyOf",
+        "ロール割り当て",
+        "セッションストア",
+        "JSP表示制御",
+        "アノテーション設定確認",
+        "プログラム判定"
+      ]
     },
     {
       "id": "s8",
@@ -79,13 +119,37 @@
       "id": "s13",
       "title": "仕組み",
       "content": "ここでは、アノテーションによる認可チェックの仕組みについて説明する。\n\n![](assets/libraries-role-check/architecture.png)\nアノテーションを用いたチェック処理の実行は、Nablarchの `インターセプタ` の仕組みを利用して実現している。\n`CheckRole` アノテーションは、このインターセプタを実装したものとなっている。\n\n`CheckRole` と `CheckRoleUtil` 自体は直接認可チェックは行わず、 `RoleEvaluator` に処理を委譲する。\nこのとき、 `RoleEvaluator` のインスタンスは `SystemRepository` から `roleEvaluator` という名前で取得したものを使用する。\nまた、チェック処理に渡すユーザIDは、 `ThreadContext` の `getUserId` メソッドで取得したものを使用する。\n\n`RoleEvaluator` のデフォルトの実装クラスとして、本認可チェックでは `BasicRoleEvaluator` というクラスを提供している。\nこのクラスは、ユーザに紐づくロールと引数で渡されたロールとを比較し、条件を満たすかどうかを判定するシンプルな作りとなっている。\nなお、ユーザに紐づくロールの解決は `UserRoleResolver` に委譲している。\n\n`UserRoleResolver` のデフォルト実装としては、　`SessionStoreUserRoleResolver` を提供している。\nこのクラスは、セッションストアに保存された情報でユーザのロールを解決する仕組みとなっている。",
-      "hints": []
+      "hints": [
+        "RoleEvaluator",
+        "BasicRoleEvaluator",
+        "UserRoleResolver",
+        "SessionStoreUserRoleResolver",
+        "CheckRole",
+        "CheckRoleUtil",
+        "SystemRepository",
+        "ThreadContext",
+        "Interceptor",
+        "認可チェックの仕組み",
+        "インターセプタ",
+        "ロール解決",
+        "roleEvaluator"
+      ]
     },
     {
       "id": "s14",
       "title": "拡張方法",
       "content": "前述の仕組みの説明から、 `RoleEvaluator` または `UserRoleResolver` の実体を差し替えることで任意の処理に拡張できることがわかる。\n\n`RoleEvaluator` の実体の差し替えは、 `RoleEvaluator` を実装した独自クラスを作成し、そのクラスを `roleEvaluator` という名前でコンポーネント登録することで実現できる。\n\n```xml\n<component name=\"roleEvaluator\" class=\"com.example.CustomRoleEvaluator\" />\n```\n`RoleEvaluator` の実体には `BasicRoleEvaluator` を使いつつ、 `UserRoleResolver` の実体だけを差し替えたい場合は、 `BasicRoleEvaluator` の `userRoleResolver` プロパティに設定するコンポーネントを差し替えればいい。\nデフォルトコンフィグレーションを利用している場合は、 `userRoleResolver` という名前のコンポーネントを設定するように定義されているので、同じ名前で独自クラスのコンポーネントを定義することで差し替えができる。\n\n```xml\n<component name=\"userRoleResolver\" class=\"com.example.CustomUserRoleResolver\" />\n```",
-      "hints": []
+      "hints": [
+        "RoleEvaluator",
+        "UserRoleResolver",
+        "BasicRoleEvaluator",
+        "SessionStoreUserRoleResolver",
+        "roleEvaluator",
+        "userRoleResolver",
+        "カスタマイズ",
+        "拡張",
+        "差し替え"
+      ]
     }
   ]
 }

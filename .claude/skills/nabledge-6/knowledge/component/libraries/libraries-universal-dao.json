@@ -13,7 +13,88 @@
       "id": "s2",
       "title": "機能概要",
       "content": "",
-      "hints": []
+      "hints": [
+        "BLOBデータ登録",
+        "バイナリデータ",
+        "大容量バイナリデータ",
+        "Oracle BLOB",
+        "database-binary_column",
+        "CLOBデータ登録",
+        "テキストデータ",
+        "大容量テキストデータ",
+        "Oracle CLOB",
+        "database-clob_column",
+        "SimpleDbTransactionManager",
+        "UniversalDao.Transaction",
+        "個別トランザクション",
+        "別トランザクション実行",
+        "connectionFactory",
+        "transactionFactory",
+        "dbTransactionName",
+        "ConnectionFactory",
+        "TransactionFactory",
+        "DatabaseMetaDataExtractor",
+        "java.sql.DatabaseMetaData",
+        "シノニム",
+        "主キー情報取得",
+        "databaseMetaDataExtractor",
+        "権限問題",
+        "主キー検索",
+        "件数取得SQL",
+        "SELECT COUNT(*)",
+        "convertCountSql",
+        "Dialect",
+        "H2Dialect",
+        "ページング",
+        "ORDER BY",
+        "カスタムダイアレクト",
+        "sqlMap",
+        "StatementFactory",
+        "@Entity",
+        "@Table",
+        "@Access",
+        "@Column",
+        "@Id",
+        "@Version",
+        "@Temporal",
+        "@GeneratedValue",
+        "@SequenceGenerator",
+        "@TableGenerator",
+        "楽観ロック",
+        "自動採番",
+        "シーケンス採番",
+        "テーブル採番",
+        "sequenceName",
+        "pkColumnValue",
+        "generator",
+        "strategy",
+        "Dialect",
+        "java.lang.String",
+        "java.lang.Short",
+        "java.lang.Integer",
+        "java.lang.Long",
+        "java.math.BigDecimal",
+        "java.lang.Boolean",
+        "java.util.Date",
+        "java.sql.Date",
+        "java.sql.Timestamp",
+        "java.time.LocalDate",
+        "java.time.LocalDateTime",
+        "byte[]",
+        "@Temporal",
+        "Beanデータタイプ",
+        "検索結果マッピング",
+        "UniversalDAO Bean型",
+        "バイナリデータ",
+        "ユニバーサルDAO",
+        "O/Rマッパー",
+        "CRUD",
+        "Beanマッピング",
+        "Jakarta Persistence",
+        "共通項目自動設定",
+        "doma_adaptor",
+        "@Table"
+      ]
     },
     {
       "id": "s3",
@@ -31,7 +112,11 @@
       "id": "s5",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-dao</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-common-dao",
+        "com.nablarch.framework",
+        "Maven依存関係"
+      ]
     },
     {
       "id": "s6",
@@ -43,73 +128,149 @@
       "id": "s7",
       "title": "ユニバーサルDAOを使うための設定を行う",
       "content": "ユニバーサルDAOを使うためには、 データベースアクセス(JDBCラッパー) の設定に加えて、\n`BasicDaoContextFactory` の設定をコンポーネント定義に追加する。\n\n```xml\n<!-- コンポーネント名は\"daoContextFactory\"で設定する。 -->\n<component name=\"daoContextFactory\" class=\"nablarch.common.dao.BasicDaoContextFactory\" />\n```",
-      "hints": []
+      "hints": [
+        "BasicDaoContextFactory",
+        "daoContextFactory",
+        "コンポーネント定義",
+        "初期設定"
+      ]
     },
     {
       "id": "s8",
       "title": "任意のSQL(SQLファイル)で検索する",
       "content": "任意のSQLで検索したい場合は、データベースアクセスの SQLをファイルで管理する と同様に、\nSQLファイルを作成し、SQL IDを指定して検索する。\n\n```java\nUniversalDao.findAllBySqlFile(User.class, \"FIND_BY_NAME\");\n```\nSQLファイルは、検索結果をマッピングするBeanから導出する。\n上の例のUser.classがsample.entity.Userの場合、\nSQLファイルのパスは、クラスパス配下のsample/entity/User.sqlとなる。\n\nSQL IDに「#」が含まれると、「SQLファイルのパス#SQL ID」と解釈する。\n下の例では、SQLファイルのパスがクラスパス配下のsample/entity/Member.sql、\nSQL IDがFIND_BY_NAMEとなる。\n\n```java\nUniversalDao.findAllBySqlFile(GoldUser.class, \"sample.entity.Member#FIND_BY_NAME\");\n```\n> **Tip:** 「#」を含めた指定は、機能単位（Actionハンドラ単位）にSQLを集約したい場合などに使用できる。 ただし、指定が煩雑になるデメリットがあるため、基本は「#」を付けない指定を使用すること。",
-      "hints": []
+      "hints": [
+        "findAllBySqlFile",
+        "SQLファイル",
+        "SQL ID",
+        "SQLファイルパス導出",
+        "任意SQL検索"
+      ]
     },
     {
       "id": "s9",
       "title": "テーブルをJOINした検索結果を取得する",
       "content": "一覧検索などで、複数のテーブルをJOINした結果を取得したい場合がある。\nこのような場合は、非効率なため、JOIN対象のデータを個別に検索せずに、\n**1回で検索できるSQL** と **JOINした結果をマッピングするBean** を作成すること。",
-      "hints": []
+      "hints": [
+        "JOIN",
+        "複数テーブル",
+        "一覧検索",
+        "JOINマッピング"
+      ]
     },
     {
       "id": "s10",
       "title": "検索結果を遅延ロードする",
       "content": "大量の検索結果を扱う処理では、メモリが足らなくなるため、検索結果をすべてメモリに展開できない。\n以下のようなケースがある。\n\n* ウェブで大量データをダウンロードする\n* バッチで大量データを処理する\n\nそのような場合は、ユニバーサルDAOの遅延ロードを使用する。\n遅延ロードを使用すると、ユニバーサルDAOとしては1件ずつロードするが、\nJDBCのフェッチサイズによってメモリの使用量が変わる。\nフェッチサイズの詳細は、データベースベンダー提供のマニュアルを参照。\n\n遅延ロードは、検索時に、 `UniversalDao#defer` メソッドを先に呼び出すだけで使用できる。\n遅延ロードでは、内部でサーバサイドカーソルを使用しているので、\n`DeferredEntityList#close` メソッドを呼び出す必要がある。\n\n```java\n// try-with-resourcesを使ったclose呼び出し。\n// DeferredEntityListはダウンキャストして取得する。\ntry (DeferredEntityList<User> users\n        = (DeferredEntityList<User>) UniversalDao.defer()\n                                        .findAllBySqlFile(User.class, \"FIND_BY_NAME\")) {\n    for (User user : users) {\n        // userを使った処理\n    }\n}\n```\n> **Important:** 使用するRDBMSによっては、カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる。 これにより、遅延ロードを使用した大量データの処理中にトランザクション制御を行った場合、クローズ済みのカーソルを参照し、エラーとなる可能性があるため注意すること。 データベースベンダ提供のマニュアルに沿ってカーソルの挙動を調整するか、大量データを扱わないよう ページング などで回避すること。",
-      "hints": []
+      "hints": [
+        "DeferredEntityList",
+        "UniversalDao.defer",
+        "遅延ロード",
+        "大量データ",
+        "サーバサイドカーソル",
+        "フェッチサイズ"
+      ]
     },
     {
       "id": "s11",
       "title": "条件を指定して検索する",
       "content": "検索画面のように、条件を指定した検索をユニバーサルDAOでも提供している。\n\n```java\n// 検索条件を取得する\nProjectSearchForm condition = context.getRequestScopedVar(\"form\");\n\n// 条件を指定して検索する\nList<Project> projects = UniversalDao.findAllBySqlFile(\n    Project.class, \"SEARCH_PROJECT\", condition);\n```\n> **Important:** 検索条件は、Entityではなく検索条件を持つ専用のBeanを指定する。 ただし、1つのテーブルのみへのアクセスの場合は、Entityを指定しても良い。",
-      "hints": []
+      "hints": [
+        "findAllBySqlFile",
+        "検索条件",
+        "条件検索",
+        "専用Bean"
+      ]
     },
     {
       "id": "s12",
       "title": "型を変換する",
       "content": "ユニバーサルDAOでは、 @Temporal を使用して、 `java.util.Date` 及び `java.util.Calendar` 型の値をデータベースにマッピングする方法を指定できる。\n他の型については、任意のマッピングは不可能であるため、Entityのプロパティは、データベースの型及び使用するJDBCドライバの仕様に応じて定義すること。\n\nまた、ユニバーサルDAOは、自動生成したSQLをDBに送信する場合はJakarta Persistenceアノテーションの情報を使用するが、任意のSQLをDBに送信する場合はJakarta Persistenceアノテーションの情報は使用しない。\nそのため、型変換については、以下のようになる。\n\nEntityから自動的に生成したSQLを実行する場合\nデータベースへの出力時\n* @Temporal が設定されているプロパティについては、@Temporalに指定された型へ変換する。\n* 上記以外については、データベースアクセス(JDBCラッパー) に処理を委譲して変換する。\n\nデータベースから取得時\n* @Temporal が設定されているプロパティについては、@Temporalに指定された型から変換する。\n* 上記以外はEntityの情報を元に、値が変換される。\n\n任意のSQLで検索する場合\nデータベースへの出力時\n* データベースアクセス(JDBCラッパー) に処理を委譲して変換する。\n\nデータベースから取得時\n* Entityから自動的に生成したSQLを実行する場合と同様の処理を行う。\n\n\n> **Important:** データベースの型とプロパティの型が不一致の場合、実行時に型変換エラーが発生する場合がある。 また、SQL実行時に暗黙的型変換が行われ、性能劣化(indexが使用されないことに起因する)となる可能性がある。 データベースとJavaのデータタイプのマッピングについては、使用するプロダクトに依存するため、 JDBCドライバのマニュアルを参照すること。 例えば、DBがdate型の場合には、多くのデータベースではプロパティの型は `java.sql.Date` となる。 また、DBが数値型(integerやbigint、number)などの場合は、プロパティの型は `int` (`java.lang.Integer`) や `long` (`java.lang.Long`) となる。",
-      "hints": []
+      "hints": [
+        "@Temporal",
+        "java.util.Date",
+        "java.util.Calendar",
+        "型変換",
+        "java.sql.Date",
+        "暗黙的型変換",
+        "universal_dao_jpa_temporal"
+      ]
     },
     {
       "id": "s13",
       "title": "ページングを行う",
       "content": "ユニバーサルDAOの検索は、ページングをサポートしている。\nページングは、検索時に、 `UniversalDao#per` メソッド、 `UniversalDao#page` メソッドを先に呼び出すだけで使用できる。\n\n```java\nEntityList<User> users = UniversalDao.per(3).page(1)\n                            .findAllBySqlFile(User.class, \"FIND_ALL_USERS\");\n```\nページングの画面表示に必要な検索結果件数といった情報は、 `Pagination` が保持している。\n`Pagination` は、 `EntityList` から取得できる。\n\n```java\nPagination pagination = users.getPagination();\n```\n> **Tip:** ページング用の検索処理は、 データベースアクセス(JDBCラッパー)の範囲指定検索機能 を使用して行う。\n> **Tip:** ページングでは、実際の範囲指定レコードの取得処理の前に、件数取得SQLが発行される。 件数取得SQLに起因して性能劣化が発生した場合等、必要に応じて ページング処理の件数取得用SQLを変更する を参考にして件数取得SQLを変更する。",
-      "hints": []
+      "hints": [
+        "UniversalDao.per",
+        "UniversalDao.page",
+        "Pagination",
+        "EntityList",
+        "ページング",
+        "件数取得SQL"
+      ]
     },
     {
       "id": "s14",
       "title": "サロゲートキーを採番する",
       "content": "サロゲートキーを採番する場合は、以下のアノテーションを使用する。\n\n* @GeneratedValue\n* @SequenceGenerator\n* @TableGenerator\n\nユニバーサルDAOでは、 `jakarta.persistence.GenerationType` のすべてのストラテジをサポートしている。\n\nGenerationType.AUTO\n\\\n\n```java\n@Id\n@Column(name = \"USER_ID\", length = 15)\n@GeneratedValue(strategy = GenerationType.AUTO)\npublic Long getId() {\n    return id;\n}\n```\n- データベース機能に設定された `Dialect` を元に採番方法を選択する。\n優先順位は、IDENTITY→SEQUENCE→TABLEの順となる。\n- SEQUENCEが選択された場合、シーケンスオブジェクト名は\"<テーブル名>_<採番するカラム名>\"となる。\n- シーケンスオブジェクト名を指定したい場合は、 @SequenceGenerator で指定する。\n\nGenerationType.IDENTITY\n\\\n\n```java\n@Id\n@Column(name = \"USER_ID\", length = 15)\n@GeneratedValue(strategy = GenerationType.IDENTITY)\npublic Long getId() {\n    return id;\n}\n```\nGenerationType.SEQUENCE\n\\\n\n```java\n@Id\n@Column(name = \"USER_ID\", length = 15)\n@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = \"seq\")\n@SequenceGenerator(name = \"seq\", sequenceName = \"USER_ID_SEQ\")\npublic Long getId() {\n    return id;\n}\n```\n- シーケンスオブジェクトの名前は @SequenceGenerator で指定する。\n- sequenceName属性を省略した場合、\"<テーブル名>_<採番するカラム名>\"となる。\n\nGenerationType.TABLE\n\\\n\n```java\n@Id\n@Column(name = \"USER_ID\", length = 15)\n@GeneratedValue(strategy = GenerationType.TABLE, generator = \"table\")\n@TableGenerator(name = \"table\", pkColumnValue = \"USER_ID\")\npublic Long getId() {\n    return id;\n}\n```\n- レコードを識別する値は @TableGenerator で指定する。\n- pkColumnValue属性を省略した場合、\"<テーブル名>_<採番するカラム名>\"となる。\n\n> **Tip:** シーケンス及びテーブルを使用したサロゲートキーの採番処理は、 サロゲートキーの採番 を使用して行う。 設定値(テーブルを使用した場合のテーブル名やカラム名の設定など)は、リンク先を参照すること。",
-      "hints": []
+      "hints": [
+        "@GeneratedValue",
+        "@SequenceGenerator",
+        "@TableGenerator",
+        "GenerationType",
+        "Dialect",
+        "サロゲートキー",
+        "シーケンス採番"
+      ]
     },
     {
       "id": "s15",
       "title": "バッチ実行(一括登録、更新、削除)を行う",
       "content": "ユニバーサルDAOでは、大量データの一括登録や更新、削除時にバッチ実行ができる。\nバッチ実行することで、アプリケーション稼働サーバとデータベースサーバとのラウンドトリップ回数を削減でき、パフォーマンスの向上が期待できる。\n\nバッチ実行は以下のメソッドを使用する。\n\n* `batchInsert`\n* `batchUpdate`\n* `batchDelete`\n\n> **Important:** `batchUpdate` を使用した、一括更新処理では排他制御処理を行わない。 もし、更新対象のEntityとデータベースのバージョンが不一致だった場合、そのレコードの更新は行われずに処理が正常終了する。 排他制御が必要となる更新処理では、一括更新ではなく1レコード毎の更新処理を呼び出すこと。",
-      "hints": []
+      "hints": [
+        "batchInsert",
+        "batchUpdate",
+        "batchDelete",
+        "一括登録",
+        "一括更新",
+        "一括削除"
+      ]
     },
     {
       "id": "s16",
       "title": "楽観的ロックを行う",
       "content": "ユニバーサルDAOでは、 @Version\nが付いているEntityを更新した場合、自動で楽観的ロックを行う。\n楽観的ロックで排他エラーが発生した場合は、 `jakarta.persistence.OptimisticLockException` を送出する。\n\n> **Important:** `@Version <universal_dao_jpa_version>` は数値型のプロパティのみに指定できる。 文字列型のプロパティだと正しく動作しない。\n排他エラー時の画面遷移は、 `OnError` を使用して行う。\n\n```java\n// type属性に対象とする例外、path属性に遷移先のパスを指定する。\n@OnError(type = OptimisticLockException.class,\n         path = \"/WEB-INF/view/common/errorPages/userError.jsp\")\npublic HttpResponse update(HttpRequest request, ExecutionContext context) {\n\n    UniversalDao.update(user); // 前後の処理は省略。\n\n}\n```\n> **Important:** バッチ実行(一括登録、更新、削除)を行う に記載があるように、 一括更新処理(`batchUpdate`)では楽観的ロックは使用できないので注意すること。",
-      "hints": []
+      "hints": [
+        "@Version",
+        "OptimisticLockException",
+        "OnError",
+        "楽観的ロック",
+        "排他制御"
+      ]
     },
     {
       "id": "s17",
       "title": "悲観的ロックを行う",
       "content": "ユニバーサルDAOでは、悲観的ロックの機能を特に提供していない。\n\n悲観的ロックは、データベースの行ロック（select for update）を使用することで行う。\n行ロック（select for update）を記載したSQLは、\n`UniversalDao#findBySqlFile` メソッドを使って実行する。",
-      "hints": []
+      "hints": [
+        "findBySqlFile",
+        "SELECT FOR UPDATE",
+        "悲観的ロック",
+        "行ロック"
+      ]
     },
     {
       "id": "s18",
       "title": "排他制御の考え方",
       "content": "排他制御に使用するバージョンカラムをどのテーブルに定義するかは業務的な観点により決める必要がある。\n\nバージョン番号を持つテーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。\nたとえば、「ユーザ」という大きな単位でロックすることが業務的に許容されるならば、ユーザテーブルにバージョン番号を定義する。\nただし、単位を大きくすると、競合する可能性が高くなり、更新失敗(楽観的ロックの場合)や処理遅延(悲観的ロックの場合)を招く点に注意すること。",
-      "hints": []
+      "hints": [
+        "バージョンカラム",
+        "排他制御",
+        "ロック単位",
+        "競合",
+        "楽観的ロック",
+        "悲観的ロック"
+      ]
     },
     {
       "id": "s19",

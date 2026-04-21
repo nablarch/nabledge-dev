@@ -24,6 +24,13 @@
 | フォーム(Java Beans) | メソッドから戻されたフォームを リクエストボディ変換ハンドラ で、レスポンスボディに出力する内容に変換しクライアントに返却する。 |
 | `HttpResponse` | メソッドから戻された `HttpResponse` の情報を、クライアントに返却する。 |
 
+<details>
+<summary>keywords</summary>
+
+JaxRsHttpRequest, ExecutionContext, HttpResponse, メソッドシグネチャ, 引数, 戻り値, リソースクラス, void, Java Beans, HttpRequest
+
+</details>
+
 ## パスパラメータを扱う
 
 検索や更新、削除対象のリソースを示す値をパスパラメータとして指定する場合の実装方法を示す。
@@ -62,6 +69,13 @@ public User delete(JaxRsHttpRequest req) {
 }
 ```
 > **Important:** Jakarta RESTful Web Servicesで規定されている `PathParam` は使用できないので注意すること。
+
+<details>
+<summary>keywords</summary>
+
+JaxRsHttpRequest, PathParam, パスパラメータ, getPathParam, ルーティング設定, router_adaptor, UniversalDao
+
+</details>
 
 ## クエリーパラメータを扱う
 
@@ -104,6 +118,13 @@ public UserSearchForm {
 }
 ```
 > **Important:** Jakarta RESTful Web Servicesで規定されている `QueryParam` は使用できないので注意すること。
+
+<details>
+<summary>keywords</summary>
+
+JaxRsHttpRequest, BeanUtil, QueryParam, クエリパラメータ, getParamMap, BeanUtil.createAndCopy, UserSearchForm, ValidatorUtil
+
+</details>
 
 ## レスポンスヘッダを設定する
 
@@ -154,3 +175,10 @@ public EntityResponse<List<Client>> something(JaxRsHttpRequest request, Executio
     return response;
 }
 ```
+
+<details>
+<summary>keywords</summary>
+
+HttpResponse, EntityResponse, レスポンスヘッダ, setHeader, @Produces, ステータスコード, secure_handler, setStatusCode, setEntity
+
+</details>

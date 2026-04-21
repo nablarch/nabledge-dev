@@ -13,43 +13,87 @@
       "id": "s2",
       "title": "ハンドラクラス名",
       "content": "* `nablarch.common.handler.TransactionManagementHandler`",
-      "hints": []
+      "hints": [
+        "TransactionManagementHandler",
+        "nablarch.common.handler.TransactionManagementHandler",
+        "トランザクション制御ハンドラ",
+        "透過的トランザクション",
+        "ハンドラクラス"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-transaction</artifactId>\n</dependency>\n\n<!-- データベースに対するトランザクションを制御する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n\n<!-- トランザクション終了時に任意の処理を実行する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-core-transaction",
+        "nablarch-core-jdbc",
+        "nablarch-core",
+        "com.nablarch.framework",
+        "Maven依存関係"
+      ]
     },
     {
       "id": "s4",
       "title": "制約",
       "content": "データベース接続管理ハンドラ より後ろに配置すること\nデータベースに対するトランザクションを制御する場合には、トランザクション管理対象のデータベース接続がスレッド上に存在している必要がある。\nこのため、本ハンドラは データベース接続管理ハンドラ より後ろに配置する必要がある。",
-      "hints": []
+      "hints": [
+        "DbConnectionManagementHandler",
+        "database_connection_management_handler",
+        "ハンドラ配置順序",
+        "DB接続",
+        "制約"
+      ]
     },
     {
       "id": "s5",
       "title": "トランザクション制御対象を設定する",
       "content": "このハンドラは、 `transactionFactory`\nプロパティに設定されたファクトリクラス( `TransactionFactory` 実装クラス)を使用してトランザクションの制御対象を取得しスレッド上で管理する。\n\nスレッド上で管理する際には、トランザクションを識別するための名前を設定する。\nデフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 `transactionName` プロパティに設定すること。\n複数のトランザクションを使用する場合 は、  `transactionName`  プロパティへの値の設定が必須となる。\n\n> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対するトランザクションを制御する場合は、 extdoc:`DbConnectionManagementHandler#connectionName <nablarch.common.handler.DbConnectionManagementHandler.setConnectionName(java.lang.String)>` に設定した値と同じ値を extdoc:`transactionName <nablarch.common.handler.TransactionManagementHandler.setTransactionName(java.lang.String)>` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 extdoc:`transactionName <nablarch.common.handler.TransactionManagementHandler.setTransactionName(java.lang.String)>` への設定は省略して良い。\n以下の設定ファイル例を参考にし、このハンドラを設定すること。\n\n```xml\n<!-- トランザクション制御ハンドラ -->\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"name\" />\n</component>\n\n<!-- データベースに対するトランザクション制御を行う場合には、JdbcTransactionFactoryを設定する -->\n<component name=\"databaseTransactionFactory\"\n    class=\"nablarch.core.db.transaction.JdbcTransactionFactory\">\n  <!-- プロパティの設定は省略 -->\n</component>\n```",
-      "hints": []
+      "hints": [
+        "transactionFactory",
+        "transactionName",
+        "TransactionFactory",
+        "JdbcTransactionFactory",
+        "DbConnectionManagementHandler",
+        "connectionName",
+        "トランザクション設定"
+      ]
     },
     {
       "id": "s6",
       "title": "特定の例外の場合にトランザクションをコミットさせる",
       "content": "このハンドラのデフォルト動作では、全てのエラー及び例外がロールバック対象となるが、\n発生した例外の内容によってはトランザクションをコミットしたい場合がある。\n\nこの場合は、 `transactionCommitExceptions` プロパティに対して、\nコミット対象の例外クラスを設定することで対応する。\nなお、設定した例外クラスのサブクラスもコミット対象となる。\n\n以下に設定例を示す。\n\n```xml\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n  <!-- transactionCommitExceptionsプロパティにコミット対象の例外クラスをFQCNで設定する。 -->\n  <property name=\"transactionCommitExceptions\">\n    <list>\n      <!-- example.TransactionCommitExceptionをコミット対象とする -->\n      <value>example.TransactionCommitException</value>\n    </list>\n  </property>\n</component>\n```",
-      "hints": []
+      "hints": [
+        "transactionCommitExceptions",
+        "例外時コミット",
+        "ロールバック対象外",
+        "例外クラス設定",
+        "TransactionManagementHandler"
+      ]
     },
     {
       "id": "s7",
       "title": "トランザクション終了時に任意の処理を実行したい",
       "content": "このハンドラでは、トランザクション終了(コミットやロールバック)時に、コールバック処理を行う。\n\nコールバックされる処理は、このハンドラより後続に設定されたハンドラの中で、 `TransactionEventCallback` を実装しているものとなる。\nもし、複数のハンドラが  `TransactionEventCallback` を実装している場合は、より手前に設定されているハンドラから順次コールバック処理を実行する。\n\nなお、トランザクションをロールバックする場合には、ロールバック後にコールバック処理を実行する。\nこのため、コールバック処理は新しいトランザクションで実行され、コールバックが正常に終了するとコミットされる。\n\n> **Important:** 複数のハンドラがコールバック処理を実装していた場合で、コールバック処理中にエラーや例外が発生した場合は、 残りのハンドラに対するコールバック処理は実行しないため注意すること。\n以下に例を示す。\n\nコールバック処理を行うハンドラの作成\n以下実装例のように、  `TransactionEventCallback` を実装したハンドラを作成する。\n\n`transactionNormalEnd` にトランザクションコミット時のコールバック処理を実装し、\n`transactionAbnormalEnd` にトランザクションロールバック時のコールバック処理を実装する。\n\n```java\npublic static class SampleHandler\n    implements Handler<Object, Object>, TransactionEventCallback<Object> {\n\n  @Override\n  public Object handle(Object o, ExecutionContext context) {\n    // ハンドラの処理を実装する\n    return context.handleNext(o);\n  }\n\n  @Override\n  public void transactionNormalEnd(Object o, ExecutionContext ctx) {\n    // トランザクションコミット時のコールバック処理を実装する\n  }\n\n  @Override\n  public void transactionAbnormalEnd(Throwable e, Object o, ExecutionContext ctx) {\n    // トランザクションロールバック時のコールバック処理を実装する\n  }\n}\n```\nハンドラキューを構築する\n以下のように、このハンドラの後続ハンドラにコールバック処理を実装したハンドラを設定する。\n\n```xml\n<list name=\"handlerQueue\">\n  <!-- トランザクション制御ハンドラ -->\n  <component class=\"nablarch.common.handler.TransactionManagementHandler\">\n    <!-- プロパティへの設定は省略 -->\n  </component>\n\n  <!-- コールバック処理を実装したハンドラ -->\n  <component class=\"sample.SampleHandler\" />\n</list>\n```",
-      "hints": []
+      "hints": [
+        "TransactionEventCallback",
+        "transactionNormalEnd",
+        "transactionAbnormalEnd",
+        "コールバック処理",
+        "トランザクション終了イベント"
+      ]
     },
     {
       "id": "s8",
       "title": "アプリケーションで複数のトランザクションを使用する",
       "content": "1つのアプリケーションで複数のトランザクション制御が必要となるケースが考えられる。\nこの場合は、このハンドラをハンドラキュー上に複数設定することで対応する。\n\n以下に複数のデータベース接続に対するトランザクションを制御するための設定例を示す。\n\n```xml\n<!-- デフォルトのデータベース接続を設定 -->\n<component name=\"defaultDatabaseHandler\"\n    class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n\n  <property name=\"connectionFactory\" ref=\"connectionFactory\" />\n\n</component>\n\n<!-- userAccessLogという名前でデータベース接続を登録 -->\n<component name=\"userAccessLogDatabaseHandler\"\n    class=\"nablarch.common.handler.DbConnectionManagementHandler\">\n\n  <property name=\"connectionFactory\" ref=\"userAccessLogConnectionFactory\" />\n  <property name=\"connectionName\" value=\"userAccessLog\" />\n\n</component>\n\n<!-- デフォルトのデータベース接続に対するトランザクション制御の設定 -->\n<component name=\"defaultTransactionHandler\"\n    class=\"nablarch.common.handler.TransactionManagementHandler\">\n\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n\n</component>\n\n<!-- userAccessLogというデータベース接続に対するトランザクション制御の設定 -->\n<component name=\"userAccessLogTransactionHandler\"\n    class=\"nablarch.common.handler.TransactionManagementHandler\">\n\n  <property name=\"transactionFactory\" ref=\"databaseTransactionFactory\" />\n  <property name=\"transactionName\" value=\"userAccessLog\" />\n\n</component>\n```\n上記のハンドラをハンドラキューに設定した場合の例を示す。\n\n```xml\n<!-- データベースとトランザクション制御以外のハンドラは省略 -->\n\n<list name=\"handlerQueue\">\n  <!-- デフォルトのデータベースに対する接続とトランザクション制御 -->\n  <component-ref name=\"defaultDatabaseHandler\" />\n  <component-ref name=\"defaultTransactionHandler\" />\n\n  <!-- userAccessLogのデータベースに対する接続とトランザクション制御 -->\n  <component-ref name=\"userAccessLogDatabaseHandler\" />\n  <component-ref name=\"userAccessLogTransactionHandler\" />\n</list>\n```",
-      "hints": []
+      "hints": [
+        "transactionName",
+        "複数トランザクション",
+        "TransactionManagementHandler",
+        "DbConnectionManagementHandler",
+        "複数DB接続"
+      ]
     }
   ]
 }

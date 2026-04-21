@@ -10,10 +10,24 @@ Nablarch OpenAPI Generatorは、 [OpenAPI(外部サイト、英語)](https://www
 
 生成されたソースコードを使用することで、OpenAPIドキュメントで定義したREST APIのインターフェースに従ったアクションクラスの実装が容易となる。
 
+<details>
+<summary>keywords</summary>
+
+OpenAPI Generator, nablarch-jaxrs, ソースコード生成, リソースインターフェース生成, モデル生成, RESTfulウェブサービス, nablarch-openapi-generator
+
+</details>
+
 ## 前提条件
 
 * Nablarch RESTfulウェブサービスのソースコード生成元となるOpenAPIドキュメントが作成されていること
 * OpenAPIドキュメントは [OpenAPI 3.0.3(外部サイト、英語)](https://spec.openapis.org/oas/v3.0.3.html) 仕様で記述されていること
+
+<details>
+<summary>keywords</summary>
+
+OpenAPI 3.0.3, 前提条件, OpenAPIドキュメント
+
+</details>
 
 ## 動作概要
 
@@ -23,6 +37,13 @@ Nablarch OpenAPI Generatorは、 [OpenAPI(外部サイト、英語)](https://www
 * スキーマ定義を元にした、リクエスト、レスポンスに対応するモデル
 
 > **Tip:** OpenAPI Generatorの仕様上 `.openapi-generator-ignore` 、 `.openapi-generator/FILES` 、 `.openapi-generator/VERSION` が Generatorの設定項目 の `output` で指定したディレクトリ配下に生成されるが、これらは使用しない。
+
+<details>
+<summary>keywords</summary>
+
+ソースコード生成, リソースインターフェース, モデル生成, アクションインターフェース
+
+</details>
 
 ## 運用方法
 
@@ -35,6 +56,13 @@ Nablarch OpenAPI Generatorは、 [OpenAPI(外部サイト、英語)](https://www
 
 > **Tip:** 本ツールはOpenAPIドキュメントの修正に合わせて繰り返し実行されることを想定している。Nablarch RESTfulウェブサービスのアクションクラスは生成されたリソース(アクション)インターフェースを実装して作成するため、本ツールによる自動生成を再度行ってもアクションクラスに実装した内容が失われることはない。
 > **Tip:** OpenAPI Generatorおよび本ツールはMavenプラグインとしての実行形態を想定しているが、CLIでも使用可能である。詳しくは CLIとして実行する を参照すること。
+
+<details>
+<summary>keywords</summary>
+
+運用手順, ソースコード再生成, アクションクラス実装, 繰り返し実行
+
+</details>
 
 ## 使用方法
 
@@ -203,6 +231,13 @@ java -jar openapi-generator-cli-7.10.0.jar help generate
 Generatorの設定項目 のうち本ツール固有の設定項目については、 `--additional-properties` に `key=value` の形式で指定する。複数指定する場合は `,` 区切りでの指定となる。
 
 > **Tip:** 本ツール固有の設定項目は、 `--additional-properties=hideGenerationTimestamp=true` のように `--additional-properties=` に続けて項目名をそのまま指定する。
+
+<details>
+<summary>keywords</summary>
+
+openapi-generator-maven-plugin, Maven設定, inputSpec, generatorName, nablarch-jaxrs, nablarch-openapi-generator, 依存関係, OpenAPI Generator 7.10.0, mvn compile, Mavenビルド, sourceFolder, コンパイル対象, 出力先, target/generated-sources/openapi, output, sourceFolder, inputSpec, generatorName, output, apiPackage, modelPackage, hideGenerationTimestamp, sourceFolder, useTags, serializableModel, generateBuilders, useBeanValidation, additionalModelTypeAnnotations, additionalEnumTypeAnnotations, primitivePropertiesAsString, supportConsumesMediaTypes, supportProducesMediaTypes, configOptions, 設定項目, useBeanValidation, Bean Validation, バリデーション, bean_validation, CLI, CLIとして実行, java -cp, openapi-generator-cli, --generator-name, --input-spec, --additional-properties, JARファイル, nablarch-jaxrs, inputSpec, generatorName, sourceFolder, apiPackage, modelPackage, OpenAPIコード生成, リソースインターフェース生成, モデル生成, ProjectsApi, EntityResponse, JaxRsHttpRequest, ExecutionContext, @Path, @POST, @GET, @Consumes, @Produces, createProject, findProjectById, operationId, ProjectCreateRequest, ProjectResponse, ProjectResponse, @JsonProperty, @JsonTypeName, UUID, Long, LocalDate, スキーマ定義, uuid, int64, date, ProjectCreateRequest, @Valid, @Required, @Length, @JsonTypeName, useBeanValidation, Bean Validation, ProjectsApi, EntityResponse, LocalDate, @Domain, x-nablarch-domain, ドメインバリデーション, @JsonTypeName, ProjectCreateRequest, useBeanValidation, @Required, CustomersApi, CustomersCsvFileUploadRequest, CustomersCsvFileUploadResultResponse, multipart/form-data, ファイルアップロード, format: binary, @Consumes, JaxRsHttpRequest, EntityResponse, CustomersApi, HttpResponse, text/csv, ファイルダウンロード, format: binary, @GET, JaxRsHttpRequest, ソースコード生成, OpenAPIジェネレーター, NablarchOpenApiGenerator, restful_web_service_architecture, router_adaptor_path_annotation, JaxRsHttpRequest, ExecutionContext, EntityResponse, HttpResponse, nablarch.fw.jaxrs.JaxRsHttpRequest, nablarch.fw.ExecutionContext, nablarch.fw.jaxrs.EntityResponse, nablarch.fw.web.HttpResponse, @GET, @POST, @PUT, @DELETE, @PATCH, @HEAD, @OPTIONS, @Consumes, @Produces, @Valid, @Path, @Generated, リソースインターフェース生成, operationId, useTags, useBeanValidation, @JsonTypeName, @JsonProperty, モデル生成, Bean Validation対応, useBeanValidation, nablarch.core.validation.ee.Required, nablarch.core.validation.ee.NumberRange, nablarch.core.validation.ee.DecimalRange, nablarch.core.validation.ee.Length, nablarch.core.validation.ee.Size, nablarch.core.validation.ee.Domain, @Required, @NumberRange, @DecimalRange, @Length, @Size, @Domain, @Pattern, jakarta.validation.constraints, nablarch-fw-jaxrs, nablarch-core-validation-ee, jackson-annotations, jakarta.ws.rs-api, jakarta.annotation-api, データ型対応表, OpenAPIデータ型, type, format, integer, number, boolean, string, array, object, java.lang.Integer, java.lang.Long, java.math.BigDecimal, java.lang.Float, java.lang.Double, java.lang.Boolean, java.lang.String, byte[], java.time.LocalDate, java.time.OffsetDateTime, java.util.UUID, java.net.URI, java.util.List, java.util.Set, uniqueItems, multipart/form-data, binary, Bean Validation対応, ドメインバリデーション, useBeanValidation, x-nablarch-domain, @Required, @NumberRange, @DecimalRange, @Length, @Size, @Domain, @Pattern, required, minimum, maximum, minLength, maxLength, minItems, maxItems, pattern, Domain, nablarch.core.validation.ee.Domain, バリデーション運用上の注意点, BeanUtil, ValidatorUtil, nablarch.core.beans.BeanUtil, bean_validation-execute_explicitly, ApplicationException, 相関バリデーション, ドメインバリデーション, ProjectValidatorUtil
+
+</details>
 
 ## ソースコード生成仕様
 

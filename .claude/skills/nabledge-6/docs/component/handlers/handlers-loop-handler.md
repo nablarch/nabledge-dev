@@ -17,6 +17,13 @@
 
 * `nablarch.fw.handler.LoopHandler`
 
+<details>
+<summary>keywords</summary>
+
+LoopHandler, トランザクションループ制御ハンドラ, データリーダ, ループ処理, 後続ハンドラ繰り返し実行, トランザクション制御, コミット間隔, バッチ処理ループ, 処理対象データ繰り返し, LoopHandler, nablarch.fw.handler.LoopHandler, トランザクションループ制御ハンドラ, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -37,10 +44,24 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, nablarch-core-transaction, nablarch-core-jdbc, モジュール依存関係, Maven依存設定
+
+</details>
+
 ## 制約
 
 データベース接続管理ハンドラ より後ろに設定すること
 データベースに対するトランザクションを制御する場合には、トランザクション管理対象のデータベース接続がスレッド上に存在している必要がある。
+
+<details>
+<summary>keywords</summary>
+
+database_connection_management_handler, DbConnectionManagementHandler, ハンドラ順序制約, データベース接続管理ハンドラ, トランザクション制御制約
+
+</details>
 
 ## トランザクション制御対象を設定する
 
@@ -67,6 +88,13 @@
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション制御対象設定, トランザクション識別名
+
+</details>
+
 ## コミット間隔を指定する
 
 バッチ処理のコミット間隔は、 `commitInterval` プロパティに設定する。
@@ -80,6 +108,13 @@
   <property name="commitInterval" value="1000" />
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+commitInterval, コミット間隔, バッチスループット, トランザクションコミット間隔, loop_handler-commit_interval
+
+</details>
 
 ## トランザクション終了時に任意の処理を実行したい
 
@@ -138,3 +173,10 @@ public static class SampleHandler
   <component class="sample.SampleHandler" />
 </list>
 ```
+
+<details>
+<summary>keywords</summary>
+
+TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了通知, ロールバック後処理, loop_handler-callback
+
+</details>

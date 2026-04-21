@@ -43,6 +43,13 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 |---|---|
 | archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |
 
+<details>
+<summary>keywords</summary>
+
+Mavenプロジェクト, 単一プロジェクト構成, H2 Database Engine, Jakarta Batch基本設定, batchlet疎通確認, chunk疎通確認, about_maven_parent_module, Mavenと連動するツール初期設定, Maven Archetype Plugin, nablarch-batch-ee-archetype, ブランクプロジェクト生成, archetypeVersion, groupId制約, artifactId, version, package, ハイフン禁止, Mavenアーキタイプ, プロジェクト情報入力, Y/N確認, カレントディレクトリ変更
+
+</details>
+
 ## プロジェクト情報の入力
 
 上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。
@@ -99,6 +106,13 @@ mvn test
 (以下略)
 ```
 
+<details>
+<summary>keywords</summary>
+
+SampleBatchletTest, ユニットテスト, mvn test, データベース接続テスト, 疎通確認, BUILD SUCCESS, Tests run
+
+</details>
+
 ## 起動テスト
 
 生成したプロジェクトには、以下のバッチアプリケーションが組み込まれている。
@@ -110,6 +124,13 @@ mvn test
 
 
 上記2つのバッチアプリケーションの動作確認を行うことで、ブランクプロジェクトの生成に成功していることを確認する。
+
+<details>
+<summary>keywords</summary>
+
+sample-chunk, sample-batchlet, chunk方式バッチ起動, batchlet方式バッチ起動, nablarch.fw.batch.ee.Main, mvn exec:java, outputdata.csv, SAMPLE_USERテーブル
+
+</details>
 
 ## バッチアプリケーションのビルド
 
@@ -192,6 +213,20 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main -Dexec.args="'sample-ba
 
 またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法 を参照。
 
+<details>
+<summary>keywords</summary>
+
+疎通確認失敗, 原因不明, 手順誤り, やり直し, firstStepGenerateBatchEEBlankProject, ブランクプロジェクト再生成, H2 Database Engine, データベース設定変更, gsp-dba-maven-plugin, DDL生成, Entityクラス自動生成, RDBMS変更
+
+</details>
+
 ## 補足
 
 H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 ../firstStep_appendix/firststep_complement を参照すること。
+
+<details>
+<summary>keywords</summary>
+
+H2データ確認, ブランクプロジェクト組み込みツール, firststep_complement
+
+</details>

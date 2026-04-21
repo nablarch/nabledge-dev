@@ -18,6 +18,13 @@ OnDoubleSubmissionインターセプタ
 
 * `nablarch.common.web.token.UseToken`
 
+<details>
+<summary>keywords</summary>
+
+UseToken, nablarch.common.web.token.UseToken, 二重サブミット防止, トークン発行, JSP以外のテンプレートエンジン, on_double_submission_interceptor
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -26,6 +33,13 @@ OnDoubleSubmissionインターセプタ
   <artifactId>nablarch-fw-web-tag</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, Mavenモジュール
+
+</details>
 
 ## UseTokenを使用する
 
@@ -48,3 +62,10 @@ Thymeleafでの実装例
 この例のようにname属性は"nablarch_token"と設定して、value属性はリクエストスコープから"nablarch_request_token"というキーで取得した値を設定する必要がある。
 このname属性とリクエストスコープから値を取得するキーは変更できる。
 詳しくは サーバ側の二重サブミット防止 を参照すること。
+
+<details>
+<summary>keywords</summary>
+
+@UseToken, nablarch_token, nablarch_request_token, Thymeleaf, hiddenフィールド, トークン埋め込み, 二重サブミット防止
+
+</details>

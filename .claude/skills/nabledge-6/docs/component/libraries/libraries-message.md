@@ -10,6 +10,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+PropertiesStringResourceLoader, BasicStringResourceLoader, BasicStaticDataCache, StringResourceHolder, MessageFormatter, BasicMessageFormatter, JavaMessageFormatBaseMessageFormatter, MessageFormat, プロパティファイル設定変更, データベースメッセージ管理, メッセージフォーマット変更, メッセージ管理, プロパティファイル, データベース管理, メッセージフォーマット, java.text.MessageFormat, MessageFormat, 実行中更新不可
+
+</details>
+
 ## メッセージの定義場所を指定できる
 
 メッセージは、データベースやプロパティファイルで管理できる。デフォルトでは、プロパティファイルでの管理となる。
@@ -50,7 +57,21 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-core, nablarch-core-message, nablarch-common-jdbc, Maven依存関係, モジュール
+
+</details>
+
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+プロパティファイル作成単位, アプリケーション単位, messages.properties, 影響範囲, メッセージ管理, messages.properties, classpath, UTF-8, java.util.Properties, プロパティファイル定義, native2ascii, PropertiesStringResourceLoader, 多言語化, defaultLocale, ThreadContext, locales, 言語設定, BasicStaticDataCache, StringResourceHolder, BasicApplicationInitializer, ApplicationException, MessageUtil, 業務例外, MessageLevel, createMessage, メッセージ送出, Message, nablarch.core.message.Message, MessageFormat, java.text.MessageFormat, java.util.Map, 埋め込み文字, MessageUtil, パターン文字, messageタグ, 固定文言, JSP, n:message, tag-write_message, カスタムタグ, MessageLevel, nablarch_info, nablarch_warn, nablarch_error, errorsタグ, WebUtil, ApplicationException, INFO, WARN, ERROR, notifyMessages
+
+</details>
 
 ## プロパティファイルの作成単位
 

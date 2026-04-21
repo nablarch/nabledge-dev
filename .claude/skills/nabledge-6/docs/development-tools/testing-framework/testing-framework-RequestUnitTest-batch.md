@@ -101,10 +101,24 @@
 
 # 構造
 
+<details>
+<summary>keywords</summary>
+
+リクエスト単体テスト バッチ処理, コマンドラインから起動, 動作を擬似的に再現, バッチテスト概要, バッチリクエスト単体テストクラス構成図, クラス構成, バッチテスト全体構成
+
+</details>
+
 ## StandaloneTestSupportTemplate
 
 バッチやメッセージング処理などコンテナ外で動作する処理のテスト実行環境を提供する。
 テストデータを読み取り、全テストショット(\ TestShot \ )を実行する。
+
+<details>
+<summary>keywords</summary>
+
+主なクラス一覧, 作成単位, テスト対象クラスにつき１つ, テストクラスにつき１つ, DbAccessTestSupport, リクエスト単体テストクラス, Excelファイル テストデータ, StandaloneTestSupportTemplate, BatchRequestTestSupport, TestShot, MainForRequestTesting, FileSupport, StandaloneTestSupportTemplate, コンテナ外処理テスト, テストショット実行, バッチテスト実行環境
+
+</details>
 
 ## TestShot
 
@@ -144,6 +158,13 @@
 入力データ準備や結果確認ロジックはバッチや各種メッセージング処理ごとに異なるので\
 方式に応じたカスタマイズが可能となっている。
 
+<details>
+<summary>keywords</summary>
+
+TestShot, テストショット, データベースセットアップ, ステータスコード確認, ログ出力結果確認, カスタマイズ可能, 方式に応じたカスタマイズ
+
+</details>
+
 ## BatchRequestTestSupport
 
 バッチ処理テスト用のスーパクラス。\
@@ -171,6 +192,13 @@
 
 具体的な使用方法は、\ ../05_UnitTestGuide/02_RequestUnitTest/batch\ を参照。
 
+<details>
+<summary>keywords</summary>
+
+BatchRequestTestSupport, バッチリクエスト単体テスト, 入力ファイル作成, 出力ファイル確認, テストスーパクラス
+
+</details>
+
 ## MainForRequestTesting
 
 リクエスト単体テスト用のメインクラス。\
@@ -178,6 +206,13 @@
 
 * テスト用のコンポーネント設定ファイルからシステムリポジトリを初期化する。
 * 常駐化機能を無効化する。
+
+<details>
+<summary>keywords</summary>
+
+MainForRequestTesting, テスト用メインクラス, 常駐化無効化, テスト用コンポーネント設定
+
+</details>
 
 ## FileSupport
 
@@ -195,11 +230,25 @@
 
 バッチ処理固有のテストデータについて説明する。
 
+<details>
+<summary>keywords</summary>
+
+DbAccessTestSupport, DB準備データ投入, データベーステスト, データベース使用テスト, FileSupport, ファイルテスト, 入力ファイル作成, 出力ファイル比較, ファイル内容確認
+
+</details>
+
 ## 固定長ファイル
 
 基本的な記述方法は、\
 batch_request_test\
 を参照。
+
+<details>
+<summary>keywords</summary>
+
+固定長ファイル, パディング, バイナリデータ, 16進数形式, テストデータ記述方法
+
+</details>
 
 ## パディング
 
@@ -222,6 +271,13 @@ batch_request_test\
 
 
 # 各種設定値
+
+<details>
+<summary>keywords</summary>
+
+可変長ファイル, テストデータ記述方法, バッチテストデータ
+
+</details>
 
 ## 常駐バッチのテスト用ハンドラ構成
 
@@ -252,6 +308,13 @@ batch_request_test\
 <!-- リクエストスレッドループハンドラをテスト用のハンドラに置き換える設定 -->
 <component name="requestThreadLoopHandler" class="nablarch.test.OneShotLoopHandler" />
 ```
+
+<details>
+<summary>keywords</summary>
+
+RequestThreadLoopHandler, OneShotLoopHandler, 常駐バッチテスト, ハンドラ設定変更, テスト用ハンドラ
+
+</details>
 
 ## ディレクティブのデフォルト値
 
@@ -290,3 +353,10 @@ batch_request_test\
   <entry key="record-separator" value="CRLF"/>
 </map>
 ```
+
+<details>
+<summary>keywords</summary>
+
+defaultDirectives, fixedLengthDirectives, variableLengthDirectives, ディレクティブデフォルト設定, コンポーネント設定ファイル
+
+</details>

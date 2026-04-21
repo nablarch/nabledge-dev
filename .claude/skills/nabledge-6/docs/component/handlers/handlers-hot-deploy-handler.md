@@ -18,6 +18,13 @@
 
 * `nablarch.fw.hotdeploy.HotDeployHandler`
 
+<details>
+<summary>keywords</summary>
+
+HotDeployHandler, nablarch.fw.hotdeploy.HotDeployHandler, ホットデプロイ, クラス再ロード, 開発環境専用, 本番環境禁止, リクエスト単体テスト
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -26,6 +33,13 @@
   <artifactId>nablarch-fw-web-hotdeploy</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-hotdeploy, com.nablarch.framework, モジュール, Maven依存関係, 制約, ホットデプロイハンドラ制約
+
+</details>
 
 ## 制約
 
@@ -48,3 +62,10 @@
 </component>
 ```
 > **Important:** 以下に示す理由により、エンティティクラスはホットデプロイ対象にしてはならない。 * リクエスト毎に対象パッケージ内の全てのクラスが再ロードされるため、 エンティティクラスのような頻繁に変更されないクラスもホットデプロイ対象にしてしまうとレスポンス速度の低下につながる恐れがある。 * リクエスト毎にクラスローダが変わるため、 session_store を使用した場合などでエンティティクラスのキャストに失敗する場合がある。
+
+<details>
+<summary>keywords</summary>
+
+targetPackages, ホットデプロイ対象パッケージ, エンティティクラス除外, クラスローダ, session_store, キャスト失敗
+
+</details>

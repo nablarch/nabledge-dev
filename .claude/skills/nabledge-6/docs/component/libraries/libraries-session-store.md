@@ -25,6 +25,13 @@ HTTPセッションを抽象化した機能を提供する。
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+SessionUtil, ExecutionContext, JavaSerializeStateEncoder, JavaSerializeEncryptStateEncoder, JaxbStateEncoder, UUID, セッションストア, セッション変数, DBストア, HIDDENストア, HTTPセッションストア, 直列化, NABLARCH_SID
+
+</details>
+
 ## セッション変数の保存先を選択できる
 
 セッション変数の保存先を、用途に応じて選択できる。
@@ -63,7 +70,21 @@ HTTPセッションを抽象化した機能を提供する。
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, nablarch-fw-web-dbstore, モジュール依存関係, DBストア
+
+</details>
+
 ## 制約
+
+<details>
+<summary>keywords</summary>
+
+シリアライズ可能, Java Beans, 制約, シリアライズ
+
+</details>
 
 ## 保存対象はシリアライズ可能なJava Beansオブジェクトであること
 
@@ -73,6 +94,13 @@ HTTPセッションを抽象化した機能を提供する。
 また、プロパティには配列やコレクションを使用できる。
 
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+SessionManager, DbStore, HiddenStore, HttpSessionStore, USER_SESSION, userSessionSchema, UserSessionSchema, BasicApplicationInitializer, セッションストア設定, コンポーネント設定, tag-hidden_store_tag, n:hiddenStore, HIDDENストア, 複数タブ, 入力確認完了画面, Entity, Form, parameterName, HiddenStore, SessionUtil.changeId, CsrfTokenUtil.regenerateCsrfToken, SessionUtil.put, SessionUtil.invalidate, csrf_token_verification_handler, 認証, ログイン, ログアウト, JSP, セッション変数参照, リクエストスコープ, セッション変数名, AesEncryptor, Base64Key, KeyGenerator, SecureRandom, HIDDENストア, 暗号化, 冗長化, AES, SessionKeyNotFoundException, on_error_interceptor, HttpErrorResponse, OnError, 不正な画面遷移, 戻るボタン, SampleErrorHandler
+
+</details>
 
 ## セッションストアを使用するための設定
 
@@ -292,6 +320,13 @@ public HttpResponse backToNew(HttpRequest request, ExecutionContext context) {
 ```
 
 ## 拡張例
+
+<details>
+<summary>keywords</summary>
+
+SessionStore, SessionManager.availableStores, 保存先追加, カスタムストア, セッションストア選択基準, DBストア, HIDDENストア, HTTPセッションストア, 複数タブ対応, セッション変数保存先, スケールアウト, セッション有効期間, 有効期間保存先, データベース管理, Redis有効期限, HTTPセッション
+
+</details>
 
 ## セッション変数の保存先を追加する
 

@@ -65,11 +65,25 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 ![](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/01_Eclipse_Preference.png)
 
+<details>
+<summary>keywords</summary>
+
+HttpDumpツール前提条件, Java Maven インストール要件, プロキシ設定 localhost除外, Mavenプロジェクト要件, ブラウザ関連付け, nablarch-testing, nablarch-testing-jetty12, Maven依存関係, mvn dependency:copy-dependencies, httpDump.bat, JAR取得, Eclipse設定, ファイルの関連付け, 外部エディタ登録, *.html, Eclipse Preference
+
+</details>
+
 ## 外部プログラム選択
 
 ラジオボタンから外部プログラム(External program)を選択し、参照(Browse)ボタンを押下する。
 
 ![](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/02_Eclipse_EditorSelection.png)
+
+<details>
+<summary>keywords</summary>
+
+外部プログラム設定, Eclipse エディタ選択, External program, Browse
+
+</details>
 
 ## 起動用バッチファイル（シェルスクリプト）選択
 
@@ -77,6 +91,13 @@ Windowsの場合はバッチファイル(httpDump.bat)を、
 Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
 
 ![](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/03_Eclipse_OpenFile.png)
+
+<details>
+<summary>keywords</summary>
+
+httpDump.bat, httpDump.sh, Windows Linux OS別選択, バッチファイル指定
+
+</details>
 
 ## HTMLファイルからの起動方法
 
@@ -87,3 +108,10 @@ httpDumpで開くことでツールを起動できる。
 .. |br| raw:: html
 
 <br/>
+
+<details>
+<summary>keywords</summary>
+
+HTMLファイル起動, Eclipse パッケージエクスプローラ, httpDumpで開く, 右クリック起動
+
+</details>

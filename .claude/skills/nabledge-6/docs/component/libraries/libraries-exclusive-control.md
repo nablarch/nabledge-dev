@@ -12,6 +12,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序
+
+</details>
+
 ## 楽観的ロック/悲観的ロックができる
 
 この機能では、テーブルにバージョン番号カラムを定義することで、楽観的ロック/悲観的ロックを行う。
@@ -55,6 +62,13 @@
   <artifactId>nablarch-fw-web-tag</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係, BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition, HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors, HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck, ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理, 排他制御拡張, 拡張なし
+
+</details>
 
 ## 使用方法
 

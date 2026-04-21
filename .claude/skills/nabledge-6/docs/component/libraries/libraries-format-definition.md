@@ -10,6 +10,13 @@
 
 フォーマット定義ファイルの共通的な記述ルールについて説明する。
 
+<details>
+<summary>keywords</summary>
+
+文字コード, UTF-8, リテラル表記, コメント, フォーマット定義ファイル記法, 文字列リテラル, 真偽値, 10進整数
+
+</details>
+
 ## 文字コード
 
 フォーマット定義ファイルの文字コードは `UTF-8` となる。
@@ -56,7 +63,21 @@ record-length:  120     # 各業の長さは120バイト
 
 詳細は、 レコードフォーマット定義部 を参照
 
+<details>
+<summary>keywords</summary>
+
+ディレクティブ宣言部, レコードフォーマット定義部, フォーマット定義ファイル構造
+
+</details>
+
 ## ディレクティブ宣言部の定義
+
+<details>
+<summary>keywords</summary>
+
+file-type, text-encoding, record-separator, 共通ディレクティブ, ディレクティブ定義, ディレクティブ宣言部, record-length, positive-zone-sign-nibble, negative-zone-sign-nibble, positive-pack-sign-nibble, negative-pack-sign-nibble, required-decimal-point, fixed-sign-position, required-plus-sign, 固定長, Fixed, ゾーン数値, パック数値, 符号付き数値, field-separator, quoting-delimiter, ignore-blank-lines, requires-title, title-record-type-name, max-record-length, 可変長, Variable, CSV, TSV, タイトルレコード, RFC4180, JSON, JSON形式, JSONディレクティブ, XML, XML形式, XMLディレクティブ, pad, encoding, number, signed_number, replacement, リテラル値, デフォルト値, BigDecimal, フィールドコンバータ, パディング, トリム, 文字エンコーディング, 数値変換, 文字置換, 項目定義省略, 固定長, 可変長, JSON, XML, フォーマット定義, 項目定義, 読み取り対象外, 固定長フィールドタイプ, 可変長フィールドタイプ, JSONフィールドタイプ, XMLフィールドタイプ, ゾーン数値, パック数値, バイナリ列, 数値文字列, FixedLengthConvertorSetting, VariableLengthConvertorSetting, InvalidDataFormatException, SignedNumberStringDecimal, convertEmptyToNull, フォーマット定義フィールドタイプ, X, N, XN, Z, SZ, P, SP, B, X9, SX9, BL, OB, フィールド定義, フィールド開始位置, フィールド名, フィールドタイプ, フィールドコンバータ, 多重度, OBフィールドタイプ混在禁止, レコードタイプ名, java.util.Map, 数字のみフィールド名禁止, XML属性値定義, JSON多重度, XML多重度, ?プレフィックス, filler項目, 入力対象除外, 項目通番, 要素通番, マルチフォーマット, Classifier, レコード識別, レコード判定条件, 固定長マルチレコード, 複数レコードフォーマット, dataKbn
+
+</details>
 
 ## 共通で使用可能なディレクティブ一覧
 

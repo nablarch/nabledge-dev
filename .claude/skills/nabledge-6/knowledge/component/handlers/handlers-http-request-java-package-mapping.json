@@ -13,31 +13,60 @@
       "id": "s2",
       "title": "ハンドラクラス名",
       "content": "* `nablarch.fw.web.handler.HttpRequestJavaPackageMapping`",
-      "hints": []
+      "hints": [
+        "HttpRequestJavaPackageMapping",
+        "HTTPリクエストディスパッチ",
+        "URLマッピング",
+        "アクションクラス",
+        "router_adaptor推奨",
+        "HttpRequestJavaPackageMapping",
+        "nablarch.fw.web.handler.HttpRequestJavaPackageMapping",
+        "ハンドラクラス名"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-fw-web",
+        "com.nablarch.framework",
+        "Maven依存関係"
+      ]
     },
     {
       "id": "s4",
       "title": "制約",
       "content": "ハンドラキューの最後に置くこと\n本ハンドラは、後続のハンドラを呼び出さない。\nこのため、本ハンドラの配置はハンドラキューの最後に置くこと。",
-      "hints": []
+      "hints": [
+        "ハンドラキュー",
+        "配置順序",
+        "最後に配置",
+        "制約"
+      ]
     },
     {
       "id": "s5",
       "title": "ディスパッチの設定",
       "content": "本クラスを使用する際は、前述の baseUri と、アクションを配置するパッケージ(ベースパッケージ)の設定が必須となる。\n以下にbaseUri を `action` 、ベースパッケージを `jp.co.tis.nablarch.example` に設定する例を示す。\n\n```xml\n<component name=\"packageMapping\"\n           class=\"nablarch.fw.web.handler.HttpRequestJavaPackageMapping\">\n  <property name=\"baseUri\" value=\"/action/\"/>\n  <property name=\"basePackage\" value=\"jp.co.tis.nablarch.example\"/>\n</component>\n```\n上記設定の場合のディスパッチ例を以下に示す。\n\n:URL: /action/UserAction/index\n:ディスパッチ先クラス: jp.co.tis.nablarch.example.UserAction",
-      "hints": []
+      "hints": [
+        "baseUri",
+        "basePackage",
+        "ディスパッチ設定",
+        "URLマッピング設定",
+        "packageMapping"
+      ]
     },
     {
       "id": "s6",
       "title": "アクションが複数のパッケージに配置される場合の設定",
       "content": "アクションは、複数のパッケージにまたがって配置できる。\nこの場合、前述の ディスパッチの設定 に記載のベースパッケージを全Actionが置かれるパッケージに\n設定し、URIのクラス名にベースパッケージから対応づける Action までのパスを記載する。\n\n以下にクラスの配置とURLの対応付けの例を示す。\n\n![](assets/handlers-http-request-java-package-mapping/package_mapping.png)",
-      "hints": []
+      "hints": [
+        "複数パッケージ",
+        "パッケージマッピング",
+        "アクションクラス配置",
+        "サブパッケージ"
+      ]
     }
   ]
 }

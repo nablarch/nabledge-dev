@@ -21,6 +21,13 @@
 
 * `nablarch.fw.handler.MultiThreadExecutionHandler`
 
+<details>
+<summary>keywords</summary>
+
+マルチスレッド実行制御ハンドラ, サブスレッド, 並行実行, MultiStatus, nablarch.fw.Result.MultiStatus, 処理結果, 集約, MultiThreadExecutionHandler, nablarch.fw.handler.MultiThreadExecutionHandler, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -30,9 +37,23 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, モジュール一覧, 依存関係
+
+</details>
+
 ## 制約
 
 特に無し
+
+<details>
+<summary>keywords</summary>
+
+制約, マルチスレッド実行制御ハンドラ, スタンドアロン
+
+</details>
 
 ## スレッド数を指定する
 
@@ -49,6 +70,13 @@
 </component>
 ```
 > **Important:** 本ハンドラ以降の処理を複数スレッドで実行する場合、後続のハンドラやバッチアクションなどはスレッドセーフな実装となっている必要がある。 スレッドセーフとなっている保証のない処理を安易に複数スレッドで実行すると、予期せぬ例外が発生したり、データ不整合の原因となるので注意すること。
+
+<details>
+<summary>keywords</summary>
+
+concurrentNumber, スレッド数, 並列実行, スレッドセーフ, 多重実行
+
+</details>
 
 ## スレッド起動前後で任意の処理を実行したい
 
@@ -99,6 +127,13 @@ public class SampleHandler implements Handler<Object, Result>, ExecutionHandlerC
 }
 ```
 
+<details>
+<summary>keywords</summary>
+
+ExecutionHandlerCallback, nablarch.fw.handler.ExecutionHandlerCallback, preExecution, errorInExecution, postExecution, コールバック処理, サブスレッド起動前後, トランザクション確定
+
+</details>
+
 ## データベース接続に関する設定について
 
 親スレッド側の処理でデータベース接続が必要となる場合には、本ハンドラ以前に データベース接続管理ハンドラ の設定が必要になる。
@@ -107,6 +142,13 @@ public class SampleHandler implements Handler<Object, Result>, ExecutionHandlerC
 
 このため、親スレッド及びサブスレッドの両方でデータベースアクセスを行うハンドラ構成の場合、最低でも2つのデータベース接続が使用される。
 サブスレッドが複数となる場合には、スレッド数分のデータベース接続が必要となる。例えば、サブスレッド数が10の場合、合計11個のデータベース接続が必要となる。
+
+<details>
+<summary>keywords</summary>
+
+database_connection_management_handler, データベース接続設定, DBコネクション数, 親スレッド, サブスレッド
+
+</details>
 
 ## サブスレッドでの例外発生時の振る舞い
 
@@ -125,3 +167,10 @@ public class SampleHandler implements Handler<Object, Result>, ExecutionHandlerC
 実行中の処理が終わったタイミングで正常終了する。
 
 > **Important:** extdoc:`InterruptedException<java.lang.InterruptedException>` を捕捉している場合は、 割り込み要求により安全に処理できないことを示しているため、例外を送出する等で処理を異常終了させること。
+
+<details>
+<summary>keywords</summary>
+
+ThreadPoolExecutor, InterruptedException, サブスレッド例外, shutdownNow, ロールバック, 割り込み処理
+
+</details>

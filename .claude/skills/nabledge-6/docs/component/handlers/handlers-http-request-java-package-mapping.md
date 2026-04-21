@@ -31,6 +31,13 @@ URL形式
 
 * `nablarch.fw.web.handler.HttpRequestJavaPackageMapping`
 
+<details>
+<summary>keywords</summary>
+
+HttpRequestJavaPackageMapping, HTTPリクエストディスパッチ, URLマッピング, アクションクラス, router_adaptor推奨, HttpRequestJavaPackageMapping, nablarch.fw.web.handler.HttpRequestJavaPackageMapping, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -40,11 +47,25 @@ URL形式
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, com.nablarch.framework, Maven依存関係
+
+</details>
+
 ## 制約
 
 ハンドラキューの最後に置くこと
 本ハンドラは、後続のハンドラを呼び出さない。
 このため、本ハンドラの配置はハンドラキューの最後に置くこと。
+
+<details>
+<summary>keywords</summary>
+
+ハンドラキュー, 配置順序, 最後に配置, 制約
+
+</details>
 
 ## ディスパッチの設定
 
@@ -63,6 +84,13 @@ URL形式
 :URL: /action/UserAction/index
 :ディスパッチ先クラス: jp.co.tis.nablarch.example.UserAction
 
+<details>
+<summary>keywords</summary>
+
+baseUri, basePackage, ディスパッチ設定, URLマッピング設定, packageMapping
+
+</details>
+
 ## アクションが複数のパッケージに配置される場合の設定
 
 アクションは、複数のパッケージにまたがって配置できる。
@@ -72,3 +100,10 @@ URL形式
 以下にクラスの配置とURLの対応付けの例を示す。
 
 ![](../../../knowledge/assets/handlers-http-request-java-package-mapping/package_mapping.png)
+
+<details>
+<summary>keywords</summary>
+
+複数パッケージ, パッケージマッピング, アクションクラス配置, サブパッケージ
+
+</details>

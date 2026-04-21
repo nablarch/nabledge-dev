@@ -20,6 +20,13 @@
 
 * `nablarch.fw.web.handler.ResourceMapping`
 
+<details>
+<summary>keywords</summary>
+
+nablarch.fw.web.handler.ResourceMapping, ResourceMapping, リソースマッピングハンドラ, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -28,6 +35,13 @@
   <artifactId>nablarch-fw-web</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, com.nablarch.framework, Mavenモジュール, 依存関係
+
+</details>
 
 ## 制約
 
@@ -39,6 +53,13 @@ HTTPレスポンスハンドラ よりも後に配置すること
 本ハンドラは、 HTTPレスポンスハンドラ の機能により提供される `servlet://` 、 `file://` 、 `classpath://` スキームを使用できる。
 また、エラーが発生した際は 404(Not Found)の応答を返す。
 これらの応答を処理するため、本ハンドラは HTTPレスポンスハンドラ より後に配置する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+forwarding_handler, http_response_handler, forward://, servlet://, file://, classpath://, ハンドラ配置順序, 制約
+
+</details>
 
 ## 静的リソースのダウンロード
 
@@ -70,3 +91,10 @@ HTTPレスポンスハンドラ よりも後に配置すること
 .. |br| raw:: html
 
 <br />
+
+<details>
+<summary>keywords</summary>
+
+baseUri, basePath, request_handler_entry, 静的リソースダウンロード, 認可チェック, ResourceMapping設定, 後続ハンドラ呼び出しなし
+
+</details>

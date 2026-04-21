@@ -15,6 +15,13 @@
 ```
 > **Tip:** Velocityのバージョン2.0を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
+<details>
+<summary>keywords</summary>
+
+nablarch-mail-sender-velocity-adaptor, Velocityアダプタ, メール送信モジュール, Maven依存関係, Velocity 2.0
+
+</details>
+
 ## E-mail Velocityアダプタを使用するための設定を行う
 
 本アダプタを使用するためには、コンポーネント設定ファイルで `VelocityMailProcessor` を `MailRequester` へ設定する。
@@ -70,6 +77,13 @@ public class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+VelocityMailProcessor, MailRequester, ComponentFactory, VelocityEngine, VelocityEngineFactory, ClasspathResourceLoader, 定型メール設定, コンポーネント設定, VelocityEngine初期化, templateEngineMailProcessor
+
+</details>
+
 ## メールのテンプレートを作成する
 
 Velocityを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。
@@ -90,7 +104,21 @@ $approverは速やかに$titleを承認してください。$option
 テンプレートファイルを配置する場所は `VelocityEngine` の設定によって異なる。
 例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。
 
+<details>
+<summary>keywords</summary>
+
+TemplateEngineProcessedResult, メールテンプレート, 件名, 本文, デリミタ, Velocityテンプレート, テンプレートファイル配置
+
+</details>
+
 ## メール送信要求を登録する
 
 単に定型メールの送信要求を登録すればよい。
 mail-request を参照。
+
+<details>
+<summary>keywords</summary>
+
+メール送信要求, 定型メール登録, mail-request
+
+</details>

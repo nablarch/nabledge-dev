@@ -13,31 +13,68 @@
       "id": "s2",
       "title": "Action/Component単体テストの書き方",
       "content": "本項で例として使用したテストクラスとテストデータは以下のとおり(右クリック->保存でダウンロード)。\n\n* [テストケース一覧(ユーザ登録_ UserComponent_クラス単体テストケース.xlsx)](assets/testing-framework-02-componentUnitTest/ユーザ登録_UserComponent_クラス単体テストケース.xlsx)\n* [テストクラス(UserComponentTest.java)](assets/testing-framework-02-componentUnitTest/UserComponentTest.java)\n* [テストデータ(UserComponentTest.xlsx)](assets/testing-framework-02-componentUnitTest/UserComponentTest.xlsx)\n* [テスト対象クラス(UserComponent.java)](assets/testing-framework-02-componentUnitTest/UserComponent.java)\n\n\n本項では、ユーザ登録用メソッド(UserComponent#registerUser)を例に説明する。\n\n\n# テストケース実行のパターン分け\nテストケース一覧とテスト対象メソッドから、テストケースは以下の4つに分類される。これは、どのパターンに属するかによって、テストクラスやデータの作成方法に\\\n違いがあるためである。\n\n| パターン | 当てはまる処理の例 |\n|---|---|\n| 戻り値(データベースの検索結果)を確認しなければならないもの | 検索処理 |\n| 戻り値(データベースの検索結果以外)を確認しなければならないもの | 計算、判定処理 |\n| 処理終了後のデータベースの状況を確認しなければならないもの | 更新(挿入、削除含む)処理 |\n| メッセージIDを確認しなければならないもの | エラー処理 |\n\n今回の例は、DB挿入処理、2重登録時のエラー処理ありなので、テストケースは\"処理終了後のデータベースの状況を確認しなければならないもの\"と\\\n\"メッセージIDを確認しなければならないもの\"に分類される。\n\n# テストデータとテストクラスの作成\n\\ 事前準備データの作成処理\\ 、\\ 処理終了後のデータベースの状況を確認しなければならないもの\\ 、\\ メッセージIDを確認しなければならないもの\\ のそれぞれについて、テストデータとテストクラスの作成方法を説明する。\\\nまず最初に、テストデータ(Excelファイル)そのもののと、テストクラスの作成方法(継承すべきクラスなど)を説明する。次に、各パターンごとのデータとテストメソッド作成方法を説明する。",
-      "hints": []
+      "hints": [
+        "Action単体テスト",
+        "Component単体テスト",
+        "クラス単体テスト",
+        "テストクラス名",
+        "UserComponentTest",
+        "テストケースパターン分類",
+        "検索処理",
+        "更新処理",
+        "エラー処理テスト",
+        "テストケース分類"
+      ]
     },
     {
       "id": "s3",
       "title": "テストデータの作成",
       "content": "テストデータを記載したExcelファイルは、\\ Nablarch Validationに対応したForm/Entityのクラス単体テスト\\ と同様にテストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。\\\nなお、全てのテストデータは同じExcelのシートに記載する前提である。\n\nテストデータの記述方法詳細については、\\ ../../06_TestFWGuide/01_Abstract\\ 、\\ ../../06_TestFWGuide/02_DbAccessTest\\ を参照。\n\nなお、メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている\\\n(これらのデータを個別のテストデータとして作成しない)前提である。",
-      "hints": []
+      "hints": [
+        "テストデータ",
+        "Excelファイル配置",
+        "静的マスタデータ",
+        "テストシート"
+      ]
     },
     {
       "id": "s4",
       "title": "テストクラスの作成",
       "content": "Component単体テストのテストクラスは以下の条件を満たすように作成する。詳細は、\\ ../../06_TestFWGuide/02_DbAccessTest\\ を参照。\n\n* テストクラスのパッケージは、テスト対象のAction/Componentと同じとする。\n* <Action/Componentクラス名>Testというクラス名でテストクラスを作成する。\n* nablarch.test.core.db.DbAccessTestSupportを継承する。\n\n```java\npackage nablarch.sample.management.user; // 【説明】パッケージはUserComponentと同じ\n\nimport static org.junit.Assert.assertEquals;\nimport static org.junit.Assert.assertTrue;\nimport static org.junit.Assert.fail;\n\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Map.Entry;\n\nimport nablarch.core.db.statement.SqlResultSet;\nimport nablarch.core.message.ApplicationException;\nimport nablarch.test.core.db.DbAccessTestSupport;\n\nimport org.junit.Test;\n\n/**\n * {@link UserComponentTest}のテストクラス。\n * \n * @author Tsuyoshi Kawasaki\n * @since 1.0\n */\npublic class UserComponentTest extends DbAccessTestSupport {\n// 【説明】クラス名はUserComponentTestで、DbAccessTestSupportを継承する\n\n// ～後略～\n```",
-      "hints": []
+      "hints": [
+        "DbAccessTestSupport",
+        "UserComponentTest",
+        "テストクラス作成ルール",
+        "パッケージ設定"
+      ]
     },
     {
       "id": "s5",
       "title": "事前準備データの作成処理",
       "content": "事前データと事前データ投入処理を作成する。今回の例では、次のようなデータを作成している。\n\n* スレッドコンテキスト\\ [#]_\\ の設定\n\n* USER_ID:ユーザID。USERID0001。\n* REQUEST_ID:リクエストID。USERS00301。\n\n* 挿入対象テーブルの初期化\n\n* SYSTEM_ACCOUNT:システムアカウントテーブル。初期データ3件。\n* USERS:ユーザテーブル。初期データ0件。\n* UGROUP_SYSTEM_ACCOUNT:グループシステムアカウントテーブル。初期データ0件。\n* SYSTEM_ACCOUNT_AUTHORITY:システムアカウント権限テーブル。初期データ0件。\n\n* マスタ系データの投入\n\n* ID_GENERATE:採番テーブル。登録時に採番処理を行うため。採番テーブルを初期化しておかないと、テスト実行時の採番結果がわからなくなり、挿入結果の検証ができなくなる。\n\n![](assets/testing-framework-02-componentUnitTest/componentUnitTest_Setup.png)\n.. [#]\n\nスレッドコンテキストとは、ユーザID、リクエストID、使用言語のような、一連の処理を実行するときに、コールスタックの複数のメソッドにおいて共通的に必要なデータを格納するオブジェクト。\n\nこれらのデータを読み込む処理を以下に示す。\n\n```java\n// ～前略～\n\n/**\n * {@link UserComponent#registerUser()}のテスト1。<br>\n * 正常系。\n */\n@Test\npublic void testRegisterUser1() {\n    String sheetName = \"registerUser\";\n\n    setThreadContextValues(sheetName, \"threadContext\"); // 【説明】スレッドコンテキストの設定\n\n\n// ～中略～\n\n     for (int i = 0; i < sysAcctDatas.size(); i++) { \n\n// ～中略～\n\n        // データベース準備\n        setUpDb(sheetName); // 【説明】事前データの投入。\n                            // 【説明】各ケースごとに初期化するためループ中で実行する。\n\n// ～後略～\n```",
-      "hints": []
+      "hints": [
+        "setThreadContextValues",
+        "setUpDb",
+        "スレッドコンテキスト",
+        "事前データ投入",
+        "ID_GENERATE"
+      ]
     },
     {
       "id": "s6",
       "title": "処理終了後のデータベースの状況を確認しなければならないもの",
       "content": "",
-      "hints": []
+      "hints": [
+        "commitTransactions",
+        "assertTableEquals",
+        "トランザクションコミット",
+        "DB状態検証",
+        "getListMap",
+        "database-common_bean",
+        "SystemAccountEntity",
+        "UsersEntity",
+        "UgroupSystemAccountEntity"
+      ]
     },
     {
       "id": "s7",
@@ -55,7 +92,13 @@
       "id": "s9",
       "title": "メッセージIDを確認しなければならないもの",
       "content": "",
-      "hints": []
+      "hints": [
+        "ApplicationException",
+        "メッセージID",
+        "異常系テスト",
+        "例外クラス指定",
+        "getMessageId"
+      ]
     },
     {
       "id": "s10",

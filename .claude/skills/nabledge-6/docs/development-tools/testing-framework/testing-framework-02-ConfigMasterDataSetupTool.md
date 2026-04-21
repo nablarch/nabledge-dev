@@ -94,6 +94,13 @@ masterdata.test.backup-schema=nablarch_test_master
 
 以下の設定をすることでEclipseから本ツールを起動できる。
 
+<details>
+<summary>keywords</summary>
+
+前提条件, インストール要件, Eclipse インストール, Maven インストール, Nablarchアーキタイプ, テーブル作成済み, バックアップ用スキーマ, マスタデータ投入ツール前提, nablarch-testing jar, nablarch-testing-XXX.jar, mvn compile, mvn dependency:copy-dependencies, DoutputDirectory=lib, 提供方法, ツールセットアップ, マスタデータ投入ツール インストール, jarファイル ダウンロード, masterdata.test.backup-schema, バックアップスキーマ設定, マスタデータ投入ツール設定, プロパティファイル, master-data-setup-tool.zip, MASTER_DATA.xlsx, master_data-build.properties, master_data-log.properties, master_data-app-log.properties
+
+</details>
+
 ## Antビュー起動
 
 ツールバーから、ウィンドウ(Window)→設定(Show View)を選択し、Antビューを開く。
@@ -101,6 +108,13 @@ masterdata.test.backup-schema=nablarch_test_master
 
 
 ![](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/open_ant_view.png)
+
+<details>
+<summary>keywords</summary>
+
+Eclipse連携, Antビュー起動, Eclipseツール設定, マスタデータ投入ツール Eclipse, Show View
+
+</details>
 
 ## ビルドファイル登録
 
@@ -113,3 +127,10 @@ Antビルドファイル(master_data-build.xml)を選択する。
 Antビューに登録したビルドファイルが表示されることを確認する。
 
 ![](../../../knowledge/assets/testing-framework-02-ConfigMasterDataSetupTool/build_file_in_view.png)
+
+<details>
+<summary>keywords</summary>
+
+master_data-build.xml, Antビルドファイル登録, Eclipseビルドファイル, マスタデータ投入ツール設定, Antビュー
+
+</details>

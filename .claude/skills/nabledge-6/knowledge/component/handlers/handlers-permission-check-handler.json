@@ -13,37 +13,78 @@
       "id": "s2",
       "title": "ハンドラクラス名",
       "content": "* `nablarch.common.permission.PermissionCheckHandler`",
-      "hints": []
+      "hints": [
+        "PermissionCheckHandler",
+        "nablarch.common.permission.PermissionCheckHandler",
+        "PermissionFactory",
+        "nablarch.common.permission.PermissionFactory",
+        "認可チェックハンドラ",
+        "ハンドラクラス"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-common-auth</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-common-auth",
+        "com.nablarch.framework",
+        "モジュール",
+        "依存関係"
+      ]
     },
     {
       "id": "s4",
       "title": "制約",
       "content": "スレッドコンテキスト変数管理ハンドラ より後ろに配置すること\n本ハンドラではスレッドコンテキスト上に設定されたリクエストIDとユーザIDをもとに認可チェックを行うため、\nスレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを配置する必要がある。\n\n内部フォーワードハンドラ より後ろに配置すること\n内部フォーワードが行われた際に、フォーワード先のリクエストID（ 内部リクエストID ）をもとに\n認可チェックを行いたい場合は、 内部フォーワードハンドラ より後ろに本ハンドラを配置する必要がある。\n合わせて、 スレッドコンテキスト変数管理ハンドラ の `attributes` に `InternalRequestIdAttribute` を追加すること。\n\nHTTPエラー制御ハンドラ より後ろに配置すること\n認可チェックエラーの場合に表示するエラーページを指定するため、\nHTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必要がある。",
-      "hints": []
+      "hints": [
+        "InternalRequestIdAttribute",
+        "nablarch.common.handler.threadcontext.InternalRequestIdAttribute",
+        "ハンドラ配置順序",
+        "制約",
+        "スレッドコンテキスト",
+        "内部リクエストID"
+      ]
     },
     {
       "id": "s5",
       "title": "リクエストに対する認可チェック",
       "content": "ログイン中のユーザが、現在のリクエスト(リクエストID)に対して権限を持っているかをチェックする。\nチェックの詳細は、 permission_check を参照。\n\n権限がある場合\n業務ロジック や\n画面表示の制御 で参照できるように、\n認可チェックに使用した `Permission` をスレッドローカルに設定する。\nそして、後続ハンドラを呼び出す。\n\n権限がない場合\n`Forbidden(403)` を送出する。\n\nチェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、\n`PermissionCheckHandler.setUsesInternalRequestId`\nでtrueを指定する。デフォルトはfalseである。",
-      "hints": []
+      "hints": [
+        "PermissionCheckHandler",
+        "Permission",
+        "nablarch.common.permission.Permission",
+        "Forbidden",
+        "nablarch.fw.results.Forbidden",
+        "setUsesInternalRequestId",
+        "リクエスト認可チェック",
+        "権限チェック",
+        "403エラー",
+        "内部リクエストID"
+      ]
     },
     {
       "id": "s6",
       "title": "権限がない場合に表示するエラーページを指定する",
       "content": "権限がない場合に表示するエラーページは、HTTPエラー制御ハンドラで指定する。\n指定方法は、 デフォルトページの設定 を参照。",
-      "hints": []
+      "hints": [
+        "エラーページ指定",
+        "403エラーページ",
+        "HTTPエラー制御ハンドラ",
+        "HttpErrorHandler_DefaultPage"
+      ]
     },
     {
       "id": "s7",
       "title": "特定のリクエストを認可チェックから除外する",
       "content": "ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、\n`PermissionCheckHandler.setIgnoreRequestIds`\nで指定する。\n\n```xml\n<component name=\"permissionCheckHandler\"\n           class=\"nablarch.common.permission.PermissionCheckHandler\">\n  <property name=\"permissionFactory\" ref=\"permissionFactory\"/>\n  <!-- 認可チェックを除外するリクエストIDをカンマ区切りで指定する -->\n  <property name=\"ignoreRequestIds\" value=\"/action/login,/action/logout\" />\n</component>\n```",
-      "hints": []
+      "hints": [
+        "setIgnoreRequestIds",
+        "PermissionCheckHandler",
+        "nablarch.common.permission.PermissionCheckHandler",
+        "認可チェック除外",
+        "ログイン前リクエスト"
+      ]
     }
   ]
 }

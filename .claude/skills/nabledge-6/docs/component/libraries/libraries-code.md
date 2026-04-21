@@ -18,6 +18,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+BasicCodeManager, BasicStaticDataCache, BasicCodeLoader, CodePatternSchema, CodeNameSchema, BasicApplicationInitializer, コード管理機能設定, コードパターンテーブル, コード名称テーブル, 初期設定, codeManager, loadOnStartup, CodeUtil, パターン切り替え, CodePatternSchema, patternColumnNames, getValues, codeSelect, pattern属性, PATTERN1, PATTERN2, CodeUtil, 多言語化対応, getName, getShortName, Locale, LANG, 言語指定, SORT_ORDER, ソート順定義, コード名称テーブル, codeSelect, CodeUtil, getOptionalName, オプション名称, OPTIONAL_NAME, optionColumnName, labelPattern, FORM_NAME, KANA_NAME, CodePatternSchema, patternColumnNames, @CodeValue, バリデーション, CodeValue, bean_validation, nablarch_validation, pattern属性, SampleDomainBean, ドメインバリデーション, コード管理, コード値名称マッピング, 値, 名称, 略称, 国際化対応, 多言語化, 参照整合性制約, code-validation, doma_adaptor, テーブル管理
+
+</details>
+
 ## 国際化に対応できる
 
 この機能は、言語ごとに名称を管理することが出来る。
@@ -43,6 +50,13 @@
   <artifactId>nablarch-common-code-jdbc</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-common-code, nablarch-common-code-jdbc, モジュール依存関係, Maven
+
+</details>
 
 ## 使用方法
 

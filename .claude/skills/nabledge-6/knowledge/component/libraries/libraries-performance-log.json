@@ -13,13 +13,50 @@
       "id": "s2",
       "title": "パフォーマンスログの出力方針",
       "content": "パフォーマンスログは、ヒープサイズの取得などでパフォーマンスに影響を与える可能性がある。\nそのため、開発時の使用を想定しているためDEBUGレベルで出力する。\n\n| ログレベル | ロガー名 |\n|---|---|\n| DEBUG | PERFORMANCE |\n上記出力方針に対するログ出力の設定例を下記に示す。\n\nlog.propertiesの設定例\n```properties\nwriterNames=appLog\n\n# アプリケーションログの出力先\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.encoding=UTF-8\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=PER,ROO\n\n# アプリケーションログの設定\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\n# パフォーマンスログの設定\nloggers.PER.nameRegex=PERFORMANCE\nloggers.PER.level=DEBUG\nloggers.PER.writerNames=appLog\n```\napp-log.propertiesの設定例\n```properties\n# PerformanceLogFormatter\n#performanceLogFormatter.className=\n#performanceLogFormatter.targetPoints=\n#performanceLogFormatter.datePattern=\nperformanceLogFormatter.format=\\n\\tpoint = [$point$] result = [$result$]\\\n                               \\n\\tstart_time = [$startTime$] end_time = [$endTime$]\\\n                               \\n\\texecution_time = [$executionTime$]\\\n                               \\n\\tmax_memory = [$maxMemory$]\\\n                               \\n\\tstart_free_memory = [$startFreeMemory$] start_used_memory = [$startUsedMemory$]\\\n                               \\n\\tend_free_memory = [$endFreeMemory$] end_used_memory = [$endUsedMemory$]\n```",
-      "hints": []
+      "hints": [
+        "パフォーマンスログ出力方針",
+        "DEBUGレベル",
+        "PERFORMANCEロガー",
+        "log.properties設定",
+        "app-log.properties設定",
+        "PerformanceLogFormatter",
+        "ログレベル設定"
+      ]
     },
     {
       "id": "s3",
       "title": "使用方法",
       "content": "",
-      "hints": []
+      "hints": [
+        "PerformanceLogUtil",
+        "startメソッド",
+        "endメソッド",
+        "パフォーマンス計測",
+        "実行時間計測",
+        "メモリ使用量",
+        "再帰呼び出し制限",
+        "実行時ID",
+        "ポイント名",
+        "オプション情報",
+        "Object...",
+        "varargs",
+        "PerformanceLogFormatter",
+        "performanceLogFormatter.className",
+        "performanceLogFormatter.format",
+        "performanceLogFormatter.datePattern",
+        "performanceLogFormatter.targetPoints",
+        "app-log.properties設定",
+        "フォーマット設定",
+        "プレースホルダ",
+        "PerformanceJsonLogFormatter",
+        "JsonLogFormatter",
+        "performanceLogFormatter.targets",
+        "performanceLogFormatter.structuredMessagePrefix",
+        "JSON構造化ログ",
+        "performanceLogFormatter.className",
+        "performanceLogFormatter.datePattern",
+        "performanceLogFormatter.targetPoints"
+      ]
     },
     {
       "id": "s4",

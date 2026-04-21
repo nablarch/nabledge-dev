@@ -184,6 +184,13 @@
 </tbody>
 </table>
 
+<details>
+<summary>keywords</summary>
+
+Excelシート命名規約, テストメソッド名とシート名, データタイプ, SETUP_TABLE, EXPECTED_TABLE, EXPECTED_COMPLETE_TABLE, LIST_MAP, SETUP_FIXED, EXPECTED_FIXED, SETUP_VARIABLE, EXPECTED_VARIABLE, MESSAGE, EXPECTED_REQUEST_HEADER_MESSAGES, EXPECTED_REQUEST_BODY_MESSAGES, RESPONSE_HEADER_MESSAGES, RESPONSE_BODY_MESSAGES, コメント記法, //記法, マーカーカラム, 角括弧カラム名, セルの書式, 文字列書式, 日付フォーマット, yyyyMMddHHmmssSSS, yyyy-MM-dd HH:mm:ss.SSS, 特殊記法, ${systemTime}, ${updateTime}, ${setUpTime}, ${binaryFile}, ${文字種,文字数}, null値記法, 空文字列記法, ダブルクォート記法, """記法, SystemTimeProvider, テスト実行順序独立性, テストデータExcel管理, マスタデータ事前準備, 複数データタイプ混在禁止, EXPECTED_TABLE, EXPECTED_COMPLETE_TABLE, master_data_setup_tool, auto-test-framework_multi-datatype, JUnit Vintage, junit-vintage-engine, junit-jupiter, maven-surefire-plugin, JUnit5移行, JUnit4テスト実行, ntf_junit5_extension, junit-bom, 自動テストフレームワーク, JUnit4, テストデータ外部化, Excelファイル, Nablarch特化API, トランザクション制御, システム日付設定, Matcher, assertメソッド, 自動テストフレームワーク構成, テストクラス, テスト対象クラス, Excelファイル, コンポーネント設定ファイル, 環境設定ファイル, Nablarch Application Framework
+
+</details>
+
 ## テストメソッド記述方法
 
 JUnit4のアノテーションを使用する。
@@ -201,6 +208,13 @@ public class SampleTest {
 ```
 > **Tip:** @Beforeや@Afterなどのアノテーションも使用できる。これらのアノテーションを用いて、 テストメソッド前後にリソースの取得解放などの共通処理を行いたい場合は、 次の項を参照（ テスト実行前後に共通処理を行いたい。 ）。
 
+<details>
+<summary>keywords</summary>
+
+JUnit5, Vintage Engine, JUnit5対応, run_ntf_on_junit5_with_vintage_engine, @Test, JUnit4, テストメソッド, SampleTest, アノテーション
+
+</details>
+
 ## Excelによるテストデータ記述
 
 データベースの準備データやデータベース検索結果などのデータを表すには、
@@ -210,6 +224,13 @@ Excelファイルを使用することにより、このようなデータをス
 # 命名規約
 
 Excelファイル名、ファイルパスには推奨される規約が存在する。この規約に従うことにより、テストクラスで明示的にディレクトリ名やファイル名を指定してファイルを読み込む必要がなくなり、簡潔にテストソースコードを記述できる。また明示的にパスを指定することで任意の場所のExcelファイルを読み込むことも可能である。
+
+<details>
+<summary>keywords</summary>
+
+@Before, @After, JUnit4アノテーション, テストライフサイクル, using_junit_annotation, Excelテストデータ, 命名規約, スプレッドシート, テストデータ外部化, 可読性
+
+</details>
 
 ## パス、ファイル名に関する規約
 
@@ -245,6 +266,13 @@ Excelファイル名、ファイルパスには推奨される規約が存在す
 </table>
 
 Excel ファイルは、 Excel2003以前のファイル形式(拡張子 xls の形式)および Excel2007 以降のファイル形式(拡張子 xlsx の形式)に対応している。
+
+<details>
+<summary>keywords</summary>
+
+Excelファイル命名規約, テストクラス同名, xlsx, xls, ファイルパス規約, ExampleDbAcessTest
+
+</details>
 
 ## Excelシート名に関する規約
 

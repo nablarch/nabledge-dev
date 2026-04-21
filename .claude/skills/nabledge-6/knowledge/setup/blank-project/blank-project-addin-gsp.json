@@ -13,7 +13,37 @@
       "id": "s2",
       "title": "pom.xmlファイルの修正",
       "content": "",
-      "hints": []
+      "hints": [
+        "gsp-dba-maven-plugin",
+        "開発フェーズ",
+        "本番環境",
+        "DBA",
+        "DDL",
+        "ER図",
+        "ローカルDB",
+        "generate-entity",
+        "Java 17",
+        "JVMオプション",
+        "Entityクラス自動生成",
+        "Java17以降",
+        "nablarch.db.jdbcDriver",
+        "nablarch.db.url",
+        "nablarch.db.adminUser",
+        "nablarch.db.adminPassword",
+        "nablarch.db.user",
+        "nablarch.db.password",
+        "nablarch.db.schema",
+        "gsp-dba-maven-plugin",
+        "JDBC設定",
+        "RDBMS接続設定",
+        "データベース接続設定",
+        "Maven POM設定",
+        "JDBCドライバ依存関係",
+        "oracle.jdbc.driver.OracleDriver",
+        "org.postgresql.Driver",
+        "com.ibm.db2.jcc.DB2Driver",
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+      ]
     },
     {
       "id": "s3",
@@ -31,7 +61,33 @@
       "id": "s5",
       "title": "data-model.edm  (src/main/resources/entity)の準備",
       "content": "src/main/resources/entity以下にRDBMS毎にedmファイルが存在するので、使用するRDBMSに対応するファイルを「data-model.edm」にリネームする。\n\n\n# 動作確認\n\n> **Important:** DBのデータが削除されるため、必要であれば現在DBに格納されているデータを退避しておくこと。\n**1.以下のコマンドを実行して、DDLの生成からダンプファイル作成までを行う。**\n\n```bash\nmvn -P gsp clean generate-resources\n```\n.. tip ::\n\n以下のゴールが実行されるように、各アーキタイプから生成したプロジェクトのpom.xmlに記述されている。\n\n* generate-ddl\n* execute-ddl\n* generate-entity\n* load-data\n* export-schema\n\n\n成功すると以下のようなログがコンソールに出力される。\n\n```text\n(中略)\n[INFO] --- gsp-dba-maven-plugin:3.2.0:export-schema (default-cli) @ myapp-web ---\n[INFO] PUBLICスキーマのExportを開始します。:C:\\develop\\myapp\\myapp-web\\gsp-target\\output\\PUBLIC.dmp\n[INFO] Building jar: C:\\develop\\myapp-web\\gsp-target\\output\\myapp-web-testdata-0.1.0.jar\n[INFO] PUBLICスキーマのExport完了\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time: 5.415 s\n[INFO] Finished at: 2016-05-11T21:17:03+09:00\n[INFO] Final Memory: 13M/31M\n[INFO] ------------------------------------------------------------------------\n```\nまた、 `gsp-target/output/` ディレクトリにダンプファイルが格納されたjarファイルが生成される。\n\n> **Tip:** 実行に失敗する場合は、RDBMS固有の制限事項に抵触していないか確認する。 RDBMS固有の制限事項については、https://github.com/coastland/gsp-dba-maven-plugin (外部サイト)の「ゴール共通のパラメータ」を参照。\n**2.以下のコマンドを実行して、ダンプファイルをローカルリポジトリへインストールする。**\n\n```bash\nmvn -P gsp install:install-file\n```\n成功すると以下のようなログがコンソールに出力される。\n\n```text\n(中略)\n[INFO] --- maven-install-plugin:2.5.2:install-file (default-cli) @ myapp-web ---\n[INFO] pom.xml not found in myapp-web-testdata-0.1.0.jar\n[INFO] Installing C:\\develop\\myapp-web\\gsp-target\\output\\myapp-web-testdata-0.1.0.jar to C:\\Users\\TISxxxxxx\\.m2\\repository\\com\\example\\myapp-web-testdata\\0.1.0\\myapp-web-testdata-0.1.0.jar\n[INFO] Installing C:\\Users\\TISxxx~1\\AppData\\Local\\Temp\\mvninstall7441010390688212345.pom to C:\\Users\\TISxxxxxx\\.m2\\repository\\com\\example\\myapp-web-testdata\\0.1.0\\myapp-web-testdata-0.1.0.pom\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time: 1.077 s\n[INFO] Finished at: 2016-05-12T14:37:39+09:00\n[INFO] Final Memory: 8M/20M\n[INFO] ------------------------------------------------------------------------\n```\n**3.以下のコマンドを実行して、ダンプファイルをインポートする。**\n\n```bash\nmvn -P gsp gsp-dba:import-schema\n```\n成功すると以下のようなログがコンソールに出力される。\n\n```text\n(中略)\n[INFO] スキーマのインポートを開始します。:C:\\develop\\myapp-web\\gsp-target\\output\\PUBLIC.dmp\n[INFO] スキーマのインポートを終了しました\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time: 2.584 s\n[INFO] Finished at: 2016-05-12T14:49:58+09:00\n[INFO] Final Memory: 9M/23M\n[INFO] ------------------------------------------------------------------------\n```\n# データモデリングツールについての補足\n\nブランクプロジェクトは [SI Object Browser ER(外部サイト)](https://products.sint.co.jp/ober) というモデリングツールを使用してデータモデル(data-model.edm)を作成することを前提としている。\nしかし、data-model.edm が使われるのはDDLの生成時だけである。\nそのため、任意の方法でDDLを生成・実行しデータベースを構築すれば、\nDDL の生成/実行以外の機能は SI Object Browser ER 以外のモデリングツールを使用した場合でも実行可能である。\n\nSI Object Browser ER 以外のモデリングツールを使用する場合は、以下のように generate-ddl 、execute-ddl のゴールが実行されないようpom.xmlを修正する。\n\n```xml\n<build>\n  <plugins>\n    <plugin>\n      <groupId>jp.co.tis.gsp</groupId>\n      <artifactId>gsp-dba-maven-plugin</artifactId>\n        <executions>\n          <execution>\n            <id>default-cli</id>\n            <phase>generate-resources</phase>\n            <goals>\n              <!-- <goal>generate-ddl</goal> この行を削除する --> \n              <!-- <goal>execute-ddl</goal> この行を削除する -->\n              <goal>generate-entity</goal>\n              <goal>load-data</goal>\n              <goal>export-schema</goal>\n            </goals>\n          </execution>\n        </executions>\n    </plugin>\n  </plugins>\n</build>\n```\n修正後に以下のコマンドを実行することでEntityクラスの生成、テストデータの登録、ダンプファイルの作成が行われる。\nなお、コマンド実行前に任意の方法でデータベースを構築する必要がある。\n\n```bash\nmvn -P gsp clean generate-resources\n```\n> **Tip:** gsp-dba-maven-pluginはDDL生成機能を使用しない場合は、DDL実行機能の使用も推奨しない。",
-      "hints": []
+      "hints": [
+        "data-model.edm",
+        "EDMファイル設定",
+        "RDBMS別エンティティモデル",
+        "エンティティモデルリネーム",
+        "src/main/resources/entity",
+        "mvn -P gsp clean generate-resources",
+        "mvn -P gsp install:install-file",
+        "mvn -P gsp gsp-dba:import-schema",
+        "generate-ddl",
+        "execute-ddl",
+        "load-data",
+        "export-schema",
+        "gsp-target/output",
+        "動作確認",
+        "ダンプファイル",
+        "スキーマインポート",
+        "ゴール共通のパラメータ",
+        "RDBMS固有の制限事項",
+        "SI Object Browser ER",
+        "data-model.edm",
+        "generate-ddl",
+        "execute-ddl",
+        "モデリングツール",
+        "DDL生成スキップ",
+        "pom.xml修正"
+      ]
     }
   ]
 }

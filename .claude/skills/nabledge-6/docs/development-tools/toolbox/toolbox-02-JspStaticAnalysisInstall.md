@@ -8,6 +8,13 @@ index\ の設定変更方法について説明する。
 
 * アーキタイプからブランクプロジェクトの生成が完了していること。
 
+<details>
+<summary>keywords</summary>
+
+JSP静的解析ツール, ブランクプロジェクト, セットアップ前提条件, アーキタイプ
+
+</details>
+
 ## 設定ファイル構成
 
 設定ファイルの構成は下表の通り。
@@ -20,6 +27,13 @@ index\ の設定変更方法について説明する。
 | tools/static-analysis/jspanalysis/transform-to-html.xsl | 解析結果のXMLをHTMLに変換する際の定義ファイル。\|br\| 記述方法は、 出力結果確認方法 の「JSP解析(XMLレポート出力)」を参照。 |
 | nablarch-archetype-parentのpom.xml | jspanalysis.excludePatterns以外を設定する。 |
 内部でAntを使用しているため存在する。利用者はMaven経由で実行するため通常意識することはない。
+
+<details>
+<summary>keywords</summary>
+
+pom.xml, nablarch-tools.xml, config.txt, transform-to-html.xsl, 設定ファイル構成, JSP静的解析設定ファイル
+
+</details>
 
 ## pom.xmlの書き換え
 
@@ -44,3 +58,10 @@ Jakarta Server Pages静的解析ツール用のプロパティを実行環境に
 .. |br| raw:: html
 
 <br />
+
+<details>
+<summary>keywords</summary>
+
+jspanalysis.checkjspdir, jspanalysis.xmloutput, jspanalysis.htmloutput, jspanalysis.checkconfig, jspanalysis.charset, jspanalysis.lineseparator, jspanalysis.xsl, jspanalysis.additionalext, jspanalysis.excludePatterns, JSP静的解析プロパティ設定, pom.xml設定変更
+
+</details>

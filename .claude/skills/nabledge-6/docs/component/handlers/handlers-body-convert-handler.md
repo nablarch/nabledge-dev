@@ -23,6 +23,13 @@
 
 * `nablarch.fw.jaxrs.BodyConvertHandler`
 
+<details>
+<summary>keywords</summary>
+
+BodyConvertHandler, nablarch.fw.jaxrs.BodyConvertHandler, リクエストボディ変換ハンドラ, レスポンスボディ変換
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -32,12 +39,26 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-jaxrs, com.nablarch.framework, モジュール依存関係
+
+</details>
+
 ## 制約
 
 本ハンドラは ルーティングアダプタ よりも後ろに設定すること
 このハンドラは、リソース(アクション)クラスのメソッドに設定された、アノテーションの情報を元に
 リクエスト及びレスポンスの変換処理を行う。
 このため、ディスパッチ先を特定する ルーティングアダプタ よりも後ろに設定する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+router_adaptor, ハンドラ設定順序, ディスパッチ先特定, アノテーション情報
+
+</details>
 
 ## 変換処理を行うコンバータを設定する
 
@@ -62,6 +83,13 @@
 ```
 > **Tip:** extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティに設定されたコンバータで、 変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
 
+<details>
+<summary>keywords</summary>
+
+BodyConverter, bodyConverters, JaxbBodyConverter, FormUrlEncodedConverter, MIMEタイプ変換設定, 415ステータスコード
+
+</details>
+
 ## リクエストボディをFormに変換する
 
 リクエストボディの変換処理で使用するフォーマットは、リクエストを処理するメソッドに設定された `Consumes` により決まる。
@@ -82,6 +110,13 @@ public HttpResponse saveJson(Person person) {
 }
 ```
 
+<details>
+<summary>keywords</summary>
+
+@Consumes, Consumes, Content-Type, リクエストボディ変換, 415ステータスコード, @Valid, HttpResponse, MediaType, application/json, UniversalDao
+
+</details>
+
 ## リソース(アクション)の処理結果をレスポンスボディに変換する
 
 レスポンスボディへの変換処理で使用するフォーマットは、リクエストを処理したメソッドに設定された `Produces` により決まる。
@@ -98,3 +133,10 @@ public List<Person> findJson() {
     return UniversalDao.findAll(Person.class);
 }
 ```
+
+<details>
+<summary>keywords</summary>
+
+@Produces, Produces, レスポンスボディ変換, application/json, MediaType, UniversalDao
+
+</details>

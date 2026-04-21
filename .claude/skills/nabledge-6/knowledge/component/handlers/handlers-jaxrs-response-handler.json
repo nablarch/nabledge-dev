@@ -13,37 +13,94 @@
       "id": "s2",
       "title": "ハンドラクラス名",
       "content": "* `nablarch.fw.jaxrs.JaxRsResponseHandler`",
-      "hints": []
+      "hints": [
+        "Jakarta RESTful Web Servicesレスポンスハンドラ",
+        "JAX-RSレスポンスハンドラ",
+        "JaxRsResponseHandler",
+        "レスポンスハンドラ概要",
+        "名称変更",
+        "Nablarch6",
+        "エラーレスポンス",
+        "エラーログ",
+        "クライアント返却",
+        "JaxRsResponseHandler",
+        "nablarch.fw.jaxrs.JaxRsResponseHandler",
+        "レスポンスハンドラ",
+        "ハンドラクラス名"
+      ]
     },
     {
       "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-fw-jaxrs",
+        "モジュール",
+        "依存関係",
+        "com.nablarch.framework"
+      ]
     },
     {
       "id": "s4",
       "title": "制約",
       "content": "なし。",
-      "hints": []
+      "hints": [
+        "制約",
+        "JaxRsResponseHandler制約"
+      ]
     },
     {
       "id": "s5",
       "title": "例外及びエラーに応じたレスポンスの生成",
       "content": "例外及びエラーに応じたレスポンス情報の生成は、 `errorResponseBuilder` プロパティに設定された\n`ErrorResponseBuilder` により行われる。\nただし、発生した例外クラスが `HttpErrorResponse` の場合は、\n`HttpErrorResponse#getResponse()` から戻される\n`HttpResponse` がクライアントに戻される。\n\n設定を省略した場合は、デフォルト実装の `ErrorResponseBuilder` が使用される。\nデフォルト実装では、プロジェクト要件を満たせない場合は、デフォルト実装クラスを継承して対応すること。\n\n以下に設定例を示す。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorResponseBuilder\">\n    <component class=\"sample.SampleErrorResponseBuilder\" />\n  </property>\n</component>\n```\n> **Important:** ErrorResponseBuilderは例外及びエラーに応じたレスポンスを生成する役割のため、ErrorResponseBuilderの処理中に例外が発生するとレスポンスが生成されず、クライアントにレスポンスを返せない状態となる。 そのため、プロジェクトでErrorResponseBuilderをカスタマイズする場合は、ErrorResponseBuilderの処理中に例外が発生しないように実装すること。 ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはErrorResponseBuilderの処理中に発生した例外をWARNレベルで ログ出力を行い、ステータスコード500のレスポンスを生成し、後続処理を継続する。",
-      "hints": []
+      "hints": [
+        "ErrorResponseBuilder",
+        "nablarch.fw.jaxrs.ErrorResponseBuilder",
+        "HttpErrorResponse",
+        "nablarch.fw.web.HttpErrorResponse",
+        "HttpResponse",
+        "errorResponseBuilder",
+        "エラーレスポンス生成",
+        "例外処理"
+      ]
     },
     {
       "id": "s6",
       "title": "例外及びエラーに応じたログ出力",
       "content": "例外及びエラーに応じたログ出力は `errorLogWriter` プロパティに設定された\n`JaxRsErrorLogWriter` により行われる。\n\n設定を省略した場合は、デフォルト実装の `JaxRsErrorLogWriter` が使用される。\nデフォルト実装では、プロジェクト要件を満たせない場合は、デフォルト実装クラスを継承して対応すること。\n\n以下に設定例を示す。\n\n```xml\n<component class=\"nablarch.fw.jaxrs.JaxRsResponseHandler\">\n  <property name=\"errorLogWriter\">\n    <component class=\"sample.SampleJaxRsErrorLogWriter\" />\n  </property>\n</component>\n```",
-      "hints": []
+      "hints": [
+        "JaxRsErrorLogWriter",
+        "nablarch.fw.jaxrs.JaxRsErrorLogWriter",
+        "errorLogWriter",
+        "エラーログ出力",
+        "例外ログ"
+      ]
     },
     {
       "id": "s7",
       "title": "拡張例",
       "content": "",
-      "hints": []
+      "hints": [
+        "ErrorResponseBuilder",
+        "ApplicationException",
+        "エラーレスポンスカスタマイズ",
+        "バリデーションエラー",
+        "エラーメッセージ設定",
+        "エラーレスポンスボディ",
+        "ErrorResponseBuilder",
+        "NoDataException",
+        "個別エラーレスポンス",
+        "ステータスコード",
+        "エラーレスポンスカスタマイズ",
+        "ResponseFinisher",
+        "nablarch.fw.jaxrs.ResponseFinisher",
+        "AdoptHandlerResponseFinisher",
+        "nablarch.fw.jaxrs.AdoptHandlerResponseFinisher",
+        "responseFinishers",
+        "レスポンスヘッダ",
+        "CORS対応",
+        "secure_handler"
+      ]
     },
     {
       "id": "s8",

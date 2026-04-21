@@ -20,6 +20,13 @@
 
 * `nablarch.common.permission.PermissionCheckHandler`
 
+<details>
+<summary>keywords</summary>
+
+PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, PermissionFactory, nablarch.common.permission.PermissionFactory, 認可チェックハンドラ, ハンドラクラス
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -28,6 +35,13 @@
   <artifactId>nablarch-common-auth</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-common-auth, com.nablarch.framework, モジュール, 依存関係
+
+</details>
 
 ## 制約
 
@@ -43,6 +57,13 @@
 HTTPエラー制御ハンドラ より後ろに配置すること
 認可チェックエラーの場合に表示するエラーページを指定するため、
 HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+InternalRequestIdAttribute, nablarch.common.handler.threadcontext.InternalRequestIdAttribute, ハンドラ配置順序, 制約, スレッドコンテキスト, 内部リクエストID
+
+</details>
 
 ## リクエストに対する認可チェック
 
@@ -62,10 +83,24 @@ HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必
 `PermissionCheckHandler.setUsesInternalRequestId`
 でtrueを指定する。デフォルトはfalseである。
 
+<details>
+<summary>keywords</summary>
+
+PermissionCheckHandler, Permission, nablarch.common.permission.Permission, Forbidden, nablarch.fw.results.Forbidden, setUsesInternalRequestId, リクエスト認可チェック, 権限チェック, 403エラー, 内部リクエストID
+
+</details>
+
 ## 権限がない場合に表示するエラーページを指定する
 
 権限がない場合に表示するエラーページは、HTTPエラー制御ハンドラで指定する。
 指定方法は、 デフォルトページの設定 を参照。
+
+<details>
+<summary>keywords</summary>
+
+エラーページ指定, 403エラーページ, HTTPエラー制御ハンドラ, HttpErrorHandler_DefaultPage
+
+</details>
 
 ## 特定のリクエストを認可チェックから除外する
 
@@ -81,3 +116,10 @@ HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必
   <property name="ignoreRequestIds" value="/action/login,/action/logout" />
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+setIgnoreRequestIds, PermissionCheckHandler, nablarch.common.permission.PermissionCheckHandler, 認可チェック除外, ログイン前リクエスト
+
+</details>

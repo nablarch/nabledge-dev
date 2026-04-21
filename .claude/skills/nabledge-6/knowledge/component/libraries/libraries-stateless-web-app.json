@@ -13,19 +13,43 @@
       "id": "s2",
       "title": "基本的な考え方",
       "content": "サーブレットAPIが提供するHTTPセッションはAPサーバで状態を持ってしまうため、そのままではスケールアウトができない。\n通常、APサーバのスケールアウトを行うには以下のような対処が必要となる。\n\n1. ロードバランサーでスティッキーセッションを有効にする\n2. APサーバのセッションレプリケーション機能を使用する\n3. APサーバのHTTPセッション保存先をNoSQLにする\n\n1, 2は [Twelve-Factor App](https://12factor.net/ja/) で言うところの廃棄容易性の点で劣り、2, 3はAPサーバ依存となる。\n\nNablarchが使用する機能では、HTTPセッションに依存しているものがあるが、\nこれらの機能をHTTPセッション非依存のものに切り替えることで、\nAPサーバをステートレスにできる。",
-      "hints": []
+      "hints": [
+        "ステートレス",
+        "スケールアウト",
+        "HTTPセッション",
+        "廃棄容易性",
+        "Twelve-Factor App"
+      ]
     },
     {
       "id": "s3",
       "title": "HTTPセッションに依存している機能",
       "content": "以下の機能は、デフォルトではHTTPセッションに依存している。\n\n* session_store\n* 2重サブミット防止\n* スレッドコンテキスト変数管理ハンドラ\n* HTTPリライトハンドラ\n* hidden暗号化",
-      "hints": []
+      "hints": [
+        "セッションストア",
+        "2重サブミット防止",
+        "スレッドコンテキスト変数管理ハンドラ",
+        "HTTPリライトハンドラ",
+        "hidden暗号化",
+        "HTTPセッション依存機能一覧"
+      ]
     },
     {
       "id": "s4",
       "title": "HTTPセッション非依存機能の導入方法",
       "content": "HTTPセッションに依存している機能 の各機能について以下の通り設定することでHTTPセッションへの依存をなくすことができる。",
-      "hints": []
+      "hints": [
+        "LanguageAttributeInHttpSession",
+        "TimeZoneAttributeInHttpSession",
+        "UserIdAttribute",
+        "LanguageAttributeInHttpCookie",
+        "TimeZoneAttributeInHttpCookie",
+        "UserIdAttributeInSessionStore",
+        "db_managed_expiration",
+        "db_double_submit",
+        "HTTPセッション非依存への切り替え",
+        "useHiddenEncryption"
+      ]
     },
     {
       "id": "s5",
@@ -61,13 +85,23 @@
       "id": "s10",
       "title": "ローカルファイルシステムの使用",
       "content": "アップロードしたファイルなどをAPサーバのローカルに保存してしまうと、ステートを持つことになってしまう。\nこのような場合は、共有のストレージを用意するなどして、APサーバがローカルにファイルを持たないようにする必要がある。",
-      "hints": []
+      "hints": [
+        "ローカルファイルシステム",
+        "ファイルアップロード",
+        "共有ストレージ",
+        "ステートレス"
+      ]
     },
     {
       "id": "s11",
       "title": "HTTPセッションの誤生成を検知する",
       "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 `WebFrontController` の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 `WebFrontController` のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```",
-      "hints": []
+      "hints": [
+        "WebFrontController",
+        "preventSessionCreation",
+        "HTTPセッション生成検知",
+        "例外送出"
+      ]
     }
   ]
 }

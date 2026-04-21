@@ -23,6 +23,13 @@
 
 * `nablarch.fw.jaxrs.JaxRsResponseHandler`
 
+<details>
+<summary>keywords</summary>
+
+Jakarta RESTful Web Servicesレスポンスハンドラ, JAX-RSレスポンスハンドラ, JaxRsResponseHandler, レスポンスハンドラ概要, 名称変更, Nablarch6, エラーレスポンス, エラーログ, クライアント返却, JaxRsResponseHandler, nablarch.fw.jaxrs.JaxRsResponseHandler, レスポンスハンドラ, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -32,9 +39,23 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-jaxrs, モジュール, 依存関係, com.nablarch.framework
+
+</details>
+
 ## 制約
 
 なし。
+
+<details>
+<summary>keywords</summary>
+
+制約, JaxRsResponseHandler制約
+
+</details>
 
 ## 例外及びエラーに応じたレスポンスの生成
 
@@ -58,6 +79,13 @@
 ```
 > **Important:** ErrorResponseBuilderは例外及びエラーに応じたレスポンスを生成する役割のため、ErrorResponseBuilderの処理中に例外が発生するとレスポンスが生成されず、クライアントにレスポンスを返せない状態となる。 そのため、プロジェクトでErrorResponseBuilderをカスタマイズする場合は、ErrorResponseBuilderの処理中に例外が発生しないように実装すること。 ErrorResponseBuilderの処理中に例外が発生した場合、フレームワークはErrorResponseBuilderの処理中に発生した例外をWARNレベルで ログ出力を行い、ステータスコード500のレスポンスを生成し、後続処理を継続する。
 
+<details>
+<summary>keywords</summary>
+
+ErrorResponseBuilder, nablarch.fw.jaxrs.ErrorResponseBuilder, HttpErrorResponse, nablarch.fw.web.HttpErrorResponse, HttpResponse, errorResponseBuilder, エラーレスポンス生成, 例外処理
+
+</details>
+
 ## 例外及びエラーに応じたログ出力
 
 例外及びエラーに応じたログ出力は `errorLogWriter` プロパティに設定された
@@ -76,7 +104,21 @@
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+JaxRsErrorLogWriter, nablarch.fw.jaxrs.JaxRsErrorLogWriter, errorLogWriter, エラーログ出力, 例外ログ
+
+</details>
+
 ## 拡張例
+
+<details>
+<summary>keywords</summary>
+
+ErrorResponseBuilder, ApplicationException, エラーレスポンスカスタマイズ, バリデーションエラー, エラーメッセージ設定, エラーレスポンスボディ, ErrorResponseBuilder, NoDataException, 個別エラーレスポンス, ステータスコード, エラーレスポンスカスタマイズ, ResponseFinisher, nablarch.fw.jaxrs.ResponseFinisher, AdoptHandlerResponseFinisher, nablarch.fw.jaxrs.AdoptHandlerResponseFinisher, responseFinishers, レスポンスヘッダ, CORS対応, secure_handler
+
+</details>
 
 ## エラー時のレスポンスにメッセージを設定する
 

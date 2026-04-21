@@ -16,6 +16,13 @@
 ```
 > **Tip:** Thymeleafのバージョン3.1.1.RELEASEを使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
+<details>
+<summary>keywords</summary>
+
+nablarch-web-thymeleaf-adaptor, com.nablarch.integration, Thymeleafアダプタ, モジュール依存関係, テンプレートエンジン
+
+</details>
+
 ## ウェブアプリケーション Thymeleafアダプタを使用するための設定を行う
 
 本アダプタを使用するためには、コンポーネント設定ファイルで
@@ -48,6 +55,13 @@
 </component>
 ```
 > **Tip:** `ITemplateResolver` インタフェースの実装クラスに、 `org.thymeleaf.templateresolver.ServletContextTemplateResolver` が存在するが、 以下の理由により、システムリポジトリ にコンポーネントとして登録できない。 * コンストラクタ引数に `jakarta.servlet.ServletContext` が必須である(デフォルトコンストラクタを持たない)。 * システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず、ファクトリ によるオブジェクト生成もできない。 このため、 `ServletContextTemplateResolver` ではなく、 `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
+
+<details>
+<summary>keywords</summary>
+
+ThymeleafResponseWriter, HttpResponseHandler, TemplateEngine, ITemplateResolver, ClassLoaderTemplateResolver, ServletContextTemplateResolver, templateEngine, customResponseWriter, Thymeleaf設定
+
+</details>
 
 ## 処理対象判定について
 
@@ -107,3 +121,10 @@ return new HttpResponse("index.html");
 return new HttpResponse("template/index.html");
 ```
 これにより、配置したテンプレートファイルを用いてレスポンスが出力される。
+
+<details>
+<summary>keywords</summary>
+
+ThymeleafResponseWriter, HttpResponse, pathPattern, 処理対象判定, サーブレットフォワード, .html, コンテンツパス, サフィックス省略, TemplateEngine, ClassLoaderTemplateResolver, HttpResponse, prefix, テンプレートファイル配置, テンプレートパス指定
+
+</details>

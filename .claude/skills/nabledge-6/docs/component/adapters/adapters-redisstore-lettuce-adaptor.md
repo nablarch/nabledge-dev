@@ -15,6 +15,13 @@
 
 > **Tip:** ローカルで試す場合、Dockerを使えば次のようにコマンドを実行することでRedisインスタンスを構築できる。 .. code-block:: shell > docker run --name redis -d -p 6379:6379 redis:5.0.9 停止する場合は次のようにコマンドを実行する。 .. code-block:: shell > docker stop redis
 
+<details>
+<summary>keywords</summary>
+
+Disposable, BasicApplicationDisposer, BasicApplicationInitializer, LettuceRedisClientProvider, disposableList, dispose, Redisコネクション廃棄, アプリケーション終了処理, JavaSerializeStateEncoder, SessionEntry, serializeEncoder, セッションキー形式, セッション情報エンコード, nablarch.session, Redis有効期限, TTL, セッション有効期限管理, 自動削除, pttl, 有効期限切れセッション, LettuceRedisClientProvider, lettuceRedisClientProvider, BasicApplicationInitializer, BasicApplicationDisposer, initializeList, disposableList, nablarch.sessionManager.defaultStoreName, redisstore-lettuce.config, redisstore-lettuce.xml, Redisストア最小構成, セッションストア設定, コンポーネント定義修正, 環境設定値
+
+</details>
+
 ## 設定内容
 
 最小構成でRedisストアを使い始めるには、アプリケーションのコンポーネント定義と環境設定値を修正する必要がある。
@@ -110,6 +117,13 @@ nablarch.sessionManager.defaultStoreName=redis
 * Cluster構成
 
 ここでは、接続先のRedisの構成に合わせて、どのように設定を変更すればいいのかについて説明する。
+
+<details>
+<summary>keywords</summary>
+
+LettuceSimpleRedisClient, LettuceMasterReplicaRedisClient, LettuceClusterRedisClient, LettuceRedisClient, lettuceSimpleRedisClient, lettuceMasterReplicaRedisClient, lettuceClusterRedisClient, nablarch.lettuce.clientType, nablarch.lettuce.simple.uri, nablarch.lettuce.masterReplica.uri, nablarch.lettuce.cluster.uriList, Redis構成設定, Sentinel, Cluster構成, Master-Replica構成, カスタムクライアントクラス, createClient, createConnection, RedisClient, RedisClusterClient, StatefulRedisConnection, StatefulRedisMasterReplicaConnection, StatefulRedisClusterConnection, ClusterTopologyRefreshOptions, ClusterClientOptions
+
+</details>
 
 ## 構成ごとに用意されたクライアントクラス
 
@@ -286,6 +300,13 @@ LettuceでClusterのトポロジ更新を監視できるようにするには、
 
 `LettuceRedisClientProvider` は `ComponentFactory` を実装しており、 `createObject()` メソッドは、決定されたクライアントクラス（`LettuceRedisClient`）のコンポーネントを返すように実装されている。
 
+<details>
+<summary>keywords</summary>
+
+LettuceRedisClientProvider, ComponentFactory, LettuceRedisClient, clientType, clientList, getType, createObject, クライアントクラス決定
+
+</details>
+
 ## クライアントクラスの初期化
 
 本アダプタが提供している３つのクライアントクラスは、いずれもRedisへの接続を確立するために初期化が必要となっている。
@@ -308,6 +329,13 @@ LettuceでClusterのトポロジ更新を監視できるようにするには、
 </component>
 ```
 こうすることで、コンポーネント定義の記述を変更することなく、決定されたクライアントクラスのコンポーネントを初期化できる。
+
+<details>
+<summary>keywords</summary>
+
+Initializable, initialize, BasicApplicationInitializer, LettuceRedisClientProvider, initializeList, クライアント初期化, Redis接続確立
+
+</details>
 
 ## クライアントクラスの廃棄処理
 

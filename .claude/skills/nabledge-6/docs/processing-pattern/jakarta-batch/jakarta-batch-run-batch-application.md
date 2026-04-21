@@ -21,6 +21,13 @@ $ java nablarch.fw.batch.ee.Main jobName --option1 value1 --option2 value2
 ```
 > **Tip:** プロジェクト独自で起動クラスを作成する際にも、このMainクラスを参考に実装できる。
 
+<details>
+<summary>keywords</summary>
+
+nablarch.fw.batch.ee.Main, JobOperator, バッチアプリケーション起動, ジョブ実行, 起動オプション, jobParameters, JOBのXMLファイル名
+
+</details>
+
 ## バッチアプリケーションの終了コード
 
 上記のMainクラスのプログラムの終了コードは以下のようになる。
@@ -36,6 +43,13 @@ $ java nablarch.fw.batch.ee.Main jobName --option1 value1 --option2 value2
 を呼び出し "WARNING" を終了ステータスとして設定する。警告終了時は、バッチステータスは任意の値を許可するため、
 例外を送出しバッチステータスが `BatchStatus.COMPLETED` 以外となる場合であっても、
 終了ステータスに "WARNING" を設定していれば、上記クラスは警告終了する。
+
+<details>
+<summary>keywords</summary>
+
+nablarch.fw.batch.ee.Main, BatchStatus, BatchStatus.COMPLETED, JobContext, JobContext#setExitStatus, setExitStatus, 終了コード, 正常終了, 異常終了, 警告終了, WARNING
+
+</details>
 
 ## システムリポジトリを初期化する
 
@@ -76,3 +90,10 @@ $ java nablarch.fw.batch.ee.Main jobName --option1 value1 --option2 value2
   <!-- ステップ定義は省略 -->
 </job>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarchJobListenerExecutor, batch-boot.xml, diConfigFilePath, システムリポジトリ初期化, ジョブリスナー設定
+
+</details>

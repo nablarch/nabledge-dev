@@ -14,6 +14,13 @@ UseTokenインターセプタによるトークン設定
 
 * `nablarch.common.web.token.OnDoubleSubmission`
 
+<details>
+<summary>keywords</summary>
+
+OnDoubleSubmission, nablarch.common.web.token.OnDoubleSubmission, 二重サブミットチェック, インターセプタ
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -22,6 +29,13 @@ UseTokenインターセプタによるトークン設定
   <artifactId>nablarch-fw-web-tag</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, モジュール依存関係
+
+</details>
 
 ## OnDoubleSubmissionを使用する
 
@@ -35,6 +49,13 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
     // 省略。
 }
 ```
+
+<details>
+<summary>keywords</summary>
+
+@OnDoubleSubmission, path属性, 二重サブミット防止, アクションメソッドアノテーション
+
+</details>
 
 ## OnDoubleSubmissionのデフォルト値を指定する
 
@@ -60,8 +81,22 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 ```
 > **Important:** extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` と `BasicDoubleSubmissionHandler` の どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。 このため、 トークンを使用した二重サブミットの防止 を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
 
+<details>
+<summary>keywords</summary>
+
+BasicDoubleSubmissionHandler, nablarch.common.web.token.BasicDoubleSubmissionHandler, doubleSubmissionHandler, path, messageId, statusCode, デフォルト値設定, アプリケーション全体設定
+
+</details>
+
 ## OnDoubleSubmissionの振る舞いを変更する
 
 `OnDoubleSubmission` アノテーションの振る舞いは、
 `DoubleSubmissionHandler`
 インタフェースを実装することで変更できる。実装したクラスをコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。
+
+<details>
+<summary>keywords</summary>
+
+DoubleSubmissionHandler, nablarch.common.web.token.DoubleSubmissionHandler, doubleSubmissionHandler, 振る舞いカスタマイズ, インターフェース実装
+
+</details>

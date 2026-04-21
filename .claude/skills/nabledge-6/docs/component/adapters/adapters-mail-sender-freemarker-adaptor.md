@@ -15,6 +15,13 @@
 ```
 > **Tip:** FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
+<details>
+<summary>keywords</summary>
+
+nablarch-mail-sender-freemarker-adaptor, FreeMarkerメールアダプタ, モジュール依存関係, FreeMarker 2.3.27-incubating
+
+</details>
+
 ## E-mail FreeMarkerアダプタを使用するための設定を行う
 
 本アダプタを使用するためには、コンポーネント設定ファイルで `FreeMarkerMailProcessor` を `MailRequester` へ設定する。
@@ -77,6 +84,13 @@ public class ConfigurationFactory implements ComponentFactory<Configuration> {
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+FreeMarkerMailProcessor, MailRequester, ComponentFactory, Configuration, ConfigurationFactory, basePackagePath, encoding, nablarch.integration.mail.freemarker.FreeMarkerMailProcessor, nablarch.common.mail.MailRequester, nablarch.core.repository.di.ComponentFactory, FreeMarkerアダプタ設定, コンポーネント設定, テンプレートエンジン設定
+
+</details>
+
 ## メールのテンプレートを作成する
 
 FreeMarkerを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。
@@ -98,7 +112,21 @@ ${approver}は速やかに${title}を承認してください。${option}
 例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされる。
 また、 `basePackagePath` に `com/example/template/` と設定されているので、クラスパス上の `com/example/template/` ディレクトリにテンプレートファイルを配置することになる。
 
+<details>
+<summary>keywords</summary>
+
+TemplateEngineProcessedResult, nablarch.common.mail.TemplateEngineProcessedResult, テンプレート作成, デリミタ, 件名と本文分割
+
+</details>
+
 ## メール送信要求を登録する
 
 単に定型メールの送信要求を登録すればよい。
 mail-request を参照。
+
+<details>
+<summary>keywords</summary>
+
+メール送信要求登録, 定型メール送信, mail-request
+
+</details>

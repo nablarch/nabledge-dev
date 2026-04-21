@@ -20,6 +20,13 @@
 
 * `nablarch.common.handler.TransactionManagementHandler`
 
+<details>
+<summary>keywords</summary>
+
+TransactionManagementHandler, nablarch.common.handler.TransactionManagementHandler, トランザクション制御ハンドラ, 透過的トランザクション, ハンドラクラス
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -41,11 +48,25 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-core-transaction, nablarch-core-jdbc, nablarch-core, com.nablarch.framework, Maven依存関係
+
+</details>
+
 ## 制約
 
 データベース接続管理ハンドラ より後ろに配置すること
 データベースに対するトランザクションを制御する場合には、トランザクション管理対象のデータベース接続がスレッド上に存在している必要がある。
 このため、本ハンドラは データベース接続管理ハンドラ より後ろに配置する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+DbConnectionManagementHandler, database_connection_management_handler, ハンドラ配置順序, DB接続, 制約
+
+</details>
 
 ## トランザクション制御対象を設定する
 
@@ -73,6 +94,13 @@
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+transactionFactory, transactionName, TransactionFactory, JdbcTransactionFactory, DbConnectionManagementHandler, connectionName, トランザクション設定
+
+</details>
+
 ## 特定の例外の場合にトランザクションをコミットさせる
 
 このハンドラのデフォルト動作では、全てのエラー及び例外がロールバック対象となるが、
@@ -95,6 +123,13 @@
   </property>
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+transactionCommitExceptions, 例外時コミット, ロールバック対象外, 例外クラス設定, TransactionManagementHandler
+
+</details>
 
 ## トランザクション終了時に任意の処理を実行したい
 
@@ -150,6 +185,13 @@ public static class SampleHandler
   <component class="sample.SampleHandler" />
 </list>
 ```
+
+<details>
+<summary>keywords</summary>
+
+TransactionEventCallback, transactionNormalEnd, transactionAbnormalEnd, コールバック処理, トランザクション終了イベント
+
+</details>
 
 ## アプリケーションで複数のトランザクションを使用する
 
@@ -208,3 +250,10 @@ public static class SampleHandler
   <component-ref name="userAccessLogTransactionHandler" />
 </list>
 ```
+
+<details>
+<summary>keywords</summary>
+
+transactionName, 複数トランザクション, TransactionManagementHandler, DbConnectionManagementHandler, 複数DB接続
+
+</details>

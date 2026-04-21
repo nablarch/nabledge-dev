@@ -10,6 +10,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+固定長, 可変長, JSON, XML, マルチレイアウト, 非推奨, BeanUtil, JsonNumber, JsonBoolean, DataType, data_bind, パック数値, パディング, トリミング, EBCDIC, ゾーン10進数, messaging
+
+</details>
+
 ## 標準でサポートするフォーマットが豊富
 
 標準では、以下の形式のフォーマットに対応している。
@@ -59,6 +66,13 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-core-dataformat, nablarch-fw-web-extension, モジュール依存関係
+
+</details>
+
 ## 使用方法
 
 ## 入出力データのフォーマットを定義する
@@ -96,6 +110,13 @@ type    = "02"
 4 data    X
 ```
 
+<details>
+<summary>keywords</summary>
+
+フォーマット定義ファイル, data_format/format_definition, マルチレイアウト, レコード識別フィールド, Classifier
+
+</details>
+
 ## ファイルにデータを出力する
 
 データレコードの内容をファイルに出力する方法について説明する。
@@ -126,6 +147,13 @@ FileRecordWriterHolder.write(user, "user.csv");
 > **Important:** extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` で開いたファイルリソースは、 出力ファイル開放ハンドラ にて自動的に開放される。 このため、 `FileRecordWriterHolder` を使用する場合には、 必ず 出力ファイル開放ハンドラ をハンドラキュー上に設定すること。
 > **Important:** 出力するデータに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で不正な値でないかをチェックすること。
 > **Important:** デフォルトの動作では1レコード毎にファイルへの書き込みを行う。 大量データを出力する場合はレコード毎にファイルに書き込むと性能要件を満たせない可能性がある。 そのような場合は、1レコード毎でなく指定したバッファサイズで書き込みを行うようにデフォルトの動作を変更して対応すること。 下記のコンポーネント定義を追加することで、1レコード毎でなく指定したバッファサイズで書き込みを行うようにできる。 .. code-block:: xml <!-- コンポーネント名はdataFormatConfigとする --> <component name="dataFormatConfig" class="nablarch.core.dataformat.DataFormatConfig"> <property name="flushEachRecordInWriting" value="false" /> </component> 出力に使用するバッファサイズは `FileRecordWriterHolder` の `open` メソッドで指定できる。
+
+<details>
+<summary>keywords</summary>
+
+FileRecordWriterHolder, DataFormatConfig, flushEachRecordInWriting, file_record_writer_dispose_handler, file_path_management, ファイル出力, バッファサイズ
+
+</details>
 
 ## ファイルダウンロードで使用する
 
@@ -168,6 +196,13 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
 }
 ```
 > **Tip:** フォーマット定義ファイルの格納パスは、 ファイルパス管理 に設定する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+DataRecordResponse, Content-Type, Content-Disposition, ファイルダウンロード, file_path_management
+
+</details>
 
 ## アップロードしたファイルを読み込む
 
@@ -272,6 +307,13 @@ public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
 }
 ```
 > **Tip:** extdoc:`nablarch.fw.web.upload.util` パッケージ内のクラスのドキュメントを合わせて参照すること。
+
+<details>
+<summary>keywords</summary>
+
+UploadHelper, DataRecordFormatter, FormatterFactory, FilePathSetting, HttpRequest, アップロード, nablarch_validation, bean_validation, BufferedInputStream, PartInfo, DataRecord, BulkValidator, BulkValidationResult, BeanUtil, 階層構造, ドット区切り, parent.child, 配列, user[0].name, Map, ネスト, 任意項目, data_format-structured_data, DTD, XXE, allowDTD, XmlDataParser, セキュリティ, XML外部エンティティ, XXE攻撃, 名前空間, namespace, xmlns, ?@xmlns, XmlDataParser, XmlDataBuilder, プレフィックス, body, 属性, コンテンツ, XML要素, data_format-xml_content_name_change, 予約フィールド名, 寄せ字, 文字置き換え, CharacterReplacementManager, characterReplacementManager, CharacterReplacementConfig, replacement, typeName, filePath, encoding, data_format-replacement, 拡張, DataType, FixedLengthConvertorFactory, VariableLengthConvertorFactory, JsonDataConvertorFactory, XmlDataConvertorFactory, FixedLengthConvertorSetting, convertorTable, data_format-field_type_add, contentName, XmlDataParser, XmlDataBuilder, body, コンテンツ名変更, data_format-xml_content_name_change, DataType, FixedLengthConvertorFactory, VariableLengthConvertorFactory, JsonDataConvertorFactory, XmlDataConvertorFactory, FixedLengthConvertorSetting, VariableLengthConvertorSetting, JsonDataConvertorSetting, XmlDataConvertorSetting, nablarch.core.dataformat.convertor.datatype.DataType, nablarch.core.dataformat.convertor.FixedLengthConvertorFactory, フィールドタイプ追加, カスタムデータタイプ, ファクトリクラス拡張, convertorTable, fixedLengthConvertorFactory, variableLengthConvertorFactory, jsonDataConvertorFactory, xmlDataConvertorFactory, data_format-field_type_add, XmlDataParser, XmlDataBuilder, nablarch.core.dataformat.XmlDataParser, nablarch.core.dataformat.XmlDataBuilder, コンテンツ名変更, XML属性要素コンテンツ名, contentName, data_format-xml_content_name_change, JSON階層構造, XML階層構造, Map, ドット記法, 配列添字, ネスト構造, 階層構造データ読み書き, XmlDataParser, allowDTD, DTD, XXE, XML外部実体参照, DTD無効化, XML名前空間, xmlns, 名前空間定義, フォーマット定義ファイル名前空間, body, XML属性, コンテンツフィールド, 属性とコンテンツ共存, CharacterReplacementManager, CharacterReplacementConfig, typeName, filePath, encoding, 寄せ字, 文字置き換え, replacement, format, 日付フォーマット, 数値フォーマット, 出力フォーマット
+
+</details>
 
 ## JSONやXMLの階層構造のデータを読み書きする
 

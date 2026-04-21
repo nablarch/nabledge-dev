@@ -30,6 +30,13 @@
 
 ## 機能概要
 
+<details>
+<summary>keywords</summary>
+
+MailSender, メール送信バッチ, 常駐バッチ, 二重送信防止, statusUpdateTransaction, mailSendPatternId, メール送信パターンID, 未送信データ抽出, MailSender, AddressException, InvalidCharacterException, SendFailedException, リトライ, メール送信エラー, 例外処理, ログ出力, MailRequestTable, sendProcessIdColumnName, mailMultiProcessTransaction, 悲観ロック, マルチプロセス, 冗長構成, 排他制御, InvalidCharacterException, メールヘッダインジェクション, セキュリティ対策, 改行コード, 件名, 差し戻し先メールアドレス, JavaMail, MailSender, MailRequester, mailTransactionManager, 電子署名, メール本文暗号化, トランザクション指定, 拡張, SimpleDbTransactionManager, TableIdGenerator, メール送信, ディレードオンライン処理, 非同期メール送信, テンプレートメール, 定型メール, 大量メール一斉送信非対応, TinyTemplateEngineMailProcessor, mail_sender_freemarker_adaptor, mail_sender_thymeleaf_adaptor, mail_sender_velocity_adaptor
+
+</details>
+
 ## テンプレートを使った定型メールを送信できる。
 
 システムのメール送信では、登録完了通知メールのように、同じ文言で、一部の項目のみ異なるメールを送信することが多い。
@@ -65,6 +72,13 @@
   <artifactId>nablarch-common-idgenerator-jdbc</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-mail-sender, nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, メール送信モジュール, Maven依存関係, MailRequestTable, MailRecipientTable, MailAttachedFileTable, MailTemplateTable, MailConfig, MailRequester, MailRequestConfig, MailSessionConfig, TinyTemplateEngineMailProcessor, mailRequestSbnId, recipientTypeTO, recipientTypeCC, recipientTypeBCC, statusUnsent, statusSent, statusFailure, mailRequestCountMessageId, sendSuccessMessageId, sendFailureCode, abnormalEndExitCode, defaultReplyTo, defaultReturnPath, defaultCharset, maxRecipientCount, maxAttachedFileSize, mailSmtpHost, mailHost, mailSmtpPort, mailSmtpConnectionTimeout, mailSmtpTimeout, mailSendPatternIdColumnName, sendProcessIdColumnName, メール送信設定, テーブルスキーマ設定, SMTPサーバ設定, コード値設定, メール送信要求コンポーネント設定, MailRequester, MailUtil, FreeTextMailContext, TemplateMailContext, AttachedFile, requestToSend, getMailRequester, setVariable, addAttachedFile, メール送信要求登録, 定型メール, 非定型メール, テンプレートメール, 添付ファイル
+
+</details>
 
 ## 使用方法
 

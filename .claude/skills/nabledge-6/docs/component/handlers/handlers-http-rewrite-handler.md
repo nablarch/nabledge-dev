@@ -20,6 +20,13 @@
 
 * `nablarch.fw.web.handler.HttpRewriteHandler`
 
+<details>
+<summary>keywords</summary>
+
+HTTPリライトハンドラ, 未ログイン, ログイン画面, 特殊な遷移, 使用場面, リクエストパス書き換え, コンテンツパス書き換え, いつ使う, 用途, HttpRewriteHandler, nablarch.fw.web.handler.HttpRewriteHandler, HTTPリライトハンドラ, ハンドラクラス名
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -28,6 +35,13 @@
   <artifactId>nablarch-fw-web</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web, com.nablarch.framework, モジュール依存関係, Maven依存
+
+</details>
 
 ## 制約
 
@@ -38,6 +52,13 @@ HTTPレスポンスハンドラ より後ろに配置すること
 スレッドコンテキスト変数管理ハンドラ より前に配置すること
 本ハンドラでは、スレッドコンテキストに入れられるリクエストパスを書き換える。
 このため、本ハンドラは スレッドコンテキスト変数管理ハンドラ より前に配置する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+http_response_handler, thread_context_handler, ハンドラ配置順序, 制約, リクエストパス書き換え, コンテンツパス書き換え
+
+</details>
 
 ## 書き換えの設定
 
@@ -123,6 +144,13 @@ HTTPレスポンスハンドラ より後ろに配置すること
 | 全リクエストパラメータ名 | %{paramNames} | HttpRequestRewriteRule |
 | ステータスコード | %{statusCode} | ContentPathRewriteRule |
 
+<details>
+<summary>keywords</summary>
+
+HttpRewriteHandler, HttpRequestRewriteRule, ContentPathRewriteRule, RewriteRule, nablarch.fw.web.handler.HttpRequestRewriteRule, nablarch.fw.web.handler.ContentPathRewriteRule, nablarch.fw.handler.RewriteRule, pattern, rewriteTo, conditions, exports, requestPathRewriteRules, contentPathRewriteRules, リライトルール設定, 変数条件指定
+
+</details>
+
 ## 変数に値を設定
 
 HTTPリライトハンドラでは、パスの書き換え以外に リクエストスコープ、セッションスコープ、
@@ -165,3 +193,10 @@ exports で、「設定する変数名」に設定できる変数スコープは
 | リクエストスコープ | %{request:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |
 | スレッドコンテキスト | %{thread:(変数名)} | HttpRequestRewriteRule / ContentPathRewriteRule |
 | ウィンドウスコープ | %{param:(変数名)} | HttpRequestRewriteRule |
+
+<details>
+<summary>keywords</summary>
+
+HttpRequestRewriteRule, ContentPathRewriteRule, exports, セッションスコープ, リクエストスコープ, スレッドコンテキスト, ウィンドウスコープ, 変数設定, スコープへの値設定
+
+</details>

@@ -13,55 +13,119 @@
       "id": "s2",
       "title": "全体像",
       "content": "![](assets/testing-framework-RequestUnitTest-real/real_request_test_class.png)\n# 主なクラス, リソース\n\n<table>\n<thead>\n<tr>\n  <th>名称</th>\n  <th>役割</th>\n  <th>作成単位</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>リクエスト単体\\</td>\n  <td>テストロジックを実装する。</td>\n  <td>テスト対象クラス(Action)につき１つ作成</td>\n</tr>\n<tr>\n  <td>テストクラス</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>Excelファイル\\</td>\n  <td>テーブルに格納する準備データや期待する結果、\\</td>\n  <td>テストクラスにつき１つ作成</td>\n</tr>\n<tr>\n  <td>（テストデータ）</td>\n  <td>入力ファイルなど、テストデータを記載する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>StandaloneTest\\</td>\n  <td>バッチやメッセージング処理などコンテナ外で動作する\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>SupportTemplate</td>\n  <td>処理のテスト実行環境を提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>MessagingRequest\\</td>\n  <td>同期応答メッセージ受信処理のリクエスト単体\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>TestSupport</td>\n  <td>テストで必要となるテスト準備機能、\\</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>各種アサートを提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>MessagingReceive\\</td>\n  <td>応答不要メッセージ受信処理のリクエスト単体テストで\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>TestSupport</td>\n  <td>必要となるテスト準備機能、各種アサートを提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>TestShot</td>\n  <td>データシートに定義されたテストケース1件分の情報を\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>格納するクラス。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>MainForRequestTesting</td>\n  <td>テスト用メインクラス。テスト実行時の差分を吸収する。</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>DbAccessTestSupport</td>\n  <td>DB準備データ投入などデータベースを使用するテストに\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>必要な機能を提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>MQSupport</td>\n  <td>電文作成などメッセージングのテストに\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>必要な機能を提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>TestDataConvertor</td>\n  <td>Excelから読み込んだテストデータを編集するための\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>インタフェース。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>必要に応じてデータ種別ごとにアーキテクトが実装する。</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n\n# 構造",
-      "hints": []
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "MessagingRequestTestSupport",
+        "MessagingReceiveTestSupport",
+        "TestShot",
+        "MainForRequestTesting",
+        "DbAccessTestSupport",
+        "MQSupport",
+        "TestDataConvertor",
+        "メッセージ受信処理テスト",
+        "リクエスト単体テスト",
+        "クラス構造"
+      ]
     },
     {
       "id": "s3",
       "title": "StandaloneTestSupportTemplate",
       "content": "バッチやメッセージング処理などコンテナ外で動作する処理のテスト実行環境を提供する。\nテストデータを読み取り、全テストショット(\\ TestShot \\ )を実行する。",
-      "hints": []
+      "hints": [
+        "StandaloneTestSupportTemplate",
+        "TestShot",
+        "テスト実行環境",
+        "バッチテスト",
+        "メッセージングテスト",
+        "コンテナ外処理"
+      ]
     },
     {
       "id": "s4",
       "title": "TestShot",
       "content": "1テストショットの情報保持とテストショットを実行する。\\\nテストショットは以下の要素で成り立っている。\n\n* 入力データの準備\n* メインクラス起動\n* 出力結果の確認\n\nバッチやメッセージング処理などコンテナ外で動作する処理のテストにおいて\n共通の準備処理、結果確認機能を提供する。\n\n<table>\n<thead>\n<tr>\n  <th>準備処理</th>\n  <th>結果確認</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>データベースのセットアップ</td>\n  <td>データベース更新内容確認</td>\n</tr>\n<tr>\n  <td></td>\n  <td>ログ出力結果確認</td>\n</tr>\n<tr>\n  <td></td>\n  <td>ステータスコード確認</td>\n</tr>\n</tbody>\n</table>\n\n\n入力データ準備や結果確認ロジックはバッチや各種メッセージング処理ごとに異なるので\\\n方式に応じたカスタマイズが可能となっている。",
-      "hints": []
+      "hints": [
+        "TestShot",
+        "テストショット",
+        "データベースセットアップ",
+        "ステータスコード確認",
+        "ログ出力確認",
+        "準備処理",
+        "結果確認"
+      ]
     },
     {
       "id": "s5",
       "title": "MessagingRequestTestSupport",
       "content": "同期応答メッセージ受信処理テスト用のスーパクラス。\\\nアプリケーションプログラマは本クラスを継承してテストクラスを作成する。\n\n本クラスは、\\ TestShot \\が提供する準備処理、結果確認に以下の機能を追加する。\n\n<table>\n<thead>\n<tr>\n  <th>準備処理</th>\n  <th>結果確認</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>要求電文の作成</td>\n  <td>応答電文の内容確認</td>\n</tr>\n</tbody>\n</table>\n\n\n本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\\\nテストソース記述量を大きく削減できる。\n\n具体的な使用方法は、\\ ../05_UnitTestGuide/02_RequestUnitTest/real\\ を参照。\n\n> **Tip:** 本クラスは、入力データをキューにPUTする用途で、main側のコンポーネント設定ファイルを読み込む。 その際、\\ `nablarch.fw.messaging.FwHeaderDefinition`\\ 実装クラスは、 \\ `fwHeaderDefinition`\\ という名前で登録されていなければならない。 これ以外の名称を使用する場合は、本クラスのgetFwHeaderDefinitionName()をオーバライドすることにより 本クラスが使用するFwHeaderDefinitionコンポーネント名を変更できる。",
-      "hints": []
+      "hints": [
+        "MessagingRequestTestSupport",
+        "FwHeaderDefinition",
+        "fwHeaderDefinition",
+        "getFwHeaderDefinitionName",
+        "同期応答メッセージ",
+        "要求電文",
+        "応答電文"
+      ]
     },
     {
       "id": "s6",
       "title": "MessagingReceiveTestSupport",
       "content": "応答不要メッセージ処理テスト用のスーパクラス。\\\nアプリケーションプログラマは本クラスを継承してテストクラスを作成する。\n\n本クラスは、\\ TestShot \\が提供する準備処理、結果確認に以下の機能を追加する。\n\n<table>\n<thead>\n<tr>\n  <th>準備処理</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>要求電文の作成</td>\n</tr>\n</tbody>\n</table>\n\n本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\\\nテストソース記述量を大きく削減できる。\n\n具体的な使用方法は、\\ ../05_UnitTestGuide/02_RequestUnitTest/delayed_receive\\ を参照。",
-      "hints": []
+      "hints": [
+        "MessagingReceiveTestSupport",
+        "応答不要メッセージ",
+        "要求電文作成",
+        "メッセージ受信テスト"
+      ]
     },
     {
       "id": "s7",
       "title": "MainForRequestTesting",
       "content": "リクエスト単体テスト用のメインクラス。\\\n本番用メインクラスとの主な差異は以下の通り。\n\n* テスト用のコンポーネント設定ファイルからシステムリポジトリを初期化する。\n* 常駐化機能を無効化する。",
-      "hints": []
+      "hints": [
+        "MainForRequestTesting",
+        "テスト用メインクラス",
+        "常駐化無効化",
+        "コンポーネント設定ファイル"
+      ]
     },
     {
       "id": "s8",
       "title": "MQSupport",
       "content": "メッセージに関する操作を提供するクラス。\n主に以下の機能を提供する。\n\n* テストデータから要求電文を作成し、受信キューにPUTする。\n* 応答電文を送信キューからGETし、テストデータの期待値と内容を比較する。",
-      "hints": []
+      "hints": [
+        "MQSupport",
+        "要求電文作成",
+        "受信キュー",
+        "応答電文",
+        "送信キュー",
+        "メッセージングテスト"
+      ]
     },
     {
       "id": "s9",
       "title": "TestDataConvertor",
       "content": "Excelから読み込んだテストデータを編集するためのインタフェース。\n必要に応じてXMLやJSONなどのデータ種別ごとにアーキテクトが実装する。\n\n実装クラスでは以下の機能を実装する。\n\n* Excelから読み込んだデータに対して任意で編集する。\n* 編集したデータを読み込むためのレイアウト定義データを動的に生成する。\n\n本インタフェースを実装することで、例えばExcelに日本語で記述されたデータをURLエンコーディングする等の処理を追加可能である。\n\n実装クラスは \"TestDataConverter_<データ種別>\" というキー名でテスト用のコンポーネント設定ファイルに登録する必要がある。\n\n\n# テストデータ\n\nメッセージング処理固有のテストデータについて説明する。",
-      "hints": []
+      "hints": [
+        "TestDataConvertor",
+        "テストデータ編集",
+        "レイアウト定義",
+        "TestDataConverter_データ種別",
+        "Excelテストデータ"
+      ]
     },
     {
       "id": "s10",
       "title": "メッセージ",
       "content": "基本的な記述方法は、\\\n../05_UnitTestGuide/02_RequestUnitTest/real\nを参照。\n\n> **Tip:** パディングおよびバイナリデータの扱いは、\\ about_fixed_length_file\\ と同様である。",
-      "hints": []
+      "hints": [
+        "パディング",
+        "バイナリデータ",
+        "固定長ファイル",
+        "about_fixed_length_file",
+        "メッセージテストデータ"
+      ]
     }
   ]
 }

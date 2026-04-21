@@ -23,6 +23,13 @@ Nablarchの tag に必要なリクエスト処理を行うハンドラ。
 
 * `nablarch.common.web.handler.NablarchTagHandler`
 
+<details>
+<summary>keywords</summary>
+
+NablarchTagHandler, nablarch.common.web.handler.NablarchTagHandler, CustomTagConfig, nablarch.common.web.tag.CustomTagConfig, カスタムタグ制御, hidden暗号化, チェックボックス, 複合キー復元, リクエスト処理
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -32,6 +39,13 @@ Nablarchの tag に必要なリクエスト処理を行うハンドラ。
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-web-tag, com.nablarch.framework, モジュール, 依存関係, Maven
+
+</details>
+
 ## 制約
 
 マルチパートリクエストハンドラ より後ろに設定すること
@@ -39,6 +53,13 @@ Nablarchの tag に必要なリクエスト処理を行うハンドラ。
 
 hidden暗号化 使用時は、スレッドコンテキスト変数管理ハンドラ より後ろに設定すること
 hidden暗号化対象のリクエストか否かを判定するために、スレッドコンテキストからリクエストIDを取得するため。
+
+<details>
+<summary>keywords</summary>
+
+ハンドラ順序, multipart_handler, thread_context_handler, 設定順序制約, hidden暗号化, リクエストID
+
+</details>
 
 ## 復号に失敗(改竄エラー、セッション無効化エラー)した場合のエラーページを設定する
 
@@ -69,3 +90,10 @@ hidden暗号化 の復号処理は、次の2つのケースにおいて失敗す
 
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+改竄エラー, セッション無効化エラー, 復号失敗, エラーページ設定, path, statusCode, sessionExpirePath, sessionExpireStatusCode, NablarchTagHandler
+
+</details>

@@ -7,37 +7,130 @@
       "id": "s1",
       "title": "概要",
       "content": "",
-      "hints": []
+      "hints": [
+        "JUnit5拡張機能",
+        "自動テストフレームワーク",
+        "JUnit5",
+        "JUnit Vintage",
+        "パラメータ化テスト",
+        "JUnit4互換性"
+      ]
     },
     {
       "id": "s2",
       "title": "概要",
       "content": "ここでは、JUnit 5で書かれたテストの中で自動テストフレームワークを使用するための拡張機能について説明する。\n本拡張機能を使用することで、パラメータ化テストなどのJUnit 5が提供する便利な機能と自動テストフレームワークを組み合わせて使用できるようになる。\n\n> **Tip:** 本拡張機能を導入しても、JUnit 4で書かれた既存の自動テストフレームワークのテストを修正する必要はない。 JUnit 4で書かれたテストは、JUnit Vintageを使うことで引き続きJUnit 5上で実行できる（JUnit Vintageを使って自動テストフレームワークを動作させる方法については JUnit 5で自動テストフレームワークを動かす を参照）。 したがって、既存のテストはJUnit 4のコードのままにしておき、新規テストだけJUnit 5を使ったコードにできる。",
-      "hints": []
+      "hints": [
+        "JUnit5拡張機能",
+        "自動テストフレームワーク",
+        "JUnit5",
+        "JUnit Vintage",
+        "パラメータ化テスト",
+        "JUnit4互換性"
+      ]
     },
     {
       "id": "s3",
       "title": "前提条件",
       "content": "JUnit 5を使用するには、以下の条件を満たしている必要がある。\n\n* maven-surefire-plugin の 2.22.0 以上\n\nまた本ページは、JUnit 5の導入方法やテストケースの作成方法などの基本的な知識を有していることを前提としているため、それらの手順については記載していない。\nJUnit 5 自体についての情報は、 [公式のユーザガイド（外部サイト、英語）](https://junit.org/junit5/docs/5.11.0/user-guide/) を参照のこと。",
-      "hints": []
+      "hints": [
+        "maven-surefire-plugin",
+        "前提条件",
+        "バージョン要件"
+      ]
     },
     {
       "id": "s4",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-testing-junit5</artifactId>\n  <scope>test</scope>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-testing-junit5",
+        "モジュール",
+        "Maven依存関係",
+        "com.nablarch.framework"
+      ]
     },
     {
       "id": "s5",
       "title": "基本的な使い方",
       "content": "自動テストフレームワークは、 `TestSupport` などのテストに必要な機能を実装したクラスを提供している。\n従来のJUnit 4では、これらの自動テストフレームワークが提供するクラスをテストクラスが継承することで、提供するクラスが持つ機能をテストクラスから使用できるようにしていた。\n\n本拡張機能は、自動テストフレームワークが提供するクラスのインスタンスを拡張機能側で生成し、テストクラスにインジェクションする仕組みを提供する。\nこの仕組みには、JUnit 5の [Extension (外部サイト、英語)](https://junit.org/junit5/docs/5.11.0/user-guide/#extensions) を利用している。\n\n本拡張機能では、自動テストフレームワークが提供するクラスごとに **Extension クラス** と **合成アノテーション** を用意している。\n例えば、 `TestSupport` には `TestSupportExtension` と `NablarchTest` が用意されている。\n\n> **Tip:** 合成アノテーションはJUnit 5が提供する機能で、複数のアノテーションの設定を別の１つのアノテーションにまとめることができる。 詳しくは [公式ガイドの「2.1.1. Meta-Annotations and Composed Annotations」(外部サイト、英語)](https://junit.org/junit5/docs/5.11.0/user-guide/#writing-tests-meta-annotations) を参照のこと。\nこれらのクラスを使って以下のように実装することで、 `TestSupport` をテストで使用できるようになる。\n\n```java\n// 1. 対応する合成アノテーションをテストクラスに設定する\n@NablarchTest\nclass YourTest {\n    // 2. 使用するクラスをテストクラスのフィールドとして宣言する\n    TestSupport support;\n\n    @Test\n    void test() {\n        ...\n        // 3. テスト内で使用する\n        Map<String, String> map = support.getMap(sheetName, id);\n        ...\n    }\n}\n```\n`TestSupport` をテストクラスで使用する場合は、まず対応する合成アノテーション(`NablarchTest`)をテストクラスに設定する。\nこれにより、 `TestSupportExtension` がテストクラスに対して適用される。\n\n次に、 `TestSupport` 型のインスタンスフィールドをテストクラスに宣言する。\nこのとき、インスタンスフィールドの可視性は何でも構わない。\n\n拡張機能は、テスト実行前に対応するクラス（ここでは `TestSupport`）のインスタンスを生成する。\nそして、テストクラスに代入可能なフィールドを見つけると、自動的にインスタンスをインジェクションする。\n\n> **Warning:** インジェクション対象となるフィールドがnullでない場合、拡張機能はエラー終了するので値は設定しないこと。",
-      "hints": []
+      "hints": [
+        "TestSupport",
+        "NablarchTest",
+        "TestSupportExtension",
+        "インジェクション",
+        "合成アノテーション",
+        "Extensionクラス",
+        "フィールドインジェクション"
+      ]
     },
     {
       "id": "s6",
       "title": "Extension クラスと合成アノテーションの一覧",
       "content": "本拡張機能では、以下のExtensionクラスと合成アノテーションを提供している。\n\n\n| 自動テストフレームワークが提供するクラス | Extension クラス | 合成アノテーション |\n|---|---|---|\n| `TestSupport` | `TestSupportExtension` | `NablarchTest` |\n| `BatchRequestTestSupport` | `BatchRequestTestExtension` | `BatchRequestTest` |\n| `DbAccessTestSupport` | `DbAccessTestExtension` | `DbAccessTest` |\n| `EntityTestSupport` | `EntityTestExtension` | `EntityTest` |\n| `BasicHttpRequestTestTemplate` | `BasicHttpRequestTestExtension` | `BasicHttpRequestTest` |\n| `HttpRequestTestSupport` | `HttpRequestTestExtension` | `HttpRequestTest` |\n| `RestTestSupport` | `RestTestExtension` | `RestTest` |\n| `SimpleRestTestSupport` | `SimpleRestTestExtension` | `SimpleRestTest` |\n| `IntegrationTestSupport` | `IntegrationTestExtension` | `IntegrationTest` |\n| `MessagingReceiveTestSupport` | `MessagingReceiveTestExtension` | `MessagingReceiveTest` |\n| `MessagingRequestTestSupport` | `MessagingRequestTestExtension` | `MessagingRequestTest` |\n# BasicHttpRequestTest の使い方の補足\n\n`BasicHttpRequestTestTemplate` 以外は、 基本的な使い方 で説明した方法で使用できる。\n\n`BasicHttpRequestTestTemplate` のみ、合成アノテーションである `BasicHttpRequestTest` を使用するときにパラメータを指定する必要があるので、その点について補足する。\n\n```java\n// 1. BasicHttpRequestTest の baseUri を指定する\n@BasicHttpRequestTest(baseUri = \"/test/\")\nclass YourTestClass {\n    // 2. BasicHttpRequestTestTemplate のインジェクション方法は、他と変わらない\n    BasicHttpRequestTestTemplate support;\n\n    @Test\n    void test() {\n        support.execute();\n    }\n}\n```\n`BasicHttpRequestTest` アノテーションには `baseUri` を指定する必要がある。\nこの値は、 `AbstractHttpRequestTestTemplate` の `getBaseUri()` メソッドが返却する値に対応する。",
-      "hints": []
+      "hints": [
+        "TestSupportExtension",
+        "NablarchTest",
+        "BatchRequestTestExtension",
+        "BatchRequestTest",
+        "DbAccessTestExtension",
+        "DbAccessTest",
+        "EntityTestExtension",
+        "EntityTest",
+        "BasicHttpRequestTestExtension",
+        "BasicHttpRequestTest",
+        "HttpRequestTestExtension",
+        "HttpRequestTest",
+        "RestTestExtension",
+        "RestTest",
+        "SimpleRestTestExtension",
+        "SimpleRestTest",
+        "IntegrationTestExtension",
+        "IntegrationTest",
+        "MessagingReceiveTestExtension",
+        "MessagingReceiveTest",
+        "MessagingRequestTestExtension",
+        "MessagingRequestTest",
+        "BasicHttpRequestTestTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "baseUri",
+        "合成アノテーション一覧",
+        "独自拡張クラス",
+        "Extensionクラス継承",
+        "JUnit4移植",
+        "TestSupport",
+        "SimpleRestTestSupport",
+        "TestSupportExtension",
+        "AbstractHttpRequestTestTemplate",
+        "BasicHttpRequestTestExtension",
+        "TestEventDispatcherExtension",
+        "TestEventDispatcher",
+        "createSupport",
+        "@ExtendWith",
+        "ExtendWith",
+        "BasicHttpRequestTestTemplate",
+        "AbstractHttpRequestTestTemplate",
+        "findAnnotation",
+        "合成アノテーション",
+        "baseUri",
+        "beforeAll",
+        "beforeEach",
+        "afterAll",
+        "afterEach",
+        "@Rule",
+        "resolveTestRules",
+        "TestRule再現",
+        "TestRule",
+        "JUnit4移植",
+        "TestSupportExtension",
+        "TestSupport",
+        "@RegisterExtension",
+        "RegisterExtension",
+        "staticフィールド",
+        "プログラム的登録",
+        "beforeAll",
+        "afterAll"
+      ]
     },
     {
       "id": "s7",

@@ -31,6 +31,13 @@ Nablarchバッチアプリケーションの起点となるメインクラス。
 javaコマンドから直接起動し、システムリポジトリやログの初期化処理を行い、
 ハンドラキューを実行する。
 
+<details>
+<summary>keywords</summary>
+
+status_code_convert_handler, data_read_handler, duplicate_process_check_handler, request_path_java_package_mapping, multi_thread_execution_handler, loop_handler, dbless_loop_handler, retry_handler, process_resident_handler, process_stop_handler, database_connection_management_handler, transaction_management_handler, global_error_handler, thread_context_handler, thread_context_clear_handler, ServiceAvailabilityCheckHandler, file_record_writer_dispose_handler, ProcessStop, ハンドラキュー構成, 都度起動バッチ, 常駐バッチ, 最小ハンドラ構成, マルチスレッド実行, DatabaseRecordReader, FileDataReader, ValidatableFileDataReader, ResumeDataReader, DataReader, データリーダ, データベース読み込み, ファイル読み込み, レジューム機能, バリデーション付きファイル読み込み, BatchAction, FileBatchAction, NoInputDataBatchAction, AsyncMessageSendAction, バッチアクション, ファイル入力バッチ, 入力データなしバッチ, 応答不要メッセージ送信, 都度起動バッチ, 常駐バッチ, スタンドアロンアプリケーション, db_messaging, Mainクラス, ハンドラキュー, バッチ種別選択
+
+</details>
+
 ## リクエストパスによるアクションとリクエストIDの指定
 
 Nablarchバッチアプリケーションでは、コマンドライン引数(-requestPath)で、
@@ -45,6 +52,13 @@ Nablarchバッチアプリケーションでは、コマンドライン引数(-r
 ```
 リクエストIDは、各バッチプロセスの識別子として用いられる。
 同一の業務アクションクラスを実行するプロセスを複数起動する場合などは、このリクエストIDが識別子となる。
+
+<details>
+<summary>keywords</summary>
+
+requestPath, リクエストID, コマンドライン引数, アクションクラス指定, バッチプロセス識別子
+
+</details>
 
 ## Nablarchバッチアプリケーションの処理の流れ
 
@@ -66,6 +80,13 @@ Nablarchバッチアプリケーションが入力データを読み込み、処
 `ステータスコード→プロセス終了コード変換ハンドラ(StatusCodeConvertHandler)` が、
 処理結果のステータスコードをプロセス終了コードに変換し、
 バッチアプリケーションの処理結果としてプロセス終了コードが返される。
+
+<details>
+<summary>keywords</summary>
+
+DataReader, DispatchHandler, StatusCodeConvertHandler, Result, 処理フロー, ハンドラキュー, プロセス終了コード, ステータスコード変換
+
+</details>
 
 ## Nablarchバッチアプリケーションで使用するハンドラ
 

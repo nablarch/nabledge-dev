@@ -24,6 +24,13 @@
 
 * `nablarch.fw.handler.BasicProcessStopHandler`
 
+<details>
+<summary>keywords</summary>
+
+BasicProcessStopHandler, nablarch.fw.handler.BasicProcessStopHandler, プロセス停止制御, ループ中断, プロセス停止フラグ, 都度起動バッチ
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -38,11 +45,25 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-standalone, nablarch-fw-batch, モジュール依存関係
+
+</details>
+
 ## 制約
 
 スレッドコンテキスト変数管理ハンドラ より後ろに設定すること
 本ハンドラは、スレッドコンテキスト上のリクエストIDをもとに停止処理を行うため、
 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを設定する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+ThreadContextHandler, thread_context_handler, スレッドコンテキスト, リクエストID, ハンドラ設定順序
+
+</details>
 
 ## プロセス停止制御を行うための設定
 
@@ -83,3 +104,10 @@
   </property>
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+dbTransactionManager, tableName, requestIdColumnName, processHaltColumnName, checkInterval, exitCode, BasicApplicationInitializer, プロセス停止設定, 都度起動バッチ, 常駐バッチ, サブスレッド, メインスレッド
+
+</details>

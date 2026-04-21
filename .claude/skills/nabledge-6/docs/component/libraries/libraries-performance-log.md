@@ -54,7 +54,21 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
                                \n\tend_free_memory = [$endFreeMemory$] end_used_memory = [$endUsedMemory$]
 ```
 
+<details>
+<summary>keywords</summary>
+
+パフォーマンスログ出力方針, DEBUGレベル, PERFORMANCEロガー, log.properties設定, app-log.properties設定, PerformanceLogFormatter, ログレベル設定
+
+</details>
+
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+PerformanceLogUtil, startメソッド, endメソッド, パフォーマンス計測, 実行時間計測, メモリ使用量, 再帰呼び出し制限, 実行時ID, ポイント名, オプション情報, Object..., varargs, PerformanceLogFormatter, performanceLogFormatter.className, performanceLogFormatter.format, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints, app-log.properties設定, フォーマット設定, プレースホルダ, PerformanceJsonLogFormatter, JsonLogFormatter, performanceLogFormatter.targets, performanceLogFormatter.structuredMessagePrefix, JSON構造化ログ, performanceLogFormatter.className, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints
+
+</details>
 
 ## パフォーマンスログを出力する
 

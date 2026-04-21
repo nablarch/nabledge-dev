@@ -17,6 +17,13 @@
 
 * `nablarch.fw.messaging.handler.MessageReplyHandler`
 
+<details>
+<summary>keywords</summary>
+
+MessageReplyHandler, nablarch.fw.messaging.handler.MessageReplyHandler, ResponseMessage, 電文応答制御ハンドラ, 応答電文送信
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -25,6 +32,13 @@
   <artifactId>nablarch-fw-messaging</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-messaging, com.nablarch.framework, Mavenモジュール, 依存関係設定
+
+</details>
 
 ## 制約
 
@@ -43,6 +57,13 @@
 本ハンドラが応答を送信する前に業務処理の結果を確定させる必要がある。
 このため、 トランザクション制御ハンドラ は、本ハンドラより後ろに設定する必要がある。
 
+<details>
+<summary>keywords</summary>
+
+messaging_context_handler, transaction_management_handler, ハンドラ配置順序, 2相コミット, トランザクション制御, メッセージキュー配置制約
+
+</details>
+
 ## フレームワーク制御ヘッダの設定
 
 応答電文内のフレームワーク制御ヘッダの定義を変更する場合には、プロジェクトで拡張したフレームワーク制御ヘッダの定義を設定する必要がある。
@@ -60,3 +81,10 @@
   </property>
 </component> 
 ```
+
+<details>
+<summary>keywords</summary>
+
+StandardFwHeaderDefinition, nablarch.fw.messaging.StandardFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダ, カスタマイズ, mom_system_messaging-fw_header
+
+</details>

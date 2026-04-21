@@ -13,6 +13,13 @@
 
 * `nablarch.fw.handler.GlobalErrorHandler`
 
+<details>
+<summary>keywords</summary>
+
+GlobalErrorHandler, nablarch.fw.handler.GlobalErrorHandler, グローバルエラーハンドラ, 未捕捉例外, エラー捕捉, ログ出力
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -22,6 +29,13 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-fw, com.nablarch.framework, Mavenモジュール, 依存関係
+
+</details>
+
 ## 制約
 
 できるだけハンドラキューの先頭に配置すること
@@ -30,6 +44,13 @@
 もし、このハンドラより手前のハンドラで例外が発生した場合は、ウェブアプリケーションサーバやJVMにより例外処理が行われる。
 
 例外を捕捉した際にスレッドコンテキストの情報をログに出力したい場合は、 スレッドコンテキスト変数削除ハンドラ より後に配置すること。
+
+<details>
+<summary>keywords</summary>
+
+ハンドラキュー配置順, 先頭配置, thread_context_clear_handler, スレッドコンテキスト, ログ出力
+
+</details>
 
 ## 例外及びエラーに応じた処理内容
 
@@ -50,6 +71,13 @@
 | `VirtualMachineError` (サブクラス含む) | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーをリスローする。 .. tip:: `StackOverflowError` 及び `OutOfMemoryError` 以外が対象となる。 |
 | 上記以外のエラークラス | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーを原因に持つ `InternalError` を生成し、ハンドラの処理結果として返却する。 |
 
+<details>
+<summary>keywords</summary>
+
+ServiceError, nablarch.fw.results.ServiceError, Result.Error, nablarch.fw.Result.Error, InternalError, nablarch.fw.results.InternalError, ThreadDeath, StackOverflowError, OutOfMemoryError, VirtualMachineError, 例外処理, エラー処理, FATALレベル, リスロー, InternalError生成
+
+</details>
+
 ## グローバルエラーハンドラでは要件を満たせない場合
 
 このハンドラは、設定などで実装を切り替えることはできない。
@@ -57,3 +85,10 @@
 プロジェクト固有のエラー処理用ハンドラを作成し対応すること。
 
 例えば、ログレベルを細かく切り替えたい場合などは、このハンドラを使用するのではなく、ハンドラを新たに作成すると良い。
+
+<details>
+<summary>keywords</summary>
+
+カスタムハンドラ, プロジェクト固有ハンドラ, ログレベル切り替え, 実装切り替え不可
+
+</details>

@@ -29,6 +29,13 @@ INFO progress finish step. job name: [test-job] step name: [test-step] step stat
 INFO progress finish job. job name: [test-job]
 ```
 
+<details>
+<summary>keywords</summary>
+
+ProgressManager, TPS, 進捗ログ, ジョブ開始終了ログ, ステップ進捗状況, 終了予測時間, 未処理件数, 処理済み件数
+
+</details>
+
 ## 進捗ログを専用のログファイルに出力するための設定を追加する
 
 進捗を示すログは、ログカテゴリ名を `progress` として出力する。
@@ -53,6 +60,13 @@ loggers.PROGRESS.nameRegex=progress
 loggers.PROGRESS.level=INFO
 loggers.PROGRESS.writerNames=progressLog
 ```
+
+<details>
+<summary>keywords</summary>
+
+FileLogWriter, BasicLogFormatter, progress, log.properties, 専用ログファイル, availableLoggersNamesOrder, loggers.PROGRESS
+
+</details>
 
 ## Batchletステップで進捗ログを出力する
 
@@ -111,6 +125,13 @@ public class ProgressBatchlet extends AbstractBatchlet {
     }
 }
 ```
+
+<details>
+<summary>keywords</summary>
+
+ProgressManager, AbstractBatchlet, ProgressBatchlet, setInputCount, outputProgressInfo, Batchletステップ進捗ログ, PROGRESS_LOG_INTERVAL, @Named, @Dependent, @Inject
+
+</details>
 
 ## Chunkステップで進捗ログを出力する
 
@@ -181,3 +202,10 @@ public class ProgressReader extends AbstractItemReader {
 ```
 > **Important:** `ItemReader <jsr352-progress_reader>` で処理対象件数を設定せずに、 `進捗ログ出力リスナー <jsr352-progress_listener>` を設定した場合には、設定不備として例外を送出し処理を異常終了させる。 このため、進捗ログを必要としない場合には、 進捗ログ出力リスナー の設定を必ず削除すること。
 > **Important:** chunkステップでRetrying Exceptionsを設定した場合は、リスナーによる進捗ログの出力が正しく機能しなくなる。 これは、リスナーが処理済み件数として使用している `metrics` の読み込み済み件数が実態とずれることに起因する。 このため、Retrying Exceptionsを使用して例外発生時のリトライ処理を行いたい場合には、 `ItemWriter` の実装クラスにて処理済み件数を計算し、 extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を使用して進捗ログを出力すること。
+
+<details>
+<summary>keywords</summary>
+
+ProgressManager, AbstractItemReader, ProgressReader, progressLogListener, ItemWriter, Chunkステップ進捗ログ, RetryingExceptions, setInputCount, outputProgressInfo, @Inject, @Named, @Dependent, StepContext
+
+</details>

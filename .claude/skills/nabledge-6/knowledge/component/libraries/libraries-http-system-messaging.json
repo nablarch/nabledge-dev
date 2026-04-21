@@ -13,7 +13,16 @@
       "id": "s2",
       "title": "機能概要",
       "content": "",
-      "hints": []
+      "hints": [
+        "MessagingAction",
+        "MessageSender",
+        "HTTPメッセージング",
+        "メッセージ送受信",
+        "MOMメッセージング互換",
+        "実行制御基盤",
+        "HTTPメッセージ受信",
+        "HTTPメッセージ送信"
+      ]
     },
     {
       "id": "s3",
@@ -25,13 +34,32 @@
       "id": "s4",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging-http</artifactId>\n</dependency>\n```",
-      "hints": []
+      "hints": [
+        "nablarch-fw-messaging",
+        "nablarch-fw-messaging-http",
+        "モジュール依存関係",
+        "Maven依存関係"
+      ]
     },
     {
       "id": "s5",
       "title": "使用方法",
       "content": "",
-      "hints": []
+      "hints": [
+        "MessageSenderClient",
+        "HttpMessagingClient",
+        "MessagingAction",
+        "SyncMessage",
+        "MessageSender",
+        "ResponseMessage",
+        "RequestMessage",
+        "ExecutionContext",
+        "HTTPメッセージ受信",
+        "HTTPメッセージ送信",
+        "messageSenderClient",
+        "コンポーネント定義",
+        "メッセージ送信設定"
+      ]
     },
     {
       "id": "s6",
@@ -55,7 +83,14 @@
       "id": "s9",
       "title": "拡張例",
       "content": "",
-      "hints": []
+      "hints": [
+        "FwHeaderDefinition",
+        "StandardFwHeaderDefinition",
+        "HttpMessagingClient",
+        "フレームワーク制御ヘッダのカスタマイズ",
+        "HTTPクライアント処理変更",
+        "フレームワーク制御ヘッダ読み書き変更"
+      ]
     },
     {
       "id": "s10",
@@ -73,7 +108,20 @@
       "id": "s12",
       "title": "送受信電文のデータモデル",
       "content": "HTTPメッセージングでは、送受信電文の内容を以下のデータモデルで表現する。\n\n![](assets/libraries-http-system-messaging/http_system_messaging-data_model.png)\n\nプロトコルヘッダ\n主にウェブコンテナによるメッセージ送受信処理において使用される情報を格納したヘッダ領域である。\nプロトコルヘッダはMapインターフェースでアクセスすることが可能となっている。\n\n\n共通プロトコルヘッダ\nプロトコルヘッダのうち、フレームワークが使用する以下のヘッダについては、特定のキー名でアクセスできる。\nキー名をカッコで示す。\n\nメッセージID(X-Message-Id)\n電文ごとに一意採番される文字列\n\n:送信時: 送信処理の際に採番した値\n:受信時: 送信側が発番した値\n\n関連メッセージID(X-Correlation-Id)\n電文が関連する電文のメッセージID\n\n:応答電文: 要求電文のメッセージID\n:再送要求: 応答再送を要求する要求電文のメッセージID\n\n\nメッセージボディ\nHTTPリクエストのデータ領域をメッセージボディと呼ぶ。\nフレームワーク機能は、原則としてプロトコルヘッダ領域のみを使用する。\nそれ以外のデータ領域については、未解析の単なるバイナリデータとして扱うものとする。\n\nメッセージボディの解析は、 汎用データフォーマット によって行う。\nこれにより、電文の内容をフィールド名をキーとするMap形式で読み書き可能である。\n\n\nフレームワーク制御ヘッダ\n本フレームワークが提供する機能の中には、電文中に特定の制御項目が定義されていることを前提として設計されているものが多く存在する。\nそのような制御項目のことを `フレームワーク制御ヘッダ` とよぶ。\n\nフレームワーク制御ヘッダとそれを使用するハンドラの対応は以下のとおり。\n\nリクエストID\nこの電文を受信したアプリケーションが実行すべき業務処理を識別するためのID。\n\nこのヘッダを使用する主要なハンドラ：\n\n| リクエストディスパッチハンドラ\n| 再送電文制御ハンドラ\n| permission_check_handler\n| ServiceAvailabilityCheckHandler\n\nユーザID\nこの電文の実行権限を表す文字列\n\nこのヘッダを使用する主要なハンドラ：\n\n| permission_check_handler\n\n再送要求フラグ\n再送要求電文の送信時に設定されるフラグ\n\nこのヘッダを使用する主要なハンドラ：\n\n| 再送電文制御ハンドラ\n\nステータスコード\n要求電文に対する処理結果を表すコード値\n\nこのヘッダを使用する主要なハンドラ：\n\n| 電文応答制御ハンドラ\n\nフレームワーク制御ヘッダは、デフォルトの設定では、\nメッセージボディの最初のデータレコード中に、それぞれ以下のフィールド名で定義されている必要がある。\n\n:リクエストID: requestId\n:ユーザID: userId\n:再送要求フラグ: resendFlag\n:ステータスコード: statusCode\n\n以下は、標準的なフレームワーク制御ヘッダの定義例である。\n\n```bash\n#===================================================================\n# フレームワーク制御ヘッダ部 (50byte)\n#===================================================================\n[NablarchHeader]\n1   requestId   X(10)       # リクエストID\n11  userId      X(10)       # ユーザID\n21  resendFlag  X(1)  \"0\"   # 再送要求フラグ (0: 初回送信 1: 再送要求)\n22  statusCode  X(4)  \"200\" # ステータスコード\n26 ?filler      X(25)       # 予備領域\n#====================================================================\n```\nフォーマット定義にフレームワーク制御ヘッダ以外の項目を含めた場合、\nフレームワーク制御ヘッダの任意ヘッダ項目としてアクセスでき、\nプロジェクト毎にフレームワーク制御ヘッダを簡易的に拡張する目的で使用できる。\n\nまた、将来的な任意項目の追加およびフレームワークの機能追加に伴うヘッダ追加に対応するため、\n予備領域を設けておくことを強く推奨する。",
-      "hints": []
+      "hints": [
+        "プロトコルヘッダ",
+        "共通プロトコルヘッダ",
+        "メッセージボディ",
+        "フレームワーク制御ヘッダ",
+        "requestId",
+        "userId",
+        "resendFlag",
+        "statusCode",
+        "X-Message-Id",
+        "X-Correlation-Id",
+        "データモデル",
+        "NablarchHeader"
+      ]
     }
   ]
 }

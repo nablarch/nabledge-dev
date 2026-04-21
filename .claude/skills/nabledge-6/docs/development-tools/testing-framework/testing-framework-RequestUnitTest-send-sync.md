@@ -113,6 +113,13 @@
 
 # 構造
 
+<details>
+<summary>keywords</summary>
+
+同期応答メッセージ送信処理, リクエスト単体テスト, 要求電文送信, 同期受信, 動作再現, StandaloneTestSupportTemplate, AbstractHttpRequestTestTemplate, MessageSender, RequestTestingMessagingProvider, TestDataConvertor, 同期応答メッセージ送信処理, バッチ処理, テスト親クラス継承
+
+</details>
+
 ## StandaloneTestSupportTemplate
 
 Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
@@ -120,12 +127,26 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
 本クラスもしくはAbstractHttpRequestTestTemplateを実装したテストケースを使用する必要がある。
 
+<details>
+<summary>keywords</summary>
+
+StandaloneTestSupportTemplate, MockMessagingContext, 要求電文アサート, テストケース基底クラス, 同期応答メッセージ送信
+
+</details>
+
 ## AbstractHttpRequestTestTemplate
 
 Action実行後に、MockMessagingContextを用いて、要求電文のアサートを行う機能。
 
 同期応答メッセージ送信処理のリクエスト単体テストを行う場合は、処理の形態に合わせて
 本クラスもしくはStandaloneTestSupportTemplateを実装したテストケースを使用する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+AbstractHttpRequestTestTemplate, MockMessagingContext, HTTPリクエストテスト, 要求電文アサート, 同期応答メッセージ送信
+
+</details>
 
 ## RequestTestingMessagingProvider
 
@@ -152,6 +173,13 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 
 > **Tip:** 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。
 
+<details>
+<summary>keywords</summary>
+
+RequestTestingMessagingProvider, MockMessagingContext, 要求電文アサート, 応答電文生成, テストデータ読み込み
+
+</details>
+
 ## MessageSender
 
 同期応答メッセージ送信処理で使用するコンポーネント。
@@ -162,6 +190,13 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 * 要求電文を元にMockMessagingContextを実行する。
 * MockMessagingContextから返却された応答電文をパースする。
 * パース結果のオブジェクトを呼び出し元に返却する。
+
+<details>
+<summary>keywords</summary>
+
+MessageSender, MockMessagingContext, 要求電文生成, 応答電文パース, 同期応答メッセージ送信
+
+</details>
 
 ## TestDataConvertor
 
@@ -182,6 +217,13 @@ Excelから読み込んだテストデータを編集するためのインタフ
 
 同期応答メッセージ送信処理固有のテストデータについて説明する。
 
+<details>
+<summary>keywords</summary>
+
+TestDataConvertor, テストデータ変換, Excelデータ編集, レイアウト定義, URLエンコーディング
+
+</details>
+
 ## 同期応答メッセージ送信処理
 
 基本的な記述方法は、\
@@ -189,3 +231,10 @@ Excelから読み込んだテストデータを編集するためのインタフ
 を参照。
 
 > **Tip:** パディングおよびバイナリデータの扱いは、\ about_fixed_length_file\ と同様である。
+
+<details>
+<summary>keywords</summary>
+
+send_sync_request_write_test_data, テストデータ記述, パディング, バイナリデータ, 固定長ファイル
+
+</details>

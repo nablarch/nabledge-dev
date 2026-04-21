@@ -13,13 +13,35 @@
       "id": "s2",
       "title": "モジュール一覧",
       "content": "```xml\n<!-- Domaアダプタ -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-doma-adaptor</artifactId>\n</dependency>\n```\n> **Tip:** Domaのバージョン2.62.0を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
-      "hints": []
+      "hints": [
+        "nablarch-doma-adaptor",
+        "com.nablarch.integration",
+        "Domaアダプタ",
+        "Maven依存関係",
+        "モジュール設定",
+        "Doma2",
+        "動的SQL",
+        "2waySQL",
+        "Transactional",
+        "パフォーマンス向上",
+        "トランザクション制御"
+      ]
     },
     {
       "id": "s3",
       "title": "Domaアダプタを使用するための設定を行う",
       "content": "本アダプタを使用するための手順を以下に示す。",
-      "hints": []
+      "hints": [
+        "doma-processor",
+        "maven-compiler-plugin",
+        "domaDialect",
+        "dataSource",
+        "H2Dialect",
+        "org.seasar.doma.jdbc.dialect.Dialect",
+        "ダイアレクト設定",
+        "データソース設定",
+        "依存関係設定"
+      ]
     },
     {
       "id": "s4",
@@ -37,7 +59,17 @@
       "id": "s6",
       "title": "Domaを使用してデータベースにアクセスする",
       "content": "Domaを使用したデータベースアクセスを行うための手順を以下に示す。",
-      "hints": []
+      "hints": [
+        "DomaDaoRepository",
+        "Transactional",
+        "nablarch.integration.doma.Transactional",
+        "nablarch.integration.doma.DomaDaoRepository",
+        "@Dao",
+        "@Transactional",
+        "データベースアクセス",
+        "トランザクション管理",
+        "Daoルックアップ"
+      ]
     },
     {
       "id": "s7",
@@ -55,37 +87,135 @@
       "id": "s9",
       "title": "別トランザクションで実行する",
       "content": "`Transactional` インターセプタによって開始されたトランザクションではなく、\n別のトランザクションを使用してデータベースアクセスを行いたい場合がある。\n\nその場合は、 `DomaConfig#getTransactionManager` で取得した\n`TransactionManager` を使用して別トランザクションで制御する。\n\n実装例を以下に示す。\n\n```java\nDomaConfig.singleton()\n        .getTransactionManager()\n        .requiresNew(() ->\n                DomaDaoRepository.get(ProjectDao.class).insert(project);\n```",
-      "hints": []
+      "hints": [
+        "DomaConfig",
+        "TransactionManager",
+        "nablarch.integration.doma.DomaConfig",
+        "requiresNew",
+        "別トランザクション",
+        "トランザクション分離"
+      ]
     },
     {
       "id": "s10",
       "title": "Jakarta Batchに準拠したバッチアプリケーションで使用する",
       "content": "Jakarta Batchに準拠したバッチアプリケーションでDomaを使用するために、\n本アダプタでは以下のリスナーを提供している。\n\n* `DomaTransactionStepListener`\n* `DomaTransactionItemWriteListener`\n\nこれらのリスナーをリスナーリストに定義することで、\nJakarta Batchに準拠したバッチアプリケーションでもDomaを使用したデータベースアクセスを行うことができる。\n\n設定例を以下に示す。\n\n```xml\n<list name=\"stepListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener\" />\n</list>\n\n<list name=\"itemWriteListeners\">\n  <!-- その他のリスナーは省略 -->\n  <component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener\" />\n</list>\n```\n> **Important:** `Chunkステップ <jsr352-batch_type_chunk>` のItemWriterでデータベースに対してバッチ更新(バッチinsertやバッチupdateなど)する場合、バッチサイズの指定を明示的に行う必要がある。 ※Chunkステップのitem-countのサイズがバッチサイズとなるわけではないので注意すること これを行わなかった場合、Domaのデフォルト値が適用されるため、バッチ更新を使用してもパフォーマンスが向上しない可能性がある。 実装例 例えば、1000件ごとにバッチinsertを行う場合には、Daoのメソッドを以下のように実装する。 .. code-block:: java @BatchInsert(batchSize = 1000) int[] batchInsert(List<Bonus> bonuses);",
-      "hints": []
+      "hints": [
+        "DomaTransactionStepListener",
+        "DomaTransactionItemWriteListener",
+        "nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener",
+        "nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener",
+        "@BatchInsert",
+        "batchSize",
+        "Jakarta Batch",
+        "バッチリスナー",
+        "バッチ更新"
+      ]
     },
     {
       "id": "s11",
       "title": "Jakarta Batchに準拠したバッチアプリケーションで遅延ロードを行う",
       "content": "Jakarta Batchに準拠したバッチアプリケーションで大量データの読み込みを行う際に、遅延ロードを使用したい場合がある。\n\nその場合は、Daoの実装クラスをルックアップする際に `DomaDaoRepository#get(java.lang.Class,java.lang.Class)` を使用し、第2引数に `DomaTransactionNotSupportedConfig` のClassクラスを指定する。\n\n> **Important:** 引数が1つの `DomaDaoRepository#get(java.lang.Class)` を使用した場合は `DomaConfig` が使用されるため、 `DomaTransactionItemWriteListener` によるトランザクションのコミットでストリームがクローズされるため、後続のレコードが読み込めなくなってしまう。\n実装例を以下に示す。\n\nDaoインタフェース\nポイント\n* 検索結果は `Stream` で取得する。\n\n```java\n@Dao\npublic interface ProjectDao {\n\n    @Select(strategy = SelectType.RETURN)\n    Stream<Project> search();\n}\n```\nItemReaderクラス\nポイント\n* Daoの実装クラスを取得する際に `DomaDaoRepository#get(java.lang.Class,java.lang.Class)` を使用し、第2引数に `DomaTransactionNotSupportedConfig` を指定する。\n* openメソッドで検索結果のストリームを取得する。\n* リソースの解放漏れを防ぐため、closeメソッドで必ずストリームを閉じる。\n\n```java\n@Dependent\n@Named\npublic class ProjectReader extends AbstractItemReader {\n\n    private Iterator<Project> iterator;\n\n    private Stream<Project> stream;\n\n    @Override\n    public void open(Serializable checkpoint) throws Exception {\n        final ProjectDao dao = DomaDaoRepository.get(ProjectDao.class, DomaTransactionNotSupportedConfig.class);\n        stream = dao.search();\n        iterator = stream.iterator();\n    }\n\n    @Override\n    public Object readItem() {\n        if (iterator.hasNext()) {\n            return iterator.next();\n        } else {\n            return null;\n        }\n    }\n\n    @Override\n    public void close() throws Exception {\n        stream.close();\n    }\n}\n```\n> **Tip:** Doma 2.44.0よりDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。 詳しくは、 migration_doma2.44.0 を参照すること。",
-      "hints": []
+      "hints": [
+        "DomaTransactionNotSupportedConfig",
+        "nablarch.integration.doma.DomaTransactionNotSupportedConfig",
+        "AbstractItemReader",
+        "@Dependent",
+        "@Named",
+        "遅延ロード",
+        "大量データ読み込み",
+        "Stream",
+        "Jakarta Batch",
+        "@Select",
+        "SelectType",
+        "SelectType.RETURN"
+      ]
     },
     {
       "id": "s12",
       "title": "複数のデータベースにアクセスする",
       "content": "複数のデータベースにアクセスする必要がある場合は、新しくConfigクラスを作成し、\n別のデータベースへのアクセスはそのConfigクラスを使用して行うように実装する。\n\n実装例を以下に示す。\n\nコンポーネント設定ファイル\n```xml\n<component name=\"customDomaDialect\" class=\"org.seasar.doma.jdbc.dialect.OracleDialect\"  />\n<component name=\"customDataSource\" class=\"oracle.jdbc.pool.OracleDataSource\">\n  <!-- プロパティは省略 -->\n</component>\n```\nConfigクラス\nポイント\n* Domaの提供するConfigインターフェースを実装すること。\n* 可視性がpublicで引数なしのコンストラクタを持つこと。\n\n```java\npublic final class CustomConfig implements Config {\n\n    public CustomConfig() {\n        dialect = SystemRepository.get(\"customDomaDialect\");\n        localTransactionDataSource =\n                new LocalTransactionDataSource(SystemRepository.get(\"customDataSource\"));\n        localTransaction = localTransactionDataSource.getLocalTransaction(getJdbcLogger());\n        localTransactionManager = new LocalTransactionManager(localTransaction);\n    }\n\n    // その他のフィールド、メソッドはDomaConfigを参考に実装すること\n}\n```\nDaoインタフェース\n```java\n@Dao\npublic interface ProjectDao {\n    // 省略\n}\n```\n業務アクションクラス\nポイント\n* Daoの実装クラスを取得する際に、 `DomaDaoRepository#get(java.lang.Class,java.lang.Class)` を使用し、第2引数に作成したConfigクラスを指定する。\n\n```java\npublic HttpResponse create(final HttpRequest request, final ExecutionContext context) {\n    final Project project = SessionUtil.delete(context, \"project\");\n\n    CustomConfig.singleton()\n            .getTransactionManager()\n            .requiresNew(() ->\n                    DomaDaoRepository.get(ProjectDao.class, CustomConfig.class).insert(project);\n\n    return new HttpResponse(\"redirect://complete\");\n}\n```\n> **Tip:** Doma 2.44.0より作成するConfigへのSingletonConfigアノテーションの付与およびDaoアノテーションのconfig属性が非推奨になったため、Doma 2.44.0以前に案内していた内容から実装方法を変更している。 詳しくは、 migration_doma2.44.0 を参照すること。",
-      "hints": []
+      "hints": [
+        "CustomConfig",
+        "Config",
+        "DomaDaoRepository",
+        "nablarch.integration.doma.DomaDaoRepository",
+        "複数データベース",
+        "マルチDB",
+        "Configクラス",
+        "OracleDialect",
+        "LocalTransactionDataSource",
+        "LocalTransactionManager",
+        "SystemRepository",
+        "SingletonConfig"
+      ]
     },
     {
       "id": "s13",
       "title": "DomaとNablarchのデータベースアクセスを併用する",
       "content": "データベースアクセスにDomaを採用した場合でも、 Nablarch提供のデータベースアクセス を使用したい場合がある。\n例えば、 メール送信ライブラリ を使用する場合が該当する。(メール送信要求 で データベースアクセス(JDBCラッパー) を使用している。)\n\nこの問題を解決するため、Nablarchのデータベースアクセス処理が、Domaと同じトランザクション(データベース接続)を使用できる機能を提供している。\n\n利用手順\nコンポーネント設定ファイルに以下の定義を追加する。\nこれにより、Nablarchのデータベースアクセスが、自動的にDomaのトランザクション配下で実行されるようにある。\n\n* コンポーネント設定ファイルに `ConnectionFactoryFromDomaConnection` を定義する。\nコンポーネント名は、 `connectionFactoryFromDoma` とする。\n* Jakarta Batch用のDomaのトランザクションを制御するリスナーに、ConnectionFactoryFromDomaConnectionを設定する。\n\n```xml\n<!-- コンポーネント名は、connectionFactoryFromDomaとする -->\n<component name=\"connectionFactoryFromDoma\"\n    class=\"nablarch.integration.doma.ConnectionFactoryFromDomaConnection\">\n\n  <!-- プロパティに対する設定は省略 -->\n\n</component>\n\n<!-- \nJakarta Batchに準拠したバッチアプリケーションで使用する場合は、Domaのトランザクションを制御するリスナーに\n上記で定義したconnectionFactoryFromDomaを設定する。\n -->\n<component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionItemWriteListener\">\n  <property name=\"connectionFactory\" ref=\"connectionFactoryFromDoma\" />\n</component>\n\n<component class=\"nablarch.integration.doma.batch.ee.listener.DomaTransactionStepListener\">\n  <property name=\"connectionFactory\" ref=\"connectionFactoryFromDoma\" />\n</component>\n```",
-      "hints": []
+      "hints": [
+        "ConnectionFactoryFromDomaConnection",
+        "nablarch.integration.doma.ConnectionFactoryFromDomaConnection",
+        "connectionFactoryFromDoma",
+        "DomaとNablarch併用",
+        "トランザクション共有"
+      ]
     },
     {
       "id": "s14",
       "title": "ロガーを切り替える",
       "content": "本アダプタではDomaが使うロガーの実装として、Nablarchのロガーを使用する `NablarchJdbcLogger` を提供している。\nデフォルトでは `NablarchJdbcLogger` が使用されるが、他のものに差し替える場合はコンポーネント定義ファイルに設定する必要がある。\n\n`org.seasar.doma.jdbc.UtilLoggingJdbcLogger` を使用する場合の設定例を以下に示す。\n\nポイント\n* 定義するロガーは `org.seasar.doma.jdbc.JdbcLogger` の実装クラスとすること\n* ロガーのコンポーネント名は `domaJdbcLogger` とすること\n\n```xml\n<component name=\"domaJdbcLogger\" class=\"org.seasar.doma.jdbc.UtilLoggingJdbcLogger\"  />\n```",
-      "hints": []
+      "hints": [
+        "NablarchJdbcLogger",
+        "UtilLoggingJdbcLogger",
+        "nablarch.integration.doma.NablarchJdbcLogger",
+        "domaJdbcLogger",
+        "JdbcLogger",
+        "ロガー切り替え",
+        "JDBCログ",
+        "DomaStatementProperties",
+        "domaStatementProperties",
+        "maxRows",
+        "fetchSize",
+        "queryTimeout",
+        "batchSize",
+        "java.sql.Statement設定",
+        "フェッチサイズ設定",
+        "クエリタイムアウト設定",
+        "バッチサイズ設定",
+        "最大行数制限",
+        "Doma移行",
+        "config属性 非推奨",
+        "SingletonConfig非推奨",
+        "SingletonConfig",
+        "Doma 2.44.0",
+        "DaoアノテーションのconfigAttribute",
+        "DomaTransactionNotSupportedConfig",
+        "DomaDaoRepository",
+        "CustomConfig",
+        "DomaConfig 移行",
+        "Dao config属性削除",
+        "DomaDaoRepository#get",
+        "DomaDaoRepository",
+        "@Dao config属性",
+        "@Transactional",
+        "DomaTransactionNotSupportedConfig 移行",
+        "遅延ロード 移行",
+        "Jakarta Batch 遅延ロード",
+        "DomaDaoRepository#get 第2引数",
+        "DomaDaoRepository.get(Class, Class)",
+        "@Select",
+        "@Dependent",
+        "@Named",
+        "AbstractItemReader",
+        "独自Config 移行",
+        "CustomConfig 移行",
+        "SingletonConfig削除",
+        "SingletonConfig アノテーション",
+        "DomaDaoRepository.get(Class, Class)",
+        "複数データベース Config移行"
+      ]
     },
     {
       "id": "s15",

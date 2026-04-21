@@ -77,7 +77,21 @@ messagingLogFormatter.httpReceivedMessageFormat=@@@@ HTTP RECEIVED MESSAGE @@@@\
                                                   \n\tmessage_body   = [$messageBody$]
 ```
 
+<details>
+<summary>keywords</summary>
+
+メッセージングログ出力方針, ログレベル INFO, ロガー名 MESSAGING, アプリケーションログ出力, log.properties設定, メッセージングログ設定例
+
+</details>
+
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+MessagingLogFormatter, messagingLogFormatter.className, messagingLogFormatter.maskingPatterns, messagingLogFormatter.maskingChar, messagingLogFormatter.sentMessageFormat, messagingLogFormatter.receivedMessageFormat, messagingLogFormatter.httpSentMessageFormat, messagingLogFormatter.httpReceivedMessageFormat, メッセージマスキング設定, MOMメッセージングフォーマット, HTTPメッセージングフォーマット, メッセージボディISO-8859-1, MessagingJsonLogFormatter, JSON構造化ログ, messagingLogFormatter.structuredMessagePrefix, messagingLogFormatter.sentMessageTargets, messagingLogFormatter.receivedMessageTargets, messagingLogFormatter.httpSentMessageTargets, messagingLogFormatter.httpReceivedMessageTargets, messagingLogFormatter.sentMessageLabel, messagingLogFormatter.receivedMessageLabel, messagingLogFormatter.httpSentMessageLabel, messagingLogFormatter.httpReceivedMessageLabel, JsonLogFormatter, メッセージングログJSON形式出力
+
+</details>
 
 ## メッセージングログの設定
 

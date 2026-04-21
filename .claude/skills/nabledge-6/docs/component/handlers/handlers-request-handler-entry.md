@@ -23,6 +23,13 @@
 
 * `nablarch.fw.RequestHandlerEntry`
 
+<details>
+<summary>keywords</summary>
+
+RequestHandlerEntry, nablarch.fw.RequestHandlerEntry, リクエストパスフィルタリング, 条件付きハンドラ呼び出し, 特定URLハンドラ
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -32,9 +39,23 @@
 </dependency>
 ```
 
+<details>
+<summary>keywords</summary>
+
+nablarch-core, com.nablarch.framework, モジュール依存関係
+
+</details>
+
 ## 制約
 
 なし。
+
+<details>
+<summary>keywords</summary>
+
+制約なし
+
+</details>
 
 ## 本ハンドラの使用例
 
@@ -76,6 +97,13 @@
       <component-ref name="multipartHandler"/>
       <component-ref name="sessionStoreHandler" />
 ```
+
+<details>
+<summary>keywords</summary>
+
+requestPattern, handler, ResourceMapping, WebFrontController, 静的コンテンツダウンロード, JPEGファイルダウンロード
+
+</details>
 
 ## リクエストパターン指定のバリエーション
 
@@ -199,3 +227,10 @@
 </tr>
 </tbody>
 </table>
+
+<details>
+<summary>keywords</summary>
+
+requestPattern, ワイルドカード, Glob式, 前方一致, パターンマッチング
+
+</details>

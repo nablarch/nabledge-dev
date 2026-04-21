@@ -36,6 +36,13 @@
 \ 事前準備データの作成処理\ 、\ 処理終了後のデータベースの状況を確認しなければならないもの\ 、\ メッセージIDを確認しなければならないもの\ のそれぞれについて、テストデータとテストクラスの作成方法を説明する。\
 まず最初に、テストデータ(Excelファイル)そのもののと、テストクラスの作成方法(継承すべきクラスなど)を説明する。次に、各パターンごとのデータとテストメソッド作成方法を説明する。
 
+<details>
+<summary>keywords</summary>
+
+Action単体テスト, Component単体テスト, クラス単体テスト, テストクラス名, UserComponentTest, テストケースパターン分類, 検索処理, 更新処理, エラー処理テスト, テストケース分類
+
+</details>
+
 ## テストデータの作成
 
 テストデータを記載したExcelファイルは、\ Nablarch Validationに対応したForm/Entityのクラス単体テスト\ と同様にテストソースコードと同じディレクトリに同じ名前で格納する(拡張子のみ異なる)。\
@@ -45,6 +52,13 @@
 
 なお、メッセージデータやコードマスタなどの、データベースに格納する静的マスタデータは、プロジェクトで管理されたデータがあらかじめ投入されている\
 (これらのデータを個別のテストデータとして作成しない)前提である。
+
+<details>
+<summary>keywords</summary>
+
+テストデータ, Excelファイル配置, 静的マスタデータ, テストシート
+
+</details>
 
 ## テストクラスの作成
 
@@ -83,6 +97,13 @@ public class UserComponentTest extends DbAccessTestSupport {
 
 // ～後略～
 ```
+
+<details>
+<summary>keywords</summary>
+
+DbAccessTestSupport, UserComponentTest, テストクラス作成ルール, パッケージ設定
+
+</details>
 
 ## 事前準備データの作成処理
 
@@ -138,7 +159,21 @@ public void testRegisterUser1() {
 // ～後略～
 ```
 
+<details>
+<summary>keywords</summary>
+
+setThreadContextValues, setUpDb, スレッドコンテキスト, 事前データ投入, ID_GENERATE
+
+</details>
+
 ## 処理終了後のデータベースの状況を確認しなければならないもの
+
+<details>
+<summary>keywords</summary>
+
+commitTransactions, assertTableEquals, トランザクションコミット, DB状態検証, getListMap, database-common_bean, SystemAccountEntity, UsersEntity, UgroupSystemAccountEntity
+
+</details>
 
 ## テストデータ(入力値)の作成
 
@@ -268,6 +303,13 @@ case1を例にとると、想定結果は次のようになる。
 | SYSTEM_ACCOUNT_AUTHORITY | 変化なし(新規追加なし)。 |
 
 ## メッセージIDを確認しなければならないもの
+
+<details>
+<summary>keywords</summary>
+
+ApplicationException, メッセージID, 異常系テスト, 例外クラス指定, getMessageId
+
+</details>
 
 ## テストデータ(入力値と想定値)の作成
 

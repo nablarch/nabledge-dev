@@ -21,6 +21,13 @@ HTTPリクエスト(
 
 * `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler`
 
+<details>
+<summary>keywords</summary>
+
+HttpMessagingRequestParsingHandler, nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler, ハンドラクラス
+
+</details>
+
 ## モジュール一覧
 
 ```xml
@@ -29,6 +36,13 @@ HTTPリクエスト(
   <artifactId>nablarch-fw-messaging-http</artifactId>
 </dependency>
 ```
+
+<details>
+<summary>keywords</summary>
+
+nablarch-fw-messaging-http, モジュール, Maven依存関係, com.nablarch.framework
+
+</details>
 
 ## 制約
 
@@ -41,6 +55,13 @@ HTTPレスポンスハンドラ より後ろに配置すること
 要求電文と応答電文の変換に使う
 `DataRecordFormatter` を取得するため、
 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを配置する必要がある。
+
+<details>
+<summary>keywords</summary>
+
+http_response_handler, thread_context_handler, DataRecordFormatter, ハンドラ配置順序, 制約
+
+</details>
 
 ## HTTPリクエストを要求電文に変換する
 
@@ -125,6 +146,13 @@ HTTPレスポンスハンドラ より後ろに配置すること
 :説明: リクエストボディのフォーマットが不正なため、証跡ログとして記録する。
 そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
 
+<details>
+<summary>keywords</summary>
+
+HttpRequest, RequestMessage, X-Message-Id, X-Correlation-Id, StructuredFwHeaderDefinition, StandardFwHeaderDefinition, RequestEntityTooLarge, MessagingException, InvalidDataFormatException, HTTPリクエスト変換, 要求電文, フレームワーク制御ヘッダ, リクエストボディ変換, フォーマット定義, fwHeaderKeys
+
+</details>
+
 ## 巨大なサイズのリクエストを防ぐ
 
 巨大なサイズのリクエストボディがリクエストされると、
@@ -144,3 +172,10 @@ HTTPレスポンスハンドラ より後ろに配置すること
   <property name="bodyLengthLimit" value="10000000" />
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+bodyLengthLimit, サイズ制限, リクエストボディ上限, 413, ディスクリソース枯渇防止
+
+</details>
