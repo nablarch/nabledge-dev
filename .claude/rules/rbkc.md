@@ -40,4 +40,7 @@ verify changes require explicit user approval before implementation.
 **Process:**
 1. Identify the change needed and explain the purpose and rationale to the user
 2. Get explicit user approval before making any changes
-3. Implement using TDD (test → RED → implement → GREEN)
+3. Implement using TDD:
+   - Write the verify unit test → confirm RED
+   - Implement the verify check → confirm GREEN
+   - Implement the RBKC fix → confirm verify GREEN on actual output

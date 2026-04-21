@@ -4,7 +4,9 @@
 **Issue**: #299
 **Updated**: 2026-04-21 (session 24)
 
-全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
+全フェーズ TDD（verify が質問ゲートのため順序に注意）:
+- **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
+- **CLI 追加時**: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
 ## verify 実装ルール（絶対遵守）
 
