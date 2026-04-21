@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 26)
+**Updated**: 2026-04-21 (session 27)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -97,61 +97,89 @@
 
 ---
 
-### Phase 21-D: h2/h3 なし RST の preamble section title を h1 title に合わせる（md=[] 140件解消）
+### Phase 21-D: JSON スキーマゼロベース見直し — ソース忠実な section 構造
+
+**目的**: RBKC の根本目的（ソースに忠実な決定論的変換）に沿うよう、converter が独自ルールで作っている section title（`_PREAMBLE_TITLE = "概要"` 固定値など）を廃止し、ソースに実在する構造のみを JSON に反映する。
 
 **問題（事実）**:
-- `scripts/create/converters/rst.py:54` の `_PREAMBLE_TITLE = "概要"` が、h2/h3 が無い RST で唯一のセクション title として使われている
-- RST ソースには `概要` という文字列は存在しない（h1 は例えば `全体像`）
-- 結果: hints ファイル（h1 title を key）と RBKC JSON（`概要` を key）が食い違い、md=[] 140件の verify FAIL が発生
+- `scripts/create/converters/rst.py:54` の `_PREAMBLE_TITLE = "概要"` が、ソースに存在しない文字列を JSON に混入させている
+- h2/h3 が無い RST でも強制的に section を作り、`概要` 固定値を section title にしている
+- hints ファイル（h1 title を key）と RBKC JSON（`概要` を key）の食い違いで md=[] 140件の verify FAIL が発生
+- 固定値 `概要` に置き換えるのも h1 title に置き換えるのも「独自ルール」であり、RBKC の目的に反する
 
-**あるべき姿**:
-- h2/h3 が全く無い RST = ファイル全体が 1 セクション → その section title は h1 title と同じ
-- h2/h3 がある RST の preamble（h1 と最初の h2 の間） → 現状通り `概要`（ソースに実テキストが無い導入部なので妥当）
+**あるべき JSON スキーマ**:
 
-**影響範囲（全バージョン）**: v6=119, v5=181, v1.4=198, v1.3=260, v1.2=246 ファイル
+```json
+{
+  "id": "...",
+  "title": "全体像",          // h1 = ファイル全体のタイトル
+  "content": "本文...",        // h1 直下〜最初の h2 直前 の本文
+  "sections": [                // h2/h3 が存在するときのみ要素を持つ
+    {"title": "...", "content": "..."},
+    ...
+  ]
+}
+```
+
+**原則**:
+- ソースに存在しない文字列を JSON に入れない
+- h1 → top-level `title` / h1 直下の本文 → top-level `content`
+- h2/h3 → `sections[]` の title/content
+- h2/h3 が無いファイルは `sections=[]`
+- 独自の固定値 section title (`概要` 等) を作らない
+
+**docs MD の姿**:
+- `# {title}` の直下に top-level `content` をそのまま出力
+- h2/h3 があれば `## {section.title}` を続けて出力
+- h2/h3 が無いファイルは `##` が出ない（ダブらない、直感通り）
+
+**hints ファイル**:
+- ファイルレベル hints（h1 直下 content 用）と section レベル hints を持つ構造に変更
+- h2/h3 なしファイルはファイルレベル hints のみ
+
+**影響範囲**:
+- JSON スキーマ変更（top-level `content` 追加、section 生成ロジック変更）
+- converter 全 3 種（rst/md/xlsx）
+- docs.py（docs MD 生成）
+- hints.py / extract_hints.py / hints ファイル v6.json
+- verify 全チェック（QC1–QC6, QO1, QO5, check_hints_file_consistency）
+- index.py（index.toon 生成）
+- nabledge-test のスコアリングロジック影響確認
 
 **Steps:**
-- [ ] 調査: h2/h3 なし RST で preamble title を h1 title に変える前提で、副作用の洗い出し（例: docs MD 表示、QO1 チェック、既存テストへの影響）
-- [ ] 修正方針をユーザーに提示・承認
-- [ ] rst converter 修正 TDD: `_split_sections` で sections が空のケースの section title を h1 title にするテスト追加 → RED → 実装 → GREEN
-- [ ] 既存の `_PREAMBLE_TITLE = "概要"` を維持する箇所（h2/h3 ある RST の preamble）のテスト追加・確認
+- [ ] 調査: 現状の JSON スキーマと全 converter / verify / docs / hints ロジックの一覧化
+- [ ] 調査: nabledge-test のセクション検索ロジックへの影響確認
+- [ ] 設計書更新: `tools/rbkc/docs/rbkc-verify-quality-design.md` と新規 `tools/rbkc/docs/rbkc-json-schema-design.md`（仮）に新スキーマを定義
+- [ ] 設計レビュー: Software Engineer サブエージェントによる設計レビュー、ユーザー承認
+- [ ] TDD: rst converter — h2/h3 なしケースで top-level content、section 空のテスト → RED → 実装 → GREEN
+- [ ] TDD: rst converter — h2/h3 ありケースで h1 直下本文を top-level content、以下 h2/h3 を section に
+- [ ] TDD: md converter — 同様
+- [ ] TDD: xlsx converter — top-level content の扱いを整理（シート構造に応じた設計）
+- [ ] TDD: docs.py — 新スキーマに対応した MD 出力
+- [ ] TDD: hints.py / extract_hints.py — ファイルレベル + section レベル hints に対応
+- [ ] TDD: verify（QC1–QC6, QO1, QO5, check_hints_file_consistency）— 新スキーマ対応
+- [ ] hints ファイル v6.json 再生成
+- [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
-- [ ] rbkc create 6 → verify 6 の md=[] FAIL が 140→0 に減ることを確認
-- [ ] コミット
+- [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
 
 ---
 
-### Phase 21-E: catalog Step A マッピング精度向上（file=[] 46件解消）
+### Phase 21-E: （旧 file=[] 46件）— Phase 21-D で同時解消される見込み
 
-**問題（事実）**:
-- RBKC JSON の section title が hints ファイルに存在しない 46 件
-- 例: `migration-migration § 'タグライブラリのネームスペースをJakarta EE 10のネームスペースに変更する'`
-- KC catalog の Expected Sections に対する RBKC JSON 側 section title の対応付けが取れていない
+Phase 21-D で section 構造を見直すため、現状の file=[] 46件の大半（catalog Step A マッピング精度問題）は自然に解消される可能性が高い。
 
 **Steps:**
-- [ ] 全容把握: file=[] 46件の file_id / section_title 一覧を取得
-- [ ] ケース分類: 真の新規セクション / h3→h2 昇格 / 表記揺れ / その他
-- [ ] ケース別の方針をユーザーに提示・承認
-- [ ] 修正 TDD: ケースごとにテスト → 実装
-- [ ] サブエージェント品質チェック
-- [ ] rbkc create 6 → verify 6 の file=[] FAIL が 46→0 に減ることを確認
-- [ ] コミット
+- [ ] Phase 21-D 完了後に verify 再実行し、残存 file=[] FAIL を再調査
+- [ ] 残存があれば個別対応、無ければ Phase クローズ
 
 ---
 
-### Phase 21-F: 同一 section title の hints 値不一致を解消（4件）
-
-**問題（事実）**:
-- section title は一致するが hints 値が異なる 4 件
-- 例: `adapters-doma-adaptor § 'ロガーを切り替える'`, `adapters-micrometer-adaptor § '設定ファイル'`, `testing-framework-01-Abstract § '自動テストフレームワークの構成'`, `testing-framework-02-entityUnitTestWithNablarchValidation § 'テストメソッドの作成方法'`
+### Phase 21-F: （旧 値不一致 4件）— Phase 21-D 完了後に再調査
 
 **Steps:**
-- [ ] 調査: 4件のそれぞれで JSON / docs MD / hints ファイルの値を比較し原因を特定（ロード順？エンコード？部分一致？）
-- [ ] 原因ごとの修正方針をユーザーに提示・承認
-- [ ] 修正 TDD
-- [ ] サブエージェント品質チェック
-- [ ] rbkc create 6 → verify 6 の該当 FAIL が 0 になることを確認
-- [ ] コミット
+- [ ] Phase 21-D 完了後に verify 再実行し、残存値不一致 FAIL を再調査
+- [ ] 残存があれば個別対応、無ければ Phase クローズ
 
 ---
 
