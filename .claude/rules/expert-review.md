@@ -36,8 +36,22 @@ Task
   description: "Expert review as {Expert Role}"
   prompt: "You are a {Expert Role} reviewing changes for quality assurance.
 
+## Project Quality Standard
+
+Nabledge provides knowledge about Nablarch, a mission-critical enterprise framework used in
+large-scale financial systems. The same quality standard applies here.
+
+- If there is even a 1% risk, eliminate it — do not accept it
+- "Good enough" does not exist; quality is binary: correct or not correct
+- verify is the quality gate for RBKC output — never weaken it to make output pass
+- 100% content coverage is the target; missing content is a bug to fix, not a reason to lower thresholds
+
 ## Changes to Review
 {List of changed files with diffs}
+
+## Non-Negotiable Constraints
+{List constraints that must not be compromised — e.g., existing design decisions, project invariants.
+Example: 'verify must catch all content gaps — skipping unresolvable references is not acceptable'}
 
 ## Review Guidelines
 {Expert-specific review guidelines from this document}
@@ -48,6 +62,7 @@ Task
 3. List specific issues found (High/Medium/Low priority)
 4. Suggest concrete improvements for High/Medium issues
 5. Highlight positive aspects
+Note: Your suggestions must respect the non-negotiable constraints above.
 
 ## Output Format
 Use markdown with sections:
@@ -93,7 +108,7 @@ For issues marked "Implement Now":
 
 ### 5. Save Review Results
 
-Save to `.pr/{pr_number}/review-by-{expert_role}.md`:
+Save to `.work/{issue_number_5digit}/review-by-{expert_role}.md`:
 
 ```markdown
 # Expert Review: {Expert Role}
@@ -143,13 +158,13 @@ Modify PR template's Expert Review section to link to detailed reviews using abs
 
 **URL Format**:
 ```
-https://github.com/{owner}/{repo}/blob/{current_branch}/.pr/{pr_number}/review-by-{expert_role}.md
+https://github.com/{owner}/{repo}/blob/{current_branch}/.work/{issue_number_5digit}/review-by-{expert_role}.md
 ```
 
 Where:
 - `{owner}/{repo}`: From `gh repo view --json nameWithOwner -q .nameWithOwner`
 - `{current_branch}`: Current branch name
-- `{pr_number}`: Issue number (5-digit zero-padded, e.g., "00042")
+- `{issue_number_5digit}`: Issue number, 5-digit zero-padded (e.g., "00042")
 - `{expert_role}`: Expert role in lowercase with hyphens
 
 Example:
@@ -157,7 +172,7 @@ Example:
 ## Expert Review
 
 {For each expert}
-- [{Expert Role}](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-{expert-role}.md) - Rating: {X}/5
+- [{Expert Role}](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-{expert-role}.md) - Rating: {X}/5
 ```
 
 ## Expert-Specific Guidelines

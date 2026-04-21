@@ -99,9 +99,9 @@ Total: <total_count> scenarios
 - **Coverage scenarios** (`"benchmark": false/absent`): 1 trial each — coverage run, regression detection
 - **Benchmark scenarios** (`"benchmark": true`): 3 trials each — quality measurement with statistical rigor
 
-### Step 2: Resolve PR number
+### Step 2: Resolve issue number
 
-PR番号は作業記録の保存先 `.pr/xxxxx/` を決定するために必要。
+Issue番号は作業記録の保存先 `.work/xxxxx/` を決定するために必要。
 
 **Resolve from current branch name**:
 
@@ -109,20 +109,20 @@ PR番号は作業記録の保存先 `.pr/xxxxx/` を決定するために必要�
 # Get current branch name
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-# Extract PR number from branch name pattern: <number>-<description>
+# Extract issue number from branch name pattern: <number>-<description>
 # Examples: 125-improve-search-performance → 00125
 #           88-redesign-index-hints → 00088
-pr_number=$(echo "$branch" | grep -oP '^\d+' | xargs printf '%05d')
+issue_number=$(echo "$branch" | grep -oP '^\d+' | xargs printf '%05d')
 
-# Verify .pr directory exists
-if [ ! -d ".pr/${pr_number}" ]; then
-  mkdir -p ".pr/${pr_number}"
+# Verify .work directory exists
+if [ ! -d ".work/${issue_number}" ]; then
+  mkdir -p ".work/${issue_number}"
 fi
 ```
 
 **If branch is `main` or has no number prefix**: Use `00000` as fallback and warn the user.
 
-Store as `$PR_NUMBER` (5-digit zero-padded string) for use in subsequent steps.
+Store as `$ISSUE_NUMBER` (5-digit zero-padded string) for use in subsequent steps.
 
 ### Step 3: Load scenarios
 
@@ -464,8 +464,8 @@ Run the report generation script:
 python .claude/skills/nabledge-test/scripts/generate_reports.py \
   --workspace "${WORKSPACE}" \
   --scenarios ".claude/skills/nabledge-test/scenarios/nabledge-${VERSION}/scenarios.json" \
-  --output-dir ".tmp/nabledge-test/.pr/${PR_NUMBER}/${RUN_TIMESTAMP_SHORT}/" \
-  --report-path ".tmp/nabledge-test/.pr/${PR_NUMBER}/report-${RUN_TIMESTAMP_SHORT}.md" \
+  --output-dir ".tmp/nabledge-test/.work/${ISSUE_NUMBER}/${RUN_TIMESTAMP_SHORT}/" \
+  --report-path ".tmp/nabledge-test/.work/${ISSUE_NUMBER}/report-${RUN_TIMESTAMP_SHORT}.md" \
   --version "${VERSION}" \
   --branch "$(git rev-parse --abbrev-ref HEAD)" \
   --commit "$(git rev-parse --short HEAD)" \
@@ -474,10 +474,10 @@ python .claude/skills/nabledge-test/scripts/generate_reports.py \
 ```
 
 This generates:
-- Individual reports: `.pr/<PR_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`
+- Individual reports: `.work/<ISSUE_NUMBER>/nabledge-test/<YYYYMMDDHHMM>/<scenario-id>.md`
   - All fields populated from grading.json and metrics.json
   - 目視判定 table left blank (for manual review by kiyohome)
-- Aggregate report: `.pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`
+- Aggregate report: `.work/<ISSUE_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md`
   - All numerical sections populated from source data
   - `<!-- AGENT: ... -->` placeholders for the 💡 and 🔬 analysis sections
 
@@ -628,7 +628,7 @@ After the script completes, open `${TARGET_DIR}/comparison-report.md` and replac
 ✓ qa-002: 5/5 expectations detected | 14s | 15,200 tokens
 ✗ ca-004: 8/12 expectations detected | 64s | 8,820 tokens
 
-Aggregate report: .pr/<PR_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md
+Aggregate report: .work/<ISSUE_NUMBER>/nabledge-test/report-<YYYYMMDDHHMM>.md
 Workspace: .tmp/nabledge-test/run-<YYYYMMDD-HHMMSS>/
 ```
 

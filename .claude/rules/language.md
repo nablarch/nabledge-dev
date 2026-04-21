@@ -12,7 +12,7 @@
 |----------|----------|-----------|
 | End users (Nabledge users) | Japanese | Primary users are Japanese Nablarch developers |
 | Developers (repository contributors) | English | Standard for technical collaboration |
-| AI conversations | Request Japanese individually | Not default; specify when needed |
+| AI conversations | Japanese | Repository contributors are Japanese; keep conversation in Japanese |
 
 ## Quick Reference
 
@@ -49,11 +49,13 @@ Write in Japanese for Nabledge users:
 
 ## AI Conversations
 
-**Default**: Follow context (usually English for development tasks)
+**Default: Japanese.** Respond in Japanese in all conversational exchanges with the user (questions, status updates, proposals, summaries).
 
-**When Japanese needed**: Explicitly request in Japanese
-- Example: "日本語で説明してください"
-- AI will respond in Japanese when directly requested
+The artifacts themselves still follow the rules above — code, commits, issues, PRs, and developer docs stay in English even when the surrounding conversation is Japanese.
+
+When to switch to English in conversation:
+- The user explicitly writes to you in English
+- The user explicitly asks for English output
 
 ## Skills Documentation Pattern
 

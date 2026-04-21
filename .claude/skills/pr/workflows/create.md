@@ -216,16 +216,13 @@ Replace each placeholder in the loaded template:
   to server-side sessions.
   ```
 
-**Step 3: Replace [List implementation...]**
-- Extract task list from commit messages (subjects)
-- Format as checkbox list with all items checked
-- Example output:
+**Step 3: Replace Tasks section**
+- Replace the Tasks section body with a link to the PR's task file:
   ```
-  - [x] Create login form component
-  - [x] Implement JWT token generation
-  - [x] Add authentication middleware
-  - [x] Write integration tests
+  See [tasks.md](.work/[ISSUE_NUMBER_5DIGIT]/tasks.md).
   ```
+- `[ISSUE_NUMBER_5DIGIT]` is the issue number zero-padded to 5 digits (e.g., 42 → 00042)
+- The task list is maintained in `.work/{00000}/tasks.md` per `.claude/rules/work-log.md`; the PR body only links to it (DRY)
 
 **Step 4: Replace Expert Review Section**
 
@@ -233,13 +230,13 @@ Generate absolute GitHub URLs for expert review files:
 
 **URL Format**:
 ```
-https://github.com/{owner}/{repo}/blob/{current_branch}/.pr/{pr_number}/review-by-{expert-role}.md
+https://github.com/{owner}/{repo}/blob/{current_branch}/.work/{issue_number_5digit}/review-by-{expert-role}.md
 ```
 
 Where:
 - `{owner}/{repo}`: From `gh repo view --json nameWithOwner -q .nameWithOwner`
 - `{current_branch}`: Current branch name
-- `{pr_number}`: Issue number (5-digit zero-padded, e.g., "00042")
+- `{issue_number_5digit}`: Issue number, 5-digit zero-padded (e.g., "00042")
 - `{expert-role}`: Expert role in lowercase with hyphens (e.g., "software-engineer")
 
 Example:
@@ -248,8 +245,8 @@ Example:
 
 AI-driven expert reviews conducted before PR creation (see `.claude/rules/expert-review.md`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [Prompt Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-prompt-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [Prompt Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-prompt-engineer.md) - Rating: 5/5
 ```
 
 **Step 5: Replace Success Criteria Section**
@@ -283,17 +280,15 @@ Implemented session-based authentication using JWT tokens. Chose this approach
 for stateless authentication and better scalability compared to server-side sessions.
 
 ## Tasks
-- [x] Create login form component
-- [x] Implement JWT token generation
-- [x] Add authentication middleware
-- [x] Write integration tests
+
+See [tasks.md](.work/00042/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
@@ -322,17 +317,15 @@ Closes #42
 Implemented session-based authentication using JWT tokens. Chose this approach for stateless authentication and better scalability compared to server-side sessions.
 
 ## Tasks
-- [x] Create login form component
-- [x] Implement JWT token generation
-- [x] Add authentication middleware
-- [x] Write integration tests
+
+See [tasks.md](.work/00042/tasks.md).
 
 ## Expert Review
 
 AI-driven expert reviews conducted before PR creation (see \`.claude/rules/expert-review.md\`):
 
-- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-software-engineer.md) - Rating: 4/5
-- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.pr/00042/review-by-qa-engineer.md) - Rating: 5/5
+- [Software Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-software-engineer.md) - Rating: 4/5
+- [QA Engineer](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-qa-engineer.md) - Rating: 5/5
 
 ## Success Criteria Check
 
