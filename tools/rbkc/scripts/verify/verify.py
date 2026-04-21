@@ -615,9 +615,29 @@ def check_index_coverage(knowledge_dir, index_path):
     return []
 
 
+_README_COUNT_RE = re.compile(r'^(\d+)\s*ページ', re.MULTILINE)
+
+
 def check_docs_coverage(knowledge_dir, docs_dir):
-    """Stub — not yet implemented."""
-    return []
+    """Check that docs_dir contains README.md with matching file count."""
+    issues = []
+    readme = Path(docs_dir) / "README.md"
+    if not readme.exists():
+        issues.append(f"[docs] README.md missing: {readme}")
+        return issues
+
+    # Count .md files excluding README.md itself
+    actual = len([p for p in Path(docs_dir).rglob("*.md") if p.name != "README.md"])
+
+    text = readme.read_text(encoding="utf-8")
+    m = _README_COUNT_RE.search(text)
+    if m:
+        declared = int(m.group(1))
+        if declared != actual:
+            issues.append(
+                f"[docs] README.md count mismatch: declares {declared} ページ but found {actual} .md files"
+            )
+    return issues
 
 
 # RST :ref: patterns

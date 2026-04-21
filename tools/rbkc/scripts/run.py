@@ -286,7 +286,7 @@ def create(
 
     copy_assets(all_asset_refs, output_dir)
     generate_index(output_dir, version, index_path)
-    generate_docs(output_dir, docs_dir)
+    generate_docs(output_dir, docs_dir, version)
 
     snap = make_snapshot(file_infos, repo_root, version)
     save_snapshot(snap, _snapshot_path(state_dir, version))
@@ -341,7 +341,7 @@ def update(
 
     copy_assets(changed_asset_refs, output_dir)
     generate_index(output_dir, version, output_dir / "index.toon")
-    generate_docs(output_dir, output_dir.parent / "docs")
+    generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot to reflect current state
     save_snapshot(new_snap, snap_path)
@@ -383,7 +383,7 @@ def delete(
                 count += 1
 
     generate_index(output_dir, version, output_dir / "index.toon")
-    generate_docs(output_dir, output_dir.parent / "docs")
+    generate_docs(output_dir, output_dir.parent / "docs", version)
 
     # Update snapshot
     save_snapshot(new_snap, snap_path)

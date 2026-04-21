@@ -1668,3 +1668,64 @@ class TestVerifyFileExcelQC:
         json_path.write_text(json.dumps({"id": "x", "title": "T", "no_knowledge_content": False, "sections": []}))
         assert verify_file(tmp_path / "test.rst", json_path, "rst") == []
         assert verify_file(tmp_path / "test.md", json_path, "md") == []
+
+
+# ---------------------------------------------------------------------------
+# check_docs_coverage: README.md existence
+# ---------------------------------------------------------------------------
+
+class TestCheckDocsCoverage:
+    """check_docs_coverage — README.md must exist and count must match .md files."""
+
+    def _check(self, knowledge_dir, docs_dir):
+        from scripts.verify.verify import check_docs_coverage
+        return check_docs_coverage(knowledge_dir, docs_dir)
+
+    def _make_readme(self, docs_dir, count):
+        """Write a minimal README.md with the given page count line."""
+        (docs_dir / "README.md").write_text(f"# header\n\n{count} ページ\n")
+
+    def test_pass_readme_exists_and_count_matches(self, tmp_path):
+        """README.md present with matching count → no issues."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        sub = docs_dir / "component"
+        sub.mkdir()
+        (sub / "file1.md").write_text("# f1\n")
+        (sub / "file2.md").write_text("# f2\n")
+        self._make_readme(docs_dir, 2)
+        assert self._check(tmp_path / "knowledge", docs_dir) == []
+
+    def test_fail_readme_missing(self, tmp_path):
+        """README.md absent from docs_dir → FAIL."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        issues = self._check(tmp_path / "knowledge", docs_dir)
+        assert any("README.md" in i for i in issues)
+
+    def test_fail_docs_dir_missing(self, tmp_path):
+        """docs_dir does not exist → FAIL."""
+        issues = self._check(tmp_path / "knowledge", tmp_path / "docs")
+        assert any("README.md" in i for i in issues)
+
+    def test_fail_count_mismatch(self, tmp_path):
+        """README.md count does not match actual .md files → FAIL."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        sub = docs_dir / "component"
+        sub.mkdir()
+        (sub / "file1.md").write_text("# f1\n")
+        (sub / "file2.md").write_text("# f2\n")
+        self._make_readme(docs_dir, 5)  # wrong count
+        issues = self._check(tmp_path / "knowledge", docs_dir)
+        assert any("count" in i.lower() or "ページ" in i or "mismatch" in i.lower() for i in issues)
+
+    def test_pass_readme_no_count_line(self, tmp_path):
+        """README.md with no count line → skip count check (no false positive)."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        sub = docs_dir / "component"
+        sub.mkdir()
+        (sub / "file1.md").write_text("# f1\n")
+        (docs_dir / "README.md").write_text("# header\n\n## section\n")
+        assert self._check(tmp_path / "knowledge", docs_dir) == []
