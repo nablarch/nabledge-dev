@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 28)
+**Updated**: 2026-04-21 (session 29)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -150,8 +150,10 @@
 - [x] 調査: 現状の JSON スキーマと全 converter / verify / docs / hints ロジックの一覧化 — `.pr/00299/investigation-21d.md` 参照
 - [x] 調査: nabledge-test のセクション検索ロジックへの影響確認 — 影響なし（scoring は keyword detection）
 - [x] 調査: nabledge スキル本体（nabledge-6/5/1.4/1.3/1.2）のスキーマ依存確認 — scripts/workflows に影響あり。本 Phase で同時改修
-- [x] 設計書作成: `tools/rbkc/docs/rbkc-json-schema-design.md` 新規作成 + `rbkc-verify-quality-design.md` 更新
-- [ ] 設計レビュー: Software Engineer サブエージェントによる設計レビュー、ユーザー承認
+- [x] 設計書作成: `tools/rbkc/docs/rbkc-json-schema-design.md` 新規作成
+- [x] Plan C 確定（flat 維持 + top-level content 追加 + `概要` 固定値廃止 + v5 KC 欠損フィールド復元）— `16cfbc0d`
+- [ ] 設計レビュー: Software Engineer サブエージェントによる Plan C 設計レビュー、ユーザー承認
+- [ ] verify 変更提案: QC1-6 スコープ拡張、QC6 id ベース照合等を別途ユーザー承認プロセスで確定（rbkc.md ルール）
 - [ ] TDD: rst converter — h2/h3 なしケースで top-level content、section 空のテスト → RED → 実装 → GREEN
 - [ ] TDD: rst converter — h2/h3 ありケースで h1 直下本文を top-level content、以下 h2/h3 を section に
 - [ ] TDD: md converter — 同様
