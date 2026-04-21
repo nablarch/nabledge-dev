@@ -15,8 +15,8 @@ Closes #{issue_number}
 [Why this approach was chosen, alternatives considered, trade-offs made]
 
 ## Tasks
-- [x] Task completed
-- [x] Task completed
+
+See [tasks.md](.pr/{00000}/tasks.md).
 
 ## Expert Review
 
