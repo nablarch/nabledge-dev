@@ -16,7 +16,7 @@ Closes #{issue_number}
 
 ## Tasks
 
-See [tasks.md](.pr/{00000}/tasks.md).
+See [tasks.md](.work/{00000}/tasks.md).
 
 ## Expert Review
 

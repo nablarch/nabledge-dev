@@ -1,6 +1,6 @@
 # Work Log
 
-Two files per PR under `.pr/xxxxx/`:
+Two files per PR under `.work/xxxxx/` (xxxxx is the 5-digit zero-padded issue number):
 
 | File | Purpose |
 |------|---------|
@@ -65,7 +65,7 @@ The Tasks section in the PR body links to tasks.md — do not duplicate the list
 ```markdown
 ## Tasks
 
-See [tasks.md](.pr/xxxxx/tasks.md).
+See [tasks.md](.work/xxxxx/tasks.md).
 ```
 
 ## Temporary Files
