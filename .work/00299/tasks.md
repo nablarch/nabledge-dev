@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-20 (session 23)
+**Updated**: 2026-04-21 (session 24)
 
 全フェーズ TDD: テスト作成 → RED確認 → 実装 → GREEN確認 → サブエージェント品質チェック
 
@@ -15,6 +15,52 @@
 ---
 
 ## In Progress
+
+### Phase 21-A: docs/README.md 未生成
+
+**問題**: nabledge-5には `docs/README.md`（全MDへのリンク集）があるが v6 には未生成。
+`docs.py` の `generate_docs()` にREADME生成ロジックが存在しない。
+
+**Steps:**
+- [ ] TDD: README生成テスト作成（RED）
+- [ ] `generate_docs()` にREADME生成追加（GREEN）
+- [ ] verify更新: README.md の存在・内容チェック追加
+- [ ] rbkc create 6 → verify 6 FAIL 0件確認
+- [ ] コミット
+
+---
+
+### Phase 21-B: hints が JSON に入っていない（file_id 不一致）
+
+**問題**: KC cache の file_id（例: `adapters-doma_adaptor`）と RBKC 生成時の file_id（例: `adapters-doma-adaptor`）が不一致のため、341ファイル中 224ファイルで hints lookup がミスヒット → hints が空になっている。
+
+**最終チェック基準（verify に実装）**:
+元のヒント全量・JSONヒント全量・MDヒント全量が論理的なファイル単位で完全一致すること
+
+**Steps:**
+- [ ] 全容把握: file_id 不一致の全パターン調査（どのような変換ルールのズレか）
+- [ ] 修正: file_id 正規化ロジックを hints lookup に追加（TDD: RED → GREEN）
+- [ ] verify 更新: 元ヒント全量＝JSONヒント全量＝MDヒント全量の完全一致チェック実装（TDD）
+- [ ] rbkc create 6 → verify 6 FAIL 0件確認
+- [ ] コミット
+
+---
+
+### Phase 21-C: リリースノート・セキュリティ対応表の粒度が粗い
+
+**問題**: 現状は全シート×全行を1セクションに連結 → 毎回全行ロード、検索で使えない。
+行単位（変更1件=1セクション）にすれば個別レコードとして検索可能になる。
+
+**Steps:**
+- [ ] 全容把握: v6リリースノート・セキュリティExcelのシート構造・行構造を調査しセクション分割設計を確定
+- [ ] ユーザーに設計案提示・承認
+- [ ] xlsx_releasenote TDD: 行単位セクション分割テスト（RED → GREEN）
+- [ ] xlsx_security TDD: 行単位セクション分割テスト（RED → GREEN）
+- [ ] verify 更新: 新粒度に対応したチェック
+- [ ] rbkc create 6 → verify 6 FAIL 0件確認
+- [ ] コミット
+
+---
 
 ### Phase 18: 統合検証 — v6 完了
 
