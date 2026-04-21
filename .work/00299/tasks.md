@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 34)
+**Updated**: 2026-04-21 (session 35)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -208,7 +208,7 @@
 - [x] 設計方針ユーザー承認（2026-04-21 session 34）: 保存率 100% / h1-only + 非 h1-only ともに R9 (h1 集約) / R8 は不採用 / xlsx は Phase 21-C まで `__file__` key
 - [x] §4-2 簡略化: R1〜R6 に整理（R3 全レベル照合 / R8 削除 / R9 → R6 に改番）
 - [x] §5/§6 更新（受容範囲・未解決リスク）
-- [ ] xlsx の全バージョン hints 集計（Phase 21-C 対応の参考値）
+- [x] xlsx の全バージョン hints 集計（Phase 21-C 対応の参考値）— `.pr/00299/measure_xlsx_hints.py` 実行、設計書 §B-11 に追記。v6=221, v5=1158, v1.x=0 hints
 - [ ] 設計書最終承認（見直し完了版）
 - [ ] TDD: `.pr/00299/generate_hints.py` 実装
   - [ ] 全レベル見出し抽出（RST h1/h2/h3/h4、MD `#`〜`####`）
