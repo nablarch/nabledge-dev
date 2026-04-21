@@ -1,7 +1,5 @@
 # アーキテクチャ概要
 
-## 概要
-
 Nablarchでは、Jakarta RESTful Web Servicesのリソースクラスを作るのと同じように、ウェブアプリケーションの業務アクションを使用して
 RESTfulウェブサービスを作成する機能（Jakarta RESTful Web Servicesサポート）を提供する。
 

@@ -1,6 +1,11 @@
 # マルチスレッド実行制御ハンドラ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+ThreadPoolExecutor, InterruptedException, サブスレッド例外, shutdownNow, ロールバック, 割り込み処理
+
+</details>
 
 本ハンドラは、サブスレッドを作成し、ハンドラキュー上の後続ハンドラの処理を各サブスレッド上で並行実行する。
 このハンドラでの処理結果は、各サブスレッドでの実行結果を集約したオブジェクト(`MultiStatus`)となる。
@@ -24,7 +29,7 @@
 <details>
 <summary>keywords</summary>
 
-マルチスレッド実行制御ハンドラ, サブスレッド, 並行実行, MultiStatus, nablarch.fw.Result.MultiStatus, 処理結果, 集約, MultiThreadExecutionHandler, nablarch.fw.handler.MultiThreadExecutionHandler, ハンドラクラス名
+マルチスレッド実行制御ハンドラ, サブスレッド, 並行実行, MultiStatus, nablarch.fw.Result.MultiStatus, 処理結果, 集約
 
 </details>
 
@@ -40,7 +45,7 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-fw-standalone, モジュール一覧, 依存関係
+MultiThreadExecutionHandler, nablarch.fw.handler.MultiThreadExecutionHandler, ハンドラクラス名
 
 </details>
 
@@ -51,7 +56,7 @@ nablarch-fw-standalone, モジュール一覧, 依存関係
 <details>
 <summary>keywords</summary>
 
-制約, マルチスレッド実行制御ハンドラ, スタンドアロン
+nablarch-fw-standalone, モジュール一覧, 依存関係
 
 </details>
 
@@ -74,7 +79,7 @@ nablarch-fw-standalone, モジュール一覧, 依存関係
 <details>
 <summary>keywords</summary>
 
-concurrentNumber, スレッド数, 並列実行, スレッドセーフ, 多重実行
+制約, マルチスレッド実行制御ハンドラ, スタンドアロン
 
 </details>
 
@@ -130,7 +135,7 @@ public class SampleHandler implements Handler<Object, Result>, ExecutionHandlerC
 <details>
 <summary>keywords</summary>
 
-ExecutionHandlerCallback, nablarch.fw.handler.ExecutionHandlerCallback, preExecution, errorInExecution, postExecution, コールバック処理, サブスレッド起動前後, トランザクション確定
+concurrentNumber, スレッド数, 並列実行, スレッドセーフ, 多重実行
 
 </details>
 
@@ -146,7 +151,7 @@ ExecutionHandlerCallback, nablarch.fw.handler.ExecutionHandlerCallback, preExecu
 <details>
 <summary>keywords</summary>
 
-database_connection_management_handler, データベース接続設定, DBコネクション数, 親スレッド, サブスレッド
+ExecutionHandlerCallback, nablarch.fw.handler.ExecutionHandlerCallback, preExecution, errorInExecution, postExecution, コールバック処理, サブスレッド起動前後, トランザクション確定
 
 </details>
 
@@ -171,6 +176,6 @@ database_connection_management_handler, データベース接続設定, DBコネ
 <details>
 <summary>keywords</summary>
 
-ThreadPoolExecutor, InterruptedException, サブスレッド例外, shutdownNow, ロールバック, 割り込み処理
+database_connection_management_handler, データベース接続設定, DBコネクション数, 親スレッド, サブスレッド
 
 </details>

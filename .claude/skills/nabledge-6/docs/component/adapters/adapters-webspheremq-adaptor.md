@@ -1,7 +1,5 @@
 # IBM MQアダプタ
 
-## 概要
-
 NablarchのMOMメッセージング機能 で [IBM MQ(外部サイト、英語)](https://www.ibm.com/docs/en/ibm-mq/9.3?topic=mq-about) を使用するためのアダプタを提供する。
 
 IBM MQの仕様及び構築手順などは、IBM社のオフィシャルサイト及びマニュアルを参照すること。

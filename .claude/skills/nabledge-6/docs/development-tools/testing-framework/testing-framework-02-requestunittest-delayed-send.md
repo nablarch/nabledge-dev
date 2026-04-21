@@ -7,7 +7,8 @@
 
 **※他の処理のようなアクションクラスに対する条件網羅や、限界値テストなどは実施不要である。**
 
-# テスト対象の成果物
+## テスト対象の成果物
+
 * 電文のレイアウトを定義したフォーマット定義ファイル
 * 下記3種類のSQL文
 
@@ -40,7 +41,7 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 テストデータの記述方法は、\ message_sendSyncMessage_test\ を参照すること。
 本項では、\ message_sendSyncMessage_test\ と記述方法が異なる箇所を解説する。
 
-# 要求電文の期待値および、返却する応答電文（レスポンスメッセージ）の準備
+## 要求電文の期待値および、返却する応答電文（レスポンスメッセージ）の準備
 
 応答不要メッセージ送信処理では、応答電文は存在しないため応答電文が期待値通りであることを確認する必要はない。
 
@@ -55,7 +56,8 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 * RESPONSE_HEADER_MESSAGES
 * RESPONSE_BODY_MESSAGES
 
-## 正常系のテスト
+
+#### 正常系のテスト
 
 | 電文が正しく送信されるケースの確認を実施する。
 | このケースでは、送信された電文の確認及び該当データのステータス更新の確認を行う。
@@ -64,8 +66,7 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 | このため、「testShots」の定義に下記画像のように「KEY=messageRequestId」、「VALUE=メッセージのリクエストID」を追加する必要がある。
 
 ![](../../../knowledge/assets/testing-framework-02-requestunittest-delayed-send/delayed_send.png)
-
-## 異常系のテスト(障害系のテスト)
+#### 異常系のテスト(障害系のテスト)
 
 | 異常系のテストは、メッセージの送信に失敗した場合に該当データのステータスをエラーに更新するUPDATE文を確認するために必要である。
 | 異常系テストケースを実施するには、「testShots」の定義に下記画像のように「KEY=errorCase」、「VALUE=true」と設定すれば良い。

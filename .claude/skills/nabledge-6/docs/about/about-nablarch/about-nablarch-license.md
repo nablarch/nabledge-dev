@@ -1,6 +1,11 @@
 # Nablarchのライセンスについて
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+Apache License 2.0, ライセンス, Nablarchライセンス, LICENSE.txt
+
+</details>
 
 本文書およびNablarch フレームワークは、Apache License 2.0 で提供されます。
 

@@ -1,6 +1,11 @@
 # アプリケーションの責務配置
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+FwHeaderReader, MessageReader, RequestMessage, ResponseMessage, nablarch.fw.messaging.reader.FwHeaderReader, nablarch.fw.messaging.reader.MessageReader, nablarch.fw.messaging.RequestMessage, nablarch.fw.messaging.ResponseMessage, nablarch.fw.Result.Success, MOMメッセージング, アクションクラス, フォームクラス, エンティティクラス, データリーダ, 責務配置, 応答不要メッセージング
+
+</details>
 
 MOMメッセージングを作成する際に実装すべきクラスとその責務について説明する。
 

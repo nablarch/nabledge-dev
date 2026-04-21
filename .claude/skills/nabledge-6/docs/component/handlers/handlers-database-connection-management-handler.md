@@ -1,7 +1,5 @@
 # データベース接続管理ハンドラ
 
-## 概要
-
 後続のハンドラ及びライブラリで使用するためのデータベース接続を、スレッド上で管理するハンドラ。
 
 データベースアクセスの詳細は、 データベースアクセス(JDBCラッパー) を参照。
@@ -51,6 +49,13 @@ nablarch-core-jdbc, nablarch-common-jdbc, Mavenモジュール, 依存設定
 
 なし。
 
+<details>
+<summary>keywords</summary>
+
+connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFactoryForDataSource, データベース接続設定, 接続ファクトリ設定
+
+</details>
+
 ## データベースの接続先を設定する
 
 このハンドラは、 `connectionFactory`
@@ -76,7 +81,7 @@ nablarch-core-jdbc, nablarch-common-jdbc, Mavenモジュール, 依存設定
 <details>
 <summary>keywords</summary>
 
-connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFactoryForDataSource, データベース接続設定, 接続ファクトリ設定
+connectionName, setConnectionName, DbConnectionContext, AppDbConnection, 複数データベース接続, デフォルト接続, DbConnectionContext.getConnection
 
 </details>
 
@@ -125,10 +130,3 @@ userAccessLogデータベース接続を使用する
 ```java
 AppDbConnection connection = DbConnectionContext.getConnection("userAccessLog");
 ```
-
-<details>
-<summary>keywords</summary>
-
-connectionName, setConnectionName, DbConnectionContext, AppDbConnection, 複数データベース接続, デフォルト接続, DbConnectionContext.getConnection
-
-</details>

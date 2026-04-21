@@ -1,6 +1,11 @@
 # Getting Started
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+Exampleアプリケーション, blank_project, 本格的なアプリケーション, 実装例, Getting Started, 前提条件, 動作環境, 事前構築, example_application, 都度起動バッチ, 常駐バッチ, ハンドラ構成, Nablarchバッチアプリケーション, 実装方法の違い
+
+</details>
 
 本章を通読することで、Nablarchバッチアプリケーション方式のバッチの開発イメージを掴むことができる。
 

@@ -1,7 +1,5 @@
 # Jakarta Batchアプリケーションの起動
 
-## 概要
-
 ## バッチアプリケーションを起動する
 
 Jakarta Batchに準拠したバッチアプリケーションの場合、バッチの起動はJakarta Batchで規定されたAPIを使用して行う。

@@ -1,7 +1,5 @@
 # 機能追加要望・改善要望
 
-## 概要
-
 Nablarchでは機能追加要望、改善要望、不具合報告を [JIRA](https://nablarch.atlassian.net) で受け付けています。
 
 ## JIRAへの課題起票方法

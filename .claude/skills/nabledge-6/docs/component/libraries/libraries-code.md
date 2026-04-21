@@ -1,7 +1,5 @@
 # コード管理
 
-## 概要
-
 アプリケーションで使用する値と名称とのマッピングを管理する機能を提供する。
 
 例えば、以下の様な性別区分と表示名称のマッピング情報を管理する。
@@ -21,7 +19,7 @@
 <details>
 <summary>keywords</summary>
 
-BasicCodeManager, BasicStaticDataCache, BasicCodeLoader, CodePatternSchema, CodeNameSchema, BasicApplicationInitializer, コード管理機能設定, コードパターンテーブル, コード名称テーブル, 初期設定, codeManager, loadOnStartup, CodeUtil, パターン切り替え, CodePatternSchema, patternColumnNames, getValues, codeSelect, pattern属性, PATTERN1, PATTERN2, CodeUtil, 多言語化対応, getName, getShortName, Locale, LANG, 言語指定, SORT_ORDER, ソート順定義, コード名称テーブル, codeSelect, CodeUtil, getOptionalName, オプション名称, OPTIONAL_NAME, optionColumnName, labelPattern, FORM_NAME, KANA_NAME, CodePatternSchema, patternColumnNames, @CodeValue, バリデーション, CodeValue, bean_validation, nablarch_validation, pattern属性, SampleDomainBean, ドメインバリデーション, コード管理, コード値名称マッピング, 値, 名称, 略称, 国際化対応, 多言語化, 参照整合性制約, code-validation, doma_adaptor, テーブル管理
+BasicCodeManager, BasicStaticDataCache, BasicCodeLoader, CodePatternSchema, CodeNameSchema, BasicApplicationInitializer, コード管理機能設定, コードパターンテーブル, コード名称テーブル, 初期設定, codeManager, loadOnStartup, コード管理, コード値名称マッピング, 値, 名称, 略称, 国際化対応, 多言語化, 参照整合性制約, code-validation, doma_adaptor, テーブル管理
 
 </details>
 
@@ -54,7 +52,7 @@ BasicCodeManager, BasicStaticDataCache, BasicCodeLoader, CodePatternSchema, Code
 <details>
 <summary>keywords</summary>
 
-nablarch-common-code, nablarch-common-code-jdbc, モジュール依存関係, Maven
+CodeUtil, パターン切り替え, CodePatternSchema, patternColumnNames, getValues, codeSelect, pattern属性, PATTERN1, PATTERN2, nablarch-common-code, nablarch-common-code-jdbc, モジュール依存関係, Maven
 
 </details>
 
@@ -63,7 +61,7 @@ nablarch-common-code, nablarch-common-code-jdbc, モジュール依存関係, Ma
 <details>
 <summary>keywords</summary>
 
-BasicCodeManager, BasicStaticDataCache, BasicCodeLoader, CodePatternSchema, CodeNameSchema, BasicApplicationInitializer, コード管理機能設定, コードパターンテーブル, コード名称テーブル, 初期設定, codeManager, loadOnStartup, CodeUtil, パターン切り替え, CodePatternSchema, patternColumnNames, getValues, codeSelect, pattern属性, PATTERN1, PATTERN2, CodeUtil, 多言語化対応, getName, getShortName, Locale, LANG, 言語指定, SORT_ORDER, ソート順定義, コード名称テーブル, codeSelect, CodeUtil, getOptionalName, オプション名称, OPTIONAL_NAME, optionColumnName, labelPattern, FORM_NAME, KANA_NAME, CodePatternSchema, patternColumnNames, @CodeValue, バリデーション, CodeValue, bean_validation, nablarch_validation, pattern属性, SampleDomainBean, ドメインバリデーション, コード管理, コード値名称マッピング, 値, 名称, 略称, 国際化対応, 多言語化, 参照整合性制約, code-validation, doma_adaptor, テーブル管理, nablarch-common-code, nablarch-common-code-jdbc, モジュール依存関係, Maven
+CodeUtil, 多言語化対応, getName, getShortName, Locale, LANG, 言語指定
 
 </details>
 
@@ -294,6 +292,13 @@ CodeUtil.getShortName("GENDER", "MALE", Locale.ENGLISH) // -> M
 
 ![](../../../knowledge/assets/libraries-code/code_sort.png)
 
+<details>
+<summary>keywords</summary>
+
+SORT_ORDER, ソート順定義, コード名称テーブル, codeSelect
+
+</details>
+
 ## 名称、略称以外の名称を定義する
 
 デフォルトの動作では名称と略称の2種類の名称を使用できる。
@@ -345,6 +350,13 @@ KANA_NAMEの名称を表示する場合は、以下のように `optionColumnNam
 
 ![](../../../knowledge/assets/libraries-code/code_option_name.png)
 
+<details>
+<summary>keywords</summary>
+
+CodeUtil, getOptionalName, オプション名称, OPTIONAL_NAME, optionColumnName, labelPattern, FORM_NAME, KANA_NAME, CodePatternSchema, patternColumnNames
+
+</details>
+
 ## 入力値が有効なコード値かチェックする
 
 入力値(画面の場合はクライアントから送信されるリクエストパラメータ)が、コードの有効範囲内かをチェック出来る機能を提供する。
@@ -381,3 +393,10 @@ public void setGender(String gender) {
 private String gender;
 ```
 > **Tip:** `ドメインバリデーション <bean_validation-domain_validation>` を使用した場合、1つのドメインに対して1つのパターンしか指定できない。 このため、複数のパターンに対応するためには、パターンに対応したドメインを定義する必要がある。 ただし、全てのパターンに対応したドメインを定義する必要はなく、バリデーションで必要なドメインのみ定義すればよい。 以下に例を示す。 .. code-block:: java public class SampleDomainBean { // PATTERN1用のドメイン @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN1") String flowStatusGeneral; // PATTERN2用のドメイン @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN2") String flowStatusGuest; }
+
+<details>
+<summary>keywords</summary>
+
+@CodeValue, バリデーション, CodeValue, bean_validation, nablarch_validation, pattern属性, SampleDomainBean, ドメインバリデーション
+
+</details>

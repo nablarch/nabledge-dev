@@ -1,6 +1,11 @@
 # Jakarta RESTful Web Servicesサポート/Jakarta RESTful Web Services/HTTPメッセージングの機能比較
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+機能比較, Jakarta RESTful Web Servicesサポート, HTTPメッセージング, Jakarta RESTful Web Services, リクエストマッピング, バリデーション, クライアントAPI, MessagingAction, BodyConverter, DataRecordFormatter, JaxRsResponseHandler, RESTfulウェブサービス選択, 非同期処理, トランザクション制御
+
+</details>
 
 ここでは、以下の機能比較を示す。
 

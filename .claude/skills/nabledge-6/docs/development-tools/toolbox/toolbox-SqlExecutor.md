@@ -1,11 +1,9 @@
 # Nablarch SQL Executor
 
-## 概要
-
 <details>
 <summary>keywords</summary>
 
-SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行
+sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq
 
 </details>
 
@@ -19,7 +17,7 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 <details>
 <summary>keywords</summary>
 
-SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行
+SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行, SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧
 
 </details>
 
@@ -28,7 +26,7 @@ SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール
 <details>
 <summary>keywords</summary>
 
-配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor
+配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor, sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング
 
 </details>
 
@@ -105,7 +103,7 @@ https://github.com/nablarch/sql-executor (外部サイト)
 
 #### 基本設定の変更
 
-#### src/main/resources/db.configの修正
+##### src/main/resources/db.configの修正
 
 接続URLやユーザ、パスワードを変更する場合、src/main/resources/db.configを修正する。
 
@@ -156,7 +154,7 @@ db.password=SAMPLE
 JDBCドライバを変更する場合、以下のファイルを修正する。
 
 
-#### pom.xml
+##### pom.xml
 
 pom.xml中の「使用するRDBMSにあわせて、下記JDBCドライバの dependency を更新してください。」とのコメントがある箇所を修正する。
 
@@ -222,7 +220,7 @@ pom.xml中の「使用するRDBMSにあわせて、下記JDBCドライバの dep
   </dependency>
 </dependencies>
 ```
-#### src/main/resources/db.xml
+##### src/main/resources/db.xml
 JDBCドライバのクラス名とダイアレクトのクラス名を修正する。
 dataSourceコンポーネントのdriverClassNameプロパティに、ドライバのクラス名を設定する。
 
@@ -284,7 +282,7 @@ target直下に作成されたsql-executor-distribution.zipを配布すること
 <details>
 <summary>keywords</summary>
 
-DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver, mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer, sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq, SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧, sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング
+DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver
 
 </details>
 
@@ -330,7 +328,7 @@ cmd /c start http://localhost:7979/index.html
 <details>
 <summary>keywords</summary>
 
-SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行, 配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor, 配布前提条件, Firefox, Chrome, Nablarch開発環境, JDBCドライバ登録, Maven Central Repository, Project Local Repository, customizeDBAddFileMavenRepo, ソースコード取得, sql-executor clone, DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver, mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer, sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq, SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧, sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング
+mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer
 
 </details>
 

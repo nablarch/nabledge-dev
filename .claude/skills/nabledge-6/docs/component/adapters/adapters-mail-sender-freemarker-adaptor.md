@@ -1,7 +1,5 @@
 # E-mail FreeMarkerアダプタ
 
-## 概要
-
 [FreeMarker(外部サイト)](https://freemarker.apache.org/) を使用した定型メール送信処理を行うためのアダプタを提供する。
 
 ## モジュール一覧

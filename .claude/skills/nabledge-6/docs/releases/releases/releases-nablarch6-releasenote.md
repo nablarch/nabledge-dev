@@ -1,6 +1,11 @@
 # 
 
-## 
+<details>
+<summary>keywords</summary>
+
+Jakarta EE 10対応, Java 17, Nablarch 5から6への移行, マイグレーション, モジュールバージョン, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, アダプタ動作未検証, nablarch-testing-jetty12, com.nablarch.framework, com.nablarch.integration, nablarch-single-module-archetype, com.nablarch.configuration, com.nablarch.tool, nablarch-toolbox
+
+</details>
 
 ■Nablarch 6 リリースノート
 5u23からの変更点を記載しています。

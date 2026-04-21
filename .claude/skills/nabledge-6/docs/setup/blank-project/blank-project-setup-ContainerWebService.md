@@ -1,6 +1,11 @@
 # コンテナ用RESTfulウェブサービスプロジェクトの初期セットアップ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+コンテナ用RESTfulウェブサービス, 初期セットアップ, ブランクプロジェクト, コンテナイメージ, RESTfulウェブサービスプロジェクト生成
+
+</details>
 
 コンテナ用RESTfulウェブサービスプロジェクトの初期セットアップでは以下を行う。
 
@@ -9,16 +14,21 @@
 * コンテナイメージの作成
 * コンテナイメージの実行
 
-
-# 事前準備
+## 事前準備
 
 後の 疎通確認 で使用するため、以下のいずれかをインストールする。
 
 * Firefox
 * Chrome
 
+<details>
+<summary>keywords</summary>
 
-# 生成するプロジェクトの概要
+事前準備, ブラウザインストール, Firefox, Chrome, 疎通確認準備
+
+</details>
+
+## 生成するプロジェクトの概要
 
 本手順で生成するプロジェクトの概要は以下の通りである。
 
@@ -31,11 +41,23 @@
 | 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * NablarchのRESTfulウェブサービス用の基本的な設定 * 疎通確認用RESTfulウェブサービス * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
+<details>
+<summary>keywords</summary>
 
+Mavenプロジェクト, H2 Database Engine, Jerseyアダプタ, ルーティングアダプタ, 単一プロジェクト構成
 
-# ブランクプロジェクト作成
+</details>
+
+## ブランクプロジェクト作成
 
 Nablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。
+
+<details>
+<summary>keywords</summary>
+
+mvn archetype:generate, nablarch-container-jaxrs-archetype, groupId, artifactId, archetypeVersion
+
+</details>
 
 ## mvnコマンドの実行
 
@@ -53,8 +75,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | 設定値 | 説明 |
 |---|---|
 | archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |
-
-## プロジェクト情報の入力
+#### プロジェクト情報の入力
 
 上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。
 
@@ -73,33 +94,66 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
-
-
-# 疎通確認
+## 疎通確認
 
 疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 RESTfulウェブサービスプロジェクトの初期セットアップ を参照。
 
 > **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-# コンテナイメージを作成する
+<details>
+<summary>keywords</summary>
+
+疎通確認, myapp-container-jaxrs, RESTfulウェブサービス動作確認
+
+</details>
+
+## コンテナイメージを作成する
 
 コンテナイメージの作成方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
 > **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-# コンテナイメージを実行する
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ作成, Dockerイメージビルド, myapp-container-jaxrs
+
+</details>
+
+## コンテナイメージを実行する
 
 コンテナイメージの実行方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
 > **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 > **Note:** 動作確認は、以下のURLで行える。 * `http://localhost:8080/find/json` * `http://localhost:8080/find/xml`
-# データベースに関する設定を行う
+
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ実行, localhost:8080, find/json, find/xml, myapp-container-jaxrs
+
+</details>
+
+## データベースに関する設定を行う
 
 ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、使用するRDBMSの変更手順 を参照して設定すること。
 
 またER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法 を参照。
 
+<details>
+<summary>keywords</summary>
 
-# 補足
+H2 Database Engine, データベース設定, RDBMS変更, gsp-dba-maven-plugin, DDL生成
+
+</details>
+
+## 補足
 
 H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 ../firstStep_appendix/firststep_complement を参照すること。
+
+<details>
+<summary>keywords</summary>
+
+H2データ確認, ブランクプロジェクト補足, 組み込みツール
+
+</details>

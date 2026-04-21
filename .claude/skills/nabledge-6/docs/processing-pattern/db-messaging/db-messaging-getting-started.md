@@ -1,6 +1,11 @@
 # Getting Started
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+DBメッセージング, テーブルをキューとして使ったメッセージング, Exampleアプリケーション, blank_project, table_queue, getting_started/table_queue, 前提条件, 環境構築
+
+</details>
 
 本章を通読することで、Nablarchのテーブルをキューとして使ったメッセージング方式の開発イメージを掴むことができる。
 

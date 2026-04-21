@@ -1,13 +1,18 @@
 # 初期セットアップの前に
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ, Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定, マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル
+
+</details>
 
 ## ブランクプロジェクト（プロジェクトのひな形）について
 
 <details>
 <summary>keywords</summary>
 
-ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ
+ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧
 
 </details>
 
@@ -26,7 +31,7 @@
 <details>
 <summary>keywords</summary>
 
-ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧
+プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト
 
 </details>
 
@@ -47,7 +52,7 @@
 <details>
 <summary>keywords</summary>
 
-プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト
+Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア
 
 </details>
 
@@ -75,7 +80,7 @@
 <details>
 <summary>keywords</summary>
 
-Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア
+nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core
 
 </details>
 
@@ -88,13 +93,6 @@ Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-e
 .. important ::
 
 以降の手順で、Maven関連と思われるトラブルに遭遇した場合は、 Mavenのよくあるトラブル を参照すること。
-
-<details>
-<summary>keywords</summary>
-
-Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定
-
-</details>
 
 ## 使用するNablarchのバージョンの指定
 
@@ -136,13 +134,6 @@ nablarch-bom内の定義（抜粋）
 </dependencyManagement>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core
-
-</details>
-
 ## 初期セットアップを行う際の共通的な注意点
 
 初期セットアップを行う際、以下の点に注意すること。
@@ -156,10 +147,3 @@ nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile,
 * このエラーが発生した場合はeclipseがプラグインのインストールを提案するので、提案に従いプラグインをインストールすることで解消される。
 * ネットワーク環境が不安定な場合は各開発者がプラグインのインストールで時間を要する可能性があるので、
 予めプラグインをインストールしたeclipseを配付する等の対応を検討すること。
-
-<details>
-<summary>keywords</summary>
-
-マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル
-
-</details>

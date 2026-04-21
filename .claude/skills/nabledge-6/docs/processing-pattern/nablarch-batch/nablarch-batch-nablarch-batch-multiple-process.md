@@ -1,6 +1,11 @@
 # 常駐バッチアプリケーションのマルチプロセス化
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionExecutor, ParameterizedSqlPStatement, DbConnectionContext, ExecutionContext, AppDbConnection, FileCreateRequest, SystemRepository, UUID, マルチプロセス化, 悲観ロック, 常駐バッチ, processId UUID
+
+</details>
 
 基本的には データベースをキューとしたメッセージングのマルチプロセス化
 と同様となるため、そちらを参照すること。

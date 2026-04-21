@@ -1,7 +1,5 @@
 # メッセージング基盤テストシミュレータサンプル
 
-## 概要
-
 [ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-messaging-simulator)
 
 本サンプルは、Nablarchアプリケーションフレームワークの MOMメッセージング 、 HTTPメッセージング を使用する
@@ -19,13 +17,6 @@
 > **Important:** 本サンプルではMOMとしてIBM MQ 9.3 を使用している。 IBM MQ 9.3 はJavaのバージョン 8 以上がサポート対象であるため、本サンプルでは Java 17を使用する。
 
 ## 用途
-
-<details>
-<summary>keywords</summary>
-
-疎通テスト, 結合テスト, 負荷テスト, テスト対向先システム, メッセージングシミュレータ, MOMメッセージング, HTTPメッセージング, IBM MQ
-
-</details>
 
 ## 疎通テスト
 
@@ -45,13 +36,6 @@
 アプリケーションの負荷テストを行う際に、負荷をかけるための大量のメッセージ送受信ができる。
 
 ## 特徴
-
-<details>
-<summary>keywords</summary>
-
-テストデータ作成, マルチスレッド送信, 動的レスポンス切り替え, 異常系テスト, タイムアウトテスト
-
-</details>
 
 ## 取引単体テストと同じ手順でテストデータを作成できる
 
@@ -73,13 +57,6 @@ Nablarchアプリケーションフレームワークのマルチスレッド実
 
 ## 要求
 
-<details>
-<summary>keywords</summary>
-
-メッセージ受信, メッセージ送信, HTTPステータスコード, 応答電文, 要求電文, ログ出力, Excelファイル, 送信回数指定
-
-</details>
-
 ## シミュレータがメッセージ受信する場合
 
 * HTTPメッセージ受信、MOM同期応答メッセージ受信用の応答電文を送信できる。
@@ -95,13 +72,6 @@ Nablarchアプリケーションフレームワークのマルチスレッド実
 * Excelファイルに記述された内容を順に送信できる。
 
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-シミュレータ起動, ビルド手順, http-incoming-startup.bat, mom-incoming-startup.bat, mvn, git clone
-
-</details>
 
 ## シミュレータの実行モジュールを作成する
 
@@ -135,13 +105,6 @@ mvn clean dependency:copy-dependencies -DoutputDirectory=target/build/lib packag
 :MOMメッセージ送信: mom-outgoing-startup.bat
 
 ## 拡張例
-
-<details>
-<summary>keywords</summary>
-
-HttpIncomingSimulateAction, getRequestId, sendCount, レスポンス遅延, リクエスト送信回数, nablarch.fw.launcher.Main, HttpRequest, HttpResponse, ExecutionContext, TimeUnit
-
-</details>
 
 ## メッセージ送信時にリクエスト送信回数を指定する
 

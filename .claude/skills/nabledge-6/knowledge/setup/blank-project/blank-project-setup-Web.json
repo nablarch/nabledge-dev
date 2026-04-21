@@ -1,43 +1,225 @@
 {
   "id": "blank-project-setup-Web",
   "title": "ウェブプロジェクトの初期セットアップ",
+  "content": "ウェブプロジェクトの初期セットアップでは以下を行う。\n\n* ウェブプロジェクトの生成\n* ウェブプロジェクトの動作確認",
+  "hints": [
+    "ウェブプロジェクト初期セットアップ",
+    "ウェブプロジェクト生成",
+    "動作確認"
+  ],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
-      "title": "概要",
-      "content": "ウェブプロジェクトの初期セットアップでは以下を行う。\n\n* ウェブプロジェクトの生成\n* ウェブプロジェクトの動作確認\n\n\n# 生成するプロジェクトの概要\n\n本手順で生成するプロジェクトの概要は以下の通りである。\n\n| 項目 | 説明 |\n|---|---|\n| プロジェクト種別 | Mavenプロジェクト |\n| プロジェクト構成 | 単一プロジェクト構成 |\n| 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |\n| 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |\n| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |\n他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。\n\n\n\n# ブランクプロジェクト作成\n\nNablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。",
-      "hints": []
+      "title": "生成するプロジェクトの概要",
+      "content": "本手順で生成するプロジェクトの概要は以下の通りである。\n\n| 項目 | 説明 |\n|---|---|\n| プロジェクト種別 | Mavenプロジェクト |\n| プロジェクト構成 | 単一プロジェクト構成 |\n| 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |\n| 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |\n| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |\n他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。",
+      "hints": [
+        "H2 Database Engine",
+        "ルーティングアダプタ",
+        "Mavenプロジェクト",
+        "ウェブアプリケーション構成",
+        "ブランクプロジェクト概要"
+      ]
     },
     {
       "id": "s2",
+      "title": "ブランクプロジェクト作成",
+      "content": "Nablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。",
+      "hints": [
+        "nablarch-web-archetype",
+        "Maven archetype:generate",
+        "ブランクプロジェクト作成",
+        "archetypeVersion",
+        "groupId",
+        "artifactId",
+        "version",
+        "package"
+      ]
+    },
+    {
+      "id": "s3",
       "title": "mvnコマンドの実行",
       "content": "[Maven Archetype Plugin(外部サイト、英語)](https://maven.apache.org/archetype/maven-archetype-plugin/usage.html) を使用して、ブランクプロジェクトを生成する。\n\nカレントディレクトリを、ブランクプロジェクトを作成したいディレクトリ(任意のディレクトリで可)に変更する。\n\nその後、以下のコマンドを実行する。\n\n```bat\nmvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-web-archetype -DarchetypeVersion={nablarch_version}\n```\n上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。\n\n| 設定値 | 説明 |\n|---|---|\n| archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |",
       "hints": []
     },
     {
-      "id": "s3",
+      "id": "s4",
       "title": "プロジェクト情報の入力",
-      "content": "上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。\n\n| 入力項目 | 説明 | 設定例 |\n|---|---|---|\n| groupId | グループID（通常はパッケージ名を入力） | `com.example` |\n| artifactId | アーティファクトID | `myapp-web` |\n| version | バージョン番号 | `0.1.0` |\n| package | パッケージ(通常はグループIDと同じ) | `com.example` |\n\n> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。\nプロジェクト情報の入力が終わると、Y: :と表示される。\n\n* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。\n* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。\n\nコマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。\n\n\n\n# 疎通確認",
+      "content": "上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。\n\n| 入力項目 | 説明 | 設定例 |\n|---|---|---|\n| groupId | グループID（通常はパッケージ名を入力） | `com.example` |\n| artifactId | アーティファクトID | `myapp-web` |\n| version | バージョン番号 | `0.1.0` |\n| package | パッケージ(通常はグループIDと同じ) | `com.example` |\n\n> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。\nプロジェクト情報の入力が終わると、Y: :と表示される。\n\n* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。\n* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。\n\nコマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。",
       "hints": []
     },
     {
-      "id": "s4",
+      "id": "s5",
+      "title": "疎通確認",
+      "content": "",
+      "hints": [
+        "SampleAction",
+        "SampleActionRequestTest",
+        "疎通確認",
+        "mvn test",
+        "mvn jetty:run",
+        "自動テスト",
+        "起動確認"
+      ]
+    },
+    {
+      "id": "s6",
       "title": "自動テスト",
       "content": "アーキタイプから生成したプロジェクトには、以下のユニットテストが含まれている。\n\n| ユニットテストのクラス | テスト内容 |\n|---|---|\n| SampleActionRequestTest | Nablarchのテスティングフレームワークを使用して、画面が表示可能であるかを確認する。 |\nユニットテストを実行することで、ブランクプロジェクトの生成に成功していることを確認する。\n\n\n以下のコマンドを実行する。\n\n```text\ncd myapp-web\nmvn test\n```\n> **Tip:** ここで使用しているMavenの「clean」「test」は、MavenのBuilt-in Lifecycleである。 他にどのようなLifecycleが存在するかについては、 [Built-in Lifecycle Bindings(外部サイト、英語)](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)  を参照。\n実行に成功すると、以下のようなログがコンソールに出力される。\n\n```text\n(中略)\n[INFO] -----------------------< com.example:myapp-web >------------------------\n[INFO] Building myapp-web 0.1.0\n[INFO] --------------------------------[ war ]---------------------------------\n(中略)\n[INFO] Results:\n[INFO]\n[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0\n[INFO]\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n(以下略)\n```",
       "hints": []
     },
     {
-      "id": "s5",
+      "id": "s7",
       "title": "起動確認",
       "content": "生成したプロジェクトには、以下の画面が含まれている。\n\n| 画面表示に使用するクラス | 内容 |\n|---|---|\n| SampleAction | ウェブアプリケーション実装する際に一般的に使用するNablarchの機能についての動作確認。 |\nブラウザで画面を表示することで、ブランクプロジェクトの生成に成功していることを確認する。\n\nまだ、生成したプロジェクトにカレントディレクトリを移動していない場合は移動する。\n\n```text\ncd myapp-web\n```\nその後、以下のコマンドを実行することで、疎通確認用のアプリケーションをビルドしてから起動する。\n\n```text\nmvn jetty:run\n```\n> **Tip:** 上記のコマンド例で使用しているMavenの「jetty:run」は、 Jetty Maven Pluginのrunゴールを使用するという指定である。 アプリケーションのビルドを行うcompileゴールは「jetty:run」で合わせて実行されるため、明示的に実行する必要はない。 Jetty Maven Pluginについては [Jetty Maven Plugin(外部サイト、英語)](https://jetty.org/docs/jetty/12/programming-guide/maven-jetty/jetty-maven-plugin.html)  を参照。\n起動に成功するとコンソールに以下のようなログが出力される。\n\n```text\n(中略)\n2023-03-30 10:04:42.148 -INFO- nablarch.fw.web.servlet.NablarchServletContextListener [null] boot_proc = [] proc_sys = [web] req_id = [null] usr_id = [null] [nablarch.fw.web.servlet.NablarchServletContextListener#contextInitialized] initialization completed.\n```\n起動に成功したらブラウザで `http://localhost:9080/` にアクセスし、疎通確認画面を開く。\n表示されたページの内容を読み、成功していることを確認する。\n\nまた、ログを確認しエラーが出ていないことを確認する。",
       "hints": []
     },
     {
-      "id": "s6",
+      "id": "s8",
       "title": "疎通確認になぜか失敗する場合",
-      "content": "原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。\n\n原因が分からない場合は、ブランクプロジェクト作成 からやり直してみること。\n\n# データベースに関する設定を行う\n\nブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、使用するRDBMSの変更手順 を参照して設定すること。\n\nまたER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法 を参照。\n\n# 補足（web.xml）\n\nJNDI経由で接続を取得させる場合、web.xmlに<resource-ref>要素を定義する必要があるが、\n管理を容易にするため、web.xmlは、環境別にわけず、共用するようにしている。\n\n本番環境のみJNDI経由で接続を取得する場合、<resource-ref>要素の定義はローカルＰＣの開発環境向けの設定としては不要なものとなるが、\nアプリケーション内でその定義を使用するコードを書かない限り、<resource-ref>要素は使用されない。\nよって、ローカルＰＣの開発環境内でのアプリケーションの動作において問題は発生しない。\n\n# 補足\n\nH2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 ../firstStep_appendix/firststep_complement を参照すること。",
+      "content": "原因は分からないが疎通確認に失敗する場合、どこかで手順を誤っている可能性がある。\n\n原因が分からない場合は、ブランクプロジェクト作成 からやり直してみること。",
       "hints": []
+    },
+    {
+      "id": "s9",
+      "title": "データベースに関する設定を行う",
+      "content": "ブランクプロジェクトは、初期状態ではH2 Database Engineを使用するように設定されている。使用するRDBMSを変更する場合は、使用するRDBMSの変更手順 を参照して設定すること。\n\nまたER図からのDDL生成や実行、Entityクラスの自動生成を行うにはgsp-dba-maven-pluginの初期設定および実行を行う。詳細は gsp-dba-maven-plugin(DBA作業支援ツール)の初期設定方法 を参照。",
+      "hints": [
+        "H2 Database Engine",
+        "customize-db",
+        "gsp-dba-maven-plugin",
+        "RDBMS変更",
+        "DDL生成",
+        "Entityクラス自動生成"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "補足（web.xml）",
+      "content": "JNDI経由で接続を取得させる場合、web.xmlに<resource-ref>要素を定義する必要があるが、\n管理を容易にするため、web.xmlは、環境別にわけず、共用するようにしている。\n\n本番環境のみJNDI経由で接続を取得する場合、<resource-ref>要素の定義はローカルＰＣの開発環境向けの設定としては不要なものとなるが、\nアプリケーション内でその定義を使用するコードを書かない限り、<resource-ref>要素は使用されない。\nよって、ローカルＰＣの開発環境内でのアプリケーションの動作において問題は発生しない。",
+      "hints": [
+        "web.xml",
+        "resource-ref",
+        "JNDI",
+        "接続設定",
+        "環境別設定"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "補足",
+      "content": "H2のデータの確認方法や、ブランクプロジェクトに組み込まれているツールに関しては、 ../firstStep_appendix/firststep_complement を参照すること。",
+      "hints": [
+        "H2データ確認",
+        "ブランクプロジェクト補足",
+        "組み込みツール"
+      ]
+    }
+  ],
+  "index": [
+    {
+      "id": "__file__",
+      "title": "ウェブプロジェクトの初期セットアップ",
+      "hints": [
+        "ウェブプロジェクト初期セットアップ",
+        "ウェブプロジェクト生成",
+        "動作確認"
+      ]
+    },
+    {
+      "id": "s1",
+      "title": "生成するプロジェクトの概要",
+      "hints": [
+        "H2 Database Engine",
+        "ルーティングアダプタ",
+        "Mavenプロジェクト",
+        "ウェブアプリケーション構成",
+        "ブランクプロジェクト概要"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "ブランクプロジェクト作成",
+      "hints": [
+        "nablarch-web-archetype",
+        "Maven archetype:generate",
+        "ブランクプロジェクト作成",
+        "archetypeVersion",
+        "groupId",
+        "artifactId",
+        "version",
+        "package"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "mvnコマンドの実行",
+      "hints": []
+    },
+    {
+      "id": "s4",
+      "title": "プロジェクト情報の入力",
+      "hints": []
+    },
+    {
+      "id": "s5",
+      "title": "疎通確認",
+      "hints": [
+        "SampleAction",
+        "SampleActionRequestTest",
+        "疎通確認",
+        "mvn test",
+        "mvn jetty:run",
+        "自動テスト",
+        "起動確認"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "自動テスト",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "起動確認",
+      "hints": []
+    },
+    {
+      "id": "s8",
+      "title": "疎通確認になぜか失敗する場合",
+      "hints": []
+    },
+    {
+      "id": "s9",
+      "title": "データベースに関する設定を行う",
+      "hints": [
+        "H2 Database Engine",
+        "customize-db",
+        "gsp-dba-maven-plugin",
+        "RDBMS変更",
+        "DDL生成",
+        "Entityクラス自動生成"
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "補足（web.xml）",
+      "hints": [
+        "web.xml",
+        "resource-ref",
+        "JNDI",
+        "接続設定",
+        "環境別設定"
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "補足",
+      "hints": [
+        "H2データ確認",
+        "ブランクプロジェクト補足",
+        "組み込みツール"
+      ]
     }
   ]
 }

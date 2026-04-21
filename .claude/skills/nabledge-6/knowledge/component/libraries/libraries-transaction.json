@@ -1,16 +1,19 @@
 {
   "id": "libraries-transaction",
   "title": "トランザクション管理",
+  "content": "トランザクション制御が必要となるリソース（データベースやメッセージキュー）に対するトランザクション管理機能を提供する。",
+  "hints": [
+    "Transaction",
+    "TransactionFactory",
+    "TransactionManagementHandler",
+    "トランザクションリソース追加",
+    "カスタムトランザクション実装",
+    "IBM MQ"
+  ],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
-      "title": "概要",
-      "content": "トランザクション制御が必要となるリソース（データベースやメッセージキュー）に対するトランザクション管理機能を提供する。",
-      "hints": []
-    },
-    {
-      "id": "s2",
       "title": "機能概要",
       "content": "",
       "hints": [
@@ -21,13 +24,13 @@
       ]
     },
     {
-      "id": "s3",
+      "id": "s2",
       "title": "各種リソースに対するトランザクション制御が出来る",
       "content": "データベースやメッセージキューといったトランザクション制御が必要となるリソースに対するトランザクション管理が出来る。\n\nデータベースに対するトランザクション制御の詳細は以下を参照。\n\n* データベースに対するトランザクション制御\n* データベースに対するトランザクションタイムアウトを適用する\n\n新たなリソースに対して、トランザクション制御の要件が出た場合には、本機能で定められたインタフェースを実装することで容易に実現できる。\n詳細は、 トランザクション対象のリソースを追加する を参照。",
       "hints": []
     },
     {
-      "id": "s4",
+      "id": "s3",
       "title": "モジュール一覧",
       "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-transaction</artifactId>\n</dependency>\n\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n```",
       "hints": [
@@ -37,7 +40,7 @@
       ]
     },
     {
-      "id": "s5",
+      "id": "s4",
       "title": "使用方法",
       "content": "",
       "hints": [
@@ -47,7 +50,26 @@
         "データベーストランザクション制御",
         "データベース接続設定",
         "database-new_transaction",
-        "TransactionManagementHandler",
+        "TransactionManagementHandler"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データベースに対するトランザクション制御",
+      "content": "コンポーネント設定ファイルにJDBCを使用したトランザクション制御を追加することで、データベースに対するトランザクション制御が実現出来る。\nなお、データベースに対する接続設定が行われていることが前提となる。\n\nデータベース接続方法の詳細は、 データベースに対する接続設定 を参照。\n\nなお、1SQL単位などの粒度の小さいトランザクションを使用する場合は、 現在のトランザクションとは異なるトランザクションでSQLを実行する を参照に設定及び実装すること。\n\nコンポーネント定義例\nJDBC用のトランザクションクラスを生成するファクトリクラス( `JdbcTransactionFactory` )をコンポーネント設定ファイルに定義する。\n\n```xml\n<!-- コンポーネントとしてJdbcTransactionFactoryを設定する -->\n<component class=\"nablarch.core.db.transaction.JdbcTransactionFactory\">\n\n  <!-- アイソレーションレベル -->\n  <property name=\"isolationLevel\" value=\"READ_COMMITTED\" />\n\n  <!-- トランザクションタイムアウト秒数 -->\n  <property name=\"transactionTimeoutSec\" value=\"15\" />\n\n</component>\n```\n> **Tip:** 上記に設定したクラスを直接使用することは基本的にない。 トランザクション制御を必要とする場合には、 トランザクション制御ハンドラ を使用すること。",
+      "hints": []
+    },
+    {
+      "id": "s6",
+      "title": "データベースに対するトランザクションタイムアウトを適用する",
+      "content": "`JdbcTransactionFactory` に対してトランザクションタイムアウト秒数を設定することで、トランザクションタイムアウト機能が有効となる。\nもし、設定されたトランザクションタイムアウト秒数が0以下の場合には、トランザクションタイムアウト機能は無効化される。\n\n> **Tip:** バッチアプリケーションなどの大量データを一括で処理するような機能では、トランザクションタイムアウト機能を使用するのではなく、 ジョブスケジューラの終了遅延監視などで処理遅延のハンドリングを行うこと。 なぜなら、バッチアプリケーションでは、全体の処理時間が想定内であればよく、個々のトランザクションで遅延が起きても問題ないからである。 例えば、特定トランザクションがデータベースのリソース不足で1分かかったとしても、処理全体が想定時間内に終わっていれば問題ないと判断される。\nトランザクションタイムアウトのチェックを開始するタイミング\nトランザクションの開始時( `Transaction#begin()` )にチェックが開始される。\n\n複数のトランザクションを使用した場合（例えば、トランザクション内で別トランザクションを実行した場合）は、\nトランザクションごとにタイムアウトのチェックを行う。\n\nトランザクションタイムアウトのチェックタイミング\nトランザクションタイムアウト秒数を超過したか否かは以下のタイミングでチェックする。\n\nSQL実行前\nSQL実行前にトランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\n\nSQL実行前にチェックを行うのは、既にトランザクションタイムアウト秒数を経過していた場合に、\nデータベースにアクセスすることはリソースを不必要に消費することになるため。\n\nSQL実行後\nSQL実行後にトランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\n\nSQL実行中や結果セットの変換中にトランザクションタイムアウト秒数を超過する可能性があるため、\nSQLの実行が正常に終わった場合でもチェックを行っている。\n\nクエリータイムアウト例外発生時\nクエリータイムアウトを示す例外が発生した場合で、トランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\nクエリータイムアウト例外か否かは、データベース機能の ダイアレクト を用いて判定する。\n\n処理時間の長いSQL文(単純に重いSQLやロック開放待ちのSQL)が実行された場合、制御がデータベースから戻ってこない可能性がある。\nこのため、トランザクションタイムアウトの残り秒数を `java.sql.Statement#setQueryTimeout` に設定し、\nトランザクションタイムアウト秒数超過時には強制的に実行をキャンセルしている。\n\nなお、SQL実行時にクエリータイムアウト時間が設定されていた場合は、\n設定済みのクエリータイムアウト時間よりトランザクションタイムアウトの残り秒数が小さい場合に、\n設定済みクエリータイムアウト時間をトランザクションタイムアウトの残り秒数で上書きする。\n\nクエリータイムアウトのハンドリング例を以下に示す。\n\nパターン1\n| 設定済みクエリータイムアウト時間: 10秒\n| トランザクションタイムアウトの残り秒数: 15秒\n| SQL実行時に設定するクエリータイムアウト時間: 10秒\n| クエリータイムアウト発生時にはトランザクションタイムアウトとはならずSQL実行時例外が送出される\n\nパターン2\n| 設定済みクエリータイムアウト時間: 10秒\n| トランザクションタイムアウトの残り秒数: 5秒\n| SQL実行時に設定するクエリータイムアウト時間: 5秒\n| クエリータイムアウト発生時にはトランザクションタイムアウトとなり、 `TransactionTimeoutException` が送出される。\n\n> **Tip:** この機能は、データベースアクセス時にトランザクションタイムアウトチェックを行うため、 データベースにアクセスしないロジックで処理遅延が発生した場合は、トランザクションタイムアウトとはならない。 例えば、データベースアクセスを行わないロジックで無限ループが発生した場合は、本機能ではトランザクションタイムアウトを検出できない。 このような場合には、アプリケーションサーバのタイムアウト機能などを用いて、遅延しているアプリケーションスレッドのハンドリングを行うこと。\nトランザクションタイムアウト時間のリセットタイミング\nトランザクションを明示的に開始した場合( `Transaction#begin` を呼び出した場合)に、トランザクションタイムアウト時間がリセットされる。\nトランザクションの終了時( `Transaction#commit` や `Transaction#rollback` )では、\nトランザクションタイムアウトの残り時間はリセットされないので注意すること。",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "拡張例",
+      "content": "",
+      "hints": [
         "JdbcTransactionFactory",
         "TransactionTimeoutException",
         "transactionTimeoutSec",
@@ -57,21 +79,16 @@
       ]
     },
     {
-      "id": "s6",
-      "title": "データベースに対するトランザクション制御",
-      "content": "コンポーネント設定ファイルにJDBCを使用したトランザクション制御を追加することで、データベースに対するトランザクション制御が実現出来る。\nなお、データベースに対する接続設定が行われていることが前提となる。\n\nデータベース接続方法の詳細は、 データベースに対する接続設定 を参照。\n\nなお、1SQL単位などの粒度の小さいトランザクションを使用する場合は、 現在のトランザクションとは異なるトランザクションでSQLを実行する を参照に設定及び実装すること。\n\nコンポーネント定義例\nJDBC用のトランザクションクラスを生成するファクトリクラス( `JdbcTransactionFactory` )をコンポーネント設定ファイルに定義する。\n\n```xml\n<!-- コンポーネントとしてJdbcTransactionFactoryを設定する -->\n<component class=\"nablarch.core.db.transaction.JdbcTransactionFactory\">\n\n  <!-- アイソレーションレベル -->\n  <property name=\"isolationLevel\" value=\"READ_COMMITTED\" />\n\n  <!-- トランザクションタイムアウト秒数 -->\n  <property name=\"transactionTimeoutSec\" value=\"15\" />\n\n</component>\n```\n> **Tip:** 上記に設定したクラスを直接使用することは基本的にない。 トランザクション制御を必要とする場合には、 トランザクション制御ハンドラ を使用すること。",
-      "hints": []
-    },
-    {
-      "id": "s7",
-      "title": "データベースに対するトランザクションタイムアウトを適用する",
-      "content": "`JdbcTransactionFactory` に対してトランザクションタイムアウト秒数を設定することで、トランザクションタイムアウト機能が有効となる。\nもし、設定されたトランザクションタイムアウト秒数が0以下の場合には、トランザクションタイムアウト機能は無効化される。\n\n> **Tip:** バッチアプリケーションなどの大量データを一括で処理するような機能では、トランザクションタイムアウト機能を使用するのではなく、 ジョブスケジューラの終了遅延監視などで処理遅延のハンドリングを行うこと。 なぜなら、バッチアプリケーションでは、全体の処理時間が想定内であればよく、個々のトランザクションで遅延が起きても問題ないからである。 例えば、特定トランザクションがデータベースのリソース不足で1分かかったとしても、処理全体が想定時間内に終わっていれば問題ないと判断される。\nトランザクションタイムアウトのチェックを開始するタイミング\nトランザクションの開始時( `Transaction#begin()` )にチェックが開始される。\n\n複数のトランザクションを使用した場合（例えば、トランザクション内で別トランザクションを実行した場合）は、\nトランザクションごとにタイムアウトのチェックを行う。\n\nトランザクションタイムアウトのチェックタイミング\nトランザクションタイムアウト秒数を超過したか否かは以下のタイミングでチェックする。\n\nSQL実行前\nSQL実行前にトランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\n\nSQL実行前にチェックを行うのは、既にトランザクションタイムアウト秒数を経過していた場合に、\nデータベースにアクセスすることはリソースを不必要に消費することになるため。\n\nSQL実行後\nSQL実行後にトランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\n\nSQL実行中や結果セットの変換中にトランザクションタイムアウト秒数を超過する可能性があるため、\nSQLの実行が正常に終わった場合でもチェックを行っている。\n\nクエリータイムアウト例外発生時\nクエリータイムアウトを示す例外が発生した場合で、トランザクションタイムアウト秒数を超過していた場合は、 `TransactionTimeoutException` を送出する。\nクエリータイムアウト例外か否かは、データベース機能の ダイアレクト を用いて判定する。\n\n処理時間の長いSQL文(単純に重いSQLやロック開放待ちのSQL)が実行された場合、制御がデータベースから戻ってこない可能性がある。\nこのため、トランザクションタイムアウトの残り秒数を `java.sql.Statement#setQueryTimeout` に設定し、\nトランザクションタイムアウト秒数超過時には強制的に実行をキャンセルしている。\n\nなお、SQL実行時にクエリータイムアウト時間が設定されていた場合は、\n設定済みのクエリータイムアウト時間よりトランザクションタイムアウトの残り秒数が小さい場合に、\n設定済みクエリータイムアウト時間をトランザクションタイムアウトの残り秒数で上書きする。\n\nクエリータイムアウトのハンドリング例を以下に示す。\n\nパターン1\n| 設定済みクエリータイムアウト時間: 10秒\n| トランザクションタイムアウトの残り秒数: 15秒\n| SQL実行時に設定するクエリータイムアウト時間: 10秒\n| クエリータイムアウト発生時にはトランザクションタイムアウトとはならずSQL実行時例外が送出される\n\nパターン2\n| 設定済みクエリータイムアウト時間: 10秒\n| トランザクションタイムアウトの残り秒数: 5秒\n| SQL実行時に設定するクエリータイムアウト時間: 5秒\n| クエリータイムアウト発生時にはトランザクションタイムアウトとなり、 `TransactionTimeoutException` が送出される。\n\n> **Tip:** この機能は、データベースアクセス時にトランザクションタイムアウトチェックを行うため、 データベースにアクセスしないロジックで処理遅延が発生した場合は、トランザクションタイムアウトとはならない。 例えば、データベースアクセスを行わないロジックで無限ループが発生した場合は、本機能ではトランザクションタイムアウトを検出できない。 このような場合には、アプリケーションサーバのタイムアウト機能などを用いて、遅延しているアプリケーションスレッドのハンドリングを行うこと。\nトランザクションタイムアウト時間のリセットタイミング\nトランザクションを明示的に開始した場合( `Transaction#begin` を呼び出した場合)に、トランザクションタイムアウト時間がリセットされる。\nトランザクションの終了時( `Transaction#commit` や `Transaction#rollback` )では、\nトランザクションタイムアウトの残り時間はリセットされないので注意すること。",
-      "hints": []
-    },
-    {
       "id": "s8",
-      "title": "拡張例",
-      "content": "",
+      "title": "トランザクション対象のリソースを追加する",
+      "content": "トランザクション対象のリソースを追加する場合は、以下の手順が必要となる。\n\n例えば、IBM MQを分散トランザクションのトランザクションマネージャとしてトランザクションを制御する場合などが該当する。\n\n#. トランザクション実装の追加\n#. トランザクションを生成するためのファクトリ実装の追加\n#. トランザクション制御ハンドラ を使ってトランザクション制御を実現\n\n以下に詳細な手順を示す。\n\nトランザクション実装の追加\nトランザクションは、 `Transaction` インタフェースを実装し、\nトランザクション対象のリソースに対するトランザクションの開始、終了処理を実装する。\n\n```java\npublic class SampleTransaction implements Transaction {\n\n  private final String resourceName;\n\n  // トランザクション制御対象のリソースを識別するための\n  // リソース名を受け取る。\n  // トランザクション制御時に、このリソース名からトランザクション制御対象のリソースを取得する必要がある。\n  public SampleTransaction(String resourceName) {\n    this.resourceName = resourceName;\n  }\n\n  @Override\n  public void begin() {\n    // トランザクション対象リソースに対するトランザクションの開始処理を実装する\n  }\n\n  @Override\n  public void commit() {\n    // トランザクション対象リソースに対するトランザクションの確定処理を実装する\n  }\n\n  @Override\n  public void rollback() {\n    // トランザクション対象リソースに対するトランザクションの破棄処理を実装する\n  }\n}\n```\nトランザクションを生成するためのファクトリ実装の追加\nトランザクションを生成するためのファクトリクラスを作成する。\nファクトリクラスは、 `TransactionFactory` を実装する。\n\nこの例は、上記で作成した `SampleTransaction` を生成するファクトリクラスとなっている。\n\n```java\npublic class SampleTransactionFactory implements TransactionFactory {\n\n  @Override\n  public Transaction getTransaction(String resourceName) {\n    // トランザクション対象を識別するためのリソース名を持つ\n    // トランザクションオブジェクトを生成し返却する。\n    SampleTransaction transaction = new SampleTransaction(resourceName);\n    return transaction;\n  }\n}\n```\nトランザクション制御ハンドラ を使ってトランザクション制御を実現\nNablarchの標準ハンドラに含まれるトランザクション制御ハンドラを使うことでトランザクション制御が実現出来る。\n\n以下の例のように、追加したファクトリクラスを、トランザクション制御ハンドラに設定する。\n\n```xml\n<!-- トランザクション制御ハンドラ -->\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n\n  <!-- トランザクションファクトリ -->\n  <property name=\"transactionFactory\">\n    <component class=\"sample.SampleTransactionFactory\" />\n  </property>\n```\n</component>",
+      "hints": []
+    }
+  ],
+  "index": [
+    {
+      "id": "__file__",
+      "title": "トランザクション管理",
       "hints": [
         "Transaction",
         "TransactionFactory",
@@ -82,9 +99,67 @@
       ]
     },
     {
-      "id": "s9",
+      "id": "s1",
+      "title": "機能概要",
+      "hints": [
+        "トランザクション管理",
+        "データベーストランザクション",
+        "メッセージキュートランザクション",
+        "トランザクション制御リソース追加"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "各種リソースに対するトランザクション制御が出来る",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "モジュール一覧",
+      "hints": [
+        "nablarch-core-transaction",
+        "nablarch-core-jdbc",
+        "モジュール依存関係"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "使用方法",
+      "hints": [
+        "JdbcTransactionFactory",
+        "isolationLevel",
+        "transactionTimeoutSec",
+        "データベーストランザクション制御",
+        "データベース接続設定",
+        "database-new_transaction",
+        "TransactionManagementHandler"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "データベースに対するトランザクション制御",
+      "hints": []
+    },
+    {
+      "id": "s6",
+      "title": "データベースに対するトランザクションタイムアウトを適用する",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "拡張例",
+      "hints": [
+        "JdbcTransactionFactory",
+        "TransactionTimeoutException",
+        "transactionTimeoutSec",
+        "トランザクションタイムアウト",
+        "クエリータイムアウト",
+        "Statement#setQueryTimeout"
+      ]
+    },
+    {
+      "id": "s8",
       "title": "トランザクション対象のリソースを追加する",
-      "content": "トランザクション対象のリソースを追加する場合は、以下の手順が必要となる。\n\n例えば、IBM MQを分散トランザクションのトランザクションマネージャとしてトランザクションを制御する場合などが該当する。\n\n#. トランザクション実装の追加\n#. トランザクションを生成するためのファクトリ実装の追加\n#. トランザクション制御ハンドラ を使ってトランザクション制御を実現\n\n以下に詳細な手順を示す。\n\nトランザクション実装の追加\nトランザクションは、 `Transaction` インタフェースを実装し、\nトランザクション対象のリソースに対するトランザクションの開始、終了処理を実装する。\n\n```java\npublic class SampleTransaction implements Transaction {\n\n  private final String resourceName;\n\n  // トランザクション制御対象のリソースを識別するための\n  // リソース名を受け取る。\n  // トランザクション制御時に、このリソース名からトランザクション制御対象のリソースを取得する必要がある。\n  public SampleTransaction(String resourceName) {\n    this.resourceName = resourceName;\n  }\n\n  @Override\n  public void begin() {\n    // トランザクション対象リソースに対するトランザクションの開始処理を実装する\n  }\n\n  @Override\n  public void commit() {\n    // トランザクション対象リソースに対するトランザクションの確定処理を実装する\n  }\n\n  @Override\n  public void rollback() {\n    // トランザクション対象リソースに対するトランザクションの破棄処理を実装する\n  }\n}\n```\nトランザクションを生成するためのファクトリ実装の追加\nトランザクションを生成するためのファクトリクラスを作成する。\nファクトリクラスは、 `TransactionFactory` を実装する。\n\nこの例は、上記で作成した `SampleTransaction` を生成するファクトリクラスとなっている。\n\n```java\npublic class SampleTransactionFactory implements TransactionFactory {\n\n  @Override\n  public Transaction getTransaction(String resourceName) {\n    // トランザクション対象を識別するためのリソース名を持つ\n    // トランザクションオブジェクトを生成し返却する。\n    SampleTransaction transaction = new SampleTransaction(resourceName);\n    return transaction;\n  }\n}\n```\nトランザクション制御ハンドラ を使ってトランザクション制御を実現\nNablarchの標準ハンドラに含まれるトランザクション制御ハンドラを使うことでトランザクション制御が実現出来る。\n\n以下の例のように、追加したファクトリクラスを、トランザクション制御ハンドラに設定する。\n\n```xml\n<!-- トランザクション制御ハンドラ -->\n<component class=\"nablarch.common.handler.TransactionManagementHandler\">\n\n  <!-- トランザクションファクトリ -->\n  <property name=\"transactionFactory\">\n    <component class=\"sample.SampleTransactionFactory\" />\n  </property>\n```\n</component>",
       "hints": []
     }
   ]

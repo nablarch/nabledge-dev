@@ -1,6 +1,11 @@
 # 様々なフォーマットのデータへのアクセス
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+データバインド, 汎用データフォーマット, data_bind, data_format, データ入出力, フォーマット変換, 機能選択, IDE補完
+
+</details>
 
 様々なフォーマットのデータを扱う機能を提供する。
 

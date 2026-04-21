@@ -1,6 +1,11 @@
 # データを導出するバッチの作成(Chunkステップ)
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+リスナー, トランザクション制御, JSR352, バッチ処理構成, jsr352-listener, バッチアプリケーション リスナー, nablarchJobListenerExecutor, nablarchStepListenerExecutor
+
+</details>
 
 Exampleアプリケーションを元に、既存データから計算を行い新たにデータを導出する Chunkステップ 方式のバッチを解説する。
 
@@ -49,7 +54,7 @@ SELECT * FROM BONUS;
 <details>
 <summary>keywords</summary>
 
-リスナー, トランザクション制御, JSR352, バッチ処理構成, jsr352-listener, バッチアプリケーション リスナー, nablarchJobListenerExecutor, nablarchStepListenerExecutor
+動作確認, TRUNCATE TABLE BONUS, 賞与計算バッチ実行, bonus-calculate, mvn exec:java, SELECT * FROM BONUS, H2コンソール, 動作確認手順
 
 </details>
 
@@ -157,6 +162,13 @@ INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
 検索結果を 遅延ロード する。
 * `readItem` メソッドで読み込んだデータから一行分のデータを返却する。
 このメソッドで返却したオブジェクトが、後続する `ItemProcessor` の `processItem` メソッドの引数として与えられる。
+
+<details>
+<summary>keywords</summary>
+
+ItemReader, AbstractItemReader, ItemProcessor, DeferredEntityList, UniversalDao, @Named, @Dependent, Chunkステップ データ読み込み, 遅延ロード, ItemReader実装, open, readItem, close, EmployeeSearchReader, EmployeeForm, findAllBySqlFile
+
+</details>
 
 ## 業務ロジックを実行する
 

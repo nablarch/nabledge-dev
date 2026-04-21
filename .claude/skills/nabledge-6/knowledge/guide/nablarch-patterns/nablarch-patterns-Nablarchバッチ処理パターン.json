@@ -1,19 +1,37 @@
 {
   "id": "nablarch-patterns-Nablarchバッチ処理パターン",
   "title": "Nablarchバッチ処理パターン",
+  "content": "",
+  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "起動方法による分類",
       "content": "[Nablarchバッチ](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/index.html)では、主に以下の2つの起動方法を使用します。\n\n- [都度起動バッチ](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/batch/nablarch_batch/architecture.html#nablarch-batch-each-time-batch)\n    - プロセスを都度起動して、バッチ処理を実行します\n    - 日次や月次など、定期的にバッチ処理を実行するような場合に使用します\n- [テーブルをキューとして使ったメッセージング](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/index.html)\n    - プロセスを起動しておき、定期的にデータベース上のテーブルを監視し未処理のレコードを順次処理します\n    - オンライン処理で処理要求を受け付け、非同期でバッチ処理を実行したいような場合に使用します",
-      "hints": []
+      "hints": [
+        "都度起動バッチ",
+        "テーブルをキューとして使ったメッセージング",
+        "バッチ起動方法",
+        "非同期バッチ",
+        "定期バッチ",
+        "常駐バッチ"
+      ]
     },
     {
       "id": "s2",
       "title": "入出力による分類",
       "content": "この切り口とは別に、主となる入力、出力の組み合わせにより、\n以下の3パターンに分けることができます。\n\n- FILE to DB\n- DB to DB\n- DB to FILE\n\n組み合わせは以下の通りとなります。\n\n|          | FILE to DB | DB to DB | DB to FILE |\n|----------|------------|----------|------------|\n| 都度起動 | ○         | ○       | ○         |\n| 常駐     | ✕          | ○       | △         |\n\n- ○：使用する\n- △：仕組み上は可能だが普通は使わない\n- ✕：使わない\n\n（常駐バッチは、通常データベースを監視するため、FILE to DBとの組み合わせはありません）",
-      "hints": []
+      "hints": [
+        "FILE to DB",
+        "DB to DB",
+        "DB to FILE",
+        "テンポラリテーブル",
+        "バッチ入出力パターン",
+        "マッチング処理",
+        "コントロールブレイク",
+        "FILE to FILE"
+      ]
     },
     {
       "id": "s3",
@@ -43,12 +61,82 @@
       "id": "s7",
       "title": "注意点",
       "content": "",
-      "hints": []
+      "hints": [
+        "ファイル移動",
+        "ファイルコピー",
+        "バッチ再実行",
+        "単体テスト",
+        "ファイル取り込み"
+      ]
     },
     {
       "id": "s8",
       "title": "ファイルの移動、コピー",
       "content": "FILE to DBないしDB to FILEを行う場合、そのバッチ処理にはファイルの移動やコピーは含めないようにします。\n\n仮に以下のようなバッチ処理を実装したとします。\n\n1. ファイルを所定のディレクトリに移動（初期化処理）\n2. 1で移動したファイルを読み込んでDBに登録（本処理）\n\n2で処理が失敗した場合、再実行する前に入力ファイルを元のディレクトリに戻すというオペレーションが必要となってしまいます。\n\nファイルの移動、コピーを別出ししておくことで、以下のようなメリットがあります。\n\n- 再実行がやりやすくなる\n- ファイル取り込みバッチの単体テストがやりやすくなる\n- ファイルの移動、コピーを自分で実装しないので、移動、コピーに対する単体テストが不要になる",
+      "hints": []
+    }
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "起動方法による分類",
+      "hints": [
+        "都度起動バッチ",
+        "テーブルをキューとして使ったメッセージング",
+        "バッチ起動方法",
+        "非同期バッチ",
+        "定期バッチ",
+        "常駐バッチ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "入出力による分類",
+      "hints": [
+        "FILE to DB",
+        "DB to DB",
+        "DB to FILE",
+        "テンポラリテーブル",
+        "バッチ入出力パターン",
+        "マッチング処理",
+        "コントロールブレイク",
+        "FILE to FILE"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "FILE to DB",
+      "hints": []
+    },
+    {
+      "id": "s4",
+      "title": "DB to DB",
+      "hints": []
+    },
+    {
+      "id": "s5",
+      "title": "DB to FILE",
+      "hints": []
+    },
+    {
+      "id": "s6",
+      "title": "上記以外の組み合わせ(FILE to FILE)",
+      "hints": []
+    },
+    {
+      "id": "s7",
+      "title": "注意点",
+      "hints": [
+        "ファイル移動",
+        "ファイルコピー",
+        "バッチ再実行",
+        "単体テスト",
+        "ファイル取り込み"
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "ファイルの移動、コピー",
       "hints": []
     }
   ]

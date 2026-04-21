@@ -1,7 +1,5 @@
 # ユニバーサルDAO
 
-## 概要
-
 ユニバーサルDAOでは、 [Jakarta Persistence (外部サイト、英語)](https://jakarta.ee/specifications/persistence/)
 のアノテーションを使った簡易的なO/Rマッパーを提供する。
 
@@ -16,7 +14,7 @@
 <details>
 <summary>keywords</summary>
 
-BLOBデータ登録, バイナリデータ, 大容量バイナリデータ, Oracle BLOB, database-binary_column, CLOBデータ登録, テキストデータ, 大容量テキストデータ, Oracle CLOB, database-clob_column, SimpleDbTransactionManager, UniversalDao.Transaction, 個別トランザクション, 別トランザクション実行, connectionFactory, transactionFactory, dbTransactionName, ConnectionFactory, TransactionFactory, DatabaseMetaDataExtractor, java.sql.DatabaseMetaData, シノニム, 主キー情報取得, databaseMetaDataExtractor, 権限問題, 主キー検索, 件数取得SQL, SELECT COUNT(*), convertCountSql, Dialect, H2Dialect, ページング, ORDER BY, カスタムダイアレクト, sqlMap, StatementFactory, @Entity, @Table, @Access, @Column, @Id, @Version, @Temporal, @GeneratedValue, @SequenceGenerator, @TableGenerator, 楽観ロック, 自動採番, シーケンス採番, テーブル採番, sequenceName, pkColumnValue, generator, strategy, Dialect, java.lang.String, java.lang.Short, java.lang.Integer, java.lang.Long, java.math.BigDecimal, java.lang.Boolean, java.util.Date, java.sql.Date, java.sql.Timestamp, java.time.LocalDate, java.time.LocalDateTime, byte[], @Temporal, Beanデータタイプ, 検索結果マッピング, UniversalDAO Bean型, バイナリデータ, ユニバーサルDAO, O/Rマッパー, CRUD, Beanマッピング, Jakarta Persistence, 共通項目自動設定, doma_adaptor, @Table
+BLOBデータ登録, バイナリデータ, 大容量バイナリデータ, Oracle BLOB, database-binary_column, java.lang.String, java.lang.Short, java.lang.Integer, java.lang.Long, java.math.BigDecimal, java.lang.Boolean, java.util.Date, java.sql.Date, java.sql.Timestamp, java.time.LocalDate, java.time.LocalDateTime, byte[], @Temporal, Beanデータタイプ, 検索結果マッピング, UniversalDAO Bean型, ユニバーサルDAO, O/Rマッパー, CRUD, Beanマッピング, Jakarta Persistence, 共通項目自動設定, doma_adaptor, @Table
 
 </details>
 
@@ -55,7 +53,7 @@ Beanに使用できるデータタイプについては、 universal_dao_bean_da
 <details>
 <summary>keywords</summary>
 
-nablarch-common-dao, com.nablarch.framework, Maven依存関係
+CLOBデータ登録, テキストデータ, 大容量テキストデータ, Oracle CLOB, database-clob_column, nablarch-common-dao, com.nablarch.framework, Maven依存関係
 
 </details>
 
@@ -76,7 +74,7 @@ nablarch-common-dao, com.nablarch.framework, Maven依存関係
 <details>
 <summary>keywords</summary>
 
-BasicDaoContextFactory, daoContextFactory, コンポーネント定義, 初期設定
+SimpleDbTransactionManager, UniversalDao.Transaction, 個別トランザクション, 別トランザクション実行, connectionFactory, transactionFactory, dbTransactionName, ConnectionFactory, TransactionFactory, BasicDaoContextFactory, daoContextFactory, コンポーネント定義, 初期設定
 
 </details>
 
@@ -104,7 +102,7 @@ UniversalDao.findAllBySqlFile(GoldUser.class, "sample.entity.Member#FIND_BY_NAME
 <details>
 <summary>keywords</summary>
 
-findAllBySqlFile, SQLファイル, SQL ID, SQLファイルパス導出, 任意SQL検索
+DatabaseMetaDataExtractor, java.sql.DatabaseMetaData, シノニム, 主キー情報取得, databaseMetaDataExtractor, 権限問題, 主キー検索, findAllBySqlFile, SQLファイル, SQL ID, SQLファイルパス導出, 任意SQL検索
 
 </details>
 
@@ -117,7 +115,7 @@ findAllBySqlFile, SQLファイル, SQL ID, SQLファイルパス導出, 任意SQ
 <details>
 <summary>keywords</summary>
 
-JOIN, 複数テーブル, 一覧検索, JOINマッピング
+件数取得SQL, SELECT COUNT(*), convertCountSql, Dialect, H2Dialect, ページング, ORDER BY, カスタムダイアレクト, sqlMap, StatementFactory, JOIN, 複数テーブル, 一覧検索, JOINマッピング
 
 </details>
 
@@ -154,7 +152,7 @@ try (DeferredEntityList<User> users
 <details>
 <summary>keywords</summary>
 
-DeferredEntityList, UniversalDao.defer, 遅延ロード, 大量データ, サーバサイドカーソル, フェッチサイズ
+@Entity, @Table, @Access, @Column, @Id, @Version, @Temporal, @GeneratedValue, @SequenceGenerator, @TableGenerator, 楽観ロック, 自動採番, シーケンス採番, テーブル採番, sequenceName, pkColumnValue, generator, strategy, Dialect, DeferredEntityList, UniversalDao.defer, 遅延ロード, 大量データ, サーバサイドカーソル, フェッチサイズ
 
 </details>
 

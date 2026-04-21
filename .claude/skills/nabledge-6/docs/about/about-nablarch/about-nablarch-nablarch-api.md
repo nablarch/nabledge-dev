@@ -1,6 +1,11 @@
 # Nablarch API
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+@Published, 公開API判断, Nablarch APIドキュメント, アーキテクト向けAPI, 非公開API, Javadocアノテーション, NablarchTestingApi, DaoContext, BasicDaoContext
+
+</details>
 
 * Nablarch APIドキュメント <nablarch-all/NablarchApi/>
 * Nablarch Testing APIドキュメント <nablarch-testing/NablarchTestingApi/>

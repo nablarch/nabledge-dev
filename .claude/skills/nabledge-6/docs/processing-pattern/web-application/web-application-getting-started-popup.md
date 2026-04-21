@@ -1,7 +1,5 @@
 # ポップアップ画面の作成
 
-## 概要
-
 Exampleアプリケーションを元にポップアップ画面の作成方法を解説する。
 
 ポップアップ画面は、 tag-submit_popup に記載がある通り別ウィンドウ化ではなくダイアログ形式で作成する。
@@ -52,3 +50,10 @@ jQueryについては、 [ドキュメント(外部サイト、英語)](https://
 ポップアップ画面の解説は以上。
 
 Getting Started TOPページへ
+
+<details>
+<summary>keywords</summary>
+
+ポップアップ画面, ダイアログ表示, 別ウィンドウ禁止, Bootstrap, Ajax検索, jQuery, 親ウィンドウへの値引き渡し
+
+</details>

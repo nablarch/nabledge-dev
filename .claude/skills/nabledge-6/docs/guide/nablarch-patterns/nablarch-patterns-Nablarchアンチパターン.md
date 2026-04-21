@@ -1,13 +1,18 @@
 # Nablarchアンチパターン
 
-## 
-
 Nablarchが想定する使用方法を踏まえずに設計、製造すると、
 大きな手戻りや性能不良、最悪の場合は本番障害となる恐れがあります。
 
 ここでは実際に発生した誤りの事例を紹介します。
 
 ## Webアプリケーション
+
+<details>
+<summary>keywords</summary>
+
+マルチスレッドバグ, コンポーネントライフサイクル, システムリポジトリ, singleton, DIコンテナ, prototype, request, スレッドセーフ
+
+</details>
 
 ## コンポーネントライフサイクルの誤解によるマルチスレッドバグ
 
@@ -34,6 +39,13 @@ Nablarchのシステムリポジトリで管理されるコンポーネントの
 フレームワークの仕組みを理解して、誤った設計・実装を行わないようにしましょう。
 
 以下に誤った実装例を示します。
+
+<details>
+<summary>keywords</summary>
+
+N+1問題, createReader, handleメソッド, トランザクションログ, ループ処理, NoInputDataBatchAction, コミット制御, バッチアンチパターン, ExecutionContext, SqlResultSet, SqlRow
+
+</details>
 
 ## N+1問題
 
@@ -124,6 +136,13 @@ public Result handle(ExecutionContext context) {
 上記の例ですと、handle内で発行しているSQLをcreateReaderで行うようにします。
 
 ## Jakarta Batchに準拠したバッチ
+
+<details>
+<summary>keywords</summary>
+
+Batchlet, Chunk, Jakarta Batch, バッチの種類, Batchlet誤用
+
+</details>
 
 ## Batchletの誤用
 

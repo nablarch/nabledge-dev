@@ -1,6 +1,11 @@
 # コンテナ用Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+コンテナ用バッチ, DB接続無し, 初期セットアップ, プロジェクト生成, コンテナイメージ
+
+</details>
 
 コンテナ用Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップでは以下を行う。
 
@@ -9,8 +14,7 @@
 * コンテナイメージの作成
 * コンテナイメージの実行
 
-
-# 生成するプロジェクトの概要
+## 生成するプロジェクトの概要
 
 本手順で生成するプロジェクトの概要は以下の通りである。
 
@@ -21,11 +25,23 @@
 | 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
+<details>
+<summary>keywords</summary>
 
+Mavenプロジェクト, 単一プロジェクト構成, 都度起動バッチ, ディレクトリ構成, about_maven_parent_module
 
-# ブランクプロジェクト作成
+</details>
+
+## ブランクプロジェクト作成
 
 Nablarchが提供するアーキタイプを使用してブランクプロジェクトを生成する。
+
+<details>
+<summary>keywords</summary>
+
+nablarch-container-batch-dbless-archetype, mvn archetype:generate, archetypeVersion, groupId, artifactId, ブランクプロジェクト生成, Nablarch 6u2
+
+</details>
 
 ## mvnコマンドの実行
 
@@ -63,22 +79,41 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
-
-
-# 疎通確認
+## 疎通確認
 
 疎通確認の仕組みや手順は通常のNablarchバッチ（DB接続無し）プロジェクトと同じなので、 Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップ手順 を参照。
 
 > **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-# コンテナイメージを作成する
+<details>
+<summary>keywords</summary>
+
+疎通確認, myapp-container-batch-dbless, 都度起動バッチ
+
+</details>
+
+## コンテナイメージを作成する
 
 コンテナイメージの作成手順は通常のコンテナ用Nablarchバッチプロジェクトと同じなので、 コンテナ用Nablarchバッチプロジェクトのコンテナイメージ作成手順 を参照。
 
 > **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-# コンテナイメージを実行する
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ作成, myapp-container-batch-dbless, Docker
+
+</details>
+
+## コンテナイメージを実行する
 
 コンテナイメージの実行手順は通常のコンテナ用Nablarchバッチプロジェクトと同じなので、 コンテナ用Nablarchバッチプロジェクトのコンテナイメージ実行手順 を参照。
 
 > **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。 また、コンテナ用Nablarchバッチ（DB接続無し）プロジェクトでは都度起動バッチのみ実行可能である。
+
+<details>
+<summary>keywords</summary>
+
+コンテナイメージ実行, myapp-container-batch-dbless, 都度起動バッチ, DB接続無し実行制限
+
+</details>

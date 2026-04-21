@@ -1,6 +1,11 @@
 # 汎用データフォーマット
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+DTD, XXE, allowDTD, XmlDataParser, セキュリティ, XML外部エンティティ, XXE攻撃
+
+</details>
 
 システムで扱う多様なデータ形式に対応した汎用の入出力ライブラリ機能を提供する。
 
@@ -13,7 +18,7 @@
 <details>
 <summary>keywords</summary>
 
-固定長, 可変長, JSON, XML, マルチレイアウト, 非推奨, BeanUtil, JsonNumber, JsonBoolean, DataType, data_bind, パック数値, パディング, トリミング, EBCDIC, ゾーン10進数, messaging
+固定長, 可変長, JSON, XML, マルチレイアウト, 非推奨, BeanUtil, JsonNumber, JsonBoolean, DataType, data_bind, パック数値, パディング, トリミング, EBCDIC, ゾーン10進数, messaging, FixedLengthConvertorFactory, VariableLengthConvertorFactory, JsonDataConvertorFactory, XmlDataConvertorFactory, FixedLengthConvertorSetting, VariableLengthConvertorSetting, JsonDataConvertorSetting, XmlDataConvertorSetting, nablarch.core.dataformat.convertor.datatype.DataType, nablarch.core.dataformat.convertor.FixedLengthConvertorFactory, フィールドタイプ追加, カスタムデータタイプ, ファクトリクラス拡張, convertorTable, fixedLengthConvertorFactory, variableLengthConvertorFactory, jsonDataConvertorFactory, xmlDataConvertorFactory, data_format-field_type_add, JSON階層構造, XML階層構造, Map, ドット記法, 配列添字, ネスト構造, 階層構造データ読み書き
 
 </details>
 
@@ -69,7 +74,7 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-core-dataformat, nablarch-fw-web-extension, モジュール依存関係
+nablarch-core-dataformat, nablarch-fw-web-extension, モジュール依存関係, XmlDataParser, XmlDataBuilder, nablarch.core.dataformat.XmlDataParser, nablarch.core.dataformat.XmlDataBuilder, コンテンツ名変更, XML属性要素コンテンツ名, contentName, data_format-xml_content_name_change, allowDTD, DTD, XXE, XML外部実体参照, DTD無効化
 
 </details>
 
@@ -113,7 +118,7 @@ type    = "02"
 <details>
 <summary>keywords</summary>
 
-フォーマット定義ファイル, data_format/format_definition, マルチレイアウト, レコード識別フィールド, Classifier
+フォーマット定義ファイル, data_format/format_definition, マルチレイアウト, レコード識別フィールド, Classifier, XML名前空間, xmlns, 名前空間定義, フォーマット定義ファイル名前空間
 
 </details>
 
@@ -151,7 +156,7 @@ FileRecordWriterHolder.write(user, "user.csv");
 <details>
 <summary>keywords</summary>
 
-FileRecordWriterHolder, DataFormatConfig, flushEachRecordInWriting, file_record_writer_dispose_handler, file_path_management, ファイル出力, バッファサイズ
+FileRecordWriterHolder, DataFormatConfig, flushEachRecordInWriting, file_record_writer_dispose_handler, file_path_management, ファイル出力, バッファサイズ, body, XML属性, コンテンツフィールド, 属性とコンテンツ共存
 
 </details>
 
@@ -200,7 +205,7 @@ public HttpResponse download(HttpRequest request, ExecutionContext context) {
 <details>
 <summary>keywords</summary>
 
-DataRecordResponse, Content-Type, Content-Disposition, ファイルダウンロード, file_path_management
+DataRecordResponse, Content-Type, Content-Disposition, ファイルダウンロード, file_path_management, CharacterReplacementManager, CharacterReplacementConfig, typeName, filePath, encoding, 寄せ字, 文字置き換え, replacement
 
 </details>
 
@@ -311,7 +316,7 @@ public HttpResponse upload(HttpRequest req, ExecutionContext ctx) {
 <details>
 <summary>keywords</summary>
 
-UploadHelper, DataRecordFormatter, FormatterFactory, FilePathSetting, HttpRequest, アップロード, nablarch_validation, bean_validation, BufferedInputStream, PartInfo, DataRecord, BulkValidator, BulkValidationResult, BeanUtil, 階層構造, ドット区切り, parent.child, 配列, user[0].name, Map, ネスト, 任意項目, data_format-structured_data, DTD, XXE, allowDTD, XmlDataParser, セキュリティ, XML外部エンティティ, XXE攻撃, 名前空間, namespace, xmlns, ?@xmlns, XmlDataParser, XmlDataBuilder, プレフィックス, body, 属性, コンテンツ, XML要素, data_format-xml_content_name_change, 予約フィールド名, 寄せ字, 文字置き換え, CharacterReplacementManager, characterReplacementManager, CharacterReplacementConfig, replacement, typeName, filePath, encoding, data_format-replacement, 拡張, DataType, FixedLengthConvertorFactory, VariableLengthConvertorFactory, JsonDataConvertorFactory, XmlDataConvertorFactory, FixedLengthConvertorSetting, convertorTable, data_format-field_type_add, contentName, XmlDataParser, XmlDataBuilder, body, コンテンツ名変更, data_format-xml_content_name_change, DataType, FixedLengthConvertorFactory, VariableLengthConvertorFactory, JsonDataConvertorFactory, XmlDataConvertorFactory, FixedLengthConvertorSetting, VariableLengthConvertorSetting, JsonDataConvertorSetting, XmlDataConvertorSetting, nablarch.core.dataformat.convertor.datatype.DataType, nablarch.core.dataformat.convertor.FixedLengthConvertorFactory, フィールドタイプ追加, カスタムデータタイプ, ファクトリクラス拡張, convertorTable, fixedLengthConvertorFactory, variableLengthConvertorFactory, jsonDataConvertorFactory, xmlDataConvertorFactory, data_format-field_type_add, XmlDataParser, XmlDataBuilder, nablarch.core.dataformat.XmlDataParser, nablarch.core.dataformat.XmlDataBuilder, コンテンツ名変更, XML属性要素コンテンツ名, contentName, data_format-xml_content_name_change, JSON階層構造, XML階層構造, Map, ドット記法, 配列添字, ネスト構造, 階層構造データ読み書き, XmlDataParser, allowDTD, DTD, XXE, XML外部実体参照, DTD無効化, XML名前空間, xmlns, 名前空間定義, フォーマット定義ファイル名前空間, body, XML属性, コンテンツフィールド, 属性とコンテンツ共存, CharacterReplacementManager, CharacterReplacementConfig, typeName, filePath, encoding, 寄せ字, 文字置き換え, replacement, format, 日付フォーマット, 数値フォーマット, 出力フォーマット
+UploadHelper, DataRecordFormatter, FormatterFactory, FilePathSetting, HttpRequest, アップロード, nablarch_validation, bean_validation, BufferedInputStream, PartInfo, DataRecord, BulkValidator, BulkValidationResult, BeanUtil, format, 日付フォーマット, 数値フォーマット, 出力フォーマット
 
 </details>
 
@@ -398,9 +403,7 @@ JSON
   ]
 }
 ```
-
-## XMLでDTDを使う
-
+#### XMLでDTDを使う
 > **Important:** 本機能でXMLを入力する場合、DTDをデフォルトで使用できない。DTDを使用したXMLを読み込もうとした場合、例外が発生する。 これは [XML外部実体参照(XXE)](https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing) を防止するための措置である。
 読み込み対象となるXMLが信頼できる場合は、 `XmlDataParser` の `allowDTD` プロパティを使用してDTDの使用を許可できる。
 使用方法は下記の通り。
@@ -423,6 +426,13 @@ JSON
     </component>
   </component-configuration>
 ```
+
+<details>
+<summary>keywords</summary>
+
+階層構造, ドット区切り, parent.child, 配列, user[0].name, Map, ネスト, 任意項目, data_format-structured_data
+
+</details>
 
 ## XMLで名前空間を使う
 

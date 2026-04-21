@@ -1,6 +1,11 @@
 # Jakarta Batchに準拠したバッチアプリケーションとNablarchバッチアプリケーションとの機能比較
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+DuplicateJobRunningCheckListener, ItemReader, ResumeDataReader, Jakarta Batchとの機能比較, バッチアプリケーション比較, リトライ処理, 障害復旧・再実行, 並列実行, 常駐バッチ, コミット制御, 例外ハンドリング, 同時実行防止, プロセス停止
+
+</details>
 
 この章では、以下の機能の比較を示す。
 

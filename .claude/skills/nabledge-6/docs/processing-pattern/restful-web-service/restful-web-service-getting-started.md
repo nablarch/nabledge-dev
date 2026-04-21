@@ -1,6 +1,11 @@
 # Getting Started
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+RESTfulウェブサービス開発, Exampleアプリケーション, blank_project, 本格的なアプリケーション作成, サンプルアプリケーション, 前提条件, 動作環境構築, Exampleアプリケーション環境構築, 事前準備, example_application
+
+</details>
 
 本章を通読することで、Nablarchアプリケーションフレームワークを使用したRESTfulウェブサービスの開発のイメージを掴むことができる。
 

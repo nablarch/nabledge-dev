@@ -1,7 +1,5 @@
 # ファイルをDBに登録するバッチの作成
 
-## 概要
-
 Exampleアプリケーションを元に、ファイルをDBに登録するバッチを解説する。
 
 作成する機能の概要
@@ -41,6 +39,13 @@ SELECT * FROM ZIP_CODE_DATA;
 責務配置については Nablarchバッチの責務配置 を参照。
 
 住所ファイル登録バッチのハンドラ構成については `import-zip-code-file.xml` を参照。
+
+<details>
+<summary>keywords</summary>
+
+ZIP_CODE_DATA, TRUNCATE, ImportZipCodeFileAction, ImportZipCodeFile, import-zip-code-file.xml, mvn exec:java, nablarch.fw.launcher.Main, requestPath, diConfig, userId, バッチ実行, テーブル削除, 登録確認
+
+</details>
 
 ## 入力データソースからデータを読み込む
 
@@ -188,6 +193,13 @@ public class ZipCodeFileReader implements DataReader<ZipCodeForm> {
 
 > **Tip:** extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。
 
+<details>
+<summary>keywords</summary>
+
+ZipCodeForm, ZipCodeFileReader, ObjectMapperIterator, ObjectMapperFactory, FilePathSetting, DataReader, ObjectMapper, @Csv, @CsvFormat, @LineNumber, @Domain, @Required, CsvType, QuoteMode, CSVファイル読み込み, データリーダ, csv-input, importZipCode, バリデーション, 行番号
+
+</details>
+
 ## 業務ロジックを実行する
 
 業務ロジックを実行する部分について解説する。
@@ -242,3 +254,10 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 * `createReader` メソッドでは使用するデータリーダクラスのインスタンスを返却する。
 
 > **Tip:** Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。 インターセプタの実装に関しては、Exampleアプリケーションの `ValidateData.java` の実装を参照。
+
+<details>
+<summary>keywords</summary>
+
+ImportZipCodeFileAction, BatchAction, ZipCodeData, BeanUtil, UniversalDao, ZipCodeFileReader, @ValidateData, handle, createReader, Result, Result.Success, 業務アクション, DBへのデータ登録, インターセプタ, バリデーション共通化
+
+</details>

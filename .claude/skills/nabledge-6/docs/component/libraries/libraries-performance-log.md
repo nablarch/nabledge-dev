@@ -1,7 +1,5 @@
 # パフォーマンスログの出力
 
-## 概要
-
 パフォーマンスログは、任意の処理範囲に対する実行時間とメモリ使用量を出力し、
 開発時のパフォーマンスチューニングに使用する。
 アプリケーションでは、ソースコード上でフレームワークが提供するAPIを呼び出し、計測対象の処理範囲を指定して出力する。
@@ -66,7 +64,7 @@ performanceLogFormatter.format=\n\tpoint = [$point$] result = [$result$]\
 <details>
 <summary>keywords</summary>
 
-PerformanceLogUtil, startメソッド, endメソッド, パフォーマンス計測, 実行時間計測, メモリ使用量, 再帰呼び出し制限, 実行時ID, ポイント名, オプション情報, Object..., varargs, PerformanceLogFormatter, performanceLogFormatter.className, performanceLogFormatter.format, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints, app-log.properties設定, フォーマット設定, プレースホルダ, PerformanceJsonLogFormatter, JsonLogFormatter, performanceLogFormatter.targets, performanceLogFormatter.structuredMessagePrefix, JSON構造化ログ, performanceLogFormatter.className, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints
+PerformanceLogUtil, startメソッド, endメソッド, パフォーマンス計測, 実行時間計測, メモリ使用量, 再帰呼び出し制限, 実行時ID, ポイント名, オプション情報, Object..., varargs
 
 </details>
 
@@ -154,6 +152,13 @@ performanceLogFormatter.datePattern=yyyy-MM-dd HH:mm:ss.SSS
 performanceLogFormatter.format=point:$point$ result:$result$ exe_time:$executionTime$ms
 ```
 
+<details>
+<summary>keywords</summary>
+
+PerformanceLogFormatter, performanceLogFormatter.className, performanceLogFormatter.format, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints, app-log.properties設定, フォーマット設定, プレースホルダ
+
+</details>
+
 ## JSON形式の構造化ログとして出力する
 
 JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、
@@ -212,3 +217,10 @@ performanceLogFormatter.targetPoints=UserSearchAction#doUSERS00101
 performanceLogFormatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 performanceLogFormatter.targets=point,result,executionTime
 ```
+
+<details>
+<summary>keywords</summary>
+
+PerformanceJsonLogFormatter, JsonLogFormatter, performanceLogFormatter.targets, performanceLogFormatter.structuredMessagePrefix, JSON構造化ログ, performanceLogFormatter.className, performanceLogFormatter.datePattern, performanceLogFormatter.targetPoints
+
+</details>

@@ -1,6 +1,11 @@
 # アプリケーションの責務配置
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+DataReader, Result, Result.Success, アクションクラス, フォームクラス, エンティティクラス, バリデーション, 責務配置, バッチ設計
+
+</details>
 
 Nablarchバッチアプリケーションを作成する際に実装すべきクラスとその責務について説明する。
 

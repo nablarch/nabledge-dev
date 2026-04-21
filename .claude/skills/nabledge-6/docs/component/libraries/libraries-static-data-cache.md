@@ -1,7 +1,5 @@
 # 静的データのキャッシュ
 
-## 概要
-
 データベースやファイルなどに格納した静的データへのアクセスを高速化するためのキャッシュ機能を提供する。
 
 この機能は単体では動作しない。
@@ -49,7 +47,7 @@ nablarch-core, モジュール依存関係, com.nablarch.framework
 <details>
 <summary>keywords</summary>
 
-StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue, BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング
+StaticDataLoader, BasicStaticDataCache, StaticDataCache, BasicApplicationInitializer, loader, データロード, キャッシュ初期化, loadAll, getValue
 
 </details>
 
@@ -159,3 +157,10 @@ public class SampleService {
   <property name="loadOnStartup" value="true" />
 </component>
 ```
+
+<details>
+<summary>keywords</summary>
+
+BasicStaticDataCache, loadOnStartup, 一括ロード, オンデマンドロード, キャッシュタイミング
+
+</details>

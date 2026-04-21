@@ -1,7 +1,5 @@
 # 取引単体テストの実施方法（バッチ）
 
-## 概要
-
 バッチ処理の取引単体テストは、自動テストフレームワークを使用してテストを行う。
 リクエスト単体テストを連続実行することにより、取引単位でのテストを行う。
 
@@ -21,7 +19,8 @@ import nablarch.test.core.batch.BatchRequestTestSupport;
 
 public class B21AC01Test extends BatchRequestTestSupport {
 ```
-# テストケース分割方針
+
+## テストケース分割方針
 
 基本的には、\ **1シートにつき1テストケース**\ とする。
 以下、例外事項を示す。
@@ -38,8 +37,7 @@ public class B21AC01Test extends BatchRequestTestSupport {
 非常に簡単なテストケースで、テストデータ量が少ない場合、
 1シートに全テストケースを含めてもよい。
 
-
-# 基本的な記述方法
+## 基本的な記述方法
 
 基本的には、1テストケースを1シートにまとめて記述する。\
 1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。
@@ -64,9 +62,7 @@ LIST_MAP=testShots
 | 2 | ユーザ削除 | 100 | default |  | default |  | userDeleteBatch |
 | 3 | ファイル出力 | 100 | default |  | fileInputBatch | default | fileOutputBatch |
 
-
-# 1テストケースを複数シートを分割する場合
-
+## 1テストケースを複数シートを分割する場合
 
 例えば、前項(\ 基本的な記述方法\ )で例示したテストケースは、以下のように分割して記述可能である。
 
@@ -123,8 +119,7 @@ LIST_MAP=testShots
 |---|---|---|---|---|---|
 | 1 | ファイル出力 | 100 | default | default | fileOutputBatch |
 
-
-# 1シートに複数ケースを含める場合
+## 1シートに複数ケースを含める場合
 
 非常に簡単なテストケースの場合は、複数にまとめてもよい。
 

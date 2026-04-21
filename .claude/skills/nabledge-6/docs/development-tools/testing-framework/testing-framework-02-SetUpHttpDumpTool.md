@@ -1,11 +1,15 @@
 # リクエスト単体データ作成ツール インストールガイド
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+httpDump.bat, httpDump.sh, Windows Linux OS別選択, バッチファイル指定, HTMLファイル起動, Eclipse パッケージエクスプローラ, httpDumpで開く, 右クリック起動
+
+</details>
 
 index\ のインストール方法について説明する。
 
-
-# 前提事項
+## 前提事項
 
 本ツールを使用する際、以下の前提事項を満たす必要がある。
 
@@ -18,7 +22,7 @@ index\ のインストール方法について説明する。
 * htmlファイルがブラウザに関連付けされていること
 * ブラウザのプロキシ設定で、localhostが除外されていること
 
-# 提供方法
+## 提供方法
 
 本ツールは以下のjarにて提供する。
 
@@ -52,8 +56,7 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 * [httpDump.bat](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/httpDump.bat)
 
-
-# Eclipseとの連携
+## Eclipseとの連携
 
 以下の設定をすることでEclipseから本ツールを起動できる。
 
@@ -68,7 +71,7 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 <details>
 <summary>keywords</summary>
 
-HttpDumpツール前提条件, Java Maven インストール要件, プロキシ設定 localhost除外, Mavenプロジェクト要件, ブラウザ関連付け, nablarch-testing, nablarch-testing-jetty12, Maven依存関係, mvn dependency:copy-dependencies, httpDump.bat, JAR取得, Eclipse設定, ファイルの関連付け, 外部エディタ登録, *.html, Eclipse Preference
+HttpDumpツール前提条件, Java Maven インストール要件, プロキシ設定 localhost除外, Mavenプロジェクト要件, ブラウザ関連付け
 
 </details>
 
@@ -81,7 +84,7 @@ HttpDumpツール前提条件, Java Maven インストール要件, プロキシ
 <details>
 <summary>keywords</summary>
 
-外部プログラム設定, Eclipse エディタ選択, External program, Browse
+nablarch-testing, nablarch-testing-jetty12, Maven依存関係, mvn dependency:copy-dependencies, httpDump.bat, JAR取得
 
 </details>
 
@@ -95,7 +98,7 @@ Linuxの場合はシェルスクリプト(httpDump.sh)を選択する。
 <details>
 <summary>keywords</summary>
 
-httpDump.bat, httpDump.sh, Windows Linux OS別選択, バッチファイル指定
+Eclipse設定, ファイルの関連付け, 外部エディタ登録, *.html, Eclipse Preference
 
 </details>
 
@@ -112,6 +115,6 @@ httpDumpで開くことでツールを起動できる。
 <details>
 <summary>keywords</summary>
 
-HTMLファイル起動, Eclipse パッケージエクスプローラ, httpDumpで開く, 右クリック起動
+外部プログラム設定, Eclipse エディタ選択, External program, Browse
 
 </details>

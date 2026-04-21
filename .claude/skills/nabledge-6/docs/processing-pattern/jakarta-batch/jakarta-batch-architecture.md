@@ -1,6 +1,11 @@
 # アーキテクチャ概要
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+最小リスナー構成, JobProgressLogListener, StepProgressLogListener, DbConnectionManagementListener, StepTransactionManagementListener, ItemWriteTransactionManagementListener, DB接続管理, トランザクション制御, jobListeners, stepListeners, itemWriteListeners, リスナー定義, ジョブ定義XML, コンポーネント設定, リスナーリスト上書き, nablarchJobListenerExecutor, nablarchStepListenerExecutor, nablarchItemWriteListenerExecutor, DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHandler
+
+</details>
 
 ## バッチアプリケーションの構成
 
@@ -50,7 +55,7 @@ Batchlet, Chunk, バッチ種別選択, タスク指向, ItemReader, ItemProcess
 <details>
 <summary>keywords</summary>
 
-NablarchStepListenerExecutor, nablarch.fw.batch.ee.listener.step.NablarchStepListenerExecutor, Batchlet処理フロー, Batchlet, NablarchStepListenerExecutor, NablarchItemWriteListenerExecutor, nablarch.fw.batch.ee.listener.step.NablarchStepListenerExecutor, nablarch.fw.batch.ee.listener.chunk.NablarchItemWriteListenerExecutor, Chunk処理フロー, ItemReader, ItemProcessor, ItemWriter, Form, Entity, 例外ハンドリング, batch status, exit status, Jakarta Batch例外処理, log_adaptor, jsr352-failure_monitoring, ログ設定, ロギングフレームワーク
+NablarchStepListenerExecutor, nablarch.fw.batch.ee.listener.step.NablarchStepListenerExecutor, Batchlet処理フロー, Batchlet
 
 </details>
 
@@ -154,7 +159,7 @@ ItemWriterレベルのリスナー
 <details>
 <summary>keywords</summary>
 
-JobProgressLogListener, DuplicateJobRunningCheckListener, StepProgressLogListener, DbConnectionManagementListener, StepTransactionManagementListener, ChunkProgressLogListener, ItemWriteTransactionManagementListener, ジョブレベルリスナー, ステップレベルリスナー, ItemWriterレベルリスナー, リスナー実行順保証, 多重起動防止
+NablarchStepListenerExecutor, NablarchItemWriteListenerExecutor, nablarch.fw.batch.ee.listener.step.NablarchStepListenerExecutor, nablarch.fw.batch.ee.listener.chunk.NablarchItemWriteListenerExecutor, Chunk処理フロー, ItemReader, ItemProcessor, ItemWriter, Form, Entity
 
 </details>
 
@@ -178,7 +183,7 @@ JobProgressLogListener, DuplicateJobRunningCheckListener, StepProgressLogListene
 <details>
 <summary>keywords</summary>
 
-最小リスナー構成, JobProgressLogListener, StepProgressLogListener, DbConnectionManagementListener, StepTransactionManagementListener, ItemWriteTransactionManagementListener, DB接続管理, トランザクション制御
+例外ハンドリング, batch status, exit status, Jakarta Batch例外処理, log_adaptor, jsr352-failure_monitoring, ログ設定, ロギングフレームワーク
 
 </details>
 
@@ -280,6 +285,6 @@ JobProgressLogListener, DuplicateJobRunningCheckListener, StepProgressLogListene
 <details>
 <summary>keywords</summary>
 
-jobListeners, stepListeners, itemWriteListeners, リスナー定義, ジョブ定義XML, コンポーネント設定, リスナーリスト上書き, nablarchJobListenerExecutor, nablarchStepListenerExecutor, nablarchItemWriteListenerExecutor, DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHandler
+JobProgressLogListener, DuplicateJobRunningCheckListener, StepProgressLogListener, DbConnectionManagementListener, StepTransactionManagementListener, ChunkProgressLogListener, ItemWriteTransactionManagementListener, ジョブレベルリスナー, ステップレベルリスナー, ItemWriterレベルリスナー, リスナー実行順保証, 多重起動防止
 
 </details>

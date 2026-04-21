@@ -1,8 +1,13 @@
 # マスタデータ復旧機能
 
-## 概要
+<details>
+<summary>keywords</summary>
 
-# 概要
+バックアップスキーマ作成, マスタデータ復旧, データ投入, 復旧対象テーブル, 外部キー, slow test, テーブル削除挿入順序, 親子関係, nablarch.suppress-table-sort, MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tablesTobeWatched, testEventListeners, 監視対象テーブル, コンポーネント設定, MasterDataRestorer$SqlLogWatchingFormatter, nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter, NopLogWriter, nablarch.test.core.log.NopLogWriter, BasicLoggerFactory, nablarch.core.log.basic.BasicLoggerFactory, StandardOutputLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, SQLログ, app-log.properties, log.properties
+
+</details>
+
+## 概要
 
 通常の場合、テスト行う際にマスタデータを書き換えることはない。
 しかし、マスタメンテナンス機能等のテストでは、マスタデータを変更しないと
@@ -17,15 +22,13 @@
 自動テスト中にマスタデータが更新された場合、そのテストメソッドが終了した時点で、
 マスタデータを元の状態に復旧する機能を提供する。
 
-
-# 特徴
+## 特徴
 
 * テストの実行順序に依存せずに、常に正しい状態のマスタデータでテストできる。
 * マスタデータ復旧は自動で行われるので、各テストクラスで復旧処理、復旧用データを用意する必要ない。
 * バックアップ用スキーマからテーブル毎に一括で復旧するので、1件ずつINSERTする場合に比べて高速に復旧できる。
 
-
-# 必要となるスキーマ
+## 必要となるスキーマ
 
 本機能を使用するにあたり、以下の２つのスキーマが必要となる。
 
@@ -33,7 +36,8 @@
 |---|---|
 | 自動テスト用スキーマ | 自動テストに使用するスキーマ。 |
 | バックアップ用スキーマ | 復旧に使用するためのマスタデータを保存しておくためのスキーマ。 |
-# 動作イメージ
+
+## 動作イメージ
 
 自動テストフレームワークはコンポーネント設定ファイルより、監視対象テーブル名一覧を取得する。
 テスト実行中、自動テストフレームワークはSQLログを監視することにより、\
@@ -47,7 +51,7 @@
 
 ![](../../../knowledge/assets/testing-framework-04-MasterDataRestore/copy_from_backup.png)
 
-# 環境構築
+## 環境構築
 
 以下の環境構築を実施し、自動テストフレームワークのマスタデータ復旧機能を有効にする。
 
@@ -61,7 +65,7 @@
 <details>
 <summary>keywords</summary>
 
-マスタデータ復旧, マスタデータ変更, テスト失敗防止, テストメソッド終了, 異常系テスト, テスト実行順序, 自動復旧, 高速復旧, バックアップスキーマ, 一括復旧, 自動テスト用スキーマ, バックアップ用スキーマ, 必要スキーマ, 2つのスキーマ, 監視対象テーブル, SQLログ監視, 全件削除, 全件挿入, 復旧メカニズム, コンポーネント設定ファイル, バックアップスキーマ作成, マスタデータ復旧, データ投入, 復旧対象テーブル
+マスタデータ復旧, マスタデータ変更, テスト失敗防止, テストメソッド終了, 異常系テスト
 
 </details>
 
@@ -83,7 +87,7 @@ nablarch.suppress-table-sort=true
 <details>
 <summary>keywords</summary>
 
-外部キー, slow test, テーブル削除挿入順序, 親子関係, nablarch.suppress-table-sort
+テスト実行順序, 自動復旧, 高速復旧, バックアップスキーマ, 一括復旧
 
 </details>
 
@@ -91,14 +95,8 @@ nablarch.suppress-table-sort=true
 
 自動テスト用のコンポーネント設定ファイルに、監視対象テーブルを列挙する。
 
-<details>
-<summary>keywords</summary>
 
-MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tablesTobeWatched, testEventListeners, 監視対象テーブル, コンポーネント設定
-
-</details>
-
-## 設定項目一覧
+#### 設定項目一覧
 
 | 設定項目名 | 説明 | デフォルト値 |
 |---|---|---|
@@ -106,7 +104,7 @@ MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tabl
 | tablesTobeWatched | 監視対象とするテーブル名をリスト形式で列挙する。 | なし |
 | testEventListeners | テストイベントリスナーの一覧。 ここにマスタデータ復旧クラス(nablarch.test.core.db.MasterDataRestorer)を登録することで、 テストメソッド終了時にマスタデータが行われるようになる。 | なし |
 
-## 設定例
+#### 設定例
 
 ```xml
 <!-- マスタデータ復旧クラス -->
@@ -128,27 +126,27 @@ MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tabl
 </component>
 ```
 
+<details>
+<summary>keywords</summary>
+
+自動テスト用スキーマ, バックアップ用スキーマ, 必要スキーマ, 2つのスキーマ
+
+</details>
+
 ## ログ出力設定
 
 本機能ではSQLログを監視することにより、マスタデータへの変更を検出する。\
 よって、そのためのログ出力が必要である。
 
-<details>
-<summary>keywords</summary>
 
-MasterDataRestorer$SqlLogWatchingFormatter, nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter, NopLogWriter, nablarch.test.core.log.NopLogWriter, BasicLoggerFactory, nablarch.core.log.basic.BasicLoggerFactory, StandardOutputLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, SQLログ, app-log.properties, log.properties
-
-</details>
-
-## app-log.properties
+#### app-log.properties
 
 `sqlLogFormatter`\ のクラス名に、本機能の提供クラスを指定する。
 
 ```none
 sqlLogFormatter.className=nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter
 ```
-
-## log.properties
+#### log.properties
 
 log.propertiesにSQLログをデバッグレベル以上で出力する設定をする。
 以下の例では、SQLログを標準出力に表示させないよう専用のロガー（何もしないロガー）を
@@ -178,3 +176,10 @@ loggers.sql.nameRegex=SQL
 loggers.sql.level=DEBUG      # 【説明】DEBUGレベル以上に設定すること			 
 loggers.sql.writerNames=nop                                                              
 ```
+
+<details>
+<summary>keywords</summary>
+
+監視対象テーブル, SQLログ監視, 全件削除, 全件挿入, 復旧メカニズム, コンポーネント設定ファイル
+
+</details>

@@ -1,7 +1,5 @@
 # JSR310(Date and Time API)アダプタ
 
-## 概要
-
 JSR310(Date and Time API)で追加された日時関連を使用可能にするためのアダプタを提供する。
 このアダプタを使用することで、 BeanUtil でJSR310(Date and Time API)を使用できる。
 

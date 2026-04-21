@@ -1,7 +1,5 @@
 # E-mail Velocityアダプタ
 
-## 概要
-
 [Velocity(外部サイト)](https://velocity.apache.org/) を使用した定型メール送信処理を行うためのアダプタを提供する。
 
 ## モジュール一覧

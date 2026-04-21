@@ -1,12 +1,84 @@
 {
   "id": "testing-framework-fileupload",
   "title": "リクエスト単体テストの実施方法(ファイルアップロード)",
+  "content": "ファイルアップロードのテストは、ウェブアプリケーションのテストの一種である。\nしたがって、ファイルアップロードのテストを実施するには、ウェブアプリケーションの\\ index\\ が前提となる。\n\nファイルアップロードのテストをする場合、HTTPリクエストパラメータにアップロードファイルを指定する必要がある。\\\n本項では、HTTPリクエストパラメータにアップロードファイルを指定する方法を解説する。\\",
+  "hints": [
+    "${attach:ファイルパス}",
+    "ファイルアップロード",
+    "HTTPリクエストパラメータ",
+    "アップロードファイル指定",
+    "プロジェクトルート相対パス",
+    "ウェブアプリケーションのテスト前提",
+    "バイナリファイルアップロード",
+    "画像ファイル",
+    "requestParams",
+    "LIST_MAP",
+    "${attach:}指定例",
+    "固定長ファイル",
+    "CSVファイル",
+    "SETUP_FIXED",
+    "テストデータシート",
+    "text-encoding",
+    "record-separator"
+  ],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
-      "title": "概要",
-      "content": "ファイルアップロードのテストは、ウェブアプリケーションのテストの一種である。\nしたがって、ファイルアップロードのテストを実施するには、ウェブアプリケーションの\\ index\\ が前提となる。\n\nファイルアップロードのテストをする場合、HTTPリクエストパラメータにアップロードファイルを指定する必要がある。\\\n本項では、HTTPリクエストパラメータにアップロードファイルを指定する方法を解説する。\\\n\n\n\n# アップロードファイルの記述方法\n\nHTTPリクエストパラメータの値に、以下の記述をすることで、\nHTTPリクエストパラメータにアップロードファイルを指定できる。\n\n```text\n${attach:ファイルパス}\n```\n> **Tip:** ファイルパスは、\\ **テスト実行時のカレントディレクトリからの相対パス**\\ 、すなわち、\\ プロジェクトルートディレクトリからの相対パスで記述する。\n# バイナリファイルの場合\n\n画像ファイル等、バイナリファイルをアップロードする場合は、事前にファイルを配置しておき、\nそのファイルへのパスを指定する。\n\n\n以下の例では、uploadfileというキーで、プロジェクト配下のtest/resources/images\\\nディレクトリにあるpicture.pngをアップロードする。\n\n```text\n<project_root>\n     + test\n        + resources\n           + images\n              + picture.png\n```\n------\n\n\n`LIST_MAP=requestParams`\n\n<table>\n<thead>\n<tr>\n  <th>uploadfile</th>\n  <th>comment</th>\n  <th>public</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>`${attach:test/resources/images/picture.png}`</td>\n  <td>アップロードします。</td>\n  <td>`false`</td>\n</tr>\n</tbody>\n</table>\n\n\n------\n\n# 固定長ファイル、CSVファイルの場合\n\n\\ 固定長ファイル\\や\nCSVファイル\\ をアップロードする場合、\\\nそのファイル内容をテストデータシートに記載する。\\\nテスト実行時に、自動テストフレームワークがこのデータを元にファイルを作成する。\n\n\n以下の例では、workディレクトリ配下にmember_list.csvファイルを作成し、\nそのファイルをアップロード対象として指定している。\n\n------\n\n`LIST_MAP=requestParams`\n\n<table>\n<thead>\n<tr>\n  <th>uploadfile</th>\n  <th>comment</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>`${attach:work/member_list.csv}`</td>\n  <td>10月度新規会員を登録</td>\n</tr>\n</tbody>\n</table>\n\n\n`SETUP_FIXED=work/member_list.csv`\n\n\n\n// ディレクティブ\n\n<table>\n<tbody>\n<tr>\n  <td>text-encoding</td>\n  <td>Windows-31J</td>\n  <td></td>\n</tr>\n<tr>\n  <td>record-separator</td>\n  <td>CRLF</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n// データ\n\n<table>\n<thead>\n<tr>\n  <th>name</th>\n  <th>age</th>\n  <th>address</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>山田太郎</td>\n  <td>30</td>\n  <td>東京都港区芝浦1-1</td>\n</tr>\n<tr>\n  <td>田中次郎</td>\n  <td>20</td>\n  <td>大阪府門真市東田町2-2</td>\n</tr>\n</tbody>\n</table>\n\n------\n\n> **Tip:** 固定長ファイルやCSVファイルをアップロードする場合でも、 バイナリファイルと同様に、事前にファイルを用意しておくことも可能であるが、 テストデータの保守容易性を考慮するとテストデータシートに記載しておくべきである。",
+      "title": "アップロードファイルの記述方法",
+      "content": "HTTPリクエストパラメータの値に、以下の記述をすることで、\nHTTPリクエストパラメータにアップロードファイルを指定できる。\n\n```text\n${attach:ファイルパス}\n```\n> **Tip:** ファイルパスは、\\ **テスト実行時のカレントディレクトリからの相対パス**\\ 、すなわち、\\ プロジェクトルートディレクトリからの相対パスで記述する。",
+      "hints": []
+    },
+    {
+      "id": "s2",
+      "title": "バイナリファイルの場合",
+      "content": "画像ファイル等、バイナリファイルをアップロードする場合は、事前にファイルを配置しておき、\nそのファイルへのパスを指定する。\n\n\n以下の例では、uploadfileというキーで、プロジェクト配下のtest/resources/images\\\nディレクトリにあるpicture.pngをアップロードする。\n\n```text\n<project_root>\n     + test\n        + resources\n           + images\n              + picture.png\n```\n------\n\n\n`LIST_MAP=requestParams`\n\n<table>\n<thead>\n<tr>\n  <th>uploadfile</th>\n  <th>comment</th>\n  <th>public</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>`${attach:test/resources/images/picture.png}`</td>\n  <td>アップロードします。</td>\n  <td>`false`</td>\n</tr>\n</tbody>\n</table>\n\n\n------",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "固定長ファイル、CSVファイルの場合",
+      "content": "\\ 固定長ファイル\\や\nCSVファイル\\ をアップロードする場合、\\\nそのファイル内容をテストデータシートに記載する。\\\nテスト実行時に、自動テストフレームワークがこのデータを元にファイルを作成する。\n\n\n以下の例では、workディレクトリ配下にmember_list.csvファイルを作成し、\nそのファイルをアップロード対象として指定している。\n\n------\n\n`LIST_MAP=requestParams`\n\n<table>\n<thead>\n<tr>\n  <th>uploadfile</th>\n  <th>comment</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>`${attach:work/member_list.csv}`</td>\n  <td>10月度新規会員を登録</td>\n</tr>\n</tbody>\n</table>\n\n\n`SETUP_FIXED=work/member_list.csv`\n\n\n\n// ディレクティブ\n\n<table>\n<tbody>\n<tr>\n  <td>text-encoding</td>\n  <td>Windows-31J</td>\n  <td></td>\n</tr>\n<tr>\n  <td>record-separator</td>\n  <td>CRLF</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n// データ\n\n<table>\n<thead>\n<tr>\n  <th>name</th>\n  <th>age</th>\n  <th>address</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>山田太郎</td>\n  <td>30</td>\n  <td>東京都港区芝浦1-1</td>\n</tr>\n<tr>\n  <td>田中次郎</td>\n  <td>20</td>\n  <td>大阪府門真市東田町2-2</td>\n</tr>\n</tbody>\n</table>\n\n------\n\n> **Tip:** 固定長ファイルやCSVファイルをアップロードする場合でも、 バイナリファイルと同様に、事前にファイルを用意しておくことも可能であるが、 テストデータの保守容易性を考慮するとテストデータシートに記載しておくべきである。",
+      "hints": []
+    }
+  ],
+  "index": [
+    {
+      "id": "__file__",
+      "title": "リクエスト単体テストの実施方法(ファイルアップロード)",
+      "hints": [
+        "${attach:ファイルパス}",
+        "ファイルアップロード",
+        "HTTPリクエストパラメータ",
+        "アップロードファイル指定",
+        "プロジェクトルート相対パス",
+        "ウェブアプリケーションのテスト前提",
+        "バイナリファイルアップロード",
+        "画像ファイル",
+        "requestParams",
+        "LIST_MAP",
+        "${attach:}指定例",
+        "固定長ファイル",
+        "CSVファイル",
+        "SETUP_FIXED",
+        "テストデータシート",
+        "text-encoding",
+        "record-separator"
+      ]
+    },
+    {
+      "id": "s1",
+      "title": "アップロードファイルの記述方法",
+      "hints": []
+    },
+    {
+      "id": "s2",
+      "title": "バイナリファイルの場合",
+      "hints": []
+    },
+    {
+      "id": "s3",
+      "title": "固定長ファイル、CSVファイルの場合",
       "hints": []
     }
   ]

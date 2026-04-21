@@ -1,6 +1,11 @@
 # ウェブアプリケーション Thymeleafアダプタ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+TemplateEngine, ClassLoaderTemplateResolver, HttpResponse, prefix, テンプレートファイル配置, テンプレートパス指定
+
+</details>
 
 ウェブアプリケーションで、テンプレートエンジンに [Thymeleaf(外部サイト)](https://www.thymeleaf.org)
 を使用するためのアダプタを提供する。
@@ -125,6 +130,6 @@ return new HttpResponse("template/index.html");
 <details>
 <summary>keywords</summary>
 
-ThymeleafResponseWriter, HttpResponse, pathPattern, 処理対象判定, サーブレットフォワード, .html, コンテンツパス, サフィックス省略, TemplateEngine, ClassLoaderTemplateResolver, HttpResponse, prefix, テンプレートファイル配置, テンプレートパス指定
+ThymeleafResponseWriter, HttpResponse, pathPattern, 処理対象判定, サーブレットフォワード, .html, コンテンツパス, サフィックス省略
 
 </details>

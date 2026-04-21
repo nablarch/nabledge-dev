@@ -1,6 +1,11 @@
 # Jakarta Batchに準拠したバッチアプリケーションの悲観的ロック
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+UniversalDao, DeferredEntityList, AbstractItemReader, AbstractItemWriter, ItemProcessor, 悲観的ロック, ロック時間短縮, Jakartaバッチ, 主キー取得, バッチ排他制御, @Dependent, @Named, SampleReader, SampleProcessor, SampleWriter, ProjectId, Project
+
+</details>
 
 本項では、Jakarta Batchに準拠したバッチアプリケーションで悲観的ロックを行うための実装例を示す。
 以下に示す例を参考に実装することで、ロック時間が短縮され他プロセスへの影響を抑えることができる。

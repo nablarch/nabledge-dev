@@ -1,13 +1,18 @@
 # Java21で使用する場合のセットアップ方法
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+Java21, ブランクプロジェクト, セットアップ手順, 疎通確認, 標準エンコーディング, UTF-8, file.encoding, COMPAT, MAVEN_OPTS, Java18, エンコーディング変更, maven-surefire-plugin, argLine
+
+</details>
 
 ブランクプロジェクトをJava21で使用する場合、各ブランクプロジェクトの疎通確認前に以下の手順を行う。
 
 * 標準エンコーディングの変更（標準エンコーディングをJava17以前と同じ実行環境にしたい場合）
 * Javaバージョンの変更
 
-# 標準エンコーディングの変更（標準エンコーディングをJava17以前と同じく実行環境依存にしたい場合）
+## 標準エンコーディングの変更（標準エンコーディングをJava17以前と同じく実行環境依存にしたい場合）
 
 Java18から標準エンコーディングがUTF-8に統一され、環境依存ではなくなっている。
 標準エンコーディングをJava17以前と同じく実行環境依存にしたい場合は、以下のようにJavaコマンドの実行時オプションとしてシステムプロパティを指定する。
@@ -16,7 +21,15 @@ Java18から標準エンコーディングがUTF-8に統一され、環境依存
 
 > **Tip:** Mavenから実行する場合は、環境変数 [MAVEN_OPTS (外部サイト)](https://maven.apache.org/configure.html#MAVEN_OPTS_environment_variable.3A) を使うことでJVMオプションを設定できる。ただしログに `Picked up MAVEN_OPTS: -Dfile.encoding=COMPAT` が表示される。 なお、MavenプラグインによってはJVMオプションの設定方法が異なる場合があるため注意すること。（例えばテストを実行するmaven-surefire-pluginでは、pom.xmlのプラグイン設定にある `argLine` で指定する必要がある）
 > **Important:** Java17までは `-Dfile.encoding=COMPAT` というオプションは有効ではないので、従来の実行環境にこのJVMオプションが適用されないように注意すること。
-# Javaバージョンの変更
+
+<details>
+<summary>keywords</summary>
+
+Javaバージョン, pom.xml, java.version, Java21, ブランクプロジェクト
+
+</details>
+
+## Javaバージョンの変更
 
 ブランクプロジェクトではソース及びclassファイルが準拠するJavaのバージョンとしてJava17が設定されているため
 以下のようにファイルを変更する。

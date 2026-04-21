@@ -1,7 +1,5 @@
 # Redisストア(Lettuce)アダプタ
 
-## 概要
-
 セッションストアに [Redis(外部サイト、英語)](https://redis.io/) を使用できるようにするアダプタを提供する。
 
 セッションストアにRedisを使用すると、DBストアを選択した場合と比較して次のようなメリットが得られる。
@@ -18,7 +16,7 @@
 <details>
 <summary>keywords</summary>
 
-Disposable, BasicApplicationDisposer, BasicApplicationInitializer, LettuceRedisClientProvider, disposableList, dispose, Redisコネクション廃棄, アプリケーション終了処理, JavaSerializeStateEncoder, SessionEntry, serializeEncoder, セッションキー形式, セッション情報エンコード, nablarch.session, Redis有効期限, TTL, セッション有効期限管理, 自動削除, pttl, 有効期限切れセッション, LettuceRedisClientProvider, lettuceRedisClientProvider, BasicApplicationInitializer, BasicApplicationDisposer, initializeList, disposableList, nablarch.sessionManager.defaultStoreName, redisstore-lettuce.config, redisstore-lettuce.xml, Redisストア最小構成, セッションストア設定, コンポーネント定義修正, 環境設定値
+Disposable, BasicApplicationDisposer, BasicApplicationInitializer, LettuceRedisClientProvider, disposableList, dispose, Redisコネクション廃棄, アプリケーション終了処理, lettuceRedisClientProvider, initializeList, nablarch.sessionManager.defaultStoreName, redisstore-lettuce.config, redisstore-lettuce.xml, Redisストア最小構成, セッションストア設定, コンポーネント定義修正, 環境設定値
 
 </details>
 
@@ -121,7 +119,7 @@ nablarch.sessionManager.defaultStoreName=redis
 <details>
 <summary>keywords</summary>
 
-LettuceSimpleRedisClient, LettuceMasterReplicaRedisClient, LettuceClusterRedisClient, LettuceRedisClient, lettuceSimpleRedisClient, lettuceMasterReplicaRedisClient, lettuceClusterRedisClient, nablarch.lettuce.clientType, nablarch.lettuce.simple.uri, nablarch.lettuce.masterReplica.uri, nablarch.lettuce.cluster.uriList, Redis構成設定, Sentinel, Cluster構成, Master-Replica構成, カスタムクライアントクラス, createClient, createConnection, RedisClient, RedisClusterClient, StatefulRedisConnection, StatefulRedisMasterReplicaConnection, StatefulRedisClusterConnection, ClusterTopologyRefreshOptions, ClusterClientOptions
+JavaSerializeStateEncoder, SessionEntry, serializeEncoder, セッションキー形式, セッション情報エンコード, nablarch.session, LettuceSimpleRedisClient, LettuceMasterReplicaRedisClient, LettuceClusterRedisClient, LettuceRedisClient, lettuceSimpleRedisClient, lettuceMasterReplicaRedisClient, lettuceClusterRedisClient, nablarch.lettuce.clientType, nablarch.lettuce.simple.uri, nablarch.lettuce.masterReplica.uri, nablarch.lettuce.cluster.uriList, Redis構成設定, Sentinel, Cluster構成, Master-Replica構成, カスタムクライアントクラス, createClient, createConnection, RedisClient, RedisClusterClient, StatefulRedisConnection, StatefulRedisMasterReplicaConnection, StatefulRedisClusterConnection, ClusterTopologyRefreshOptions, ClusterClientOptions
 
 </details>
 
@@ -303,7 +301,7 @@ LettuceでClusterのトポロジ更新を監視できるようにするには、
 <details>
 <summary>keywords</summary>
 
-LettuceRedisClientProvider, ComponentFactory, LettuceRedisClient, clientType, clientList, getType, createObject, クライアントクラス決定
+Redis有効期限, TTL, セッション有効期限管理, 自動削除, pttl, 有効期限切れセッション, LettuceRedisClientProvider, ComponentFactory, LettuceRedisClient, clientType, clientList, getType, createObject, クライアントクラス決定
 
 </details>
 

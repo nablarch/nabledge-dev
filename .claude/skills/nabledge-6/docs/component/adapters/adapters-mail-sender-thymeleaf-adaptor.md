@@ -1,7 +1,5 @@
 # E-mail Thymeleafアダプタ
 
-## 概要
-
 [Thymeleaf(外部サイト)](https://www.thymeleaf.org) を使用した定型メール送信処理を行うためのアダプタを提供する。
 
 ## モジュール一覧

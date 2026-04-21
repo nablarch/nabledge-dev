@@ -1,16 +1,12 @@
 {
   "id": "libraries-sql-log",
   "title": "SQLログの出力",
+  "content": "SQLログは、パフォーマンスチューニングに使用するために、SQL文の実行時間やSQL文を出力する。\nアプリケーションでは、ログ出力を設定することにより出力する。",
+  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
-      "title": "概要",
-      "content": "SQLログは、パフォーマンスチューニングに使用するために、SQL文の実行時間やSQL文を出力する。\nアプリケーションでは、ログ出力を設定することにより出力する。",
-      "hints": []
-    },
-    {
-      "id": "s2",
       "title": "SQLログの出力方針",
       "content": "SQLログは、ログのサイズが大きくなりディスクフルになったり、パフォーマンスに影響を与える可能性がある。\nそのため、SQLログは開発時の使用を想定し、DEBUGレベル以下で出力する。\n\n| ログレベル | ロガー名 | 出力内容 |\n|---|---|---|\n| DEBUG | SQL | SQL文、実行時間、件数(検索件数や更新件数など)、トランザクションの処理結果(コミット又はロールバック) |\n| TRACE | SQL | SQLパラメータ(バインド変数の値) |\n上記出力方針に対するログ出力の設定例を下記に示す。\n\nlog.propertiesの設定例\n```properties\nwriterNames=appLog\n\n# アプリケーションログの出力先\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\nwriter.appLog.encoding=UTF-8\nwriter.appLog.maxFileSize=10000\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\nwriter.appLog.formatter.format=$date$ -$logLevel$- $runtimeLoggerName$ [$executionId$] boot_proc = [$bootProcess$] proc_sys = [$processingSystem$] req_id = [$requestId$] usr_id = [$userId$] $message$$information$$stackTrace$\n\navailableLoggersNamesOrder=SQL,ROO\n\n# アプリケーションログの設定\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appLog\n\n# SQLログの設定\nloggers.SQL.nameRegex=SQL\nloggers.SQL.level=TRACE\nloggers.SQL.writerNames=appLog\n```\napp-log.propertiesの設定例\n```properties\n# SqlLogFormatter\n#sqlLogFormatter.className=\n# SqlPStatement#retrieveのフォーマット\nsqlLogFormatter.startRetrieveFormat=$methodName$\\\n                                      \\n\\tSQL = [$sql$]\\\n                                      \\n\\tstart_position = [$startPosition$] size = [$size$]\\\n                                      \\n\\tquery_timeout = [$queryTimeout$] fetch_size = [$fetchSize$]\\\n                                      \\n\\tadditional_info:\\\n                                      \\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\\n                                    \\n\\texecute_time(ms) = [$executeTime$] retrieve_time(ms) = [$retrieveTime$] count = [$count$]\n# SqlPStatement#executeのフォーマット\nsqlLogFormatter.startExecuteFormat=$methodName$\\\n                                      \\n\\tSQL = [$sql$]\\\n                                      \\n\\tadditional_info:\\\n                                      \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteFormat=$methodName$\\\n                                    \\n\\texecute_time(ms) = [$executeTime$]\n# SqlPStatement#executeQueryのフォーマット\nsqlLogFormatter.startExecuteQueryFormat=$methodName$\\\n                                          \\n\\tSQL = [$sql$]\\\n                                          \\n\\tadditional_info:\\\n                                          \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteQueryFormat=$methodName$\\\n                                        \\n\\texecute_time(ms) = [$executeTime$]\n# SqlPStatement#executeUpdateのフォーマット\nsqlLogFormatter.startExecuteUpdateFormat=$methodName$\\\n                                            \\n\\tSQL = [$sql$]\\\n                                            \\n\\tadditional_info:\\\n                                            \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteUpdateFormat=$methodName$\\\n                                        \\n\\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]\n# SqlStatement#executeBatchのフォーマット\nsqlLogFormatter.startExecuteBatchFormat=$methodName$\\\n                                          \\n\\tSQL = [$sql$]\\\n                                          \\n\\tadditional_info:\\\n                                          \\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteBatchFormat=$methodName$\\\n                                        \\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]\n```",
       "hints": [
@@ -37,23 +33,17 @@
         "sqlLogFormatter.endExecuteUpdateFormat",
         "sqlLogFormatter.startExecuteBatchFormat",
         "sqlLogFormatter.endExecuteBatchFormat",
-        "SqlLogFormatter",
-        "SqlPStatement",
-        "SqlStatement",
         "sqlLogFormatter.className",
-        "sqlLogFormatter.startRetrieveFormat",
-        "sqlLogFormatter.endRetrieveFormat",
-        "sqlLogFormatter.startExecuteFormat",
-        "sqlLogFormatter.endExecuteFormat",
-        "sqlLogFormatter.startExecuteQueryFormat",
-        "sqlLogFormatter.endExecuteQueryFormat",
-        "sqlLogFormatter.startExecuteUpdateFormat",
-        "sqlLogFormatter.endExecuteUpdateFormat",
-        "sqlLogFormatter.startExecuteBatchFormat",
-        "sqlLogFormatter.endExecuteBatchFormat",
         "SQLログ設定",
         "ログフォーマット",
-        "プレースホルダ",
+        "プレースホルダ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "content": "",
+      "hints": [
         "SqlJsonLogFormatter",
         "JsonLogFormatter",
         "sqlLogFormatter.structuredMessagePrefix",
@@ -74,20 +64,81 @@
     },
     {
       "id": "s3",
-      "title": "使用方法",
-      "content": "",
-      "hints": []
-    },
-    {
-      "id": "s4",
       "title": "SQLログの設定",
       "content": "SQLログの設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n\\\n\nsqlLogFormatter.className\n`SqlLogFormatter` を実装したクラス。\n差し替える場合に指定する。\n\nsqlLogFormatter.startRetrieveFormat\n`SqlPStatement#retrieve`\nの開始時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:SQL文: $sql$\n:取得開始位置: $startPosition$\n:取得最大件数: $size$\n:タイムアウト時間: $queryTimeout$\n:フェッチする行数: $fetchSize$\n:付加情報: $additionalInfo$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tstart_position = [$startPosition$] size = [$size$]\n    \\n\\tquery_timeout = [$queryTimeout$] fetch_size = [$fetchSize$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```\nsqlLogFormatter.endRetrieveFormat\n`SqlPStatement#retrieve`\nの終了時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:実行時間: $executeTime$\n:データ取得時間: $retrieveTime$\n:検索件数: $count$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] retrieve_time(ms) = [$retrieveTime$] count = [$count$]\n```\nsqlLogFormatter.startExecuteFormat\n`SqlPStatement#execute`\nの開始時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:SQL文: $sql$\n:付加情報: $additionalInfo$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```\nsqlLogFormatter.endExecuteFormat\n`SqlPStatement#execute`\nの終了時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:実行時間: $executeTime$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$]\n```\nsqlLogFormatter.startExecuteQueryFormat\n`SqlPStatement#executeQuery`\nの開始時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:SQL文: $sql$\n:付加情報: $additionalInfo$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```\nsqlLogFormatter.endExecuteQueryFormat\n`SqlPStatement#executeQuery`\nの終了時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:実行時間: $executeTime$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$]\n```\nsqlLogFormatter.startExecuteUpdateFormat\n`SqlPStatement#executeUpdate`\nの開始時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:SQL文: $sql$\n:付加情報: $additionalInfo$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```\nsqlLogFormatter.endExecuteUpdateFormat\n`SqlPStatement#executeUpdate`\nの終了時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:実行時間: $executeTime$\n:更新件数: $updateCount$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] update_count = [$updateCount$]\n```\nsqlLogFormatter.startExecuteBatchFormat\n`SqlStatement#executeBatch`\nの開始時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:SQL文: $sql$\n:付加情報: $additionalInfo$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\tSQL = [$sql$]\n    \\n\\tadditional_info:\n    \\n\\t$additionalInfo$\n```\nsqlLogFormatter.endExecuteBatchFormat\n`SqlStatement#executeBatch`\nの終了時に使用するフォーマット。\n\nフォーマットに指定可能なプレースホルダ\n:メソッド名: $methodName$\n:実行時間: $executeTime$\n:バッチ件数: $batchCount$\n\nデフォルトのフォーマット\n```bash\n$methodName$\n    \\n\\texecute_time(ms) = [$executeTime$] batch_count = [$updateCount$]\n```\n記述例\n```properties\nsqlLogFormatter.className=nablarch.core.db.statement.SqlLogFormatter\nsqlLogFormatter.startRetrieveFormat=$methodName$\\n\\tSQL:$sql$\\n\\tstart:$startPosition$ size:$size$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endRetrieveFormat=$methodName$\\n\\texe:$executeTime$ms ret:$retrieveTime$ms count:$count$\nsqlLogFormatter.startExecuteFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteFormat=$methodName$\\n\\texe:$executeTime$ms\nsqlLogFormatter.startExecuteQueryFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteQueryFormat=$methodName$\\n\\texe:$executeTime$ms\nsqlLogFormatter.startExecuteUpdateFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteUpdateFormat=$methodName$\\n\\texe:$executeTime$ms count:$updateCount$\nsqlLogFormatter.startExecuteBatchFormat=$methodName$\\n\\tSQL:$sql$\\n\\tadditional_info:\\n\\t$additionalInfo$\nsqlLogFormatter.endExecuteBatchFormat=$methodName$\\n\\texe:$executeTime$ms count:$updateCount$\n```",
       "hints": []
     },
     {
-      "id": "s5",
+      "id": "s4",
       "title": "JSON形式の構造化ログとして出力する",
       "content": "JSON形式の構造化ログとして出力する 設定によりログをJSON形式で出力できるが、\n`SqlLogFormatter` では\nSQLログの各項目はmessageの値に文字列として出力される。\nSQLログの各項目もJSONの値として出力するには、\n`SqlJsonLogFormatter` を使用する。\n設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n`SqlJsonLogFormatter` を用いる際に\n指定するプロパティは以下の通り。\n\nsqlLogFormatter.className `必須`\nJSON形式でログを出力する場合、\n`SqlJsonLogFormatter` を指定する。\n\nsqlLogFormatter.startRetrieveTargets\n`SqlPStatement#retrieve`\nの開始時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:SQL文: sql\n:取得開始位置: startPosition\n:取得最大件数: size\n:タイムアウト時間: queryTimeout\n:フェッチする行数: fetchSize\n:付加情報: additionalInfo\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.endRetrieveTargets\n`SqlPStatement#retrieve`\nの終了時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:実行時間: executeTime\n:データ取得時間: retrieveTime\n:検索件数: count\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.startExecuteTargets\n`SqlPStatement#execute`\nの開始時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:SQL文: sql\n:付加情報: additionalInfo\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.endExecuteTargets\n`SqlPStatement#execute`\nの終了時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:実行時間: executeTime\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.startExecuteQueryTargets\n`SqlPStatement#executeQuery`\nの開始時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:SQL文: sql\n:付加情報: additionalInfo\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.endExecuteQueryTargets\n`SqlPStatement#executeQuery`\nの終了時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:実行時間: executeTime\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.startExecuteUpdateTargets\n`SqlPStatement#executeUpdate`\nの開始時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:SQL文: sql\n:付加情報: additionalInfo\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.endExecuteUpdateTargets\n`SqlPStatement#executeUpdate`\nの終了時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:実行時間: executeTime\n:更新件数: updateCount\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.startExecuteBatchTargets\n`SqlStatement#executeBatch`\nの開始時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:SQL文: sql\n:付加情報: additionalInfo\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.endExecuteBatchTargets\n`SqlStatement#executeBatch`\nの終了時のログ出力項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:メソッド名: methodName\n:実行時間: executeTime\n:バッチ件数: batchCount\n\nデフォルトは全ての出力項目が対象となる。\n\nsqlLogFormatter.structuredMessagePrefix\nフォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。\nメッセージの先頭にあるマーカー文字列が `JsonLogFormatter` に設定しているマーカー文字列と一致する場合、 `JsonLogFormatter` はメッセージを JSON データとして処理する。\nデフォルトは `\"$JSON$\"` となる。\n変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して `JsonLogFormatter` にも同じ値を設定すること（LogWriterのプロパティについては ログ出力の設定 を参照）。\n\n記述例\n```properties\nsqlLogFormatter.className=nablarch.core.db.statement.SqlJsonLogFormatter\nsqlLogFormatter.structuredMessagePrefix=$JSON$\nsqlLogFormatter.startRetrieveTargets=methodName,sql,startPosition,size,additionalInfo\nsqlLogFormatter.endRetrieveTargets=methodName,executeTime,retrieveTime,count\nsqlLogFormatter.startExecuteTargets=methodName,sql,additionalInfo\nsqlLogFormatter.endExecuteTargets=methodName,executeTime\nsqlLogFormatter.startExecuteQueryTargets=methodName,sql,additionalInfo\nsqlLogFormatter.endExecuteQueryTargets=methodName,executeTime\nsqlLogFormatter.startExecuteUpdateTargets=methodName,sql,additionalInfo\nsqlLogFormatter.endExecuteUpdateTargets=methodName,executeTime,updateCount\nsqlLogFormatter.startExecuteBatchTargets=methodName,sql,additionalInfo\nsqlLogFormatter.endExecuteBatchTargets=methodName,executeTime,batchCount\n```",
+      "hints": []
+    }
+  ],
+  "index": [
+    {
+      "id": "s1",
+      "title": "SQLログの出力方針",
+      "hints": [
+        "SQLログ",
+        "SQLログ出力方針",
+        "SQL文実行時間",
+        "SqlLogFormatter",
+        "log.properties",
+        "app-log.properties",
+        "DEBUGレベル",
+        "SQLパラメータ",
+        "バインド変数",
+        "FileLogWriter",
+        "BasicLogFormatter",
+        "SqlPStatement",
+        "SqlStatement",
+        "sqlLogFormatter.startRetrieveFormat",
+        "sqlLogFormatter.endRetrieveFormat",
+        "sqlLogFormatter.startExecuteFormat",
+        "sqlLogFormatter.endExecuteFormat",
+        "sqlLogFormatter.startExecuteQueryFormat",
+        "sqlLogFormatter.endExecuteQueryFormat",
+        "sqlLogFormatter.startExecuteUpdateFormat",
+        "sqlLogFormatter.endExecuteUpdateFormat",
+        "sqlLogFormatter.startExecuteBatchFormat",
+        "sqlLogFormatter.endExecuteBatchFormat",
+        "sqlLogFormatter.className",
+        "SQLログ設定",
+        "ログフォーマット",
+        "プレースホルダ"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "使用方法",
+      "hints": [
+        "SqlJsonLogFormatter",
+        "JsonLogFormatter",
+        "sqlLogFormatter.structuredMessagePrefix",
+        "sqlLogFormatter.startRetrieveTargets",
+        "sqlLogFormatter.endRetrieveTargets",
+        "sqlLogFormatter.startExecuteTargets",
+        "sqlLogFormatter.endExecuteTargets",
+        "sqlLogFormatter.startExecuteQueryTargets",
+        "sqlLogFormatter.endExecuteQueryTargets",
+        "sqlLogFormatter.startExecuteUpdateTargets",
+        "sqlLogFormatter.endExecuteUpdateTargets",
+        "sqlLogFormatter.startExecuteBatchTargets",
+        "sqlLogFormatter.endExecuteBatchTargets",
+        "JSON形式ログ",
+        "構造化ログ",
+        "SQLログJSON出力"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "SQLログの設定",
+      "hints": []
+    },
+    {
+      "id": "s4",
+      "title": "JSON形式の構造化ログとして出力する",
       "hints": []
     }
   ]

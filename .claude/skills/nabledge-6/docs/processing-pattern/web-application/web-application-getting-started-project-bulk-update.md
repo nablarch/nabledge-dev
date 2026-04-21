@@ -1,6 +1,11 @@
 # 一括更新機能の作成
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+InnerProjectForm, ProjectBulkForm, ProjectListDto, ProjectBulkAction, ProjectSearchForm, ProjectSearchDto, EntityList, UniversalDao, BeanUtil, SessionUtil, Project, @Valid, @Required, @Domain, @InjectForm, @OnError, @OnDoubleSubmission, ApplicationException, OptimisticLockException, useToken, 一括更新, ネストフォーム, セッションストア, 排他制御, Bean Validation
+
+</details>
 
 Exampleアプリケーションを元に一括更新機能を解説する。
 
@@ -313,10 +318,3 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 一括更新機能の解説は以上。
 
 Getting Started TOPページへ
-
-<details>
-<summary>keywords</summary>
-
-InnerProjectForm, ProjectBulkForm, ProjectListDto, ProjectBulkAction, ProjectSearchForm, ProjectSearchDto, EntityList, UniversalDao, BeanUtil, SessionUtil, Project, @Valid, @Required, @Domain, @InjectForm, @OnError, @OnDoubleSubmission, ApplicationException, OptimisticLockException, useToken, 一括更新, ネストフォーム, セッションストア, 排他制御, Bean Validation
-
-</details>

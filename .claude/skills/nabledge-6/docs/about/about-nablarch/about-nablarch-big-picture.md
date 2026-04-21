@@ -1,6 +1,11 @@
 # 全体像
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+実行制御基盤, ライブラリ, パイプライン型処理モデル, ハンドラ, 処理方式, web_application, web_service, batch_application, messaging, 共通アーキテクチャ
+
+</details>
 
 Nablarchアプリケーションフレームワークの全体像を以下に示す。
 

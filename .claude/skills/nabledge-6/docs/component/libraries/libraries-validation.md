@@ -1,6 +1,11 @@
 # 入力値のチェック
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+バリデーション, Bean Validation, Nablarch Validation, Jakarta Bean Validation, 入力値チェック, 推奨バリデーション
+
+</details>
 
 クライアントから送信されるユーザ入力値や、システム間連携により外部システムから送信される値が妥当かを検証するための機能を提供する。
 

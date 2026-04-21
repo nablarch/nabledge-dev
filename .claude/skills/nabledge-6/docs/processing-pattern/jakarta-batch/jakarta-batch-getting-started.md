@@ -1,6 +1,11 @@
 # Getting Started
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+Jakartaバッチアプリケーション開発, プロジェクト作成, blank_project, batchlet, chunk, Exampleアプリケーション, 前提条件, example_application, 環境構築
+
+</details>
 
 本章を通読することで、Nablarchを用いた |jsr352| に準拠したバッチアプリケーションの開発のイメージを掴むことができる。
 

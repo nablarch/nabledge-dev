@@ -1,6 +1,11 @@
 # 排他制御
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+排他制御拡張, 拡張なし
+
+</details>
 
 この機能では、データベースのデータ更新に対する排他制御を行う。
 この機能により、データベースの同一データに対して、
@@ -15,7 +20,7 @@
 <details>
 <summary>keywords</summary>
 
-排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序
+排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序, BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition
 
 </details>
 
@@ -66,11 +71,18 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係, BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition, HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors, HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck, ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理, 排他制御拡張, 拡張なし
+nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係, HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors
 
 </details>
 
 ## 使用方法
+
+<details>
+<summary>keywords</summary>
+
+HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck
+
+</details>
 
 ## 排他制御を使うために準備する
 
@@ -352,3 +364,10 @@ ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));
 ## 拡張例
 
 なし。
+
+<details>
+<summary>keywords</summary>
+
+ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理
+
+</details>

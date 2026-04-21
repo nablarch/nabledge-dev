@@ -1,7 +1,5 @@
 # リクエスト単体テストの実施方法(HTTP同期応答メッセージ送信処理)
 
-## 概要
-
 リクエスト単体テスト実施方法は、\ message_sendSyncMessage_test\ を参照すること。
 
 ただし、「送信キュー」「受信キュー」を「通信先」と読み替えること。
@@ -40,8 +38,7 @@
 
 ![](../../../knowledge/assets/testing-framework-02-requestunittest-http-send-sync/http_send_sync_ok_pattern_expected.png)
 > **Tip:** 送信対象のリクエストIDが複数存在する場合、送信順のテストは不可能である。上記の例の場合、 `ProjectSaveMessage` より先に、 `ProjectSaveMessage2` が送信された場合であってもテストは成功となる。
-
-## 障害系のテスト
+#### 障害系のテスト
 
 応答電文の表に「errorMode:」から始まる特定の値を設定することで、障害系のテストを行うことができる\ [#http_send_sync_abnormal_test]_\ 。
 

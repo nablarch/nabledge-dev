@@ -1,7 +1,5 @@
 # HTTP文字エンコード制御ハンドラ
 
-## 概要
-
 本ハンドラではリクエスト( `HttpServletRequest` )
 及びレスポンス( `HttpServletResponse` )に対して規定の文字エンコーディングを設定する。
 

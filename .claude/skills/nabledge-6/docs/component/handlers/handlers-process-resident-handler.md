@@ -1,6 +1,11 @@
 # プロセス常駐化ハンドラ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+ServiceUnavailable, RetryableException, ProcessAbnormalEnd, abnormalEndExceptions, RetryUtil, 例外ハンドリング, サービス閉塞中, リトライ可能例外, プロセス異常終了
+
+</details>
 
 後続のハンドラキューの内容を一定間隔毎に繰り返し実行するハンドラ。
 本ハンドラは、特定のデータソース上の入力データを定期的に監視してバッチ処理を行う、いわゆる常駐起動型のバッチ処理で用いられる。
@@ -22,7 +27,7 @@
 <details>
 <summary>keywords</summary>
 
-プロセス常駐化ハンドラ, ProcessResidentHandler, 常駐起動型バッチ, 定期監視, データソース監視, 一定間隔繰り返し実行, 後続ハンドラキュー, ProcessResidentHandler, nablarch.fw.handler.ProcessResidentHandler, プロセス常駐化ハンドラ, 常駐起動型バッチ
+プロセス常駐化ハンドラ, ProcessResidentHandler, 常駐起動型バッチ, 定期監視, データソース監視, 一定間隔繰り返し実行, 後続ハンドラキュー
 
 </details>
 
@@ -38,7 +43,7 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven
+ProcessResidentHandler, nablarch.fw.handler.ProcessResidentHandler, プロセス常駐化ハンドラ, 常駐起動型バッチ
 
 </details>
 
@@ -52,7 +57,7 @@ nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Mav
 <details>
 <summary>keywords</summary>
 
-ProcessResidentHandler, RetryableException, リトライハンドラ設定順序, retry_handler, 制約, ハンドラ設定順
+nablarch-fw-standalone, com.nablarch.framework, モジュール依存関係, Maven
 
 </details>
 
@@ -76,7 +81,7 @@ ProcessResidentHandler, RetryableException, リトライハンドラ設定順序
 <details>
 <summary>keywords</summary>
 
-dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デフォルト1000ms
+ProcessResidentHandler, RetryableException, リトライハンドラ設定順序, retry_handler, 制約, ハンドラ設定順
 
 </details>
 
@@ -111,7 +116,7 @@ dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デ
 <details>
 <summary>keywords</summary>
 
-normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, process_stop_handler, 常駐ハンドラ終了
+dataWatchInterval, ProcessResidentHandler, データ監視間隔, ミリ秒, デフォルト1000ms
 
 </details>
 
@@ -146,6 +151,6 @@ normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, 
 <details>
 <summary>keywords</summary>
 
-ServiceUnavailable, RetryableException, ProcessAbnormalEnd, abnormalEndExceptions, RetryUtil, 例外ハンドリング, サービス閉塞中, リトライ可能例外, プロセス異常終了
+normalEndExceptions, ProcessStop, ProcessStopHandler, プロセス正常終了, process_stop_handler, 常駐ハンドラ終了
 
 </details>

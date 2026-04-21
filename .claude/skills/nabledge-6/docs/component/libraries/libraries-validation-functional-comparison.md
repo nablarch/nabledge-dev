@@ -1,7 +1,5 @@
 # Bean ValidationとNablarch Validationの機能比較
 
-## 概要
-
 ここでは、Nablarchの提供するバリデーション機能と |jsr349| の機能比較を示す。
 
 | 機能 | Bean \|br\| Validation | Nablarch \|br\| Validation | Jakarta \|br\| Bean Validation |

@@ -2,15 +2,21 @@
 
 ## 概要
 
-# 概要
-
 リクエスト単体テスト（メッセージ受信処理)では、
 要求電文1件を受信したときの動作を擬似的に再現し、テストを行う。
 
 ## 全体像
 
 ![](../../../knowledge/assets/testing-framework-RequestUnitTest-real/real_request_test_class.png)
-# 主なクラス, リソース
+
+<details>
+<summary>keywords</summary>
+
+StandaloneTestSupportTemplate, MessagingRequestTestSupport, MessagingReceiveTestSupport, TestShot, MainForRequestTesting, DbAccessTestSupport, MQSupport, TestDataConvertor, メッセージ受信処理テスト, リクエスト単体テスト, クラス構造
+
+</details>
+
+## 主なクラス, リソース
 
 <table>
 <thead>
@@ -129,15 +135,7 @@
 </tbody>
 </table>
 
-
-# 構造
-
-<details>
-<summary>keywords</summary>
-
-StandaloneTestSupportTemplate, MessagingRequestTestSupport, MessagingReceiveTestSupport, TestShot, MainForRequestTesting, DbAccessTestSupport, MQSupport, TestDataConvertor, メッセージ受信処理テスト, リクエスト単体テスト, クラス構造
-
-</details>
+## 構造
 
 ## StandaloneTestSupportTemplate
 
@@ -310,17 +308,16 @@ Excelから読み込んだテストデータを編集するためのインタフ
 
 実装クラスは "TestDataConverter_<データ種別>" というキー名でテスト用のコンポーネント設定ファイルに登録する必要がある。
 
-
-# テストデータ
-
-メッセージング処理固有のテストデータについて説明する。
-
 <details>
 <summary>keywords</summary>
 
 TestDataConvertor, テストデータ編集, レイアウト定義, TestDataConverter_データ種別, Excelテストデータ
 
 </details>
+
+## テストデータ
+
+メッセージング処理固有のテストデータについて説明する。
 
 ## メッセージ
 

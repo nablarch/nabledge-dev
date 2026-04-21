@@ -1,6 +1,11 @@
 # 出力ファイル開放ハンドラ
 
-## 概要
+<details>
+<summary>keywords</summary>
+
+FileRecordWriterHolder, nablarch.common.io.FileRecordWriterHolder, ハンドラキュー設定, 出力ファイル自動クローズ, リソース解放
+
+</details>
 
 業務アクションやハンドラで開いた出力ファイルを閉じる(リソースの解放)ハンドラ。
 
@@ -16,7 +21,7 @@
 <details>
 <summary>keywords</summary>
 
-出力ファイル開放ハンドラとは, FileRecordWriterDisposeHandler概要, 出力ファイルを閉じる, リソース解放ハンドラ, FileRecordWriterDisposeHandler, nablarch.common.io.FileRecordWriterDisposeHandler, 出力ファイル開放ハンドラ, ハンドラクラス
+出力ファイル開放ハンドラとは, FileRecordWriterDisposeHandler概要, 出力ファイルを閉じる, リソース解放ハンドラ
 
 </details>
 
@@ -33,7 +38,7 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマット, モジュール依存関係
+FileRecordWriterDisposeHandler, nablarch.common.io.FileRecordWriterDisposeHandler, 出力ファイル開放ハンドラ, ハンドラクラス
 
 </details>
 
@@ -44,7 +49,7 @@ nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマッ
 <details>
 <summary>keywords</summary>
 
-制約なし, 出力ファイル開放ハンドラ制約
+nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマット, モジュール依存関係
 
 </details>
 
@@ -56,6 +61,6 @@ nablarch-core-dataformat, com.nablarch.framework, 汎用データフォーマッ
 <details>
 <summary>keywords</summary>
 
-FileRecordWriterHolder, nablarch.common.io.FileRecordWriterHolder, ハンドラキュー設定, 出力ファイル自動クローズ, リソース解放
+制約なし, 出力ファイル開放ハンドラ制約
 
 </details>

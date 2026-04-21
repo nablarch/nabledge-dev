@@ -1,7 +1,5 @@
 # ルーティングアダプタ
 
-## 概要
-
 [http-request-router(外部サイト)](https://github.com/kawasima/http-request-router) を使用して、
 リクエストURLと業務アクションのマッピングを行うアダプタ。
 
@@ -22,7 +20,7 @@
 <details>
 <summary>keywords</summary>
 
-nablarch-router-adaptor, com.nablarch.integration, ルーティングアダプタ, モジュール依存関係, http-request-router
+nablarch-router-adaptor, com.nablarch.integration, ルーティングアダプタ, モジュール依存関係, http-request-router, PathOptionsProviderRoutesMapping, JaxRsPathOptionsProvider, JaxRsMethodBinderFactory, JerseyJaxRsHandlerListFactory, RoutesMapping, JaxRsHttpRequest, PathOptionsFormatter, BasicApplicationInitializer, WebFrontController, @Path, @GET, @POST, @DELETE, @HEAD, @OPTIONS, @PATCH, @PUT, @Produces, applicationPath, basePackage, pathOptionsProvider, pathOptionsFormatter, methodBinderFactory, handlerQueue, initializeList, Pathアノテーション ルーティング, JAX-RS マッピング, パスパラメータ, ルーティング定義確認, アノテーション引き継ぎ, インターフェース継承
 
 </details>
 
@@ -113,7 +111,7 @@ router.controllerDetector=nablarch.integration.router.NablarchControllerDetector
 <details>
 <summary>keywords</summary>
 
-NablarchControllerDetector, nablarch.integration.router.NablarchControllerDetector, routes.properties, 自動マッピング, JBoss, WildFly, :controller, :action, router.controllerDetector, PathOptionsProviderRoutesMapping, JaxRsPathOptionsProvider, JaxRsMethodBinderFactory, JerseyJaxRsHandlerListFactory, RoutesMapping, JaxRsHttpRequest, PathOptionsFormatter, BasicApplicationInitializer, WebFrontController, @Path, @GET, @POST, @DELETE, @HEAD, @OPTIONS, @PATCH, @PUT, @Produces, applicationPath, basePackage, pathOptionsProvider, pathOptionsFormatter, methodBinderFactory, handlerQueue, initializeList, Pathアノテーション ルーティング, JAX-RS マッピング, パスパラメータ, ルーティング定義確認, アノテーション引き継ぎ, インターフェース継承
+NablarchControllerDetector, nablarch.integration.router.NablarchControllerDetector, routes.properties, 自動マッピング, JBoss, WildFly, :controller, :action, router.controllerDetector
 
 </details>
 
