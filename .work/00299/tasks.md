@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 31)
+**Updated**: 2026-04-21 (session 32)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -165,7 +165,7 @@
 - [ ] TDD: xlsx converter — `title: ""`、全内容を top-level content へ、`sections: []`
 - [ ] TDD: docs.py — 新テンプレート（top-level content 出力、sections==[] なら `##` 出さない）
 - [ ] TDD: hints.py / extract_hints.py — title ベース key 維持、`概要` 廃止対応
-- [ ] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）
+- [x] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）— committed `8d559b52`
 - [ ] TDD: verify（スキーマ変更分のみ。本格改修は別途承認プロセス）
 - [ ] hints ファイル v6.json 再生成（`概要` エントリを h1 title / h2 title ベースに再マップ）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
