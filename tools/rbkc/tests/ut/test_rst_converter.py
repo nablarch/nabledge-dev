@@ -46,6 +46,21 @@ class TestTopLevelContent:
         assert "唯一の段落" in result.content
         assert result.sections == []
 
+    def test_no_h2_content_not_duplicated(self):
+        """Regression: when there are no h2/h3, top-level content must not be duplicated."""
+        source = (
+            "孤立タイトル\n"
+            "=============\n"
+            "\n"
+            "段落A。\n"
+            "\n"
+            "段落B。\n"
+        )
+        result = convert(source, "example")
+        assert result.sections == []
+        assert result.content.count("段落A") == 1
+        assert result.content.count("段落B") == 1
+
     def test_empty_preamble_means_empty_top_level_content(self):
         source = (
             "タイトル\n"

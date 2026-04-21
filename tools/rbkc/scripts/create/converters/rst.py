@@ -218,13 +218,7 @@ def _split_sections(
         current_lines.append(line)
         i += 1
 
-    # Save remaining content before flushing
-    trailing_lines = list(current_lines)
     _flush()
-
-    # If no h2/h3 sections were found, post-title content becomes preamble
-    if not sections:
-        preamble_lines = preamble_lines + trailing_lines
 
     return title, preamble_lines, sections
 
