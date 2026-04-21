@@ -7,74 +7,107 @@
 
 ## 計測設計（ユーザー合意済み）
 
-3段階の粒度で計測し、各段階を**別コンテキスト**で独立判定する（バイアス排除）。
+### 3段階の粒度で別コンテキスト独立判定
 
-| 段階 | 実行 | 判定方法 | 判定コンテキスト |
-|------|------|----------|----------------|
-| ① キーワード抽出 | AIでキーワード抽出 | script: `expected_keywords` 一致率 | メインで完結 |
-| ② 検索まで | ① + `keyword-search.sh` | LLM judge: 検索結果が適切か | 別sub-agent |
-| ③ フル | n6 skill 丸ごと | LLM judge: 最終回答が適切か | 別sub-agent |
+| 段階 | 実行内容 | 判定方法 | 判定コンテキスト |
+|------|---------|----------|----------------|
+| Stage 1 | AIでキーワード抽出（ツール不使用） | script: `expected_keywords` との recall/precision | メイン内完結 |
+| Stage 2 | Stage 1 + `keyword-search.sh` 実行 | LLM judge: 検索結果が質問に適切か | 別sub-agent |
+| Stage 3 | n6 skill フル実行（回答生成まで） | LLM judge: 最終回答が質問に適切か | 別sub-agent |
 
-**効率化**:
-- ②実行時に①の抽出キーワードも記録 → AIコール1回で①②両方の計測データ取得
-- ①はscript判定のみなのでほぼノーコスト
-- ②③はそれぞれ isolated sub-agent で flat に judge
+### 反復ループ（Round制）
 
-**スケーリング**:
-1. 3-5件（パターン網羅: QA/CA/benchmark）で ①②③ 動作確認・判定基準調整
-2. 問題なければ 15件
-3. 問題なければ 30件で確定ベースライン
+各Stageは **Round単位** で回す。1 Round = 計測 → レビュー → 改善提案 → ユーザー合意 → 修正 → 次Round。
+
+```
+Round N
+  1. 計測実行（5件 × 対象Stage）
+  2. プロンプト・実行方法・結果を記録: .work/00307/rounds/stage{N}-round{M}.md
+  3. Prompt Engineer Expert レビュー (.claude/rules/expert-review.md 参照)
+  4. 改善提案をユーザーに提示 → 合意
+  5. 修正 → Round N+1 の計測へ
+```
+
+### パターン網羅サンプル 5件（ユーザー承認済み）
+
+| id | カテゴリ | 狙い |
+|----|---------|------|
+| review-01 | review / アーキテクチャ | 失敗ケース再現性（前回 recall 40% 粒度ズレ） |
+| review-04 | review / セキュリティ | 遅延主原因（前回 452秒） |
+| impact-01 | impact / 影響分析 | 横断トピック（Tx/DB接続） |
+| req-02 | req / 要件 | 単純な機能問い合わせ |
+| req-09 | req | expected_sections 0件（「情報なし」挙動） |
+
+### スケーリング段取り
+
+1. **5件でパターン網羅** — Stage 1 → Stage 2 → Stage 3 各Roundを回し改善
+2. **15件で中間確認** — 5件で確定したプロンプトで拡張
+3. **30件ベースライン** — 最終計測
+
+### 共通実行パラメータ
+
+- Model: `sonnet`
+- Output: `--output-format json`
+- Schema: `--json-schema '{...}'`
+- Permission: `--permission-mode bypassPermissions`
+- Tool restriction: `--tools` で stage 別に制御
+- Prompt 渡し: **stdin 経由**（`--tools` variadic が positional prompt を食う問題の回避）
+
+### 改善記録ファイル
+
+`.work/00307/rounds/stage{N}-round{M}.md` に Stage/Round ごとの記録を残す。構成：
+
+1. 計測条件（date / sample / model / options / prompt ファイル）
+2. 結果サマリ（accuracy / time / cost / 個別結果）
+3. Expert Review（Prompt Engineer）
+4. 改善提案と判断（Implement / Defer / Reject）
+5. 次Roundへの変更
 
 ## In Progress
 
-### 計測ハーネス再設計（3段階対応）
+### Stage 1 Round 1 → 2
 
-**Status**: 現状の `tools/benchmark/run.py` は「フロー全体を1エージェントで動かす」前提の scaffolding のみ。3段階対応へ再設計が必要。
-
-**Steps:**
-- [ ] シナリオJSON拡張: 各シナリオに `expected_keywords`（①用）、`expected_answer` or 判定基準（②③用）を追加
-- [ ] `run.py` を3段階対応に再設計:
-  - Stage1: AI でキーワード抽出だけ実行 → script で expected_keywords と比較
-  - Stage2: keyword-search.sh を Stage1 のキーワードで実行 → 検索結果を sub-agent で judge
-  - Stage3: n6 skill フル実行 → 最終回答を sub-agent で judge
-- [ ] judge prompt を作成（`prompts/judge_stage2.md` / `prompts/judge_stage3.md`）
-- [ ] 3件（QA/CA/benchmarkから1本ずつ）で動作確認・判定基準調整
-- [ ] time/cost/accuracy を `summary.json` に出力する構造を決定
-
-**Context**:
-- 前セッションで 1件を current flow で走らせたら 452秒 (7.5分) / $0.39 / 13 turns と異常に遅い → 段階分割で原因切り分け可能に
-- ③ が一番コストかかるので、①②で問題なければ ③ に進む運用
-
-### 計測速度の調査（必要なら）
-
-**Status**: ③ フル実行が遅すぎる場合のみ調査。①②が速ければ後回し。
+**Status**: Round 1 試行計測済み（3件, recall=80% mean, review-01 で 40%）。5件パターン網羅でやり直し、Prompt Engineer Expert Review して改善に入る。
 
 **Steps:**
-- [ ] `claude -p --output-format stream-json --verbose` で turn 毎の内訳確認
-- [ ] 初期 `cache_creation_input_tokens=32822` の正体を確認（system prompt か tool schema か）
-- [ ] `--max-turns` チューニング
+- [ ] 5件（review-01/review-04/impact-01/req-02/req-09）で Stage 1 を実行
+- [ ] 結果を `.work/00307/rounds/stage1-round1.md` に記録（条件・プロンプト・結果）
+- [ ] Prompt Engineer Expert Review を実施（`.work/00307/review-by-prompt-engineer-stage1-round1.md`）
+- [ ] 改善提案をユーザーに提示、合意を取る
+- [ ] 合意内容を `prompts/stage1_extract.md` / 判定ロジックに反映
+- [ ] Round 2 計測 → 再レビュー → 収束するまで繰り返し
 
 ## Not Started
 
-### パターン網羅3-5件で ①②③ 動作確認
+### Stage 2 Round制
 
 **Steps:**
-- [ ] QA/CA/benchmark から代表3件選定
-- [ ] 3件で ①②③ 全段階実行、accuracy/time/cost を観察
-- [ ] 判定基準の妥当性を検証、必要なら evaluator prompt 調整
+- [ ] Stage 2 実行スクリプト実装（Stage 1 キーワード → `keyword-search.sh` → 結果記録）
+- [ ] `prompts/judge_stage2.md` 作成（別sub-agent LLM judge）
+- [ ] 5件 Stage 2 Round 1 計測
+- [ ] Prompt Engineer Expert Review → 改善 → 収束するまで繰り返し
+
+### Stage 3 Round制
+
+**Steps:**
+- [ ] Stage 3 実行スクリプト実装（n6 skill フル呼び出し）
+- [ ] `prompts/judge_stage3.md` 作成（別sub-agent LLM judge）
+- [ ] 5件 Stage 3 Round 1 計測（current flow）
+- [ ] Prompt Engineer Expert Review → 改善 → 収束するまで繰り返し
+- [ ] 5件で current/new 両フロー比較
 
 ### 15件で中間確認
 
 **Steps:**
-- [ ] ①②③ 全段階実行
-- [ ] 異常値・分散を確認
+- [ ] 5件で確定したプロンプト・パラメータで 15件実行（Stage 1/2/3）
+- [ ] 分散・異常値チェック
 
 ### 30件ベースライン測定
 
 **Steps:**
-- [ ] ①②③ 全段階実行し `.results/{timestamp}/` に保存
+- [ ] 30件実行（Stage 1/2/3, current/new）
 - [ ] `summary.json` に段階別 accuracy/time(mean,median)/cost(mean,median) 出力
-- [ ] 妥当な結果なら `tools/benchmark/baseline/{timestamp}/` にコピーして git コミット（A案、ユーザー確認済み）
+- [ ] 妥当なら `tools/benchmark/baseline/{timestamp}/` にコピーして git commit
 
 ### 検索フロー改修（全5バージョン: 1.2 / 1.3 / 1.4 / 5 / 6）
 
@@ -87,39 +120,40 @@
 - `full-text-search.sh` → `keyword-search.sh` にリネーム（新エントリーポイント公開）
 
 **Steps:**
-- [ ] nabledge-6 で改修（後述の各バージョンの雛形として）
+- [ ] nabledge-6 で改修
 - [ ] 1.2 / 1.3 / 1.4 / 5 に同じ変更を適用（cross-version consistency rule）
 - [ ] 改修PR1本で全バージョン一括コミット（nabledge-skill rule）
 
 ### キーワード検索の公開（新エントリーポイント）
 
 **Steps:**
-- [ ] `plugin/GUIDE-CC.md` に「キーワード検索」の使い方を追記（全5バージョン）
+- [ ] `plugin/GUIDE-CC.md` に「キーワード検索」追記（全5バージョン）
 - [ ] `plugin/GUIDE-GHC.md` に同じく追記（全5バージョン）
-- [ ] 既存の「知識検索」「コード分析」の user-facing interface は不変なので記述の整合性チェックのみ
 
-### 改修後 ①②③ 再測定 + ベースライン比較
+### 改修後 Stage 1/2/3 再測定 + ベースライン比較
 
 **Steps:**
-- [ ] 改修後の ①②③ で30件実行
-- [ ] baseline と比較（accuracy 維持 + time/cost 削減か？）
-- [ ] 改善/同等 → 採用
-- [ ] 後退 → 原因分析してユーザーに改善案提示
+- [ ] 30件で Stage 1/2/3 改修後計測
+- [ ] baseline と比較
+- [ ] 改善/同等 → 採用、後退 → 原因分析
 
 ### 仕上げ
 
 **Steps:**
-- [ ] `tools/benchmark/README.md` 作成（使い方、結果の読み方）
-- [ ] `CHANGELOG.md` に新エントリーポイント「キーワード検索」追加（nabledge-6/nabledge-5 plugin）— developer docs は changelog 対象外なのでベンチマーク自体は含めない
-- [ ] Expert review 実施（Software Engineer / Prompt Engineer / DevOps 想定）→ `.work/00307/review-by-*.md`
+- [ ] `tools/benchmark/README.md` 作成
+- [ ] `CHANGELOG.md` に新エントリーポイント「キーワード検索」追加
+- [ ] Expert review 実施 → `.work/00307/review-by-*.md`
 - [ ] `Skill(skill: "pr", args: "create")` でPR作成
-- [ ] 未コミットの `tools/benchmark/` と `.work/00307/` を purpose 別に split commit（`.claude/rules/commit.md`）
 
 ## Done
 
-- [x] 現状検索フロー把握（`qa.md` / `_knowledge-search.md` / `_section-judgement.md` / `code-analysis.md`）
-- [x] シナリオJSONスキーマ確定（既存 `scenarios-all-30.json` をそのまま利用）
+- [x] 現状検索フロー把握
+- [x] シナリオJSONスキーマ確定
 - [x] 30件シナリオを `.work/00307/scenarios-all-30.json` と `tools/benchmark/scenarios/qa-v6.json` に配置
-- [x] `tools/benchmark/` scaffolding（`run.py` / `prompts/search_current.md` / `prompts/search_new.md` / `scenarios/qa-v6.json`）
-- [x] 1件実行検証（`review-04` with current flow）— 動くが遅い（13 turns / $0.39 / 452秒）
-- [x] 計測設計合意: 3段階（①抽出/②検索/③フル）× 別コンテキスト独立判定
+- [x] `tools/benchmark/` scaffolding
+- [x] 1件実行検証（`review-04` with current flow）— 452秒問題確認
+- [x] 計測設計合意: 3段階 × 別コンテキスト独立判定
+- [x] Round制ワークフロー合意
+- [x] 5件サンプル選定合意（review-01/review-04/impact-01/req-02/req-09）
+- [x] Stage 1 `run.py` 実装（stdin prompt, recall/precision script判定）
+- [x] Stage 1 試行計測（3件）— 動作確認OK
