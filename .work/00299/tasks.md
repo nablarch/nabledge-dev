@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 27)
+**Updated**: 2026-04-21 (session 28)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -147,8 +147,8 @@
 - nabledge-test のスコアリングロジック影響確認
 
 **Steps:**
-- [ ] 調査: 現状の JSON スキーマと全 converter / verify / docs / hints ロジックの一覧化
-- [ ] 調査: nabledge-test のセクション検索ロジックへの影響確認
+- [x] 調査: 現状の JSON スキーマと全 converter / verify / docs / hints ロジックの一覧化 — `.pr/00299/investigation-21d.md` 参照
+- [x] 調査: nabledge-test のセクション検索ロジックへの影響確認 — 影響なし（scoring は keyword detection）
 - [ ] 設計書更新: `tools/rbkc/docs/rbkc-verify-quality-design.md` と新規 `tools/rbkc/docs/rbkc-json-schema-design.md`（仮）に新スキーマを定義
 - [ ] 設計レビュー: Software Engineer サブエージェントによる設計レビュー、ユーザー承認
 - [ ] TDD: rst converter — h2/h3 なしケースで top-level content、section 空のテスト → RED → 実装 → GREEN
