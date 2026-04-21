@@ -166,7 +166,7 @@
 - [ ] TDD: docs.py — 新テンプレート（top-level content 出力、sections==[] なら `##` 出さない）
 - [ ] TDD: hints.py / extract_hints.py — title ベース key 維持、`概要` 廃止対応
 - [x] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）— committed `8d559b52`
-- [ ] TDD: verify（スキーマ変更分のみ。本格改修は別途承認プロセス）
+- [x] TDD: verify（スキーマ変更分のみ: QC1–QC5 / QO2 に top-level content 追加）— committed `7c9e4fc0`
 - [ ] hints ファイル v6.json 再生成（`概要` エントリを h1 title / h2 title ベースに再マップ）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
