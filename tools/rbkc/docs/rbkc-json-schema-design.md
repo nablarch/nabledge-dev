@@ -46,21 +46,32 @@ RBKC（RST/Markdown/Excel → JSON 知識ファイル変換）の出力 JSON ス
 | `title` | string | ソースの h1 タイトル | ✅ |
 | `content` | string | h1 直下〜最初の h2 直前の本文（Markdown）。preamble が空なら空文字 | ✅ |
 | `sections` | array | h2/h3 セクション。**存在しないファイルは `[]`** | ✅ |
-| `sections[].id` | string | `s1`, `s2`, ... の連番 | ✅ |
+| `sections[].id` | string | `s1`, `s2`, ... の連番。**regex `^s[1-9][0-9]*$` に必ず一致。`top` は予約語で section id には使えない** | ✅ |
 | `sections[].title` | string | ソースの h2 または h3 タイトル | ✅ |
 | `sections[].content` | string | セクション本文（Markdown） | ✅ |
 | `sections[].hints` | array | セクションのキーワード | ✅（空配列可） |
-| `index` | array | トップレベル + 各セクションの `{id, title, hints}` 一覧 | ✅ |
-| `no_knowledge_content` | bool | `true` のとき `content`・`sections` はコンテンツを持たない目次/toctree 専用ページ | ✅ |
+| `index` | array | トップレベル + 各セクションの `{id, title, hints}` 一覧。`no_knowledge_content == true` のときは `[]`（top 不在） | ✅ |
+| `no_knowledge_content` | bool | `true` のとき `content`・`sections`・`index` はすべて空（目次/toctree 専用ページ） | ✅ |
 | `official_doc_urls` | array | 公式ドキュメント URL | ✅（空配列可） |
+
+### 2-2a. スキーマ不変条件
+
+以下は verify で検証する（QO1 配下）:
+
+- `sections[].id` は `^s[1-9][0-9]*$` に一致。`top` は section id として使えない
+- `.index[]` に id の重複があってはならない（`top` 含む）
+- `no_knowledge_content == true` ⇒ `content == ""` AND `sections == []` AND `index == []`
+- `no_knowledge_content == false` ⇒ `.index[0].id == "top"`（トップレベル content が空でも `top` エントリは存在する）
 
 ### 2-3. `index` フィールドの構造
 
 nabledge スキル側が section メタ情報（id/title/hints）を取得する単一の窓口。
 
-- **トップレベル content** は必ず `{"id": "top", "title": <h1 title>, "hints": [...]}` として含まれる（content が空でも hints がある場合があるため常に含む）
-- 以降 `sections[]` と 1:1 対応で `{"id": "s1", ...}`, `{"id": "s2", ...}` と続く
-- 順序はトップ→`s1`→`s2`→...
+- `no_knowledge_content == false` のとき:
+  - 先頭は必ず `{"id": "top", "title": <h1 title>, "hints": [...]}`（top-level content が空でも `top` エントリは存在）
+  - 以降 `sections[]` と 1:1 対応で `{"id": "s1", ...}`, `{"id": "s2", ...}` が順に続く
+- `no_knowledge_content == true` のとき:
+  - `index == []`（`top` エントリも含まれない。content / sections いずれも存在しないため）
 
 ### 2-4. section id の付与規則
 
@@ -77,9 +88,10 @@ nabledge スキル側が section メタ情報（id/title/hints）を取得する
 - h1 → top-level `title`
 - h1 直下〜最初の h2 直前の本文 → top-level `content`
 - h2/h3 → `sections[].title` / `sections[].content`（ソース出現順）
+- **h2 と h3 は同一階層（フラット）として `sections` に入る**。たとえば h2→h3→h2 の順であれば `sections[0]` = h2, `sections[1]` = h3, `sections[2]` = h2。`sections[].title` に heading level 情報は残さない
 - h4 以降 → 所属 h2/h3 の `content` に `#` 記号付きで埋め込み（現行仕様踏襲）
 - h2/h3 が 1 つも無いファイル → `sections: []`
-- h1 すら無い（目次 toctree 専用など） → `title: ""`, `content: ""`, `sections: []`, `no_knowledge_content: true`
+- h1 すら無い（目次 toctree 専用など） → `title: ""`, `content: ""`, `sections: []`, `index: []`, `no_knowledge_content: true`
 
 ### 3-2. RST converter
 
@@ -98,6 +110,10 @@ nabledge スキル側が section メタ情報（id/title/hints）を取得する
 - 新スキーマでの扱い: **`sections: []`** + 全内容を top-level `content` に投入
 - `title` はファイル識別子由来の人間可読タイトル（現行仕様踏襲）
 - 行単位 section 化は **Phase 21-C で別途対応**（本設計のスコープ外）
+
+**原則 §1「ソース非存在文字列混入禁止」の例外としての位置付け**:
+
+Excel には h1 相当のソース構造が存在しないため、`title` を「ファイル識別子由来の人間可読タイトル」に設定することは §1 に対する設計上の**例外**である。RST/MD は source-faithful を厳格に適用するが、xlsx だけは source-derived（ファイル識別子から決定論的に導出）の title を許容する。この例外は本 Phase 21-D の範囲で唯一許容され、他の固定値／独自ルールの導入は禁止する。Phase 21-C で行単位 section 化を行う際に、セル値ベースの title 導出（例: A1 セル値）への移行を検討する。
 
 ---
 
@@ -140,6 +156,76 @@ keyword1, keyword2, ...
 - sections があればループで `## {title}` + content + hints の `<details>` を出力
 - `no_knowledge_content == true` のときは `# {title}` のみで終了
 
+### 4-2a. 空行ルール（正規）
+
+docs MD の空行規則は以下のとおり。QO1/QO2 の完全一致比較が決定論的に行えるよう、RBKC と verify の両方で本規則に従う。
+
+1. 各出力ブロック（`# title` / `content` / `<details>` / `## section title` / section content / section `<details>`）の間には、**空行ちょうど 1 行** を挿入する
+2. 出力しないブロックは、その分の空行も出さない（連続した空行を生じさせない）
+3. ファイル末尾は改行ちょうど 1 つで終わる（trailing newline）
+4. `<details>` ブロック内部の構造は以下で固定:
+   ```
+   <details><summary>keywords</summary>
+
+   keyword1, keyword2, ...
+
+   </details>
+   ```
+
+### 4-2b. 出力パターン例
+
+以下に主要な 4 パターンを例示する。`◯` は実在、`×` は空/不在を表す。
+
+**Pattern A**: title ◯ / content ◯ / top hints ◯ / sections ◯
+
+```markdown
+# タイトル
+
+トップレベルの本文。
+
+<details><summary>keywords</summary>
+
+kw1, kw2
+
+</details>
+
+## セクション1
+
+セクション本文。
+
+<details><summary>keywords</summary>
+
+kw3
+
+</details>
+```
+
+**Pattern B**: title ◯ / content ◯ / top hints × / sections ×
+
+```markdown
+# タイトル
+
+本文のみ。
+```
+
+**Pattern C**: title ◯ / content × / sections ◯（h1 直下に preamble なし、最初が h2）
+
+```markdown
+# タイトル
+
+## セクション1
+
+セクション本文。
+```
+
+**Pattern D**: `no_knowledge_content == true`（title も空、toctree 専用ページ）
+
+```markdown
+# 
+```
+
+（h1 のみの 1 行 + trailing newline。title が空のときは `# ` の後に空白も付けない実装選択が可能だが、一貫性のため `# \n` で統一する）
+
 ### 4-3. README.md
 
 `tools/rbkc/scripts/create/docs.py` の `_generate_readme` は index.toon 等経由で type/category/title の目次を生成（section 非依存、変更なし）。
@@ -171,7 +257,32 @@ keyword1, keyword2, ...
 
 ### 5-3. 初期生成
 
-`extract_hints.py`（`.pr/00299/extract_hints.py`）は KC キャッシュから初期 hints を生成する one-time スクリプト。section title ベースから section id ベースへのマッピング変更を伴う。詳細は Phase 21-D の実装タスクで確定する。
+`extract_hints.py`（`.pr/00299/extract_hints.py`）は KC キャッシュから初期 hints を生成する one-time スクリプト。section title ベースから section id ベースへのマッピング変更を伴う。
+
+### 5-3a. 旧 hints → 新 hints のマッピング契約
+
+旧 `hints/v6.json`（section title を key）から新 `hints/v6.json`（section id を key）への変換は以下の契約に従う。実装は `extract_hints.py` を本契約に合わせて改修する。
+
+**前提**: 新 RBKC 出力（新スキーマ適用後の `rbkc create` 結果）のソース h1 title と `sections[].title` の一覧が、マッピングの参照源となる。
+
+**マッピング手順（ファイルごと）**:
+
+1. 新 RBKC 出力 JSON を読み込み、`title`（h1）と `sections[].{id,title}` の一覧を取得する
+2. 旧 hints entry のキー（セクション title 文字列）ごとに以下を判定:
+   - 旧 key == 新 h1 title（`title` フィールド） → 新 key は `"top"`
+   - 旧 key が `sections[].title` のいずれかと完全一致 → 新 key はその section の id（`s1`, `s2` ...）
+   - 旧 key が `_PREAMBLE_TITLE = "概要"` 固定値由来で、かつ新 JSON に title が `"概要"` の section が存在しない → 新 key は `"top"`（旧 preamble 擬似 section の hints を top に移す）
+   - 旧 key が `_PREAMBLE_TITLE = "概要"` 固定値由来で、かつ新 JSON に title が `"概要"` の section が実在する → **ambiguous**。警告出力し、当該 file の hints 手動確認を要求（自動マッピングしない）
+   - 上記いずれにも該当しない（ソース変更で h2 が削除されたなど） → 警告出力し、該当 hints を drop（stale hints）
+3. 生成された新 hints を書き出す前に、旧 hints との **dry-run diff** を出力（追加・削除・再マップされたキーの一覧）。ユーザーが diff を確認してから最終書き出しを行う
+
+**生成後の検証ゲート**:
+
+- `rbkc create 6` を実行して新スキーマ JSON を再生成
+- `rbkc verify 6` を実行し、QC6（hints 完全性）が PASS することを確認
+- QC1–QC5 / QO1–QO5 のすべてが PASS することで、hints が正しく新スキーマに移行したことを保証する
+
+**ambiguous ケースの扱い**: 上記 2-d（旧 "概要" key かつ新 JSON に "概要" section 実在）に該当するファイルは、手動で split を判断する。自動処理で false PASS が出る可能性があるため、ゼロトレランス原則に従って自動処理を行わない。
 
 ---
 
@@ -183,13 +294,23 @@ keyword1, keyword2, ...
 
 - 入力: `$file` (knowledge file), `$section` (id: `top` または `s1`, `s2`, ...)
 - 処理:
-  - `section == "top"` → `jq -r '.content' $file`
+  - `section == "top"` → `jq -r '.content' $file`。結果が空文字列でも正常終了（空の content を返す。SECTION_NOT_FOUND を返すのは `.content` フィールド自体が JSON に存在しない場合のみ = スキーマ違反）
   - それ以外 → `jq -r --arg sec "$section" '.sections[] | select(.id==$sec) | .content' $file`
-- `SECTION_NOT_FOUND` を返す条件は現行踏襲
+  - section id にマッチするエントリが存在しない → `SECTION_NOT_FOUND` を返す
+- スキーマ違反（`.content` フィールド不在など）は別種エラーとして報告する
 
 ### 6-2. `scripts/full-text-search.sh`
 
-- 検索単位: `[{id:"top", title:.title, content:.content, hints: (.index[] | select(.id=="top") | .hints)}] + .sections`
+- 検索単位: トップレベル + sections を `id` 統一で扱う
+  ```jq
+  [{
+    id: "top",
+    title: .title,
+    content: .content,
+    hints: ([.index[] | select(.id=="top") | .hints][0] // [])
+  }] + .sections
+  ```
+- `no_knowledge_content == true` の場合、トップレベル `top` エントリは `content=""` / `hints=[]` となり、検索スコアリングで自然に落ちる。実装は empty ガードを明示的に持つ必要はないが、jq の `// []` ガードで `.index[]` が空のときに null が紛れ込むのを防ぐ
 - 出力フォーマット: `<score>\t<file>|<id>` は現行踏襲
 
 ### 6-3. `workflows/_knowledge-search/_section-search.md`
@@ -204,14 +325,16 @@ keyword1, keyword2, ...
 
 ---
 
-## 7. verify 仕様の更新（概要）
+## 7. verify への影響（別プロセスで管理）
 
-詳細は `rbkc-verify-quality-design.md` の更新で管理するが、本スキーマ変更に伴う verify 側の対応観点を記す。
+本スキーマ変更は verify の検証範囲・アルゴリズムに影響する。`.claude/rules/rbkc.md` §「Rules for changing verify」に従い、verify の変更は**本スキーマ設計とは独立にユーザー承認が必要**である。以下は変更が必要になる観点の列挙（仕様の決定ではない）:
 
-- QC1–QC6: 検証テキストの連結範囲に top-level `content` を含める（`_json_text` / `_build_json_text` / `search_units` 構築に追加）
-- QO1: `index` フィールドの整合性（`top` + sections[].id との一致）を検証
-- QO5: docs MD 本文整合性は「top-level content → sections」の順序で検証
-- `check_hints_file_consistency`: key が section title から id (`top`, `s*`) に変わる対応
+- QC1–QC6 の検証対象に top-level `content` が追加される
+- QO1 で新スキーマ不変条件（§2-2a）の検証が必要になる
+- QC6 の照合 key が section title から section id に変わる
+- `check_hints_file_consistency` の key 体系が変わる
+
+これらの verify 側の具体的な変更仕様は、本スキーマ設計書の承認後に別途 `rbkc-verify-quality-design.md` の更新プロセス（rules 記載の TDD + ユーザー承認）を経て確定する。
 
 ---
 
@@ -237,3 +360,15 @@ keyword1, keyword2, ...
 ### 影響なし
 - 全版の `SKILL.md` / `plugin/` / `assets/` / `docs/` の参照
 - nabledge-test の scoring（keyword detection ベース）
+
+### 8a. 展開順序（cross-version rollout）
+
+`.claude/rules/nabledge-skill.md` の "Apply cross-version changes in a single commit or PR" 原則に従い、全 5 版を同一 PR でロールアウトする。
+
+1. RBKC 側コードと verify を新スキーマに対応（テスト含む TDD）
+2. 全版の `hints/v{version}.json` を §5-3a の契約に従い再生成
+3. 全版で `rbkc create {version}` を実行し、新スキーマ JSON を生成
+4. 全版で `rbkc verify {version}` を実行、FAIL 0 件確認
+5. 全版の nabledge スキルスクリプト（§6）を改修
+6. 全版で `nabledge-test <version> --baseline` を実行し、ベースライン劣化がないこと確認
+7. 単一 PR でコミット
