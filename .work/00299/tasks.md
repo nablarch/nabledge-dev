@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 24)
+**Updated**: 2026-04-21 (session 25)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -18,40 +18,61 @@
 
 ## In Progress
 
-### Phase 21-A: docs/README.md 未生成
+### Phase 21-A: docs/README.md 未生成 ✅
 
-**問題**: nabledge-5には `docs/README.md`（全MDへのリンク集）があるが v6 には未生成。
-`docs.py` の `generate_docs()` にREADME生成ロジックが存在しない。
-
-**Steps:**
-- [ ] verify に README.md 存在チェック追加 → verify FAIL 確認（RED）
-- [ ] `generate_docs()` に README 生成追加 → verify GREEN 確認
-- [ ] サブエージェント品質チェック
-- [ ] rbkc create 6 → verify 6 FAIL 0件確認
-- [ ] コミット
+- [x] verify に README.md 存在チェック追加 → verify FAIL 確認（RED）
+- [x] `generate_docs()` に README 生成追加 → verify GREEN 確認
+- [x] サブエージェント品質チェック（SE expert review 実施、指摘修正済み）
+- [x] rbkc create 6 → verify 6 FAIL 0件確認
+- [x] コミット — `c238dc8f`
 
 ---
 
 ### Phase 21-B: hints の永続化と完全一致チェック
 
-**問題1**: KC cache の hints が RBKC 側に永続化されていない。`.cache` は削除される前提のため、`rbkc create` 時に `tools/rbkc/hints/v{version}.json` として保存する必要がある。
+**設計確定（ユーザー承認済み）**:
+- `tools/rbkc/hints/v{version}.json` はソースファイル（git 管理、手動更新）
+- `rbkc hints {version}` = 一回だけ実行して KC キャッシュから生成、以後は手動更新
+- `rbkc create` は `hints/v{version}.json` を入力として使う（KC キャッシュ不要）
+- verify チェック: JSON hints == hints/vN.json hints == docs MD hints（三者一致）
+- KC キャッシュとの整合は hints 生成時のみ。verify には入らない
 
-**問題2**: KC cache の file_id（例: `adapters-doma_adaptor`）と RBKC 生成時の file_id（例: `adapters-doma-adaptor`）が不一致のため、341ファイル中 224ファイルで hints lookup がミスヒット → hints が空。
+**問題2（解決済み）**: KC file_id（`_` あり）と RBKC file_id（ハイフンのみ）の不一致
+→ `build_hints_index` で out_id = base_id.replace("_", "-") に修正済み（196 ファイル修正）
 
-**チェック基準（verify に実装）**:
-1. hints ファイル全量 ＝ KC cache ヒント全量（完全一致）
-2. hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量（完全一致）
+**Status**: 190 hints FAIL remaining. Hints file generated, JSON hints written, but ~140 docs MD lack hints blocks + ~50 hints file sections not in JSON (section title mismatch due to catalog Step A imperfect mapping).
+
+**Root cause of remaining FAILs**:
+1. `md=[]` (140件): docs MD 内の `<details><summary>keywords</summary>` ブロックがない — hints が hints ファイルにあるが docs MD には書かれていない
+2. `json=[]` (0件): 解消済み
+3. value mismatch (50件): JSON/docs MD の hints 値 ≠ hints ファイル — catalog Step A でマップされた section が RBKC JSON の section title と不一致（e.g. hints ファイルは KC title 'タグライブラリのネームスペース...' に hints を持つが JSON はその section なし）
+
+**決定**:
+- `lookup_hints_with_fallback` の優先順位を hints_idx 優先に修正済み（kc_result がある場合は hints_idx を使う）
+- `catalog_index` の last-wins バグ修正済み（part-1 entry を保持）
+- `extract_hints.py` を `.pr/00299/` に作成済み（standalone one-time script）
+- `rbkc hints` コマンドを run.py から削除済み
+- `tests/ut/test_hints.py` を追加済み（5テスト）
+- `check_hints_file_consistency()` を verify.py に追加済み
+- `check_docs_coverage()` を verify.py に追加済み
 
 **Steps:**
-- [ ] 全容把握: file_id 不一致の全パターン調査（変換ルールのズレを特定）
-- [ ] 設計: hints 永続化ファイルのフォーマット決定、ユーザー承認
-- [ ] verify チェック1追加: hints ファイル全量 ＝ KC cache ヒント全量 → verify FAIL 確認（RED）
-- [ ] `rbkc create` 時に `tools/rbkc/hints/v{version}.json` へ保存 → verify GREEN 確認
-- [ ] verify チェック2追加: hints ファイル全量 ＝ JSON ヒント全量 ＝ MD ヒント全量 → verify FAIL 確認（RED）
-- [ ] file_id 正規化ロジック追加 → rbkc create 6 → verify GREEN 確認
+- [x] 全容把握: file_id 不一致の全パターン調査（117直接一致、196正規化待ち、28はKC未収録）
+- [x] file_id 正規化ロジック追加: `hints.py` の `build_hints_index` で `_` → `-` 正規化
+- [x] 設計: hints 永続化ファイルのフォーマット決定、ユーザー承認
+- [x] `catalog_index` last-wins バグ修正（part-1 entry 保持）+ TestBuildHintsIndexCatalogSplitHandling test 追加
+- [x] verify チェック追加: `check_hints_file_consistency()` + `check_docs_coverage()` 実装 + テスト
+- [x] `.pr/00299/extract_hints.py` 作成（standalone, build_hints_index 使用）
+- [x] `rbkc hints` コマンドを run.py から削除
+- [x] `tools/rbkc/hints/v6.json` 生成（339 file_ids, 1179 sections, 12595 hints）
+- [x] `lookup_hints_with_fallback` 優先順位修正（hints_idx 優先）
+- [x] rbkc create 6 実行（341 files）
+- [ ] verify FAIL 190件を分析・解消（docs MD hints 未記入 + catalog mapping mismatch）
+  - [DECISION: docs MD に hints ブロックを書くのは create ではなく hints ファイルにセクションがある場合のみ？それとも空でも書くべき？]
+  - verify の check_hints_file_consistency の期待動作を確認 — hints ファイルにあるが JSON/MD にないセクションは FAIL か？
 - [ ] サブエージェント品質チェック
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
-- [ ] コミット
+- [ ] コミット（Phase 21-B）
 
 ---
 
