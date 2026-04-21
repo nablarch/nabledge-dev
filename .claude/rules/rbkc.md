@@ -23,6 +23,16 @@ verify is the final quality assurance mechanism for RBKC output. It must be kept
 - Tests required only here, because verify does not exercise CLI code paths.
 - Examples: argument validation, command routing, error handling for missing files or invalid input.
 
+## Hints files
+
+`tools/rbkc/hints/v{version}.json` is a **source file**, not a generated artifact.
+
+- **Generate once**: Run `rbkc hints {version}` once to generate from the KC cache. Verify the output, then never regenerate.
+- **Update manually**: After initial generation, edit `hints/v{version}.json` directly when hints need adjustment.
+- **Input to create**: `rbkc create` reads `hints/v{version}.json` as its hints source. The KC cache is not required at create time.
+- **Verify checks hints consistency**: `rbkc verify` checks that knowledge JSON hints == docs MD hints == `hints/v{version}.json` hints (three-way match).
+- **KC cache alignment is a one-time concern**: The `rbkc hints` command produces the initial file from KC cache. Once committed, the KC cache is no longer consulted by create or verify.
+
 ## Rules for changing verify
 
 verify changes require explicit user approval before implementation.
