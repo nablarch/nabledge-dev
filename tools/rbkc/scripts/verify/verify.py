@@ -860,8 +860,13 @@ _MD_INTERNAL_LINK_RE = re.compile(r'\[([^\]]+)\]\((?!https?://)([^)]+)\)')
 
 
 def _json_text(data: dict) -> str:
-    """Concatenate all JSON text fields for substring search."""
-    parts = [data.get("title", "")]
+    """Concatenate all JSON text fields for substring search.
+
+    Includes top-level title + top-level content (preamble, h1..first h2) +
+    all section titles + all section content. Hints are out of QL1 scope
+    (covered by QC6); they are not included here.
+    """
+    parts = [data.get("title", ""), data.get("content", "")]
     for section in data.get("sections", []):
         parts.append(section.get("title", ""))
         parts.append(section.get("content", ""))

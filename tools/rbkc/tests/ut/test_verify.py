@@ -1498,6 +1498,167 @@ class TestCheckSourceLinks:
         data = self._make_data([{"id": "s1", "title": "概要", "content": "text", "hints": []}])
         assert self._check(source, "xlsx", data) == []
 
+    # --- Top-level content coverage (Phase 21-I regression fix) ---
+
+    def test_pass_rst_ref_title_in_top_level_content(self):
+        """:ref: target title present in top-level content (preamble) → PASS.
+
+        QL1 must search top-level data["content"] in addition to section content,
+        because Phase 21-D preamble text (h1..first h2) is stored there.
+        """
+        source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n\nサブ\n---\n\n本文。\n"
+        data = {
+            "id": "test-file",
+            "title": "概要",
+            "no_knowledge_content": False,
+            "content": "詳細はMy Sectionを参照。",
+            "sections": [
+                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+            ],
+        }
+        label_map = {"my-label": "My Section"}
+        assert self._check(source, "rst", data, label_map) == []
+
+    def test_pass_rst_image_alt_in_top_level_content(self):
+        """image alt present in top-level content (preamble) → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/mail_system.png\n"
+            "   :alt: メールシステム構成\n"
+            "\n"
+            "サブ\n---\n\n本文。\n"
+        )
+        data = {
+            "id": "test-file",
+            "title": "概要",
+            "no_knowledge_content": False,
+            "content": "![メールシステム構成](assets/test/mail_system.png)",
+            "sections": [
+                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+            ],
+        }
+        assert self._check(source, "rst", data) == []
+
+    def test_pass_rst_image_filename_in_top_level_content(self):
+        """image without alt — filename present in top-level content → PASS."""
+        source = (
+            "概要\n====\n\n"
+            ".. image:: _images/framework.png\n"
+            "\n"
+            "サブ\n---\n\n本文。\n"
+        )
+        data = {
+            "id": "test-file",
+            "title": "概要",
+            "no_knowledge_content": False,
+            "content": "![](assets/test/framework.png)",
+            "sections": [
+                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+            ],
+        }
+        assert self._check(source, "rst", data) == []
+
+    def test_fail_rst_ref_missing_when_not_in_top_level_or_sections(self):
+        """Negative test: ref title absent from BOTH top-level content and sections → FAIL.
+
+        Guards against false negatives — confirms QL1 still fires when content is
+        genuinely missing, not just that the fix's new code path silences it.
+        """
+        source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n\nサブ\n---\n\n本文。\n"
+        data = {
+            "id": "test-file",
+            "title": "概要",
+            "no_knowledge_content": False,
+            "content": "関連なし。",
+            "sections": [
+                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+            ],
+        }
+        label_map = {"my-label": "My Section"}
+        issues = self._check(source, "rst", data, label_map)
+        assert any("QL1" in i and "my-label" in i for i in issues)
+
+    def test_pass_md_internal_link_text_in_top_level_content(self):
+        """MD internal link text present in top-level content → PASS."""
+        source = "# 概要\n\n詳しくは[別ページ](../other.md)を参照。\n\n## サブ\n\n本文。\n"
+        data = {
+            "id": "test-file",
+            "title": "概要",
+            "no_knowledge_content": False,
+            "content": "詳しくは別ページを参照。",
+            "sections": [
+                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+            ],
+        }
+        assert self._check(source, "md", data) == []
+
+
+class TestJsonTextHelper:
+    """Direct unit tests for _json_text() concat contract.
+
+    Guards against silent regression of the concat logic itself, independent
+    of higher-level QL1 code paths.
+    """
+
+    def _helper(self, data: dict) -> str:
+        from scripts.verify.verify import _json_text
+        return _json_text(data)
+
+    def test_includes_title_and_top_level_content_and_sections(self):
+        """_json_text() must concatenate title + top-level content + section titles + section content."""
+        data = {
+            "title": "T_TITLE",
+            "content": "T_TOP_CONTENT",
+            "sections": [
+                {"title": "S1_TITLE", "content": "S1_CONTENT", "hints": []},
+                {"title": "S2_TITLE", "content": "S2_CONTENT", "hints": []},
+            ],
+        }
+        text = self._helper(data)
+        assert "T_TITLE" in text
+        assert "T_TOP_CONTENT" in text
+        assert "S1_TITLE" in text
+        assert "S1_CONTENT" in text
+        assert "S2_TITLE" in text
+        assert "S2_CONTENT" in text
+
+    def test_excludes_hints(self):
+        """Hints are out of QL1 scope (covered by QC6) — must not be in concat."""
+        data = {
+            "title": "T",
+            "content": "TOP",
+            "hints": ["TOP_HINT_SHOULD_NOT_APPEAR"],
+            "sections": [
+                {"title": "S", "content": "SC", "hints": ["SEC_HINT_SHOULD_NOT_APPEAR"]},
+            ],
+        }
+        text = self._helper(data)
+        assert "TOP_HINT_SHOULD_NOT_APPEAR" not in text
+        assert "SEC_HINT_SHOULD_NOT_APPEAR" not in text
+
+    def test_missing_top_level_content_key_safe(self):
+        """data without "content" key — no KeyError, still includes other parts."""
+        data = {
+            "title": "T",
+            "sections": [{"title": "S", "content": "SC", "hints": []}],
+        }
+        text = self._helper(data)
+        assert "T" in text
+        assert "S" in text
+        assert "SC" in text
+
+    def test_empty_top_level_content_safe(self):
+        """Empty top-level content — still includes other parts, no error."""
+        data = {
+            "title": "T",
+            "content": "",
+            "sections": [{"title": "S", "content": "SC", "hints": []}],
+        }
+        text = self._helper(data)
+        assert "T" in text
+        assert "S" in text
+        assert "SC" in text
+
 
 # ---------------------------------------------------------------------------
 # V2-4: Excel QC1/QC2/QC3 — sequential-delete via verify_file (placeholder)
