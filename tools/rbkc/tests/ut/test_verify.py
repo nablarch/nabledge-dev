@@ -1181,6 +1181,19 @@ class TestBuildLabelMap:
         result = self._build(rst)
         assert result.get("no-blank") == "Section Title"
 
+    def test_overline_style_heading(self):
+        """Label before overline-style heading (====\\ntitle\\n====) → mapped to title."""
+        rst = ".. _overline-label:\n\n==============\nOverline Title\n==============\n"
+        result = self._build(rst)
+        assert result.get("overline-label") == "Overline Title"
+
+    def test_stacked_labels_overline_style(self):
+        """Two labels before overline-style heading → both mapped to title."""
+        rst = ".. _old:\n.. _new:\n\n==============\nOverline Title\n==============\n"
+        result = self._build(rst)
+        assert result.get("old") == "Overline Title"
+        assert result.get("new") == "Overline Title"
+
 
 class TestCheckSourceLinks:
     """check_source_links: QL1 verification of internal links."""

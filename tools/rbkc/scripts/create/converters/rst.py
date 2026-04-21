@@ -345,7 +345,12 @@ def _collect_targets(lines: list[str]) -> dict[str, str]:
 # Inline markup converter
 # ---------------------------------------------------------------------------
 
-def _convert_inline(text: str, file_id: str = "", targets: dict[str, str] | None = None) -> str:
+def _convert_inline(
+    text: str,
+    file_id: str = "",
+    targets: dict[str, str] | None = None,
+    label_map: dict[str, str] | None = None,
+) -> str:
     """Convert RST inline markup to Markdown."""
 
     # :java:extdoc:`ClassName <fqcn>`  →  `ClassName`
@@ -357,10 +362,15 @@ def _convert_inline(text: str, file_id: str = "", targets: dict[str, str] | None
     # :java:extdoc:`ClassName`  →  `ClassName`
     text = re.sub(r":java:extdoc:`([^`]+)`", r"`\1`", text)
 
-    # :ref:`display text <label>`  →  display text (Phase 4 resolves links)
+    # :ref:`display text <label>`  →  display text
     text = re.sub(r":ref:`([^<`]+?)\s*<[^>]+>`", lambda m: m.group(1).strip(), text)
-    # :ref:`label`  →  label
-    text = re.sub(r":ref:`([^`]+)`", r"\1", text)
+    # :ref:`label`  →  resolved section title (or label if not in map)
+    def _resolve_ref(m: re.Match) -> str:
+        label = m.group(1).strip()
+        if label_map:
+            return label_map.get(label, label)
+        return label
+    text = re.sub(r":ref:`([^`]+)`", _resolve_ref, text)
 
     # :doc:`text <path>`  →  text
     text = re.sub(r":doc:`([^<`]+?)\s*<[^>]+>`", lambda m: m.group(1).strip(), text)
@@ -1120,7 +1130,7 @@ def _detect_no_knowledge_content(sections: list[Section]) -> bool:
 # Public API
 # ---------------------------------------------------------------------------
 
-def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None = None, source_path: "Path | None" = None) -> RSTResult:
+def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None = None, source_path: "Path | None" = None, label_map: dict[str, str] | None = None) -> RSTResult:
     """Convert RST *source* to :class:`RSTResult`.
 
     Args:
@@ -1130,6 +1140,9 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
             Maps {name: url}.  Merged with targets found in *source*.
         source_path: Path to the RST source file.  Used to resolve relative
             :file: references (e.g. Handler.js) in raw directives.
+        label_map: Cross-file RST label→title map from build_label_map().  When
+            provided, bare :ref:`label` references are pre-resolved to their
+            section titles before tokenising.
 
     Returns:
         :class:`RSTResult` with title, no_knowledge_content flag, and sections.
@@ -1139,6 +1152,17 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
     """
     from pathlib import Path as _Path
     source_dir = source_path.parent if source_path is not None else None
+
+    # Pre-resolve :ref:`label` using label_map before tokenizing
+    if label_map:
+        def _presolve_ref(m: re.Match) -> str:
+            inner = m.group(1)
+            # Display-form :ref:`text <label>` — keep as-is; handled by _convert_inline
+            if "<" in inner:
+                return m.group(0)
+            label = inner.strip()
+            return label_map.get(label, label)
+        source = re.sub(r":ref:`([^`]+)`", _presolve_ref, source)
 
     lines = source.splitlines(keepends=True)
     heading_chars = _detect_heading_chars([l.rstrip("\n") for l in lines])

@@ -162,6 +162,7 @@ def _convert_and_write(
     output_dir: Path,
     hints_idx: dict,
     existing_hints: dict | None = None,
+    label_map: dict | None = None,
 ) -> None:
     """Convert one source file and write its knowledge JSON to *output_dir*.
 
@@ -172,10 +173,17 @@ def _convert_and_write(
         existing_hints: Existing RBKC hints from load_existing_hints().
                         When provided, hints are looked up with carry-over
                         semantics (existing_hints preferred over hints_idx).
+        label_map: RST label→title map for :ref: resolution.
     """
     convert = _converter_for(fi.format, fi.source_path.name)
 
-    if fi.format in ("rst", "md"):
+    if fi.format == "rst":
+        result = convert(
+            fi.source_path.read_text(encoding="utf-8", errors="replace"),
+            fi.file_id,
+            label_map=label_map,
+        )
+    elif fi.format == "md":
         result = convert(fi.source_path.read_text(encoding="utf-8", errors="replace"), fi.file_id)
     else:
         result = convert(fi.source_path, fi.file_id)
@@ -263,9 +271,16 @@ def create(
     file_infos = classify_sources(sources, version, repo_root)
     hints_idx = _hints_index(repo_root, version)
 
+    # Build RST label map for :ref: resolution in converters
+    from scripts.create.scan import _source_roots
+    label_map: dict = {}
+    for src_root in _source_roots(version, repo_root):
+        if src_root.exists():
+            label_map.update(build_label_map(src_root))
+
     all_asset_refs = []
     for fi in file_infos:
-        _convert_and_write(fi, output_dir, hints_idx, existing_hints)
+        _convert_and_write(fi, output_dir, hints_idx, existing_hints, label_map)
         if fi.format == "rst":
             all_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
 
@@ -300,6 +315,13 @@ def update(
     # files whose source changed (same as create() semantics).
     existing_hints = load_existing_hints(output_dir)
 
+    # Build RST label map for :ref: resolution in converters
+    from scripts.create.scan import _source_roots
+    label_map: dict = {}
+    for src_root in _source_roots(version, repo_root):
+        if src_root.exists():
+            label_map.update(build_label_map(src_root))
+
     snap_path = _snapshot_path(state_dir, version)
     old_snap = load_snapshot(snap_path)
     new_snap = make_snapshot(file_infos, repo_root, version)
@@ -312,7 +334,7 @@ def update(
     for fi in file_infos:
         rel = str(fi.source_path.relative_to(repo_root)).replace("\\", "/")
         if rel in changed_keys:
-            _convert_and_write(fi, output_dir, hints_idx, existing_hints)
+            _convert_and_write(fi, output_dir, hints_idx, existing_hints, label_map)
             if fi.format == "rst":
                 changed_asset_refs.extend(collect_asset_refs(fi.source_path, fi.file_id))
             count += 1

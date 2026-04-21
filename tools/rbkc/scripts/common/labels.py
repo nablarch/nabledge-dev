@@ -46,12 +46,22 @@ def build_label_map(source_dir) -> dict[str, str]:
                 stripped = line.strip()
                 if not stripped:
                     continue
-                # First non-blank line after label(s): heading text if followed by underline
-                next_non_blank_idx = next(
-                    (j for j in range(i + 1, len(lines)) if lines[j].strip()), None
-                )
-                if next_non_blank_idx is not None and _is_heading_underline(lines[next_non_blank_idx]):
-                    for lbl in pending_labels:
-                        label_map[lbl] = stripped
+                if _is_heading_underline(stripped):
+                    # Overline style: label → overline → title → underline
+                    # The title is the next non-blank line after the overline.
+                    next_non_blank_idx = next(
+                        (j for j in range(i + 1, len(lines)) if lines[j].strip()), None
+                    )
+                    if next_non_blank_idx is not None and not _is_heading_underline(lines[next_non_blank_idx]):
+                        for lbl in pending_labels:
+                            label_map[lbl] = lines[next_non_blank_idx].strip()
+                else:
+                    # Underline-only style: label → title → underline
+                    next_non_blank_idx = next(
+                        (j for j in range(i + 1, len(lines)) if lines[j].strip()), None
+                    )
+                    if next_non_blank_idx is not None and _is_heading_underline(lines[next_non_blank_idx]):
+                        for lbl in pending_labels:
+                            label_map[lbl] = stripped
                 pending_labels = []
     return label_map
