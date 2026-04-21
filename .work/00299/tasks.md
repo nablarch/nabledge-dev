@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 36)
+**Updated**: 2026-04-21 (session 37)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -168,6 +168,16 @@
 - [x] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）— committed `8d559b52`
 - [x] TDD: verify（スキーマ変更分のみ: QC1–QC5 / QO2 に top-level content 追加）— committed `7c9e4fc0`
 - [x] hints ファイル v6.json 再生成: diff 無し（既存 15 件の `概要` キーは全てソース RST に実在する h2 見出し由来で source-faithful だった）
+- [x] session 37 設計書更新: top-level `hints` フィールド新設 + §2-3 不変条件改訂 + §3-3 hints 注入規則追加 + §4-2 docs MD ルール追加 + §5 hints file 配列消費規則追加
+  - 背景: Phase 21-H の hints file 配列形式で先頭 entry が h1 title (118 ファイル) の格納先が従来スキーマに無く、verify で 965 hints FAIL 発生
+  - 判断: ソース忠実原則に従い、KC の `s1=h1_title` 疑似 section 方式は踏襲せず、top-level に `hints` を新設（ユーザー承認済み）
+- [ ] session 37 設計書のユーザー最終承認
+- [ ] TDD: run.py `_convert_and_write` — hints 配列の先頭 peek/pop で top-level hints を分岐
+- [ ] TDD: rst converter / md converter / xlsx converter — 既存の top-level content 対応と整合確認
+- [ ] TDD: docs.py — top-level `hints` ブロック出力追加
+- [ ] TDD: index.py — `__file__` エントリを index 先頭に追加
+- [ ] TDD: verify — `check_hints_file_consistency` に top-level hints チェック追加 + top-level `hints` フィールド存在チェック
+- [ ] hints file v6.json は既存のまま（Phase 21-H で生成済み配列形式）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
 - [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
