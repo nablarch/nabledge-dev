@@ -424,11 +424,16 @@ def verify(
         json_path = output_dir / fi.output_path
 
         # Per-file JSON checks (A, B, C, D)
+        if not json_path.exists():
+            print(f"FAIL {source_rel}: JSON output missing: {json_path}", file=sys.stderr)
+            all_ok = False
+            continue
+
         for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir):
             print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
 
-        json_data = json.loads(json_path.read_text(encoding="utf-8")) if json_path.exists() else {}
+        json_data = json.loads(json_path.read_text(encoding="utf-8"))
 
         # Check C (new): source-driven link verification
         if not json_data.get("no_knowledge_content"):
@@ -444,12 +449,16 @@ def verify(
         # docs MD is a stub title header — toctree paths would inflate token count.
         if not json_data.get("no_knowledge_content"):
             docs_md_path = docs_dir / Path(fi.output_path).with_suffix(".md")
-            for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
-                print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
-                all_ok = False
 
-            # Check E: JSON ↔ docs MD consistency
-            if docs_md_path.exists():
+            if not docs_md_path.exists():
+                print(f"FAIL {source_rel}: docs MD missing: {docs_md_path}", file=sys.stderr)
+                all_ok = False
+            else:
+                for issue in verify_docs_md(fi.source_path, docs_md_path, fi.format):
+                    print(f"FAIL {source_rel}: [docs MD] {issue}", file=sys.stderr)
+                    all_ok = False
+
+                # Check E: JSON ↔ docs MD consistency
                 docs_md_text = docs_md_path.read_text(encoding="utf-8")
                 for issue in check_json_docs_md_consistency(json_data, docs_md_text):
                     print(f"FAIL {source_rel}: [JSON↔MD] {issue}", file=sys.stderr)
