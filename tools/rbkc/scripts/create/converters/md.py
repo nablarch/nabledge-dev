@@ -57,21 +57,20 @@ def _is_no_knowledge(file_id: str) -> bool:
 # Parsing
 # ---------------------------------------------------------------------------
 
-def _split_sections(lines: list[str]) -> tuple[str, list[tuple[str, list[str]]]]:
-    """Split Markdown lines into (title, raw_sections).
+def _split_sections(lines: list[str]) -> tuple[str, list[str], list[tuple[str, list[str]]]]:
+    """Split Markdown lines into (title, preamble_lines, sections).
 
-    ``#`` (h1) is extracted as the document title and does not produce a section.
-    ``##`` and all deeper ATX headings (h2, h3, h4…) are treated as section
-    boundaries — consistent with the RST converter, which also splits on both
-    h2 and h3 levels.  Content before the first non-h1 heading becomes a
-    preamble section with an empty title.
+    ``#`` (h1) is extracted as the document title.  Content between h1 and
+    the first h2+ heading is returned as ``preamble_lines``.  ``##`` and
+    deeper ATX headings create entries in ``sections``.
 
     Returns:
-        (title, [(section_title, section_lines), ...])
+        (title, preamble_lines, [(section_title, section_lines), ...])
     """
     title = ""
+    preamble_lines: list[str] = []
     sections: list[tuple[str, list[str]]] = []
-    current_title = ""
+    current_title: str | None = None
     current_lines: list[str] = []
 
     for line in lines:
@@ -81,21 +80,23 @@ def _split_sections(lines: list[str]) -> tuple[str, list[tuple[str, list[str]]]]
             heading_text = m.group(2)
             if level == 1:
                 title = heading_text
-                # Do not start a new section for h1 itself
                 continue
+            # h2+ → new section boundary
+            if current_title is None:
+                preamble_lines.extend(current_lines)
             else:
-                # h2+ → new section boundary
-                # Flush current section
                 sections.append((current_title, current_lines))
-                current_title = heading_text
-                current_lines = []
-                continue
+            current_title = heading_text
+            current_lines = []
+            continue
         current_lines.append(line)
 
-    # Flush last section
-    sections.append((current_title, current_lines))
+    if current_title is None:
+        preamble_lines.extend(current_lines)
+    else:
+        sections.append((current_title, current_lines))
 
-    return title, sections
+    return title, preamble_lines, sections
 
 
 # ---------------------------------------------------------------------------
@@ -119,21 +120,20 @@ def convert(source: str, file_id: str = "") -> RSTResult:
     cleaned = _strip_html_comments(source)
 
     lines = cleaned.splitlines(keepends=False)
-    title, raw_sections = _split_sections(lines)
+    title, preamble_lines, raw_sections = _split_sections(lines)
+
+    preamble_content = "\n".join(preamble_lines).strip()
 
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
-        # Strip leading/trailing blank lines from section content
         content = "\n".join(sec_lines).strip()
         sections.append(Section(title=sec_title, content=content))
-
-    # Remove empty preamble-only sections (no title, no content)
-    sections = [s for s in sections if s.title or s.content]
 
     no_knowledge = _is_no_knowledge(file_id)
 
     return RSTResult(
         title=title,
         no_knowledge_content=no_knowledge,
+        content=preamble_content,
         sections=sections,
     )
