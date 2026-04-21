@@ -167,7 +167,7 @@
 - [ ] TDD: hints.py / extract_hints.py — title ベース key 維持、`概要` 廃止対応
 - [x] `read-sections.sh` 修正（5 版: v6/v5/v1.4/v1.3/v1.2）— committed `8d559b52`
 - [x] TDD: verify（スキーマ変更分のみ: QC1–QC5 / QO2 に top-level content 追加）— committed `7c9e4fc0`
-- [ ] hints ファイル v6.json 再生成（`概要` エントリを h1 title / h2 title ベースに再マップ）
+- [x] hints ファイル v6.json 再生成: diff 無し（既存 15 件の `概要` キーは全てソース RST に実在する h2 見出し由来で source-faithful だった）
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
 - [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
