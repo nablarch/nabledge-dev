@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-21 (session 37)
+**Updated**: 2026-04-22 (session 37 continued)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -171,14 +171,15 @@
 - [x] session 37 設計書更新: top-level `hints` フィールド新設 + §2-3 不変条件改訂 + §3-3 hints 注入規則追加 + §4-2 docs MD ルール追加 + §5 hints file 配列消費規則追加
   - 背景: Phase 21-H の hints file 配列形式で先頭 entry が h1 title (118 ファイル) の格納先が従来スキーマに無く、verify で 965 hints FAIL 発生
   - 判断: ソース忠実原則に従い、KC の `s1=h1_title` 疑似 section 方式は踏襲せず、top-level に `hints` を新設（ユーザー承認済み）
-- [ ] session 37 設計書のユーザー最終承認
-- [ ] TDD: run.py `_convert_and_write` — hints 配列の先頭 peek/pop で top-level hints を分岐
-- [ ] TDD: rst converter / md converter / xlsx converter — 既存の top-level content 対応と整合確認
-- [ ] TDD: docs.py — top-level `hints` ブロック出力追加
-- [ ] TDD: index.py — `__file__` エントリを index 先頭に追加
-- [ ] TDD: verify — `check_hints_file_consistency` に top-level hints チェック追加 + top-level `hints` フィールド存在チェック
-- [ ] hints file v6.json は既存のまま（Phase 21-H で生成済み配列形式）
-- [ ] rbkc create 6 → verify 6 FAIL 0件確認
+- [x] session 37 設計書のユーザー最終承認 — `f99b9474`
+- [x] TDD: run.py `_convert_and_write` — hints 配列の先頭 peek/pop で top-level hints を分岐
+- [x] TDD: run.py `_pop_top_level_hints` — `"__file__"` sentinel + top title 両対応（xlsx 対応）
+- [x] TDD: docs.py — top-level `hints` ブロック出力追加
+- [x] TDD: index.py — `__file__` エントリを index 先頭に追加
+- [x] TDD: verify — `check_hints_file_consistency` に top-level hints チェック + `__file__` sentinel 対応
+- [x] hints file v6.json は既存のまま（Phase 21-H で生成済み配列形式）
+- [x] rbkc create 6 実行（341 files）+ verify 6 で xlsx sentinel hints FAIL が 10 件 → 0 件に解消
+- [ ] 残 453 FAIL は Phase 21-E/21-F/21-G スコープ（本セッション範囲外）
 - [ ] サブエージェント品質チェック (Software Engineer + QA Engineer)
 - [ ] コミット（スキーマ変更は破壊的変更のため複数コミットに分割）
 
