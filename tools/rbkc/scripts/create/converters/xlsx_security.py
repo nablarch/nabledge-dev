@@ -37,10 +37,9 @@ def convert(path: Path, file_id: str = "") -> RSTResult:
             if cells:
                 lines.append("  ".join(cells))
 
-    sections = [Section(title="", content="\n".join(lines))]
-
     return RSTResult(
         title="",
         no_knowledge_content=False,
-        sections=sections,
+        content="\n".join(lines),
+        sections=[],
     )

@@ -61,5 +61,9 @@ def convert(path: Path, file_id: str = "") -> RSTResult:
     else:
         lines = _xlsx_lines(path)
 
-    sections = [Section(title="", content="\n".join(lines))]
-    return RSTResult(title="", no_knowledge_content=False, sections=sections)
+    return RSTResult(
+        title="",
+        no_knowledge_content=False,
+        content="\n".join(lines),
+        sections=[],
+    )
