@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 38, scope pivot: RBKC drops hints)
+**Updated**: 2026-04-22 (session 38 + 39, scope pivot: RBKC drops hints; processing_patterns bug found)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -71,19 +71,36 @@
 - [x] `.claude/rules/rbkc.md` — Hints files セクション（`rbkc hints` / `hints/v{V}.json` / 三者一致ルール）を削除。「RBKC は content のみ扱う、hints は別 Issue」と明記
 - [x] コミット・プッシュ（「docs: scope RBKC to content-only」）— committed `b21197d73`
 
-#### Step K-3: コードから hints を削除
+#### Step K-3: コードから hints を削除 + processing_patterns バグ修正
 
-- [ ] `tools/rbkc/scripts/create/converters/rst.py` / `md.py` / `xlsx_*.py` — hints 抽出・出力ロジックを削除
-- [ ] `tools/rbkc/scripts/create/hints.py` — ファイル削除（または空化）、`run.py` / `create_pipeline` から呼び出し削除
-- [ ] `tools/rbkc/scripts/create/docs.py` — `<details>keywords</summary>` ブロック出力を削除
-- [ ] `tools/rbkc/scripts/verify/verify.py` — `check_hints_*` / `_parse_docs_md_hints` / `check_hints_file_consistency` / `_json_text` から hints を参照する箇所を削除
-- [ ] `tools/rbkc/scripts/run.py` — hints 関連配線（もしあれば）を削除
-- [ ] `tools/rbkc/hints/` ディレクトリ削除（Step K-1 で別 Issue 資産に保全済み）
-- [ ] `tools/rbkc/rbkc.sh` — `hints` サブコマンドがあれば削除
-- [ ] 影響ユニットテスト削除/更新
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — FAIL 0件確認（5バージョン全て）
-- [ ] サブエージェント品質チェック (SE + QA) — 削除漏れ・残骸なきこと
-- [ ] コミット・プッシュ（「feat(rbkc): drop hints scope — content only」）
+**session 39 で発覚した追加問題（必ず本 Step で同時修正）**:
+- `tools/rbkc/scripts/create/index.py:91` が `_collect_hints(data)` を呼び、hints 語彙を `processing_patterns` 列に詰め込んでいる（本来の意味論違反）
+- 監査結果（v6 index.toon 313 entries）:
+  - `type=processing-pattern` 79件: `pp != category`（本来 `pp == category` が正、例: `pp=nablarch-batch`）
+  - `type!=processing-pattern` 186件: `pp` に hints 語彙が詰まっている（本来空文字）
+- v1.2〜v5 は KC 出力のまま正しい意味論。汚染されているのは v6 のみ
+- KC の挙動 (`phase_f_finalize.py:303-308`): `type=processing-pattern` なら `category` を使う、それ以外は空
+- RBKC の mapping (`tools/rbkc/mappings/v{V}.json`) は既に type/category を持つので RBKC 自己完結で機械生成可能（AI 不要、別ファイル不要）
+
+**修正方針（ユーザー承認済み: 案 A）**:
+- `processing_patterns` は mapping 由来の type/category から機械生成（KC と同じ意味論）
+- 追加ファイル生成は不要。`index.py` のロジック差し替えだけで済む
+- index.toon スキーマ `{title,type,category,processing_patterns,path}` は維持（skill 5 版の `_file-search.md` Axis 3 も維持）
+
+**Steps:**
+- [ ] `tools/rbkc/scripts/create/index.py` — `_collect_hints(data)` 呼び出しを削除し、`file_infos` を受け取って `fi.type == "processing-pattern"` なら `fi.category`、それ以外は空文字を使うロジックに置換。`generate_index()` シグネチャ変更（file_infos 受け取り）、`run.py` からの呼び出しも更新
+- [ ] `tools/rbkc/scripts/create/hints.py` — ファイル削除
+- [ ] `tools/rbkc/scripts/run.py` — hints 関連（`load_existing_hints` / `_pop_hints_for_title` / `_pop_top_level_hints` / `_normalize_kc_to_array` / `hints_path` / `load_hints_file` / `_hints_index` / `build_hints_index` import / `_convert_and_write` の hints 引数と top_hints 処理 / `check_hints_file_consistency` 呼び出し）を全削除
+- [ ] `tools/rbkc/scripts/create/docs.py` — `<details>keywords</summary>` ブロック出力を削除（2箇所: top_hints / section hints）
+- [ ] `tools/rbkc/scripts/verify/verify.py` — `check_hints_completeness` / `_parse_docs_md_hints` / `check_hints_file_consistency` / `FILE_SENTINEL` import / その他 hints 参照を削除
+- [ ] `tools/rbkc/scripts/common/constants.py` — `FILE_SENTINEL` 定義を削除（他で使われていないことを事前確認）
+- [ ] `tools/rbkc/hints/` ディレクトリ削除（Step K-1 で保全済み）
+- [ ] converters (`rst.py` / `md.py` / `xlsx_*.py`) — 元々 hints 参照なしを確認のみ
+- [ ] `tools/rbkc/rbkc.sh` — hints サブコマンドなしを確認のみ
+- [ ] 影響テスト: `test_hints.py` 削除、`test_run.py` / `test_verify.py` / `test_docs.py` の hints 関連テスト削除。`test_index.py` に processing_patterns 機械生成テスト追加（`type=processing-pattern` / その他）
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — FAIL 0件確認、index.toon で `type=processing-pattern` エントリの `pp == category` を確認
+- [ ] サブエージェント品質チェック (SE + QA) — 削除漏れ・残骸なきこと、processing_patterns 意味論の妥当性
+- [ ] コミット・プッシュ（「feat(rbkc): drop hints scope + fix processing_patterns semantics」）
 
 #### Step K-4: 別 Issue 起票
 
