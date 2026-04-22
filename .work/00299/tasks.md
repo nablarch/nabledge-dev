@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 46 — Phase 21-X X-4a 実施、v6 verify FAIL 4812→56 (98.8% 削減)。独立性原則違反を撤去: tokenizer から `_ADMONITION_LABELS` 辞書と `_PAD_CHAR` 幅保存ロジックを除去し、`scripts/common/rst_admonition.py` に共通規約を集約。HTML `<table>` 出力の grid-table renderer を MD table に書き直し。converter 側: footnote label の hyphen 対応・CJK simple-table mid-sep 誤検出修正。残 56 FAIL は converter の真のバグ群 (複雑な table 内 directive / grid-table rowspan の変則形式 / 多カラム simple-table の改行連続問題) に収束。)
+**Updated**: 2026-04-22 (session 47 — Phase 21-X X-4b 着手。B4 の部分対応として converter の section/file title に `_convert_inline` を通すよう修正。RST の double-backtick `` ``code`` `` が normalised form `` `code` `` に揃い、QO1 title 不一致と QC1 残渣を 3 件解消。v6 verify FAIL 56 → 53。残 53 は B1/B2 系 (table 継続行) と B3/B5/B7 が主。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -239,7 +239,8 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 - [ ] B1: grid-table rowspan continuation merge 実装
 - [ ] B2: simple-table 多行 cell continuation 判定修正
 - [ ] B3: footnote body 再帰処理 (tokenizer と同じ fence 出力に揃える)
-- [ ] B4: `\ _\` パターンドロップ in `_convert_inline`
+- [x] B4-a: section/file title を `_convert_inline` に通す — committed `4b617079d` (56→53 FAIL)
+- [ ] B4-b: `\ _\` (空の named ref) パターンドロップ in `_convert_inline` body 側
 - [ ] B5: substitution 展開タイミング見直し
 - [ ] B6: 変則 rowspan sep スキップ
 - [ ] B7: transition `----` 処理追加
