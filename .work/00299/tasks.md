@@ -100,7 +100,7 @@
 - [x] `test_hints.py` 削除、`test_run.py` / `test_verify.py` / `test_docs.py` の hints 関連テスト削除。`test_index.py` 新規作成（TestProcessingPatternsSemantics / TestNoKnowledgeContentExcluded / TestMissingJsonSkipped / TestTitleCommaEscape / TestGenerateIndexEdgeCases）
 - [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — "All files verified OK" (FAIL 0件)、index.toon 監査: pp 79件すべて `pp == category`、他 239件すべて `pp == ''`、違反 0件
 - [x] サブエージェント品質チェック (SE 4.5/5 / QA 4.5/5) — 全指摘（Medium 2, Low 3）を同一コミットで修正済み
-- [ ] コミット・プッシュ（「feat(rbkc): drop hints scope + fix processing_patterns semantics」）
+- [x] コミット・プッシュ — committed `f7cff23a1` (feat) + `983ae8301` (docs)
 
 #### Step K-4: 別 Issue 起票
 
