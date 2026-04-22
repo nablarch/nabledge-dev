@@ -274,9 +274,9 @@ def normalise_rst(
             # Trailing `\` at end of file or before blank → drop the newline
             return r"\ "
         first = tail[0]
-        if first in "=+-~^#*<>:._`\"'":
-            # Next line begins with a potential structural marker — keep the
-            # newline so detection still works.
+        if first in "=+-~^#*<>:._`\"'|":
+            # Next line begins with a potential structural marker (table/heading)
+            # — keep the newline so detection still works.
             return f"\\\n{m.group(1)}"
         return r"\ " + tail
 
@@ -775,19 +775,16 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
     """Render an RST grid-table as an HTML `<table>` block.
 
     Converter (scripts/create/converters/rst.py `_parse_grid_table`) emits
-    HTML for grid tables rather than MD, so the normaliser must match.
+    HTML for grid tables. Each content line between `+---+` separators is
+    treated as an independent row (matching converter's behaviour).
     """
     n = len(lines)
     rows: list[tuple[bool, list[str]]] = []  # (is_header, cells)
-    current_row: list[str] | None = None
     in_header = True
     i = start
     while i < n:
         ln = lines[i]
         if _GRID_TABLE_SEP_RE.match(ln):
-            if current_row is not None:
-                rows.append((in_header, current_row))
-                current_row = None
             # `+===+` marks end of header; subsequent rows are body
             if '=' in ln:
                 in_header = False
@@ -802,18 +799,10 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
         if ln.strip().startswith("|") and ln.strip().endswith("|"):
             inner = ln.strip().strip("|")
             cells = [c.strip() for c in inner.split("|")]
-            if current_row is None:
-                current_row = cells
-            else:
-                for idx, c in enumerate(cells):
-                    if idx < len(current_row):
-                        current_row[idx] = (current_row[idx] + " " + c).strip() if c else current_row[idx]
+            rows.append((in_header, cells))
             i += 1
             continue
         break
-
-    if current_row is not None:
-        rows.append((in_header, current_row))
 
     if not rows:
         return "", i
