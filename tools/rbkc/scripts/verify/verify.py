@@ -616,25 +616,13 @@ def _normalize_md_unit(text: str) -> str:
     # (Source-side normalisation drops them, so we strip here for symmetry.)
     text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
     text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
-    # Grid-table HTML scaffolding the converter emits: strip <table>/<tbody>/
-    # <tr>/<td>/<th>/<thead>/<br>/<br /> tags and their closers so the cell
-    # text aligns with source-side rst normalisation.
-    text = re.sub(r'</?(?:table|thead|tbody|tr|td|th|br)(?:\s[^>]*)?/?>', ' ', text, flags=re.IGNORECASE)
-    # Unresolved RST field-list entries the converter passes through as-is
-    # (``:name: value`` or ``:name:`` on its own line with the value
-    # continued below). Drop the ``:name:`` marker so the value aligns
-    # with the source-normalised form (which collapses these away).
-    text = re.sub(r'(?m)^\s*:([^:`\n]+):(?:\s+|$)', '', text)
-    # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
-    # (and ``name_`` → ``name``). Preceding char must be a word-ending marker
-    # (alnum, closing bracket/paren) — a backtick must NOT be allowed because
-    # that would incorrectly strip the ``_`` inside ``` `_` ``` inline code.
-    # Use MULTILINE so the anchor fires at every line end.
-    text = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
 
-    # Split into fenced-code and non-code regions so MD syntax strips only
-    # apply to non-code text (otherwise a `# comment` inside ``` leaks into
-    # MD-heading removal and mismatches the source-side normaliser).
+    # Split into fenced-code and non-code regions so MD syntax strips (HTML
+    # tags, headings, list markers, etc.) only apply to non-code text. Inside
+    # fenced code blocks, verbatim content must be preserved — otherwise HTML
+    # tags that originate from the source (e.g. ``<br/>`` inside Java
+    # Javadoc comments) get stripped on the MD side while the source side
+    # keeps them, causing a spurious QC2 fabricated-content error.
     out: list[str] = []
     in_fence = False
     for line in text.split("\n"):
@@ -645,6 +633,21 @@ def _normalize_md_unit(text: str) -> str:
             out.append(line)
             continue
         l = line
+        # Grid-table HTML scaffolding the converter emits: strip
+        # <table>/<tbody>/<tr>/<td>/<th>/<thead>/<br>/<br /> tags and their
+        # closers so the cell text aligns with source-side rst normalisation.
+        l = re.sub(r'</?(?:table|thead|tbody|tr|td|th|br)(?:\s[^>]*)?/?>', ' ', l, flags=re.IGNORECASE)
+        # Unresolved RST field-list entries the converter passes through as-is
+        # (``:name: value`` or ``:name:`` on its own line with the value
+        # continued below). Drop the ``:name:`` marker so the value aligns
+        # with the source-normalised form (which collapses these away).
+        l = re.sub(r'^\s*:([^:`\n]+):(?:\s+|$)', '', l)
+        # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
+        # (and ``name_`` → ``name``). Preceding char must be a word-ending
+        # marker (alnum, closing bracket/paren) — a backtick must NOT be
+        # allowed because that would incorrectly strip the ``_`` inside
+        # ``` `_` ``` inline code.
+        l = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', l)
         # MD headings: #### Heading -> Heading
         l = re.sub(r'^#{1,6}[^\S\n]+', '', l)
         # Bullet list markers (MD): "* "/"- "/"+ ". Require the next char after

@@ -230,9 +230,7 @@ SETUP_FIXED[グループID]=ファイルパス
 | ディレクティブ行 \ [#]_\ | ディレクティブを記載する。ディレクティブ名のセルの右のセルに設定値を記載する（複数行指定可）。 |
 | レコード種別 | レコード種別を記載する。マルチレイアウトの場合は、この記述を連続で記載する。 |
 | フィールド名称 | フィールド名称を記載する。フィールドの数だけ記載する。 |
-| データ型 | そのフィールドのデータ型を記載する。フィールドの数だけ記載する。 |
-|  | データ型は「半角英字」のように日本語名称で記述する。 |
-|  | フォーマット定義ファイル上のデータ型と日本語名称のデータ型のマッピングは、 [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) のメンバ変数DEFAULT_TABLEを参照。 |
+| データ型 | そのフィールドのデータ型を記載する。フィールドの数だけ記載する。 データ型は「半角英字」のように日本語名称で記述する。 フォーマット定義ファイル上のデータ型と日本語名称のデータ型のマッピングは、 [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) のメンバ変数DEFAULT_TABLEを参照。 |
 | フィールド長 | そのフィールドのフィールド長を記載する。フィールドの数だけ記載する。 |
 | データ | そのフィールドに格納されるデータを記載する。複数レコード存在する場合は次の行に続けてデータを記載する。 |
 

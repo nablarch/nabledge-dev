@@ -179,20 +179,12 @@ Excelファイルに定義した応答電文のフォーマットおよびデー
 
 | 名称 | 説明 |
 |---|---|
-| 識別子 | 電文の種類を示すIDを指定する。本項目が、テストケース一覧のexpectedMessageおよびresponseMessageに記載されたグループIDと紐付けられる。 |
-|  | 識別子の書式を以下に示す。 |
-|  | * 要求電文のヘッダ … EXPECTED_REQUEST_HEADER_MESSAGES=リクエストID |
-|  | * 要求電文の本文 … EXPECTED_REQUEST_BODY_MESSAGES=リクエストID |
-|  | * 応答電文のヘッダ … RESPONSE_HEADER_MESSAGES=リクエストID |
-|  | * 応答電文の本文 … RESPONSE_BODY_MESSAGES=リクエストID |
+| 識別子 | 電文の種類を示すIDを指定する。本項目が、テストケース一覧のexpectedMessageおよびresponseMessageに記載されたグループIDと紐付けられる。 識別子の書式を以下に示す。 * 要求電文のヘッダ … EXPECTED_REQUEST_HEADER_MESSAGES=リクエストID * 要求電文の本文 … EXPECTED_REQUEST_BODY_MESSAGES=リクエストID * 応答電文のヘッダ … RESPONSE_HEADER_MESSAGES=リクエストID * 応答電文の本文 … RESPONSE_BODY_MESSAGES=リクエストID |
 | ディレクティブ行 \ [#f6]_\ | ディレクティブを記載する。ディレクティブ名のセルの右のセルに設定値を記載する（複数行指定可）。 |
 | no | ディレクティブ行の下の行には必ず「no」を記載する。 |
 | フィールド名称 | フィールド名称を記載する。フィールドの数だけ記載する。 |
-| データ型 | そのフィールドのデータ型を記載する。フィールドの数だけ記載する。 |
-|  | データ型は「半角英字」のように日本語名称で記述する。 |
-|  | フォーマット定義ファイル上のデータ型と日本語名称のデータ型のマッピングは、 [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) のメンバ変数DEFAULT_TABLEを参照。 |
-| フィールド長 | そのフィールドのフィールド長を記載する。「-」を記載した場合は、「データ」の欄の記載内容を元にサイズを自動計算する。 |
-|  | フィールドの数だけ記載する。 |
+| データ型 | そのフィールドのデータ型を記載する。フィールドの数だけ記載する。 データ型は「半角英字」のように日本語名称で記述する。 フォーマット定義ファイル上のデータ型と日本語名称のデータ型のマッピングは、 [BasicDataTypeMapping](https://github.com/nablarch/nablarch-testing/blob/main/src/main/java/nablarch/test/core/file/BasicDataTypeMapping.java) のメンバ変数DEFAULT_TABLEを参照。 |
+| フィールド長 | そのフィールドのフィールド長を記載する。「-」を記載した場合は、「データ」の欄の記載内容を元にサイズを自動計算する。 フィールドの数だけ記載する。 |
 | データ | データは、応答電文の場合のみ記載する。そのフィールドに格納されるデータを記載する。複数件応答電文を返却する場合は次の行に続けてデータを記載する。 |
 
 .. [#f6]

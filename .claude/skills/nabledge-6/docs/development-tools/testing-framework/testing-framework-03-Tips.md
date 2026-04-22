@@ -663,8 +663,7 @@ nablarch.test.resource-root=test/online;test/batch
 
 | キー | 値 |
 |---|---|
-| TestDataConverter_<データ種別> | 上記インタフェースを実装したクラスのクラス名。 |
-|  | データ種別はテストデータのfile-typeに指定した値。 |
+| TestDataConverter_<データ種別> | 上記インタフェースを実装したクラスのクラス名。 データ種別はテストデータのfile-typeに指定した値。 |
 
 ## システムリポジトリ登録例
 

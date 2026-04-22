@@ -724,16 +724,18 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
             d += _dw(ch)
         return ["".join(cell).strip() for cell in cells]
 
-    # Directive inside a simple-table cell (e.g. ``.. code-block::``) drops
-    # the rest of that cell's body — rendering a multi-line directive body
-    # inside a single Markdown table cell is not well-defined and would leak
-    # RST syntax into the output.
+    # Directive inside a simple-table cell (e.g. ``.. tip::`` / ``.. important::``).
+    # Drop just the directive header line but keep body text so the readable
+    # content of the cell is preserved.
     _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
 
-    rows: list[list[str]] = []
+    # Group body lines by row. A new row starts when the first column has
+    # non-whitespace content; subsequent lines that only fill later columns
+    # (continuation) get merged into that row's cells. Separator lines
+    # trigger header-count detection and reset skip state.
+    grouped_rows: list[list[list[str]]] = []  # rows -> cells -> list of text fragments
     sep_count = 0
     head_count: int | None = None
-    skip_until_sep = False
 
     for line in block:
         s = line.rstrip()
@@ -743,20 +745,27 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
         if stripped and all(c in "= " for c in stripped):
             sep_count += 1
             if sep_count == 2 and head_count is None:
-                head_count = len(rows)
-            skip_until_sep = False
+                head_count = len(grouped_rows)
             continue
-        if skip_until_sep:
-            continue
-        # If any cell on this line starts a nested directive, stop absorbing
-        # rows for the current table row until the next separator.
-        if _CELL_DIRECTIVE_RE.search(s):
-            skip_until_sep = True
+        # Drop the directive header line itself but keep its body on
+        # subsequent lines.
+        if _CELL_DIRECTIVE_RE.match(s):
             continue
         cells = split_row(s)
-        # Skip rows that are entirely empty (e.g., option-only cells like :ref: refs)
-        if any(c for c in cells):
-            rows.append(cells)
+        first_col_has_text = bool(cells[0].strip()) if cells else False
+        if first_col_has_text or not grouped_rows:
+            grouped_rows.append([[c] if c else [] for c in cells])
+        else:
+            # Continuation: append each non-empty cell's text to the previous
+            # row's corresponding cell.
+            for ci, c in enumerate(cells):
+                if ci < len(grouped_rows[-1]) and c:
+                    grouped_rows[-1][ci].append(c)
+
+    rows: list[list[str]] = [
+        [" ".join(frag for frag in cell if frag) for cell in row]
+        for row in grouped_rows
+    ]
 
     if head_count is None:
         head_count = 0
@@ -787,13 +796,14 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
             for cell in row:
                 # cell format: [morerows, morecols, offset, StringList]
                 content = cell[3] if len(cell) >= 4 else []
-                # Drop any nested directive body (e.g. .. code-block::) from the
-                # cell: flattening it into one cell loses structure and leaks
-                # RST syntax.
+                # Drop directive header lines (``.. tip::`` / ``.. code-block::``
+                # etc.) but keep their body text so the content that readers
+                # see is preserved. Code-block bodies are flattened as plain
+                # prose to fit one table cell.
                 kept = []
                 for line in content:
                     if _CELL_DIRECTIVE_RE.match(line):
-                        break
+                        continue
                     kept.append(line)
                 text_parts = [line.strip() for line in kept if line.strip()]
                 cells.append(" ".join(text_parts))

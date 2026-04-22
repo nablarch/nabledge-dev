@@ -236,14 +236,8 @@ Jakarta Server Pages静的解析ツールでチェックしたい対象の存在
 | 宣言 | <%! int i = 0; %> | <%! |
 | 式 | <%= map.size() %> | <%= |
 | スクリプトレット | <%  String name = null; %> | <% |
-| ディレクティブ | <%@ taglib prefix="n" uri=  \|br\| | 「<%@」から始まり、最初の空白までの \|br\| |
-|  | "http://tis.co.jp/nablarch" %> | 部分を記述する。 |
-|  |  | 例：） <%@ taglib |
-| アクションタグ | <jsp:attribute name="attrName" /> | 「<jsp:」から始まり、最初の空白までの \|br\| |
-|  |  | 部分を記述する。\|br\| |
-|  |  | 「<jsp:」のみを設定した場合、\|br\| |
-|  |  | アクションタグ全てが使用可能となる。 |
-|  |  | 例：） <jsp:attribute |
+| ディレクティブ | <%@ taglib prefix="n" uri=  \|br\| "http://tis.co.jp/nablarch" %> | 「<%@」から始まり、最初の空白までの \|br\| 部分を記述する。 例：） <%@ taglib |
+| アクションタグ | <jsp:attribute name="attrName" /> | 「<jsp:」から始まり、最初の空白までの \|br\| 部分を記述する。\|br\| 「<jsp:」のみを設定した場合、\|br\| アクションタグ全てが使用可能となる。 例：） <jsp:attribute |
 | カスタムタグ | <n:error name="attrName" /> | 設定方法は、アクションタグと同じ。 |
 
 
