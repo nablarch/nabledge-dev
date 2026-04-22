@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 48 — Phase 21-Y / Y-1 完了。docutils AST probe を全 5 バージョン 2,581 RST に実施、v6/v5 は parse error 0 件、v1.x は WARNING 中心で真の parse 失敗 5 件のみ。grid-table rowspan (`morerows`) / substitution / admonition 14 種 / table 3 種 / footnote / transition はすべて AST node として取得可能。Sphinx 固有 role/directive は minimal shim で吸収できることを実証。結果を `.work/00299/phase21y/ast-probe.md` / `ast-probe.json` に保存、notes.md (session 48) にサマリ。**Y-2 (Visitor 設計) に進む判断をユーザーに要請中**。)
+**Updated**: 2026-04-23 (session 49 — 方針転換: Phase 21-Y を create 単独の書き直しから、`scripts/common/rst_ast.py` 経由で create / verify の両方が docutils AST を consume する構成に変更。設計書 `rbkc-verify-quality-design.md` §2-2 の独立性原則を「向きベース」に緩め、共通ロジック (scripts/common/ + docutils) は両方から利用可能と明記。§3-1 手順 0 を tokenizer 列挙方式から docutils AST + node → MD 対応表方式に刷新済。footnote body 再帰問題は docutils 側が `<footnote>` node の children として block elements を保持するため自動的に解決。Y-1 完了、Y-2 から再開。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,27 +53,28 @@
 
 ## In Progress
 
-### Phase 21-Y: converter を docutils AST ベースで全面書き直し (最優先)
+### Phase 21-Y: RST 処理を docutils AST + 共通ロジック化し create/verify 双方を書き直す (最優先)
 
-**目的**: 残 53 FAIL を 0 化。同時に、過去の patch 堆積による密結合と再発リスクを解消する。
+**目的**: 残 53 FAIL を 0 化。同時に、create 側 tokenizer と verify 側 tokenizer が RST 仕様解釈で分岐する構造バグ (footnote body 等) を根絶する。
 
-**方針 (session 47 合意)**:
+**方針 (session 49 合意)**:
 
-- `tools/rbkc/scripts/create/converters/rst.py` (1598 行) をゼロから書き直す
-- 自前 parse (grid-table / simple-table / inline / directive / section splitter) を**全廃**し、`docutils.core.publish_doctree(source)` で得られる AST (doctree) を入力とする Visitor に変える
-- プロジェクト固有の変換ロジックは「doctree node → MD」の Visitor のみ
+- `scripts/common/rst_ast.py` を新設し、docutils AST 取得と node → MD 対応表を一元管理
+- create 側 (`scripts/create/converters/rst.py`) と verify 側 (`scripts/verify/verify.py` + `scripts/common/rst_normaliser.py`) は両方 `common/rst_ast.py` を経由して docutils を consume
+- 独立性原則は「向き」で再定義: create → verify / verify → create の相互依存は禁止、だが両者が `common/` 経由で同じ RST 仕様ロジックを使うのは**推奨**
+- 自前 parse (grid-table / simple-table / inline / directive / section splitter / tokenizer の regex 群) を**全廃**
 - **TDD なし・verify 駆動**: `.claude/rules/rbkc.md` の「create-side は verify が quality gate、test 不要」方針に従う
-- 旧 `rst.py` と `tests/ut/test_rst_converter.py` は書き直し完了時に削除
+- 旧 `rst.py` / `rst_normaliser.py` / 旧テストは書き直し完了時に削除
 
-**docutils 利用可否の確認 (session 47)**:
-- `docutils==0.22.4` が setup.sh で install 済、`GridTableParser` / `SimpleTableParser` / `publish_doctree` / `statemachine` 利用可能
-- 現 `rst.py` も一部で `SimpleTableParser` / `StringList` を使っているが、CJK fallback や grid-table 自前実装と混在 → Phase 21-Y で AST 経由に一本化
+**設計書更新 (session 49 実施済)**:
+- `rbkc-verify-quality-design.md` §2-2: 独立性原則を「向き」で再定義、`scripts/common/` + docutils の共有を明文化
+- `rbkc-verify-quality-design.md` §3-1 手順 0: tokenizer 列挙方式 → docutils AST + node → MD 対応表方式に刷新
+- footnote body を含む全 body-owning node は「子 node を再帰 Visit」で統一扱い (B. Admonition と同じ原則が footnote にも自動適用される)
 
 **期待される効果**:
-- grid-table rowspan / simple-table continuation / substitution 順序 / rowspan 変則 separator 等、現 converter が苦手としていた構文は docutils が解決済
-- CJK の display-width 問題は tableparser 固有。AST 経由なら回避可能 (`publish_doctree` は CJK でも動く想定、X-Y-1 で実測)
-- inline (role/ref/literal/substitution) が doctree ノードとして構造化済 → 自前 regex 不要
-- 設計書の独立性原則 (`rbkc.md` / `rbkc-verify-quality-design.md` §2-2) と整合
+- create / verify で同じ AST を consume するため、RST 仕様の解釈がドリフトする構造バグが消える (footnote body 再帰・section splitter・table cell 内 directive 等)
+- grid-table rowspan / simple-table continuation / substitution / rowspan 変則 separator / inline role 等、現 converter/tokenizer が苦手としていた構文は docutils が解決済
+- コード行数が大幅削減 (現 `rst.py` 1598 行 + `rst_normaliser.py` ~600 行 → 合算で減少見込み)
 
 ---
 
@@ -92,39 +93,47 @@
 - [x] 結果を `.work/00299/phase21y/ast-probe.md` / `ast-probe.json` に保存、notes.md (session 48) にサマリ記載
 - [ ] **BLOCKED**: Y-2 (Visitor 設計) 開始可否、include 事前展開方針、cross-ref 解決 hook 方針をユーザーに確認
 
-#### Y-2: Visitor 設計の確定
+#### Y-2: 共通モジュール + node → MD 対応表の設計
 
-- [ ] X-2 の成果物 (`.work/00299/phase21x/inline-patterns.json` / `block-patterns.json` / `transform-rules.md`) を参照しつつ、doctree node → MD の対応表を作る
+- [ ] `scripts/common/rst_ast.py` の API を設計 (docutils ラッパー)
+  - [ ] `parse(source: str, source_path: Path | None) -> Doctree` — 設定 (Sphinx role/directive shim・`file_insertion_enabled=True`・`report_level`) を一元化
+  - [ ] `walk(doctree, visitor: NodeVisitor) -> str` — node → MD の共通 Visitor フレームワーク
+  - [ ] `register_shims() -> None` — Sphinx 固有 role (`ref` / `doc` / `java:extdoc` / `download` / `javadoc_url`) と v1.x 固有 directive (`function` / `class`) を generic に登録 (Y-1 probe で確立したセット)
 - [ ] node → MD 対応表を `tools/rbkc/docs/rbkc-converter-design.md` として新規作成
-  - section / title / paragraph / literal / emphasis / strong
-  - reference (`:ref:` / external / named / anonymous)
-  - substitution_reference / target / footnote / footnote_reference
-  - bullet_list / enumerated_list / definition_list / field_list
-  - table (grid / simple / list-table)
-  - admonition (14 種、`scripts/common/rst_admonition.py` に委譲)
-  - literal_block / code (言語アノテーション付き)
-  - image / figure / raw
-  - comment / transition / line_block
+  - [ ] 構造: `document` / `section` / `title` / `paragraph` / `transition` / `container` / `compound` / `topic` / `sidebar` / `rubric`
+  - [ ] インライン: `Text` / `strong` / `emphasis` / `literal` / `title_reference` / `inline` / `reference` / `target` / `substitution_reference` / `substitution_definition` / `footnote_reference` / `citation_reference` / `problematic` / `system_message`
+  - [ ] リスト: `bullet_list` / `enumerated_list` / `list_item` / `definition_list` / `definition_list_item` / `term` / `definition` / `field_list` / `field` / `field_name` / `field_body` / `line_block` / `line`
+  - [ ] ブロック: `block_quote` / `literal_block` / `doctest_block`
+  - [ ] テーブル: `table` / `tgroup` / `colspec` / `thead` / `tbody` / `row` / `entry`
+  - [ ] 画像/図: `image` / `figure` / `caption` / `legend`
+  - [ ] 注: `note` / `tip` / `warning` / `important` / `attention` / `hint` / `admonition` / `caution` / `danger` / `error`
+  - [ ] 参照/索引: `footnote` / `citation` / `label`
+  - [ ] その他: `raw` / `comment`
+- [ ] create / verify それぞれの Visitor サブクラスが対応表から生成する出力の差分を明記
+  - create Visitor: `sections: list[Section]`・`RSTResult` (JSON 化前の構造) を返す
+  - verify Visitor: フラットな正規化 MD 文字列を返す
 - [ ] 設計書レビューをユーザーに依頼 (レビューなしでは実装着手しない)
 
-#### Y-3: 新 converter 実装 (feature branch 内で clean cut)
+#### Y-3: 共通モジュール + create/verify 実装
 
-- [ ] 旧 `rst.py` を `rst_legacy.py` にリネーム (switch は使わず、すぐ戻せる状態だけ維持)
-- [ ] `rst.py` を `publish_doctree` + Visitor で書き直し
+- [ ] `scripts/common/rst_ast.py` 実装 (Y-2 API 通り)
+- [ ] 旧 `scripts/create/converters/rst.py` を `rst_legacy.py` にリネーム (すぐ戻せる状態を維持)
+- [ ] 旧 `scripts/common/rst_normaliser.py` を `rst_normaliser_legacy.py` にリネーム
+- [ ] 新 `rst.py` を `common/rst_ast.py` + create Visitor で書き直し
   - [ ] `RSTConverter.convert(source, file_id, targets, source_dir, substitutions) -> RSTResult`
-  - [ ] Visitor 実装 (Y-2 対応表通り)
-  - [ ] `scripts/common/rst_admonition.py` / `rst_substitutions.py` / `rst_include.py` の共通モジュールは流用
-  - [ ] cross-ref 解決 hook (targets 辞書経由) は doctree transform で対応
+  - [ ] `scripts/common/rst_admonition.py` / `rst_substitutions.py` / `rst_include.py` は docutils の transform と統合 / または deprecate 判断
+- [ ] 新 `rst_normaliser.py` (verify 側 tokenizer) を `common/rst_ast.py` + verify Visitor で書き直し
+- [ ] `verify.py` から新 normaliser を呼ぶよう配線変更
 - [ ] `bash rbkc.sh create 6` が完走することを確認
-- [ ] 旧 `rst_legacy.py` 削除
-- [ ] `tests/ut/test_rst_converter.py` 削除 (rbkc.md 方針通り)
+- [ ] 旧 `rst_legacy.py` / `rst_normaliser_legacy.py` 削除
+- [ ] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py`) 削除 (rbkc.md 方針通り)
 
 #### Y-4: v6 verify FAIL 0 まで収束
 
 - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
 - [ ] FAIL が残る場合は以下のいずれか:
   - (a) Visitor の漏れ → Y-2 対応表 + Visitor を更新
-  - (b) tokenizer 側の抜け → 設計書更新 + tokenizer 更新 (ユーザー承認)
+  - (b) docutils 挙動の差異で想定と異なる node が出る → 対応表を更新 (ユーザー承認)
   - (c) 許容構文リスト追加 → 設計書更新 + 更新 (ユーザー承認)
 - [ ] 反復
 
@@ -141,7 +150,7 @@
 - [ ] nabledge-test v6 / v5 / v1.4 / v1.3 / v1.2 — ベースライン比で劣化なし (Phase 18〜20 を吸収)
 - [ ] `pytest tools/rbkc/tests/` — verify / CLI / common モジュールの test 全 PASS
 - [ ] サブエージェント品質チェック (SE + QA)
-- [ ] `tools/rbkc/README.md` の converter 説明を「docutils AST ベース Visitor」に更新
+- [ ] `tools/rbkc/README.md` の説明を「docutils AST + common/rst_ast.py 経由、create / verify 共通」に更新
 - [ ] コミット・プッシュ (feature / docs 分割)
 
 ---
