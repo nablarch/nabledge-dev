@@ -606,12 +606,14 @@ def _build_rst_search_units(
     def _norm(t: str) -> str:
         # Strip MD image syntax entirely — alt text may contain brackets,
         # so use a loop to handle nested brackets like ![[1]_](url).
+        # URL may contain one level of balanced parens (common in Javadoc
+        # anchors like ``#findAll(java.lang.Class)``).
         prev = None
         while prev != t:
             prev = t
-            t = re.sub(r'!\[[^\n]*?\]\([^)\n]+\)', '', t, count=1)
+            t = re.sub(r'!\[[^\n]*?\]\((?:[^()\n]|\([^)\n]*\))+\)', '', t, count=1)
         # Strip URL bodies from [text](url), keep visible text.
-        t = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', t)
+        t = re.sub(r'\[([^\]\n]+)\]\((?:[^()\n]|\([^)\n]*\))+\)', r'\1', t)
         return re.sub(r'\s+', ' ', t).strip()
 
     if top_title:
@@ -674,8 +676,8 @@ def _check_rst_content_completeness(
     norm_source = norm_source_raw
     while prev != norm_source:
         prev = norm_source
-        norm_source = re.sub(r'!\[[^\n]*?\]\([^)\n]+\)', '', norm_source, count=1)
-    norm_source = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', norm_source)
+        norm_source = re.sub(r'!\[[^\n]*?\]\((?:[^()\n]|\([^)\n]*\))+\)', '', norm_source, count=1)
+    norm_source = re.sub(r'\[([^\]\n]+)\]\((?:[^()\n]|\([^)\n]*\))+\)', r'\1', norm_source)
     norm_source = re.sub(r'\s+', ' ', norm_source).strip()
     search_units = _build_rst_search_units(data)
 

@@ -552,11 +552,12 @@ def _walk_blocks(
             i += 1
             continue
 
-        # Bullet list marker — preserve in MD form (`* body`).
-        # Converter emits MD bullet lists, so keep markers to match JSON.
+        # Bullet list marker — preserve the original marker (*/-/+) and
+        # body. Converter passes through MD-compatible bullets.
         bm = _BULLET_RE.match(line)
         if bm:
-            out.append(f"{bm.group('indent')}* {bm.group('body')}")
+            marker = bm.group("marker")
+            out.append(f"{bm.group('indent')}{marker} {bm.group('body')}")
             i += 1
             continue
 
