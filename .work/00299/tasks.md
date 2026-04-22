@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 45 — Phase 21-X X-4 実装継続中。v6 verify FAIL 4812→123 (97% 削減)。しかし設計書 2-2 節「独立性原則」および 5 章「許容されない変更」違反が複数発覚。tokenizer 側に converter 出力模倣コードを入れてしまった (HTML grid-table / simple-table trailing-sep / admonition label dict / 幅保存 padding 等)。次セッションで **Phase 21-X X-4a: 独立性違反撤去 + converter 側 RST 仕様準拠修正** を実施して回復する。詳細は X-4a を参照)
+**Updated**: 2026-04-22 (session 46 — Phase 21-X X-4a 実施、v6 verify FAIL 4812→56 (98.8% 削減)。独立性原則違反を撤去: tokenizer から `_ADMONITION_LABELS` 辞書と `_PAD_CHAR` 幅保存ロジックを除去し、`scripts/common/rst_admonition.py` に共通規約を集約。HTML `<table>` 出力の grid-table renderer を MD table に書き直し。converter 側: footnote label の hyphen 対応・CJK simple-table mid-sep 誤検出修正。残 56 FAIL は converter の真のバグ群 (複雑な table 内 directive / grid-table rowspan の変則形式 / 多カラム simple-table の改行連続問題) に収束。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -172,35 +172,54 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 | `\x04` 幅保存 padding | RST 仕様外の hack | 削除 (inline transforms は RST 仕様に忠実に) |
 | `_render_simple_table` の CJK mid-sep detection | RST 仕様範囲内だが複雑化 | 維持 or 簡素化 |
 
-#### X-4a: 独立性違反の撤去と converter 修正 (session 46 — 次セッション最優先)
+#### X-4a: 独立性違反の撤去と converter 修正 ✅ 完了 (session 46)
 
-**方針 (session 45 合意 = 選択肢 D)**:
+**結果**: v6 verify FAIL 4812 → 56 (98.8% 削減)、全 199 unit test GREEN。
 
-1. **tokenizer 側に入れた converter-依存コードを撤去**
-2. **converter を RST 仕様準拠に修正** (HTML grid-table → MD table、simple-table trailing-sep → 標準 MD)
-3. **共通規約は `scripts/common/` に集約** (admonition 変換規則など)
-4. **残 FAIL は "converter の真のバグ"** として明示。別 Issue / 別 Phase で converter 側修正
+- [x] **tokenizer の converter-依存コード撤去**
+  - [x] `_render_grid_table` の HTML `<table>` 出力 → MD table に変更
+  - [x] `_render_simple_table` → 標準 MD (header/sep/body) に統一
+  - [x] `_PAD_CHAR` 幅保存 padding 削除 (inline transforms は RST 仕様準拠)
+  - [x] `_ADMONITION_LABELS` 辞書 → `scripts/common/rst_admonition.py` に移動
+- [x] **`scripts/common/rst_admonition.py` 作成** (TDD 16 件 PASS)
+  - [x] RST admonition → MD blockquote 変換規則、14 directive の閉集合
+  - [x] converter / tokenizer 両方から import
+- [x] **converter の RST 仕様準拠修正**
+  - [x] `_parse_grid_table` → HTML ではなく MD table を出力
+  - [x] `_parse_simple_table_cjk` の mid-separator 検出バグ修正 (total_seps >= 3 を要件化)
+  - [x] footnote label regex の hyphen 許可 (`[#thread-unsafe]` など)
+  - [x] `_ADMONITIONS` を `scripts.common.rst_admonition.ADMONITION_LABELS` に切替
+- [x] **tokenizer 側追加修正** (converter 追従)
+  - [x] backtick-label 定義 `.. _\`name\`:` 対応
+  - [x] コメント行の indent-aware continuation strip 修正
+  - [x] field-list 厳密正規表現 (inline role `:java:extdoc:` を誤マッチしない)
+  - [x] admonition body 2 段階処理 (prose の field-list 名 drop / tail はそのまま)
+  - [x] admonition tail に CJK field-list 対応 (`:リクエストスコープ:` など)
+  - [x] simple-table / list-table / grid-table cell 内 directive ヘッダ行 strip
+  - [x] grid-table rowspan sub-separator (`| +---+`) 対応
+  - [x] grid-table 変則 sub-separator `+---+/text/+---+` スキップ
+  - [x] fenced code block 内の whitespace 非圧縮
+  - [x] 見出しアンダーライン単体行 (transition) 保持
 
-**Steps** (予想所要: 合計 1 時間程度):
+**残 56 FAIL の分類**:
 
-- [ ] **種類 1: tokenizer の converter-依存コード撤去** (~10 分)
-  - [ ] `_render_grid_table` の HTML `<table>` 出力 → MD table 出力に変更
-  - [ ] `_render_simple_table` の trailing-separator 形式 → 標準 MD (header\n---\nbody) に統一
-  - [ ] `_PAD_CHAR` (`\x04`) 幅保存 padding → 削除
-  - [ ] `_ADMONITION_LABELS` 辞書 → `scripts/common/rst_admonition.py` に移動
-- [ ] **種類 2: `scripts/common/rst_admonition.py` 作成** (~15 分)
-  - [ ] RST admonition ディレクティブ → MD blockquote 変換規則を純粋関数として定義
-  - [ ] converter と tokenizer 両方から import
-  - [ ] 単体テスト TDD
-- [ ] **種類 3: converter の RST 仕様準拠修正** (~30 分)
-  - [ ] `scripts/create/converters/rst.py` `_parse_grid_table` → HTML ではなく MD table を出力
-  - [ ] `_parse_simple_table` → trailing-separator でなく標準 MD 形式 (header\n---\nbody) を出力
-  - [ ] converter が `rst_admonition` 共通モジュールを使用するよう変更
-- [ ] **種類 4: 残 FAIL の分類と報告** (~5 分)
-  - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
-  - [ ] 残 FAIL を分類: section splitter バグ / code-block orphan fence / grid-table rowspan 未対応 / その他
-  - [ ] ユーザーに報告: 「verify は設計書通りの品質ゲートとして機能。残 FAIL は converter の真のバグ」
-  - [ ] 別 Issue 起票 or 別 Phase で converter 修正を計画
+主に converter の真のバグに収束 (tokenizer は設計書通りの品質ゲートとして機能):
+
+| カテゴリ | ファイル例 | 件数 |
+|---|---|---|
+| 多カラム simple-table で cell 値が行跨ぎ + 埋込み directive | `tag_reference.rst` `biz_samples/01/index.rst` など | ~30 |
+| 複雑 directive (Excel 記述方法の画像 etc) の converter 側処理漏れ | `06_TestFWGuide/01_Abstract.rst` 他 | ~15 |
+| biz_samples の footnote body が section splitter で前 section に吸収 | `PBKDF2*`, `biz_samples/01` | ~8 |
+| QC5 converter がディレクティブ記法を JSON に残存 | `RequestUnitTest_rest` | 2 |
+| 未分類 | その他 | ~1 |
+
+#### X-4b: 残 56 FAIL → 0 化 (converter の真のバグ修正)
+
+**前提**: X-4a で tokenizer 側は設計書通り確定済。以降の修正は converter 側のみ。
+
+- [ ] 残 56 FAIL を個別調査し converter のバグを特定
+- [ ] 1 件ずつ converter を修正 (tokenizer は触らない)
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
 
 #### X-5: 実データ検証と残 FAIL のトリアージ (X-4a 完了後)
 
