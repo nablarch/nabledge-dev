@@ -813,22 +813,61 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
 def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
     """Render an RST grid-table as an HTML `<table>` block.
 
-    Converter (scripts/create/converters/rst.py `_parse_grid_table`) emits
-    HTML for grid tables. Each content line between `+---+` separators is
-    treated as an independent row (matching converter's behaviour).
+    Uses display-width column boundaries from the first `+---+` separator
+    so that inline `|` (e.g. line-block markers inside a cell) is not
+    mistaken for a column divider.
     """
+    import unicodedata as _ud
+
+    def _dw(c: str) -> int:
+        return 2 if _ud.east_asian_width(c) in ("W", "F") else 1
+
+    def _display_positions(line: str) -> list[int]:
+        pos = [0] * (len(line) + 1)
+        for i, c in enumerate(line):
+            pos[i + 1] = pos[i] + _dw(c)
+        return pos
+
     n = len(lines)
-    rows: list[tuple[bool, list[str]]] = []  # (is_header, cells)
+    # Column boundaries in display width from first separator
+    boundaries_w: list[int] = []
+    for j in range(start, min(start + 20, n)):
+        ln = lines[j]
+        if _GRID_TABLE_SEP_RE.match(ln):
+            pos = _display_positions(ln)
+            boundaries_w = [pos[i] for i, c in enumerate(ln) if c == "+"]
+            break
+
+    def _idx_at_width(line: str, w: int) -> int:
+        pos = _display_positions(line)
+        for i, p in enumerate(pos):
+            if p >= w:
+                return i
+        return len(line)
+
+    def _split_cells(ln: str) -> list[str]:
+        if not boundaries_w or len(boundaries_w) < 2:
+            parts = ln.split("|")
+            return [p.strip() for p in parts[1:-1]] if len(parts) >= 3 else []
+        cells = []
+        for i in range(len(boundaries_w) - 1):
+            left_idx = _idx_at_width(ln, boundaries_w[i]) + 1
+            right_idx = _idx_at_width(ln, boundaries_w[i + 1])
+            if left_idx > len(ln):
+                cells.append("")
+                continue
+            cells.append(ln[left_idx:right_idx].strip())
+        return cells
+
+    rows: list[tuple[bool, list[str]]] = []
     in_header = True
     i = start
     while i < n:
         ln = lines[i]
         if _GRID_TABLE_SEP_RE.match(ln):
-            # `+===+` marks end of header; subsequent rows are body
             if '=' in ln:
                 in_header = False
             i += 1
-            # Peek: end table if next line isn't grid-related
             if i < n and not (
                 _GRID_TABLE_SEP_RE.match(lines[i])
                 or (lines[i].strip().startswith("|") and lines[i].strip().endswith("|"))
@@ -836,9 +875,9 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
                 break
             continue
         if ln.strip().startswith("|") and ln.strip().endswith("|"):
-            inner = ln.strip().strip("|")
-            cells = [c.strip() for c in inner.split("|")]
-            rows.append((in_header, cells))
+            cells = _split_cells(ln)
+            if cells:
+                rows.append((in_header, cells))
             i += 1
             continue
         break
