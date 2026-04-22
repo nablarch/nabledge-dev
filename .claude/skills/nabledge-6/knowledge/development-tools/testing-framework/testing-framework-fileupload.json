@@ -1,23 +1,23 @@
 {
   "id": "testing-framework-fileupload",
   "title": "リクエスト単体テストの実施方法(ファイルアップロード)",
-  "content": "ファイルアップロードのテストは、ウェブアプリケーションのテストの一種である。\nしたがって、ファイルアップロードのテストを実施するには、ウェブアプリケーションの\\ index\\ が前提となる。\n\nファイルアップロードのテストをする場合、HTTPリクエストパラメータにアップロードファイルを指定する必要がある。\\\n本項では、HTTPリクエストパラメータにアップロードファイルを指定する方法を解説する。\\",
+  "content": "ファイルアップロードのテストは、ウェブアプリケーションのテストの一種である。\nしたがって、ファイルアップロードのテストを実施するには、ウェブアプリケーションの\u0000 index\u0000 が前提となる。\n\nファイルアップロードのテストをする場合、HTTPリクエストパラメータにアップロードファイルを指定する必要がある。\u0000\n本項では、HTTPリクエストパラメータにアップロードファイルを指定する方法を解説する。\u0000\n\n-----",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "アップロードファイルの記述方法",
-      "content": "HTTPリクエストパラメータの値に、以下の記述をすることで、\nHTTPリクエストパラメータにアップロードファイルを指定できる。\n\n```text\n${attach:ファイルパス}\n```\n> **Tip:** ファイルパスは、\\ **テスト実行時のカレントディレクトリからの相対パス**\\ 、すなわち、\\ プロジェクトルートディレクトリからの相対パスで記述する。"
+      "content": "HTTPリクエストパラメータの値に、以下の記述をすることで、\nHTTPリクエストパラメータにアップロードファイルを指定できる。\n\n```text\n${attach:ファイルパス}\n```\n\n> **Tip:**\n> ファイルパスは、\u0000 **テスト実行時のカレントディレクトリからの相対パス**\u0000 、すなわち、\u0000\n> プロジェクトルートディレクトリからの相対パスで記述する。"
     },
     {
       "id": "s2",
       "title": "バイナリファイルの場合",
-      "content": "画像ファイル等、バイナリファイルをアップロードする場合は、事前にファイルを配置しておき、\nそのファイルへのパスを指定する。\n\n\n以下の例では、uploadfileというキーで、プロジェクト配下のtest/resources/images\\\nディレクトリにあるpicture.pngをアップロードする。\n\n```text\n<project_root>\n     + test\n        + resources\n           + images\n              + picture.png\n```\n------\n\n\n`LIST_MAP=requestParams`\n\n| uploadfile | comment | public |\n|---|---|---|\n| `${attach:test/resources/images/picture.png}` | アップロードします。 | `false` |\n\n\n------"
+      "content": "画像ファイル等、バイナリファイルをアップロードする場合は、事前にファイルを配置しておき、\nそのファイルへのパスを指定する。\n\n以下の例では、uploadfileというキーで、プロジェクト配下のtest/resources/images\u0000\nディレクトリにあるpicture.pngをアップロードする。\n\n```text\n<project_root>\n     + test\n        + resources\n           + images\n              + picture.png\n```\n\n-----\n\n`LIST_MAP=requestParams`\n\n| uploadfile | comment | public |\n|---|---|---|\n| `${attach:test/resources/images/picture.png}` | アップロードします。 | `false` |"
     },
     {
       "id": "s3",
       "title": "固定長ファイル、CSVファイルの場合",
-      "content": "\\ 固定長ファイル\\や\nCSVファイル\\ をアップロードする場合、\\\nそのファイル内容をテストデータシートに記載する。\\\nテスト実行時に、自動テストフレームワークがこのデータを元にファイルを作成する。\n\n\n以下の例では、workディレクトリ配下にmember_list.csvファイルを作成し、\nそのファイルをアップロード対象として指定している。\n\n------\n\n`LIST_MAP=requestParams`\n\n| uploadfile | comment |\n|---|---|\n| `${attach:work/member_list.csv}` | 10月度新規会員を登録 |\n\n\n`SETUP_FIXED=work/member_list.csv`\n\n\n\n// ディレクティブ\n\n| text-encoding | Windows-31J |  |\n|---|---|---|\n| record-separator | CRLF |  |\n\n// データ\n\n| name | age | address |\n|---|---|---|\n| 山田太郎 | 30 | 東京都港区芝浦1-1 |\n| 田中次郎 | 20 | 大阪府門真市東田町2-2 |\n\n------\n\n> **Tip:** 固定長ファイルやCSVファイルをアップロードする場合でも、 バイナリファイルと同様に、事前にファイルを用意しておくことも可能であるが、 テストデータの保守容易性を考慮するとテストデータシートに記載しておくべきである。"
+      "content": "\u0000 固定長ファイル\u0000や\nCSVファイル\u0000 をアップロードする場合、\u0000\nそのファイル内容をテストデータシートに記載する。\u0000\nテスト実行時に、自動テストフレームワークがこのデータを元にファイルを作成する。\n\n以下の例では、workディレクトリ配下にmember_list.csvファイルを作成し、\nそのファイルをアップロード対象として指定している。\n\n-----\n\n`LIST_MAP=requestParams`\n\n| uploadfile | comment |\n|---|---|\n| `${attach:work/member_list.csv}` | 10月度新規会員を登録 |\n\n`SETUP_FIXED=work/member_list.csv`\n\n// ディレクティブ\n\n| text-encoding | Windows-31J |  |\n|---|---|---|\n| record-separator | CRLF |  |\n\n// データ\n\n| name | age | address |\n|---|---|---|\n| 山田太郎 | 30 | 東京都港区芝浦1-1 |\n| 田中次郎 | 20 | 大阪府門真市東田町2-2 |\n\n-----\n\n> **Tip:**\n> 固定長ファイルやCSVファイルをアップロードする場合でも、\n> バイナリファイルと同様に、事前にファイルを用意しておくことも可能であるが、\n> テストデータの保守容易性を考慮するとテストデータシートに記載しておくべきである。"
     }
   ]
 }

@@ -1,10 +1,19 @@
 # 認可チェックハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* リクエストに対する認可チェック
+* 権限がない場合に表示するエラーページを指定する
+* 特定のリクエストを認可チェックから除外する
+
 本ハンドラでは、 リクエストに対する認可チェック を行う。
 
 認可チェックは、ライブラリの permission_check を使用して行う。
 そのため、本ハンドラを使用するには、
-`PermissionFactory` を実装したクラスを本ハンドラに設定する必要がある。
+PermissionFactory を実装したクラスを本ハンドラに設定する必要がある。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -12,11 +21,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-permission-check-handler/flow.png)
+![](../images/PermissionCheckHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.common.permission.PermissionCheckHandler`
+* nablarch.common.permission.PermissionCheckHandler
 
 ## モジュール一覧
 
@@ -32,12 +41,10 @@
 スレッドコンテキスト変数管理ハンドラ より後ろに配置すること
 本ハンドラではスレッドコンテキスト上に設定されたリクエストIDとユーザIDをもとに認可チェックを行うため、
 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを配置する必要がある。
-
 内部フォーワードハンドラ より後ろに配置すること
 内部フォーワードが行われた際に、フォーワード先のリクエストID（ 内部リクエストID ）をもとに
 認可チェックを行いたい場合は、 内部フォーワードハンドラ より後ろに本ハンドラを配置する必要がある。
-合わせて、 スレッドコンテキスト変数管理ハンドラ の `attributes` に `InternalRequestIdAttribute` を追加すること。
-
+合わせて、 スレッドコンテキスト変数管理ハンドラ の `attributes` に InternalRequestIdAttribute を追加すること。
 HTTPエラー制御ハンドラ より後ろに配置すること
 認可チェックエラーの場合に表示するエラーページを指定するため、
 HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必要がある。
@@ -50,14 +57,13 @@ HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必
 権限がある場合
 業務ロジック や
 画面表示の制御 で参照できるように、
-認可チェックに使用した `Permission` をスレッドローカルに設定する。
+認可チェックに使用した Permission をスレッドローカルに設定する。
 そして、後続ハンドラを呼び出す。
-
 権限がない場合
-`Forbidden(403)` を送出する。
+Forbidden(403) を送出する。
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
-`PermissionCheckHandler.setUsesInternalRequestId`
+PermissionCheckHandler.setUsesInternalRequestId
 でtrueを指定する。デフォルトはfalseである。
 
 ## 権限がない場合に表示するエラーページを指定する
@@ -68,7 +74,7 @@ HTTPエラー制御ハンドラ より後ろに本ハンドラを配置する必
 ## 特定のリクエストを認可チェックから除外する
 
 ログイン前のリクエストなど、認可チェックを除外したいリクエストがある場合は、
-`PermissionCheckHandler.setIgnoreRequestIds`
+PermissionCheckHandler.setIgnoreRequestIds
 で指定する。
 
 ```xml

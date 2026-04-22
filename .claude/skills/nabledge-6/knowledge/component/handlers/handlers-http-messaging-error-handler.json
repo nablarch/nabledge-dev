@@ -1,13 +1,13 @@
 {
   "id": "handlers-http-messaging-error-handler",
   "title": "HTTPメッセージングエラー制御ハンドラ",
-  "content": "本ハンドラでは後続のハンドラで発生した例外及びエラーを補足し、例外(エラー)に応じたログ出力とレスポンスの生成を行う。\nまた、後続のハンドラでレスポンスボディが設定されていない場合には、HTTPステータスコードに対応したデフォルトのボディをレスポンスに設定する。\n\n本ハンドラでは、以下の処理を行う。\n\n* 例外(エラー)に応じたログ出力とレスポンスの生成を行う。\n詳細は、 例外の種類に応じたログ出力とレスポンス生成 を参照。\n\n* デフォルトのレスポンスボディを設定する。\n詳細は、 レスポンスボディが空の場合のデフォルトレスポンスの設定 を参照。\n\n処理の流れは以下のとおり。\n\n![](assets/handlers-http-messaging-error-handler/flow.png)",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* 例外の種類に応じたログ出力とレスポンス生成\n\n  * nablarch.fw.Result.Errorのログ出力について\n* レスポンスボディが空の場合のデフォルトレスポンスの設定\n\n本ハンドラでは後続のハンドラで発生した例外及びエラーを補足し、例外(エラー)に応じたログ出力とレスポンスの生成を行う。\nまた、後続のハンドラでレスポンスボディが設定されていない場合には、HTTPステータスコードに対応したデフォルトのボディをレスポンスに設定する。\n\n本ハンドラでは、以下の処理を行う。\n\n* 例外(エラー)に応じたログ出力とレスポンスの生成を行う。\n  詳細は、 例外の種類に応じたログ出力とレスポンス生成 を参照。\n* デフォルトのレスポンスボディを設定する。\n  詳細は、 レスポンスボディが空の場合のデフォルトレスポンスの設定 を参照。\n\n処理の流れは以下のとおり。\n\n![](../images/HttpMessagingErrorHandler/flow.png)",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* `nablarch.fw.messaging.handler.HttpMessagingErrorHandler`"
+      "content": "* nablarch.fw.messaging.handler.HttpMessagingErrorHandler"
     },
     {
       "id": "s2",
@@ -17,17 +17,17 @@
     {
       "id": "s3",
       "title": "制約",
-      "content": "HTTPレスポンスハンドラ より後ろに配置すること\n本ハンドラで生成した `HttpResponse` を HTTPレスポンスハンドラ が処理する。\nこのため、本ハンドラを HTTPレスポンスハンドラ より後ろに設定する必要がある。"
+      "content": "HTTPレスポンスハンドラ より後ろに配置すること\n本ハンドラで生成した HttpResponse を HTTPレスポンスハンドラ が処理する。\nこのため、本ハンドラを HTTPレスポンスハンドラ より後ろに設定する必要がある。"
     },
     {
       "id": "s4",
       "title": "例外の種類に応じたログ出力とレスポンス生成",
-      "content": "`nablarch.fw.NoMoreHandlerException`\n:ログレベル: INFO\n:レスポンス: 404\n:説明: リクエストを処理すべきハンドラが存在しなかったことを意味するため、証跡ログとして記録する。\nまた、処理すべき *action class* が存在しなかったことを意味するため、HTTPステータスコードが *404*  のレスポンスを生成する。\n\n`nablarch.fw.web.HttpErrorResponse`\n:ログレベル: ログ出力なし\n:レスポンス: `HttpErrorResponse#getResponse()`\n:説明: 後続のハンドラで業務例外(バリデーションなどを行った結果の例外)が発生したことを意味するので、ログ出力は行わない。\n\n`nablarch.fw.Result.Error`\n:ログレベル: 設定による\n:レスポンス: `Error#getStatusCode()`\n:説明: nablarch.fw.Result.Errorのログ出力について を参照\n\n`nablarch.core.message.ApplicationException` と `nablarch.fw.messaging.MessagingException`\n:ログレベル: \\-\n:レスポンス: 400\n:説明: クライアントからのリクエストが不正であることを示す例外のため、HTTPステータスコードが *400* のレスポンスを生成する。\n\n上記以外の例外及びエラー\n:ログレベル: FATAL\n:レスポンス: 500\n:説明: 上記に該当しない例外及びエラーの場合には、障害扱いとしてログ出力を行う。\nまた、予期しない例外やエラーであるため、レスポンスは **500** としている。"
+      "content": "nablarch.fw.NoMoreHandlerException\nnablarch.fw.web.HttpErrorResponse\nnablarch.fw.Result.Error\nnablarch.core.message.ApplicationException と nablarch.fw.messaging.MessagingException\n上記以外の例外及びエラー"
     },
     {
       "id": "s5",
       "title": "nablarch.fw.Result.Errorのログ出力について",
-      "content": "後続のハンドラで発生した例外が、 `Error` の場合はログ出力を行うかどうかは、\n`writeFailureLogPattern` に設定した値によって変わる。\nこのプロパティには正規表現が設定でき、その正規表現が `Error#getStatusCode()` とマッチした場合に `FATAL` レベルのログを出力する。"
+      "content": "後続のハンドラで発生した例外が、 Error の場合はログ出力を行うかどうかは、\nwriteFailureLogPattern に設定した値によって変わる。\nこのプロパティには正規表現が設定でき、その正規表現が Error#getStatusCode() とマッチした場合に FATAL レベルのログを出力する。"
     },
     {
       "id": "s6",

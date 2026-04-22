@@ -1,5 +1,13 @@
 # OnDoubleSubmissionインターセプタ
 
+**目次**
+
+* インターセプタクラス名
+* モジュール一覧
+* OnDoubleSubmissionを使用する
+* OnDoubleSubmissionのデフォルト値を指定する
+* OnDoubleSubmissionの振る舞いを変更する
+
 二重サブミット(同一リクエストの二重送信)のチェック を行うインターセプタ。
 
 このインターセプタを使用するためには、
@@ -10,7 +18,7 @@ UseTokenインターセプタによるトークン設定
 
 ## インターセプタクラス名
 
-* `nablarch.common.web.token.OnDoubleSubmission`
+* nablarch.common.web.token.OnDoubleSubmission
 
 ## モジュール一覧
 
@@ -23,7 +31,7 @@ UseTokenインターセプタによるトークン設定
 
 ## OnDoubleSubmissionを使用する
 
-`OnDoubleSubmission` アノテーションを、
+OnDoubleSubmission アノテーションを、
 アクションのメソッドに対して設定する。
 
 ```java
@@ -37,11 +45,11 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
 ## OnDoubleSubmissionのデフォルト値を指定する
 
 アプリケーション全体で使用する
-`OnDoubleSubmission` アノテーションのデフォルト値を設定する場合は、
-`BasicDoubleSubmissionHandler`
+OnDoubleSubmission アノテーションのデフォルト値を設定する場合は、
+BasicDoubleSubmissionHandler
 をコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。
 
-`BasicDoubleSubmissionHandler`
+BasicDoubleSubmissionHandler
 では、アノテーションの属性が指定されなかった場合に、自身のプロパティに設定されたリソースパス、メッセージID、ステータスコードを使用する。
 
 設定例
@@ -56,10 +64,17 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
   <property name="statusCode" value="200" />
 </component>
 ```
-> **Important:** `OnDoubleSubmission` と `BasicDoubleSubmissionHandler` の どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。 このため、 トークンを使用した二重サブミットの防止 を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
+
+> **Important:**
+> OnDoubleSubmission
+> と BasicDoubleSubmissionHandler の
+> どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。
+
+> このため、 トークンを使用した二重サブミットの防止
+> を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
 
 ## OnDoubleSubmissionの振る舞いを変更する
 
-`OnDoubleSubmission` アノテーションの振る舞いは、
-`DoubleSubmissionHandler`
+OnDoubleSubmission アノテーションの振る舞いは、
+DoubleSubmissionHandler
 インタフェースを実装することで変更できる。実装したクラスをコンポーネント定義に `doubleSubmissionHandler` という名前で追加する。

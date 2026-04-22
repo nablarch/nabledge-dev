@@ -1,23 +1,31 @@
 # HTTPメッセージングリクエスト変換ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* HTTPリクエストを要求電文に変換する
+* 巨大なサイズのリクエストを防ぐ
+
 HTTPリクエスト(
-`HttpRequest`
+HttpRequest
 )を要求電文(
-`RequestMessage`
+RequestMessage
 )に変換するハンドラ。
 
 本ハンドラでは、以下の処理を行う。
 
 * HTTPリクエストを要求電文に変換する。
-詳細は、 HTTPリクエストを要求電文に変換する を参照。
+  詳細は、 HTTPリクエストを要求電文に変換する を参照。
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-http-messaging-request-parsing-handler/flow.png)
+![](../images/HttpMessagingRequestParsingHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler`
+* nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler
 
 ## モジュール一覧
 
@@ -33,11 +41,10 @@ HTTPリクエスト(
 HTTPレスポンスハンドラ より後ろに配置すること
 変換処理に失敗した場合は、ステータスコードを指定したレスポンスをクライアントに返すため、
 本ハンドラは HTTPレスポンスハンドラ より後ろに配置する必要がある。
-
 スレッドコンテキスト変数管理ハンドラ より後ろに配置すること
 スレッドコンテキスト上に設定されたリクエストIDをもとに、
 要求電文と応答電文の変換に使う
-`DataRecordFormatter` を取得するため、
+DataRecordFormatter を取得するため、
 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを配置する必要がある。
 
 ## HTTPリクエストを要求電文に変換する
@@ -56,28 +63,27 @@ HTTPレスポンスハンドラ より後ろに配置すること
 リクエストボディの変換は、 汎用データフォーマット により行う。
 以下のルールでフォーマット定義ファイルを準備しておく必要がある。
 
-受信時のフォーマット定義ファイルの論理名
-<リクエストID> + "_RECEIVE"
-
-送信時のフォーマット定義ファイルの論理名
-<リクエストID> + "_SEND"
+> 受信時のフォーマット定義ファイルの論理名
+> <リクエストID> + "_RECEIVE"
+> 送信時のフォーマット定義ファイルの論理名
+> <リクエストID> + "_SEND"
 
 デフォルトでは読み込んだデータを構造化データとして取り扱うが、
 フレームワーク制御ヘッダに対する各項目の設定は行わない。
 そのため、フレームワーク制御ヘッダに対する各項目を設定する場合、
-`StructuredFwHeaderDefinition`
+StructuredFwHeaderDefinition
 をコンポーネント設定ファイルに追加し、電文からヘッダ情報を取得する際のキー情報を指定する。
 
 設定例を以下に示す。
 
 ポイント
 * キー情報は、
-`StructuredFwHeaderDefinition#fwHeaderKeys`
-プロパティに指定する。
-* `StructuredFwHeaderDefinition#fwHeaderKeys`
-プロパティには、キーにフィールド名、値に電文上の位置を指定する。
-電文上の位置は構造化データをMapに変換した後のキー情報を記述する。
-構造化データからMapに変換される際のキー情報については、 JSONやXMLの階層構造のデータを読み書きする を参照。
+  StructuredFwHeaderDefinition#fwHeaderKeys
+  プロパティに指定する。
+* StructuredFwHeaderDefinition#fwHeaderKeys
+  プロパティには、キーにフィールド名、値に電文上の位置を指定する。
+  電文上の位置は構造化データをMapに変換した後のキー情報を記述する。
+  構造化データからMapに変換される際のキー情報については、 JSONやXMLの階層構造のデータを読み書きする を参照。
 
 ```xml
 <component class="nablarch.fw.messaging.handler.HttpMessagingRequestParsingHandler">
@@ -95,6 +101,7 @@ HTTPレスポンスハンドラ より後ろに配置すること
   </property>
 </component>
 ```
+
 また、固定長データや可変長データを取り扱う場合は標準フレームワーク制御ヘッダ定義を指定する。
 
 ```xml
@@ -105,23 +112,9 @@ HTTPレスポンスハンドラ より後ろに配置すること
 変換時に捕捉する例外と処理内容を以下に示す。
 以下に示していない例外については捕捉しない。
 
-`nablarch.fw.results.RequestEntityTooLarge`
-:ログレベル: INFO
-:レスポンス: 413
-:説明: リクエストボディのサイズ上限を超過したため、証跡ログとして記録する。
-そして、サイズ超過を表すため、HTTPステータスコードが *413*  のレスポンスを生成する。
-
-`nablarch.fw.messaging.MessagingException`
-:ログレベル: INFO
-:レスポンス: 400
-:説明: リクエストボディが不正なため、証跡ログとして記録する。
-そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
-
-`nablarch.core.dataformat.InvalidDataFormatException`
-:ログレベル: INFO
-:レスポンス: 400
-:説明: リクエストボディのフォーマットが不正なため、証跡ログとして記録する。
-そして、クライアントエラーを表すため、HTTPステータスコードが *400*  のレスポンスを生成する。
+nablarch.fw.results.RequestEntityTooLarge
+nablarch.fw.messaging.MessagingException
+nablarch.core.dataformat.InvalidDataFormatException
 
 ## 巨大なサイズのリクエストを防ぐ
 
@@ -132,7 +125,7 @@ HTTPレスポンスハンドラ より後ろに配置すること
 証跡としてINFOログを出力し、 `413` をクライアントに返す。
 
 リクエストボディのサイズ上限は、バイト数で設定する。
-設定を省略した場合は、 `Integer#MAX_VALUE` となる。
+設定を省略した場合は、 Integer#MAX_VALUE となる。
 
 以下に設定例を示す。
 

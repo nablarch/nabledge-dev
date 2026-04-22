@@ -1,7 +1,7 @@
 {
   "id": "libraries-stateless-web-app",
   "title": "Webアプリケーションをステートレスにする",
-  "content": "",
+  "content": "**目次**\n\n* 基本的な考え方\n* HTTPセッションに依存している機能\n* HTTPセッション非依存機能の導入方法\n\n  * セッションストア\n  * 2重サブミット防止\n  * スレッドコンテキスト変数管理ハンドラ\n  * HTTPリライトハンドラ\n  * hidden暗号化\n* ローカルファイルシステムの使用\n* HTTPセッションの誤生成を検知する",
   "no_knowledge_content": false,
   "sections": [
     {
@@ -32,7 +32,7 @@
     {
       "id": "s6",
       "title": "スレッドコンテキスト変数管理ハンドラ",
-      "content": "スレッドコンテキストの初期化 に以下の部品を使用しない。\n\n* `LanguageAttributeInHttpSession`\n* `TimeZoneAttributeInHttpSession`\n* `UserIdAttribute`\n\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* `LanguageAttributeInHttpCookie`\n* `TimeZoneAttributeInHttpCookie`\n* `UserIdAttributeInSessionStore`"
+      "content": "スレッドコンテキストの初期化 に以下の部品を使用しない。\n\n* LanguageAttributeInHttpSession\n* TimeZoneAttributeInHttpSession\n* UserIdAttribute\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* LanguageAttributeInHttpCookie\n* TimeZoneAttributeInHttpCookie\n* UserIdAttributeInSessionStore"
     },
     {
       "id": "s7",
@@ -52,7 +52,7 @@
     {
       "id": "s10",
       "title": "HTTPセッションの誤生成を検知する",
-      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 `WebFrontController` の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 `WebFrontController` のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```"
+      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 WebFrontController の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 WebFrontController のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```"
     }
   ]
 }

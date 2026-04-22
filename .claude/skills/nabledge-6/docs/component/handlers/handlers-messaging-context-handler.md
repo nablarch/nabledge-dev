@@ -1,5 +1,12 @@
 # メッセージングコンテキスト管理ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* MQの接続先を設定する
+
 後続のハンドラ及びライブラリで使用するためのMQ接続を、スレッド上で管理するハンドラ。
 
 MOMメッセージングの詳細は、 システム間メッセージング を参照。
@@ -11,11 +18,11 @@ MOMメッセージングの詳細は、 システム間メッセージング を
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-messaging-context-handler/MessagingContextHandler_flow.png)
+![](../images/MessagingContextHandler/MessagingContextHandler_flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.messaging.handler.MessagingContextHandler`
+* nablarch.fw.messaging.handler.MessagingContextHandler
 
 ## モジュール一覧
 
@@ -32,12 +39,12 @@ MOMメッセージングの詳細は、 システム間メッセージング を
 
 ## MQの接続先を設定する
 
-このハンドラは、 `messagingProvider`
-プロパティに設定されたプロバイダクラス( `MessagingProvider` 実装クラス)を使用してMQ接続を取得する。
+このハンドラは、 messagingProvider
+プロパティに設定されたプロバイダクラス( MessagingProvider 実装クラス)を使用してMQ接続を取得する。
 
 以下に設定例を示す。
 プロバイダクラスの設定内容については、使用する
-`MessagingProvider` 実装クラスのJavadocを参照。
+MessagingProvider 実装クラスのJavadocを参照。
 
 ```xml
 <!-- メッセージコンテキスト管理ハンドラ -->

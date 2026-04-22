@@ -7,12 +7,12 @@
     {
       "id": "s1",
       "title": "テストケース分割方針",
-      "content": "基本的には、\\ **1シートにつき1テストケース**\\ とする。\n以下、例外事項を示す。"
+      "content": "基本的には、\u0000 **1シートにつき1テストケース**\u0000 とする。\n以下、例外事項を示す。"
     },
     {
       "id": "s2",
       "title": "複雑なテストケースの場合",
-      "content": "テストデータが大量であったり、1取引に含まれる処理が多い場合に、\\\n１つのシートに全てのテストデータを詰め込むと、シート内にデータが多くなり過ぎて、\\\nテストデータの可読性が落ちる場合がある。\\\nこのような場合は、1ケースを複数シートに分割して記述しても良い。"
+      "content": "テストデータが大量であったり、1取引に含まれる処理が多い場合に、\u0000\n１つのシートに全てのテストデータを詰め込むと、シート内にデータが多くなり過ぎて、\u0000\nテストデータの可読性が落ちる場合がある。\u0000\nこのような場合は、1ケースを複数シートに分割して記述しても良い。"
     },
     {
       "id": "s3",
@@ -22,17 +22,17 @@
     {
       "id": "s4",
       "title": "基本的な記述方法",
-      "content": "基本的には、1テストケースを1シートにまとめて記述する。\\\n1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。\n\n以下の例では、３つのバッチ(ファイル入力バッチ、ユーザ削除バッチ、ファイル出力バッチ)\\\nで構成される取引を処理している。\n\n```java\n/** 正常終了するケース */\n@Test\npublic void testSuccess() {\n    execute();\n}\n```\n**【testSuccessシート】**\n\nLIST_MAP=testShots\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |\n|---|---|---|---|---|---|---|---|\n| 1 | ファイル入力 | 100 | default | default | default |  | fileInputBatch |\n| 2 | ユーザ削除 | 100 | default |  | default |  | userDeleteBatch |\n| 3 | ファイル出力 | 100 | default |  | fileInputBatch | default | fileOutputBatch |"
+      "content": "基本的には、1テストケースを1シートにまとめて記述する。\u0000\n1シート内に複数のバッチ実行を記述することにより、取引単位のテストとなる。\n\n以下の例では、３つのバッチ(ファイル入力バッチ、ユーザ削除バッチ、ファイル出力バッチ)\u0000\nで構成される取引を処理している。\n\n```java\n/** 正常終了するケース */\n@Test\npublic void testSuccess() {\n    execute();\n}\n```\n\n**【testSuccessシート】**\n\nLIST_MAP=testShots\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |\n|---|---|---|---|---|---|---|---|\n| 1 | ファイル入力 | 100 | default | default | default |  | fileInputBatch |\n| 2 | ユーザ削除 | 100 | default |  | default |  | userDeleteBatch |\n| 3 | ファイル出力 | 100 | default |  | fileInputBatch | default | fileOutputBatch |"
     },
     {
       "id": "s5",
       "title": "1テストケースを複数シートを分割する場合",
-      "content": "例えば、前項(\\ 基本的な記述方法\\ )で例示したテストケースは、以下のように分割して記述可能である。\n\n\n```java\npackage nablarch.sample.ss21AA01\n\nimport org.junit.Test;\nimport nablarch.test.core.messaging.BatchRequestTestSupport;\n\n// 中略\n\npublic class B21AA01Test extends BatchRequestTestSupport {\n\n    @Test\n    public void testSuccess() {\n\n        // 入力ファイルをテンポラリテーブルに登録\n        execute(\"testSuccess_fileInput\");\n\n        // テンポラリテーブルの情報をユーザ関連テーブルを削除\n        execute(\"testSuccess_userDelete\");\n\n        // 結果をファイル出力\n        execute(\"testSuccess_fileOutput\");\n    }\n```\n\\\n\n**【testSuccess_fileInputシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | setUpFile | requestPath |\n|---|---|---|---|---|---|\n| 1 | ファイル入力 | 100 | default | default | fileInputBatch |\n\n\\\n\n**【testSuccess_userDeleteシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | expectedTable | requestPath |\n|---|---|---|---|---|---|\n| 1 | ユーザ削除 | 100 | default | default | userDeleteBatch |\n\n\n**【testSuccess_fileOutputシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | outFile | requestPath |\n|---|---|---|---|---|---|\n| 1 | ファイル出力 | 100 | default | default | fileOutputBatch |"
+      "content": "例えば、前項(\u0000 基本的な記述方法\u0000 )で例示したテストケースは、以下のように分割して記述可能である。\n\n```java\npackage nablarch.sample.ss21AA01\n\nimport org.junit.Test;\nimport nablarch.test.core.messaging.BatchRequestTestSupport;\n\n// 中略\n\npublic class B21AA01Test extends BatchRequestTestSupport {\n\n    @Test\n    public void testSuccess() {\n\n        // 入力ファイルをテンポラリテーブルに登録\n        execute(\"testSuccess_fileInput\");\n\n        // テンポラリテーブルの情報をユーザ関連テーブルを削除\n        execute(\"testSuccess_userDelete\");\n\n        // 結果をファイル出力\n        execute(\"testSuccess_fileOutput\");\n    }\n```\n\n\u0000\n\n**【testSuccess_fileInputシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | setUpFile | requestPath |\n|---|---|---|---|---|---|\n| 1 | ファイル入力 | 100 | default | default | fileInputBatch |\n\n\u0000\n\n**【testSuccess_userDeleteシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | expectedTable | requestPath |\n|---|---|---|---|---|---|\n| 1 | ユーザ削除 | 100 | default | default | userDeleteBatch |\n\n**【testSuccess_fileOutputシート】**\n\nLIST_MAP=testShots\n\n| no | case | expectedStatusCode | setUpTable | outFile | requestPath |\n|---|---|---|---|---|---|\n| 1 | ファイル出力 | 100 | default | default | fileOutputBatch |"
     },
     {
       "id": "s6",
       "title": "1シートに複数ケースを含める場合",
-      "content": "非常に簡単なテストケースの場合は、複数にまとめてもよい。\n\n以下の例では、２つのテストケース（通常のケースと入力データが0件のケース）を\\\n１つのシートで記述している\n\n```java\n/** 正常終了するケース */\n@Test\npublic void testSuccess() {\n    execute();\n}\n```\n**【testSuccessシート】**\n\nLIST_MAP=testShots\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |\n|---|---|---|---|---|---|---|---|\n| 1-1 | ファイル入力 | 100 | shot1 | shot1 |  |  | fileInputBatch |\n| 1-2 | ユーザ削除 | 100 |  |  | shot1 |  | userDeleteBatch |\n| 2-1 | ファイル入力（0件） | 100 | shot2 | shot2 |  |  | fileInputBatch |\n| 2-2 | ユーザ削除（0件） | 100 |  |  | shot2 |  | userDeleteBatch |\n\n\\\n\n> **Tip:** グループIDを使用することで1シートに複数ケースのテストデータを記述できる。 詳細は、『\\ 一つのシートに複数テストケースのデータを記載したい\\ 』の項を参照。"
+      "content": "非常に簡単なテストケースの場合は、複数にまとめてもよい。\n\n以下の例では、２つのテストケース（通常のケースと入力データが0件のケース）を\u0000\n１つのシートで記述している\n\n```java\n/** 正常終了するケース */\n@Test\npublic void testSuccess() {\n    execute();\n}\n```\n\n**【testSuccessシート】**\n\nLIST_MAP=testShots\n\n| no | description | expectedStatusCode | setUpTable | setUpFile | expectedTable | expectedFile | requestPath |\n|---|---|---|---|---|---|---|---|\n| 1-1 | ファイル入力 | 100 | shot1 | shot1 |  |  | fileInputBatch |\n| 1-2 | ユーザ削除 | 100 |  |  | shot1 |  | userDeleteBatch |\n| 2-1 | ファイル入力（0件） | 100 | shot2 | shot2 |  |  | fileInputBatch |\n| 2-2 | ユーザ削除（0件） | 100 |  |  | shot2 |  | userDeleteBatch |\n\n\u0000\n\n> **Tip:**\n> グループIDを使用することで1シートに複数ケースのテストデータを記述できる。\n> 詳細は、『\u0000 一つのシートに複数テストケースのデータを記載したい\u0000 』の項を参照。"
     }
   ]
 }

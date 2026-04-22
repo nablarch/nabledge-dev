@@ -3,58 +3,59 @@
 リクエストされた情報(JSON形式)をDBに登録する機能を解説する。
 
 作成する機能の概要
-![](../../../knowledge/assets/http-messaging-getting-started-save/overview.png)
+![](../images/overview.png)
 動作確認手順
 1. 事前にDBの状態を確認
 
-H2のコンソールから下記SQLを実行し、レコードが存在しないことを確認する。
+  H2のコンソールから下記SQLを実行し、レコードが存在しないことを確認する。
 
-```sql
-SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
-```
+  ```sql
+  SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+  ```
 2. プロジェクト情報の登録
 
-任意のRESTクライアントを使用して、以下のリクエストを送信する。
+> 任意のRESTクライアントを使用して、以下のリクエストを送信する。
 
-URL
-http://localhost:9080/ProjectSaveAction
-HTTPメソッド
-POST
-HTTPヘッダ
-Content-Type: application/json 
-X-Message-Id: 1
-リクエストボディ
-```json
-{
-    "projectName": "プロジェクト９９９",
-    "projectType": "development",
-    "projectClass": "ss",
-    "projectManager": "山田",
-    "projectLeader": "田中",
-    "clientId": 10,
-    "projectStartDate": "20160101",
-    "projectEndDate": "20161231",
-    "note": "備考９９９",
-    "sales": 10000,
-    "costOfGoodsSold": 20000,
-    "sga": 30000,
-    "allocationOfCorpExpenses": 40000
-}
-```
-3. 動作確認
+> URL
+> [http://localhost:9080/ProjectSaveAction](http://localhost:9080/ProjectSaveAction)
+> HTTPメソッド
+> POST
+> HTTPヘッダ
+> Content-Type: application/json 
+> 
+> X-Message-Id: 1
+> リクエストボディ
+> ```json
+> {
+>     "projectName": "プロジェクト９９９",
+>     "projectType": "development",
+>     "projectClass": "ss",
+>     "projectManager": "山田",
+>     "projectLeader": "田中",
+>     "clientId": 10,
+>     "projectStartDate": "20160101",
+>     "projectEndDate": "20161231",
+>     "note": "備考９９９",
+>     "sales": 10000,
+>     "costOfGoodsSold": 20000,
+>     "sga": 30000,
+>     "allocationOfCorpExpenses": 40000
+> }
+> ```
 
-H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
+1. 動作確認
 
-```sql
-SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
-```
+> H2のコンソールから下記SQLを実行し、レコードが1件取得できることを確認する。
+
+> ```sql
+> SELECT * FROM PROJECT WHERE PROJECT_NAME = 'プロジェクト９９９';
+> ```
 
 ## 登録を行う
 
-#. フォーマットファイルの作成
-#. フォームの作成
-#. 業務アクションの作成
-
+1. フォーマットファイルの作成
+2. フォームの作成
+3. 業務アクションの作成
 
 フォーマットファイルの作成
 HTTPメッセージングでは、リクエストされたHTTPメッセージを 汎用データフォーマット を使用して解析する。
@@ -83,7 +84,6 @@ text-encoding:    "UTF-8"
 この実装のポイント
 * フォーマットファイルの名称は、「リクエストID + "_RECEIVE"」という形式にする。
 * フォーマットファイルの記述方法は data_format-definition を参照。
-
 
 フォームの作成
 リクエストボディの内容をバインドするフォームを作成する。
@@ -122,7 +122,6 @@ public class ProjectForm {
 この実装のポイント
 * Bean Validation を用いてバリデーションを行うため、バリデーション用のアノテーションを設定する。
 
-
 業務アクションの作成
 プロジェクトをDBに登録する業務アクションを作成する。
 
@@ -140,7 +139,7 @@ public class ProjectSaveAction extends MessagingAction {
      * 登録が完了した場合は、レスポンスコードを記載した応答電文を設定する。
      * 例外が発生した場合は、{@link ProjectSaveAction#onError(Throwable, RequestMessage, ExecutionContext)}
      * にて応答電文を設定する。
-     * 
+     *
      * @param requestMessage   受信したメッセージ
      * @param executionContext 実行コンテキスト
      * @return 応答電文
@@ -173,13 +172,14 @@ public class ProjectSaveAction extends MessagingAction {
 }
 ```
 この実装のポイント
-* `MessagingAction` を継承し、業務メソッドを作成する。
-* `MessagingAction#onReceive`
-に、リクエスト受信時に実行する処理を実装する。
-* リクエストボディの値は、 汎用データフォーマット を使用して解析された状態で引数の `RequestMessage` オブジェクト
-が保持している。 `getParamMap` メソッドを使用してリクエストボディの値を取得する。
+* MessagingAction を継承し、業務メソッドを作成する。
+* MessagingAction#onReceive
+  に、リクエスト受信時に実行する処理を実装する。
+* リクエストボディの値は、 汎用データフォーマット を使用して解析された状態で引数の RequestMessage オブジェクト
+  が保持している。 getParamMap メソッドを使用してリクエストボディの値を取得する。
 * Bean Validation を使用してリクエスト値のバリデーションを行う。
-* `UniversalDao` を用いてプロジェクトをDBに登録する。
-* 処理結果を表すレスポンスコードを `ResponseMessage` に設定して返却する。
+* UniversalDao を用いてプロジェクトをDBに登録する。
+* 処理結果を表すレスポンスコードを ResponseMessage に設定して返却する。
 
-> **Tip:** 業務例外が送出された場合は、 HTTPメッセージングエラー制御ハンドラ の処理によってレスポンスコード「400」が設定される。
+> **Tip:**
+> 業務例外が送出された場合は、 HTTPメッセージングエラー制御ハンドラ の処理によってレスポンスコード「400」が設定される。

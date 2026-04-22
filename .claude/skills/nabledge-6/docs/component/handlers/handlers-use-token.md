@@ -1,5 +1,11 @@
 # UseTokenインターセプタ
 
+**目次**
+
+* インターセプタクラス名
+* モジュール一覧
+* UseTokenを使用する
+
 二重サブミット(同一リクエストの二重送信)防止 のためのトークンを発行するインターセプタ。
 
 このインターセプタが使用されることを想定しているのは、主にJSP以外のテンプレートエンジンを採用している場合である。
@@ -14,7 +20,7 @@ OnDoubleSubmissionインターセプタ
 
 ## インターセプタクラス名
 
-* `nablarch.common.web.token.UseToken`
+* nablarch.common.web.token.UseToken
 
 ## モジュール一覧
 
@@ -27,7 +33,7 @@ OnDoubleSubmissionインターセプタ
 
 ## UseTokenを使用する
 
-`UseToken` アノテーションを、
+UseToken アノテーションを、
 アクションのメソッドに対して設定する。
 
 ```java
@@ -36,6 +42,7 @@ public HttpResponse confirm(HttpRequest req, ExecutionContext ctx) {
     // 省略
 }
 ```
+
 また、入力フォームへ明示的にトークンを埋め込む必要がある。
 
 Thymeleafでの実装例
@@ -43,6 +50,7 @@ Thymeleafでの実装例
 <form th:action="@{/path/to/action}" method="post">
   <input type="hidden" name="nablarch_token" th:value="${nablarch_request_token}" />
 ```
+
 この例のようにname属性は"nablarch_token"と設定して、value属性はリクエストスコープから"nablarch_request_token"というキーで取得した値を設定する必要がある。
 このname属性とリクエストスコープから値を取得するキーは変更できる。
 詳しくは サーバ側の二重サブミット防止 を参照すること。

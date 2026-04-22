@@ -1,5 +1,13 @@
 # ノーマライズハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* 標準で提供しているノーマライズ処理
+* ノーマライズ処理を追加する
+
 クライアントから送信されるリクエストパラメータをノーマライズするハンドラ。
 
 本ハンドラでは、以下の処理を行う。
@@ -8,11 +16,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-normalize-handler/flow.png)
+![](../images/NormalizationHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.web.handler.NormalizationHandler`
+* nablarch.fw.web.handler.NormalizationHandler
 
 ## モジュール一覧
 
@@ -33,13 +41,13 @@
 
 標準では、以下のノーマライズ処理を提供している。
 
-* リクエストパラメータの前後のホワイトスペースを除去するノーマライザ( `TrimNormalizer` ) [#whitespace]_
+* リクエストパラメータの前後のホワイトスペースを除去するノーマライザ( TrimNormalizer ) [1]
 
 ## ノーマライズ処理を追加する
 
-このハンドラはデフォルト動作で、リクエストパラメータの前後のホワイトスペース [#whitespace]_ を除去するノーマライザが有効となっている。
+このハンドラはデフォルト動作で、リクエストパラメータの前後のホワイトスペース [1] を除去するノーマライザが有効となっている。
 
-プロジェクト要件で、ノーマライズ処理を追加する場合には、 `Normalizer` の実装クラスを作成し、本ハンドラに設定する。
+プロジェクト要件で、ノーマライズ処理を追加する場合には、 Normalizer の実装クラスを作成し、本ハンドラに設定する。
 
 以下に例を示す。
 
@@ -79,9 +87,12 @@ public class SampleNormalizer implements Normalizer {
   </property>
 </component>
 ```
-> **Tip:** ノーマライザを設定せずに、以下のようにハンドラを設定した場合、デフォルトで提供される前後のホワイトスペースを除去するノーマライザが自動的に適用される。
 
-```xml
-<component class="nablarch.fw.web.handler.NormalizationHandler" />
-```
-ホワイトスペースの定義は `Character#isWhitespace` を参照
+> **Tip:**
+> ノーマライザを設定せずに、以下のようにハンドラを設定した場合、デフォルトで提供される前後のホワイトスペースを除去するノーマライザが自動的に適用される。
+
+> ```xml
+> <component class="nablarch.fw.web.handler.NormalizationHandler" />
+> ```
+
+ホワイトスペースの定義は Character#isWhitespace を参照

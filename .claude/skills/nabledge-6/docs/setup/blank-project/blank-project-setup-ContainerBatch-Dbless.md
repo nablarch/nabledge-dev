@@ -15,7 +15,8 @@
 |---|---|
 | プロジェクト種別 | Mavenプロジェクト |
 | プロジェクト構成 | 単一プロジェクト構成 |
-| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchバッチアプリケーション用の基本的な設定 * 疎通確認用の都度起動バッチアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
 ## ブランクプロジェクト作成
@@ -33,6 +34,7 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-container-batch-dbless-archetype -DarchetypeVersion={nablarch_version}
 ```
+
 上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
 
 | 設定値 | 説明 |
@@ -50,11 +52,14 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | version | バージョン番号 | `0.1.0` |
 | package | パッケージ(通常はグループIDと同じ) | `com.example` |
 
-> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+> **Important:**
+> 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。
+> よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+
 プロジェクト情報の入力が終わると、Y: :と表示される。
 
-* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
-* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
+> * >   入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
+> * >   プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
@@ -62,16 +67,20 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 疎通確認の仕組みや手順は通常のNablarchバッチ（DB接続無し）プロジェクトと同じなので、 Nablarchバッチ（DB接続無し）プロジェクトの初期セットアップ手順 を参照。
 
-> **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> **Note:**
+> アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを作成する
 
 コンテナイメージの作成手順は通常のコンテナ用Nablarchバッチプロジェクトと同じなので、 コンテナ用Nablarchバッチプロジェクトのコンテナイメージ作成手順 を参照。
 
-> **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> **Note:**
+> アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを実行する
 
 コンテナイメージの実行手順は通常のコンテナ用Nablarchバッチプロジェクトと同じなので、 コンテナ用Nablarchバッチプロジェクトのコンテナイメージ実行手順 を参照。
 
-> **Note:** アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。 また、コンテナ用Nablarchバッチ（DB接続無し）プロジェクトでは都度起動バッチのみ実行可能である。
+> **Note:**
+> アーティファクトID が `myapp-container-batch-dbless` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> また、コンテナ用Nablarchバッチ（DB接続無し）プロジェクトでは都度起動バッチのみ実行可能である。

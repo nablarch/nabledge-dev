@@ -1,5 +1,19 @@
 # Webアプリケーションをステートレスにする
 
+**目次**
+
+* 基本的な考え方
+* HTTPセッションに依存している機能
+* HTTPセッション非依存機能の導入方法
+
+  * セッションストア
+  * 2重サブミット防止
+  * スレッドコンテキスト変数管理ハンドラ
+  * HTTPリライトハンドラ
+  * hidden暗号化
+* ローカルファイルシステムの使用
+* HTTPセッションの誤生成を検知する
+
 ## 基本的な考え方
 
 サーブレットAPIが提供するHTTPセッションはAPサーバで状態を持ってしまうため、そのままではスケールアウトができない。
@@ -41,16 +55,15 @@ HTTPセッションに依存している機能 の各機能について以下の
 
 スレッドコンテキストの初期化 に以下の部品を使用しない。
 
-* `LanguageAttributeInHttpSession`
-* `TimeZoneAttributeInHttpSession`
-* `UserIdAttribute`
-
+* LanguageAttributeInHttpSession
+* TimeZoneAttributeInHttpSession
+* UserIdAttribute
 
 それぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。
 
-* `LanguageAttributeInHttpCookie`
-* `TimeZoneAttributeInHttpCookie`
-* `UserIdAttributeInSessionStore`
+* LanguageAttributeInHttpCookie
+* TimeZoneAttributeInHttpCookie
+* UserIdAttributeInSessionStore
 
 ## HTTPリライトハンドラ
 
@@ -72,9 +85,9 @@ Nablarchでは hidden暗号化 の機能を提供している。
 設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。
 この機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。
 
-この機能は、 `WebFrontController` の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。
+この機能は、 WebFrontController の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。
 
-具体的には、 `WebFrontController` のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。
+具体的には、 WebFrontController のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。
 
 ```xml
 <!-- ハンドラキュー構成 -->

@@ -1,14 +1,20 @@
 # Jakarta Batchアプリケーションの起動
 
+**目次**
+
+* バッチアプリケーションを起動する
+* バッチアプリケーションの終了コード
+* システムリポジトリを初期化する
+
 ## バッチアプリケーションを起動する
 
 Jakarta Batchに準拠したバッチアプリケーションの場合、バッチの起動はJakarta Batchで規定されたAPIを使用して行う。
 
-Nablarchでは、標準の実装クラスとして、`nablarch.fw.batch.ee.Main` を提供している。
+Nablarchでは、標準の実装クラスとして、nablarch.fw.batch.ee.Main を提供している。
 このクラスは実行引数として対象JOBのXMLファイル名(.xmlを除いたファイル名)を指定する。
 
-ジョブ実行時にパラメータを指定したい場合は、 `nablarch.fw.batch.ee.Main` に対して起動オプションを指定する。
-起動オプションで指定した値は、 `JobOperator#start` のjobParametersに設定される。
+ジョブ実行時にパラメータを指定したい場合は、 nablarch.fw.batch.ee.Main に対して起動オプションを指定する。
+起動オプションで指定した値は、 JobOperator#start のjobParametersに設定される。
 
 起動オプションは、名前に `--` を付加し、名前の次の引数に値を設定する。
 
@@ -17,22 +23,24 @@ Nablarchでは、標準の実装クラスとして、`nablarch.fw.batch.ee.Main`
 # この例では、「option1=value1」と「option2=value2」の2つのjobParametersが設定される。
 $ java nablarch.fw.batch.ee.Main jobName --option1 value1 --option2 value2
 ```
-> **Tip:** プロジェクト独自で起動クラスを作成する際にも、このMainクラスを参考に実装できる。
+
+> **Tip:**
+> プロジェクト独自で起動クラスを作成する際にも、このMainクラスを参考に実装できる。
 
 ## バッチアプリケーションの終了コード
 
 上記のMainクラスのプログラムの終了コードは以下のようになる。
 
-* 正常終了：0 - 終了ステータスが “WARNING” 以外の場合で、バッチステータスが  `BatchStatus.COMPLETED` の場合
-* 異常終了：1 - 終了ステータスが “WARNING” 以外の場合で、バッチステータスが  `BatchStatus.COMPLETED` 以外の場合
+* 正常終了：0 - 終了ステータスが “WARNING” 以外の場合で、バッチステータスが  BatchStatus.COMPLETED の場合
+* 異常終了：1 - 終了ステータスが “WARNING” 以外の場合で、バッチステータスが  BatchStatus.COMPLETED 以外の場合
 * 警告終了：2 - 終了ステータスが “WARNING” の場合
 
 なお、JOBの終了待ちの間に中断された場合は、異常終了のコードを返す。
 
 バリデーションエラーなど警告すべき事項が発生している場合に、警告終了させることができる。
-警告終了の方法はchunkまたはbatchlet内で、 `JobContext#setExitStatus(String)`
+警告終了の方法はchunkまたはbatchlet内で、 JobContext#setExitStatus(String)
 を呼び出し "WARNING" を終了ステータスとして設定する。警告終了時は、バッチステータスは任意の値を許可するため、
-例外を送出しバッチステータスが `BatchStatus.COMPLETED` 以外となる場合であっても、
+例外を送出しバッチステータスが BatchStatus.COMPLETED 以外となる場合であっても、
 終了ステータスに "WARNING" を設定していれば、上記クラスは警告終了する。
 
 ## システムリポジトリを初期化する

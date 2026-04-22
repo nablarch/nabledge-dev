@@ -7,17 +7,17 @@
     {
       "id": "s1",
       "title": "概要",
-      "content": "リクエスト単体テスト（同期応答メッセージ送信処理)では、\n要求電文1件をキューに送信し、結果を同期的に受信する際の動作を擬似的に再現し、テストを行う。\n\n\n> **Tip:** リクエスト単体テストそのものの概要については、 message_sendSyncMessage_test を参照。"
+      "content": "リクエスト単体テスト（同期応答メッセージ送信処理)では、\n要求電文1件をキューに送信し、結果を同期的に受信する際の動作を擬似的に再現し、テストを行う。\n\n> **Tip:**\n> リクエスト単体テストそのものの概要については、\n> message_sendSyncMessage_test\n> を参照。"
     },
     {
       "id": "s2",
       "title": "全体像",
-      "content": "バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。\n\n![](assets/testing-framework-RequestUnitTest-send-sync/send_sync.png)\n> **Tip:** 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。\n\n* StandaloneTestSupportTemplate\n* AbstractHttpRequestTestTemplate"
+      "content": "バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。\n\n![](./_images/send_sync.png)\n\n> **Tip:**\n> 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。\n\n> * >   StandaloneTestSupportTemplate\n> * >   AbstractHttpRequestTestTemplate"
     },
     {
       "id": "s3",
       "title": "主なクラス, リソース",
-      "content": "| 名称 | 役割 | 作成単位 |\n|---|---|---|\n| リクエスト単体\\ | テストロジックを実装する。 | テスト対象クラス(Action)につき１つ作成 |\n| テストクラス |  |  |\n| Excelファイル\\ | 要求電文の期待値および応答電文などの | テストクラスにつき１つ作成 |\n| （テストデータ） | テストデータを記載する。\\ |  |\n| StandaloneTest\\ | Action実行後に、MockMessagingContextを用いて | \\－ |\n| SupportTemplate | 要求電文のアサートを実行する。 |  |\n| AbstractHttpRequest\\ | Action実行後に、MockMessagingContextを用いて | \\－ |\n| TestTemplate | 要求電文のアサートを実行する。 |  |\n| MessageSender | 同期応答メッセージ送信処理を行う際に\\ | \\－ |\n|  | 使用するコンポーネント。 |  |\n| RequestTestingMessagingProvider | リクエスト単体テストにおいて、\\ | \\－ |\n|  | 要求電文のアサート機能および\\ |  |\n|  | 応答電文の生成・返却機能を提供する。 |  |\n| TestDataConvertor | Excelから読み込んだテストデータを編集するための\\ | \\－ |\n|  | インタフェース。 |  |\n|  | 必要に応じてデータ種別ごとにアーキテクトが実装する。 |  |"
+      "content": "| 名称 | 役割 | 作成単位 |\n|---|---|---|\n| リクエスト単体\u0000 テストクラス | テストロジックを実装する。 | テスト対象クラス(Action)につき１つ作成 |\n| Excelファイル\u0000 （テストデータ） | 要求電文の期待値および応答電文などの テストデータを記載する。\u0000 | テストクラスにつき１つ作成 |\n| StandaloneTest\u0000 SupportTemplate | Action実行後に、MockMessagingContextを用いて 要求電文のアサートを実行する。 | \u0000－ |\n| AbstractHttpRequest\u0000 TestTemplate | Action実行後に、MockMessagingContextを用いて 要求電文のアサートを実行する。 | \u0000－ |\n| MessageSender | 同期応答メッセージ送信処理を行う際に\u0000 使用するコンポーネント。 | \u0000－ |\n| RequestTestingMessagingProvider | リクエスト単体テストにおいて、\u0000 要求電文のアサート機能および\u0000 応答電文の生成・返却機能を提供する。 | \u0000－ |\n| TestDataConvertor | Excelから読み込んだテストデータを編集するための\u0000 インタフェース。 必要に応じてデータ種別ごとにアーキテクトが実装する。 | \u0000－ |"
     },
     {
       "id": "s4",
@@ -37,7 +37,7 @@
     {
       "id": "s7",
       "title": "RequestTestingMessagingProvider",
-      "content": "要求電文のアサートおよび、応答電文の生成・返却する機能を提供するクラス。\n\nまた、Excelに記載された要求電文の期待値と、応答電文の読み込みも実行する。\n\n本クラスは、以下の準備処理、結果確認機能を提供する。\n\n| 準備処理 | 結果確認 |\n|---|---|\n| 応答電文の生成 | 要求電文のアサート |\n\n> **Tip:** 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。"
+      "content": "要求電文のアサートおよび、応答電文の生成・返却する機能を提供するクラス。\n\nまた、Excelに記載された要求電文の期待値と、応答電文の読み込みも実行する。\n\n本クラスは、以下の準備処理、結果確認機能を提供する。\n\n> | > 準備処理 | > 結果確認 |\n> |---|---|\n> | > 応答電文の生成 | > 要求電文のアサート |\n\n> **Tip:**\n> 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。"
     },
     {
       "id": "s8",
@@ -57,7 +57,7 @@
     {
       "id": "s11",
       "title": "同期応答メッセージ送信処理",
-      "content": "基本的な記述方法は、\\\n\\ send_sync_request_write_test_data\\\nを参照。\n\n> **Tip:** パディングおよびバイナリデータの扱いは、\\ about_fixed_length_file\\ と同様である。"
+      "content": "基本的な記述方法は、\u0000\n\u0000 send_sync_request_write_test_data\u0000\nを参照。\n\n> **Tip:**\n> パディングおよびバイナリデータの扱いは、\u0000 about_fixed_length_file\u0000 と同様である。"
     }
   ]
 }

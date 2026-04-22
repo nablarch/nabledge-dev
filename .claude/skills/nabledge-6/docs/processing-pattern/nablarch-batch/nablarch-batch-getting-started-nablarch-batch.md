@@ -3,31 +3,32 @@
 Exampleアプリケーションを元に、ファイルをDBに登録するバッチを解説する。
 
 作成する機能の概要
-![](../../../knowledge/assets/nablarch-batch-getting-started-nablarch-batch/overview.png)
+![](../images/overview.png)
 住所ファイル登録バッチ実行手順
 1. 登録対象テーブルのデータを削除する
 
-H2のコンソールから下記SQLを実行し、データ登録対象テーブルのデータを削除する。
+  H2のコンソールから下記SQLを実行し、データ登録対象テーブルのデータを削除する。
 
-```sql
-TRUNCATE TABLE ZIP_CODE_DATA;
-```
+  ```sql
+  TRUNCATE TABLE ZIP_CODE_DATA;
+  ```
 2. 住所ファイル登録バッチを実行する
 
-コマンドプロンプトから下記コマンドを実行する。
+> コマンドプロンプトから下記コマンドを実行する。
 
-```bash
-$cd {nablarch-example-batchリポジトリ}
-$mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
-    -Dexec.args="'-requestPath' 'ImportZipCodeFileAction/ImportZipCodeFile' '-diConfig' 'classpath:import-zip-code-file.xml' '-userId' '105'"
-```
-3. ファイルの内容がDBに登録されたことを確認する
+> ```bash
+> $cd {nablarch-example-batchリポジトリ}
+> $mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
+>     -Dexec.args="'-requestPath' 'ImportZipCodeFileAction/ImportZipCodeFile' '-diConfig' 'classpath:import-zip-code-file.xml' '-userId' '105'"
+> ```
 
-H2のコンソールから下記SQLを実行し、住所情報が登録されていることを確認する。
+1. ファイルの内容がDBに登録されたことを確認する
 
-```sql
-SELECT * FROM ZIP_CODE_DATA;
-```
+  H2のコンソールから下記SQLを実行し、住所情報が登録されていることを確認する。
+
+  ```sql
+  SELECT * FROM ZIP_CODE_DATA;
+  ```
 
 ## ファイルをDBに登録する
 
@@ -38,15 +39,14 @@ SELECT * FROM ZIP_CODE_DATA;
 処理フローについては、 Nablarchバッチの処理フロー を参照。
 責務配置については Nablarchバッチの責務配置 を参照。
 
-住所ファイル登録バッチのハンドラ構成については `import-zip-code-file.xml` を参照。
+住所ファイル登録バッチのハンドラ構成については import-zip-code-file.xml を参照。
 
 ## 入力データソースからデータを読み込む
 
 入力データソースからデータを読み込む処理について解説する。
 
-#. 入力ファイルを受け付けるフォームの作成
-#. データリーダの作成
-
+1. 入力ファイルを受け付けるフォームの作成
+2. データリーダの作成
 
 入力ファイルを受け付けるフォームを作成
 データバインド を用いてCSV(住所ファイル)をバインドするフォームを作成する。
@@ -95,15 +95,14 @@ public class ZipCodeForm {
 }
 ```
 この実装のポイント
-* データバインド を用いてフォームにCSVをバインドするため、`Csv`
-及び `CsvFormat` を付与する。
+* データバインド を用いてフォームにCSVをバインドするため、Csv
+  及び CsvFormat を付与する。
 * Bean Validation を実施するために、バリデーション用のアノテーションを付与する。
-* 行数プロパティを定義し、ゲッタに `LineNumber` を付与することで、
-対象データが何行目のデータであるかを自動的に設定できる。
-
+* 行数プロパティを定義し、ゲッタに LineNumber を付与することで、
+  対象データが何行目のデータであるかを自動的に設定できる。
 
 データリーダの作成
-ファイルを読み込んで一行ずつ業務アクションメソッドへ引き渡す、 `DataReader` の実装クラスを作成する。
+ファイルを読み込んで一行ずつ業務アクションメソッドへ引き渡す、 DataReader の実装クラスを作成する。
 
 ZipCodeFileReader.java
 ```java
@@ -180,21 +179,24 @@ public class ZipCodeFileReader implements DataReader<ZipCodeForm> {
 }
 ```
 この実装のポイント
-* `read` メソッドに一行分のデータを返却する処理を実装する。`read` メソッドで読み込んだデータが業務アクションハンドラへ引き渡される。
-* `hasNext` メソッドに次行の有無を判定する処理を実装する。このメソッドが `false` を返却するとファイルの読み込み処理は終了となる。
-* `close` メソッドにファイルの読み込み終了後のストリームのclose処理を実装する。
+* read メソッドに一行分のデータを返却する処理を実装する。read メソッドで読み込んだデータが業務アクションハンドラへ引き渡される。
+* hasNext メソッドに次行の有無を判定する処理を実装する。このメソッドが false を返却するとファイルの読み込み処理は終了となる。
+* close メソッドにファイルの読み込み終了後のストリームのclose処理を実装する。
 
-> **Tip:** `ObjectMapper` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。
+> **Tip:**
+> ObjectMapper のように
+> hasNext メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、
+> データ読み込み処理をバッチごとに実装する手間を省くことができる。
+> イテレータの実装に関してはExampleアプリケーションの ObjectMapperIterator.java の実装を参照。
 
 ## 業務ロジックを実行する
 
 業務ロジックを実行する部分について解説する。
 
-#. 業務アクションの作成
-
+1. 業務アクションの作成
 
 業務アクションの作成
-`BatchAction` を継承し、業務アクションクラスを作成する。
+BatchAction を継承し、業務アクションクラスを作成する。
 
 ImportZipCodeFileAction.java
 ```java
@@ -235,8 +237,10 @@ public class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {
 }
 ```
 この実装のポイント
-* `handle` メソッドに、データリーダから渡された一行分のデータに対する処理を実装する。
-* `UniversalDao#insert` を使用して住所エンティティをデータベースに登録する。
-* `createReader` メソッドでは使用するデータリーダクラスのインスタンスを返却する。
+* handle メソッドに、データリーダから渡された一行分のデータに対する処理を実装する。
+* UniversalDao#insert を使用して住所エンティティをデータベースに登録する。
+* createReader メソッドでは使用するデータリーダクラスのインスタンスを返却する。
 
-> **Tip:** Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。 インターセプタの実装に関しては、Exampleアプリケーションの `ValidateData.java` の実装を参照。
+> **Tip:**
+> Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。
+> インターセプタの実装に関しては、Exampleアプリケーションの ValidateData.java の実装を参照。

@@ -8,7 +8,7 @@
 登録確認画面へ遷移するにあたり、まず顧客情報の登録に必要な以下の入力項目を登録画面に追加する。
 
 フォームの作成
-登録画面に入力された値を受け付けるため、 `ClientForm` クラスを新規作成する。
+登録画面に入力された値を受け付けるため、 ClientForm クラスを新規作成する。
 
 ClientForm.java
 ```java
@@ -27,18 +27,17 @@ public class ClientForm implements Serializable {
 ```
 この実装のポイント
 * フォームクラスには必ずセッタ及びゲッタを作成する。
-* `@InjectForm` を使用してバリデーションを実行する( 後述 )ために、フォームは `Serializable` インタフェースを実装する。
+* @InjectForm を使用してバリデーションを実行する( 後述 )ために、フォームは Serializable インタフェースを実装する。
 * 入力値を受け付けるプロパティは全てString型で宣言する。詳細は バリデーションルールの設定方法 を参照。
-
 登録画面のJSPを修正する
 登録画面のJSPに以下の項目を追加する。
 
-* textタグ の `name` 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
-* selectタグ の `name` 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
-* 各タグの `name` 属性の指定方法は、 tag-access_rule を参照。
+* textタグ の name 属性に、顧客名を受け付けるフォームのプロパティ名を追加する。
+* selectタグ の name 属性に、業種コードを受け付けるフォームのプロパティ名を追加する。
+* 各タグの name 属性の指定方法は、 tag-access_rule を参照。
 * textタグ 、 selectタグ に入力エラー発生時のCSSクラスを追加する。
-* 登録ボタン( buttonタグ )の `uri` 属性に、登録確認画面へ遷移するURIを追加する。
-`uri` 属性の指定方法は、 tag-specify_uri を参照。
+* 登録ボタン( buttonタグ )の uri 属性に、登録確認画面へ遷移するURIを追加する。
+  uri 属性の指定方法は、 tag-specify_uri を参照。
 * 入力エラー発生時のエラーメッセージ表示領域を追加する。
 
 /src/main/webapp/WEB-INF/view/client/create.jsp
@@ -83,15 +82,16 @@ public class ClientForm implements Serializable {
 Bean Validation を使用して、入力値のチェックルールを設定する。
 
 ClientForm.java
-```java
-@Required
-@Domain("clientName")
-private String clientName;
+> ```java
+> @Required
+> @Domain("clientName")
+> private String clientName;
+> 
+> @Required(message = "{nablarch.core.validation.ee.Required.select.message}")
+> @Domain("industryCode")
+> private String industryCode;
+> ```
 
-@Required(message = "{nablarch.core.validation.ee.Required.select.message}")
-@Domain("industryCode")
-private String industryCode;
-```
 messages.properties
 ```jproperties
 #その他のメッセージは省略
@@ -99,12 +99,11 @@ messages.properties
 nablarch.core.validation.ee.Required.select.message=選択してください。
 ```
 この実装のポイント
-* Bean Validation を行うためには、`nablarch.core.validation.ee` 配下のアノテーションを付与する
-( `nablarch.core.validation.validator` 配下に同名アノテーションが存在する場合があるので注意)。
-* ドメインバリデーション を使用して、`ClientForm` クラスのプロパティにバリデーションルールを定義する。
-* 対象項目に適したメッセージを表示するために、 `Required` の `message` 属性に独自に定義したメッセージを指定する。
-メッセージ定義の詳細は プロパティファイルにメッセージを定義する を参照。
-
+* Bean Validation を行うためには、nablarch.core.validation.ee 配下のアノテーションを付与する
+  ( nablarch.core.validation.validator 配下に同名アノテーションが存在する場合があるので注意)。
+* ドメインバリデーション を使用して、ClientForm クラスのプロパティにバリデーションルールを定義する。
+* 対象項目に適したメッセージを表示するために、 Required の message 属性に独自に定義したメッセージを指定する。
+  メッセージ定義の詳細は プロパティファイルにメッセージを定義する を参照。
 
 confirmメソッドを作成し、バリデーションが行われるように設定する
 実行前に入力値のチェックが行われるように設定したメソッドを作成する。
@@ -122,11 +121,10 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 }
 ```
 この実装のポイント
-* 業務アクションメソッドに `InjectForm` を付与して Bean Validation を実行する。
-* `OnError` の `path` 属性で、バリデーションエラー発生時にinputメソッドへ内部フォーワードするよう設定する
-(登録画面を再表示するためには、業種リストを設定する必要があるため)。
+* 業務アクションメソッドに InjectForm を付与して Bean Validation を実行する。
+* OnError の path 属性で、バリデーションエラー発生時にinputメソッドへ内部フォーワードするよう設定する
+  (登録画面を再表示するためには、業種リストを設定する必要があるため)。
 * バリデーションエラーが発生しなかった場合は、リクエストスコープからバリデーション済みオブジェクトが取得出来る。
-
 登録確認画面の表示処理を実装する
 後続の登録処理に使用する顧客情報を session_store に保存し、登録確認画面を表示する。
 
@@ -148,11 +146,10 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 ```
 この実装のポイント
 * 登録画面の表示処理時と同様、業種情報をデータベースから取得してリクエストスコープに設定する。
-*  セッションストア への保存は、`SessionUtil` を使用する。
+* セッションストア への保存は、SessionUtil を使用する。
 * セッションストアにフォームは格納しない ため、
-`BeanUtil` を使用してフォームをエンティティに変換した上で セッションストア に登録する。
+  BeanUtil を使用してフォームをエンティティに変換した上で セッションストア に登録する。
 * セッションストア を使用する際の詳しい実装例は create_example を参照。
-
 
 登録確認画面のJSPを作成する
 登録確認画面のJSPを新規作成する。
@@ -167,7 +164,6 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 ```
 この実装のポイント
 * confirmationPageタグ を使用することで、登録画面のJSPを流用して確認画面を作成できる。詳細は tag-make_common を参照。
-
 登録画面を修正する
 登録画面のJSPを修正し、登録画面のみで表示する項目、確認画面でのみ表示する項目を出し分けられるようにする。
 
@@ -191,28 +187,31 @@ public HttpResponse confirm(HttpRequest request, ExecutionContext context) {
 この実装のポイント
 * 登録画面のみで表示する項目は forInputPageタグ の内部に記述する。
 * 確認画面でのみ表示する項目は forConfirmationPageタグ の内部に記述する。
-
 動作確認を行う
 登録確認処理が正しく実装されていることを確認するため、以下の手順で動作確認を実施する。
-
 バリデーションエラーが発生しないケース
 1. 顧客登録画面を表示する。
 
-![](../../../knowledge/assets/web-application-client-create2/input_display.png)
-2. 顧客名に全角文字列、業種に任意の値を選択して確認ボタンを押下する。
+> ![](../images/client_create/input_display.png)
 
-![](../../../knowledge/assets/web-application-client-create2/input_valid_value.png)
-3. 登録確認画面が表示され、`2` で入力した顧客名、業種がラベルで表示されることを確認する。
+1. 顧客名に全角文字列、業種に任意の値を選択して確認ボタンを押下する。
 
-![](../../../knowledge/assets/web-application-client-create2/confirm_display.png)
+> ![](../images/client_create/input_valid_value.png)
+
+1. 登録確認画面が表示され、2 で入力した顧客名、業種がラベルで表示されることを確認する。
+
+> ![](../images/client_create/confirm_display.png)
 バリデーションエラーが発生するケース
 1. 顧客登録画面を表示する。
 
-![](../../../knowledge/assets/web-application-client-create2/input_display.png)
-2. 顧客名に半角文字列、業種を未選択にして確認ボタンを押下する。
+> ![](../images/client_create/input_display.png)
 
-![](../../../knowledge/assets/web-application-client-create2/input_invalid_value.png)
-3. 登録画面が再度表示され、エラーメッセージが表示されていることを確認する。
+1. 顧客名に半角文字列、業種を未選択にして確認ボタンを押下する。
 
-![](../../../knowledge/assets/web-application-client-create2/input_invalid_display.png)
+> ![](../images/client_create/input_invalid_value.png)
+
+1. 登録画面が再度表示され、エラーメッセージが表示されていることを確認する。
+
+> ![](../images/client_create/input_invalid_display.png)
+
 次へ

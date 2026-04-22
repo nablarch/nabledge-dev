@@ -1,13 +1,13 @@
 {
   "id": "blank-project-MavenModuleStructures",
   "title": "Mavenアーキタイプの構成",
-  "content": "本章では、Nablarchの提供するMavenアーキタイプの構成と、各ディレクトリ・ファイルの概要を記載する。",
+  "content": "本章では、Nablarchの提供するMavenアーキタイプの構成と、各ディレクトリ・ファイルの概要を記載する。\n\n**目次**\n\n* 全体構成の概要\n* 各構成要素の詳細\n\n  * nablarch-archetype-parent(親プロジェクト)\n  * pj-webプロジェクト\n  * pj-jaxrsプロジェクト\n  * pj-batch-eeプロジェクト\n  * pj-batchプロジェクト\n  * pj-batch-dblessプロジェクト\n  * pj-container-webプロジェクト\n  * pj-container-jaxrsプロジェクト\n  * pj-container-batchプロジェクト\n  * pj-container-batch-dblessプロジェクト\n  * 各プロジェクト共通の設定\n  * ビルド設定\n* 【参考】プロジェクト分割方針\n\n  * 推奨するプロジェクト構成の方針\n  * プロジェクトを過度に分割した場合の問題点",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "全体構成の概要",
-      "content": "Nablarchでは、以下のアーキタイプを提供している。なお、アーキタイプのグループIDはすべて `com.nablarch.archetype` である。\n\n| アーティファクトID | 説明 |\n|---|---|\n| nablarch-web-archetype | ウェブアプリケーション実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-jaxrs-archetype | RESTfulウェブサービス実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-batch-ee-archetype | Jakarta Batchに準拠したバッチアプリケーションフレームワークを使用する場合のアーキタイプ |\n| nablarch-batch-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-batch-dbless-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用するがDBに接続しない場合のアーキタイプ |\n| nablarch-container-web-archetype | `nablarch-web-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-jaxrs-archetype | `nablarch-jaxrs-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-batch-archetype | `nablarch-batch-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-batch-dbless-archetype | `nablarch-batch-dbless-archetype` のDockerコンテナ版アーキタイプ |\nnablarch-web-archetypeとnablarch-batch-archetypeのアーキタイプを使用し、\nプロジェクト生成中に入力する `artifactId` に、 `pj-web` , `pj-batch` をそれぞれ指定した場合、以下のような構成となる。\n\n\n![](assets/blank-project-MavenModuleStructures/maven_archetype.png)\n| Mavenプロジェクト名 | パッケージング | 用途 |\n|---|---|---|\n| pj-web | war | ウェブアプリケーション実行制御基盤を使用するアプリケーションを開発する。 最終的に、warファイルとしてアプリケーションサーバにデプロイされる単位で作成する。 |\n| pj-batch | jar | Nablarch独自のバッチアプリケーション実行制御基盤を使用するアプリケーションを開発する。 |\n> **Tip:** 自動生成エンティティは [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) を使用した場合に生成される。 使用する場合は、../addin_gsp に記載されている設定を行う必要がある。"
+      "content": "Nablarchでは、以下のアーキタイプを提供している。なお、アーキタイプのグループIDはすべて `com.nablarch.archetype` である。\n\n| アーティファクトID | 説明 |\n|---|---|\n| nablarch-web-archetype | ウェブアプリケーション実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-jaxrs-archetype | RESTfulウェブサービス実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-batch-ee-archetype | Jakarta Batchに準拠したバッチアプリケーションフレームワークを使用する場合のアーキタイプ |\n| nablarch-batch-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用する場合のアーキタイプ |\n| nablarch-batch-dbless-archetype | Nablarch独自のバッチアプリケーション実行制御基盤を使用するがDBに接続しない場合のアーキタイプ |\n| nablarch-container-web-archetype | `nablarch-web-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-jaxrs-archetype | `nablarch-jaxrs-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-batch-archetype | `nablarch-batch-archetype` のDockerコンテナ版アーキタイプ |\n| nablarch-container-batch-dbless-archetype | `nablarch-batch-dbless-archetype` のDockerコンテナ版アーキタイプ |\n\nnablarch-web-archetypeとnablarch-batch-archetypeのアーキタイプを使用し、\nプロジェクト生成中に入力する `artifactId` に、 `pj-web` , `pj-batch` をそれぞれ指定した場合、以下のような構成となる。\n\n![](maven_archetype.png)\n\n| Mavenプロジェクト名 | パッケージング | 用途 |\n|---|---|---|\n| pj-web | war | ウェブアプリケーション実行制御基盤を使用するアプリケーションを開発する。  最終的に、warファイルとしてアプリケーションサーバにデプロイされる単位で作成する。 |\n| pj-batch | jar | Nablarch独自のバッチアプリケーション実行制御基盤を使用するアプリケーションを開発する。 |\n\n> **Tip:**\n> 自動生成エンティティは [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) を使用した場合に生成される。\n> 使用する場合は、../addin_gsp に記載されている設定を行う必要がある。"
     },
     {
       "id": "s2",
@@ -17,75 +17,190 @@
     {
       "id": "s3",
       "title": "nablarch-archetype-parent(親プロジェクト)",
-      "content": "#### 概要\n\nnablarch-archetype-parentは、各アーキタイプから作成したプロジェクトの親となるプロジェクトである。\n\nこのプロジェクトを利用者が直接書き換えることは無い。\n\n本プロジェクトには、主に以下の設定が記述されている。\n\n* 各種Mavenプラグインのバージョン\n* 各種ツールが使用するファイルのパス\n\n#### nablarch-archetype-parentの所在\n\nアーキタイプから生成したプロジェクトを一度でもビルドしたことがあれば、以下の階層下にnablarch-archetype-parentのpom.xmlがキャッシュされている。\nnablarch-archetype-parentに記載された設定を確認したい場合は、キャッシュされたpom.xmlを確認すると良い。\n\n```text\n<ホームディレクトリ>/.m2/repository/com/nablarch/archetype/\n```"
+      "content": ""
     },
     {
       "id": "s4",
-      "title": "pj-webプロジェクト",
-      "content": "ウェブアプリケーションのwarファイルとしてパッケージングされるプロジェクト。\n\n#### プロジェクトの構成\n\n```text\nmyapp-web\n|\n|   pom.xml                     … Mavenの設定ファイル\n|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)\n|\n+---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。\n|\n+---h2\n|   +---bin                     … H2の起動に使用するファイルが格納されている。\n|   |\n|   \\---db\n|           SAMPLE.mv.db        … H2のデータファイル。\n|           SAMPLE.mv.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.mv.db」にコピーして使用する。\n|\n+---src\n|   +---env                     … 環境別の設定ファイルが格納されている。\n|   |\n|   +---main\n|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。\n|   |   |\n|   |   +---resources           … 直下には開発環境・本番環境で共に使用する設定ファイルが格納されている。\n|   |   |   |\n|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|   |   |   |\n|   |   |   \\---net             … ルーティングアダプタ用設定ファイルが格納されている。\n|   |   |\n|   |   \\---webapp\n|   |       +---images          … 疎通確認用の画像ファイルが格納されている。\n|   |       |\n|   |       \\---WEB-INF         … web.xmlが格納されている。\n|   |            |\n|   |            +---errorPages … エラー画面のサンプルが格納されている。\n|   |            |\n|   |            \\---test       … 疎通確認画面用のファイルが格納されている。\n|   |\n|   \\---test\n|       +---java                … 疎通テスト用のユニットテストが格納されている。\n|       |\n|       \\---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。\n|           |\n|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|           |\n|           \\---nablarch        … HTMLチェックツール用のデータが格納されている。\n|\n+---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。\n|\n+---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。\n|\n\\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。\n```\n#### ツールの設定\n\ntoolsフォルダには、Mavenと連携させて使用するツールの設定ファイルが含まれている。\n以下に主なディレクトリとファイルを示す。\n\n| ディレクトリまたはファイル | 説明 |\n|---|---|\n| nablarch-tools.xml | Jakarta Server Pages静的解析ツールを実行する際に使用する設定ファイル |\n| static-analysis/jspanalysis | Jakarta Server Pages静的解析ツールの設定ファイルが格納されている。 |"
+      "title": "概要",
+      "content": "nablarch-archetype-parentは、各アーキタイプから作成したプロジェクトの親となるプロジェクトである。\n\nこのプロジェクトを利用者が直接書き換えることは無い。\n\n本プロジェクトには、主に以下の設定が記述されている。\n\n* 各種Mavenプラグインのバージョン\n* 各種ツールが使用するファイルのパス"
     },
     {
       "id": "s5",
-      "title": "pj-jaxrsプロジェクト",
-      "content": "RESTfulウェブサービスアプリケーションのwarファイルとしてパッケージングされるプロジェクト。\n\n\n#### プロジェクトの構成\n\nWebと同一であるため省略。"
+      "title": "nablarch-archetype-parentの所在",
+      "content": "アーキタイプから生成したプロジェクトを一度でもビルドしたことがあれば、以下の階層下にnablarch-archetype-parentのpom.xmlがキャッシュされている。\nnablarch-archetype-parentに記載された設定を確認したい場合は、キャッシュされたpom.xmlを確認すると良い。\n\n```text\n<ホームディレクトリ>/.m2/repository/com/nablarch/archetype/\n```"
     },
     {
       "id": "s6",
-      "title": "pj-batch-eeプロジェクト",
-      "content": "Jakarta Batchに準拠したバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。\n\n\n#### プロジェクトの構成\n\n(ディレクトリ及びファイルの説明は、Web、batchに存在しない要素についてのみ記載)\n\n```text\nmyapp-batch-ee\n|\n|   pom.xml\n|   README.md\n|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル\n|\n+---db\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---env\n|   |\n|   +---main\n|   |   +---java\n|   |   |\n|   |   \\---resources\n|   |       |   batch-boot.xml              … バッチ起動時に使用する設定ファイル。\n|   |       |\n|   |       +---entity\n|   |       |\n|   |       \\---META-INF\n|   |           |   beans.xml               … Jakarta Contexts and Dependency Injectionを有効化するために必要なファイル。\n|   |           |\n|   |           \\---batch-jobs\n|   |                   sample-batchlet.xml … batchlet方式の疎通確認用アプリケーションのジョブファイル。\n|   |                   sample-chunk.xml    … chunk方式の疎通確認用アプリケーションのジョブファイル。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           +---data\n|\n+---testdata                                … 開発時にETL機能の入力・出力ファイルを格納するための作業用ディレクトリ。\n|\n\\---work\n```\n#### 本番環境へのリリースについて\n\nバッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n```bash\njava -jar <実行可能jarファイル名> <ジョブ名>\n```"
+      "title": "pj-webプロジェクト",
+      "content": "ウェブアプリケーションのwarファイルとしてパッケージングされるプロジェクト。"
     },
     {
       "id": "s7",
-      "title": "pj-batchプロジェクト",
-      "content": "Nablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。\n\n\n#### プロジェクトの構成\n\n(ディレクトリ及びファイルの説明は、Webに存在しない要素についてのみ記載)\n\n```text\nmyapp-batch\n|\n|   pom.xml\n|   README.md\n|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル\n|\n+---db\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---env\n|   |\n|   +---main\n|   |   +---java\n|   |   |\n|   |   +---resources\n|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。\n|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。\n|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。\n|   |   |   |\n|   |   |   \\---entity\n|   |   |\n|   |   \\---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           \\---data\n|\n\\---work\n```\n#### 本番環境へのリリースについて\n\nバッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n```bash\njava -jar <実行可能jarファイル名> ^\n    -diConfig <コンポーネント設定ファイル> ^\n    -requestPath <リクエストパス> ^\n    -userId <ユーザID>\n```"
+      "title": "プロジェクトの構成",
+      "content": "```text\nmyapp-web\n|\n|   pom.xml                     … Mavenの設定ファイル\n|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)\n|\n+---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。\n|\n+---h2\n|   +---bin                     … H2の起動に使用するファイルが格納されている。\n|   |\n|   \\---db\n|           SAMPLE.mv.db        … H2のデータファイル。\n|           SAMPLE.mv.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.mv.db」にコピーして使用する。\n|\n+---src\n|   +---env                     … 環境別の設定ファイルが格納されている。\n|   |\n|   +---main\n|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。\n|   |   |\n|   |   +---resources           … 直下には開発環境・本番環境で共に使用する設定ファイルが格納されている。\n|   |   |   |\n|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|   |   |   |\n|   |   |   \\---net             … ルーティングアダプタ用設定ファイルが格納されている。\n|   |   |\n|   |   \\---webapp\n|   |       +---images          … 疎通確認用の画像ファイルが格納されている。\n|   |       |\n|   |       \\---WEB-INF         … web.xmlが格納されている。\n|   |            |\n|   |            +---errorPages … エラー画面のサンプルが格納されている。\n|   |            |\n|   |            \\---test       … 疎通確認画面用のファイルが格納されている。\n|   |\n|   \\---test\n|       +---java                … 疎通テスト用のユニットテストが格納されている。\n|       |\n|       \\---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。\n|           |\n|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|           |\n|           \\---nablarch        … HTMLチェックツール用のデータが格納されている。\n|\n+---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。\n|\n+---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。\n|\n\\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。\n```"
     },
     {
       "id": "s8",
-      "title": "pj-batch-dblessプロジェクト",
-      "content": "DBに接続しないNablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。\n\n\n#### プロジェクトの構成\n\npj-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。\n\n#### 本番環境へのリリースについて\n\nバッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n```bash\njava -jar <実行可能jarファイル名> ^\n    -diConfig <コンポーネント設定ファイル> ^\n    -requestPath <リクエストパス> ^\n    -userId <ユーザID>\n```"
+      "title": "ツールの設定",
+      "content": "toolsフォルダには、Mavenと連携させて使用するツールの設定ファイルが含まれている。\n以下に主なディレクトリとファイルを示す。\n\n| ディレクトリまたはファイル | 説明 |\n|---|---|\n| nablarch-tools.xml | Jakarta Server Pages静的解析ツールを実行する際に使用する設定ファイル |\n| static-analysis/jspanalysis | Jakarta Server Pages静的解析ツールの設定ファイルが格納されている。 |"
     },
     {
       "id": "s9",
-      "title": "pj-container-webプロジェクト",
-      "content": "ウェブアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。\n\n#### プロジェクトの構成\n\n```text\nmyapp-container-web\n|\n|   pom.xml                     … Mavenの設定ファイル\n|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)\n|\n+---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。\n|\n+---h2\n|   +---bin                     … H2の起動に使用するファイルが格納されている。\n|   |\n|   \\---db\n|           SAMPLE.h2.db        … H2のデータファイル。\n|           SAMPLE.h2.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.h2.db」にコピーして使用する。\n|\n+---src\n|   +---main\n|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。\n|   |   |\n|   |   +---resources           … 直下には設定ファイルが格納されている。\n|   |   |   |\n|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|   |   |   |\n|   |   |   \\---net             … ルーティングアダプタ用設定ファイルが格納されている。\n|   |   |\n|   |   +---jib                 … コンテナイメージ上に配置するファイルが格納されている。\n|   |   |\n|   |   \\---webapp\n|   |       +---images          … 疎通確認用の画像ファイルが格納されている。\n|   |       |\n|   |       \\---WEB-INF         … web.xmlが格納されている。\n|   |            |\n|   |            +---errorPages … エラー画面のサンプルが格納されている。\n|   |            |\n|   |            \\---test       … 疎通確認画面用のファイルが格納されている。\n|   |\n|   |\n|   \\---test\n|       +---java                … 疎通テスト用のユニットテストが格納されている。\n|       |\n|       \\---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。\n|           |\n|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|           |\n|           \\---nablarch        … HTMLチェックツール用のデータが格納されている。\n|\n+---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。\n|\n+---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。\n|\n\\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。\n```\nsrc/main/jib について\n`src/main/jib` に配置したディレクトリやファイルは、そのままコンテナ上に配置される。\nたとえば、 `src/main/jib/var/foo.txt` というファイルを配置した状態でコンテナイメージをビルドすると、コンテナ上の `/var/foo.txt` にファイルが配置される。\n詳細は [Jibのドキュメントを参照](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#adding-arbitrary-files-to-the-image) (外部サイト、英語)。\n\nブランクプロジェクトでは、Tomcatのログ出力を全て標準出力にするために、Tomcatの設定ファイルがいくつか配置されている。\n\n\n\n#### ツールの設定\n\nWebと同一であるため省略。"
+      "title": "pj-jaxrsプロジェクト",
+      "content": "RESTfulウェブサービスアプリケーションのwarファイルとしてパッケージングされるプロジェクト。"
     },
     {
       "id": "s10",
-      "title": "pj-container-jaxrsプロジェクト",
-      "content": "RESTfulウェブサービスアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。\n\n#### プロジェクトの構成\n\nコンテナ版Webと同一であるため省略。"
+      "title": "プロジェクトの構成",
+      "content": "Webと同一であるため省略。"
     },
     {
       "id": "s11",
-      "title": "pj-container-batchプロジェクト",
-      "content": "NablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。\n\n\n#### プロジェクトの構成\n\n(ディレクトリ及びファイルの説明は、コンテナ版Webに存在しない要素についてのみ記載)\n\n```text\nmyapp-container-batch\n|\n|   pom.xml\n|   README.md\n|\n+---db\n|\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---main\n|   |   +---java\n|   |   |\n|   |   +---jib\n|   |   |\n|   |   +---resources\n|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。\n|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。\n|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。\n|   |   |   |\n|   |   |   \\---entity\n|   |   |\n|   |   \\---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           \\---data\n|\n\\---work\n```"
+      "title": "pj-batch-eeプロジェクト",
+      "content": "Jakarta Batchに準拠したバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。"
     },
     {
       "id": "s12",
-      "title": "pj-container-batch-dblessプロジェクト",
-      "content": "DBに接続しないNablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。\n\n#### プロジェクトの構成\n\npj-container-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。"
+      "title": "プロジェクトの構成",
+      "content": "(ディレクトリ及びファイルの説明は、Web、batchに存在しない要素についてのみ記載)\n\n```text\nmyapp-batch-ee\n|\n|   pom.xml\n|   README.md\n|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル\n|\n+---db\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---env\n|   |\n|   +---main\n|   |   +---java\n|   |   |\n|   |   \\---resources\n|   |       |   batch-boot.xml              … バッチ起動時に使用する設定ファイル。\n|   |       |\n|   |       +---entity\n|   |       |\n|   |       \\---META-INF\n|   |           |   beans.xml               … Jakarta Contexts and Dependency Injectionを有効化するために必要なファイル。\n|   |           |\n|   |           \\---batch-jobs\n|   |                   sample-batchlet.xml … batchlet方式の疎通確認用アプリケーションのジョブファイル。\n|   |                   sample-chunk.xml    … chunk方式の疎通確認用アプリケーションのジョブファイル。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           +---data\n|\n+---testdata                                … 開発時にETL機能の入力・出力ファイルを格納するための作業用ディレクトリ。\n|\n\\---work\n```"
     },
     {
       "id": "s13",
-      "title": "各プロジェクト共通の設定",
-      "content": "各Mavenプロジェクトそれぞれで下記のように設定している。\n\n* プロファイルの定義\n* ビルドフェーズで実行するゴールの追加\n* コンパイルに関する設定。以下のような設定が存在する。\n\n* 使用するJavaのバージョン\n* ファイルエンコーディング\n* JDBCドライバ\n* アーキタイプから生成したプロジェクトに組み込まれているツール に記載されているツールの設定。以下のような設定が存在する。\n\n* [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するデータベース接続設定（JDBC接続URLやデータベーススキーマなど）\n* カバレッジ設定\n\n\n以下に個々の詳細を示す。\n\n\n\n#### プロファイル一覧\n\n定義されているプロファイルの詳細については、各プロジェクトの `pom.xml` を参照。\n\n以下に定義されているプロファイルを示す。\n\n| プロファイル名 | 概要 |\n|---|---|\n| dev | 開発環境用及び、ユニットテスト実行用のプロファイル。src/env/dev/resourcesディレクトリのリソースを使用する。 |\n| prod | 本番環境用のプロファイル。src/env/prod/resourcesディレクトリのリソースを使用する。 |\n> **Tip:** `pom.xml` 中のdevプロファイルにactiveByDefault要素が記述されており、デフォルトでdevプロファイルが使用されるようになっている。\n> **Note:** コンテナ用のプロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。 したがって、コンテナ用のプロジェクトにはプロファイルが定義されていない。 詳しくは コンテナの本番環境設定 を参照。\n##### プロファイルの使い方\n\nこれらのプロファイルは環境に応じた成果物を作成する際に使用する。\n\n例えば、本番環境用のWARファイルを作成したい場合、\n`pj-web`\\ モジュール配下で、本番環境用プロファイルを指定してmvnコマンドを実行する。\n\n以下にコマンドの例を示す。\n\n```bash\nmvn package -P prod -DskipTests=true\n```\n> **Tip:** 上記コマンドでは、ユニットテストのスキップを指定している。 「mvn package」実行時には、デフォルトではユニットテストも併せて行われるが、本番環境用のプロファイルではユニットテストの実行に失敗するためである。\n#### ビルドフェーズに追加されているゴール一覧\n\nMavenのデフォルトのビルドフェーズ定義に加えて、以下のゴールが実行されるように設定されている。\n\n設定の詳細については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照のこと。\n\n\n| ビルドフェーズ | ゴール | 概要 |\n|---|---|---|\n| initialize | jacoco:prepare-agent | JaCoCoの実行時エージェントを準備する。 |\n| pre-integration-test | jacoco:prepare-agent-integration | 結合試験用にJaCoCoの実行時エージェントを準備する。 |\n> **Tip:** gsp-dba-maven-pluginの実行はMavenのビルドフェーズに紐づかないため、エンティティの自動生成など、gsp-dba-maven-pluginで実装されているゴールを実行したい場合は、ゴールを手動で実行すること。\n#### コンパイルに関する設定\n\n設定内容については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照。\n\n\n#### ツールの設定\n\nツールの設定は、`pom.xml` (各プロジェクト及び、 nablarch-archetype-parent(親プロジェクト) )に記載されている。\n親プロジェクトに記載されているツールについては、 アーキタイプから生成したプロジェクトに組み込まれているツール を参照。"
+      "title": "本番環境へのリリースについて",
+      "content": "バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n> ```bash\n> java -jar <実行可能jarファイル名> <ジョブ名>\n> ```"
     },
     {
       "id": "s14",
-      "title": "ビルド設定",
-      "content": "以下のような場合は、各モジュールのpom.xmlを変更する。\n\n* モジュール個別で使用する依存ライブラリを追加・変更する。例えば、使用するNablarchのバージョンを変更するために、nablarch-bomのバージョンを修正する場合が該当する。\n* モジュール個別で使用するMavenプラグインを追加・変更する。\n\n#### 使用するNablarchのバージョンを変更する場合の例\n\n以下にNablarch6u2を使用する場合の設定例を示す。\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.nablarch.profile</groupId>\n      <artifactId>nablarch-bom</artifactId>\n\n      <!--\n      使用するNablarchのバージョンと対応したバージョンを指定する。\n      この例は6u2を指定している。\n      -->\n      <version>6u2</version>\n\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n    …\n</dependencyManagement>\n```\n#### 依存ライブラリ追加の例\n\n以下に\\ `pj-web`\\ モジュールで暗号化ユーティリティを使用するために、nablarch-common-encryptionへの依存を追加する場合の例を示す。\n\nなお、依存を追加する場合にはscopeの設定を適切に行うこと。scopeの設定を怠ると、ユニットテストでのみ使用するはずのモジュールが本番でも使用されるといった問題が起きる可能性がある。\n\n```xml\n<dependencies>\n…\n  <dependency>\n    <groupId>com.nablarch.framework</groupId>\n    <artifactId>nablarch-common-encryption</artifactId>\n  </dependency>\n…\n</dependencies>\n```\nNablarchのライブラリの場合、pom.xmlにバージョン番号は通常指定しなくても良い(nablarch-bomに対するバージョン指定により、個々のライブラリのバージョンが決定するため)。"
+      "title": "pj-batchプロジェクト",
+      "content": "Nablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。"
     },
     {
       "id": "s15",
+      "title": "プロジェクトの構成",
+      "content": "(ディレクトリ及びファイルの説明は、Webに存在しない要素についてのみ記載)\n\n```text\nmyapp-batch\n|\n|   pom.xml\n|   README.md\n|   distribution.xml                        … maven-assembly-pluginで使用する設定ファイル\n|\n+---db\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---env\n|   |\n|   +---main\n|   |   +---java\n|   |   |\n|   |   +---resources\n|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。\n|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。\n|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。\n|   |   |   |\n|   |   |   \\---entity\n|   |   |\n|   |   \\---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           \\---data\n|\n\\---work\n```"
+    },
+    {
+      "id": "s16",
+      "title": "本番環境へのリリースについて",
+      "content": "バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n> ```bash\n> java -jar <実行可能jarファイル名> ^\n>     -diConfig <コンポーネント設定ファイル> ^\n>     -requestPath <リクエストパス> ^\n>     -userId <ユーザID>\n> ```"
+    },
+    {
+      "id": "s17",
+      "title": "pj-batch-dblessプロジェクト",
+      "content": "DBに接続しないNablarchバッチアプリケーションのjarファイルとしてパッケージされるプロジェクト。"
+    },
+    {
+      "id": "s18",
+      "title": "プロジェクトの構成",
+      "content": "pj-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。"
+    },
+    {
+      "id": "s19",
+      "title": "本番環境へのリリースについて",
+      "content": "バッチアプリケーションのビルド時に `target` 配下に生成されるzipファイルの中には、\nバッチアプリケーションの実行可能jarと依存ライブラリが格納されている。\n\nそのため、本番環境へのリリース時は、以下の手順でバッチを実行できる。\n\n1. zipファイルを任意のディレクトリに解凍する。\n2. 以下のコマンドでバッチを実行する。\n\n> ```bash\n> java -jar <実行可能jarファイル名> ^\n>     -diConfig <コンポーネント設定ファイル> ^\n>     -requestPath <リクエストパス> ^\n>     -userId <ユーザID>\n> ```"
+    },
+    {
+      "id": "s20",
+      "title": "pj-container-webプロジェクト",
+      "content": "ウェブアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。"
+    },
+    {
+      "id": "s21",
+      "title": "プロジェクトの構成",
+      "content": "```text\nmyapp-container-web\n|\n|   pom.xml                     … Mavenの設定ファイル\n|   README.md                   … 本プロジェクトの補足説明(読み終わったら削除可)\n|\n+---db                          … 疎通アプリケーション用のDDL及びInsert文。RDBMS別に格納されている。\n|\n+---h2\n|   +---bin                     … H2の起動に使用するファイルが格納されている。\n|   |\n|   \\---db\n|           SAMPLE.h2.db        … H2のデータファイル。\n|           SAMPLE.h2.db.org    … H2のデータファイルのバックアップ。H2が起動しなくなった場合に「SAMPLE.h2.db」にコピーして使用する。\n|\n+---src\n|   +---main\n|   |   +---java                … 疎通確認用アプリケーションのクラスが格納されている。\n|   |   |\n|   |   +---resources           … 直下には設定ファイルが格納されている。\n|   |   |   |\n|   |   |   +---entity          … ER図のサンプル。gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|   |   |   |\n|   |   |   \\---net             … ルーティングアダプタ用設定ファイルが格納されている。\n|   |   |\n|   |   +---jib                 … コンテナイメージ上に配置するファイルが格納されている。\n|   |   |\n|   |   \\---webapp\n|   |       +---images          … 疎通確認用の画像ファイルが格納されている。\n|   |       |\n|   |       \\---WEB-INF         … web.xmlが格納されている。\n|   |            |\n|   |            +---errorPages … エラー画面のサンプルが格納されている。\n|   |            |\n|   |            \\---test       … 疎通確認画面用のファイルが格納されている。\n|   |\n|   |\n|   \\---test\n|       +---java                … 疎通テスト用のユニットテストが格納されている。\n|       |\n|       \\---resources           … 直下にはユニットテスト用の設定ファイルが格納されている。\n|           |\n|           +---data            … gsp-dba-maven-pluginを使用する際のサンプルデータとして用意している。\n|           |\n|           \\---nablarch        … HTMLチェックツール用のデータが格納されている。\n|\n+---tmp                         … ウェブアプリケーションのリクエスト単体テストで使用されるディレクトリ。疎通テスト実行時に自動生成される。\n|\n+---tools                       … Mavenと連携させて使用するツールの設定ファイルが格納されている。\n|\n\\---work                        … 開発時に入力・出力ファイルを格納するための作業用ディレクトリ。疎通確認時に自動生成される。\n```\n\nsrc/main/jib について\n`src/main/jib` に配置したディレクトリやファイルは、そのままコンテナ上に配置される。\nたとえば、 `src/main/jib/var/foo.txt` というファイルを配置した状態でコンテナイメージをビルドすると、コンテナ上の `/var/foo.txt` にファイルが配置される。\n詳細は [Jibのドキュメントを参照](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin#adding-arbitrary-files-to-the-image) (外部サイト、英語)。\n\nブランクプロジェクトでは、Tomcatのログ出力を全て標準出力にするために、Tomcatの設定ファイルがいくつか配置されている。"
+    },
+    {
+      "id": "s22",
+      "title": "ツールの設定",
+      "content": "Webと同一であるため省略。"
+    },
+    {
+      "id": "s23",
+      "title": "pj-container-jaxrsプロジェクト",
+      "content": "RESTfulウェブサービスアプリケーションがデプロイされたTomcatベースのDockerイメージをビルドするプロジェクト。"
+    },
+    {
+      "id": "s24",
+      "title": "プロジェクトの構成",
+      "content": "コンテナ版Webと同一であるため省略。"
+    },
+    {
+      "id": "s25",
+      "title": "pj-container-batchプロジェクト",
+      "content": "NablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。"
+    },
+    {
+      "id": "s26",
+      "title": "プロジェクトの構成",
+      "content": "(ディレクトリ及びファイルの説明は、コンテナ版Webに存在しない要素についてのみ記載)\n\n```text\nmyapp-container-batch\n|\n|   pom.xml\n|   README.md\n|\n+---db\n|\n|\n+---h2\n|   +---bin\n|   |\n|   \\---db\n|           SAMPLE.mv.db\n|           SAMPLE.mv.db.org\n|\n+---src\n|   +---main\n|   |   +---java\n|   |   |\n|   |   +---jib\n|   |   |\n|   |   +---resources\n|   |   |   |   batch-boot.xml              … 都度起動バッチ起動時に指定する設定ファイル。\n|   |   |   |   mail-sender-boot.xml        … メール送信バッチ起動時に指定する設定ファイル。\n|   |   |   |   resident-batch-boot.xml     … テーブルをキューとして使ったメッセージング起動時に指定する設定ファイル。\n|   |   |   |\n|   |   |   \\---entity\n|   |   |\n|   |   \\---scripts                         … バッチ等の起動に使用するためのシェルスクリプトファイル(使用は任意)。\n|   |\n|   \\---test\n|       +---java\n|       |\n|       \\---resources\n|           |\n|           \\---data\n|\n\\---work\n```"
+    },
+    {
+      "id": "s27",
+      "title": "pj-container-batch-dblessプロジェクト",
+      "content": "DBに接続しないNablarchバッチアプリケーションがデプロイされたLinuxサーバのDockerイメージをビルドするプロジェクト。"
+    },
+    {
+      "id": "s28",
+      "title": "プロジェクトの構成",
+      "content": "pj-container-batchプロジェクトの構成 からDB関連のディレクトリ及びファイルを除いただけであるため省略。"
+    },
+    {
+      "id": "s29",
+      "title": "各プロジェクト共通の設定",
+      "content": "各Mavenプロジェクトそれぞれで下記のように設定している。\n\n* プロファイルの定義\n* ビルドフェーズで実行するゴールの追加\n* コンパイルに関する設定。以下のような設定が存在する。\n\n  * 使用するJavaのバージョン\n  * ファイルエンコーディング\n  * JDBCドライバ\n* アーキタイプから生成したプロジェクトに組み込まれているツール に記載されているツールの設定。以下のような設定が存在する。\n\n  * [gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するデータベース接続設定（JDBC接続URLやデータベーススキーマなど）\n  * カバレッジ設定\n\n以下に個々の詳細を示す。"
+    },
+    {
+      "id": "s30",
+      "title": "プロファイル一覧",
+      "content": "定義されているプロファイルの詳細については、各プロジェクトの `pom.xml` を参照。\n\n以下に定義されているプロファイルを示す。\n\n| プロファイル名 | 概要 |\n|---|---|\n| dev | 開発環境用及び、ユニットテスト実行用のプロファイル。src/env/dev/resourcesディレクトリのリソースを使用する。 |\n| prod | 本番環境用のプロファイル。src/env/prod/resourcesディレクトリのリソースを使用する。 |\n\n> **Tip:**\n> `pom.xml` 中のdevプロファイルにactiveByDefault要素が記述されており、デフォルトでdevプロファイルが使用されるようになっている。\n\n> **Note:**\n> コンテナ用のプロジェクトでは、環境ごとの違いはプロファイルではなくOS環境変数を使って切り替える。\n> したがって、コンテナ用のプロジェクトにはプロファイルが定義されていない。\n> 詳しくは コンテナの本番環境設定 を参照。"
+    },
+    {
+      "id": "s31",
+      "title": "プロファイルの使い方",
+      "content": "これらのプロファイルは環境に応じた成果物を作成する際に使用する。\n\n例えば、本番環境用のWARファイルを作成したい場合、\n`pj-web`\u0000 モジュール配下で、本番環境用プロファイルを指定してmvnコマンドを実行する。\n\n以下にコマンドの例を示す。\n\n```bash\nmvn package -P prod -DskipTests=true\n```\n\n> **Tip:**\n> 上記コマンドでは、ユニットテストのスキップを指定している。\n\n> 「mvn package」実行時には、デフォルトではユニットテストも併せて行われるが、本番環境用のプロファイルではユニットテストの実行に失敗するためである。"
+    },
+    {
+      "id": "s32",
+      "title": "ビルドフェーズに追加されているゴール一覧",
+      "content": "Mavenのデフォルトのビルドフェーズ定義に加えて、以下のゴールが実行されるように設定されている。\n\n設定の詳細については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照のこと。\n\n| ビルドフェーズ | ゴール | 概要 |\n|---|---|---|\n| initialize | jacoco:prepare-agent | JaCoCoの実行時エージェントを準備する。 |\n| pre-integration-test | jacoco:prepare-agent-integration | 結合試験用にJaCoCoの実行時エージェントを準備する。 |\n\n> **Tip:**\n> gsp-dba-maven-pluginの実行はMavenのビルドフェーズに紐づかないため、エンティティの自動生成など、gsp-dba-maven-pluginで実装されているゴールを実行したい場合は、ゴールを手動で実行すること。"
+    },
+    {
+      "id": "s33",
+      "title": "コンパイルに関する設定",
+      "content": "設定内容については、各プロジェクトの `pom.xml` 及び、 nablarch-archetype-parent(親プロジェクト) の `pom.xml` を参照。"
+    },
+    {
+      "id": "s34",
+      "title": "ツールの設定",
+      "content": "ツールの設定は、`pom.xml` (各プロジェクト及び、 nablarch-archetype-parent(親プロジェクト) )に記載されている。\n親プロジェクトに記載されているツールについては、 アーキタイプから生成したプロジェクトに組み込まれているツール を参照。"
+    },
+    {
+      "id": "s35",
+      "title": "ビルド設定",
+      "content": "以下のような場合は、各モジュールのpom.xmlを変更する。\n\n* モジュール個別で使用する依存ライブラリを追加・変更する。例えば、使用するNablarchのバージョンを変更するために、nablarch-bomのバージョンを修正する場合が該当する。\n* モジュール個別で使用するMavenプラグインを追加・変更する。"
+    },
+    {
+      "id": "s36",
+      "title": "使用するNablarchのバージョンを変更する場合の例",
+      "content": "以下にNablarch6u2を使用する場合の設定例を示す。\n\n```xml\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.nablarch.profile</groupId>\n      <artifactId>nablarch-bom</artifactId>\n\n      <!--\n      使用するNablarchのバージョンと対応したバージョンを指定する。\n      この例は6u2を指定している。\n      -->\n      <version>6u2</version>\n\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n    …\n</dependencyManagement>\n```"
+    },
+    {
+      "id": "s37",
+      "title": "依存ライブラリ追加の例",
+      "content": "以下に\u0000 `pj-web`\u0000 モジュールで暗号化ユーティリティを使用するために、nablarch-common-encryptionへの依存を追加する場合の例を示す。\n\nなお、依存を追加する場合にはscopeの設定を適切に行うこと。scopeの設定を怠ると、ユニットテストでのみ使用するはずのモジュールが本番でも使用されるといった問題が起きる可能性がある。\n\n```xml\n<dependencies>\n…\n  <dependency>\n    <groupId>com.nablarch.framework</groupId>\n    <artifactId>nablarch-common-encryption</artifactId>\n  </dependency>\n…\n</dependencies>\n```\n\nNablarchのライブラリの場合、pom.xmlにバージョン番号は通常指定しなくても良い(nablarch-bomに対するバージョン指定により、個々のライブラリのバージョンが決定するため)。"
+    },
+    {
+      "id": "s38",
       "title": "【参考】プロジェクト分割方針",
       "content": ""
     },
     {
-      "id": "s16",
+      "id": "s39",
       "title": "推奨するプロジェクト構成の方針",
-      "content": "以下に推奨するプロジェクト構成の方針を示す。\n\n* 作成するアプリケーションが１つの場合(ウェブのみ、バッチのみ等)は、それぞれ単体のプロジェクトで構成する。\n* 社内用と社外用で２つのウェブアプリケーションを作成するようなケースでは、無理に１つのMavenプロジェクトにまとめず、個別にMavenプロジェクトを作ること。\n* 複数のアプリケーションが存在し、共通化したいライブラリが存在する場合は、共通ライブラリを配置するMavenプロジェクトを作る。\n* 実行制御基盤を追加した際は、実行制御基盤毎にMavenプロジェクトを作る。例えば、メッセージング実行制御基盤を使用したアプリケーションを追加する場合は、新しくMavenプロジェクトを作る。\n* 必要以上にプロジェクトは分割しない。詳細は、 プロジェクトを過度に分割した場合の問題点 を参照。\n\n> **Tip:** プロジェクトを分割する際には、リソースの重複が無い様に注意すること。 例えば、[gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するedmファイルを複数のMavenプロジェクトに混在させると、重複したEntityクラスが複数のMavenプロジェクトに存在することになる。"
+      "content": "以下に推奨するプロジェクト構成の方針を示す。\n\n* 作成するアプリケーションが１つの場合(ウェブのみ、バッチのみ等)は、それぞれ単体のプロジェクトで構成する。\n* 社内用と社外用で２つのウェブアプリケーションを作成するようなケースでは、無理に１つのMavenプロジェクトにまとめず、個別にMavenプロジェクトを作ること。\n* 複数のアプリケーションが存在し、共通化したいライブラリが存在する場合は、共通ライブラリを配置するMavenプロジェクトを作る。\n* 実行制御基盤を追加した際は、実行制御基盤毎にMavenプロジェクトを作る。例えば、メッセージング実行制御基盤を使用したアプリケーションを追加する場合は、新しくMavenプロジェクトを作る。\n* 必要以上にプロジェクトは分割しない。詳細は、 プロジェクトを過度に分割した場合の問題点 を参照。\n\n> **Tip:**\n> プロジェクトを分割する際には、リソースの重複が無い様に注意すること。\n\n> 例えば、[gsp-dba-maven-plugin(外部サイト)](https://github.com/coastland/gsp-dba-maven-plugin) で使用するedmファイルを複数のMavenプロジェクトに混在させると、重複したEntityクラスが複数のMavenプロジェクトに存在することになる。"
     },
     {
-      "id": "s17",
+      "id": "s40",
       "title": "プロジェクトを過度に分割した場合の問題点",
       "content": "プロジェクトを過度に分割した場合の問題点を以下に示す。\n\n* ビルド及びデプロイの手順が複雑になる。\n* 結合テスト以降で、どのモジュールを組み合わせてテストしたか管理が複雑になる。\n\n一般的には、Mavenプロジェクトは少ないほうが開発をスムーズに進めることが出来る。"
     }

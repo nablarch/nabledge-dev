@@ -1,5 +1,17 @@
 # 機能詳細
 
+**目次**
+
+* Nablarchの初期化
+* 入力値のチェック
+* データベースアクセス
+* 排他制御
+* URIとアクションクラスのマッピング
+* 国際化対応
+* 認証
+* 認可チェック
+* エラー時に返却するレスポンス
+
 ## Nablarchの初期化
 
 ウェブアプリケーションのNablarchの初期化 を参照。
@@ -16,17 +28,22 @@
 
 * ユニバーサルDAO
 
-* universal_dao_jpa_optimistic_lock
-* universal_dao_jpa_pessimistic_lock
+  * universal_dao_jpa_optimistic_lock
+  * universal_dao_jpa_pessimistic_lock
 
-
-> **Important:** 排他制御 機能は、クライアント(taglib)との連動が前提であるため、 HTTPメッセージングでは使用できない。
+> **Important:**
+> 排他制御 機能は、クライアント(taglib)との連動が前提であるため、
+> HTTPメッセージングでは使用できない。
 
 ## URIとアクションクラスのマッピング
 
 * HTTPリクエストディスパッチハンドラ
 
-> **Tip:** HTTPメッセージングでは ルーティングアダプタ を使用できない。 HTTPメッセージングは、MOMメッセージング が提供する `MessagingAction` でアクションクラスを作成するため、URIに応じてアクションクラスのメソッドを呼び分ける想定がないため。
+> **Tip:**
+> HTTPメッセージングでは ルーティングアダプタ を使用できない。
+> HTTPメッセージングは、MOMメッセージング が提供する
+> MessagingAction
+> でアクションクラスを作成するため、URIに応じてアクションクラスのメソッドを呼び分ける想定がないため。
 
 ## 国際化対応
 

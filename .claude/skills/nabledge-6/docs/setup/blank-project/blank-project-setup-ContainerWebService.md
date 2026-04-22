@@ -24,7 +24,8 @@
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
 | 組み込まれているアダプタ | * Jersey用アダプタ(詳細は、 Jakarta RESTful Web Servicesアダプタ を参照) * ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |
-| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * NablarchのRESTfulウェブサービス用の基本的な設定 * 疎通確認用RESTfulウェブサービス * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * NablarchのRESTfulウェブサービス用の基本的な設定 * 疎通確認用RESTfulウェブサービス * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
 ## ブランクプロジェクト作成
@@ -42,12 +43,14 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-container-jaxrs-archetype -DarchetypeVersion={nablarch_version}
 ```
+
 上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
 
 | 設定値 | 説明 |
 |---|---|
 | archetypeVersion | 使用したいアーキタイプのバージョンを指定する。（Nablarch 6u2以降を指定すること） |
-#### プロジェクト情報の入力
+
+## プロジェクト情報の入力
 
 上記コマンドを実行すると、以下の項目について入力を求められるので、 生成されるブランクプロジェクトに関する情報を入力する。
 
@@ -58,11 +61,14 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | version | バージョン番号 | `0.1.0` |
 | package | パッケージ(通常はグループIDと同じ) | `com.example` |
 
-> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+> **Important:**
+> 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。
+> よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+
 プロジェクト情報の入力が終わると、Y: :と表示される。
 
-* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
-* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
+> * >   入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
+> * >   プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
@@ -70,23 +76,28 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 疎通確認の仕組みや手順は通常のRESTfulウェブサービスプロジェクトと同じなので、 RESTfulウェブサービスプロジェクトの初期セットアップ を参照。
 
-> **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> **Note:**
+> アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを作成する
 
 コンテナイメージの作成方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
-> **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> **Note:**
+> アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを実行する
 
 コンテナイメージの実行方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
-> **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
-> **Note:** 動作確認は、以下のURLで行える。
+> **Note:**
+> アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
-* `http://localhost:8080/find/json`
-* `http://localhost:8080/find/xml`
+> **Note:**
+> 動作確認は、以下のURLで行える。
+
+> * >   `http://localhost:8080/find/json`
+> * >   `http://localhost:8080/find/xml`
 
 ## データベースに関する設定を行う
 

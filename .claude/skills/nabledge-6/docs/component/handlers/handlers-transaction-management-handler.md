@@ -1,5 +1,15 @@
 # トランザクション制御ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* トランザクション制御対象を設定する
+* 特定の例外の場合にトランザクションをコミットさせる
+* トランザクション終了時に任意の処理を実行したい
+* アプリケーションで複数のトランザクションを使用する
+
 データベースやメッセージキューなどのトランザクションに対応したリソースを使用し、後続処理における透過的トランザクションを実現するハンドラ。
 
 トランザクション機能の詳細は、 トランザクション管理 を参照。
@@ -12,11 +22,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-transaction-management-handler/flow.png)
+![](../images/TransactionManagementHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.common.handler.TransactionManagementHandler`
+* nablarch.common.handler.TransactionManagementHandler
 
 ## モジュール一覧
 
@@ -47,14 +57,21 @@
 
 ## トランザクション制御対象を設定する
 
-このハンドラは、 `transactionFactory`
-プロパティに設定されたファクトリクラス( `TransactionFactory` 実装クラス)を使用してトランザクションの制御対象を取得しスレッド上で管理する。
+このハンドラは、 transactionFactory
+プロパティに設定されたファクトリクラス( TransactionFactory 実装クラス)を使用してトランザクションの制御対象を取得しスレッド上で管理する。
 
 スレッド上で管理する際には、トランザクションを識別するための名前を設定する。
-デフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 `transactionName` プロパティに設定すること。
-複数のトランザクションを使用する場合 は、  `transactionName`  プロパティへの値の設定が必須となる。
+デフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 transactionName プロパティに設定すること。
+複数のトランザクションを使用する場合 は、  transactionName  プロパティへの値の設定が必須となる。
 
-> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対するトランザクションを制御する場合は、 `DbConnectionManagementHandler#connectionName` に設定した値と同じ値を `transactionName` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 `transactionName` への設定は省略して良い。
+> **Tip:**
+> データベース接続管理ハンドラ で設定したデータベースに対するトランザクションを制御する場合は、
+> DbConnectionManagementHandler#connectionName に設定した値と同じ値を
+> transactionName プロパティに設定すること。
+
+> なお、 DbConnectionManagementHandler#connectionName に値を設定していない場合は、
+> transactionName への設定は省略して良い。
+
 以下の設定ファイル例を参考にし、このハンドラを設定すること。
 
 ```xml
@@ -76,7 +93,7 @@
 このハンドラのデフォルト動作では、全てのエラー及び例外がロールバック対象となるが、
 発生した例外の内容によってはトランザクションをコミットしたい場合がある。
 
-この場合は、 `transactionCommitExceptions` プロパティに対して、
+この場合は、 transactionCommitExceptions プロパティに対して、
 コミット対象の例外クラスを設定することで対応する。
 なお、設定した例外クラスのサブクラスもコミット対象となる。
 
@@ -98,20 +115,23 @@
 
 このハンドラでは、トランザクション終了(コミットやロールバック)時に、コールバック処理を行う。
 
-コールバックされる処理は、このハンドラより後続に設定されたハンドラの中で、 `TransactionEventCallback` を実装しているものとなる。
-もし、複数のハンドラが  `TransactionEventCallback` を実装している場合は、より手前に設定されているハンドラから順次コールバック処理を実行する。
+コールバックされる処理は、このハンドラより後続に設定されたハンドラの中で、 TransactionEventCallback を実装しているものとなる。
+もし、複数のハンドラが  TransactionEventCallback を実装している場合は、より手前に設定されているハンドラから順次コールバック処理を実行する。
 
 なお、トランザクションをロールバックする場合には、ロールバック後にコールバック処理を実行する。
 このため、コールバック処理は新しいトランザクションで実行され、コールバックが正常に終了するとコミットされる。
 
-> **Important:** 複数のハンドラがコールバック処理を実装していた場合で、コールバック処理中にエラーや例外が発生した場合は、 残りのハンドラに対するコールバック処理は実行しないため注意すること。
+> **Important:**
+> 複数のハンドラがコールバック処理を実装していた場合で、コールバック処理中にエラーや例外が発生した場合は、
+> 残りのハンドラに対するコールバック処理は実行しないため注意すること。
+
 以下に例を示す。
 
 コールバック処理を行うハンドラの作成
-以下実装例のように、  `TransactionEventCallback` を実装したハンドラを作成する。
+以下実装例のように、  TransactionEventCallback を実装したハンドラを作成する。
 
-`transactionNormalEnd` にトランザクションコミット時のコールバック処理を実装し、
-`transactionAbnormalEnd` にトランザクションロールバック時のコールバック処理を実装する。
+transactionNormalEnd にトランザクションコミット時のコールバック処理を実装し、
+transactionAbnormalEnd にトランザクションロールバック時のコールバック処理を実装する。
 
 ```java
 public static class SampleHandler
@@ -191,6 +211,7 @@ public static class SampleHandler
 
 </component>
 ```
+
 上記のハンドラをハンドラキューに設定した場合の例を示す。
 
 ```xml

@@ -3,58 +3,58 @@
 Exampleアプリケーションを元に、既存データから計算を行い新たにデータを導出する Chunkステップ 方式のバッチを解説する。
 
 作成する機能の概要
-![](../../../knowledge/assets/jakarta-batch-getting-started-chunk/overview.png)
+![](../images/chunk/overview.png)
 動作確認手順
 1. 登録対象テーブル(賞与テーブル)のデータを削除
 
-H2のコンソールから下記SQLを実行し、賞与テーブルのデータを削除する。
+  H2のコンソールから下記SQLを実行し、賞与テーブルのデータを削除する。
 
-```sql
-TRUNCATE TABLE BONUS;
-```
+  ```sql
+  TRUNCATE TABLE BONUS;
+  ```
 2. 賞与計算バッチを実行
 
-コマンドプロンプトから賞与計算バッチを実行する。
+  コマンドプロンプトから賞与計算バッチを実行する。
 
-```bash
-$cd {nablarch-example-batch-eeシステムリポジトリ}
-$mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
-    -Dexec.args=bonus-calculate
-```
-5. バッチ実行後の状態の確認
+> ```bash
+> $cd {nablarch-example-batch-eeシステムリポジトリ}
+> $mvn exec:java -Dexec.mainClass=nablarch.fw.batch.ee.Main ^
+>     -Dexec.args=bonus-calculate
+> ```
 
-H2のコンソールから下記SQLを実行し、賞与情報が登録されたことを確認する。
+1. バッチ実行後の状態の確認
 
-```sql
-SELECT * FROM BONUS;
-```
+> H2のコンソールから下記SQLを実行し、賞与情報が登録されたことを確認する。
+
+> ```sql
+> SELECT * FROM BONUS;
+> ```
 
 ## データを導出する
 
 既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。
 
-#. getting_started_chunk-read
-#. getting_started_chunk-business_logic
-#. getting_started_chunk-persistence
-#. getting_started_chunk-job
+1. getting_started_chunk-read
+2. getting_started_chunk-business_logic
+3. getting_started_chunk-persistence
+4. getting_started_chunk-job
 
 処理フローについては、 Chunkステップのバッチの処理フロー を参照。
 責務配置については Chunkステップの責務配置 を参照。
 
-バッチ処理は、 [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
+バッチ処理は、 <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
 リスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。
 
 ## 入力データソースからデータを読み込む
 
 計算に必要なデータを取得する処理を実装する。
 
-#. フォームの作成
-#. ItemReaderの作成
-
+1. フォームの作成
+2. ItemReaderの作成
 
 フォームの作成
-Chunkステップでは、 `ItemReader` と
-`ItemProcessor` とのデータ連携にフォームを使用する。
+Chunkステップでは、 ItemReader と
+ItemProcessor とのデータ連携にフォームを使用する。
 
 EmployeeForm.java
 ```java
@@ -86,11 +86,11 @@ public class EmployeeForm {
 ```
 
 ItemReaderの作成
-`AbstractItemReader` を継承し、データの読み込みを行う。
+AbstractItemReader を継承し、データの読み込みを行う。
 
-| インタフェース名 | 責務 |
-|---|---|
-| `ItemReader` | データの読み込みを行う。 空実装を提供する `AbstractItemReader` を継承する。 * `ItemReader#open` * `ItemReader#readItem` * `ItemReader#close` |
+> | > インタフェース名 | > 責務 |
+> |---|---|
+> | > ItemReader | > > データの読み込みを行う。  > 空実装を提供する AbstractItemReader を継承する。  > > * > >   ItemReader#open > > * > >   ItemReader#readItem > > * > >   ItemReader#close |
 
 EmployeeSearchReader.java
 ```java
@@ -140,26 +140,26 @@ FROM
 INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
 ```
 この実装のポイント
-* `Named` と `Dependent` をクラスに付与する。
-詳細は、 BatchletのNamedとDependentの説明 を参照。
-* `open` メソッドで処理対象のデータを読み込む。
+* Named と Dependent をクラスに付与する。
+  詳細は、 BatchletのNamedとDependentの説明 を参照。
+* open メソッドで処理対象のデータを読み込む。
 * SQLファイルの配置場所や作成方法などは、 任意のSQL(SQLファイル)で検索する を参照。
-* 大量のデータを読み込む場合は、メモリの逼迫を防ぐために `UniversalDao#defer` を使用して
-検索結果を 遅延ロード する。
-* `readItem` メソッドで読み込んだデータから一行分のデータを返却する。
-このメソッドで返却したオブジェクトが、後続する `ItemProcessor` の `processItem` メソッドの引数として与えられる。
+* 大量のデータを読み込む場合は、メモリの逼迫を防ぐために UniversalDao#defer を使用して
+  検索結果を 遅延ロード する。
+* readItem メソッドで読み込んだデータから一行分のデータを返却する。
+  このメソッドで返却したオブジェクトが、後続する ItemProcessor の processItem メソッドの引数として与えられる。
 
 ## 業務ロジックを実行する
 
 賞与の計算等の業務ロジックを実装する。
 
 ItemProcessorの作成
-`ItemProcessor` を実装し、
-業務ロジックを行う(永続化処理は `ItemWriter` の責務であるため実施しない)。
+ItemProcessor を実装し、
+業務ロジックを行う(永続化処理は ItemWriter の責務であるため実施しない)。
 
-| インタフェース名 | 責務 |
-|---|---|
-| `ItemProcessor` | 一行分のデータに対する業務処理を行う。 * `ItemProcessor#processItem` |
+> | > インタフェース名 | > 責務 |
+> |---|---|
+> | > ItemProcessor | > 一行分のデータに対する業務処理を行う。  > * >   ItemProcessor#processItem |
 
 BonusCalculateProcessor.java
 ```java
@@ -194,19 +194,19 @@ public class BonusCalculateProcessor implements ItemProcessor {
 }
 ```
 この実装のポイント
-* `processItem` メソッドで一定数( getting_started_chunk-job にて設定方法を解説)のエンティティを返却した時点で、
-後続する `ItemWriter` の `writeItems` メソッドが実行される。
+* processItem メソッドで一定数( getting_started_chunk-job にて設定方法を解説)のエンティティを返却した時点で、
+  後続する ItemWriter の writeItems メソッドが実行される。
 
 ## 永続化処理を行う
 
 DB更新等の、永続化処理を実装する。
 
 ItemWriterの作成
-`ItemWriter` を実装し、データの永続化を行う。
+ItemWriter を実装し、データの永続化を行う。
 
-| インタフェース名 | 責務 |
-|---|---|
-| `ItemWriter` | データを永続化する。 * `ItemWriter#writeItems` |
+> | > インタフェース名 | > 責務 |
+> |---|---|
+> | > ItemWriter | > データを永続化する。  > * >   ItemWriter#writeItems |
 
 BonusWriter.java
 ```java
@@ -221,37 +221,37 @@ public class BonusWriter extends AbstractItemWriter {
 }
 ```
 この実装のポイント
-* `UniversalDao#batchInsert` を使用してエンティティのリストを一括登録する。
-* `writeItems` メソッド実行後にトランザクションがコミットされ、新たなトランザクションが開始される。
-* `writeItems` メソッド実行後、バッチ処理が `readItem` メソッド実行から繰り返される。
+* UniversalDao#batchInsert を使用してエンティティのリストを一括登録する。
+* writeItems メソッド実行後にトランザクションがコミットされ、新たなトランザクションが開始される。
+* writeItems メソッド実行後、バッチ処理が readItem メソッド実行から繰り返される。
 
 ## JOB設定ファイルを作成する
 
 JOBの実行設定を記載したファイルを作成する。
 
-bonus-calculate.xml
-```xml
-<job id="bonus-calculate" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
-  <listeners>
-    <listener ref="nablarchJobListenerExecutor" />
-  </listeners>
-
-  <step id="step1">
-    <listeners>
-      <listener ref="nablarchStepListenerExecutor" />
-      <listener ref="nablarchItemWriteListenerExecutor" />
-    </listeners>
-
-    <chunk item-count="1000">
-      <reader ref="employeeSearchReader" />
-      <processor ref="bonusCalculateProcessor" />
-      <writer ref="bonusWriter" />
-    </chunk>
-  </step>
-</job>
-```
-この実装のポイント
-* ジョブ定義ファイルは `/src/main/resources/META-INF/batch-jobs/` 配下に配置する。
-* `job` 要素 の `id` 属性で、ジョブ名称を指定する。
-* `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりで処理する件数を設定する。
-* 設定ファイルの詳細な記述方法は [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) を参照。
+> bonus-calculate.xml
+> ```xml
+> <job id="bonus-calculate" xmlns="https://jakarta.ee/xml/ns/jakartaee" version="2.0">
+>   <listeners>
+>     <listener ref="nablarchJobListenerExecutor" />
+>   </listeners>
+> 
+>   <step id="step1">
+>     <listeners>
+>       <listener ref="nablarchStepListenerExecutor" />
+>       <listener ref="nablarchItemWriteListenerExecutor" />
+>     </listeners>
+> 
+>     <chunk item-count="1000">
+>       <reader ref="employeeSearchReader" />
+>       <processor ref="bonusCalculateProcessor" />
+>       <writer ref="bonusWriter" />
+>     </chunk>
+>   </step>
+> </job>
+> ```
+> この実装のポイント
+> * >   ジョブ定義ファイルは /src/main/resources/META-INF/batch-jobs/ 配下に配置する。
+> * >   job 要素 の id 属性で、ジョブ名称を指定する。
+> * >   chunk 要素の item-count 属性で writeItems 一回当たりで処理する件数を設定する。
+> * >   設定ファイルの詳細な記述方法は <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a> を参照。

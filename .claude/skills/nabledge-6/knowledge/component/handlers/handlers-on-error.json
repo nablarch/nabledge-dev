@@ -1,13 +1,13 @@
 {
   "id": "handlers-on-error",
   "title": "OnErrorインターセプタ",
-  "content": "業務アクションでの例外発生時に、指定したレスポンスを返却するインターセプタ。\n\nInjectForm インターセプタ を使用して入力値チェックを行う場合も、\nInjectForm インターセプタ よりも前にこのインターセプタが実行されるように設定することで、\nバリデーションエラーに対するレスポンスを指定できる。\n\nこのインターセプタは、業務アクションのメソッドに対して、 `OnError` を設定することで有効となる。\n\n> **Tip:** 複数の例外に対するレスポンスを指定したい場合は、 OnErrorsインターセプタ を使用すること。\n> **Important:** 単一の例外に対して複数のレスポンスは指定できない。 例外に対して複数のレスポンスを指定したい場合は、 複数のレスポンスを指定する を参照。",
+  "content": "**目次**\n\n* インターセプタクラス名\n* モジュール一覧\n* OnErrorを使用する\n* エラー時の遷移先画面に表示するデータを取得する\n* 複数のレスポンスを指定する\n\n業務アクションでの例外発生時に、指定したレスポンスを返却するインターセプタ。\n\nInjectForm インターセプタ を使用して入力値チェックを行う場合も、\nInjectForm インターセプタ よりも前にこのインターセプタが実行されるように設定することで、\nバリデーションエラーに対するレスポンスを指定できる。\n\nこのインターセプタは、業務アクションのメソッドに対して、 OnError を設定することで有効となる。\n\n> **Tip:**\n> 複数の例外に対するレスポンスを指定したい場合は、 OnErrorsインターセプタ を使用すること。\n\n> **Important:**\n> 単一の例外に対して複数のレスポンスは指定できない。\n> 例外に対して複数のレスポンスを指定したい場合は、 複数のレスポンスを指定する を参照。",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "インターセプタクラス名",
-      "content": "* `nablarch.fw.web.interceptor.OnError`"
+      "content": "* nablarch.fw.web.interceptor.OnError"
     },
     {
       "id": "s2",
@@ -17,7 +17,7 @@
     {
       "id": "s3",
       "title": "OnErrorを使用する",
-      "content": "`OnError` アノテーションを、\n業務アクションのリクエストを処理するメソッドに対して設定する。\n\n以下の例では、業務アクションのメソッド内で業務エラー( `ApplicationException` )が発生した場合の遷移先を指定している。\n\nポイント\n* type属性には、`RuntimeException` 及びそのサブクラスを指定できる。\n* type属性に指定した例外のサブクラスも処理の対象となる。\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理は省略\n}\n```"
+      "content": "OnError アノテーションを、\n業務アクションのリクエストを処理するメソッドに対して設定する。\n\n以下の例では、業務アクションのメソッド内で業務エラー( ApplicationException )が発生した場合の遷移先を指定している。\n\nポイント\n* type属性には、RuntimeException 及びそのサブクラスを指定できる。\n* type属性に指定した例外のサブクラスも処理の対象となる。\n\n```java\n@OnError(type = ApplicationException.class, path = \"/WEB-INF/view/project/index.jsp\")\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    // 業務処理は省略\n}\n```"
     },
     {
       "id": "s4",
@@ -27,7 +27,7 @@
     {
       "id": "s5",
       "title": "複数のレスポンスを指定する",
-      "content": "本インターセプタでは、単一の例外に対して複数のレスポンスは指定できないため、\n複数のレスポンスを指定したい場合は、業務アクションのメソッド内に個別に `HttpErrorResponse` を生成する必要がある。\n\n以下に実装例を示す。\n\n```java\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    try {\n        // 業務処理は省略\n    } catch (ApplicationException e) {\n        if (/* 条件式を記述 */) {\n            return new HttpErrorResponse(\"/WEB-INF/view/project/index.jsp\");\n        } else {\n            return new HttpErrorResponse(\"/WEB-INF/view/error.jsp\");\n        }\n    }\n}\n```"
+      "content": "本インターセプタでは、単一の例外に対して複数のレスポンスは指定できないため、\n複数のレスポンスを指定したい場合は、業務アクションのメソッド内に個別に HttpErrorResponse を生成する必要がある。\n\n以下に実装例を示す。\n\n```java\npublic HttpResponse handle(HttpRequest request, ExecutionContext context) {\n    try {\n        // 業務処理は省略\n    } catch (ApplicationException e) {\n        if (/* 条件式を記述 */) {\n            return new HttpErrorResponse(\"/WEB-INF/view/project/index.jsp\");\n        } else {\n            return new HttpErrorResponse(\"/WEB-INF/view/error.jsp\");\n        }\n    }\n}\n```"
     }
   ]
 }

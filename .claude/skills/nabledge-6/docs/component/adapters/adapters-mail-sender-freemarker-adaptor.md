@@ -1,5 +1,12 @@
 # E-mail FreeMarkerアダプタ
 
+**目次**
+
+* モジュール一覧
+* E-mail FreeMarkerアダプタを使用するための設定を行う
+* メールのテンプレートを作成する
+* メール送信要求を登録する
+
 [FreeMarker(外部サイト)](https://freemarker.apache.org/) を使用した定型メール送信処理を行うためのアダプタを提供する。
 
 ## モジュール一覧
@@ -11,14 +18,17 @@
   <artifactId>nablarch-mail-sender-freemarker-adaptor</artifactId>
 </dependency>
 ```
-> **Tip:** FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+> **Tip:**
+> FreeMarkerのバージョン2.3.27-incubatingを使用してテストを行っている。
+> バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
 ## E-mail FreeMarkerアダプタを使用するための設定を行う
 
-本アダプタを使用するためには、コンポーネント設定ファイルで `FreeMarkerMailProcessor` を `MailRequester` へ設定する。
+本アダプタを使用するためには、コンポーネント設定ファイルで FreeMarkerMailProcessor を MailRequester へ設定する。
 
 `FreeMarkerMailProcessor` にはFreeMarkerが提供する `Configuration` を設定する必要がある。
-`Configuration` は以下の理由により `ComponentFactory` の実装クラスを作成してコンポーネントを設定することを推奨する。
+`Configuration` は以下の理由により ComponentFactory の実装クラスを作成してコンポーネントを設定することを推奨する。
 
 * `Configuration` はデフォルトコンストラクタが非推奨である
 * `Configuration` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい
@@ -55,6 +65,7 @@ public class ConfigurationFactory implements ComponentFactory<Configuration> {
     }
 }
 ```
+
 この `ConfigurationFactory` を使用するコンポーネント設定ファイルの設定例を以下に示す。
 
 ```xml
@@ -90,7 +101,8 @@ ${title}について${option}
 ${title}は、申請番号${requestId}で申請されました。
 ${approver}は速やかに${title}を承認してください。${option}
 ```
-より詳しい件名と本文の分割ルールは `TemplateEngineProcessedResult#valueOf` を参照。
+
+より詳しい件名と本文の分割ルールは TemplateEngineProcessedResult#valueOf を参照。
 
 テンプレートファイルを配置する場所は `Configuration` の設定によって異なる。
 例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされる。

@@ -1,5 +1,12 @@
 # E-mail Velocityアダプタ
 
+**目次**
+
+* モジュール一覧
+* E-mail Velocityアダプタを使用するための設定を行う
+* メールのテンプレートを作成する
+* メール送信要求を登録する
+
 [Velocity(外部サイト)](https://velocity.apache.org/) を使用した定型メール送信処理を行うためのアダプタを提供する。
 
 ## モジュール一覧
@@ -11,14 +18,17 @@
   <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>
 </dependency>
 ```
-> **Tip:** Velocityのバージョン2.0を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
+
+> **Tip:**
+> Velocityのバージョン2.0を使用してテストを行っている。
+> バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
 ## E-mail Velocityアダプタを使用するための設定を行う
 
-本アダプタを使用するためには、コンポーネント設定ファイルで `VelocityMailProcessor` を `MailRequester` へ設定する。
+本アダプタを使用するためには、コンポーネント設定ファイルで VelocityMailProcessor を MailRequester へ設定する。
 
 `VelocityMailProcessor` にはVelocityが提供する `VelocityEngine` を設定する必要がある。
-`VelocityEngine` は以下の理由により `ComponentFactory` の実装クラスを作成してコンポーネントを設定することを推奨する。
+`VelocityEngine` は以下の理由により ComponentFactory の実装クラスを作成してコンポーネントを設定することを推奨する。
 
 * `VelocityEngine` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい
 * `VelocityEngine` を設定した後に `init` メソッドを呼ぶ必要がある
@@ -51,6 +61,7 @@ public class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {
     }
 }
 ```
+
 この `ConfigurationFactory` を使用するコンポーネント設定ファイルの設定例を以下に示す。
 
 ```xml
@@ -83,7 +94,8 @@ $titleについて$option
 $titleは、申請番号$requestIdで申請されました。
 $approverは速やかに$titleを承認してください。$option
 ```
-より詳しい件名と本文の分割ルールは `TemplateEngineProcessedResult#valueOf` を参照。
+
+より詳しい件名と本文の分割ルールは TemplateEngineProcessedResult#valueOf を参照。
 
 テンプレートファイルを配置する場所は `VelocityEngine` の設定によって異なる。
 例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。

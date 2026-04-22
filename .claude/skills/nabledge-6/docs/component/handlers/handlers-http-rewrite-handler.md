@@ -1,5 +1,13 @@
 # HTTPリライトハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* 書き換えの設定
+* 変数に値を設定
+
 本ハンドラは、HTTPのリクエストおよびレスポンスに対して、リクエストパスとコンテンツパス、
 および変数を書き換える機能を提供する。
 このハンドラは、「未ログイン状態の際は強制的にログイン画面に遷移させる」といった、特殊な
@@ -12,11 +20,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-http-rewrite-handler/flow.png)
+![](../images/HttpRewriteHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.web.handler.HttpRewriteHandler`
+* nablarch.fw.web.handler.HttpRewriteHandler
 
 ## モジュール一覧
 
@@ -32,14 +40,13 @@
 HTTPレスポンスハンドラ より後ろに配置すること
 本ハンドラで書き換えたコンテンツパスは、レスポンスハンドラにより使用される。
 このため、本ハンドラは HTTPレスポンスハンドラ の後ろに配置する必要がある。
-
 スレッドコンテキスト変数管理ハンドラ より前に配置すること
 本ハンドラでは、スレッドコンテキストに入れられるリクエストパスを書き換える。
 このため、本ハンドラは スレッドコンテキスト変数管理ハンドラ より前に配置する必要がある。
 
 ## 書き換えの設定
 
-書き換えの設定は、 `本ハンドラ`  のプロパティ requestPathRewriteRules または contentPathRewriteRules に対して行う。
+書き換えの設定は、 本ハンドラ  のプロパティ requestPathRewriteRules または contentPathRewriteRules に対して行う。
 
 以下に設定例を示す。
 
@@ -86,14 +93,15 @@ HTTPレスポンスハンドラ より後ろに配置すること
   </property>
 </component>
 ```
-この例からわかる通り、設定は `HttpRequestRewriteRule`
-(リクエストパスを書き換える場合)または `ContentPathRewriteRule`
+
+この例からわかる通り、設定は HttpRequestRewriteRule
+(リクエストパスを書き換える場合)または ContentPathRewriteRule
 (コンテンツパスを書き換える場合)を使用して行う。
 
-`HttpRequestRewriteRule`
-および `ContentPathRewriteRule`
+HttpRequestRewriteRule
+および ContentPathRewriteRule
 には、下記のプロパティが存在する。(プロパティは、スーパークラスの
-`RewriteRule` に定義されている。)
+RewriteRule に定義されている。)
 
 | プロパティ名 | 説明 |
 |---|---|
@@ -102,11 +110,11 @@ HTTPレスポンスハンドラ より後ろに配置すること
 | conditions | パス以外の追加の適用条件 |
 | exports | 変数の書き換え設定 |
 
-`HttpRequestRewriteRule`
-および `ContentPathRewriteRule`
+HttpRequestRewriteRule
+および ContentPathRewriteRule
 では、conditionsの設定に変数を使用できる。
-`HttpRequestRewriteRule`
-、 `ContentPathRewriteRule`
+HttpRequestRewriteRule
+、 ContentPathRewriteRule
 それぞれで使用可能な変数は下記の通り。
 
 | 変数種別 | 書式 | 適用可能なクラス |
@@ -126,8 +134,8 @@ HTTPレスポンスハンドラ より後ろに配置すること
 HTTPリライトハンドラでは、パスの書き換え以外に リクエストスコープ、セッションスコープ、
 スレッドコンテキスト、ウィンドウスコープへ変数を設定できる。
 
-変数を設定するには、`HttpRequestRewriteRule`
-または `ContentPathRewriteRule` の
+変数を設定するには、HttpRequestRewriteRule
+または ContentPathRewriteRule の
 export プロパティを設定する。
 
 以下に設定例を示す。
@@ -151,6 +159,7 @@ export プロパティを設定する。
   </property>
 </component>
 ```
+
 このように、 exports プロパティに 「設定する変数名」(上記例の場合、"%{request:prevUrl}")と
 「設定する値」(上記例の場合 "${header:Referer}")をリストで設定することで、各スコープへ変数の
 設定ができる。

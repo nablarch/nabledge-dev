@@ -1,9 +1,24 @@
 # Jakarta RESTful Web Servcies Bean Validationハンドラ
 
-> **Tip:** 本機能は、Nablarch5までは「JAX-RS BeanValidationハンドラ」という名称だった。 しかし、Java EEがEclipse Foundationに移管され仕様名が変わったことに伴い「Jakarta RESTful Web Servcies Bean Validationハンドラ」という名称に変更された。 変更されたのは名称のみで、機能的な差は無い。 その他、Nablarch6で名称が変更された機能については Nablarch5と6で名称が変更になった機能について を参照のこと。
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する
+* Bean Validationのグループを指定する
+
+> **Tip:**
+> 本機能は、Nablarch5までは「JAX-RS BeanValidationハンドラ」という名称だった。
+> しかし、Java EEがEclipse Foundationに移管され仕様名が変わったことに伴い「Jakarta RESTful Web Servcies Bean Validationハンドラ」という名称に変更された。
+
+> 変更されたのは名称のみで、機能的な差は無い。
+
+> その他、Nablarch6で名称が変更された機能については Nablarch5と6で名称が変更になった機能について を参照のこと。
+
 本ハンドラは、リソース(アクション)クラスが受け取るForm(Bean)に対して、Bean Validation を実行する。
 バリデーションでバリデーションエラーが発生した場合には、後続のハンドラに処理は委譲せずに、
-`ApplicationException` を送出して処理を終了する。
+ApplicationException を送出して処理を終了する。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -11,11 +26,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-jaxrs-bean-validation-handler/flow.png)
+![](../images/JaxRsBeanValidationHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.jaxrs.JaxRsBeanValidationHandler`
+* nablarch.fw.jaxrs.JaxRsBeanValidationHandler
 
 ## モジュール一覧
 
@@ -40,7 +55,7 @@
 ## リソース(アクション)で受け取るForm(Bean)に対してバリデーションを実行する
 
 リソース(アクション)のメソッドで受け取るForm(Bean)に対して、バリデーションを実行したい場合は、
-そのメソッドに対して `Valid` アノテーションを設定する。
+そのメソッドに対して Valid アノテーションを設定する。
 
 以下に例を示す。
 
@@ -58,17 +73,16 @@ public HttpResponse save(Person person) {
 
 ## Bean Validationのグループを指定する
 
-`Valid` アノテーションを設定したメソッドに対して
-`ConvertGroup` アノテーションを設定することで、Bean Validationのグループを指定することができる。
+Valid アノテーションを設定したメソッドに対して
+ConvertGroup アノテーションを設定することで、Bean Validationのグループを指定することができる。
 
-`ConvertGroup` アノテーションは `from` 属性と `to` 属性の指定が必須である。
+ConvertGroup アノテーションは `from` 属性と `to` 属性の指定が必須である。
 それぞれ以下のように指定すること。
 
-* `from` ・・・ `Default.class` 固定
+* `from` ・・・ Default.class 固定
 
-* メソッドに `Valid` アノテーションを設定する場合、
-バリデーションは `Default` グループを設定したものとして実行されるため。
-
+  * メソッドに Valid アノテーションを設定する場合、
+    バリデーションは Default グループを設定したものとして実行されるため。
 * `to` ・・・Bean Validationのグループを指定する
 
 以下に例を示す。

@@ -5,70 +5,72 @@ Exampleアプリケーションを元に一括更新機能を解説する。
 作成する機能の説明
 1. メニューの一括更新リンクを押下し、一括更新画面へ遷移する。
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-menu.png)
-2. プロジェクト全件検索の結果が表示される。
+> ![](../images/project_bulk_update/project_bulk_update-menu.png)
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-list.png)
-3. 当該ページで更新する項目を書き換えて、更新ボタンを押下する(ページをまたいだ更新はできない)。
+1. プロジェクト全件検索の結果が表示される。
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-list_changed.png)
-4. 更新確認画面が表示されるので、確定ボタンを押下する。
+> ![](../images/project_bulk_update/project_bulk_update-list.png)
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-confirm.png)
-5. データベースが更新され、更新完了画面が表示される。
+1. 当該ページで更新する項目を書き換えて、更新ボタンを押下する(ページをまたいだ更新はできない)。
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-complete.png)
+> ![](../images/project_bulk_update/project_bulk_update-list_changed.png)
+
+1. 更新確認画面が表示されるので、確定ボタンを押下する。
+
+> ![](../images/project_bulk_update/project_bulk_update-confirm.png)
+
+1. データベースが更新され、更新完了画面が表示される。
+
+> ![](../images/project_bulk_update/project_bulk_update-complete.png)
 
 ## 一括更新機能の作成
 
 一括更新機能の作成方法を解説する。
 
-#. フォームの作成
-#. 画面に更新対象を受け渡すBeanの作成
-#. 一括更新画面を表示する業務アクションメソッドの作成
-#. 一括更新画面JSPの作成
-#. 更新内容を確認する業務アクションメソッドの作成
-#. 確認画面JSPの作成
-#. データベースを一括更新する業務アクションメソッドの作成
-#. 完了画面の作成
-
+> 1. >   フォームの作成
+> 2. >   画面に更新対象を受け渡すBeanの作成
+> 3. >   一括更新画面を表示する業務アクションメソッドの作成
+> 4. >   一括更新画面JSPの作成
+> 5. >   更新内容を確認する業務アクションメソッドの作成
+> 6. >   確認画面JSPの作成
+> 7. >   データベースを一括更新する業務アクションメソッドの作成
+> 8. >   完了画面の作成
 
 フォームの作成
 検索条件を受け付けるフォームと、更新内容を受け付けるフォームをそれぞれ作成する。
 
 検索フォームの作成
 検索フォームの実装は、 検索機能の作成：フォームの作成 と同様であるためそちらを参照。
-
 更新フォームの作成
 複数のプロジェクトの更新情報を一括で送信するため、フォームを2種類作成する。
 
-#. プロジェクト１つ分の更新情報を受け付けるフォーム
-#. プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
+> 1. >   プロジェクト１つ分の更新情報を受け付けるフォーム
+> 2. >   プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
 
-![](../../../knowledge/assets/web-application-getting-started-project-bulk-update/project_bulk_update-form.png)
+> > ![](../images/project_bulk_update/project_bulk_update-form.png)
 
 プロジェクト１つ分の更新情報を受け付けるフォーム
 プロジェクト１つ分の更新値を受け付けるフォームを作成する。
 
-InnerProjectForm.java
-```java
-public class InnerProjectForm implements Serializable {
+> InnerProjectForm.java
+> ```java
+> public class InnerProjectForm implements Serializable {
+> 
+>     // 一部項目のみ抜粋
+> 
+>     /** プロジェクト名 */
+>     @Required
+>     @Domain("projectName")
+>     private String projectName;
+> 
+>     // ゲッタ及びセッタは省略
+> }
+> ```
 
-    // 一部項目のみ抜粋
-
-    /** プロジェクト名 */
-    @Required
-    @Domain("projectName")
-    private String projectName;
-
-    // ゲッタ及びセッタは省略
-}
-```
 この実装のポイント
 * 入れ子となったフォームに対しても  Bean Validation を実行するため、
-`@Required` や `@Domain`
-などのバリデーション用のアノテーションを付与する。
-
+  @Required や @Domain
+  などのバリデーション用のアノテーションを付与する。
 
 プロジェクト１つ分のフォームのリストをプロパティとして持つ親フォーム
 複数プロジェクトの更新情報を一括で受け付けるために、プロジェクト１つ分の更新情報を受け付けるフォームのリストを定義した親フォームを作成する。
@@ -85,26 +87,24 @@ public class ProjectBulkForm implements Serializable {
 }
 ```
 この実装のポイント
-* `@Valid` を付与することで、入れ子としたフォームも Bean Validation の対象に含めることができる。
-
+* @Valid を付与することで、入れ子としたフォームも Bean Validation の対象に含めることができる。
 
 業務アクションで取得した更新対象リストを画面へ受け渡すBeanの作成
 業務アクションで取得した更新対象リストを画面へ受け渡すBeanを作成する。このBeanは一括更新画面と確認画面で持ちまわすため、 セッションストア に登録する。
 
-ProjectListDto.java
-```java
-public class ProjectListDto implements Serializable {
-
-    /** プロジェクトリスト */
-    private List<Project> projectList = new ArrayList<>();
-
-    // ゲッタ及びセッタは省略
-}
-```
-この実装のポイント
-* 配列やコレクション型を セッションストア に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
-そのBeanを セッションストア に登録すること。詳細は セッションストア使用上の制約 を参照。
-
+> ProjectListDto.java
+> ```java
+> public class ProjectListDto implements Serializable {
+> 
+>     /** プロジェクトリスト */
+>     private List<Project> projectList = new ArrayList<>();
+> 
+>     // ゲッタ及びセッタは省略
+> }
+> ```
+> この実装のポイント
+> * >   配列やコレクション型を セッションストア に登録する場合は、シリアライズ可能なBeanのプロパティとして定義し、
+>   そのBeanを セッションストア に登録すること。詳細は セッションストア使用上の制約 を参照。
 
 一括更新画面を表示する業務アクションメソッドの作成
 データベースから対象プロジェクトを取得し、一括更新画面に表示する業務アクションメソッドを作成する。
@@ -137,8 +137,7 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
 この実装のポイント
 * 検索メソッドの実装方法に関しては 検索機能の作成：業務アクションの実装 と同様であるためそちらを参照。
 * 確認画面から一括更新画面へ戻った際に、同条件でページングや再検索ができるように
-検索条件を セッションストア に登録して持ちまわす。
-
+  検索条件を セッションストア に登録して持ちまわす。
 
 一括更新画面JSPの作成
 検索結果の表示と複数のプロジェクトの情報を編集する、一括更新画面のJSPを作成する。
@@ -206,10 +205,9 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
 この実装のポイント
 * 検索結果を表示するJSPの作成方法は 検索機能の作成：検索結果表示部分の作成 と同様であるため、そちらを参照。
 * 確認画面から一括更新画面に戻った際に、同条件での再検索やページングが行えるように、 セッションストア から取得した検索条件を元に検索条件パラメータを構成する。
-JSPでは、 セッションストア に登録したオブジェクトは、リクエストスコープに登録したオブジェクトと同様に扱うことができる。
-* 配列型、もしくは `List` 型プロパティの要素は、 `プロパティ名[index]` 形式でアクセスできる。
-詳細は tag-access_rule 参照。
-
+  JSPでは、 セッションストア に登録したオブジェクトは、リクエストスコープに登録したオブジェクトと同様に扱うことができる。
+* 配列型、もしくは List 型プロパティの要素は、 プロパティ名[index] 形式でアクセスできる。
+  詳細は tag-access_rule 参照。
 
 更新内容を確認する業務アクションメソッドの作成
 更新内容を確認する業務アクションメソッドを作成する。
@@ -239,7 +237,6 @@ public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext contex
 ```
 この実装のポイント
 * 更新する情報は セッションストア に保持する。
-
 
 確認画面JSPの作成
 変更後のプロジェクト情報を表示する画面のJSPを作成する。
@@ -294,16 +291,17 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 ```
 この実装のポイント
 * 基本的な実装方法は  更新機能の作成：データベースを更新する業務アクションメソッドの作成 と同様である。
-* `UniversalDao#update` を更新件数分実行する。
-排他制御エラーが発生した場合は全件の更新がロールバックされる。
+* UniversalDao#update を更新件数分実行する。
+  排他制御エラーが発生した場合は全件の更新がロールバックされる。
 
-> **Tip:** Exampleアプリケーションでは独自のエラー制御ハンドラを追加しているため、排他制御エラーにより `OptimisticLockException` が発生した場合、 排他制御エラー画面へ遷移する。ハンドラによるエラー制御の作成方法は、 ハンドラで例外クラスに対応したエラーページに遷移させる を参照。
-* `UniversalDao` には、エンティティのリストを引数に取る
-`UniversalDao#batchUpdate` メソッドも用意されているが、
-このメソッドは バッチ実行 での使用を想定したものであり、排他制御を行わない。
-排他制御が必要である場合は、 `UniversalDao#update`
-を使用すること。
-
+  > **Tip:**
+> Exampleアプリケーションでは独自のエラー制御ハンドラを追加しているため、排他制御エラーにより OptimisticLockException が発生した場合、
+  > 排他制御エラー画面へ遷移する。ハンドラによるエラー制御の作成方法は、 ハンドラで例外クラスに対応したエラーページに遷移させる を参照。
+* UniversalDao には、エンティティのリストを引数に取る
+  UniversalDao#batchUpdate メソッドも用意されているが、
+  このメソッドは バッチ実行 での使用を想定したものであり、排他制御を行わない。
+  排他制御が必要である場合は、 UniversalDao#update
+  を使用すること。
 
 完了画面の表示
 完了画面の実装方法は 更新機能の作成：更新完了画面の作成 と同様であるためそちらを参照。

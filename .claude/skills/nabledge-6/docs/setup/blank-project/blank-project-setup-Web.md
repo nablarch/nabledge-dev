@@ -15,7 +15,8 @@
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
 | 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |
-| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
 ## ブランクプロジェクト作成
@@ -33,6 +34,7 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-web-archetype -DarchetypeVersion={nablarch_version}
 ```
+
 上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
 
 | 設定値 | 説明 |
@@ -50,11 +52,14 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | version | バージョン番号 | `0.1.0` |
 | package | パッケージ(通常はグループIDと同じ) | `com.example` |
 
-> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+> **Important:**
+> 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。
+> よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+
 プロジェクト情報の入力が終わると、Y: :と表示される。
 
-* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
-* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
+> * >   入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
+> * >   プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
@@ -67,8 +72,8 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | ユニットテストのクラス | テスト内容 |
 |---|---|
 | SampleActionRequestTest | Nablarchのテスティングフレームワークを使用して、画面が表示可能であるかを確認する。 |
-ユニットテストを実行することで、ブランクプロジェクトの生成に成功していることを確認する。
 
+ユニットテストを実行することで、ブランクプロジェクトの生成に成功していることを確認する。
 
 以下のコマンドを実行する。
 
@@ -76,7 +81,12 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 cd myapp-web
 mvn test
 ```
-> **Tip:** ここで使用しているMavenの「clean」「test」は、MavenのBuilt-in Lifecycleである。 他にどのようなLifecycleが存在するかについては、 [Built-in Lifecycle Bindings(外部サイト、英語)](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)  を参照。
+
+> **Tip:**
+> ここで使用しているMavenの「clean」「test」は、MavenのBuilt-in Lifecycleである。
+
+> 他にどのようなLifecycleが存在するかについては、 [Built-in Lifecycle Bindings(外部サイト、英語)](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)  を参照。
+
 実行に成功すると、以下のようなログがコンソールに出力される。
 
 ```text
@@ -102,6 +112,7 @@ mvn test
 | 画面表示に使用するクラス | 内容 |
 |---|---|
 | SampleAction | ウェブアプリケーション実装する際に一般的に使用するNablarchの機能についての動作確認。 |
+
 ブラウザで画面を表示することで、ブランクプロジェクトの生成に成功していることを確認する。
 
 まだ、生成したプロジェクトにカレントディレクトリを移動していない場合は移動する。
@@ -109,18 +120,26 @@ mvn test
 ```text
 cd myapp-web
 ```
+
 その後、以下のコマンドを実行することで、疎通確認用のアプリケーションをビルドしてから起動する。
 
 ```text
 mvn jetty:run
 ```
-> **Tip:** 上記のコマンド例で使用しているMavenの「jetty:run」は、 Jetty Maven Pluginのrunゴールを使用するという指定である。 アプリケーションのビルドを行うcompileゴールは「jetty:run」で合わせて実行されるため、明示的に実行する必要はない。 Jetty Maven Pluginについては [Jetty Maven Plugin(外部サイト、英語)](https://jetty.org/docs/jetty/12/programming-guide/maven-jetty/jetty-maven-plugin.html)  を参照。
+
+> **Tip:**
+> 上記のコマンド例で使用しているMavenの「jetty:run」は、 Jetty Maven Pluginのrunゴールを使用するという指定である。
+> アプリケーションのビルドを行うcompileゴールは「jetty:run」で合わせて実行されるため、明示的に実行する必要はない。
+
+> Jetty Maven Pluginについては [Jetty Maven Plugin(外部サイト、英語)](https://jetty.org/docs/jetty/12/programming-guide/maven-jetty/jetty-maven-plugin.html)  を参照。
+
 起動に成功するとコンソールに以下のようなログが出力される。
 
 ```text
 (中略)
 2023-03-30 10:04:42.148 -INFO- nablarch.fw.web.servlet.NablarchServletContextListener [null] boot_proc = [] proc_sys = [web] req_id = [null] usr_id = [null] [nablarch.fw.web.servlet.NablarchServletContextListener#contextInitialized] initialization completed.
 ```
+
 起動に成功したらブラウザで `http://localhost:9080/` にアクセスし、疎通確認画面を開く。
 表示されたページの内容を読み、成功していることを確認する。
 

@@ -1,5 +1,12 @@
 # スレッドコンテキスト変数削除ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* スレッドコンテキストの削除処理
+
 スレッドコンテキスト変数管理ハンドラ で設定したスレッドローカル上の変数を削除するハンドラ。
 
 本ハンドラでは、以下の処理を行う。
@@ -8,11 +15,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-thread-context-clear-handler/flow.png)
+![](../images/ThreadContextClearHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.common.handler.threadcontext.ThreadContextClearHandler`
+* nablarch.common.handler.threadcontext.ThreadContextClearHandler
 
 ## モジュール一覧
 

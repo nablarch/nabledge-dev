@@ -1,25 +1,33 @@
 # リクエストボディ変換ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* 変換処理を行うコンバータを設定する
+* リクエストボディをFormに変換する
+* リソース(アクション)の処理結果をレスポンスボディに変換する
+
 本ハンドラでは、リクエストボディとレスポンスボディの変換処理を行う。
 
 変換時に使用するフォーマットは、リクエストを処理するリソース(アクション)クラスのメソッドに設定された
-`Consumes` 及び `Produces` アノテーションで指定する。
+Consumes 及び Produces アノテーションで指定する。
 
 本ハンドラでは、以下の処理を行う。
 
 * リクエストボディをリソース(アクション)クラスで受け付けるFormに変換する。
-詳細は、リクエストボディをFormに変換する を参照。
-
+  詳細は、リクエストボディをFormに変換する を参照。
 * リソース(アクション)クラスの処理結果をレスポンスボディに変換する。
-詳細は、リソース(アクション)の処理結果をレスポンスボディに変換する を参照。
+  詳細は、リソース(アクション)の処理結果をレスポンスボディに変換する を参照。
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-body-convert-handler/flow.png)
+![](../images/BodyConvertHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.jaxrs.BodyConvertHandler`
+* nablarch.fw.jaxrs.BodyConvertHandler
 
 ## モジュール一覧
 
@@ -39,10 +47,10 @@
 
 ## 変換処理を行うコンバータを設定する
 
-このハンドラでは、 `bodyConverters` プロパティに設定された、
-`BodyConverter` の実装クラスを使用してリクエスト及びレスポンスの変換処理を行う。
-`bodyConverters` プロパティには、
-プロジェクトで使用するMIMEに対応した、 `BodyConverter` を設定すること。
+このハンドラでは、 bodyConverters プロパティに設定された、
+BodyConverter の実装クラスを使用してリクエスト及びレスポンスの変換処理を行う。
+bodyConverters プロパティには、
+プロジェクトで使用するMIMEに対応した、 BodyConverter を設定すること。
 
 以下に例を示す。
 
@@ -58,18 +66,21 @@
   </property>
 </component>
 ```
-> **Tip:** `bodyConverters` プロパティに設定されたコンバータで、 変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
+
+> **Tip:**
+> bodyConverters プロパティに設定されたコンバータで、
+> 変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
 
 ## リクエストボディをFormに変換する
 
-リクエストボディの変換処理で使用するフォーマットは、リクエストを処理するメソッドに設定された `Consumes` により決まる。
-もし、 `Consumes` に設定されたMIMEと異なるMIMEがリクエストヘッダのContent-Typeに設定されていた場合は、
+リクエストボディの変換処理で使用するフォーマットは、リクエストを処理するメソッドに設定された Consumes により決まる。
+もし、 Consumes に設定されたMIMEと異なるMIMEがリクエストヘッダのContent-Typeに設定されていた場合は、
 サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
 
 リソース(アクション)のメソッドの実装例を以下に示す。
 
 この例では、 `MediaType.APPLICATION_JSON` が示す `application/json` に対応した
-`BodyConverter` でリクエストボディが `Person` に変換される。
+BodyConverter でリクエストボディが `Person` に変換される。
 
 ```java
 @Consumes(MediaType.APPLICATION_JSON)
@@ -82,12 +93,12 @@ public HttpResponse saveJson(Person person) {
 
 ## リソース(アクション)の処理結果をレスポンスボディに変換する
 
-レスポンスボディへの変換処理で使用するフォーマットは、リクエストを処理したメソッドに設定された `Produces` により決まる。
+レスポンスボディへの変換処理で使用するフォーマットは、リクエストを処理したメソッドに設定された Produces により決まる。
 
 リソース(アクション)のメソッドの実装例を以下に示す。
 
 この例では、 `MediaType.APPLICATION_JSON` が示す `application/json` に対応した
-`BodyConverter` でリクエストボディが `Person` に変換される。
+BodyConverter でリクエストボディが `Person` に変換される。
 
 ```java
 GET

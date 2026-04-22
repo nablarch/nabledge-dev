@@ -16,7 +16,7 @@
 
 以下に文字集合を表す図を示す。
 
-![](../../../knowledge/assets/about-nablarch-CustomizeAvailableCharacters/charset.png)
+![](charset.png)
 
 ## 文字集合定義の所在
 
@@ -43,22 +43,24 @@
 * ASCII記号
 * 半角カナ
 
-> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
+> **Tip:**
+> デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
 
-```text
-nablarch/core/validation/charset-definition.config
-```
+> ```text
+> nablarch/core/validation/charset-definition.config
+> ```
+
 ただし、以下の文字集合については、
 Unicode上のコードポイントがコンポーネント設定ファイルに定義されている。
 
-
 * halfWidthWhitespace
 
-> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
+> **Tip:**
+> デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
 
-```text
-nablarch/core/validation/charset-definition.xml
-```
+> ```text
+> nablarch/core/validation/charset-definition.xml
+> ```
 
 ## 設定方法
 
@@ -73,10 +75,9 @@ nablarch/core/validation/charset-definition.xml
 * 半角数字
 * 全角カタカナ
 
-
 これらの使用可能文字の精査エラーメッセージはメッセージIDを設定することで使用できる。
 
-指定するメッセージIDに対応するプレースホルダは [デフォルト設定一覧](../../../knowledge/assets/about-nablarch-CustomizeAvailableCharacters/デフォルト設定一覧.xlsx) を参照
+指定するメッセージIDに対応するプレースホルダは デフォルト設定一覧 <../../configuration/デフォルト設定一覧.xlsx> を参照
 
 メッセージID及びメッセージ内容の変更手順自体については、./CustomizeMessageIDAndMessage を参照
 
@@ -102,7 +103,9 @@ nablarch/core/validation/charset-definition.xml
 
 これらの使用可能文字の精査エラーメッセージの設定はコンポーネントを定義することで使用できる。
 
-> **Tip:** 上記の使用可能文字のメッセージIDをデフォルトの設定に組み込んでいない理由は、 メッセージIDを定義していない場合、Nablarchアプリケーション起動時に警告が出力されてしまうためである。
+> **Tip:**
+> 上記の使用可能文字のメッセージIDをデフォルトの設定に組み込んでいない理由は、
+> メッセージIDを定義していない場合、Nablarchアプリケーション起動時に警告が出力されてしまうためである。
 
 ## 単独で使用できない使用可能文字
 
@@ -110,11 +113,10 @@ nablarch/core/validation/charset-definition.xml
 
 ## メッセージIDを指定するだけでは使用できない使用可能文字の設定方法
 
-メッセージIDを指定するだけでは使用できない使用可能文字はNablarchの設定ファイル（ウェブプロジェクトであれば `web-component-configuration.xml` など）に
+メッセージIDを指定するだけでは使用できない使用可能文字はNablarchの設定ファイル（ウェブプロジェクトであれば web-component-configuration.xml など）に
 コンポーネント定義を追加する必要がある。
 
 以下が定義例である。この中から使用するものだけを設定すれば良い。
-
 
 ```xml
 <!-- Nablarchコア機能 -->
@@ -224,4 +226,5 @@ nablarch/core/validation/charset-definition.xml
   <property name="messageId" value="${nablarch.ibmExtendedCharset.messageId}"/>
 </component>
 ```
+
 メッセージID及びメッセージ内容の変更手順自体については、./CustomizeMessageIDAndMessage を参照

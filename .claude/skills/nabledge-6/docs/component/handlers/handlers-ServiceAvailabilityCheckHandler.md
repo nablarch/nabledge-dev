@@ -1,10 +1,17 @@
 # サービス提供可否チェックハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* リクエストに対するサービス提供可否チェック
+
 本ハンドラでは、 リクエストに対するサービス提供可否チェック を行う。
 
 サービス提供可否チェックは、ライブラリの service_availability を使用して行う。
 そのため、本ハンドラを使用するには、
-`ServiceAvailability` を実装したクラスを本ハンドラに設定する必要がある。
+ServiceAvailability を実装したクラスを本ハンドラに設定する必要がある。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -12,11 +19,11 @@
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-ServiceAvailabilityCheckHandler/ServiceAvailabilityCheckHandler_flow.png)
+![](../images/ServiceAvailabilityCheckHandler/ServiceAvailabilityCheckHandler_flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.common.availability.ServiceAvailabilityCheckHandler`
+* nablarch.common.availability.ServiceAvailabilityCheckHandler
 
 ## モジュール一覧
 
@@ -32,23 +39,21 @@
 スレッドコンテキスト変数管理ハンドラ より後ろに配置すること
 本ハンドラではスレッドコンテキスト上に設定されたリクエストIDをもとにサービス提供可否チェックを行うため、
 スレッドコンテキスト変数管理ハンドラ より後ろに本ハンドラを配置する必要がある。
-
 内部フォーワードハンドラ より後ろに配置すること
 内部フォーワードが行われた際に、フォーワード先のリクエストID（ 内部リクエストID ）をもとに
 サービス提供可否チェックを行いたい場合は、 内部フォーワードハンドラ より後ろに本ハンドラを配置する必要がある。
-合わせて、 スレッドコンテキスト変数管理ハンドラ の `attributes` に `InternalRequestIdAttribute` を追加すること。
+合わせて、 スレッドコンテキスト変数管理ハンドラ の `attributes` に InternalRequestIdAttribute を追加すること。
 
 ## リクエストに対するサービス提供可否チェック
 
-`ThreadContext` からリクエストIDを取得し、サービス提供可否をチェックする。
+ThreadContext からリクエストIDを取得し、サービス提供可否をチェックする。
 チェックの詳細は、 service_availability を参照。
 
 OK(サービス提供可)の場合
 後続ハンドラを呼び出す。
-
 NG(サービス提供不可)の場合
-`ServiceUnavailable` (503) を送出する。
+ServiceUnavailable (503) を送出する。
 
 チェック対象のリクエストIDをフォーワード先のリクエストIDに変更したい場合は、
-`ServiceAvailabilityCheckHandler.setUsesInternalRequestId`
+ServiceAvailabilityCheckHandler.setUsesInternalRequestId
 でtrueを指定する。デフォルトはfalseである。

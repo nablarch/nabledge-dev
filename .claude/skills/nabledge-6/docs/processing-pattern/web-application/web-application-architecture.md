@@ -1,5 +1,13 @@
 # アーキテクチャ概要
 
+**目次**
+
+* ウェブアプリケーションの構成
+* ウェブアプリケーションの処理の流れ
+* ウェブアプリケーションで使用するハンドラ
+
+  * 最小ハンドラ構成
+
 Nablarchでは、HTMLをベースとした画面UIを持つウェブアプリケーションを構築するための機能を提供している。
 
 ## ウェブアプリケーションの構成
@@ -7,10 +15,10 @@ Nablarchでは、HTMLをベースとした画面UIを持つウェブアプリケ
 Nablarchではウェブアプリケーションを構築する場合、ServletAPIの使用を前提としている。
 以下にNablarchにおけるウェブアプリケーションの構成を示す。
 
-![](../../../knowledge/assets/web-application-architecture/application_structure.png)
+![](images/application_structure.png)
+
 Nablarchサーブレットコンテキスト初期化リスナー (NablarchServletContextListener)
 システムリポジトリやログの初期化処理を行うサーブレットコンテキストリスナー。
-
 Webフロントコントローラ (WebFrontController)
 受け取ったリクエストに対する処理をハンドラキューに委譲するサーブレットフィルタ。
 
@@ -18,15 +26,15 @@ Webフロントコントローラ (WebFrontController)
 
 ウェブアプリケーションがリクエストを処理し、レスポンスを返却するまでの処理の流れを以下に示す。
 
-![](../../../knowledge/assets/web-application-architecture/web-design.png)
-1. Webフロントコントローラ ( `jakarta.servlet.Filter` の実装クラス)がrequestを受信する。
-2. Webフロントコントローラ は、requestに対する処理をハンドラキュー(handler queue)に委譲する。
-3. ハンドラキューに設定されたディスパッチハンドラ(`DispatchHandler`) が、URIを元に処理すべきaction classを特定しハンドラキューの末尾に追加する。
-4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して業務ロジック(business logic) を実行する。
-各クラスの詳細は、 application_design を参照。
+![](images/web-design.png)
 
-5. action classは、処理結果を示す `HttpResponse` を作成し返却する。
-6. ハンドラキュー内のHTTPレスポンスハンドラ(`HttpResponseHandler`)が、 `HttpResponse` をクライアントに返却するレスポンスに変換する。例えば、JSPのServlet Forwardなど。
+1. Webフロントコントローラ ( jakarta.servlet.Filter の実装クラス)がrequestを受信する。
+2. Webフロントコントローラ は、requestに対する処理をハンドラキュー(handler queue)に委譲する。
+3. ハンドラキューに設定されたディスパッチハンドラ(DispatchHandler) が、URIを元に処理すべきaction classを特定しハンドラキューの末尾に追加する。
+4. アクションクラス(action class)は、フォームクラス(form class)やエンティティクラス(entity class)を使用して業務ロジック(business logic) を実行する。
+  各クラスの詳細は、 application_design を参照。
+5. action classは、処理結果を示す HttpResponse を作成し返却する。
+6. ハンドラキュー内のHTTPレスポンスハンドラ(HttpResponseHandler)が、 HttpResponse をクライアントに返却するレスポンスに変換する。例えば、JSPのServlet Forwardなど。
 7. responseが返却される。
 
 ## ウェブアプリケーションで使用するハンドラ
@@ -44,22 +52,17 @@ Nablarchでは、ウェブアプリケーションを構築するために必要
 * セッション変数保存ハンドラ
 * ノーマライズハンドラ
 * セキュアハンドラ
-
 リクエストのフィルタリングを行うハンドラ
 * service_availability
 * permission_check_handler
-
 データベースに関連するハンドラ
 * データベース接続管理ハンドラ
 * トランザクション制御ハンドラ
-
 リクエストの検証を行うハンドラ
 * CSRFトークン検証ハンドラ
-
 エラー処理に関するハンドラ
 * HTTPエラー制御ハンドラ
 * グローバルエラーハンドラ
-
 その他
 * HTTPリクエストディスパッチハンドラ
 * Nablarchカスタムタグ制御ハンドラ
@@ -74,12 +77,13 @@ Nablarchでは、ウェブアプリケーションを構築するために必要
 Nablarchでウェブアプリケーションを構築する際の、必要最小限のハンドラキューを以下に示す。
 これをベースに、プロジェクト要件に従ってNablarchの標準ハンドラやプロジェクトで作成したカスタムハンドラを追加する。
 
+最小ハンドラ構成
 | No. | ハンドラ | 往路処理 | 復路処理 | 例外処理 |
 |---|---|---|---|---|
 | 1 | HTTP文字エンコード制御ハンドラ | リクエストとレスポンスに文字エンコーディングを設定する。 |  |  |
 | 2 | グローバルエラーハンドラ |  |  | 実行時例外、またはエラーの場合、ログ出力を行う。 |
 | 3 | HTTPレスポンスハンドラ |  | サーブレットフォーワード、リダイレクト、レスポンス書き込みのいずれかを行う。 | 実行時例外、またはエラーの場合、既定のエラーページを表示する。 |
-| 4 | セキュアハンドラ |  | レスポンスオブジェクト(`HttpResponse`)にセキュリティ関連のレスポンスヘッダを設定する。 |  |
+| 4 | セキュアハンドラ |  | レスポンスオブジェクト(HttpResponse)にセキュリティ関連のレスポンスヘッダを設定する。 |  |
 | 5 | マルチパートリクエストハンドラ | リクエストがマルチパート形式の場合、その内容を一時ファイルに保存する。 | 保存した一時ファイルを削除する。 |  |
 | 6 | セッション変数保存ハンドラ | セッションストアから内容を読み込む。 | セッションストアに内容を書き込む。 |  |
 | 7 | ノーマライズハンドラ | リクエストパラメータのノーマライズ処理を行う。 |  |  |

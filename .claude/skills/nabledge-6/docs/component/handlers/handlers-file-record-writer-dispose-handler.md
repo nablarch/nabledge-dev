@@ -1,15 +1,25 @@
 # 出力ファイル開放ハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* ハンドラキューへの設定について
+
 業務アクションやハンドラで開いた出力ファイルを閉じる(リソースの解放)ハンドラ。
 
-> **Important:** このハンドラで解放対象となるのは、 `FileRecordWriterHolder` を使用して開いた出力ファイルとなる。 それ以外のAPI(例えば、 `java.io` パッケージ)を使って開いたリソースについては、個別にクローズ処理を行うこと。
+> **Important:**
+> このハンドラで解放対象となるのは、 FileRecordWriterHolder を使用して開いた出力ファイルとなる。
+> それ以外のAPI(例えば、 java.io パッケージ)を使って開いたリソースについては、個別にクローズ処理を行うこと。
+
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-file-record-writer-dispose-handler/flow.png)
+![](../images/FileRecordWriterDisposeHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.common.io.FileRecordWriterDisposeHandler`
+* nablarch.common.io.FileRecordWriterDisposeHandler
 
 ## モジュール一覧
 

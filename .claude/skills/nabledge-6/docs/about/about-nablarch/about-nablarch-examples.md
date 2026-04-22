@@ -3,7 +3,10 @@
 Exampleは、Nablarchアプリケーションフレームワークの機能の使用方法を示した実装例であり、 実行制御基盤 毎に作成している。
 本章では、Exampleに必要な環境構築手順と、アプリケーションの実行手順を解説する。
 
-> **Tip:** Exampleを改修して本格的なアプリケーションを作成することは想定していない。 本格的なアプリケーションを作成する場合は ブランクプロジェクト から作成すること。
+> **Tip:**
+> Exampleを改修して本格的なアプリケーションを作成することは想定していない。
+
+> 本格的なアプリケーションを作成する場合は ブランクプロジェクト から作成すること。
 
 ## Exampleの実行方法
 
@@ -31,27 +34,26 @@ Java21で使用する場合のセットアップ方法
 
 ## ウェブアプリケーション
 
-- [ウェブアプリケーション (JSP)](https://github.com/nablarch/nablarch-example-web) (解説)
-- [ウェブアプリケーション (Thymeleaf)](https://github.com/nablarch/nablarch-example-thymeleaf-web) (解説)
+* [ウェブアプリケーション (JSP)](https://github.com/nablarch/nablarch-example-web) (解説)
+* [ウェブアプリケーション (Thymeleaf)](https://github.com/nablarch/nablarch-example-thymeleaf-web) (解説)
 
 ## ウェブサービス
 
-- [RESTfulウェブサービス](https://github.com/nablarch/nablarch-example-rest) (解説)
-- [HTTPメッセージング (受信)](https://github.com/nablarch/nablarch-example-http-messaging) (解説)
-- [HTTPメッセージング (送信)](https://github.com/nablarch/nablarch-example-http-messaging-send) (解説)
+* [RESTfulウェブサービス](https://github.com/nablarch/nablarch-example-rest) (解説)
+* [HTTPメッセージング (受信)](https://github.com/nablarch/nablarch-example-http-messaging) (解説)
+* [HTTPメッセージング (送信)](https://github.com/nablarch/nablarch-example-http-messaging-send) (解説)
 
 ## バッチアプリケーション
 
-- [Jakarta Batchに準拠したバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch-ee) (解説)
-- [Nablarchバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch) (解説)
+* [Jakarta Batchに準拠したバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch-ee) (解説)
+* [Nablarchバッチアプリケーション](https://github.com/nablarch/nablarch-example-batch) (解説)
 
 ## メッセージング
 
-- MOMによるメッセージング (解説)
+* MOMによるメッセージング (解説)
 
-- [応答不要メッセージ送信](https://github.com/nablarch/nablarch-example-mom-delayed-send)
-- [同期応答メッセージ送信](https://github.com/nablarch/nablarch-example-mom-sync-send-batch)
-- [応答不要メッセージ受信](https://github.com/nablarch/nablarch-example-mom-delayed-receive)
-- [同期応答メッセージ受信](https://github.com/nablarch/nablarch-example-mom-sync-receive)
-
-- [テーブルをキューとして使ったメッセージング](https://github.com/nablarch/nablarch-example-db-queue) (解説)
+  * [応答不要メッセージ送信](https://github.com/nablarch/nablarch-example-mom-delayed-send)
+  * [同期応答メッセージ送信](https://github.com/nablarch/nablarch-example-mom-sync-send-batch)
+  * [応答不要メッセージ受信](https://github.com/nablarch/nablarch-example-mom-delayed-receive)
+  * [同期応答メッセージ受信](https://github.com/nablarch/nablarch-example-mom-sync-receive)
+* [テーブルをキューとして使ったメッセージング](https://github.com/nablarch/nablarch-example-db-queue) (解説)

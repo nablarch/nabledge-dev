@@ -28,7 +28,7 @@ JDKで使用されるCP930はダブルバイト文字に対して必ずシフト
 
 本機能は、下記のパッケージで提供される。
 
-*please.change.me.* **core.dataformat.convertor.datatype**
+> *please.change.me.* **core.dataformat.convertor.datatype**
 
 ## フィールドタイプの構成
 
@@ -38,37 +38,37 @@ JDKで使用されるCP930はダブルバイト文字に対して必ずシフト
 
 以下に本機能で使用するクラス一覧を記す。
 
-| パッケージ名 | クラス名 | 概要 |
-|---|---|---|
-| *please.change.me.* **core.dataformat.** **convertor.datatype** | EbcdicDoubleByteCharacterString | \| EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 \| 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 \| 入出力のバイトデータに **シフトコードが付与されるケース** を想定しているデータタイプとして実装する。 |
-| *please.change.me.* **core.dataformat.** **convertor.datatype** | EbcdicNoShiftCodeDoubleByteCharacterString | \| EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 \| 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 \| 入出力のバイトデータに **シフトコードが付与されないケース** を想定しているデータタイプとして実装する。 |
+> | > パッケージ名 | > クラス名 | > 概要 |
+> |---|---|---|
+> | > *please.change.me.* **core.dataformat.** **convertor.datatype** | > EbcdicDoubleByteCharacterString | > EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 > 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 > 入出力のバイトデータに **シフトコードが付与されるケース** を想定しているデータタイプとして実装する。 |
+> | > *please.change.me.* **core.dataformat.** **convertor.datatype** | > EbcdicNoShiftCodeDoubleByteCharacterString | > EBCDIC(CP930)のダブルバイト文字列に対応したデータタイプクラス。 > 固定長のデータフォーマットの全角文字（ダブルバイト文字）フィールドの入出力に使用する。 > 入出力のバイトデータに **シフトコードが付与されないケース** を想定しているデータタイプとして実装する。 |
 
 ## フィールドタイプの使用方法
 
-追加したフィールドタイプの使用方法は フィールドタイプを追加する を参照。
-Fixed(固定長)フォーマットのファクトリクラスの実装例を以下に示す。
+> 追加したフィールドタイプの使用方法は フィールドタイプを追加する を参照。
+> Fixed(固定長)フォーマットのファクトリクラスの実装例を以下に示す。
 
-```java
-public class EbcdicFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
-    @Override
-    protected Map<String, Class<?>> getDefaultConvertorTable() {
-        final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(
-                new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
-        // EBCDIC(CP930)用のデータタイプ ESN, EN を追加する
-        defaultConvertorTable.put("ESN", EbcdicDoubleByteCharacterString.class);
-        defaultConvertorTable.put("EN", EbcdicNoShiftCodeDoubleByteCharacterString.class);
-        return Collections.unmodifiableMap(defaultConvertorTable);
-    }
-}
-```
+> ```java
+> public class EbcdicFixedLengthConvertorFactory extends FixedLengthConvertorFactory {
+>     @Override
+>     protected Map<String, Class<?>> getDefaultConvertorTable() {
+>         final Map<String, Class<?>> defaultConvertorTable = new CaseInsensitiveMap<Class<?>>(
+>                 new ConcurrentHashMap<String, Class<?>>(super.getDefaultConvertorTable()));
+>         // EBCDIC(CP930)用のデータタイプ ESN, EN を追加する
+>         defaultConvertorTable.put("ESN", EbcdicDoubleByteCharacterString.class);
+>         defaultConvertorTable.put("EN", EbcdicNoShiftCodeDoubleByteCharacterString.class);
+>         return Collections.unmodifiableMap(defaultConvertorTable);
+>     }
+> }
+> ```
 
 ## フィールドタイプ・フィールドコンバータ定義一覧
 
-追加したフィールドタイプについて解説する。
+> 追加したフィールドタイプについて解説する。
 
-**フィールドタイプ**
+> **フィールドタイプ**
 
-| タイプ識別子 | Java型 | 内容 |
-|---|---|---|
-| ESN | String | \| ダブルバイト文字列 (バイト長 = 文字数 × 2 + 2(シフトコード分)) \| 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。 \| 入力時はシフトアウト・シフトインのコードを付加された状態を想定し特になにもせず文字列化を行い、 \|  出力時はシフトアウト・シフトインのコードを自動で付加する。 \| サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicDoubleByteCharacterString \| 引数: バイト長(数値、必須指定) |
-| EN | String | \| ダブルバイト文字列 (バイト長 = 文字数 × 2) \| 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。 \| 入力時はシフトアウト・シフトインのコードを内部で補完して文字列化を行い、 \| 出力時はシフトアウト・シフトインのコードを付加しない。 \| サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicNoShiftCodeDoubleByteCharacterString \| 引数: バイト長(数値、必須指定) |
+> | > タイプ識別子 | > Java型 | > 内容 |
+> |---|---|---|
+> | > ESN | > String | > ダブルバイト文字列 (バイト長 = 文字数 × 2 + 2(シフトコード分)) > 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。 > 入力時はシフトアウト・シフトインのコードを付加された状態を想定し特になにもせず文字列化を行い、 > 出力時はシフトアウト・シフトインのコードを自動で付加する。 > サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicDoubleByteCharacterString > 引数: バイト長(数値、必須指定) |
+> | > EN | > String | > ダブルバイト文字列 (バイト長 = 文字数 × 2) > 本サンプルは、デフォルトでは全角空白による右トリム・パディングを行う。 > 入力時はシフトアウト・シフトインのコードを内部で補完して文字列化を行い、 > 出力時はシフトアウト・シフトインのコードを付加しない。 > サンプル実装クラス: please.change.me.core.dataformat.converter.datatype.EbcdicNoShiftCodeDoubleByteCharacterString > 引数: バイト長(数値、必須指定) |

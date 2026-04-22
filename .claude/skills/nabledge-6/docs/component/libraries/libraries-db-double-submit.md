@@ -1,5 +1,11 @@
 # データベースを使用した二重サブミット防止
 
+**目次**
+
+* 機能概要
+* モジュール一覧
+* 使用方法
+
 二重サブミット防止 では、サーバ側のトークンはHTTPセッションに保存される。
 このため、アプリケーションサーバをスケールアウトする際には、スティッキーセッションやセッションレプリケーション等を
 使用する必要がある。
@@ -7,8 +13,14 @@
 サーバ側のトークンをデータベースに保管する実装を使用することで、特にアプリケーションサーバの設定をしなくても、
 複数のアプリケーションサーバ間でトークンを共有できる。
 
-> **Tip:** ブラウザが閉じられた場合などにテーブル上にトークンが残ってしまうことがある。 そのため、期限切れのトークンは定期的に削除する必要がある。
-> **Important:** HTTPセッションを使用した 二重サブミット防止 はCSRF対策に使用できたが、 本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。 本機能を使用する場合は、CSRF対策に CSRFトークン検証ハンドラ を使用すること。
+> **Tip:**
+> ブラウザが閉じられた場合などにテーブル上にトークンが残ってしまうことがある。
+> そのため、期限切れのトークンは定期的に削除する必要がある。
+
+> **Important:**
+> HTTPセッションを使用した 二重サブミット防止 はCSRF対策に使用できたが、
+> 本機能はユーザを識別せずにトークンをDBに格納しているためCSRF対策に使用できない。
+> 本機能を使用する場合は、CSRF対策に CSRFトークン検証ハンドラ を使用すること。
 
 ## 機能概要
 
@@ -29,15 +41,15 @@
 
 作成するテーブルの定義を以下に示す。
 
-`DOUBLE_SUBMISSION` テーブル
+DOUBLE_SUBMISSION テーブル
 | カラム名 | データ型 |
 |---|---|
-| TOKEN(PK) | `java.lang.String` |
-| CREATED_AT | `java.sql.Timestamp` |
+| TOKEN(PK) | java.lang.String |
+| CREATED_AT | java.sql.Timestamp |
 
 テーブル名およびカラム名は変更可能である。
-変更する場合は、 `DbTokenManager.dbTokenSchema` に
-`DbTokenSchema` のコンポーネントを定義する。
+変更する場合は、 DbTokenManager.dbTokenSchema に
+DbTokenSchema のコンポーネントを定義する。
 
 2種類のコンポーネント定義を追加する。
 
@@ -71,6 +83,7 @@
   </property>
 </component>
 ```
+
 `tokenGenerator` という名前でコンポーネント定義を追加する。
 これによりトークンにUUIDが使用され、推測および衝突の可能性を考慮しなくてよくなる。
 
@@ -78,9 +91,12 @@
 <component name="tokenGenerator"
            class="nablarch.common.web.token.UUIDV4TokenGenerator" />
 ```
-> **Important:** テスティングフレームワークのトークン発行 はトークンのDB保存に対応していない。 そのため、自動テスト実行時には `HttpSessionTokenManager` に差し替えてテストする必要がある。
 
-```xml
-<!-- トークンをHTTPセッションに保存する -->
-<component name="tokenManager" class="nablarch.common.web.token.HttpSessionTokenManager"/>
-```
+> **Important:**
+> テスティングフレームワークのトークン発行 はトークンのDB保存に対応していない。
+> そのため、自動テスト実行時には HttpSessionTokenManager に差し替えてテストする必要がある。
+
+> ```xml
+> <!-- トークンをHTTPセッションに保存する -->
+> <component name="tokenManager" class="nablarch.common.web.token.HttpSessionTokenManager"/>
+> ```

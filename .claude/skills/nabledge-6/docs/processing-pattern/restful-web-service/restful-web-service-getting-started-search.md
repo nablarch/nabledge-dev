@@ -8,33 +8,32 @@ Exampleアプリケーションを元に、検索機能を解説する。
 
 検索条件として、 `顧客ID(完全一致)`  、 `プロジェクト名(部分一致)` を指定できる。
 検索条件を指定しない場合は、全てのプロジェクト情報を返却する。
-
 動作確認手順
 1. プロジェクト情報の検索
 
-ここでは、顧客IDが `1` のプロジェクト情報を検索する。
+> ここでは、顧客IDが 1 のプロジェクト情報を検索する。
 
-任意のRESTクライアントを使用して、以下のリクエストを送信する。
+> 任意のRESTクライアントを使用して、以下のリクエストを送信する。
 
-URL
-http://localhost:9080/projects?clientId=1
-HTTPメソッド
-GET
+> URL
+> [http://localhost:9080/projects?clientId=1](http://localhost:9080/projects?clientId=1)
+> HTTPメソッド
+> GET
 
-2. 検索結果の確認
+1. 検索結果の確認
 
-1.を実行した結果、以下のようなJSON形式のレスポンスが返却されることを確認する。
+> 1.を実行した結果、以下のようなJSON形式のレスポンスが返却されることを確認する。
 
-```javascript
-[{
-    "projectId":1,
-    "projectName":"プロジェクト００１",
-    "projectType":"development",
-
-    // 省略
-
-}]
-```
+> ```javascript
+> [{
+>     "projectId":1,
+>     "projectName":"プロジェクト００１",
+>     "projectType":"development",
+> 
+>     // 省略
+> 
+> }]
+> ```
 
 ## プロジェクト情報を検索する
 
@@ -58,7 +57,6 @@ public class ProjectSearchForm implements Serializable {
 ```
 この実装のポイント
 * プロパティは全てString型で宣言する。詳細は バリデーションルールの設定方法 を参照。
-
 検索条件を保持するBeanの作成
 検索条件を保持するBeanを作成する。
 
@@ -76,26 +74,24 @@ public class ProjectSearchDto implements Serializable {
 ```
 この実装のポイント
 * Beanのプロパティは、対応する条件カラムの定義(型)と互換性のある型とする こと。
-
 検索に使用するSQLの作成
 検索に使用するSQLを作成する。
 
-Project.sql
-```none
-FIND_PROJECT =
-SELECT
-    *
-FROM
-    PROJECT
-WHERE
-    $if(clientId) {CLIENT_ID = :clientId}
-    AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}
-```
-この実装のポイント
-* SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は SQLをファイルで管理する を参照。
-* Beanのプロパティ名を使って、SQLに値をバインドする。詳細は Beanオブジェクトを入力としてSQLを実行する を参照。
-* 検索条件として指定された項目のみを条件に含める場合には、 $if 構文を使用してSQL文を構築 する。
-
+> Project.sql
+> ```none
+> FIND_PROJECT =
+> SELECT
+>     *
+> FROM
+>     PROJECT
+> WHERE
+>     $if(clientId) {CLIENT_ID = :clientId}
+>     AND $if(projectName) {PROJECT_NAME LIKE :%projectName%}
+> ```
+> この実装のポイント
+> * >   SQLインジェクションを防ぐため、SQLは外部ファイルに記述する。詳細は SQLをファイルで管理する を参照。
+> * >   Beanのプロパティ名を使って、SQLに値をバインドする。詳細は Beanオブジェクトを入力としてSQLを実行する を参照。
+> * >   検索条件として指定された項目のみを条件に含める場合には、 $if 構文を使用してSQL文を構築 する。
 業務アクションメソッドの実装
 検索条件をもとにデータベースから検索する処理を実装する。
 
@@ -116,17 +112,16 @@ public List<Project> find(JaxRsHttpRequest req) {
 }
 ```
 この実装のポイント
-* 検索結果をJSON形式でクライアントに返却するため、 `Produces` アノテーションに
-`MediaType.APPLICATION_JSON` を指定する。
-* クエリパラメータは `JaxRsHttpRequest` から取得する。
-* `BeanUtil` を使用してリクエストパラメータからフォームを作成する。
-* `ValidatorUtil#validate`
-を使用してフォームのバリデーションを行う。
-* フォームの値を `BeanUtil` を使用して検索条件Beanにコピーする。
+* 検索結果をJSON形式でクライアントに返却するため、 Produces アノテーションに
+  `MediaType.APPLICATION_JSON` を指定する。
+* クエリパラメータは JaxRsHttpRequest から取得する。
+* BeanUtil を使用してリクエストパラメータからフォームを作成する。
+* ValidatorUtil#validate
+  を使用してフォームのバリデーションを行う。
+* フォームの値を BeanUtil を使用して検索条件Beanにコピーする。
 * ユニバーサルDAO を使用して取得したプロジェクト情報のリストを戻り値として返却する。
 * 戻り値のオブジェクトは リクエストボディ変換ハンドラ によってJSON形式に変換されるため、
-業務アクションメソッド内で変換処理を実装する必要はない。
-
+  業務アクションメソッド内で変換処理を実装する必要はない。
 URLとのマッピングを定義
 ルーティングアダプタ を使用して、業務アクションとURLのマッピングを行う。
 マッピングには Jakarta RESTful Web ServicesのPathアノテーション を使用する。

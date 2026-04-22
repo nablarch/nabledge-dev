@@ -29,7 +29,7 @@
 - [デフォルト設定値からの設定変更方法](about/about-nablarch/about-nablarch-setting-guide-CustomizingConfigurations.md)
 - [処理方式、環境に依存する設定の管理方法](about/about-nablarch/about-nablarch-setting-guide-ManagingEnvironmentalConfiguration.md)
 - [Nablarchアプリケーションフレームワーク設定ガイド](about/about-nablarch/about-nablarch-setting-guide.md)
-- [ご利用にあたって](about/about-nablarch/about-nablarch-terms-of-use.md)
+- [ご利用にあたって — 情報の外部送信について](about/about-nablarch/about-nablarch-terms-of-use.md)
 - [Nablarch のバージョンアップ方針](about/about-nablarch/about-nablarch-versionup-policy.md)
 ### migration
 
@@ -161,7 +161,7 @@
 - [メッセージ管理](component/libraries/libraries-message.md)
 - [メッセージングログの出力](component/libraries/libraries-messaging-log.md)
 - [MOMメッセージング](component/libraries/libraries-mom-system-messaging.md)
-- [Fixed(固定長)のマルチフォーマット定義のサンプル集](component/libraries/libraries-multi-format-example.md)
+- [libraries-multi-format-example](component/libraries/libraries-multi-format-example.md)
 - [Nablarch Validation](component/libraries/libraries-nablarch-validation.md)
 - [パフォーマンスログの出力](component/libraries/libraries-performance-log.md)
 - [システムリポジトリ](component/libraries/libraries-repository.md)

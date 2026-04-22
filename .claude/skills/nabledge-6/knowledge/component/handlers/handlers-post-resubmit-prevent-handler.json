@@ -1,13 +1,13 @@
 {
   "id": "handlers-post-resubmit-prevent-handler",
   "title": "POST再送信防止ハンドラ",
-  "content": "POSTで受け付けたリクエストに対して、リダイレクトを使用し再度リクエストを受け付けなおす処理を行うハンドラ。\nこの処理により、ブラウザ上のリロード処理などによる誤操作による意図しないPOSTリクエストの再送を防ぐ目的で使用する。\n\n\n> **Important:** 新規プロジェクトにおける本ハンドラの使用は推奨しない。\n> **Important:** 本ハンドラでは、POST再送信防止が指示されたリクエストが送信された際、POST情報をセッションに格納し次のリダイレクト処理でPOST情報をセッションから破棄している。 この方法では、大量のリクエストが送信された際に、POST情報が解放されずにセッションに蓄積され、メモリを圧迫する。 つまり、POSTリクエストを連続して送信するDOS攻撃に対して脆弱である。 本ハンドラを使用せずにブラウザからのPOST情報の再送信を防止するには、業務アクションにてリダイレクトのレスポンスを返すことで実現するよう検討すること。\n本ハンドラでは、以下の処理を行う。\n\n* リクエストがPOST再送信防止対象であった場合、リクエストパラメータをセッションに保存してリダイレクト先にリダイレクトする。\n(POST再送信防止対象であるか否かの条件は下記2点。)\n\n* リクエストがPOSTであること。\n* リクエストパラメータに \"POST_RESUBMIT_PREVENT_PARAM\" が含まれること。(formタグのpreventPostResubmitがtrueに設定されていると、このパラメータが自動設定される。)\n\n\n* リクエストがPOST再送信防止によるGETリクエストであった場合、セッションに保持したリクエストパラメータを復元してセッションから削除する。\nもしセッションにパラメータが存在しなかった場合、再送信処理として所定のエラー画面を表示する。\n\n処理の流れは以下のとおり。\n\n![](assets/handlers-post-resubmit-prevent-handler/flow.png)",
+  "content": "**目次**\n\n* ハンドラクラス名\n* モジュール一覧\n* 制約\n* ポスト再送信防止の使用方法\n* リクエスト先と遷移先パスのマッピングを行う\n\nPOSTで受け付けたリクエストに対して、リダイレクトを使用し再度リクエストを受け付けなおす処理を行うハンドラ。\nこの処理により、ブラウザ上のリロード処理などによる誤操作による意図しないPOSTリクエストの再送を防ぐ目的で使用する。\n\n> **Important:**\n> 新規プロジェクトにおける本ハンドラの使用は推奨しない。\n\n> **Important:**\n> 本ハンドラでは、POST再送信防止が指示されたリクエストが送信された際、POST情報をセッションに格納し次のリダイレクト処理でPOST情報をセッションから破棄している。\n> この方法では、大量のリクエストが送信された際に、POST情報が解放されずにセッションに蓄積され、メモリを圧迫する。\n> つまり、POSTリクエストを連続して送信するDOS攻撃に対して脆弱である。\n\n> 本ハンドラを使用せずにブラウザからのPOST情報の再送信を防止するには、業務アクションにてリダイレクトのレスポンスを返すことで実現するよう検討すること。\n\n本ハンドラでは、以下の処理を行う。\n\n* リクエストがPOST再送信防止対象であった場合、リクエストパラメータをセッションに保存してリダイレクト先にリダイレクトする。\n  (POST再送信防止対象であるか否かの条件は下記2点。)\n\n  > * >   リクエストがPOSTであること。\n  > * >   リクエストパラメータに \"POST_RESUBMIT_PREVENT_PARAM\" が含まれること。(formタグのpreventPostResubmitがtrueに設定されていると、このパラメータが自動設定される。)\n* リクエストがPOST再送信防止によるGETリクエストであった場合、セッションに保持したリクエストパラメータを復元してセッションから削除する。\n  もしセッションにパラメータが存在しなかった場合、再送信処理として所定のエラー画面を表示する。\n\n処理の流れは以下のとおり。\n\n![](../images/PostResubmitPreventHandler/flow.png)",
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* `nablarch.fw.web.post.PostResubmitPreventHandler`"
+      "content": "* nablarch.fw.web.post.PostResubmitPreventHandler"
     },
     {
       "id": "s2",
@@ -27,7 +27,7 @@
     {
       "id": "s5",
       "title": "リクエスト先と遷移先パスのマッピングを行う",
-      "content": "リクエスト先と遷移先は、リクエストIDの前方一致で設定できる。\n設定例は下記の通り。\n\n```xml\n<!-- POST再送信防止ハンドラ -->\n<component name=\"postResubmitPreventHandler\"\n    class=\"nablarch.fw.web.post.PostResubmitPreventHandler\">\n\n  <!--\n  リダイレクト後のGETリクエストが複数回送信された場合の遷移先パスのマッピングを設定する。\n\n  リクエストIDがkeyで指定した場合、valueで設定したパスに遷移する。\n  複数のkeyがマッチした場合、最も文字数が長いkeyに対応するvalueのパスに遷移する。\n  -->\n  <property name=\"forwardPathMapping\">\n    <map>\n      <entry key=\"/\"  value=\"redirect:///action/error/index\" />\n      <entry key=\"/action/func1/\" value=\"redirect:///action/error/index2\" />\n      <entry key=\"/action/func2/\" value=\"/error.jsp\" />\n    </map>\n  </property>\n</component>\n```\nこの設定例でリクエストID「/action/func1/index」のように、複数のリクエストIDの前方一致で複数マッチするリクエストID\nについては、最も長いキーにマッチしたリダイレクト先(上記の場合、\"redirect:///action/error/index2\")が選択される。"
+      "content": "リクエスト先と遷移先は、リクエストIDの前方一致で設定できる。\n設定例は下記の通り。\n\n```xml\n<!-- POST再送信防止ハンドラ -->\n<component name=\"postResubmitPreventHandler\"\n    class=\"nablarch.fw.web.post.PostResubmitPreventHandler\">\n\n  <!--\n  リダイレクト後のGETリクエストが複数回送信された場合の遷移先パスのマッピングを設定する。\n\n  リクエストIDがkeyで指定した場合、valueで設定したパスに遷移する。\n  複数のkeyがマッチした場合、最も文字数が長いkeyに対応するvalueのパスに遷移する。\n  -->\n  <property name=\"forwardPathMapping\">\n    <map>\n      <entry key=\"/\"  value=\"redirect:///action/error/index\" />\n      <entry key=\"/action/func1/\" value=\"redirect:///action/error/index2\" />\n      <entry key=\"/action/func2/\" value=\"/error.jsp\" />\n    </map>\n  </property>\n</component>\n```\n\nこの設定例でリクエストID「/action/func1/index」のように、複数のリクエストIDの前方一致で複数マッチするリクエストID\nについては、最も長いキーにマッチしたリダイレクト先(上記の場合、\"redirect:///action/error/index2\")が選択される。"
     }
   ]
 }

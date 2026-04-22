@@ -17,7 +17,8 @@
 | プロジェクト構成 | 単一プロジェクト構成 |
 | 使用DB | H2 Databaes Engine(アプリケーションに組み込み) |
 | 組み込まれているアダプタ | ルーティングアダプタ(詳細は、 ルーティングアダプタ を参照) |
-| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。 * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+| 生成するプロジェクトに含まれるもの | 生成されたプロジェクトには以下が含まれる。  * Nablarchのウェブアプリケーション用の基本的な設定 * 疎通確認用ウェブアプリケーション * Mavenと連動して動作するツールの初期設定( nablarch-archetype-parent(親プロジェクト) を参照することによって取り込んでいる)。 |
+
 他のプロジェクトとの関係、及びディレクトリ構成は、 ../MavenModuleStructures/index を参照。
 
 ## ブランクプロジェクト作成
@@ -35,6 +36,7 @@ Nablarchが提供するアーキタイプを使用してブランクプロジェ
 ```bat
 mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArtifactId=nablarch-container-web-archetype -DarchetypeVersion={nablarch_version}
 ```
+
 上記コマンドで使用されているNablarchのバージョンは |nablarch_version| となっている。バージョンを変更したい場合は、以下のパラメータを変更すること。
 
 | 設定値 | 説明 |
@@ -52,11 +54,14 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 | version | バージョン番号 | `0.1.0` |
 | package | パッケージ(通常はグループIDと同じ) | `com.example` |
 
-> **Important:** 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。 よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+> **Important:**
+> 項目groupIdおよびpackageは、Javaのパッケージ名にマッピングされる。
+> よって、これらの入力値には、英小文字、数字、ドットを使用し、ハイフンは使用しないこと。
+
 プロジェクト情報の入力が終わると、Y: :と表示される。
 
-* 入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
-* プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
+> * >   入力した内容をもとに、ひな形を生成する場合には「Y」を入力してください。
+> * >   プロジェクト情報の入力をやり直したい場合には「N」を入力してください。
 
 コマンドが正常終了した場合、ブランクプロジェクトがカレントディレクトリ配下に作成される。
 
@@ -64,7 +69,8 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 
 疎通確認の仕組みや手順は通常のウェブプロジェクトと同じなので、 ウェブプロジェクトの初期セットアップ手順 を参照。
 
-> **Note:** アーティファクトID が `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
+> **Note:**
+> アーティファクトID が `myapp-container-web` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
 
 ## コンテナイメージを作成する
 
@@ -76,6 +82,7 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 cd myapp-container-web
 mvn package jib:dockerBuild
 ```
+
 実行に成功すると、以下のようなログがコンソールに出力される。
 
 ```text
@@ -90,6 +97,7 @@ mvn package jib:dockerBuild
 [INFO] ------------------------------------------------------------------------
 (以下略)
 ```
+
 ビルドされたDockerイメージは、ローカルリポジトリに保存される。
 以下のコマンドで、ローカルリポジトリに保存されたイメージを確認できる。
 
@@ -99,6 +107,7 @@ REPOSITORY              TAG         IMAGE ID       CREATED        SIZE
 myapp-container-web     0.1.0       dd60cbdc7722   50 years ago   449MB
 myapp-container-web     latest      dd60cbdc7722   50 years ago   449MB
 ```
+
 `myapp-container-web:0.1.0` と `myapp-container-web:latest` という２つのイメージが登録されていることが分かる。
 
 このように、ブランクプロジェクトでは `jib:dockerBuild` を実行すると次の２つのイメージが作成されるように設定されている。
@@ -122,11 +131,17 @@ myapp-container-web     latest      dd60cbdc7722   50 years ago   449MB
   <!--省略...-->
 </project>
 ```
-> **Tip:** ブランクプロジェクトではイメージをタグで指定しているが、もしもタグが指すイメージが変更されると検証時と異なるバージョンの イメージが選択され、アプリケーションの動作に影響が出る可能性がある。 プロジェクトにおける検証が完了した段階で、バージョンを固定するためにイメージをダイジェストで指定することを推奨する。 ダイジェストによる設定例を以下に示す。
 
-```xml
-<jib.from.image>tomcat@sha256:28fde3a9cf9ff62b250cd2ce5b8981a75eedbe6a37a9954c8432f6f52483cfb8</jib.from.image>
-```
+> **Tip:**
+> ブランクプロジェクトではイメージをタグで指定しているが、もしもタグが指すイメージが変更されると検証時と異なるバージョンの
+> イメージが選択され、アプリケーションの動作に影響が出る可能性がある。
+> プロジェクトにおける検証が完了した段階で、バージョンを固定するためにイメージをダイジェストで指定することを推奨する。
+
+> ダイジェストによる設定例を以下に示す。
+
+> ```xml
+> <jib.from.image>tomcat@sha256:28fde3a9cf9ff62b250cd2ce5b8981a75eedbe6a37a9954c8432f6f52483cfb8</jib.from.image>
+> ```
 
 ## コンテナイメージを実行する
 
@@ -136,15 +151,29 @@ myapp-container-web     latest      dd60cbdc7722   50 years ago   449MB
 cd myapp-container-web
 docker run -d -p 8080:8080 -v %CD%\h2:/usr/local/tomcat/h2 --name myapp-container-web myapp-container-web
 ```
+
 コンテナが起動したら、ウェブブラウザで `http://localhost:8080/` にアクセスすることで、アプリケーションの動作を確認できる。
 
-> **Tip:** 上記コマンドは、データベースとしてブランクプロジェクトにあらかじめ組み込んでいるSAMPLE.h2.dbを使用する場合の例となっている。 SAMPLE.h2.dbを使用しない場合は、ボリュームの指定(`-v`)は不要になる。
-> **Tip:** Dockerの実行は、Docker Desktopを使用していることを 前提 としている。 Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。 Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。 このため、ボリュームのホスト側に指定できるパスは、VM上のパスになる。 Windowsの場合、デフォルトでは `C:\Users` がVM上の `/c/users` にマウントされている。 したがって、Docker Toolboxを使用している場合は、ボリュームの指定を `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2` のようにしなければならない。
+> **Tip:**
+> 上記コマンドは、データベースとしてブランクプロジェクトにあらかじめ組み込んでいるSAMPLE.h2.dbを使用する場合の例となっている。
+> SAMPLE.h2.dbを使用しない場合は、ボリュームの指定(`-v`)は不要になる。
+
+> **Tip:**
+> Dockerの実行は、Docker Desktopを使用していることを 前提 としている。
+> Docker Toolboxを使用している場合は、上記例のボリューム指定ではエラーになる。
+
+> Docker Toolboxを使用している場合、DockerはVirtualBox上のVMで動いている。
+> このため、ボリュームのホスト側に指定できるパスは、VM上のパスになる。
+
+> Windowsの場合、デフォルトでは `C:\Users` がVM上の `/c/users` にマウントされている。
+> したがって、Docker Toolboxを使用している場合は、ボリュームの指定を `-v /c/users/path/to/project/h2:/usr/local/tomcat/h2` のようにしなければならない。
+
 コンテナを終了するには、次のコマンドを実行する。
 
 ```text
 docker stop myapp-container-web
 ```
+
 また、コンテナを削除するには、次のコマンドを実行する。
 
 ```text

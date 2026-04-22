@@ -1,10 +1,17 @@
 # CORSプリフライトリクエストハンドラ
 
+**目次**
+
+* ハンドラクラス名
+* モジュール一覧
+* 制約
+* CORSを実現する
+
 本ハンドラは、 RESTfulウェブサービス でCORS(Cross-Origin Resource Sharing)を実現するために使用する。
 
 CORSを実現するには、実際のリクエストの前に送信されるプリフライトリクエストと実際のリクエストに対する処理が必要となる。
 プリフライトリクエストは本ハンドラで処理し、実際のリクエストに対する処理は クライアントに返すレスポンスに共通処理を追加する で説明している
-ResponseFinisherを実装した `CorsResponseFinisher` で処理する。
+ResponseFinisherを実装した CorsResponseFinisher で処理する。
 
 本ハンドラでは、以下の処理を行う。
 
@@ -12,11 +19,11 @@ ResponseFinisherを実装した `CorsResponseFinisher` で処理する。
 
 処理の流れは以下のとおり。
 
-![](../../../knowledge/assets/handlers-cors-preflight-request-handler/flow.png)
+![](../images/CorsPreflightRequestHandler/flow.png)
 
 ## ハンドラクラス名
 
-* `nablarch.fw.jaxrs.CorsPreflightRequestHandler`
+* nablarch.fw.jaxrs.CorsPreflightRequestHandler
 
 ## モジュール一覧
 
@@ -30,15 +37,15 @@ ResponseFinisherを実装した `CorsResponseFinisher` で処理する。
 ## 制約
 
 Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置すること
-本ハンドラで生成した `HttpResponse` を Jakarta RESTful Web Servicesレスポンスハンドラ が処理するため、
+本ハンドラで生成した HttpResponse を Jakarta RESTful Web Servicesレスポンスハンドラ が処理するため、
 本ハンドラは Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置する必要がある。
 
 ## CORSを実現する
 
-CORSを実現するには本ハンドラと `CorsResponseFinisher` を設定する。
+CORSを実現するには本ハンドラと CorsResponseFinisher を設定する。
 
-CORSの処理は `Cors` インタフェースが行う。
-フレームワークはCORSの基本実装として `BasicCors` クラスを提供している。
+CORSの処理は Cors インタフェースが行う。
+フレームワークはCORSの基本実装として BasicCors クラスを提供している。
 本ハンドラとCorsResponseFinisherにBasicCorsを指定すればよい。
 
 設定を以下に示す。
@@ -83,27 +90,27 @@ CORSの処理は `Cors` インタフェースが行う。
   </property>
 </component>
 ```
-`BasicCors` はデフォルトで以下の処理を行う。
+
+BasicCors はデフォルトで以下の処理を行う。
 
 プリフライトリクエスト(CorsPreflightRequestHandlerが呼び出す処理)
-- リクエストが以下の条件を全て満たす場合にプリフライトリクエストと判定する。
+* リクエストが以下の条件を全て満たす場合にプリフライトリクエストと判定する。
 
-- HTTPメソッド：OPTIONS
-- Originヘッダ：存在する
-- Access-Control-Request-Methodヘッダ：存在する
-
-- リクエストがプリフライトリクエストの場合は以下のレスポンスを返す。
+  > * >   HTTPメソッド：OPTIONS
+  > * >   Originヘッダ：存在する
+  > * >   Access-Control-Request-Methodヘッダ：存在する
+* リクエストがプリフライトリクエストの場合は以下のレスポンスを返す。
 
 実際のリクエスト(CorsResponseFinisherが呼び出す処理)
-- 以下のレスポンスヘッダを設定する。
+* 以下のレスポンスヘッダを設定する。
 
-- Access-Control-Allow-Originヘッダ：リクエストのOriginヘッダ
+  > * >   Access-Control-Allow-Originヘッダ：リクエストのOriginヘッダ
 
-- リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
-- Varyヘッダ：Origin
+  >   > * >   >   リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
+  > * >   Varyヘッダ：Origin
 
-- リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
-- Access-Control-Allow-Credentialsヘッダ：true
+  >   > * >   >   リクエストのOriginヘッダが許可するOriginに含まれる場合のみこのヘッダを設定
+  > * >   Access-Control-Allow-Credentialsヘッダ：true
 
 デフォルトの処理のうち、レスポンスヘッダの内容を設定で変更できる。
-設定で変更できる内容は `BasicCors` のJavadocを参照。
+設定で変更できる内容は BasicCors のJavadocを参照。

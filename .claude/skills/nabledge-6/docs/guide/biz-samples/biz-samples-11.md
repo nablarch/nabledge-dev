@@ -1,5 +1,31 @@
 # メッセージング基盤テストシミュレータサンプル
 
+**目次**
+
+* 用途
+
+  * 疎通テスト
+  * 結合テスト
+  * 負荷テスト
+* 特徴
+
+  * 取引単体テストと同じ手順でテストデータを作成できる
+  * 特殊および複雑なテストケースにも、カスタマイズすることで対応可能(メッセージ受信)
+  * マルチスレッドで要求電文を送信することが可能（メッセージ送信）
+* 要求
+
+  * シミュレータがメッセージ受信する場合
+  * シミュレータがメッセージ送信する場合
+* 使用方法
+
+  * シミュレータの実行モジュールを作成する
+  * シミュレータを起動する
+* 拡張例
+
+  * メッセージ送信時にリクエスト送信回数を指定する
+  * メッセージ受信時にリクエストの種類に応じてレスポンスを切り替える
+  * メッセージ受信時に意図的にレスポンスを遅延させる
+
 [ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-messaging-simulator)
 
 本サンプルは、Nablarchアプリケーションフレームワークの MOMメッセージング 、 HTTPメッセージング を使用する
@@ -11,10 +37,13 @@
 シミュレータの動作イメージを以下に示す。
 
 シミュレータがメッセージ受信する場合
-![](../../../knowledge/assets/biz-samples-11/behavior_illustration01.png)
+![](./_images/behavior_illustration01.png)
 シミュレータがメッセージ送信する場合
-![](../../../knowledge/assets/biz-samples-11/behavior_illustration02.png)
-> **Important:** 本サンプルではMOMとしてIBM MQ 9.3 を使用している。 IBM MQ 9.3 はJavaのバージョン 8 以上がサポート対象であるため、本サンプルでは Java 17を使用する。
+![](./_images/behavior_illustration02.png)
+
+> **Important:**
+> 本サンプルではMOMとしてIBM MQ 9.3 を使用している。
+> IBM MQ 9.3 はJavaのバージョン 8 以上がサポート対象であるため、本サンプルでは Java 17を使用する。
 
 ## 用途
 
@@ -93,16 +122,12 @@ git clone https://github.com/nablarch/nablarch-biz-sample-all.git
 cd nablarch-messaging-simulator/
 mvn clean dependency:copy-dependencies -DoutputDirectory=target/build/lib package
 ```
+
 作成した実行モジュールは、シミュレータを実行する環境に配置する。
 
 ## シミュレータを起動する
 
 実行モジュールに含まれる以下のbatファイルを実行することでシミュレータが起動する。
-
-:HTTPメッセージ受信: http-incoming-startup.bat
-:HTTPメッセージ送信: http-outgoing-startup.bat
-:MOMメッセージ受信: mom-incoming-startup.bat
-:MOMメッセージ送信: mom-outgoing-startup.bat
 
 ## 拡張例
 
@@ -134,7 +159,10 @@ public class HttpIncomingSimulateAction implements Handler<HttpRequest, HttpResp
     }
 }
 ```
-> **Tip:** MOMメッセージの受信時にレスポンスを切り替えたい場合も、HTTPメッセージの受信時と同様に、 アクションクラスの `getRequestId` メソッドを修正すればよい。
+
+> **Tip:**
+> MOMメッセージの受信時にレスポンスを切り替えたい場合も、HTTPメッセージの受信時と同様に、
+> アクションクラスの `getRequestId` メソッドを修正すればよい。
 
 ## メッセージ受信時に意図的にレスポンスを遅延させる
 

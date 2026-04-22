@@ -3,10 +3,9 @@
 本章では、登録画面の初期表示について解説する。
 
 登録画面のJSPを作成する
-ひな形となるJSPを `/src/main/webapp/WEB-INF/view/client` 配下に配置する。
+ひな形となるJSPを /src/main/webapp/WEB-INF/view/client 配下に配置する。
 
-[create.jsp](../../../knowledge/assets/web-application-client-create1/create.jsp)
-
+> create.jsp <../downloads/client_create/create.jsp>
 画面に初期表示する部分を実装する
 create.jspに登録画面の内容を追加する。
 
@@ -46,45 +45,46 @@ create.jspに登録画面の内容を追加する。
 ```
 この実装のポイント
 * tag を使用し、テキスト入力フォーム、プルダウンを作成する。
-tag-input_form を参照。
-* selectタグ の `listName` 属性に、
-後述の初期表示メソッドでリクエストスコープに登録する業種リストの名称を指定し、プルダウンに表示する。
-tag-selection を参照。
-
+  tag-input_form を参照。
+* selectタグ の listName 属性に、
+  後述の初期表示メソッドでリクエストスコープに登録する業種リストの名称を指定し、プルダウンに表示する。
+  tag-selection を参照。
 業務アクションに初期表示メソッドを作成する
-`ClientAction` に、以下の処理を行う業務アクションメソッドを追加する
+ClientAction に、以下の処理を行う業務アクションメソッドを追加する
 
-* プルダウンに表示するデータを取得しリクエストスコープに登録する。
-* 初期表示画面のJSPへフォーワードする。
+> * >   プルダウンに表示するデータを取得しリクエストスコープに登録する。
+> * >   初期表示画面のJSPへフォーワードする。
 
-ClientAction.java
-```java
-public HttpResponse input(HttpRequest request, ExecutionContext context) {
-    EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
-    context.setRequestScopedVar("industries", industries);
-    return new HttpResponse("/WEB-INF/view/client/create.jsp");
-}
-```
-業務アクションメソッドのシグネチャは以下とすること。
-業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
+> ClientAction.java
+> ```java
+> public HttpResponse input(HttpRequest request, ExecutionContext context) {
+>     EntityList<Industry> industries = UniversalDao.findAll(Industry.class);
+>     context.setRequestScopedVar("industries", industries);
+>     return new HttpResponse("/WEB-INF/view/client/create.jsp");
+> }
+> ```
 
-この実装のポイント
-* 登録画面に業種のプルダウンを表示するために、ユニバーサルDAO を使用してデータベースから業種情報を全件取得する。
-* JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。
+> 業務アクションメソッドのシグネチャは以下とすること。
+> 業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
 
+> この実装のポイント
+> * >   登録画面に業種のプルダウンを表示するために、ユニバーサルDAO を使用してデータベースから業種情報を全件取得する。
+> * >   JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。
 URLと業務アクションのマッピングを行う
 マッピング処理はOSSライブラリである [http_request_router(外部サイト)](https://github.com/kawasima/http-request-router) を使用して行う。
 指定したURLと初期表示処理をマッピングするための設定を追加する。
 
-routes.xml
-```xml
-<routes>
-  <!-- 上から評価されるので、他のマッピングより前に設定する -->
-  <get path="/action/client" to="Client#input"/>
-  <!-- その他の設定は省略 -->
-</routes>
-```
-> **Tip:** routes.xmlの指定方法は、[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md) を参照。
+> routes.xml
+> ```xml
+> <routes>
+>   <!-- 上から評価されるので、他のマッピングより前に設定する -->
+>   <get path="/action/client" to="Client#input"/>
+>   <!-- その他の設定は省略 -->
+> </routes>
+> ```
+
+> > **Tip:**
+> > routes.xmlの指定方法は、[ライブラリのREADMEドキュメント(外部サイト)](https://github.com/kawasima/http-request-router/blob/master/README.ja.md) を参照。
 登録画面へのリンクを作成する
 ヘッダメニューに顧客登録画面へのリンクを作成する。
 
@@ -99,17 +99,19 @@ routes.xml
 ```
 この実装のポイント
 * tag の aタグ を使用してリンクを作成する。
-
 動作確認を行う
 以下の手順で動作確認を行う。
 
 1. アプリケーションにログインし、ヘッダメニューに「顧客登録」リンクが作成されていることを確認する。
 
-![](../../../knowledge/assets/web-application-client-create1/header_menu.png)
-2. 「顧客登録」リンクを押下すると顧客登録画面に遷移し、「顧客名」フォーム、「業種」プルダウン、登録ボタンが表示されていることを確認する。
+> ![](../images/client_create/header_menu.png)
 
-![](../../../knowledge/assets/web-application-client-create1/initial_display.png)
-3. 「業種」プルダウンが選択できることを確認する。
+1. 「顧客登録」リンクを押下すると顧客登録画面に遷移し、「顧客名」フォーム、「業種」プルダウン、登録ボタンが表示されていることを確認する。
 
-![](../../../knowledge/assets/web-application-client-create1/initial_display_select.png)
+> ![](../images/client_create/initial_display.png)
+
+1. 「業種」プルダウンが選択できることを確認する。
+
+> ![](../images/client_create/initial_display_select.png)
+
 次へ

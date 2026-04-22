@@ -1,1 +1,4 @@
 # Form/Entityの単体テスト
+
+01_entityUnitTestWithBeanValidation
+02_entityUnitTestWithNablarchValidation
