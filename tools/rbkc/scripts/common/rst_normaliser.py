@@ -705,41 +705,68 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
             for (s, e) in cols
         ]
 
-    # Simple-table grammar: opening `===`, optional header row + `===`,
-    # data rows, closing `===`. The table ends at the FIRST matching
-    # closing separator after we've collected at least one data row.
+    # Look ahead: count separators between this opening and the table end
+    # to determine whether there's a mid-separator (header marker).
+    look_seps = 0
+    look_i = start + 1
+    while look_i < n:
+        ln = lines[look_i]
+        if _SIMPLE_TABLE_SEP_RE.match(ln):
+            look_seps += 1
+            look_i += 1
+            # After this sep, peek: if the next non-blank line is not
+            # indented to the table's first column, we've hit the end.
+            k = look_i
+            while k < n and not lines[k].strip():
+                k += 1
+            if k >= n:
+                break
+            nxt = lines[k]
+            nxt_indent = len(nxt) - len(nxt.lstrip())
+            if nxt_indent < cols[0][0]:
+                break
+            continue
+        if not ln.strip():
+            look_i += 1
+            continue
+        nxt_indent = len(ln) - len(ln.lstrip())
+        if nxt_indent < cols[0][0]:
+            break
+        look_i += 1
+    # look_seps counts mid+closing. If look_seps >= 2 → has mid-sep.
+    has_mid_sep = look_seps >= 2
+
     rows: list[list[str]] = []
     current_row: list[str] | None = None
     i = start + 1
     # Skip optional blank
     while i < n and not lines[i].strip():
         i += 1
-    # Consume header + optional mid-separator
-    if i < n and not _SIMPLE_TABLE_SEP_RE.match(lines[i]):
-        header = _split_row(lines[i])
-        rows.append(header)
-        i += 1
-        # Skip continuation of header (rare) until the mid-separator
+    if has_mid_sep:
+        # Consume header row(s) until the mid-separator.
         while i < n and not _SIMPLE_TABLE_SEP_RE.match(lines[i]):
             if not lines[i].strip():
                 i += 1
                 continue
             cells = _split_row(lines[i])
-            if cells[0] == "":
+            if cells[0] == "" and rows:
                 for idx, c in enumerate(cells):
                     if c:
                         rows[-1][idx] = (rows[-1][idx] + " " + c).strip() if rows[-1][idx] else c
-                i += 1
             else:
-                break
-    # Skip mid-separator if present
-    if i < n and _SIMPLE_TABLE_SEP_RE.match(lines[i]):
-        i += 1
-    # Data rows until closing separator
+                rows.append(cells)
+            i += 1
+        header_count = len(rows)
+        # Skip the mid-separator
+        if i < n and _SIMPLE_TABLE_SEP_RE.match(lines[i]):
+            i += 1
+    else:
+        header_count = 0
+
+    # Body rows until closing separator (or end)
     while i < n:
         ln = lines[i]
         if _SIMPLE_TABLE_SEP_RE.match(ln):
-            # Table ends
             if current_row is not None:
                 rows.append(current_row)
                 current_row = None
@@ -769,12 +796,15 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
         return "", i
 
     ncols = len(cols)
-    # Converter escapes "|" inside simple-table cells; match that.
     esc_rows = [[c.replace("|", "\\|") for c in r] for r in rows]
-    header = "| " + " | ".join(esc_rows[0]) + " |"
     sep = "|" + "|".join(["---"] * ncols) + "|"
-    body_rows = ["| " + " | ".join(r) + " |" for r in esc_rows[1:]]
-    return "\n".join([header, sep] + body_rows), i
+    if has_mid_sep and header_count > 0:
+        header_md = ["| " + " | ".join(r) + " |" for r in esc_rows[:header_count]]
+        body_md = ["| " + " | ".join(r) + " |" for r in esc_rows[header_count:]]
+        return "\n".join(header_md + [sep] + body_md), i
+    # No mid-separator → all rows, then trailing separator
+    all_rows = ["| " + " | ".join(r) + " |" for r in esc_rows]
+    return "\n".join(all_rows + [sep]), i
 
 
 def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
