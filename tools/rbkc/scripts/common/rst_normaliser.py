@@ -875,8 +875,28 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
             cells.append(ln[left_idx:right_idx].strip())
         return cells
 
+    # Pre-scan: does this grid-table have a header separator `+===+`?
+    has_header_sep = False
+    scan_i = start
+    while scan_i < n:
+        ln = lines[scan_i]
+        if _GRID_TABLE_SEP_RE.match(ln):
+            if '=' in ln:
+                has_header_sep = True
+            scan_i += 1
+            if scan_i < n and not (
+                _GRID_TABLE_SEP_RE.match(lines[scan_i])
+                or (lines[scan_i].strip().startswith("|") and lines[scan_i].strip().endswith("|"))
+            ):
+                break
+            continue
+        if ln.strip().startswith("|") and ln.strip().endswith("|"):
+            scan_i += 1
+            continue
+        break
+
     rows: list[tuple[bool, list[str]]] = []
-    in_header = True
+    in_header = has_header_sep  # only mark rows as header if separator exists
     i = start
     while i < n:
         ln = lines[i]
