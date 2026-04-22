@@ -25,15 +25,15 @@ Jakarta Server Pages静的解析ツール用のプロパティを実行環境に
 
 | 設定プロパティ                    説明 |  |
 |---|---|
-| jspanalysis.checkjspdir | チェック対象JSPディレクトリパスもしくはファイルパスを設定する。 CI環境のように一括でチェックを実行する場合には、\|br\| ディレクトリパスを設定する。 例:: ./main/web ディレクトリを指定した場合は、再帰的にチェックが実行される。 |
+| jspanalysis.checkjspdir | チェック対象JSPディレクトリパスもしくはファイルパスを設定する。 CI環境のように一括でチェックを実行する場合には、 ディレクトリパスを設定する。 例:: ./main/web ディレクトリを指定した場合は、再帰的にチェックが実行される。 |
 | jspanalysis.xmloutput | チェック結果のXMLレポートファイルの出力パスを設定する。 例:: ./build/reports/jsp/report.xml |
 | jspanalysis.htmloutput | チェック結果のHTMLレポートファイルの出力パスを設定する。 例:: ./build/reports/jsp/report.html |
 | jspanalysis.checkconfig | Jakarta Server Pages静的解析ツール設定ファイルのファイルパスを設定する。 例:: ./tool/jspanalysis/config.txt |
 | jspanalysis.charset | チェック対象JSPファイルの文字コードを設定する。 例:: utf-8 |
-| jspanalysis.lineseparator | チェック対象JSPファイルで使用されている改行コードを \|br\| 設定する。 例:: \n |
-| jspanalysis.xsl | チェック結果のXMLをHTMLファイルに変換する際のXSLT \|br\| ファイルパスを設定する。 例:: ./tool/jspanalysis/transform-to-html.xsl |
-| jspanalysis.additionalext | チェック対象とするJSPファイルの拡張子を設定する。 複数の拡張子を指定する場合には、カンマ(,)区切りで指定する。\|br\| この設定値の内容にかかわらず、拡張子が `jsp` のファイル \|br\| は必ずチェック対象となる。 例:: tag |
-| jspanalysis.excludePatterns [2]_ | チェック対象外とするディレクトリ（ファイル）名を正規表現で設 \|br\| 定する。 複数のパターンを設定する場合にはカンマ(,)区切りで指定する。 例:: ui_local,ui_test,ui_test/.*/set.tag |
+| jspanalysis.lineseparator | チェック対象JSPファイルで使用されている改行コードを  設定する。 例:: \n |
+| jspanalysis.xsl | チェック結果のXMLをHTMLファイルに変換する際のXSLT  ファイルパスを設定する。 例:: ./tool/jspanalysis/transform-to-html.xsl |
+| jspanalysis.additionalext | チェック対象とするJSPファイルの拡張子を設定する。 複数の拡張子を指定する場合には、カンマ(,)区切りで指定する。 この設定値の内容にかかわらず、拡張子が `jsp` のファイル  は必ずチェック対象となる。 例:: tag |
+| jspanalysis.excludePatterns [2]_ | チェック対象外とするディレクトリ（ファイル）名を正規表現で設  定する。 複数のパターンを設定する場合にはカンマ(,)区切りで指定する。 例:: ui_local,ui_test,ui_test/.*/set.tag |
 
 本設定は、デフォルトではコメントアウトしている。本設定を使用する場合は、pom.xmlと、toolsディレクトリのnablarch-tools.xmlについてコメントアウトを解除すること。
 > **Tip:** ファイルパス(ディレクトリパス)は、絶対パスでの指定も可能となっている。

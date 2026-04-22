@@ -48,11 +48,6 @@ public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
 <tr>
   <th></th>
   <th></th>
-  <th>---------------------+-----------------------+-------------------</th>
-</tr>
-<tr>
-  <th></th>
-  <th></th>
   <th>正常系               |異常系                 |画面表示検証用</th>
 </tr>
 </thead>

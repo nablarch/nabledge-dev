@@ -673,7 +673,7 @@ def _rows_to_md_table(rows: list[list[str]], header_count: int, file_id: str = "
 # Simple table parser (via docutils, with CJK-safe fallback)
 # ---------------------------------------------------------------------------
 
-def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
+def _parse_simple_table_cjk(block: list[str], file_id: str = "", targets=None, substitutions=None) -> list[str]:
     """CJK-safe simple table parser using display-width column splitting.
 
     Fallback for when docutils SimpleTableParser fails due to CJK characters
@@ -770,10 +770,10 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
     if head_count is None:
         head_count = 0
 
-    return _rows_to_md_table(rows, head_count, file_id)
+    return _rows_to_md_table(rows, head_count, file_id, targets, substitutions)
 
 
-def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
+def _parse_simple_table(block: list[str], file_id: str = "", targets=None, substitutions=None) -> list[str]:
     """Convert RST simple table to Markdown table using docutils SimpleTableParser."""
     if not block:
         return []
@@ -783,7 +783,7 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
         parser = SimpleTableParser()
         tabledata = parser.parse(sl)
     except Exception:
-        return _parse_simple_table_cjk(block, file_id)
+        return _parse_simple_table_cjk(block, file_id, targets=targets, substitutions=substitutions)
 
     colspecs, headrows, bodyrows = tabledata
 
@@ -813,7 +813,7 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
     head_rows = _to_rows(headrows)
     body_rows = _to_rows(bodyrows)
     all_rows = head_rows + body_rows
-    return _rows_to_md_table(all_rows, len(head_rows), file_id)
+    return _rows_to_md_table(all_rows, len(head_rows), file_id, targets, substitutions)
 
 
 # ---------------------------------------------------------------------------
@@ -939,17 +939,43 @@ def _parse_grid_table(block: list[str], file_id: str = "", targets=None, substit
             continue
 
         rows: list[list[str]] = []
+
+        def _is_sub_separator(cells: list[str]) -> bool:
+            """A row where every non-empty cell is only ``-``/``=``/``+``
+            padding is an intra-row separator (grid-table cell sub-divider).
+            Treat it as a new-row boundary, not content."""
+            non_empty = [c for c in cells if c]
+            if not non_empty:
+                return False
+            return all(set(c) <= set("-=+ ") for c in non_empty)
+
         for cl in content_lines:
             cells = _split_cells(cl)
             if not cells:
                 continue
+            if _is_sub_separator(cells):
+                # Sub-separator: starts a new row on the next content line.
+                # Represented here by appending an empty row sentinel which
+                # the next non-empty content line replaces. Using a fresh
+                # row with blank cells forces the next line to be a new row
+                # rather than continuing the previous one.
+                rows.append(["" for _ in cells])
+                continue
             if not rows or any(c for c in cells):
-                rows.append(cells)
+                # If current top-of-stack is an empty sentinel (from
+                # sub-separator), overwrite it instead of stacking.
+                if rows and not any(r for r in rows[-1]):
+                    rows[-1] = cells
+                else:
+                    rows.append(cells)
             else:
                 # All cells empty → continuation; merge into last row
                 for ci, c in enumerate(cells):
                     if ci < len(rows[-1]) and c:
                         rows[-1][ci] = (rows[-1][ci] + " " + c).strip()
+
+        # Drop any trailing empty-sentinel rows.
+        rows = [r for r in rows if any(c for c in r)]
 
         if not rows:
             continue
@@ -1306,7 +1332,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                 if content and content[0].rstrip().startswith("+"):
                     md_lines = _parse_grid_table(content, file_id, targets=targets, substitutions=substitutions)
                 else:
-                    md_lines = _parse_simple_table(content, file_id)
+                    md_lines = _parse_simple_table(content, file_id, targets=targets, substitutions=substitutions)
                 output.extend(md_lines)
                 continue
 
@@ -1377,7 +1403,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # Strip leading indent
             min_indent = min((len(l) - len(l.lstrip()) for l in table_block if l.strip()), default=0)
             stripped_block = [l[min_indent:] for l in table_block]
-            output.extend(_parse_simple_table(stripped_block, file_id))
+            output.extend(_parse_simple_table(stripped_block, file_id, targets=targets, substitutions=substitutions))
             continue
 
         # Grid table (starts with +---)

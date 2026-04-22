@@ -15,7 +15,7 @@
 
 | 項目          値 | 補足 |  |
 |---|---|---|
-| JDBC URL | `jdbc:h2:../db/SAMPLE` | 左記の通り、h2.batからの相対パスでデータファイルの位置を \|br\| 指定する必要がある。 |
+| JDBC URL | `jdbc:h2:../db/SAMPLE` | 左記の通り、h2.batからの相対パスでデータファイルの位置を  指定する必要がある。 |
 | User Name | `SAMPLE` |  |
 | Password | `SAMPLE` |  |
 
