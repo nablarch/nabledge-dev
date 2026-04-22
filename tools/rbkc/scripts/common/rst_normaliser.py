@@ -930,21 +930,36 @@ def _render_table_directive(name: str, body: list[str]) -> str:
     so the normalised source must match that structure.
     """
     if name == "list-table":
-        # Parse the bullet-list structure into a list of rows, each a list of cells.
+        # Parse rows by indentation: "* -" starts a row, "- " (at row indent)
+        # starts a new cell in the same row, everything else is cell
+        # continuation. Nested bullet lists (where a sub-list appears inside
+        # a cell) must NOT be confused with new cells — detect them by
+        # indent level.
         rows: list[list[str]] = []
         current_row: list[str] | None = None
         current_cell_idx = -1
+        # Row indent = indent of "* -"; cell indent = indent of "-" (same
+        # column as `*`). Sub-content deeper than cell indent is continuation.
+        row_indent: int | None = None
+        cell_indent: int | None = None
         for line in body:
             if not line.strip():
                 continue
+            lstrip = len(line) - len(line.lstrip())
             stripped = line.lstrip()
-            # "* - cell" or "* -" (empty first cell) starts a new row
-            if stripped.startswith("* -") or stripped == "*" or stripped.startswith("* "):
+            # "* - cell" or "* -" at the row-indent level starts a new row.
+            # Nested bullets deeper than row_indent are cell continuation.
+            is_row_marker = (
+                (stripped.startswith("* -") or stripped == "*" or stripped.startswith("* "))
+                and (row_indent is None or lstrip == row_indent)
+            )
+            if is_row_marker:
                 current_row = []
                 rows.append(current_row)
-                # strip the bullet marker
+                if row_indent is None:
+                    row_indent = lstrip
+                    cell_indent = lstrip + 2  # column where `-` sits
                 after = stripped[1:].lstrip()
-                # after is now "- cell" or "-" or "- " or "" (bullet only)
                 if after.startswith("- "):
                     current_row.append(after[2:])
                 elif after == "-" or after == "":
@@ -952,25 +967,27 @@ def _render_table_directive(name: str, body: list[str]) -> str:
                 else:
                     current_row.append(after)
                 current_cell_idx = len(current_row) - 1
-            # "- cell" or bare "-" is a subsequent cell in the current row
-            elif stripped.startswith("- "):
+            # "- cell" at cell_indent → new cell in current row
+            elif stripped.startswith("- ") and cell_indent is not None and lstrip == cell_indent:
                 cell = stripped[2:]
                 if current_row is None:
                     current_row = []
                     rows.append(current_row)
                 current_row.append(cell)
                 current_cell_idx = len(current_row) - 1
-            elif stripped == "-":
-                # empty cell
+            elif stripped == "-" and cell_indent is not None and lstrip == cell_indent:
                 if current_row is None:
                     current_row = []
                     rows.append(current_row)
                 current_row.append("")
                 current_cell_idx = len(current_row) - 1
             else:
-                # Continuation of the current cell
+                # Continuation of the current cell (may include sub-bullets)
                 if current_row is not None and current_cell_idx >= 0:
-                    current_row[current_cell_idx] = (current_row[current_cell_idx] + " " + stripped).strip() if current_row[current_cell_idx] else stripped
+                    addition = stripped
+                    current_row[current_cell_idx] = (
+                        current_row[current_cell_idx] + " " + addition
+                    ).strip() if current_row[current_cell_idx] else addition
         if not rows:
             return ""
         ncols = max(len(r) for r in rows)
