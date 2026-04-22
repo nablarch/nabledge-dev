@@ -1,5 +1,46 @@
 # Notes
 
+## 2026-04-22 (session 43)
+
+### Decision: tokenizer 方式に切替 (Phase 21-X)
+
+**背景**:
+
+session 43 の対話で、設計書 3-1 節「ソース原文のまま・削除だけ」が以下の converter 変換により**機械的に substring 一致不能**と確認:
+
+- `:ref:\`label\`` → ラベル解決により別文字列（参照先タイトル）に置換
+- `` ``code`` `` → `` `code` `` (backtick 数変化)
+- `` `text <url>`_ `` → `[text](url)` (括弧の構造自体が別形式)
+- `\|name\|` (substitution 参照) → 定義先展開後のテキスト
+- `.. note::` + 本文 → `> **Note:** ` + 本文 (admonition)
+- RST simple/grid/list-table → MD table `| --- |` 形式に再構成
+
+**前回 (`_normalize_rst_source` 300行) が失敗した構造的原因**:
+
+1. 場当たり: 実装中にパターンを見つけて regex を追加
+2. 積み上げ: 複数 regex が同じ行を書き換え、適用順に副作用
+3. 推測ベース: RST 公式仕様でなく実装者の推測
+
+**今回の違い**:
+
+- **実装前**に全バージョン・全ファイルを走査してパターンを網羅 (Phase 21-X Step X-2)
+- **tokenizer 方式**: 字句解析で token 列に切り、各 token を独立純粋関数で変換 (順序非依存)
+- **規則は RST 公式仕様 (docutils) + 実データ実測** から導出
+- **設計書更新** が必須 (3-1 手順に「手順0: ソース前処理 (tokenizer)」を追加)
+
+### 関連コミット (session 42 — 参考資料として保全)
+
+Phase 21-W 方針で session 42 に行った修正は参考資料として維持。Phase 21-X の tokenizer 設計時に「どの構文をどう変換すべきか」の実データ例として活用する:
+
+- `9abea1c57` fix(rbkc): reduce v6 verify FAIL 310→240 via verify/converter fixes
+- `31de50369` fix(rbkc): preserve nested-directive body in simple-table cells
+- `56988a2bf` fix(rbkc): batch verify/converter fixes reduce FAIL 162→135
+- `64253ec5b` fix(rbkc): grid-table sub-separators + simple-table substitutions
+
+現在の verify.py は `_verify_normalise_backup.py` として保全済 (session 42)。Phase 21-X Step X-4 で tokenizer ベースに書き直す。
+
+---
+
 ## 2026-04-22 (session 42)
 
 ### Decision: verify の正規化パイプラインを廃止し、設計書通りに書き直す (Phase 21-W)

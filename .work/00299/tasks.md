@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 42 — FAIL 310→120 via pattern-based fixes (bullet in fence, heading-underline uniformity, grid-table sub-separator, :ref: table-cell padding, simple-table substitutions, `<url>`_ greedy text). Identified FUNDAMENTAL DIRECTION ERROR: verify has drifted to "normalize RST source to MD-ish then compare" (~300-line regex pipeline), contradicting the design which mandates "delete JSON tokens from raw source, classify residue as RST syntax or content-gap". Next step: rewrite verify per design — see Phase 21-W below.)
+**Updated**: 2026-04-22 (session 43 — Phase 21-W は中断。設計書の「原文削除のみ」はインライン RST role (`:ref:`/``code``/`text <url>`_ 等) を含むファイルで機械的に substring 一致不能と判明。前回 `_normalize_rst_source` が破綻したのはアプローチ選択ミス (regex パターン積み上げ → 適用順依存 → モグラ叩き)。今回は **RST 公式構文仕様ベースの tokenizer 方式** + **実装前に全バージョン全ファイルを走査してパターンを網羅** で再挑戦する。詳細は Phase 21-X を参照)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,98 +53,145 @@
 
 ## In Progress
 
-### Phase 21-W: verify を設計書通りに書き直す（最優先）
+### Phase 21-X: 調査 → 設計書更新 → tokenizer 方式で verify 実装 (最優先)
 
 **意図（なぜやるか）**:
 
-現状の verify は session 41 以降、FAIL を潰すたびに「ソース側を MD 形式に寄せる」正規表現がひたすら増え続けて 300 行超になっている。これは設計書 3-1 節の sequential-delete アルゴリズムから逸脱している。
+Phase 21-W の「原文のまま削除するだけ」は、converter が RST → MD でラベル解決・記法変換・table 再構成を行う以上、substring 一致が**機械的に不可能**と判明した（例: `:ref:\`doma_config\`` → `Doma設定` にラベル解決されるため原文に存在しない）。
 
-**設計書の仕様（再掲）**:
+前回 (Phase 21-V/W 以前) の `_normalize_rst_source` 300 行が破綻したのは次の 3 つの構造的欠陥:
 
-```
-[JSON content] → MD構文を除去 → token列
-[ソースファイル] から token を順次「削除」
-  削除できなかった token → FAIL (QC2/QC3/QC4)
-  削除後の残渣にソース構文要素以外が残っていれば → FAIL (QC1)
-```
+1. **場当たり的にパターンを発見**：実装中に実データで見つけては正規表現を追加
+2. **regex パターンの積み上げ**：複数の regex が同じ行を書き換えるため、適用順に副作用が出る
+3. **規則の出所が実装者の推測**：RST 仕様に照らした閉じた列挙ではない
 
-- **JSON 側**: MD 構文（見出し `#`、リスト `*/-/+`、コードフェンス、テーブル `|---|`、強調 `**` 等）だけ除去してプレーンテキストに
-- **ソース側**: **原文のまま触らない**。ただ削除するだけ
-- **残渣判定**: RST 許容構文リスト（`.. directive::`, `:role:\`\``, `====`, コメント、`:field:` 等）にマッチすれば OK
+**今回の違い（前回と同じ轍を踏まないための必須要件）**:
 
-**何が間違っていたか**:
+| 観点 | 前回 | 今回 |
+|---|---|---|
+| パターン発見の時期 | 実装中に場当たり | **実装前に全バージョン・全ファイル走査で一括** |
+| 網羅性の保証 | なし | **出現箇所 100% をスクリプトで数値確認** |
+| 規則の出所 | 実装者の推測 | **RST 公式仕様 (docutils) + 実データ実測** |
+| 実装手法 | 正規表現 300 行を 1 関数に積む | **tokenizer + 独立純粋関数** (順序非依存) |
+| 新規パターン発生時 | regex を黙って追加 | **設計書更新 + ユーザー承認** が前提 |
 
-- `_normalize_rst_source` で RST → MD 方向の正規化を大量に行い、両側を中間形式で一致させようとした
-- 設計書は「source 原文のまま、削除して残渣を許容構文で判定」だけを求めている
-- 結果、パターンごとの false positive 対応（モグラ叩き）で規模が肥大化、各修正が副作用を生む
+**実装方針（tokenizer 方式）**:
 
-**スコープ**:
+RST は docutils 仕様に準拠した明確な構文を持つため、正規表現で行単位に書き換えるのではなく、字句解析で構文要素を切り出して独立に変換する:
 
-- `_normalize_rst_source` 全廃
-- `_normalize_md_unit` は維持（MD 構文除去は設計書通り）
-- sequential-delete は生ソースに対して実行
-- QC1 残渣判定は「許容構文要素リスト」（設計書 3-1 末尾）に照らす純粋な構文チェック
-- 設計書の「許容構文要素リスト」に**追加が必要なら設計書を先に更新**、ユーザー承認を得てから実装
+1. RST ソースを文字単位でスキャンし、inline role / inline code / external link / substitution / directive block / table block / heading underline / bullet / field list を token 列に切り出す
+2. 各 token は純粋関数で MD 同等形式に変換（`:ref:\`label\`` → ラベル表を引いて解決タイトル、`` ``code`` `` → `` `code` ``、`` `text <url>`_ `` → `[text](url)` など）
+3. JSON content は converter 出力 (MD) なので、同じ MD 形式に揃える（既存 `_normalize_md_unit` を流用）
+4. 両側を正規形で substring 比較（sequential-delete）
+5. 残渣は「許容構文要素リスト」で判定
 
-**想定される効果**:
-
-- verify のコード行数が激減（~1000行 → 数百行）
-- モグラ叩き系の修正が不要になり、残 FAIL は本当に RBKC 側のバグ or 許容構文リスト漏れだけになる
-- 新規 false positive が出ても、ソース構文かコンテンツかの単純な判定に帰着
+**調査対象**: v6 / v5 / v1.4 / v1.3 / v1.2 の**全バージョン・全ソースファイル** (RST + MD + Excel 対象外)
 
 **Steps:**
 
-#### W-1: 方針確定と現状保全
-- [ ] 現在の branch/worktree の最新コミットを記録（`git log --oneline -5`）→ notes.md に追記
-- [ ] 現在の verify.py を `_verify_normalise_backup.py` にコピー保全（参考資料用、gitignore 対象ではない）
-- [ ] ユーザーに方針確認：「_normalize_rst_source 廃止 + 設計書ベースの最小 verify に書き直す」で進める
+#### X-1: 方針確定と現状保全 (未着手)
 
-#### W-2: 設計書の精査と必要なら更新
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` 3-1 節「許容構文要素リスト」を読み込み、実データで出現する RST 構文要素を洗い出す
-  - ディレクティブ行（`.. name::`）+ そのオプション行（`:opt: val`）と引数行
-  - ロール記法部分（`:role:\`text\``）
-  - ラベル定義（`.. _label:`）
-  - 見出しアンダーライン
-  - substitution 定義（`.. |name| ...`）
-  - footnote/citation 定義（`.. [tag] body`）
-  - comment（`.. text` で `::` を含まないもの）
-  - RST line block 継続記号 `\`
-  - table 構造（`====` セパレータ、`+---+` ボーダー、`|` セル区切り、連続セル行）
-  - bullet/enum 記号（`*`, `-`, `+`, `#.`, `1.`）
-  - RST field list 表記 `:name:` + value
-- [ ] リストに追加が必要な構文を特定（設計書に抜けがあれば）
-- [ ] ユーザーに変更案を提示、承認を得る
-- [ ] 承認後、設計書を更新
+- [ ] 現在の verify.py を `_verify_normalise_backup.py` にコピー保全済 (session 42 で実施済)
+- [ ] 最新コミット記録 → notes.md
 
-#### W-3: verify TDD 再構築
-- [ ] `_normalize_md_unit` の単体テストを整備（現状のテストから流用可能）
-- [ ] 新 verify 関数 `check_content_completeness` を設計書通りに TDD で書き直す
-  1. JSON から MD 構文除去 → token 列を生成
-  2. 各 token をソース（生 RST）から順次検索・削除
-  3. 削除できなかった token は QC2/QC3/QC4 判定
-  4. 削除後ソース残渣を行単位で走査し、許容構文リストに当てはまらない行があれば QC1
-- [ ] 既存テストケース全件 GREEN になるまで反復
+#### X-2: 調査スクリプト群の作成と実行 (実装前・手戻り防止のコア)
 
-#### W-4: 実データ検証と残 FAIL のトリアージ
+**目的**: 実装前に全バージョン・全ファイルから RST/MD 構文の出現パターンを網羅的に洗い出し、converter の変換規則を実データから逆算する。この Step を終えた時点で、「後から新パターンが出て実装を書き直す」という手戻りを原理的に消す。
+
+**Steps:**
+
+- [ ] `.work/00299/phase21x/` ディレクトリを作成
+- [ ] **X-2-a: Inline 構文の網羅スクリプト** (`scan_inline.py`)
+  - 全 RST ファイルから次を抽出・集計:
+    - `:[a-zA-Z][\w.-]*:\`...\`` (role with/without target)
+    - `` ``...`` `` (double-backtick inline literal)
+    - `` `...`_ `` / `` `...`__ `` (named / anonymous reference)
+    - `` `...<...>`_ `` (embedded URL)
+    - `\|[^|]+\|` (substitution reference)
+    - `\[[^\]]+\]_` (footnote/citation reference)
+    - `[*][*][^*]+[*][*]` / `[*][^*]+[*]` (emphasis — RST 用法あり)
+  - 各パターンの**出現回数**、**バリエーション一覧**（例: role 名は何種類あるか）
+  - 出力: `.work/00299/phase21x/inline-patterns.json`
+- [ ] **X-2-b: Block 構文の網羅スクリプト** (`scan_block.py`)
+  - 全 RST ファイルから次を抽出・集計:
+    - `^\.\. \S+::` のディレクティブ名一覧と出現回数
+    - simple-table (`=== ===` separator) / grid-table (`+---+`) / list-table の出現数
+    - 見出しアンダーライン記号の種類別集計
+    - field list (`^:\w+:`) の出現パターン
+    - bullet / enumerated list マーカーの種類
+    - line block (`|`) の使用有無
+  - 出力: `.work/00299/phase21x/block-patterns.json`
+- [ ] **X-2-c: 変換規則の逆算スクリプト** (`derive_transforms.py`)
+  - 各 inline/block パターンについて、**対応する JSON content** の該当箇所を diff で取り、変換規則を逆算
+  - 方法: サンプルファイルごとに `(RST 断片, 対応する JSON 断片)` のペアを抽出（位置合わせは元 offset → converter 出力 offset の対応表を構築）
+  - 出力: `.work/00299/phase21x/transform-rules.md` (人間レビュー用の表形式)
+- [ ] **X-2-d: MD ソース側の網羅** (`scan_md.py`)
+  - v6 の nablarch-system-development-guide 配下の全 MD ファイルから、RST と異なる MD 独自記法の出現を集計
+  - 例: `<details>` / `<summary>` / `<br>` / 数式 / 独自 link 形式
+  - 出力: `.work/00299/phase21x/md-patterns.json`
+- [ ] **X-2-e: 残渣パターンの試行スクリプト** (`pilot_residue.py`)
+  - X-2-a〜d の結果で**仮の tokenizer**を書き、全ファイルで「JSON token → ソース substring 検索」を試行
+  - マッチしなかった箇所を**全件ダンプ**
+  - 分類: (i) tokenizer 未対応の構文 / (ii) converter の真のバグ / (iii) 許容構文リスト追加候補
+  - 出力: `.work/00299/phase21x/residue-triage.md`
+- [ ] **X-2-f: 全バージョン横断確認**
+  - v6 で確立したパターンを v5 / v1.4 / v1.3 / v1.2 でも走らせ、差分を抽出
+  - 出力: `.work/00299/phase21x/cross-version-diff.md`
+- [ ] **X-2-g: 調査結果レビューをユーザーに依頼**
+  - `.work/00299/phase21x/` の全結果をサマリして notes.md に記載
+  - ユーザーに「このパターン集合で設計書を閉じて良いか」確認を取る
+
+#### X-3: 設計書の更新 (ユーザー承認後)
+
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` 3-1 節を書き直す:
+  - **新規セクション「手順 0: ソース前処理 (tokenizer)」** を追加し、X-2 で確立した変換規則を**閉じた列挙**として明記
+  - 手順 2 の「オリジナルのソースファイルを変更せず」という文言を、「tokenizer で正規化したソース」を対象とする旨に更新
+  - 許容構文要素リストを X-2 の実データに基づいて最終化
+- [ ] 設計書変更案をユーザーに提示、承認を取得
+
+#### X-4: tokenizer + verify の TDD 実装
+
+- [ ] **tokenizer モジュール** (`scripts/verify/rst_tokenizer.py`)
+  - 各 inline/block 構文ごとに独立な tokenize 関数
+  - 各 token ごとに純粋な `to_md()` 変換関数
+  - 適用順序に依存しない（token 列を走査するだけ）
+  - ラベル表 (`label_map`) を引数として受け取る
+  - 各関数を単体テストで網羅（RED → GREEN）
+- [ ] **`check_content_completeness`** を tokenizer ベースで再実装:
+  1. ソース → tokenizer → 正規化ソース
+  2. JSON content → `_normalize_md_unit` → 正規化 JSON
+  3. sequential-delete で QC2/QC3/QC4 判定
+  4. 残渣を許容構文リストで QC1 判定
+- [ ] 既存テスト全件 GREEN 確認
+
+#### X-5: 実データ検証と残 FAIL のトリアージ
+
 - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
-- [ ] 残 FAIL を分類：
+- [ ] 残 FAIL を分類:
   - (a) RBKC converter の真のバグ → converter 修正
-  - (b) 許容構文リストに入れるべき新規 RST 構文 → 設計書更新 + verify 更新（ユーザー承認要）
-  - (c) 許容できない JSON 側の捏造 → converter のバグとして記録
-- [ ] (a) は即修正、(b) はユーザー確認後、(c) は converter 修正
+  - (b) tokenizer の抜け → 設計書更新 + tokenizer 更新 (ユーザー承認)
+  - (c) 許容構文リスト追加 → 設計書更新 + 更新 (ユーザー承認)
+- [ ] 修正反映、verify GREEN まで反復
 
-#### W-5: v6 verify PASS まで反復
-- [ ] W-4 のサイクルを FAIL 0 まで回す
-- [ ] サブエージェント品質チェック（SE + QA）
+#### X-6: 全バージョンでの v6 verify PASS まで反復
+
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — FAIL 0
+- [ ] `bash rbkc.sh create 5 && bash rbkc.sh verify 5` — FAIL 0
+- [ ] `bash rbkc.sh create 1.4 && bash rbkc.sh verify 1.4` — FAIL 0
+- [ ] `bash rbkc.sh create 1.3 && bash rbkc.sh verify 1.3` — FAIL 0
+- [ ] `bash rbkc.sh create 1.2 && bash rbkc.sh verify 1.2` — FAIL 0
+- [ ] サブエージェント品質チェック (SE + QA)
 - [ ] コミット・プッシュ
-
-#### W-6: 他バージョンへの波及確認
-- [ ] v5, v1.4, v1.3, v1.2 も同じ verify で通るか確認
-- [ ] 通らない場合は Phase 19/20 で個別対応
 
 ---
 
-### Phase 21-V: verify 作り直し + v6 verify PASS まで一気通貫 (SUPERSEDED by Phase 21-W)
+### Phase 21-W: verify を設計書通りに書き直す（SUPERSEDED by Phase 21-X）
+
+**結論**: 設計書 3-1 節「原文のまま・削除だけ」は、converter がラベル解決・inline 記法変換を行うため**機械的に substring 一致不能**と session 43 で判明。tokenizer 方式に切り替え、実装前に全バージョン全ファイルを走査するアプローチ (Phase 21-X) に移行した。Phase 21-W の Step 定義は参考資料として以下に残す。
+
+---
+
+### Phase 21-V: verify 作り直し + v6 verify PASS まで一気通貫 (SUPERSEDED by Phase 21-X)
 
 **方針（session 39 合意）**:
 - 既存 verify は hints 時代の層が残り、配線漏れ・sequential-delete アルゴリズムが converter 出力形式と衝突している（RST simple-table ↔ MD table 変換を認識できず QC1/QC2 両方で FAIL 等）
