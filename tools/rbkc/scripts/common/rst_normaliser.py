@@ -141,12 +141,13 @@ _ENUM_RE = re.compile(
 # ---------------------------------------------------------------------------
 
 # Sentinels protect emitted backticks from the later interpreted-text regex
-# which strips bare backticks. They use raw-1-byte chars that do not occur in
-# RST prose. Restored to backticks by _restore_sentinels() AFTER the block
-# walker, so block renderers that measure column widths see the sentinel
-# width (same as original raw `` ``code`` `` on the source side).
-_SENT_L = "\x02BT\x02"
-_SENT_R = "\x03BT\x03"
+# which strips bare backticks. Each sentinel is a *single* ASCII character
+# that never appears in RST prose, so that simple-table column splitting
+# (which uses display width) aligns with the original `` ``...`` `` span:
+# two opening/closing backticks of display width 2 match two single-char
+# sentinels of display width 2.
+_SENT_L = "\x02\x02"
+_SENT_R = "\x03\x03"
 
 
 def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
