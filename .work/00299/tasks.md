@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 39 — Phase 21-K complete, verify rebuild plan 21-V)
+**Updated**: 2026-04-22 (session 40 — Phase 21-V V-1〜V-4 complete, V-5 in progress: 24256 FAILs categorized, root cause identified)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -67,38 +67,36 @@
 
 **Steps (一気通貫):**
 
-#### V-1: 既存 verify の白紙化
-- [ ] `tools/rbkc/scripts/verify/verify.py` を空スタブに置換（公開 API のシグネチャのみ残す）
-- [ ] `tools/rbkc/tests/ut/test_verify.py` も一旦退避（新仕様で書き直すため `test_verify_OLD.py` にリネーム、新 `test_verify.py` をゼロから作る）
-- [ ] `bash rbkc.sh verify 6` が最低限エラーなく走ることを確認（全 PASS 扱い）
+#### V-1: 既存 verify の白紙化 ✅ committed `c0afe5f27`
+- [x] `tools/rbkc/scripts/verify/verify.py` を空スタブに置換（公開 API のシグネチャのみ残す）
+- [x] `tools/rbkc/tests/ut/test_verify.py` も一旦退避（`_test_verify_OLD.py.bak` にリネーム）
+- [x] `bash rbkc.sh verify 6` → "All files verified OK" 確認
 
-#### V-2: 設計書仕様の再確認・調整
-- [ ] 設計書 3 章「許容構文要素リスト」を読み直し、現状の converter 出力（MD table 記号 `|` / `---`、強調 `**` 等）を扱える形か確認
-- [ ] 不足あれば設計書を先に更新してコミット（例: RST simple-table の `===== =====` は converter が削除して MD table 化 → 許容構文ではなく変換対象、verify は対応する MD table を JSON 側に見つける等）
-- [ ] ユーザーに設計書変更点を共有（`.claude/rules/rbkc.md` ルール）
+#### V-2: 設計書仕様の再確認・調整 ✅ (設計書変更不要と確認)
+- [x] 設計書 3 章「許容構文要素リスト」確認 — 変更不要（設計書は現状で問題なし）
 
-#### V-3: 最小 verify を TDD で再構築（RST/MD）
-- [ ] QO1: docs MD 構造整合性（title / section titles / 順序）
-- [ ] QO2: docs MD 本文整合性（JSON content が docs MD に verbatim で含まれる）
-- [ ] QO3: docs MD 存在確認
-- [ ] QO4: index.toon 網羅性
-- [ ] QC1/QC2/QC3/QC4: sequential-delete（設計書 3-1 通り）
-- [ ] QC5: 形式純粋性（RST role/directive/label、MD raw HTML/backslash escape）
-- [ ] QL1: 内部リンク（既存 check_source_links をベース）
-- [ ] QL2: 外部 URL
-- 各項目について:
-  - [ ] 単体テストを書いて RED を確認
-  - [ ] verify 関数を実装して GREEN を確認
-  - [ ] run.py から配線
+#### V-3: 最小 verify を TDD で再構築（RST/MD） ✅ 100 PASS（テスト 62件）
+- [x] QO1: docs MD 構造整合性（title / section titles / 順序）— TDD GREEN
+- [x] QO2: docs MD 本文整合性 — TDD GREEN
+- [x] QO3: docs MD 存在確認（check_docs_coverage）— TDD GREEN
+- [x] QO4: index.toon 網羅性（check_index_coverage）— TDD GREEN
+- [x] QC1/QC2/QC3/QC4: sequential-delete（設計書 3-1 通り）— TDD GREEN
+- [x] QC5: 形式純粋性 — TDD GREEN
+- [x] QL1: 内部リンク — TDD GREEN
+- [x] QL2: 外部 URL — TDD GREEN
 
-#### V-4: Excel verify の再構築
-- [ ] 既存 Excel sequential-delete ロジックは設計書と整合しているので、新 verify.py に移植
-- [ ] 単体テスト再確認
+#### V-4: Excel verify の再構築 ✅ (V-3 と同コミット)
+- [x] Excel sequential-delete ロジック移植、単体テスト GREEN
 
-#### V-5: 実データで FAIL を洗い出し
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行、FAIL をカテゴリ別に集計
-- [ ] 残った FAIL は本当の converter バグ（設計書と整合した verify が指摘する真の問題）
-- [ ] FAIL 件数と種類をユーザーに報告
+#### V-5: 実データで FAIL を洗い出し（**作業中** — verify.py/test_verify.py 未コミット）
+- [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
+- [x] FAIL カテゴリ集計: 24256 件 (QC2: 12552, QC1: 9545, QC4: 1640, QO4: 318, QC5: 134, QC3: 62, QL2: 5)
+- [ ] **根本原因調査中** — QC1/QC2 の大多数は verify の sequential-delete が RST→MD 変換の差異を考慮していないため false positive
+  - RST admonition インデント（`  text` → plain text） → sequential-delete で位置ズレ
+  - RST ` ``double-backtick`` ` → MD `` `single-backtick` `` 変換 → exact match 失敗
+  - 解決策: `normalize_rst_for_search()` 関数でソース側も whitespace/backtick normalize
+  - **まだ未実装** — session 40 終了時点で `_strip_md_to_plain_lines` の問題も判明（多行admonitionのjoin）
+- [ ] FAIL 件数と種類をユーザーに報告（V-6 着手前に報告）
 
 #### V-6: converter バグを TDD で修正（見つかった分だけ）
 - [ ] 件数次第で phase 分割するかその場で直すかを判断
