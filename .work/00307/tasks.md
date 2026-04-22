@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (Stage 2 Round 1 完了 — 全5シナリオ judge=3 達成、PE レビュー fix 適用済)
+**Updated**: 2026-04-22 (Stage 3 Round 1 完了 — 全5シナリオ judge=3 達成)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -119,16 +119,15 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 ### Stage 3 section 選択 + 最終回答 + Round 制
 
 **Steps:**
-- [ ] `tools/benchmark/prompts/stage3_section_select.md` 作成（AI-2、title + path のみ渡す、hints なし）
-- [ ] AI-2 JSON schema 作成（selected_paths: list[str]）
-- [ ] `prompts/stage3_answer.md` 作成（AI-3、読み込んだ section から最終回答生成）
-- [ ] `prompts/judge_stage3.md` 作成（別 sub-agent、最終回答品質を4段階）
-- [ ] `run.py` に Stage 3 pipeline 追加 (AI-2 → read-sections → AI-3 answer → judge)
-- [ ] Stage 3 Round 1 計測（5件、new flow）
-- [ ] Stage 3 Round 1 計測（5件、current flow）— baseline として
-- [ ] 結果を `.work/00307/rounds/stage3-round1.md` に記録（new/current 比較）
-- [ ] Prompt Engineer Expert Review
-- [ ] ユーザーに「結果 + 改善案 + どうするか提案」を提示 → 合意
+- [x] `tools/benchmark/prompts/stage3_section_select.md` 作成（AI-2）
+- [x] `prompts/stage3_answer.md` 作成（AI-3）
+- [x] `prompts/judge_stage3.md` 作成（別 sub-agent、4段階）
+- [x] `run.py` に Stage 3 pipeline 追加 (AI-2 → read-sections → AI-3 → judge)
+- [x] Prompt Engineer Review（pre-run）→ `.work/00307/review-by-prompt-engineer-stage3-prompts.md`
+- [x] Stage 3 Round 1 計測（5件）→ 全 judge=3
+- [x] 結果を `.work/00307/rounds/stage3-round1.md` に記録
+- [x] Prompt Engineer Review（Round 1 結果）→ `.work/00307/review-by-prompt-engineer-stage3-round1.md`
+- [x] Review High fix 適用（anti-verbosity / AI-2 soft-cap / synthesis grounding）
 
 ## Done (this session)
 
