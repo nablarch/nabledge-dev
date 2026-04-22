@@ -3,12 +3,13 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-22 (Sonnet 5件 = mean level 3.00、モデル固定 Sonnet、30件実測へ)
+**Updated**: 2026-04-22 (30件比較完了: ids 97%/$15/63s vs current 100%/$13/87s、ユーザー採用判断待ち)
 
 ## 現在地（一言）
 
-新フロー (**ids**) の脱落5件比較完了 — Haiku 2.20 vs **Sonnet 3.00** (全件 level=3)。
-**モデル固定: Sonnet**。次は 30件本実測 (新 + 現行) → 採用可否判断。
+30件比較完了 (Sonnet): **ids 29/30 level=3 vs current 30/30 level=3**。
+差は req-09 (out-of-scope) のみ。詳細: [comparison-30scenarios.md](rounds/comparison-30scenarios.md)。
+ユーザー採用判断待ち (精度 ≈ 同等 / コスト +19% / 時間 -27%)。
 
 ## 検索フローは 2 つだけ
 
@@ -30,11 +31,24 @@
 ## 自律実行の流れ（ユーザー判断不要の範囲）
 
 1. [x] Haiku 5件 (mean level 2.20)
-2. [x] Sonnet 5件 (mean level **3.00**、全件 level=3)
-3. [x] モデル固定 → **Sonnet** (精度差 +0.80、コスト 2.2倍、時間同等)
-4. [ ] **新フロー (ids) 30件実測 (Sonnet)**
-5. [ ] **現行フロー 30件実測** (`search_current.md` で本番相当)
-6. [ ] 比較表作成 → ユーザーに採用可否を仰ぐ
+2. [x] Sonnet 5件 (mean level 3.00)
+3. [x] モデル固定 → Sonnet
+4. [x] 新フロー (ids) 30件実測 — 29/30 level=3 (req-09 のみ level=0)
+5. [x] 現行フロー 30件実測 — 30/30 level=3
+6. [x] 比較表作成 → [comparison-30scenarios.md](rounds/comparison-30scenarios.md)
+
+## 📢 ユーザー採用判断待ち
+
+**結果サマリ**:
+- 精度: ほぼ同等 (ids 97% vs current 100%)
+- コスト: 現行が 19% 安い ($12.81 vs $15.32 / 30件)
+- 時間: 新が 27% 速い (63s vs 87s / 件)
+- req-09 (out-of-scope) のみ差あり。AI-1 プロンプト改修で解消可能な見込み
+
+**判断選択肢**:
+- **A**: ids 採用、req-09 issue を AI-1 修正で潰してから本番反映
+- **B**: 現行維持、本 PR は index 2本のインフラ追加だけに縮退
+- **C**: 保留、追加の実験 (モデル比較拡大、別観点 benchmark 等) を先に実施
 
 ## ユーザー判断が必要
 
