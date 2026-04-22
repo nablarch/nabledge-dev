@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 43 — Phase 21-W は中断。設計書の「原文削除のみ」はインライン RST role (`:ref:`/``code``/`text <url>`_ 等) を含むファイルで機械的に substring 一致不能と判明。前回 `_normalize_rst_source` が破綻したのはアプローチ選択ミス (regex パターン積み上げ → 適用順依存 → モグラ叩き)。今回は **RST 公式構文仕様ベースの tokenizer 方式** + **実装前に全バージョン全ファイルを走査してパターンを網羅** で再挑戦する。詳細は Phase 21-X を参照)
+**Updated**: 2026-04-22 (session 44 — Phase 21-X 着手。X-2-a (inline)・X-2-b (block) 走査完了。主な結果: RST role 4種 (ref / doc / java:extdoc / download)、directives 22種、substitution 22種、見出しアンダーライン 10種、grid/simple/list-table 併用、line-block 約 8,278 行。`.work/00299/phase21x/inline-patterns.json` / `block-patterns.json` 参照。次は X-2-c 変換規則逆算)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -100,8 +100,8 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 
 **Steps:**
 
-- [ ] `.work/00299/phase21x/` ディレクトリを作成
-- [ ] **X-2-a: Inline 構文の網羅スクリプト** (`scan_inline.py`)
+- [x] `.work/00299/phase21x/` ディレクトリを作成
+- [x] **X-2-a: Inline 構文の網羅スクリプト** (`scan_inline.py`)
   - 全 RST ファイルから次を抽出・集計:
     - `:[a-zA-Z][\w.-]*:\`...\`` (role with/without target)
     - `` ``...`` `` (double-backtick inline literal)
@@ -112,7 +112,7 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
     - `[*][*][^*]+[*][*]` / `[*][^*]+[*]` (emphasis — RST 用法あり)
   - 各パターンの**出現回数**、**バリエーション一覧**（例: role 名は何種類あるか）
   - 出力: `.work/00299/phase21x/inline-patterns.json`
-- [ ] **X-2-b: Block 構文の網羅スクリプト** (`scan_block.py`)
+- [x] **X-2-b: Block 構文の網羅スクリプト** (`scan_block.py`)
   - 全 RST ファイルから次を抽出・集計:
     - `^\.\. \S+::` のディレクティブ名一覧と出現回数
     - simple-table (`=== ===` separator) / grid-table (`+---+`) / list-table の出現数
