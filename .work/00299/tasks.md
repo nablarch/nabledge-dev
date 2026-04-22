@@ -89,10 +89,10 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 
 **Steps:**
 
-#### X-1: 方針確定と現状保全 (未着手)
+#### X-1: 方針確定と現状保全 ✅ 完了 (session 43)
 
-- [ ] 現在の verify.py を `_verify_normalise_backup.py` にコピー保全済 (session 42 で実施済)
-- [ ] 最新コミット記録 → notes.md
+- [x] 現在の verify.py を `_verify_normalise_backup.py` にコピー保全
+- [x] 最新コミット記録 → notes.md (session 43 下の「最新コミット」を参照)
 
 #### X-2: 調査スクリプト群の作成と実行 (実装前・手戻り防止のコア)
 

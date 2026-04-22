@@ -37,7 +37,17 @@ Phase 21-W 方針で session 42 に行った修正は参考資料として維持
 - `56988a2bf` fix(rbkc): batch verify/converter fixes reduce FAIL 162→135
 - `64253ec5b` fix(rbkc): grid-table sub-separators + simple-table substitutions
 
-現在の verify.py は `_verify_normalise_backup.py` として保全済 (session 42)。Phase 21-X Step X-4 で tokenizer ベースに書き直す。
+現在の verify.py は `_verify_normalise_backup.py` として保全済 (session 43 で git add)。Phase 21-X Step X-4 で tokenizer ベースに書き直す。
+
+### 最新コミット (Phase 21-X 開始時点)
+
+```
+5dee028c0 docs: update tasks.md — Phase 21-X tokenizer approach (supersedes 21-W)
+600a243bc docs: add Phase 21-W — rewrite verify per design (abandon normalisation)
+64253ec5b fix(rbkc): grid-table sub-separators + simple-table substitutions
+56988a2bf fix(rbkc): batch verify/converter fixes reduce FAIL 162→135
+31de50369 fix(rbkc): preserve nested-directive body in simple-table cells
+```
 
 ---
 
