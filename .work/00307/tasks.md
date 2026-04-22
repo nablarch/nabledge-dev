@@ -65,17 +65,27 @@ Round N
 
 ## In Progress
 
-### Stage 1 Round 1 → 2
+### Stage 1 Round 2（準備中）
 
-**Status**: Round 1 試行計測済み（3件, recall=80% mean, review-01 で 40%）。5件パターン網羅でやり直し、Prompt Engineer Expert Review して改善に入る。
+**Status**: Round 1 完了（5件, recall mean 0.76 / precision 0.39, review-01 が 0.40 で外れ値）。Prompt Engineer Expert Review 完了（Rating 3/5）。ユーザーとの議論で **H-A（index.toon 語彙 anchor）** 採用方針が固まった。
+
+**Round 1 → Round 2 の変更仮説（ユーザー合意待ち）**:
+- **H-A（主仮説）**: `index.toon` の category+title を圧縮した context を prompt に同梱 → 抽出キーワードが Nablarch ドキュメント語彙に寄り recall up
+- **H-C（従仮説）**: Expert Review H1 の guidance block（機能カテゴリ/実行形態/具象クラス/対概念 の4軸）は H-A 適用後も必要かは見てから判断（Round 3 以降で）
+- **Judging**: Expert Review H2.1（`expected_keywords` を NFKC+lowercase 正規化）は独立した判定側改善。Round 2 と同時に入れる
 
 **Steps:**
-- [ ] 5件（review-01/review-04/impact-01/req-02/req-09）で Stage 1 を実行
-- [ ] 結果を `.work/00307/rounds/stage1-round1.md` に記録（条件・プロンプト・結果）
-- [ ] Prompt Engineer Expert Review を実施（`.work/00307/review-by-prompt-engineer-stage1-round1.md`）
-- [ ] 改善提案をユーザーに提示、合意を取る
-- [ ] 合意内容を `prompts/stage1_extract.md` / 判定ロジックに反映
-- [ ] Round 2 計測 → 再レビュー → 収束するまで繰り返し
+- [x] Round 1: 5件実行 → `.work/00307/rounds/stage1-round1.md`
+- [x] Round 1: Prompt Engineer Expert Review → `.work/00307/review-by-prompt-engineer-stage1-round1.md`
+- [x] Round 1: 改善提案をユーザーに提示、議論
+- [ ] `index.toon` → `index-compact.md`（category + title 圧縮版）を生成する仕組み作成
+- [ ] `prompts/stage1_extract.md` に index-compact を埋め込む prompt template に更新
+- [ ] `expected_keywords` 正規化（NFKC + lowercase）を scenarios JSON または判定ロジックに適用
+- [ ] Round 2 計測（5件）
+- [ ] Round 2 結果を `.work/00307/rounds/stage1-round2.md` に記録
+- [ ] Round 1 との比較表作成（recall/precision/cost/time の差分）
+- [ ] Prompt Engineer Expert Review（prompt 変更が Round 1 expert 由来なら不要、H-A は新仮説なので必須）
+- [ ] ユーザーに提示 → 合意なら次 Round or 次 Stage へ
 
 ## Not Started
 
@@ -108,6 +118,32 @@ Round N
 - [ ] 30件実行（Stage 1/2/3, current/new）
 - [ ] `summary.json` に段階別 accuracy/time(mean,median)/cost(mean,median) 出力
 - [ ] 妥当なら `tools/benchmark/baseline/{timestamp}/` にコピーして git commit
+
+### qa.md に「情報不足時の1回ヒアリング」追加（H-B, ユーザー指示スコープ内）
+
+**仮説**: 漠然とした質問（「ざっくり推奨構成を知りたい」等）に対しては、キーワード抽出前に 1 回だけヒアリングして対象範囲を絞ると回答精度・満足度が上がる。頻繁なヒアリングはユーザー負担なので「情報不足と判断した時のみ」発動。
+
+**Steps:**
+- [ ] 「情報不足」判定基準を設計（例: 質問がトピック単独で具体文脈なし、対象（web/batch/REST）不明、など）
+- [ ] `qa.md` に Step 0 として追加する案を設計 → Prompt Engineer レビュー
+- [ ] 実装（全5バージョン: 1.2/1.3/1.4/5/6 — cross-version consistency rule）
+- [ ] Stage 3 benchmark に hearing 挙動の計測シナリオを追加して比較
+
+### tools/benchmark/README.md 作成
+
+**目的**: 開発者＆AI が後から読めるよう、ベンチマークツールの目的・実行方法・運用規則を一箇所にまとめる。
+
+**Steps:**
+- [ ] README.md を作成、以下を含める:
+  - 目的: なぜ作ったか、何を測るか
+  - 3 Stage の定義（Stage 1 / 2 / 3 が何をするか）
+  - 実行方法（`python3 run.py --stage N --scenarios-file ... --scenario ... --limit N`）
+  - scenarios JSON スキーマ（expected_question / expected_keywords / expected_sections / etc.）
+  - prompt ファイルと各 Stage の対応
+  - `.results/` vs `baseline/` の運用（gitignore と commit 方針）
+  - Round 制ワークフロー（計測 → expert review → 合意 → 修正 → 次 Round）の説明
+  - 再現性の担保範囲（AI 非決定性のみブレる、他はすべて固定）
+  - 改善記録ファイル（`.work/00307/rounds/stage{N}-round{M}.md`）の読み方
 
 ### 検索フロー改修（全5バージョン: 1.2 / 1.3 / 1.4 / 5 / 6）
 
@@ -157,3 +193,5 @@ Round N
 - [x] 5件サンプル選定合意（review-01/review-04/impact-01/req-02/req-09）
 - [x] Stage 1 `run.py` 実装（stdin prompt, recall/precision script判定）
 - [x] Stage 1 試行計測（3件）— 動作確認OK
+- [x] Stage 1 Round 1（5件）計測・記録・expert review 完了
+- [x] `.claude/rules/development.md` に「プロンプト変更は expert-review 起点でない場合必ず Prompt Engineer レビュー」を追記

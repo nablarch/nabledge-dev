@@ -44,6 +44,23 @@ Launch both as subagents in separate contexts (see `.claude/rules/design-decisio
 
 If either review returns **Needs Fix**, address the issues before continuing.
 
+## Expert Review for Prompt Changes
+
+Any change to an AI prompt — whether as part of a skill, benchmark, workflow, or one-off script — must pass **Prompt Engineer** expert review before the change is adopted.
+
+**Scope (applies to):**
+- `.claude/skills/*/workflows/*.md`
+- `.claude/skills/*/assets/*.md` (user-facing prompts)
+- `tools/benchmark/prompts/*.md`
+- Any new prompt template or schema used with `claude -p` / Agent tool
+
+**When this rule fires:**
+- If the trigger for the change is itself an expert review (e.g., Round 1 prompt change was already recommended by a Prompt Engineer review), no additional review is required for that change.
+- If the trigger is anything else — new hypothesis, user request, own judgment, refactor — Prompt Engineer review is **required** before the prompt goes live.
+- Save the review to `.work/xxxxx/review-by-prompt-engineer-{round or topic}.md` and link from tasks.md / round log.
+
+**Purpose:** Prompt quality is load-bearing for downstream accuracy. A change that looks obvious may degrade behavior in ways the author cannot see without an independent read.
+
 ## Fix Problems Immediately
 
 When a problem is found — test failure, bug, incorrect behavior, rule violation — fix it immediately. Do not defer it as "out of scope" or "tracked separately."
