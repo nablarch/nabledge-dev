@@ -128,13 +128,13 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 - [x] ユーザー決定（モデル比較 / rollout / judge レベル / hints / stream-json）
 - [x] `tools/benchmark/prompts/stage1_facet.md` 作成（2軸: type / category / coverage）
 - [x] Stage 1 JSON schema（`{type[], category[], coverage}`）を prompt に同梱
-- [ ] Prompt Engineer レビュー（2軸 prompt が設計意図に合うか）
-- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` に `expected_facets` (type+category) 追加（人手で 5 件分）
-- [ ] `tools/benchmark/run.py` を Stage 1 (facet) 対応に修正（stream-json ログ保存、軸別 Jaccard スコアリング）
-- [ ] Stage 1 Round 2 計測: **Haiku / Sonnet で5件並走**（AI-1 単体、filter/AI-2 なし）
-- [ ] 結果を `.work/00307/rounds/stage1-round2.md` に記録（モデル比較表、軸別 Jaccard）
-- [ ] Prompt Engineer Expert Review（結果 + 改善案）
-- [ ] モデル確定（Haiku or Sonnet）し Stage 2 実装へ進む
+- [x] Prompt Engineer レビュー（2軸 prompt） → `.work/00307/review-by-prompt-engineer-stage1-facet-2axis.md`
+- [x] `tools/benchmark/scenarios/qa-v6-sample5.json` に `expected_facets` 追加
+- [x] `tools/benchmark/run.py` を Stage 1 (facet) 対応に修正（stream-json ログ保存、軸別 Jaccard）
+- [x] Stage 1 Round 2 計測: Haiku / Sonnet で5件並走 → Sonnet 採用
+- [x] 結果を `.work/00307/rounds/stage1-round2.md` に記録
+- [x] Round 2 Prompt Engineer Review → `.work/00307/review-by-prompt-engineer-stage1-round2-results.md`
+- [x] Round 3: 3 prompt edits + scenario 修正 → 全 5件で Jaccard=1.0 達成 (`.work/00307/rounds/stage1-round3.md`)
 
 ### [CONDITIONAL] processing_patterns back-propagation
 
