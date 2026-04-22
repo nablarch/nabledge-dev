@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 47 — Phase 21-X X-4b 着手。B4 の部分対応として converter の section/file title に `_convert_inline` を通すよう修正。RST の double-backtick `` ``code`` `` が normalised form `` `code` `` に揃い、QO1 title 不一致と QC1 残渣を 3 件解消。v6 verify FAIL 56 → 53。残 53 は B1/B2 系 (table 継続行) と B3/B5/B7 が主。)
+**Updated**: 2026-04-22 (session 47 — Phase 21-X X-4b を SUPERSEDED。converter の残バグは 8 分類・56 件に分散しており、個別修正では ROI が低く再発リスクも残ると判断。**Phase 21-Y** (converter を docutils AST ベースで全面書き直し) を新設。docutils 0.22.4 は既にインストール済、AST API と Visitor パターンで自前 parse を排除する。TDD なし・verify 駆動。B4-a (title inline 変換) は committed `4b617079d` で 56→53 FAIL に貢献済、Phase 21-Y に包含されて消える。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,7 +53,97 @@
 
 ## In Progress
 
-### Phase 21-X: 調査 → 設計書更新 → tokenizer 方式で verify 実装 (最優先)
+### Phase 21-Y: converter を docutils AST ベースで全面書き直し (最優先)
+
+**目的**: 残 53 FAIL を 0 化。同時に、過去の patch 堆積による密結合と再発リスクを解消する。
+
+**方針 (session 47 合意)**:
+
+- `tools/rbkc/scripts/create/converters/rst.py` (1598 行) をゼロから書き直す
+- 自前 parse (grid-table / simple-table / inline / directive / section splitter) を**全廃**し、`docutils.core.publish_doctree(source)` で得られる AST (doctree) を入力とする Visitor に変える
+- プロジェクト固有の変換ロジックは「doctree node → MD」の Visitor のみ
+- **TDD なし・verify 駆動**: `.claude/rules/rbkc.md` の「create-side は verify が quality gate、test 不要」方針に従う
+- 旧 `rst.py` と `tests/ut/test_rst_converter.py` は書き直し完了時に削除
+
+**docutils 利用可否の確認 (session 47)**:
+- `docutils==0.22.4` が setup.sh で install 済、`GridTableParser` / `SimpleTableParser` / `publish_doctree` / `statemachine` 利用可能
+- 現 `rst.py` も一部で `SimpleTableParser` / `StringList` を使っているが、CJK fallback や grid-table 自前実装と混在 → Phase 21-Y で AST 経由に一本化
+
+**期待される効果**:
+- grid-table rowspan / simple-table continuation / substitution 順序 / rowspan 変則 separator 等、現 converter が苦手としていた構文は docutils が解決済
+- CJK の display-width 問題は tableparser 固有。AST 経由なら回避可能 (`publish_doctree` は CJK でも動く想定、X-Y-1 で実測)
+- inline (role/ref/literal/substitution) が doctree ノードとして構造化済 → 自前 regex 不要
+- 設計書の独立性原則 (`rbkc.md` / `rbkc-verify-quality-design.md` §2-2) と整合
+
+---
+
+#### Y-1: docutils AST の実証調査
+
+- [ ] `tools/rbkc/.work/` 配下に調査スクリプト `y1_probe_ast.py` を作成、全バージョンの RST ファイルを `publish_doctree` に通して以下を確認:
+  - [ ] CJK ファイル (e.g. `biz_samples/01/index.rst`) で parse 成功するか
+  - [ ] grid-table rowspan (`morerows` 属性) が正しく AST 化されるか
+  - [ ] substitution (`|br|` 等) が展開されるか、展開タイミングは transform 前/後どちらか
+  - [ ] `.. include::` / `literalinclude` / `raw:: html` の扱い
+  - [ ] `:ref:` / `:doc:` / `:file:` の label 解決挙動 (外部解決が必要な場合の hook)
+  - [ ] footnote / transition / field-list / admonition (14 種) が取得可能な node 種別に落ちるか
+- [ ] parse 失敗・警告のあったファイルを全件ダンプ、対応方針を決める (docutils settings で抑制 / fallback / converter 側で前処理)
+- [ ] 結果を `.work/00299/phase21y/ast-probe.md` にまとめ、ユーザーに報告
+
+#### Y-2: Visitor 設計の確定
+
+- [ ] X-2 の成果物 (`.work/00299/phase21x/inline-patterns.json` / `block-patterns.json` / `transform-rules.md`) を参照しつつ、doctree node → MD の対応表を作る
+- [ ] node → MD 対応表を `tools/rbkc/docs/rbkc-converter-design.md` として新規作成
+  - section / title / paragraph / literal / emphasis / strong
+  - reference (`:ref:` / external / named / anonymous)
+  - substitution_reference / target / footnote / footnote_reference
+  - bullet_list / enumerated_list / definition_list / field_list
+  - table (grid / simple / list-table)
+  - admonition (14 種、`scripts/common/rst_admonition.py` に委譲)
+  - literal_block / code (言語アノテーション付き)
+  - image / figure / raw
+  - comment / transition / line_block
+- [ ] 設計書レビューをユーザーに依頼 (レビューなしでは実装着手しない)
+
+#### Y-3: 新 converter 実装 (feature branch 内で clean cut)
+
+- [ ] 旧 `rst.py` を `rst_legacy.py` にリネーム (switch は使わず、すぐ戻せる状態だけ維持)
+- [ ] `rst.py` を `publish_doctree` + Visitor で書き直し
+  - [ ] `RSTConverter.convert(source, file_id, targets, source_dir, substitutions) -> RSTResult`
+  - [ ] Visitor 実装 (Y-2 対応表通り)
+  - [ ] `scripts/common/rst_admonition.py` / `rst_substitutions.py` / `rst_include.py` の共通モジュールは流用
+  - [ ] cross-ref 解決 hook (targets 辞書経由) は doctree transform で対応
+- [ ] `bash rbkc.sh create 6` が完走することを確認
+- [ ] 旧 `rst_legacy.py` 削除
+- [ ] `tests/ut/test_rst_converter.py` 削除 (rbkc.md 方針通り)
+
+#### Y-4: v6 verify FAIL 0 まで収束
+
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
+- [ ] FAIL が残る場合は以下のいずれか:
+  - (a) Visitor の漏れ → Y-2 対応表 + Visitor を更新
+  - (b) tokenizer 側の抜け → 設計書更新 + tokenizer 更新 (ユーザー承認)
+  - (c) 許容構文リスト追加 → 設計書更新 + 更新 (ユーザー承認)
+- [ ] 反復
+
+#### Y-5: v5 / v1.4 / v1.3 / v1.2 で verify FAIL 0 まで収束
+
+- [ ] `bash rbkc.sh create 5 && bash rbkc.sh verify 5` — FAIL 0
+- [ ] `bash rbkc.sh create 1.4 && bash rbkc.sh verify 1.4` — FAIL 0
+- [ ] `bash rbkc.sh create 1.3 && bash rbkc.sh verify 1.3` — FAIL 0
+- [ ] `bash rbkc.sh create 1.2 && bash rbkc.sh verify 1.2` — FAIL 0
+- [ ] v1.x 固有 directive (旧 Phase 9) の Visitor 対応が足りない場合は Y-3 に戻る
+
+#### Y-6: 統合検証とクリーンアップ
+
+- [ ] nabledge-test v6 / v5 / v1.4 / v1.3 / v1.2 — ベースライン比で劣化なし (Phase 18〜20 を吸収)
+- [ ] `pytest tools/rbkc/tests/` — verify / CLI / common モジュールの test 全 PASS
+- [ ] サブエージェント品質チェック (SE + QA)
+- [ ] `tools/rbkc/README.md` の converter 説明を「docutils AST ベース Visitor」に更新
+- [ ] コミット・プッシュ (feature / docs 分割)
+
+---
+
+### Phase 21-X: 調査 → 設計書更新 → tokenizer 方式で verify 実装 (完了分、Y への前提)
 
 **意図（なぜやるか）**:
 
@@ -213,60 +303,19 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 | QC5 converter がディレクティブ記法を JSON に残存 | `RequestUnitTest_rest` | 2 |
 | 未分類 | その他 | ~1 |
 
-#### X-4b: 残 56 FAIL → 0 化 (converter の真のバグ修正) ← **現在実施中**
+#### X-4b: 残 56 FAIL → 0 化 (converter の真のバグ修正) — SUPERSEDED by Phase 21-Y
 
-**前提**: X-4a で tokenizer 側は設計書通り確定済。以降の修正は converter 側のみ。
+**打ち切り理由 (session 47)**:
 
-**方針 (session 46 合意)**: Bプラン = 本 PR 内で converter parser を書き直して FAIL 0 まで持っていく。独立性原則を維持したまま converter を RST 仕様準拠に整える。
+残 53 FAIL を調査した結果、以下の理由で個別修正路線を断念し、converter 全面書き直しに切り替える。
 
-**修正対象**: `tools/rbkc/scripts/create/converters/rst.py` (1598 行)
+- 残バグが 8 分類・56 件に分散しており、1 件 1 コミットでは FAIL 0 到達まで 7〜10h 見込み
+- 現 `rst.py` (1598 行) は過去の patch 積み重ねで grid/simple table・inline・substitution・section splitter が密結合。B5 のように**修正順序を変えるだけで他所が壊れる**構造
+- docutils 0.22.4 が既にセットアップ済で、`GridTableParser` / `SimpleTableParser` / `publish_doctree` など参照実装が利用可能。**自前再実装をやめて reference implementation に委ねる**方が仕様準拠・保守性・ROI いずれでも優位
 
-**残 56 件のバグ分類と対応**:
+X-4b の Step 定義 (B1〜B8) と B4-a commit (`4b617079d`) は参考資料として残す。Phase 21-Y で converter を書き直すとこれらは包含されて消える。
 
-| # | カテゴリ | 対象関数 | 件数 | 対応 |
-|---|---|---|---|---|
-| B1 | grid-table rowspan continuation cell 欠落 | `_parse_grid_table` | ~16 | rowspan 継続行を前行に merge するロジック追加 |
-| B2 | simple-table 多行 cell の途中切断 | `_parse_simple_table_cjk` | ~20 | 行継続ロジックを display-width でなく「first column empty で continuation」判定に変更 |
-| B3 | Footnote body に nested `.. code-block::` が RST 構文のまま残る | 1136 行付近 footnote 処理 | ~2 | footnote body を `_convert_content` で再帰 + 結果を tokenizer と同形式に |
-| B4 | `\\ _\\` (空の named ref) が JSON に残る | `_convert_inline` | ~3 | `\ _\` パターンをドロップ |
-| B5 | `|br|` 展開が grid-table cell 位置を破壊 | `_parse_grid_table` | ~5 | substitution 展開を grid-table 処理の**後**に実行 |
-| B6 | 変則 rowspan separator `+---+/text/+---+` | `_parse_grid_table` | ~4 | tokenizer 側と同じ処理 (変則 sep スキップ) |
-| B7 | transition line `----` の converter 処理漏れ | `_convert_content` | ~3 | transition を MD `---` として emit |
-| B8 | その他未分類 | - | ~3 | 個別調査 |
-
-**Steps**:
-
-- [ ] B1: grid-table rowspan continuation merge 実装
-- [ ] B2: simple-table 多行 cell continuation 判定修正
-- [ ] B3: footnote body 再帰処理 (tokenizer と同じ fence 出力に揃える)
-- [x] B4-a: section/file title を `_convert_inline` に通す — committed `4b617079d` (56→53 FAIL)
-- [ ] B4-b: `\ _\` (空の named ref) パターンドロップ in `_convert_inline` body 側
-- [ ] B5: substitution 展開タイミング見直し
-- [ ] B6: 変則 rowspan sep スキップ
-- [ ] B7: transition `----` 処理追加
-- [ ] B8: 残件個別調査
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0 確認
-- [ ] サブエージェント品質チェック (SE + QA)
-- [ ] コミット・プッシュ
-
-#### X-5: 実データ検証と残 FAIL のトリアージ (X-4a 完了後)
-
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
-- [ ] 残 FAIL を分類:
-  - (a) RBKC converter の真のバグ → converter 修正
-  - (b) tokenizer の抜け → 設計書更新 + tokenizer 更新 (ユーザー承認)
-  - (c) 許容構文リスト追加 → 設計書更新 + 更新 (ユーザー承認)
-- [ ] 修正反映、verify GREEN まで反復
-
-#### X-6: 全バージョンでの v6 verify PASS まで反復
-
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — FAIL 0
-- [ ] `bash rbkc.sh create 5 && bash rbkc.sh verify 5` — FAIL 0
-- [ ] `bash rbkc.sh create 1.4 && bash rbkc.sh verify 1.4` — FAIL 0
-- [ ] `bash rbkc.sh create 1.3 && bash rbkc.sh verify 1.3` — FAIL 0
-- [ ] `bash rbkc.sh create 1.2 && bash rbkc.sh verify 1.2` — FAIL 0
-- [ ] サブエージェント品質チェック (SE + QA)
-- [ ] コミット・プッシュ
+#### X-5 / X-6 (旧): SUPERSEDED by Phase 21-Y の該当 Step
 
 ---
 
