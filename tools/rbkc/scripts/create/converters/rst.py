@@ -1558,15 +1558,20 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
 
     preamble_md = _convert_content(preamble_lines, file_id, targets or None, source_dir, substitutions=substitutions or None)
 
+    # Convert inline RST markup in titles so they match the tokenizer's
+    # normalised source form (``code`` → `code`, :ref:`label` → resolved, etc).
+    title_md = _convert_inline(title, file_id, targets or None, substitutions=substitutions or None) if title else ""
+
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
         md = _convert_content(sec_lines, file_id, targets or None, source_dir, substitutions=substitutions or None)
-        sections.append(Section(title=sec_title, content=md))
+        sec_title_md = _convert_inline(sec_title, file_id, targets or None, substitutions=substitutions or None) if sec_title else ""
+        sections.append(Section(title=sec_title_md, content=md))
 
     no_knowledge = _detect_no_knowledge_content(preamble_md, sections)
 
     return RSTResult(
-        title=title,
+        title=title_md,
         no_knowledge_content=no_knowledge,
         content=preamble_md,
         sections=sections,
