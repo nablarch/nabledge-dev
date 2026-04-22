@@ -130,7 +130,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_user_info\ を参照。                                       |     |</td>
+  <td>詳細は、\ request_test_user_info       \ を参照。</td>
   <td></td>
 </tr>
 <tr>
@@ -140,7 +140,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_cookie_info\ を参照。                                     |     |</td>
+  <td>詳細は、\ request_test_cookie_info       \ を参照。</td>
   <td></td>
 </tr>
 <tr>
@@ -150,7 +150,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_queryparams_info\ を参照。                                |     |</td>
+  <td>詳細は、\ request_test_queryparams_info       \ を参照。</td>
   <td></td>
 </tr>
 <tr>

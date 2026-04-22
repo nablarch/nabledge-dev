@@ -185,7 +185,7 @@ Excelシートの記述方法関する規約について説明する。
 |---|---|---|
 | SETUP_TABLE | テスト実行前にデータベースに登録するデータ | 登録対象のテーブル名 |
 | EXPECTED_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムは、比較対象外となる。 | 確認対象のテーブル名 |
-| EXPECTED_COMPLETE_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムには\ default_values_when_column_omitted\ が設定されているものとして扱われる。 | 確認対象のテーブル名 |
+| EXPECTED_COMPLETE_TABLE | テスト実行後の期待するデータベースのデータ 省略したカラムには\ default_values_when_column_omitted       \ が設定されているものとして扱われる。 | 確認対象のテーブル名 |
 | LIST_MAP | List<Map<String,String>>形式のデータ | シート内で一意になるID 期待値のID(任意の文字列) |
 | SETUP_FIXED | 事前準備用の固定長ファイル | 準備ファイルの配置場所 |
 | EXPECTED_FIXED | 期待値を示す固定長ファイル | 比較対象ファイルの配置場所 |

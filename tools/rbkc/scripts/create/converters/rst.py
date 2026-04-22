@@ -1444,16 +1444,88 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
     from pathlib import Path as _Path
     source_dir = source_path.parent if source_path is not None else None
 
-    # Pre-resolve :ref:`label` using label_map before tokenizing
+    # Pre-resolve :ref:`label` using label_map before tokenizing. Inside
+    # simple-table and grid-table blocks, pad (or truncate) the replacement
+    # text to preserve the display-width of the original ``:ref:`` markup so
+    # that column boundaries defined by the separator row remain aligned.
     if label_map:
-        def _presolve_ref(m: re.Match) -> str:
-            inner = m.group(1)
-            # Display-form :ref:`text <label>` — keep as-is; handled by _convert_inline
+        import unicodedata
+
+        def _disp_width(s: str) -> int:
+            return sum(2 if unicodedata.east_asian_width(c) in ("F", "W") else 1 for c in s)
+
+        def _resolve(inner: str) -> str | None:
             if "<" in inner:
-                return m.group(0)
+                return None
             label = inner.strip()
             return label_map.get(label, label)
-        source = re.sub(r":ref:`([^`]+)`", _presolve_ref, source)
+
+        def _presolve_outside_table(line: str) -> str:
+            def _sub(m: re.Match) -> str:
+                repl = _resolve(m.group(1))
+                return repl if repl is not None else m.group(0)
+            return re.sub(r":ref:`([^`]+)`", _sub, line)
+
+        def _presolve_in_table(line: str) -> str:
+            """Pad/truncate ``:ref:`` replacement to the original display
+            width so table column positions do not shift."""
+            def _sub(m: re.Match) -> str:
+                repl = _resolve(m.group(1))
+                if repl is None:
+                    return m.group(0)
+                orig_width = _disp_width(m.group(0))
+                repl_width = _disp_width(repl)
+                if repl_width < orig_width:
+                    return repl + " " * (orig_width - repl_width)
+                return repl
+            return re.sub(r":ref:`([^`]+)`", _sub, line)
+
+        lines_in = source.split("\n")
+        lines_out: list[str] = []
+        i = 0
+        while i < len(lines_in):
+            line = lines_in[i]
+            stripped = line.strip()
+            is_simple_sep = bool(re.match(r"^={3,}(\s+={3,})+\s*$", stripped))
+            is_grid_sep = bool(re.match(r"^\+[-=+]+", stripped))
+            if is_simple_sep or is_grid_sep:
+                lines_out.append(line)
+                i += 1
+                if is_simple_sep:
+                    last_was_sep = True
+                    while i < len(lines_in):
+                        tl = lines_in[i]
+                        ts = tl.strip()
+                        is_sep = bool(ts) and all(c in "= " for c in ts) and ts.startswith("=")
+                        if is_sep:
+                            lines_out.append(tl)
+                            last_was_sep = True
+                            i += 1
+                        elif not ts:
+                            if last_was_sep:
+                                break
+                            lines_out.append(tl)
+                            i += 1
+                        else:
+                            lines_out.append(_presolve_in_table(tl))
+                            last_was_sep = False
+                            i += 1
+                else:  # grid
+                    while i < len(lines_in):
+                        tl = lines_in[i]
+                        ts = tl.strip()
+                        if ts.startswith("+") or ts.startswith("|"):
+                            if ts.startswith("+"):
+                                lines_out.append(tl)
+                            else:
+                                lines_out.append(_presolve_in_table(tl))
+                            i += 1
+                        else:
+                            break
+                continue
+            lines_out.append(_presolve_outside_table(line))
+            i += 1
+        source = "\n".join(lines_out)
 
     lines = source.splitlines(keepends=True)
     heading_keys = _detect_heading_chars([l.rstrip("\n") for l in lines])

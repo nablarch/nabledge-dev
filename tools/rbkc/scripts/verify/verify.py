@@ -573,6 +573,10 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     # otherwise multi-hyphen tokens like `---` (code-block content or YAML
     # separator) are mistakenly eaten.
     text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]+(?=[^-])', '', text, flags=re.MULTILINE)
+    # Empty list-table cell marker: ``*`` followed by ``-`` on its own line.
+    # The cell has no content so the marker must be dropped entirely —
+    # otherwise a bare ``-`` residue appears on source side but not in JSON.
+    text = re.sub(r'^[^\S\n]*\*?[^\S\n]*-[^\S\n]*$', '', text, flags=re.MULTILINE)
     # Bullet markers: "* ", "- ", "+ " at line start. The marker must be a
     # single char followed by whitespace and a non-marker char — this
     # prevents `---` from being rewritten to `--`.
@@ -591,8 +595,15 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     text = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
     # Remove leading indentation from directive bodies (1-8 non-newline spaces)
     text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
-    # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
-    text = re.sub(r'^[=\-~^"\'`#*+<>]{4,}[^\S\n]*$', '', text, flags=re.MULTILINE)
+    # RST heading underlines: ====, ----, ~~~~, etc. Require 4+ of the SAME
+    # character (so mixed strings like ``#----`` in shell-comment dividers
+    # don't accidentally match and consume legitimate content).
+    text = re.sub(
+        r'^(?:={4,}|-{4,}|~{4,}|\^{4,}|"{4,}|\'{4,}|`{4,}|\#{4,}|\*{4,}|\+{4,}|<{4,}|>{4,})[^\S\n]*$',
+        '',
+        text,
+        flags=re.MULTILINE,
+    )
     # Simple-table separator row (e.g. "=== === ====") and grid-table border
     text = re.sub(r'^[^\S\n]*[=\-]+(?:[^\S\n]+[=\-]+)+[^\S\n]*$', '', text, flags=re.MULTILINE)
     text = re.sub(r'^[^\S\n]*\+[-=+]+[^\S\n]*$', '', text, flags=re.MULTILINE)
@@ -630,7 +641,15 @@ def _normalize_md_unit(text: str) -> str:
             in_fence = not in_fence
             continue  # drop the fence marker itself
         if in_fence:
-            out.append(line)
+            # Inside fenced code: preserve content verbatim except for a
+            # few tokens that source-side normalisation removes as well,
+            # keeping both sides aligned:
+            # - ``|`` → space (e.g. ASCII directory trees)
+            # - leading bullet markers `` * ``, `` - ``, `` + `` (Javadoc-style
+            #   line prefixes are source-side bullet markers)
+            inner = line.replace("|", " ")
+            inner = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', inner)
+            out.append(inner)
             continue
         l = line
         # Grid-table HTML scaffolding the converter emits: strip
@@ -675,6 +694,10 @@ def _normalize_md_unit(text: str) -> str:
         # they originate from a nested bullet list in an RST list-table cell
         # but the source side normalises them away.
         l = re.sub(r'\|[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '| ', l)
+        # Drop ``\|`` MD-cell escape sequences entirely — the source-side
+        # never has the leading backslash so a bare backslash residue would
+        # cause a mismatch.
+        l = l.replace("\\|", " ")
         l = re.sub(r'\|', ' ', l)
         out.append(l)
     text = "\n".join(out)

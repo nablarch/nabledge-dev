@@ -399,8 +399,8 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
 </tr>
 <tr>
   <td></td>
-  <td>詳細は customize_html_check を参照。                             | ファイ</td>
-  <td>が適用される。                                |</td>
+  <td>詳細は customize_html_check        を参照。</td>
+  <td>ファイルが適用される。</td>
 </tr>
 <tr>
   <td>htmlCheckerConfig</td>
