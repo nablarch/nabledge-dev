@@ -143,12 +143,14 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
 - [x] `qa-v6-answers/README.md` に format spec を明文化（in-scope / out-of-scope / citation regex / ドリフト対策ルール）
 - [x] 残り 29 件の模範回答を作成（review-02..10 / impact-01..10 / req-01..10）
 - [x] Prompt Engineer スポットレビュー 3回実施（review-02..05 / impact-01..10 / req-01..10）、指摘は全て反映
-- [ ] Stage 2 スクリプト判定を実装
-  - 模範回答の citation から正解パス集合を抽出（regex: `` `([^`]+\.json)#(s\d+)` ``）
-  - `filter_result.json` の candidate paths と突合（正解パスが候補に含まれるか）
-  - `judge_stage2.md` は廃止、`run.py` に judge-only モード追加
-- [ ] Stage 2 を全 30件で実行 → 合否サマリ
-- [DECISION: Stage 2 合格率を見てユーザーと合意 → 合格分だけ Stage 3 judge に進むか、フロー改善に戻るか判断]
+- [x] Stage 2 スクリプト判定を実装
+  - `tools/benchmark/grading/reference_answer.py`（citation 抽出 + スクリプト採点）
+  - `tools/benchmark/score_stage2.py`（既存 `.results/` を再利用した judge-only モード）
+  - TDD: `tests/test_reference_answer.py` 15 tests → 全 GREEN (合計 34 tests)
+- [x] Stage 2 を全 30件で実行 → level=3 率 25/30 (83%)、level≥2 率 27/30 (90%)
+  - 結果: `tools/benchmark/.results/20260422-143411-stage3-sonnet/stage2_script.json`
+  - 記録: `.work/00307/rounds/stage2-script-round1.md`
+- [DECISION: Stage 2 合格率 83% を受け入れ Stage 3 judge に進むか、先に facet 抽出改善するか]
 - [ ] (Stage 2 OK なら) `judge_stage3.md` を「模範回答との比較」方式に改訂
 - [ ] (Stage 2 OK なら) Stage 3 judge を合格分で再実行
 - [ ] 結果を `.work/00307/rounds/` に記録
