@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 44 — Phase 21-X 着手。X-2-a (inline)・X-2-b (block) 走査完了。主な結果: RST role 4種 (ref / doc / java:extdoc / download)、directives 22種、substitution 22種、見出しアンダーライン 10種、grid/simple/list-table 併用、line-block 約 8,278 行。`.work/00299/phase21x/inline-patterns.json` / `block-patterns.json` 参照。次は X-2-c 変換規則逆算)
+**Updated**: 2026-04-22 (session 45 — Phase 21-X X-4 実装継続中。v6 verify FAIL 4812→123 (97% 削減)。しかし設計書 2-2 節「独立性原則」および 5 章「許容されない変更」違反が複数発覚。tokenizer 側に converter 出力模倣コードを入れてしまった (HTML grid-table / simple-table trailing-sep / admonition label dict / 幅保存 padding 等)。次セッションで **Phase 21-X X-4a: 独立性違反撤去 + converter 側 RST 仕様準拠修正** を実施して回復する。詳細は X-4a を参照)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -150,22 +150,59 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
   - Include / substitution を `scripts/common/` に配置する方針を記載
 - [x] 設計書変更案をユーザーに提示、承認取得（Q1〜Q4 + 実データ scan に基づく精緻化）
 
-#### X-4: tokenizer + verify の TDD 実装
+#### X-4: tokenizer + verify の TDD 実装 ✅ 基本実装完了 (session 44〜45、4812→123 FAIL)
 
-- [ ] **tokenizer モジュール** (`scripts/verify/rst_tokenizer.py`)
-  - 各 inline/block 構文ごとに独立な tokenize 関数
-  - 各 token ごとに純粋な `to_md()` 変換関数
-  - 適用順序に依存しない（token 列を走査するだけ）
-  - ラベル表 (`label_map`) を引数として受け取る
-  - 各関数を単体テストで網羅（RED → GREEN）
-- [ ] **`check_content_completeness`** を tokenizer ベースで再実装:
-  1. ソース → tokenizer → 正規化ソース
-  2. JSON content → `_normalize_md_unit` → 正規化 JSON
-  3. sequential-delete で QC2/QC3/QC4 判定
-  4. 残渣を許容構文リストで QC1 判定
-- [ ] 既存テスト全件 GREEN 確認
+- [x] **scripts/common/rst_substitutions.py** — `.. |name| replace::` / `raw:: html` の定義収集と展開、循環検出
+- [x] **scripts/common/rst_include.py** — `.. include::` / `literalinclude` の展開、depth 制限、循環検出
+- [x] **scripts/common/rst_normaliser.py** — tokenizer 本体 (inline 10種 + directive 22種 + tables/headings/lists/line-blocks/footnotes + field list + line-continuation)
+- [x] **scripts/verify/verify.py** — 既存 `_normalize_rst_source` を新 normaliser に委譲、sequential-delete を spec 通りに
+- [x] 既存テスト全件 GREEN 確認 (180 PASS)
+- [x] v6 create/verify で 4812→123 FAIL
 
-#### X-5: 実データ検証と残 FAIL のトリアージ
+**実装中の設計書違反 (session 45 で発覚)**:
+
+実装中に converter 出力と tokenizer 出力がミスマッチする箇所を、安易に「tokenizer 側を converter に合わせる」方向で修正してしまった。これは設計書 2-2 節「独立性原則」および 5 章「許容されない変更」に違反する。箇所:
+
+| 違反箇所 | 設計書違反 | 本来の正しい方向 |
+|---|---|---|
+| `_render_grid_table` が HTML `<table>` 出力 | converter 出力模倣 | converter を MD table 出力に修正する |
+| `_render_simple_table` に trailing-separator 形式 | converter バグに合わせた | converter のバグを直す (header\n---\nbody に) |
+| `_ADMONITION_LABELS` 辞書 (Note/Tip/...) | converter 出力模倣 | `scripts/common/` に共通の RST→MD 規約として配置 |
+| `raw:: html <a>` → MD link 変換 | converter 出力模倣 (ユーザー指示で既に共通化済の形) | 既に `common/` にある、OK |
+| `\x04` 幅保存 padding | RST 仕様外の hack | 削除 (inline transforms は RST 仕様に忠実に) |
+| `_render_simple_table` の CJK mid-sep detection | RST 仕様範囲内だが複雑化 | 維持 or 簡素化 |
+
+#### X-4a: 独立性違反の撤去と converter 修正 (session 46 — 次セッション最優先)
+
+**方針 (session 45 合意 = 選択肢 D)**:
+
+1. **tokenizer 側に入れた converter-依存コードを撤去**
+2. **converter を RST 仕様準拠に修正** (HTML grid-table → MD table、simple-table trailing-sep → 標準 MD)
+3. **共通規約は `scripts/common/` に集約** (admonition 変換規則など)
+4. **残 FAIL は "converter の真のバグ"** として明示。別 Issue / 別 Phase で converter 側修正
+
+**Steps** (予想所要: 合計 1 時間程度):
+
+- [ ] **種類 1: tokenizer の converter-依存コード撤去** (~10 分)
+  - [ ] `_render_grid_table` の HTML `<table>` 出力 → MD table 出力に変更
+  - [ ] `_render_simple_table` の trailing-separator 形式 → 標準 MD (header\n---\nbody) に統一
+  - [ ] `_PAD_CHAR` (`\x04`) 幅保存 padding → 削除
+  - [ ] `_ADMONITION_LABELS` 辞書 → `scripts/common/rst_admonition.py` に移動
+- [ ] **種類 2: `scripts/common/rst_admonition.py` 作成** (~15 分)
+  - [ ] RST admonition ディレクティブ → MD blockquote 変換規則を純粋関数として定義
+  - [ ] converter と tokenizer 両方から import
+  - [ ] 単体テスト TDD
+- [ ] **種類 3: converter の RST 仕様準拠修正** (~30 分)
+  - [ ] `scripts/create/converters/rst.py` `_parse_grid_table` → HTML ではなく MD table を出力
+  - [ ] `_parse_simple_table` → trailing-separator でなく標準 MD 形式 (header\n---\nbody) を出力
+  - [ ] converter が `rst_admonition` 共通モジュールを使用するよう変更
+- [ ] **種類 4: 残 FAIL の分類と報告** (~5 分)
+  - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
+  - [ ] 残 FAIL を分類: section splitter バグ / code-block orphan fence / grid-table rowspan 未対応 / その他
+  - [ ] ユーザーに報告: 「verify は設計書通りの品質ゲートとして機能。残 FAIL は converter の真のバグ」
+  - [ ] 別 Issue 起票 or 別 Phase で converter 修正を計画
+
+#### X-5: 実データ検証と残 FAIL のトリアージ (X-4a 完了後)
 
 - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
 - [ ] 残 FAIL を分類:
