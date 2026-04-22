@@ -121,25 +121,25 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
     - bullet / enumerated list マーカーの種類
     - line block (`|`) の使用有無
   - 出力: `.work/00299/phase21x/block-patterns.json`
-- [ ] **X-2-c: 変換規則の逆算スクリプト** (`derive_transforms.py`)
+- [x] **X-2-c: 変換規則の逆算スクリプト** (`derive_transforms.py`)
   - 各 inline/block パターンについて、**対応する JSON content** の該当箇所を diff で取り、変換規則を逆算
   - 方法: サンプルファイルごとに `(RST 断片, 対応する JSON 断片)` のペアを抽出（位置合わせは元 offset → converter 出力 offset の対応表を構築）
   - 出力: `.work/00299/phase21x/transform-rules.md` (人間レビュー用の表形式)
-- [ ] **X-2-d: MD ソース側の網羅** (`scan_md.py`)
+- [x] **X-2-d: MD ソース側の網羅** (`scan_md.py`)
   - v6 の nablarch-system-development-guide 配下の全 MD ファイルから、RST と異なる MD 独自記法の出現を集計
   - 例: `<details>` / `<summary>` / `<br>` / 数式 / 独自 link 形式
   - 出力: `.work/00299/phase21x/md-patterns.json`
-- [ ] **X-2-e: 残渣パターンの試行スクリプト** (`pilot_residue.py`)
+- [x] **X-2-e: 残渣パターンの試行スクリプト** (`pilot_residue.py`)
   - X-2-a〜d の結果で**仮の tokenizer**を書き、全ファイルで「JSON token → ソース substring 検索」を試行
   - マッチしなかった箇所を**全件ダンプ**
   - 分類: (i) tokenizer 未対応の構文 / (ii) converter の真のバグ / (iii) 許容構文リスト追加候補
   - 出力: `.work/00299/phase21x/residue-triage.md`
-- [ ] **X-2-f: 全バージョン横断確認**
+- [x] **X-2-f: 全バージョン横断確認**
   - v6 で確立したパターンを v5 / v1.4 / v1.3 / v1.2 でも走らせ、差分を抽出
   - 出力: `.work/00299/phase21x/cross-version-diff.md`
-- [ ] **X-2-g: 調査結果レビューをユーザーに依頼**
-  - `.work/00299/phase21x/` の全結果をサマリして notes.md に記載
-  - ユーザーに「このパターン集合で設計書を閉じて良いか」確認を取る
+- [x] **X-2-g: 調査結果レビューをユーザーに依頼** ✅ 調査完了、notes.md (session 44) にサマリ記載。以下でユーザーに照会中
+  - `.work/00299/phase21x/` の全結果をサマリして notes.md に記載済
+  - **BLOCKED**: ユーザーに「このパターン集合で設計書を閉じて X-3 に進んで良いか」確認を取る
 
 #### X-3: 設計書の更新 (ユーザー承認後)
 

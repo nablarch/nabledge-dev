@@ -1,5 +1,87 @@
 # Notes
 
+## 2026-04-22 (session 44) — Phase 21-X Step X-2 完了
+
+### X-2 調査結果サマリー (全 5 バージョン・1477 RST ファイル)
+
+**inline patterns** (`.work/00299/phase21x/inline-patterns.json`):
+
+| Pattern | 総数 | ユニーク |
+|---|---:|---:|
+| role_target (`:r:\`t <tgt>\``) | 6,921 | 5 |
+| role_simple (`:r:\`t\``) | 8,515 | 4 |
+| double_backtick (``` ``x`` ```) | 5,362 | — |
+| ext_link_named (`` `t <url>`_ ``) | 766 | — |
+| ref_named (`` `t`_ ``) | 819 | — |
+| substitution (`\|name\|`) | 1,140 | 22 |
+| footnote_ref (`[x]_`) | 716 | — |
+| strong / emphasis | 6,355 / 549 | — |
+| interpreted (バック1個) | 888 | — |
+
+- **Role 名は 4 種のみ**: `ref`, `doc`, `java:extdoc`, `download`, `javadoc_url`。
+- **Substitution 名は 22 種のみ**（`br` が圧倒的多数）。
+
+**block patterns** (`.work/00299/phase21x/block-patterns.json`):
+
+- **Directive は 22 種**: `code-block` (5,744), `image` (1,281), `tip` (942), `note` (808), `important`, `toctree`, `list-table`, `contents`, `raw`, `warning`, `admonition`, `table`, `include`, `figure`, `function`, `literalinclude`, `attention`, `class`, `hint`, `java:method`, `csv-table`, `rubric`
+- **セクション見出しアンダーライン**: `= - ^ ~ * + \` < > : . _` の 12 種
+- **テーブル**: simple-table 6,348 sep / grid-table 2,254 sep + 413 head / list-table 397
+- **field list**: 64 種 (`scale`, `maxdepth`, `header-rows`, `class`, `widths`, `depth`, `file`, `align`, `width`, `language`, `return`, ...)
+- **bullet markers**: `*` (12,817), `-` (4,656), `+` (347)
+- **line-block** (leading `|`): 8,278 行（v1.3/1.2 で特に多い）
+
+**変換規則** (`.work/00299/phase21x/transform-rules.md`) — v6 snapshot 比較:
+
+| Pattern | verbatim | transformed/dropped |
+|---|---:|---:|
+| role_target | 0 | 2,902 |
+| role_simple | 0 | 5,039 |
+| double_backtick | 6 | 2,442 |
+| ext_link_named | 0 | 282 |
+| ref_named | 0 | 103 |
+| substitution | 14 | 373 |
+| footnote_ref | 198 | 0 |
+| strong | 285 | 0 |
+| emphasis | 105 | 1 |
+| interpreted | 327 | 198 |
+
+⇒ Role/backtick/ext-link はほぼ 100% 変換される。Strong/emphasis/footnote_ref はほぼ verbatim。
+
+**pilot residue** (`.work/00299/phase21x/residue-triage.md`) — プロトタイプ reducer の coverage:
+
+- match (exact): 12,807
+- match (space-normalised): 58
+- miss: 3,152
+- **coverage: 80.3%**
+
+主な miss の原因（実例分析から分類）:
+- `:ref:\`label\`` のラベル解決（ラベル → 参照先タイトル置換）が reducer 側未対応
+- line-continuation `\` 末尾で RST ソースが改行された行が、MD 側では 1 行に統合される
+- field list の value（例 `:widths: 20 80`）が JSON content に含まれるが reducer の削除ルールで落ちる
+- 先頭文字が ASCII 以外の `|name|` （substitution 扱いだが実データはラベル）と、grid-table の `|` 始まりセル
+- `java:extdoc:\`Klass<FQN>\`` のラベル部分が MD 側ではリンク化される
+
+**cross-version** (`.work/00299/phase21x/cross-version-diff.md`):
+
+- Role 名セット（`ref`/`doc`/`java:extdoc`/`download`/`javadoc_url`）は全バージョン共通。
+- `java:extdoc` は v6/v5 のみ、v1.x には存在しない（v1.x は Javadoc を別記法）。
+- Directive の全バージョン共通セット: `code-block`, `image`, `list-table`, `note`, `warning`, `tip`, `figure`, `include`, `contents`, `table`, `raw`, `admonition`, `function`, `attention`。
+- v1.x 固有: `admonition`, `function`, `literalinclude` の使用比が高い。
+- Section underline chars も全バージョン共通（`= - ^ ~` が主体）。
+
+### 結論
+
+- tokenizer が扱うべき inline 構文は **8 種** (role_target, role_simple, double_backtick, ext_link_named, ref_named, substitution, footnote_ref, interpreted) + strong/emphasis の 10 種で閉じている。
+- Directive は 22 種で閉じている。うち admonition 系 (note/tip/warning/important/attention/hint/admonition) は body text を保持、残り (code-block/image/toctree/raw/...) は完全に落とす、という二分類で設計できる。
+- Label resolution（`:ref:` の target → 参照先タイトル）は converter 側で `label_map` を使って実装済み。tokenizer もこの map を受け取り同じ変換をかける。
+- Substitution は 22 種の閉集合なので substitution definition を読み取る関数で十分。
+- Line-continuation `\` は逆方向で、RST → MD 変換で行が結合される。tokenizer 側で `\\\n` → ` ` に正規化する必要がある。
+- **80% の coverage を粗い pilot で達成**しており、残 20% は上記で分類できている。
+
+X-3 以降で設計書を更新し、tokenizer を TDD で実装する。
+
+---
+
 ## 2026-04-22 (session 43)
 
 ### Decision: tokenizer 方式に切替 (Phase 21-X)
