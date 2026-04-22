@@ -2,7 +2,7 @@
 
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
-**PR**: 未作成
+**PR**: #310 (draft)
 **Updated**: 2026-04-22 (30件の模範回答作成完了。次は Stage 2 スクリプト判定の実装)
 
 ## 計測設計（ユーザー合意済み）
