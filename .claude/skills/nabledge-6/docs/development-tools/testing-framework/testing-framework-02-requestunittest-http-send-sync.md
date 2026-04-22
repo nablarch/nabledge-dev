@@ -44,32 +44,11 @@
 
 以下に、設定値と、障害系のテストの対応を示す。
 
-<table>
-<thead>
-<tr>
-  <th>最初のフィールドに設定する値</th>
-  <th>障害内容</th>
-  <th>自動テストフレームワークの動作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>`errorMode:timeout`</td>
-  <td>メッセージ送信中にタイムアウトエラーが発生する場合のテスト</td>
-  <td>**HttpMessagingTimeoutException**</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>(**MessagingException** のサブクラス)を送出する。 \ [#http_send_sync_abnormal_test_behavior]_\</td>
-</tr>
-<tr>
-  <td>`errorMode:msgException`</td>
-  <td>メッセージ送受信エラーが発生する場合のテスト</td>
-  <td>**MessagingException** をスローする。</td>
-</tr>
-</tbody>
-</table>
+| 最初のフィールドに設定する値 | 障害内容 | 自動テストフレームワークの動作 |
+|---|---|---|
+| `errorMode:timeout` | メッセージ送信中にタイムアウトエラーが発生する場合のテスト | **HttpMessagingTimeoutException** |
+|  |  | (**MessagingException** のサブクラス)を送出する。 \ [#http_send_sync_abnormal_test_behavior]_\ |
+| `errorMode:msgException` | メッセージ送受信エラーが発生する場合のテスト | **MessagingException** をスローする。 |
 
 この値は、応答電文の表の\ **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\ に記載すること。
 

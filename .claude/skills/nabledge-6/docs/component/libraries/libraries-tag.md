@@ -996,10 +996,10 @@ BLOB型カラムのダウンロードの実装例
 
 テーブル
 | カラム(論理名) | カラム(物理名) | データ型 | 補足 |
+|---|---|---|---|
 | ファイルID | FILE_ID | CHAR(3) | PK |
 | ファイル名 | FILE_NAME | NVARCHAR2(100) |  |
 | ファイルデータ | FILE_DATA | BLOB |  |
-|---|---|---|---|
 
 JSP
 ```jsp
@@ -1040,10 +1040,10 @@ public HttpResponse tempFile(HttpRequest request, ExecutionContext context) {
 
 テーブル
 | カラム(論理名) | カラム(物理名) | データ型 | 補足 |
+|---|---|---|---|
 | メッセージID | MESSAGE_ID | CHAR(8) | PK |
 | 言語 | LANG | CHAR(2) | PK |
 | メッセージ | MESSAGE | NVARCHAR2(200) |  |
-|---|---|---|---|
 
 フォーマット定義
 ```bash

@@ -13,62 +13,17 @@
 #### 主なクラス, リソース
 
 
-<table>
-<thead>
-<tr>
-  <th>名称</th>
-  <th>役割</th>
-  <th>作成単位</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>テストクラス</td>
-  <td>テストロジックを実装する。\</td>
-  <td>テスト対象クラスにつき１つ作成</td>
-</tr>
-<tr>
-  <td></td>
-  <td>DbAccessTestSupportを継承すること。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>テストデータ（Excelファイル</td>
-  <td>テーブルに格納する準備データや期待する結果\</td>
-  <td>テストクラスにつき１つ作成</td>
-</tr>
-<tr>
-  <td>）</td>
-  <td>など、テストデータを記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>テスト対象クラス</td>
-  <td>テストされるクラス。</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td>DbAccessTestSupport</td>
-  <td>準備データ投入などデータベースを使用するテスト\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>に必要な機能を提供する。また、テスト実行前後に\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>データベーストランザクションの開始・終了処理を\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>行う（ デフォルト以外のトランザクションを使用し</td>
-  <td>い ）。          |</td>
-</tr>
-</tbody>
-</table>
+| 名称 | 役割 | 作成単位 |
+|---|---|---|
+| テストクラス | テストロジックを実装する。\ | テスト対象クラスにつき１つ作成 |
+|  | DbAccessTestSupportを継承すること。 |  |
+| テストデータ（Excelファイル | テーブルに格納する準備データや期待する結果\ | テストクラスにつき１つ作成 |
+| ） | など、テストデータを記載する。 |  |
+| テスト対象クラス | テストされるクラス。 | \－ |
+| DbAccessTestSupport | 準備データ投入などデータベースを使用するテスト\ | \－ |
+|  | に必要な機能を提供する。また、テスト実行前後に\ |  |
+|  | データベーストランザクションの開始・終了処理を\ |  |
+|  | 行う（ デフォルト以外のトランザクションを使用し | い ）。          \| |
 
 ## 基本的なテスト方法
 
@@ -313,42 +268,10 @@ DB期待値から単純に無関係なカラムを省略すると、省略され
 
 SETUP_TABLE=SAMPLE_TABLE
 
-<table>
-<thead>
-<tr>
-  <th>PK_1</th>
-  <th>PK_2</th>
-  <th>COL_A</th>
-  <th>COL_B</th>
-  <th>COL_C</th>
-  <th>COL_D</th>
-  <th>有効期限</th>
-  <th>削除フラグ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>01</td>
-  <td>0001</td>
-  <td>1a</td>
-  <td>1b</td>
-  <td>1c</td>
-  <td>1d</td>
-  <td>20101231</td>
-  <td>0</td>
-</tr>
-<tr>
-  <td>02</td>
-  <td>0002</td>
-  <td>2a</td>
-  <td>2b</td>
-  <td>2c</td>
-  <td>2d</td>
-  <td>20110101</td>
-  <td>0</td>
-</tr>
-</tbody>
-</table>
+| PK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限 | 削除フラグ |
+|---|---|---|---|---|---|---|---|
+| 01 | 0001 | 1a | 1b | 1c | 1d | 20101231 | 0 |
+| 02 | 0002 | 2a | 2b | 2c | 2d | 20110101 | 0 |
 
 
 
@@ -356,42 +279,10 @@ SETUP_TABLE=SAMPLE_TABLE
 
 EXPECTED_TABLE=SAMPLE_TABLE
 
-<table>
-<thead>
-<tr>
-  <th>PK_1</th>
-  <th>PK_2</th>
-  <th>COL_A</th>
-  <th>COL_B</th>
-  <th>COL_C</th>
-  <th>COL_D</th>
-  <th>有効期限</th>
-  <th>削除フラグ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>01</td>
-  <td>0001</td>
-  <td>1a</td>
-  <td>1b</td>
-  <td>1c</td>
-  <td>1d</td>
-  <td>20101231</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td>02</td>
-  <td>0002</td>
-  <td>2a</td>
-  <td>2b</td>
-  <td>2c</td>
-  <td>2d</td>
-  <td>20110101</td>
-  <td>0</td>
-</tr>
-</tbody>
-</table>
+| PK_1 | PK_2 | COL_A | COL_B | COL_C | COL_D | 有効期限 | 削除フラグ |
+|---|---|---|---|---|---|---|---|
+| 01 | 0001 | 1a | 1b | 1c | 1d | 20101231 | 1 |
+| 02 | 0002 | 2a | 2b | 2c | 2d | 20110101 | 0 |
 
 
 
@@ -413,30 +304,10 @@ EXPECTED_TABLE=SAMPLE_TABLE
 
 SETUP_TABLE=SAMPLE_TABLE
 
-<table>
-<thead>
-<tr>
-  <th>PK_1</th>
-  <th>PK_2</th>
-  <th>有効期限</th>
-  <th>削除フラグ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>01</td>
-  <td>0001</td>
-  <td>20101231</td>
-  <td>0</td>
-</tr>
-<tr>
-  <td>02</td>
-  <td>0002</td>
-  <td>20110101</td>
-  <td>0</td>
-</tr>
-</tbody>
-</table>
+| PK_1 | PK_2 | 有効期限 | 削除フラグ |
+|---|---|---|---|
+| 01 | 0001 | 20101231 | 0 |
+| 02 | 0002 | 20110101 | 0 |
 
 
 
@@ -446,58 +317,21 @@ SETUP_TABLE=SAMPLE_TABLE
 
 EXPECTED_COMPLETE_TABLE=SAMPLE_TABLE
 
-<table>
-<thead>
-<tr>
-  <th>PK_1</th>
-  <th>PK_2</th>
-  <th>有効期限</th>
-  <th>削除フラグ</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>01</td>
-  <td>0001</td>
-  <td>20101231</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td>02</td>
-  <td>0002</td>
-  <td>20110101</td>
-  <td>0</td>
-</tr>
-</tbody>
-</table>
+| PK_1 | PK_2 | 有効期限 | 削除フラグ |
+|---|---|---|---|
+| 01 | 0001 | 20101231 | 1 |
+| 02 | 0002 | 20110101 | 0 |
 
 ## デフォルト値
 
 自動テストフレームワークのコンポーネント設定ファイルにて明示的に指定していない場合、\
 デフォルト値には以下の値が使用される。
 
-<table>
-<thead>
-<tr>
-  <th>カラム</th>
-  <th>デフォルト値</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>数値型</td>
-  <td>0</td>
-</tr>
-<tr>
-  <td>文字列型</td>
-  <td>半角スペース</td>
-</tr>
-<tr>
-  <td>日付型</td>
-  <td>1970-01-01 00:00:00.0</td>
-</tr>
-</tbody>
-</table>
+| カラム | デフォルト値 |
+|---|---|
+| 数値型 | 0 |
+| 文字列型 | 半角スペース |
+| 日付型 | 1970-01-01 00:00:00.0 |
 
 ## デフォルト値の変更方法
 
@@ -506,59 +340,21 @@ EXPECTED_COMPLETE_TABLE=SAMPLE_TABLE
 nablarch.test.core.db.BasicDefaultValuesクラスを使用し、
 以下の値をコンポーネント設定ファイルで設定できる。
 
-<table>
-<thead>
-<tr>
-  <th>設定項目名</th>
-  <th>説明</th>
-  <th>設定値</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>charValue</td>
-  <td>文字列型のデフォルト値</td>
-  <td>1文字のASCII文字</td>
-</tr>
-<tr>
-  <td>numberValue</td>
-  <td>数値型のデフォルト値</td>
-  <td>0または正の整数</td>
-</tr>
-<tr>
-  <td>dateValue</td>
-  <td>日付型のデフォルト値</td>
-  <td>JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff)</td>
-</tr>
-</tbody>
-</table>
+| 設定項目名 | 説明 | 設定値 |
+|---|---|---|
+| charValue | 文字列型のデフォルト値 | 1文字のASCII文字 |
+| numberValue | 数値型のデフォルト値 | 0または正の整数 |
+| dateValue | 日付型のデフォルト値 | JDBCタイムスタンプエスケープ形式 (yyyy-mm-dd hh:mm:ss.fffffffff) |
 
 #### コンポーネント設定ファイルの記述例
 
 以下の設定値を使用する場合のコンポーネント設定ファイル記述例を示す。
 
-<table>
-<thead>
-<tr>
-  <th>設定項目名</th>
-  <th>設定値</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>charValue</td>
-  <td>a</td>
-</tr>
-<tr>
-  <td>numberValue</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td>dateValue</td>
-  <td>2000-01-01 12:34:56.123456789</td>
-</tr>
-</tbody>
-</table>
+| 設定項目名 | 設定値 |
+|---|---|
+| charValue | a |
+| numberValue | 1 |
+| dateValue | 2000-01-01 12:34:56.123456789 |
 
 
 ```xml

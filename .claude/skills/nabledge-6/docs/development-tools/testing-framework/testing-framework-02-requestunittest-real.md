@@ -86,61 +86,19 @@ MESSAGE=setUpMessages
 
 // 共通情報（ディレクティブ、フレームワーク制御ヘッダ）
 
-<table>
-<tbody>
-<tr>
-  <td>text-encoding</td>
-  <td>Windows-31J</td>
-  <td></td>
-</tr>
-<tr>
-  <td>record-separator</td>
-  <td>CRLF</td>
-  <td></td>
-</tr>
-<tr>
-  <td>requestId</td>
-  <td>RM11AC0101</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| text-encoding | Windows-31J |  |
+|---|---|---|
+| record-separator | CRLF |  |
+| requestId | RM11AC0101 |  |
 
 // メッセージボディ
 
-<table>
-<tbody>
-<tr>
-  <td>no</td>
-  <td>レコード区分</td>
-  <td>ユーザID</td>
-</tr>
-<tr>
-  <td></td>
-  <td>半角</td>
-  <td>半角</td>
-</tr>
-</tbody>
-<thead>
-<tr>
-  <th></th>
-  <th>1</th>
-  <th>10</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1</td>
-  <td>7</td>
-  <td>0000000001</td>
-</tr>
-<tr>
-  <td>2</td>
-  <td>2</td>
-  <td>0000000001</td>
-</tr>
-</tbody>
-</table>
+|  | 1 | 10 |
+|---|---|---|
+| no | レコード区分 | ユーザID |
+|  | 半角 | 半角 |
+| 1 | 7 | 0000000001 |
+| 2 | 2 | 0000000001 |
 
 ------
 
@@ -157,14 +115,8 @@ MESSAGE=setUpMessages
 
 書式は、key-value形式である。
 
-<table>
-<tbody>
-<tr>
-  <td>キー</td>
-  <td>値</td>
-</tr>
-</tbody>
-</table>
+| キー | 値 |
+|---|---|
 
 > **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。
 
@@ -178,37 +130,12 @@ reader.fwHeaderfields=requestId,addHeader
 1行目～3行目は、外部インターフェース設計書の記載内容と同じであり、
 設計書から行列を入れ替えてコピーすると効率良く作成できる。
 
-<table>
-<thead>
-<tr>
-  <th>行</th>
-  <th>記述内容</th>
-  <th>備考</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1行目</td>
-  <td>フィールド名称</td>
-  <td>先頭セルは"no"とする。</td>
-</tr>
-<tr>
-  <td>2行目</td>
-  <td>データタイプ</td>
-  <td>先頭セルは空白</td>
-</tr>
-<tr>
-  <td>3行目</td>
-  <td>フィールド長</td>
-  <td>先頭セルは空白</td>
-</tr>
-<tr>
-  <td>4行目以降</td>
-  <td>データ</td>
-  <td>先頭セルは1からの通番</td>
-</tr>
-</tbody>
-</table>
+| 行 | 記述内容 | 備考 |
+|---|---|---|
+| 1行目 | フィールド名称 | 先頭セルは"no"とする。 |
+| 2行目 | データタイプ | 先頭セルは空白 |
+| 3行目 | フィールド長 | 先頭セルは空白 |
+| 4行目以降 | データ | 先頭セルは1からの通番 |
 
 > **Important:** フィールド名称に\ **重複した名称は許容されない**\ 。 例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）
 本表は、\ テストショット一覧\ のnoと対応関係にある。\
@@ -230,24 +157,10 @@ reader.fwHeaderfields=requestId,addHeader
 
 また、テストデータのディレクティブに設定されたfile-typeの値により、以下のように応答電文のアサート方法が変化する。
 
-<table>
-<thead>
-<tr>
-  <th>file-typeの値</th>
-  <th>アサート方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Fixed または 指定なし</td>
-  <td>テストデータに記載された項目単位に電文を分割し、アサートを行う。</td>
-</tr>
-<tr>
-  <td>その他の値</td>
-  <td>電文全体を文字列として扱い、アサートを行う。</td>
-</tr>
-</tbody>
-</table>
+| file-typeの値 | アサート方法 |
+|---|---|
+| Fixed または 指定なし | テストデータに記載された項目単位に電文を分割し、アサートを行う。 |
+| その他の値 | 電文全体を文字列として扱い、アサートを行う。 |
 
 フォーマット定義ファイルではなく、テストデータにfile-typeを設定する必要があるので、注意すること。
 

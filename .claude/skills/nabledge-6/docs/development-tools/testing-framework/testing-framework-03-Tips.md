@@ -263,28 +263,11 @@ FixedSystemTimeProviderを指定し、そのプロパティに任意の日時を
   <property name="fixedDate" value="20100913123456" />
 </component>
 ```
-<table>
-<thead>
-<tr>
-  <th>property名</th>
-  <th>設定内容</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>fixedDate</td>
-  <td>指定したい日時を以下のフォーマットいずれかに合致する文字列で指定する。</td>
-</tr>
-<tr>
-  <td></td>
-  <td>* yyyyMMddHHmmss (12桁)</td>
-</tr>
-<tr>
-  <td></td>
-  <td>* yyyyMMddHHmmssSSS (15桁)</td>
-</tr>
-</tbody>
-</table>
+| property名 | 設定内容 |
+|---|---|
+| fixedDate | 指定したい日時を以下のフォーマットいずれかに合致する文字列で指定する。 |
+|  | * yyyyMMddHHmmss (12桁) |
+|  | * yyyyMMddHHmmssSSS (15桁) |
 
 ```java
 // システム日時を取得
@@ -575,28 +558,11 @@ special_notation_in_cell を参照。
 
 ＜中略＞
 
-<table>
-<thead>
-<tr>
-  <th>name</th>
-  <th>address</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>山田</td>
-  <td>東京都</td>
-</tr>
-<tr>
-  <td>""</td>
-  <td></td>
-</tr>
-<tr>
-  <td>田中</td>
-  <td>大阪府</td>
-</tr>
-</tbody>
-</table>
+| name | address |
+|---|---|
+| 山田 | 東京都 |
+| "" |  |
+| 田中 | 大阪府 |
 
 > **Tip:** 空行を表す場合、全てのセルを\ `""`\ で埋める必要はない。 行のうちのいずれか1セルだけでよい。可読性を考慮し、 左端のセルに\ `""`\ を記載することを推奨する。
 

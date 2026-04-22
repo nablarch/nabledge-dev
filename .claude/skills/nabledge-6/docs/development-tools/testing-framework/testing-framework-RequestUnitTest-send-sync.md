@@ -20,97 +20,24 @@
 
 ## 主なクラス, リソース
 
-<table>
-<thead>
-<tr>
-  <th>名称</th>
-  <th>役割</th>
-  <th>作成単位</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>リクエスト単体\</td>
-  <td>テストロジックを実装する。</td>
-  <td>テスト対象クラス(Action)につき１つ作成</td>
-</tr>
-<tr>
-  <td>テストクラス</td>
-  <td></td>
-  <td></td>
-</tr>
-<tr>
-  <td>Excelファイル\</td>
-  <td>要求電文の期待値および応答電文などの</td>
-  <td>テストクラスにつき１つ作成</td>
-</tr>
-<tr>
-  <td>（テストデータ）</td>
-  <td>テストデータを記載する。\</td>
-  <td></td>
-</tr>
-<tr>
-  <td>StandaloneTest\</td>
-  <td>Action実行後に、MockMessagingContextを用いて</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td>SupportTemplate</td>
-  <td>要求電文のアサートを実行する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>AbstractHttpRequest\</td>
-  <td>Action実行後に、MockMessagingContextを用いて</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td>TestTemplate</td>
-  <td>要求電文のアサートを実行する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>MessageSender</td>
-  <td>同期応答メッセージ送信処理を行う際に\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>使用するコンポーネント。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>RequestTestingMessagingProvider</td>
-  <td>リクエスト単体テストにおいて、\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>要求電文のアサート機能および\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>応答電文の生成・返却機能を提供する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>TestDataConvertor</td>
-  <td>Excelから読み込んだテストデータを編集するための\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>インタフェース。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>必要に応じてデータ種別ごとにアーキテクトが実装する。</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| 名称 | 役割 | 作成単位 |
+|---|---|---|
+| リクエスト単体\ | テストロジックを実装する。 | テスト対象クラス(Action)につき１つ作成 |
+| テストクラス |  |  |
+| Excelファイル\ | 要求電文の期待値および応答電文などの | テストクラスにつき１つ作成 |
+| （テストデータ） | テストデータを記載する。\ |  |
+| StandaloneTest\ | Action実行後に、MockMessagingContextを用いて | \－ |
+| SupportTemplate | 要求電文のアサートを実行する。 |  |
+| AbstractHttpRequest\ | Action実行後に、MockMessagingContextを用いて | \－ |
+| TestTemplate | 要求電文のアサートを実行する。 |  |
+| MessageSender | 同期応答メッセージ送信処理を行う際に\ | \－ |
+|  | 使用するコンポーネント。 |  |
+| RequestTestingMessagingProvider | リクエスト単体テストにおいて、\ | \－ |
+|  | 要求電文のアサート機能および\ |  |
+|  | 応答電文の生成・返却機能を提供する。 |  |
+| TestDataConvertor | Excelから読み込んだテストデータを編集するための\ | \－ |
+|  | インタフェース。 |  |
+|  | 必要に応じてデータ種別ごとにアーキテクトが実装する。 |  |
 
 ## 構造
 
@@ -136,20 +63,9 @@ Action実行後に、MockMessagingContextを用いて、要求電文のアサー
 
 本クラスは、以下の準備処理、結果確認機能を提供する。
 
-<table>
-<thead>
-<tr>
-  <th>準備処理</th>
-  <th>結果確認</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>応答電文の生成</td>
-  <td>要求電文のアサート</td>
-</tr>
-</tbody>
-</table>
+| 準備処理 | 結果確認 |
+|---|---|
+| 応答電文の生成 | 要求電文のアサート |
 
 > **Tip:** 要求電文のアサートは、要求電文が送信されるたびに行うのではなく、Action実行後に一括で行う。
 

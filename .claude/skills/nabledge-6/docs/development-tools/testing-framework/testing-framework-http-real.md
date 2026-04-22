@@ -37,112 +37,33 @@ MESSAGE=setUpMessages
 
 // 共通情報（ディレクティブ、フレームワーク制御ヘッダ）
 
-<table>
-<tbody>
-<tr>
-  <td>text-encoding</td>
-  <td>Windows-31J</td>
-  <td></td>
-</tr>
-<tr>
-  <td>requestId</td>
-  <td>RM11AC0102</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| text-encoding | Windows-31J |  |
+|---|---|---|
+| requestId | RM11AC0102 |  |
 
 // メッセージボディ
 
 【XML】
 
-<table>
-<tbody>
-<tr>
-  <td>no</td>
-  <td>XML1</td>
-  <td>XML2</td>
-  <td>XML3</td>
-</tr>
-<tr>
-  <td></td>
-  <td>全半角</td>
-  <td>全半角</td>
-  <td>全半角</td>
-</tr>
-</tbody>
-<thead>
-<tr>
-  <th></th>
-  <th>32767</th>
-  <th>32767</th>
-  <th>32767</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1</td>
-  <td><?xml version="1.0" encoding="UTF-8"?> </td>
-  <td><userId>0000000101</userId> </td>
-  <td></request></td>
-</tr>
-<tr>
-  <td></td>
-  <td><request></td>
-  <td><resendFlag>0</resendFlag> </td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td><dataKbn>0</dataKbn></td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+|  | 32767 | 32767 | 32767 |
+|---|---|---|---|
+| no | XML1 | XML2 | XML3 |
+|  | 全半角 | 全半角 | 全半角 |
+| 1 | <?xml version="1.0" encoding="UTF-8"?>  | <userId>0000000101</userId>  | </request> |
+|  | <request> | <resendFlag>0</resendFlag>  |  |
+|  |  | <dataKbn>0</dataKbn> |  |
 
 【JSON】
 
-<table>
-<tbody>
-<tr>
-  <td>no</td>
-  <td>JSON</td>
-</tr>
-<tr>
-  <td></td>
-  <td>全半角</td>
-</tr>
-</tbody>
-<thead>
-<tr>
-  <th></th>
-  <th>32767</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1</td>
-  <td>{</td>
-</tr>
-<tr>
-  <td></td>
-  <td>"userId" : "0000000101", </td>
-</tr>
-<tr>
-  <td></td>
-  <td>"resendFlag" : "0", </td>
-</tr>
-<tr>
-  <td></td>
-  <td>"dataKbn" : "0", </td>
-</tr>
-<tr>
-  <td></td>
-  <td>}</td>
-</tr>
-</tbody>
-</table>
+|  | 32767 |
+|---|---|
+| no | JSON |
+|  | 全半角 |
+| 1 | { |
+|  | "userId" : "0000000101",  |
+|  | "resendFlag" : "0",  |
+|  | "dataKbn" : "0",  |
+|  | } |
 
 ------
 
@@ -159,14 +80,8 @@ MESSAGE=setUpMessages
 
 書式は、key-value形式である。
 
-<table>
-<tbody>
-<tr>
-  <td>キー</td>
-  <td>値</td>
-</tr>
-</tbody>
-</table>
+| キー | 値 |
+|---|---|
 
 > **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。
 
@@ -179,47 +94,14 @@ reader.fwHeaderfields=requestId,addHeader
 フレームワーク制御ヘッダ以降のメッセージを記載する。
 
 
-<table>
-<thead>
-<tr>
-  <th>行</th>
-  <th>記述内容</th>
-  <th>備考</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>1行目</td>
-  <td>フィールド名称</td>
-  <td>先頭セルは"no"とする。</td>
-</tr>
-<tr>
-  <td>2行目</td>
-  <td>データタイプ</td>
-  <td>先頭セルは空白</td>
-</tr>
-<tr>
-  <td>3行目</td>
-  <td>フィールド長</td>
-  <td>先頭セルは空白</td>
-</tr>
-<tr>
-  <td>4行目以降</td>
-  <td>XMLデータ </td>
-  <td>先頭セルは1からの通番 </td>
-</tr>
-<tr>
-  <td></td>
-  <td>および </td>
-  <td>フィールドを跨いで記載することも可能</td>
-</tr>
-<tr>
-  <td></td>
-  <td>JSONデータ</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| 行 | 記述内容 | 備考 |
+|---|---|---|
+| 1行目 | フィールド名称 | 先頭セルは"no"とする。 |
+| 2行目 | データタイプ | 先頭セルは空白 |
+| 3行目 | フィールド長 | 先頭セルは空白 |
+| 4行目以降 | XMLデータ  | 先頭セルは1からの通番  |
+|  | および  | フィールドを跨いで記載することも可能 |
+|  | JSONデータ |  |
 
 > **Tip:** JSON及びXMLデータ形式使用時は、1Excelシートに1テストケースのみ記述すること。 これはメッセージボディについて、Excelの各行の文字列長が同一であることを期待しているというNTFの制約によるものである。JSON及びXMLデータ形式は、要求電文の長さがリクエスト毎に異なるのが一般的なので、事実上1テストケースしか記述できない。
 > **Important:** フィールド名称に\ **重複した名称は許容されない**\ 。 例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）

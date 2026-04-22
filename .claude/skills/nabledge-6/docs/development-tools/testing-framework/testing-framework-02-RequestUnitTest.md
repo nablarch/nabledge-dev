@@ -11,97 +11,24 @@
 
 ## 主なクラス, リソース
 
-<table>
-<thead>
-<tr>
-  <th>名称</th>
-  <th>役割</th>
-  <th>作成単位</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>テストクラス</td>
-  <td>テストロジックを実装する。</td>
-  <td>テスト対象クラス(Action)につき１つ作成</td>
-</tr>
-<tr>
-  <td>テストデータ（Excelファイル）</td>
-  <td>テーブルに格納する準備データや期待する結果、\</td>
-  <td>テストクラスにつき１つ作成</td>
-</tr>
-<tr>
-  <td></td>
-  <td>HTTPパラメータなど、テストデータを記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>テスト対象クラス(Action)</td>
-  <td>テスト対象のクラス</td>
-  <td>取引につき1クラス作成</td>
-</tr>
-<tr>
-  <td></td>
-  <td>(Action以降の業務ロジックを実装する各クラスを含む)</td>
-  <td></td>
-</tr>
-<tr>
-  <td>DbAccessTestSupport</td>
-  <td>準備データ投入などデータベースを使用するテストに\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>必要な機能を提供する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>HttpServer</td>
-  <td>内蔵サーバ。サーブレットコンテナとして動作し、\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>HTTPレスポンスをファイル出力する機能を持つ。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>HttpRequestTestSupport</td>
-  <td>内蔵サーバの起動やリクエスト単体テストで必要とな\</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td></td>
-  <td>る各種アサートを提供する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>AbstractHttpReqestTestSupport </td>
-  <td>リクエスト単体テストをテンプレート化するクラス。リ</td>
-  <td>\－</td>
-</tr>
-<tr>
-  <td>BasicHttpReqestTestSupport</td>
-  <td>クエスト単体テストのテストソース、テストデータを定</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>型化する</td>
-  <td></td>
-</tr>
-<tr>
-  <td>TestCaseInfo</td>
-  <td>データシートに定義されたテストケース情報を格納する</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>クラス。</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| 名称 | 役割 | 作成単位 |
+|---|---|---|
+| テストクラス | テストロジックを実装する。 | テスト対象クラス(Action)につき１つ作成 |
+| テストデータ（Excelファイル） | テーブルに格納する準備データや期待する結果、\ | テストクラスにつき１つ作成 |
+|  | HTTPパラメータなど、テストデータを記載する。 |  |
+| テスト対象クラス(Action) | テスト対象のクラス | 取引につき1クラス作成 |
+|  | (Action以降の業務ロジックを実装する各クラスを含む) |  |
+| DbAccessTestSupport | 準備データ投入などデータベースを使用するテストに\ | \－ |
+|  | 必要な機能を提供する。 |  |
+| HttpServer | 内蔵サーバ。サーブレットコンテナとして動作し、\ | \－ |
+|  | HTTPレスポンスをファイル出力する機能を持つ。 |  |
+| HttpRequestTestSupport | 内蔵サーバの起動やリクエスト単体テストで必要とな\ | \－ |
+|  | る各種アサートを提供する。 |  |
+| AbstractHttpReqestTestSupport  | リクエスト単体テストをテンプレート化するクラス。リ | \－ |
+| BasicHttpReqestTestSupport | クエスト単体テストのテストソース、テストデータを定 |  |
+|  | 型化する |  |
+| TestCaseInfo | データシートに定義されたテストケース情報を格納する |  |
+|  | クラス。 |  |
 
 
 上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\
@@ -303,242 +230,53 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
 
 ## コンポーネント設定ファイル設定項目一覧
 
-<table>
-<thead>
-<tr>
-  <th>設定項目名</th>
-  <th>説明</th>
-  <th>デフォルト値</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>htmlDumpDir</td>
-  <td>HTMLダンプファイルを出力するディレクトリを指定する。</td>
-  <td>./tmp/html_dump</td>
-</tr>
-<tr>
-  <td>webBaseDir</td>
-  <td>ウェブアプリケーションのルートディレクトリ\ [#]_\</td>
-  <td>../main/web</td>
-</tr>
-<tr>
-  <td>xmlComponentFile</td>
-  <td>リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\ [#]_\</td>
-  <td>（なし）</td>
-</tr>
-<tr>
-  <td>userIdSessionKey</td>
-  <td>ログイン中ユーザIDを格納するセッションキー</td>
-  <td>user.id</td>
-</tr>
-<tr>
-  <td>exceptionRequestVarKey</td>
-  <td>ApplicationExceptionが格納されるリクエストスコープのキー</td>
-  <td>nablarch_application_error</td>
-</tr>
-<tr>
-  <td>dumpFileExtension</td>
-  <td>ダンプファイルの拡張子</td>
-  <td>html</td>
-</tr>
-<tr>
-  <td>httpHeader</td>
-  <td>HttpRequestにHTTPリクエストヘッダとして格納される値</td>
-  <td>Content-Type : application/x-www-form-urlencoded</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>Accept-Language : ja JP</td>
-</tr>
-<tr>
-  <td>sessionInfo</td>
-  <td>セッションに格納される値</td>
-  <td>（なし）</td>
-</tr>
-<tr>
-  <td>htmlResourcesExtensionList</td>
-  <td>ダンプディレクトリへコピーされるHTMLリソースの拡張子</td>
-  <td>css、jpg、js</td>
-</tr>
-<tr>
-  <td>jsTestResourceDir</td>
-  <td>javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名</td>
-  <td>../test/web</td>
-</tr>
-<tr>
-  <td>backup</td>
-  <td>ダンプディレクトリのバックアップOn/Off</td>
-  <td>true</td>
-</tr>
-<tr>
-  <td>htmlResourcesCharset</td>
-  <td>CSSファイル(スタイルシート)の文字コード</td>
-  <td>UTF-8</td>
-</tr>
-<tr>
-  <td>checkHtml</td>
-  <td>HTMLチェックの実施On/Off</td>
-  <td>true</td>
-</tr>
-<tr>
-  <td>htmlChecker</td>
-  <td>HTMLチェックを行うオブジェクトを指定する。</td>
-  <td>nablarch.test.tool.htmlcheck.Html4HtmlChecker</td>
-</tr>
-<tr>
-  <td></td>
-  <td>オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker</td>
-  <td>クラスのインスタンス。 </td>
-</tr>
-<tr>
-  <td></td>
-  <td>インタフェースを実装している必要がある。</td>
-  <td>クラスには htmlCheckerConfig で設定した設定</td>
-</tr>
-<tr>
-  <td></td>
-  <td>詳細は customize_html_check        を参照。</td>
-  <td>ファイルが適用される。</td>
-</tr>
-<tr>
-  <td>htmlCheckerConfig</td>
-  <td>HTMLチェックツールの設定ファイルパス。</td>
-  <td>test/resources/httprequesttest/html-check-config.csv</td>
-</tr>
-<tr>
-  <td></td>
-  <td>htmlChecker を設定しなかった場合のみ有効。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>ignoreHtmlResourceDirectory</td>
-  <td>HTMLリソースの中でコピー対象外とするディレクトリ名のLIST</td>
-  <td>（なし）</td>
-</tr>
-<tr>
-  <td></td>
-  <td>バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>HTMLリソースコピー時のパフォーマンスが向上する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>tempDirectory</td>
-  <td>JSPのコンパイル先ディレクトリ</td>
-  <td>jettyのデフォルト動作に依存</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>jettyのデフォルト動作では、.「/work」</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>がコンパイル先ディレクトリとなる。</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>「./work」が存在しない場合は、</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>Tempフォルダ(Windownの場合は、ユーザのホーム</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>ディレクトリ/Local Settings/Temp)が</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>出力先となる。</td>
-</tr>
-<tr>
-  <td>uploadTmpDirectory</td>
-  <td>アップロードファイルを一時的に格納するディレクトリ。</td>
-  <td>./tmp</td>
-</tr>
-<tr>
-  <td></td>
-  <td>テスト時に準備した、アップロード対象のファイルは本ディレクトリに</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>コピー後に処理される。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>これにより、アクションでファイルを移動した場合でも、</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>本ディレクトリ配下のファイルが移動されるだけであり、</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>実態が移動されることを防ぐことができる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>dumpVariableItem</td>
-  <td>HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。</td>
-  <td>false</td>
-</tr>
-<tr>
-  <td></td>
-  <td>ここでの可変項目とは以下の2種類を指す。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>* JSESSIONID</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>* 2重サブミット防止用のトークン</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>これらの項目は、テスト実行毎に異なる値が設定される。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>(false)に設定する。（前回実行結果と差異がないことを確認したい場合等）</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>可変項目をそのままHTMLに出力する場合は、本項目をON</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>(true)に設定する。</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| 設定項目名 | 説明 | デフォルト値 |
+|---|---|---|
+| htmlDumpDir | HTMLダンプファイルを出力するディレクトリを指定する。 | ./tmp/html_dump |
+| webBaseDir | ウェブアプリケーションのルートディレクトリ\ [#]_\ | ../main/web |
+| xmlComponentFile | リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\ [#]_\ | （なし） |
+| userIdSessionKey | ログイン中ユーザIDを格納するセッションキー | user.id |
+| exceptionRequestVarKey | ApplicationExceptionが格納されるリクエストスコープのキー | nablarch_application_error |
+| dumpFileExtension | ダンプファイルの拡張子 | html |
+| httpHeader | HttpRequestにHTTPリクエストヘッダとして格納される値 | Content-Type : application/x-www-form-urlencoded |
+|  |  | Accept-Language : ja JP |
+| sessionInfo | セッションに格納される値 | （なし） |
+| htmlResourcesExtensionList | ダンプディレクトリへコピーされるHTMLリソースの拡張子 | css、jpg、js |
+| jsTestResourceDir | javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名 | ../test/web |
+| backup | ダンプディレクトリのバックアップOn/Off | true |
+| htmlResourcesCharset | CSSファイル(スタイルシート)の文字コード | UTF-8 |
+| checkHtml | HTMLチェックの実施On/Off | true |
+| htmlChecker | HTMLチェックを行うオブジェクトを指定する。 | nablarch.test.tool.htmlcheck.Html4HtmlChecker |
+|  | オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker | クラスのインスタンス。  |
+|  | インタフェースを実装している必要がある。 | クラスには htmlCheckerConfig で設定した設定 |
+|  | 詳細は customize_html_check        を参照。 | ファイルが適用される。 |
+| htmlCheckerConfig | HTMLチェックツールの設定ファイルパス。 | test/resources/httprequesttest/html-check-config.csv |
+|  | htmlChecker を設定しなかった場合のみ有効。 |  |
+| ignoreHtmlResourceDirectory | HTMLリソースの中でコピー対象外とするディレクトリ名のLIST | （なし） |
+|  | バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると |  |
+|  | HTMLリソースコピー時のパフォーマンスが向上する。 |  |
+| tempDirectory | JSPのコンパイル先ディレクトリ | jettyのデフォルト動作に依存 |
+|  |  | jettyのデフォルト動作では、.「/work」 |
+|  |  | がコンパイル先ディレクトリとなる。 |
+|  |  | 「./work」が存在しない場合は、 |
+|  |  | Tempフォルダ(Windownの場合は、ユーザのホーム |
+|  |  | ディレクトリ/Local Settings/Temp)が |
+|  |  | 出力先となる。 |
+| uploadTmpDirectory | アップロードファイルを一時的に格納するディレクトリ。 | ./tmp |
+|  | テスト時に準備した、アップロード対象のファイルは本ディレクトリに |  |
+|  | コピー後に処理される。 |  |
+|  | これにより、アクションでファイルを移動した場合でも、 |  |
+|  | 本ディレクトリ配下のファイルが移動されるだけであり、 |  |
+|  | 実態が移動されることを防ぐことができる。 |  |
+| dumpVariableItem | HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。 | false |
+|  | ここでの可変項目とは以下の2種類を指す。 |  |
+|  | * JSESSIONID |  |
+|  | * 2重サブミット防止用のトークン |  |
+|  | これらの項目は、テスト実行毎に異なる値が設定される。 |  |
+|  | HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF |  |
+|  | (false)に設定する。（前回実行結果と差異がないことを確認したい場合等） |  |
+|  | 可変項目をそのままHTMLに出力する場合は、本項目をON |  |
+|  | (true)に設定する。 |  |
 
 
 PJ共通のwebモジュールが存在する場合、このプロパティにカンマ区切りでディレクトリを設定する。
@@ -558,27 +296,10 @@ PJ共通のwebモジュールが存在する場合、このプロパティにカ
 設定値には、上記のデフォルト値に加え、セッション(sessionInfo)に以下の値を設定している。
 
 
-<table>
-<thead>
-<tr>
-  <th>キー</th>
-  <th>値</th>
-  <th>説明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>commonHeaderLoginUserName</td>
-  <td>"リクエスト単体テストユーザ"</td>
-  <td>共通ヘッダ領域に表示するログインユーザ名</td>
-</tr>
-<tr>
-  <td>commonHeaderLoginDate</td>
-  <td>"20100914"</td>
-  <td>共通ヘッダ領域に表示するログイン日時</td>
-</tr>
-</tbody>
-</table>
+| キー | 値 | 説明 |
+|---|---|---|
+| commonHeaderLoginUserName | "リクエスト単体テストユーザ" | 共通ヘッダ領域に表示するログインユーザ名 |
+| commonHeaderLoginDate | "20100914" | 共通ヘッダ領域に表示するログイン日時 |
 
 ```xml
 <component name="httpTestConfiguration" class="nablarch.test.core.http.HttpTestConfiguration">

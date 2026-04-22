@@ -38,27 +38,10 @@ public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
 
 **メソッド分割例 （正常系、異常系、画面表示検証用で分割した場合）**
 
-<table>
-<thead>
-<tr>
-  <th>リクエストID</th>
-  <th>Actionメソッド名</th>
-  <th>テストデータシート名</th>
-</tr>
-<tr>
-  <th></th>
-  <th></th>
-  <th>正常系               |異常系                 |画面表示検証用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>USERS00101</td>
-  <td>doUsers00101</td>
-  <td>testUsers00101Normal |testUsers00101Abnormal |testUsers00101View</td>
-</tr>
-</tbody>
-</table>
+| リクエストID | Actionメソッド名 | テストデータシート名 |
+|  |  | 正常系               \|異常系                 \|画面表示検証用 |
+|---|---|---|
+| USERS00101 | doUsers00101 | testUsers00101Normal \|testUsers00101Abnormal \|testUsers00101View |
 
 > **Tip:** 上記のようにメソッドを分割するのは、テストデータシートが煩雑になり可読性が下がることを避ける為である。\ 上記以外でも、１つのテストデータシートにさまざまなテストケースを詰め込むと可読性が下がる場合は、テストデータシートを分割する。
 
@@ -84,257 +67,56 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 ![](../../../knowledge/assets/testing-framework-guide-development-guide-05-UnitTestGuide-02-RequestUnitTest/testShots.png)
 １ケース毎に以下の要素を持たせる。
 
-<table>
-<thead>
-<tr>
-  <th>カラム名</th>
-  <th>説明</th>
-  <th>必須</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>no</td>
-  <td>テストケース番号を1からの連番で記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>必須</td>
-</tr>
-<tr>
-  <td>description</td>
-  <td>そのテストケースの説明を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>ウェブアプリケーションのリクエスト単体テストで出力されるHTMLダンプファイルのファイル名</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>に使用される。 \ [#]_\</td>
-  <td>必須</td>
-</tr>
-<tr>
-  <td>context</td>
-  <td>そのテストケースでリクエストを送る際のユーザ情報を記載する。</td>
-  <td>必須</td>
-</tr>
-<tr>
-  <td></td>
-  <td>詳細は、\ request_test_user_info       \ を参照。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>cookie</td>
-  <td>そのテストケースで必要となるCookie情報を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>詳細は、\ request_test_cookie_info       \ を参照。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>queryParams</td>
-  <td>そのテストケースで必要となるクエリパラメータ情報を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>詳細は、\ request_test_queryparams_info       \ を参照。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>isValidToken</td>
-  <td>トークンを設定する場合にはtrueを設定する。トークンの詳細については、</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>\ サーバ側の二重サブミット防止\ を参照。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>setUpTable</td>
-  <td>各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>グループID\ を記載する。データの投入は自動テストフレームワークに</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>より行われる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedStatusCode</td>
-  <td>期待するHTTPステータスコードを記載する。</td>
-  <td>必須</td>
-</tr>
-<tr>
-  <td>expectedMessageId</td>
-  <td>メッセージが出力されること期待する場合は、その\ **メッセージID**\ を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>複数のメッセージが出力される場合はカンマ区切りで列挙する。メッセージを</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>期待しない場合は空欄とする。空欄にしたが、実際にはメッセージが出力され</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>た場合は、テスト失敗となる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedSearch</td>
-  <td>データベース検索結果がリクエストスコープに設定されることを期待する場合</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>、\ **期待する検索結果**\ を記載する。検索結果は、同じシート内のLIST_MAPデータ</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>タイプのIDで指定する。リクエストスコープから取得する際のキーは\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>**searchResult**\ である。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedTable</td>
-  <td>データベースの内容を比較する場合、期待するテーブルの\ グループID\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>forwardUri</td>
-  <td>期待するフォワード先URIを記載する。Actionクラスで指定したフォワード先JSPへの\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>URIを記載する。空欄の場合はJSPへのフォワードが行われないものとしてアサートされる。\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>システムエラー画面や認証エラー画面へ遷移することを想定するテストケースでは、\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>その画面を描画するJSPへのURIを記載する。例えば、システムエラー画面に遷移する場合は、\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>\ `/jsp/systemError.jsp`\ が期待するフォワード先URIとなる（デフォルト値の場合）。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedContentLength</td>
-  <td>コンテンツレングス・ヘッダの期待値を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>ファイルダウンロードをテストする場合にこのカラムに指定する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedContentType</td>
-  <td>コンテンツタイプ・ヘッダの期待値を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>ファイルダウンロードをテストする場合にこのカラムに指定する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedContentFileName</td>
-  <td>コンテンツディスポジション・ヘッダに指定したファイル名の期待値を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>ファイルダウンロードをテストする場合にこのカラムを指定する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedMessage</td>
-  <td>メッセージ同期送信処理を行う場合、期待する要求電文の グループID\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>を記載する。メッセージの作成は自動テストフレームワークにより行われる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>responseMessage</td>
-  <td>メッセージ同期送信処理を行う場合、返却する応答電文の グループID\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>を記載する。メッセージの作成は自動テストフレームワークにより行われる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>expectedMessageByClient</td>
-  <td>HTTPメッセージ同期送信処理を行う場合、期待する要求電文の\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>グループID を記載する。</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>メッセージの作成は自動テストフレームワークにより行われる。</td>
-  <td></td>
-</tr>
-<tr>
-  <td>responseMessageByClient</td>
-  <td>HTTPメッセージ同期送信処理を行う場合、返却する応答電文の\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>グループID を記載する。\</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
-  <td>メッセージの作成は自動テストフレームワークにより行われる。</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| カラム名 | 説明 | 必須 |
+|---|---|---|
+| no | テストケース番号を1からの連番で記載する。 |  |
+|  |  | 必須 |
+| description | そのテストケースの説明を記載する。 |  |
+|  | ウェブアプリケーションのリクエスト単体テストで出力されるHTMLダンプファイルのファイル名 |  |
+|  | に使用される。 \ [#]_\ | 必須 |
+| context | そのテストケースでリクエストを送る際のユーザ情報を記載する。 | 必須 |
+|  | 詳細は、\ request_test_user_info       \ を参照。 |  |
+| cookie | そのテストケースで必要となるCookie情報を記載する。 |  |
+|  | 詳細は、\ request_test_cookie_info       \ を参照。 |  |
+| queryParams | そのテストケースで必要となるクエリパラメータ情報を記載する。 |  |
+|  | 詳細は、\ request_test_queryparams_info       \ を参照。 |  |
+| isValidToken | トークンを設定する場合にはtrueを設定する。トークンの詳細については、 |  |
+|  | \ サーバ側の二重サブミット防止\ を参照。 |  |
+| setUpTable | 各テストケース実行前にデータベースに登録する場合は、同じシート内に記載したデータの\ |  |
+|  | グループID\ を記載する。データの投入は自動テストフレームワークに |  |
+|  | より行われる。 |  |
+| expectedStatusCode | 期待するHTTPステータスコードを記載する。 | 必須 |
+| expectedMessageId | メッセージが出力されること期待する場合は、その\ **メッセージID**\ を記載する。 |  |
+|  | 複数のメッセージが出力される場合はカンマ区切りで列挙する。メッセージを |  |
+|  | 期待しない場合は空欄とする。空欄にしたが、実際にはメッセージが出力され |  |
+|  | た場合は、テスト失敗となる。 |  |
+| expectedSearch | データベース検索結果がリクエストスコープに設定されることを期待する場合 |  |
+|  | 、\ **期待する検索結果**\ を記載する。検索結果は、同じシート内のLIST_MAPデータ |  |
+|  | タイプのIDで指定する。リクエストスコープから取得する際のキーは\ |  |
+|  | **searchResult**\ である。 |  |
+| expectedTable | データベースの内容を比較する場合、期待するテーブルの\ グループID\ |  |
+|  | を記載する。 |  |
+| forwardUri | 期待するフォワード先URIを記載する。Actionクラスで指定したフォワード先JSPへの\ |  |
+|  | URIを記載する。空欄の場合はJSPへのフォワードが行われないものとしてアサートされる。\ |  |
+|  | システムエラー画面や認証エラー画面へ遷移することを想定するテストケースでは、\ |  |
+|  | その画面を描画するJSPへのURIを記載する。例えば、システムエラー画面に遷移する場合は、\ |  |
+|  | \ `/jsp/systemError.jsp`\ が期待するフォワード先URIとなる（デフォルト値の場合）。 |  |
+| expectedContentLength | コンテンツレングス・ヘッダの期待値を記載する。 |  |
+|  | ファイルダウンロードをテストする場合にこのカラムに指定する。 |  |
+| expectedContentType | コンテンツタイプ・ヘッダの期待値を記載する。 |  |
+|  | ファイルダウンロードをテストする場合にこのカラムに指定する。 |  |
+| expectedContentFileName | コンテンツディスポジション・ヘッダに指定したファイル名の期待値を記載する。 |  |
+|  | ファイルダウンロードをテストする場合にこのカラムを指定する。 |  |
+| expectedMessage | メッセージ同期送信処理を行う場合、期待する要求電文の グループID\ |  |
+|  | を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessage | メッセージ同期送信処理を行う場合、返却する応答電文の グループID\ |  |
+|  | を記載する。メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| expectedMessageByClient | HTTPメッセージ同期送信処理を行う場合、期待する要求電文の\ |  |
+|  | グループID を記載する。 |  |
+|  | メッセージの作成は自動テストフレームワークにより行われる。 |  |
+| responseMessageByClient | HTTPメッセージ同期送信処理を行う場合、返却する応答電文の\ |  |
+|  | グループID を記載する。\ |  |
+|  | メッセージの作成は自動テストフレームワークにより行われる。 |  |
 
 
 そのテストケースにて送信するHTTP\ リクエストパラメータ\ ついては、この表ではなく別の表に記載する（\ 後述\ ）。

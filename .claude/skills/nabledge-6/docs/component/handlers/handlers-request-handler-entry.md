@@ -83,67 +83,18 @@
 ワイルドカードの設定例を以下に示す。
 
 
-<table>
-<thead>
-<tr>
-  <th>requestPattern</th>
-  <th>リクエストパス</th>
-  <th>結果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>/</td>
-  <td>/</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/index.jsp</td>
-  <td>呼ばれない</td>
-</tr>
-<tr>
-  <td>/*</td>
-  <td>/</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/</td>
-  <td>呼ばれない (* は'/'にはマッチしない)</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/index.jsp</td>
-  <td>呼ばれない (* は'.'にはマッチしない)</td>
-</tr>
-<tr>
-  <td>/app/\*.jsp</td>
-  <td>/app/index.jsp</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/admin</td>
-  <td>呼ばれない</td>
-</tr>
-<tr>
-  <td>/app/\*/test</td>
-  <td>/app/admin/test</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/test/</td>
-  <td>呼ばれない</td>
-</tr>
-</tbody>
-</table>
+| requestPattern | リクエストパス | 結果 |
+|---|---|---|
+| / | / | 呼ばれる |
+|  | /index.jsp | 呼ばれない |
+| /* | / | 呼ばれる |
+|  | /app | 呼ばれる |
+|  | /app/ | 呼ばれない (* は'/'にはマッチしない) |
+|  | /index.jsp | 呼ばれない (* は'.'にはマッチしない) |
+| /app/\*.jsp | /app/index.jsp | 呼ばれる |
+|  | /app/admin | 呼ばれない |
+| /app/\*/test | /app/admin/test | 呼ばれる |
+|  | /app/test/ | 呼ばれない |
 
 
 また、最後尾の’/’が’//’と重ねられていた場合、それ以前の文字列について前方一致すればマッチ成功と判定する記法も使用できる。
@@ -151,49 +102,12 @@
 以下に設定例を示す。
 
 
-<table>
-<thead>
-<tr>
-  <th>requestPattern</th>
-  <th>リクエストパス</th>
-  <th>結果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>/app//</td>
-  <td>/</td>
-  <td>呼ばれない</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/admin/</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/admin/index.jsp</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td>//\*.jsp</td>
-  <td>/app/index.jsp</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/admin/index.jsp</td>
-  <td>呼ばれる</td>
-</tr>
-<tr>
-  <td></td>
-  <td>/app/index.html</td>
-  <td>呼ばれない('\*.jsp'がマッチしない)</td>
-</tr>
-</tbody>
-</table>
+| requestPattern | リクエストパス | 結果 |
+|---|---|---|
+| /app// | / | 呼ばれない |
+|  | /app/ | 呼ばれる |
+|  | /app/admin/ | 呼ばれる |
+|  | /app/admin/index.jsp | 呼ばれる |
+| //\*.jsp | /app/index.jsp | 呼ばれる |
+|  | /app/admin/index.jsp | 呼ばれる |
+|  | /app/index.html | 呼ばれない('\*.jsp'がマッチしない) |

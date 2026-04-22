@@ -359,10 +359,10 @@ nablarch.common.authentication.AuthenticationFailedException
 前段処理において下記のカラム名で実行時情報が設定されていることとする。
 
 | 項目 | カラム名 |
+|---|---|
 | リクエストID | INSERT_REQUEST_ID |
 | 実行時ID | INSERT_EXECUTION_ID |
 | ユーザID | UPDATED_USER_ID |
-|---|---|
 
 app-log.propertiesの設定例
 ```properties

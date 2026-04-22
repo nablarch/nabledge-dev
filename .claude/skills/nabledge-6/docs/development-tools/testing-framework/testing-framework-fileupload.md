@@ -37,22 +37,9 @@ ${attach:ファイルパス}
 
 `LIST_MAP=requestParams`
 
-<table>
-<thead>
-<tr>
-  <th>uploadfile</th>
-  <th>comment</th>
-  <th>public</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>`${attach:test/resources/images/picture.png}`</td>
-  <td>アップロードします。</td>
-  <td>`false`</td>
-</tr>
-</tbody>
-</table>
+| uploadfile | comment | public |
+|---|---|---|
+| `${attach:test/resources/images/picture.png}` | アップロードします。 | `false` |
 
 
 ------
@@ -72,20 +59,9 @@ CSVファイル\ をアップロードする場合、\
 
 `LIST_MAP=requestParams`
 
-<table>
-<thead>
-<tr>
-  <th>uploadfile</th>
-  <th>comment</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>`${attach:work/member_list.csv}`</td>
-  <td>10月度新規会員を登録</td>
-</tr>
-</tbody>
-</table>
+| uploadfile | comment |
+|---|---|
+| `${attach:work/member_list.csv}` | 10月度新規会員を登録 |
 
 
 `SETUP_FIXED=work/member_list.csv`
@@ -94,44 +70,16 @@ CSVファイル\ をアップロードする場合、\
 
 // ディレクティブ
 
-<table>
-<tbody>
-<tr>
-  <td>text-encoding</td>
-  <td>Windows-31J</td>
-  <td></td>
-</tr>
-<tr>
-  <td>record-separator</td>
-  <td>CRLF</td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+| text-encoding | Windows-31J |  |
+|---|---|---|
+| record-separator | CRLF |  |
 
 // データ
 
-<table>
-<thead>
-<tr>
-  <th>name</th>
-  <th>age</th>
-  <th>address</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>山田太郎</td>
-  <td>30</td>
-  <td>東京都港区芝浦1-1</td>
-</tr>
-<tr>
-  <td>田中次郎</td>
-  <td>20</td>
-  <td>大阪府門真市東田町2-2</td>
-</tr>
-</tbody>
-</table>
+| name | age | address |
+|---|---|---|
+| 山田太郎 | 30 | 東京都港区芝浦1-1 |
+| 田中次郎 | 20 | 大阪府門真市東田町2-2 |
 
 ------
 

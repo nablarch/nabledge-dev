@@ -149,6 +149,7 @@ Exampleアプリケーション をベースに、
 
 INS_PROJECT_SEND_MESSAGE
 | 送信電文連番(PK) | SEND_MESSAGE_SEQUENCE |
+|---|---|
 | プロジェクト名 | PROJECT_NAME |
 | プロジェクト種別 | PROJECT_TYPE |
 | プロジェクト分類 | PROJECT_CLASS |
@@ -156,7 +157,6 @@ INS_PROJECT_SEND_MESSAGE
 | ステータス | STATUS |
 | 更新ユーザID | UPDATED_USER_ID |
 | 更新日時 | UPDATED_DATE |
-|---|---|
 
 フォーマット定義ファイル
 ポイント
@@ -451,6 +451,7 @@ Exampleアプリケーション をベースに、
 
 INS_PROJECT_RECEIVE_MESSAGE
 | 受信メッセージ連番(PK) | RECEIVED_MESSAGE_SEQUENCE |
+|---|---|
 | プロジェクト名 | PROJECT_NAME |
 | プロジェクト種別 | PROJECT_TYPE |
 | プロジェクト分類 | PROJECT_CLASS |
@@ -458,7 +459,6 @@ INS_PROJECT_RECEIVE_MESSAGE
 | ステータス | STATUS |
 | 登録ユーザID | INSERT_USER_ID |
 | 登録日時 | INSERT_DATE |
-|---|---|
 
 フォーマット定義ファイル
 ポイント

@@ -32,7 +32,7 @@
     {
       "id": "s6",
       "title": "メールの形式",
-      "content": "本サンプルでは、以下のメールを送信できる。\n\n<table>\n<thead>\n<tr>\n  <th>メール形式</th>\n  <th>業務Actionが使用するコンテキストクラス</th>\n  <th>添付ファイル</th>\n  <th>メール構造のパターン</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>TEXT</td>\n  <td>TemplateMailContext</td>\n  <td>無し</td>\n  <td>1</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>有り</td>\n  <td>2</td>\n</tr>\n<tr>\n  <td>HTML</td>\n  <td>TemplateHtmlMailContext</td>\n  <td>無し</td>\n  <td>3</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>有り</td>\n  <td>4</td>\n</tr>\n</tbody>\n</table>\n\n**メール構造のパターン１**\n\n![](assets/biz-samples-08/Mail_Pattern01.jpg)\n**メール構造のパターン２**\n\n![](assets/biz-samples-08/Mail_Pattern02.jpg)\n**メール構造のパターン３**\n\n![](assets/biz-samples-08/Mail_Pattern03.jpg)\n**メール構造のパターン４**\n\n![](assets/biz-samples-08/Mail_Pattern04.jpg)"
+      "content": "本サンプルでは、以下のメールを送信できる。\n\n| メール形式 | 業務Actionが使用するコンテキストクラス | 添付ファイル | メール構造のパターン |\n|---|---|---|---|\n| TEXT | TemplateMailContext | 無し | 1 |\n|  |  | 有り | 2 |\n| HTML | TemplateHtmlMailContext | 無し | 3 |\n|  |  | 有り | 4 |\n\n**メール構造のパターン１**\n\n![](assets/biz-samples-08/Mail_Pattern01.jpg)\n**メール構造のパターン２**\n\n![](assets/biz-samples-08/Mail_Pattern02.jpg)\n**メール構造のパターン３**\n\n![](assets/biz-samples-08/Mail_Pattern03.jpg)\n**メール構造のパターン４**\n\n![](assets/biz-samples-08/Mail_Pattern04.jpg)"
     },
     {
       "id": "s7",
@@ -57,7 +57,7 @@
     {
       "id": "s11",
       "title": "コンテンツの動的な切替",
-      "content": "HTML用のテンプレートを使用して、業務アクションなどから動的にHTML形式とTEXT形式を切り替える実装のサンプルを提示する。\n\n#### 切替方法\n\nメール送信要求時、TemplateHtmlMailContextのcontentTypeに **プレーンテキスト** を指定した場合、\n代替テキストを本文に差し替える。\n\n<table>\n<thead>\n<tr>\n  <th>コンテキストクラス</th>\n  <th>指定されたType</th>\n  <th>本文への移送元</th>\n  <th>Content-Type</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>TemplateMailContext</td>\n  <td>\\-</td>\n  <td>メールテンプレート.本文</td>\n  <td>text/plain</td>\n</tr>\n<tr>\n  <td>TemplateHtmlMailContext</td>\n  <td>*text/plain*</td>\n  <td>*代替テキストテンプレート.代替テキスト*</td>\n  <td>*text/plain*</td>\n</tr>\n<tr>\n  <td></td>\n  <td>text/html</td>\n  <td>メールテンプレート.本文</td>\n  <td>text/html</td>\n</tr>\n</tbody>\n</table>\n\n```java\npublic HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {\n    MailSampleForm form = MailSampleForm.validate(req, \"mail\");\n    TemplateHtmlMailContext mail = new TemplateHtmlMailContext();\n    // このとき、ユーザがContentType.PLAINを選択していれば、代替テキストが本文に切り替わる。\n    mail.setContentType(form.getType()); \n    // その他のプロパティを設定し、MailRequesterを呼び出す。\n}\n```"
+      "content": "HTML用のテンプレートを使用して、業務アクションなどから動的にHTML形式とTEXT形式を切り替える実装のサンプルを提示する。\n\n#### 切替方法\n\nメール送信要求時、TemplateHtmlMailContextのcontentTypeに **プレーンテキスト** を指定した場合、\n代替テキストを本文に差し替える。\n\n| コンテキストクラス | 指定されたType | 本文への移送元 | Content-Type |\n|---|---|---|---|\n| TemplateMailContext | \\- | メールテンプレート.本文 | text/plain |\n| TemplateHtmlMailContext | *text/plain* | *代替テキストテンプレート.代替テキスト* | *text/plain* |\n|  | text/html | メールテンプレート.本文 | text/html |\n\n```java\npublic HttpResponse doSendMail(HttpRequest req, ExecutionContext ctx) {\n    MailSampleForm form = MailSampleForm.validate(req, \"mail\");\n    TemplateHtmlMailContext mail = new TemplateHtmlMailContext();\n    // このとき、ユーザがContentType.PLAINを選択していれば、代替テキストが本文に切り替わる。\n    mail.setContentType(form.getType()); \n    // その他のプロパティを設定し、MailRequesterを呼び出す。\n}\n```"
     },
     {
       "id": "s12",

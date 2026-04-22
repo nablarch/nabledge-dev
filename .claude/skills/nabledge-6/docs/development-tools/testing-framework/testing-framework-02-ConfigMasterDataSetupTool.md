@@ -33,36 +33,13 @@ mvn dependency:copy-dependencies -DoutputDirectory=lib
 
 上記ファイルに含まれる設定ファイルを下記に示す。
 
-<table>
-<thead>
-<tr>
-  <th>ファイル名</th>
-  <th>説明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>tool/db/data/master_data-build.properties</td>
-  <td>環境設定用プロパティファイル</td>
-</tr>
-<tr>
-  <td>tool/db/data/master_data-build.xml</td>
-  <td>Antビルドファイル</td>
-</tr>
-<tr>
-  <td>tool/db/data/master_data-log.properties</td>
-  <td>ログ出力プロパティファイル</td>
-</tr>
-<tr>
-  <td>tool/db/data/master_data-app-log.properties</td>
-  <td>ログ出力プロパティファイル</td>
-</tr>
-<tr>
-  <td>tool/db/data/MASTER_DATA.xlsx</td>
-  <td>マスタデータファイル</td>
-</tr>
-</tbody>
-</table>
+| ファイル名 | 説明 |
+|---|---|
+| tool/db/data/master_data-build.properties | 環境設定用プロパティファイル |
+| tool/db/data/master_data-build.xml | Antビルドファイル |
+| tool/db/data/master_data-log.properties | ログ出力プロパティファイル |
+| tool/db/data/master_data-app-log.properties | ログ出力プロパティファイル |
+| tool/db/data/MASTER_DATA.xlsx | マスタデータファイル |
 
 本ツールを実行する前に以下のコマンドを実行する。
 
