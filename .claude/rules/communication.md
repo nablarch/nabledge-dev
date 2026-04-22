@@ -34,3 +34,14 @@ In those cases, still present a **recommended option first** with reasoning, and
 
 Never ask "いいですか？" / "進めてよいですか？" as the primary form of confirmation.
 State the plan, state why it is the should-be, and proceed unless the user objects.
+
+## Implementation Details
+
+Do not present code-level details (regex patterns, function signatures, data structures, etc.) unless the user asks.
+
+When blocked on a decision that could affect verify's quality gate role or requires changing design docs, stop and report only:
+
+1. **Why** a decision is needed (what constraint or ambiguity was found)
+2. **What** the options are (one sentence each, no implementation details)
+
+Let the user make the call, then implement.
