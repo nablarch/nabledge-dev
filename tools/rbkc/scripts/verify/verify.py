@@ -383,237 +383,16 @@ def _collect_rst_substitutions(text: str) -> dict[str, str]:
 def _normalize_rst_source(text: str, label_map: dict | None = None, substitutions: dict | None = None) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
-    Applies the inverse of common RST-to-Markdown conversions so that
-    JSON units (already in MD form) can be found in the normalized source.
-    Uses ``[^\\S\\n]`` (non-newline whitespace) to avoid swallowing newlines before
-    the final whitespace collapse step.
+    Delegates to :func:`scripts.common.rst_normaliser.normalise_rst`, which
+    implements the tokenizer-based normalisation specified in
+    `rbkc-verify-quality-design.md` §3-1 手順 0.
+
+    The `substitutions` parameter is accepted for backwards compatibility
+    but ignored; the new normaliser collects substitutions from the input
+    text itself.
     """
-    # Drop substitution definition blocks (header + indented body) before
-    # expanding `|name|` references — otherwise the header line itself loses
-    # its `|name|` token after expansion and the block-stripper can no longer
-    # recognise it, leaving raw bodies like ``<br />`` in the output.
-    def _strip_subst_blocks(src: str) -> str:
-        lines = src.split('\n')
-        out_lines: list[str] = []
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            m = re.match(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::', line)
-            if not m:
-                out_lines.append(line)
-                i += 1
-                continue
-            header_indent = len(line) - len(line.lstrip())
-            i += 1
-            while i < len(lines):
-                bl = lines[i]
-                if not bl.strip():
-                    i += 1
-                    continue
-                cur_indent = len(bl) - len(bl.lstrip())
-                if cur_indent > header_indent:
-                    i += 1
-                    continue
-                break
-        return '\n'.join(out_lines)
-
-    text = _strip_subst_blocks(text)
-
-    # Drop directive blocks whose raw body content is NOT expected to appear
-    # in JSON (converter either skips them or rewrites them into an
-    # unrecognisable form for direct substring comparison). Directives that
-    # carry real content (list-table, code-block, literalinclude, etc.) must
-    # NOT be stripped — their bodies reach JSON content.
-    _STRIP_BLOCK_DIRECTIVES = re.compile(
-        r'^\s*\.\.\s+(toctree|include|raw|class|only|ifconfig'
-        r'|contents|sectnum|header|footer|meta)\s*::'
-    )
-
-    def _strip_directive_blocks(src: str) -> str:
-        lines = src.split('\n')
-        out_lines: list[str] = []
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            if _STRIP_BLOCK_DIRECTIVES.match(line):
-                header_indent = len(line) - len(line.lstrip())
-                i += 1
-                while i < len(lines):
-                    bl = lines[i]
-                    if not bl.strip():
-                        i += 1
-                        continue
-                    cur_indent = len(bl) - len(bl.lstrip())
-                    if cur_indent > header_indent:
-                        i += 1
-                        continue
-                    break
-                continue
-            out_lines.append(line)
-            i += 1
-        return '\n'.join(out_lines)
-
-    text = _strip_directive_blocks(text)
-
-    # Drop RST comment blocks. Per RST spec, a line that begins with ``..``
-    # followed by text that does NOT form a directive/label/footnote/
-    # substitution reference is a comment; indented content underneath is the
-    # comment body. Comments are not rendered and their content must not
-    # appear in JSON.
-    def _strip_comment_blocks(src: str) -> str:
-        lines = src.split('\n')
-        out_lines: list[str] = []
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            s = line.lstrip()
-            # Identify a comment marker: `..` or `.. <text without "::">`
-            # that is NOT a directive/label/footnote/substitution.
-            is_comment = False
-            if s.startswith('..'):
-                rest = s[2:]
-                # Bare `..` on its own line is a comment.
-                if not rest.strip():
-                    is_comment = True
-                elif rest.startswith(' ') or rest.startswith('\t'):
-                    body = rest.lstrip()
-                    # Exclusions: directive (`name::`), label (`_name:`),
-                    # footnote/citation (`[tag]`), substitution (`|name|`).
-                    if (
-                        '::' not in body.split('\n', 1)[0]
-                        and not body.startswith('_')
-                        and not body.startswith('[')
-                        and not body.startswith('|')
-                    ):
-                        is_comment = True
-            if is_comment:
-                header_indent = len(line) - len(line.lstrip())
-                i += 1
-                # Consume indented body (deeper than header).
-                while i < len(lines):
-                    bl = lines[i]
-                    if not bl.strip():
-                        i += 1
-                        continue
-                    cur_indent = len(bl) - len(bl.lstrip())
-                    if cur_indent > header_indent:
-                        i += 1
-                        continue
-                    break
-                continue
-            out_lines.append(line)
-            i += 1
-        return '\n'.join(out_lines)
-
-    text = _strip_comment_blocks(text)
-
-    # Expand substitution references using definitions supplied or collected.
-    # Only substitute when the name between `|...|` is actually in the map —
-    # other bars in prose (e.g. ``Prometheus | HTTP API | OTLP Receiver``)
-    # must survive as plain text.
-    subs = substitutions if substitutions is not None else _collect_rst_substitutions(text)
-    if subs:
-        def _resolve_sub(m: re.Match) -> str:
-            name = m.group(1).strip()
-            if name in subs:
-                return subs[name]
-            return m.group(0)
-        text = re.sub(r'\|([^|\n]+)\|_?', _resolve_sub, text)
-    # ``inline code`` -> inline code
-    text = re.sub(r'``([^`]+)``', r'\1', text)
-    # :ref:`display text <label>` -> display text
-    text = re.sub(r':ref:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
-    # :ref:`label` -> resolved title (if known), else label
-    if label_map:
-        def _resolve_ref(m: re.Match) -> str:
-            label = m.group(1).strip()
-            return label_map.get(label, label)
-        text = re.sub(r':ref:`([^`]+)`', _resolve_ref, text)
-    else:
-        text = re.sub(r':ref:`([^`]+)`', r'\1', text)
-    # :java:extdoc:`ClassName <fqcn>` -> ClassName (converter drops the fqcn)
-    text = re.sub(r':java:extdoc:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
-    # :doc:`display text <path>` -> display text  (converter drops the path)
-    text = re.sub(r':doc:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
-    # :doc:`path` -> path
-    text = re.sub(r':doc:`([^`]+)`', r'\1', text)
-    # Generic domain role with target: :role:`text <target>` -> text
-    # (must run before the `text <url>`_ external-hyperlink pattern below, so
-    # roles like :javadoc_url: don't leak their leading ``:role:`` marker).
-    text = re.sub(r':[a-zA-Z][a-zA-Z0-9_.:-]*:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
-    # `link text <url>`_ -> link text  (RST external hyperlink, inline form).
-    # Accept both absolute URLs and relative refs (e.g. ``<./file.zip>``).
-    text = re.sub(r'`([^`<]+?)[^\S\n]*<[^>]+>`_?', r'\1', text)
-    # `text`_  -> text (named-reference form; resolved URL is separate target def)
-    text = re.sub(r'`([^`<]+?)`_+', r'\1', text)
-    # General RST role :role:`text` -> text
-    text = re.sub(r':[a-zA-Z][a-zA-Z0-9_.:-]*:`([^`]*)`', r'\1', text)
-    # `single-backtick interpreted text` — RST treats this as an interpreted
-    # text role; the converter passes it through as a single-backtick MD code
-    # span, but ``_normalize_md_unit`` strips those backticks, so match here.
-    # Must run AFTER all role-based regexes so it only fires on bare backticks.
-    text = re.sub(r'(?<![`])`([^`\n]+)`(?![`])', r'\1', text)
-    # RST footnote/citation target: `.. [tag] body` -> keep body only.
-    # Must run *before* the catch-all directive strip below, otherwise the
-    # footnote body text (which the converter inlines into the section
-    # content) is dropped from the source side.
-    text = re.sub(r'^[^\S\n]*\.\.\s+\[[^\]]+\][^\S\n]*', '', text, flags=re.MULTILINE)
-    # RST directive lines: .. directive:: args -> remove line (keep body content)
-    text = re.sub(r'^[^\S\n]*\.\.[^\S\n]+\S[^\n]*\n', '', text, flags=re.MULTILINE)
-    # RST option lines inside directives: :option: value -> remove line.
-    # Restricted to ASCII option names (directive options never use CJK);
-    # CJK field-list entries like ``:システム設定値: value`` are handled
-    # separately below so the value portion survives.
-    text = re.sub(r'^[^\S\n]*:[a-zA-Z][a-zA-Z0-9_-]*:[^\n]*\n', '', text, flags=re.MULTILINE)
-    # RST field-list entries (e.g. ``:name: value`` at line start) — keep the
-    # value, drop the marker so source and JSON-side unit normalisation agree.
-    text = re.sub(r'^[^\S\n]*:([^:`\n]+):[^\S\n]+', '', text, flags=re.MULTILINE)
-    # RST list-table item markers: `* - ` or `  - ` — the trailing hyphen
-    # must be followed by at least one space and a non-hyphen character,
-    # otherwise multi-hyphen tokens like `---` (code-block content or YAML
-    # separator) are mistakenly eaten.
-    text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]+(?=[^-])', '', text, flags=re.MULTILINE)
-    # Empty list-table cell marker: ``*`` followed by ``-`` on its own line.
-    # The cell has no content so the marker must be dropped entirely —
-    # otherwise a bare ``-`` residue appears on source side but not in JSON.
-    text = re.sub(r'^[^\S\n]*\*?[^\S\n]*-[^\S\n]*$', '', text, flags=re.MULTILINE)
-    # Bullet markers: "* ", "- ", "+ " at line start. The marker must be a
-    # single char followed by whitespace and a non-marker char — this
-    # prevents `---` from being rewritten to `--`.
-    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', text, flags=re.MULTILINE)
-    # Enumerated list markers (RST): "#." or "1." / "2." etc. at line start
-    text = re.sub(r'^[^\S\n]*(?:\d+|#)\.[^\S\n]+', '', text, flags=re.MULTILINE)
-    # Grid-table content prefix "| " at start of line -> drop the pipe.
-    text = re.sub(r'^[^\S\n]*\|[^\S\n]*', '', text, flags=re.MULTILINE)
-    # Any remaining bare pipe within a line is also stripped so source and
-    # JSON (where ``_normalize_md_unit`` turns `|` into a space) stay aligned.
-    text = re.sub(r'\|', ' ', text)
-    # Trailing hyperlink-reference underscore: "text_" or "text__". Allow
-    # a closing backtick to terminate too, so ``code_``-style spans also match.
-    # Preceding char must be word-ending (alnum/]/)) — never a backtick, which
-    # would wrongly strip the ``_`` inside ``` `_` ``` inline code literals.
-    text = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
-    # Remove leading indentation from directive bodies (1-8 non-newline spaces)
-    text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
-    # RST heading underlines: ====, ----, ~~~~, etc. Require 4+ of the SAME
-    # character (so mixed strings like ``#----`` in shell-comment dividers
-    # don't accidentally match and consume legitimate content).
-    text = re.sub(
-        r'^(?:={4,}|-{4,}|~{4,}|\^{4,}|"{4,}|\'{4,}|`{4,}|\#{4,}|\*{4,}|\+{4,}|<{4,}|>{4,})[^\S\n]*$',
-        '',
-        text,
-        flags=re.MULTILINE,
-    )
-    # Simple-table separator row (e.g. "=== === ====") and grid-table border
-    text = re.sub(r'^[^\S\n]*[=\-]+(?:[^\S\n]+[=\-]+)+[^\S\n]*$', '', text, flags=re.MULTILINE)
-    text = re.sub(r'^[^\S\n]*\+[-=+]+[^\S\n]*$', '', text, flags=re.MULTILINE)
-    # Collapse all whitespace (including newlines) for multi-line comparison
-    text = re.sub(r'\s+', ' ', text)
-    # Drop stray bullet markers that sit between words (e.g. residue of a
-    # nested bullet list collapsed onto one line).
-    text = re.sub(r'(?:(?<=^)|(?<=\s))[*+\-](?=[^\S\n]+[^*+\-\s])', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    from scripts.common.rst_normaliser import normalise_rst
+    return normalise_rst(text, label_map=label_map or {}, strict_unknown=False)
 
 
 def _normalize_md_unit(text: str) -> str:
@@ -816,23 +595,32 @@ def _build_rst_search_units(
 ) -> list[tuple[str, str, str, bool]]:
     """Build (original_unit, normalized_unit, sid, is_content) for RST content.
 
-    For RST sources: JSON content is in MD form (converter output).
-    We normalize each JSON field to plain text so it can be found in a
-    normalized RST source.  Titles are searched verbatim (already plain text).
+    Per the tokenizer-based design (rbkc-verify-quality-design.md §3-1 手順
+    0), the normalised source is already in MD-equivalent form, so JSON
+    content can be matched against it after only whitespace normalisation.
     """
     units: list[tuple[str, str, str, bool]] = []
     top_title = data.get("title", "")
     top_content = data.get("content", "")
 
-    def _norm_title(t: str) -> str:
-        # Titles are plain text but may contain double spaces / tabs that
-        # source normalisation collapses. Apply the same whitespace collapse.
+    def _norm(t: str) -> str:
+        # Strip URL bodies from [text](url) — URLs are validated by QL2;
+        # the converter rewrites asset paths differently from the source,
+        # so comparing only the visible text keeps QC2 focused on content.
+        # When the MD link appeared on one side but not the other (e.g.
+        # label resolution emitted plain text on one side and a link on
+        # the other), reduce both forms to the visible text only.
+        t = re.sub(r'!\[[^\]]*\]\([^)\n]+\)', '', t)
+        t = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', t)
+        # Collapse all whitespace runs (including newlines) to single spaces
+        # so multi-line JSON content can be found in the single-pass
+        # normalised source.
         return re.sub(r'\s+', ' ', t).strip()
 
     if top_title:
-        units.append((top_title, _norm_title(top_title), "__top__", False))
+        units.append((top_title, _norm(top_title), "__top__", False))
     if top_content:
-        norm = _normalize_md_unit(top_content)
+        norm = _norm(top_content)
         if norm:
             units.append((top_content, norm, "__top__", True))
 
@@ -841,9 +629,9 @@ def _build_rst_search_units(
         content = sec.get("content", "")
         sid = sec.get("id", "?")
         if title:
-            units.append((title, _norm_title(title), sid, False))
+            units.append((title, _norm(title), sid, False))
         if content:
-            norm = _normalize_md_unit(content)
+            norm = _norm(content)
             if norm:
                 units.append((content, norm, sid, True))
 
@@ -883,7 +671,13 @@ def _check_rst_content_completeness(
     # Collect substitutions once from the full source so per-line normalisation
     # can resolve `|name|` references defined elsewhere in the file.
     rst_substitutions = _collect_rst_substitutions(source_text)
-    norm_source = _normalize_rst_source(source_text, label_map, rst_substitutions)
+    norm_source_raw = _normalize_rst_source(source_text, label_map, rst_substitutions)
+    # Apply the same URL-stripping normalisation as _build_rst_search_units
+    # so [text](url) on both sides reduces to visible text only. Multi-line
+    # JSON content is matched against a single-line normalised source.
+    norm_source = re.sub(r'!\[[^\]]*\]\([^)\n]+\)', '', norm_source_raw)
+    norm_source = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', norm_source)
+    norm_source = re.sub(r'\s+', ' ', norm_source).strip()
     search_units = _build_rst_search_units(data)
 
     if not search_units:
@@ -917,76 +711,80 @@ def _check_rst_content_completeness(
             else:
                 issues.append(f"[QC4] section '{sid}': misplaced content: {orig_unit[:50]!r}")
 
-    # QC1: each non-syntax RST source line must appear (normalized) in some JSON field
-    all_norm_units = [nu for _, nu, _, _ in search_units if nu]
-    in_structural = False
-    in_subst = False
-    subst_indent = 0
-    in_comment = False
-    comment_indent = 0
-    for line in source_text.split('\n'):
-        s = line.strip()
-        # Track substitution definitions and their indented bodies separately
-        # from ``_RST_STRUCTURAL_DIRECTIVES``: substitution bodies are not
-        # content we expect to see in JSON (the converter expands references,
-        # not bodies).
-        if re.match(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::', line):
-            in_subst = True
-            subst_indent = len(line) - len(line.lstrip())
+    # QC1: delete JSON units from normalised source in JSON order, then
+    # check the residue. Per design spec §3-1 手順 3, residue must match the
+    # allowed-syntax list (post-tokenizer MD residue: fences, table pipes,
+    # blockquote markers, etc.).
+    residue = norm_source
+    for _orig, norm_unit, _sid, _is_c in search_units:
+        if not norm_unit:
             continue
-        if in_subst:
-            if not s:
-                continue
-            cur_indent = len(line) - len(line.lstrip())
-            if cur_indent > subst_indent:
-                continue
-            in_subst = False
-        # Track RST comment blocks. ``.. <text>`` lines that aren't
-        # directives / labels / footnotes / substitutions are comments per
-        # RST spec; indented content beneath is the comment body and must be
-        # skipped from QC1 residual checking.
-        if in_comment:
-            if not s:
-                continue
-            cur_indent = len(line) - len(line.lstrip())
-            if cur_indent > comment_indent:
-                continue
-            in_comment = False
-        if s.startswith('..'):
-            rest = s[2:]
-            is_comment_marker = False
-            if not rest.strip():
-                is_comment_marker = True
-            elif rest.startswith(' ') or rest.startswith('\t'):
-                body = rest.lstrip()
-                first_line = body.split('\n', 1)[0]
-                if (
-                    '::' not in first_line
-                    and not body.startswith('_')
-                    and not body.startswith('[')
-                    and not body.startswith('|')
-                ):
-                    is_comment_marker = True
-            if is_comment_marker:
-                in_comment = True
-                comment_indent = len(line) - len(line.lstrip())
-                continue
-        if s and re.match(r'\.\.\s+\S', s):
-            in_structural = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
-        if not s:
+        idx = residue.find(norm_unit)
+        if idx == -1:
             continue
-        if in_structural and re.match(r'^\s+\S', line):
-            continue
-        if _is_rst_syntax_line(line):
-            continue
-        norm_line = re.sub(r'\s+', ' ', _normalize_rst_source(line, label_map, rst_substitutions)).strip()
-        if not norm_line:
-            continue
-        found = any(norm_line in nu for nu in all_norm_units)
-        if not found:
-            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+        residue = residue[:idx] + residue[idx + len(norm_unit):]
+
+    # Check residue against allowed-syntax list. Allowed residue is pure
+    # whitespace and converter-emitted MD markup tokens.
+    cleaned = _strip_allowed_residue(residue)
+    if cleaned.strip():
+        # Trim long residue for readability in the issue message.
+        snippet = cleaned.strip()[:80]
+        issues.append(f"[QC1] residue not captured in JSON: {snippet!r}")
 
     return issues
+
+
+# Allowed residue tokens in the normalised RST source after JSON unit
+# deletion. Per rbkc-verify-quality-design.md §3-1 "許容構文要素リスト".
+# These are the MD markup tokens the converter emits but that appear in the
+# normalised source with slightly different surrounding whitespace than the
+# JSON content has.
+_ADMONITION_RESIDUE_LABELS = (
+    "Note", "Tip", "Warning", "Important", "Attention", "Hint",
+    "Caution", "Danger", "Error", "See Also",
+    "Deprecated", "Version Added", "Version Changed",
+)
+_ALLOWED_RESIDUE_PATTERNS = [
+    # Admonition header residues (e.g. "Note" left after ">" and "**" were stripped)
+    re.compile(r"\b(?:" + "|".join(re.escape(l) for l in _ADMONITION_RESIDUE_LABELS) + r")\b"),
+    # MD fence markers (code-block output)
+    re.compile(r"```[A-Za-z0-9_+-]*"),
+    # MD table separator rows
+    re.compile(r"\|\s*-+\s*(?:\|\s*-+\s*)+\|"),
+    # Bare MD list markers (bullets, enumerators)
+    re.compile(r"(?m)^\s*[*+\-]\s*$"),
+    re.compile(r"(?m)^\s*\d+\.\s*$"),
+    # MD blockquote markers
+    re.compile(r"(?m)^\s*>\s*"),
+    # Bold/italic leftovers
+    re.compile(r"\*\*"),
+    # Inline code tick leftovers
+    re.compile(r"`"),
+    # Table pipe residue
+    re.compile(r"\|"),
+    # Bracket residue from removed [text](url)
+    re.compile(r"[\[\]()]"),
+    # Punctuation / whitespace (ASCII + common Japanese punctuation)
+    re.compile(r"[\s、。,\.:!?;()（）【】「」『』\-—#*+~\^]+"),
+    # Stray directive/comment markers
+    re.compile(r"\.\.+"),
+    # Stray heading marker hashes (if MD heading got partially consumed)
+    re.compile(r"#+"),
+]
+
+
+def _strip_allowed_residue(text: str) -> str:
+    """Remove all allowed syntax residue tokens; return what's left."""
+    out = text
+    # Apply each pattern iteratively until stable.
+    prev = None
+    while prev != out:
+        prev = out
+        for pat in _ALLOWED_RESIDUE_PATTERNS:
+            out = pat.sub(" ", out)
+        out = re.sub(r"\s+", " ", out)
+    return out
 
 
 def _check_md_content_completeness(

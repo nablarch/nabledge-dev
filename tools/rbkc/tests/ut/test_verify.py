@@ -470,9 +470,11 @@ class TestCheckContentCompleteness:
         assert any("QC1" in i for i in issues)
 
     def test_pass_rst_syntax_in_residual_allowed(self):
+        # Converter renders `.. note::` as `> **Note:** ...` so JSON content
+        # includes the MD admonition header.
         src = "概要\n====\n\n本文。\n\n.. note::\n\n   注記内容。\n"
         data = self._data(sections=[
-            {"id": "s1", "title": "概要", "content": "本文。\n\n注記内容。"}
+            {"id": "s1", "title": "概要", "content": "本文。\n\n> **Note:** 注記内容。"}
         ])
         issues = self._check(src, data)
         assert all("QC1" not in i for i in issues)
