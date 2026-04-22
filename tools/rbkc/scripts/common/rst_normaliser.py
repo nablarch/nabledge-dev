@@ -763,7 +763,11 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
     else:
         header_count = 0
 
-    # Body rows until closing separator (or end)
+    # Body rows until closing separator (or end). A blank line does NOT
+    # end the current row — only a row whose first column is non-empty
+    # starts a new row. This matches RST simple-table semantics (multi-
+    # paragraph cells are separated by blank lines, continuations start
+    # with empty first column).
     while i < n:
         ln = lines[i]
         if _SIMPLE_TABLE_SEP_RE.match(ln):
@@ -773,9 +777,7 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
             i += 1
             break
         if not ln.strip():
-            if current_row is not None:
-                rows.append(current_row)
-                current_row = None
+            # Blank line inside a cell — treat as a space continuation
             i += 1
             continue
         cells = _split_row(ln)
