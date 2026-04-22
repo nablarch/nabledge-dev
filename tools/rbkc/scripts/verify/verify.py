@@ -562,6 +562,10 @@ def _normalize_md_unit(text: str) -> str:
     # (Source-side normalisation drops them, so we strip here for symmetry.)
     text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
     text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
+    # Grid-table HTML scaffolding the converter emits: strip <table>/<tbody>/
+    # <tr>/<td>/<th>/<thead>/<br>/<br /> tags and their closers so the cell
+    # text aligns with source-side rst normalisation.
+    text = re.sub(r'</?(?:table|thead|tbody|tr|td|th|br)(?:\s[^>]*)?/?>', ' ', text, flags=re.IGNORECASE)
     # Unresolved RST field-list entries the converter passes through as-is
     # (``:name: value``). Drop the ``:name:`` marker so the value aligns
     # with the source-normalised form (which collapses these away).
