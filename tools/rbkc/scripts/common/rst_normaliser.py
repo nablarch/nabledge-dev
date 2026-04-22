@@ -105,7 +105,8 @@ _DIRECTIVE_HEAD_RE = re.compile(r"^(?P<indent>\s*)\.\.\s+(?P<name>[A-Za-z][A-Za-
 _SUBST_DEF_HEAD_RE = re.compile(r"^\s*\.\.\s+\|([^|]+)\|\s+[a-z_-]+::.*$")
 
 # Label definition: `.. _label:` (may stack before a heading)
-_LABEL_DEF_RE = re.compile(r"^\s*\.\.\s+_[A-Za-z0-9_-]+:\s*$")
+# Label definition: allow `.` in label name (RST accepts).
+_LABEL_DEF_RE = re.compile(r"^\s*\.\.\s+_[A-Za-z0-9_.-]+:\s*$")
 
 # Footnote / citation definition: `.. [#name] text` or `.. [1] text`
 # The text (and any indented continuation body) is emitted as prose.
@@ -1031,6 +1032,10 @@ def _render_table_directive(name: str, body: list[str]) -> str:
         ncols = max(len(r) for r in rows)
         # Pad short rows
         rows = [r + [""] * (ncols - len(r)) for r in rows]
+        # Strip inline label definitions (`.. _xxx:` at cell start) which
+        # don't produce visible content.
+        _INLINE_LABEL_RE = re.compile(r"^\s*\.\.\s+_[A-Za-z0-9_.-]+:\s*")
+        rows = [[_INLINE_LABEL_RE.sub("", c) for c in r] for r in rows]
         # Escape pipes inside cells (converter does this) so embedded
         # line-block content like `| "Nablarch"` doesn't break MD table.
         rows = [[c.replace("|", "\\|") for c in r] for r in rows]
