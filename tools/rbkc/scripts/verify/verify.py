@@ -388,15 +388,85 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     Uses ``[^\\S\\n]`` (non-newline whitespace) to avoid swallowing newlines before
     the final whitespace collapse step.
     """
+    # Drop substitution definition blocks (header + indented body) before
+    # expanding `|name|` references — otherwise the header line itself loses
+    # its `|name|` token after expansion and the block-stripper can no longer
+    # recognise it, leaving raw bodies like ``<br />`` in the output.
+    def _strip_subst_blocks(src: str) -> str:
+        lines = src.split('\n')
+        out_lines: list[str] = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            m = re.match(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::', line)
+            if not m:
+                out_lines.append(line)
+                i += 1
+                continue
+            header_indent = len(line) - len(line.lstrip())
+            i += 1
+            while i < len(lines):
+                bl = lines[i]
+                if not bl.strip():
+                    i += 1
+                    continue
+                cur_indent = len(bl) - len(bl.lstrip())
+                if cur_indent > header_indent:
+                    i += 1
+                    continue
+                break
+        return '\n'.join(out_lines)
+
+    text = _strip_subst_blocks(text)
+
+    # Drop directive blocks whose raw body content is NOT expected to appear
+    # in JSON (converter either skips them or rewrites them into an
+    # unrecognisable form for direct substring comparison). Directives that
+    # carry real content (list-table, code-block, literalinclude, etc.) must
+    # NOT be stripped — their bodies reach JSON content.
+    _STRIP_BLOCK_DIRECTIVES = re.compile(
+        r'^\s*\.\.\s+(toctree|include|raw|class|only|ifconfig'
+        r'|contents|sectnum|header|footer|meta)\s*::'
+    )
+
+    def _strip_directive_blocks(src: str) -> str:
+        lines = src.split('\n')
+        out_lines: list[str] = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if _STRIP_BLOCK_DIRECTIVES.match(line):
+                header_indent = len(line) - len(line.lstrip())
+                i += 1
+                while i < len(lines):
+                    bl = lines[i]
+                    if not bl.strip():
+                        i += 1
+                        continue
+                    cur_indent = len(bl) - len(bl.lstrip())
+                    if cur_indent > header_indent:
+                        i += 1
+                        continue
+                    break
+                continue
+            out_lines.append(line)
+            i += 1
+        return '\n'.join(out_lines)
+
+    text = _strip_directive_blocks(text)
+
     # Expand substitution references using definitions supplied or collected.
+    # Only substitute when the name between `|...|` is actually in the map —
+    # other bars in prose (e.g. ``Prometheus | HTTP API | OTLP Receiver``)
+    # must survive as plain text.
     subs = substitutions if substitutions is not None else _collect_rst_substitutions(text)
     if subs:
         def _resolve_sub(m: re.Match) -> str:
             name = m.group(1).strip()
-            return subs.get(name, "")
+            if name in subs:
+                return subs[name]
+            return m.group(0)
         text = re.sub(r'\|([^|\n]+)\|_?', _resolve_sub, text)
-    else:
-        text = re.sub(r'\|[^|\n]+\|_?', '', text)
     # ``inline code`` -> inline code
     text = re.sub(r'``([^`]+)``', r'\1', text)
     # :ref:`display text <label>` -> display text
@@ -449,13 +519,16 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     # single char followed by whitespace and a non-marker char — this
     # prevents `---` from being rewritten to `--`.
     text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', text, flags=re.MULTILINE)
+    # Enumerated list markers (RST): "#." or "1." / "2." etc. at line start
+    text = re.sub(r'^[^\S\n]*(?:\d+|#)\.[^\S\n]+', '', text, flags=re.MULTILINE)
     # Grid-table content prefix "| " at start of line -> drop the pipe.
     text = re.sub(r'^[^\S\n]*\|[^\S\n]*', '', text, flags=re.MULTILINE)
     # Any remaining bare pipe within a line is also stripped so source and
     # JSON (where ``_normalize_md_unit`` turns `|` into a space) stay aligned.
     text = re.sub(r'\|', ' ', text)
-    # Trailing hyperlink-reference underscore: "text_" or "text__"
-    text = re.sub(r'(\S)_+(?=\s|$)', r'\1', text)
+    # Trailing hyperlink-reference underscore: "text_" or "text__". Allow
+    # a closing backtick to terminate too, so ``code_``-style spans also match.
+    text = re.sub(r'(\S)_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
     # Remove leading indentation from directive bodies (1-8 non-newline spaces)
     text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
     # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
@@ -464,6 +537,10 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     text = re.sub(r'^[^\S\n]*[=\-]+(?:[^\S\n]+[=\-]+)+[^\S\n]*$', '', text, flags=re.MULTILINE)
     text = re.sub(r'^[^\S\n]*\+[-=+]+[^\S\n]*$', '', text, flags=re.MULTILINE)
     # Collapse all whitespace (including newlines) for multi-line comparison
+    text = re.sub(r'\s+', ' ', text)
+    # Drop stray bullet markers that sit between words (e.g. residue of a
+    # nested bullet list collapsed onto one line).
+    text = re.sub(r'(?:(?<=^)|(?<=\s))[*+\-](?=[^\S\n]+[^*+\-\s])', ' ', text)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
@@ -480,7 +557,10 @@ def _normalize_md_unit(text: str) -> str:
     text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
     text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
     # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
-    text = re.sub(r'(\S)_+(?=\s|$)', r'\1', text)
+    # (and ``name_`` → ``name``). Use MULTILINE so the anchor fires at every
+    # line end. Allow a closing backtick to count as end-of-token so
+    # ``` `name_` ``` also normalises.
+    text = re.sub(r'(\S)_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
 
     # Split into fenced-code and non-code regions so MD syntax strips only
     # apply to non-code text (otherwise a `# comment` inside ``` leaks into
@@ -501,23 +581,35 @@ def _normalize_md_unit(text: str) -> str:
         # the marker's whitespace to NOT be another marker so we don't eat
         # multi-hyphen tokens (table separators, YAML `---`).
         l = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', l)
+        # Enumerated list markers (MD): "1." / "2." / "#." at line start
+        l = re.sub(r'^[^\S\n]*(?:\d+|#)\.[^\S\n]+', '', l)
         # `inline code` -> inline code
         l = re.sub(r'`([^`]+)`', r'\1', l)
         # Image: ![alt](path) -> "" (image is covered by QL1)
-        l = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', l)
+        # URL may include one level of balanced parens (common in Javadoc
+        # anchors like ``#apiKey()``).
+        l = re.sub(r'!\[[^\]]*\]\((?:[^()]|\([^)]*\))+\)', '', l)
         # [link text](url) -> link text
-        l = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', l)
+        l = re.sub(r'\[([^\]]+)\]\((?:[^()]|\([^)]*\))+\)', r'\1', l)
         # Admonition header line: > **Type:** ... -> content only
         l = re.sub(r'>[^\S\n]*\*\*[^*]+\*\*:?[^\S\n]*', '', l)
         # Remaining blockquote prefix: > text -> text
         l = re.sub(r'^>[^\S\n]*', '', l)
         # MD table separator rows: |---|---| -> remove line
         l = re.sub(r'^\|[-:| ]+\|[^\S\n]*$', '', l)
-        # MD table cell borders: | -> space
+        # MD table cell borders: | -> space. Before collapsing, strip bullet
+        # markers that sit inside a cell (e.g. `| * javax.json * javax.json.spi |`):
+        # they originate from a nested bullet list in an RST list-table cell
+        # but the source side normalises them away.
+        l = re.sub(r'\|[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '| ', l)
         l = re.sub(r'\|', ' ', l)
         out.append(l)
     text = "\n".join(out)
     # Collapse whitespace (handles multi-line content merged into one line)
+    text = re.sub(r'\s+', ' ', text)
+    # After collapsing, remove any isolated " * "/" - "/" + " bullet markers
+    # that survived from nested bullet lists inside list-table cells.
+    text = re.sub(r'(?:(?<=^)|(?<=\s))[*+\-](?=[^\S\n]+[^*+\-\s])', ' ', text)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
@@ -626,8 +718,13 @@ def _build_rst_search_units(
     top_title = data.get("title", "")
     top_content = data.get("content", "")
 
+    def _norm_title(t: str) -> str:
+        # Titles are plain text but may contain double spaces / tabs that
+        # source normalisation collapses. Apply the same whitespace collapse.
+        return re.sub(r'\s+', ' ', t).strip()
+
     if top_title:
-        units.append((top_title, top_title, "__top__", False))
+        units.append((top_title, _norm_title(top_title), "__top__", False))
     if top_content:
         norm = _normalize_md_unit(top_content)
         if norm:
@@ -638,7 +735,7 @@ def _build_rst_search_units(
         content = sec.get("content", "")
         sid = sec.get("id", "?")
         if title:
-            units.append((title, title, sid, False))
+            units.append((title, _norm_title(title), sid, False))
         if content:
             norm = _normalize_md_unit(content)
             if norm:
