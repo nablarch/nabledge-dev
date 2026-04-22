@@ -73,4 +73,24 @@ public class RM11AC0301RequestTest extends BatchRequestTestSupport {
 | なお、異常系ケースでは電文が送信されないため送信電文の期待値を設定する必要はない。
 
 ![](../../../knowledge/assets/testing-framework-02-requestunittest-delayed-send/delayed_send_error.png)
-> **Tip:** 異常系テストケースを実施する場合には、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。 以下にその設定例を示す。 * 本番用設定例 .. code-block:: xml <!--ディスパッチ用ハンドラ--> <component name="requestPathJavaPackageMapping" class="nablarch.fw.handler.RequestPathJavaPackageMapping"> <!-- 応答不要メッセージ送信処理用共通アクションを設定する。 --> <property name="basePackage" value="nablarch.fw.messaging.action.AsyncMessageSendAction" /> <property name="immediate" value="false" /> </component> * テスト用設定 上記本番環境用設定をテスト用のアクションクラスで上書きを行う。 .. code-block:: xml <!--ディスパッチ用ハンドラ--> <component name="requestPathJavaPackageMapping" class="nablarch.fw.handler.RequestPathJavaPackageMapping"> <property name="basePackage" value="nablarch.test.core.messaging.AsyncMessageSendActionForUt" /> <property name="immediate" value="false" /> </component>
+> **Tip:** 異常系テストケースを実施する場合には、応答不要メッセージ送信処理用共通アクションをテスト用アクションに切り替える必要がある。 以下にその設定例を示す。 * 本番用設定例
+
+```xml
+<!--ディスパッチ用ハンドラ-->
+<component name="requestPathJavaPackageMapping" class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+  <!-- 応答不要メッセージ送信処理用共通アクションを設定する。 -->
+  <property name="basePackage" value="nablarch.fw.messaging.action.AsyncMessageSendAction" />
+  <property name="immediate" value="false" />
+</component>
+```
+* テスト用設定
+
+上記本番環境用設定をテスト用のアクションクラスで上書きを行う。
+
+```xml
+<!--ディスパッチ用ハンドラ-->
+<component name="requestPathJavaPackageMapping" class="nablarch.fw.handler.RequestPathJavaPackageMapping">
+  <property name="basePackage" value="nablarch.test.core.messaging.AsyncMessageSendActionForUt" />
+  <property name="immediate" value="false" />
+</component>
+```

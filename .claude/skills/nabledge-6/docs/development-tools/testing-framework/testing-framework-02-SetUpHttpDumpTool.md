@@ -80,6 +80,3 @@ Eclipseのパッケージエクスプローラ等からHTMLファイルを右ク
 httpDumpで開くことでツールを起動できる。
 
 ![](../../../knowledge/assets/testing-framework-02-SetUpHttpDumpTool/04_Eclipse_OpenWith.png)
-.. |br| raw:: html
-
-<br/>

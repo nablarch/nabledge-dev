@@ -711,6 +711,3 @@ Eclipseでの設定方法は以下のとおり。
 * 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。
 
 ![](../../../knowledge/assets/testing-framework-02-RequestUnitTest/skip_resource_copy.png)
-.. |br| raw:: html
-
-<br />

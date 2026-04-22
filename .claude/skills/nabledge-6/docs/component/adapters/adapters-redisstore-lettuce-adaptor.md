@@ -11,7 +11,16 @@
 
 ここでは、 `localhost` の `6379` ポートで起動している単一のRedisインスタンスに対して接続する場合を例に、設定方法を説明する。
 
-> **Tip:** ローカルで試す場合、Dockerを使えば次のようにコマンドを実行することでRedisインスタンスを構築できる。 .. code-block:: shell > docker run --name redis -d -p 6379:6379 redis:5.0.9 停止する場合は次のようにコマンドを実行する。 .. code-block:: shell > docker stop redis
+> **Tip:** ローカルで試す場合、Dockerを使えば次のようにコマンドを実行することでRedisインスタンスを構築できる。
+
+```shell
+> docker run --name redis -d -p 6379:6379 redis:5.0.9
+```
+停止する場合は次のようにコマンドを実行する。
+
+```shell
+> docker stop redis
+```
 
 ## 設定内容
 

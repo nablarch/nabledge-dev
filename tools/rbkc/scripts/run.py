@@ -326,7 +326,7 @@ def verify(
             all_ok = False
             continue
 
-        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir):
+        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir, label_map=label_map):
             print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
 

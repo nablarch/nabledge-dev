@@ -40,10 +40,6 @@ public class RM21AA001ActionRequestTest extends MessagingRequestTestSupport {
 
 LIST_MAPのデータタイプで１テストメソッド分のテストショット表を記載する。IDは、\ **testShots**\ とする。
 
-..    .. image:: ./_image/new_testCases.png
-..    :scale: 80
-
-
 １ケース毎に以下の要素を持たせる。
 
 | カラム名           説明 | 必須 |  |
@@ -173,7 +169,12 @@ MESSAGE=setUpMessages
 </tbody>
 </table>
 
-> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。 .. code-block:: properties # フレームワーク制御ヘッダ名をカンマ区切りで指定する。 reader.fwHeaderfields=requestId,addHeader
+> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。
+
+```properties
+# フレームワーク制御ヘッダ名をカンマ区切りで指定する。
+reader.fwHeaderfields=requestId,addHeader
+```
 3. メッセージボディ
 
 フレームワーク制御ヘッダ以降のメッセージを記載する。

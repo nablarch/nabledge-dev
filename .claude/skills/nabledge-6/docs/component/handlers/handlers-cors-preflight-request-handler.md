@@ -94,14 +94,6 @@ CORSの処理は `Cors` インタフェースが行う。
 
 - リクエストがプリフライトリクエストの場合は以下のレスポンスを返す。
 
-.. textlint-disable ja-technical-writing/max-comma
-- ステータスコード：204
-- Access-Control-Allow-Methodsヘッダ：OPTIONS, GET, POST, PUT, DELETE, PATCH
-- Access-Control-Allow-Headersヘッダ：Content-Type, X-CSRF-TOKEN
-- Access-Control-Max-Ageヘッダ：-1
-- 以下の「実際のリクエスト」と同じレスポンスヘッダも設定する。
-.. textlint-enable ja-technical-writing/max-comma
-
 実際のリクエスト(CorsResponseFinisherが呼び出す処理)
 - 以下のレスポンスヘッダを設定する。
 

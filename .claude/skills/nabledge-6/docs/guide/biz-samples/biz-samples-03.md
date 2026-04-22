@@ -275,12 +275,12 @@ public class ProjectSearchForm {
 |  | デフォルトは"row"。\|br\| |
 | varStatusName | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。\|br\| |
 |  | デフォルトは"status"。 |
-|  | .. tip:: |
+|  |  |
 |  | n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\ |
 |  | エラーが発生し値を取得できない。\ |
 |  | n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\ |
 |  | 下記に使用例を示す。 |
-|  | .. code-block:: jsp |
+|  |  |
 |  | <n:set var="rowCount" value="${status.count}" /> |
 |  | <n:write name="rowCount" /> |
 | varCountName | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。\|br\| |
@@ -488,12 +488,12 @@ listSearchResultタグは、検索結果の一覧表示を行う。
 |  | デフォルトは"row"。 |
 | varStatusName | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。\|br\| |
 |  | デフォルトは"status"。 |
-|  | .. tip:: |
+|  |  |
 |  | n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\ |
 |  | エラーが発生し値を取得できない。\ |
 |  | n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\ |
 |  | 下記に使用例を示す。 |
-|  | .. code-block:: jsp |
+|  |  |
 |  | <n:set var="rowCount" value="${status.count}" /> |
 |  | <n:write name="rowCount" /> |
 | varCountName | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。\|br\| |
@@ -507,8 +507,3 @@ listSearchResultタグは、検索結果の一覧表示を行う。
 |  | デフォルトは"nablarch_odd"。 |
 | evenValue | ボディ行の偶数行に使用するclass属性。\|br\| |
 |  | デフォルトは"nablarch_even"。 |
-
-
-.. |br| raw:: html
-
-<br />

@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "データを導出する",
-      "content": "既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。\n\n#. getting_started_chunk-read\n#. getting_started_chunk-business_logic\n#. getting_started_chunk-persistence\n#. getting_started_chunk-job\n\n処理フローについては、 Chunkステップのバッチの処理フロー を参照。\n責務配置については Chunkステップの責務配置 を参照。\n\nバッチ処理は、 |jsr352| で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。\nリスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。"
+      "content": "既存データから新たにデータを導出するバッチの実装方法を以下の順に説明する。\n\n#. getting_started_chunk-read\n#. getting_started_chunk-business_logic\n#. getting_started_chunk-persistence\n#. getting_started_chunk-job\n\n処理フローについては、 Chunkステップのバッチの処理フロー を参照。\n責務配置については Chunkステップの責務配置 を参照。\n\nバッチ処理は、 [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。\nリスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。"
     },
     {
       "id": "s2",
@@ -27,7 +27,7 @@
     {
       "id": "s5",
       "title": "JOB設定ファイルを作成する",
-      "content": "JOBの実行設定を記載したファイルを作成する。\n\nbonus-calculate.xml\n```xml\n<job id=\"bonus-calculate\" xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" version=\"2.0\">\n  <listeners>\n    <listener ref=\"nablarchJobListenerExecutor\" />\n  </listeners>\n\n  <step id=\"step1\">\n    <listeners>\n      <listener ref=\"nablarchStepListenerExecutor\" />\n      <listener ref=\"nablarchItemWriteListenerExecutor\" />\n    </listeners>\n\n    <chunk item-count=\"1000\">\n      <reader ref=\"employeeSearchReader\" />\n      <processor ref=\"bonusCalculateProcessor\" />\n      <writer ref=\"bonusWriter\" />\n    </chunk>\n  </step>\n</job>\n```\nこの実装のポイント\n* ジョブ定義ファイルは `/src/main/resources/META-INF/batch-jobs/` 配下に配置する。\n* `job` 要素 の `id` 属性で、ジョブ名称を指定する。\n* `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりで処理する件数を設定する。\n* 設定ファイルの詳細な記述方法は |jsr352| を参照。\n\n.. |jsr352| raw:: html\n\n<a href=\"https://jakarta.ee/specifications/batch/\" target=\"_blank\">Jakarta Batch(外部サイト、英語)</a>"
+      "content": "JOBの実行設定を記載したファイルを作成する。\n\nbonus-calculate.xml\n```xml\n<job id=\"bonus-calculate\" xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" version=\"2.0\">\n  <listeners>\n    <listener ref=\"nablarchJobListenerExecutor\" />\n  </listeners>\n\n  <step id=\"step1\">\n    <listeners>\n      <listener ref=\"nablarchStepListenerExecutor\" />\n      <listener ref=\"nablarchItemWriteListenerExecutor\" />\n    </listeners>\n\n    <chunk item-count=\"1000\">\n      <reader ref=\"employeeSearchReader\" />\n      <processor ref=\"bonusCalculateProcessor\" />\n      <writer ref=\"bonusWriter\" />\n    </chunk>\n  </step>\n</job>\n```\nこの実装のポイント\n* ジョブ定義ファイルは `/src/main/resources/META-INF/batch-jobs/` 配下に配置する。\n* `job` 要素 の `id` 属性で、ジョブ名称を指定する。\n* `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりで処理する件数を設定する。\n* 設定ファイルの詳細な記述方法は [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) を参照。"
     }
   ]
 }

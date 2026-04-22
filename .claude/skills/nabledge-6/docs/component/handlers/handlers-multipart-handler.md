@@ -170,4 +170,13 @@ public HttpResponse upload(HttpRequest request, ExecutionContext context) throws
 * データバインドを使ってアップロードファイルを処理する
 * 汎用データフォーマットを使ってアップロードファイルを処理する
 
-> **Tip:** アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。 以下の様に実装することでアップロードファイルのバイトデータを読み込むことができる。 .. code-block:: java File savedFile = partInfo.getSavedFile(); try { byte[] bytes = Files.readAllBytes(savedFile.toPath()); } catch (IOException e) { throw new RuntimeException(e); }
+> **Tip:** アップロードされたファイルが画像ファイル等のバイナリファイルの場合は、読み込んだバイナリデータを使用して処理を行うこと。 以下の様に実装することでアップロードファイルのバイトデータを読み込むことができる。
+
+```java
+File savedFile = partInfo.getSavedFile();
+try {
+    byte[] bytes = Files.readAllBytes(savedFile.toPath());
+} catch (IOException e) {
+    throw new RuntimeException(e);
+}
+```

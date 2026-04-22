@@ -293,7 +293,18 @@ public class SampleForm {
     }
 }
 ```
-> **Tip:** 許容する文字セットの文字数が大きくなった場合、後方に定義されている文字のチェックには時間を要する。(単純に前方から順に文字セットに含まれるかをチェックするため) この問題を解決するために、一度チェックした文字の結果をキャッシュする仕組みを提供している。 ※原則キャッシュ機能は使わずに開発を進め、どうしても文字種バリデーションがボトルネックとなる場合に、キャッシュ機能を使うか否か検討すると良い。 使い方は単純で、以下のコンポーネント定義のように、オリジナルの文字種セットの定義を、 キャッシュ用の `CachingCharsetDef` に設定するだけである。 .. code-block:: xml <component name="半角数字" class="nablarch.core.validation.validator.unicode.CachingCharsetDef"> <property name="charsetDef"> <component class="nablarch.core.validation.validator.unicode.LiteralCharsetDef"> <property name="allowedCharacters" value="01234567890" /> </component> </property> <property name="messageId" value="numberString.message" /> </component>
+> **Tip:** 許容する文字セットの文字数が大きくなった場合、後方に定義されている文字のチェックには時間を要する。(単純に前方から順に文字セットに含まれるかをチェックするため) この問題を解決するために、一度チェックした文字の結果をキャッシュする仕組みを提供している。 ※原則キャッシュ機能は使わずに開発を進め、どうしても文字種バリデーションがボトルネックとなる場合に、キャッシュ機能を使うか否か検討すると良い。 使い方は単純で、以下のコンポーネント定義のように、オリジナルの文字種セットの定義を、 キャッシュ用の `CachingCharsetDef` に設定するだけである。
+
+```xml
+<component name="半角数字" class="nablarch.core.validation.validator.unicode.CachingCharsetDef">
+  <property name="charsetDef">
+    <component class="nablarch.core.validation.validator.unicode.LiteralCharsetDef">
+      <property name="allowedCharacters" value="01234567890" />
+    </component>
+  </property>
+  <property name="messageId" value="numberString.message" />
+</component>
+```
 サロゲートペアを許容する
 このバリデーションでは、デフォルトではサロゲートペアを許容しない。
 （例え `LiteralCharsetDef` で明示的にサロゲートペアの文字を定義していても許容しない）
@@ -330,7 +341,18 @@ public class SampleForm {
   }
 }
 ```
-> **Important:** Jakarta Bean Validationでは、バリデーションの実行順序は保証されないため、 項目単体のバリデーションよりも前に相関バリデーションが呼び出される場合がある。 このため、相関バリデーションでは項目単体のバリデーションが実行されていない場合でも、 予期せぬ例外が発生しないようにバリデーションのロジックを実装する必要がある。 例えば、上記の例で `mailAddress` 及び `confirmMailAddress` が任意項目の場合は、 未入力の場合にはバリデーションを実行せずに、結果を戻す必要がある。 .. code-block:: java @AssertTrue(message = "{compareMailAddress}") public boolean isEqualsMailAddress() { if (StringUtil.isNullOrEmpty(mailAddress) || StringUtil.isNullOrEmpty(confirmMailAddress)) { // どちらかが未入力の場合は、相関バリデーションは実施しない。(バリデーションOKとする) return true; } return Objects.equals(mailAddress, confirmMailAddress); }
+> **Important:** Jakarta Bean Validationでは、バリデーションの実行順序は保証されないため、 項目単体のバリデーションよりも前に相関バリデーションが呼び出される場合がある。 このため、相関バリデーションでは項目単体のバリデーションが実行されていない場合でも、 予期せぬ例外が発生しないようにバリデーションのロジックを実装する必要がある。 例えば、上記の例で `mailAddress` 及び `confirmMailAddress` が任意項目の場合は、 未入力の場合にはバリデーションを実行せずに、結果を戻す必要がある。
+
+```java
+@AssertTrue(message = "{compareMailAddress}")
+public boolean isEqualsMailAddress() {
+  if (StringUtil.isNullOrEmpty(mailAddress) || StringUtil.isNullOrEmpty(confirmMailAddress)) {
+    // どちらかが未入力の場合は、相関バリデーションは実施しない。(バリデーションOKとする)
+    return true;
+  }
+  return Objects.equals(mailAddress, confirmMailAddress);
+}
+```
 
 ## データベースとの相関バリデーションを行う
 

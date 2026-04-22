@@ -357,4 +357,18 @@ public void setGender(String gender) {
 @CodeValue(codeId = "GENDER", pattern = "PATTERN2")
 private String gender;
 ```
-> **Tip:** `ドメインバリデーション <bean_validation-domain_validation>` を使用した場合、1つのドメインに対して1つのパターンしか指定できない。 このため、複数のパターンに対応するためには、パターンに対応したドメインを定義する必要がある。 ただし、全てのパターンに対応したドメインを定義する必要はなく、バリデーションで必要なドメインのみ定義すればよい。 以下に例を示す。 .. code-block:: java public class SampleDomainBean { // PATTERN1用のドメイン @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN1") String flowStatusGeneral; // PATTERN2用のドメイン @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN2") String flowStatusGuest; }
+> **Tip:** `ドメインバリデーション <bean_validation-domain_validation>` を使用した場合、1つのドメインに対して1つのパターンしか指定できない。 このため、複数のパターンに対応するためには、パターンに対応したドメインを定義する必要がある。 ただし、全てのパターンに対応したドメインを定義する必要はなく、バリデーションで必要なドメインのみ定義すればよい。 以下に例を示す。
+
+```java
+public class SampleDomainBean {
+
+  // PATTERN1用のドメイン
+  @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN1")
+  String flowStatusGeneral;
+
+  // PATTERN2用のドメイン
+  @CodeValue(codeId = "FLOW_STATUS", pattern = "PATTERN2")
+  String flowStatusGuest;
+
+}
+```

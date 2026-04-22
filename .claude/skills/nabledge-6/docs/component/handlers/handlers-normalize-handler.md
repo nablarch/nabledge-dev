@@ -79,5 +79,9 @@ public class SampleNormalizer implements Normalizer {
   </property>
 </component>
 ```
-> **Tip:** ノーマライザを設定せずに、以下のようにハンドラを設定した場合、デフォルトで提供される前後のホワイトスペースを除去するノーマライザが自動的に適用される。 .. code-block:: xml <component class="nablarch.fw.web.handler.NormalizationHandler" />
-ホワイトスペースの定義は :java:extdoc:`Character#isWhitespace <java.lang.Character.isWhitespace(int)>` を参照
+> **Tip:** ノーマライザを設定せずに、以下のようにハンドラを設定した場合、デフォルトで提供される前後のホワイトスペースを除去するノーマライザが自動的に適用される。
+
+```xml
+<component class="nablarch.fw.web.handler.NormalizationHandler" />
+```
+ホワイトスペースの定義は `Character#isWhitespace` を参照

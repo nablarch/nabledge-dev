@@ -41,7 +41,7 @@ SELECT * FROM BONUS;
 処理フローについては、 Chunkステップのバッチの処理フロー を参照。
 責務配置については Chunkステップの責務配置 を参照。
 
-バッチ処理は、 |jsr352| で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
+バッチ処理は、 [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
 リスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。
 
 ## 入力データソースからデータを読み込む
@@ -254,8 +254,4 @@ bonus-calculate.xml
 * ジョブ定義ファイルは `/src/main/resources/META-INF/batch-jobs/` 配下に配置する。
 * `job` 要素 の `id` 属性で、ジョブ名称を指定する。
 * `chunk` 要素の `item-count` 属性で `writeItems` 一回当たりで処理する件数を設定する。
-* 設定ファイルの詳細な記述方法は |jsr352| を参照。
-
-.. |jsr352| raw:: html
-
-<a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a>
+* 設定ファイルの詳細な記述方法は [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) を参照。

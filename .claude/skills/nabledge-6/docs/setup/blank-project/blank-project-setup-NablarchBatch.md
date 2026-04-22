@@ -183,12 +183,7 @@ mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
 終了はctrl + c等で強制終了すること。
 
 
-.. important ::
-
-Nablarchが想定している正しい終了方法は、BATCH_REQUESTテーブルのPROCESS_HALT_FLGのフラグに1を設定するという方法である。本手順上では、簡単に停止させるために、ctrl + cで停止している。
-
-
-テーブルをキューとして使ったメッセージングを一端終了した後に再び起動させたい場合、 ../firstStep_appendix/ResiBatchReboot を参照。
+> **Important:** Nablarchが想定している正しい終了方法は、BATCH_REQUESTテーブルのPROCESS_HALT_FLGのフラグに1を設定するという方法である。本手順上では、簡単に停止させるために、ctrl + cで停止している。 テーブルをキューとして使ったメッセージングを一端終了した後に再び起動させたい場合、 ../firstStep_appendix/ResiBatchReboot を参照。
 
 ## 疎通確認になぜか失敗する場合
 

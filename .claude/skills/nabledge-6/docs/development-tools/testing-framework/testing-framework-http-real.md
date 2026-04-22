@@ -190,7 +190,12 @@ MESSAGE=setUpMessages
 </tbody>
 </table>
 
-> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。 .. code-block:: properties # フレームワーク制御ヘッダ名をカンマ区切りで指定する。 reader.fwHeaderfields=requestId,addHeader
+> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。
+
+```properties
+# フレームワーク制御ヘッダ名をカンマ区切りで指定する。
+reader.fwHeaderfields=requestId,addHeader
+```
 3. メッセージボディ
 
 フレームワーク制御ヘッダ以降のメッセージを記載する。
@@ -264,6 +269,3 @@ MESSAGE=setUpMessages
 応答電文のフィールド長は"-"(ハイフン)を設定する。
 
 ![](../../../knowledge/assets/testing-framework-http-real/http_real_test_data.png)
-.. |br| raw:: html
-
-<br />

@@ -680,9 +680,9 @@ LOGGER.logInfo("hello");
 | 出力可能なJavaのクラス | JSONによる出力 |
 |---|---|
 | `String` | JSONの文字列として出力する。 |
-| `Number` 及びそのサブクラス \|br\| （ `Integer` , `Long` , `Short` , `Byte` , `Float` , `Double` , `BigDecimal` , `BigInteger` , `AtomicInteger` , `AtomicLong` ） | `toString()` メソッドの戻り値をJSONの数値として出力する。 NaN及び無限大はJSONの文字列として出力する。 |
+| `Number` 及びそのサブクラス html <br /> （ `Integer` , `Long` , `Short` , `Byte` , `Float` , `Double` , `BigDecimal` , `BigInteger` , `AtomicInteger` , `AtomicLong` ） | `toString()` メソッドの戻り値をJSONの数値として出力する。 NaN及び無限大はJSONの文字列として出力する。 |
 | `Boolean` | JSONの真理値（ `true` / `false` ）として出力する。 |
-| `Date` \|br\| `Calendar`  及びそのサブクラス \|br\| `LocalDateTime` | JSONの文字列として出力する。デフォルトの書式は、 `"yyyy-MM-dd HH:mm:ss.SSS"` 。 書式を変更する場合は、 `datePattern` プロパティにて指定する。 |
+| `Date` html <br /> `Calendar`  及びそのサブクラス html <br /> `LocalDateTime` | JSONの文字列として出力する。デフォルトの書式は、 `"yyyy-MM-dd HH:mm:ss.SSS"` 。 書式を変更する場合は、 `datePattern` プロパティにて指定する。 |
 | `Map`  の実装クラス | JSONのオブジェクトとして出力する。 キーが `String` ではない場合や値が `null` となる場合は、キーも含め出力されない。 値として `null` を出力する場合は、プロパティ `ignoreNullValueMember` に `false` をセットする。 |
 | `List` の実装クラス、及び配列 | JSONの配列として出力する。 |
 | `null` | JSONの `null` として出力する。 `Map` の値が `null` のとき、デフォルトでは出力対象外となる。 |
@@ -1028,29 +1028,25 @@ LogPublisher.addListener(listener);
 
 | 機能 | Nablarch | log4j |
 |---|---|---|
-| ログの出力有無をログレベルで制御できる | ○ \|br\| 解説書へ | ○ |
-| ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる | ○ \|br\| 解説書へ | ○ |
-| 1つのログを複数の出力先に出力できる | ○ \|br\| 解説書へ | ○ |
-| ログを標準出力に出力できる | ○ \|br\| 解説書へ | ○ |
-| ログをファイルに出力できる | ○ \|br\| 解説書へ | ○ |
-| ファイルサイズによるログファイルのローテーションができる | △ [#logrolate]_ \|br\| 解説書へ | ○ |
-| 日時によるログファイルのローテーションができる | △ [#logrolate]_ \|br\| 解説書へ | ○ |
+| ログの出力有無をログレベルで制御できる | ○ html <br /> 解説書へ | ○ |
+| ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる | ○ html <br /> 解説書へ | ○ |
+| 1つのログを複数の出力先に出力できる | ○ html <br /> 解説書へ | ○ |
+| ログを標準出力に出力できる | ○ html <br /> 解説書へ | ○ |
+| ログをファイルに出力できる | ○ html <br /> 解説書へ | ○ |
+| ファイルサイズによるログファイルのローテーションができる | △ [#logrolate]_ html <br /> 解説書へ | ○ |
+| 日時によるログファイルのローテーションができる | △ [#logrolate]_ html <br /> 解説書へ | ○ |
 | ログをメールで送信できる | × [#extends_or_log4j]_ | ○ |
 | ログをTelnetで送信できる | × [#extends_or_log4j]_ | ○ |
 | ログをSyslogで送信できる | × [#extends_or_log4j]_ | ○ |
 | ログをWindows NTのイベントログに追加できる | × [#extends_or_log4j]_ | ○ |
 | データベースにログを出力できる | × [#extends_or_log4j]_ | ○ |
 | ログを非同期で出力できる | × [#extends_or_log4j]_ | ○ |
-| ログのフォーマットをパターン文字列で指定できる | ○ \|br\| 解説書へ | ○ |
-| 障害ログを出力できる | ○ \|br\| 解説書へ | － |
-| HTTPアクセスログを出力できる | ○ \|br\| 解説書へ | － |
-| SQLログを出力できる | ○ \|br\| 解説書へ | － |
-| パフォーマンスログを出力できる | ○ \|br\| 解説書へ | － |
-| メッセージングログを出力できる | ○ \|br\| 解説書へ | － |
+| ログのフォーマットをパターン文字列で指定できる | ○ html <br /> 解説書へ | ○ |
+| 障害ログを出力できる | ○ html <br /> 解説書へ | － |
+| HTTPアクセスログを出力できる | ○ html <br /> 解説書へ | － |
+| SQLログを出力できる | ○ html <br /> 解説書へ | － |
+| パフォーマンスログを出力できる | ○ html <br /> 解説書へ | － |
+| メッセージングログを出力できる | ○ html <br /> 解説書へ | － |
 Nablarchのログ出力は、ファイルの世代管理を提供していないので、一部提供ありとしている。
 .. [#extends_or_log4j] logアダプタ を使用する。
 または、プロジェクトで作成する。作成方法は、 LogWriterを追加する を参照。
-
-.. |br| raw:: html
-
-<br />

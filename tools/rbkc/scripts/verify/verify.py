@@ -152,13 +152,25 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
             issues.append(f"[QO4] index.toon missing: {idx}")
         return issues
 
-    # Parse index paths from index.toon (tab-separated, path is last column)
+    # Parse index paths from index.toon.
+    # TOON format: header "files[N,]{cols}:" then indented rows
+    # with comma-separated fields; path is the last field.
     lines = idx.read_text(encoding="utf-8").splitlines()
     indexed_paths: set[str] = set()
-    for line in lines[1:]:  # skip header
-        parts = line.split("\t")
-        if parts:
-            indexed_paths.add(parts[-1].strip())
+    in_table = False
+    for line in lines:
+        stripped = line.strip()
+        if not in_table:
+            if stripped.startswith("files[") and stripped.endswith(":"):
+                in_table = True
+            continue
+        if not line.startswith("  ") or not stripped:
+            continue
+        # Path is the last comma-separated field on the row
+        last_comma = stripped.rfind(",")
+        if last_comma < 0:
+            continue
+        indexed_paths.add(stripped[last_comma + 1:].strip())
 
     for jf in sorted(kdir.rglob("*.json")):
         try:
@@ -242,9 +254,10 @@ def _check_format_purity(data: dict, fmt: str) -> list[str]:
 # QL2: 外部URL一致
 # ---------------------------------------------------------------------------
 
-_URL_RE = re.compile(r'https?://[^\s\'"<>)\]]+')
-_URL_TRAILING_PUNCT_RE = re.compile(r'[.,;:]+$')
+_URL_RE = re.compile(r'https?://[^\s\'"<>)\]`]+')
+_URL_TRAILING_PUNCT_RE = re.compile(r'[.,;:`]+$')
 _RST_TARGET_LINE_RE = re.compile(r'^(?:\.\.?\s+_|__\s+https?://)')
+_RST_SUBSTITUTION_RE = re.compile(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::')
 
 
 def _clean_url(url: str) -> str:
@@ -252,10 +265,35 @@ def _clean_url(url: str) -> str:
 
 
 def _source_urls(source_text: str, fmt: str) -> list[str]:
+    """Extract external URLs actually visible to readers.
+
+    Excludes RST link-target definitions and RST substitution definitions
+    (the bodies of ``.. |name| raw:: html`` blocks). Substitution blocks
+    are dedented bodies that start after the directive header and run until
+    a blank line immediately followed by a non-indented line, so we track
+    block context.
+    """
     urls = []
-    for line in source_text.splitlines():
-        if fmt == "rst" and _RST_TARGET_LINE_RE.match(line.strip()):
-            continue
+    lines = source_text.splitlines()
+    in_subst_block = False
+    subst_indent = 0
+    for line in lines:
+        stripped = line.strip()
+        if fmt == "rst":
+            if _RST_SUBSTITUTION_RE.match(stripped):
+                in_subst_block = True
+                subst_indent = len(line) - len(line.lstrip())
+                continue
+            if in_subst_block:
+                if not stripped:
+                    continue
+                cur_indent = len(line) - len(line.lstrip())
+                if cur_indent > subst_indent:
+                    # still inside the substitution body — skip
+                    continue
+                in_subst_block = False
+            if _RST_TARGET_LINE_RE.match(stripped):
+                continue
         for url in _URL_RE.findall(line):
             u = _clean_url(url)
             if u:
@@ -292,8 +330,92 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 # QC1-QC4: sequential-delete algorithm (RST/MD)
 # ---------------------------------------------------------------------------
 
+def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
+    """Normalize RST markup to plain text for comparison with JSON content.
+
+    Applies the inverse of common RST-to-Markdown conversions so that
+    JSON units (already in MD form) can be found in the normalized source.
+    Uses ``[^\\S\\n]`` (non-newline whitespace) to avoid swallowing newlines before
+    the final whitespace collapse step.
+    """
+    # RST substitution reference |name| -> "" (the converter expands it into a
+    # different token, so stripping it from the source keeps normalise lossy
+    # but non-mismatching; substitution-body URLs are handled by QL2).
+    text = re.sub(r'\|[^|\n]+\|_?', '', text)
+    # ``inline code`` -> inline code
+    text = re.sub(r'``([^`]+)``', r'\1', text)
+    # :ref:`display text <label>` -> display text
+    text = re.sub(r':ref:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
+    # :ref:`label` -> resolved title (if known), else label
+    if label_map:
+        def _resolve_ref(m: re.Match) -> str:
+            label = m.group(1).strip()
+            return label_map.get(label, label)
+        text = re.sub(r':ref:`([^`]+)`', _resolve_ref, text)
+    else:
+        text = re.sub(r':ref:`([^`]+)`', r'\1', text)
+    # :java:extdoc:`ClassName <fqcn>` -> ClassName (converter drops the fqcn)
+    text = re.sub(r':java:extdoc:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
+    # `link text <url>`_ -> link text  (RST external hyperlink, inline form)
+    text = re.sub(r'`([^`<]+?)[^\S\n]*<https?://[^>]+>`_?', r'\1', text)
+    # `text`_  -> text (named-reference form; resolved URL is separate target def)
+    text = re.sub(r'`([^`<]+?)`_+', r'\1', text)
+    # General RST role :role:`text` -> text
+    text = re.sub(r':[a-zA-Z][a-zA-Z0-9_.:-]*:`([^`]*)`', r'\1', text)
+    # `single-backtick interpreted text` — RST treats this as an interpreted
+    # text role; the converter passes it through as a single-backtick MD code
+    # span, but ``_normalize_md_unit`` strips those backticks, so match here.
+    # Must run AFTER all role-based regexes so it only fires on bare backticks.
+    text = re.sub(r'(?<![`])`([^`\n]+)`(?![`])', r'\1', text)
+    # RST directive lines: .. directive:: args -> remove line (keep body content)
+    text = re.sub(r'^[^\S\n]*\.\.[^\S\n]+\S[^\n]*\n', '', text, flags=re.MULTILINE)
+    # RST option lines inside directives: :option: value -> remove line
+    text = re.sub(r'^[^\S\n]*:[a-zA-Z][a-zA-Z0-9_-]*:[^\n]*\n', '', text, flags=re.MULTILINE)
+    # RST list-table item markers: "* - " or "  - " -> just content (use [^\S\n]* not \s*)
+    text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]*', '', text, flags=re.MULTILINE)
+    # Remove leading indentation from directive bodies (1-8 non-newline spaces)
+    text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
+    # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
+    text = re.sub(r'^[=\-~^"\'`#*+<>]{4,}[^\S\n]*$', '', text, flags=re.MULTILINE)
+    # Collapse all whitespace (including newlines) for multi-line comparison
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
+def _normalize_md_unit(text: str) -> str:
+    """Normalize MD content (JSON field) to plain text for RST source comparison.
+
+    Strips code fences, headings, inline code markers, links, table syntax, and
+    blockquote/admonition prefixes, then collapses whitespace so multi-line content
+    can be found in the normalized RST source.
+    """
+    # Code fences: ```lang\n...\n``` -> content only
+    text = re.sub(r'```[a-zA-Z0-9]*\n', '', text)
+    text = re.sub(r'```', '', text)
+    # MD headings: #### Heading -> Heading
+    text = re.sub(r'^#{1,6}[^\S\n]+', '', text, flags=re.MULTILINE)
+    # `inline code` -> inline code
+    text = re.sub(r'`([^`]+)`', r'\1', text)
+    # [link text](url) -> link text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    # Admonition header line: > **Type:** ... -> content only
+    text = re.sub(r'>[^\S\n]*\*\*[^*]+\*\*:?[^\S\n]*', '', text)
+    # Remaining blockquote prefix: > text -> text
+    text = re.sub(r'^>[^\S\n]*', '', text, flags=re.MULTILINE)
+    # MD table separator rows: |---|---| -> remove line
+    text = re.sub(r'^\|[-:| ]+\|[^\S\n]*$', '', text, flags=re.MULTILINE)
+    # MD table cell borders: | -> space
+    text = re.sub(r'\|', ' ', text)
+    # Collapse whitespace (handles multi-line content merged into one line)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
 def _strip_md_to_plain_lines(text: str) -> list[str]:
-    """Strip Markdown syntax from JSON content; return non-empty searchable lines."""
+    """Strip Markdown syntax from JSON content; return non-empty searchable lines.
+
+    Used only for MD sources (verbatim content comparison).
+    """
     result = []
     in_fence = False
     for line in text.split('\n'):
@@ -322,11 +444,30 @@ def _is_rst_syntax_line(line: str) -> bool:
         return True
     if re.match(r"^[=\-~^\"'`#*+<>]{4,}\s*$", s):
         return True
+    # Simple-table separator row, e.g. `=== === ====` (chars + spaces only)
+    if re.match(r'^[=\-]+(\s+[=\-]+)+\s*$', s):
+        return True
+    # Grid-table border: `+---+---+` / `+===+===+`
+    if re.match(r'^\+[-=+]+\+?\s*$', s):
+        return True
+    # Line continuation marker (RST leading backslash) `\` on its own
+    if s == '\\':
+        return True
     if re.match(r'^\.\.\s*(\S.*::|$)', s):
         return True
-    if re.match(r'^\.\.\s+_[a-zA-Z0-9_-]+:', s):
+    # Label definition: `.. _label:` / `.. _label: url` — RST permits arbitrary
+    # text in the label; accept anything up to the terminating colon (the
+    # URL/target that may follow is validated separately).
+    if re.match(r'^\.\.\s+_[^:]+:', s):
         return True
+    # Substitution definition (any form): `.. |name| ...`
     if re.match(r'^\.\.\s+\|', s):
+        return True
+    # Footnote / citation target: `.. [#name]` / `.. [1]` etc.
+    if re.match(r'^\.\.\s+\[[^\]]+\]', s):
+        return True
+    # Anonymous hyperlink target: `__ https://...`
+    if re.match(r'^__\s+https?://', s):
         return True
     if re.match(r'^:[a-zA-Z][a-zA-Z0-9_.-]*:`', s):
         return True
@@ -361,7 +502,41 @@ _RST_STRUCTURAL_DIRECTIVES = re.compile(
 )
 
 
-def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[str]:
+def _build_rst_search_units(
+    data: dict,
+) -> list[tuple[str, str, str, bool]]:
+    """Build (original_unit, normalized_unit, sid, is_content) for RST content.
+
+    For RST sources: JSON content is in MD form (converter output).
+    We normalize each JSON field to plain text so it can be found in a
+    normalized RST source.  Titles are searched verbatim (already plain text).
+    """
+    units: list[tuple[str, str, str, bool]] = []
+    top_title = data.get("title", "")
+    top_content = data.get("content", "")
+
+    if top_title:
+        units.append((top_title, top_title, "__top__", False))
+    if top_content:
+        norm = _normalize_md_unit(top_content)
+        if norm:
+            units.append((top_content, norm, "__top__", True))
+
+    for sec in data.get("sections", []):
+        title = sec.get("title", "")
+        content = sec.get("content", "")
+        sid = sec.get("id", "?")
+        if title:
+            units.append((title, title, sid, False))
+        if content:
+            norm = _normalize_md_unit(content)
+            if norm:
+                units.append((content, norm, sid, True))
+
+    return units
+
+
+def check_content_completeness(source_text: str, data: dict, fmt: str, label_map: dict | None = None) -> list[str]:
     """QC1/QC2/QC3/QC4: sequential-delete algorithm."""
     if _no_knowledge(data):
         return []
@@ -373,35 +548,106 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
     if not sections and not top_title and not top_content:
         return []
 
-    # Build search units: (text, section_id, is_content)
-    search_units: list[tuple[str, str, bool]] = []
+    issues: list[str] = []
 
+    if fmt == "rst":
+        return _check_rst_content_completeness(source_text, data, issues, label_map)
+    elif fmt == "md":
+        return _check_md_content_completeness(source_text, data, issues)
+    return issues
+
+
+def _check_rst_content_completeness(
+    source_text: str, data: dict, issues: list[str], label_map: dict | None = None
+) -> list[str]:
+    """QC1-QC4 for RST sources using normalized comparison.
+
+    RST markup (``code``, :ref:, `text <url>`_) is normalized to plain text
+    on both sides before comparison, eliminating false positives from
+    RST-to-Markdown conversion differences.
+    """
+    norm_source = _normalize_rst_source(source_text, label_map)
+    search_units = _build_rst_search_units(data)
+
+    if not search_units:
+        return issues
+
+    consumed: list[tuple[int, int]] = []
+    current_pos = 0
+
+    def _in_consumed(pos: int, length: int) -> bool:
+        end = pos + length
+        return any(pos < e and end > s for s, e in consumed)
+
+    for orig_unit, norm_unit, sid, is_content in search_units:
+        idx = norm_source.find(norm_unit, current_pos)
+        if idx != -1:
+            consumed.append((idx, idx + len(norm_unit)))
+            current_pos = idx + len(norm_unit)
+        else:
+            prev_idx = norm_source.find(norm_unit)
+            if not is_content:
+                if prev_idx == -1:
+                    issues.append(f"[QC2] section '{sid}': fabricated title: {orig_unit[:50]!r}")
+                elif _in_consumed(prev_idx, len(norm_unit)):
+                    issues.append(f"[QC3] section '{sid}': duplicate title: {orig_unit[:50]!r}")
+                else:
+                    issues.append(f"[QC4] section '{sid}': misplaced title: {orig_unit[:50]!r}")
+            elif prev_idx == -1:
+                issues.append(f"[QC2] section '{sid}': fabricated content: {orig_unit[:50]!r}")
+            elif _in_consumed(prev_idx, len(norm_unit)):
+                issues.append(f"[QC3] section '{sid}': duplicate content: {orig_unit[:50]!r}")
+            else:
+                issues.append(f"[QC4] section '{sid}': misplaced content: {orig_unit[:50]!r}")
+
+    # QC1: each non-syntax RST source line must appear (normalized) in some JSON field
+    all_norm_units = [nu for _, nu, _, _ in search_units if nu]
+    in_structural = False
+    for line in source_text.split('\n'):
+        s = line.strip()
+        if s and re.match(r'\.\.\s+\S', s):
+            in_structural = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
+        if not s:
+            continue
+        if in_structural and re.match(r'^\s+\S', line):
+            continue
+        if _is_rst_syntax_line(line):
+            continue
+        norm_line = re.sub(r'\s+', ' ', _normalize_rst_source(line, label_map)).strip()
+        if not norm_line:
+            continue
+        found = any(norm_line in nu for nu in all_norm_units)
+        if not found:
+            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+
+    return issues
+
+
+def _check_md_content_completeness(
+    source_text: str, data: dict, issues: list[str]
+) -> list[str]:
+    """QC1-QC4 for MD sources (verbatim comparison)."""
+    top_title = data.get("title", "")
+    top_content = data.get("content", "")
+
+    search_units: list[tuple[str, str, bool]] = []
     if top_title:
         search_units.append((top_title, "__top__", False))
-    if top_content and fmt == "rst":
-        # RST→JSON converts RST to MD; strip MD syntax to find plain text in RST source
-        for line in _strip_md_to_plain_lines(top_content):
-            search_units.append((line, "__top__", True))
-    elif top_content:
-        # MD source: JSON content is MD verbatim; xlsx: content is plain
+    if top_content:
         search_units.append((top_content, "__top__", True))
 
-    for sec in sections:
+    for sec in data.get("sections", []):
         title = sec.get("title", "")
         content = sec.get("content", "")
         sid = sec.get("id", "?")
         if title:
             search_units.append((title, sid, False))
-        if content and fmt == "rst":
-            for line in _strip_md_to_plain_lines(content):
-                search_units.append((line, sid, True))
-        elif content:
+        if content:
             search_units.append((content, sid, True))
 
     if not search_units:
-        return []
+        return issues
 
-    issues: list[str] = []
     consumed: list[tuple[int, int]] = []
     current_pos = 0
 
@@ -449,34 +695,21 @@ def check_content_completeness(source_text: str, data: dict, fmt: str) -> list[s
     else:
         remaining = source_text
 
-    if fmt == "rst":
-        in_structural = False
-        for line in remaining.split('\n'):
-            s = line.strip()
-            if s and re.match(r'\.\.\s+\S', s):
-                in_structural = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
-            if not s:
-                continue
-            if in_structural and re.match(r'^\s+\S', line):
-                continue
-            if not _is_rst_syntax_line(line):
-                issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
-    else:
-        has_frontmatter = bool(re.match(r'^---+\s*$', source_text.split('\n')[0])) if source_text else False
-        in_frontmatter = False
-        frontmatter_seen = False
-        for line in remaining.split('\n'):
-            s = line.strip()
-            if has_frontmatter and not frontmatter_seen and re.match(r'^---+\s*$', s):
-                in_frontmatter = True
-                frontmatter_seen = True
-                continue
-            if in_frontmatter:
-                if re.match(r'^---+\s*$', s):
-                    in_frontmatter = False
-                continue
-            if not _is_md_syntax_line(line):
-                issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
+    has_frontmatter = bool(re.match(r'^---+\s*$', source_text.split('\n')[0])) if source_text else False
+    in_frontmatter = False
+    frontmatter_seen = False
+    for line in remaining.split('\n'):
+        s = line.strip()
+        if has_frontmatter and not frontmatter_seen and re.match(r'^---+\s*$', s):
+            in_frontmatter = True
+            frontmatter_seen = True
+            continue
+        if in_frontmatter:
+            if re.match(r'^---+\s*$', s):
+                in_frontmatter = False
+            continue
+        if not _is_md_syntax_line(line):
+            issues.append(f"[QC1] source content not captured: {line.strip()[:50]!r}")
 
     return issues
 
@@ -601,7 +834,7 @@ def _verify_xlsx(source_path, data: dict) -> list[str]:
 # verify_file: dispatch per format
 # ---------------------------------------------------------------------------
 
-def verify_file(source_path, json_path, fmt, knowledge_dir=None) -> list[str]:
+def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None) -> list[str]:
     """Per-file JSON checks (QC1-QC5, QL2)."""
     if not Path(json_path).exists():
         return []
@@ -617,7 +850,7 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None) -> list[str]:
     if fmt in ("rst", "md"):
         source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
         issues: list[str] = []
-        issues.extend(check_content_completeness(source_text, data, fmt))
+        issues.extend(check_content_completeness(source_text, data, fmt, label_map))
         issues.extend(_check_format_purity(data, fmt))
         issues.extend(check_external_urls(source_text, data, fmt))
         return issues

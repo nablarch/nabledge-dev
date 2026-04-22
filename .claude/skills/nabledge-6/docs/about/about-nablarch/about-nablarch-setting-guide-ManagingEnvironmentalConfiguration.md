@@ -81,7 +81,16 @@ mvn -P prod package -DskipTests=true
 ![](../../../knowledge/assets/about-nablarch-setting-guide-ManagingEnvironmentalConfiguration/switch_application_settings.png)
 > **Important:** src/main/resourcesと、各環境毎のディレクトリでファイル名が重複した場合は、各環境毎のディレクトリのファイルが優先される。
 > **Tip:** 上図には、「コンポーネント設定ファイル(xml)」と「環境設定値の定義ファイル(propertiesファイル)」しか記載していないが、resources以下のファイルは全てコピーされる。
-> **Tip:** どの環境向けに作成したアーティファクトであるかを確認できるよう、 `META-INF/MANIFEST.MF`\ に対象環境のエントリ（\ `Target-Environment`\ ）を追記する設定をしている。 **【本番環境を指定してビルドした場合のMANIFEST.MFの例】** .. code-block:: none Manifest-Version: 1.0 Built-By: tie301686 Build-Jdk: 1.7.0_60 Created-By: Apache Maven 3.2.3 Target-Environment:本番環境 Archiver-Version: Plexus Archiver
+> **Tip:** どの環境向けに作成したアーティファクトであるかを確認できるよう、 `META-INF/MANIFEST.MF`\ に対象環境のエントリ（\ `Target-Environment`\ ）を追記する設定をしている。 **【本番環境を指定してビルドした場合のMANIFEST.MFの例】**
+
+```none
+Manifest-Version: 1.0
+Built-By: tie301686
+Build-Jdk: 1.7.0_60
+Created-By: Apache Maven 3.2.3
+Target-Environment:本番環境
+Archiver-Version: Plexus Archiver
+```
 #### ユニットテスト実行時
 
 ユニットテスト実行時は、指定したプロファイル及び `src/test/resources` のリソースが使用される。
@@ -110,7 +119,7 @@ mvn test
 
 環境毎に配置した環境設定ファイル(env.properties)を切り替えることによって実現する。
 
-> **Tip:** * アーキタイプから生成した直後は、環境毎に変更する可能性が低い設定項目については、common.propertiesに記載されている。|br| common.propertiesに記載されている値を環境毎に変えたい場合は、項目をenv.propertiesに移動(カット＆ペースト)する。
+> **Tip:** * アーキタイプから生成した直後は、環境毎に変更する可能性が低い設定項目については、common.propertiesに記載されている。html <br /> common.propertiesに記載されている値を環境毎に変えたい場合は、項目をenv.propertiesに移動(カット＆ペースト)する。
 
 ## 定義されている環境を増やす方法
 
@@ -149,8 +158,8 @@ mvn test
 | id | mavenコマンドを実行する際に指定するプロファイルのID。他のプロファイルと重複しないものを指定する。 |
 | env.name | war及びjarファイルのマニフェストに含める環境名。任意の名前をつける。 |
 | env.dir | リソースを格納するディレクトリ。 |
-| env.classifier | warファイル名、jarファイル名の末尾につける識別子。半角英数で任意の名前をつける。\|br\| ファイル名の末尾に識別子をつける処理は、pom.xml中で、maven-war-plugin及びmaven-jar-pluginのclassifierプロパティに値を設定することで実現している。 |
-| webxml.path | 使用するweb.xmlを指定する。\|br\| JNDIの設定はweb.xmlにも記載する必要がある。そのため、環境差異が発生する可能性があり、使用するweb.xmlを設定可能にしている。\|br\| 本番と同一で問題なければ、例にあるように「src/main/webapp/WEB-INF/web.xml」を設定する。 |
+| env.classifier | warファイル名、jarファイル名の末尾につける識別子。半角英数で任意の名前をつける。html <br /> ファイル名の末尾に識別子をつける処理は、pom.xml中で、maven-war-plugin及びmaven-jar-pluginのclassifierプロパティに値を設定することで実現している。 |
+| webxml.path | 使用するweb.xmlを指定する。html <br /> JNDIの設定はweb.xmlにも記載する必要がある。そのため、環境差異が発生する可能性があり、使用するweb.xmlを設定可能にしている。html <br /> 本番と同一で問題なければ、例にあるように「src/main/webapp/WEB-INF/web.xml」を設定する。 |
 
 ## ディレクトリの追加
 
@@ -161,8 +170,3 @@ mvn test
 ## アプリケーション設定ファイルの作成及び修正
 
 類似しているプロファイルのアプリケーション設定ファイルをコピーし、修正する。
-
-
-.. |br| raw:: html
-
-<br />

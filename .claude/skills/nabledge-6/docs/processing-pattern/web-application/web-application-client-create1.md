@@ -68,15 +68,6 @@ public HttpResponse input(HttpRequest request, ExecutionContext context) {
 業務アクションメソッドのシグネチャは以下とすること。
 業務アクションメソッドが以下のシグネチャを満たさない場合、404エラーが発生する。
 
-.. java:method:: public HttpResponse methodName(HttpRequest request, ExecutionContext context)
-
-:param request: フレームワークから受け渡されるリクエストオブジェクト
-
-:param context: フレームワークから受け渡される実行コンテキスト
-
-:param return: 遷移先を設定したレスポンスオブジェクト
-
-
 この実装のポイント
 * 登録画面に業種のプルダウンを表示するために、ユニバーサルDAO を使用してデータベースから業種情報を全件取得する。
 * JSPへ値を受け渡すために、取得した業種リストをリクエストスコープに登録する。

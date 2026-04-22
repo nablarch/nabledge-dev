@@ -50,5 +50,5 @@ Chunkステップの場合の実装すべきクラスとその責務について
 エンティティ(entity class)
 テーブルと1対1で対応するクラス。カラムに対応するプロパティを持つ。
 
-バッチレットが返却する文字列(バッチレットの終了ステータス)の詳細は、 `Jakarta Batch Specification(外部サイト、英語) <https://jakarta.ee/specifications/batch/>`_ を参照。
-例えば、 ``insert～select`` のみで処理が完結するSQLの実行などを指す。
+バッチレットが返却する文字列(バッチレットの終了ステータス)の詳細は、 [Jakarta Batch Specification(外部サイト、英語)](https://jakarta.ee/specifications/batch/) を参照。
+例えば、 `insert～select` のみで処理が完結するSQLの実行などを指す。

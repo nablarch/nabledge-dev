@@ -7,7 +7,7 @@
     {
       "id": "s1",
       "title": "設定ファイルの構成",
-      "content": "Nablarchの設定は、デフォルトコンフィグレーション内の設定ファイルと、PJ成果物内の設定ファイルで構成される。\n\n\n以下に設定ファイルの構成を示す。\n\n![](assets/about-nablarch-setting-guide-CustomizingConfigurations/abstract.png)\n| モジュール | 説明 |\n|---|---|\n| デフォルトコンフィギュレーション(jar) | nablarch-main-default-configuration-XXXX.jarやnablarch-testing-default-configuration-XXXX.jarなどjar形式でパッケージされ、Mavenのアーティファクトとして配布される。\\|br\\| プレースホルダーに対する設定値が設定されている項目と、プレースホルダーのみが定義されている項目が存在する。\\|br\\| また、変更頻度の極めて低い項目については、プレースホルダー化されておらず直接値が設定されている。 |\n| PJ成果物 | Nablarchが提供するアーキタイプを使用した場合、デフォルトコンフィギュレーション(jar)への依存関係があらかじめ設定される。\\|br\\| PJ成果物のコンポーネント設定ファイルには、アーキタイプから生成した直後の状態で、初期値が設定された状態で提供されている。 |"
+      "content": "Nablarchの設定は、デフォルトコンフィグレーション内の設定ファイルと、PJ成果物内の設定ファイルで構成される。\n\n\n以下に設定ファイルの構成を示す。\n\n![](assets/about-nablarch-setting-guide-CustomizingConfigurations/abstract.png)\n| モジュール | 説明 |\n|---|---|\n| デフォルトコンフィギュレーション(jar) | nablarch-main-default-configuration-XXXX.jarやnablarch-testing-default-configuration-XXXX.jarなどjar形式でパッケージされ、Mavenのアーティファクトとして配布される。html <br /> プレースホルダーに対する設定値が設定されている項目と、プレースホルダーのみが定義されている項目が存在する。html <br /> また、変更頻度の極めて低い項目については、プレースホルダー化されておらず直接値が設定されている。 |\n| PJ成果物 | Nablarchが提供するアーキタイプを使用した場合、デフォルトコンフィギュレーション(jar)への依存関係があらかじめ設定される。html <br /> PJ成果物のコンポーネント設定ファイルには、アーキタイプから生成した直後の状態で、初期値が設定された状態で提供されている。 |"
     },
     {
       "id": "s2",
@@ -37,7 +37,7 @@
     {
       "id": "s7",
       "title": "コンポーネント定義の上書き",
-      "content": "変更したいデフォルトコンフィグレーションのコンポーネント設定ファイルのコンポーネントのプロパティがプレースホルダー化されていない場合、\nもしくはコンポーネント自体をプロジェクトでカスタマイズした別のクラスに変更したい場合、\nPJ成果物のコンポーネント設定ファイルにコンポーネント定義ごと再定義する。\n\n\\ [デフォルト設定一覧](assets/about-nablarch-setting-guide-CustomizingConfigurations/デフォルト設定一覧.xlsx)\\ でデフォルトコンフィグレーションで、プレースホルダーが使われていない設定を確認できる。\n\nデフォルト設定からコンポーネント定義を変更する必要がある場合、以下の手順に従って\nコンポーネントを再定義する。\n\n\n#### 同名のコンポーネントを定義する\n\nデフォルトコンフィグレーションのコンポーネント定義(xml)から、変更対象となるコンポーネントを特定し、そのコンポーネント名を取得する。\n\n\n例えば、以下のコンポーネントを差し替える場合、コンポーネント名は\\ `idGenerator`\\ であるとわかる。\n\n```xml\n<!-- 採番モジュールの設定 -->\n<component name=\"idGenerator\"\n    class=\"nablarch.common.idgenerator.TableIdGenerator\">\n  <!-- 採番テーブルの定義 -->\n  <property name=\"tableName\" value=\"ID_GENERATE\" />\n  <property name=\"idColumnName\" value=\"ID\" />\n  <property name=\"noColumnName\" value=\"NO\" />\n</component>\n```\n任意のコンポーネント設定ファイルに、差し替えたいコンポーネントと同名のコンポーネントを定義する。\n\n**【再定義ファイルの中身】**\n\n```xml\n<!-- 採番モジュールの設定(oracle sequenceを使用する) -->\n<component name=\"idGenerator\"\n           class=\"com.example.common.idgenerator.OracleSequenceIdGenerator\">\n  <property name=\"idTable\">\n    <map>\n      <entry key=\"1101\" value=\"USER_ID_SEQ\"/>\n    </map>\n  </property>\n</component>\n```\n.. tip ::\n\n同名のコンポーネント定義が複数存在する場合は、後に記述した設定が優先される。\n\nこのNablarchの仕様を使用して、コンポーネントを再定義する。\n\n\n#### (コンポーネント設定ファイルを作成した場合)作成したコンポーネント設定ファイルの読み込み\n\nコンポーネント設定ファイルの記述例を以下に示す。\n\n```xml\n<!-- 前略 -->\n<!-- 採番機能 -->\n<import file=\"nablarch/common/idgenerator.xml\" />\n\n<!-- PJのコンポーネント定義を読み込み、デフォルトのコンポーネント定義を上書きする -->\n<import file=\"pj_component.xml\"/>\n\n</component>\n```\n</component-configuration>"
+      "content": "変更したいデフォルトコンフィグレーションのコンポーネント設定ファイルのコンポーネントのプロパティがプレースホルダー化されていない場合、\nもしくはコンポーネント自体をプロジェクトでカスタマイズした別のクラスに変更したい場合、\nPJ成果物のコンポーネント設定ファイルにコンポーネント定義ごと再定義する。\n\n\\ [デフォルト設定一覧](assets/about-nablarch-setting-guide-CustomizingConfigurations/デフォルト設定一覧.xlsx)\\ でデフォルトコンフィグレーションで、プレースホルダーが使われていない設定を確認できる。\n\nデフォルト設定からコンポーネント定義を変更する必要がある場合、以下の手順に従って\nコンポーネントを再定義する。\n\n\n#### 同名のコンポーネントを定義する\n\nデフォルトコンフィグレーションのコンポーネント定義(xml)から、変更対象となるコンポーネントを特定し、そのコンポーネント名を取得する。\n\n\n例えば、以下のコンポーネントを差し替える場合、コンポーネント名は\\ `idGenerator`\\ であるとわかる。\n\n```xml\n<!-- 採番モジュールの設定 -->\n<component name=\"idGenerator\"\n    class=\"nablarch.common.idgenerator.TableIdGenerator\">\n  <!-- 採番テーブルの定義 -->\n  <property name=\"tableName\" value=\"ID_GENERATE\" />\n  <property name=\"idColumnName\" value=\"ID\" />\n  <property name=\"noColumnName\" value=\"NO\" />\n</component>\n```\n任意のコンポーネント設定ファイルに、差し替えたいコンポーネントと同名のコンポーネントを定義する。\n\n**【再定義ファイルの中身】**\n\n```xml\n<!-- 採番モジュールの設定(oracle sequenceを使用する) -->\n<component name=\"idGenerator\"\n           class=\"com.example.common.idgenerator.OracleSequenceIdGenerator\">\n  <property name=\"idTable\">\n    <map>\n      <entry key=\"1101\" value=\"USER_ID_SEQ\"/>\n    </map>\n  </property>\n</component>\n```\n> **Tip:** 同名のコンポーネント定義が複数存在する場合は、後に記述した設定が優先される。 このNablarchの仕様を使用して、コンポーネントを再定義する。\n#### (コンポーネント設定ファイルを作成した場合)作成したコンポーネント設定ファイルの読み込み\n\nコンポーネント設定ファイルの記述例を以下に示す。\n\n```xml\n<!-- 前略 -->\n<!-- 採番機能 -->\n<import file=\"nablarch/common/idgenerator.xml\" />\n\n<!-- PJのコンポーネント定義を読み込み、デフォルトのコンポーネント定義を上書きする -->\n<import file=\"pj_component.xml\"/>\n\n</component>\n```\n</component-configuration>"
     },
     {
       "id": "s8",
@@ -47,7 +47,7 @@
     {
       "id": "s9",
       "title": "設定変更例",
-      "content": "コンポーネント設定ファイルや環境設定ファイル(propertiesファイル)の設定変更の具体例は以下を参照のこと。\n\n* CustomizeMessageIDAndMessage\n* CustomizeAvailableCharacters\n* CustomizeSystemTableName\n\n\n.. |br| raw:: html\n\n<br />"
+      "content": "コンポーネント設定ファイルや環境設定ファイル(propertiesファイル)の設定変更の具体例は以下を参照のこと。\n\n* CustomizeMessageIDAndMessage\n* CustomizeAvailableCharacters\n* CustomizeSystemTableName"
     }
   ]
 }

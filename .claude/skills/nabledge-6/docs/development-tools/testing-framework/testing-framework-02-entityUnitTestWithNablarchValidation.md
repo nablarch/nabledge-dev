@@ -93,7 +93,11 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 * 保守性の高いテストデータが作成でき、レビューやメンテナンスが容易になる。
 
 
-> **Tip:** 本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合、独自に精査処理のテストを実装すること。 プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。 .. code-block:: none <親Form>.<子Form>.<子フォームのプロパティ名>
+> **Tip:** 本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合、独自に精査処理のテストを実装すること。 プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。
+
+```none
+<親Form>.<子Form>.<子フォームのプロパティ名>
+```
 #### テストケース表の作成方法
 
 以下のカラムを用意する。
@@ -398,7 +402,11 @@ testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);
 任意の値で単項目精査のテストができる。
 
 
-> **Tip:** 本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合は、独自に精査処理のテストを実装すること。 プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。 .. code-block:: none <親Form>.<子Form>.<子フォームのプロパティ名>
+> **Tip:** 本テスト方法は、プロパティとして別のFormを保持するFormに対しては使用できない。その場合は、独自に精査処理のテストを実装すること。 プロパティとして別のFormを保持するFormとは、以下の形式でプロパティにアクセスする親Formのこと。
+
+```none
+<親Form>.<子Form>.<子フォームのプロパティ名>
+```
 #### テストケース表の作成方法
 
 以下のカラムを用意する。
@@ -491,7 +499,7 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 
 
-``@ValidateFor``\ アノテーションを付与したstaticメソッドのこと
+`@ValidateFor`\ アノテーションを付与したstaticメソッドのこと
 #### テストケース表の作成
 
 * IDは"testShots"固定とする。
@@ -563,7 +571,31 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 
 ![](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_ValidationPropParams.png)
-> **Tip:** Form単体テストのテストケースやテストデータを作成する際、\ **プロパティに保持している別のFormのプロパティ** を指定したいことがある。\ この場合、次のように指定できる。 * Formのコード例 .. code-block:: java public class SampleForm { /** システムユーザ */ private SystemUserEntity systemUser; /** 電話番号配列 */ private UserTelEntity[] userTelArray; // 【説明】プロパティ以外は省略 } * 保持しているFormのプロパティを指定する方法(SystemUserEntity.userIdを指定する場合) .. code-block:: none sampleForm.systemUser.userId * Form配列の要素のプロパティを指定する方法(UserTelEntity配列の先頭要素のプロパティを指定する場合) .. code-block:: none sampleForm.userTelArray[0].telNoArea
+> **Tip:** Form単体テストのテストケースやテストデータを作成する際、\ **プロパティに保持している別のFormのプロパティ** を指定したいことがある。\ この場合、次のように指定できる。 * Formのコード例
+
+```java
+public class SampleForm {
+
+    /** システムユーザ */
+    private SystemUserEntity systemUser;
+
+    /** 電話番号配列 */
+    private UserTelEntity[] userTelArray;
+
+    // 【説明】プロパティ以外は省略
+
+}
+```
+* 保持しているFormのプロパティを指定する方法(SystemUserEntity.userIdを指定する場合)
+
+```none
+sampleForm.systemUser.userId
+```
+* Form配列の要素のプロパティを指定する方法(UserTelEntity配列の先頭要素のプロパティを指定する場合)
+
+```none
+sampleForm.userTelArray[0].telNoArea
+```
 ##### 項目間精査など
 
 項目間精査など、バリデーションメソッドの\ 精査対象確認\
@@ -644,7 +676,42 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 }
 ```
 
-> **Tip:** testConstructorAndGetterでテスト可能なプロパティの型(クラス)には制限がある。 下記型(クラス)に該当しない場合には、各テストクラスにてコンストラクタとgetterを明示的に呼び出してテストする必要がある。 * String及び、String配列 * BigDecimal及び、BigDecimal配列 * java.util.Date及び、java.util.Date配列(Excelへはyyyy-MM-dd形式もしくはyyyy-MM-dd HH:mm:ss形式で記述すること) * valueOf(String)メソッドを持つクラス及び、その配列クラス(例えばIntegerやLong、java.sql.Dateやjava.sql.Timestampなど) 以下に、個別のテスト実施方法の例を示す。 この例では、Formが `List<String>` 型のプロパティ `users` を持っているとしている。 * Excelへのデータ記述例 .. image:: ../_image/entityUnitTest_ConstructorOther.png 80 * テストコード例 .. code-block:: java /** コンストラクタのテスト */ @Test public void testConstructor() { // 【説明】 // 共通にテストが実施出来る項目は、testConstructorAndGetterを使用してテストを実施する。 Class<?> entityClass = SystemAccountEntity.class; String sheetName = "testAccessor"; String id = "testConstructor"; testConstructorAndGetter(entityClass, sheetName, id); // 【説明】 // 共通にテストが実施出来ない項目は、個別にテストを実施する。 // 【説明】 // getParamMapを呼び出し、個別にテストを行うプロパティのテストデータを取得する。 // (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。) Map<String, String[]> data = getParamMap(sheetName, "testConstructorOther"); // 【説明】Map<String, String[]>から、Entityのコンストラクタの引数であるMap<String, Object>へ変換する Map<String, Object> params = new HashMap<String, Object>(); params.put("users", Arrays.asList(data.get("set"))); // 【説明】上記で生成したMap<String, Object>を引数にEntityを生成する。 SystemAccountEntity entity = new SystemAccountEntity(params); // 【説明】getterを呼び出し、期待値通りの値が返却されることを確認する。 assertEquals(entity.getUsers(), Arrays.asList(data.get("get"))); }
+> **Tip:** testConstructorAndGetterでテスト可能なプロパティの型(クラス)には制限がある。 下記型(クラス)に該当しない場合には、各テストクラスにてコンストラクタとgetterを明示的に呼び出してテストする必要がある。 * String及び、String配列 * BigDecimal及び、BigDecimal配列 * java.util.Date及び、java.util.Date配列(Excelへはyyyy-MM-dd形式もしくはyyyy-MM-dd HH:mm:ss形式で記述すること) * valueOf(String)メソッドを持つクラス及び、その配列クラス(例えばIntegerやLong、java.sql.Dateやjava.sql.Timestampなど) 以下に、個別のテスト実施方法の例を示す。 この例では、Formが `List<String>` 型のプロパティ `users` を持っているとしている。 * Excelへのデータ記述例
+
+![](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_ConstructorOther.png)
+* テストコード例
+
+```java
+/** コンストラクタのテスト */
+@Test
+public void testConstructor() {
+    // 【説明】
+    // 共通にテストが実施出来る項目は、testConstructorAndGetterを使用してテストを実施する。
+    Class<?> entityClass = SystemAccountEntity.class;
+    String sheetName = "testAccessor";
+    String id = "testConstructor";
+    testConstructorAndGetter(entityClass, sheetName, id);
+
+    // 【説明】
+    // 共通にテストが実施出来ない項目は、個別にテストを実施する。
+
+    // 【説明】
+    // getParamMapを呼び出し、個別にテストを行うプロパティのテストデータを取得する。
+    // (テスト対象のプロパティが複数ある場合は、getListParamMapを使用する。)
+    Map<String, String[]> data = getParamMap(sheetName, "testConstructorOther");
+
+    // 【説明】Map<String, String[]>から、Entityのコンストラクタの引数であるMap<String, Object>へ変換する
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("users", Arrays.asList(data.get("set")));
+
+    // 【説明】上記で生成したMap<String, Object>を引数にEntityを生成する。
+    SystemAccountEntity entity = new SystemAccountEntity(params);
+
+    // 【説明】getterを呼び出し、期待値通りの値が返却されることを確認する。
+    assertEquals(entity.getUsers(), Arrays.asList(data.get("get")));
+
+}
+```
 
 ## setter、getterに対するテストケース
 

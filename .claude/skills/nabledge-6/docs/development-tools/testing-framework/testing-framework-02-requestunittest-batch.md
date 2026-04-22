@@ -54,10 +54,6 @@ public class RM21AA001ActionRequestTest extends BatchRequestTestSupport {
 
 LIST_MAPのデータタイプで１テストメソッド分のケース表を記載する。IDは、\ **testShots**\ とする。
 
-..    .. image:: ./_image/testShots.png
-..    :scale: 80
-
-
 １ケース毎に以下の要素を持たせる。
 
 | カラム名                説明 | 必須 |  |
@@ -219,9 +215,50 @@ SETUP_FIXED[グループID]=ファイルパス
 | record-length | フィールド長に記載したサイズでパディングするため。 |
 
 
-> **Important:** ひとつのレコード種別において、フィールド名称に\ **重複した名称は許容されない**\ 。例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される） .. textlint-disable ja-technical-writing/no-doubled-conjunction 異なるレコード種別間で、同一の名称が存在する場合は問題ない。 （例えばヘッダレコードとトレーラレコードにそれぞれ「件数」というフィールド名称が存在してよい） .. textlint-enable ja-technical-writing/no-doubled-conjunction
+> **Important:** ひとつのレコード種別において、フィールド名称に\ **重複した名称は許容されない**\ 。例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）
+
+異なるレコード種別間で、同一の名称が存在する場合は問題ない。
+（例えばヘッダレコードとトレーラレコードにそれぞれ「件数」というフィールド名称が存在してよい）
 > **Tip:** フィールド名称、データ型、フィールド長の記述は、外部インタフェース設計書からコピー＆ペーストすることで効率良く作成できる。\ （ペーストする際、「\ **行列を入れ替える**\ 」オプションにチェックすること）
-> **Tip:** 「符号無数値」および「符号付数値」のデータ型を使用する場合、そのデータには、固定長ファイルから入力する値（固定長ファイルへ出力する値）をそのまま記載すること。 すなわち固定長ファイルにパディング文字や符号が存在する場合は、それらの記載まで行う必要がある。\ 以下に、データ型が符号付数値の場合に表したい値とその表現方法の例を示す。（フォーマット定義： フィールド長10桁、パディング文字'0'、小数点必要、符号位置固定、正の符号不要） =============== ===================== 表したい数値    テストデータ上の記載 =============== ===================== 12345           0000012345 -12.34          -000012.34 =============== ===================== 「符号無数値」および「符号付数値」をテストデータとして使用する場合、テスト用のデータタイプを設定する必要がある。 以下に設定例を参照し、テスト用の設定を追加すること。 .. code-block:: xml <component name="fixedLengthConvertorSetting" class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting"> <property name="convertorTable"> <map> <!-- デフォルトの設定 デフォルトの設定を行わないと、ここで設定した値でデフォルト設定が上書きされるため注意すること。 --> <entry key="X" value="nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString"/> <entry key="N" value="nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString"/> <entry key="XN" value="nablarch.core.dataformat.convertor.datatype.ByteStreamDataString"/> <entry key="Z" value="nablarch.core.dataformat.convertor.datatype.ZonedDecimal"/> <entry key="SZ" value="nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal"/> <entry key="P" value="nablarch.core.dataformat.convertor.datatype.PackedDecimal"/> <entry key="SP" value="nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal"/> <entry key="B" value="nablarch.core.dataformat.convertor.datatype.Bytes"/> <entry key="X9" value="nablarch.core.dataformat.convertor.datatype.NumberStringDecimal"/> <entry key="SX9" value="nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal"/> <entry key="pad" value="nablarch.core.dataformat.convertor.value.Padding"/> <entry key="encoding" value="nablarch.core.dataformat.convertor.value.UseEncoding"/> <entry key="_LITERAL_" value="nablarch.core.dataformat.convertor.value.DefaultValue"/> <entry key="number" value="nablarch.core.dataformat.convertor.value.NumberString"/> <entry key="signed_number" value="nablarch.core.dataformat.convertor.value.SignedNumberString"/> <!-- テスト用のデータタイプの設定 符号無数値(X9)->TEST_X9:nablarch.test.core.file.StringDataType 符号有数値(SX9)->TEST_SX9:nablarch.test.core.file.StringDataType --> <entry key="TEST_X9" value="nablarch.test.core.file.StringDataType"/> <entry key="TEST_SX9" value="nablarch.test.core.file.StringDataType"/> </map> </property> </component>
+> **Tip:** 「符号無数値」および「符号付数値」のデータ型を使用する場合、そのデータには、固定長ファイルから入力する値（固定長ファイルへ出力する値）をそのまま記載すること。 すなわち固定長ファイルにパディング文字や符号が存在する場合は、それらの記載まで行う必要がある。\ 以下に、データ型が符号付数値の場合に表したい値とその表現方法の例を示す。（フォーマット定義： フィールド長10桁、パディング文字'0'、小数点必要、符号位置固定、正の符号不要） =============== ===================== 表したい数値    テストデータ上の記載 =============== ===================== 12345           0000012345 -12.34          -000012.34 =============== ===================== 「符号無数値」および「符号付数値」をテストデータとして使用する場合、テスト用のデータタイプを設定する必要がある。 以下に設定例を参照し、テスト用の設定を追加すること。
+
+```xml
+<component name="fixedLengthConvertorSetting"
+    class="nablarch.core.dataformat.convertor.FixedLengthConvertorSetting">
+  <property name="convertorTable">
+    <map>
+      <!--
+      デフォルトの設定
+      デフォルトの設定を行わないと、ここで設定した値でデフォルト設定が上書きされるため注意すること。
+      -->
+      <entry key="X" value="nablarch.core.dataformat.convertor.datatype.SingleByteCharacterString"/>
+      <entry key="N" value="nablarch.core.dataformat.convertor.datatype.DoubleByteCharacterString"/>
+      <entry key="XN" value="nablarch.core.dataformat.convertor.datatype.ByteStreamDataString"/>
+      <entry key="Z" value="nablarch.core.dataformat.convertor.datatype.ZonedDecimal"/>
+      <entry key="SZ" value="nablarch.core.dataformat.convertor.datatype.SignedZonedDecimal"/>
+      <entry key="P" value="nablarch.core.dataformat.convertor.datatype.PackedDecimal"/>
+      <entry key="SP" value="nablarch.core.dataformat.convertor.datatype.SignedPackedDecimal"/>
+      <entry key="B" value="nablarch.core.dataformat.convertor.datatype.Bytes"/>
+      <entry key="X9" value="nablarch.core.dataformat.convertor.datatype.NumberStringDecimal"/>
+      <entry key="SX9" value="nablarch.core.dataformat.convertor.datatype.SignedNumberStringDecimal"/>
+
+      <entry key="pad" value="nablarch.core.dataformat.convertor.value.Padding"/>
+      <entry key="encoding" value="nablarch.core.dataformat.convertor.value.UseEncoding"/>
+      <entry key="_LITERAL_" value="nablarch.core.dataformat.convertor.value.DefaultValue"/>
+      <entry key="number" value="nablarch.core.dataformat.convertor.value.NumberString"/>
+      <entry key="signed_number" value="nablarch.core.dataformat.convertor.value.SignedNumberString"/>
+
+      <!--
+      テスト用のデータタイプの設定
+      符号無数値(X9)->TEST_X9:nablarch.test.core.file.StringDataType
+      符号有数値(SX9)->TEST_SX9:nablarch.test.core.file.StringDataType
+      -->
+      <entry key="TEST_X9" value="nablarch.test.core.file.StringDataType"/>
+      <entry key="TEST_SX9" value="nablarch.test.core.file.StringDataType"/>
+    </map>
+  </property>
+</component>
+```
 ----
 
 具体例を示す。このファイルは以下のレコードで構成されている。

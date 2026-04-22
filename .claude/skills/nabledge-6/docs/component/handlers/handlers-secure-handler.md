@@ -77,7 +77,24 @@ HTTPレスポンスハンドラ よりも後ろに設定すること
 > **Tip:** ロジックを含まない単純なレスポンスヘッダを作成する場合は、 extdoc:`SecureResponseHeaderSupport <nablarch.fw.web.handler.secure.SecureResponseHeaderSupport>` を継承して作成すればよい。
 2. 本ハンドラ(`SecureHandler`)に、`No1` で作成したクラスを設定する。
 
-> **Important:** extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` 実装クラスを設定する際は、 デフォルトで適用されていたコンポーネントも設定すること。 以下に設定ファイルの例を示す。 .. code-block:: xml <component class="nablarch.fw.web.handler.SecureHandler"> <property name="secureResponseHeaderList"> <list> <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" /> <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" /> <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" /> <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" /> <component class="nablarch.fw.web.handler.secure.CacheControlHeader" /> <!-- 追加で作成したコンポーネント --> <component class="nablarch.fw.web.handler.secure.SampleSecurityHeader" /> </list> </property> </component>
+> **Important:** extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` 実装クラスを設定する際は、 デフォルトで適用されていたコンポーネントも設定すること。 以下に設定ファイルの例を示す。
+
+```xml
+<component class="nablarch.fw.web.handler.SecureHandler">
+  <property name="secureResponseHeaderList">
+    <list>
+      <component class="nablarch.fw.web.handler.secure.FrameOptionsHeader" />
+      <component class="nablarch.fw.web.handler.secure.XssProtectionHeader" />
+      <component class="nablarch.fw.web.handler.secure.ContentTypeOptionsHeader" />
+      <component class="nablarch.fw.web.handler.secure.ReferrerPolicyHeader" />
+      <component class="nablarch.fw.web.handler.secure.CacheControlHeader" />
+
+      <!-- 追加で作成したコンポーネント -->
+      <component class="nablarch.fw.web.handler.secure.SampleSecurityHeader" />
+    </list>
+  </property>
+</component>
+```
 
 ## Content Security Policy(CSP)に対応する
 

@@ -123,7 +123,16 @@ FileRecordWriterHolder.write(user, "user.csv");
 > **Tip:** extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` を使用するためには、 `フォーマット定義ファイル <data_format-format_definition_file>` の配置ディレクトリや出力先ディレクトリを ファイルパス管理 に設定する必要がある。 必要となるディレクトリの設定値については、 `FileRecordWriterHolder` を参照。
 > **Important:** extdoc:`FileRecordWriterHolder <nablarch.common.io.FileRecordWriterHolder>` で開いたファイルリソースは、 出力ファイル開放ハンドラ にて自動的に開放される。 このため、 `FileRecordWriterHolder` を使用する場合には、 必ず 出力ファイル開放ハンドラ をハンドラキュー上に設定すること。
 > **Important:** 出力するデータに不正な値が設定されていた場合に正しく処理できない可能性があるため、事前にアプリケーション側で不正な値でないかをチェックすること。
-> **Important:** デフォルトの動作では1レコード毎にファイルへの書き込みを行う。 大量データを出力する場合はレコード毎にファイルに書き込むと性能要件を満たせない可能性がある。 そのような場合は、1レコード毎でなく指定したバッファサイズで書き込みを行うようにデフォルトの動作を変更して対応すること。 下記のコンポーネント定義を追加することで、1レコード毎でなく指定したバッファサイズで書き込みを行うようにできる。 .. code-block:: xml <!-- コンポーネント名はdataFormatConfigとする --> <component name="dataFormatConfig" class="nablarch.core.dataformat.DataFormatConfig"> <property name="flushEachRecordInWriting" value="false" /> </component> 出力に使用するバッファサイズは `FileRecordWriterHolder` の `open` メソッドで指定できる。
+> **Important:** デフォルトの動作では1レコード毎にファイルへの書き込みを行う。 大量データを出力する場合はレコード毎にファイルに書き込むと性能要件を満たせない可能性がある。 そのような場合は、1レコード毎でなく指定したバッファサイズで書き込みを行うようにデフォルトの動作を変更して対応すること。 下記のコンポーネント定義を追加することで、1レコード毎でなく指定したバッファサイズで書き込みを行うようにできる。
+
+```xml
+<!-- コンポーネント名はdataFormatConfigとする -->
+<component name="dataFormatConfig" class="nablarch.core.dataformat.DataFormatConfig">
+  <property name="flushEachRecordInWriting" value="false" />
+</component>
+```
+出力に使用するバッファサイズは `FileRecordWriterHolder`
+の `open` メソッドで指定できる。
 
 ## ファイルダウンロードで使用する
 

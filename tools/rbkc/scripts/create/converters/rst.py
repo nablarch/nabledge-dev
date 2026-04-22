@@ -337,6 +337,55 @@ def _collect_targets(lines: list[str]) -> dict[str, str]:
     return targets
 
 
+def _collect_substitutions(lines: list[str]) -> dict[str, str]:
+    """Collect substitution definitions.
+
+    For now, extract URLs from ``.. |name| raw:: html`` blocks so that
+    references like ``|name|_`` resolve to something visible in the JSON.
+    Returns {name: resolved_text}.
+    """
+    subs: dict[str, str] = {}
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        m = re.match(r"\.\.\s+\|([^|]+)\|\s+([a-z_-]+)::(.*)", stripped)
+        if not m:
+            i += 1
+            continue
+        name = m.group(1).strip()
+        directive = m.group(2).lower()
+        # Directive arg on same line (e.g. .. |name| replace:: text)
+        inline_arg = m.group(3).strip()
+        # Body (indented block)
+        block, i = _read_block(lines, i + 1)
+
+        parts: list[str] = []
+        if inline_arg:
+            parts.append(inline_arg)
+        for b in block:
+            s = b.strip()
+            if s:
+                parts.append(s)
+        body = " ".join(parts)
+
+        if directive == "replace":
+            subs[name] = body
+        elif directive == "raw":
+            # Extract URL from <a href="..."> if present; else leave empty
+            m_url = re.search(r'href="([^"]+)"', body)
+            if m_url:
+                # Prefer link text if present
+                m_text = re.search(r'<a[^>]*>([^<]+)</a>', body)
+                text = m_text.group(1).strip() if m_text else m_url.group(1)
+                subs[name] = f"[{text}]({m_url.group(1)})"
+            else:
+                subs[name] = body
+        else:
+            subs[name] = body
+    return subs
+
+
 # ---------------------------------------------------------------------------
 # Inline markup converter
 # ---------------------------------------------------------------------------
@@ -346,8 +395,16 @@ def _convert_inline(
     file_id: str = "",
     targets: dict[str, str] | None = None,
     label_map: dict[str, str] | None = None,
+    substitutions: dict[str, str] | None = None,
 ) -> str:
     """Convert RST inline markup to Markdown."""
+
+    # |name|_ or |name| substitution reference
+    if substitutions:
+        def _resolve_subst(m: re.Match) -> str:
+            name = m.group(1).strip()
+            return substitutions.get(name, m.group(0))
+        text = re.sub(r"\|([^|]+)\|_?", _resolve_subst, text)
 
     # :java:extdoc:`ClassName <fqcn>`  →  `ClassName`
     text = re.sub(
@@ -518,7 +575,9 @@ def _parse_list_table(lines: list[str], start: int) -> tuple[list[list[str]], in
 
     def _flush_cell():
         if current_row is not None:
-            current_row.append(" ".join(l.strip() for l in current_cell_lines if l.strip()))
+            # Preserve newlines so downstream cell processing can strip
+            # per-line RST constructs (labels, nested directives, etc.).
+            current_row.append("\n".join(l.rstrip() for l in current_cell_lines))
 
     for bl in block[body_start:]:
         if bl.startswith("* -") or bl.startswith("*-"):
@@ -544,7 +603,7 @@ def _parse_list_table(lines: list[str], start: int) -> tuple[list[list[str]], in
     return rows, header_rows, next_i
 
 
-def _rows_to_md_table(rows: list[list[str]], header_count: int, file_id: str = "") -> list[str]:
+def _rows_to_md_table(rows: list[list[str]], header_count: int, file_id: str = "", targets=None, substitutions=None) -> list[str]:
     """Convert parsed rows to Markdown table lines."""
     if not rows:
         return []
@@ -552,8 +611,39 @@ def _rows_to_md_table(rows: list[list[str]], header_count: int, file_id: str = "
     # Determine column count from widest row
     ncols = max(len(r) for r in rows) if rows else 0
 
+    # Patterns that RST cells can carry but must not survive into Markdown cells
+    _CELL_STRIP_RE = re.compile(
+        r"^\s*("
+        r"\.\.\s+_[a-zA-Z0-9_.-]+:"             # .. _label:
+        r"|\.\.\s+_`[^`]+`:"                      # .. _`label with spaces`:
+        r"|\.\.\s+\[[^\]]+\]"                     # .. [#footnote]
+        r"|\.\.\s+[a-z][a-z_:-]*\s*::.*"          # nested directive (.. note::, .. java:method:: ..)
+        r")\s*$"
+    )
+
     def _cell(text: str) -> str:
-        return _convert_inline(text, file_id).replace("|", "\\|")
+        # Remove RST constructs that have no meaningful single-cell rendering.
+        # Body-holding directives (code-block, note, tip, ...) encountered
+        # inside a table cell drop the rest of the cell, because rendering a
+        # multi-line code block inside a single Markdown table cell is not
+        # well-defined and would anyway leak directive syntax.
+        lines = text.split("\n")
+        kept: list[str] = []
+        skip_rest = False
+        for l in lines:
+            if skip_rest:
+                continue
+            if _CELL_STRIP_RE.match(l):
+                stripped = l.strip()
+                # If this is a standalone label/footnote line, skip only it;
+                # if it introduces a directive (``.. name::``), drop the rest
+                # of the cell to avoid leaking body content.
+                if re.match(r"^\s*\.\.\s+[a-z][a-z_:-]*\s*::", l):
+                    skip_rest = True
+                continue
+            kept.append(l)
+        joined = " ".join(l.strip() for l in kept if l.strip())
+        return _convert_inline(joined, file_id, targets, substitutions=substitutions).replace("|", "\\|")
 
     md: list[str] = []
     for ri, row in enumerate(rows):
@@ -798,7 +888,63 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 # Content converter
 # ---------------------------------------------------------------------------
 
-def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str, str] | None = None, source_dir: "Path | None" = None) -> str:
+_FIELD_RE_ADMON = re.compile(r"^:([^:]+):\s*(.*)")
+
+
+def _render_admonition_body(
+    label: str,
+    inline_arg: str,
+    block: list[str],
+    file_id: str,
+    targets,
+    source_dir,
+    substitutions=None,
+) -> list[str]:
+    """Render an admonition as '> **label:** ...' + converted body.
+
+    Nested directives (code-block, lists, tables, etc.) are preserved by
+    recursively running the body through _convert_content.
+    """
+    # 1) Split block into leading prose lines (flowing text) and a tail that
+    #    may contain nested directives. When a directive-looking line appears
+    #    after any prose, the remaining block is recursively converted.
+    directive_start = re.compile(r"^\.\.\s+\S")
+    prose_parts: list[str] = []
+    if inline_arg:
+        prose_parts.append(inline_arg)
+
+    tail_start = None
+    for idx, l in enumerate(block):
+        s = l.strip()
+        if not s:
+            # blank line — keep searching; do not commit to prose yet
+            continue
+        if directive_start.match(s):
+            tail_start = idx
+            break
+        m = _FIELD_RE_ADMON.match(s)
+        if m:
+            value = m.group(2).strip()
+            if value:
+                prose_parts.append(value)
+        else:
+            prose_parts.append(s)
+
+    result: list[str] = []
+    body = " ".join(prose_parts).strip()
+    if body or not prose_parts:
+        body_md = _convert_inline(body, file_id, targets, substitutions=substitutions) if body else ""
+        result.append(f"> **{label}:** {body_md}")
+    if tail_start is not None:
+        tail = block[tail_start:]
+        nested = _convert_content(tail, file_id, targets, source_dir, substitutions=substitutions)
+        if nested.strip():
+            result.append("")
+            result.append(nested)
+    return result
+
+
+def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str, str] | None = None, source_dir: "Path | None" = None, substitutions: dict[str, str] | None = None) -> str:
     """Convert RST content lines to Markdown."""
     lines = [l.rstrip("\n") for l in raw_lines]
     output: list[str] = []
@@ -819,6 +965,19 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             i += 1
             continue
 
+        # RST comment: `..` alone, or `..<space>...` not followed by a
+        # recognised directive (e.g. `..    .. image:: ...`). Consume the
+        # indented block so nested pseudo-directives do not leak.
+        if stripped == ".." or (
+            stripped.startswith(".. ")
+            and not re.match(r"\.\.\s+_", stripped)
+            and not re.match(r"\.\.\s+\[[^\]]+\]", stripped)
+            and not re.match(r"\.\.\s+[a-z][a-z_:-]*\s*::", stripped)
+            and not re.match(r"\.\.\s+\|[^|]+\|", stripped)
+        ):
+            _, i = _read_block(lines, i + 1)
+            continue
+
         # RST anonymous target: __
         if stripped == "__":
             i += 1
@@ -835,11 +994,20 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             inline_text = m_fn.group(1).strip()
             block, i = _read_block(lines, i + 1)
             fn_lines = ([inline_text] if inline_text else []) + [b for b in block if b.strip()]
-            output.extend(fn_lines)
+            for fl in fn_lines:
+                output.append(_convert_inline(fl, file_id, targets, substitutions=substitutions))
             continue
 
-        # Directive: .. name::
-        m = re.match(r"(\s*)\.\.\s+([a-z_-]+)::(.*)", line)
+        # Substitution definition: .. |name| directive:: args
+        m_subst = re.match(r"\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::", stripped)
+        if m_subst:
+            _, i = _read_block(lines, i + 1)
+            continue
+
+        # Directive: .. name::  (also tolerate typo `.. name ::` with extra space).
+        # Directive names can contain colons in domain-specific RST extensions
+        # (e.g. ``.. java:method::``) so we accept ``[a-z][a-z_:-]*``.
+        m = re.match(r"(\s*)\.\.\s+([a-z][a-z_:-]*)\s*::(.*)", line)
         if m:
             indent_str, directive, inline_arg = m.group(1), m.group(2), m.group(3).strip()
             directive = directive.lower()
@@ -938,47 +1106,14 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                     label = "Version Changed"
                 elif directive == "seealso":
                     label = "See Also"
-                body_parts = []
-                if inline_arg:
-                    body_parts.append(inline_arg)
-                _FIELD_RE = re.compile(r"^:([^:]+):\s*(.*)")
-                for l in block:
-                    stripped = l.strip()
-                    if not stripped:
-                        continue
-                    m = _FIELD_RE.match(stripped)
-                    if m:
-                        # Field list entry: preserve value part (drop bare option-only lines)
-                        value = m.group(2).strip()
-                        if value:
-                            body_parts.append(value)
-                    else:
-                        body_parts.append(stripped)
-                body = " ".join(body_parts)
-                body = _convert_inline(body, file_id, targets)
-                output.append(f"> **{label}:** {body}")
+                output.extend(_render_admonition_body(label, inline_arg, block, file_id, targets, source_dir, substitutions))
                 continue
 
             # --- admonition (custom title) ---
             if directive == "admonition":
                 block, i = _read_block(lines, i + 1)
                 label = inline_arg or "Note"
-                _FIELD_RE = re.compile(r"^:([^:]+):\s*(.*)")
-                body_parts = []
-                for l in block:
-                    stripped = l.strip()
-                    if not stripped:
-                        continue
-                    m = _FIELD_RE.match(stripped)
-                    if m:
-                        value = m.group(2).strip()
-                        if value:
-                            body_parts.append(value)
-                    else:
-                        body_parts.append(stripped)
-                body = " ".join(body_parts)
-                body = _convert_inline(body, file_id, targets)
-                output.append(f"> **{label}:** {body}")
+                output.extend(_render_admonition_body(label, "", block, file_id, targets, source_dir, substitutions))
                 continue
 
             # --- image ---
@@ -1016,7 +1151,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- list-table ---
             if directive == "list-table":
                 rows, header_rows, i = _parse_list_table(lines, i + 1)
-                md_lines = _rows_to_md_table(rows, header_rows, file_id)
+                md_lines = _rows_to_md_table(rows, header_rows, file_id, targets, substitutions)
                 output.extend(md_lines)
                 continue
 
@@ -1036,7 +1171,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                     cells = [c.strip().strip('"') for c in bl.split(",")]
                     if any(cells):
                         rows.append(cells)
-                md_lines = _rows_to_md_table(rows, header_rows, file_id)
+                md_lines = _rows_to_md_table(rows, header_rows, file_id, targets, substitutions)
                 output.extend(md_lines)
                 continue
 
@@ -1079,7 +1214,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- rubric ---
             if directive == "rubric":
                 block, i = _read_block(lines, i + 1)
-                title = _convert_inline(inline_arg, file_id, targets)
+                title = _convert_inline(inline_arg, file_id, targets, substitutions=substitutions)
                 output.append(f"**{title}**")
                 continue
 
@@ -1138,7 +1273,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             continue
 
         # Regular paragraph / list item / other content
-        converted = _convert_inline(stripped, file_id, targets)
+        converted = _convert_inline(stripped, file_id, targets, substitutions=substitutions)
         output.append(converted)
         i += 1
 
@@ -1209,12 +1344,13 @@ def convert(source: str, file_id: str = "", extra_targets: dict[str, str] | None
     targets = _collect_targets([l.rstrip("\n") for l in lines])
     if extra_targets:
         targets.update(extra_targets)
+    substitutions = _collect_substitutions([l.rstrip("\n") for l in lines])
 
-    preamble_md = _convert_content(preamble_lines, file_id, targets or None, source_dir)
+    preamble_md = _convert_content(preamble_lines, file_id, targets or None, source_dir, substitutions=substitutions or None)
 
     sections: list[Section] = []
     for sec_title, sec_lines in raw_sections:
-        md = _convert_content(sec_lines, file_id, targets or None, source_dir)
+        md = _convert_content(sec_lines, file_id, targets or None, source_dir, substitutions=substitutions or None)
         sections.append(Section(title=sec_title, content=md))
 
     no_knowledge = _detect_no_knowledge_content(preamble_md, sections)

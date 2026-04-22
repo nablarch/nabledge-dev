@@ -69,6 +69,3 @@ MIMEが `application/json` でcharsetが `utf-8` の場合、Content-Typeは以�
   </property>
 </component> 
 ```
-.. |br| raw:: html
-
-<br/>

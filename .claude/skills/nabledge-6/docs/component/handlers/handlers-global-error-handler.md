@@ -45,7 +45,7 @@
 | `ThreadDeath` (サブクラス含む) | INFOレベルのログ出力を行う。 ログ出力後、捕捉したエラーをリスローする。 |
 | `StackOverflowError` (サブクラス含む) | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーを原因に持つ `InternalError` を生成し、ハンドラの処理結果として返却する。 |
 | `OutOfMemoryError` (サブクラス含む) | FATALレベルのログ出力を行う。 なお、FATALレベルのログ出力に失敗する可能性(再度 `OutOfMemoryError` が発生する可能性)があるため、 ログ出力前に標準エラー出力に `OutOfMemoryError` が発生したことを出力する。 ログ出力後、捕捉したエラーを原因に持つ `InternalError` を生成し、ハンドラの処理結果として返却する。 |
-| `VirtualMachineError` (サブクラス含む) | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーをリスローする。 .. tip:: `StackOverflowError` 及び `OutOfMemoryError` 以外が対象となる。 |
+| `VirtualMachineError` (サブクラス含む) | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーをリスローする。 |
 | 上記以外のエラークラス | FATALレベルのログ出力を行う。 ログ出力後、捕捉したエラーを原因に持つ `InternalError` を生成し、ハンドラの処理結果として返却する。 |
 
 ## グローバルエラーハンドラでは要件を満たせない場合

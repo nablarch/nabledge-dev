@@ -174,7 +174,13 @@ RestMockHttpRequest newRequest(String httpMethod, String uri)
 ```
 第1引数にはHTTPメソッドを、第2引数にはテスト対象となるリクエストURIを引き渡す。
 
-> **Tip:** `RestMockHttpRequest` は流れるようなインターフェイスでパラメータなどを設定できるよう メソッドをオーバーライドして自身のインスタンスを返すようにしてある。 使用できるメソッドの詳細は `Javadoc` を参照 リクエストを構築する例 .. code-block:: java RestMockHttpRequest request = post("/projects") .setHeader("Authorization","Bearer token") .setCookie(cookie);
+> **Tip:** `RestMockHttpRequest` は流れるようなインターフェイスでパラメータなどを設定できるよう メソッドをオーバーライドして自身のインスタンスを返すようにしてある。 使用できるメソッドの詳細は `Javadoc` を参照 リクエストを構築する例
+
+```java
+RestMockHttpRequest request = post("/projects")
+                                  .setHeader("Authorization","Bearer token")
+                                  .setCookie(cookie);
+```
 
 ## 実行
 

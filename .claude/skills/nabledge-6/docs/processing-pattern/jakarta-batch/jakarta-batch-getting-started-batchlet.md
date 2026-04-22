@@ -93,9 +93,9 @@ public class TruncateTableBatchlet extends AbstractBatchlet {
 * `AbstractBatchlet` を継承し、 `process` メソッドで業務処理を行う。
 
 
-* `Named` と `Dependent` をクラスに付与する。 |br|
+* `Named` と `Dependent` をクラスに付与する。 html <br />
 Named及びDependentアノテーションを設定することで、Batchlet実装クラスをCDIの管理Beanにできる。
-これにより、ジョブ定義に指定するBatchletクラス名をCDIの管理名で記述出来るようになる。 |br|
+これにより、ジョブ定義に指定するBatchletクラス名をCDIの管理名で記述出来るようになる。 html <br />
 (CDI管理Beanとしなかった場合は、完全修飾名(FQCN)で記述する)
 
 * データベースアクセス を使用してTRUNCATE文を実行する。
@@ -139,12 +139,4 @@ zip-code-truncate-table.xml
 * 複数ステップで構成されるバッチジョブの場合は、 `step` 要素を複数定義し、処理を順次実行する。
 * `batchlet` 要素の `ref` 属性には、Batchletクラス名の頭文字を小文字にした名称を指定する。
 * `property` 要素で、Batchletクラスのプロパティにインジェクトする値を指定する。
-* 設定ファイルの詳細な記述方法は |jsr352| を参照
-
-.. |jsr352| raw:: html
-
-<a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a>
-
-.. |br| raw:: html
-
-<br />
+* 設定ファイルの詳細な記述方法は [Jakarta Batch(外部サイト、英語)](https://jakarta.ee/specifications/batch/) を参照

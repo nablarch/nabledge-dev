@@ -1,9 +1,5 @@
 # メール送信
 
-.. |JavaMail| raw:: html
-
-<a href="https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html" target="_blank">Jakarta Mail (外部サイト、英語)</a>
-
 メールを送信する機能を提供する。
 
 この機能では、ディレードオンライン処理と呼ばれる方式を採用しており、
@@ -24,7 +20,7 @@
 アプリケーションがメール送信要求を出す毎に1つのメール送信要求を作成し、
 メール送信要求1つにつきメールを1通送信する。
 
-> **Tip:** 本機能は、即時にメールを送信するAPIは提供していない。 この場合は、 |JavaMail| を直接使用すること。
+> **Tip:** 本機能は、即時にメールを送信するAPIは提供していない。 この場合は、 [Jakarta Mail (外部サイト、英語)](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html) を直接使用すること。
 
 ## 機能概要
 
@@ -71,14 +67,10 @@
 この機能では、データベースを使用してメール送信に使うデータを管理する。
 テーブルのレイアウトは以下となる。
 
-.. |br| raw:: html
-
-<br />
-
 | メール送信要求ID `PK` | 文字列型 | メール送信要求を一意に識別するID |
 |---|---|---|
-| メール送信パターンID（任意項目） | 文字列型 | メールの送信方法のパターンを識別するためのID。 \|br\| パターンを使用した未送信データの抽出をする場合に定義する。（ 未送信のデータを抽出する際の条件 を参照） |
-| メール送信バッチのプロセスID（任意項目） | 文字列型 | マルチプロセス実行時に各プロセスがレコードを悲観ロックするために使用するカラム。 \|br\| マルチプロセス実行する場合に定義する。（ mail-mail_multi_process を参照） |
+| メール送信パターンID（任意項目） | 文字列型 | メールの送信方法のパターンを識別するためのID。 html <br /> パターンを使用した未送信データの抽出をする場合に定義する。（ 未送信のデータを抽出する際の条件 を参照） |
+| メール送信バッチのプロセスID（任意項目） | 文字列型 | マルチプロセス実行時に各プロセスがレコードを悲観ロックするために使用するカラム。 html <br /> マルチプロセス実行する場合に定義する。（ mail-mail_multi_process を参照） |
 | 件名 | 文字列型 |  |
 | 送信者メールアドレス | 文字列型 | メールのFromヘッダに指定するメールアドレス |
 | 返信先メールアドレス | 文字列型 | メールのReply-Toヘッダに指定するメールアドレス |
@@ -422,15 +414,15 @@ java nablarch.fw.launcher.Main \
 メールヘッダインジェクション攻撃への根本的対策として、以下の対策を実施する必要がある。
 
 * メールヘッダは固定値を使用する。外部からの入力値を使用しない。
-* プログラミング言語の標準APIを使用してメールを送信する。Javaの場合は |JavaMail| を使用する。
+* プログラミング言語の標準APIを使用してメールを送信する。Javaの場合は [Jakarta Mail (外部サイト、英語)](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html) を使用する。
 
 メールヘッダは固定値を使用する。外部からの入力値を使用しない。
 これについては、プロジェクトで対応する。
 固定値にできない場合は、改行コードを変換するか、取り除く対応をプロジェクトで行う。
 
-プログラミング言語の標準APIを使用してメールを送信する。Javaの場合は |JavaMail| を使用する。
-本機能では |JavaMail| を使用している。
-しかし、 |JavaMail| を使用しても、一部のメールヘッダの項目に改行コードが含まれていてもメール送信可能な項目がある。
+プログラミング言語の標準APIを使用してメールを送信する。Javaの場合は [Jakarta Mail (外部サイト、英語)](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html) を使用する。
+本機能では [Jakarta Mail (外部サイト、英語)](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html) を使用している。
+しかし、 [Jakarta Mail (外部サイト、英語)](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/mail/package-summary.html) を使用しても、一部のメールヘッダの項目に改行コードが含まれていてもメール送信可能な項目がある。
 そのため、保険的対策として、これらの項目に対して改行コードが含まれている場合にはメール送信を実施しないチェック機能を設けている。
 改行コードが含まれていた場合には、
 `InvalidCharacterException`

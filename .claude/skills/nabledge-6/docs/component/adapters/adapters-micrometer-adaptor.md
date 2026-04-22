@@ -150,12 +150,12 @@ nablarch.micrometer.logging.logInactive=true
 
 | レジストリ | ファクトリクラス | 提供しているアダプタのバージョン |
 |---|---|---|
-| SimpleMeterRegistry(外部サイト、英語) | `SimpleMeterRegistryFactory` | `1.0.0` 以上 |
-| LoggingMeterRegistry(外部サイト、英語) | `LoggingMeterRegistryFactory` | `1.0.0` 以上 |
-| CloudWatchMeterRegistry(外部サイト、英語) | `CloudWatchMeterRegistryFactory` | `1.0.0` 以上 |
-| DatadogMeterRegistry(外部サイト、英語) | `DatadogMeterRegistryFactory` | `1.0.0` 以上 |
-| StatsdMeterRegistry(外部サイト、英語) | `StatsdMeterRegistryFactory` | `1.0.0` 以上 |
-| OtlpMeterRegistry(外部サイト、英語) | `OtlpMeterRegistryFactory` | `1.3.0` 以上 |
+| [SimpleMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/simple/SimpleMeterRegistry.html) | `SimpleMeterRegistryFactory` | `1.0.0` 以上 |
+| [LoggingMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-core/1.13.0/io/micrometer/core/instrument/logging/LoggingMeterRegistry.html) | `LoggingMeterRegistryFactory` | `1.0.0` 以上 |
+| [CloudWatchMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-registry-cloudwatch2/1.13.0/io/micrometer/cloudwatch2/CloudWatchMeterRegistry.html) | `CloudWatchMeterRegistryFactory` | `1.0.0` 以上 |
+| [DatadogMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-registry-datadog/1.13.0/io/micrometer/datadog/DatadogMeterRegistry.html) | `DatadogMeterRegistryFactory` | `1.0.0` 以上 |
+| [StatsdMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-registry-statsd/1.13.0/io/micrometer/statsd/StatsdMeterRegistry.html) | `StatsdMeterRegistryFactory` | `1.0.0` 以上 |
+| [OtlpMeterRegistry(外部サイト、英語)](https://javadoc.io/static/io.micrometer/micrometer-registry-otlp/1.13.0/io/micrometer/registry/otlp/OtlpMeterRegistry.html) | `OtlpMeterRegistryFactory` | `1.3.0` 以上 |
 
 ## 設定ファイル
 
@@ -900,7 +900,43 @@ http_server_requests_seconds_bucket{class="com.nablarch.example.app.web.action.M
 http_server_requests_seconds_bucket{class="com.nablarch.example.app.web.action.MetricsAction",exception="None",httpMethod="GET",method="index_nablarch.fw.web.HttpRequest_nablarch.fw.ExecutionContext",outcome="SUCCESS",status="200",le="3.0",} 32.0
 http_server_requests_seconds_bucket{class="com.nablarch.example.app.web.action.MetricsAction",exception="None",httpMethod="GET",method="index_nablarch.fw.web.HttpRequest_nablarch.fw.ExecutionContext",outcome="SUCCESS",status="200",le="+Inf",} 32.0
 ```
-> **Tip:** 本アダプタで提供している `MeterRegistry` では `OtlpMeterRegistry` のみがヒストグラムバケットをサポートする。 例では、ヒストグラムバケットの具体例（`http_server_requests_seconds_bucket`）を示すため [PrometheusMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-registry-prometheus/1.13.0/io/micrometer/prometheusmetrics/PrometheusMeterRegistry.html) を使用している（[Prometheus(外部サイト、英語)](https://prometheus.io/) は、ヒストグラムによるパーセンタイルの計算をサポートしている）。 ただし、 `PrometheusMeterRegistry` の `MeterRegistryFactory` は、本アダプタでは提供していない。 実際に `PrometheusMeterRegistry` を試したい場合は、以下のようなクラスを自前で用意すること。 .. code-block:: java package example.micrometer.prometheus; import io.micrometer.prometheusmetrics.PrometheusConfig; import io.micrometer.prometheusmetrics.PrometheusMeterRegistry; import nablarch.core.repository.di.DiContainer; import nablarch.integration.micrometer.MeterRegistryFactory; import nablarch.integration.micrometer.MicrometerConfiguration; import nablarch.integration.micrometer.NablarchMeterRegistryConfig; public class PrometheusMeterRegistryFactory extends MeterRegistryFactory<PrometheusMeterRegistry> { @Override protected PrometheusMeterRegistry createMeterRegistry(MicrometerConfiguration micrometerConfiguration) { return new PrometheusMeterRegistry(new Config(prefix, micrometerConfiguration)); } @Override public PrometheusMeterRegistry createObject() { return doCreateObject(); } static class Config extends NablarchMeterRegistryConfig implements PrometheusConfig { public Config(String prefix, DiContainer diContainer) { super(prefix, diContainer); } @Override protected String subPrefix() { return "prometheus"; } } }
+> **Tip:** 本アダプタで提供している `MeterRegistry` では `OtlpMeterRegistry` のみがヒストグラムバケットをサポートする。 例では、ヒストグラムバケットの具体例（`http_server_requests_seconds_bucket`）を示すため [PrometheusMeterRegistry(外部サイト、英語)](https://javadoc.io/doc/io.micrometer/micrometer-registry-prometheus/1.13.0/io/micrometer/prometheusmetrics/PrometheusMeterRegistry.html) を使用している（[Prometheus(外部サイト、英語)](https://prometheus.io/) は、ヒストグラムによるパーセンタイルの計算をサポートしている）。 ただし、 `PrometheusMeterRegistry` の `MeterRegistryFactory` は、本アダプタでは提供していない。 実際に `PrometheusMeterRegistry` を試したい場合は、以下のようなクラスを自前で用意すること。
+
+```java
+package example.micrometer.prometheus;
+
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import nablarch.core.repository.di.DiContainer;
+import nablarch.integration.micrometer.MeterRegistryFactory;
+import nablarch.integration.micrometer.MicrometerConfiguration;
+import nablarch.integration.micrometer.NablarchMeterRegistryConfig;
+
+public class PrometheusMeterRegistryFactory extends MeterRegistryFactory<PrometheusMeterRegistry> {
+
+    @Override
+    protected PrometheusMeterRegistry createMeterRegistry(MicrometerConfiguration micrometerConfiguration) {
+        return new PrometheusMeterRegistry(new Config(prefix, micrometerConfiguration));
+    }
+
+    @Override
+    public PrometheusMeterRegistry createObject() {
+        return doCreateObject();
+    }
+
+    static class Config extends NablarchMeterRegistryConfig implements PrometheusConfig {
+
+        public Config(String prefix, DiContainer diContainer) {
+            super(prefix, diContainer);
+        }
+
+        @Override
+        protected String subPrefix() {
+            return "prometheus";
+        }
+    }
+}
+```
 
 ## あらかじめ用意されているHandlerMetricsMetaDataBuilderの実装
 

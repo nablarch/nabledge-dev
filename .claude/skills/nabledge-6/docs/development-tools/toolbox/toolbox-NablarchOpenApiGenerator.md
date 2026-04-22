@@ -1097,6 +1097,3 @@ public interface CustomersApi {
 }
 ```
 > **Tip:** ファイルダウンロードではレスポンスのコンテンツタイプは任意となる。レスポンスのスキーマ定義は `type: string` かつ `format: binary` とし、ダウンロードするファイルの内容やレスポンスヘッダは `HttpResponse` を使って設定する。
-.. |br| raw:: html
-
-<br />

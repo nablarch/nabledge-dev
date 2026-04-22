@@ -138,12 +138,23 @@ class TestCheckIndexCoverage:
         from scripts.verify.verify import check_index_coverage
         return check_index_coverage(knowledge_dir, index_path)
 
+    def _write_toon(self, idx_path, entries):
+        """Write index.toon in real TOON format: comma-separated, indented rows."""
+        lines = [
+            "# Nabledge-6 Knowledge Index",
+            "",
+            f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:",
+        ]
+        for e in entries:
+            lines.append(f"  {', '.join(e)}")
+        idx_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
     def test_pass_all_files_indexed(self, tmp_path):
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A", "no_knowledge_content": False}))
         idx = tmp_path / "index.toon"
-        idx.write_text("title\ttype\tcategory\tprocessing_patterns\tpath\nA\t\t\t\ta.json\n")
+        self._write_toon(idx, [["A", "", "", "", "a.json"]])
         assert self._check(kdir, idx) == []
 
     def test_fail_json_not_in_index(self, tmp_path):
@@ -151,7 +162,7 @@ class TestCheckIndexCoverage:
         kdir.mkdir()
         (kdir / "missing.json").write_text(json.dumps({"id": "m", "title": "M", "no_knowledge_content": False}))
         idx = tmp_path / "index.toon"
-        idx.write_text("title\ttype\tcategory\tprocessing_patterns\tpath\n")
+        self._write_toon(idx, [])
         issues = self._check(kdir, idx)
         assert any("QO4" in i and "missing.json" in i for i in issues)
 
@@ -160,7 +171,16 @@ class TestCheckIndexCoverage:
         kdir.mkdir()
         (kdir / "toc.json").write_text(json.dumps({"id": "t", "title": "T", "no_knowledge_content": True}))
         idx = tmp_path / "index.toon"
-        idx.write_text("title\ttype\tcategory\tprocessing_patterns\tpath\n")
+        self._write_toon(idx, [])
+        assert self._check(kdir, idx) == []
+
+    def test_pass_nested_path_indexed(self, tmp_path):
+        """Nested JSON with commas in title must parse correctly from TOON."""
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["B", "about", "sub", "", "sub/b.json"]])
         assert self._check(kdir, idx) == []
 
     def test_fail_missing_index_file(self, tmp_path):
@@ -364,6 +384,22 @@ class TestVerifyFileQL2:
         ]}
         assert self._check_ql2(src, data, "rst") == []
 
+    def test_pass_rst_inline_code_url_trailing_backtick_trimmed(self):
+        """RST ``http://...`` must not leak trailing backticks into the URL."""
+        src = "起動したら ``http://localhost:9080/`` にアクセス。\n"
+        data = {"id": "f", "title": "T", "content": "起動したら `http://localhost:9080/` にアクセス。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_pass_rst_substitution_only_url_skipped(self):
+        """URLs appearing only inside a substitution directive body are skipped."""
+        src = (
+            "通常テキスト。\n\n"
+            ".. |jsr317| raw:: html\n\n"
+            "   <a href=\"https://only-in-subst.example\" target=\"_blank\">Text</a>\n"
+        )
+        data = {"id": "f", "title": "T", "content": "通常テキスト。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
 
 # ---------------------------------------------------------------------------
 # QC1-QC4: content completeness (RST/MD sequential-delete)
@@ -372,9 +408,9 @@ class TestVerifyFileQL2:
 class TestCheckContentCompleteness:
     """QC1-QC4: sequential-delete algorithm via check_content_completeness."""
 
-    def _check(self, source_text, data, fmt="rst"):
+    def _check(self, source_text, data, fmt="rst", label_map=None):
         from scripts.verify.verify import check_content_completeness
-        return check_content_completeness(source_text, data, fmt)
+        return check_content_completeness(source_text, data, fmt, label_map)
 
     def _data(self, title="", content="", sections=None):
         return {
@@ -483,6 +519,36 @@ class TestCheckContentCompleteness:
             content="トップレベル本文。",
             sections=[{"id": "s1", "title": "セクション", "content": "セクション本文。"}]
         )
+        assert self._check(src, data) == []
+
+    # --- RST normalization: false positive prevention ---
+
+    def test_pass_rst_double_backtick_inline_code(self):
+        """RST ``code`` is converted to MD `code` — must not trigger QC2."""
+        src = "名前空間が ``javax.*`` から ``jakarta.*`` になる。\n"
+        data = self._data(content="名前空間が `javax.*` から `jakarta.*` になる。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_ref_label_resolved_text(self):
+        """RST :ref:`label` is resolved to display text — must not trigger QC2."""
+        src = "詳細は :ref:`doma_dependency` を参照。\n\ndoma_dependency\n===============\n\nDoma 設定。\n"
+        # converter resolves :ref:`doma_dependency` to label and also captures the section content
+        data = self._data(
+            content="詳細は doma_dependency を参照。",
+            sections=[{"id": "s1", "title": "doma_dependency", "content": "Doma 設定。"}]
+        )
+        assert self._check(src, data) == []
+
+    def test_pass_rst_external_link_text(self):
+        """RST `text <url>`_ is converted to MD [text](url) — must not trigger QC2."""
+        src = "`公式サイト <https://example.com>`_ を参照。\n"
+        data = self._data(content="[公式サイト](https://example.com) を参照。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_ref_display_form_resolved(self):
+        """RST :ref:`display <label>` resolved to display text — must not trigger QC2."""
+        src = "詳細は :ref:`Doma設定 <doma_config>` を参照。\n"
+        data = self._data(content="詳細は Doma設定 を参照。")
         assert self._check(src, data) == []
 
 

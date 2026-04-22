@@ -233,7 +233,21 @@ JSP
 メッセージレベルを使い分けることで、画面表示時のスタイルを切り替えることができる。
 スタイルの切り替えは、カスタムタグライブラリの errors タグを使用することで実現できる。
 
-> **Important:** メッセージレベルとカスタムタグを使用したスタイル変更は以下の問題点がある。 * カスタムタグライブラリが出力するDOM構造に制約があり、一般的なCSSフレームワークとの相性が悪い * メッセージレベルが3種類しかなくそれより細かい分類ができない * JSP以外のテンプレートエンジンで使用できない このため、 errorsタグを使用したメッセージレベルに応じたスタイル切り替え を使用するのではなく以下の実装方法を推奨する。 サーバサイド サーバサイドでメッセージ文字列を構築し、リクエストスコープに設定する。 メッセージを生成する際にはメッセージレベルが必須なため、INFOレベルを指定すれば良い。 .. code-block:: java context.setRequestScopedVar("message", MessageUtil.createMessage(MessageLevel.INFO, "login.message").formatMessage()); View View(JSP等)では、リクエストスコープに設定したメッセージを出力する。 JSPを使用する場合は、 write タグを使用してリクエストスコープに設定したメッセージを出力する。 .. code-block:: jsp <div class="alert alert-success" role="alert"> <n:write name="message" /> </div>
+> **Important:** メッセージレベルとカスタムタグを使用したスタイル変更は以下の問題点がある。 * カスタムタグライブラリが出力するDOM構造に制約があり、一般的なCSSフレームワークとの相性が悪い * メッセージレベルが3種類しかなくそれより細かい分類ができない * JSP以外のテンプレートエンジンで使用できない このため、 errorsタグを使用したメッセージレベルに応じたスタイル切り替え を使用するのではなく以下の実装方法を推奨する。 サーバサイド サーバサイドでメッセージ文字列を構築し、リクエストスコープに設定する。 メッセージを生成する際にはメッセージレベルが必須なため、INFOレベルを指定すれば良い。
+
+```java
+context.setRequestScopedVar("message", 
+    MessageUtil.createMessage(MessageLevel.INFO, "login.message").formatMessage());
+```
+View
+View(JSP等)では、リクエストスコープに設定したメッセージを出力する。
+JSPを使用する場合は、 write タグを使用してリクエストスコープに設定したメッセージを出力する。
+
+```jsp
+<div class="alert alert-success" role="alert">
+  <n:write name="message" />
+</div>
+```
 
 errorsタグを使用したメッセージレベルに応じたスタイル切り替え例
 メッセージレベルは、 `INFO` 、 `WARN` 、 `ERROR` の3種類があり、

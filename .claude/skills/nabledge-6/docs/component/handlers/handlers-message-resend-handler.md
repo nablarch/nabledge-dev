@@ -51,11 +51,11 @@
 
 | カラム名 | 制約等 | 格納する値 |
 |---|---|---|
-| リクエストID | 主キー \|br\| 文字列型 | 要求電文のリクエストID |
-| メッセージID | 主キー \|br\| 文字列型 | 要求電文のメッセージID 再送電文の場合には、メッセージIDではなく相関メッセージIDを使用する。 詳細は、 同一電文(再送電文)の判定方法 を参照 |
-| 宛先キューの論理名 | 文字列型 | 応答電文を送信するための宛先キューの論理名 \|br\| (`InterSystemMessage#getDestination()`) |
-| 処理結果コード | 文字列型 | 応答電文の処理結果コード \|br\| (`ResponseMessage#getStatusCode()`) |
-| 応答電文 | バイナリ型 | 応答電文の内容 \|br\| (`ResponseMessage#getBodyBytes()`) |
+| リクエストID | 主キー html <br /> 文字列型 | 要求電文のリクエストID |
+| メッセージID | 主キー html <br /> 文字列型 | 要求電文のメッセージID 再送電文の場合には、メッセージIDではなく相関メッセージIDを使用する。 詳細は、 同一電文(再送電文)の判定方法 を参照 |
+| 宛先キューの論理名 | 文字列型 | 応答電文を送信するための宛先キューの論理名 html <br /> (`InterSystemMessage#getDestination()`) |
+| 処理結果コード | 文字列型 | 応答電文の処理結果コード html <br /> (`ResponseMessage#getStatusCode()`) |
+| 応答電文 | バイナリ型 | 応答電文の内容 html <br /> (`ResponseMessage#getBodyBytes()`) |
 デフォルトのテーブル名やカラム名を変更したい場合には、設定により変更できる。
 詳細は、 `SentMessageTableSchema` 及び
 `sentMessageTableSchemaプロパティ` を参照。
@@ -88,6 +88,3 @@
   </property>
 </component> 
 ```
-.. |br| raw:: html
-
-<br />

@@ -333,7 +333,7 @@ Date now = provider.getDate();
     <property name="dbTransactionManager" ref="dbTransactionManager" / >
 </component>
 ```
-.. tip :: テーブル採番用の設定値の詳細は、\ `IdGenerator`\ を参照すること。
+> **Tip:** テーブル採番用の設定値の詳細は、\ `IdGenerator`\ を参照すること。
 
 ## Excelファイル記述例
 
@@ -681,6 +681,3 @@ nablarch.test.resource-root=test/online;test/batch
 テストフレームワーク内部では以下のデータを記述した場合と同様に扱われる。
 
 ![](../../../knowledge/assets/testing-framework-03-Tips/data_convert_internal.png)
-.. |br| raw:: html
-
-<br />

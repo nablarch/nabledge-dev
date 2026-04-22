@@ -335,7 +335,15 @@ ParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStateme
 int result = statement.executeUpdateByObject(entity);
 ```
 > **Tip:** Beanの代わりに `java.util.Map` の実装クラスも指定できる。 Mapを指定した場合は、Mapのキー値と一致するINパラメータに対して、Mapの値が設定される。 なお、Beanを指定した場合は `BeanUtil` を使用して、Mapに変換後に処理を行う。 extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` で対応していない型がBeanのプロパティに存在した場合、そのプロパティについてはこの機能で使用できない。 extdoc:`BeanUtil <nablarch.core.beans.BeanUtil>` でMapにコピーできる型を増やしたい場合には、 BeanUtilの型変換ルール を参照し対応すること。
-> **Tip:** Beanへのアクセス方法をプロパティからフィールドに変更できる。 フィールドアクセスに変更する場合には、propertiesファイルに以下の設定を追加する。 .. code-block:: properties nablarch.dbAccess.isFieldAccess=true なお、フィールドアクセスは以下の理由により推奨しない。 本フレームワークのその他の機能(例えば `BeanUtil`)では、Beanから値を取得する方法はプロパティアクセスで統一されている。 データベース機能のみフィールドアクセスに変更した場合、プログラマはフィールドアクセスとプロパティアクセスの両方を意識する必要があり、生産性の低下や不具合の原因ともなる。
+> **Tip:** Beanへのアクセス方法をプロパティからフィールドに変更できる。 フィールドアクセスに変更する場合には、propertiesファイルに以下の設定を追加する。
+
+```properties
+nablarch.dbAccess.isFieldAccess=true
+```
+なお、フィールドアクセスは以下の理由により推奨しない。
+
+本フレームワークのその他の機能(例えば `BeanUtil`)では、Beanから値を取得する方法はプロパティアクセスで統一されている。
+データベース機能のみフィールドアクセスに変更した場合、プログラマはフィールドアクセスとプロパティアクセスの両方を意識する必要があり、生産性の低下や不具合の原因ともなる。
 
 ## 型を変換する
 
@@ -715,7 +723,19 @@ SqlRow row = rows.get(0);
 // 暗号化されたカラムの値をgetBytesを使ってバイナリで取得する
 byte[] encryptedPassword = row.getBytes("password");
 ```
-> **Important:** 上記実装例の場合、カラムの内容が全てJavaのヒープ上に展開される。 このため、非常に大きいサイズのデータを読み込んだ場合、ヒープ領域を圧迫し、システムダウンなどの障害の原因となる。 このため、大量データを読み込む場合には、以下のように `Blob` オブジェクトを使用して、ヒープを大量に消費しないようにすること。 .. code-block:: java SqlResultSet rows = select.retrieve(); // Blogとしてデータを取得する Blob pdf = (Blob) rows.get(0).get("PDF"); try (InputStream input = pdf.getBinaryStream()) { // InputStreamからデータを順次読み込み処理を行う。 // 一括で読み込んだ場合、全てヒープに展開されるので注意すること }
+> **Important:** 上記実装例の場合、カラムの内容が全てJavaのヒープ上に展開される。 このため、非常に大きいサイズのデータを読み込んだ場合、ヒープ領域を圧迫し、システムダウンなどの障害の原因となる。 このため、大量データを読み込む場合には、以下のように `Blob` オブジェクトを使用して、ヒープを大量に消費しないようにすること。
+
+```java
+SqlResultSet rows = select.retrieve();
+
+// Blogとしてデータを取得する
+Blob pdf = (Blob) rows.get(0).get("PDF");
+
+try (InputStream input = pdf.getBinaryStream()) {
+  // InputStreamからデータを順次読み込み処理を行う。
+  // 一括で読み込んだ場合、全てヒープに展開されるので注意すること
+}
+```
 バイナリ型の値を登録・更新する
 サイズの小さいバイナリ値を登録・更新する場合は、 `SqlPStatement#setByte` を使用する。
 
@@ -751,7 +771,19 @@ SqlRow row = rows.get(0);
 // StringとしてCLOBの値を取得する。
 String mailBody = row.getString("mailBody");
 ```
-> **Important:** 上記実装例の場合、カラムの内容が全てJavaのヒープ上に展開される。 このため、非常に大きいサイズのデータを読み込んだ場合、ヒープ領域を圧迫し、システムダウンなどの障害の原因となる。 このため、大量データを読み込む場合には、以下のように `Clob` オブジェクトを使用して、 ヒープを大量に消費しないようにすること。 .. code-block:: java SqlResultSet rows = select.retrieve(); // Clogとしてデータを取得する Clob mailBody = (Clob) rows.get(0).get("mailBody"); try (Reader reader = mailBody.getCharacterStream()) { // Readerからデータを順次読み込み処理を行う。 // 読み込んだデータをヒープ上に全て保持した場合は、ヒープを圧迫するので注意すること。 }
+> **Important:** 上記実装例の場合、カラムの内容が全てJavaのヒープ上に展開される。 このため、非常に大きいサイズのデータを読み込んだ場合、ヒープ領域を圧迫し、システムダウンなどの障害の原因となる。 このため、大量データを読み込む場合には、以下のように `Clob` オブジェクトを使用して、 ヒープを大量に消費しないようにすること。
+
+```java
+SqlResultSet rows = select.retrieve();
+
+// Clogとしてデータを取得する
+Clob mailBody = (Clob) rows.get(0).get("mailBody");
+
+try (Reader reader = mailBody.getCharacterStream()) {
+  // Readerからデータを順次読み込み処理を行う。
+  // 読み込んだデータをヒープ上に全て保持した場合は、ヒープを圧迫するので注意すること。
+}
+```
 CLOB型に値を登録(更新)する
 サイズが小さい値を登録更新する場合は、String型の値を `SqlPStatement#setString` を使用して設定する。
 

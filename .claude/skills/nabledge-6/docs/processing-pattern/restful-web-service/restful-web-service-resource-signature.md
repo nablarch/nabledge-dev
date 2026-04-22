@@ -7,11 +7,11 @@
 メソッド引数
 | 引数定義 | 説明 |
 |---|---|
-| 引数無し | パラメータやリクエストボディを必要としない場合には、引数無しとしてメソッドを定義できる。 例 .. code-block:: java public HttpResponse sample() { // 省略 } |
-| フォーム(Java Beans) | リクエストボディから変換したフォームを元に処理を行う場合には、引数としてフォームを定義する。 例 .. code-block:: java public HttpResponse sample(SampleForm form) { // 省略 } |
-| `JaxRsHttpRequest`\ [#]_\ | パスパラメータ や クエリパラメータ を使う場合やHTTPヘッダの値などを取得したい場合には、引数として `JaxRsHttpRequest` を定義する。 例 .. code-block:: java public HttpResponse sample(JaxRsHttpRequest request) { // 省略 } |
-| `ExecutionContext` | `ExecutionContext` が提供するスコープ変数にアクセスしたい場合は、 引数として `ExecutionContext` を定義する。 例 .. code-block:: java public HttpResponse sample(ExecutionContext context) { // 省略 } |
-| 組み合わせ | 用途に応じて上記の型を組み合わせることが出来る。 例えば、HTTPヘッダ情報とリクエストボディから変換されたFormを必要とするメソッドでは、以下の定義となる。 .. code-block:: java public HttpResponse sample(SampleForm form, JaxRsHttpRequest request) { // 省略 } |
+| 引数無し | パラメータやリクエストボディを必要としない場合には、引数無しとしてメソッドを定義できる。 例 |
+| フォーム(Java Beans) | リクエストボディから変換したフォームを元に処理を行う場合には、引数としてフォームを定義する。 例 |
+| `JaxRsHttpRequest`\ [#]_\ | パスパラメータ や クエリパラメータ を使う場合やHTTPヘッダの値などを取得したい場合には、引数として `JaxRsHttpRequest` を定義する。 例 |
+| `ExecutionContext` | `ExecutionContext` が提供するスコープ変数にアクセスしたい場合は、 引数として `ExecutionContext` を定義する。 例 |
+| 組み合わせ | 用途に応じて上記の型を組み合わせることが出来る。 例えば、HTTPヘッダ情報とリクエストボディから変換されたFormを必要とするメソッドでは、以下の定義となる。 |
 .. [#]
 後方互換性維持のためHttpRequestも使用できるが、原則JaxRsHttpRequestを使用する。
 

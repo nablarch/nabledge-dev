@@ -2,6 +2,4 @@
 
 ここでは、初期セットアップの完了後に必要となる設定変更に関して記述する。
 
-.. tip ::
-
-Nablarchの設定の基本的な考え方は、 ../setting_guide/index を参照。
+> **Tip:** Nablarchの設定の基本的な考え方は、 ../setting_guide/index を参照。

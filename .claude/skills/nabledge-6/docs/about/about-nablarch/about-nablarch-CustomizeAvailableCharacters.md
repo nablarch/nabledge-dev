@@ -43,14 +43,22 @@
 * ASCII記号
 * 半角カナ
 
-> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。 .. code-block:: text nablarch/core/validation/charset-definition.config
+> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
+
+```text
+nablarch/core/validation/charset-definition.config
+```
 ただし、以下の文字集合については、
 Unicode上のコードポイントがコンポーネント設定ファイルに定義されている。
 
 
 * halfWidthWhitespace
 
-> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。 .. code-block:: text nablarch/core/validation/charset-definition.xml
+> **Tip:** デフォルトコンフィギュレーション(jar)内の以下のリソースに定義されている。
+
+```text
+nablarch/core/validation/charset-definition.xml
+```
 
 ## 設定方法
 

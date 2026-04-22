@@ -42,7 +42,7 @@
     {
       "id": "s8",
       "title": "本ハンドラ内で発生した致命的エラーの対応",
-      "content": "本ハンドラ内の処理で、下記事象が発生した場合、正常な応答が返せないと判断して、クライアントに対しては\nステータスコード500で固定的なレスポンスを返す。\n\n* サーブレットフォワード時に ServletException が発生した場合\n* RuntimeException およびそのサブクラスの例外が発生した場合\n* Error およびそのサブクラスの例外が発生した場合\n\nこの際のレスポンスは下記HTMLとなる。\n\n```html\n<html>\n  <head>\n    <title>A system error occurred.</title>\n  </head>\n  <body>\n    <p>\n      We are sorry not to be able to proceed your request.<br/>\n      Please contact the system administrator of our system.\n    </p>\n  </body>\n</html>\n```\n> **Important:** 上記HTMLのレスポンスは固定的になっており、設定による変更などはできない。 このレスポンスは、本ハンドラ内で例外が発生するレアケースのみでしか使われることはない。 このため、通常この仕様が問題になることはないが、どんなことがあってもこのレスポンスを 出してはいけないシステムにおいては、本ハンドラを参考にハンドラの自作を検討すること。\n.. |br| raw:: html\n\n<br />"
+      "content": "本ハンドラ内の処理で、下記事象が発生した場合、正常な応答が返せないと判断して、クライアントに対しては\nステータスコード500で固定的なレスポンスを返す。\n\n* サーブレットフォワード時に ServletException が発生した場合\n* RuntimeException およびそのサブクラスの例外が発生した場合\n* Error およびそのサブクラスの例外が発生した場合\n\nこの際のレスポンスは下記HTMLとなる。\n\n```html\n<html>\n  <head>\n    <title>A system error occurred.</title>\n  </head>\n  <body>\n    <p>\n      We are sorry not to be able to proceed your request.<br/>\n      Please contact the system administrator of our system.\n    </p>\n  </body>\n</html>\n```\n> **Important:** 上記HTMLのレスポンスは固定的になっており、設定による変更などはできない。 このレスポンスは、本ハンドラ内で例外が発生するレアケースのみでしか使われることはない。 このため、通常この仕様が問題になることはないが、どんなことがあってもこのレスポンスを 出してはいけないシステムにおいては、本ハンドラを参考にハンドラの自作を検討すること。"
     }
   ]
 }

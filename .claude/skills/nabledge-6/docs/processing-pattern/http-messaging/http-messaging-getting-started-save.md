@@ -21,7 +21,7 @@ http://localhost:9080/ProjectSaveAction
 HTTPメソッド
 POST
 HTTPヘッダ
-Content-Type: application/json |br|
+Content-Type: application/json html <br />
 X-Message-Id: 1
 リクエストボディ
 ```json
@@ -183,6 +183,3 @@ public class ProjectSaveAction extends MessagingAction {
 * 処理結果を表すレスポンスコードを `ResponseMessage` に設定して返却する。
 
 > **Tip:** 業務例外が送出された場合は、 HTTPメッセージングエラー制御ハンドラ の処理によってレスポンスコード「400」が設定される。
-.. |br| raw:: html
-
-<br />
