@@ -42,8 +42,12 @@ SCENARIOS_PATH_DEFAULT = BENCH_DIR / "scenarios" / "qa-v6-sample5.json"
 
 PROMPT_STAGE1_FACET = BENCH_DIR / "prompts" / "stage1_facet.md"
 PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
+PROMPT_STAGE3_SELECT = BENCH_DIR / "prompts" / "stage3_section_select.md"
+PROMPT_STAGE3_ANSWER = BENCH_DIR / "prompts" / "stage3_answer.md"
+PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
 
-INDEX_TOON_PATH = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge" / "index.toon"
+KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
+INDEX_TOON_PATH = KNOWLEDGE_ROOT / "index.toon"
 
 TYPE_ENUM = [
     "about", "check", "component", "development-tools",
@@ -61,6 +65,42 @@ CATEGORY_ENUM = [
 COVERAGE_ENUM = ["in_scope", "uncertain", "out_of_scope"]
 
 SCHEMA_JUDGE_STAGE2 = {
+    "type": "object",
+    "required": ["level", "reason"],
+    "additionalProperties": False,
+    "properties": {
+        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
+        "reason": {"type": "string", "maxLength": 300},
+    },
+}
+
+SCHEMA_STAGE3_SELECT = {
+    "type": "object",
+    "required": ["selections"],
+    "additionalProperties": False,
+    "properties": {
+        "selections": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
+        },
+    },
+}
+
+SCHEMA_STAGE3_ANSWER = {
+    "type": "object",
+    "required": ["answer", "cited"],
+    "additionalProperties": False,
+    "properties": {
+        "answer": {"type": "string", "maxLength": 4000},
+        "cited": {
+            "type": "array",
+            "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
+        },
+    },
+}
+
+SCHEMA_JUDGE_STAGE3 = {
     "type": "object",
     "required": ["level", "reason"],
     "additionalProperties": False,
@@ -273,6 +313,75 @@ def format_candidate_list(rows: list[IndexRow], max_rows: int = 200) -> str:
     return "\n".join(f"- {r.title} — {r.path}" for r in head)
 
 
+def format_candidate_list_with_sections(
+    rows: list[IndexRow], max_rows: int = 200
+) -> str:
+    """For Stage 3 AI-2: title — path, then indented section id/title list.
+
+    Reads each candidate's knowledge JSON to emit its index. Skips files
+    that cannot be read (reports as missing) rather than aborting.
+    """
+    lines: list[str] = []
+    for row in rows[:max_rows]:
+        lines.append(f"- {row.title} — {row.path}")
+        kf = KNOWLEDGE_ROOT / row.path
+        try:
+            data = json.loads(kf.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            lines.append("    (sections unavailable)")
+            continue
+        for sec in data.get("index", []) or []:
+            sid = sec.get("id")
+            stitle = sec.get("title")
+            if sid and stitle:
+                lines.append(f"    - {sid}: {stitle}")
+    return "\n".join(lines)
+
+
+def read_selected_sections(
+    selectors: list[str], max_selectors: int = 10
+) -> tuple[str, list[dict]]:
+    """Load the text of each `path:section_id` selector from knowledge/.
+
+    Returns a (formatted_text, records) pair. `records` is the per-selector
+    outcome for logging. Invalid selectors are marked but do not abort.
+    """
+    chunks: list[str] = []
+    records: list[dict] = []
+    for sel in selectors[:max_selectors]:
+        if ":" not in sel:
+            records.append({"selector": sel, "status": "malformed"})
+            continue
+        path, section_id = sel.split(":", 1)
+        kf = KNOWLEDGE_ROOT / path
+        try:
+            data = json.loads(kf.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            records.append({"selector": sel, "status": "file-missing"})
+            continue
+        sections = data.get("sections") or {}
+        text = sections.get(section_id)
+        title = next(
+            (s["title"] for s in data.get("index", []) or [] if s.get("id") == section_id),
+            None,
+        )
+        if text is None:
+            records.append(
+                {"selector": sel, "status": "section-missing", "title": title}
+            )
+            continue
+        chunks.append(f"=== {sel} — {title or ''} ===\n{text}\n=== END ===")
+        records.append(
+            {
+                "selector": sel,
+                "status": "ok",
+                "title": title,
+                "chars": len(text),
+            }
+        )
+    return "\n\n".join(chunks), records
+
+
 def run_stage2(
     scenario: dict, model: str, scen_dir: Path, index_rows: list[IndexRow]
 ) -> dict:
@@ -374,6 +483,216 @@ def run_stage2(
     }
 
 
+def run_stage3(
+    scenario: dict, model: str, scen_dir: Path, index_rows: list[IndexRow]
+) -> dict:
+    """Stage 1 facet + filter + AI-2 section select + read + AI-3 answer + judge."""
+    # Reuse Stage 2 pipeline up to filter.
+    stage1 = run_stage1_facet(scenario, model, scen_dir)
+    if stage1.get("error"):
+        return {**stage1, "stage": 3}
+
+    facets = stage1.get("extracted_facets") or {}
+    want_type = facets.get("type", []) or []
+    want_cat = facets.get("category", []) or []
+    coverage = facets.get("coverage")
+
+    if coverage == "out_of_scope" and not want_type and not want_cat:
+        outcome_rows: list[IndexRow] = []
+        fallback_used = "out_of_scope-shortcircuit"
+    else:
+        outcome = filter_with_fallback(index_rows, want_type, want_cat)
+        outcome_rows = outcome.rows
+        fallback_used = outcome.fallback_used
+
+    filter_record = {
+        "want_type": want_type,
+        "want_category": want_cat,
+        "coverage": coverage,
+        "fallback_used": fallback_used,
+        "candidate_count": len(outcome_rows),
+    }
+    (scen_dir / "filter_result.json").write_text(
+        json.dumps(filter_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    question = scenario["expected_question"]
+
+    # --- AI-2: section selection ---
+    if not outcome_rows:
+        selections: list[str] = []
+        select_envelope: dict = {}
+        select_wall = 0.0
+        select_err = "no candidates"
+    else:
+        candidate_block = format_candidate_list_with_sections(outcome_rows)
+        select_prompt = (
+            PROMPT_STAGE3_SELECT.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{candidate_list}}", candidate_block)
+        )
+        (scen_dir / "ai2_select_prompt.md").write_text(select_prompt, encoding="utf-8")
+        select_out, select_envelope, select_wall, select_err = invoke_claude_stream(
+            prompt=select_prompt,
+            schema=SCHEMA_STAGE3_SELECT,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=300,
+            log_path=scen_dir / "ai2_section_select.stream-json",
+        )
+        selections = (select_out or {}).get("selections", []) or []
+    (scen_dir / "ai2_result.json").write_text(
+        json.dumps(
+            {
+                "selections": selections,
+                "wall_s": select_wall,
+                "total_cost_usd": select_envelope.get("total_cost_usd"),
+                "error": select_err or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # --- Read sections ---
+    sections_text, section_records = read_selected_sections(selections)
+    (scen_dir / "sections_read.json").write_text(
+        json.dumps(section_records, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # --- AI-3: answer ---
+    if not sections_text:
+        answer_struct: dict = {
+            "answer": "（参照可能なセクションがありません。）",
+            "cited": [],
+        }
+        answer_envelope: dict = {}
+        answer_wall = 0.0
+        answer_err = "no sections"
+    else:
+        answer_prompt = (
+            PROMPT_STAGE3_ANSWER.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{sections_text}}", sections_text)
+        )
+        (scen_dir / "ai3_answer_prompt.md").write_text(answer_prompt, encoding="utf-8")
+        answer_struct, answer_envelope, answer_wall, answer_err = invoke_claude_stream(
+            prompt=answer_prompt,
+            schema=SCHEMA_STAGE3_ANSWER,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=300,
+            log_path=scen_dir / "ai3_answer.stream-json",
+        )
+        answer_struct = answer_struct or {"answer": "", "cited": []}
+    (scen_dir / "final_answer.md").write_text(
+        answer_struct.get("answer") or "", encoding="utf-8"
+    )
+    (scen_dir / "ai3_result.json").write_text(
+        json.dumps(
+            {
+                "answer": answer_struct.get("answer"),
+                "cited": answer_struct.get("cited"),
+                "wall_s": answer_wall,
+                "total_cost_usd": answer_envelope.get("total_cost_usd"),
+                "error": answer_err or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # --- Judge ---
+    if not answer_struct.get("answer"):
+        judge: dict | None = {"level": 0, "reason": "no answer produced"}
+        judge_envelope: dict = {}
+        judge_wall = 0.0
+        judge_err = ""
+    else:
+        judge_prompt = (
+            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{answer}}", answer_struct.get("answer") or "")
+            .replace(
+                "{{cited}}",
+                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
+            )
+        )
+        (scen_dir / "judge_stage3_prompt.md").write_text(
+            judge_prompt, encoding="utf-8"
+        )
+        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
+            prompt=judge_prompt,
+            schema=SCHEMA_JUDGE_STAGE3,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=180,
+            log_path=scen_dir / "judge_stage3.stream-json",
+        )
+
+    judge_record = {
+        "level": (judge or {}).get("level") if judge else None,
+        "reason": (judge or {}).get("reason") if judge else None,
+        "wall_s": judge_wall,
+        "total_cost_usd": judge_envelope.get("total_cost_usd"),
+        "error": judge_err or None,
+    }
+    (scen_dir / "judge_stage3_result.json").write_text(
+        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    total_cost = sum(
+        v or 0.0
+        for v in [
+            stage1.get("total_cost_usd"),
+            select_envelope.get("total_cost_usd"),
+            answer_envelope.get("total_cost_usd"),
+            judge_envelope.get("total_cost_usd"),
+        ]
+    )
+    total_wall = (stage1.get("wall_s") or 0.0) + select_wall + answer_wall + judge_wall
+
+    return {
+        "id": scenario["id"],
+        "stage": 3,
+        "model": model,
+        "question": question,
+        "stage1": {
+            "extracted_facets": stage1.get("extracted_facets"),
+            "cost_usd": stage1.get("total_cost_usd"),
+            "wall_s": stage1.get("wall_s"),
+        },
+        "filter": {
+            "fallback_used": fallback_used,
+            "candidate_count": len(outcome_rows),
+        },
+        "select": {
+            "selections": selections,
+            "cost_usd": select_envelope.get("total_cost_usd"),
+            "wall_s": select_wall,
+            "error": select_err or None,
+        },
+        "sections_read": {
+            "ok": sum(1 for r in section_records if r.get("status") == "ok"),
+            "total": len(section_records),
+        },
+        "answer": {
+            "cited": answer_struct.get("cited"),
+            "cost_usd": answer_envelope.get("total_cost_usd"),
+            "wall_s": answer_wall,
+            "error": answer_err or None,
+        },
+        "judge": judge_record,
+        "total_cost_usd": total_cost,
+        "wall_s": total_wall,
+    }
+
+
 def summarize(results: list[dict]) -> dict:
     def stat(values: list) -> dict:
         vs = [v for v in values if v is not None]
@@ -449,6 +768,43 @@ def write_markdown_summary(
         f"- mean wall (s):          {summary['wall_s'].get('mean', 0):.1f}",
         "",
     ]
+    if stage == 3:
+        lines += [
+            "| id | facets | filter | picks | judge | reason | cost | wall |",
+            "|----|--------|--------|-------|-------|--------|------|------|",
+        ]
+        for r in results:
+            if r.get("error"):
+                lines.append(
+                    f"| {r['id']} | ERROR | - | - | - | {r['error']} | - | "
+                    f"{r.get('wall_s', 0):.1f} |"
+                )
+                continue
+            s1 = r.get("stage1", {})
+            f_ = r.get("filter", {}) or {}
+            sel_ = r.get("select", {}) or {}
+            j_ = r.get("judge", {}) or {}
+            facets = s1.get("extracted_facets") or {}
+            reason = (j_.get("reason") or "").replace("|", "\\|").replace("\n", " ")
+            if len(reason) > 80:
+                reason = reason[:77] + "..."
+            lines.append(
+                "| {id} | {t}/{c} | {n} ({fb}) | {p} | {lv} | {rs} | "
+                "{cost:.4f} | {w:.1f} |".format(
+                    id=r["id"],
+                    t=",".join(facets.get("type", []) or ["∅"]),
+                    c=",".join(facets.get("category", []) or ["∅"]),
+                    n=f_.get("candidate_count", 0),
+                    fb=f_.get("fallback_used", "?"),
+                    p=len(sel_.get("selections") or []),
+                    lv=j_.get("level"),
+                    rs=reason,
+                    cost=r.get("total_cost_usd") or 0.0,
+                    w=r.get("wall_s") or 0.0,
+                )
+            )
+        out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return
     if stage == 2:
         lines += [
             "| id | facets (type / cat) | filter | judge | reason | cost | wall |",
@@ -568,11 +924,7 @@ def main() -> int:
             elif args.stage == 2:
                 r = run_stage2(sc, args.model, scen_dir, index_rows)
             else:
-                print(
-                    f"stage {args.stage} not implemented yet",
-                    file=sys.stderr,
-                )
-                return 3
+                r = run_stage3(sc, args.model, scen_dir, index_rows)
             results.append(r)
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
             f.flush()
