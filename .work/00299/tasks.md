@@ -213,13 +213,40 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
 | QC5 converter がディレクティブ記法を JSON に残存 | `RequestUnitTest_rest` | 2 |
 | 未分類 | その他 | ~1 |
 
-#### X-4b: 残 56 FAIL → 0 化 (converter の真のバグ修正)
+#### X-4b: 残 56 FAIL → 0 化 (converter の真のバグ修正) ← **現在実施中**
 
 **前提**: X-4a で tokenizer 側は設計書通り確定済。以降の修正は converter 側のみ。
 
-- [ ] 残 56 FAIL を個別調査し converter のバグを特定
-- [ ] 1 件ずつ converter を修正 (tokenizer は触らない)
-- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
+**方針 (session 46 合意)**: Bプラン = 本 PR 内で converter parser を書き直して FAIL 0 まで持っていく。独立性原則を維持したまま converter を RST 仕様準拠に整える。
+
+**修正対象**: `tools/rbkc/scripts/create/converters/rst.py` (1598 行)
+
+**残 56 件のバグ分類と対応**:
+
+| # | カテゴリ | 対象関数 | 件数 | 対応 |
+|---|---|---|---|---|
+| B1 | grid-table rowspan continuation cell 欠落 | `_parse_grid_table` | ~16 | rowspan 継続行を前行に merge するロジック追加 |
+| B2 | simple-table 多行 cell の途中切断 | `_parse_simple_table_cjk` | ~20 | 行継続ロジックを display-width でなく「first column empty で continuation」判定に変更 |
+| B3 | Footnote body に nested `.. code-block::` が RST 構文のまま残る | 1136 行付近 footnote 処理 | ~2 | footnote body を `_convert_content` で再帰 + 結果を tokenizer と同形式に |
+| B4 | `\\ _\\` (空の named ref) が JSON に残る | `_convert_inline` | ~3 | `\ _\` パターンをドロップ |
+| B5 | `|br|` 展開が grid-table cell 位置を破壊 | `_parse_grid_table` | ~5 | substitution 展開を grid-table 処理の**後**に実行 |
+| B6 | 変則 rowspan separator `+---+/text/+---+` | `_parse_grid_table` | ~4 | tokenizer 側と同じ処理 (変則 sep スキップ) |
+| B7 | transition line `----` の converter 処理漏れ | `_convert_content` | ~3 | transition を MD `---` として emit |
+| B8 | その他未分類 | - | ~3 | 個別調査 |
+
+**Steps**:
+
+- [ ] B1: grid-table rowspan continuation merge 実装
+- [ ] B2: simple-table 多行 cell continuation 判定修正
+- [ ] B3: footnote body 再帰処理 (tokenizer と同じ fence 出力に揃える)
+- [ ] B4: `\ _\` パターンドロップ in `_convert_inline`
+- [ ] B5: substitution 展開タイミング見直し
+- [ ] B6: 変則 rowspan sep スキップ
+- [ ] B7: transition `----` 処理追加
+- [ ] B8: 残件個別調査
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0 確認
+- [ ] サブエージェント品質チェック (SE + QA)
+- [ ] コミット・プッシュ
 
 #### X-5: 実データ検証と残 FAIL のトリアージ (X-4a 完了後)
 
