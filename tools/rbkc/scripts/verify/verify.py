@@ -431,17 +431,24 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     # span, but ``_normalize_md_unit`` strips those backticks, so match here.
     # Must run AFTER all role-based regexes so it only fires on bare backticks.
     text = re.sub(r'(?<![`])`([^`\n]+)`(?![`])', r'\1', text)
+    # RST footnote/citation target: `.. [tag] body` -> keep body only.
+    # Must run *before* the catch-all directive strip below, otherwise the
+    # footnote body text (which the converter inlines into the section
+    # content) is dropped from the source side.
+    text = re.sub(r'^[^\S\n]*\.\.\s+\[[^\]]+\][^\S\n]*', '', text, flags=re.MULTILINE)
     # RST directive lines: .. directive:: args -> remove line (keep body content)
     text = re.sub(r'^[^\S\n]*\.\.[^\S\n]+\S[^\n]*\n', '', text, flags=re.MULTILINE)
     # RST option lines inside directives: :option: value -> remove line
     text = re.sub(r'^[^\S\n]*:[a-zA-Z][a-zA-Z0-9_-]*:[^\n]*\n', '', text, flags=re.MULTILINE)
-    # RST list-table item markers: "* - " or "  - " -> just content (use [^\S\n]* not \s*)
-    text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]*', '', text, flags=re.MULTILINE)
-    # Bullet markers: "* ", "- ", "+ " at line start (plain bulleted lists
-    # that the MD converter renders as "* " as well — we strip on both sides
-    # by dropping the marker here and on the JSON side by `_normalize_md_unit`
-    # treating the marker as whitespace).
-    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+', '', text, flags=re.MULTILINE)
+    # RST list-table item markers: `* - ` or `  - ` — the trailing hyphen
+    # must be followed by at least one space and a non-hyphen character,
+    # otherwise multi-hyphen tokens like `---` (code-block content or YAML
+    # separator) are mistakenly eaten.
+    text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]+(?=[^-])', '', text, flags=re.MULTILINE)
+    # Bullet markers: "* ", "- ", "+ " at line start. The marker must be a
+    # single char followed by whitespace and a non-marker char — this
+    # prevents `---` from being rewritten to `--`.
+    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', text, flags=re.MULTILINE)
     # Grid-table content prefix "| " at start of line -> drop the pipe.
     text = re.sub(r'^[^\S\n]*\|[^\S\n]*', '', text, flags=re.MULTILINE)
     # Any remaining bare pipe within a line is also stripped so source and
@@ -453,6 +460,9 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
     # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
     text = re.sub(r'^[=\-~^"\'`#*+<>]{4,}[^\S\n]*$', '', text, flags=re.MULTILINE)
+    # Simple-table separator row (e.g. "=== === ====") and grid-table border
+    text = re.sub(r'^[^\S\n]*[=\-]+(?:[^\S\n]+[=\-]+)+[^\S\n]*$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^[^\S\n]*\+[-=+]+[^\S\n]*$', '', text, flags=re.MULTILINE)
     # Collapse all whitespace (including newlines) for multi-line comparison
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
@@ -471,27 +481,42 @@ def _normalize_md_unit(text: str) -> str:
     text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
     # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
     text = re.sub(r'(\S)_+(?=\s|$)', r'\1', text)
-    # Code fences: ```lang\n...\n``` -> content only
-    text = re.sub(r'```[a-zA-Z0-9]*\n', '', text)
-    text = re.sub(r'```', '', text)
-    # MD headings: #### Heading -> Heading
-    text = re.sub(r'^#{1,6}[^\S\n]+', '', text, flags=re.MULTILINE)
-    # Bullet list markers (MD): "* " / "- " / "+ " at line start
-    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+', '', text, flags=re.MULTILINE)
-    # `inline code` -> inline code
-    text = re.sub(r'`([^`]+)`', r'\1', text)
-    # Image: ![alt](path) -> "" (image is covered by QL1)
-    text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', text)
-    # [link text](url) -> link text
-    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    # Admonition header line: > **Type:** ... -> content only
-    text = re.sub(r'>[^\S\n]*\*\*[^*]+\*\*:?[^\S\n]*', '', text)
-    # Remaining blockquote prefix: > text -> text
-    text = re.sub(r'^>[^\S\n]*', '', text, flags=re.MULTILINE)
-    # MD table separator rows: |---|---| -> remove line
-    text = re.sub(r'^\|[-:| ]+\|[^\S\n]*$', '', text, flags=re.MULTILINE)
-    # MD table cell borders: | -> space
-    text = re.sub(r'\|', ' ', text)
+
+    # Split into fenced-code and non-code regions so MD syntax strips only
+    # apply to non-code text (otherwise a `# comment` inside ``` leaks into
+    # MD-heading removal and mismatches the source-side normaliser).
+    out: list[str] = []
+    in_fence = False
+    for line in text.split("\n"):
+        if re.match(r'^\s*```', line):
+            in_fence = not in_fence
+            continue  # drop the fence marker itself
+        if in_fence:
+            out.append(line)
+            continue
+        l = line
+        # MD headings: #### Heading -> Heading
+        l = re.sub(r'^#{1,6}[^\S\n]+', '', l)
+        # Bullet list markers (MD): "* "/"- "/"+ ". Require the next char after
+        # the marker's whitespace to NOT be another marker so we don't eat
+        # multi-hyphen tokens (table separators, YAML `---`).
+        l = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+(?=[^*+\-])', '', l)
+        # `inline code` -> inline code
+        l = re.sub(r'`([^`]+)`', r'\1', l)
+        # Image: ![alt](path) -> "" (image is covered by QL1)
+        l = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', l)
+        # [link text](url) -> link text
+        l = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', l)
+        # Admonition header line: > **Type:** ... -> content only
+        l = re.sub(r'>[^\S\n]*\*\*[^*]+\*\*:?[^\S\n]*', '', l)
+        # Remaining blockquote prefix: > text -> text
+        l = re.sub(r'^>[^\S\n]*', '', l)
+        # MD table separator rows: |---|---| -> remove line
+        l = re.sub(r'^\|[-:| ]+\|[^\S\n]*$', '', l)
+        # MD table cell borders: | -> space
+        l = re.sub(r'\|', ' ', l)
+        out.append(l)
+    text = "\n".join(out)
     # Collapse whitespace (handles multi-line content merged into one line)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()

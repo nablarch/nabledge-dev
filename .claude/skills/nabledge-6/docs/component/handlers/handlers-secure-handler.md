@@ -65,7 +65,13 @@ HTTPレスポンスハンドラ よりも後ろに設定すること
   </property>
 </component>
 ```
-> **Tip:** 値を変更するためのプロパティの詳細は、以下のクラスを参照。 * `FrameOptionsHeader` * `ContentTypeOptionsHeader` * `XssProtectionHeader` * `ReferrerPolicyHeader` * `CacheControlHeader`
+> **Tip:** 値を変更するためのプロパティの詳細は、以下のクラスを参照。
+
+* `FrameOptionsHeader`
+* `ContentTypeOptionsHeader`
+* `XssProtectionHeader`
+* `ReferrerPolicyHeader`
+* `CacheControlHeader`
 
 ## デフォルト以外のレスポンスヘッダを設定する
 
@@ -74,10 +80,10 @@ HTTPレスポンスハンドラ よりも後ろに設定すること
 1. `SecureResponseHeader` インタフェースの実装クラスで、
 レスポンスヘッダに設定するフィールド名と値を指定する。
 
-> **Tip:** ロジックを含まない単純なレスポンスヘッダを作成する場合は、 extdoc:`SecureResponseHeaderSupport <nablarch.fw.web.handler.secure.SecureResponseHeaderSupport>` を継承して作成すればよい。
+> **Tip:** ロジックを含まない単純なレスポンスヘッダを作成する場合は、 `SecureResponseHeaderSupport` を継承して作成すればよい。
 2. 本ハンドラ(`SecureHandler`)に、`No1` で作成したクラスを設定する。
 
-> **Important:** extdoc:`SecureResponseHeader <nablarch.fw.web.handler.secure.SecureResponseHeader>` 実装クラスを設定する際は、 デフォルトで適用されていたコンポーネントも設定すること。 以下に設定ファイルの例を示す。
+> **Important:** `SecureResponseHeader` 実装クラスを設定する際は、 デフォルトで適用されていたコンポーネントも設定すること。 以下に設定ファイルの例を示す。
 
 ```xml
 <component class="nablarch.fw.web.handler.SecureHandler">

@@ -58,7 +58,7 @@
   </property>
 </component>
 ```
-> **Tip:** extdoc:`bodyConverters <nablarch.fw.jaxrs.BodyConvertHandler.setBodyConverters(java.util.List)>` プロパティに設定されたコンバータで、 変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
+> **Tip:** `bodyConverters` プロパティに設定されたコンバータで、 変換出来ないMIMEが使用された場合、サポートしていないメディアタイプであることを示すステータスコード(`415`)を返却する。
 
 ## リクエストボディをFormに変換する
 

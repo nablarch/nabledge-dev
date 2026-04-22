@@ -78,7 +78,7 @@
 <component name="tokenGenerator"
            class="nablarch.common.web.token.UUIDV4TokenGenerator" />
 ```
-> **Important:** `テスティングフレームワークのトークン発行<how_to_set_token_in_request_unit_test>` はトークンのDB保存に対応していない。 そのため、自動テスト実行時には `HttpSessionTokenManager` に差し替えてテストする必要がある。
+> **Important:** テスティングフレームワークのトークン発行 はトークンのDB保存に対応していない。 そのため、自動テスト実行時には `HttpSessionTokenManager` に差し替えてテストする必要がある。
 
 ```xml
 <!-- トークンをHTTPセッションに保存する -->

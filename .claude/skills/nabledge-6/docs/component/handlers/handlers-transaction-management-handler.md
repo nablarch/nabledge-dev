@@ -54,7 +54,7 @@
 デフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 `transactionName` プロパティに設定すること。
 複数のトランザクションを使用する場合 は、  `transactionName`  プロパティへの値の設定が必須となる。
 
-> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対するトランザクションを制御する場合は、 extdoc:`DbConnectionManagementHandler#connectionName <nablarch.common.handler.DbConnectionManagementHandler.setConnectionName(java.lang.String)>` に設定した値と同じ値を extdoc:`transactionName <nablarch.common.handler.TransactionManagementHandler.setTransactionName(java.lang.String)>` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 extdoc:`transactionName <nablarch.common.handler.TransactionManagementHandler.setTransactionName(java.lang.String)>` への設定は省略して良い。
+> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対するトランザクションを制御する場合は、 `DbConnectionManagementHandler#connectionName` に設定した値と同じ値を `transactionName` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 `transactionName` への設定は省略して良い。
 以下の設定ファイル例を参考にし、このハンドラを設定すること。
 
 ```xml

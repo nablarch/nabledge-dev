@@ -321,7 +321,7 @@ public class Person {
     // getter、setterは省略。
 }
 ```
-> **Tip:** Java Beansクラスにバインドする場合、フォーマット指定はアノテーションで行うため、 extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` の生成時に extdoc:`DataBindConfig <nablarch.common.databind.DataBindConfig>` を使用したフォーマットの指定はできない。
+> **Tip:** Java Beansクラスにバインドする場合、フォーマット指定はアノテーションで行うため、 `ObjectMapper` の生成時に `DataBindConfig` を使用したフォーマットの指定はできない。
 
 Mapクラスにバインドする場合
 `ObjectMapper` の生成時に

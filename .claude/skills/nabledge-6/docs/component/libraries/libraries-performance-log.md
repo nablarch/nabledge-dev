@@ -83,7 +83,7 @@ SqlResultSet searchResult = searchService.selectByCondition(condition);
 // 以下ではログ出力のオプション情報は指定していない。
 PerformanceLogUtil.end(point, String.valueOf(searchResult.size()));
 ```
-> **Important:** extdoc:`PerformanceLogUtil <nablarch.core.log.app.PerformanceLogUtil>` は、 測定対象を 実行時ID ＋ポイント名で一意に識別している。 このため、再帰呼び出しの中で `PerformanceLogUtil` を使用すると計測を実施出来ないため注意すること。
+> **Important:** `PerformanceLogUtil` は、 測定対象を 実行時ID ＋ポイント名で一意に識別している。 このため、再帰呼び出しの中で `PerformanceLogUtil` を使用すると計測を実施出来ないため注意すること。
 
 ## パフォーマンスログの設定
 

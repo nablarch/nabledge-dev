@@ -198,7 +198,15 @@ public class SampleAction {
 | `/sample` | `GET` | `SampleAction#findAll()` |
 | `/sample` | `POST` | `SampleAction#register(JaxRsHttpRequest)` |
 
-> **Tip:** HTTPメソッドを紐づけるアノテーションは、標準で以下のものが用意されている。 * `jakarta.ws.rs.DELETE` * `jakarta.ws.rs.GET` * `jakarta.ws.rs.HEAD` * `jakarta.ws.rs.OPTIONS` * `jakarta.ws.rs.PATCH` * `jakarta.ws.rs.POST` * `jakarta.ws.rs.PUT`
+> **Tip:** HTTPメソッドを紐づけるアノテーションは、標準で以下のものが用意されている。
+
+* `jakarta.ws.rs.DELETE`
+* `jakarta.ws.rs.GET`
+* `jakarta.ws.rs.HEAD`
+* `jakarta.ws.rs.OPTIONS`
+* `jakarta.ws.rs.PATCH`
+* `jakarta.ws.rs.POST`
+* `jakarta.ws.rs.PUT`
 さらに、以下のようにメソッドを `Path` アノテーションで注釈することで、サブパスのマッピングも定義できる。
 
 ```java

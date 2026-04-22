@@ -184,7 +184,7 @@ public class ZipCodeFileReader implements DataReader<ZipCodeForm> {
 * `hasNext` メソッドに次行の有無を判定する処理を実装する。このメソッドが `false` を返却するとファイルの読み込み処理は終了となる。
 * `close` メソッドにファイルの読み込み終了後のストリームのclose処理を実装する。
 
-> **Tip:** extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。
+> **Tip:** `ObjectMapper` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。
 
 ## 業務ロジックを実行する
 

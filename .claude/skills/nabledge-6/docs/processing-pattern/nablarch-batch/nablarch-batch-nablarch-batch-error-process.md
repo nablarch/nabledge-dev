@@ -26,7 +26,7 @@ Nablarchバッチアプリケーションでは、ファイル入力を除き、
 ただし、 バッチ処理をリランできるようにする に記載した内容で、
 バッチ処理がリランできるようになっている必要がある。
 
-> **Tip:** `都度起動バッチ<nablarch_batch-each_time_batch>` で extdoc:`TransactionAbnormalEnd<nablarch.fw.results.TransactionAbnormalEnd>` が送出されると、バッチ処理が異常終了となる。
+> **Tip:** 都度起動バッチ で `TransactionAbnormalEnd` が送出されると、バッチ処理が異常終了となる。
 
 ## バッチ処理を異常終了にする
 

@@ -50,7 +50,7 @@ RotatePolicy
 * `DateRotatePolicy (日時によるログのローテーション)`
 * `FileSizeRotatePolicy (ファイルサイズによるログのローテーション)`
 
-> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。
+> **Important:** `SynchronousFileLogWriter` を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。
 > **Tip:** ログ出力機能で使用するログレベルについては、 ログレベルの定義 を参照。
 
 ## 各種ログの出力機能を予め提供している
@@ -205,8 +205,8 @@ writer.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter
 availableLoggersNamesOrder
 使用する全てのロガー設定の名前を指定する。複数指定する場合はカンマ区切り。
 
-> **Important:** availableLoggersNamesOrderプロパティは、記述順に意味があるので注意すること。 extdoc:`Logger <nablarch.core.log.Logger>` の取得では、ログ出力を行うクラスが指定したロガー名に対して、 ここに記述した順番で `Logger` のマッチングを行い、 最初にマッチした `Logger` を返す。 例えば、以下の記述例にあるavailableLoggersNamesOrderの記述順をavailableLoggersNamesOrder=root,sqlと記述した場合、 全てのロガー取得がロガー設定 `root` にマッチしてしまう。 その結果、ロガー名 `SQL` でログ出力しても `sqlLog` に出力されず、ロガー設定 `root` に指定された `appLog` に出力される。 したがって、availableLoggersNamesOrderプロパティは、より限定的な正規表現を指定したロガー設定から順に記述すること。
-> **Important:** availableLoggersNamesOrderとloggers.*で指定するロガー設定の名称は、必ず一致させる必要がある。 extdoc:`BasicLoggerFactory <nablarch.core.log.basic.BasicLoggerFactory>` の初期処理で一致しているかチェックを行い、 一致しない場合は例外をスローする。 例えば、上記の設定にあるavailableLoggersNamesOrderから `access` を取り除くと、例外がスローされる。 このチェックは、設定漏れの発生を防ぐために行っている。 上記の設定にあるavailableLoggersNamesOrderから `access` を取り除いた場合は、明示的にloggers.access.*の設定も取り除く必要がある。
+> **Important:** availableLoggersNamesOrderプロパティは、記述順に意味があるので注意すること。 `Logger` の取得では、ログ出力を行うクラスが指定したロガー名に対して、 ここに記述した順番で `Logger` のマッチングを行い、 最初にマッチした `Logger` を返す。 例えば、以下の記述例にあるavailableLoggersNamesOrderの記述順をavailableLoggersNamesOrder=root,sqlと記述した場合、 全てのロガー取得がロガー設定 `root` にマッチしてしまう。 その結果、ロガー名 `SQL` でログ出力しても `sqlLog` に出力されず、ロガー設定 `root` に指定された `appLog` に出力される。 したがって、availableLoggersNamesOrderプロパティは、より限定的な正規表現を指定したロガー設定から順に記述すること。
+> **Important:** availableLoggersNamesOrderとloggers.*で指定するロガー設定の名称は、必ず一致させる必要がある。 `BasicLoggerFactory` の初期処理で一致しているかチェックを行い、 一致しない場合は例外をスローする。 例えば、上記の設定にあるavailableLoggersNamesOrderから `access` を取り除くと、例外がスローされる。 このチェックは、設定漏れの発生を防ぐために行っている。 上記の設定にあるavailableLoggersNamesOrderから `access` を取り除いた場合は、明示的にloggers.access.*の設定も取り除く必要がある。
 loggers.<名前>.nameRegex
 ロガー名とのマッチングに使用する正規表現を指定する。
 正規表現は、ロガー設定の対象となるロガーを絞り込むために使用する。
@@ -398,7 +398,7 @@ writer.appLog.formatter.label.trace=T
 改行コードは、Java標準のシステムプロパティに含まれる `line.separator` から取得する。
 このため、システムプロパティの `line.separator` を変更しなければOSの改行コードが使用される。
 
-> **Tip:** extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` では `\n` と `\t` という文字列は出力できない。
+> **Tip:** `BasicLogFormatter` では `\n` と `\t` という文字列は出力できない。
 
 ## 各種ログの設定
 
@@ -702,7 +702,7 @@ LOGGER.logInfo("addition fields", structuredArgs);
 ```none
 {"date":"2021-02-04 12:34:56.789","logLevel":"INFO","message":"addition fields","key1":"value1","key2":123,"key3":true,"key5":"2021-02-04 12:34:56.789"}
 ```
-> **Tip:** extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` を使用する場合、 オプション情報に `Map` < `String` , `Object` >以外のオプション情報をセットしないこと。 extdoc:`Map <java.util.Map>` オブジェクトは複数指定することが出来るが、 キーが重複した場合はいずれかの値は無視され、出力されない。
+> **Tip:** `JsonLogFormatter` を使用する場合、 オプション情報に `Map` < `String` , `Object` >以外のオプション情報をセットしないこと。 `Map` オブジェクトは複数指定することが出来るが、 キーが重複した場合はいずれかの値は無視され、出力されない。
 
 ## 各種ログで使用するフォーマッタをJSONログ用に差し替える
 
@@ -852,7 +852,10 @@ launcherLogFormatter.endLogMsgLabel=BATCH END
 
 ## SynchronousFileLogWriterを使用するにあたっての注意事項
 
-> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` は複数プロセスからの書き込み用に作成したものであるが、 障害通知ログ のように出力頻度が低いログ出力にのみ使用することを想定している。 頻繁にログの出力が行われる場面で `SynchronousFileLogWriter` を使用すると ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性があるので、アプリケーションログやアクセスログのように出力頻度の高いログの出力に extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用してはいけない。 また、`SynchronousFileLogWriter` には以下の制約があるため、使用にあたっては十分検討すること。 * ログのローテーションができない。 * 出力されるログの内容が正常でない場合がある。
+> **Important:** `SynchronousFileLogWriter` は複数プロセスからの書き込み用に作成したものであるが、 障害通知ログ のように出力頻度が低いログ出力にのみ使用することを想定している。 頻繁にログの出力が行われる場面で `SynchronousFileLogWriter` を使用すると ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性があるので、アプリケーションログやアクセスログのように出力頻度の高いログの出力に `SynchronousFileLogWriter` を使用してはいけない。 また、`SynchronousFileLogWriter` には以下の制約があるため、使用にあたっては十分検討すること。
+
+* ログのローテーションができない。
+* 出力されるログの内容が正常でない場合がある。
 `SynchronousFileLogWriter` は、
 ロックファイルを用いて排他制御を行いながらファイルにログを書き込む。
 そして、ロック取得の待機時間を超えてもロックを取得できない場合、強制的にロックファイルを削除し、

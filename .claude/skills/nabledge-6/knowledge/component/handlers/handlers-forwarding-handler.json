@@ -22,7 +22,7 @@
     {
       "id": "s4",
       "title": "内部フォーワードを示すレスポンスを返却する",
-      "content": "業務アクションなどで内部フォーワードを示すレスポンスを返却する場合には、\nレスポンスが示すコンテンツパスを `forward://` から開始する。\n\n以下に例を示す。\n\n```java\npublic HttpResponse sample(HttpRequest request, ExecutionContext context) {\n  // 業務処理\n\n  // 同一業務アクションのinitializeに内部フォーワード\n  return new HttpResponse(\"forward://initialize\");\n}\n```\n> **Tip:** ステータスコードはフォーワード時とフォーワード後を比較し、大きい値をレスポンス時のステータスコードとする。 以下に例を示す。 * フォーワード時が **200** で、フォーワード後が **500** の場合は、クライアントには **500** を返却する。 * フォーワード時が **400** で、フォーワード後が **200** の場合は、クライアントには **400** を返却する。"
+      "content": "業務アクションなどで内部フォーワードを示すレスポンスを返却する場合には、\nレスポンスが示すコンテンツパスを `forward://` から開始する。\n\n以下に例を示す。\n\n```java\npublic HttpResponse sample(HttpRequest request, ExecutionContext context) {\n  // 業務処理\n\n  // 同一業務アクションのinitializeに内部フォーワード\n  return new HttpResponse(\"forward://initialize\");\n}\n```\n> **Tip:** ステータスコードはフォーワード時とフォーワード後を比較し、大きい値をレスポンス時のステータスコードとする。 以下に例を示す。\n\n* フォーワード時が **200** で、フォーワード後が **500** の場合は、クライアントには **500** を返却する。\n* フォーワード時が **400** で、フォーワード後が **200** の場合は、クライアントには **400** を返却する。"
     },
     {
       "id": "s5",

@@ -138,14 +138,14 @@ public class CustomTestSupport extends TestSupport {
 基本的に、自動テストフレームワークが提供するクラスは、インスタンス生成時にテストクラスの `Class` オブジェクトを渡す必要がある。
 したがって、独自拡張クラスにはテストクラスの `Class` オブジェクトを受け取れるようにコンストラクタを定義する必要がある。
 
-> **Tip:** extdoc:`SimpleRestTestSupport <nablarch.test.core.http.SimpleRestTestSupport>` は、テストクラスの `Class` オブジェクトをコンストラクタで渡さなくても使用できる。
+> **Tip:** `SimpleRestTestSupport` は、テストクラスの `Class` オブジェクトをコンストラクタで渡さなくても使用できる。
 
 ## 独自拡張用のExtensionを作成する
 
 次に、拡張元のクラスに対応するExtensionクラスを継承し、独自拡張用のExtensionを作成する。
 例では `TestSupport` を継承しているので、対応するExtensionクラスは `TestSupportExtension` になる。
 
-> **Tip:** extdoc:`AbstractHttpRequestTestTemplate <nablarch.test.core.http.AbstractHttpRequestTestTemplate>` を直接継承した独自拡張クラスを使用する場合、対応するExtensionとしては `BasicHttpRequestTestExtension` が使用できる。
+> **Tip:** `AbstractHttpRequestTestTemplate` を直接継承した独自拡張クラスを使用する場合、対応するExtensionとしては `BasicHttpRequestTestExtension` が使用できる。
 ```java
 public class CustomTestSupportExtension extends TestSupportExtension {
 

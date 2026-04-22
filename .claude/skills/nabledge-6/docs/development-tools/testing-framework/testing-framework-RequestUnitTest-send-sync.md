@@ -13,7 +13,10 @@
 バッチ処理の中で同期応答メッセージ送信処理を行う場合について、以下に全体像を示す。
 
 ![](../../../knowledge/assets/testing-framework-RequestUnitTest-send-sync/send_sync.png)
-> **Tip:** 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。 * StandaloneTestSupportTemplate * AbstractHttpRequestTestTemplate
+> **Tip:** 同期応答メッセージ送信処理のリクエスト単体テストを行う場合、テストケースの親クラスは以下の２クラスのうちのいずれかを継承しておく必要がある。
+
+* StandaloneTestSupportTemplate
+* AbstractHttpRequestTestTemplate
 
 ## 主なクラス, リソース
 

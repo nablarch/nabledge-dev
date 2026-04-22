@@ -104,7 +104,7 @@ nablarch.sessionManager.defaultStoreName=redis
 ```
 プロジェクトの環境設定ファイルで、 `nablarch.sessionManager.defaultStoreName` という設定項目を定義し、値に `redis` と設定する。
 
-> **Tip:** `ウェブのアーキタイプ <firstStepGenerateWebBlankProject>` でプロジェクトを生成している場合は、 `src/main/resources/common.properties` に `nablarch.sessionManager.defaultStoreName` が宣言されている。
+> **Tip:** ウェブのアーキタイプ でプロジェクトを生成している場合は、 `src/main/resources/common.properties` に `nablarch.sessionManager.defaultStoreName` が宣言されている。
 以上で、 `localhost` の `6379` ポートで起動しているRedisをセッションストアとして使用できるようになる。
 
 ## Redis の構成に合わせて設定する

@@ -6,7 +6,15 @@
 データの整合性を保つことができる。
 
 
-> **Important:** この機能は、以下の理由により **非推奨** である。 排他制御には、 ユニバーサルDAO を使用すること。 * ユニバーサルDAO の排他制御は、本機能より簡単に使用できる。 universal_dao_jpa_optimistic_lock 、 universal_dao_jpa_pessimistic_lock を参照。 * 主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。 この機能は、主キーの値を全て文字列型( `java.lang.String` )で保持している。 主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、 データベースによっては型の不一致でSQL文の実行時例外が発生する。 例えば、PostgreSQLのように暗黙の型変換が行われないデータベースの場合、この問題が発生する。
+> **Important:** この機能は、以下の理由により **非推奨** である。 排他制御には、 ユニバーサルDAO を使用すること。
+
+* ユニバーサルDAO の排他制御は、本機能より簡単に使用できる。
+universal_dao_jpa_optimistic_lock 、 universal_dao_jpa_pessimistic_lock を参照。
+* 主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。
+この機能は、主キーの値を全て文字列型( `java.lang.String` )で保持している。
+主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、
+データベースによっては型の不一致でSQL文の実行時例外が発生する。
+例えば、PostgreSQLのように暗黙の型変換が行われないデータベースの場合、この問題が発生する。
 
 ## 機能概要
 
@@ -290,7 +298,7 @@ public class UsersExclusiveControl extends ExclusiveControlContext {
   <td>ユーザ002</td>
 </tr>
 ```
-> **Tip:** 複合主キーに対応したカスタムタグと extdoc:`CompositeKey<nablarch.common.web.compositekey.CompositeKey>` を使うと、 複合主キーをもっと簡単に扱える。詳細は、 tag-composite_key を参照。
+> **Tip:** 複合主キーに対応したカスタムタグと `CompositeKey` を使うと、 複合主キーをもっと簡単に扱える。詳細は、 tag-composite_key を参照。
 ```java
 // (排他制御:チェック)
 // Formには、区切り文字を考慮し、リクエストパラメータから主キーを取り出す処理を実装している。
@@ -331,7 +339,10 @@ for(User deletedUser : deletedUsers) {
 ```java
 ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));
 ```
-> **Important:** バッチ処理では、ロックを行うための主キーのみを取得する前処理を設け、 本処理で1件ずつロックを取得してからデータを取得、更新するように実装する。 理由は以下の通り。 * データを取得してから更新するまでの間に、他のプロセスによりデータが更新されてしまうことを防ぐため。 * ロックしている時間をできるだけ短くし、並列処理に与える影響をできるだけ小さくするため。
+> **Important:** バッチ処理では、ロックを行うための主キーのみを取得する前処理を設け、 本処理で1件ずつロックを取得してからデータを取得、更新するように実装する。 理由は以下の通り。
+
+* データを取得してから更新するまでの間に、他のプロセスによりデータが更新されてしまうことを防ぐため。
+* ロックしている時間をできるだけ短くし、並列処理に与える影響をできるだけ小さくするため。
 
 ## 拡張例
 

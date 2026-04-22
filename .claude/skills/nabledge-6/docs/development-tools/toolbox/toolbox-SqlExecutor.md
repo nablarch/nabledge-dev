@@ -238,7 +238,11 @@ mvn compile exec:java
 ```
 その後、ブラウザを起動して、 http://localhost:7979/index.html を表示する。
 
-> **Tip:** * 初回起動時等、起動に時間がかかる場合、ブラウザがタイムアウトすることがある。 この場合は、起動完了後にブラウザをリロードする。 * 本ツールは、Internet Explorerでは、正常に動作しない。Internet Explorerが起動した場合は、URLをコピーし、FirefoxまたはChromeのアドレス欄に貼り付けること。
+> **Tip:** 
+
+* 初回起動時等、起動に時間がかかる場合、ブラウザがタイムアウトすることがある。
+この場合は、起動完了後にブラウザをリロードする。
+* 本ツールは、Internet Explorerでは、正常に動作しない。Internet Explorerが起動した場合は、URLをコピーし、FirefoxまたはChromeのアドレス欄に貼り付けること。
 
 ## 配布ファイル作成
 

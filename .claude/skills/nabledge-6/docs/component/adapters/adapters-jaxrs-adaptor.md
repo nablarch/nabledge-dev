@@ -29,7 +29,10 @@ RESTfulウェブサービス で使用するための以下のアダプタを提
 </dependency>
 ```
 > **Tip:** Jacksonのバージョン2.17.1を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
-> **Tip:** Jackson1系ライブラリの脆弱性対応が行われなくなったため、Nablarch5u16よりJackson1系のサポートを廃止した。 Jackson1系を使用していた場合はJackson2系へ移行すること。 【参考情報】 * https://jvndb.jvn.jp/ja/contents/2019/JVNDB-2019-012258.html * https://github.com/advisories/GHSA-r6j9-8759-g62w
+> **Tip:** Jackson1系ライブラリの脆弱性対応が行われなくなったため、Nablarch5u16よりJackson1系のサポートを廃止した。 Jackson1系を使用していた場合はJackson2系へ移行すること。 【参考情報】
+
+* https://jvndb.jvn.jp/ja/contents/2019/JVNDB-2019-012258.html
+* https://github.com/advisories/GHSA-r6j9-8759-g62w
 
 ## Jersey環境下でRESTfulウェブサービスを使用する
 

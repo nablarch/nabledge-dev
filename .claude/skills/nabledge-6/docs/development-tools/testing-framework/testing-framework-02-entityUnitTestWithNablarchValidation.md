@@ -571,7 +571,9 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 
 
 ![](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_ValidationPropParams.png)
-> **Tip:** Form単体テストのテストケースやテストデータを作成する際、\ **プロパティに保持している別のFormのプロパティ** を指定したいことがある。\ この場合、次のように指定できる。 * Formのコード例
+> **Tip:** Form単体テストのテストケースやテストデータを作成する際、\ **プロパティに保持している別のFormのプロパティ** を指定したいことがある。\ この場合、次のように指定できる。
+
+* Formのコード例
 
 ```java
 public class SampleForm {
@@ -676,7 +678,18 @@ public class SystemAccountEntityTest extends EntityTestSupport {
 }
 ```
 
-> **Tip:** testConstructorAndGetterでテスト可能なプロパティの型(クラス)には制限がある。 下記型(クラス)に該当しない場合には、各テストクラスにてコンストラクタとgetterを明示的に呼び出してテストする必要がある。 * String及び、String配列 * BigDecimal及び、BigDecimal配列 * java.util.Date及び、java.util.Date配列(Excelへはyyyy-MM-dd形式もしくはyyyy-MM-dd HH:mm:ss形式で記述すること) * valueOf(String)メソッドを持つクラス及び、その配列クラス(例えばIntegerやLong、java.sql.Dateやjava.sql.Timestampなど) 以下に、個別のテスト実施方法の例を示す。 この例では、Formが `List<String>` 型のプロパティ `users` を持っているとしている。 * Excelへのデータ記述例
+> **Tip:** testConstructorAndGetterでテスト可能なプロパティの型(クラス)には制限がある。 下記型(クラス)に該当しない場合には、各テストクラスにてコンストラクタとgetterを明示的に呼び出してテストする必要がある。
+
+* String及び、String配列
+* BigDecimal及び、BigDecimal配列
+* java.util.Date及び、java.util.Date配列(Excelへはyyyy-MM-dd形式もしくはyyyy-MM-dd HH:mm:ss形式で記述すること)
+* valueOf(String)メソッドを持つクラス及び、その配列クラス(例えばIntegerやLong、java.sql.Dateやjava.sql.Timestampなど)
+
+以下に、個別のテスト実施方法の例を示す。
+この例では、Formが `List<String>` 型のプロパティ `users` を持っているとしている。
+
+
+* Excelへのデータ記述例
 
 ![](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/entityUnitTest_ConstructorOther.png)
 * テストコード例

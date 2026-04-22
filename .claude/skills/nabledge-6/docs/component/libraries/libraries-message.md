@@ -87,7 +87,7 @@ success.update.project=プロジェクトの更新が完了しました。
 メッセージの多言語化を行う場合には、言語ごとのプロパティファイルを用意し、サポートする言語を `PropertiesStringResourceLoader.locales` に設定する。
 なお、デフォルトのロケールに対応する言語については、サポートする言語に追加しなくても良い。
 
-> **Important:** デフォルトのロケールは、`PropertiesStringResourceLoader.defaultLocale` (デフォルトの言語)で設定する。設定しなかった場合、デフォルトのロケールは `Locale.getDefault().getLanguage()` の値が採用される。 extdoc:`Locale.getDefault().getLanguage() <java.util.Locale.getLanguage()>` の値はOSの設定によって変化するため、この値をデフォルトのロケールとして使用すると実行する環境に応じて値が変わり障害の原因になる可能性がある。必ずデフォルトの言語を設定すること。
+> **Important:** デフォルトのロケールは、`PropertiesStringResourceLoader.defaultLocale` (デフォルトの言語)で設定する。設定しなかった場合、デフォルトのロケールは `Locale.getDefault().getLanguage()` の値が採用される。 `Locale.getDefault().getLanguage()` の値はOSの設定によって変化するため、この値をデフォルトのロケールとして使用すると実行する環境に応じて値が変わり障害の原因になる可能性がある。必ずデフォルトの言語を設定すること。
 メッセージ取得時にどの言語が使用されるかは、 `ThreadContext#getLanguage` が返すロケールによって決定される。
 もし、 `ThreadContext#getLanguage` からロケールが取得できない場合は `Locale.getDefault()` が使用される。
 
@@ -204,7 +204,7 @@ options.put("projectCount", projects.size());
 
 MessageUtil.createMessage(MessageLevel.INFO, "success.upload.project", options);
 ```
-> **Important:** 埋め込み文字に指定できる値は、 `Map` のみとなる。 複数の `Map` や、 `Map` 以外の値とセットで指定された場合は、 extdoc:`java.text.MessageFormat` を使用した値の埋め込み処理をおこなう。
+> **Important:** 埋め込み文字に指定できる値は、 `Map` のみとなる。 複数の `Map` や、 `Map` 以外の値とセットで指定された場合は、 `java.text.MessageFormat` を使用した値の埋め込み処理をおこなう。
 メッセージのフォーマット方法を変更したい場合は、 メッセージのフォーマット方法を変更する を参照し対応すること。
 
 ## 画面の固定文言をメッセージから取得する
@@ -233,7 +233,17 @@ JSP
 メッセージレベルを使い分けることで、画面表示時のスタイルを切り替えることができる。
 スタイルの切り替えは、カスタムタグライブラリの errors タグを使用することで実現できる。
 
-> **Important:** メッセージレベルとカスタムタグを使用したスタイル変更は以下の問題点がある。 * カスタムタグライブラリが出力するDOM構造に制約があり、一般的なCSSフレームワークとの相性が悪い * メッセージレベルが3種類しかなくそれより細かい分類ができない * JSP以外のテンプレートエンジンで使用できない このため、 errorsタグを使用したメッセージレベルに応じたスタイル切り替え を使用するのではなく以下の実装方法を推奨する。 サーバサイド サーバサイドでメッセージ文字列を構築し、リクエストスコープに設定する。 メッセージを生成する際にはメッセージレベルが必須なため、INFOレベルを指定すれば良い。
+> **Important:** メッセージレベルとカスタムタグを使用したスタイル変更は以下の問題点がある。
+
+* カスタムタグライブラリが出力するDOM構造に制約があり、一般的なCSSフレームワークとの相性が悪い
+* メッセージレベルが3種類しかなくそれより細かい分類ができない
+* JSP以外のテンプレートエンジンで使用できない
+
+このため、 errorsタグを使用したメッセージレベルに応じたスタイル切り替え を使用するのではなく以下の実装方法を推奨する。
+
+サーバサイド
+サーバサイドでメッセージ文字列を構築し、リクエストスコープに設定する。
+メッセージを生成する際にはメッセージレベルが必須なため、INFOレベルを指定すれば良い。
 
 ```java
 context.setRequestScopedVar("message", 
@@ -260,7 +270,7 @@ errorsタグを使用すると、メッセージレベルに応じて以下のcs
 :WARN: nablarch_warn
 :ERROR: nablarch_error
 
-> **Tip:** `バリデーション機能 <validation>` から送出される業務例外( `ApplicationException` )が持つメッセージは、 全て `ERROR` レベルとなる。
+> **Tip:** バリデーション機能 から送出される業務例外( `ApplicationException` )が持つメッセージは、 全て `ERROR` レベルとなる。
 プロパティファイル
 ```properties
 info=インフォメーション

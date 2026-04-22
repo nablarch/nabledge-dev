@@ -108,7 +108,7 @@ public HttpResponse update(ProjectUpdateForm form) {
 ユニバーサルDAO を使用してプロジェクト情報を更新する。
 * 更新に成功した場合は、正常終了(ステータスコード： `200` )を表す `HttpResponse` を返却する。
 
-> **Tip:** Exampleアプリケーションでは `ErrorResponseBuilder` を独自に拡張しており、 extdoc:`NoDataException<nablarch.common.dao.NoDataException>` が発生した場合は `404` 、 extdoc:`OptimisticLockException<jakarta.persistence.OptimisticLockException>` が発生した場合は `409` のレスポンスを生成してクライアントに返却している。
+> **Tip:** Exampleアプリケーションでは `ErrorResponseBuilder` を独自に拡張しており、 `NoDataException` が発生した場合は `404` 、 `OptimisticLockException` が発生した場合は `409` のレスポンスを生成してクライアントに返却している。
 URLとのマッピングを定義
 ルーティングアダプタ を使用して、業務アクションとURLのマッピングを行う。
 マッピングには Jakarta RESTful Web ServicesのPathアノテーション を使用する。

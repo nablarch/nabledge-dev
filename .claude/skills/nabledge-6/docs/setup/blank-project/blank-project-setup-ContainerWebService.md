@@ -83,7 +83,10 @@ mvn archetype:generate -DarchetypeGroupId=com.nablarch.archetype -DarchetypeArti
 コンテナイメージの実行方法はコンテナ用のウェブプロジェクトと同じなので、 コンテナ用ウェブプロジェクトの初期セットアップ を参照。
 
 > **Note:** アーティファクトID が `myapp-container-jaxrs` になっている点は、適宜読み替えてディレクトリやコマンドを指定すること。
-> **Note:** 動作確認は、以下のURLで行える。 * `http://localhost:8080/find/json` * `http://localhost:8080/find/xml`
+> **Note:** 動作確認は、以下のURLで行える。
+
+* `http://localhost:8080/find/json`
+* `http://localhost:8080/find/xml`
 
 ## データベースに関する設定を行う
 

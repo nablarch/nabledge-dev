@@ -45,7 +45,12 @@
   <!-- その他の設定は省略 -->
 </component>
 ```
-> **Tip:** `ITemplateResolver` インタフェースの実装クラスに、 `org.thymeleaf.templateresolver.ServletContextTemplateResolver` が存在するが、 以下の理由により、システムリポジトリ にコンポーネントとして登録できない。 * コンストラクタ引数に `jakarta.servlet.ServletContext` が必須である(デフォルトコンストラクタを持たない)。 * システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず、ファクトリ によるオブジェクト生成もできない。 このため、 `ServletContextTemplateResolver` ではなく、 `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
+> **Tip:** `ITemplateResolver` インタフェースの実装クラスに、 `org.thymeleaf.templateresolver.ServletContextTemplateResolver` が存在するが、 以下の理由により、システムリポジトリ にコンポーネントとして登録できない。
+
+* コンストラクタ引数に `jakarta.servlet.ServletContext` が必須である(デフォルトコンストラクタを持たない)。
+* システムリポジトリ構築時には `jakarta.servlet.ServletContext` にアクセスできず、ファクトリ によるオブジェクト生成もできない。
+
+このため、 `ServletContextTemplateResolver` ではなく、 `ClassLoaderTemplateResolver` 等の別の実装クラスを使用すること。
 
 ## 処理対象判定について
 
@@ -75,7 +80,13 @@ return new HttpResponse("/path/to/anotherServlet");
 この正規表現にコンテンツパスがマッチした場合、テンプレートエンジンの処理対象と判定される。
 
 
-> **Important:** Thymeleafでは、テンプレートのパスを解決する際、サフィックスを省略する設定ができるが、 本アダプタを使用する場合はサフィックスの省略は行わないこと。 * OK: `return new HttpResponse("index.html");` * NG: `return new HttpResponse("index");` サフィックスを省略した場合、セッションストアからリクエストスコープへの移送が行われず、 テンプレートからセッションストアの値を参照できなくなる。
+> **Important:** Thymeleafでは、テンプレートのパスを解決する際、サフィックスを省略する設定ができるが、 本アダプタを使用する場合はサフィックスの省略は行わないこと。
+
+* OK: `return new HttpResponse("index.html");`
+* NG: `return new HttpResponse("index");`
+
+サフィックスを省略した場合、セッションストアからリクエストスコープへの移送が行われず、
+テンプレートからセッションストアの値を参照できなくなる。
 
 ## テンプレートエンジンを使用する
 

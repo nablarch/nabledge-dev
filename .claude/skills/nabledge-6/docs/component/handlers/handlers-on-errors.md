@@ -41,4 +41,4 @@ public HttpResponse handle(HttpRequest request, ExecutionContext context) {
     // 業務処理は省略
 }
 ```
-> **Important:** extdoc:`OnError <nablarch.fw.web.interceptor.OnError>` の定義順に例外を処理するため、 継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。
+> **Important:** `OnError` の定義順に例外を処理するため、 継承関係にある例外を定義する場合は、必ずサブクラスの例外から先に定義すること。

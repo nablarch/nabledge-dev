@@ -62,7 +62,7 @@ Batchletで、ループを伴う処理を行う必要がある場合には、下
 ポイント
 * processメソッドの先頭で、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 `inputCount` に設定する。
 
-> **Important:** TPSの算出の起点となる時間は、 `inputCount` が呼び出されたタイミングとなる。 extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、 TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
+> **Important:** TPSの算出の起点となる時間は、 `inputCount` が呼び出されたタイミングとなる。 `inputCount` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、 TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
 * 処理を行うループ処理内で、一定間隔ごとに進捗ログを出力する `outputProgressInfo` を呼び出す。
 
 実装例
@@ -120,7 +120,7 @@ ItemReader
 * コンストラクタインジェクションを使用して、進捗ログを出力するインタフェース( `ProgressManager` )をインジェクションする。
 * openメソッドにて、処理対象件数(データベースへのcount結果やファイルのレコード数等)を取得し、 `inputCount` に設定する。
 
-> **Important:** TPSの算出の起点となる時間は、 `inputCount` が呼び出されたタイミングとなる。 extdoc:`inputCount <nablarch.fw.batch.ee.progress.ProgressManager.setInputCount(long)>` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、 TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
+> **Important:** TPSの算出の起点となる時間は、 `inputCount` が呼び出されたタイミングとなる。 `inputCount` を呼び出し後にデータベースから対象データを抽出するなどの重い処理を行った場合、 TPSが実際と異なる(実際より小さい値)結果となるので注意すること。
 実装例
 ```java
 @Named
@@ -177,5 +177,5 @@ public class ProgressReader extends AbstractItemReader {
   </step>
 </job>
 ```
-> **Important:** `ItemReader <jsr352-progress_reader>` で処理対象件数を設定せずに、 `進捗ログ出力リスナー <jsr352-progress_listener>` を設定した場合には、設定不備として例外を送出し処理を異常終了させる。 このため、進捗ログを必要としない場合には、 進捗ログ出力リスナー の設定を必ず削除すること。
-> **Important:** chunkステップでRetrying Exceptionsを設定した場合は、リスナーによる進捗ログの出力が正しく機能しなくなる。 これは、リスナーが処理済み件数として使用している `metrics` の読み込み済み件数が実態とずれることに起因する。 このため、Retrying Exceptionsを使用して例外発生時のリトライ処理を行いたい場合には、 `ItemWriter` の実装クラスにて処理済み件数を計算し、 extdoc:`outputProgressInfo <nablarch.fw.batch.ee.progress.ProgressManager.outputProgressInfo(long)>` を使用して進捗ログを出力すること。
+> **Important:** ItemReader で処理対象件数を設定せずに、 進捗ログ出力リスナー を設定した場合には、設定不備として例外を送出し処理を異常終了させる。 このため、進捗ログを必要としない場合には、 進捗ログ出力リスナー の設定を必ず削除すること。
+> **Important:** chunkステップでRetrying Exceptionsを設定した場合は、リスナーによる進捗ログの出力が正しく機能しなくなる。 これは、リスナーが処理済み件数として使用している `metrics` の読み込み済み件数が実態とずれることに起因する。 このため、Retrying Exceptionsを使用して例外発生時のリトライ処理を行いたい場合には、 `ItemWriter` の実装クラスにて処理済み件数を計算し、 `outputProgressInfo` を使用して進捗ログを出力すること。

@@ -169,7 +169,10 @@ Thread Result:[200 Success] The request has succeeded.
 mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^
     -Dexec.args="'-diConfig' 'classpath:resident-batch-boot.xml' '-requestPath' 'SampleResiBatch' '-userId' 'batch_user'"
 ```
-> **Tip:** 上記引数の都度起動バッチアプリケーションとの相違点は以下の通りである。 * -diConfigで指定するxmlファイル * -requestPathで指定するリクエストパス
+> **Tip:** 上記引数の都度起動バッチアプリケーションとの相違点は以下の通りである。
+
+* -diConfigで指定するxmlファイル
+* -requestPathで指定するリクエストパス
 起動に成功すると、以下のようなログがコンソールに出力される。
 
 ```text

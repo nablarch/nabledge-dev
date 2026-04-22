@@ -48,7 +48,7 @@
 スレッド上で管理する際には、トランザクションを識別するための名前を設定する。
 デフォルトでは、 `transaction` が使用されるが、任意の名前を使用する場合は、 `transactionName` プロパティに設定すること。
 
-> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対してトランザクションを制御する場合は、 extdoc:`DbConnectionManagementHandler#connectionName <nablarch.common.handler.DbConnectionManagementHandler.setConnectionName(java.lang.String)>` に設定した値と同じ値を extdoc:`transactionName <nablarch.fw.handler.LoopHandler.setTransactionName(java.lang.String)>` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 extdoc:`transactionName <nablarch.fw.handler.LoopHandler.setTransactionName(java.lang.String)>` への設定は省略して良い。
+> **Tip:** データベース接続管理ハンドラ で設定したデータベースに対してトランザクションを制御する場合は、 `DbConnectionManagementHandler#connectionName` に設定した値と同じ値を `transactionName` プロパティに設定すること。 なお、 `DbConnectionManagementHandler#connectionName` に値を設定していない場合は、 `transactionName` への設定は省略して良い。
 以下の設定ファイル例を参考にし、このハンドラを設定すること。
 
 ```xml

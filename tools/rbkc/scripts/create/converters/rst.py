@@ -927,7 +927,11 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 # Content converter
 # ---------------------------------------------------------------------------
 
-_FIELD_RE_ADMON = re.compile(r"^:([^:]+):\s*(.*)")
+# RST field-list entry inside an admonition: ``:name: value``. Require at
+# least one whitespace after the closing ``:`` so that inline roles like
+# ``:java:extdoc:`Name``` (no space before the role target) are not mis-read
+# as field-list entries.
+_FIELD_RE_ADMON = re.compile(r"^:([^:\s]+):\s+(.*)")
 
 
 def _render_admonition_body(
@@ -945,9 +949,13 @@ def _render_admonition_body(
     recursively running the body through _convert_content.
     """
     # 1) Split block into leading prose lines (flowing text) and a tail that
-    #    may contain nested directives. When a directive-looking line appears
-    #    after any prose, the remaining block is recursively converted.
+    #    may contain nested structure. A tail starts at the first line that
+    #    introduces a nested directive *or* a structural construct such as a
+    #    bullet list, enumerated list, or definition list — flattening them
+    #    into a single prose blockquote loses the list structure.
     directive_start = re.compile(r"^\.\.\s+\S")
+    bullet_start = re.compile(r"^[*+\-][ \t]+\S")
+    enum_start = re.compile(r"^\d+\.[ \t]+\S")
     prose_parts: list[str] = []
     if inline_arg:
         prose_parts.append(inline_arg)
@@ -958,7 +966,7 @@ def _render_admonition_body(
         if not s:
             # blank line — keep searching; do not commit to prose yet
             continue
-        if directive_start.match(s):
+        if directive_start.match(s) or bullet_start.match(s) or enum_start.match(s):
             tail_start = idx
             break
         m = _FIELD_RE_ADMON.match(s)

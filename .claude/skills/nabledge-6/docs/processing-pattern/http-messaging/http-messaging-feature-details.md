@@ -26,7 +26,7 @@
 
 * HTTPリクエストディスパッチハンドラ
 
-> **Tip:** HTTPメッセージングでは ルーティングアダプタ を使用できない。 HTTPメッセージングは、MOMメッセージング が提供する extdoc:`MessagingAction<nablarch.fw.messaging.action.MessagingAction>` でアクションクラスを作成するため、URIに応じてアクションクラスのメソッドを呼び分ける想定がないため。
+> **Tip:** HTTPメッセージングでは ルーティングアダプタ を使用できない。 HTTPメッセージングは、MOMメッセージング が提供する `MessagingAction` でアクションクラスを作成するため、URIに応じてアクションクラスのメソッドを呼び分ける想定がないため。
 
 ## 国際化対応
 

@@ -607,7 +607,11 @@ nablarch.micrometer.statsd.enabled=false
 多くの監視サービスでは [OpenTelemetry(外部サイト)](https://opentelemetry.io/ja) をサポートしており、通信プロトコルに OpenTelemetry Protocol (以下、OTLP) を使用してメトリクスを収集できる。
 `micrometer-registry-otlp` モジュールを用いることで、 OTLP で様々な監視サービスと連携できる。
 
-> **Important:** OpenTelemetry によるメトリクスの収集では、どういった連携方法が適しているか（利用可能か）は監視サービスによって異なるため、使用する監視サービスの情報を確認すること。 例として、いくつかの監視サービスの情報を以下に示す。 * [Datadog の OpenTelemetry(外部サイト)](https://docs.datadoghq.com/ja/opentelemetry/) * [New RelicによるOpenTelemetryの紹介(外部サイト)](https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction) * [Prometheus | HTTP API | OTLP Receiver(外部サイト、英語)](https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver)
+> **Important:** OpenTelemetry によるメトリクスの収集では、どういった連携方法が適しているか（利用可能か）は監視サービスによって異なるため、使用する監視サービスの情報を確認すること。 例として、いくつかの監視サービスの情報を以下に示す。
+
+* [Datadog の OpenTelemetry(外部サイト)](https://docs.datadoghq.com/ja/opentelemetry/)
+* [New RelicによるOpenTelemetryの紹介(外部サイト)](https://docs.newrelic.com/jp/docs/opentelemetry/opentelemetry-introduction)
+* [Prometheus | HTTP API | OTLP Receiver(外部サイト、英語)](https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver)
 ここでは、localhost の 9090 ポートで起動している Prometheus に OTLP で連携する場合を例にして説明する。
 
 依存関係を追加する

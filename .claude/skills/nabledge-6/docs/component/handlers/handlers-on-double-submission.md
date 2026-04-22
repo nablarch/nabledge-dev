@@ -56,7 +56,7 @@ public HttpResponse register(HttpRequest req, ExecutionContext ctx) {
   <property name="statusCode" value="200" />
 </component>
 ```
-> **Important:** extdoc:`OnDoubleSubmission <nablarch.common.web.token.OnDoubleSubmission>` と `BasicDoubleSubmissionHandler` の どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。 このため、 トークンを使用した二重サブミットの防止 を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
+> **Important:** `OnDoubleSubmission` と `BasicDoubleSubmissionHandler` の どちらもpathの指定がない場合は、二重サブミットと判定した場合に遷移先が不明なため、システムエラーとなる。 このため、 トークンを使用した二重サブミットの防止 を使用するアプリケーションでは、必ずどちらかのpathを指定すること。
 
 ## OnDoubleSubmissionの振る舞いを変更する
 
