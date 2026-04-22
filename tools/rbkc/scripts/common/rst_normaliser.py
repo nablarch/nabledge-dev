@@ -207,8 +207,9 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     # 5. Named reference: `text`_ → text
     text = re.sub(r"(?<![`:])`([^`<>\n]+?)`_(?!_)", r"\1", text)
 
-    # 6. Interpreted text (bare backtick): `text` → text
-    text = re.sub(r"(?<![`:_\w])`([^`<>\n]+?)`(?![_`])", r"\1", text)
+    # 6. Interpreted text (bare single backtick): RST default role passes
+    # through to converter as `text` (MD inline code). Keep backticks.
+    # (No change needed; text is already in MD form.)
 
     return text
 
@@ -757,30 +758,36 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
         return "", i
 
     ncols = len(cols)
-    header = "| " + " | ".join(rows[0]) + " |"
+    # Converter escapes "|" inside simple-table cells; match that.
+    esc_rows = [[c.replace("|", "\\|") for c in r] for r in rows]
+    header = "| " + " | ".join(esc_rows[0]) + " |"
     sep = "|" + "|".join(["---"] * ncols) + "|"
-    body_rows = ["| " + " | ".join(r) + " |" for r in rows[1:]]
+    body_rows = ["| " + " | ".join(r) + " |" for r in esc_rows[1:]]
     return "\n".join([header, sep] + body_rows), i
 
 
 def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
-    """Render an RST grid-table (`+---+---+` separators) as an MD table."""
+    """Render an RST grid-table as an HTML `<table>` block.
+
+    Converter (scripts/create/converters/rst.py `_parse_grid_table`) emits
+    HTML for grid tables rather than MD, so the normaliser must match.
+    """
     n = len(lines)
-    rows: list[list[str]] = []
+    rows: list[tuple[bool, list[str]]] = []  # (is_header, cells)
     current_row: list[str] | None = None
-    saw_header = False
+    in_header = True
     i = start
     while i < n:
         ln = lines[i]
         if _GRID_TABLE_SEP_RE.match(ln):
             if current_row is not None:
-                rows.append(current_row)
+                rows.append((in_header, current_row))
                 current_row = None
-            # `+===+` marks end of header row
+            # `+===+` marks end of header; subsequent rows are body
             if '=' in ln:
-                saw_header = True
+                in_header = False
             i += 1
-            # Peek: if next is not a grid line, table ends
+            # Peek: end table if next line isn't grid-related
             if i < n and not (
                 _GRID_TABLE_SEP_RE.match(lines[i])
                 or (lines[i].strip().startswith("|") and lines[i].strip().endswith("|"))
@@ -793,7 +800,6 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
             if current_row is None:
                 current_row = cells
             else:
-                # continuation
                 for idx, c in enumerate(cells):
                     if idx < len(current_row):
                         current_row[idx] = (current_row[idx] + " " + c).strip() if c else current_row[idx]
@@ -802,17 +808,33 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
         break
 
     if current_row is not None:
-        rows.append(current_row)
+        rows.append((in_header, current_row))
 
     if not rows:
         return "", i
 
-    ncols = max(len(r) for r in rows)
-    rows = [r + [""] * (ncols - len(r)) for r in rows]
-    header = "| " + " | ".join(rows[0]) + " |"
-    sep = "|" + "|".join(["---"] * ncols) + "|"
-    body_rows = ["| " + " | ".join(r) + " |" for r in rows[1:]]
-    return "\n".join([header, sep] + body_rows), i
+    # Emit HTML
+    out = ["<table>"]
+    header_rows = [r for hdr, r in rows if hdr]
+    body_rows = [r for hdr, r in rows if not hdr]
+    if header_rows:
+        out.append("<thead>")
+        for r in header_rows:
+            out.append("<tr>")
+            for c in r:
+                out.append(f"  <th>{c}</th>")
+            out.append("</tr>")
+        out.append("</thead>")
+    if body_rows:
+        out.append("<tbody>")
+        for r in body_rows:
+            out.append("<tr>")
+            for c in r:
+                out.append(f"  <td>{c}</td>")
+            out.append("</tr>")
+        out.append("</tbody>")
+    out.append("</table>")
+    return "\n".join(out), i
 
 
 def _split_directive_options(body: list[str]) -> tuple[dict[str, str], list[str]]:
@@ -881,9 +903,12 @@ def _render_directive(
             return body_text
         return ""
 
-    # Group E: image — everything dropped
+    # Group E: image — converter emits `![alt](assets/{id}/{filename})`.
+    # We don't know the file_id here; emit a placeholder MD image whose URL
+    # will be stripped by the verify layer (both sides reduce to `![alt]`).
     if name in _IMAGE_DIRECTIVES:
-        return ""
+        alt = options.get("alt", "")
+        return f"![{alt}](image)"
 
     # Group F: include — should have been expanded already by expand_includes;
     # if seen here, the body was missing or include had no path.

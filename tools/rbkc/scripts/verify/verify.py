@@ -604,17 +604,14 @@ def _build_rst_search_units(
     top_content = data.get("content", "")
 
     def _norm(t: str) -> str:
-        # Strip URL bodies from [text](url) — URLs are validated by QL2;
-        # the converter rewrites asset paths differently from the source,
-        # so comparing only the visible text keeps QC2 focused on content.
-        # When the MD link appeared on one side but not the other (e.g.
-        # label resolution emitted plain text on one side and a link on
-        # the other), reduce both forms to the visible text only.
-        t = re.sub(r'!\[[^\]]*\]\([^)\n]+\)', '', t)
+        # Strip MD image syntax entirely — alt text may contain brackets,
+        # so use a loop to handle nested brackets like ![[1]_](url).
+        prev = None
+        while prev != t:
+            prev = t
+            t = re.sub(r'!\[[^\n]*?\]\([^)\n]+\)', '', t, count=1)
+        # Strip URL bodies from [text](url), keep visible text.
         t = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', t)
-        # Collapse all whitespace runs (including newlines) to single spaces
-        # so multi-line JSON content can be found in the single-pass
-        # normalised source.
         return re.sub(r'\s+', ' ', t).strip()
 
     if top_title:
@@ -672,10 +669,12 @@ def _check_rst_content_completeness(
     # can resolve `|name|` references defined elsewhere in the file.
     rst_substitutions = _collect_rst_substitutions(source_text)
     norm_source_raw = _normalize_rst_source(source_text, label_map, rst_substitutions)
-    # Apply the same URL-stripping normalisation as _build_rst_search_units
-    # so [text](url) on both sides reduces to visible text only. Multi-line
-    # JSON content is matched against a single-line normalised source.
-    norm_source = re.sub(r'!\[[^\]]*\]\([^)\n]+\)', '', norm_source_raw)
+    # Apply the same URL-stripping normalisation as _build_rst_search_units.
+    prev = None
+    norm_source = norm_source_raw
+    while prev != norm_source:
+        prev = norm_source
+        norm_source = re.sub(r'!\[[^\n]*?\]\([^)\n]+\)', '', norm_source, count=1)
     norm_source = re.sub(r'\[([^\]\n]+)\]\([^)\n]+\)', r'\1', norm_source)
     norm_source = re.sub(r'\s+', ' ', norm_source).strip()
     search_units = _build_rst_search_units(data)

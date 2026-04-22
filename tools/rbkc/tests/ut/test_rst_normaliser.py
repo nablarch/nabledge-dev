@@ -67,7 +67,8 @@ class TestInline:
         assert "[1]_" in _normalise("See [1]_ for details")
 
     def test_interpreted_text(self):
-        assert _normalise("`emph`") == "emph"
+        # Converter preserves bare `text` as MD inline code; normaliser keeps it.
+        assert _normalise("`emph`") == "`emph`"
 
     def test_strong_preserved(self):
         # Strong markup is identical in RST and MD
@@ -177,16 +178,19 @@ class TestDirectiveFigure:
 
 
 class TestDirectiveImage:
-    def test_image_fully_dropped(self):
+    def test_image_emits_md_placeholder(self):
+        # Converter emits `![alt](assets/...)`; normaliser uses placeholder
+        # URL which gets stripped symmetrically during verify.
         src = textwrap.dedent("""\
             .. image:: foo.png
                :scale: 50%
-               :alt: anything
+               :alt: Caption
             """)
         out = _normalise(src)
+        assert "![Caption](image)" in out
+        # non-alt options and source filename dropped
         assert "foo.png" not in out
         assert "50%" not in out
-        assert "anything" not in out
 
 
 class TestDirectiveDropBody:
