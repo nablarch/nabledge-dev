@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 47 — Phase 21-X X-4b を SUPERSEDED。converter の残バグは 8 分類・56 件に分散しており、個別修正では ROI が低く再発リスクも残ると判断。**Phase 21-Y** (converter を docutils AST ベースで全面書き直し) を新設。docutils 0.22.4 は既にインストール済、AST API と Visitor パターンで自前 parse を排除する。TDD なし・verify 駆動。B4-a (title inline 変換) は committed `4b617079d` で 56→53 FAIL に貢献済、Phase 21-Y に包含されて消える。)
+**Updated**: 2026-04-23 (session 48 — Phase 21-Y / Y-1 完了。docutils AST probe を全 5 バージョン 2,581 RST に実施、v6/v5 は parse error 0 件、v1.x は WARNING 中心で真の parse 失敗 5 件のみ。grid-table rowspan (`morerows`) / substitution / admonition 14 種 / table 3 種 / footnote / transition はすべて AST node として取得可能。Sphinx 固有 role/directive は minimal shim で吸収できることを実証。結果を `.work/00299/phase21y/ast-probe.md` / `ast-probe.json` に保存、notes.md (session 48) にサマリ。**Y-2 (Visitor 設計) に進む判断をユーザーに要請中**。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -77,17 +77,20 @@
 
 ---
 
-#### Y-1: docutils AST の実証調査
+#### Y-1: docutils AST の実証調査 ✅ 完了 (session 48)
 
-- [ ] `tools/rbkc/.work/` 配下に調査スクリプト `y1_probe_ast.py` を作成、全バージョンの RST ファイルを `publish_doctree` に通して以下を確認:
-  - [ ] CJK ファイル (e.g. `biz_samples/01/index.rst`) で parse 成功するか
-  - [ ] grid-table rowspan (`morerows` 属性) が正しく AST 化されるか
-  - [ ] substitution (`|br|` 等) が展開されるか、展開タイミングは transform 前/後どちらか
-  - [ ] `.. include::` / `literalinclude` / `raw:: html` の扱い
-  - [ ] `:ref:` / `:doc:` / `:file:` の label 解決挙動 (外部解決が必要な場合の hook)
-  - [ ] footnote / transition / field-list / admonition (14 種) が取得可能な node 種別に落ちるか
-- [ ] parse 失敗・警告のあったファイルを全件ダンプ、対応方針を決める (docutils settings で抑制 / fallback / converter 側で前処理)
-- [ ] 結果を `.work/00299/phase21y/ast-probe.md` にまとめ、ユーザーに報告
+- [x] `tools/rbkc/.work/y1_probe_ast.py` を作成、全 5 バージョン 2,581 RST ファイルを `publish_doctree` に通して計測:
+  - [x] CJK parse: v6/v5/v1.x 全ファイルで成功 (UTF-8 素のまま可)
+  - [x] grid-table rowspan: `entry.morerows` / `morecols` 属性として取得可 (v6=74, v5=91, v1.4=133, v1.3=77, v1.2=72)
+  - [x] substitution: Substitutions transform が `|x|` を raw ノードに展開済で AST に反映 (v6=95 def, v5=133 def)
+  - [x] include / literalinclude / raw: `file_insertion_enabled=False` で include 無効化、literalinclude は shim で literal_block、raw は built-in で取れる
+  - [x] `:ref:` / `:doc:` / `:file:` 等 10 種の role: minimal shim で `inline` ノード (classes=`role-xxx`) に落とし、Visitor で targets 辞書解決
+  - [x] footnote / footnote_reference / transition / field_list / admonition (14 種) / image / figure / table / list-table / topic / rubric / line_block すべて AST node として確認
+- [x] parse 失敗・警告ファイルの分類:
+  - v6=0 err, v5=0 err, v1.4=4 err, v1.3=1 err, v1.2=0 err (合計 5 件のみ、真の malformed)
+  - warn は ソース側 RST ゆるみ (list/blockquote/definition list ends without blank line) が中心、docutils は AST を構築するので converter 側で許容
+- [x] 結果を `.work/00299/phase21y/ast-probe.md` / `ast-probe.json` に保存、notes.md (session 48) にサマリ記載
+- [ ] **BLOCKED**: Y-2 (Visitor 設計) 開始可否、include 事前展開方針、cross-ref 解決 hook 方針をユーザーに確認
 
 #### Y-2: Visitor 設計の確定
 
