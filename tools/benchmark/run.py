@@ -2,17 +2,18 @@
 """
 Benchmark runner for nabledge-6 search flow.
 
-Runs N QA scenarios against a chosen flow (current / new), captures answer +
-metrics, and writes results under .results/{YYYYMMDD-HHMMSS}/.
+Runs scenarios against one of three measurement stages:
 
-The baseline/ directory is a git-tracked snapshot of a specific run, copied
-manually from .results/ when we want to commit it.
+  --stage 1   AI keyword extraction only (tool-less), script-judged against expected_keywords
+  --stage 2   Stage 1 + keyword-search.sh, LLM-judged in an isolated sub-agent
+  --stage 3   Full nabledge-6 skill, LLM-judged in an isolated sub-agent
+
+Results land under .results/{YYYYMMDD-HHMMSS}-stage{N}-{flow}/.
 
 Usage:
-  python run.py --flow current --limit 1
-  python run.py --flow new --limit 1
-  python run.py --flow current                      # all 30
-  python run.py --flow current --scenario review-01 # single scenario by id
+  python run.py --stage 1 --flow current --limit 3
+  python run.py --stage 2 --flow new --scenario review-01
+  python run.py --stage 3 --flow current
 """
 
 from __future__ import annotations
@@ -27,13 +28,44 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 BENCH_DIR = Path(__file__).resolve().parent
-SCENARIOS_PATH = BENCH_DIR / "scenarios" / "qa-v6.json"
-PROMPT_CURRENT = BENCH_DIR / "prompts" / "search_current.md"
-PROMPT_NEW = BENCH_DIR / "prompts" / "search_new.md"
+SCENARIOS_PATH_DEFAULT = BENCH_DIR / "scenarios" / "qa-v6.json"
 
-# Structured output schema. answer+keywords+matched_sections only — everything
-# else (cost, duration, turns) comes from claude -p's own JSON envelope.
-OUTPUT_SCHEMA = {
+PROMPT_STAGE1 = BENCH_DIR / "prompts" / "stage1_extract.md"
+PROMPT_STAGE2_CURRENT = BENCH_DIR / "prompts" / "stage2_search_current.md"
+PROMPT_STAGE2_NEW = BENCH_DIR / "prompts" / "stage2_search_new.md"
+PROMPT_STAGE3_CURRENT = BENCH_DIR / "prompts" / "stage3_full_current.md"
+PROMPT_STAGE3_NEW = BENCH_DIR / "prompts" / "stage3_full_new.md"
+PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
+PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
+
+SCHEMA_STAGE1 = {
+    "type": "object",
+    "properties": {
+        "keywords": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["keywords"],
+}
+
+SCHEMA_STAGE2 = {
+    "type": "object",
+    "properties": {
+        "keywords": {"type": "array", "items": {"type": "string"}},
+        "hits": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "file": {"type": "string"},
+                    "section_id": {"type": "string"},
+                },
+                "required": ["file", "section_id"],
+            },
+        },
+    },
+    "required": ["keywords", "hits"],
+}
+
+SCHEMA_STAGE3 = {
     "type": "object",
     "properties": {
         "keywords": {"type": "array", "items": {"type": "string"}},
@@ -44,9 +76,8 @@ OUTPUT_SCHEMA = {
                 "properties": {
                     "file": {"type": "string"},
                     "section_id": {"type": "string"},
-                    "relevance": {"type": "string", "enum": ["high", "partial"]},
                 },
-                "required": ["file", "section_id", "relevance"],
+                "required": ["file", "section_id"],
             },
         },
         "answer": {"type": "string"},
@@ -54,91 +85,183 @@ OUTPUT_SCHEMA = {
     "required": ["keywords", "matched_sections", "answer"],
 }
 
+SCHEMA_JUDGE = {
+    "type": "object",
+    "properties": {
+        "verdict": {"type": "string", "enum": ["pass", "partial", "fail"]},
+        "score": {"type": "number"},
+        "reasoning": {"type": "string"},
+    },
+    "required": ["verdict", "score", "reasoning"],
+}
 
-def load_scenarios() -> list[dict]:
-    return json.loads(SCENARIOS_PATH.read_text(encoding="utf-8"))
+
+def load_scenarios(path: Path) -> list[dict]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def build_prompt(flow: str, question: str) -> str:
-    prompt_file = PROMPT_CURRENT if flow == "current" else PROMPT_NEW
-    return prompt_file.read_text(encoding="utf-8").replace("{{question}}", question)
+def invoke_claude(
+    prompt: str,
+    schema: dict,
+    max_turns: int,
+    model: str,
+    allowed_tools: list[str] | None = None,
+    timeout_s: int = 600,
+) -> tuple[dict | None, dict, float, str]:
+    """Run claude -p and return (structured_output, envelope, wall_s, error).
 
-
-def run_scenario(scenario: dict, flow: str, max_turns: int, model: str) -> dict:
-    question = scenario["expected_question"]
-    prompt = build_prompt(flow, question)
-
-    # Tools required: just Bash (the skill scripts). No Edit/Write.
-    # allowedTools restricts to Bash only.
+    envelope is the raw JSON from claude -p (cost/turns/duration_ms/etc).
+    error is a short human-readable string if something went wrong, else "".
+    """
+    # Variadic flags like --allowedTools / --disallowedTools greedily consume
+    # subsequent positional args, so we feed the prompt via stdin.
     cmd = [
         "claude",
         "-p",
         "--model", model,
         "--output-format", "json",
         "--max-turns", str(max_turns),
-        "--json-schema", json.dumps(OUTPUT_SCHEMA),
-        "--allowedTools", "Bash",
+        "--json-schema", json.dumps(schema),
         "--permission-mode", "bypassPermissions",
-        prompt,
     ]
+    if allowed_tools is None:
+        pass  # default: all tools allowed
+    elif allowed_tools:
+        cmd += ["--tools", ",".join(allowed_tools)]
+    else:
+        cmd += ["--tools", ""]  # empty string -> disable all tools
 
     t0 = time.time()
-    proc = subprocess.run(
-        cmd, capture_output=True, text=True, cwd=REPO_ROOT, timeout=600
-    )
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=prompt,
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired:
+        return None, {}, time.time() - t0, f"timeout after {timeout_s}s"
     wall_s = time.time() - t0
 
     if proc.returncode != 0:
-        return {
-            "id": scenario["id"],
-            "flow": flow,
-            "error": f"claude exited {proc.returncode}",
-            "stderr": proc.stderr[-2000:],
-            "wall_s": wall_s,
-        }
+        return None, {}, wall_s, f"claude exited {proc.returncode}: {proc.stderr[-500:]}"
 
     try:
         envelope = json.loads(proc.stdout)
     except json.JSONDecodeError as e:
-        return {
-            "id": scenario["id"],
-            "flow": flow,
-            "error": f"json decode: {e}",
-            "stdout_tail": proc.stdout[-2000:],
-            "wall_s": wall_s,
-        }
+        return None, {}, wall_s, f"json decode: {e}"
 
-    structured = envelope.get("structured_output") or {}
+    structured = envelope.get("structured_output")
+    return structured, envelope, wall_s, ""
+
+
+def score_stage1(extracted: list[str], expected: list[str]) -> dict:
+    """Script-based scoring: recall/precision against expected_keywords."""
+    ex = [k.strip().lower() for k in extracted if k.strip()]
+    want = [k.strip().lower() for k in expected if k.strip()]
+    matched = [k for k in want if any(k in e or e in k for e in ex)]
+    recall = len(matched) / len(want) if want else 0.0
+    precision = len(matched) / len(ex) if ex else 0.0
     return {
+        "extracted_count": len(ex),
+        "expected_count": len(want),
+        "matched": matched,
+        "missed": [k for k in want if k not in matched],
+        "recall": recall,
+        "precision": precision,
+    }
+
+
+def run_stage1(scenario: dict, model: str) -> dict:
+    question = scenario["expected_question"]
+    prompt = PROMPT_STAGE1.read_text(encoding="utf-8").replace("{{question}}", question)
+
+    structured, envelope, wall_s, err = invoke_claude(
+        prompt=prompt,
+        schema=SCHEMA_STAGE1,
+        max_turns=2,
+        model=model,
+        allowed_tools=[],
+        timeout_s=120,
+    )
+
+    result = {
         "id": scenario["id"],
-        "flow": flow,
+        "stage": 1,
         "question": question,
-        "expected_sections": scenario.get("expected_sections", []),
         "expected_keywords": scenario.get("expected_keywords", []),
-        "keywords": structured.get("keywords", []),
-        "matched_sections": structured.get("matched_sections", []),
-        "answer": structured.get("answer", ""),
+        "wall_s": wall_s,
         "duration_ms": envelope.get("duration_ms"),
         "num_turns": envelope.get("num_turns"),
         "total_cost_usd": envelope.get("total_cost_usd"),
         "is_error": envelope.get("is_error"),
-        "stop_reason": envelope.get("stop_reason"),
-        "terminal_reason": envelope.get("terminal_reason"),
-        "wall_s": wall_s,
     }
+    if err:
+        result["error"] = err
+        return result
+    keywords = (structured or {}).get("keywords", [])
+    result["keywords"] = keywords
+    result["score"] = score_stage1(keywords, scenario.get("expected_keywords", []))
+    return result
+
+
+def summarize(results: list[dict]) -> dict:
+    def stat(values: list[float]) -> dict:
+        vs = [v for v in values if v is not None]
+        if not vs:
+            return {"count": 0}
+        vs_sorted = sorted(vs)
+        n = len(vs_sorted)
+        median = (
+            vs_sorted[n // 2]
+            if n % 2 == 1
+            else (vs_sorted[n // 2 - 1] + vs_sorted[n // 2]) / 2
+        )
+        return {
+            "count": n,
+            "mean": sum(vs) / n,
+            "median": median,
+            "min": min(vs),
+            "max": max(vs),
+        }
+
+    ok = [r for r in results if not r.get("error")]
+    summary = {
+        "total": len(results),
+        "errors": len(results) - len(ok),
+        "wall_s": stat([r.get("wall_s") for r in ok]),
+        "cost_usd": stat([r.get("total_cost_usd") for r in ok]),
+        "turns": stat([r.get("num_turns") for r in ok]),
+    }
+    if ok and "score" in ok[0]:
+        summary["recall"] = stat([r["score"]["recall"] for r in ok])
+        summary["precision"] = stat([r["score"]["precision"] for r in ok])
+    return summary
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--flow", choices=["current", "new"], required=True)
+    ap.add_argument("--stage", type=int, choices=[1, 2, 3], required=True)
+    ap.add_argument(
+        "--flow",
+        choices=["current", "new"],
+        default="current",
+        help="search flow variant (relevant for stage 2/3 only)",
+    )
     ap.add_argument("--scenario", help="single scenario id")
     ap.add_argument("--limit", type=int, help="run only first N scenarios")
-    ap.add_argument("--max-turns", type=int, default=30)
+    ap.add_argument(
+        "--scenarios-file",
+        default=str(SCENARIOS_PATH_DEFAULT),
+        help=f"scenarios JSON path (default: {SCENARIOS_PATH_DEFAULT})",
+    )
     ap.add_argument("--model", default="sonnet")
-    ap.add_argument("--out", help="output directory (default: .results/{ts})")
+    ap.add_argument("--out", help="output directory (default: .results/{ts}-stage{N}-{flow})")
     args = ap.parse_args()
 
-    scenarios = load_scenarios()
+    scenarios = load_scenarios(Path(args.scenarios_file))
     if args.scenario:
         scenarios = [s for s in scenarios if s["id"] == args.scenario]
         if not scenarios:
@@ -148,24 +271,49 @@ def main() -> int:
         scenarios = scenarios[: args.limit]
 
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir = Path(args.out) if args.out else BENCH_DIR / ".results" / ts
+    default_out = BENCH_DIR / ".results" / f"{ts}-stage{args.stage}-{args.flow}"
+    out_dir = Path(args.out) if args.out else default_out
     out_dir.mkdir(parents=True, exist_ok=True)
     results_path = out_dir / "results.jsonl"
+    summary_path = out_dir / "summary.json"
 
-    print(f"flow={args.flow} scenarios={len(scenarios)} out={out_dir}", file=sys.stderr)
+    print(
+        f"stage={args.stage} flow={args.flow} scenarios={len(scenarios)} out={out_dir}",
+        file=sys.stderr,
+    )
 
+    results: list[dict] = []
     with results_path.open("w", encoding="utf-8") as f:
         for i, sc in enumerate(scenarios, 1):
             print(f"[{i}/{len(scenarios)}] {sc['id']} ...", file=sys.stderr, flush=True)
-            r = run_scenario(sc, args.flow, args.max_turns, args.model)
+            if args.stage == 1:
+                r = run_stage1(sc, args.model)
+            else:
+                print(
+                    f"stage {args.stage} not implemented yet",
+                    file=sys.stderr,
+                )
+                return 3
+            results.append(r)
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
             f.flush()
-            print(
-                f"  -> turns={r.get('num_turns')} cost={r.get('total_cost_usd')} wall={r.get('wall_s'):.1f}s err={r.get('error') or r.get('is_error')}",
-                file=sys.stderr,
-            )
+            if r.get("error"):
+                print(f"  -> ERROR: {r['error']}", file=sys.stderr)
+            else:
+                score = r.get("score", {})
+                print(
+                    f"  -> turns={r.get('num_turns')} cost=${r.get('total_cost_usd')} "
+                    f"wall={r.get('wall_s'):.1f}s recall={score.get('recall'):.2f} "
+                    f"missed={score.get('missed')}",
+                    file=sys.stderr,
+                )
 
+    summary = summarize(results)
+    summary_path.write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print(f"done. results: {results_path}", file=sys.stderr)
+    print(f"       summary: {summary_path}", file=sys.stderr)
     return 0
 
 

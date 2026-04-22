@@ -1,0 +1,140 @@
+[
+  {
+    "id": "review-01",
+    "review_perspective": "アーキテクチャ",
+    "context": "ファイルからDBへの都度起動バッチ",
+    "expected_question": "ファイルの明細レコードを読み込んで DB テーブルに取り込む夜間バッチを作りたい。Nablarch でこういうバッチを実装するときの推奨構成を知りたい",
+    "expected_keywords": [
+      "バッチ",
+      "ファイル入出力",
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ],
+    "expected_sections": [
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s1",
+      "processing-pattern/nablarch-batch/nablarch-batch-architecture.json|s3",
+      "processing-pattern/nablarch-batch/nablarch-batch-feature_details.json|s1"
+    ],
+    "notes": "architecture#s1 に推奨ハンドラキュー構成。s3 は処理の流れ。feature_details#s1 で都度起動/常駐の使い分け。質問からクラス名・ハンドラ名を除去",
+    "main": [
+      "バッチ",
+      "ファイル入出力"
+    ],
+    "sub": [
+      "都度起動バッチ",
+      "データバインド",
+      "データベースアクセス"
+    ]
+  },
+  {
+    "id": "review-04",
+    "review_perspective": "セキュリティ",
+    "context": "ウェブアプリケーション",
+    "expected_question": "ユーザーが入力する画面項目のチェックをどう書くのが Nablarch 流？ 必須・桁数・形式チェックをなるべく楽に書きたい",
+    "expected_keywords": [
+      "バリデーション",
+      "Bean Validation",
+      "必須",
+      "入力チェック",
+      "アノテーション"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s2",
+      "component/libraries/libraries-bean_validation.json|s13",
+      "component/libraries/libraries-validation.json|s1"
+    ],
+    "notes": "feature_details#s2 がパターン側エントリ。bean_validation#s13 が Web アプリ用。validation#s1 が全体像",
+    "main": [
+      "バリデーション",
+      "Bean Validation"
+    ],
+    "sub": [
+      "必須",
+      "入力チェック",
+      "アノテーション"
+    ]
+  },
+  {
+    "id": "impact-01",
+    "impact_perspective": "ハンドラ間",
+    "context": "トランザクション境界とDB接続管理",
+    "expected_question": "バッチで DB を更新しているんだけど、コミットのタイミングやトランザクションの区切りがどこで決まっているのかよく分からない。Nablarch でトランザクションの境界って何で決まる？",
+    "expected_keywords": [
+      "トランザクション",
+      "コミット",
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ],
+    "expected_sections": [
+      "component/handlers/handlers-transaction_management_handler.json|s3",
+      "component/handlers/handlers-transaction_management_handler.json|s4",
+      "component/handlers/handlers-database_connection_management_handler.json|s3"
+    ],
+    "notes": "実装クラス名 (TransactionManagementHandler, DbConnectionManagementHandler) を質問から排除。「コミットのタイミング」「境界」という業務語で代替",
+    "main": [
+      "トランザクション",
+      "コミット"
+    ],
+    "sub": [
+      "バッチ",
+      "ロールバック",
+      "トランザクション制御"
+    ]
+  },
+  {
+    "id": "req-02",
+    "requirements_perspective": "認可",
+    "context": "画面アクセス制御",
+    "builtin": true,
+    "expected_question": "ログインしたユーザーの権限に応じて、アクセスできる画面を制限したい。Nablarch に権限チェックの仕組みはある？",
+    "expected_keywords": [
+      "認可",
+      "Permission",
+      "アクセス制限",
+      "権限",
+      "画面"
+    ],
+    "expected_sections": [
+      "processing-pattern/web-application/web-application-feature_details.json|s14",
+      "component/handlers/handlers-permission_check_handler.json|s4",
+      "component/libraries/libraries-permission_check.json|s1"
+    ],
+    "notes": "feature_details#s14 がパターン側エントリ。handlers-permission_check s4 がリクエスト認可。libraries-permission_check s1 がライブラリ側概要",
+    "main": [
+      "認可",
+      "Permission"
+    ],
+    "sub": [
+      "アクセス制限",
+      "権限",
+      "画面"
+    ]
+  },
+  {
+    "id": "req-09",
+    "requirements_perspective": "流量制御",
+    "context": "APIレート制限",
+    "builtin": false,
+    "expected_question": "REST API への呼び出し回数を制限して、サーバの過負荷を防ぎたい。いわゆるレート制限の仕組みは Nablarch にある？",
+    "expected_keywords": [
+      "レート制限",
+      "スロットリング",
+      "RESTfulウェブサービス",
+      "過負荷",
+      "アクセス制限"
+    ],
+    "expected_sections": [],
+    "notes": "知識ファイルにレート制限/流量制御の記載なし。正しい回答は「ビルトインなし」。検索結果が空になることが正解",
+    "main": [
+      "レート制限",
+      "スロットリング"
+    ],
+    "sub": [
+      "RESTfulウェブサービス",
+      "過負荷",
+      "アクセス制限"
+    ]
+  }
+]
