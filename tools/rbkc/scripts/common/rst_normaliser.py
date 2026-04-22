@@ -139,6 +139,15 @@ _ENUM_RE = re.compile(
 # Inline transforms
 # ---------------------------------------------------------------------------
 
+# Sentinels protect emitted backticks from the later interpreted-text regex
+# which strips bare backticks. They use raw-1-byte chars that do not occur in
+# RST prose. Restored to backticks by _restore_sentinels() AFTER the block
+# walker, so block renderers that measure column widths see the sentinel
+# width (same as original raw `` ``code`` `` on the source side).
+_SENT_L = "\x02BT\x02"
+_SENT_R = "\x03BT\x03"
+
+
 def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     """Apply inline transforms in a specific, non-order-sensitive way.
 
@@ -146,10 +155,6 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     are designed to match distinct constructs. Apply each once, from most
     specific to most general.
     """
-    # Sentinels protect emitted backticks from the later interpreted-text
-    # regex which strips bare backticks.
-    _SENT_L = "\x02BT\x02"
-    _SENT_R = "\x03BT\x03"
 
     # 1. Role with target — match converter behaviour exactly:
     #   - :ref:`text <label>`   → visible text
@@ -195,11 +200,8 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
 
     text = re.sub(r"`([^`<]+?)\s*<([^`<>]+)>`_+", _ext_link, text)
 
-    # 4. Double-backtick literal: ``code`` → `code` via sentinel so the
-    #    later single-backtick-stripping regex (interpreted text) leaves it
-    #    alone. We use an unlikely pair that doesn't exist in RST prose.
-    _SENT_L = "\x02BT\x02"
-    _SENT_R = "\x03BT\x03"
+    # 4. Double-backtick literal: ``code`` → sentinel+content+sentinel, so
+    #    later single-backtick-stripping (interpreted text) leaves it alone.
     text = re.sub(r"``([^`]+?)``", lambda m: _SENT_L + m.group(1) + _SENT_R, text)
 
     # 5. Named reference: `text`_ → text
@@ -208,10 +210,17 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     # 6. Interpreted text (bare backtick): `text` → text
     text = re.sub(r"(?<![`:_\w])`([^`<>\n]+?)`(?![_`])", r"\1", text)
 
-    # 4b. Restore double-backtick sentinels as single backticks
-    text = text.replace(_SENT_L, "`").replace(_SENT_R, "`")
-
     return text
+
+
+def _restore_sentinels(text: str) -> str:
+    """Swap backtick sentinels back to single backticks.
+
+    Called after block-level rendering so that column-width measurements
+    in simple-tables use the sentinel placeholder (which matches the raw
+    RST source width) rather than the narrower single-backtick form.
+    """
+    return text.replace(_SENT_L, "`").replace(_SENT_R, "`")
 
 
 # ---------------------------------------------------------------------------
@@ -252,8 +261,23 @@ def normalise_rst(
     # Step D: strip label definition lines
     text = _strip_label_definitions(text)
 
-    # Step E: line-continuation: backslash + newline → single space
-    text = re.sub(r"\\\n", " ", text)
+    # Step E: line-continuation. RST `\<newline>` escapes the newline. The
+    # converter preserves the literal backslash in MD output with a trailing
+    # space. Replace only when the next visible char is prose (not a structural
+    # separator like =/+/- that would break table/heading detection).
+    def _continuation(m: re.Match) -> str:
+        tail = m.group(1).lstrip()
+        if not tail:
+            # Trailing `\` at end of file or before blank → drop the newline
+            return r"\ "
+        first = tail[0]
+        if first in "=+-~^#*<>:._`\"'":
+            # Next line begins with a potential structural marker — keep the
+            # newline so detection still works.
+            return f"\\\n{m.group(1)}"
+        return r"\ " + tail
+
+    text = re.sub(r"\\\n([^\n]*)", _continuation, text)
 
     # Step F: inline transforms (roles, backticks, links) — must precede the
     # block walker so that constructs like `:ref:`label`` are not misread as
@@ -275,6 +299,10 @@ def normalise_rst(
     normalised = _walk_blocks(
         text, label_map, heading_keys=heading_keys, strict_unknown=strict_unknown
     )
+
+    # Step H2: restore backtick sentinels after block-level work (widths
+    # measured for simple-tables used the sentinel placeholder).
+    normalised = _restore_sentinels(normalised)
 
     # Step I: whitespace collapse on each line (preserve newlines)
     out_lines = []
