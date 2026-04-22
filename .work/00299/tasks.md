@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 41 — verify FAIL 5968→1253 (79% reduction). Ported QO4/QL2 fixes in verify; converter fixes for admonition body, substitution, typo-tolerant directives, list-table cells, footnote inline conversion, comment skip. Remaining 1253 FAILs require deeper work: 557 QC2 largely driven by section-split bug in converter (footnote/trailing content absorbed into wrong section), 693 QC1 split-layout mismatches between md-unit norm and rst-source norm for `*` bullet lists / grid-table rows; 3 QC5 nested-directive residues inside simple-table cells. Next step requires design call — see session 41 notes below.)
+**Updated**: 2026-04-22 (session 42 — FAIL 310→120 via pattern-based fixes (bullet in fence, heading-underline uniformity, grid-table sub-separator, :ref: table-cell padding, simple-table substitutions, `<url>`_ greedy text). Identified FUNDAMENTAL DIRECTION ERROR: verify has drifted to "normalize RST source to MD-ish then compare" (~300-line regex pipeline), contradicting the design which mandates "delete JSON tokens from raw source, classify residue as RST syntax or content-gap". Next step: rewrite verify per design — see Phase 21-W below.)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,7 +53,98 @@
 
 ## In Progress
 
-### Phase 21-V: verify 作り直し + v6 verify PASS まで一気通貫
+### Phase 21-W: verify を設計書通りに書き直す（最優先）
+
+**意図（なぜやるか）**:
+
+現状の verify は session 41 以降、FAIL を潰すたびに「ソース側を MD 形式に寄せる」正規表現がひたすら増え続けて 300 行超になっている。これは設計書 3-1 節の sequential-delete アルゴリズムから逸脱している。
+
+**設計書の仕様（再掲）**:
+
+```
+[JSON content] → MD構文を除去 → token列
+[ソースファイル] から token を順次「削除」
+  削除できなかった token → FAIL (QC2/QC3/QC4)
+  削除後の残渣にソース構文要素以外が残っていれば → FAIL (QC1)
+```
+
+- **JSON 側**: MD 構文（見出し `#`、リスト `*/-/+`、コードフェンス、テーブル `|---|`、強調 `**` 等）だけ除去してプレーンテキストに
+- **ソース側**: **原文のまま触らない**。ただ削除するだけ
+- **残渣判定**: RST 許容構文リスト（`.. directive::`, `:role:\`\``, `====`, コメント、`:field:` 等）にマッチすれば OK
+
+**何が間違っていたか**:
+
+- `_normalize_rst_source` で RST → MD 方向の正規化を大量に行い、両側を中間形式で一致させようとした
+- 設計書は「source 原文のまま、削除して残渣を許容構文で判定」だけを求めている
+- 結果、パターンごとの false positive 対応（モグラ叩き）で規模が肥大化、各修正が副作用を生む
+
+**スコープ**:
+
+- `_normalize_rst_source` 全廃
+- `_normalize_md_unit` は維持（MD 構文除去は設計書通り）
+- sequential-delete は生ソースに対して実行
+- QC1 残渣判定は「許容構文要素リスト」（設計書 3-1 末尾）に照らす純粋な構文チェック
+- 設計書の「許容構文要素リスト」に**追加が必要なら設計書を先に更新**、ユーザー承認を得てから実装
+
+**想定される効果**:
+
+- verify のコード行数が激減（~1000行 → 数百行）
+- モグラ叩き系の修正が不要になり、残 FAIL は本当に RBKC 側のバグ or 許容構文リスト漏れだけになる
+- 新規 false positive が出ても、ソース構文かコンテンツかの単純な判定に帰着
+
+**Steps:**
+
+#### W-1: 方針確定と現状保全
+- [ ] 現在の branch/worktree の最新コミットを記録（`git log --oneline -5`）→ notes.md に追記
+- [ ] 現在の verify.py を `_verify_normalise_backup.py` にコピー保全（参考資料用、gitignore 対象ではない）
+- [ ] ユーザーに方針確認：「_normalize_rst_source 廃止 + 設計書ベースの最小 verify に書き直す」で進める
+
+#### W-2: 設計書の精査と必要なら更新
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` 3-1 節「許容構文要素リスト」を読み込み、実データで出現する RST 構文要素を洗い出す
+  - ディレクティブ行（`.. name::`）+ そのオプション行（`:opt: val`）と引数行
+  - ロール記法部分（`:role:\`text\``）
+  - ラベル定義（`.. _label:`）
+  - 見出しアンダーライン
+  - substitution 定義（`.. |name| ...`）
+  - footnote/citation 定義（`.. [tag] body`）
+  - comment（`.. text` で `::` を含まないもの）
+  - RST line block 継続記号 `\`
+  - table 構造（`====` セパレータ、`+---+` ボーダー、`|` セル区切り、連続セル行）
+  - bullet/enum 記号（`*`, `-`, `+`, `#.`, `1.`）
+  - RST field list 表記 `:name:` + value
+- [ ] リストに追加が必要な構文を特定（設計書に抜けがあれば）
+- [ ] ユーザーに変更案を提示、承認を得る
+- [ ] 承認後、設計書を更新
+
+#### W-3: verify TDD 再構築
+- [ ] `_normalize_md_unit` の単体テストを整備（現状のテストから流用可能）
+- [ ] 新 verify 関数 `check_content_completeness` を設計書通りに TDD で書き直す
+  1. JSON から MD 構文除去 → token 列を生成
+  2. 各 token をソース（生 RST）から順次検索・削除
+  3. 削除できなかった token は QC2/QC3/QC4 判定
+  4. 削除後ソース残渣を行単位で走査し、許容構文リストに当てはまらない行があれば QC1
+- [ ] 既存テストケース全件 GREEN になるまで反復
+
+#### W-4: 実データ検証と残 FAIL のトリアージ
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
+- [ ] 残 FAIL を分類：
+  - (a) RBKC converter の真のバグ → converter 修正
+  - (b) 許容構文リストに入れるべき新規 RST 構文 → 設計書更新 + verify 更新（ユーザー承認要）
+  - (c) 許容できない JSON 側の捏造 → converter のバグとして記録
+- [ ] (a) は即修正、(b) はユーザー確認後、(c) は converter 修正
+
+#### W-5: v6 verify PASS まで反復
+- [ ] W-4 のサイクルを FAIL 0 まで回す
+- [ ] サブエージェント品質チェック（SE + QA）
+- [ ] コミット・プッシュ
+
+#### W-6: 他バージョンへの波及確認
+- [ ] v5, v1.4, v1.3, v1.2 も同じ verify で通るか確認
+- [ ] 通らない場合は Phase 19/20 で個別対応
+
+---
+
+### Phase 21-V: verify 作り直し + v6 verify PASS まで一気通貫 (SUPERSEDED by Phase 21-W)
 
 **方針（session 39 合意）**:
 - 既存 verify は hints 時代の層が残り、配線漏れ・sequential-delete アルゴリズムが converter 出力形式と衝突している（RST simple-table ↔ MD table 変換を認識できず QC1/QC2 両方で FAIL 等）
