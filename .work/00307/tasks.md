@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-22 (LLM/script index + stage3 ids variant 実装完了、実測待ち)
+**Updated**: 2026-04-22 (Haiku 脱落5件実測完了、mean level 2.20。Sonnet 比較待ち)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -176,8 +176,12 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
 - [x] Stage 1 プロンプト書き直し（`stage1_ids.md` 作成、Prompt Engineer レビュー反映済み）commit `c47d764a1`
 - [x] `run.py` に `--variant ids` 追加（`run_stage3_ids`: AI-1 index → 直接 `file_id|sid` → script が path 解決 → AI-3 → judge）
 - [x] `test_build_index.py` 6 tests GREEN、全 40 tests パス
-- [ ] **脱落5件で実測**（haiku、`--stage 3 --variant ids`）
-- [ ] 5件で OK なら 30件実測 → 採用可否判断
+- [x] 脱落5件 Haiku 実測 (`20260422-183823-stage3-ids-haiku`) — mean level 2.20, cost $0.24/件, wall 67s/件
+  - review-07: 2→3 ✓ / req-06: 1→3 ✓ / impact-06: 0→2 ✓ / review-10: 1→2 △ / review-05: 2→1 ✗
+  - AI-1 schema validation 全件パス、unresolved=0
+- [ ] **Sonnet で同じ脱落5件を実測**（Haiku vs Sonnet 比較、ユーザー方針#1）
+- [ ] Haiku/Sonnet 比較結果でモデル固定 → 30件実測 → 採用可否判断
+- [ ] review-05/review-10 の回答内容精査（AI-1 選択は妥当か、judge 判定は妥当か）
 - [ ] 採用後: **他バージョン (v1.2 / v1.3 / v1.4 / v5) への適用は別 PR のロールベース KC 側で実施**（本 PR では v6 のみ。phase_f_finalize への組み込みもロールベース KC 側）
 - [ ] 模範回答の citation 粒度を再検討（必須 fact / 補助 fact 分け or 粒度見直し）
 
