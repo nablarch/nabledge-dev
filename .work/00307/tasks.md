@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-22 (Stage 2 script judge 完了。脱落5件の分析で AI-1 の情報条件欠陥が判明、Stage 1 再設計へ)
+**Updated**: 2026-04-22 (LLM用index / スクリプト用index 分離方針決定、実装着手)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -155,7 +155,7 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
   - req-06 / review-05 / review-07 / review-10 は模範回答の citation 粒度も要再検討
 - [ ] Stage 3 judge / 合格分再実行は保留（Stage 1 情報条件を直してからでないと測り直す意味がない）
 
-### AI-1 絞込条件抽出の再設計（質問 → 絞込条件の作り方を見直す）
+### AI-1 絞込条件抽出の再設計（LLM用index / スクリプト用index 分離）
 
 **問題**: 現行の `stage1_facet.md` は AI-1 に type / category の **enum 名 + 1行説明だけ** を渡し、24 カテゴリから選ばせる設計。**カテゴリの中身（どのファイルが属するか）を見せていない**ので、表層のカテゴリ名と質問語の意味類似度でしか解けない。
 
@@ -164,18 +164,18 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
 - review-05「REST API の JSON 検証エラー応答」→ `jaxrs_response_handler`（handlers）を引けない
 - impact-06「CSP 有効化後に onclick= が動かない」→ `secure_handler` / `libraries-tag` を引けず、**回答が誤答**（「Nablarch 未対応」と断言、実際は `SecureHandler` + カスタムタグで自動対応）
 
-エキスパートレビューも AI 同士で、レビュアーがカテゴリ中身を把握しているバイアスで「モデルも分かるはず」と投影し、情報設計の欠陥を見逃した。
+**方針（ユーザー合意 2026-04-22）**: index を新設して AI-1 の情報条件を根本修正
+- **LLM 用 index** (`knowledge/index-llm.md`): ID + ページタイトル + [SID + セクションタイトル] のみ。LLM が読みやすい独自形式。339ファイル / 1411セクション / 約31,000 tokens（日本語のまま）
+- **スクリプト用 index** (`knowledge/index-script.json`): ID → path / sections の引き表。compact JSON、約 48KB
+- AI-1 は LLM 用 index を見て「質問に関連しそうな ID（または ID|SID）」を直接返す → スクリプトがパスに解決
 
 **Steps:**
-- [ ] **AI-1 に渡す情報の選択肢を列挙**（ユーザー議論）
-  - 案A: カテゴリごとに代表ファイルを 3〜5個添える（軽い、書き足すだけ）
-  - 案B: index.toon のタイトル一覧（295行）を丸ごと渡す（カテゴリを介さず直接ファイル選択）
-  - 案C: keyword → ファイルパスの辞書を事前構築
-  - 案D: 2段階抽出（質問 → 意図抽出 → 意図と情報を突き合わせ）
-- [ ] 採用案を決定（情報条件 → タスク可解性を紙上でシミュレーションしてから決める）
-- [ ] Stage 1 プロンプト書き直し
-- [ ] 脱落5件＋任意の数件で計測せずシミュレーション（情報条件が妥当か目視確認）
+- [ ] `phase_f_finalize.py` に LLM用index / スクリプト用index 生成を追加
+- [ ] v6 で index 生成を実行（知識ファイル読まずに直接生成する one-off スクリプトでも可）
+- [ ] **脱落5件＋任意5件で紙上シミュレーション**（LLM用index を見てどの ID が返りそうか目視）
+- [ ] Stage 1 プロンプト書き直し（ID を直接返すフローに切替）
 - [ ] 5件で実測 → 30件で実測
+- [ ] OK なら v1.2 / v1.3 / v1.4 / v5 にも index 生成を適用（cross-version consistency）
 - [ ] 模範回答の citation 粒度を再検討（必須 fact / 補助 fact 分け or 粒度見直し）
 
 ### 新旧フロー比較ベンチマーク（更新可否の判定）
