@@ -102,7 +102,7 @@
     {
       "id": "s20",
       "title": "like検索時のエスケープ文字及びエスケープ対象文字を定義する",
-      "content": "エスケープ文字及びエスケープ対象文字の定義は、コンポーネント設定ファイルに行う。\nなお、エスケープ文字は自動的対象にエスケープとなるため、明示的にエスケープ対象文字に設定する必要はない。\n\n設定を省略した場合は、以下の値を使用する。\n\n:エスケープ文字: `\\`\n:エスケープ対象文字: `% 、 `\n\nコンポーネント設定例\nこの例ではエスケープ文字に `\\` を設定し、エスケープ文字には `%` 、 `％ 、 ` 、 `＿` の4文字を設定している。\n\nここで定義した `BasicStatementFactory` コンポーネントは、 データベースに対する接続設定\nで定義したデータベース接続を取得するコンポーネントに設定すること。\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <!-- エスケープ文字の定義 -->\n  <property name=\"likeEscapeChar\" value=\"\\\" />\n\n  <!-- エスケープ対象文字の定義(カンマ区切りで設定する) -->\n  <property name=\"likeEscapeTargetCharList\" value=\"%,％,_,＿\" />\n</component>\n```"
+      "content": "エスケープ文字及びエスケープ対象文字の定義は、コンポーネント設定ファイルに行う。\nなお、エスケープ文字は自動的対象にエスケープとなるため、明示的にエスケープ対象文字に設定する必要はない。\n\n設定を省略した場合は、以下の値を使用する。\n\n:エスケープ文字: `\\`\n:エスケープ対象文字: `%` 、 `_`\n\nコンポーネント設定例\nこの例ではエスケープ文字に `\\` を設定し、エスケープ文字には `%` 、 `％` 、 `_` 、 `＿` の4文字を設定している。\n\nここで定義した `BasicStatementFactory` コンポーネントは、 データベースに対する接続設定\nで定義したデータベース接続を取得するコンポーネントに設定すること。\n\n```xml\n<component name=\"statementFactory\" class=\"nablarch.core.db.statement.BasicStatementFactory\">\n  <!-- エスケープ文字の定義 -->\n  <property name=\"likeEscapeChar\" value=\"\\\" />\n\n  <!-- エスケープ対象文字の定義(カンマ区切りで設定する) -->\n  <property name=\"likeEscapeTargetCharList\" value=\"%,％,_,＿\" />\n</component>\n```"
     },
     {
       "id": "s21",

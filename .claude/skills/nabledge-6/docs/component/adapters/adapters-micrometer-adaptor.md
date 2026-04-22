@@ -958,7 +958,7 @@ public class PrometheusMeterRegistryFactory extends MeterRegistryFactory<Prometh
 | タグ名 | 説明 |
 |---|---|
 | `class` | リクエストを処理したアクションクラスの名前(`Class.getName()`)。 取得できない場合は `UNKNOWN`。 |
-| `method` | リクエストを処理したアクションクラスのメソッド名と、引数の型名(`Class.getCanonicalName())をアンダースコア(`)で繋げた文字列。 取得できない場合は `UNKNOWN`。 |
+| `method` | リクエストを処理したアクションクラスのメソッド名と、引数の型名(`Class.getCanonicalName()`)をアンダースコア(`_`)で繋げた文字列。 取得できない場合は `UNKNOWN`。 |
 | `httpMethod` | HTTPメソッド |
 | `status` | HTTPステータスコード |
 | `outcome` | ステータスコードの種類を表す文字列（1XX: `INFORMATION`, 2XX: `SUCCESS`, 3XX: `REDIRECTION`, 4XX: `CLIENT_ERROR`, 5XX: `SERVER_ERROR`, その他: `UNKNOWN`） |

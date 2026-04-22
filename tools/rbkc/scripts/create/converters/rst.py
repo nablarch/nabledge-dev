@@ -460,18 +460,24 @@ def _convert_inline(
         text,
     )
 
-    # Anonymous hyperlink reference: `text`__  →  text
-    text = re.sub(r"`([^`]+)`__", r"\1", text)
+    # Anonymous hyperlink reference: `text`__  →  text. The trailing ``__``
+    # must be followed by a word boundary so spans like ``(`_`)`` don't match.
+    text = re.sub(r"`([^`]+?)`__(?=\s|$|[^\w])", r"\1", text)
 
-    # Hyperlink reference: `text`_  →  [text](url) if target known, else plain text
+    # Hyperlink reference: `text`_  →  [text](url) if target known, else plain text.
+    # Trailing ``_`` must be followed by a word boundary (space, end-of-line,
+    # or non-word/non-backtick punctuation) — otherwise an isolated backtick
+    # code span whose text ends in ``_`` (e.g. ``(`_`)``) is mistakenly
+    # parsed as a reference and its body is discarded.
+    _REF_SUFFIX = r"(?=\s|$|[^\w_`])"
     if targets:
         def _resolve_named_ref(m: re.Match) -> str:
             name = m.group(1)
             url = targets.get(name) or targets.get(name.lower())
             return f"[{name}]({url})" if url else name
-        text = re.sub(r"`([^`]+)`_(?!_)", _resolve_named_ref, text)
+        text = re.sub(r"`([^`]+?)`_" + _REF_SUFFIX, _resolve_named_ref, text)
     else:
-        text = re.sub(r"`([^`]+)`_", r"\1", text)
+        text = re.sub(r"`([^`]+?)`_" + _REF_SUFFIX, r"\1", text)
 
     return text
 
