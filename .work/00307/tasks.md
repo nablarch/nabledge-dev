@@ -78,6 +78,7 @@ Round N
 - [x] Round 1: 5件実行 → `.work/00307/rounds/stage1-round1.md`
 - [x] Round 1: Prompt Engineer Expert Review → `.work/00307/review-by-prompt-engineer-stage1-round1.md`
 - [x] Round 1: 改善提案をユーザーに提示、議論
+- [DECISION: H-A の設計案（index-compact の切り出し粒度・prompt への埋め込み方）をユーザーに先に提示して合意を取るか、それとも手を動かして具体 prompt を作ってから見せるか] 進め方合意
 - [ ] `index.toon` → `index-compact.md`（category + title 圧縮版）を生成する仕組み作成
 - [ ] `prompts/stage1_extract.md` に index-compact を埋め込む prompt template に更新
 - [ ] `expected_keywords` 正規化（NFKC + lowercase）を scenarios JSON または判定ロジックに適用
