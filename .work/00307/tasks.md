@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22
+**Updated**: 2026-04-22 (自然な順序に補正 — AI-1 先行実測)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -114,9 +114,9 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 
 ## In Progress
 
-### Stage 1 Round 2（facet 抽出）準備
+### Stage 1 Round 2（facet 抽出）— AI-1 を先に実測して設計判断
 
-**Status**: 旧 Round 2 案（index.toon 語彙 anchor）は廃止。ファセット検索ピボット設計がエキスパートレビュー完了。実装準備。
+**Status**: 旧 Round 2 案（index.toon 語彙 anchor）は廃止。ファセット検索ピボット設計はエキスパートレビュー完了。ただし **設計書は机上**なので、mapping 拡張等の仕込みに入る前に、まず **AI-1 facet 抽出プロンプトだけを 5件で実測** → 出てきた facet を見て「filter が機能しそうか」「processing_patterns 列を埋める必要があるか」を実データで判断する自然な順序に補正（2026-04-22）。
 
 **Steps:**
 - [x] Round 1: 5件実行 → `.work/00307/rounds/stage1-round1.md`
@@ -124,17 +124,28 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 - [x] Round 1: 改善提案をユーザー提示、議論
 - [x] ファセット検索へのピボット設計 → `.work/00307/review-by-prompt-engineer-stage1-facet-design.md`
 - [x] ユーザー決定（モデル比較 / rollout / judge レベル / hints / stream-json）
-- [ ] `processing_patterns` を `tools/knowledge-creator/mappings/v6.json` に back-propagate
-- [ ] `phase_f_finalize.py::_build_index_toon` を mapping から processing_patterns を取得する形に微修正
-- [ ] index.toon 再生成 → `processing_patterns` が mapping 由来になっていることを確認
-- [ ] `tools/benchmark/prompts/stage1_facet.md` 作成（AI-1 facet 抽出 prompt）
-- [ ] Stage 1 JSON schema 更新（`{type[], category[], processing_patterns[], coverage, rationale}`）
-- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` の `expected_keywords` を `expected_facets` に置換
-- [ ] `tools/benchmark/run.py` を Stage 1 (facet) 対応に修正（stream-json ログ保存含む）
-- [ ] Stage 1 Round 2 計測: **Haiku / Sonnet で5件並走**
-- [ ] 結果を `.work/00307/rounds/stage1-round2.md` に記録（モデル比較表含む）
+- [ ] `tools/benchmark/prompts/stage1_facet.md` 作成（AI-1 facet 抽出 prompt、設計書 D1.2 準拠）
+- [ ] Stage 1 JSON schema（`{type[], category[], processing_patterns[], coverage}`）を prompt に同梱
+- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` の `expected_keywords` を `expected_facets` に置換（人手で 5 件分）
+- [ ] `tools/benchmark/run.py` を Stage 1 (facet) 対応に修正（stream-json ログ保存、軸別 Jaccard スコアリング）
+- [ ] Stage 1 Round 2 計測: **Haiku / Sonnet で5件並走**（AI-1 単体、filter/AI-2 なし）
+- [ ] 結果を `.work/00307/rounds/stage1-round2.md` に記録（モデル比較表、軸別 Jaccard）
 - [ ] Prompt Engineer Expert Review（結果 + 改善案）
-- [ ] ユーザーに「結果 + 改善案 + どうするか提案」を提示 → 合意
+- [DECISION: AI-1 出力を見て判断] ユーザーと協議:
+  - AI-1 facet が安定しているか（collapse / 過一般化していないか）
+  - `processing_patterns` 列を埋める必要があるか（現状 225/295 空のままで Stage 2 が機能するなら不要）
+  - モデル確定（Haiku or Sonnet）
+  - 次: Stage 2 実装に進む / AI-1 プロンプト改善 Round 3 / mapping 拡張
+
+### [CONDITIONAL] processing_patterns back-propagation
+
+**前提**: 上記 DECISION で「processing_patterns 列を埋める必要がある」と判断された場合のみ実施。不要と判断されたら削除。
+
+**Steps:**
+- [ ] `tools/knowledge-creator/mappings/v6.json` に `processing_patterns` フィールド追加
+- [ ] `step2_classify.py` で mapping → catalog へ transit
+- [ ] `phase_f_finalize.py::_build_index_toon` を mapping 由来に変更
+- [ ] index.toon 再生成 → 4列目が埋まっていることを確認
 
 ## Not Started
 
