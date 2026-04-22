@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 39 — Step K-3 complete)
+**Updated**: 2026-04-22 (session 39 — Phase 21-K complete, verify rebuild plan 21-V)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,109 +53,76 @@
 
 ## In Progress
 
-### Phase 21-G-1: verify 配線漏れ解消（配線のみ・修正は 21-G-2 以降）
+### Phase 21-V: verify 作り直し + v6 verify PASS まで一気通貫
 
-**目的**: verify_file() に RST/MD 用 check を配線。FAIL 修正は後続フェーズに分割。
+**方針（session 39 合意）**:
+- 既存 verify は hints 時代の層が残り、配線漏れ・sequential-delete アルゴリズムが converter 出力形式と衝突している（RST simple-table ↔ MD table 変換を認識できず QC1/QC2 両方で FAIL 等）
+- モグラ叩きをやめて、**設計書 `rbkc-verify-quality-design.md` の仕様通りの最小 verify を一から書き直す**
+- hints が無くなった今、verify の責務は「ソースの内容が JSON/docs MD に、許容構文リスト通りに正しく含まれているか」だけ
+- Issue #299 の SC は verify PASS — 本 PR でクリアする
 
-**実行結果 (2026-04-22)**:
-- 配線実装・unit tests 200 PASS
-- `rbkc verify 6` で 23,989 FAIL / 299 ファイル表面化
-- 根本原因別内訳（調査済み）:
+**前提**:
+- 配線のみコミット済 (`d7e3469ac`) は維持（verify 作り直しで置き換わる）
+- 現在の CJK fallback 差分は revert 済（新 verify のほうで必要なら対応）
 
-| パターン | 件数 | 受け皿 Phase |
-|---|---|---|
-| RST grid-table 変換不整合 (`==== ==== ` / MD table 行残留) | ~3,854 + OTHER 大半 | 21-G-2 |
-| RST `:role:` 未変換 | 2,277 | 21-G-3 |
-| RST `` ``double backtick`` `` | 1,094 | 21-G-4 |
-| RST `\\ ` backslash-space エスケープ | 593 | 21-G-5 |
-| RST `.. directive::` 残留 | 124 | 21-G-6 |
-| QC4 配置ミス | 1,640 | 21-G-7 |
-| QL2 / QC3 | 124 | 21-G-8 |
-| その他 OTHER (大部分は grid-table 巻き込み) | ~13,787 | 21-G-2 で大半解消見込み |
+**Steps (一気通貫):**
 
-**Steps:**
-- [x] TDD: 配線テスト追加 (test_verify.py TestVerifyFileExcelQC に新規2件)
-- [x] `verify_file()` に RST/MD 分岐追加、check_content_completeness / check_format_purity / check_external_urls を呼び出し
-- [x] unit tests 200 PASS
-- [x] `rbkc verify 6` 実行、FAIL 件数把握、根本原因別に分類
-- [ ] コミット・プッシュ（配線のみ）
+#### V-1: 既存 verify の白紙化
+- [ ] `tools/rbkc/scripts/verify/verify.py` を空スタブに置換（公開 API のシグネチャのみ残す）
+- [ ] `tools/rbkc/tests/ut/test_verify.py` も一旦退避（新仕様で書き直すため `test_verify_OLD.py` にリネーム、新 `test_verify.py` をゼロから作る）
+- [ ] `bash rbkc.sh verify 6` が最低限エラーなく走ることを確認（全 PASS 扱い）
 
----
+#### V-2: 設計書仕様の再確認・調整
+- [ ] 設計書 3 章「許容構文要素リスト」を読み直し、現状の converter 出力（MD table 記号 `|` / `---`、強調 `**` 等）を扱える形か確認
+- [ ] 不足あれば設計書を先に更新してコミット（例: RST simple-table の `===== =====` は converter が削除して MD table 化 → 許容構文ではなく変換対象、verify は対応する MD table を JSON 側に見つける等）
+- [ ] ユーザーに設計書変更点を共有（`.claude/rules/rbkc.md` ルール）
 
-### Phase 21-G-2: RST grid-table 変換修正
+#### V-3: 最小 verify を TDD で再構築（RST/MD）
+- [ ] QO1: docs MD 構造整合性（title / section titles / 順序）
+- [ ] QO2: docs MD 本文整合性（JSON content が docs MD に verbatim で含まれる）
+- [ ] QO3: docs MD 存在確認
+- [ ] QO4: index.toon 網羅性
+- [ ] QC1/QC2/QC3/QC4: sequential-delete（設計書 3-1 通り）
+- [ ] QC5: 形式純粋性（RST role/directive/label、MD raw HTML/backslash escape）
+- [ ] QL1: 内部リンク（既存 check_source_links をベース）
+- [ ] QL2: 外部 URL
+- 各項目について:
+  - [ ] 単体テストを書いて RED を確認
+  - [ ] verify 関数を実装して GREEN を確認
+  - [ ] run.py から配線
 
-**仮説**: `====  ====` 形式の grid-table が converter で正しく MD table に変換されない、または本文と混在して取り込まれる。QC1 (RST 本文欠落) と QC2 (JSON に MD table 残留) の両方で多発。
+#### V-4: Excel verify の再構築
+- [ ] 既存 Excel sequential-delete ロジックは設計書と整合しているので、新 verify.py に移植
+- [ ] 単体テスト再確認
 
-**Steps:**
-- [ ] 典型ファイル `tag.rst` / `tag_reference.rst` / grid-table 多用テスト framework 系で再現ケース抽出
-- [ ] RST converter の grid-table ハンドラを調査、仕様（reStructuredText grid table）と突き合わせ
-- [ ] TDD: 最小再現テスト追加（RED）
-- [ ] converter 修正（GREEN）
-- [ ] `rbkc verify 6` で FAIL 件数減少を確認
-- [ ] サブエージェント品質チェック
+#### V-5: 実データで FAIL を洗い出し
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` を実行、FAIL をカテゴリ別に集計
+- [ ] 残った FAIL は本当の converter バグ（設計書と整合した verify が指摘する真の問題）
+- [ ] FAIL 件数と種類をユーザーに報告
+
+#### V-6: converter バグを TDD で修正（見つかった分だけ）
+- [ ] 件数次第で phase 分割するかその場で直すかを判断
+- [ ] 各 FAIL について:
+  - [ ] 最小再現テストを追加（RED）
+  - [ ] converter 修正（GREEN）
+  - [ ] `rbkc verify 6` で件数減少を確認
+- [ ] 全 FAIL 消化まで繰り返し
+
+#### V-7: v6 verify PASS 確認
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — "All files verified OK" を確認
+- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` 4 章マトリクスの ❌ → ✅ 更新
+- [ ] サブエージェント品質チェック (SE + QA)
 - [ ] コミット・プッシュ
 
 ---
 
-### Phase 21-G-3: RST role (`:ref:` `:doc:` 等) 未変換
+### Phase 18: 統合検証 — v6 完了
+
+**前提**: Phase 21-V 完了後
 
 **Steps:**
-- [ ] role 種別ごとの出現パターンと期待変換形式を調査
-- [ ] TDD: 各 role 型の再現テスト
-- [ ] converter 修正
-- [ ] verify 減少確認
-- [ ] コミット
-
----
-
-### Phase 21-G-4: RST double backtick (`` ``text`` ` 形式) 処理
-
-**Steps:**
-- [ ] `` ``...`` `` → MD `` `...` `` の変換が不完全な箇所を特定
-- [ ] TDD → 修正 → verify 確認 → コミット
-
----
-
-### Phase 21-G-5: RST `\\ ` backslash-space エスケープ処理
-
-**Steps:**
-- [ ] RST inline markup の `\\ ` 分離記法を content から剥がす
-- [ ] TDD → 修正 → verify 確認 → コミット
-
----
-
-### Phase 21-G-6: RST `.. directive::` 残留
-
-**Steps:**
-- [ ] 残留している directive 種別を列挙
-- [ ] converter の directive 分岐を調査、未ハンドル分を追加または除外
-- [ ] TDD → 修正 → verify 確認 → コミット
-
----
-
-### Phase 21-G-7: QC4 配置ミス (1,640 件)
-
-**Steps:**
-- [ ] 配置逆行の典型ケース抽出
-- [ ] 原因調査（多くは 21-G-2〜21-G-6 の副作用で解消する可能性あり）
-- [ ] 残存分のみ別対応
-
----
-
-### Phase 21-G-8: QL2 / QC3 残件
-
-**Steps:**
-- [ ] QL2 62件: ソース外部 URL が JSON に欠落している理由を調査
-- [ ] QC3 62件: 重複の典型ケース抽出
-- [ ] 修正 → verify 確認 → コミット
-
----
-
-### Phase 21-G-9: 設計書マトリクス更新
-
-**Steps:**
-- [ ] 21-G-1〜21-G-8 完了後、`rbkc-verify-quality-design.md` 4章マトリクスの ❌→✅ 更新
-- [ ] コミット
+- [ ] nabledge-test v6 実行 — ベースライン比で劣化なし確認
+- [ ] 問題があればユーザー報告
 
 ---
 
@@ -217,34 +184,12 @@
 
 ## Not Started
 
-### Phase 21-G: verify パイプラインの配線漏れを解消（QC1/QC2/QC3/QC4 等）
-
-**問題（事実）**:
-- `scripts/verify/verify.py` に実装された RST/MD 用チェック (`check_content_completeness`, `check_format_purity`, `check_hints_completeness`, `check_external_urls`) が、`scripts/run.py` の verify オーケストレーションから一切呼ばれていない
-- `verify_file()` は `fmt != "xlsx"` で即 return — RST/MD では完全に noop
-- 設計書マトリクス 4章 の ❌ は「verify が検証していない」状態を正しく示していた
-
-**このフェーズの前提**:
-- Phase 21-K（hints スコープアウト）を先に完了させ、現在検知されている FAIL を全て解消してから配線する
-- そうしないと、配線直後に既存 FAIL が大量に QC2 として顕在化して切り分け困難になる
-
-**Steps:**
-- [ ] 調査: verify.py 内の各 check_* 関数と設計書マトリクスとの対応を整理（どの関数がどの QC/QL/QO に対応するか）
-- [ ] 調査: run.py から呼ばれていない check_* 関数を列挙
-- [ ] 配線計画をユーザーに提示・承認（どの check を RST/MD/Excel それぞれで実行するか）
-- [ ] TDD: 配線後に特定の既知不正ケース（テスト fixture）で RED を確認
-- [ ] run.py に check_* 関数群を配線
-- [ ] サブエージェント品質チェック
-- [ ] rbkc create 6 → verify 6 FAIL 0件を確認（新たに顕在化する FAIL があれば個別 Phase 化）
-- [ ] 設計書 rbkc-verify-quality-design.md のマトリクスを ❌→✅ に更新（配線済みの項目のみ）
-- [ ] コミット
-
----
-
 ### Phase 21-C: リリースノート・セキュリティ対応表の粒度が粗い
 
 **問題**: 現状は全シート×全行を1セクションに連結 → 毎回全行ロード、検索で使えない。
 行単位（変更1件=1セクション）にすれば個別レコードとして検索可能になる。
+
+**前提**: Phase 21-V 完了後
 
 **Steps:**
 - [ ] 全容把握: v6リリースノート・セキュリティExcelのシート構造・行構造を調査しセクション分割設計を確定
@@ -254,16 +199,6 @@
 - [ ] verify 更新: 新粒度に対応したチェック
 - [ ] rbkc create 6 → verify 6 FAIL 0件確認
 - [ ] コミット
-
----
-
-### Phase 18: 統合検証 — v6 完了
-
-**前提**: Phase 21-K / 21-G 完了後
-
-**Steps:**
-- [ ] nabledge-test v6 実行 — ベースライン比で劣化なし確認
-- [ ] 問題があればユーザー報告
 
 ---
 
