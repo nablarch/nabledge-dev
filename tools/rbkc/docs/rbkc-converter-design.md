@@ -46,6 +46,20 @@ docutils の transform が以下を解決済で AST に反映する:
 
 Visitor 側は**解決後の AST をそのまま walk する**だけで、自前のラベル表は不要。
 
+### 3-5. 未解決 substitution / 未解決 reference の扱い
+
+docutils transform が解決できなかった `substitution_reference` / `reference` (`refname` のまま残存) は、create / verify とも **FAIL (QC1: 未解決参照)** を報告する。silent drop / fallback は禁止 (検証抜け穴になるため)。
+
+### 3-6. 共通エスケープ・正規化ヘルパー
+
+テーブルセル内の `|` / 改行エスケープ、`raw html` の entity decode 等、create / verify が一致して適用する必要のある文字列変換は、必ず `scripts/common/rst_ast.py` に共有ヘルパーとして実装し、両側がそれを呼び出す。個別実装禁止 (符号化の drift が sequential-delete の破綻原因になる)。
+
+共有すべきヘルパー:
+
+- `escape_cell_text(s: str) -> str` — `|` と改行を escape
+- `normalise_raw_html(html: str) -> str` — `<br>`/`<br/>` → `\n`、`&nbsp;` → 空白、`&lt;` `&gt;` `&amp;` を decode。対象 entity / tag は Y-1 probe で確認したものに限定
+- `fill_merged_cells(table_rows, morerows, morecols) -> list[list[str]]` — rowspan/colspan を空 cell 補完で展開。**マージ元セルの内容は top-left に配置し、他の占有セルは空文字**とする。create / verify は同じ結果を得る
+
 ## 4. node → MD 対応表
 
 ### 4-1. 構造
@@ -55,8 +69,10 @@ Visitor 側は**解決後の AST をそのまま walk する**だけで、自前
 | `document` | root。top-level title は最初の `title` child、top-level content は次の `section` 出現までの child 列の再帰 Visit 結果 | root。全 child の再帰 Visit 結果を連結 | |
 | `section` | `Section(title, content)` として追加。title は最初の child `title`、content は残りの children の再帰 Visit 結果 | title を 1 行、body を再帰 Visit、末尾に空行 | |
 | `title` | 最初の Text child を文字列化 | `<title>\n\n` | `section` 直下の場合 |
+| `subtitle` | `title` と同様に文字列化 (document 直下 = document title の補足) | 同左 | v5/v6 に 2-7 件、v1.x に 4-7 件出現 |
+| `docinfo` | 子 node (`field`) を再帰 Visit | 同左 | v1.4 に 1 件のみ |
 | `paragraph` | 子 inline を連結、末尾 `\n\n` | 同左 | |
-| `transition` | 空行を出力 | `-----\n\n` | RST の `----` separator |
+| `transition` | `-----\n\n` を出力 | `-----\n\n` | create/verify で同一形式 (sequential-delete で marker として一致) |
 | `container` | 子 node を再帰 Visit（属性は無視） | 同左 | generic grouping |
 | `compound` | 子 node を再帰 Visit | 同左 | |
 | `topic` | 子 node を再帰 Visit（topic title は title child） | 同左 | |
@@ -73,14 +89,14 @@ Visitor 側は**解決後の AST をそのまま walk する**だけで、自前
 | `literal` | `` `<child>` `` | inline code |
 | `title_reference` | children を連結（強調なし） | docutils デフォルト role |
 | `inline` | children を連結（class 属性は無視） | generic span |
-| `reference` | `refuri` があれば `[<text>](<refuri>)`、`refname`/`refid` があれば `<text>` (解決後タイトル) | label 解決は docutils に委譲 |
+| `reference` | `refuri` があれば `[<text>](<refuri>)`、`refid` があれば `<text>` (解決後タイトル)。`refname` が残っている場合は**未解決** → FAIL (QC1 未解決参照) | label 解決は docutils に委譲 |
 | `target` | 出力なし (label 登録済) | |
-| `substitution_reference` | 出力なし (transform で置換済) | 未置換で残っていたら FAIL |
+| `substitution_reference` | transform で置換済なので通常到達しない。到達したら**未解決** → FAIL (QC1 未解決参照) | |
 | `substitution_definition` | 出力なし | |
 | `footnote_reference` | `[<label>]` | MD に索引不要、残置 |
 | `citation_reference` | `[<label>]` | 同上 |
-| `problematic` | children を連結（警告は system_message 側で扱う） | |
-| `system_message` | 出力なし | 警告は Visitor が集計して別途報告 |
+| `problematic` | children を連結（inline 失敗箇所の原文を保持） | v1.x で最大 181 件。system_message 側で警告として記録するが本文は出す |
+| `system_message` | 出力なし (Visitor が警告として集計するのみ) | parse error (level >= 3) の場合は create は警告ログ、verify は QC1 未対応ソースとして FAIL |
 
 ### 4-3. リスト
 
@@ -90,13 +106,18 @@ Visitor 側は**解決後の AST をそのまま walk する**だけで、自前
 | `enumerated_list` | `list_item` を順に Visit、先頭に `1.` `2.` ... | docutils が番号を付与 |
 | `list_item` | 子 node を再帰 Visit、1 段インデント | |
 | `definition_list` | `definition_list_item` を順に Visit | |
-| `definition_list_item` | `term` 行 + `definition` 行 | |
+| `definition_list_item` | `term` 行 + `classifier` (存在時) + `definition` 行 | |
 | `term` | inline 連結 | |
+| `classifier` | `: <inline>` (term 末尾に連結) | |
 | `definition` | 子 node を再帰 Visit | |
-| `field_list` | **出力なし** (directive option / standalone 両方) | §3-1 既定通り廃棄 |
+| `field_list` | **出力なし** (directive option も standalone も廃棄) | v6 実データ 238 件で JSON 非出現を確認済。bibliographic field も同じ扱い |
 | `field` / `field_name` / `field_body` | 出力なし (`field_list` 内で処理) | |
+| `option_list` | `option_list_item` を順に Visit (コマンド CLI オプション表) | v6 の RST ではほぼ出現しない想定、念のため対応 |
+| `option_list_item` | `option_group` + `description` の行 | |
+| `option_group` / `option` / `option_string` / `option_argument` / `description` | children 連結 | |
 | `line_block` | `line` の連結、各 line の先頭に空白なし (docutils が改行保持) | |
 | `line` | inline 連結 + `\n` | |
+| `attribution` | block_quote 末尾に `— <inline>` として出力 | `.. epigraph::` 等で出現 |
 
 ### 4-4. ブロック
 
@@ -110,13 +131,13 @@ Visitor 側は**解決後の AST をそのまま walk する**だけで、自前
 
 | Node | 出力 | 備考 |
 |---|---|---|
-| `table` | MD table として `thead` / `tbody` を順に出力 | `title` children があれば table の直前に paragraph として |
+| `table` | MD table として `thead` / `tbody` を順に出力。`title` children があれば table の直前に paragraph として | create/verify とも `fill_merged_cells` 共有ヘルパー (§3-6) を経由してから行出力する |
 | `tgroup` | 子 node を Visit (`colspec` / `thead` / `tbody`) | |
 | `colspec` | 出力なし (MD は column width 非対応) | |
 | `thead` | ヘッダ行 + セパレータ `\| --- \| --- \|` | |
 | `tbody` | body 行 | |
-| `row` | 各 `entry` の child を \| で区切った行 | |
-| `entry` | 子 node を再帰 Visit、`\|` と `\n` は escape | `morerows` / `morecols` は MD 非対応のため**空 cell を補う** |
+| `row` | 各 `entry` の child を `\|` で区切った行 | |
+| `entry` | 子 node を再帰 Visit し `escape_cell_text` (§3-6) を適用 | `morerows` / `morecols` は `fill_merged_cells` で top-left に内容を配置、他占有セルは空文字 |
 
 ### 4-6. 画像 / 図
 
@@ -147,7 +168,7 @@ Visitor 側は**解決後の AST をそのまま walk する**だけで、自前
 
 | Node | 出力 | 備考 |
 |---|---|---|
-| `raw` | `format` 属性が `html` の場合は children テキストをそのまま出力 (MD は inline HTML 許容)、それ以外は廃棄 | `<br>` / `<br/>` は `\n` に正規化 |
+| `raw` | `format="html"` の場合は children テキストを `normalise_raw_html` (§3-6) に通して出力、それ以外の format (latex/tex 等) は廃棄 | Y-1 probe で v6=708 / v5=977 / v1.x 50-60 件。処理対象 HTML entity / tag は §3-6 ヘルパーの仕様で管理 |
 | `comment` | 出力なし | RST コメント |
 
 ## 5. 未登録 node の扱い
