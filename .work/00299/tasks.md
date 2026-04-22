@@ -53,6 +53,112 @@
 
 ## In Progress
 
+### Phase 21-G-1: verify 配線漏れ解消（配線のみ・修正は 21-G-2 以降）
+
+**目的**: verify_file() に RST/MD 用 check を配線。FAIL 修正は後続フェーズに分割。
+
+**実行結果 (2026-04-22)**:
+- 配線実装・unit tests 200 PASS
+- `rbkc verify 6` で 23,989 FAIL / 299 ファイル表面化
+- 根本原因別内訳（調査済み）:
+
+| パターン | 件数 | 受け皿 Phase |
+|---|---|---|
+| RST grid-table 変換不整合 (`==== ==== ` / MD table 行残留) | ~3,854 + OTHER 大半 | 21-G-2 |
+| RST `:role:` 未変換 | 2,277 | 21-G-3 |
+| RST `` ``double backtick`` `` | 1,094 | 21-G-4 |
+| RST `\\ ` backslash-space エスケープ | 593 | 21-G-5 |
+| RST `.. directive::` 残留 | 124 | 21-G-6 |
+| QC4 配置ミス | 1,640 | 21-G-7 |
+| QL2 / QC3 | 124 | 21-G-8 |
+| その他 OTHER (大部分は grid-table 巻き込み) | ~13,787 | 21-G-2 で大半解消見込み |
+
+**Steps:**
+- [x] TDD: 配線テスト追加 (test_verify.py TestVerifyFileExcelQC に新規2件)
+- [x] `verify_file()` に RST/MD 分岐追加、check_content_completeness / check_format_purity / check_external_urls を呼び出し
+- [x] unit tests 200 PASS
+- [x] `rbkc verify 6` 実行、FAIL 件数把握、根本原因別に分類
+- [ ] コミット・プッシュ（配線のみ）
+
+---
+
+### Phase 21-G-2: RST grid-table 変換修正
+
+**仮説**: `====  ====` 形式の grid-table が converter で正しく MD table に変換されない、または本文と混在して取り込まれる。QC1 (RST 本文欠落) と QC2 (JSON に MD table 残留) の両方で多発。
+
+**Steps:**
+- [ ] 典型ファイル `tag.rst` / `tag_reference.rst` / grid-table 多用テスト framework 系で再現ケース抽出
+- [ ] RST converter の grid-table ハンドラを調査、仕様（reStructuredText grid table）と突き合わせ
+- [ ] TDD: 最小再現テスト追加（RED）
+- [ ] converter 修正（GREEN）
+- [ ] `rbkc verify 6` で FAIL 件数減少を確認
+- [ ] サブエージェント品質チェック
+- [ ] コミット・プッシュ
+
+---
+
+### Phase 21-G-3: RST role (`:ref:` `:doc:` 等) 未変換
+
+**Steps:**
+- [ ] role 種別ごとの出現パターンと期待変換形式を調査
+- [ ] TDD: 各 role 型の再現テスト
+- [ ] converter 修正
+- [ ] verify 減少確認
+- [ ] コミット
+
+---
+
+### Phase 21-G-4: RST double backtick (`` ``text`` ` 形式) 処理
+
+**Steps:**
+- [ ] `` ``...`` `` → MD `` `...` `` の変換が不完全な箇所を特定
+- [ ] TDD → 修正 → verify 確認 → コミット
+
+---
+
+### Phase 21-G-5: RST `\\ ` backslash-space エスケープ処理
+
+**Steps:**
+- [ ] RST inline markup の `\\ ` 分離記法を content から剥がす
+- [ ] TDD → 修正 → verify 確認 → コミット
+
+---
+
+### Phase 21-G-6: RST `.. directive::` 残留
+
+**Steps:**
+- [ ] 残留している directive 種別を列挙
+- [ ] converter の directive 分岐を調査、未ハンドル分を追加または除外
+- [ ] TDD → 修正 → verify 確認 → コミット
+
+---
+
+### Phase 21-G-7: QC4 配置ミス (1,640 件)
+
+**Steps:**
+- [ ] 配置逆行の典型ケース抽出
+- [ ] 原因調査（多くは 21-G-2〜21-G-6 の副作用で解消する可能性あり）
+- [ ] 残存分のみ別対応
+
+---
+
+### Phase 21-G-8: QL2 / QC3 残件
+
+**Steps:**
+- [ ] QL2 62件: ソース外部 URL が JSON に欠落している理由を調査
+- [ ] QC3 62件: 重複の典型ケース抽出
+- [ ] 修正 → verify 確認 → コミット
+
+---
+
+### Phase 21-G-9: 設計書マトリクス更新
+
+**Steps:**
+- [ ] 21-G-1〜21-G-8 完了後、`rbkc-verify-quality-design.md` 4章マトリクスの ❌→✅ 更新
+- [ ] コミット
+
+---
+
 ### Phase 21-K: hints スコープアウト — 設計書とコードを "content のみ" に整える (完了)
 
 **目的**: 後続タスク（統合検証など）で「ここは hints あるんだっけ？」と判断に迷わないように、設計書とコードから hints 関連を削除して基盤を整える。hints 資産は別 Issue 用にブランチ外の形で保全する。
