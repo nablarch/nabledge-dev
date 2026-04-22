@@ -15,6 +15,8 @@ from pathlib import PurePosixPath
 from docutils.parsers.rst.tableparser import SimpleTableParser
 from docutils.statemachine import StringList
 
+from scripts.common.rst_admonition import ADMONITION_LABELS, is_admonition
+
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -38,12 +40,11 @@ class RSTResult:
 # Constants
 # ---------------------------------------------------------------------------
 
-# Standard admonition directive names
-_ADMONITIONS = {
-    "note", "warning", "important", "tip", "caution",
-    "attention", "danger", "error", "hint", "seealso",
-    "deprecated", "versionadded", "versionchanged",
-}
+# Admonition directive names come from scripts.common.rst_admonition — the
+# single source of truth. We exclude ``admonition`` (custom-titled) because
+# it goes through a separate converter branch that passes the title as the
+# inline arg; named admonitions (note/tip/...) use the default label table.
+_ADMONITIONS = {n for n in ADMONITION_LABELS if n != "admonition"}
 
 # Directives whose block body is silently skipped
 _SKIP_DIRECTIVES = {"include"}
@@ -729,6 +730,14 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "", targets=None, s
     # content of the cell is preserved.
     _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
 
+    # Pre-scan: count how many separator lines exist in total. If there are
+    # exactly 2 (top + bottom), the table has no header row; if there are
+    # 3 or more, the second one is the mid-separator marking the header.
+    total_seps = sum(
+        1 for line in block
+        if line.strip() and all(c in "= " for c in line.strip())
+    )
+
     # Group body lines by row. A new row starts when the first column has
     # non-whitespace content; subsequent lines that only fill later columns
     # (continuation) get merged into that row's cells. Separator lines
@@ -744,7 +753,9 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "", targets=None, s
         stripped = s.lstrip()
         if stripped and all(c in "= " for c in stripped):
             sep_count += 1
-            if sep_count == 2 and head_count is None:
+            # Only treat a mid-separator as a header marker when the table
+            # actually has 3+ separators (top + mid + bottom).
+            if sep_count == 2 and head_count is None and total_seps >= 3:
                 head_count = len(grouped_rows)
             continue
         # Drop the directive header line itself but keep its body on
@@ -835,15 +846,17 @@ def _parse_simple_table(block: list[str], file_id: str = "", targets=None, subst
 # ---------------------------------------------------------------------------
 
 def _parse_grid_table(block: list[str], file_id: str = "", targets=None, substitutions=None) -> list[str]:
-    """Convert RST grid table to HTML table.
+    """Convert RST grid table to Markdown table.
 
-    Uses ``|`` splitting to extract cell text — works correctly with CJK
-    characters, which break docutils GridTableParser due to display-width
-    vs code-point-width mismatch.
+    Uses display-width column boundaries from the first ``+---+`` separator
+    so that inline ``|`` (e.g. line-block markers inside a cell) is not
+    mistaken for a column divider. Works correctly with CJK characters,
+    which break docutils GridTableParser due to display-width vs
+    code-point-width mismatch.
 
-    Supports rowspan detection: a cell continuation row (``|      |``) where
-    a sub-separator (``+----+``) appears in the same column indicates row
-    merging; the continuation cell text is merged into the preceding cell.
+    The output is a standard MD table so that docs/ rendering and
+    verify's tokenizer-based normalisation both see a single canonical
+    form.
     """
     if not block:
         return []
@@ -943,98 +956,65 @@ def _parse_grid_table(block: list[str], file_id: str = "", targets=None, substit
     # accumulate multi-line cells by checking if all cells in a line are empty
     # (pure continuation) or only some are empty (new sub-row).
 
-    # Simplified approach: each content line with at least one non-empty cell
-    # is treated as a row; empty cells in continuation lines are merged up.
-    html: list[str] = ["<table>"]
-    body_open = False  # track whether <tbody> is currently open
+    # Collect header and body rows from all groups as flat lists.
+    header_rows_raw: list[list[str]] = []
+    body_rows_raw: list[list[str]] = []
+
+    _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
+
+    def _is_sub_separator(cells: list[str]) -> bool:
+        non_empty = [c for c in cells if c]
+        if not non_empty:
+            return False
+        return all(set(c) <= set("-=+ ") for c in non_empty)
 
     for is_header, content_lines in groups:
         if not content_lines:
             continue
 
         rows: list[list[str]] = []
-
-        def _is_sub_separator(cells: list[str]) -> bool:
-            """A row where every non-empty cell is only ``-``/``=``/``+``
-            padding is an intra-row separator (grid-table cell sub-divider).
-            Treat it as a new-row boundary, not content."""
-            non_empty = [c for c in cells if c]
-            if not non_empty:
-                return False
-            return all(set(c) <= set("-=+ ") for c in non_empty)
-
         for cl in content_lines:
             cells = _split_cells(cl)
             if not cells:
                 continue
             if _is_sub_separator(cells):
-                # Sub-separator: starts a new row on the next content line.
-                # Represented here by appending an empty row sentinel which
-                # the next non-empty content line replaces. Using a fresh
-                # row with blank cells forces the next line to be a new row
-                # rather than continuing the previous one.
                 rows.append(["" for _ in cells])
                 continue
             if not rows or any(c for c in cells):
-                # If current top-of-stack is an empty sentinel (from
-                # sub-separator), overwrite it instead of stacking.
                 if rows and not any(r for r in rows[-1]):
                     rows[-1] = cells
                 else:
                     rows.append(cells)
             else:
-                # All cells empty → continuation; merge into last row
                 for ci, c in enumerate(cells):
                     if ci < len(rows[-1]) and c:
                         rows[-1][ci] = (rows[-1][ci] + " " + c).strip()
 
-        # Drop any trailing empty-sentinel rows.
         rows = [r for r in rows if any(c for c in r)]
+        if not rows:
+            continue
 
+        # Drop rows that leak RST directive syntax.
+        rows = [r for r in rows if not any(_CELL_DIRECTIVE_RE.match(c) for c in r if c)]
         if not rows:
             continue
 
         if is_header:
-            # Close any open body section before emitting header
-            if body_open:
-                html.append("</tbody>")
-                body_open = False
-            html.append("<thead>")
+            header_rows_raw.extend(rows)
         else:
-            # Open body section only once (multiple body groups share one <tbody>)
-            if not body_open:
-                html.append("<tbody>")
-                body_open = True
+            body_rows_raw.extend(rows)
 
-        tag = "th" if is_header else "td"
-        ncols = max(len(r) for r in rows)
-        _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
+    all_rows = header_rows_raw + body_rows_raw
+    if not all_rows:
+        return []
 
-        for row in rows:
-            # A row whose non-empty cell starts a directive (e.g. ``.. tip::``)
-            # is a continuation-style cell that shouldn't be rendered as a
-            # table row — drop the row to avoid leaking RST syntax.
-            if any(_CELL_DIRECTIVE_RE.match(c) for c in row if c):
-                continue
-            html.append("<tr>")
-            for ci in range(ncols):
-                text = _convert_inline(
-                    row[ci] if ci < len(row) else "",
-                    file_id,
-                    targets=targets,
-                    substitutions=substitutions,
-                )
-                html.append(f"  <{tag}>{text}</{tag}>")
-            html.append("</tr>")
-
-        if is_header:
-            html.append("</thead>")
-
-    if body_open:
-        html.append("</tbody>")
-
-    html.append("</table>")
-    return html
+    return _rows_to_md_table(
+        all_rows,
+        len(header_rows_raw),
+        file_id,
+        targets,
+        substitutions,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1152,7 +1132,8 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
         # RST footnote / citation target — extract inline text + block body.
         # Accept both `.. [#name] text` (inline text follows `]`) and
         # `.. [#name]` (no inline text; body on indented continuation lines).
-        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-zA-Z0-9_]*)\](?:\s+(.*))?$", stripped)
+        # Footnote labels allow `-` per docutils (e.g. `#thread-unsafe`).
+        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-zA-Z0-9_-]*)\](?:\s+(.*))?$", stripped)
         if m_fn:
             inline_text = (m_fn.group(1) or "").strip()
             block, i = _read_block(lines, i + 1)
@@ -1262,13 +1243,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             # --- admonition (named) ---
             if directive in _ADMONITIONS:
                 block, i = _read_block(lines, i + 1)
-                label = directive.capitalize()
-                if directive == "versionadded":
-                    label = "Version Added"
-                elif directive == "versionchanged":
-                    label = "Version Changed"
-                elif directive == "seealso":
-                    label = "See Also"
+                label = ADMONITION_LABELS[directive]
                 output.extend(_render_admonition_body(label, inline_arg, block, file_id, targets, source_dir, substitutions))
                 continue
 
