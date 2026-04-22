@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (Stage 3 Round 1 完了 — 全5シナリオ judge=3 達成)
+**Updated**: 2026-04-22 (30件ベースライン完了。LLM judge を正解ベース採点に切り替えるタスク追加)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -115,6 +115,33 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 | 5 | `--output-format stream-json` で **AI-1 / AI-2 / judge の実行ログを全保存** |
 
 ## In Progress
+
+### 正解データ作成 + LLM judge を正解ベースに切り替え
+
+**背景**:
+Stage 2 / Stage 3 の LLM judge は正解データなしで Sonnet が自己推定採点していた。
+Nablarch の知識を持っているかどうか不明な LLM の推測判断であり、信頼できない。
+正解データ（各質問に対して「何が答えられれば合格か」）を作り、それと照合する採点に切り替える。
+
+**実行結果の保存場所**:
+- 30件ベースライン: `tools/benchmark/.results/20260422-143411-stage3-sonnet/`
+- 30件ベースライン保存: `tools/benchmark/baseline/20260422-stage3-sonnet/`
+- 各シナリオの回答テキスト: `{result_dir}/{scenario_id}/final_answer.md`
+- 各シナリオの cited: `{result_dir}/{scenario_id}/ai3_result.json`
+
+**Steps:**
+- [ ] 30件の正解データを作成する
+  - メインエージェントが各質問に対して知識ファイルを grep して「正解となる key facts」をリストアップ
+  - サブエージェントにレビューしてもらい確定
+  - `tools/benchmark/scenarios/qa-v6-answers.json` に保存（format 設計が必要）
+- [ ] Stage 2 judge を正解ベースに切り替え
+  - judge prompt に「正解 key facts」を渡し、候補ファイルリストにそれらが含まれるか採点
+  - `prompts/judge_stage2.md` 改訂
+- [ ] Stage 3 judge を正解ベースに切り替え
+  - judge prompt に「正解 key facts」を渡し、回答テキストにそれらが含まれるか採点
+  - `prompts/judge_stage3.md` 改訂
+- [ ] 30件を正解ベース judge で再計測（既存の回答テキストを使い judge のみ再実行でも可）
+- [ ] 結果を `.work/00307/rounds/` に記録
 
 ### Stage 3 section 選択 + 最終回答 + Round 制
 
