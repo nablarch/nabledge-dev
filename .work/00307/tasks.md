@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (自然な順序に補正 — AI-1 先行実測)
+**Updated**: 2026-04-22 (2軸案に pivot — type/category のみ、processing_patterns は category 内に畳み込み)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -15,12 +15,14 @@
 
 ```
 質問
-  ↓ AI-1 (facet 抽出: type / category / processing_patterns)
-  ↓ 機械 filter (index.toon から候補ファイル絞込)
+  ↓ AI-1 (facet 抽出: type / category のみ、2軸)
+  ↓ 機械 filter (index.toon を type×category で AND 絞込)
   ↓ AI-2 (title + path から section 選択) ※初回は hints 渡さず
   ↓ read-sections
   ↓ 最終回答
 ```
+
+※ 2軸に簡略化した理由: index.toon の `processing_patterns` 列は `type=processing-pattern` の 70 行で category の複製、残り 225 行は空 — 軸としての情報量ゼロ。処理パターンは「type=processing-pattern ∧ category={web-application|nablarch-batch|...}」で完全に表現できる。5 シナリオで simulation 済み (type×category のみで recall=1.0、候補 56–124 行)。
 
 設計書: [review-by-prompt-engineer-stage1-facet-design.md](review-by-prompt-engineer-stage1-facet-design.md)
 
@@ -124,18 +126,15 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 - [x] Round 1: 改善提案をユーザー提示、議論
 - [x] ファセット検索へのピボット設計 → `.work/00307/review-by-prompt-engineer-stage1-facet-design.md`
 - [x] ユーザー決定（モデル比較 / rollout / judge レベル / hints / stream-json）
-- [ ] `tools/benchmark/prompts/stage1_facet.md` 作成（AI-1 facet 抽出 prompt、設計書 D1.2 準拠）
-- [ ] Stage 1 JSON schema（`{type[], category[], processing_patterns[], coverage}`）を prompt に同梱
-- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` の `expected_keywords` を `expected_facets` に置換（人手で 5 件分）
+- [x] `tools/benchmark/prompts/stage1_facet.md` 作成（2軸: type / category / coverage）
+- [x] Stage 1 JSON schema（`{type[], category[], coverage}`）を prompt に同梱
+- [ ] Prompt Engineer レビュー（2軸 prompt が設計意図に合うか）
+- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` に `expected_facets` (type+category) 追加（人手で 5 件分）
 - [ ] `tools/benchmark/run.py` を Stage 1 (facet) 対応に修正（stream-json ログ保存、軸別 Jaccard スコアリング）
 - [ ] Stage 1 Round 2 計測: **Haiku / Sonnet で5件並走**（AI-1 単体、filter/AI-2 なし）
 - [ ] 結果を `.work/00307/rounds/stage1-round2.md` に記録（モデル比較表、軸別 Jaccard）
 - [ ] Prompt Engineer Expert Review（結果 + 改善案）
-- [DECISION: AI-1 出力を見て判断] ユーザーと協議:
-  - AI-1 facet が安定しているか（collapse / 過一般化していないか）
-  - `processing_patterns` 列を埋める必要があるか（現状 225/295 空のままで Stage 2 が機能するなら不要）
-  - モデル確定（Haiku or Sonnet）
-  - 次: Stage 2 実装に進む / AI-1 プロンプト改善 Round 3 / mapping 拡張
+- [ ] モデル確定（Haiku or Sonnet）し Stage 2 実装へ進む
 
 ### [CONDITIONAL] processing_patterns back-propagation
 
