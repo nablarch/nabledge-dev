@@ -46,6 +46,7 @@ PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
 PROMPT_STAGE3_SELECT = BENCH_DIR / "prompts" / "stage3_section_select.md"
 PROMPT_STAGE3_ANSWER = BENCH_DIR / "prompts" / "stage3_answer.md"
 PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
+PROMPT_SEARCH_CURRENT = BENCH_DIR / "prompts" / "search_current.md"
 
 KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
 INDEX_TOON_PATH = KNOWLEDGE_ROOT / "index.toon"
@@ -496,6 +497,123 @@ def run_stage2(
         "filter": {
             "fallback_used": fallback_used,
             "candidate_count": len(outcome_rows),
+        },
+        "judge": judge_record,
+        "total_cost_usd": total_cost,
+        "wall_s": total_wall,
+    }
+
+
+def run_stage3_current(
+    scenario: dict, model: str, scen_dir: Path
+) -> dict:
+    """Current production flow: single agent with Bash access to
+    full-text-search.sh / get-hints.sh / read-sections.sh.
+
+    Produces an AI-3 shaped output (answer + cited) so the same
+    judge_stage3 prompt can score it directly.
+    """
+    question = scenario["expected_question"]
+    prompt = PROMPT_SEARCH_CURRENT.read_text(encoding="utf-8").replace(
+        "{{question}}", question
+    )
+    (scen_dir / "search_current_prompt.md").write_text(prompt, encoding="utf-8")
+
+    answer_struct, envelope, wall_s, err = invoke_claude_stream(
+        prompt=prompt,
+        schema=SCHEMA_STAGE3_ANSWER,
+        max_turns=25,
+        model=model,
+        allowed_tools=["Bash"],
+        timeout_s=900,
+        log_path=scen_dir / "search_current.stream-json",
+    )
+    answer_struct = answer_struct or {"answer": "", "cited": []}
+    (scen_dir / "final_answer.md").write_text(
+        answer_struct.get("answer") or "", encoding="utf-8"
+    )
+    (scen_dir / "search_current_result.json").write_text(
+        json.dumps(
+            {
+                "answer": answer_struct.get("answer"),
+                "cited": answer_struct.get("cited"),
+                "wall_s": wall_s,
+                "total_cost_usd": envelope.get("total_cost_usd"),
+                "num_turns": envelope.get("num_turns"),
+                "error": err or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # Judge — same Stage 3 judge as the ids variant for apples-to-apples.
+    if not answer_struct.get("answer"):
+        judge: dict | None = {"level": 0, "reason": "no answer produced"}
+        judge_envelope: dict = {}
+        judge_wall = 0.0
+        judge_err = ""
+    else:
+        judge_prompt = (
+            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{answer}}", answer_struct.get("answer") or "")
+            .replace(
+                "{{cited}}",
+                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
+            )
+        )
+        (scen_dir / "judge_stage3_prompt.md").write_text(
+            judge_prompt, encoding="utf-8"
+        )
+        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
+            prompt=judge_prompt,
+            schema=SCHEMA_JUDGE_STAGE3,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=180,
+            log_path=scen_dir / "judge_stage3.stream-json",
+        )
+
+    judge_record = {
+        "level": (judge or {}).get("level") if judge else None,
+        "reason": (judge or {}).get("reason") if judge else None,
+        "wall_s": judge_wall,
+        "total_cost_usd": judge_envelope.get("total_cost_usd"),
+        "error": judge_err or None,
+    }
+    (scen_dir / "judge_stage3_result.json").write_text(
+        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    total_cost = (envelope.get("total_cost_usd") or 0.0) + (
+        judge_envelope.get("total_cost_usd") or 0.0
+    )
+    total_wall = wall_s + judge_wall
+
+    return {
+        "id": scenario["id"],
+        "stage": 3,
+        "variant": "current",
+        "model": model,
+        "question": question,
+        "search": {
+            "cost_usd": envelope.get("total_cost_usd"),
+            "wall_s": wall_s,
+            "num_turns": envelope.get("num_turns"),
+            "error": err or None,
+        },
+        "filter": {
+            "fallback_used": "current-flow",
+            "candidate_count": len(answer_struct.get("cited") or []),
+        },
+        "answer": {
+            "cited": answer_struct.get("cited"),
+            "cost_usd": envelope.get("total_cost_usd"),
+            "wall_s": wall_s,
+            "error": err or None,
         },
         "judge": judge_record,
         "total_cost_usd": total_cost,
@@ -1110,10 +1228,11 @@ def main() -> int:
                     help="claude model id or alias (sonnet, haiku, opus, or exact id)")
     ap.add_argument(
         "--variant",
-        choices=["facet", "ids"],
+        choices=["facet", "ids", "current"],
         default="facet",
-        help="stage-3 flow variant: facet (type/category + AI-2 select) or "
-             "ids (direct file_id|sid selection from LLM index)",
+        help="stage-3 flow variant: facet (type/category + AI-2 select), "
+             "ids (direct file_id|sid selection from LLM index), or "
+             "current (production skill: BM25 + AI section-judgement)",
     )
     ap.add_argument("--out", help="output directory (default: .results/{ts}-stage{N}-{model})")
     args = ap.parse_args()
@@ -1144,7 +1263,11 @@ def main() -> int:
 
     index_rows: list[IndexRow] = []
     id_to_path: dict[str, dict] = {}
-    if args.stage >= 2 and not (args.stage == 3 and args.variant == "ids"):
+    needs_facet_index = (
+        args.stage == 2
+        or (args.stage == 3 and args.variant == "facet")
+    )
+    if needs_facet_index:
         index_rows = load_index(INDEX_TOON_PATH)
     if args.stage == 3 and args.variant == "ids":
         id_to_path = json.loads(INDEX_SCRIPT_PATH.read_text(encoding="utf-8"))
@@ -1161,6 +1284,8 @@ def main() -> int:
                 r = run_stage2(sc, args.model, scen_dir, index_rows)
             elif args.variant == "ids":
                 r = run_stage3_ids(sc, args.model, scen_dir, id_to_path)
+            elif args.variant == "current":
+                r = run_stage3_current(sc, args.model, scen_dir)
             else:
                 r = run_stage3(sc, args.model, scen_dir, index_rows)
             results.append(r)
