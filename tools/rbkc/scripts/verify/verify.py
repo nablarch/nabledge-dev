@@ -508,8 +508,14 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     text = re.sub(r'^[^\S\n]*\.\.\s+\[[^\]]+\][^\S\n]*', '', text, flags=re.MULTILINE)
     # RST directive lines: .. directive:: args -> remove line (keep body content)
     text = re.sub(r'^[^\S\n]*\.\.[^\S\n]+\S[^\n]*\n', '', text, flags=re.MULTILINE)
-    # RST option lines inside directives: :option: value -> remove line
+    # RST option lines inside directives: :option: value -> remove line.
+    # Restricted to ASCII option names (directive options never use CJK);
+    # CJK field-list entries like ``:システム設定値: value`` are handled
+    # separately below so the value portion survives.
     text = re.sub(r'^[^\S\n]*:[a-zA-Z][a-zA-Z0-9_-]*:[^\n]*\n', '', text, flags=re.MULTILINE)
+    # RST field-list entries (e.g. ``:name: value`` at line start) — keep the
+    # value, drop the marker so source and JSON-side unit normalisation agree.
+    text = re.sub(r'^[^\S\n]*:([^:`\n]+):[^\S\n]+', '', text, flags=re.MULTILINE)
     # RST list-table item markers: `* - ` or `  - ` — the trailing hyphen
     # must be followed by at least one space and a non-hyphen character,
     # otherwise multi-hyphen tokens like `---` (code-block content or YAML
@@ -556,6 +562,10 @@ def _normalize_md_unit(text: str) -> str:
     # (Source-side normalisation drops them, so we strip here for symmetry.)
     text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
     text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
+    # Unresolved RST field-list entries the converter passes through as-is
+    # (``:name: value``). Drop the ``:name:`` marker so the value aligns
+    # with the source-normalised form (which collapses these away).
+    text = re.sub(r'(?m)^\s*:([^:`\n]+):\s+', '', text)
     # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
     # (and ``name_`` → ``name``). Use MULTILINE so the anchor fires at every
     # line end. Allow a closing backtick to count as end-of-token so
