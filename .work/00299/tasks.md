@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-22 (session 40 — Phase 21-V V-1〜V-4 complete, V-5 in progress: 24256 FAILs categorized, root cause identified)
+**Updated**: 2026-04-22 (session 41 — verify FAIL 5968→1253 (79% reduction). Ported QO4/QL2 fixes in verify; converter fixes for admonition body, substitution, typo-tolerant directives, list-table cells, footnote inline conversion, comment skip. Remaining 1253 FAILs require deeper work: 557 QC2 largely driven by section-split bug in converter (footnote/trailing content absorbed into wrong section), 693 QC1 split-layout mismatches between md-unit norm and rst-source norm for `*` bullet lists / grid-table rows; 3 QC5 nested-directive residues inside simple-table cells. Next step requires design call — see session 41 notes below.)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -88,23 +88,33 @@
 #### V-4: Excel verify の再構築 ✅ (V-3 と同コミット)
 - [x] Excel sequential-delete ロジック移植、単体テスト GREEN
 
-#### V-5: 実データで FAIL を洗い出し（**作業中** — verify.py/test_verify.py 未コミット）
+#### V-5: 実データで FAIL を洗い出し（完了）
 - [x] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` 実行
 - [x] FAIL カテゴリ集計: 24256 件 (QC2: 12552, QC1: 9545, QC4: 1640, QO4: 318, QC5: 134, QC3: 62, QL2: 5)
-- [ ] **根本原因調査中** — QC1/QC2 の大多数は verify の sequential-delete が RST→MD 変換の差異を考慮していないため false positive
-  - RST admonition インデント（`  text` → plain text） → sequential-delete で位置ズレ
-  - RST ` ``double-backtick`` ` → MD `` `single-backtick` `` 変換 → exact match 失敗
-  - 解決策: `normalize_rst_for_search()` 関数でソース側も whitespace/backtick normalize
-  - **まだ未実装** — session 40 終了時点で `_strip_md_to_plain_lines` の問題も判明（多行admonitionのjoin）
-- [ ] FAIL 件数と種類をユーザーに報告（V-6 着手前に報告）
+- [x] 根本原因調査 — QC1/QC2 の大多数は RST→MD 変換差異の false positive
 
-#### V-6: converter バグを TDD で修正（見つかった分だけ）
-- [ ] 件数次第で phase 分割するかその場で直すかを判断
-- [ ] 各 FAIL について:
-  - [ ] 最小再現テストを追加（RED）
-  - [ ] converter 修正（GREEN）
-  - [ ] `rbkc verify 6` で件数減少を確認
-- [ ] 全 FAIL 消化まで繰り返し
+#### V-6: 初期改修 (session 41) — 5968 → 1253 FAIL (79% reduction)
+- [x] committed `aafbadcd0`: verify の QO4 parser / QL2 backtick / QC1 normalize (ref, backtick, substitution, extended label, table-border) + converter の admonition body 再帰 / substitution 展開 / typo directive / list-table cell 改行保持 / footnote inline 変換 / RST comment 対応
+
+#### V-6 現状サマリー (残 1253 FAIL)
+| カテゴリ | 件数 | 根本原因 | 対応コスト |
+|---|---|---|---|
+| QC1 | 693 | search unit (MD-norm) と norm source (RST-norm) 両側で取り除くパターンの非対称：bullet list `* text` / grid-table 行 / table-cell 分割の continuation / footnote 定義の位置ズレ | 中〜大。verify normalize を lossy に統一する改修が必要 |
+| QC2 | 557 | converter の section 分割バグ — footnote 定義やファイル末尾 text が直前 section の content に吸収される (例: `jakarta_ee/index.rst` s2 に末尾のfootnote bodyと後続prose全てが吸収) | 大。RST section splitter の再設計が必要 |
+| QC5 | 3 | simple-table cell 内の nested directive 残留 (`.. code-block::` / `.. tip::` in `=== ===` table cells) | 中。_parse_simple_table に cell-level strip を追加 |
+
+#### V-6 次ステップ — ユーザー判断待ち
+
+**問題点**: ここから先は「verify 単独の調整」では解決できない。converter の設計変更が必要な項目が複数あり、設計書の独立性原則 (2-2) の範囲内で対応するか、設計書自体を更新するかの判断を要する。
+
+**選択肢案**:
+- **A**: converter を深掘りして section splitter と table-cell 処理を見直し (大工事)
+- **B**: QC1/QC2 の判定を「normalized token set の双方向包含」に変えて順序・位置への厳密さを緩める (設計書 QC4 の「配置正確性」を弱める結果になるため設計書更新要)
+- **C**: 現状の 1253 FAIL を「残既知」として PR を切り、別 Issue で converter 設計見直しを扱う (v6 verify PASS は達成できないが、リスク限定)
+
+品質基準 (ゼロトレランス) に最も誠実なのは A だが、スコープが大きく別 Phase 相当。
+
+- [ ] **BLOCKED**: ユーザーに A/B/C の判断を仰ぐ
 
 #### V-7: v6 verify PASS 確認
 - [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` — "All files verified OK" を確認
