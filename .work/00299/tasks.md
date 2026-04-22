@@ -59,9 +59,9 @@
 
 #### Step K-1: 別 Issue 用の資産棚卸し（削除前に固定）
 
-- [ ] `hints/v6.json` / `v5.json` / `v1.4.json` / `v1.3.json` / `v1.2.json` の現状を別 Issue 用資料として `.work/00299/handoff-hints/` にコピー
-- [ ] `.work/00299/generate_hints.py` / `extract_hints.py` も同ディレクトリに保全
-- [ ] 別 Issue 用の引き継ぎメモ `.work/00299/handoff-hints/README.md` 作成（背景・粒度差問題・AI hints の価値判断の要約）
+- [x] `hints/v6.json` / `v5.json` / `v1.4.json` / `v1.3.json` / `v1.2.json` の現状を別 Issue 用資料として `.work/00299/handoff-hints/` にコピー
+- [x] `.work/00299/generate_hints.py` / `extract_hints.py` も同ディレクトリに保全
+- [x] 別 Issue 用の引き継ぎメモ `.work/00299/handoff-hints/README.md` 作成（背景・粒度差問題・AI hints の価値判断の要約）
 - [ ] コミット・プッシュ（「hints 別 Issue 引き継ぎ資産を保全」）
 
 #### Step K-2: 設計書を "content のみ" に更新
