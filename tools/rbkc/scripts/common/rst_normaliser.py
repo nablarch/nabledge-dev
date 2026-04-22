@@ -25,6 +25,10 @@ from scripts.common.rst_substitutions import (
     UndefinedSubstitutionError,
 )
 from scripts.common.rst_include import expand_includes
+from scripts.common.rst_admonition import (
+    ADMONITION_DIRECTIVES as _ADMONITION_DIRECTIVES,
+    render_header as _render_admonition_header,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -45,31 +49,9 @@ class UnknownSyntaxError(Exception):
 
 # Directive groups
 _FENCED_CODE_DIRECTIVES = {"code-block", "sourcecode", "literalinclude"}
-_ADMONITION_DIRECTIVES = {
-    "note", "tip", "warning", "important", "attention",
-    "hint", "admonition", "caution", "danger", "error", "seealso",
-    "deprecated", "versionadded", "versionchanged",
-}
-
-# Labels emitted by the converter as the admonition header:
-#   "> **<Label>:** <body>"
-# Match the converter's formatting so normalised source substring-matches JSON.
-_ADMONITION_LABELS = {
-    "note": "Note",
-    "tip": "Tip",
-    "warning": "Warning",
-    "important": "Important",
-    "attention": "Attention",
-    "hint": "Hint",
-    "admonition": "Note",  # default when no arg
-    "caution": "Caution",
-    "danger": "Danger",
-    "error": "Error",
-    "seealso": "See Also",
-    "deprecated": "Deprecated",
-    "versionadded": "Version Added",
-    "versionchanged": "Version Changed",
-}
+# Admonition directive set comes from scripts.common.rst_admonition (imported
+# above). Labels and header rendering are delegated to that module so the
+# converter and tokenizer share a single source of truth.
 _TABLE_DIRECTIVES = {"list-table", "table", "csv-table"}
 _FIGURE_DIRECTIVES = {"figure"}
 _IMAGE_DIRECTIVES = {"image"}
@@ -104,9 +86,12 @@ _DIRECTIVE_HEAD_RE = re.compile(r"^(?P<indent>\s*)\.\.\s+(?P<name>[A-Za-z][A-Za-
 # Substitution definition header (collected separately; skipped in tokenizer body)
 _SUBST_DEF_HEAD_RE = re.compile(r"^\s*\.\.\s+\|([^|]+)\|\s+[a-z_-]+::.*$")
 
-# Label definition: `.. _label:` (may stack before a heading)
-# Label definition: allow `.` in label name (RST accepts).
-_LABEL_DEF_RE = re.compile(r"^\s*\.\.\s+_[A-Za-z0-9_.-]+:\s*$")
+# Label definition: `.. _label:` or `.. _`label with spaces`:`.
+# Label names allow backtick-quoted forms for labels containing spaces or
+# non-identifier characters. Both forms are collected and stripped.
+_LABEL_DEF_RE = re.compile(
+    r"^\s*\.\.\s+_(?:`[^`]+`|[A-Za-z0-9_.-]+):\s*$"
+)
 
 # Footnote / citation definition: `.. [#name] text` or `.. [1] text`
 # The text (and any indented continuation body) is emitted as prose.
@@ -116,8 +101,13 @@ _FOOTNOTE_DEF_RE = re.compile(r"^\s*\.\.\s+\[([0-9]+|\*|#[A-Za-z0-9_-]*)\]\s*(.*
 # directive parsing; leftover comments caught here).
 _COMMENT_RE = re.compile(r"^\s*\.\.\s+(?![A-Za-z][A-Za-z0-9_:-]*::)\S.*$|^\s*\.\.\s*$")
 
-# Field list line: `:name: value` (value may be empty)
-_FIELD_LIST_RE = re.compile(r"^(?P<indent>\s*):(?P<name>[A-Za-z][^:\n]*):\s*(?P<value>.*)$")
+# Field list line: `:name: value` (value may be empty).
+# Require whitespace or EOL immediately after the second ``:`` so that inline
+# roles (``:ref:\`label\``` — ``:`` followed by a backtick) are not misparsed
+# as field lists.
+_FIELD_LIST_RE = re.compile(
+    r"^(?P<indent>\s*):(?P<name>[A-Za-z][^:\n]*):(?=\s|$)\s*(?P<value>.*)$"
+)
 
 # Simple-table separator: `=== ===` or `- -` etc.
 _SIMPLE_TABLE_SEP_RE = re.compile(r"^\s*=+(?: +=+)+\s*$")
@@ -141,27 +131,16 @@ _ENUM_RE = re.compile(
 # Inline transforms
 # ---------------------------------------------------------------------------
 
-# Sentinels protect emitted backticks from the later interpreted-text regex
-# which strips bare backticks. Each sentinel is a *single* ASCII character
-# that never appears in RST prose, so that simple-table column splitting
-# (which uses display width) aligns with the original `` ``...`` `` span:
-# two opening/closing backticks of display width 2 match two single-char
-# sentinels of display width 2.
-_SENT_L = "\x02\x02"
-_SENT_R = "\x03\x03"
-# Width-preserving padding character for inline transforms that shorten
-# text (e.g., `:ref:`label`` → `label` loses 6 ASCII chars). Each pad char
-# counts as 1 display width for table column splitting, and is stripped
-# at the end of normalisation.
-_PAD_CHAR = "\x04"
-
-
 def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     """Apply inline transforms in a specific, non-order-sensitive way.
 
     Inline substitutions operate on disjoint syntactic forms whose regexes
     are designed to match distinct constructs. Apply each once, from most
     specific to most general.
+
+    The output is the MD-equivalent visible text — widths are not preserved
+    (the caller must extract structural elements such as tables from the
+    raw source before inline transforms shrink inline markup).
     """
 
     # 1. Role with target — match converter behaviour exactly:
@@ -169,17 +148,17 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     #   - :doc:`text <path>`    → visible text
     #   - :java:extdoc:`Name <fqn>` → `Name` (code-quoted)
     #   - :javadoc_url:`text <path>` → [text](path)
-    #   - :download:`text <path>`   → [text](path) (converter rewrites asset dir; URL strip aligns both sides)
+    #   - :download:`text <path>`   → [text](path)
     def _role_target(m: re.Match) -> str:
-        role, text, target = m.group(1), m.group(2).strip(), m.group(3).strip()
+        role, txt, target = m.group(1), m.group(2).strip(), m.group(3).strip()
         if role == "java:extdoc":
-            return f"{_SENT_L}{text or target}{_SENT_R}"
+            return f"`{txt or target}`"
         if role == "javadoc_url":
-            return f"[{text or target}]({target})"
+            return f"[{txt or target}]({target})"
         if role == "download":
-            return f"[{text or target}]({target})"
+            return f"[{txt or target}]({target})"
         # :ref: / :doc: / unknown → visible text only
-        return text or target
+        return txt or target
 
     text = re.sub(
         r":([A-Za-z][A-Za-z0-9_.:+-]*):`([^`<>]*)<([^`<>]+)>`",
@@ -187,22 +166,14 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
         text,
     )
 
-    # 2. Role simple (no target). Width-preserving so simple-table column
-    # splitting (which uses raw-source display widths) remains correct.
-    import unicodedata as _ud
-    def _dw(s: str) -> int:
-        return sum(2 if _ud.east_asian_width(c) in ("W", "F") else 1 for c in s)
-
+    # 2. Role simple (no target).
     def _role_simple(m: re.Match) -> str:
         role, inner = m.group(1), m.group(2)
         if role == "java:extdoc":
-            out = f"{_SENT_L}{inner}{_SENT_R}"
-        elif role == "ref":
-            out = label_map.get(inner, inner)
-        else:
-            out = inner
-        pad = max(0, _dw(m.group(0)) - _dw(out))
-        return out + _PAD_CHAR * pad
+            return f"`{inner}`"
+        if role == "ref":
+            return label_map.get(inner, inner)
+        return inner
 
     text = re.sub(r":([A-Za-z][A-Za-z0-9_.:+-]*):`([^`]+)`", _role_simple, text)
 
@@ -212,33 +183,26 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
 
     text = re.sub(r"`([^`<]+?)\s*<([^`<>]+)>`_+", _ext_link, text)
 
-    # 4. Double-backtick literal: ``code`` → sentinel+content+sentinel, so
-    #    later single-backtick-stripping (interpreted text) leaves it alone.
-    text = re.sub(r"``([^`]+?)``", lambda m: _SENT_L + m.group(1) + _SENT_R, text)
+    # 4. Double-backtick literal: ``code`` → `code`
+    text = re.sub(r"``([^`]+?)``", r"`\1`", text)
 
-    # 5. Named reference: `text`_ → text (width-preserving)
-    def _named_ref(m: re.Match) -> str:
-        out = m.group(1)
-        pad = max(0, _dw(m.group(0)) - _dw(out))
-        return out + _PAD_CHAR * pad
-
-    text = re.sub(r"(?<![`:])`([^`<>\n]+?)`_(?!_)", _named_ref, text)
+    # 5. Named reference: `text`_ → text. Require trailing `_` to be at a
+    # word boundary (whitespace, EOL, or non-word/non-backtick punctuation)
+    # so that back-to-back inline code spans like `` `%` `` and `` `_` `` are
+    # not swept into a single spurious named reference. The text part may
+    # contain ``<`` / ``>`` (e.g. Java generics in RST named refs), matching
+    # the converter's behaviour.
+    text = re.sub(
+        r"(?<![`:])`([^`\n]+?)`_(?=\s|$|[^\w_`])",
+        r"\1",
+        text,
+    )
 
     # 6. Interpreted text (bare single backtick): RST default role passes
     # through to converter as `text` (MD inline code). Keep backticks.
     # (No change needed; text is already in MD form.)
 
     return text
-
-
-def _restore_sentinels(text: str) -> str:
-    """Swap backtick sentinels back to single backticks.
-
-    Called after block-level rendering so that column-width measurements
-    in simple-tables use the sentinel placeholder (which matches the raw
-    RST source width) rather than the narrower single-backtick form.
-    """
-    return text.replace(_SENT_L, "`").replace(_SENT_R, "`")
 
 
 # ---------------------------------------------------------------------------
@@ -279,30 +243,13 @@ def normalise_rst(
     # Step D: strip label definition lines
     text = _strip_label_definitions(text)
 
-    # Step E: line-continuation. RST `\<newline>` escapes the newline. The
-    # converter preserves the literal backslash in MD output with a trailing
-    # space. Replace only when the next visible char is prose (not a structural
-    # separator like =/+/- that would break table/heading detection).
-    def _continuation(m: re.Match) -> str:
-        tail = m.group(1).lstrip()
-        if not tail:
-            # Trailing `\` at end of file or before blank → drop the newline
-            return r"\ "
-        first = tail[0]
-        if first in "=+-~^#*<>:._`\"'|":
-            # Next line begins with a potential structural marker (table/heading)
-            # — keep the newline so detection still works.
-            return f"\\\n{m.group(1)}"
-        return r"\ " + tail
+    # Step E: line-continuation. RST ``\<newline>`` escapes the newline.
+    # The converter preserves the literal ``\`` + ``\n`` sequence in MD
+    # output (both sides see the same raw characters), so the tokenizer
+    # leaves it alone — structural detection still works because ``\``
+    # is not a heading/table/list marker character.
 
-    text = re.sub(r"\\\n([^\n]*)", _continuation, text)
-
-    # Step F: inline transforms (roles, backticks, links) — must precede the
-    # block walker so that constructs like `:ref:`label`` are not misread as
-    # standalone field-list lines (`:name: value`).
-    text = _apply_inline_transforms(text, label_map)
-
-    # Step G: expand substitution references against the body prose.
+    # Step F: expand substitution references against the body prose.
     # Non-strict when not enforcing unknown syntax: leave `|x|`-shaped
     # prose that isn't a real substitution (IP addresses, command args) alone.
     try:
@@ -311,24 +258,32 @@ def normalise_rst(
         if strict_unknown:
             raise
 
-    # Step G2: detect section heading levels (by first-appearance order of
+    # Step G: detect section heading levels (by first-appearance order of
     # underline char, matching converter's logic).
     heading_keys = _detect_heading_keys(text)
 
-    # Step H: walk lines, collapsing directives/tables/headings/lists/comments
+    # Step H: walk lines, collapsing directives/tables/headings/lists/comments.
+    # Inline transforms (:ref:, ``code``, `text <url>`_) are applied here
+    # per block, after structural elements (tables) have been extracted on
+    # raw-width text so column boundaries remain accurate.
     normalised = _walk_blocks(
         text, label_map, heading_keys=heading_keys, strict_unknown=strict_unknown
     )
 
-    # Step H2: restore backtick sentinels after block-level work (widths
-    # measured for simple-tables used the sentinel placeholder).
-    normalised = _restore_sentinels(normalised)
-    # Strip width-preserving pad chars after block walking completes.
-    normalised = normalised.replace(_PAD_CHAR, "")
-
-    # Step I: whitespace collapse on each line (preserve newlines)
+    # Step I: whitespace collapse on each line (preserve newlines). Lines
+    # inside fenced code blocks keep their original indentation so that
+    # JSON code-block content (which preserves source indentation) matches.
     out_lines = []
+    in_fence = False
     for line in normalised.split("\n"):
+        stripped = line.lstrip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            out_lines.append(line.rstrip())
+            continue
+        if in_fence:
+            out_lines.append(line.rstrip())
+            continue
         out_lines.append(re.sub(r"[ \t]+", " ", line).rstrip())
     normalised = "\n".join(out_lines)
     # Collapse 3+ consecutive blanks to 2 for readability, but don't strip.
@@ -446,6 +401,10 @@ def _walk_blocks(
         except ValueError:
             return 1  # fallback
 
+    def _xf(s: str) -> str:
+        """Apply inline transforms to a prose string."""
+        return _apply_inline_transforms(s, label_map)
+
     while i < n:
         line = lines[i]
 
@@ -458,7 +417,7 @@ def _walk_blocks(
             and _HEADING_UNDERLINE_RE.match(lines[i + 2])
             and line.rstrip()[0] == lines[i + 2].rstrip()[0]
         ):
-            title = lines[i + 1].strip()
+            title = _xf(lines[i + 1].strip())
             level = _heading_level((True, line.rstrip()[0]))
             out.append("#" * level + " " + title)
             i += 3
@@ -476,20 +435,23 @@ def _walk_blocks(
                 and lines[i - 1].rstrip()[0] == lines[i + 1].rstrip()[0]
             )
         ):
-            title = line.strip()
+            title = _xf(line.strip())
             level = _heading_level((False, lines[i + 1].rstrip()[0]))
             out.append("#" * level + " " + title)
             i += 2
             continue
 
-        # Stray heading underline (no paired title) — drop
+        # Stray underline line — may be an RST transition (horizontal rule).
+        # Converter emits the line verbatim in JSON; preserve it here so
+        # substring matching succeeds.
         if _HEADING_UNDERLINE_RE.match(line):
+            out.append(line.rstrip())
             i += 1
             continue
 
         # Simple-table start — re-render the whole block as MD table
         if _SIMPLE_TABLE_SEP_RE.match(line):
-            rendered, next_i = _render_simple_table(lines, i)
+            rendered, next_i = _render_simple_table(lines, i, label_map=label_map)
             if rendered:
                 out.append(rendered)
             i = next_i
@@ -497,7 +459,7 @@ def _walk_blocks(
 
         # Grid-table separator — render the block as MD table
         if _GRID_TABLE_SEP_RE.match(line):
-            rendered, next_i = _render_grid_table(lines, i)
+            rendered, next_i = _render_grid_table(lines, i, label_map=label_map)
             if rendered:
                 out.append(rendered)
             i = next_i
@@ -509,7 +471,13 @@ def _walk_blocks(
             name = m.group("name").lower()
             args = m.group("args").strip()
             header_indent = len(m.group("indent"))
-            body_lines, next_i = _collect_directive_body(lines, i, header_indent)
+            # Fenced-code directives treat body indent strictly (a line
+            # shallower than the first body line ends the block) — matches
+            # the converter so substring alignment holds.
+            strict_body = name.lower() in _FENCED_CODE_DIRECTIVES
+            body_lines, next_i = _collect_directive_body(
+                lines, i, header_indent, strict_body_indent=strict_body,
+            )
             i = next_i
             rendered = _render_directive(name, args, body_lines, label_map, strict_unknown=strict_unknown)
             if rendered:
@@ -539,21 +507,23 @@ def _walk_blocks(
                 break
             i = j
             if body_lines:
-                out.append(" ".join(body_lines))
+                out.append(_xf(" ".join(body_lines)))
             continue
 
         # Standalone comment line
         if _COMMENT_RE.match(line):
-            # Skip the comment and its indented continuation lines
+            # Skip the comment and its indented continuation lines. The
+            # comment's own indent defines the continuation boundary —
+            # only lines indented *deeper* belong to the comment body.
+            comment_indent = len(line) - len(line.lstrip())
             i += 1
-            header_indent = 0
             while i < n:
                 bl = lines[i]
                 if not bl.strip():
                     i += 1
                     continue
                 cur_indent = len(bl) - len(bl.lstrip())
-                if cur_indent > header_indent:
+                if cur_indent > comment_indent:
                     i += 1
                     continue
                 break
@@ -565,7 +535,7 @@ def _walk_blocks(
         fm = _FIELD_LIST_RE.match(line)
         if fm and fm.group("value") is not None:
             name = fm.group("name").strip()
-            value = fm.group("value").strip()
+            value = _xf(fm.group("value").strip())
             if value:
                 out.append(f":{name}: {value}")
             else:
@@ -578,7 +548,7 @@ def _walk_blocks(
         bm = _BULLET_RE.match(line)
         if bm:
             marker = bm.group("marker")
-            out.append(f"{bm.group('indent')}{marker} {bm.group('body')}")
+            out.append(f"{bm.group('indent')}{marker} {_xf(bm.group('body'))}")
             i += 1
             continue
 
@@ -592,7 +562,7 @@ def _walk_blocks(
                 norm_marker = f"{m_num.group(1)}."
             else:
                 norm_marker = marker  # e.g. "a." or "#."
-            out.append(f"{em.group('indent')}{norm_marker} {em.group('body')}")
+            out.append(f"{em.group('indent')}{norm_marker} {_xf(em.group('body'))}")
             i += 1
             continue
 
@@ -602,27 +572,32 @@ def _walk_blocks(
         if lbm:
             content = lbm.group(1)
             if content.strip() or line.strip() == "|":
-                out.append(f"| {content}" if content else "|")
+                out.append(f"| {_xf(content)}" if content else "|")
                 i += 1
                 continue
 
-        # Grid-table cell line: `| text | text |` — strip pipes, keep text
-        if line.strip().startswith("|") and line.strip().endswith("|"):
-            inner = line.strip().strip("|").strip()
-            # split on pipes and rejoin with spaces
-            cells = [c.strip() for c in inner.split("|")]
-            out.append(" ".join(cells))
-            i += 1
-            continue
+        # Note: a standalone `| text | text |` line is handled by the
+        # table renderer that saw the `+---+` separator upstream, so
+        # bare pipes in prose (e.g. `|br|` expansions) pass through.
 
-        out.append(line)
+        out.append(_xf(line))
         i += 1
 
     return "\n".join(out)
 
 
-def _collect_directive_body(lines: list[str], start: int, header_indent: int) -> tuple[list[str], int]:
+def _collect_directive_body(
+    lines: list[str], start: int, header_indent: int,
+    *, strict_body_indent: bool = False,
+) -> tuple[list[str], int]:
     """Collect the indented body of a directive starting at *start*.
+
+    When *strict_body_indent* is True, the body ends as soon as a line is
+    indented less than the first body line — matching the converter's
+    `_read_block` behaviour for fenced-code and other verbatim-body
+    directives. For narrative directives (admonition, list-table) the
+    default behaviour is used: body runs until a line reaches or falls
+    below the directive's header indent.
 
     Returns (body_lines, next_index). Body lines retain their original
     text (relative indentation may be dedented later by the renderer).
@@ -642,6 +617,8 @@ def _collect_directive_body(lines: list[str], start: int, header_indent: int) ->
             break
         if body_indent is None:
             body_indent = cur_indent
+        elif strict_body_indent and cur_indent < body_indent:
+            break
         body.append(line)
         i += 1
     # Drop trailing blank lines
@@ -665,14 +642,29 @@ def _collect_directive_body(lines: list[str], start: int, header_indent: int) ->
     return body, i
 
 
-def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
-    """Render an RST simple-table (`=== ===` separators) as an MD table.
+def _render_simple_table(
+    lines: list[str], start: int, *, label_map: dict[str, str] | None = None
+) -> tuple[str, int]:
+    """Render an RST simple-table (`=== ===` separators) as a standard MD table.
+
+    MD table layout per spec §3-1 (closed set of block constructs):
+        | h1 | h2 |
+        | --- | --- |
+        | a  | b  |
+
+    When no header row is present (no mid-separator), the first data row is
+    treated as the header (MD tables require a header).
 
     Column boundaries come from the separator *display* widths. CJK
     characters occupy two display columns, so we track display width
     rather than raw codepoint index when splitting rows.
     """
     import unicodedata
+
+    label_map = label_map or {}
+
+    def _xf_cell(s: str) -> str:
+        return _apply_inline_transforms(s, label_map)
 
     def _char_width(c: str) -> int:
         return 2 if unicodedata.east_asian_width(c) in ("W", "F") else 1
@@ -815,25 +807,50 @@ def _render_simple_table(lines: list[str], start: int) -> tuple[str, int]:
         return "", i
 
     ncols = len(cols)
-    esc_rows = [[c.replace("|", "\\|") for c in r] for r in rows]
+    # Strip nested directive header lines from cells (e.g. ``.. tip::``)
+    # but keep the body prose so indented body content is preserved.
+    _NESTED_DIRECTIVE_LINE_RE = re.compile(r"\.\.\s+[a-z][a-z_:-]*\s*::[^\n]*")
+
+    def _strip_cell_st(s: str) -> str:
+        # Remove any ``.. directive::`` occurrences inline in the cell text
+        # (simple-table cells are already flattened, so the directive header
+        # sits as a run of chars within the cell).
+        return _NESTED_DIRECTIVE_LINE_RE.sub("", s).strip()
+
+    rows = [[_strip_cell_st(c) for c in r] for r in rows]
+    # Apply inline transforms per cell, then escape pipes.
+    xf_rows = [[_xf_cell(c).replace("|", "\\|") for c in r] for r in rows]
     sep = "|" + "|".join(["---"] * ncols) + "|"
     if has_mid_sep and header_count > 0:
-        header_md = ["| " + " | ".join(r) + " |" for r in esc_rows[:header_count]]
-        body_md = ["| " + " | ".join(r) + " |" for r in esc_rows[header_count:]]
+        header_md = ["| " + " | ".join(r) + " |" for r in xf_rows[:header_count]]
+        body_md = ["| " + " | ".join(r) + " |" for r in xf_rows[header_count:]]
         return "\n".join(header_md + [sep] + body_md), i
-    # No mid-separator → all rows, then trailing separator
-    all_rows = ["| " + " | ".join(r) + " |" for r in esc_rows]
-    return "\n".join(all_rows + [sep]), i
+    # No mid-separator → first row becomes the header (MD requires one).
+    header_md = ["| " + " | ".join(xf_rows[0]) + " |"]
+    body_md = ["| " + " | ".join(r) + " |" for r in xf_rows[1:]]
+    return "\n".join(header_md + [sep] + body_md), i
 
 
-def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
-    """Render an RST grid-table as an HTML `<table>` block.
+def _render_grid_table(
+    lines: list[str], start: int, *, label_map: dict[str, str] | None = None
+) -> tuple[str, int]:
+    """Render an RST grid-table as a standard MD table.
+
+    Output layout:
+        | h1 | h2 |
+        | --- | --- |
+        | a  | b  |
 
     Uses display-width column boundaries from the first `+---+` separator
     so that inline `|` (e.g. line-block markers inside a cell) is not
     mistaken for a column divider.
     """
     import unicodedata as _ud
+
+    label_map = label_map or {}
+
+    def _xf_cell(s: str) -> str:
+        return _apply_inline_transforms(s, label_map)
 
     def _dw(c: str) -> int:
         return 2 if _ud.east_asian_width(c) in ("W", "F") else 1
@@ -898,6 +915,23 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
     rows: list[tuple[bool, list[str]]] = []
     in_header = has_header_sep  # only mark rows as header if separator exists
     i = start
+
+    def _is_cell_line(s: str) -> bool:
+        """A cell line starts with ``|`` and ends with either ``|`` or ``+``
+        (the latter happens for rowspan continuation rows that embed
+        a sub-divider like ``|         +---+``)."""
+        st = s.strip()
+        if not st.startswith("|"):
+            return False
+        return st.endswith("|") or st.endswith("+")
+
+    def _is_weird_rowspan_sep(s: str) -> bool:
+        """An intermediate line like ``+---+/text/+---+`` — a rowspan
+        separator with embedded cell text on the middle column. Treat as
+        a divider (skip without breaking the loop)."""
+        st = s.strip()
+        return st.startswith("+") and st.endswith("+") and "-" in st
+
     while i < n:
         ln = lines[i]
         if _GRID_TABLE_SEP_RE.match(ln):
@@ -906,15 +940,30 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
             i += 1
             if i < n and not (
                 _GRID_TABLE_SEP_RE.match(lines[i])
-                or (lines[i].strip().startswith("|") and lines[i].strip().endswith("|"))
+                or _is_cell_line(lines[i])
             ):
                 break
             continue
-        if ln.strip().startswith("|") and ln.strip().endswith("|"):
+        if _is_cell_line(ln):
             cells = _split_cells(ln)
-            # Skip rows where every cell is empty — converter omits these.
-            if cells and any(c for c in cells):
+            # Skip rows where every non-empty cell is only dashes / equals /
+            # plus padding — these are rowspan sub-dividers that the
+            # converter omits.
+            def _is_divider(cs: list[str]) -> bool:
+                non_empty = [c for c in cs if c]
+                if not non_empty:
+                    return False
+                return all(set(c) <= set("-=+ ") for c in non_empty)
+
+            if cells and any(c for c in cells) and not _is_divider(cells):
                 rows.append((in_header, cells))
+            i += 1
+            continue
+        if _is_weird_rowspan_sep(ln):
+            # Rowspan separator carrying partial cell text — the converter
+            # treats the embedded text as cell content and merges it into
+            # surrounding rows. For alignment, skip without breaking so
+            # the next cell line continues the table.
             i += 1
             continue
         break
@@ -922,28 +971,35 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
     if not rows:
         return "", i
 
-    # Emit HTML
-    out = ["<table>"]
+    # Determine column count from widest row
+    ncols = max(len(r) for _, r in rows)
+
+    # Apply inline transforms to each cell; escape pipes so embedded
+    # text like `| pipe |` doesn't break MD table syntax.
+    def _cell_md(c: str) -> str:
+        return _xf_cell(c).replace("|", "\\|")
+
     header_rows = [r for hdr, r in rows if hdr]
     body_rows = [r for hdr, r in rows if not hdr]
+
+    # Pad rows to ncols
+    def _pad(r: list[str]) -> list[str]:
+        return r + [""] * (ncols - len(r))
+
+    md_lines: list[str] = []
     if header_rows:
-        out.append("<thead>")
-        for r in header_rows:
-            out.append("<tr>")
-            for c in r:
-                out.append(f"  <th>{c}</th>")
-            out.append("</tr>")
-        out.append("</thead>")
-    if body_rows:
-        out.append("<tbody>")
-        for r in body_rows:
-            out.append("<tr>")
-            for c in r:
-                out.append(f"  <td>{c}</td>")
-            out.append("</tr>")
-        out.append("</tbody>")
-    out.append("</table>")
-    return "\n".join(out), i
+        # Use first header row as the MD header (MD tables have one header row)
+        md_lines.append("| " + " | ".join(_cell_md(c) for c in _pad(header_rows[0])) + " |")
+        md_lines.append("|" + "|".join(["---"] * ncols) + "|")
+        for r in header_rows[1:] + body_rows:
+            md_lines.append("| " + " | ".join(_cell_md(c) for c in _pad(r)) + " |")
+    else:
+        # No `+===+` header separator — treat first row as the header
+        md_lines.append("| " + " | ".join(_cell_md(c) for c in _pad(body_rows[0])) + " |")
+        md_lines.append("|" + "|".join(["---"] * ncols) + "|")
+        for r in body_rows[1:]:
+            md_lines.append("| " + " | ".join(_cell_md(c) for c in _pad(r)) + " |")
+    return "\n".join(md_lines), i
 
 
 def _split_directive_options(body: list[str]) -> tuple[dict[str, str], list[str]]:
@@ -986,24 +1042,62 @@ def _render_directive(
         body_text = "\n".join(body_rest).rstrip()
         return f"```{lang}\n{body_text}\n```"
 
-    # Group B: admonition — emit MD blockquote with labelled header so the
-    # normalised source matches converter output (which renders
-    # `.. note::` as `> **Note:** ...`).
+    # Group B: admonition — emit MD blockquote with labelled header from the
+    # shared scripts.common.rst_admonition module (the single source of
+    # truth for RST→MD admonition conventions).
+    #
+    # Converter behaviour (scripts.create.converters.rst._render_admonition_body):
+    # split the body at the first line introducing a directive, bullet list,
+    # or enumerated list. Prose lines BEFORE that split have their field-list
+    # markers (``:name: value``) collapsed to just ``value``. Lines FROM the
+    # split onwards are preserved verbatim (field markers intact).
     if name in _ADMONITION_DIRECTIVES:
-        body_text = "\n".join(body_rest)
-        inner = _walk_blocks(body_text, label_map, strict_unknown=strict_unknown)
-        inner_flat = re.sub(r'\s+', ' ', inner).strip()
-        label = _ADMONITION_LABELS.get(name, name.capitalize())
-        title_part = args.strip()
-        if title_part and name == "admonition":
-            return f"> **{title_part}** {inner_flat}"
-        return f"> **{label}:** {inner_flat}"
+        # Split the body into prose (before tail) and tail (from first
+        # structural marker onward), same as the converter.
+        tail_start = None
+        directive_start = re.compile(r"^\s*\.\.\s+\S")
+        bullet_start = re.compile(r"^\s*[*+\-][ \t]+\S")
+        enum_start = re.compile(r"^\s*\d+[.\)][ \t]+\S")
+        for idx, l in enumerate(body_rest):
+            s = l.strip()
+            if not s:
+                continue
+            if directive_start.match(l) or bullet_start.match(l) or enum_start.match(l):
+                tail_start = idx
+                break
+        if tail_start is None:
+            prose_lines = body_rest
+            tail_lines: list[str] = []
+        else:
+            prose_lines = body_rest[:tail_start]
+            tail_lines = body_rest[tail_start:]
+        # Normalise prose lines: drop ``:name:`` from leading field-list
+        # markers (converter behaviour). The regex targets a literal field
+        # entry — the ``:name:`` must be followed by whitespace or end of
+        # line so that inline roles like ``:java:extdoc:`...``` are not
+        # mis-stripped. Field names can be any non-whitespace/non-backtick
+        # chars (CJK characters are allowed — e.g. ``:固定長:``).
+        prose_text = "\n".join(prose_lines)
+        prose_text = re.sub(
+            r"(?m)^[ \t]*:(?!\s)([^:\s`]+):(?=[ \t]|$)", "", prose_text
+        )
+        prose_inner = _walk_blocks(prose_text, label_map, strict_unknown=strict_unknown)
+        prose_flat = re.sub(r"\s+", " ", prose_inner).strip()
+        header = _render_admonition_header(name, args.strip())
+        # Re-walk the tail so nested directives/lists/tables are rendered.
+        tail_rendered = ""
+        if tail_lines:
+            tail_text = "\n".join(tail_lines)
+            tail_rendered = _walk_blocks(tail_text, label_map, strict_unknown=strict_unknown).strip()
+        if tail_rendered:
+            return f"{header} {prose_flat}\n\n{tail_rendered}".rstrip() if prose_flat else f"{header}\n\n{tail_rendered}".rstrip()
+        return f"{header} {prose_flat}".rstrip()
 
     # Group C: table — drop argument (converter does not include table
     # title in JSON body; caption presence confirmed 0/100 in v6 empirical
     # scan), reconstruct cells as MD table.
     if name in _TABLE_DIRECTIVES:
-        return _render_table_directive(name, body_rest)
+        return _render_table_directive(name, body_rest, label_map)
 
     # Group D: figure — converter emits `![caption](assets/{id}/{filename})`.
     # First non-option body line is the caption. Use placeholder URL so
@@ -1038,12 +1132,18 @@ def _render_directive(
     return ""
 
 
-def _render_table_directive(name: str, body: list[str]) -> str:
+def _render_table_directive(
+    name: str, body: list[str], label_map: dict[str, str] | None = None
+) -> str:
     """Extract visible text from a list-table/table/csv-table body as MD table rows.
 
     Converter emits MD table syntax (`| cell | cell |` with `|---|` separator),
     so the normalised source must match that structure.
     """
+    label_map = label_map or {}
+
+    def _xf_cell(s: str) -> str:
+        return _apply_inline_transforms(s, label_map)
     if name == "list-table":
         # Parse rows by indentation: "* -" starts a row, "- " (at row indent)
         # starts a new cell in the same row, everything else is cell
@@ -1112,9 +1212,29 @@ def _render_table_directive(name: str, body: list[str]) -> str:
         # don't produce visible content.
         _INLINE_LABEL_RE = re.compile(r"^\s*\.\.\s+_[A-Za-z0-9_.-]+:\s*")
         rows = [[_INLINE_LABEL_RE.sub("", c) for c in r] for r in rows]
-        # Escape pipes inside cells (converter does this) so embedded
-        # line-block content like `| "Nablarch"` doesn't break MD table.
-        rows = [[c.replace("|", "\\|") for c in r] for r in rows]
+        # Nested directives inside a cell: converter behaviour depends on
+        # whether the whole cell is just the directive (dropped entirely)
+        # or the directive is followed by body prose (directive header
+        # dropped, body kept). Applying a line-by-line strip matches both.
+        _LIST_NESTED_DIRECTIVE_LINE_RE = re.compile(r"\.\.\s+[a-z][a-z_:-]*\s*::[^\n]*")
+
+        def _strip_cell(s: str) -> str:
+            # If the cell IS a directive with a body-holding directive name
+            # that produces fenced-code / table output, drop the whole cell
+            # (rendering a code-block in a single MD table cell is not
+            # well-defined). Otherwise, drop just the directive header line
+            # and keep the body text.
+            first = s.strip()
+            if first.startswith(".."):
+                head = re.match(r"\.\.\s+([a-z][a-z_:-]*)\s*::", first)
+                if head and head.group(1) in {"code-block", "sourcecode", "literalinclude"}:
+                    return ""
+            return _LIST_NESTED_DIRECTIVE_LINE_RE.sub("", s).strip()
+
+        rows = [[_strip_cell(c) for c in r] for r in rows]
+        # Apply inline transforms and escape pipes so embedded line-block
+        # content (e.g. `| "Nablarch"`) doesn't break MD table.
+        rows = [[_xf_cell(c).replace("|", "\\|") for c in r] for r in rows]
         # Render MD table: first row as header
         header = "| " + " | ".join(rows[0]) + " |"
         sep = "|" + "|".join(["---"] * ncols) + "|"
@@ -1126,12 +1246,12 @@ def _render_table_directive(name: str, body: list[str]) -> str:
         # used for bare tables so we get MD table output, matching converter.
         for idx, line in enumerate(body):
             if _SIMPLE_TABLE_SEP_RE.match(line):
-                rendered, _ = _render_simple_table(body, idx)
+                rendered, _ = _render_simple_table(body, idx, label_map=label_map)
                 return rendered
             if _GRID_TABLE_SEP_RE.match(line):
-                rendered, _ = _render_grid_table(body, idx)
+                rendered, _ = _render_grid_table(body, idx, label_map=label_map)
                 return rendered
-        return "\n".join(l for l in body if l.strip())
+        return "\n".join(_xf_cell(l) for l in body if l.strip())
 
     if name == "csv-table":
         return "\n".join(body)

@@ -320,12 +320,13 @@ class TestFieldLists:
 # ---------------------------------------------------------------------------
 
 class TestLineContinuation:
-    def test_backslash_newline_preserved(self):
-        # Converter emits the literal `\` in MD output, so normaliser
-        # maps "\<newline>" to "\ " (backslash + space) for alignment.
+    def test_backslash_newline_preserved_verbatim(self):
+        # Converter preserves the literal ``\<newline>`` sequence in MD
+        # output (both sides stay identical), so the tokenizer must not
+        # transform it.
         src = "foo \\\nbar\n"
         out = _normalise(src)
-        assert "foo \\ bar" in out
+        assert "foo \\\nbar" in out
 
 
 # ---------------------------------------------------------------------------
