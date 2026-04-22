@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (2軸案に pivot — type/category のみ、processing_patterns は category 内に畳み込み)
+**Updated**: 2026-04-22 (Stage 2 Round 1 完了 — 全5シナリオ judge=3 達成、PE レビュー fix 適用済)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -116,6 +116,22 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 
 ## In Progress
 
+### Stage 3 section 選択 + 最終回答 + Round 制
+
+**Steps:**
+- [ ] `tools/benchmark/prompts/stage3_section_select.md` 作成（AI-2、title + path のみ渡す、hints なし）
+- [ ] AI-2 JSON schema 作成（selected_paths: list[str]）
+- [ ] `prompts/stage3_answer.md` 作成（AI-3、読み込んだ section から最終回答生成）
+- [ ] `prompts/judge_stage3.md` 作成（別 sub-agent、最終回答品質を4段階）
+- [ ] `run.py` に Stage 3 pipeline 追加 (AI-2 → read-sections → AI-3 answer → judge)
+- [ ] Stage 3 Round 1 計測（5件、new flow）
+- [ ] Stage 3 Round 1 計測（5件、current flow）— baseline として
+- [ ] 結果を `.work/00307/rounds/stage3-round1.md` に記録（new/current 比較）
+- [ ] Prompt Engineer Expert Review
+- [ ] ユーザーに「結果 + 改善案 + どうするか提案」を提示 → 合意
+
+## Done (this session)
+
 ### Stage 1 Round 2（facet 抽出）— AI-1 を先に実測して設計判断
 
 **Status**: 旧 Round 2 案（index.toon 語彙 anchor）は廃止。ファセット検索ピボット設計はエキスパートレビュー完了。ただし **設計書は机上**なので、mapping 拡張等の仕込みに入る前に、まず **AI-1 facet 抽出プロンプトだけを 5件で実測** → 出てきた facet を見て「filter が機能しそうか」「processing_patterns 列を埋める必要があるか」を実データで判断する自然な順序に補正（2026-04-22）。
@@ -136,6 +152,19 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 - [x] Round 2 Prompt Engineer Review → `.work/00307/review-by-prompt-engineer-stage1-round2-results.md`
 - [x] Round 3: 3 prompt edits + scenario 修正 → 全 5件で Jaccard=1.0 達成 (`.work/00307/rounds/stage1-round3.md`)
 
+### Stage 2 機械 filter 実装 + Round 制
+
+**Steps:**
+- [x] `tools/benchmark/filter/facet_filter.py` 実装（index.toon 読込、AND filter、fallback ladder）
+- [x] `tests/test_facet_filter.py` 19 tests（parsing / AND / OR / wildcard / fallback / 5 scenarios）
+- [x] `prompts/judge_stage2.md` 作成（4段階 + 近傍ファイル容認 + reason ≤300）
+- [x] `run.py` に Stage 2 (filter + judge) 対応追加
+- [x] `invoke_claude_stream` max_turns リカバリ fix (`96402a071`)
+- [x] Stage 2 Round 1 計測（Sonnet、5件 → 全 judge=3、fallback=none）
+- [x] `.work/00307/rounds/stage2-round1.md` 記録
+- [x] Prompt Engineer Review → `.work/00307/review-by-prompt-engineer-stage2-round1.md`
+- [x] Review fix 適用（primary 定義 / reason format / 言語 / 近傍例）→ 再実行でも全 judge=3
+
 ### [CONDITIONAL] processing_patterns back-propagation
 
 **前提**: 上記 DECISION で「processing_patterns 列を埋める必要がある」と判断された場合のみ実施。不要と判断されたら削除。
@@ -147,32 +176,6 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 - [ ] index.toon 再生成 → 4列目が埋まっていることを確認
 
 ## Not Started
-
-### Stage 2 機械 filter 実装 + Round 制
-
-**Steps:**
-- [ ] `tools/benchmark/filter/facet_filter.py` 実装（index.toon 読込、AND filter、fallback ladder: drop-pp → type-only → none、fallback_used 記録）
-- [ ] ユニットテスト（空 processing_patterns は value match しない、fallback 動作、閾値）
-- [ ] `tools/benchmark/scenarios/qa-v6-sample5.json` に `expected_candidate_paths` 追加
-- [ ] `prompts/judge_stage2.md` 作成（別 sub-agent LLM judge、4段階レベル + 理由）
-- [ ] `run.py` に Stage 2 (filter + judge) 対応追加
-- [ ] Stage 2 Round 1 計測（5件、確定モデル使用）
-- [ ] 結果を `.work/00307/rounds/stage2-round1.md` に記録
-- [ ] Prompt Engineer Expert Review
-- [ ] ユーザーに「結果 + 改善案 + どうするか提案」を提示 → 合意
-
-### Stage 3 section 選択 + 最終回答 + Round 制
-
-**Steps:**
-- [ ] `tools/benchmark/prompts/stage3_section_select.md` 作成（AI-2、title + path のみ渡す、hints なし）
-- [ ] AI-2 JSON schema 作成
-- [ ] Stage 3 runner: AI-2 → read-sections → 最終回答生成まで
-- [ ] `prompts/judge_stage3.md` 作成（別 sub-agent、最終回答品質を4段階）
-- [ ] Stage 3 Round 1 計測（5件、new flow）
-- [ ] Stage 3 Round 1 計測（5件、current flow）— baseline として
-- [ ] 結果を `.work/00307/rounds/stage3-round1.md` に記録（new/current 比較）
-- [ ] Prompt Engineer Expert Review
-- [ ] ユーザーに「結果 + 改善案 + どうするか提案」を提示 → 合意
 
 ### 15件で中間確認
 
