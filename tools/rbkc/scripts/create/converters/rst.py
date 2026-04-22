@@ -1135,10 +1135,12 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             i += 1
             continue
 
-        # RST footnote / citation target — extract inline text + block body
-        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-zA-Z0-9_]*)\]\s+(.*)", stripped)
+        # RST footnote / citation target — extract inline text + block body.
+        # Accept both `.. [#name] text` (inline text follows `]`) and
+        # `.. [#name]` (no inline text; body on indented continuation lines).
+        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-zA-Z0-9_]*)\](?:\s+(.*))?$", stripped)
         if m_fn:
-            inline_text = m_fn.group(1).strip()
+            inline_text = (m_fn.group(1) or "").strip()
             block, i = _read_block(lines, i + 1)
             fn_lines = ([inline_text] if inline_text else []) + [b for b in block if b.strip()]
             for fl in fn_lines:

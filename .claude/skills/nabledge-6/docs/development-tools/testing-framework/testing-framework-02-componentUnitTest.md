@@ -101,10 +101,7 @@ public class UserComponentTest extends DbAccessTestSupport {
 * ID_GENERATE:採番テーブル。登録時に採番処理を行うため。採番テーブルを初期化しておかないと、テスト実行時の採番結果がわからなくなり、挿入結果の検証ができなくなる。
 
 ![](../../../knowledge/assets/testing-framework-02-componentUnitTest/componentUnitTest_Setup.png)
-.. [#]
-
 スレッドコンテキストとは、ユーザID、リクエストID、使用言語のような、一連の処理を実行するときに、コールスタックの複数のメソッドにおいて共通的に必要なデータを格納するオブジェクト。
-
 これらのデータを読み込む処理を以下に示す。
 
 ```java

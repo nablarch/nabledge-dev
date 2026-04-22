@@ -633,11 +633,9 @@ ParameterizedSqlPStatement statement = connection.prepareParameterizedSqlStateme
 // conditionのプロパティの値をバインド変数に設定しSQLが実行される
 SqlResultSet result = statement.retrieve(condition);
 ```
-.. [#collection]
 Beanオブジェクトを入力としてSQLを実行する に記載がある通り、プロパティの値は `BeanUtil` を使用してMapに変換してから使用する。
 このため、 `BeanUtil` でサポートされていない型でプロパティが宣言されていた場合、
 in句に条件を設定できないため注意すること。
-
 なお、 `BeanUtil` で変換対象の型を追加する方法は、
 型変換ルールを追加する を参照。
 

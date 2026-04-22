@@ -5,9 +5,7 @@
 
 [ソースコード](https://github.com/nablarch/nablarch-biz-sample-all/tree/main/nablarch-smime-integration)
 
-.. [#bouncy]
 bouncycastleとは、暗号化等のセキュリティ関連の機能を提供するオープンソースライブラリである。
-
 詳細は、bouncycastleのサイト(\ [https://www.bouncycastle.org/](https://www.bouncycastle.org/)\ )を参照
 
 ## 環境準備

@@ -12,9 +12,7 @@
 | `JaxRsHttpRequest`\ [#]_\ | パスパラメータ や クエリパラメータ を使う場合やHTTPヘッダの値などを取得したい場合には、引数として `JaxRsHttpRequest` を定義する。 例 |
 | `ExecutionContext` | `ExecutionContext` が提供するスコープ変数にアクセスしたい場合は、 引数として `ExecutionContext` を定義する。 例 |
 | 組み合わせ | 用途に応じて上記の型を組み合わせることが出来る。 例えば、HTTPヘッダ情報とリクエストボディから変換されたFormを必要とするメソッドでは、以下の定義となる。 |
-.. [#]
-後方互換性維持のためHttpRequestも使用できるが、原則JaxRsHttpRequestを使用する。
-
+後方互換性維持のためHttpRequestも使用できるが、原則JaxRsHttpRequestを使用する。  
 メソッド戻り値
 | 戻り値の型 | 説明 |
 |---|---|

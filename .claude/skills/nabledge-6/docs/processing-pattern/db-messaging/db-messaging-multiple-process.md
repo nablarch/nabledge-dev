@@ -83,5 +83,4 @@ public DataReader<SqlRow> createReader(ExecutionContext context) {
     return new DatabaseTableQueueReader(reader, 1000, "RECEIVED_MESSAGE_SEQUENCE");;
 }
 ```
-.. [#multi_process]
 冗長化構成の複数のサーバ上で同一のデータベースをキューとしたメッセージングを起動するケースなどが該当する。

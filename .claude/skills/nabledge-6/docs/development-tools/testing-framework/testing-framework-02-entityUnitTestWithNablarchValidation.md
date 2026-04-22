@@ -760,12 +760,9 @@ setter、getterに対するテストケース を参照。
 </tbody>
 </table>
 
-.. [#]
 `nablarch.test.core.util.generator.CharacterGenerator`\ の実装クラスを指定する。
 このクラスがテスト用の入力値を生成する。
 通常は、\ `nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator`\ を使用すれば良い。
-
-
 設定するメッセージIDは、バリデータの設定値と合致させる。
 
 （以下の記述例を参照）

@@ -53,14 +53,11 @@
 | スキームが `http` または `https` の場合 | 指定したURLへのリダイレクトを行う |
 | スキームが上記以外で、 ステータスコードが400以上の場合 | ステータスコードに合うエラー画面の表示をおこなう。 |
 | 上記以外の場合 | HttpResponse#getBodyStream()の結果を応答する。 |
-.. [#scheme]
 ここで言う「スキーム」とは、後続ハンドラが返した
 `HttpResponse#getContentPath()`
 で取得した  `ResourceLocator` の
 `getScheme() メソッド` の戻り値のことを指す。
 明示的にスキームを指定しない場合のデフォルトスキームは `servlet` である。
-
-.. [#statusCode]
 ここで言う「ステータスコード」とは、後続ハンドラが返す
 `HttpResponse` クラスの
 `getStatusCode()` メソッドの戻り値のことを示す。

@@ -635,15 +635,11 @@ nablarch.test.resource-root=test/online;test/batch
 ```
 \
 
-.. [#]
 一時的に設定を変更する場合は、設定ファイルを変更しなくても、
 テスト実行時のVM引数指定を追加することで代替可能である。
-
 【例】 \ `-Dnablarch.test.resource-root=path/to/test-data-dir`\
-
 \
 
-.. [#]
 複数のディレクトリを指定した場合、同名のテストデータが存在した場合、
 最初に発見されたテストデータが読み込まれる。
 

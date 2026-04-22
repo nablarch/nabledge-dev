@@ -10,7 +10,6 @@
 次画面へのリクエストパラメータを作成できるツールを提供する。
 
 
-.. [*]
 リクエストパラメータのテストデータ記述方法については、\ ../../05_UnitTestGuide/02_RequestUnitTest/index\ （特に「\  request_test_req_params\ 」の項 ）を参照
 
 ## 特徴

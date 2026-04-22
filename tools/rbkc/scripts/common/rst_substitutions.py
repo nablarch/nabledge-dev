@@ -88,7 +88,13 @@ def collect_substitutions(text: str) -> dict[str, str]:
                 # Body is only <br> tags (possibly many) — map each to \n.
                 subs[name] = _BR_TAG_RE.sub("\n", body)
             else:
-                subs[name] = body
+                # Extract `<a href="url">text</a>` → `[text](url)` (MD link)
+                # to match converter's rendering of HTML anchors.
+                m_a = re.match(r'^<a\s+[^>]*href="([^"]+)"[^>]*>([^<]+)</a>\s*$', body)
+                if m_a:
+                    subs[name] = f"[{m_a.group(2)}]({m_a.group(1)})"
+                else:
+                    subs[name] = body
         else:
             # Unknown directive — preserve whatever text is there.
             subs[name] = " ".join(body_lines).strip()

@@ -833,18 +833,11 @@ public void testSetterAndGetter() {
 
 \
 
-.. [#]
 文字種と文字列長の単項目精査テストケース で、maxを省略したテストケースを作成する場合は指定必須。
-
-.. [#]
 `nablarch.test.core.util.generator.CharacterGenerator`\ の実装クラスを指定する。
 このクラスがテスト用の入力値を生成する。
 通常は、\ `nablarch.test.core.util.generator.BasicJapaneseCharacterGenerator`\ を使用すれば良い。
-
-.. [#]
 Bean Validationを使用する場合は、 `nablarch.test.core.entity.BeanValidationTestStrategy`\ を固定で指定する。
-
-
 #### コンポーネント設定ファイルの記述例
 
 テスト用コンポーネント設定ファイル記述例を示す。

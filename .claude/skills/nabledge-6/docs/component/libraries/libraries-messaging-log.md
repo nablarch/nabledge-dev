@@ -197,12 +197,8 @@ HTTP受信メッセージのログ出力に使用するフォーマット。
     \n\tmessage_header = [$messageHeader$]
     \n\tmessage_body   = [$messageBody$]
 ```
-.. [#placeholder]
-
-
 * **$messageBody$:** 電文をISO-8859-1固定でエンコードした結果を出力する。
 * **$messageBodyHex$:** $messageBody$の内容をヘキサダンプして出力する。
-
 記述例
 ```properties
 messagingLogFormatter.className=nablarch.fw.messaging.logging.MessagingLogFormatter
@@ -329,11 +325,8 @@ messagingLogFormatter.structuredMessagePrefix
 デフォルトは `"$JSON$"` となる。
 変更する場合は、LogWriterの `structuredMessagePrefix` プロパティを使用して `JsonLogFormatter` にも同じ値を設定すること（LogWriterのプロパティについては ログ出力の設定 を参照）。
 
-.. [#placeholder_json]
-
 * **messageBody:** 電文をISO-8859-1固定でエンコードした結果を出力する。
 * **messageBodyHex:** messageBodyの内容をヘキサダンプして出力する。
-
 記述例
 ```properties
 messagingLogFormatter.className=nablarch.fw.messaging.logging.MessagingJsonLogFormatter

@@ -541,19 +541,13 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
 </table>
 
 
-.. [#]
 PJ共通のwebモジュールが存在する場合、このプロパティにカンマ区切りでディレクトリを設定する。
 複数指定された場合、先頭から順にリソースが読み込まれる。
-
 以下に例を示す。
-
-```xml
-<component name="httpTestConfiguration" class="nablarch.test.core.http.HttpTestConfiguration">
-  <property name="webBaseDir" value="/path/to/web-a/,/path/to/web-common"/>
-```
+.. code-block:: xml
+  <component name="httpTestConfiguration" class="nablarch.test.core.http.HttpTestConfiguration">
+    <property name="webBaseDir" value="/path/to/web-a/,/path/to/web-common"/>
 この場合、web-a、web-commonの順にリソースが探索される。
-
-.. [#]
 この項目を設定した場合は、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。\
 通常は設定する必要はない。\
 クラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ、この項目を設定する。\

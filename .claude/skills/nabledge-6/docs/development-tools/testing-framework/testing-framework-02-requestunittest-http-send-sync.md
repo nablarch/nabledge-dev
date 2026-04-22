@@ -73,11 +73,8 @@
 
 この値は、応答電文の表の\ **ヘッダおよび本文両方の、「no」を除く最初のフィールド**\ に記載すること。
 
-.. [#http_send_sync_abnormal_test]
 業務アクション内で、明示的に **MessagingException** を制御していないのであれば、
 個別のリクエスト単体テストにおいて障害系のテストを行う必要は無い。
-
-.. [#http_send_sync_abnormal_test_behavior]
 \ message_sendSyncMessage_test\ と異なるクラスを送出する。
 
 ## モックアップを使用するための記述

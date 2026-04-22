@@ -357,10 +357,7 @@ db2 -tvf "C:\develop\myapp-web\db\ddl\db2\create.sql"
 ```bash
 mvn -P gsp clean generate-resources
 ```
-.. [#gsp]
-
 gsp-dba-maven-pluginを使用するためには、別途設定が必要である。
-
 設定については addin_gsp を参照。
 
 ## データの投入

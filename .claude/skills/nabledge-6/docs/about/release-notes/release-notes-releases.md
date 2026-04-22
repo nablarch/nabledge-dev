@@ -10,5 +10,4 @@
 | 2023/12/22 | 6 [1]_ | [リリースノート(6)](../../../knowledge/assets/release-notes-releases/nablarch6-releasenote.xlsx) | [ドキュメント(6)](https://nablarch.github.io/docs/6/doc/) |
 Nablarch 5のリリース情報については [こちら](https://nablarch.github.io/docs/5-LATEST/doc/releases/index.html) を参照。
 
-.. [1]
 先行リリースバージョンであるため、新たな使用は避けること
