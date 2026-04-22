@@ -876,7 +876,8 @@ def _render_grid_table(lines: list[str], start: int) -> tuple[str, int]:
             continue
         if ln.strip().startswith("|") and ln.strip().endswith("|"):
             cells = _split_cells(ln)
-            if cells:
+            # Skip rows where every cell is empty — converter omits these.
+            if cells and any(c for c in cells):
                 rows.append((in_header, cells))
             i += 1
             continue
