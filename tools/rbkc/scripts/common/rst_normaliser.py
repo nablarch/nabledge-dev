@@ -97,8 +97,9 @@ _KNOWN_DIRECTIVES = (
 _HEADING_CHARS = set('=-~^"\'`#*+<>:._')
 _HEADING_UNDERLINE_RE = re.compile(r"^([=\-~^\"'`#*+<>:._])\1{2,}\s*$")
 
-# Directive header: `.. name:: args`
-_DIRECTIVE_HEAD_RE = re.compile(r"^(?P<indent>\s*)\.\.\s+(?P<name>[A-Za-z][A-Za-z0-9_:-]*)::(?P<args>.*)$")
+# Directive header: `.. name:: args` (also tolerate typo `.. name ::` with
+# extra space before the trailing ``::``).
+_DIRECTIVE_HEAD_RE = re.compile(r"^(?P<indent>\s*)\.\.\s+(?P<name>[A-Za-z][A-Za-z0-9_:-]*)\s*::(?P<args>.*)$")
 
 # Substitution definition header (collected separately; skipped in tokenizer body)
 _SUBST_DEF_HEAD_RE = re.compile(r"^\s*\.\.\s+\|([^|]+)\|\s+[a-z_-]+::.*$")
@@ -286,8 +287,10 @@ def normalise_rst(
     text = _apply_inline_transforms(text, label_map)
 
     # Step G: expand substitution references against the body prose.
+    # Non-strict when not enforcing unknown syntax: leave `|x|`-shaped
+    # prose that isn't a real substitution (IP addresses, command args) alone.
     try:
-        text = expand_substitutions(text, subs)
+        text = expand_substitutions(text, subs, strict=strict_unknown)
     except UndefinedSubstitutionError:
         if strict_unknown:
             raise

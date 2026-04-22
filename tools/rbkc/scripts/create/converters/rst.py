@@ -774,9 +774,23 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "", targets=None, s
 
 
 def _parse_simple_table(block: list[str], file_id: str = "", targets=None, substitutions=None) -> list[str]:
-    """Convert RST simple table to Markdown table using docutils SimpleTableParser."""
+    """Convert RST simple table to Markdown table using docutils SimpleTableParser.
+
+    For blocks containing CJK characters, skip docutils and use the
+    CJK-safe display-width parser directly, because docutils
+    SimpleTableParser splits by code-point index and gets column boundaries
+    wrong when cell content mixes CJK (width 2) with ASCII (width 1).
+    """
     if not block:
         return []
+
+    # If any block line contains a CJK char outside the separator rows,
+    # prefer the CJK-safe parser.
+    import unicodedata
+    def _has_wide(s: str) -> bool:
+        return any(unicodedata.east_asian_width(c) in ("W", "F") for c in s)
+    if any(_has_wide(ln) for ln in block):
+        return _parse_simple_table_cjk(block, file_id, targets=targets, substitutions=substitutions)
 
     try:
         sl = StringList(block)

@@ -88,7 +88,7 @@ public class EmployeeForm {
 ItemReaderの作成
 `AbstractItemReader` を継承し、データの読み込みを行う。
 
-| インタフェース名                                                       責務 |  |
+| インタフェース名 | 責務 |
 |---|---|
 | `ItemReader` | データの読み込みを行う。 空実装を提供する `AbstractItemReader` を継承する。 * `ItemReader#open` * `ItemReader#readItem` * `ItemReader#close` |
 
@@ -157,7 +157,7 @@ ItemProcessorの作成
 `ItemProcessor` を実装し、
 業務ロジックを行う(永続化処理は `ItemWriter` の責務であるため実施しない)。
 
-| インタフェース名                                                         責務 |  |
+| インタフェース名 | 責務 |
 |---|---|
 | `ItemProcessor` | 一行分のデータに対する業務処理を行う。 * `ItemProcessor#processItem` |
 
@@ -204,7 +204,7 @@ DB更新等の、永続化処理を実装する。
 ItemWriterの作成
 `ItemWriter` を実装し、データの永続化を行う。
 
-| インタフェース名                                                        責務 |  |
+| インタフェース名 | 責務 |
 |---|---|
 | `ItemWriter` | データを永続化する。 * `ItemWriter#writeItems` |
 

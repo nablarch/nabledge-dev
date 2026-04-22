@@ -228,7 +228,7 @@ batch_request_test\
 
 **【変更が必要なハンドラ】**
 
-| 変更対象のハンドラ        変更後のハンドラ | 変更理由 |  |
+| 変更対象のハンドラ | 変更後のハンドラ | 変更理由 |
 |---|---|---|
 | RequestThreadLoopHandler | OneShotLoopHandler | RequestThreadLoopHandlerでテストを実施すると、 バッチ実行が終わらずにテストコードに制御が戻らなくなるため。 OneShotLoopHandlerにハンドラを差し替えることで、 テスト実行前にセットアップした要求データを全件処理後に バッチ実行が終了しテストコードに制御が戻るようになる。 |
 

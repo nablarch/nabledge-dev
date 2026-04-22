@@ -101,18 +101,21 @@ def collect_substitutions(text: str) -> dict[str, str]:
     return subs
 
 
-def expand_substitutions(text: str, subs: dict[str, str]) -> str:
+def expand_substitutions(text: str, subs: dict[str, str], *, strict: bool = True) -> str:
     """Expand `|name|` references in *text* using *subs*.
 
     Recursive: if an expansion contains further `|name|` references, those
-    are expanded too. Cycles raise SubstitutionCycleError. Undefined
-    references raise UndefinedSubstitutionError.
+    are expanded too. Cycles raise SubstitutionCycleError.
+
+    In strict mode, an undefined reference raises UndefinedSubstitutionError.
+    In non-strict mode, undefined references are left verbatim in the text
+    (useful when text contains `|x|`-shaped content that isn't a real
+    substitution, e.g., `|127.0.0.1|` inside prose).
 
     Note: definition blocks themselves (`.. |name| directive:: ...`) contain
     `|name|` in the header line; these are handled as references during
     expansion since the definition block is expected to be stripped
-    elsewhere. Callers that want to keep the definition text unaffected
-    should strip definition blocks before calling this function.
+    elsewhere.
     """
 
     def _sub_once(s: str, stack: tuple[str, ...]) -> str:
@@ -121,7 +124,9 @@ def expand_substitutions(text: str, subs: dict[str, str]) -> str:
             if name in stack:
                 raise SubstitutionCycleError(f"substitution cycle via |{name}|")
             if name not in subs:
-                raise UndefinedSubstitutionError(f"undefined substitution |{name}|")
+                if strict:
+                    raise UndefinedSubstitutionError(f"undefined substitution |{name}|")
+                return m.group(0)
             value = subs[name]
             if "|" in value:
                 value = _sub_once(value, stack + (name,))

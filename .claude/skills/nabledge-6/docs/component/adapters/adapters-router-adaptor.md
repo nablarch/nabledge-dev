@@ -87,7 +87,7 @@ router.controllerDetector=nablarch.integration.router.NablarchControllerDetector
 </routes>
 ```
 業務アクションとマッピングするURLの例
-| 業務アクション              URL |  |
+| 業務アクション | URL |
 |---|---|
 | PersonAction#index | /action/person/index |
 | PersonAction#search | /action/person/search |
@@ -347,7 +347,7 @@ public class TestAction implements TestApi {
 ```
 この例では `TestApi` インターフェースに `Path` アノテーションが注釈されているため、 `foo` メソッドがリクエストを受け付けるメソッドとして認識され `TestAction` クラスに宣言されている `bar` メソッドには `@GET` アノテーションなどが注釈されているがこれはリクエストを受け付けるメソッドとしては無視される。
 
-| クラスまたはインターフェース    宣言されているメソッド | リクエストを受け付けられるか？ |  |
+| クラスまたはインターフェース | 宣言されているメソッド | リクエストを受け付けられるか？ |
 |---|---|---|
 | `TestApi` | `foo` | ○ |
 | `TestAction` | `bar` | × |

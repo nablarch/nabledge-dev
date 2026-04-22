@@ -23,7 +23,7 @@ index\ の設定変更方法について説明する。
 
 Jakarta Server Pages静的解析ツール用のプロパティを実行環境にあわせて修正する際は、jspanalysis.excludePatternsの修正であればツールを実行するプロジェクトのpom.xmlを修正する。それ以外の項目の修正であればnablarch-archetype-parentのpom.xmlを修正する。
 
-| 設定プロパティ                    説明 |  |
+| 設定プロパティ | 説明 |
 |---|---|
 | jspanalysis.checkjspdir | チェック対象JSPディレクトリパスもしくはファイルパスを設定する。 CI環境のように一括でチェックを実行する場合には、 ディレクトリパスを設定する。 例:: ./main/web ディレクトリを指定した場合は、再帰的にチェックが実行される。 |
 | jspanalysis.xmloutput | チェック結果のXMLレポートファイルの出力パスを設定する。 例:: ./build/reports/jsp/report.xml |

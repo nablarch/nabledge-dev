@@ -62,7 +62,7 @@ Batchletの作成
 実装すべきインタフェースとその責務
 Batchletクラスに以下のインタフェースを実装してバッチ処理を作成する。オーバーライドしたメソッドは、Batch Runtimeによって適切なタイミングで呼び出される。
 
-| インタフェース                                                       実装 |  |
+| インタフェース | 実装 |
 |---|---|
 | `Batchlet` | バッチ処理を実装する。 デフォルト実装を提供する `AbstractBatchlet` を継承する。 * `Batchlet#process` * `Batchlet#stop` |
 

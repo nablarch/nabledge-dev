@@ -12,12 +12,12 @@ LIST_MAPのデータタイプで１テストメソッド分のテストショッ
 
 HTTP同期応答メッセージ受信処理特有の内容について以下に示す。
 
-| カラム名           説明 | 必須 |  |
+| カラム名 | 説明 | 必須 |
 |---|---|---|
-| diConfig | HTTP同期応答メッセージ受信リクエスト単体テスト用のコンポーネント設定ファイルへのパスを記載する 必須  (例：http-messaging-test-component-configuration.xml)。 |  |
-| expectedStatusCode | JSON及びXMLデータ形式使用時は空欄にする。                                                      必須 |  |
-| requestPath | アクションを実行するためのURLから、ホスト名を抜いた部分。                                      必須  例えばアクション実行のURLが「http://127.0.0.1/msgaction/ss11AC/RM11AC0102」であれば、  「/msgaction/ss11AC/RM11AC0102」となる。 |  |
-| userId | 認証認可チェックに使用するユーザID                                                                     必須 |  |
+| diConfig | HTTP同期応答メッセージ受信リクエスト単体テスト用のコンポーネント設定ファイルへのパスを記載する  (例：http-messaging-test-component-configuration.xml)。 | 必須 |
+| expectedStatusCode | JSON及びXMLデータ形式使用時は空欄にする。 | 必須 |
+| requestPath | アクションを実行するためのURLから、ホスト名を抜いた部分。  例えばアクション実行のURLが「http://127.0.0.1/msgaction/ss11AC/RM11AC0102」であれば、  「/msgaction/ss11AC/RM11AC0102」となる。 | 必須 |
+| userId | 認証認可チェックに使用するユーザID | 必須 |
 
 > **Tip:** JSON及びXMLデータ形式使用時は、ステータスコードの比較も、Excelファイルのメッセージボディとの比較で行う。フレームワーク制御ヘッダもメッセージボディに含まれるためである。
 
