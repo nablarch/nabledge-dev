@@ -897,12 +897,16 @@ def _render_directive(
     if name in _TABLE_DIRECTIVES:
         return _render_table_directive(name, body_rest)
 
-    # Group D: figure — caption (body prose) preserved; options (incl. :alt:) dropped
+    # Group D: figure — converter emits `![caption](assets/{id}/{filename})`.
+    # First non-option body line is the caption. Use placeholder URL so
+    # verify's URL-strip symmetrically removes both sides.
     if name in _FIGURE_DIRECTIVES:
-        body_text = "\n".join(body_rest).strip()
-        if body_text:
-            return body_text
-        return ""
+        caption = ""
+        for line in body_rest:
+            if line.strip():
+                caption = line.strip()
+                break
+        return f"![{caption}](image)"
 
     # Group E: image — converter emits `![alt](assets/{id}/{filename})`.
     # We don't know the file_id here; emit a placeholder MD image whose URL
