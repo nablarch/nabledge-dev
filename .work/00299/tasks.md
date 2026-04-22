@@ -95,11 +95,11 @@
 
 #### Y-2: 共通モジュール + node → MD 対応表の設計
 
-- [ ] `scripts/common/rst_ast.py` の API を設計 (docutils ラッパー)
-  - [ ] `parse(source: str, source_path: Path | None) -> Doctree` — 設定 (Sphinx role/directive shim・`file_insertion_enabled=True`・`report_level`) を一元化
-  - [ ] `walk(doctree, visitor: NodeVisitor) -> str` — node → MD の共通 Visitor フレームワーク
-  - [ ] `register_shims() -> None` — Sphinx 固有 role (`ref` / `doc` / `java:extdoc` / `download` / `javadoc_url`) と v1.x 固有 directive (`function` / `class`) を generic に登録 (Y-1 probe で確立したセット)
-- [ ] node → MD 対応表を `tools/rbkc/docs/rbkc-converter-design.md` として新規作成
+- [x] `scripts/common/rst_ast.py` の API を設計 (docutils ラッパー) — `rbkc-converter-design.md` §6 に記載
+  - [x] `parse(source: str, source_path: Path | None) -> Doctree` — 設定 (Sphinx role/directive shim・`file_insertion_enabled=True`・`report_level`) を一元化
+  - [x] `walk(doctree, visitor: NodeVisitor) -> str` — node → MD の共通 Visitor フレームワーク
+  - [x] `register_shims() -> None` — Sphinx 固有 role / v1.x 固有 directive を generic に登録 (Y-1 probe で確立したセット)
+- [x] node → MD 対応表を `tools/rbkc/docs/rbkc-converter-design.md` として新規作成
   - [ ] 構造: `document` / `section` / `title` / `paragraph` / `transition` / `container` / `compound` / `topic` / `sidebar` / `rubric`
   - [ ] インライン: `Text` / `strong` / `emphasis` / `literal` / `title_reference` / `inline` / `reference` / `target` / `substitution_reference` / `substitution_definition` / `footnote_reference` / `citation_reference` / `problematic` / `system_message`
   - [ ] リスト: `bullet_list` / `enumerated_list` / `list_item` / `definition_list` / `definition_list_item` / `term` / `definition` / `field_list` / `field` / `field_name` / `field_body` / `line_block` / `line`
