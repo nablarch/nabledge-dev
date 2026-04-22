@@ -24,19 +24,40 @@ present — the level 2 bar is "one primary file is clearly missing," not
 - Judge the **list as a whole**, not individual files. It is fine if the
   list contains extra unrelated files (too broad), as long as the right
   files are somewhere in it. Extra files lower precision but not recall.
-- You have only title + path. If the title maps to a plausible Nablarch
-  topic for the question, count it.
+- **Primary file definition**: A file a Nablarch domain expert would
+  open *first* to directly answer the question — not context,
+  background, or near-neighbor. Before deciding the level, enumerate
+  the primaries you expect for this question.
+- **Title-fit bar**: A title "fits" only if a Nablarch domain expert,
+  seeing the title + path, would expect the file to contain the
+  mechanism being asked about. Surface-keyword overlap alone does NOT
+  qualify.
 - **Not-built-in questions**: If the question asks about a feature
   Nablarch may not provide (e.g., rate limiting), do NOT penalize the
   list for lacking an exact match. If near-neighbor files (handlers,
   interceptors, filters, libraries) are present, output level **3**. The
   right answer in these cases is "no built-in; closest alternatives are
   X" — near-neighbors are sufficient.
+  Example: Q "Nablarch に rate limiting はある？" with list containing
+  `component/handlers/*` and `processing-pattern/restful-web-service/*`
+  → level **3**.
 - Do not reward a list for being long. A 50-file list and a 5-file list
   are judged on the same criterion: is the right file present?
 - You cannot read file contents. Judge on title + path plausibility
   alone. Uncertainty about inside-the-file content is NOT a reason to
-  downgrade — if the title fits the topic, assume the content fits.
+  downgrade — if the title fits the topic (per the title-fit bar
+  above), assume the content fits.
+
+## Reason format
+
+The `reason` field MUST follow this shape (≤300 chars):
+
+```
+Expected primaries: [title A; title B; ...]. Present: [yes/no each]. {short verdict}.
+```
+
+Write the reason in the **same language as the question** (Japanese
+question → Japanese reason; English question → English reason).
 
 ## Output schema
 
