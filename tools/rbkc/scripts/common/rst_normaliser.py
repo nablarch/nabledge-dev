@@ -149,6 +149,11 @@ _ENUM_RE = re.compile(
 # sentinels of display width 2.
 _SENT_L = "\x02\x02"
 _SENT_R = "\x03\x03"
+# Width-preserving padding character for inline transforms that shorten
+# text (e.g., `:ref:`label`` → `label` loses 6 ASCII chars). Each pad char
+# counts as 1 display width for table column splitting, and is stripped
+# at the end of normalisation.
+_PAD_CHAR = "\x04"
 
 
 def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
@@ -182,18 +187,22 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
         text,
     )
 
-    # 2. Role simple (no target):
-    #   - :ref:`label`       → resolved section title (or label if unknown)
-    #   - :doc:`path`        → path
-    #   - :java:extdoc:`N`   → `N` (code-quoted)
-    #   - default            → inner text
+    # 2. Role simple (no target). Width-preserving so simple-table column
+    # splitting (which uses raw-source display widths) remains correct.
+    import unicodedata as _ud
+    def _dw(s: str) -> int:
+        return sum(2 if _ud.east_asian_width(c) in ("W", "F") else 1 for c in s)
+
     def _role_simple(m: re.Match) -> str:
         role, inner = m.group(1), m.group(2)
         if role == "java:extdoc":
-            return f"{_SENT_L}{inner}{_SENT_R}"
-        if role == "ref":
-            return label_map.get(inner, inner)
-        return inner
+            out = f"{_SENT_L}{inner}{_SENT_R}"
+        elif role == "ref":
+            out = label_map.get(inner, inner)
+        else:
+            out = inner
+        pad = max(0, _dw(m.group(0)) - _dw(out))
+        return out + _PAD_CHAR * pad
 
     text = re.sub(r":([A-Za-z][A-Za-z0-9_.:+-]*):`([^`]+)`", _role_simple, text)
 
@@ -207,8 +216,13 @@ def _apply_inline_transforms(text: str, label_map: dict[str, str]) -> str:
     #    later single-backtick-stripping (interpreted text) leaves it alone.
     text = re.sub(r"``([^`]+?)``", lambda m: _SENT_L + m.group(1) + _SENT_R, text)
 
-    # 5. Named reference: `text`_ → text
-    text = re.sub(r"(?<![`:])`([^`<>\n]+?)`_(?!_)", r"\1", text)
+    # 5. Named reference: `text`_ → text (width-preserving)
+    def _named_ref(m: re.Match) -> str:
+        out = m.group(1)
+        pad = max(0, _dw(m.group(0)) - _dw(out))
+        return out + _PAD_CHAR * pad
+
+    text = re.sub(r"(?<![`:])`([^`<>\n]+?)`_(?!_)", _named_ref, text)
 
     # 6. Interpreted text (bare single backtick): RST default role passes
     # through to converter as `text` (MD inline code). Keep backticks.
@@ -309,6 +323,8 @@ def normalise_rst(
     # Step H2: restore backtick sentinels after block-level work (widths
     # measured for simple-tables used the sentinel placeholder).
     normalised = _restore_sentinels(normalised)
+    # Strip width-preserving pad chars after block walking completes.
+    normalised = normalised.replace(_PAD_CHAR, "")
 
     # Step I: whitespace collapse on each line (preserve newlines)
     out_lines = []
