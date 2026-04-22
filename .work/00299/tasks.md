@@ -53,7 +53,7 @@
 
 ## In Progress
 
-### Phase 21-K: hints スコープアウト — 設計書とコードを "content のみ" に整える (ほぼ完了、残 K-4 のみ)
+### Phase 21-K: hints スコープアウト — 設計書とコードを "content のみ" に整える (完了)
 
 **目的**: 後続タスク（統合検証など）で「ここは hints あるんだっけ？」と判断に迷わないように、設計書とコードから hints 関連を削除して基盤を整える。hints 資産は別 Issue 用にブランチ外の形で保全する。
 
@@ -104,9 +104,8 @@
 
 #### Step K-4: 別 Issue 起票
 
-- [ ] GitHub Issue を作成: 「AI 生成 hints の品質レビュー・マージ（全5バージョン）」
-- [ ] 本 PR `.work/00299/handoff-hints/` へのリンクと背景要約を記載
-- [ ] このタスクファイルから該当 Issue 番号を参照
+- [x] GitHub Issue #309 起票 — AI-curated hints のフォローアップ
+- [x] `.work/00299/handoff-hints/` へのリンクと背景要約を記載
 
 ---
 
