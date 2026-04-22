@@ -141,13 +141,14 @@ RST は docutils 仕様に準拠した明確な構文を持つため、正規表
   - `.work/00299/phase21x/` の全結果をサマリして notes.md に記載済
   - **BLOCKED**: ユーザーに「このパターン集合で設計書を閉じて X-3 に進んで良いか」確認を取る
 
-#### X-3: 設計書の更新 (ユーザー承認後)
+#### X-3: 設計書の更新 (ユーザー承認後) ✅ 完了 (session 44)
 
-- [ ] `tools/rbkc/docs/rbkc-verify-quality-design.md` 3-1 節を書き直す:
-  - **新規セクション「手順 0: ソース前処理 (tokenizer)」** を追加し、X-2 で確立した変換規則を**閉じた列挙**として明記
-  - 手順 2 の「オリジナルのソースファイルを変更せず」という文言を、「tokenizer で正規化したソース」を対象とする旨に更新
-  - 許容構文要素リストを X-2 の実データに基づいて最終化
-- [ ] 設計書変更案をユーザーに提示、承認を取得
+- [x] `tools/rbkc/docs/rbkc-verify-quality-design.md` 3-1 節を書き直す:
+  - **新規セクション「手順 0: ソース前処理 (tokenizer)」** 追加、inline 10 種・directive 7 グループ（22 種）・block 構文を閉集合として明記
+  - 手順 1–4 を「正規化ソース」を対象とするよう書き換え
+  - 許容構文要素リストを、tokenizer 正規化後の MD 由来残渣（fence・table sep・blockquote 等）に刷新
+  - Include / substitution を `scripts/common/` に配置する方針を記載
+- [x] 設計書変更案をユーザーに提示、承認取得（Q1〜Q4 + 実データ scan に基づく精緻化）
 
 #### X-4: tokenizer + verify の TDD 実装
 
