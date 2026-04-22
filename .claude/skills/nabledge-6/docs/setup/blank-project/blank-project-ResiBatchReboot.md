@@ -4,13 +4,6 @@
 
 テーブルをキューとして使ったメッセージングを一端終了した後に再び起動させたい場合、処理対象データの処理済みフラグを再設定する必要がある。
 
-<details>
-<summary>keywords</summary>
-
-テーブルをキューとして使ったメッセージング, 処理済みフラグ, 再起動, 再設定
-
-</details>
-
 ## 手順
 
 以下の方法でデータを再設定できる。
@@ -79,10 +72,3 @@ COMMIT;
 .. |br| raw:: html
 
 <br />
-
-<details>
-<summary>keywords</summary>
-
-H2データベース, SAMPLE_USER, h2.bat, 組み込みモード, 未処理状態リセット, JDBC URL, Test Connection
-
-</details>

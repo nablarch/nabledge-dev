@@ -60,10 +60,3 @@ public HttpResponse delete(HttpRequest request, ExecutionContext context) {
 削除機能の解説は以上。
 
 Getting Started TOPページへ
-
-<details>
-<summary>keywords</summary>
-
-UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, Project, @OnDoubleSubmission, ProjectAction, プロジェクト削除, 主キー削除, 二重サブミット防止, UniversalDao#delete
-
-</details>

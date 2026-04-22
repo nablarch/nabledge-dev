@@ -1,12 +1,5 @@
 # Bean Validationに対応したForm/Entityのクラス単体テスト
 
-<details>
-<summary>keywords</summary>
-
-testSingleValidation, EntityTestSupport, 単項目精査, UserRegistrationFormTest, TARGET_CLASS, sheetName, id, Bean Validation, Form単体テスト, Entity単体テスト, 単体テスト
-
-</details>
-
 本項では、入力値チェックを Bean Validation で実施しているFormおよびEntityクラス単体テスト(以下Form単体テストまたはEntity単体テスト)について説明する。
 両者はほぼ同じように単体テストを行えるため、共通する内容についてはForm単体テストをベースに説明し、特有の処理については個別に説明する。
 
@@ -19,13 +12,6 @@ testSingleValidation, EntityTestSupport, 単項目精査, UserRegistrationFormTe
 * [テストクラス(UserRegistrationFormTest.java)](../../../knowledge/assets/testing-framework-01-entityUnitTestWithBeanValidation/UserRegistrationFormTest.java)
 * [テストデータ(UserRegistrationFormTest.xlsx)](../../../knowledge/assets/testing-framework-01-entityUnitTestWithBeanValidation/UserRegistrationFormTest.xlsx)
 * [テスト対象クラス(UserRegistrationForm.java)](../../../knowledge/assets/testing-framework-01-entityUnitTestWithBeanValidation/UserRegistrationForm.java)
-
-<details>
-<summary>keywords</summary>
-
-AssertTrue, testShots, params, 項目間精査, テストケース表, 入力パラメータ表, 埋め込み文字, special_notation_in_cell, interpolateKey, interpolateValue, expectedMessageId, propertyName, EntityTestSupport, nablarch.test.core.db.EntityTestSupport, テストデータExcel, テストクラス作成, Form単体テスト, Entity単体テスト, 単項目精査テスト
-
-</details>
 
 ## テストデータの作成
 

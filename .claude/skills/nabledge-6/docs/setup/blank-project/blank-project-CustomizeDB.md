@@ -1,12 +1,5 @@
 # 使用するRDBMSの変更手順
 
-<details>
-<summary>keywords</summary>
-
-H2 Database Engine, RDBMS設定変更, アーキタイプ生成プロジェクト, データベース接続前提条件, JDBCドライバ設定, profiles要素, JNDI接続, Maven依存関係, データベース切替, com.h2database, com.oracle.database.jdbc, org.postgresql, com.ibm.db2, com.microsoft.sqlserver, h2, ojdbc11, postgresql, jcc, mssql-jdbc, SQL Server, JDBCドライバ, Mavenセントラルリポジトリ, 登録不要, コンテナ設定, OS環境変数, env.properties上書き, プロファイル切り替え不使用, Twelve-Factor App, container_production_config
-
-</details>
-
 Nablarchのアーキタイプを使用して作成したプロジェクトは、 **初期状態ではH2 Database Engine** (以下H2)を使用するように設定されている。
 
 別のRDBMSを使用するように設定変更する手順を記述する。
@@ -64,13 +57,6 @@ mvn install:install-file -DgroupId=com.ibm -DartifactId=db2jcc4 -Dversion=10.5.0
 #### SQLServer
 
 SQLServerの場合、JDBCドライバはMavenのセントラルリポジトリに公開されているため登録は不要である。
-
-<details>
-<summary>keywords</summary>
-
-Mavenリポジトリ, ファイル登録, JDBCドライバ, customizeDBAddFileMavenRepo, JDBCドライバ設定, ローカルコネクションプール, dependencies要素, Maven依存関係, com.h2database
-
-</details>
 
 ## ファイル修正
 

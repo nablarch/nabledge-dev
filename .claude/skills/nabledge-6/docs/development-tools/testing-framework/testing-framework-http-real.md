@@ -1,24 +1,10 @@
 # リクエスト単体テストの実施方法（HTTP同期応答メッセージ受信処理）
 
-<details>
-<summary>keywords</summary>
-
-HTTP同期応答メッセージ受信処理, リクエスト単体テスト, real_request_test, 記述方法の差異, 準備データ, データベース, リクエストメッセージ, テストデータ準備, 期待値, レスポンスメッセージ, expectedMessages, 応答電文
-
-</details>
-
 リクエスト単体テストの実施方法は、\ real_request_test\ を参照すること。
 
 本項では、\ real_request_test\ と記述方法が異なる箇所を解説する。
 
 ## テストデータの書き方
-
-<details>
-<summary>keywords</summary>
-
-testShots, diConfig, expectedStatusCode, requestPath, userId, テストショット一覧, LIST_MAP, テストデータ
-
-</details>
 
 ## テストショット一覧
 

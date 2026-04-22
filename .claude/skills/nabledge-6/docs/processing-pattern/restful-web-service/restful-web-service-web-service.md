@@ -1,12 +1,5 @@
 # ウェブサービス編
 
-<details>
-<summary>keywords</summary>
-
-MessagingException, nablarch.fw.messaging.MessagingException, RESTfulウェブサービス, HTTPメッセージング, フレームワーク選択, restful_web_service, http_messaging, Jakarta RESTful Web Services
-
-</details>
-
 本章ではNablarchアプリケーションフレームワークを使用してウェブサービスを開発するために必要となる情報を提供する。
 
 Nablarchでは、以下2種類のRESTfulウェブサービス用のフレームワークを提供している。

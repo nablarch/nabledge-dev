@@ -152,10 +152,3 @@ public class ProjectAction {
 ```
 この実装のポイント
 * `@Path` アノテーションと `@GET` アノテーションを使用して、GETリクエスト時にマッピングする業務アクションメソッドを定義する。
-
-<details>
-<summary>keywords</summary>
-
-ProjectSearchForm, ProjectSearchDto, ProjectAction, Project, BeanUtil, JaxRsHttpRequest, ValidatorUtil, UniversalDao, MediaType, @Produces, @Path, @GET, @Domain, RESTful検索処理, クエリパラメータ, UniversalDao検索, JSON返却, BeanValidation
-
-</details>

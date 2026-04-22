@@ -1,12 +1,5 @@
 # 様々なフォーマットのデータへのアクセス
 
-<details>
-<summary>keywords</summary>
-
-データバインド, 汎用データフォーマット, data_bind, data_format, データ入出力, フォーマット変換, 機能選択, IDE補完
-
-</details>
-
 様々なフォーマットのデータを扱う機能を提供する。
 
 Nablarchでは、以下の2種類のデータ入出力機能を提供している。

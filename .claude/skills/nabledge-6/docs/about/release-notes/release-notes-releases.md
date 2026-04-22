@@ -1,12 +1,5 @@
 # リリース情報
 
-<details>
-<summary>keywords</summary>
-
-リリース情報, バージョン一覧, リリースノート, Nablarch 6, 6u3, 6u2, 6u1, 6, 先行リリース, ドキュメント, 全リリースノート一括ダウンロード
-
-</details>
-
 [全リリースノート一括ダウンロード](../../../knowledge/assets/release-notes-releases/nablarch-6-OSS-all-releasenote.zip)
 
 | リリース日付 | バージョン | リリースノート | ドキュメント |

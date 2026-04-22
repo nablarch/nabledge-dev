@@ -2,207 +2,87 @@
   "id": "testing-framework-02-RequestUnitTest",
   "title": "リクエスト単体テスト（ウェブアプリケーション）",
   "content": "",
-  "hints": [
-    "HttpRequestTestSupport",
-    "HttpResponse",
-    "execute",
-    "システムリポジトリ再初期化",
-    "コンポーネント設定ファイル",
-    "バックアップ復元",
-    "テスト連続実行"
-  ],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "概要",
-      "content": "リクエスト単体テスト(ウェブアプリケーション)では、内蔵サーバを使用してテストを行う。\\\nここでは、リクエスト単体テストのテスト補助クラスと内蔵サーバの使用方法を記載する。",
-      "hints": []
+      "content": "リクエスト単体テスト(ウェブアプリケーション)では、内蔵サーバを使用してテストを行う。\\\nここでは、リクエスト単体テストのテスト補助クラスと内蔵サーバの使用方法を記載する。"
     },
     {
       "id": "s2",
       "title": "全体像",
-      "content": "![](assets/testing-framework-02-RequestUnitTest/request_unit_test_structure.png)",
-      "hints": []
+      "content": "![](assets/testing-framework-02-RequestUnitTest/request_unit_test_structure.png)"
     },
     {
       "id": "s3",
       "title": "主なクラス, リソース",
-      "content": "<table>\n<thead>\n<tr>\n  <th>名称</th>\n  <th>役割</th>\n  <th>作成単位</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>テストクラス</td>\n  <td>テストロジックを実装する。</td>\n  <td>テスト対象クラス(Action)につき１つ作成</td>\n</tr>\n<tr>\n  <td>テストデータ（Excelファイル）</td>\n  <td>テーブルに格納する準備データや期待する結果、\\</td>\n  <td>テストクラスにつき１つ作成</td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTTPパラメータなど、テストデータを記載する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>テスト対象クラス(Action)</td>\n  <td>テスト対象のクラス</td>\n  <td>取引につき1クラス作成</td>\n</tr>\n<tr>\n  <td></td>\n  <td>(Action以降の業務ロジックを実装する各クラスを含む)</td>\n  <td></td>\n</tr>\n<tr>\n  <td>DbAccessTestSupport</td>\n  <td>準備データ投入などデータベースを使用するテストに\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>必要な機能を提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>HttpServer</td>\n  <td>内蔵サーバ。サーブレットコンテナとして動作し、\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTTPレスポンスをファイル出力する機能を持つ。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>HttpRequestTestSupport</td>\n  <td>内蔵サーバの起動やリクエスト単体テストで必要とな\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>る各種アサートを提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>AbstractHttpReqestTestSupport</td>\n  <td>br</td>\n  <td></td>\n  <td>リクエスト単体テストをテンプレート化するクラス。リ</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>BasicHttpReqestTestSupport</td>\n  <td>クエスト単体テストのテストソース、テストデータを定</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>型化する</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>TestCaseInfo</td>\n  <td>データシートに定義されたテストケース情報を格納する</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>クラス。</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n\n上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\\\nこのため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。\\",
-      "hints": []
+      "content": "<table>\n<thead>\n<tr>\n  <th>名称</th>\n  <th>役割</th>\n  <th>作成単位</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>テストクラス</td>\n  <td>テストロジックを実装する。</td>\n  <td>テスト対象クラス(Action)につき１つ作成</td>\n</tr>\n<tr>\n  <td>テストデータ（Excelファイル）</td>\n  <td>テーブルに格納する準備データや期待する結果、\\</td>\n  <td>テストクラスにつき１つ作成</td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTTPパラメータなど、テストデータを記載する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>テスト対象クラス(Action)</td>\n  <td>テスト対象のクラス</td>\n  <td>取引につき1クラス作成</td>\n</tr>\n<tr>\n  <td></td>\n  <td>(Action以降の業務ロジックを実装する各クラスを含む)</td>\n  <td></td>\n</tr>\n<tr>\n  <td>DbAccessTestSupport</td>\n  <td>準備データ投入などデータベースを使用するテストに\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>必要な機能を提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>HttpServer</td>\n  <td>内蔵サーバ。サーブレットコンテナとして動作し、\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTTPレスポンスをファイル出力する機能を持つ。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>HttpRequestTestSupport</td>\n  <td>内蔵サーバの起動やリクエスト単体テストで必要とな\\</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td></td>\n  <td>る各種アサートを提供する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>AbstractHttpReqestTestSupport</td>\n  <td>br</td>\n  <td></td>\n  <td>リクエスト単体テストをテンプレート化するクラス。リ</td>\n  <td>\\－</td>\n</tr>\n<tr>\n  <td>BasicHttpReqestTestSupport</td>\n  <td>クエスト単体テストのテストソース、テストデータを定</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>型化する</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>TestCaseInfo</td>\n  <td>データシートに定義されたテストケース情報を格納する</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>クラス。</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n\n上記のクラス群は、内蔵サーバも含め全て同一のJVM上で動作する。\\\nこのため、リクエストやセッション等のサーバ側のオブジェクトを加工できる。\\"
     },
     {
       "id": "s4",
       "title": "前提事項",
-      "content": "内蔵サーバを使用してHTMLダンプを出力するというリクエスト単体テストは、\\\n１リクエスト１画面遷移のシンクライアント型ウェブアプリケーションを対象としている。\\\nAjaxやリッチクライアントを利用したアプリケーションの場合、\\\nHTMLダンプによるレイアウト確認は使用できない。\n\n> **Tip:** 本書ではViewテクノロジにJSPを用いているが、\\ サーブレットコンテナ上で画面全体をレンダリングする方式であれば、\\ JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。",
-      "hints": []
+      "content": "内蔵サーバを使用してHTMLダンプを出力するというリクエスト単体テストは、\\\n１リクエスト１画面遷移のシンクライアント型ウェブアプリケーションを対象としている。\\\nAjaxやリッチクライアントを利用したアプリケーションの場合、\\\nHTMLダンプによるレイアウト確認は使用できない。\n\n> **Tip:** 本書ではViewテクノロジにJSPを用いているが、\\ サーブレットコンテナ上で画面全体をレンダリングする方式であれば、\\ JSP以外のViewテクノロジでもHTMLダンプの出力が可能である。"
     },
     {
       "id": "s5",
       "title": "構造",
-      "content": "",
-      "hints": []
+      "content": ""
     },
     {
       "id": "s6",
       "title": "BasicHttpRequestTestTemplate",
-      "content": "各テストクラスのスーパクラス。\\\n本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\\\nテストソース記述量を大きく削減できる。\n\n具体的な使用方法は、\\ ../05_UnitTestGuide/02_RequestUnitTest/index\\ を参照。",
-      "hints": []
+      "content": "各テストクラスのスーパクラス。\\\n本クラスを使用することで、リクエスト単体テストのテストソース、テストデータを定型化でき、\\\nテストソース記述量を大きく削減できる。\n\n具体的な使用方法は、\\ ../05_UnitTestGuide/02_RequestUnitTest/index\\ を参照。"
     },
     {
       "id": "s7",
       "title": "AbstractHttpRequestTestTemplate",
-      "content": "アプリケーションプログラマが直接使用することはない。\\\nテストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。\\",
-      "hints": []
+      "content": "アプリケーションプログラマが直接使用することはない。\\\nテストデータの書き方を変えたい場合など、自動テストフレームワークを拡張する際に用いる。\\"
     },
     {
       "id": "s8",
       "title": "TestCaseInfo",
-      "content": "データシートに定義されたテストケース情報を格納するクラス。\\\nテストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。",
-      "hints": []
+      "content": "データシートに定義されたテストケース情報を格納するクラス。\\\nテストデータの書き方を変えたい場合は、本クラス及び前述のAbstractHttpRequestTestTemplateを継承する。"
     },
     {
       "id": "s9",
       "title": "HttpRequestTestSupport",
-      "content": "リクエスト単体テスト用に用意されたスーパクラス。リクエスト単体テスト用のメソッドを用意している。\n\n\n#### データベース関連機能\n\nデータベースに関する機能は、DbAccessTestSupportクラスに委譲することで実現している。\n詳細は、\\ 02_DbAccessTest\\ を参照。\n\nただし、DbAccessTestSupportのうち以下のメソッドは、\\\nリクエスト単体テストでは不要であり、アプリケーションプログラマに誤解を与えないよう、\\\n意図的に委譲していない。\n\n* public void beginTransactions()\n* public void commitTransactions()\n* public void endTransactions()\n* public void setThreadContextValues(String sheetName, String id)\n\n\n#### 事前準備補助機能\n\n内蔵サーバへのリクエスト送信には、HttpRequestとExecutionContextのインスタンスが必要となる。\\\nHttpRequestTestSupportクラスでは、これらのオブジェクトを簡単に作成できるようメソッドを用意している。\\\n\n\n##### HttpRequest\n\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\n引数には、以下の値を引き渡す。\n\n* テスト対象となるリクエストURI\n* 上記で取得したリクエストパラメータ\n\n本メソッドでは、受け取ったリクエストURIとリクエストパラメータを元に\\\nHttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定した上で返却する。\\\nHttpRequestにリクエストパラメータやURI以外のデータを設定したい場合は、\\\n本メソッド呼び出しにより取得したインスタンスに対してデータを設定するとよい。\n\n\n##### ExecutionContext\n\nExecutionContextインスタンスを生成する。\n\n\n```java\nExecutionContext createExecutionContext(String userId)\n```\n引数にはユーザIDを指定する。指定したユーザIDはセッションに格納される。\\\nこれにより、そのユーザIDでログインしている状態となる。\\\n\n\n\n\n\n\n##### トークン発行\n\n2重サブミット防止を施しているURIに対するテストを行うには、\\\nテスト実行前にトークンを発行しセッションに設定しておく必要がある。\\\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\nトークンの発行およびセッションへの格納が行われる。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nリクエスト単体実行時に、テストデータ上でトークンを設定するか否かを制御したい場合は、\n以下のメソッドを使用する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n第3引数がbooleanになっており、真の場合は前述のsetValidTokenと同じ動作となる。\n偽の場合は、セッションからトークン情報が除去される。以下のように使用することで、\nテストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。\n\n\n```java\n// 【説明】テストデータから取得したものとする。\nString isTokenValid; \n\n// 【説明】\"true\"の場合はトークンが設定される。\nsetToken(req, ctx, Boolean.parseBoolean(isTokenValid)));\n```",
-      "hints": []
+      "content": "リクエスト単体テスト用に用意されたスーパクラス。リクエスト単体テスト用のメソッドを用意している。\n\n\n#### データベース関連機能\n\nデータベースに関する機能は、DbAccessTestSupportクラスに委譲することで実現している。\n詳細は、\\ 02_DbAccessTest\\ を参照。\n\nただし、DbAccessTestSupportのうち以下のメソッドは、\\\nリクエスト単体テストでは不要であり、アプリケーションプログラマに誤解を与えないよう、\\\n意図的に委譲していない。\n\n* public void beginTransactions()\n* public void commitTransactions()\n* public void endTransactions()\n* public void setThreadContextValues(String sheetName, String id)\n\n\n#### 事前準備補助機能\n\n内蔵サーバへのリクエスト送信には、HttpRequestとExecutionContextのインスタンスが必要となる。\\\nHttpRequestTestSupportクラスでは、これらのオブジェクトを簡単に作成できるようメソッドを用意している。\\\n\n\n##### HttpRequest\n\n```java\nHttpRequest createHttpRequest(String requestUri, Map<String, String[]> params)\n```\n引数には、以下の値を引き渡す。\n\n* テスト対象となるリクエストURI\n* 上記で取得したリクエストパラメータ\n\n本メソッドでは、受け取ったリクエストURIとリクエストパラメータを元に\\\nHttpRequestインスタンスを生成し、HTTPメソッドをPOSTに設定した上で返却する。\\\nHttpRequestにリクエストパラメータやURI以外のデータを設定したい場合は、\\\n本メソッド呼び出しにより取得したインスタンスに対してデータを設定するとよい。\n\n\n##### ExecutionContext\n\nExecutionContextインスタンスを生成する。\n\n\n```java\nExecutionContext createExecutionContext(String userId)\n```\n引数にはユーザIDを指定する。指定したユーザIDはセッションに格納される。\\\nこれにより、そのユーザIDでログインしている状態となる。\\\n\n\n\n\n\n\n##### トークン発行\n\n2重サブミット防止を施しているURIに対するテストを行うには、\\\nテスト実行前にトークンを発行しセッションに設定しておく必要がある。\\\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\nトークンの発行およびセッションへの格納が行われる。\n\n```java\nvoid setValidToken(HttpRequest request, ExecutionContext context)\n```\nリクエスト単体実行時に、テストデータ上でトークンを設定するか否かを制御したい場合は、\n以下のメソッドを使用する。\n\n```java\nvoid setToken(HttpRequest request, ExecutionContext context, boolean valid)\n```\n第3引数がbooleanになっており、真の場合は前述のsetValidTokenと同じ動作となる。\n偽の場合は、セッションからトークン情報が除去される。以下のように使用することで、\nテストクラスにトークンを設定するかどうかの分岐処理を書かなくてすむ。\n\n\n```java\n// 【説明】テストデータから取得したものとする。\nString isTokenValid; \n\n// 【説明】\"true\"の場合はトークンが設定される。\nsetToken(req, ctx, Boolean.parseBoolean(isTokenValid)));\n```"
     },
     {
       "id": "s10",
       "title": "実行",
-      "content": "HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\n内蔵サーバが起動されリクエストが送信される。\n\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx) \n```\n引数には以下の値を引き渡す。\n\n* テストケース説明\n* HttpRequest\n* ExectionContext\n\nテストケース説明は、HTMLダンプ出力時のファイル名に使用される。\n詳細は\nHTMLダンプ出力ディレクトリ\nを参照。\n\n\n\n#### システムリポジトリの初期化\n\nexecuteメソッド内部では、システムリポジトリの再初期化を行っている。\\\nこれにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\n* 現在のシステムリポジトリの状態をバックアップ\n* テスト対象のウェブアプリケーションのコンポーネント設定ファイルを用いてシステムリポジトリを再初期化\n* executeメソッド終了時に、バックアップしたシステムリポジトリを復元する。\n\n\nテスト対象のウェブアプリケーションに関する設定については、\\\n各種設定値\\\nを参照。",
-      "hints": []
+      "content": "HttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\n内蔵サーバが起動されリクエストが送信される。\n\n```java\nHttpResponse execute(String caseName, HttpRequest req, ExecutionContext ctx) \n```\n引数には以下の値を引き渡す。\n\n* テストケース説明\n* HttpRequest\n* ExectionContext\n\nテストケース説明は、HTMLダンプ出力時のファイル名に使用される。\n詳細は\nHTMLダンプ出力ディレクトリ\nを参照。\n\n\n\n#### システムリポジトリの初期化\n\nexecuteメソッド内部では、システムリポジトリの再初期化を行っている。\\\nこれにより、クラス単体テストとリクエスト単体テストで設定を分けずに連続実行できる。\n\n* 現在のシステムリポジトリの状態をバックアップ\n* テスト対象のウェブアプリケーションのコンポーネント設定ファイルを用いてシステムリポジトリを再初期化\n* executeメソッド終了時に、バックアップしたシステムリポジトリを復元する。\n\n\nテスト対象のウェブアプリケーションに関する設定については、\\\n各種設定値\\\nを参照。"
     },
     {
       "id": "s11",
       "title": "結果確認",
-      "content": "#### メッセージ\n\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\nアプリケーション例外に格納されたメッセージが想定通りであることを確認する。\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual);\n```\n引数には、以下の値を引き渡す。\n\n* 期待するメッセージ（複数ある場合はカンマ区切りで指定する。）\n* 先に作成したExectionContext\n\n\n例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合は、\\\nアサート失敗となる。\n\n\n> **Tip:** メッセージIDの比較はIDをソートした状態で行うので、テストデータを記載する際に 順序を気にする必要はない。",
-      "hints": []
+      "content": "#### メッセージ\n\nHttpRequestTestSupportにある下記のメソッドを呼び出すことで、\\\nアプリケーション例外に格納されたメッセージが想定通りであることを確認する。\n\n```java\nvoid assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext actual);\n```\n引数には、以下の値を引き渡す。\n\n* 期待するメッセージ（複数ある場合はカンマ区切りで指定する。）\n* 先に作成したExectionContext\n\n\n例外が発生しなかった場合や、アプリケーション例外以外の例外が発生した場合は、\\\nアサート失敗となる。\n\n\n> **Tip:** メッセージIDの比較はIDをソートした状態で行うので、テストデータを記載する際に 順序を気にする必要はない。"
     },
     {
       "id": "s12",
       "title": "HTMLダンプ出力",
-      "content": "#### HTMLダンプ出力ディレクトリ\n\nテストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成される。\nその配下にテストクラス毎に同名のディレクトリが作成され、\nそのテストクラスで実行されたテストケース説明と同名のHTMLダンプファイルが出力される。\n\nまた、HTMLダンプファイルが参照するHTMLリソース（スタイルシートや画像などのリソース）についても\nこのディレクトリに出力されるので、このディレクトリを保存することで、どの環境でもHTMLを同じように参照できる。\n\n* html_dumpディレクトリが既に存在する場合は、html_dump_bkという名前でバックアップされる。\n\n\n![](assets/testing-framework-02-RequestUnitTest/htmlDumpDir.png)",
-      "hints": []
+      "content": "#### HTMLダンプ出力ディレクトリ\n\nテストを実行すると、テスト用プロジェクトのルートディレクトリにtmp/html_dumpディレクトリが作成される。\nその配下にテストクラス毎に同名のディレクトリが作成され、\nそのテストクラスで実行されたテストケース説明と同名のHTMLダンプファイルが出力される。\n\nまた、HTMLダンプファイルが参照するHTMLリソース（スタイルシートや画像などのリソース）についても\nこのディレクトリに出力されるので、このディレクトリを保存することで、どの環境でもHTMLを同じように参照できる。\n\n* html_dumpディレクトリが既に存在する場合は、html_dump_bkという名前でバックアップされる。\n\n\n![](assets/testing-framework-02-RequestUnitTest/htmlDumpDir.png)"
     },
     {
       "id": "s13",
       "title": "各種設定値",
-      "content": "環境設定に依存する設定値については、コンポーネント設定ファイルで変更できる。\\\n設定可能な項目を以下に示す。",
-      "hints": []
+      "content": "環境設定に依存する設定値については、コンポーネント設定ファイルで変更できる。\\\n設定可能な項目を以下に示す。"
     },
     {
       "id": "s14",
       "title": "コンポーネント設定ファイル設定項目一覧",
-      "content": "<table>\n<thead>\n<tr>\n  <th>設定項目名</th>\n  <th>説明</th>\n  <th>デフォルト値</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>htmlDumpDir</td>\n  <td>HTMLダンプファイルを出力するディレクトリを指定する。</td>\n  <td>./tmp/html_dump</td>\n</tr>\n<tr>\n  <td>webBaseDir</td>\n  <td>ウェブアプリケーションのルートディレクトリ\\ [#]_\\</td>\n  <td>../main/web</td>\n</tr>\n<tr>\n  <td>xmlComponentFile</td>\n  <td>リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\\ [#]_\\</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td>userIdSessionKey</td>\n  <td>ログイン中ユーザIDを格納するセッションキー</td>\n  <td>user.id</td>\n</tr>\n<tr>\n  <td>exceptionRequestVarKey</td>\n  <td>ApplicationExceptionが格納されるリクエストスコープのキー</td>\n  <td>nablarch_application_error</td>\n</tr>\n<tr>\n  <td>dumpFileExtension</td>\n  <td>ダンプファイルの拡張子</td>\n  <td>html</td>\n</tr>\n<tr>\n  <td>httpHeader</td>\n  <td>HttpRequestにHTTPリクエストヘッダとして格納される値</td>\n  <td>Content-Type : application/x-www-form-urlencoded</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>Accept-Language : ja JP</td>\n</tr>\n<tr>\n  <td>sessionInfo</td>\n  <td>セッションに格納される値</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td>htmlResourcesExtensionList</td>\n  <td>ダンプディレクトリへコピーされるHTMLリソースの拡張子</td>\n  <td>css、jpg、js</td>\n</tr>\n<tr>\n  <td>jsTestResourceDir</td>\n  <td>javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名</td>\n  <td>../test/web</td>\n</tr>\n<tr>\n  <td>backup</td>\n  <td>ダンプディレクトリのバックアップOn/Off</td>\n  <td>true</td>\n</tr>\n<tr>\n  <td>htmlResourcesCharset</td>\n  <td>CSSファイル(スタイルシート)の文字コード</td>\n  <td>UTF-8</td>\n</tr>\n<tr>\n  <td>checkHtml</td>\n  <td>HTMLチェックの実施On/Off</td>\n  <td>true</td>\n</tr>\n<tr>\n  <td>htmlChecker</td>\n  <td>HTMLチェックを行うオブジェクトを指定する。</td>\n  <td>br</td>\n  <td></td>\n  <td>nablarch.test.tool.htmlcheck.Html4HtmlChecker</td>\n</tr>\n<tr>\n  <td></td>\n  <td>オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker</td>\n  <td>クラスのインスタンス。</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>インタフェースを実装している必要がある。</td>\n  <td>br</td>\n  <td></td>\n  <td>クラスには htmlCheckerConfig で設定した設定</td>\n</tr>\n<tr>\n  <td></td>\n  <td>詳細は customize_html_check を参照。</td>\n  <td>ファイルが適用される。</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>htmlCheckerConfig</td>\n  <td>HTMLチェックツールの設定ファイルパス。</td>\n  <td>br</td>\n  <td></td>\n  <td>test/resources/httprequesttest/html-check-config.csv</td>\n</tr>\n<tr>\n  <td></td>\n  <td>htmlChecker を設定しなかった場合のみ有効。</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>ignoreHtmlResourceDirectory</td>\n  <td>HTMLリソースの中でコピー対象外とするディレクトリ名のLIST</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td></td>\n  <td>.. tip::</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTMLリソースコピー時のパフォーマンスが向上する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>tempDirectory</td>\n  <td>JSPのコンパイル先ディレクトリ</td>\n  <td>jettyのデフォルト動作に依存</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>.. tip ::</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>jettyのデフォルト動作では、.「/work」</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>がコンパイル先ディレクトリとなる。</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>「./work」が存在しない場合は、</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>Tempフォルダ(Windownの場合は、ユーザのホーム</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>ディレクトリ/Local Settings/Temp)が</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>出力先となる。</td>\n</tr>\n<tr>\n  <td>uploadTmpDirectory</td>\n  <td>アップロードファイルを一時的に格納するディレクトリ。</td>\n  <td>./tmp</td>\n</tr>\n<tr>\n  <td></td>\n  <td>テスト時に準備した、アップロード対象のファイルは本ディレクトリに</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>コピー後に処理される。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>これにより、アクションでファイルを移動した場合でも、</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>本ディレクトリ配下のファイルが移動されるだけであり、</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>実態が移動されることを防ぐことができる。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>dumpVariableItem</td>\n  <td>HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。</td>\n  <td>false</td>\n</tr>\n<tr>\n  <td></td>\n  <td>ここでの可変項目とは以下の2種類を指す。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>* JSESSIONID</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>* 2重サブミット防止用のトークン</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>これらの項目は、テスト実行毎に異なる値が設定される。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>(false)に設定する。（前回実行結果と差異がないことを確認したい場合等）</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>可変項目をそのままHTMLに出力する場合は、本項目をON</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>(true)に設定する。</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n\n.. [#]\nPJ共通のwebモジュールが存在する場合、このプロパティにカンマ区切りでディレクトリを設定する。\n複数指定された場合、先頭から順にリソースが読み込まれる。\n\n以下に例を示す。\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n  <property name=\"webBaseDir\" value=\"/path/to/web-a/,/path/to/web-common\"/>\n```\nこの場合、web-a、web-commonの順にリソースが探索される。\n\n.. [#]\nこの項目を設定した場合は、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。\\\n通常は設定する必要はない。\\\nクラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ、この項目を設定する。\\",
-      "hints": []
+      "content": "<table>\n<thead>\n<tr>\n  <th>設定項目名</th>\n  <th>説明</th>\n  <th>デフォルト値</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>htmlDumpDir</td>\n  <td>HTMLダンプファイルを出力するディレクトリを指定する。</td>\n  <td>./tmp/html_dump</td>\n</tr>\n<tr>\n  <td>webBaseDir</td>\n  <td>ウェブアプリケーションのルートディレクトリ\\ [#]_\\</td>\n  <td>../main/web</td>\n</tr>\n<tr>\n  <td>xmlComponentFile</td>\n  <td>リクエスト単体テスト実行時に使用するコンポーネント設定ファイル\\ [#]_\\</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td>userIdSessionKey</td>\n  <td>ログイン中ユーザIDを格納するセッションキー</td>\n  <td>user.id</td>\n</tr>\n<tr>\n  <td>exceptionRequestVarKey</td>\n  <td>ApplicationExceptionが格納されるリクエストスコープのキー</td>\n  <td>nablarch_application_error</td>\n</tr>\n<tr>\n  <td>dumpFileExtension</td>\n  <td>ダンプファイルの拡張子</td>\n  <td>html</td>\n</tr>\n<tr>\n  <td>httpHeader</td>\n  <td>HttpRequestにHTTPリクエストヘッダとして格納される値</td>\n  <td>Content-Type : application/x-www-form-urlencoded</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>Accept-Language : ja JP</td>\n</tr>\n<tr>\n  <td>sessionInfo</td>\n  <td>セッションに格納される値</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td>htmlResourcesExtensionList</td>\n  <td>ダンプディレクトリへコピーされるHTMLリソースの拡張子</td>\n  <td>css、jpg、js</td>\n</tr>\n<tr>\n  <td>jsTestResourceDir</td>\n  <td>javascriptの自動テスト実行時に使用するリソースのコピー先ディレクトリ名</td>\n  <td>../test/web</td>\n</tr>\n<tr>\n  <td>backup</td>\n  <td>ダンプディレクトリのバックアップOn/Off</td>\n  <td>true</td>\n</tr>\n<tr>\n  <td>htmlResourcesCharset</td>\n  <td>CSSファイル(スタイルシート)の文字コード</td>\n  <td>UTF-8</td>\n</tr>\n<tr>\n  <td>checkHtml</td>\n  <td>HTMLチェックの実施On/Off</td>\n  <td>true</td>\n</tr>\n<tr>\n  <td>htmlChecker</td>\n  <td>HTMLチェックを行うオブジェクトを指定する。</td>\n  <td>br</td>\n  <td></td>\n  <td>nablarch.test.tool.htmlcheck.Html4HtmlChecker</td>\n</tr>\n<tr>\n  <td></td>\n  <td>オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker</td>\n  <td>クラスのインスタンス。</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>インタフェースを実装している必要がある。</td>\n  <td>br</td>\n  <td></td>\n  <td>クラスには htmlCheckerConfig で設定した設定</td>\n</tr>\n<tr>\n  <td></td>\n  <td>詳細は customize_html_check を参照。</td>\n  <td>ファイルが適用される。</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>htmlCheckerConfig</td>\n  <td>HTMLチェックツールの設定ファイルパス。</td>\n  <td>br</td>\n  <td></td>\n  <td>test/resources/httprequesttest/html-check-config.csv</td>\n</tr>\n<tr>\n  <td></td>\n  <td>htmlChecker を設定しなかった場合のみ有効。</td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td>ignoreHtmlResourceDirectory</td>\n  <td>HTMLリソースの中でコピー対象外とするディレクトリ名のLIST</td>\n  <td>（なし）</td>\n</tr>\n<tr>\n  <td></td>\n  <td>.. tip::</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTMLリソースコピー時のパフォーマンスが向上する。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>tempDirectory</td>\n  <td>JSPのコンパイル先ディレクトリ</td>\n  <td>jettyのデフォルト動作に依存</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>.. tip ::</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>jettyのデフォルト動作では、.「/work」</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>がコンパイル先ディレクトリとなる。</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>「./work」が存在しない場合は、</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>Tempフォルダ(Windownの場合は、ユーザのホーム</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>ディレクトリ/Local Settings/Temp)が</td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td>出力先となる。</td>\n</tr>\n<tr>\n  <td>uploadTmpDirectory</td>\n  <td>アップロードファイルを一時的に格納するディレクトリ。</td>\n  <td>./tmp</td>\n</tr>\n<tr>\n  <td></td>\n  <td>テスト時に準備した、アップロード対象のファイルは本ディレクトリに</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>コピー後に処理される。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>これにより、アクションでファイルを移動した場合でも、</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>本ディレクトリ配下のファイルが移動されるだけであり、</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>実態が移動されることを防ぐことができる。</td>\n  <td></td>\n</tr>\n<tr>\n  <td>dumpVariableItem</td>\n  <td>HTMLダンプファイル出力時に可変項目を出力するか否かを設定する。</td>\n  <td>false</td>\n</tr>\n<tr>\n  <td></td>\n  <td>ここでの可変項目とは以下の2種類を指す。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>* JSESSIONID</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>* 2重サブミット防止用のトークン</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>これらの項目は、テスト実行毎に異なる値が設定される。</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>HTMLダンプ結果を毎回同じ結果にしたい場合は、本項目をOFF</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>(false)に設定する。（前回実行結果と差異がないことを確認したい場合等）</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>可変項目をそのままHTMLに出力する場合は、本項目をON</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>(true)に設定する。</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n\n.. [#]\nPJ共通のwebモジュールが存在する場合、このプロパティにカンマ区切りでディレクトリを設定する。\n複数指定された場合、先頭から順にリソースが読み込まれる。\n\n以下に例を示す。\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n  <property name=\"webBaseDir\" value=\"/path/to/web-a/,/path/to/web-common\"/>\n```\nこの場合、web-a、web-commonの順にリソースが探索される。\n\n.. [#]\nこの項目を設定した場合は、リクエスト送信直前に指定されたコンポーネント設定ファイルで初期化が行われる。\\\n通常は設定する必要はない。\\\nクラス単体テストとリクエスト単体テストとで設定を変える必要がある場合のみ、この項目を設定する。\\"
     },
     {
       "id": "s15",
       "title": "コンポーネント設定ファイルの記述例",
-      "content": "コンポーネント設定ファイル記述例を記載する。\n設定値には、上記のデフォルト値に加え、セッション(sessionInfo)に以下の値を設定している。\n\n\n<table>\n<thead>\n<tr>\n  <th>キー</th>\n  <th>値</th>\n  <th>説明</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>commonHeaderLoginUserName</td>\n  <td>\"リクエスト単体テストユーザ\"</td>\n  <td>共通ヘッダ領域に表示するログインユーザ名</td>\n</tr>\n<tr>\n  <td>commonHeaderLoginDate</td>\n  <td>\"20100914\"</td>\n  <td>共通ヘッダ領域に表示するログイン日時</td>\n</tr>\n</tbody>\n</table>\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n    <property name=\"htmlDumpDir\" value=\"./tmp/html_dump\"/>\n    <property name=\"webBaseDir\" value=\"../main/web\"/>\n    <property name=\"xmlComponentFile\" value=\"http-request-test.xml\"/>\n    <property name=\"userIdSessionKey\" value=\"user.id\"/>\n    <property name=\"httpHeader\">\n        <map>\n            <entry key=\"Content-Type\" value=\"application/x-www-form-urlencoded\"/>\n            <entry key=\"Accept-Language\" value=\"ja JP\"/>\n        </map>\n    </property>\n    <property name=\"sessionInfo\">\n        <map>\n            <entry key=\"commonHeaderLoginUserName\" value=\"リクエスト単体テストユーザ\"/>\n            <entry key=\"commonHeaderLoginDate\" value=\"20100914\" />\n        </map>\n    </property>\n    <property name=\"htmlResourcesExtensionList\">\n        <list>\n            <value>css</value>\n            <value>jpg</value>\n            <value>js</value>\n        </list>\n    </property>\n    <property name=\"backup\" value=\"true\" />\n    <property name=\"htmlResourcesCharset\" value=\"UTF-8\" />    \n    <property name=\"ignoreHtmlResourceDirectory\">\n        <list>\n            <value>.svn</value>\n        </list>\n    </property>\n    <property name=\"tempDirectory\" value=\"webTemp\" />\n    <property name=\"htmlCheckerConfig\"\n      value=\"test/resources/httprequesttest/html-check-config.csv\" />\n</component>\n```",
-      "hints": []
+      "content": "コンポーネント設定ファイル記述例を記載する。\n設定値には、上記のデフォルト値に加え、セッション(sessionInfo)に以下の値を設定している。\n\n\n<table>\n<thead>\n<tr>\n  <th>キー</th>\n  <th>値</th>\n  <th>説明</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>commonHeaderLoginUserName</td>\n  <td>\"リクエスト単体テストユーザ\"</td>\n  <td>共通ヘッダ領域に表示するログインユーザ名</td>\n</tr>\n<tr>\n  <td>commonHeaderLoginDate</td>\n  <td>\"20100914\"</td>\n  <td>共通ヘッダ領域に表示するログイン日時</td>\n</tr>\n</tbody>\n</table>\n\n```xml\n<component name=\"httpTestConfiguration\" class=\"nablarch.test.core.http.HttpTestConfiguration\">\n    <property name=\"htmlDumpDir\" value=\"./tmp/html_dump\"/>\n    <property name=\"webBaseDir\" value=\"../main/web\"/>\n    <property name=\"xmlComponentFile\" value=\"http-request-test.xml\"/>\n    <property name=\"userIdSessionKey\" value=\"user.id\"/>\n    <property name=\"httpHeader\">\n        <map>\n            <entry key=\"Content-Type\" value=\"application/x-www-form-urlencoded\"/>\n            <entry key=\"Accept-Language\" value=\"ja JP\"/>\n        </map>\n    </property>\n    <property name=\"sessionInfo\">\n        <map>\n            <entry key=\"commonHeaderLoginUserName\" value=\"リクエスト単体テストユーザ\"/>\n            <entry key=\"commonHeaderLoginDate\" value=\"20100914\" />\n        </map>\n    </property>\n    <property name=\"htmlResourcesExtensionList\">\n        <list>\n            <value>css</value>\n            <value>jpg</value>\n            <value>js</value>\n        </list>\n    </property>\n    <property name=\"backup\" value=\"true\" />\n    <property name=\"htmlResourcesCharset\" value=\"UTF-8\" />    \n    <property name=\"ignoreHtmlResourceDirectory\">\n        <list>\n            <value>.svn</value>\n        </list>\n    </property>\n    <property name=\"tempDirectory\" value=\"webTemp\" />\n    <property name=\"htmlCheckerConfig\"\n      value=\"test/resources/httprequesttest/html-check-config.csv\" />\n</component>\n```"
     },
     {
       "id": "s16",
       "title": "その他の設定",
-      "content": "性能が高くないPCで開発をしており、リクエスト単体テスト実行速度を向上させたい場合は、\\\n以下の設定をすることで実行速度の改善が見込まれる。\n\n> **Tip:** Pentium4、Pentinum Dual-Core等の処理性能が低いCPUを搭載したPCに効果がある。\\ 逆に、これら以降のCPUを搭載したマシンでは、それほど効果的ではないので無理に設定する必要はない。\n#### JVMオプションの指定\n\n最大ヒープサイズと最小ヒープサイズを同一の値にすることで、\\\nヒープサイズ拡張のオーバヘッドを回避できる。\n\n-Xms256m -Xmx256m\n\n\nまた、クラスファイルの検証を省略することで実行速度が向上する。\n\n-Xverfiy:none\n\n\nEclipseでの設定方法は以下のとおり。\n\n* メニューバーより「実行」→「実行構成」を選択する。\n\n* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/vmoptions.png)\nまた、実行構成を変更しなくても、以下の方法でデフォルトのVM引数を設定できる。\n\n* メニューバーより「ウィンドウ」→「設定」を選択する。 「設定」ウィンドウが表示されるので、「インストール済みのJRE」をする。\n\n* インストール済みのJREの一覧が表示されるので、使用するJREを選択し「編集」ボタンを押下する。\n\n![](assets/testing-framework-02-RequestUnitTest/installed_jre.png)\n* 「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/edit_jre.png)\n#### HTMLリソースコピーの抑止\n\nリクエスト単体実行時に、以下のシステムプロパティを指定すると、 HTMLダンプ出力 時に、HTMLリソースコピーを抑止できる。\n\n-Dnablarch.test.skip-resource-copy=true\n\n\n\n\nCSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合は、\nテスト実行の度にHTMLリソースをコピーする必要はないので、\nこのシステムプロパティを設定してもよい。\n\n\n> **Important:** 本システムプロパティを指定した場合、HTMLリソースのコピーが行われなくなるので、 CSSなどのHTMLリソースを編集しても\\ HTMLダンプ出力\\ に反映されない。\n> **Tip:** HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらず、\\ HTMLリソースのコピーが実行される。\nEclipseでの設定方法は以下のとおり。\n\n* メニューバーより「実行」→「実行構成」を選択する。\n\n* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/skip_resource_copy.png)\n.. |br| raw:: html\n\n<br />",
-      "hints": []
-    }
-  ],
-  "index": [
-    {
-      "id": "__file__",
-      "title": "リクエスト単体テスト（ウェブアプリケーション）",
-      "hints": [
-        "HttpRequestTestSupport",
-        "HttpResponse",
-        "execute",
-        "システムリポジトリ再初期化",
-        "コンポーネント設定ファイル",
-        "バックアップ復元",
-        "テスト連続実行"
-      ]
-    },
-    {
-      "id": "s1",
-      "title": "概要",
-      "hints": []
-    },
-    {
-      "id": "s2",
-      "title": "全体像",
-      "hints": []
-    },
-    {
-      "id": "s3",
-      "title": "主なクラス, リソース",
-      "hints": []
-    },
-    {
-      "id": "s4",
-      "title": "前提事項",
-      "hints": []
-    },
-    {
-      "id": "s5",
-      "title": "構造",
-      "hints": []
-    },
-    {
-      "id": "s6",
-      "title": "BasicHttpRequestTestTemplate",
-      "hints": []
-    },
-    {
-      "id": "s7",
-      "title": "AbstractHttpRequestTestTemplate",
-      "hints": []
-    },
-    {
-      "id": "s8",
-      "title": "TestCaseInfo",
-      "hints": []
-    },
-    {
-      "id": "s9",
-      "title": "HttpRequestTestSupport",
-      "hints": []
-    },
-    {
-      "id": "s10",
-      "title": "実行",
-      "hints": []
-    },
-    {
-      "id": "s11",
-      "title": "結果確認",
-      "hints": []
-    },
-    {
-      "id": "s12",
-      "title": "HTMLダンプ出力",
-      "hints": []
-    },
-    {
-      "id": "s13",
-      "title": "各種設定値",
-      "hints": []
-    },
-    {
-      "id": "s14",
-      "title": "コンポーネント設定ファイル設定項目一覧",
-      "hints": []
-    },
-    {
-      "id": "s15",
-      "title": "コンポーネント設定ファイルの記述例",
-      "hints": []
-    },
-    {
-      "id": "s16",
-      "title": "その他の設定",
-      "hints": []
+      "content": "性能が高くないPCで開発をしており、リクエスト単体テスト実行速度を向上させたい場合は、\\\n以下の設定をすることで実行速度の改善が見込まれる。\n\n> **Tip:** Pentium4、Pentinum Dual-Core等の処理性能が低いCPUを搭載したPCに効果がある。\\ 逆に、これら以降のCPUを搭載したマシンでは、それほど効果的ではないので無理に設定する必要はない。\n#### JVMオプションの指定\n\n最大ヒープサイズと最小ヒープサイズを同一の値にすることで、\\\nヒープサイズ拡張のオーバヘッドを回避できる。\n\n-Xms256m -Xmx256m\n\n\nまた、クラスファイルの検証を省略することで実行速度が向上する。\n\n-Xverfiy:none\n\n\nEclipseでの設定方法は以下のとおり。\n\n* メニューバーより「実行」→「実行構成」を選択する。\n\n* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/vmoptions.png)\nまた、実行構成を変更しなくても、以下の方法でデフォルトのVM引数を設定できる。\n\n* メニューバーより「ウィンドウ」→「設定」を選択する。 「設定」ウィンドウが表示されるので、「インストール済みのJRE」をする。\n\n* インストール済みのJREの一覧が表示されるので、使用するJREを選択し「編集」ボタンを押下する。\n\n![](assets/testing-framework-02-RequestUnitTest/installed_jre.png)\n* 「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/edit_jre.png)\n#### HTMLリソースコピーの抑止\n\nリクエスト単体実行時に、以下のシステムプロパティを指定すると、 HTMLダンプ出力 時に、HTMLリソースコピーを抑止できる。\n\n-Dnablarch.test.skip-resource-copy=true\n\n\n\n\nCSSや画像ファイルなど静的なHTMLリソースを頻繁に編集しない場合は、\nテスト実行の度にHTMLリソースをコピーする必要はないので、\nこのシステムプロパティを設定してもよい。\n\n\n> **Important:** 本システムプロパティを指定した場合、HTMLリソースのコピーが行われなくなるので、 CSSなどのHTMLリソースを編集しても\\ HTMLダンプ出力\\ に反映されない。\n> **Tip:** HTMLリソースディレクトリが存在しない場合は、システムプロパティの設定有無に関わらず、\\ HTMLリソースのコピーが実行される。\nEclipseでの設定方法は以下のとおり。\n\n* メニューバーより「実行」→「実行構成」を選択する。\n\n* 「実行構成」ウィンドウが表示されるので、「引数」タブをクリックし、「VM引数」欄に前述のオプションを指定する。\n\n![](assets/testing-framework-02-RequestUnitTest/skip_resource_copy.png)\n.. |br| raw:: html\n\n<br />"
     }
   ]
 }

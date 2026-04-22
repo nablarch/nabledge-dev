@@ -1,12 +1,5 @@
 # データベースを入力とするChunkステップ
 
-<details>
-<summary>keywords</summary>
-
-BaseDatabaseItemReader, nablarch.fw.batch.ee.chunk.BaseDatabaseItemReader, DeferredEntityList, UniversalDao, ProgressManager, @Dependent, @Named, @Inject, doOpen, readItem, doClose, EmployeeSearchReader, EmployeeForm, データベース入力Chunk, 遅延ロード, リーダ専用DB接続, Chunkステップ
-
-</details>
-
 データベースから処理対象データを抽出する場合は、Jakarta Batchで提供されているリーダではなく
 本機能で提供する `BaseDatabaseItemReader` を実装すること。
 

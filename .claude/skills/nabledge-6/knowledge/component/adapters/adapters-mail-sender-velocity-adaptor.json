@@ -2,112 +2,27 @@
   "id": "adapters-mail-sender-velocity-adaptor",
   "title": "E-mail Velocityアダプタ",
   "content": "[Velocity(外部サイト)](https://velocity.apache.org/) を使用した定型メール送信処理を行うためのアダプタを提供する。",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "モジュール一覧",
-      "content": "```xml\n<!-- E-mail Velocityアダプタ -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>\n</dependency>\n```\n> **Tip:** Velocityのバージョン2.0を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。",
-      "hints": [
-        "nablarch-mail-sender-velocity-adaptor",
-        "Velocityアダプタ",
-        "メール送信モジュール",
-        "Maven依存関係",
-        "Velocity 2.0"
-      ]
+      "content": "```xml\n<!-- E-mail Velocityアダプタ -->\n<dependency>\n  <groupId>com.nablarch.integration</groupId>\n  <artifactId>nablarch-mail-sender-velocity-adaptor</artifactId>\n</dependency>\n```\n> **Tip:** Velocityのバージョン2.0を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。"
     },
     {
       "id": "s2",
       "title": "E-mail Velocityアダプタを使用するための設定を行う",
-      "content": "本アダプタを使用するためには、コンポーネント設定ファイルで `VelocityMailProcessor` を `MailRequester` へ設定する。\n\n`VelocityMailProcessor` にはVelocityが提供する `VelocityEngine` を設定する必要がある。\n`VelocityEngine` は以下の理由により `ComponentFactory` の実装クラスを作成してコンポーネントを設定することを推奨する。\n\n* `VelocityEngine` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい\n* `VelocityEngine` を設定した後に `init` メソッドを呼ぶ必要がある\n\n`VelocityEngine` を作成する `ComponentFactory` 実装クラスの例を以下に示す。\n\n```java\npackage com.example;\n\nimport org.apache.velocity.app.VelocityEngine;\nimport org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;\n\nimport nablarch.core.repository.di.ComponentFactory;\n\npublic class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {\n\n    @Override\n    public VelocityEngine createObject() {\n        VelocityEngine velocityEngine = new VelocityEngine();\n\n        velocityEngine.setProperty(\"resource.loader\", \"classloader\");\n        velocityEngine.setProperty(\"classloader.resource.loader.class\",\n                ClasspathResourceLoader.class.getName());\n\n        //必要に応じてVelocityEngineへその他の設定を行う\n\n        velocityEngine.init();\n\n        return velocityEngine;\n    }\n}\n```\nこの `ConfigurationFactory` を使用するコンポーネント設定ファイルの設定例を以下に示す。\n\n```xml\n<component name=\"templateEngineMailProcessor\"\n           class=\"nablarch.integration.mail.velocity.VelocityMailProcessor\" autowireType=\"None\">\n  <property name=\"velocityEngine\">\n    <component class=\"com.example.VelocityEngineFactory\"/>\n  </property>\n</component>\n\n<!-- メール送信要求API -->\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n  <!-- その他の設定は省略 -->\n</component>\n```",
-      "hints": [
-        "VelocityMailProcessor",
-        "MailRequester",
-        "ComponentFactory",
-        "VelocityEngine",
-        "VelocityEngineFactory",
-        "ClasspathResourceLoader",
-        "定型メール設定",
-        "コンポーネント設定",
-        "VelocityEngine初期化",
-        "templateEngineMailProcessor"
-      ]
+      "content": "本アダプタを使用するためには、コンポーネント設定ファイルで `VelocityMailProcessor` を `MailRequester` へ設定する。\n\n`VelocityMailProcessor` にはVelocityが提供する `VelocityEngine` を設定する必要がある。\n`VelocityEngine` は以下の理由により `ComponentFactory` の実装クラスを作成してコンポーネントを設定することを推奨する。\n\n* `VelocityEngine` への設定はコンポーネント設定ファイルよりもJavaコードで行う方がやりやすい\n* `VelocityEngine` を設定した後に `init` メソッドを呼ぶ必要がある\n\n`VelocityEngine` を作成する `ComponentFactory` 実装クラスの例を以下に示す。\n\n```java\npackage com.example;\n\nimport org.apache.velocity.app.VelocityEngine;\nimport org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;\n\nimport nablarch.core.repository.di.ComponentFactory;\n\npublic class VelocityEngineFactory implements ComponentFactory<VelocityEngine> {\n\n    @Override\n    public VelocityEngine createObject() {\n        VelocityEngine velocityEngine = new VelocityEngine();\n\n        velocityEngine.setProperty(\"resource.loader\", \"classloader\");\n        velocityEngine.setProperty(\"classloader.resource.loader.class\",\n                ClasspathResourceLoader.class.getName());\n\n        //必要に応じてVelocityEngineへその他の設定を行う\n\n        velocityEngine.init();\n\n        return velocityEngine;\n    }\n}\n```\nこの `ConfigurationFactory` を使用するコンポーネント設定ファイルの設定例を以下に示す。\n\n```xml\n<component name=\"templateEngineMailProcessor\"\n           class=\"nablarch.integration.mail.velocity.VelocityMailProcessor\" autowireType=\"None\">\n  <property name=\"velocityEngine\">\n    <component class=\"com.example.VelocityEngineFactory\"/>\n  </property>\n</component>\n\n<!-- メール送信要求API -->\n<component name=\"mailRequester\" class=\"nablarch.common.mail.MailRequester\">\n  <property name=\"templateEngineMailProcessor\" ref=\"templateEngineMailProcessor\"/>\n  <!-- その他の設定は省略 -->\n</component>\n```"
     },
     {
       "id": "s3",
       "title": "メールのテンプレートを作成する",
-      "content": "Velocityを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。\n\n件名と本文はデリミタと呼ばれる行で分割される。\nデフォルトのデリミタは `---` である（半角のハイフンが3つ）。\n\nテンプレートの例を以下に示す。\n\n```none\n$titleについて$option\n---\n$titleは、申請番号$requestIdで申請されました。\n$approverは速やかに$titleを承認してください。$option\n```\nより詳しい件名と本文の分割ルールは `TemplateEngineProcessedResult#valueOf` を参照。\n\nテンプレートファイルを配置する場所は `VelocityEngine` の設定によって異なる。\n例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。",
-      "hints": [
-        "TemplateEngineProcessedResult",
-        "メールテンプレート",
-        "件名",
-        "本文",
-        "デリミタ",
-        "Velocityテンプレート",
-        "テンプレートファイル配置"
-      ]
+      "content": "Velocityを使用した定型メール処理では件名と本文を1つのテンプレートに記述する。\n\n件名と本文はデリミタと呼ばれる行で分割される。\nデフォルトのデリミタは `---` である（半角のハイフンが3つ）。\n\nテンプレートの例を以下に示す。\n\n```none\n$titleについて$option\n---\n$titleは、申請番号$requestIdで申請されました。\n$approverは速やかに$titleを承認してください。$option\n```\nより詳しい件名と本文の分割ルールは `TemplateEngineProcessedResult#valueOf` を参照。\n\nテンプレートファイルを配置する場所は `VelocityEngine` の設定によって異なる。\n例えば、前節で示した設定例だとテンプレートファイルはクラスパスからロードされるので、クラスパス上のディレクトリにテンプレートファイルを配置することになる。"
     },
     {
       "id": "s4",
       "title": "メール送信要求を登録する",
-      "content": "単に定型メールの送信要求を登録すればよい。\nmail-request を参照。",
-      "hints": [
-        "メール送信要求",
-        "定型メール登録",
-        "mail-request"
-      ]
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "モジュール一覧",
-      "hints": [
-        "nablarch-mail-sender-velocity-adaptor",
-        "Velocityアダプタ",
-        "メール送信モジュール",
-        "Maven依存関係",
-        "Velocity 2.0"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "E-mail Velocityアダプタを使用するための設定を行う",
-      "hints": [
-        "VelocityMailProcessor",
-        "MailRequester",
-        "ComponentFactory",
-        "VelocityEngine",
-        "VelocityEngineFactory",
-        "ClasspathResourceLoader",
-        "定型メール設定",
-        "コンポーネント設定",
-        "VelocityEngine初期化",
-        "templateEngineMailProcessor"
-      ]
-    },
-    {
-      "id": "s3",
-      "title": "メールのテンプレートを作成する",
-      "hints": [
-        "TemplateEngineProcessedResult",
-        "メールテンプレート",
-        "件名",
-        "本文",
-        "デリミタ",
-        "Velocityテンプレート",
-        "テンプレートファイル配置"
-      ]
-    },
-    {
-      "id": "s4",
-      "title": "メール送信要求を登録する",
-      "hints": [
-        "メール送信要求",
-        "定型メール登録",
-        "mail-request"
-      ]
+      "content": "単に定型メールの送信要求を登録すればよい。\nmail-request を参照。"
     }
   ]
 }

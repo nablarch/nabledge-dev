@@ -6,13 +6,6 @@
 フォーマットの設定を本機能に集約することで、画面やファイル、メールなど形式毎に
 設定をする必要がなくなる。
 
-<details>
-<summary>keywords</summary>
-
-フォーマッタ, 日付フォーマット, 数値フォーマット, データ変換, FormatterUtil
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -22,21 +15,7 @@
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-core, Maven依存関係, モジュール設定
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-FormatterUtil, dateTime, number, SimpleDateFormat, DecimalFormat, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, 日付フォーマット, 数値フォーマット, フォーマッタ使用方法
-
-</details>
 
 ## フォーマッタの設定
 
@@ -175,13 +154,6 @@ public class SampleDto {
 ```
 > **Important:** コンポーネント定義でデフォルトのフォーマッタの設定を変更する場合は、 変更を加えないフォーマッタやプロパティに関しても必ず設定を記述すること。 コンポーネント定義に記述がないフォーマッタは使用できない。
 
-<details>
-<summary>keywords</summary>
-
-FormatterConfig, formatterConfig, formatters, DateTimeFormatter, DateTimeStrFormatter, NumberFormatter, NumberStrFormatter, dateStrPattern, フォーマッタ設定変更, デフォルトパターン変更
-
-</details>
-
 ## フォーマッタを追加する
 
 フォーマッタを追加する場合は、以下の手順が必要となる。
@@ -226,10 +198,3 @@ format_custom を参照して、コンポーネント設定ファイルに `nabl
   </property>
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-Formatter, FormatterConfig, カスタムフォーマッタ追加, Formatter実装, nablarch.core.text.Formatter
-
-</details>

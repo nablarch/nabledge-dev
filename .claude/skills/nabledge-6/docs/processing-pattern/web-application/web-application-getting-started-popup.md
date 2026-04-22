@@ -50,10 +50,3 @@ jQueryについては、 [ドキュメント(外部サイト、英語)](https://
 ポップアップ画面の解説は以上。
 
 Getting Started TOPページへ
-
-<details>
-<summary>keywords</summary>
-
-ポップアップ画面, ダイアログ表示, 別ウィンドウ禁止, Bootstrap, Ajax検索, jQuery, 親ウィンドウへの値引き渡し
-
-</details>

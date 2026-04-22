@@ -2,87 +2,22 @@
   "id": "nablarch-batch-nablarch-batch-error-process",
   "title": "Nablarchバッチアプリケーションのエラー処理",
   "content": "",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "バッチ処理をリランできるようにする",
-      "content": "Nablarchバッチアプリケーションでは、ファイル入力を除き、\nバッチ処理をリランできるようにする機能を提供していない。\n\nそのため、処理対象レコードにステータスを持たせ、\n処理成功や失敗時にステータスを変更するといった、\nアプリケーションでの設計と実装が必要となる。\n処理成功や失敗時のステータス変更の実装方法については、\nトランザクション終了時に任意の処理を実行したい を参照。\n\nファイル入力については、\n`ResumeDataReader (レジューム機能付き読み込み)`\nを使用することで、障害発生ポイントからの再実行ができる。",
-      "hints": [
-        "ResumeDataReader",
-        "nablarch.fw.reader.ResumeDataReader",
-        "リラン",
-        "再実行",
-        "ステータス管理",
-        "ファイル入力",
-        "障害復旧"
-      ]
+      "content": "Nablarchバッチアプリケーションでは、ファイル入力を除き、\nバッチ処理をリランできるようにする機能を提供していない。\n\nそのため、処理対象レコードにステータスを持たせ、\n処理成功や失敗時にステータスを変更するといった、\nアプリケーションでの設計と実装が必要となる。\n処理成功や失敗時のステータス変更の実装方法については、\nトランザクション終了時に任意の処理を実行したい を参照。\n\nファイル入力については、\n`ResumeDataReader (レジューム機能付き読み込み)`\nを使用することで、障害発生ポイントからの再実行ができる。"
     },
     {
       "id": "s2",
       "title": "バッチ処理でエラー発生時に処理を継続する",
-      "content": "エラー発生時の処理継続は、 常駐バッチ のみ対応している。\n都度起動バッチ は対応していない。\n\n常駐バッチ では、\n`TransactionAbnormalEnd`\nを送出すると、 リトライハンドラ により処理が継続される。\nただし、 バッチ処理をリランできるようにする に記載した内容で、\nバッチ処理がリランできるようになっている必要がある。\n\n> **Tip:** `都度起動バッチ<nablarch_batch-each_time_batch>` で extdoc:`TransactionAbnormalEnd<nablarch.fw.results.TransactionAbnormalEnd>` が送出されると、バッチ処理が異常終了となる。",
-      "hints": [
-        "TransactionAbnormalEnd",
-        "nablarch.fw.results.TransactionAbnormalEnd",
-        "エラー継続",
-        "常駐バッチ",
-        "都度起動バッチ",
-        "retry_handler",
-        "処理継続"
-      ]
+      "content": "エラー発生時の処理継続は、 常駐バッチ のみ対応している。\n都度起動バッチ は対応していない。\n\n常駐バッチ では、\n`TransactionAbnormalEnd`\nを送出すると、 リトライハンドラ により処理が継続される。\nただし、 バッチ処理をリランできるようにする に記載した内容で、\nバッチ処理がリランできるようになっている必要がある。\n\n> **Tip:** `都度起動バッチ<nablarch_batch-each_time_batch>` で extdoc:`TransactionAbnormalEnd<nablarch.fw.results.TransactionAbnormalEnd>` が送出されると、バッチ処理が異常終了となる。"
     },
     {
       "id": "s3",
       "title": "バッチ処理を異常終了にする",
-      "content": "アプリケーションでエラーを検知した場合に、\n処理を継続せずにバッチ処理を異常終了させたい場合がある。\n\nNablarchバッチアプリケーションでは、\n`ProcessAbnormalEnd`\nを送出すると、バッチ処理を異常終了にできる。\n`ProcessAbnormalEnd`\nが送出された場合、プロセス終了コードはこのクラスに指定された値となる。",
-      "hints": [
-        "ProcessAbnormalEnd",
-        "nablarch.fw.launcher.ProcessAbnormalEnd",
-        "異常終了",
-        "プロセス終了コード",
-        "バッチ異常終了"
-      ]
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "バッチ処理をリランできるようにする",
-      "hints": [
-        "ResumeDataReader",
-        "nablarch.fw.reader.ResumeDataReader",
-        "リラン",
-        "再実行",
-        "ステータス管理",
-        "ファイル入力",
-        "障害復旧"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "バッチ処理でエラー発生時に処理を継続する",
-      "hints": [
-        "TransactionAbnormalEnd",
-        "nablarch.fw.results.TransactionAbnormalEnd",
-        "エラー継続",
-        "常駐バッチ",
-        "都度起動バッチ",
-        "retry_handler",
-        "処理継続"
-      ]
-    },
-    {
-      "id": "s3",
-      "title": "バッチ処理を異常終了にする",
-      "hints": [
-        "ProcessAbnormalEnd",
-        "nablarch.fw.launcher.ProcessAbnormalEnd",
-        "異常終了",
-        "プロセス終了コード",
-        "バッチ異常終了"
-      ]
+      "content": "アプリケーションでエラーを検知した場合に、\n処理を継続せずにバッチ処理を異常終了させたい場合がある。\n\nNablarchバッチアプリケーションでは、\n`ProcessAbnormalEnd`\nを送出すると、バッチ処理を異常終了にできる。\n`ProcessAbnormalEnd`\nが送出された場合、プロセス終了コードはこのクラスに指定された値となる。"
     }
   ]
 }

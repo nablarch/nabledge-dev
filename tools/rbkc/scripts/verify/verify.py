@@ -6,7 +6,6 @@ See: tools/rbkc/docs/rbkc-verify-quality-design.md
 Public API:
     check_json_docs_md_consistency(data, docs_md_text) -> list[str]  # QO5
     check_format_purity(data, fmt) -> list[str]                      # QC5
-    check_hints_completeness(data, prev_hints) -> list[str]          # QC6
     check_content_completeness(source_text, data, fmt) -> list[str]  # QC1/QC2/QC3/QC4
     check_external_urls(source_text, data, fmt) -> list[str]         # QL2
     verify_file(source_path, json_path, fmt, knowledge_dir) -> list[str]
@@ -22,7 +21,6 @@ import json
 import re
 from pathlib import Path
 
-from scripts.common.constants import FILE_SENTINEL
 from scripts.common.labels import build_label_map, _RST_LABEL_DEF_RE, _RST_HEADING_CHARS, _is_heading_underline
 
 
@@ -173,42 +171,6 @@ def check_format_purity(data: dict, fmt: str) -> list[str]:
             issues.extend(_check_md_syntax(sec_title, location_t))
             issues.extend(_check_md_syntax(content, location_c))
 
-    return issues
-
-
-# ---------------------------------------------------------------------------
-# QC6: hints 完全性
-# ---------------------------------------------------------------------------
-
-def check_hints_completeness(
-    data: dict,
-    prev_hints: dict[str, dict[str, list[str]]],
-) -> list[str]:
-    """QC6: Verify all hints from previous run are present in current output.
-
-    Args:
-        data: Current knowledge JSON dict.
-        prev_hints: {file_id: {section_title: hints}} from the previous run.
-
-    Returns:
-        List of FAIL messages for each missing hint.
-    """
-    file_id = data.get("id", "")
-    file_prev = prev_hints.get(file_id)
-    if not file_prev:
-        return []
-
-    issues = []
-    for section in data.get("sections", []):
-        title = section.get("title", "")
-        current_hints = set(section.get("hints", []))
-        expected_hints = file_prev.get(title, [])
-
-        for hint in expected_hints:
-            if hint not in current_hints:
-                issues.append(
-                    f"[QC6] section '{title}': hint '{hint}' missing from current output"
-                )
     return issues
 
 
@@ -678,173 +640,6 @@ def check_docs_coverage(knowledge_dir, docs_dir):
     return issues
 
 
-_KEYWORDS_RE = re.compile(
-    r'<details>\s*<summary>keywords</summary>\s*(.*?)\s*</details>',
-    re.DOTALL,
-)
-
-
-def _parse_docs_md_hints(docs_md_text: str) -> dict[str, list[str]]:
-    """Extract file-level and section-level hints from docs MD keywords blocks.
-
-    Returns a dict whose keys are section titles (``## Title``), plus the
-    ``FILE_SENTINEL`` key for any keywords block appearing *before* the
-    first ``##`` heading (i.e. attached to the top-level h1).
-    """
-    result: dict[str, list[str]] = {}
-    lines = docs_md_text.splitlines()
-    current_section = FILE_SENTINEL
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        if line.startswith("## "):
-            current_section = line[3:].strip()
-        elif line == "<details>":
-            # Look for <summary>keywords</summary> on next line
-            if i + 1 < len(lines) and lines[i + 1].strip() == "<summary>keywords</summary>":
-                # Collect lines until </details>
-                j = i + 2
-                while j < len(lines) and lines[j].strip() != "</details>":
-                    j += 1
-                # Lines between <summary> and </details>, skip blank lines
-                content_lines = [l.strip() for l in lines[i + 2:j] if l.strip()]
-                hints = []
-                for cline in content_lines:
-                    hints.extend(h.strip() for h in cline.split(",") if h.strip())
-                result[current_section] = hints
-                i = j
-        i += 1
-    return result
-
-
-def check_hints_file_consistency(output_dir, docs_dir, hints_file) -> list[str]:
-    """Check three-way consistency: hints/vN.json == knowledge JSON hints == docs MD hints.
-
-    hints_file stores entries in array form ``{file_id: [{title, hints}, ...]}``
-    so that same-title sections (h2 / h3 with identical text) are aligned
-    positionally.  Knowledge JSON sections are consumed in order against these
-    entries; the head entry is popped when its title matches the section's.
-
-    Returns empty list if hints_file does not exist (skip check in KC-free environments).
-    """
-    hints_file = Path(hints_file)
-    if not hints_file.exists():
-        return []
-
-    data = json.loads(hints_file.read_text(encoding="utf-8"))
-    hints_idx: dict[str, list[dict]] = data.get("hints", {})
-
-    issues: list[str] = []
-    output_dir = Path(output_dir)
-    docs_dir = Path(docs_dir)
-
-    for json_path in sorted(output_dir.rglob("*.json")):
-        try:
-            kdata = json.loads(json_path.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-
-        if kdata.get("no_knowledge_content"):
-            continue
-
-        file_id = kdata.get("id", "")
-        if not file_id:
-            continue
-
-        top_title = kdata.get("title", "")
-        expected_entries = list(hints_idx.get(file_id, []))
-        remaining = list(expected_entries)
-
-        # Top-level hints (Phase 21-D session 37):
-        #   the hints-file head entry is the file-level hint entry when its
-        #   title equals JSON top-level title, OR when its title is the
-        #   "__file__" sentinel (xlsx: JSON title is "", so the hints file
-        #   uses the sentinel — schema design §3-4).
-        expected_top_hints: list[str] = []
-        has_top_entry = False
-        if remaining:
-            head_title = remaining[0].get("title", "")
-            if head_title == FILE_SENTINEL or head_title == top_title:
-                expected_top_hints = remaining.pop(0).get("hints", [])
-                has_top_entry = True
-
-        if "hints" not in kdata:
-            if has_top_entry:
-                issues.append(
-                    f"[hints] {file_id}: top-level `hints` field missing from JSON"
-                    f" (hints file expected={expected_top_hints[:3]}…)"
-                )
-            json_top_hints: list[str] = []
-        else:
-            json_top_hints = kdata.get("hints") or []
-
-        if json_top_hints != expected_top_hints:
-            issues.append(
-                f"[hints] {file_id}: top-level hints differ from hints file"
-                f" (json={json_top_hints[:3]}… file={expected_top_hints[:3]}…)"
-            )
-
-        # Check 1: JSON section hints == hints file — positional consume by title match
-        for sec in kdata.get("sections", []):
-            title = sec.get("title", "")
-            json_hints = sec.get("hints", [])
-            expected_hints: list[str] = []
-            if remaining and remaining[0].get("title", "") == title:
-                expected_hints = remaining.pop(0).get("hints", [])
-            if json_hints != expected_hints:
-                issues.append(
-                    f"[hints] {file_id} § '{title}': JSON hints differ from hints file"
-                    f" (json={json_hints[:3]}… file={expected_hints[:3]}…)"
-                )
-        if remaining:
-            for entry in remaining:
-                issues.append(
-                    f"[hints] {file_id} § '{entry.get('title', '')}': hints file entry"
-                    f" not matched by any knowledge section"
-                )
-
-        # Check 2: docs MD hints == hints file
-        rel_path = json_path.relative_to(output_dir)
-        docs_md_path = docs_dir / rel_path.with_suffix(".md")
-        if docs_md_path.exists():
-            md_hints = _parse_docs_md_hints(docs_md_path.read_text(encoding="utf-8"))
-
-            # Top-level block: keywords appearing before the first ## heading.
-            # Check in both directions — a drift in either side is a FAIL:
-            #   - hints file expects a file-level entry → docs MD must have the block
-            #   - hints file has no file-level entry → docs MD must NOT have a stray block
-            md_top = md_hints.get(FILE_SENTINEL, [])
-            if has_top_entry:
-                if md_top != expected_top_hints:
-                    issues.append(
-                        f"[hints] {file_id}: docs MD top-level hints differ from hints file"
-                        f" (md={md_top[:3]}… file={expected_top_hints[:3]}…)"
-                    )
-            elif md_top:
-                issues.append(
-                    f"[hints] {file_id}: docs MD has stray top-level keywords block"
-                    f" but hints file has no file-level entry (md={md_top[:3]}…)"
-                )
-
-            # Section blocks: same-title collisions inside a single docs file
-            # cannot be distinguished here; mirror the existing limitation.
-            seen: set[str] = set()
-            for entry in expected_entries[1:] if has_top_entry else expected_entries:
-                title = entry.get("title", "")
-                if title in seen:
-                    continue  # skip duplicates for MD check
-                seen.add(title)
-                expected_hints = entry.get("hints", [])
-                md_h = md_hints.get(title, [])
-                if md_h != expected_hints:
-                    issues.append(
-                        f"[hints] {file_id} § '{title}': docs MD hints differ from hints file"
-                        f" (md={md_h[:3]}… file={expected_hints[:3]}…)"
-                    )
-
-    return issues
-
-
 # RST :ref: patterns
 _RST_REF_DISPLAY_RE = re.compile(r':ref:`([^<`]+?)\s*<([^>]+)>`')
 _RST_REF_PLAIN_RE = re.compile(r':ref:`([^`]+)`')
@@ -863,8 +658,7 @@ def _json_text(data: dict) -> str:
     """Concatenate all JSON text fields for substring search.
 
     Includes top-level title + top-level content (preamble, h1..first h2) +
-    all section titles + all section content. Hints are out of QL1 scope
-    (covered by QC6); they are not included here.
+    all section titles + all section content.
     """
     parts = [data.get("title", ""), data.get("content", "")]
     for section in data.get("sections", []):

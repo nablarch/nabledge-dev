@@ -21,13 +21,6 @@
 
 ## 機能概要
 
-<details>
-<summary>keywords</summary>
-
-シーケンス採番, テーブル採番, サロゲートキー採番, 採番識別名, テーブル採番レイアウト, SequenceIdGenerator, TableIdGenerator, universal_dao以外での使用, 採番ボトルネック, 親キー連番, 専用テーブル採番
-
-</details>
-
 ## シーケンスを使った値の採番が出来る
 
 データベース上に作成されたシーケンスオブジェクトを使って、一意の値を採番出来る。
@@ -63,21 +56,7 @@
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-common-idgenerator, nablarch-common-idgenerator-jdbc, 採番モジュール, Maven依存関係
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-BasicDaoContextFactory, TableIdGenerator, SequenceIdGenerator, BasicApplicationInitializer, sequenceIdGenerator, tableIdGenerator, tableName, idColumnName, noColumnName, ユニバーサルDAO採番設定, シーケンス採番設定, テーブル採番設定, 自動採番カラム
-
-</details>
 
 ## ユニバーサルDAO用に採番を設定する
 
@@ -120,13 +99,6 @@ BasicDaoContextFactory, TableIdGenerator, SequenceIdGenerator, BasicApplicationI
 ```
 
 ## 拡張例
-
-<details>
-<summary>keywords</summary>
-
-IdGenerator, 採番拡張, カスタム採番実装, IdGenerator実装, 採番置き換え
-
-</details>
 
 ## テーブル採番やシーケンス採番を置き換える
 

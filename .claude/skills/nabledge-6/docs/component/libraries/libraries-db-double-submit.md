@@ -14,13 +14,6 @@
 
 サーバ側のトークンをデータベースに保管できる
 
-<details>
-<summary>keywords</summary>
-
-二重サブミット防止, DBトークン管理, スケールアウト, CSRF対策, tag-double_submission, csrf_token_verification_handler
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -29,13 +22,6 @@
   <artifactId>nablarch-fw-web-doublesubmit-jdbc</artifactId>
 </dependency>
 ```
-
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-web-doublesubmit-jdbc, データベース二重サブミット防止, Mavenモジュール
-
-</details>
 
 ## 使用方法
 
@@ -93,10 +79,3 @@ nablarch-fw-web-doublesubmit-jdbc, データベース二重サブミット防止
            class="nablarch.common.web.token.UUIDV4TokenGenerator" />
 ```
 > **Important:** `テスティングフレームワークのトークン発行<how_to_set_token_in_request_unit_test>` はトークンのDB保存に対応していない。 そのため、自動テスト実行時には `HttpSessionTokenManager` に差し替えてテストする必要がある。 .. code-block:: xml <!-- トークンをHTTPセッションに保存する --> <component name="tokenManager" class="nablarch.common.web.token.HttpSessionTokenManager"/>
-
-<details>
-<summary>keywords</summary>
-
-DbTokenManager, DbTokenSchema, SimpleDbTransactionManager, UUIDV4TokenGenerator, HttpSessionTokenManager, BasicApplicationInitializer, tokenManager, tokenGenerator, DOUBLE_SUBMISSIONテーブル, dbManager, dbTokenSchema, tableName, tokenName, createdAtName, TOKEN, CREATED_AT
-
-</details>

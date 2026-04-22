@@ -1,12 +1,5 @@
 # Nablarchバッチアプリケーションの悲観的ロック
 
-<details>
-<summary>keywords</summary>
-
-BatchAction, SampleAction, DatabaseRecordReader, SqlPStatement, DbConnectionContext, UniversalDao, SqlRow, ExecutionContext, Project, Success, DataReader, Result, 悲観的ロック, バッチ処理, データリーダ, 主キー取得, 排他制御
-
-</details>
-
 本項では、Nablarchバッチアプリケーションで悲観的ロックを行うための実装例を示す。
 以下に示す例を参考に実装することで、ロック時間が短縮され他プロセスへの影響を抑えることができる。
 

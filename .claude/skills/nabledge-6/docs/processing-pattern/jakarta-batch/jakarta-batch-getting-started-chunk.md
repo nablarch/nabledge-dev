@@ -1,12 +1,5 @@
 # データを導出するバッチの作成(Chunkステップ)
 
-<details>
-<summary>keywords</summary>
-
-リスナー, トランザクション制御, JSR352, バッチ処理構成, jsr352-listener, バッチアプリケーション リスナー, nablarchJobListenerExecutor, nablarchStepListenerExecutor
-
-</details>
-
 Exampleアプリケーションを元に、既存データから計算を行い新たにデータを導出する Chunkステップ 方式のバッチを解説する。
 
 作成する機能の概要
@@ -50,13 +43,6 @@ SELECT * FROM BONUS;
 
 バッチ処理は、 |jsr352| で規定されたインターフェースの実装に加えて、トランザクション制御などの共通的な処理を提供するリスナーによって構成する。
 リスナーの詳細は バッチアプリケーションで使用するリスナー 及び リスナーの指定方法 を参照。
-
-<details>
-<summary>keywords</summary>
-
-動作確認, TRUNCATE TABLE BONUS, 賞与計算バッチ実行, bonus-calculate, mvn exec:java, SELECT * FROM BONUS, H2コンソール, 動作確認手順
-
-</details>
 
 ## 入力データソースからデータを読み込む
 
@@ -163,13 +149,6 @@ INNER JOIN GRADE ON EMPLOYEE.GRADE_CODE = GRADE.GRADE_CODE
 * `readItem` メソッドで読み込んだデータから一行分のデータを返却する。
 このメソッドで返却したオブジェクトが、後続する `ItemProcessor` の `processItem` メソッドの引数として与えられる。
 
-<details>
-<summary>keywords</summary>
-
-ItemReader, AbstractItemReader, ItemProcessor, DeferredEntityList, UniversalDao, @Named, @Dependent, Chunkステップ データ読み込み, 遅延ロード, ItemReader実装, open, readItem, close, EmployeeSearchReader, EmployeeForm, findAllBySqlFile
-
-</details>
-
 ## 業務ロジックを実行する
 
 賞与の計算等の業務ロジックを実装する。
@@ -218,13 +197,6 @@ public class BonusCalculateProcessor implements ItemProcessor {
 * `processItem` メソッドで一定数( getting_started_chunk-job にて設定方法を解説)のエンティティを返却した時点で、
 後続する `ItemWriter` の `writeItems` メソッドが実行される。
 
-<details>
-<summary>keywords</summary>
-
-ItemProcessor, BonusCalculateProcessor, @Named, @Dependent, 業務ロジック実装, Chunkステップ 業務処理, processItem, writeItems, Bonus, calculateBonus, EmployeeForm
-
-</details>
-
 ## 永続化処理を行う
 
 DB更新等の、永続化処理を実装する。
@@ -252,13 +224,6 @@ public class BonusWriter extends AbstractItemWriter {
 * `UniversalDao#batchInsert` を使用してエンティティのリストを一括登録する。
 * `writeItems` メソッド実行後にトランザクションがコミットされ、新たなトランザクションが開始される。
 * `writeItems` メソッド実行後、バッチ処理が `readItem` メソッド実行から繰り返される。
-
-<details>
-<summary>keywords</summary>
-
-ItemWriter, AbstractItemWriter, UniversalDao, batchInsert, トランザクションコミット, 永続化処理, Chunkステップ 書き込み, writeItems, BonusWriter, @Dependent, @Named
-
-</details>
 
 ## JOB設定ファイルを作成する
 
@@ -294,10 +259,3 @@ bonus-calculate.xml
 .. |jsr352| raw:: html
 
 <a href="https://jakarta.ee/specifications/batch/" target="_blank">Jakarta Batch(外部サイト、英語)</a>
-
-<details>
-<summary>keywords</summary>
-
-JOB定義ファイル, item-count, chunk要素, nablarchJobListenerExecutor, nablarchStepListenerExecutor, nablarchItemWriteListenerExecutor, JOB設定, batch-jobs, META-INF, bonus-calculate
-
-</details>

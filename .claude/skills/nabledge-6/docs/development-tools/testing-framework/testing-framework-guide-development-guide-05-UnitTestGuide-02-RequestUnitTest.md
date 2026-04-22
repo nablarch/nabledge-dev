@@ -1,12 +1,5 @@
 # リクエスト単体テストの実施方法
 
-<details>
-<summary>keywords</summary>
-
-BasicHttpRequestTestTemplate, getBaseUri, リクエスト単体テスト, testShots, LIST_MAP, beforeExecuteRequest, afterExecuteRequest, ExecutionContext, ThreadContext設定不要, トランザクション制御不要, Web Frameworkハンドラ, テストクラス作成注意点, FileSupport, assertFile, ダウンロードファイルテスト, batch_request_test, html_dump_dir, テストメソッド分割, JUnit, テスト起動, テスト実行方法, テストデータ, cookie, Cookie情報, リクエストパラメータ複数値, カンマ区切り, エスケープ, requestParams, expectedSearch, 検索結果検証, searchResult, テストケース一覧リンク, テストメソッド実装
-
-</details>
-
 ## テストクラスの書き方
 
 テストクラスは以下の条件を満たすように作成する。
@@ -27,13 +20,6 @@ package nablarch.sample.management.user;
 public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
 ```
 > **Tip:** スーパクラスBasicHttpRequestTestTemplateは、リクエスト単体テストに必要な各種メソッドを用意している。\ DbAccessTestSupportの機能も兼ね備えているので、データベースの設定などもクラス単体テストと\ 同じように実行できる。\
-
-<details>
-<summary>keywords</summary>
-
-execute, Advice, テストメソッド作成, JUnit, @Test, BasicHttpRequestTestTemplate, DbAccessTestSupport, RequestTest, テストクラス命名規則, リクエスト単体テストクラス作成
-
-</details>
 
 ## テストメソッド分割
 
@@ -82,26 +68,12 @@ execute, Advice, テストメソッド作成, JUnit, @Test, BasicHttpRequestTest
 
 > **Tip:** 上記のようにメソッドを分割するのは、テストデータシートが煩雑になり可読性が下がることを避ける為である。\ 上記以外でも、１つのテストデータシートにさまざまなテストケースを詰め込むと可読性が下がる場合は、テストデータシートを分割する。
 
-<details>
-<summary>keywords</summary>
-
-BasicAdvice, beforeExecute, afterExecute, TestCaseInfo, getTestCaseName, getSheetName, getTestCaseNo, getHttpRequest, assertSqlResultSetEquals, assertSqlRowEquals, assertEntity, assertListMapEquals, getListMap, ExecutionContext, SqlResultSet, SqlRow, HttpRequest, リクエストスコープ検証, テストメソッド分割, 正常系, 異常系, 画面表示検証, テストデータシート分割, USERS00101, doUsers00101, testUsers00101Normal, testUsers00101Abnormal, testUsers00101View
-
-</details>
-
 ## テストデータの書き方
 
 テストデータを記載したExcelファイルは、クラス単体テストと同様に\
 テストソースコードと同じディレクトリに同じ名前で格納する（拡張子のみ異なる）。
 
 テストデータの記述方法詳細については、\ how_to_write_excel\ を参照。
-
-<details>
-<summary>keywords</summary>
-
-HTMLダンプ, HtmlCheckTool, html_dump, テスト結果確認, ダンプファイル命名, dump-dir-label, testShots, description, テストデータ, Excelファイル, how_to_write_excel
-
-</details>
 
 ## テストクラスで共通のデータベース初期値
 

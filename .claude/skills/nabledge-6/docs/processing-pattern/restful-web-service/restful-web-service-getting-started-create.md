@@ -111,10 +111,3 @@ public class ProjectAction {
 ```
 この実装のポイント
 * `@Path` アノテーションと `@POST` アノテーションを使用して、POSTリクエスト時にマッピングする業務アクションメソッドを定義する。
-
-<details>
-<summary>keywords</summary>
-
-ProjectForm, ProjectAction, Project, BeanUtil, UniversalDao, HttpResponse, MediaType, Serializable, @Consumes, @Valid, @Required, @Domain, @Path, @POST, JSONリクエスト登録処理, RESTful APIリソース登録, HTTPステータスコード201, フォームからエンティティへの変換
-
-</details>

@@ -17,23 +17,9 @@
 ```
 > **Tip:** http-request-routerのバージョン0.1.1を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 
-<details>
-<summary>keywords</summary>
-
-nablarch-router-adaptor, com.nablarch.integration, ルーティングアダプタ, モジュール依存関係, http-request-router, PathOptionsProviderRoutesMapping, JaxRsPathOptionsProvider, JaxRsMethodBinderFactory, JerseyJaxRsHandlerListFactory, RoutesMapping, JaxRsHttpRequest, PathOptionsFormatter, BasicApplicationInitializer, WebFrontController, @Path, @GET, @POST, @DELETE, @HEAD, @OPTIONS, @PATCH, @PUT, @Produces, applicationPath, basePackage, pathOptionsProvider, pathOptionsFormatter, methodBinderFactory, handlerQueue, initializeList, Pathアノテーション ルーティング, JAX-RS マッピング, パスパラメータ, ルーティング定義確認, アノテーション引き継ぎ, インターフェース継承
-
-</details>
-
 ## ルーティングアダプタを使用するための設定を行う
 
 本アダプタを使用するための手順を以下に示す。
-
-<details>
-<summary>keywords</summary>
-
-RoutesMapping, nablarch.integration.router.RoutesMapping, packageMapping, basePackage, ディスパッチハンドラ設定, ルート定義ファイル, routes.xml, ハンドラキュー設定, アクションクラスマッピング, WebFrontController, nablarch.fw.web.servlet.WebFrontController, BasicApplicationInitializer, nablarch.core.repository.initialization.BasicApplicationInitializer, handlerQueue, initializeList
-
-</details>
 
 ## ディスパッチハンドラを設定する
 
@@ -107,13 +93,6 @@ router.controllerDetector=nablarch.integration.router.NablarchControllerDetector
 | PersonAction#search | /action/person/search |
 | LoginAction#index | /action/login/index |
 | ProjectUploadAction#index | /action/projectUpload/index |
-
-<details>
-<summary>keywords</summary>
-
-NablarchControllerDetector, nablarch.integration.router.NablarchControllerDetector, routes.properties, 自動マッピング, JBoss, WildFly, :controller, :action, router.controllerDetector
-
-</details>
 
 ## Jakarta RESTful Web ServicesのPathアノテーションでマッピングする
 

@@ -10,13 +10,6 @@ Nablarchアプリケーションフレームワークの主な構成要素を以
 
 ![](../../../knowledge/assets/about-nablarch-architecture/fw-design.png)
 
-<details>
-<summary>keywords</summary>
-
-Nablarchフレームワーク構成要素, アーキテクチャ概要, JSR352バッチ適用外, フレームワーク設計図
-
-</details>
-
 ## ハンドラキュー(handler queue)
 
 ハンドラキューとは、リクエストやレスポンスに対する横断的な処理を行うハンドラ群を予め定められた順序に沿って定義したキューを指す。
@@ -38,13 +31,6 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 ハンドラは、前後関係を意識してハンドラキューに設定しないと正常に動作しないものがある。
 ハンドラの制約等(前後関係など)は、各ハンドラの章で説明するので、ハンドラキューを構築する際には各ハンドラのドキュメントを参照すること。
 
-<details>
-<summary>keywords</summary>
-
-ハンドラキュー, ハンドラ, インターセプタ, 横断的処理, OnDoubleSubmission, UseToken, OnErrors, OnError, InjectForm, nablarch.common.web.token.OnDoubleSubmission, nablarch.common.web.token.UseToken, nablarch.fw.web.interceptor.OnErrors, nablarch.fw.web.interceptor.OnError, nablarch.common.web.interceptor.InjectForm, Interceptor.Factory, nablarch.fw.Interceptor.Factory
-
-</details>
-
 ## インターセプタ(interceptor)
 
 インターセプタとは、実行時に動的にハンドラキューに追加されるハンドラのことを指す。
@@ -60,10 +46,3 @@ Nablarchは受け取ったリクエストに対し、ハンドラキュー上に
 ライブラリとは、データベースアクセスやファイルアクセス、ログ出力などのようにハンドラから呼び出されるコンポーネント群のことを指す。
 
 Nablarchアプリケーションフレームワークが提供するライブラリは、 Nablarchが提供するライブラリ を参照。
-
-<details>
-<summary>keywords</summary>
-
-ライブラリ, データベースアクセス, ファイルアクセス, ログ出力, コンポーネント
-
-</details>

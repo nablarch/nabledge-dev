@@ -1,12 +1,5 @@
 # Nablarchでの非同期処理
 
-<details>
-<summary>keywords</summary>
-
-非同期処理, テーブルをキューとして使ったメッセージング, Webアプリケーション, DB登録検知
-
-</details>
-
 NablarchのWebアプリケーションでは、非同期処理は「[テーブルをキューとして使ったメッセージング](https://nablarch.github.io/docs/LATEST/doc/application_framework/application_framework/messaging/db/index.html)」を組み合わることで実現可能です。
 
 例えば、Webアプリケーションで1つのリクエストで処理するには時間がかかり過ぎるものがあるとします。
@@ -28,10 +21,3 @@ Nablarchが提供する[メール送信](https://nablarch.github.io/docs/LATEST/
 
 しかし、メール送信に関しては、そもそもマルチスレッドを必要とするような大量送信に使用することは想定されていません。
 したがって、メール送信を利用する場合は、「テーブルをキューとして使ったメッセージング」ではなく「常駐バッチ」を使って問題ありません。
-
-<details>
-<summary>keywords</summary>
-
-メール送信, 常駐バッチ, テーブルをキューとして使ったメッセージング, マルチスレッド, 非同期処理
-
-</details>

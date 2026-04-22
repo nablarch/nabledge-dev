@@ -1,12 +1,5 @@
 # リクエスト単体テスト（ウェブアプリケーション）
 
-<details>
-<summary>keywords</summary>
-
-HttpRequestTestSupport, HttpResponse, execute, システムリポジトリ再初期化, コンポーネント設定ファイル, バックアップ復元, テスト連続実行
-
-</details>
-
 ## 概要
 
 リクエスト単体テスト(ウェブアプリケーション)では、内蔵サーバを使用してテストを行う。\

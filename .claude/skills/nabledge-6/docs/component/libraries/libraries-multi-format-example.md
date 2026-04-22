@@ -1,12 +1,5 @@
 # Fixed(固定長)のマルチフォーマット定義のサンプル集
 
-<details>
-<summary>keywords</summary>
-
-固定長マルチフォーマット, Fixed, レコード識別, Classifier, dataKbn, record-length, マルチフォーマット定義
-
-</details>
-
 単一のフィールドでフォーマットを識別する例
 単一フィールドが条件の場合、そのフィールド値が各フォーマットに定義した条件と一致した場合に、そのレコード定義で処理される。
 

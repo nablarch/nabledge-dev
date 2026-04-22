@@ -1,12 +1,5 @@
 # バッチアプリケーション編
 
-<details>
-<summary>keywords</summary>
-
-バッチアプリケーション, Jakarta Batch, Nablarchバッチ, フレームワーク選択, jsr352, nablarch_batch
-
-</details>
-
 本章ではNablarchアプリケーションフレームワークを使用してバッチアプリケーションを開発するために必要となる情報を提供する。
 
 Nablarchのバッチアプリケーションでは、以下2種類のバッチアプリケーションのフレームワークを提供している。

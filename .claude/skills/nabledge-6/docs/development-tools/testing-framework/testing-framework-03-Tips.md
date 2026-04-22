@@ -1,12 +1,5 @@
 # 目的別API使用方法
 
-<details>
-<summary>keywords</summary>
-
-TestSupport, DbAccessTestSupport, getListMap, LIST_MAP, List-Map形式, Excelデータ取得, テストパラメータ取得, OracleSequenceIdGenerator, FastTableIdGenerator, シーケンスオブジェクト採番, テーブル採番, 採番テスト, idGenerator, IdGenerator, nablarch.test.resource-root, テストデータディレクトリ変更, 複数ディレクトリ指定, セミコロン区切り, VM引数指定, グループID, EXPECTED_TABLE, SETUP_TABLE, setUpDb, assertTableEquals, 複数テストケース, シート管理, TestDataParser, Excelファイル読み込み, 別ディレクトリ, SystemRepository, 採番, シーケンス, @BeforeClass, @AfterClass, スーパークラス継承, メソッドオーバーライド, アノテーション注意点, テストデータ解析, データファイル読み込み, 委譲, beginTransactions, endTransactions, フレームワーク非継承, getClass, トランザクション, transaction, TransactionManager, コミット, ロールバック, special_notation_in_cell, 空白, 空文字, 改行, null, テストデータ特殊文字, assertProperties, Beanアサート, プロパティ検証, Excel期待値, マスタデータ, 04_MasterDataRestore, マスタデータ変更テスト, 空行, NULL, テストデータ空行, テストデータディレクトリ, baseDir, データファイルパス, テストリソース
-
-</details>
-
 目的別のAPIの使用方法について説明する。
 
 
@@ -43,13 +36,6 @@ LIST_MAP=<シート内で一意になるID（任意の文字列）>
 
 * `TestSupport#getListMap(String sheetName, String id)`
 * `DbAccessTestSupport#getListMap(String sheetName, String id)`
-
-<details>
-<summary>keywords</summary>
-
-getListMap, ループテスト, テストデータバリエーション, setUpDb, パラメータ化テスト, ThreadContext, setThreadContextValues, DbAccessTestSupport, TestSupport, ユーザID設定, リクエストID設定, 自動設定項目, nablarch.test.core.file.TestDataConverter, TestDataConverter_<データ種別>, URLエンコーディング変換, テストデータ変換処理, file-type, FormUrlEncodedTestDataConverter
-
-</details>
 
 ## テストソースコード実装例
 
@@ -106,13 +92,6 @@ list.add(second);
 テストをループさせる。これにより、Excelデータを追加するだけで、データバリエーションを増やすことができる。
 
 以下の例では、前述のList-Map形式を使用して複数のテストを１つのメソッドで実行している。
-
-<details>
-<summary>keywords</summary>
-
-FixedSystemTimeProvider, SystemTimeProvider, SystemRepository, fixedDate, システム日時固定, テスト用固定日時, @Before, @After, @BeforeClass, @AfterClass, テスト前後共通処理, JUnit4
-
-</details>
 
 ## テストソースコード実装例
 
@@ -208,13 +187,6 @@ LIST_MAP=expected02
 テストクラス側では、前述のAPIと同名のオーバーロードメソッドに引数グループIDを渡す。
 これにより、指定したグループIDのデータのみを処理対象にできる。
 
-<details>
-<summary>keywords</summary>
-
-ThreadContext, スレッドコンテキスト, ThreadContext.setObject, リクエストスコープ, DbAccessTestSupport, トランザクション制御, beginTransactions, endTransactions, トランザクション自動制御
-
-</details>
-
 ## テストソースコード実装例
 
 ```java
@@ -279,13 +251,6 @@ EXPECTED_TABLE[case_002]=EMPLOYEE_TABLE
 
 Nablarch Application Frameworkでは、SystemTimeProviderインタフェースの実装クラスがシステム日時を提供する。この実装クラスを、固定値を返すテスト用クラスに差し替えることにより、任意のシステム日時を返すことができる。
 
-<details>
-<summary>keywords</summary>
-
-JUnit, @Test, @Rule, @ClassRule, アノテーション, assertObjectPropertyEquals, assertObjectArrayPropertyEquals, assertObjectListPropertyEquals, HttpRequestTestSupport, プロパティ検証
-
-</details>
-
 ## 設定ファイル例
 
 コンポーネント設定ファイルにて、SystemTimeProviderインタフェースの実装クラスを指定する箇所に
@@ -339,13 +304,6 @@ Date now = provider.getDate();
 | ② 期待値はテーブルに設定した値を元に設定する。
 
 以下に設定例及び使用例を示す。
-
-<details>
-<summary>keywords</summary>
-
-テストサポートクラス, ユーティリティ, テストヘルパー, 空行, テストデータ, ダブルクォーテーション, special_notation_in_cell, 可変長ファイル, SETUP_VARIABLE
-
-</details>
 
 ## 設定ファイルの例
 
@@ -421,13 +379,6 @@ Excelファイルに設定する値を記述して下記メソッドを呼び出
 
 > **Tip:** 特に自動設定項目を使用してデータベースを登録・更新する際は、ThreadContextにリクエストIDとユーザIDが設定されている必要がある。テスト対象クラス起動前にこれらの値をThreadContextに設定しておくこと。
 
-<details>
-<summary>keywords</summary>
-
-テストデータ, NULLデータ, 空文字, コメント行, テストデータディレクトリ, how_to_change_test_data_dir, テストデータ配置場所変更
-
-</details>
-
 ## テストソースコード実装例
 
 ```java
@@ -459,13 +410,6 @@ LIST_MAP=threadContext
 
 "/foo/bar/"に存在する"Buz.xlsx"というファイルからデータを読み込む場合の例を以下に示す。
 
-<details>
-<summary>keywords</summary>
-
-マスタデータ, SETUP_TABLE, マスタデータ投入, テスト用マスタ
-
-</details>
-
 ## テストソースコード実装例
 
 ```java
@@ -477,13 +421,6 @@ List<Map<String, String>> list = parser.getListMap("/foo/bar/Baz.xlsx", "sheet00
 
 JUnit4で用意されたアノテーション(@Before, @After, @BeforeClass, @AfterClass)を使用することで、
 テスト実行前後に共通処理を実行させることができる。
-
-<details>
-<summary>keywords</summary>
-
-テストデータ変換, データ変換, TestDataConverter, 型変換
-
-</details>
 
 ## 注意事項
 

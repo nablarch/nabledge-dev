@@ -4,13 +4,6 @@
 
 ## 機能概要
 
-<details>
-<summary>keywords</summary>
-
-ファイルパス管理, 論理名管理, ディレクトリ管理, 拡張子管理, ファイル入出力
-
-</details>
-
 ## ディレクトリや拡張子を論理名で管理できる
 
 ディレクトリや拡張子を論理名で管理することが出来る。
@@ -28,21 +21,7 @@
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-core, モジュール依存関係, com.nablarch.framework
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-FilePathSetting, basePathSettings, fileExtensions, filePathSetting, classpathスキーム, fileスキーム, ファイルパス設定, 論理名定義
-
-</details>
 
 ## ディレクトリと拡張子を設定する
 
@@ -107,10 +86,3 @@ File csvOutputDir = filePathSetting.getBaseDirectory("csv-output");
 // /var/nablarch/input/users
 File users = filePathSetting.getFileWithoutCreate("fixed-file-input", "users")
 ```
-
-<details>
-<summary>keywords</summary>
-
-FilePathSetting, getFileWithoutCreate, getBaseDirectory, 論理名, ファイルパス取得
-
-</details>

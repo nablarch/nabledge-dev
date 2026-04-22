@@ -1,12 +1,5 @@
 # 登録機能の作成
 
-<details>
-<summary>keywords</summary>
-
-X-Message-Id, Content-Type, POST, ProjectSaveAction, HTTPメッセージング動作確認, リクエストヘッダ, リクエストボディ
-
-</details>
-
 リクエストされた情報(JSON形式)をDBに登録する機能を解説する。
 
 作成する機能の概要
@@ -193,10 +186,3 @@ public class ProjectSaveAction extends MessagingAction {
 .. |br| raw:: html
 
 <br />
-
-<details>
-<summary>keywords</summary>
-
-MessagingAction, RequestMessage, ResponseMessage, UniversalDao, ProjectForm, ProjectSaveAction, Project, BeanUtil, ValidatorUtil, ExecutionContext, HttpResponse, @Required, @Domain, HTTPメッセージング登録処理, フォーマットファイル作成, bean_validation, データベース登録, レスポンスコード設定
-
-</details>

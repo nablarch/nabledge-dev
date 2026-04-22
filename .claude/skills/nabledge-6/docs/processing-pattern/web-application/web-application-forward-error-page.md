@@ -37,13 +37,6 @@ public class ExampleErrorForwardHandler implements Handler<Object, Object> {
 }
 ```
 
-<details>
-<summary>keywords</summary>
-
-ExampleErrorForwardHandler, HttpErrorResponse, NoDataException, OptimisticLockException, on_error_interceptor, on_errors_interceptor, エラーページ共通化, ハンドラによるエラー遷移制御, システム全体エラー画面統一, 例外ハンドリング
-
-</details>
-
 ## 1つの例外クラスに対して複数の遷移先がある場合の実装方法
 
 業務例外( `ApplicationException` )が発生した箇所によって、エラー時の遷移先画面を切り替えたい場合がる。
@@ -72,10 +65,3 @@ public HttpResponse list(HttpRequest request, ExecutionContext context) {
   return new HttpResponse("/WEB-INF/view/client/complete.jsp");
 }
 ```
-
-<details>
-<summary>keywords</summary>
-
-ApplicationException, HttpErrorResponse, @InjectForm, @OnError, on_error_interceptor, 業務例外, 複数遷移先, try-catch, 遷移先切り替え, forward
-
-</details>

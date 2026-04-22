@@ -11,13 +11,6 @@
 
 ## 機能概要
 
-<details>
-<summary>keywords</summary>
-
-BLOBデータ登録, バイナリデータ, 大容量バイナリデータ, Oracle BLOB, database-binary_column, java.lang.String, java.lang.Short, java.lang.Integer, java.lang.Long, java.math.BigDecimal, java.lang.Boolean, java.util.Date, java.sql.Date, java.sql.Timestamp, java.time.LocalDate, java.time.LocalDateTime, byte[], @Temporal, Beanデータタイプ, 検索結果マッピング, UniversalDAO Bean型, ユニバーサルDAO, O/Rマッパー, CRUD, Beanマッピング, Jakarta Persistence, 共通項目自動設定, doma_adaptor, @Table
-
-</details>
-
 ## SQLを書かなくても単純なCRUDができる
 
 Jakarta PersistenceアノテーションをEntityに付けるだけで、SQLを書かなくても、以下の単純なCRUDができる。
@@ -50,13 +43,6 @@ Beanに使用できるデータタイプについては、 universal_dao_bean_da
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-CLOBデータ登録, テキストデータ, 大容量テキストデータ, Oracle CLOB, database-clob_column, nablarch-common-dao, com.nablarch.framework, Maven依存関係
-
-</details>
-
 ## 使用方法
 
 > **Important:** ユニバーサルDAOの基本的な使い方は、 `nablarch.common.dao.UniversalDao` を参照。
@@ -70,13 +56,6 @@ CLOBデータ登録, テキストデータ, 大容量テキストデータ, Orac
 <!-- コンポーネント名は"daoContextFactory"で設定する。 -->
 <component name="daoContextFactory" class="nablarch.common.dao.BasicDaoContextFactory" />
 ```
-
-<details>
-<summary>keywords</summary>
-
-SimpleDbTransactionManager, UniversalDao.Transaction, 個別トランザクション, 別トランザクション実行, connectionFactory, transactionFactory, dbTransactionName, ConnectionFactory, TransactionFactory, BasicDaoContextFactory, daoContextFactory, コンポーネント定義, 初期設定
-
-</details>
 
 ## 任意のSQL(SQLファイル)で検索する
 
@@ -99,25 +78,11 @@ UniversalDao.findAllBySqlFile(GoldUser.class, "sample.entity.Member#FIND_BY_NAME
 ```
 > **Tip:** 「#」を含めた指定は、機能単位（Actionハンドラ単位）にSQLを集約したい場合などに使用できる。 ただし、指定が煩雑になるデメリットがあるため、基本は「#」を付けない指定を使用すること。
 
-<details>
-<summary>keywords</summary>
-
-DatabaseMetaDataExtractor, java.sql.DatabaseMetaData, シノニム, 主キー情報取得, databaseMetaDataExtractor, 権限問題, 主キー検索, findAllBySqlFile, SQLファイル, SQL ID, SQLファイルパス導出, 任意SQL検索
-
-</details>
-
 ## テーブルをJOINした検索結果を取得する
 
 一覧検索などで、複数のテーブルをJOINした結果を取得したい場合がある。
 このような場合は、非効率なため、JOIN対象のデータを個別に検索せずに、
 **1回で検索できるSQL** と **JOINした結果をマッピングするBean** を作成すること。
-
-<details>
-<summary>keywords</summary>
-
-件数取得SQL, SELECT COUNT(*), convertCountSql, Dialect, H2Dialect, ページング, ORDER BY, カスタムダイアレクト, sqlMap, StatementFactory, JOIN, 複数テーブル, 一覧検索, JOINマッピング
-
-</details>
 
 ## 検索結果を遅延ロードする
 
@@ -149,13 +114,6 @@ try (DeferredEntityList<User> users
 ```
 > **Important:** 使用するRDBMSによっては、カーソルオープン中にトランザクション制御が行われるとカーソルがクローズされる。 これにより、遅延ロードを使用した大量データの処理中にトランザクション制御を行った場合、クローズ済みのカーソルを参照し、エラーとなる可能性があるため注意すること。 データベースベンダ提供のマニュアルに沿ってカーソルの挙動を調整するか、大量データを扱わないよう ページング などで回避すること。
 
-<details>
-<summary>keywords</summary>
-
-@Entity, @Table, @Access, @Column, @Id, @Version, @Temporal, @GeneratedValue, @SequenceGenerator, @TableGenerator, 楽観ロック, 自動採番, シーケンス採番, テーブル採番, sequenceName, pkColumnValue, generator, strategy, Dialect, DeferredEntityList, UniversalDao.defer, 遅延ロード, 大量データ, サーバサイドカーソル, フェッチサイズ
-
-</details>
-
 ## 条件を指定して検索する
 
 検索画面のように、条件を指定した検索をユニバーサルDAOでも提供している。
@@ -169,13 +127,6 @@ List<Project> projects = UniversalDao.findAllBySqlFile(
     Project.class, "SEARCH_PROJECT", condition);
 ```
 > **Important:** 検索条件は、Entityではなく検索条件を持つ専用のBeanを指定する。 ただし、1つのテーブルのみへのアクセスの場合は、Entityを指定しても良い。
-
-<details>
-<summary>keywords</summary>
-
-findAllBySqlFile, 検索条件, 条件検索, 専用Bean
-
-</details>
 
 ## 型を変換する
 
@@ -204,13 +155,6 @@ Entityから自動的に生成したSQLを実行する場合
 
 > **Important:** データベースの型とプロパティの型が不一致の場合、実行時に型変換エラーが発生する場合がある。 また、SQL実行時に暗黙的型変換が行われ、性能劣化(indexが使用されないことに起因する)となる可能性がある。 データベースとJavaのデータタイプのマッピングについては、使用するプロダクトに依存するため、 JDBCドライバのマニュアルを参照すること。 例えば、DBがdate型の場合には、多くのデータベースではプロパティの型は `java.sql.Date` となる。 また、DBが数値型(integerやbigint、number)などの場合は、プロパティの型は `int` (`java.lang.Integer`) や `long` (`java.lang.Long`) となる。
 
-<details>
-<summary>keywords</summary>
-
-@Temporal, java.util.Date, java.util.Calendar, 型変換, java.sql.Date, 暗黙的型変換, universal_dao_jpa_temporal
-
-</details>
-
 ## ページングを行う
 
 ユニバーサルDAOの検索は、ページングをサポートしている。
@@ -228,13 +172,6 @@ Pagination pagination = users.getPagination();
 ```
 > **Tip:** ページング用の検索処理は、 データベースアクセス(JDBCラッパー)の範囲指定検索機能 を使用して行う。
 > **Tip:** ページングでは、実際の範囲指定レコードの取得処理の前に、件数取得SQLが発行される。 件数取得SQLに起因して性能劣化が発生した場合等、必要に応じて ページング処理の件数取得用SQLを変更する を参考にして件数取得SQLを変更する。
-
-<details>
-<summary>keywords</summary>
-
-UniversalDao.per, UniversalDao.page, Pagination, EntityList, ページング, 件数取得SQL
-
-</details>
 
 ## サロゲートキーを採番する
 
@@ -305,13 +242,6 @@ public Long getId() {
 
 > **Tip:** シーケンス及びテーブルを使用したサロゲートキーの採番処理は、 サロゲートキーの採番 を使用して行う。 設定値(テーブルを使用した場合のテーブル名やカラム名の設定など)は、リンク先を参照すること。
 
-<details>
-<summary>keywords</summary>
-
-@GeneratedValue, @SequenceGenerator, @TableGenerator, GenerationType, Dialect, サロゲートキー, シーケンス採番
-
-</details>
-
 ## バッチ実行(一括登録、更新、削除)を行う
 
 ユニバーサルDAOでは、大量データの一括登録や更新、削除時にバッチ実行ができる。
@@ -324,13 +254,6 @@ public Long getId() {
 * `batchDelete`
 
 > **Important:** `batchUpdate` を使用した、一括更新処理では排他制御処理を行わない。 もし、更新対象のEntityとデータベースのバージョンが不一致だった場合、そのレコードの更新は行われずに処理が正常終了する。 排他制御が必要となる更新処理では、一括更新ではなく1レコード毎の更新処理を呼び出すこと。
-
-<details>
-<summary>keywords</summary>
-
-batchInsert, batchUpdate, batchDelete, 一括登録, 一括更新, 一括削除
-
-</details>
 
 ## 楽観的ロックを行う
 
@@ -353,13 +276,6 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 ```
 > **Important:** バッチ実行(一括登録、更新、削除)を行う に記載があるように、 一括更新処理(`batchUpdate`)では楽観的ロックは使用できないので注意すること。
 
-<details>
-<summary>keywords</summary>
-
-@Version, OptimisticLockException, OnError, 楽観的ロック, 排他制御
-
-</details>
-
 ## 悲観的ロックを行う
 
 ユニバーサルDAOでは、悲観的ロックの機能を特に提供していない。
@@ -368,13 +284,6 @@ public HttpResponse update(HttpRequest request, ExecutionContext context) {
 行ロック（select for update）を記載したSQLは、
 `UniversalDao#findBySqlFile` メソッドを使って実行する。
 
-<details>
-<summary>keywords</summary>
-
-findBySqlFile, SELECT FOR UPDATE, 悲観的ロック, 行ロック
-
-</details>
-
 ## 排他制御の考え方
 
 排他制御に使用するバージョンカラムをどのテーブルに定義するかは業務的な観点により決める必要がある。
@@ -382,13 +291,6 @@ findBySqlFile, SELECT FOR UPDATE, 悲観的ロック, 行ロック
 バージョン番号を持つテーブルは、排他制御を行う単位ごとに定義し、競合が許容される最大の単位で定義する。
 たとえば、「ユーザ」という大きな単位でロックすることが業務的に許容されるならば、ユーザテーブルにバージョン番号を定義する。
 ただし、単位を大きくすると、競合する可能性が高くなり、更新失敗(楽観的ロックの場合)や処理遅延(悲観的ロックの場合)を招く点に注意すること。
-
-<details>
-<summary>keywords</summary>
-
-バージョンカラム, 排他制御, ロック単位, 競合, 楽観的ロック, 悲観的ロック
-
-</details>
 
 ## データサイズの大きいバイナリデータを登録（更新）する
 

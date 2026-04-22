@@ -34,13 +34,6 @@
 
 * `nablarch.fw.handler.RequestPathJavaPackageMapping`
 
-<details>
-<summary>keywords</summary>
-
-RequestPathJavaPackageMapping, nablarch.fw.handler.RequestPathJavaPackageMapping, リクエストディスパッチ, アクション委譲, リクエストパス解析, メッセージングディスパッチ
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -50,23 +43,9 @@ RequestPathJavaPackageMapping, nablarch.fw.handler.RequestPathJavaPackageMapping
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw, モジュール依存設定, com.nablarch.framework
-
-</details>
-
 ## 制約
 
 なし。
-
-<details>
-<summary>keywords</summary>
-
-制約なし, RequestPathJavaPackageMapping制約
-
-</details>
 
 ## ベースパッケージ、ベースパスの設定
 
@@ -83,13 +62,6 @@ nablarch-fw, モジュール依存設定, com.nablarch.framework
 </component>
 ```
 
-<details>
-<summary>keywords</summary>
-
-basePackage, basePath, ベースパッケージ設定, ベースパス設定, RequestPathJavaPackageMapping設定
-
-</details>
-
 ## 複数パッケージのクラスにディスパッチする
 
 本ハンドラを使ってディスパッチする場合、ディスパッチ先のクラスは、リクエストパスの指定によって複数振り分けることができる。
@@ -97,13 +69,6 @@ basePackage, basePath, ベースパッケージ設定, ベースパス設定, Re
 
 たとえば上記 ベースパッケージ、ベースパスの設定 を設定した際に、 `nablarch.application.xxx.ExampleBatchAction`
 クラスにディスパッチする場合、リクエストパスには `/app/action/xxx/ExampleBatchAction` を指定すればよい。
-
-<details>
-<summary>keywords</summary>
-
-複数パッケージディスパッチ, 相対パッケージ指定, リクエストパスサブパッケージ
-
-</details>
 
 ## クラス名のプレフィクス、サフィックスの設定
 
@@ -124,13 +89,6 @@ basePackage, basePath, ベースパッケージ設定, ベースパス設定, Re
   <property name="classNameSuffix" value="BatchAction" />
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-classNamePrefix, classNameSuffix, クラス名省略, プレフィクス設定, サフィックス設定
-
-</details>
 
 ## 複雑なパッケージへのディスパッチ
 
@@ -170,13 +128,6 @@ classNamePrefix, classNameSuffix, クラス名省略, プレフィクス設定, 
 </component>
 ```
 
-<details>
-<summary>keywords</summary>
-
-JavaPackageMappingEntry, nablarch.fw.handler.JavaPackageMappingEntry, optionalPackageMappingEntries, requestPattern, 複雑なパッケージディスパッチ, パッケージマッピング, リクエストパターン設定
-
-</details>
-
 ## ディスパッチ対象クラスを遅延実行する
 
 デフォルトではディスパッチ対象クラスへの委譲は即時実行されるが、ハンドラキュー上の後続のハンドラ実行後にディスパッチ対象クラスへ委譲したい場合は、以下の例を参照して `immediate` プロパティにfalseを設定すること。
@@ -187,10 +138,3 @@ JavaPackageMappingEntry, nablarch.fw.handler.JavaPackageMappingEntry, optionalPa
   <property name="immediate" value="false" />
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-immediate, 遅延実行, ディスパッチタイミング制御, 後続ハンドラ実行後ディスパッチ
-
-</details>

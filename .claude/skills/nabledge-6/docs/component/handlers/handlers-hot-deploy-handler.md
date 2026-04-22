@@ -16,13 +16,6 @@
 
 * `nablarch.fw.hotdeploy.HotDeployHandler`
 
-<details>
-<summary>keywords</summary>
-
-HotDeployHandler, nablarch.fw.hotdeploy.HotDeployHandler, ホットデプロイ, クラス再ロード, 開発環境専用, 本番環境禁止, リクエスト単体テスト
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -32,23 +25,9 @@ HotDeployHandler, nablarch.fw.hotdeploy.HotDeployHandler, ホットデプロイ,
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-web-hotdeploy, com.nablarch.framework, モジュール, Maven依存関係, 制約, ホットデプロイハンドラ制約
-
-</details>
-
 ## 制約
 
 なし。
-
-<details>
-<summary>keywords</summary>
-
-targetPackages, ホットデプロイ対象パッケージ, エンティティクラス除外, クラスローダ, session_store, キャスト失敗
-
-</details>
 
 ## ホットデプロイ対象のパッケージを指定する
 

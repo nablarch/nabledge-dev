@@ -8,16 +8,15 @@ file in TOON format — the format used by Nabledge skills for knowledge lookup.
 
 Where:
 - ``title``: from JSON ``title`` field
-- ``type``: first directory component relative to *knowledge_dir*
-             (e.g. ``component`` for ``component/handlers/file.json``)
-- ``category``: second directory component (e.g. ``handlers``)
-- ``processing_patterns``: space-joined hints aggregated from all sections
+- ``type``: from classified FileInfo (mapping-driven)
+- ``category``: from classified FileInfo (mapping-driven)
+- ``processing_patterns``: ``category`` when ``type == "processing-pattern"``, else empty
 - ``relative_path``: path relative to *knowledge_dir*
 
 Files with ``no_knowledge_content: true`` are excluded.
 
 Public API:
-    generate_index(knowledge_dir: Path, version: str, output_path: Path) -> int
+    generate_index(file_infos, knowledge_dir, version, output_path) -> int
 """
 from __future__ import annotations
 
@@ -32,6 +31,9 @@ def _load_json(path: Path) -> dict:
 def _derive_type_category(rel_path: Path) -> tuple[str, str]:
     """Derive (type, category) from a path relative to the knowledge root.
 
+    Used by docs.py for README grouping — kept for backward compatibility
+    with path-based derivation when FileInfo is not available.
+
     Examples:
         component/handlers/handlers-error.json  -> ('component', 'handlers')
         about/release-notes/file.json           -> ('about', 'release-notes')
@@ -43,32 +45,21 @@ def _derive_type_category(rel_path: Path) -> tuple[str, str]:
     return type_, category
 
 
-def _collect_hints(data: dict) -> str:
-    """Aggregate all hints from top-level and all sections, deduplicated, space-joined.
+def generate_index(
+    file_infos: list,
+    knowledge_dir: Path,
+    version: str,
+    output_path: Path,
+) -> int:
+    """Write ``index.toon`` to *output_path* from classified file infos.
 
-    Commas inside individual hints are replaced with the Japanese comma (、)
-    so they do not break the TOON field-delimiter (ASCII comma).
-    """
-    seen: list[str] = []
-    seen_set: set[str] = set()
-
-    def _add(h: str) -> None:
-        if h and h not in seen_set:
-            seen.append(h.replace(",", "、"))
-            seen_set.add(h)
-
-    for h in data.get("hints", []):
-        _add(h)
-    for section in data.get("sections", []):
-        for h in section.get("hints", []):
-            _add(h)
-    return " ".join(seen)
-
-
-def generate_index(knowledge_dir: Path, version: str, output_path: Path) -> int:
-    """Scan *knowledge_dir* and write ``index.toon`` to *output_path*.
+    ``processing_patterns`` is derived from the mapping-assigned type/category:
+    ``type == "processing-pattern"`` → ``category`` (e.g. ``nablarch-batch``);
+    any other type → empty string. This matches KC's semantics
+    (``phase_f_finalize.py:303``).
 
     Args:
+        file_infos: List of FileInfo objects from classify_sources().
         knowledge_dir: Root directory containing knowledge JSON files.
         version: Nabledge version string (e.g. "6", "5").
         output_path: Destination path for ``index.toon``.
@@ -78,25 +69,30 @@ def generate_index(knowledge_dir: Path, version: str, output_path: Path) -> int:
     """
     entries: list[dict] = []
 
-    for json_path in sorted(knowledge_dir.rglob("*.json")):
+    for fi in file_infos:
+        json_path = knowledge_dir / fi.output_path
+        if not json_path.exists():
+            continue
         data = _load_json(json_path)
         if data.get("no_knowledge_content") is True:
             continue
 
-        rel_path = json_path.relative_to(knowledge_dir)
-        type_, category = _derive_type_category(rel_path)
         title = data.get("title", json_path.stem)
         # Commas in title would break TOON format — replace with Japanese comma
         title = title.replace(",", "、")
-        processing_patterns = _collect_hints(data)
+
+        pp = fi.category if fi.type == "processing-pattern" else ""
 
         entries.append({
             "title": title,
-            "type": type_,
-            "category": category,
-            "processing_patterns": processing_patterns,
-            "path": str(rel_path).replace("\\", "/"),
+            "type": fi.type,
+            "category": fi.category,
+            "processing_patterns": pp,
+            "path": fi.output_path.replace("\\", "/"),
         })
+
+    # Preserve deterministic order: sort by path
+    entries.sort(key=lambda e: e["path"])
 
     lines = [f"# Nabledge-{version} Knowledge Index", ""]
     lines.append(f"files[{len(entries)},]{{title,type,category,processing_patterns,path}}:")

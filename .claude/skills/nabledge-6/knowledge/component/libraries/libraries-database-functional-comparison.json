@@ -2,8 +2,6 @@
   "id": "libraries-database-functional-comparison",
   "title": "ユニバーサルDAOとJakarta Persistenceとの機能比較",
   "content": "この章では、以下の機能の比較を示す。\n\n* ユニバーサルDAO\n* |JSR317|\n\n> **Important:** ユニバーサルDAOでは、JPAで定義されているアノテーションのうち、 universal_dao_jpa_annotations に記載のあるものだけをサポートしている。 ここに記載のないアノテーションに関連する機能については、使用できない。\n| 機能 | ユニバーサルDAO | Jakarta Persistence |\n|---|---|---|\n| リレーションシップに対応できる \\|br\\| | × [#relation]_ | ○ |\n| Entityを元にCRUDが実行できる \\|br\\| SQLを作成することなくCRUDのSQLを実行できる | ○ \\|br\\| 解説書へ | ○ |\n| 検索結果をJava Beansオブジェクトとして取得できる | ○ \\|br\\| 解説書へ | ○ |\n| 任意のSQL文を実行できる | ○ \\|br\\| 解説書へ | ○ |\n| SQLの動的組み立てができる | △ [#criteria]_ \\|br\\| 解説書へ | ○ |\n| バッチ実行ができる | ○ \\|br\\| 解説書へ | × |\n| 大量データを取得する際に遅延ロードができる \\|br\\| (ヒープを圧迫せずに大量データを処理できる) | ○ \\|br\\| 解説書へ | × |\n| ページング用の範囲指定の検索ができる | ○ \\|br\\| 解説書へ | ○ |\n| サロゲートキーの値を採番できる | ○ \\|br\\| 解説書へ | ○ |\n| Entityの状態をデータベースに反映時に \\|br\\| Jakarta Bean Validationが実行できる | × [#validaiton]_ | ○ |\n| データベースアクセス前後に \\|br\\| 任意の処理(コールバック呼び出し)を実行できる | × [#callback]_ | ○ |\n| 排他制御ができる | △ [#lock]_ \\|br\\| 解説書へ(楽観ロック) \\|br\\| 解説書へ(悲観ロック) | ○ |\nリレーションシップがあるテーブルの検索はSQLを作成することで対応できる。登録、更新、削除については、テーブル毎に必要な処理を呼び出すことで対応する。\nユニバーサルDAOでは、条件及びソート項目に限り動的な組み立てができる。詳細は、 :ref:`SQLの動的組み立て <database-variable_condition>` を参照\nNablarchでは、外部からのデータを受け付けたタイミングでバリデーションを実施し、バリデーションエラーがない場合のみEntityへ変換しデータベースへ保存する。\n任意の処理が必要となる場合は、ユニバーサルDAOを呼び出す側で処理を行うことで対応する。\nユニバーサルDAOでは、楽観的ロックのみサポートする。悲観的ロックやJakarta Persistenceで定義されている検索時のロックモードの指定などはサポートしない。(悲観的ロックは、 ``select for update`` などを使用することで実現できる。)\n.. |jsr317| raw:: html\n\n<a href=\"https://jakarta.ee/specifications/persistence/\" target=\"_blank\">Jakarta Persistence(外部サイト、英語)</a>\n\n.. |br| raw:: html\n\n<br />",
-  "hints": [],
   "no_knowledge_content": false,
-  "sections": [],
-  "index": []
+  "sections": []
 }

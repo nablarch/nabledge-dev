@@ -72,21 +72,7 @@ jaxRsAccessLogFormatter.endFormat=@@@@ END @@@@ rid = [$requestId$] uid = [$user
                                     \n\tfree_memory    = [$freeMemory$]
 ```
 
-<details>
-<summary>keywords</summary>
-
-HTTPアクセスログ出力方針, ログレベル INFO, HTTP_ACCESS, log.properties, app-log.properties, JaxRsAccessLogFormatter, アプリケーションログ, jaxrs_access_log_handler, 証跡ログ, リクエストパラメータ
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-JaxRsAccessLogFormatter, jaxRsAccessLogFormatter.className, jaxRsAccessLogFormatter.beginFormat, jaxRsAccessLogFormatter.endFormat, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.bodyLogTargetMatcher, jaxRsAccessLogFormatter.bodyMaskingFilter, jaxRsAccessLogFormatter.bodyMaskingItemNames, jaxRsAccessLogFormatter.parametersSeparator, jaxRsAccessLogFormatter.sessionScopeSeparator, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, HTTPアクセスログ設定, マスキング, リクエストボディログ, レスポンスボディログ, MessageBodyLogTargetMatcher, JaxRsBodyLogTargetMatcher, LogContentMaskingFilter, JaxRsBodyMaskingFilter, BasicLogFormatter, ThreadContext
-
-</details>
 
 ## HTTPアクセスログ（RESTfulウェブサービス用）の設定
 
@@ -331,13 +317,6 @@ httpAccessLogFormatter.beginLabel=HTTP ACCESS BEGIN
 httpAccessLogFormatter.endLabel=HTTP ACCESS END
 ```
 
-<details>
-<summary>keywords</summary>
-
-JaxRsAccessJsonLogFormatter, JSON構造化ログ, jaxRsAccessLogFormatter.beginTargets, jaxRsAccessLogFormatter.endTargets, jaxRsAccessLogFormatter.datePattern, jaxRsAccessLogFormatter.maskingPatterns, jaxRsAccessLogFormatter.maskingChar, jaxRsAccessLogFormatter.beginOutputEnabled, jaxRsAccessLogFormatter.endOutputEnabled, jaxRsAccessLogFormatter.structuredMessagePrefix, jaxRsAccessLogFormatter.beginLabel, jaxRsAccessLogFormatter.endLabel, httpAccessLogFormatter.className, JsonLogFormatter
-
-</details>
-
 ## セッションストアIDについて
 
 セッションストアIDを出力に含めた場合、 session_store が発行するセッションを識別するIDが出力される。
@@ -349,10 +328,3 @@ JaxRsAccessJsonLogFormatter, JSON構造化ログ, jaxRsAccessLogFormatter.beginT
 
 * セッションストアIDが発行されていないリクエストでは、途中でIDが発行されたとしても、同一リクエスト内で出力されるセッションストアIDは全て空になる
 * 途中で `セッションを破棄` したり `IDを変更` しても、ログに出力される値はリクエスト処理開始時のものから変化しない
-
-<details>
-<summary>keywords</summary>
-
-セッションストアID, session_store_handler, jaxrs_access_log_handler, セッション識別ID, ハンドラ配置順序, SessionUtil
-
-</details>

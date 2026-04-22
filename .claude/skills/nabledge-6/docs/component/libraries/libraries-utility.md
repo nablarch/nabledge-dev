@@ -1,12 +1,5 @@
 # 汎用ユーティリティ
 
-<details>
-<summary>keywords</summary>
-
-DateUtil, FileUtil, ObjectUtil, StringUtil, BeanUtil, Base64Util, BinaryUtil, nablarch.core.util.DateUtil, nablarch.core.util.FileUtil, nablarch.core.util.ObjectUtil, nablarch.core.util.StringUtil, nablarch.core.beans.BeanUtil, nablarch.core.util.Base64Util, nablarch.core.util.BinaryUtil, 日付ユーティリティ, 文字列ユーティリティ, Base64エンコーディング, バイナリユーティリティ, 汎用ユーティリティ
-
-</details>
-
 本フレームワークで提供している、汎用的に使用できるユーティリティクラスを以下に示す。
 
 | クラス名 | モジュール名 | 概要 |

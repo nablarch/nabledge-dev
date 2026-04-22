@@ -92,13 +92,6 @@ public class ProjectCreationServiceAction extends BatchAction<SqlRow> {
 * テーブルをキューとして扱うため、入力データはテーブルの検索結果となる。
 このため、 `BatchAction` の型パラメータには `SqlRow` を指定する。
 
-<details>
-<summary>keywords</summary>
-
-BatchAction, SqlRow, テーブルキュー, アクションクラス作成, DBメッセージング
-
-</details>
-
 ## テーブルを監視するためのリーダを生成する
 
 アクションクラスを作成する で作成したアクションクラスに、テーブルを監視するリーダを生成するメソッドを作成する。
@@ -180,13 +173,6 @@ where
 
 * SQLファイルへのSQLの記述ルールは、 SQLをファイルで管理する を参照。
 
-<details>
-<summary>keywords</summary>
-
-DatabaseTableQueueReader, DatabaseRecordReader, DatabaseRecordListener, SqlPStatement, createReader, SimpleDbTransactionManager, SimpleDbTransactionExecutor, AppDbConnection, SystemRepository, テーブルキュー監視, 悲観ロック, 未処理データ取得
-
-</details>
-
 ## 未処理データを元に業務処理を実行する
 
 アクションクラスを作成する で作成したアクションクラスに、業務処理を実装するメソッドを作成する。
@@ -219,13 +205,6 @@ public Result handle(final SqlRow inputData, final ExecutionContext context) {
 
 * 正常に処理したことを示す `Result.Success` を返却する。
 処理が失敗した場合、例外を送出するため、常に `Result.Success` を返却すれば良い。
-
-<details>
-<summary>keywords</summary>
-
-handle, Result.Success, UniversalDao, ApplicationException, MessageUtil, MessageLevel, 業務処理実装, テーブルキュー処理
-
-</details>
 
 ## 処理済みデータのステータスを更新する
 
@@ -286,10 +265,3 @@ where
 * SQLでは、指定のレコードのステータスを更新する。
 
 * SQLファイルへのSQLの記述ルールは、 SQLをファイルで管理する を参照。
-
-<details>
-<summary>keywords</summary>
-
-transactionSuccess, transactionFailure, StatusUpdateDto, ステータス更新, 処理済みデータ, 正常終了, 異常終了
-
-</details>

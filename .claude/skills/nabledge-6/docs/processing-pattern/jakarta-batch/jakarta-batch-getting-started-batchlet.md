@@ -1,12 +1,5 @@
 # 対象テーブルのデータを削除するバッチの作成(Batchletステップ)
 
-<details>
-<summary>keywords</summary>
-
-TruncateTableBatchlet, AbstractBatchlet, Batchlet, jakarta.batch.api.Batchlet, @Dependent, @Named, @Inject, @BatchProperty, AppDbConnection, DbConnectionContext, SqlPStatement, Batchletステップ実装, テーブルデータ削除バッチ, CDI管理Bean登録, ジョブ定義ファイル設定, バッチプロパティインジェクション
-
-</details>
-
 Exampleアプリケーションを元に、 batchletステップ で対象テーブルのデータを削除するバッチを解説する。
 
 作成する機能の説明
@@ -155,10 +148,3 @@ zip-code-truncate-table.xml
 .. |br| raw:: html
 
 <br />
-
-<details>
-<summary>keywords</summary>
-
-nablarch.fw.batch.ee.Main, メインクラス, ジョブ名指定, exec:java, zip-code-truncate-table, バッチ起動コマンド, JSR-352バッチ実行
-
-</details>

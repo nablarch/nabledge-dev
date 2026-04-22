@@ -1,12 +1,5 @@
 # Jakarta Server Pages静的解析ツール
 
-<details>
-<summary>keywords</summary>
-
-JSP静的解析, サニタイジング漏れ検出, nablarch-testing, 保守性向上, JSPコンパイル, Jakarta Server Pages静的解析ツール, Antタスク, Maven, HTMLレポート, XMLレポート, 設定ファイル, HtmlConvert, SanitizingCheckTask, nablarch.test.tool.sanitizingcheck.HtmlConvert, nablarch.test.tool.sanitizingcheck.SanitizingCheckTask, jspanalysis.checkjspdir, jspanalysis.xmloutput, jspanalysis.htmloutput, jspanalysis.checkconfig, jspanalysis.charset, jspanalysis.lineseparator, jspanalysis.xsl, jspanalysis.additionalexts, jspanalysis.excludePatterns, maven-antrun-plugin, analyzeJsp, analyzeJspOutputXml, ブランクプロジェクト生成, アーキタイプ, セットアップ前提条件
-
-</details>
-
 ## 概要
 
 JSPで使用を許可する構文とタグを規定し、許可する構文とタグのみを使用していることをチェックする。
@@ -130,13 +123,6 @@ static class UserAgent {
 ## 前提条件
 
 * アーキタイプからブランクプロジェクトの生成が完了していること。
-
-<details>
-<summary>keywords</summary>
-
-許可タグ指定, EL式チェック, チェック対象ファイル, 除外ファイル設定, suppress jsp check, チェック無効化, HTMLコメント特例, 01_customJspAnalysis, 01_customJspAnalysisProp
-
-</details>
 
 ## 使用方法
 

@@ -1,12 +1,5 @@
 # Nablarch 5から6への移行ガイド
 
-<details>
-<summary>keywords</summary>
-
-Nablarch 5から6への移行, 移行ガイド概要, 6u2, 先行リリース, gsp-dba-maven-plugin, taglib, ネームスペース変更, Jakarta EE 10, JSP, JSTL, jakarta.tags.core, javax.servlet.jsp.jstl, taglib ディレクティブ, Bean Validation, JAX-RS, JMS, Jakarta EE移行, 依存関係更新, hibernate-validator, jakarta.servlet.jsp.jstl, jersey-bom, artemis, Java 17, 最低Javaバージョン要件, Java 17以上, コンパイル要件, 実行時エラー, JSR352バッチ, NoClassDefFoundError, WeldException, エラー対処, Micrometerアダプタ, 監視サービス連携, バージョン更新, micrometer_collaboration, 移行手順概要, Nablarchバージョンアップ, Jakarta EE対応, 移行に必要な2つの修正, Java EE, Jakarta EE, 仕様対応表, javax, jakarta, 名前空間プレフィックス変更, JSF, JPA, JTA, CDI, JAXB, EJB, JASPIC, JACC, JAF, JSON-B, JSON-P, JCA, jBatch, EL, JAX-WS, waitt-maven-plugin, jetty-ee10-maven-plugin, 組み込みサーバ, Jakarta EE非対応, mvn jetty:run, Jetty 12, nablarch-bom, pom.xml BOM, Nablarchバージョンアップ手順, com.nablarch.profile, 名前空間変更, import文, Grep検索, Jakarta EE 9, javax.servlet.forward.request_uri, jakarta.servlet.forward.request_uri, ConstraintValidator
-
-</details>
-
 ここでは、Nablarch 5で作られたプロジェクトをNablarch 6へ移行するための方法について説明する。
 
 > **Important:** Nablarch 6のバージョン 6/6u1 は先行リリースバージョンであり、6u2が正式リリース後の最初のバージョンとなる。 そのため、ここで説明する手順は、Nablarch 5の最新バージョンからNablarch 6u2へのバージョンアップを前提としている。 またアーキタイプから作ったプロジェクトなどに組み込まれているgsp-dba-maven-pluginは、6u2と合わせてリリースされた5.1.0の使用を前提としている。 6u3以降へバージョンアップする場合は、ここで説明する手順以外にも追加の手順が必要となる場合があるため、6u3以降のリリースノートを順に参照してバージョンアップ手順を必ず確認すること。
@@ -24,23 +17,9 @@ Jakarta EEとは、Java EEがEclipse Foundationに移管された後の名前で
 
 また、名前空間の変更などにより後方互換性が維持されないため、アプリケーションサーバ上で動作させるにはJakarta EE 10に対応しているアプリケーションサーバが必要となる。
 
-<details>
-<summary>keywords</summary>
-
-Jakarta EE 10, javax から jakarta 名前空間変更, Java EE後継, アプリケーションサーバ要件, 後方互換性なし, JSR352, JBeret, jberet-core, jberet-se, weld-core-impl, weld-se-core, wildfly-elytron-security-manager, jakarta.batch-api, jakarta.inject-api, jakarta.enterprise.cdi-api, jakarta.transaction-api, expressly, pom.xml, 依存関係, groupId変更, artifactId変更, javax.inject, javax.enterprise, jboss-batch-api_1.0_spec, weld-core, wildfly-security-manager, javax.el, org.glassfish.expressly, jboss-marshalling, jboss-logging, guava, slf4j-api, logback-classic, バッチアプリケーション移行, Domaアダプタ, 依存関係設定, Jakarta EE移行, doma_dependency, migration_doma2.44.0
-
-</details>
-
 ## 動作に必要なJavaの最低バージョンを17に変更
 
 Nablarch 6のモジュールはJava 17でコンパイルされているため、動作させるにはJava 17以上が必要となる。
-
-<details>
-<summary>keywords</summary>
-
-前提条件, Nablarch 5最新版へのバージョンアップ, Java 17以上, Jakarta EE 10対応アプリケーションサーバ, NoClassDefFoundError, WeldException, slf4j-nablarch-adaptor, クラスパス順序, Logback, BeanLogger, jboss-logging, AbstractExecutorServices, gsp-dba-maven-plugin, generate-entity, Jakarta EE対応, エンティティ生成, JPA, 5.1.0, Nablarch 6u2
-
-</details>
 
 ## 前提条件
 
@@ -92,13 +71,6 @@ Nablarchを構成する各モジュールのバージョンはBOMで管理して
   </dependencies>
 </dependencyManagement>
 ```
-
-<details>
-<summary>keywords</summary>
-
-移行手順詳細, ウェブプロジェクト固有手順, バッチプロジェクト, waitt-to-jetty, update-ntf-jetty, nablarch-testing-jetty6, nablarch-testing-jetty12, nablarch-testing-jetty9, NTF, Nablarch Testing Framework, HttpServerFactoryJetty12, HttpServerFactoryJetty6, unit-test.xml
-
-</details>
 
 ## Jakarta EE対応
 
@@ -597,13 +569,6 @@ Jakarta EE 10で提供されているネームスペースは、 [Jakarta Standa
 ```jsp
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 ```
-
-<details>
-<summary>keywords</summary>
-
-Jakarta EE BOM, jakarta.jakartaee-bom, jakarta.platform, Java EE依存関係変更方針, BOM推奨, web.xml, XMLスキーマ, Jakarta EE 10, jakartaee, web-app_6_0.xsd, xmlns, xsi:schemaLocation
-
-</details>
 
 ## JSR352に準拠したバッチアプリケーションの移行手順
 

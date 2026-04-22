@@ -6,16 +6,11 @@ These files are for developer reference only (not deployed to the skill).
 **Output format** for each knowledge file:
     # {title}
 
+    {top-level content (preamble)}
+
     ## {section_title}
 
     {section_content}
-
-    <details>
-    <summary>keywords</summary>
-
-    keyword1, keyword2, ...
-
-    </details>
 
 For files with ``no_knowledge_content: true``, only a minimal header is
 generated (title + official doc URLs if present) so that link targets exist.
@@ -23,10 +18,10 @@ generated (title + official doc URLs if present) so that link targets exist.
 **Output path**: ``{docs_dir}/{type}/{category}/{file_id}.md``
 
 Where type/category are derived from the JSON file's path relative to the
-knowledge root — consistent with ``scripts/index.py``.
+knowledge root — consistent with ``scripts/create/index.py``.
 
 Public API:
-    generate_docs(knowledge_dir: Path, docs_dir: Path) -> int
+    generate_docs(knowledge_dir: Path, docs_dir: Path, version: str = "") -> int
 """
 from __future__ import annotations
 
@@ -84,16 +79,6 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     """Full MD for normal knowledge files."""
     lines = [f"# {data.get('title', '')}", ""]
 
-    top_hints = data.get("hints", [])
-    if top_hints:
-        lines.append("<details>")
-        lines.append("<summary>keywords</summary>")
-        lines.append("")
-        lines.append(", ".join(top_hints))
-        lines.append("")
-        lines.append("</details>")
-        lines.append("")
-
     top_content = data.get("content", "")
     if top_content:
         lines.append(_rewrite_asset_links(top_content, docs_md_path, knowledge_dir))
@@ -102,21 +87,11 @@ def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
     for section in data.get("sections", []):
         title = section.get("title", "")
         content = section.get("content", "")
-        hints = section.get("hints", [])
 
         lines.append(f"## {title}")
         lines.append("")
         if content:
             lines.append(_rewrite_asset_links(content, docs_md_path, knowledge_dir))
-            lines.append("")
-
-        if hints:
-            lines.append("<details>")
-            lines.append("<summary>keywords</summary>")
-            lines.append("")
-            lines.append(", ".join(hints))
-            lines.append("")
-            lines.append("</details>")
             lines.append("")
 
     return "\n".join(lines)

@@ -31,13 +31,6 @@ RESTfulウェブサービス で使用するための以下のアダプタを提
 > **Tip:** Jacksonのバージョン2.17.1を使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 > **Tip:** Jackson1系ライブラリの脆弱性対応が行われなくなったため、Nablarch5u16よりJackson1系のサポートを廃止した。 Jackson1系を使用していた場合はJackson2系へ移行すること。 【参考情報】 * https://jvndb.jvn.jp/ja/contents/2019/JVNDB-2019-012258.html * https://github.com/advisories/GHSA-r6j9-8759-g62w
 
-<details>
-<summary>keywords</summary>
-
-nablarch-jackson-adaptor, nablarch-jersey-adaptor, nablarch-resteasy-adaptor, Jacksonアダプタ, Jerseyアダプタ, RESTEasyアダプタ, モジュール依存関係, Jackson2.17.1, Jackson1系廃止
-
-</details>
-
 ## Jersey環境下でRESTfulウェブサービスを使用する
 
 ウェブアプリケーションサーバにバンドルされている [Jakarta RESTful Web Services(外部サイト、英語)](https://jakarta.ee/specifications/restful-ws/) の実装が、
@@ -74,13 +67,6 @@ nablarch-jackson-adaptor, nablarch-jersey-adaptor, nablarch-resteasy-adaptor, Ja
 </component>
 ```
 > **Tip:** 使用するウェブアプリケーションサーバに [Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson) が バンドルされていない場合は、Jacksonのモジュールをアプリケーションモジュールとセットでデプロイすること。
-
-<details>
-<summary>keywords</summary>
-
-JerseyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, Jersey設定, ハンドラ自動構成, ボディコンバータ
-
-</details>
 
 ## RESTEasy環境下でRESTfulウェブサービスを使用する
 
@@ -119,13 +105,6 @@ JerseyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, 
 ```
 > **Tip:** 使用するウェブアプリケーションサーバに [Jackson(外部サイト、英語)](https://github.com/FasterXML/jackson) が バンドルされていない場合は、Jacksonのモジュールをアプリケーションモジュールとセットでデプロイすること。
 
-<details>
-<summary>keywords</summary>
-
-ResteasyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter, JaxbBodyConverter, FormUrlEncodedConverter, MultipartFormDataBodyConverter, jaxrs_bean_validation_handler, RESTEasy設定, ハンドラ自動構成, ボディコンバータ
-
-</details>
-
 ## 各環境下で使用するボディコンバータを変更（追加）したい
 
 プロジェクトで対応すべきMIMEが増えた場合には、 `JaxRsHandlerListFactory` を実装し対応する。
@@ -133,10 +112,3 @@ ResteasyJaxRsHandlerListFactory, JaxRsMethodBinderFactory, Jackson2BodyConverter
 実装方法は、本アダプタ
 (`JerseyJaxRsHandlerListFactory` 、 `ResteasyJaxRsHandlerListFactory`)
 を参考にすると良い。
-
-<details>
-<summary>keywords</summary>
-
-JaxRsHandlerListFactory, JerseyJaxRsHandlerListFactory, ResteasyJaxRsHandlerListFactory, カスタムボディコンバータ, MIMEタイプ追加, ボディコンバータ変更, ボディコンバータ拡張
-
-</details>

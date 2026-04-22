@@ -22,13 +22,6 @@
 
 * `nablarch.fw.messaging.handler.MessageResendHandler`
 
-<details>
-<summary>keywords</summary>
-
-MessageResendHandler, nablarch.fw.messaging.handler.MessageResendHandler, 再送電文制御, 重複電文制御, 応答電文自動送信, 処理フロー
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -37,13 +30,6 @@ MessageResendHandler, nablarch.fw.messaging.handler.MessageResendHandler, 再送
   <artifactId>nablarch-fw-messaging</artifactId>
 </dependency>
 ```
-
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-messaging, com.nablarch.framework, Mavenモジュール
-
-</details>
 
 ## 制約
 
@@ -54,13 +40,6 @@ nablarch-fw-messaging, com.nablarch.framework, Mavenモジュール
 トランザクション制御ハンドラ よりも後ろに設定すること
 本ハンドラでは、応答電文をデータベースに保存する。
 このため、データベースへのトランザクション制御を実現する トランザクション制御ハンドラ よりも後ろに本ハンドラを設定する必要がある。
-
-<details>
-<summary>keywords</summary>
-
-message_reply_handler, transaction_management_handler, ハンドラ順序制約, 配置順序
-
-</details>
 
 ## 応答電文の保存先について
 
@@ -81,13 +60,6 @@ message_reply_handler, transaction_management_handler, ハンドラ順序制約,
 詳細は、 `SentMessageTableSchema` 及び
 `sentMessageTableSchemaプロパティ` を参照。
 
-<details>
-<summary>keywords</summary>
-
-SentMessageTableSchema, nablarch.fw.messaging.tableschema.SentMessageTableSchema, sentMessageTableSchema, 応答電文テーブル, 送信済み電文保存, テーブルスキーマ, InterSystemMessage, ResponseMessage
-
-</details>
-
 ## 同一電文(再送電文)の判定方法
 
 本ハンドラが受信した電文が以下の条件を満たす場合、既に処理済みの要求電文を受信したと判断し、保存した応答電文を処理結果として返却する。
@@ -98,13 +70,6 @@ SentMessageTableSchema, nablarch.fw.messaging.tableschema.SentMessageTableSchema
 フレームワーク制御ヘッダの詳細は、 フレームワーク制御ヘッダ を参照。
 
 > **Important:** 相手先システムが要求電文を再送する際には、以下の制約を満たす必要がある。 この制約を満たせない場合、本ハンドラを使用できないので、プロジェクト側で再送制御を実現するハンドラを新たに作成する必要がある。 * 再送電文の相関メッセージIDには、初回送信時の要求電文のメッセージIDを設定すること * フレームワーク制御ヘッダの再送要求フラグに値を設定すること
-
-<details>
-<summary>keywords</summary>
-
-再送電文判定, フレームワーク制御ヘッダ, 再送要求フラグ, 相関メッセージID, mom_system_messaging-fw_header, 重複受信判定
-
-</details>
 
 ## フレームワーク制御ヘッダの設定
 
@@ -126,10 +91,3 @@ SentMessageTableSchema, nablarch.fw.messaging.tableschema.SentMessageTableSchema
 .. |br| raw:: html
 
 <br />
-
-<details>
-<summary>keywords</summary>
-
-StandardFwHeaderDefinition, nablarch.fw.messaging.StandardFwHeaderDefinition, fwHeaderDefinition, フレームワーク制御ヘッダカスタマイズ
-
-</details>

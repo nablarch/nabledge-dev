@@ -1,12 +1,5 @@
 # 登録内容確認画面から登録画面へ戻る
 
-<details>
-<summary>keywords</summary>
-
-ClientAction, SessionUtil, BeanUtil, nablarch.core.beans.BeanUtil, HttpResponse, HttpRequest, ExecutionContext, Client, ClientForm, EntityList, Industry, UniversalDao, 確認画面から戻る, セッションストア, 内部フォーワード, フォーム変換, 登録画面戻る
-
-</details>
-
 本章では、登録内容確認画面から登録画面へ戻る処理について解説する。
 
 前へ

@@ -1,12 +1,5 @@
 # Nablarch SQL Executor
 
-<details>
-<summary>keywords</summary>
-
-sql-executor.bat, DB接続変更, ツール起動, 配布ツール使用, db.url, db.user, db.password, 異常終了, faq
-
-</details>
-
 ## 概要
 
 Nablarch SQL ExecutorはNablarch特殊構文を含むSQLファイルを対話的に実行するツールである。
@@ -14,21 +7,7 @@ PJにおいて設計者がSQLを設計する際などに使用する。
 
 本ツールはPJで使用するDBを設定して、ビルドして使う必要がある。
 
-<details>
-<summary>keywords</summary>
-
-SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール, SQLデバッグ, 対話的SQL実行, SQLExecutor操作方法, IN句記法, 日付型設定, パラメータ指定, SQL実行, SYSDATE, IllegalArgumentException, 埋込み変数入力, 初回起動, 再検索, ステートメント一覧
-
-</details>
-
 ## 想定使用方法
-
-<details>
-<summary>keywords</summary>
-
-配布ワークフロー, DB接続方法, ローカルDB, PJ共通DB, 制約, WITH句, IN句, DATETIMEリテラル, Doma, doma_adaptor, sql.log, app.log, FAQ, DBコネクションエラー, パラメータの指定方法が正しくありません, 実行ログ, 異常終了, トラブルシューティング
-
-</details>
 
 ## 本ツールの想定使用方法
 
@@ -73,13 +52,6 @@ SQL Executor, Nablarch特殊構文, SQLファイル対話実行, 設計ツール
 > **Tip:** Nablarchでは2-way SQLとしてSQLを記述できる [Doma(外部サイト、英語)](https://doma.readthedocs.io/en/stable/) 用の アダプタ を提供している。 Domaを使用した場合、本ツールのような複雑なツールのセットアップを行わなくても、本番環境用に定義したSQLを簡単にテスト実行出来る。 (動的な条件を構築するような場合でも、SQLを書き換えることなく実行できる) このため、Domaの使用を検討することを推奨する。
 
 ## 配布方法
-
-<details>
-<summary>keywords</summary>
-
-配布前提条件, Firefox, Chrome, Nablarch開発環境, JDBCドライバ登録, Maven Central Repository, Project Local Repository, customizeDBAddFileMavenRepo, ソースコード取得, sql-executor clone
-
-</details>
 
 ## 前提条件
 
@@ -279,13 +251,6 @@ target直下に作成されたsql-executor-distribution.zipを配布すること
 
 ## 配布されたツールの使用方法
 
-<details>
-<summary>keywords</summary>
-
-DB設定変更, db.config, pom.xml, db.xml, JDBCドライバ変更, ダイアレクト, H2Dialect, OracleDialect, PostgreSQLDialect, DB2Dialect, SqlServerDialect, BasicDataSource, BasicDbConnectionFactoryForDataSource, driverClassName, OracleDriver, DB2Driver, SQLServerDriver
-
-</details>
-
 ## 前提条件
 
 ツールを使用するための前提条件を以下に示す。
@@ -324,13 +289,6 @@ cmd /c start http://localhost:7979/index.html
 実行しても何も出力されずに異常終了する場合は、 FAQ を参照。
 
 ## 操作方法
-
-<details>
-<summary>keywords</summary>
-
-mvn compile exec:java, mvn package, 起動確認, 配布ファイル作成, sql-executor-distribution.zip, localhost:7979, Internet Explorer
-
-</details>
 
 ## 基本的な操作方法
 

@@ -1,12 +1,5 @@
 # アプリケーション開発時に使える便利なツール
 
-<details>
-<summary>keywords</summary>
-
-JSP静的解析, SQLエグゼキュータ, OpenAPIジェネレータ, 開発支援ツール, ツール一覧, JspStaticAnalysis, SqlExecutor, NablarchOpenApiGenerator
-
-</details>
-
 本書では、アプリケーション開発時に使える便利なツールを紹介する。|br|
 
 

@@ -1,4 +1,4 @@
-"""Unit tests for verify.py — QO2, QC5, QC6, QC1-QC3(Excel), QC1-QC4(RST/MD), QL2, QL1."""
+"""Unit tests for verify.py — QO2, QC5, QC1-QC3(Excel), QC1-QC4(RST/MD), QL2, QL1."""
 from __future__ import annotations
 
 import pytest
@@ -28,7 +28,7 @@ class TestCheckJsonDocsMdConsistency:
     def test_pass_content_present_in_docs_md(self):
         """Content verbatim in docs MD → no issues."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "概要の説明文です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要の説明文です。"},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n概要の説明文です。\n"
         assert self._check(data, docs_md) == []
@@ -36,8 +36,8 @@ class TestCheckJsonDocsMdConsistency:
     def test_pass_multiple_sections_all_present(self):
         """All sections present in docs MD → no issues."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "概要の内容。", "hints": []},
-            {"id": "s2", "title": "設定方法", "content": "設定の内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要の内容。"},
+            {"id": "s2", "title": "設定方法", "content": "設定の内容。"},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n概要の内容。\n\n## 設定方法\n\n設定の内容。\n"
         assert self._check(data, docs_md) == []
@@ -45,7 +45,7 @@ class TestCheckJsonDocsMdConsistency:
     def test_pass_empty_content_section(self):
         """Empty content section → no issues (nothing to check)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "", "hints": []},
+            {"id": "s1", "title": "概要", "content": ""},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n"
         assert self._check(data, docs_md) == []
@@ -66,7 +66,7 @@ class TestCheckJsonDocsMdConsistency:
     def test_fail_content_missing_from_docs_md(self):
         """Content not in docs MD → FAIL (QO5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "重要な説明が欠落しています。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "重要な説明が欠落しています。"},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n全く別の内容。\n"
         issues = self._check(data, docs_md)
@@ -77,7 +77,7 @@ class TestCheckJsonDocsMdConsistency:
     def test_fail_content_partially_missing(self):
         """Only part of content present → FAIL (QO5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "前半の内容。後半が欠落。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "前半の内容。後半が欠落。"},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n前半の内容。\n"
         issues = self._check(data, docs_md)
@@ -87,8 +87,8 @@ class TestCheckJsonDocsMdConsistency:
     def test_fail_multiple_sections_one_missing(self):
         """One of multiple sections missing → FAIL for that section only."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "概要の内容。", "hints": []},
-            {"id": "s2", "title": "設定方法", "content": "欠落している設定内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要の内容。"},
+            {"id": "s2", "title": "設定方法", "content": "欠落している設定内容。"},
         ])
         docs_md = "# テストタイトル\n\n## 概要\n\n概要の内容。\n\n## 設定方法\n\n別の内容。\n"
         issues = self._check(data, docs_md)
@@ -98,7 +98,7 @@ class TestCheckJsonDocsMdConsistency:
     def test_fail_includes_section_title_in_message(self):
         """FAIL message identifies the section with missing content."""
         data = self._make_data([
-            {"id": "s1", "title": "処理概要", "content": "欠落コンテンツ。", "hints": []},
+            {"id": "s1", "title": "処理概要", "content": "欠落コンテンツ。"},
         ])
         docs_md = "# テストタイトル\n\n## 処理概要\n\n\n"
         issues = self._check(data, docs_md)
@@ -111,7 +111,6 @@ class TestCheckJsonDocsMdConsistency:
                 "id": "s1",
                 "title": "図解",
                 "content": "説明\n![図](assets/my-file/diagram.png)",
-                "hints": [],
             },
         ])
         # docs MD would have rewritten link — but we skip this section entirely
@@ -143,14 +142,14 @@ class TestCheckFormatPurity:
     def test_rst_pass_clean_content(self):
         """RST: no format-specific syntax → no issues."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "クリーンな内容です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "クリーンな内容です。"},
         ])
         assert self._check(data, "rst") == []
 
     def test_rst_pass_plain_backtick_code(self):
         """RST: plain backtick inline code (Markdown style) is allowed."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "`MyClass` を使います。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "`MyClass` を使います。"},
         ])
         assert self._check(data, "rst") == []
 
@@ -159,7 +158,7 @@ class TestCheckFormatPurity:
     def test_rst_fail_role_syntax(self):
         """RST: :role:`text` pattern → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": ":java:class:`MyClass` を使います。", "hints": []},
+            {"id": "s1", "title": "概要", "content": ":java:class:`MyClass` を使います。"},
         ])
         issues = self._check(data, "rst")
         assert len(issues) >= 1
@@ -168,7 +167,7 @@ class TestCheckFormatPurity:
     def test_rst_fail_directive_syntax(self):
         """RST: .. directive:: pattern → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": ".. code-block:: java\n\nコード", "hints": []},
+            {"id": "s1", "title": "概要", "content": ".. code-block:: java\n\nコード"},
         ])
         issues = self._check(data, "rst")
         assert len(issues) >= 1
@@ -189,7 +188,7 @@ class TestCheckFormatPurity:
     def test_rst_fail_heading_underline_in_section_title(self):
         """RST: heading underline in section title → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "見出し\n======", "content": "内容", "hints": []},
+            {"id": "s1", "title": "見出し\n======", "content": "内容"},
         ])
         issues = self._check(data, "rst")
         assert len(issues) >= 1
@@ -198,7 +197,7 @@ class TestCheckFormatPurity:
     def test_rst_pass_heading_underline_in_content(self):
         """RST: heading underline in content (code example) → PASS (not checked in content)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "コード例:\n\n    ====\n\n内容", "hints": []},
+            {"id": "s1", "title": "概要", "content": "コード例:\n\n    ====\n\n内容"},
         ])
         # Heading underline check is NOT applied to content fields
         assert self._check(data, "rst") == []
@@ -206,7 +205,7 @@ class TestCheckFormatPurity:
     def test_rst_fail_label_definition(self):
         """RST: _label: label definition → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": ".. _my-label:\n\n内容", "hints": []},
+            {"id": "s1", "title": "概要", "content": ".. _my-label:\n\n内容"},
         ])
         issues = self._check(data, "rst")
         assert len(issues) >= 1
@@ -215,7 +214,7 @@ class TestCheckFormatPurity:
     def test_rst_fail_title_contaminated(self):
         """RST: :role: in title → FAIL (QC5)."""
         data = self._make_data(
-            [{"id": "s1", "title": "概要", "content": "内容", "hints": []}],
+            [{"id": "s1", "title": "概要", "content": "内容"}],
             title=":java:class:`Title`"
         )
         issues = self._check(data, "rst")
@@ -226,14 +225,14 @@ class TestCheckFormatPurity:
     def test_md_pass_clean_content(self):
         """MD: no format-specific syntax → no issues."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "クリーンな内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "クリーンな内容。"},
         ])
         assert self._check(data, "md") == []
 
     def test_md_pass_code_fence(self):
         """MD: code fences (```) are allowed in MD content."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "```java\ncode\n```", "hints": []},
+            {"id": "s1", "title": "概要", "content": "```java\ncode\n```"},
         ])
         assert self._check(data, "md") == []
 
@@ -242,7 +241,7 @@ class TestCheckFormatPurity:
     def test_md_fail_raw_html_tag(self):
         """MD: raw HTML tag → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "<details>\n<summary>詳細</summary>\n</details>", "hints": []},
+            {"id": "s1", "title": "概要", "content": "<details>\n<summary>詳細</summary>\n</details>"},
         ])
         issues = self._check(data, "md")
         assert len(issues) >= 1
@@ -251,7 +250,7 @@ class TestCheckFormatPurity:
     def test_md_fail_backslash_escape(self):
         """MD: backslash escape \\* → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "\\*エスケープされたテキスト\\*", "hints": []},
+            {"id": "s1", "title": "概要", "content": "\\*エスケープされたテキスト\\*"},
         ])
         issues = self._check(data, "md")
         assert len(issues) >= 1
@@ -260,7 +259,7 @@ class TestCheckFormatPurity:
     def test_md_fail_br_tag(self):
         """MD: <br> HTML tag → FAIL (QC5)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "行1<br>行2", "hints": []},
+            {"id": "s1", "title": "概要", "content": "行1<br>行2"},
         ])
         issues = self._check(data, "md")
         assert len(issues) >= 1
@@ -269,14 +268,14 @@ class TestCheckFormatPurity:
     def test_md_pass_java_generic_type(self):
         """MD: Java generic type like List<String> → PASS (not raw HTML)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "List<String> と Map<K, V> を使います。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "List<String> と Map<K, V> を使います。"},
         ])
         assert self._check(data, "md") == []
 
     def test_md_pass_java_generic_uppercase_single(self):
         """MD: single uppercase type param like List<T> → PASS (not raw HTML)."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "List<T> を実装します。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "List<T> を実装します。"},
         ])
         assert self._check(data, "md") == []
 
@@ -285,107 +284,9 @@ class TestCheckFormatPurity:
     def test_excel_skipped(self):
         """Excel format: QC5 is not applicable → no issues."""
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "内容", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内容"},
         ])
         assert self._check(data, "xlsx") == []
-
-
-# ---------------------------------------------------------------------------
-# QC6: hints 完全性
-# ---------------------------------------------------------------------------
-
-class TestCheckHintsCompleteness:
-    """QC6: Hints from previous run must all be present in current output."""
-
-    def _check(self, data, prev_hints):
-        from scripts.verify.verify import check_hints_completeness
-        return check_hints_completeness(data, prev_hints)
-
-    def _make_data(self, file_id, sections):
-        return {
-            "id": file_id,
-            "title": "テスト",
-            "no_knowledge_content": False,
-            "sections": sections,
-        }
-
-    # --- PASS cases ---
-
-    def test_pass_all_hints_present(self):
-        """All previous hints present in current output → no issues."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": ["HintA", "HintB"]},
-        ])
-        prev_hints = {"my-file": {"概要": ["HintA", "HintB"]}}
-        assert self._check(data, prev_hints) == []
-
-    def test_pass_additional_hints_allowed(self):
-        """Current output has more hints than previous → no issues (additions OK)."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": ["HintA", "HintB", "HintC"]},
-        ])
-        prev_hints = {"my-file": {"概要": ["HintA", "HintB"]}}
-        assert self._check(data, prev_hints) == []
-
-    def test_pass_no_previous_hints_for_file(self):
-        """File not in prev_hints → no issues (first run)."""
-        data = self._make_data("new-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": []},
-        ])
-        prev_hints = {}
-        assert self._check(data, prev_hints) == []
-
-    def test_pass_no_previous_hints_for_section(self):
-        """Section not in prev_hints[file_id] → no issues."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "新セクション", "content": "内容", "hints": []},
-        ])
-        prev_hints = {"my-file": {}}
-        assert self._check(data, prev_hints) == []
-
-    # --- FAIL cases ---
-
-    def test_fail_hint_missing_from_current(self):
-        """Previous hint missing from current output → FAIL (QC6)."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": ["HintA"]},
-        ])
-        prev_hints = {"my-file": {"概要": ["HintA", "HintB"]}}
-        issues = self._check(data, prev_hints)
-        assert len(issues) == 1
-        assert "QC6" in issues[0]
-        assert "HintB" in issues[0]
-
-    def test_fail_all_hints_missing(self):
-        """All previous hints missing from current section → FAIL for each."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": []},
-        ])
-        prev_hints = {"my-file": {"概要": ["HintA", "HintB"]}}
-        issues = self._check(data, prev_hints)
-        assert len(issues) >= 1
-        assert all("QC6" in i for i in issues)
-
-    def test_fail_identifies_section_and_hint(self):
-        """FAIL message includes section title and missing hint name."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "処理詳細", "content": "内容", "hints": []},
-        ])
-        prev_hints = {"my-file": {"処理詳細": ["ImportantHint"]}}
-        issues = self._check(data, prev_hints)
-        assert any("処理詳細" in i for i in issues)
-        assert any("ImportantHint" in i for i in issues)
-
-    def test_fail_multiple_sections_partial_miss(self):
-        """Missing hint in one section only → FAIL for that section."""
-        data = self._make_data("my-file", [
-            {"id": "s1", "title": "概要", "content": "内容", "hints": ["HintA"]},
-            {"id": "s2", "title": "詳細", "content": "内容", "hints": []},
-        ])
-        prev_hints = {"my-file": {"概要": ["HintA"], "詳細": ["HintX"]}}
-        issues = self._check(data, prev_hints)
-        assert len(issues) == 1
-        assert "詳細" in issues[0]
 
 
 # ---------------------------------------------------------------------------
@@ -419,7 +320,7 @@ class TestVerifyFileContentRstMd:
         """All section content appears in source → no issues."""
         source = "概要\n====\n\n概要の説明文です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要の説明文です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要の説明文です。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -427,8 +328,8 @@ class TestVerifyFileContentRstMd:
         """All sections present in correct order → no issues."""
         source = "概要\n====\n\n概要の内容。\n\n設定方法\n========\n\n設定の内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要の内容。", "hints": []},
-            {"id": "s2", "title": "設定方法", "content": "設定の内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要の内容。"},
+            {"id": "s2", "title": "設定方法", "content": "設定の内容。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -454,7 +355,7 @@ class TestVerifyFileContentRstMd:
         source = "概要\n====\n\n行1\n\n行2\n"
         data = self._make_data("f", [
             # JSON content has single blank line normalized
-            {"id": "s1", "title": "概要", "content": "行1\n\n行2", "hints": []},
+            {"id": "s1", "title": "概要", "content": "行1\n\n行2"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -462,7 +363,7 @@ class TestVerifyFileContentRstMd:
         """MD source content present in JSON → no issues."""
         source = "# タイトル\n\n## 概要\n\nMarkdown の説明です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "Markdown の説明です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "Markdown の説明です。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -470,7 +371,7 @@ class TestVerifyFileContentRstMd:
         """After deletion, only RST syntax markers remain → no QC1 issues."""
         source = "概要\n====\n\n内容テキスト。\n\n.. code-block:: java\n\n  code\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "内容テキスト。\n\n```java\n  code\n```", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内容テキスト。\n\n```java\n  code\n```"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -480,7 +381,7 @@ class TestVerifyFileContentRstMd:
         """Source has text not in any JSON section → FAIL QC1."""
         source = "概要\n====\n\n重要な説明があります。追加情報も存在します。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "重要な説明があります。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "重要な説明があります。"},
             # "追加情報も存在します。" is not captured
         ])
         issues = self._check(source, data, "rst")
@@ -491,7 +392,7 @@ class TestVerifyFileContentRstMd:
         """Entire section content absent from JSON → FAIL QC1."""
         source = "概要\n====\n\n概要内容。\n\n詳細\n====\n\n詳細内容が欠落。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
             # 詳細 section missing entirely
         ])
         issues = self._check(source, data, "rst")
@@ -503,7 +404,7 @@ class TestVerifyFileContentRstMd:
         """JSON has content not in source → FAIL QC2."""
         source = "概要\n====\n\n実際の内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "実際の内容。\n捏造された追加情報。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "実際の内容。\n捏造された追加情報。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC2" in i for i in issues)
@@ -512,7 +413,7 @@ class TestVerifyFileContentRstMd:
         """JSON content entirely absent from source → FAIL QC2."""
         source = "概要\n====\n\n本物の内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "全く別の内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "全く別の内容。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC2" in i for i in issues)
@@ -523,8 +424,8 @@ class TestVerifyFileContentRstMd:
         """Same content appears in two JSON sections → second one FAIL QC3."""
         source = "概要\n====\n\n共有テキスト内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "共有テキスト内容。", "hints": []},
-            {"id": "s2", "title": "別セクション", "content": "共有テキスト内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "共有テキスト内容。"},
+            {"id": "s2", "title": "別セクション", "content": "共有テキスト内容。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC3" in i for i in issues)
@@ -535,7 +436,7 @@ class TestVerifyFileContentRstMd:
         """Section titles should not be separately counted as missing content."""
         source = "概要\n====\n\n内容テキスト。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内容テキスト。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -543,7 +444,7 @@ class TestVerifyFileContentRstMd:
         """**text** in JSON content is stripped to 'text' before source matching."""
         source = "概要\n====\n\nキーワードが重要です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "**キーワード**が重要です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "**キーワード**が重要です。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -551,7 +452,7 @@ class TestVerifyFileContentRstMd:
         """*text* in JSON content is stripped to 'text' before source matching."""
         source = "概要\n====\n\nキーワードが重要です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "*キーワード*が重要です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "*キーワード*が重要です。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -559,7 +460,7 @@ class TestVerifyFileContentRstMd:
         """'> **Note:** text' → label stripped; body 'text' searched in source (MD)."""
         source = "# 概要\n\nメモの内容です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "> **Note:** メモの内容です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "> **Note:** メモの内容です。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -567,7 +468,7 @@ class TestVerifyFileContentRstMd:
         """Indented toctree child entries in RST source → treated as syntax, not QC1."""
         source = "目次\n====\n\n通常テキスト。\n\n.. toctree::\n\n   chapter1\n   chapter2\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "目次", "content": "通常テキスト。", "hints": []},
+            {"id": "s1", "title": "目次", "content": "通常テキスト。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -575,7 +476,7 @@ class TestVerifyFileContentRstMd:
         """RST substitution definitions '.. |name| replace:: ...' → syntax, not QC1."""
         source = "概要\n====\n\n内容テキスト。\n\n.. |NB| replace:: Nablarch\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内容テキスト。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -583,7 +484,7 @@ class TestVerifyFileContentRstMd:
         """Frontmatter body lines (between '---') in MD source → syntax, not QC1."""
         source = "---\ntitle: テスト\ndate: 2026-01-01\n---\n\n# 概要\n\n内容テキスト。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "内容テキスト。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内容テキスト。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -591,7 +492,7 @@ class TestVerifyFileContentRstMd:
         """JSON section title absent from source → QC2 (fabricated) with title in message."""
         source = "概要\n====\n\n内容テキスト。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "存在しないタイトル", "content": "内容テキスト。", "hints": []},
+            {"id": "s1", "title": "存在しないタイトル", "content": "内容テキスト。"},
         ])
         issues = self._check(source, data, "rst")
         qc2_issues = [i for i in issues if "QC2" in i]
@@ -602,7 +503,7 @@ class TestVerifyFileContentRstMd:
         """Multiple uncaptured source lines → all reported (no early break)."""
         source = "概要\n====\n\n欠落行1\n欠落行2\n欠落行3\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "", "hints": []},
+            {"id": "s1", "title": "概要", "content": ""},
         ])
         issues = self._check(source, data, "rst")
         qc1_issues = [i for i in issues if "QC1" in i]
@@ -612,7 +513,7 @@ class TestVerifyFileContentRstMd:
         """snake_case identifiers in JSON content are not mangled by underscore stripping."""
         source = "概要\n====\n\ndo_something_else を使用します。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "do_something_else を使用します。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "do_something_else を使用します。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -620,7 +521,7 @@ class TestVerifyFileContentRstMd:
         """RST directive body content (note:: body) is real content, must be captured."""
         source = "概要\n====\n\n.. note::\n\n   重要な注記内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "重要な注記内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "重要な注記内容。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -628,7 +529,7 @@ class TestVerifyFileContentRstMd:
         """'> **注意:** text' → Japanese admonition label stripped before source match (MD)."""
         source = "# 概要\n\nメモの内容です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "> **注意:** メモの内容です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "> **注意:** メモの内容です。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -636,7 +537,7 @@ class TestVerifyFileContentRstMd:
         """'> **note:** text' → lowercase admonition label stripped before source match (MD)."""
         source = "# 概要\n\nメモの内容です。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "> **note:** メモの内容です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "> **note:** メモの内容です。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -644,7 +545,7 @@ class TestVerifyFileContentRstMd:
         """MD horizontal rule '---' in body is not mistaken for frontmatter boundary."""
         source = "# 概要\n\n最初の内容。\n\n---\n\n区切り後の内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "最初の内容。\n\n---\n\n区切り後の内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "最初の内容。\n\n---\n\n区切り後の内容。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -652,7 +553,7 @@ class TestVerifyFileContentRstMd:
         """If content after HR is not in JSON, QC1 is reported (HR does not swallow it)."""
         source = "# 概要\n\n最初の内容。\n\n---\n\n欠落した内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "最初の内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "最初の内容。"},
         ])
         issues = self._check(source, data, "md")
         assert any("QC1" in i for i in issues)
@@ -684,8 +585,8 @@ class TestVerifyFileContentQC4:
         """Two sections in correct source order → no issues."""
         source = "概要\n====\n\n概要内容。\n\n詳細\n====\n\n詳細内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -693,9 +594,9 @@ class TestVerifyFileContentQC4:
         """Three sections in correct source order → no issues."""
         source = "A\n====\n\nA内容。\n\nB\n====\n\nB内容。\n\nC\n====\n\nC内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
-            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
-            {"id": "s3", "title": "C", "content": "C内容。", "hints": []},
+            {"id": "s1", "title": "A", "content": "A内容。"},
+            {"id": "s2", "title": "B", "content": "B内容。"},
+            {"id": "s3", "title": "C", "content": "C内容。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -703,8 +604,8 @@ class TestVerifyFileContentQC4:
         """MD: two sections in correct order → no issues."""
         source = "# タイトル\n\n## 概要\n\n概要内容。\n\n## 詳細\n\n詳細内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -716,8 +617,8 @@ class TestVerifyFileContentQC4:
         # JSON order:   概要 → 詳細  (reversed)
         source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC4" in i for i in issues)
@@ -726,8 +627,8 @@ class TestVerifyFileContentQC4:
         """JSON section title found before previous section title → FAIL QC4."""
         source = "B\n====\n\nB内容。\n\nA\n====\n\nA内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
-            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
+            {"id": "s1", "title": "A", "content": "A内容。"},
+            {"id": "s2", "title": "B", "content": "B内容。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC4" in i for i in issues)
@@ -736,8 +637,8 @@ class TestVerifyFileContentQC4:
         """MD: JSON section order reversed vs source → FAIL QC4."""
         source = "# タイトル\n\n## 詳細\n\n詳細内容。\n\n## 概要\n\n概要内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         issues = self._check(source, data, "md")
         assert any("QC4" in i for i in issues)
@@ -746,8 +647,8 @@ class TestVerifyFileContentQC4:
         """QC4 FAIL message identifies which section (by ID) has misplaced content."""
         source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         issues = self._check(source, data, "rst")
         qc4_issues = [i for i in issues if "QC4" in i]
@@ -759,8 +660,8 @@ class TestVerifyFileContentQC4:
         """Both the misplaced section title and its content lines each fire QC4."""
         source = "詳細\n====\n\n詳細内容。\n\n概要\n====\n\n概要内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "概要内容。", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "詳細内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要内容。"},
+            {"id": "s2", "title": "詳細", "content": "詳細内容。"},
         ])
         issues = self._check(source, data, "rst")
         qc4_issues = [i for i in issues if "QC4" in i]
@@ -772,9 +673,9 @@ class TestVerifyFileContentQC4:
         # JSON:   A → C → B  (C and B are out of order)
         source = "A\n====\n\nA内容。\n\nB\n====\n\nB内容。\n\nC\n====\n\nC内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "A", "content": "A内容。", "hints": []},
-            {"id": "s3", "title": "C", "content": "C内容。", "hints": []},
-            {"id": "s2", "title": "B", "content": "B内容。", "hints": []},
+            {"id": "s1", "title": "A", "content": "A内容。"},
+            {"id": "s3", "title": "C", "content": "C内容。"},
+            {"id": "s2", "title": "B", "content": "B内容。"},
         ])
         issues = self._check(source, data, "rst")
         qc4_issues = [i for i in issues if "QC4" in i]
@@ -788,8 +689,8 @@ class TestVerifyFileContentQC4:
         """Content that was already consumed (duplicate) → QC3, not QC4."""
         source = "概要\n====\n\n共有テキスト。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "共有テキスト。", "hints": []},
-            {"id": "s2", "title": "別セクション", "content": "共有テキスト。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "共有テキスト。"},
+            {"id": "s2", "title": "別セクション", "content": "共有テキスト。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC3" in i for i in issues)
@@ -799,8 +700,8 @@ class TestVerifyFileContentQC4:
         """Content reversed in source order (not duplicate) → QC4, not QC3."""
         source = "B\n====\n\nBのみの内容。\n\nA\n====\n\nAのみの内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "A", "content": "Aのみの内容。", "hints": []},
-            {"id": "s2", "title": "B", "content": "Bのみの内容。", "hints": []},
+            {"id": "s1", "title": "A", "content": "Aのみの内容。"},
+            {"id": "s2", "title": "B", "content": "Bのみの内容。"},
         ])
         issues = self._check(source, data, "rst")
         qc3 = [i for i in issues if "QC3" in i]
@@ -814,8 +715,8 @@ class TestVerifyFileContentQC4:
         # prev_idx of "B内容。" falls inside the consumed range → QC3
         source = "概要\n====\n\nAB内容。\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "AB内容。", "hints": []},
-            {"id": "s2", "title": "別セクション", "content": "B内容。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "AB内容。"},
+            {"id": "s2", "title": "別セクション", "content": "B内容。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QC3" in i for i in issues)
@@ -825,8 +726,8 @@ class TestVerifyFileContentQC4:
         """Sections with no content (title only): correct order → no QC4."""
         source = "概要\n====\n\n詳細\n====\n\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "", "hints": []},
+            {"id": "s1", "title": "概要", "content": ""},
+            {"id": "s2", "title": "詳細", "content": ""},
         ])
         issues = self._check(source, data, "rst")
         qc4 = [i for i in issues if "QC4" in i]
@@ -837,8 +738,8 @@ class TestVerifyFileContentQC4:
         # Source: 詳細 → 概要; JSON: 概要 → 詳細 (reversed)
         source = "詳細\n====\n\n概要\n====\n\n"
         data = self._make_data("f", [
-            {"id": "s1", "title": "概要", "content": "", "hints": []},
-            {"id": "s2", "title": "詳細", "content": "", "hints": []},
+            {"id": "s1", "title": "概要", "content": ""},
+            {"id": "s2", "title": "詳細", "content": ""},
         ])
         issues = self._check(source, data, "rst")
         qc4 = [i for i in issues if "QC4" in i]
@@ -871,7 +772,7 @@ class TestCheckExternalUrls:
         """RST: URL in source appears in JSON content → no issues."""
         source = "概要\n====\n\n詳細は `公式サイト <https://nablarch.github.io/docs/>`_ を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -879,7 +780,7 @@ class TestCheckExternalUrls:
         """MD: URL in source appears in JSON content → no issues."""
         source = "## 概要\n\n詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細は [公式サイト](https://nablarch.github.io/docs/) を参照。"},
         ])
         assert self._check(source, data, "md") == []
 
@@ -887,7 +788,7 @@ class TestCheckExternalUrls:
         """Source has no external URLs → no issues."""
         source = "概要\n====\n\n内部の説明文です。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "内部の説明文です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内部の説明文です。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -906,7 +807,7 @@ class TestCheckExternalUrls:
         """RST: URL from hyperlink target definition appears in JSON → no issues."""
         source = "概要\n====\n\n詳細は ExternalSite_ を参照。\n\n.. _ExternalSite: https://example.com/docs\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細は [ExternalSite](https://example.com/docs) を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細は [ExternalSite](https://example.com/docs) を参照。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -921,7 +822,6 @@ class TestCheckExternalUrls:
                 "id": "s1",
                 "title": "概要",
                 "content": "[サイトA](https://example.com/a) と [サイトB](https://example.com/b) を参照。",
-                "hints": [],
             },
         ])
         assert self._check(source, data, "rst") == []
@@ -930,7 +830,7 @@ class TestCheckExternalUrls:
         """URL with query params and fragment: all characters preserved in match."""
         source = "概要\n====\n\n`参照 <https://example.com/path?q=1#section>`_ を確認。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/path?q=1#section) を確認。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/path?q=1#section) を確認。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -940,7 +840,7 @@ class TestCheckExternalUrls:
         """Source URL not in any JSON field → FAIL QL2."""
         source = "概要\n====\n\n`公式サイト <https://nablarch.github.io/docs/>`_ を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "公式サイトを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "公式サイトを参照。"},
         ])
         issues = self._check(source, data, "rst")
         assert len(issues) == 1
@@ -958,7 +858,6 @@ class TestCheckExternalUrls:
                 "id": "s1",
                 "title": "概要",
                 "content": "[サイトA](https://example.com/a) とサイトBを参照。",
-                "hints": [],
             },
         ])
         issues = self._check(source, data, "rst")
@@ -973,7 +872,7 @@ class TestCheckExternalUrls:
             "`サイトA <https://example.com/a>`_ と `サイトB <https://example.com/b>`_ を参照。\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "サイトAとサイトBを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "サイトAとサイトBを参照。"},
         ])
         issues = self._check(source, data, "rst")
         ql2_issues = [i for i in issues if "QL2" in i]
@@ -983,7 +882,7 @@ class TestCheckExternalUrls:
         """URL in JSON is truncated (not complete match) → FAIL QL2."""
         source = "概要\n====\n\n`参照 <https://example.com/full/path>`_ を確認。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/full) を確認。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "[参照](https://example.com/full) を確認。"},
         ])
         issues = self._check(source, data, "rst")
         ql2_issues = [i for i in issues if "QL2" in i]
@@ -994,7 +893,7 @@ class TestCheckExternalUrls:
         """MD source URL missing from JSON → FAIL QL2."""
         source = "## 概要\n\n[公式サイト](https://nablarch.github.io/docs/) を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "公式サイトを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "公式サイトを参照。"},
         ])
         issues = self._check(source, data, "md")
         ql2_issues = [i for i in issues if "QL2" in i]
@@ -1005,7 +904,7 @@ class TestCheckExternalUrls:
         """FAIL message contains the missing URL."""
         source = "概要\n====\n\n`サイト <https://example.com/specific/path>`_ を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "サイトを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "サイトを参照。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("https://example.com/specific/path" in i for i in issues)
@@ -1016,7 +915,7 @@ class TestCheckExternalUrls:
         """RST unreferenced named target URL not in JSON → PASS (target def line excluded)."""
         source = "概要\n====\n\n内部の説明文です。\n\n.. _Unused: https://example.com/unreferenced\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "内部の説明文です。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "内部の説明文です。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -1024,7 +923,7 @@ class TestCheckExternalUrls:
         """RST anonymous target (`__ url`) URL not in JSON → PASS (target def line excluded)."""
         source = "概要\n====\n\n詳細は `こちら`__ を参照。\n\n__ https://example.com/anon\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細はこちらを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細はこちらを参照。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -1034,7 +933,7 @@ class TestCheckExternalUrls:
         """Bare URL followed by sentence period: period must not be part of extracted URL."""
         source = "概要\n====\n\n詳細は https://example.com/path. を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細は https://example.com/path を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細は https://example.com/path を参照。"},
         ])
         assert self._check(source, data, "rst") == []
 
@@ -1046,7 +945,6 @@ class TestCheckExternalUrls:
                 "id": "s1",
                 "title": "概要",
                 "content": "https://example.com/a, https://example.com/b を参照。",
-                "hints": [],
             },
         ])
         assert self._check(source, data, "rst") == []
@@ -1057,7 +955,7 @@ class TestCheckExternalUrls:
         """Source URL is prefix of JSON URL → FAIL QL2 (substring match would pass incorrectly)."""
         source = "概要\n====\n\n`サイト <https://example.com/path>`_ を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "[サイト](https://example.com/path-extended) を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "[サイト](https://example.com/path-extended) を参照。"},
         ])
         issues = self._check(source, data, "rst")
         ql2_issues = [i for i in issues if "QL2" in i]
@@ -1073,7 +971,7 @@ class TestCheckExternalUrls:
             "`リンク1 <https://example.com/page>`_ と `リンク2 <https://example.com/page>`_ を参照。\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "リンク1とリンク2を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "リンク1とリンク2を参照。"},
         ])
         ql2_issues = [i for i in self._check(source, data, "rst") if "QL2" in i]
         assert len(ql2_issues) == 1
@@ -1083,14 +981,14 @@ class TestCheckExternalUrls:
     def test_xlsx_format_skipped(self):
         """xlsx format: check skipped regardless of URL presence."""
         source = "https://example.com/should-be-ignored\n"
-        data = self._make_data([{"id": "s1", "title": "概要", "content": "何もなし。", "hints": []}])
+        data = self._make_data([{"id": "s1", "title": "概要", "content": "何もなし。"}])
         assert self._check(source, data, "xlsx") == []
 
     def test_fail_ql2_http_url_missing(self):
         """HTTP (non-HTTPS) URL missing from JSON → FAIL QL2."""
         source = "概要\n====\n\n`旧サイト <http://example.com/old>`_ を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "旧サイトを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "旧サイトを参照。"},
         ])
         issues = self._check(source, data, "rst")
         assert any("QL2" in i and "http://example.com/old" in i for i in issues)
@@ -1224,7 +1122,7 @@ class TestCheckSourceLinks:
         """:ref:`label` where label maps to a title that appears in JSON → PASS."""
         source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細はMy Sectionを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細はMy Sectionを参照。"},
         ])
         label_map = {"my-label": "My Section"}
         assert self._check(source, "rst", data, label_map) == []
@@ -1233,7 +1131,7 @@ class TestCheckSourceLinks:
         """:ref:`label` where label title is absent from JSON → FAIL QL1."""
         source = "概要\n====\n\n詳細は :ref:`my-label` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細を参照。"},
         ])
         label_map = {"my-label": "My Section"}
         issues = self._check(source, "rst", data, label_map)
@@ -1243,7 +1141,7 @@ class TestCheckSourceLinks:
         """:ref:`display text <label>` — display text appears in JSON → PASS."""
         source = "概要\n====\n\n:ref:`こちら <my-label>` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "こちらを参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "こちらを参照。"},
         ])
         label_map = {"my-label": "My Section"}
         assert self._check(source, "rst", data, label_map) == []
@@ -1252,7 +1150,7 @@ class TestCheckSourceLinks:
         """:ref:`display text <label>` — display text absent from JSON → FAIL QL1."""
         source = "概要\n====\n\n:ref:`こちら <my-label>` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "参照してください。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "参照してください。"},
         ])
         label_map = {"my-label": "My Section"}
         issues = self._check(source, "rst", data, label_map)
@@ -1262,7 +1160,7 @@ class TestCheckSourceLinks:
         """:ref:`unknown-label` not in label_map → skip (cannot verify)."""
         source = "概要\n====\n\n詳細は :ref:`unknown-label` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "詳細を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "詳細を参照。"},
         ])
         assert self._check(source, "rst", data, {}) == []
 
@@ -1270,7 +1168,7 @@ class TestCheckSourceLinks:
         """Two :ref: on same line; one title absent from JSON → FAIL QL1 only for missing."""
         source = "概要\n====\n\n:ref:`label-a` と :ref:`label-b` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "Section A を参照。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "Section A を参照。"},
         ])
         label_map = {"label-a": "Section A", "label-b": "Section B"}
         issues = self._check(source, "rst", data, label_map)
@@ -1281,7 +1179,7 @@ class TestCheckSourceLinks:
         """Same :ref:`label` appears twice; reported at most once even if title missing."""
         source = "概要\n====\n\n:ref:`my-label` と :ref:`my-label` を参照。\n"
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "他の説明。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "他の説明。"},
         ])
         label_map = {"my-label": "My Section"}
         issues = [i for i in self._check(source, "rst", data, label_map) if "my-label" in i]
@@ -1297,7 +1195,7 @@ class TestCheckSourceLinks:
             "   システム構成図\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "システム構成図", "hints": []},
+            {"id": "s1", "title": "概要", "content": "システム構成図"},
         ])
         assert self._check(source, "rst", data) == []
 
@@ -1309,7 +1207,7 @@ class TestCheckSourceLinks:
             "   システム構成図\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "概要説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "概要説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "figure" in i for i in issues)
@@ -1322,7 +1220,7 @@ class TestCheckSourceLinks:
             "   :align: center\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "diagram.png の説明。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "diagram.png の説明。"},
         ])
         assert self._check(source, "rst", data) == []
 
@@ -1334,7 +1232,7 @@ class TestCheckSourceLinks:
             "   :align: center\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "figure" in i for i in issues)
@@ -1348,7 +1246,7 @@ class TestCheckSourceLinks:
             "   :width: 100%\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "figure" in i for i in issues)
@@ -1363,7 +1261,7 @@ class TestCheckSourceLinks:
             "   :alt: ロゴ画像\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "ロゴ画像の説明。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "ロゴ画像の説明。"},
         ])
         assert self._check(source, "rst", data) == []
 
@@ -1375,7 +1273,7 @@ class TestCheckSourceLinks:
             "   :alt: ロゴ画像\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "image" in i for i in issues)
@@ -1387,7 +1285,7 @@ class TestCheckSourceLinks:
             ".. image:: _images/logo.png\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "logo.png の説明。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "logo.png の説明。"},
         ])
         assert self._check(source, "rst", data) == []
 
@@ -1398,7 +1296,7 @@ class TestCheckSourceLinks:
             ".. image:: _images/logo.png\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "図の説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "図の説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "image" in i for i in issues)
@@ -1414,8 +1312,7 @@ class TestCheckSourceLinks:
         )
         data = self._make_data([
             {"id": "s1", "title": "概要",
-             "content": "```java\n# (literalinclude: _code/example.java)\n```",
-             "hints": []},
+             "content": "```java\n# (literalinclude: _code/example.java)\n```"},
         ])
         assert self._check(source, "rst", data) == []
 
@@ -1427,7 +1324,7 @@ class TestCheckSourceLinks:
             "   :language: java\n"
         )
         data = self._make_data([
-            {"id": "s1", "title": "概要", "content": "コードの説明のみ。", "hints": []},
+            {"id": "s1", "title": "概要", "content": "コードの説明のみ。"},
         ])
         issues = self._check(source, "rst", data)
         assert any("QL1" in i and "literalinclude" in i for i in issues)
@@ -1439,7 +1336,7 @@ class TestCheckSourceLinks:
         source = "# 概要\n\n## セクション\n\n詳細は [こちらを参照](#details) してください。\n"
         data = self._make_data([
             {"id": "s1", "title": "セクション",
-             "content": "詳細はこちらを参照してください。", "hints": []},
+             "content": "詳細はこちらを参照してください。"},
         ])
         assert self._check(source, "md", data) == []
 
@@ -1448,7 +1345,7 @@ class TestCheckSourceLinks:
         source = "# 概要\n\n## セクション\n\n詳細は [こちらを参照](#details) してください。\n"
         data = self._make_data([
             {"id": "s1", "title": "セクション",
-             "content": "詳細を参照。", "hints": []},
+             "content": "詳細を参照。"},
         ])
         issues = self._check(source, "md", data)
         assert any("QL1" in i for i in issues)
@@ -1458,7 +1355,7 @@ class TestCheckSourceLinks:
         source = "# 概要\n\n## セクション\n\n詳細は [公式サイト](https://example.com) で確認。\n"
         data = self._make_data([
             {"id": "s1", "title": "セクション",
-             "content": "詳細は公式サイトで確認。", "hints": []},
+             "content": "詳細は公式サイトで確認。"},
         ])
         assert self._check(source, "md", data) == []
 
@@ -1467,7 +1364,7 @@ class TestCheckSourceLinks:
         source = "# 概要\n\n## セクション\n\n詳細は [設定ガイド](../config.md) を参照。\n"
         data = self._make_data([
             {"id": "s1", "title": "セクション",
-             "content": "詳細は設定ガイドを参照。", "hints": []},
+             "content": "詳細は設定ガイドを参照。"},
         ])
         assert self._check(source, "md", data) == []
 
@@ -1476,7 +1373,7 @@ class TestCheckSourceLinks:
         source = "# 概要\n\n## セクション\n\n詳細は [設定ガイド](../config.md) を参照。\n"
         data = self._make_data([
             {"id": "s1", "title": "セクション",
-             "content": "詳細を参照。", "hints": []},
+             "content": "詳細を参照。"},
         ])
         issues = self._check(source, "md", data)
         assert any("QL1" in i for i in issues)
@@ -1495,7 +1392,7 @@ class TestCheckSourceLinks:
     def test_xlsx_format_skipped(self):
         """xlsx format → skip all checks."""
         source = "Some text with internal links"
-        data = self._make_data([{"id": "s1", "title": "概要", "content": "text", "hints": []}])
+        data = self._make_data([{"id": "s1", "title": "概要", "content": "text"}])
         assert self._check(source, "xlsx", data) == []
 
     # --- Top-level content coverage (Phase 21-I regression fix) ---
@@ -1513,7 +1410,7 @@ class TestCheckSourceLinks:
             "no_knowledge_content": False,
             "content": "詳細はMy Sectionを参照。",
             "sections": [
-                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+                {"id": "s1", "title": "サブ", "content": "本文。"},
             ],
         }
         label_map = {"my-label": "My Section"}
@@ -1534,7 +1431,7 @@ class TestCheckSourceLinks:
             "no_knowledge_content": False,
             "content": "![メールシステム構成](assets/test/mail_system.png)",
             "sections": [
-                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+                {"id": "s1", "title": "サブ", "content": "本文。"},
             ],
         }
         assert self._check(source, "rst", data) == []
@@ -1553,7 +1450,7 @@ class TestCheckSourceLinks:
             "no_knowledge_content": False,
             "content": "![](assets/test/framework.png)",
             "sections": [
-                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+                {"id": "s1", "title": "サブ", "content": "本文。"},
             ],
         }
         assert self._check(source, "rst", data) == []
@@ -1571,7 +1468,7 @@ class TestCheckSourceLinks:
             "no_knowledge_content": False,
             "content": "関連なし。",
             "sections": [
-                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+                {"id": "s1", "title": "サブ", "content": "本文。"},
             ],
         }
         label_map = {"my-label": "My Section"}
@@ -1587,7 +1484,7 @@ class TestCheckSourceLinks:
             "no_knowledge_content": False,
             "content": "詳しくは別ページを参照。",
             "sections": [
-                {"id": "s1", "title": "サブ", "content": "本文。", "hints": []},
+                {"id": "s1", "title": "サブ", "content": "本文。"},
             ],
         }
         assert self._check(source, "md", data) == []
@@ -1610,8 +1507,8 @@ class TestJsonTextHelper:
             "title": "T_TITLE",
             "content": "T_TOP_CONTENT",
             "sections": [
-                {"title": "S1_TITLE", "content": "S1_CONTENT", "hints": []},
-                {"title": "S2_TITLE", "content": "S2_CONTENT", "hints": []},
+                {"title": "S1_TITLE", "content": "S1_CONTENT"},
+                {"title": "S2_TITLE", "content": "S2_CONTENT"},
             ],
         }
         text = self._helper(data)
@@ -1622,25 +1519,11 @@ class TestJsonTextHelper:
         assert "S2_TITLE" in text
         assert "S2_CONTENT" in text
 
-    def test_excludes_hints(self):
-        """Hints are out of QL1 scope (covered by QC6) — must not be in concat."""
-        data = {
-            "title": "T",
-            "content": "TOP",
-            "hints": ["TOP_HINT_SHOULD_NOT_APPEAR"],
-            "sections": [
-                {"title": "S", "content": "SC", "hints": ["SEC_HINT_SHOULD_NOT_APPEAR"]},
-            ],
-        }
-        text = self._helper(data)
-        assert "TOP_HINT_SHOULD_NOT_APPEAR" not in text
-        assert "SEC_HINT_SHOULD_NOT_APPEAR" not in text
-
     def test_missing_top_level_content_key_safe(self):
         """data without "content" key — no KeyError, still includes other parts."""
         data = {
             "title": "T",
-            "sections": [{"title": "S", "content": "SC", "hints": []}],
+            "sections": [{"title": "S", "content": "SC"}],
         }
         text = self._helper(data)
         assert "T" in text
@@ -1652,7 +1535,7 @@ class TestJsonTextHelper:
         data = {
             "title": "T",
             "content": "",
-            "sections": [{"title": "S", "content": "SC", "hints": []}],
+            "sections": [{"title": "S", "content": "SC"}],
         }
         text = self._helper(data)
         assert "T" in text
@@ -1710,7 +1593,7 @@ class TestVerifyFileExcelQC:
         """All source cell values appear in JSON (title + section title + content) → no issues."""
         xlsx_path = self._make_xlsx(tmp_path, [["ファイルタイトル", "セルA", "セルB"], ["セルC", "セルD"]])
         data = self._make_data([
-            {"id": "s1", "title": "セルA", "content": "セルB セルC セルD", "hints": []},
+            {"id": "s1", "title": "セルA", "content": "セルB セルC セルD"},
         ], title="ファイルタイトル")
         issues = self._check(xlsx_path, data)
         assert [i for i in issues if "QC" in i] == []
@@ -1719,7 +1602,7 @@ class TestVerifyFileExcelQC:
         """Empty/whitespace-only cells are not required in JSON."""
         xlsx_path = self._make_xlsx(tmp_path, [["値A", None, "  ", "値B"]])
         data = self._make_data([
-            {"id": "s1", "title": "値B", "content": "", "hints": []},
+            {"id": "s1", "title": "値B", "content": ""},
         ], title="値A")
         assert [i for i in self._check(xlsx_path, data) if "QC" in i] == []
 
@@ -1738,7 +1621,7 @@ class TestVerifyFileExcelQC:
         """Source cell value absent from JSON → FAIL QC1."""
         xlsx_path = self._make_xlsx(tmp_path, [["存在するセル", "欠落セル"]])
         data = self._make_data([
-            {"id": "s1", "title": "存在するセル", "content": "存在するセル", "hints": []},
+            {"id": "s1", "title": "存在するセル", "content": "存在するセル"},
         ], title="存在するセル")
         issues = self._check(xlsx_path, data)
         assert any("QC1" in i and "欠落セル" in i for i in issues)
@@ -1747,7 +1630,7 @@ class TestVerifyFileExcelQC:
         """Multiple missing cells → multiple QC1 issues."""
         xlsx_path = self._make_xlsx(tmp_path, [["A"], ["B"], ["C"]])
         data = self._make_data([
-            {"id": "s1", "title": "A", "content": "A", "hints": []},
+            {"id": "s1", "title": "A", "content": "A"},
         ], title="A")
         issues = [i for i in self._check(xlsx_path, data) if "QC1" in i]
         assert len(issues) >= 2
@@ -1758,7 +1641,7 @@ class TestVerifyFileExcelQC:
         """JSON contains token absent from source → FAIL QC2."""
         xlsx_path = self._make_xlsx(tmp_path, [["本物のセル"]])
         data = self._make_data([
-            {"id": "s1", "title": "本物のセル", "content": "本物のセル 捏造トークン", "hints": []},
+            {"id": "s1", "title": "本物のセル", "content": "本物のセル 捏造トークン"},
         ], title="本物のセル")
         issues = self._check(xlsx_path, data)
         assert any("QC2" in i and "捏造トークン" in i for i in issues)
@@ -1769,7 +1652,7 @@ class TestVerifyFileExcelQC:
         """Cell appears once in source but twice in JSON → FAIL QC2 (residual after delete)."""
         xlsx_path = self._make_xlsx(tmp_path, [["唯一のセル"]])
         data = self._make_data([
-            {"id": "s1", "title": "唯一のセル", "content": "唯一のセル 唯一のセル", "hints": []},
+            {"id": "s1", "title": "唯一のセル", "content": "唯一のセル 唯一のセル"},
         ], title="唯一のセル")
         issues = self._check(xlsx_path, data)
         # Source has "唯一のセル" once; JSON has it 3 times (title + section title + content×2).
@@ -1780,7 +1663,7 @@ class TestVerifyFileExcelQC:
         """Cell value is matched as a whole string, not split by word."""
         xlsx_path = self._make_xlsx(tmp_path, [["テスト"], ["システム開発ガイド"], ["セキュリティ対応表"]])
         data = self._make_data([
-            {"id": "s1", "title": "システム開発ガイド", "content": "セキュリティ対応表", "hints": []},
+            {"id": "s1", "title": "システム開発ガイド", "content": "セキュリティ対応表"},
         ], title="テスト")
         issues = self._check(xlsx_path, data)
         assert [i for i in issues if "QC" in i] == []
@@ -1789,7 +1672,7 @@ class TestVerifyFileExcelQC:
         """Cell value must appear in full — partial word match is not enough."""
         xlsx_path = self._make_xlsx(tmp_path, [["システム開発ガイド"]])
         data = self._make_data([
-            {"id": "s1", "title": "テスト", "content": "システム開発", "hints": []},
+            {"id": "s1", "title": "テスト", "content": "システム開発"},
         ], title="テスト")
         issues = self._check(xlsx_path, data)
         assert any("QC1" in i and "システム開発ガイド" in i for i in issues)
@@ -1801,7 +1684,7 @@ class TestVerifyFileExcelQC:
         # First "AB" is consumed, second "AB" finds only consumed region → QC3.
         xlsx_path = self._make_xlsx(tmp_path, [["AB", "AB"]])
         data = self._make_data([
-            {"id": "s1", "title": "AB", "content": "", "hints": []},
+            {"id": "s1", "title": "AB", "content": ""},
         ], title="テスト")
         issues = self._check(xlsx_path, data)
         assert any("QC3" in i and "AB" in i for i in issues)
@@ -1811,7 +1694,7 @@ class TestVerifyFileExcelQC:
         xlsx_path = self._make_xlsx(tmp_path, [["対策", "実施項目", "対応状況"]])
         content = "| 対策 | 実施項目 | 対応状況 |\n|---|---|---|\n| 根本的解決 | 実施する | 〇 |"
         data = self._make_data([
-            {"id": "s1", "title": "対策", "content": content, "hints": []},
+            {"id": "s1", "title": "対策", "content": content},
         ], title="テスト")
         # "根本的解決", "実施する", "〇" are in content but not in source cells.
         # Only markdown structure tokens (|, ---, etc.) should be stripped.
@@ -1824,7 +1707,7 @@ class TestVerifyFileExcelQC:
         """xlsx with all empty cells → no source tokens → skip QC checks."""
         xlsx_path = self._make_xlsx(tmp_path, [[None, None], ["", "  "]])
         data = self._make_data([
-            {"id": "s1", "title": "何か", "content": "内容", "hints": []},
+            {"id": "s1", "title": "何か", "content": "内容"},
         ], title="タイトル")
         assert self._check(xlsx_path, data) == []
 
@@ -1900,422 +1783,6 @@ class TestCheckDocsCoverage:
 
 
 # ---------------------------------------------------------------------------
-# check_hints_file_consistency: hints/vN.json == JSON hints == docs MD hints
-# ---------------------------------------------------------------------------
-
-class TestCheckHintsFileConsistency:
-    """Three-way hints consistency: hints/vN.json == knowledge JSON == docs MD."""
-
-    def _check(self, output_dir, docs_dir, hints_file):
-        from scripts.verify.verify import check_hints_file_consistency
-        return check_hints_file_consistency(output_dir, docs_dir, hints_file)
-
-    def _write_json(self, output_dir, file_id, sections):
-        """Write a minimal knowledge JSON with hints."""
-        import json
-        path = output_dir / f"{file_id}.json"
-        data = {
-            "id": file_id,
-            "title": file_id,
-            "no_knowledge_content": False,
-            "sections": sections,
-        }
-        path.write_text(json.dumps(data), encoding="utf-8")
-
-    def _write_docs_md(self, docs_dir, file_id, section_hints_map):
-        """Write docs MD with keywords blocks for each section."""
-        lines = [f"# {file_id}", ""]
-        for title, hints in section_hints_map.items():
-            lines += [f"## {title}", ""]
-            if hints:
-                lines += [
-                    "<details>",
-                    "<summary>keywords</summary>",
-                    "",
-                    ", ".join(hints),
-                    "",
-                    "</details>",
-                    "",
-                ]
-        (docs_dir / f"{file_id}.md").write_text("\n".join(lines), encoding="utf-8")
-
-    def _write_hints_file(self, path, hints_dict):
-        """Write hints file in array form.
-
-        Accepts either:
-        * {file_id: [{"title", "hints"}, ...]}  (array form, used as-is)
-        * {file_id: {title: hints}}             (dict form, normalized to array)
-        """
-        import json
-        normalized: dict[str, list[dict]] = {}
-        for fid, entries in hints_dict.items():
-            if isinstance(entries, dict):
-                normalized[fid] = [{"title": t, "hints": h} for t, h in entries.items()]
-            else:
-                normalized[fid] = entries
-        path.write_text(json.dumps({"version": "6", "hints": normalized}), encoding="utf-8")
-
-    def test_pass_all_consistent(self, tmp_path):
-        """JSON hints == docs MD hints == hints file → no issues."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["h1", "h2"]}])
-        self._write_docs_md(dd, "file1", {"概要": ["h1", "h2"]})
-        self._write_hints_file(hf, {"file1": {"概要": ["h1", "h2"]}})
-        assert self._check(kd, dd, hf) == []
-
-    def test_pass_no_hints_file(self, tmp_path):
-        """hints file absent → skip check (no false positive)."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"  # not created
-        assert self._check(kd, dd, hf) == []
-
-    def test_fail_json_hints_differ_from_hints_file(self, tmp_path):
-        """JSON has different hints than hints file → FAIL."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["wrong"]}])
-        self._write_docs_md(dd, "file1", {"概要": ["h1"]})
-        self._write_hints_file(hf, {"file1": {"概要": ["h1"]}})
-        issues = self._check(kd, dd, hf)
-        assert any("file1" in i for i in issues)
-
-    def test_fail_docs_md_hints_differ_from_hints_file(self, tmp_path):
-        """docs MD has different hints than hints file → FAIL."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": ["h1"]}])
-        self._write_docs_md(dd, "file1", {"概要": ["wrong"]})
-        self._write_hints_file(hf, {"file1": {"概要": ["h1"]}})
-        issues = self._check(kd, dd, hf)
-        assert any("file1" in i for i in issues)
-
-    def test_pass_empty_hints_all_consistent(self, tmp_path):
-        """All hints empty and consistent → no issues."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json(kd, "file1", [{"id": "s1", "title": "概要", "content": "", "hints": []}])
-        self._write_docs_md(dd, "file1", {"概要": []})
-        self._write_hints_file(hf, {})  # file1 not in hints file → expect empty
-        assert self._check(kd, dd, hf) == []
-
-    def test_pass_same_title_twice_positionally_aligned(self, tmp_path):
-        """Same title appearing twice in both JSON and hints file → positional align OK."""
-        import json as _json
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        # JSON with two sections of same title (h2 + h3 case)
-        self._write_json(kd, "file1", [
-            {"id": "s1", "title": "使用方法", "content": "", "hints": ["first"]},
-            {"id": "s2", "title": "使用方法", "content": "", "hints": ["second"]},
-        ])
-        # docs MD: two blocks with same title
-        (dd / "file1.md").write_text(
-            "# file1\n\n"
-            "## 使用方法\n\n<details>\n<summary>keywords</summary>\n\nfirst\n\n</details>\n\n"
-            "## 使用方法\n\n<details>\n<summary>keywords</summary>\n\nsecond\n\n</details>\n",
-            encoding="utf-8",
-        )
-        # hints file in array form
-        hf.write_text(_json.dumps({
-            "version": "6",
-            "hints": {
-                "file1": [
-                    {"title": "使用方法", "hints": ["first"]},
-                    {"title": "使用方法", "hints": ["second"]},
-                ],
-            },
-        }), encoding="utf-8")
-        # Check 1 (JSON ↔ hints file positional) must pass.
-        issues = self._check(kd, dd, hf)
-        # Filter out the docs-MD-side check (parser collapses same-title)
-        json_issues = [i for i in issues if "JSON hints differ" in i or "not matched" in i]
-        assert json_issues == []
-
-
-# ---------------------------------------------------------------------------
-# Phase 21-D (session 37): top-level hints three-way consistency
-# ---------------------------------------------------------------------------
-
-
-class TestCheckHintsFileConsistencyTopLevelHints:
-    """Top-level hints three-way consistency: JSON `hints` ↔ hints file head ↔ docs MD file block."""
-
-    def _check(self, output_dir, docs_dir, hints_file):
-        from scripts.verify.verify import check_hints_file_consistency
-        return check_hints_file_consistency(output_dir, docs_dir, hints_file)
-
-    def _write_json_with_top_hints(self, output_dir, file_id, top_hints, sections):
-        import json
-        data = {
-            "id": file_id,
-            "title": file_id,
-            "content": "",
-            "hints": top_hints,
-            "no_knowledge_content": False,
-            "sections": sections,
-        }
-        (output_dir / f"{file_id}.json").write_text(json.dumps(data), encoding="utf-8")
-
-    def _write_docs_md_with_top_hints(self, docs_dir, file_id, top_hints, section_hints_map):
-        lines = [f"# {file_id}", ""]
-        if top_hints:
-            lines += [
-                "<details>",
-                "<summary>keywords</summary>",
-                "",
-                ", ".join(top_hints),
-                "",
-                "</details>",
-                "",
-            ]
-        for title, hints in section_hints_map.items():
-            lines += [f"## {title}", ""]
-            if hints:
-                lines += [
-                    "<details>",
-                    "<summary>keywords</summary>",
-                    "",
-                    ", ".join(hints),
-                    "",
-                    "</details>",
-                    "",
-                ]
-        (docs_dir / f"{file_id}.md").write_text("\n".join(lines), encoding="utf-8")
-
-    def _write_hints_file(self, path, entries_by_file):
-        import json
-        path.write_text(
-            json.dumps({"version": "6", "hints": entries_by_file}),
-            encoding="utf-8",
-        )
-
-    def test_pass_all_top_level_consistent(self, tmp_path):
-        """JSON top-level hints == docs MD file-level block == hints file head entry."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json_with_top_hints(
-            kd, "file1", ["fk1", "fk2"],
-            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
-        )
-        self._write_docs_md_with_top_hints(
-            dd, "file1", ["fk1", "fk2"],
-            {"概要": ["s1k"]},
-        )
-        self._write_hints_file(hf, {
-            "file1": [
-                {"title": "file1", "hints": ["fk1", "fk2"]},
-                {"title": "概要", "hints": ["s1k"]},
-            ],
-        })
-        assert self._check(kd, dd, hf) == []
-
-    def test_fail_json_top_hints_differ_from_hints_file(self, tmp_path):
-        """JSON top-level hints ≠ hints file head entry → FAIL."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        # JSON stores wrong top-level hints
-        self._write_json_with_top_hints(
-            kd, "file1", ["wrong"],
-            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
-        )
-        self._write_docs_md_with_top_hints(
-            dd, "file1", ["fk1"],
-            {"概要": ["s1k"]},
-        )
-        self._write_hints_file(hf, {
-            "file1": [
-                {"title": "file1", "hints": ["fk1"]},
-                {"title": "概要", "hints": ["s1k"]},
-            ],
-        })
-        issues = self._check(kd, dd, hf)
-        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
-
-    def test_fail_docs_md_missing_top_hints_block(self, tmp_path):
-        """docs MD lacks the file-level keywords block but hints file expects it → FAIL."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json_with_top_hints(
-            kd, "file1", ["fk1"],
-            [{"id": "s1", "title": "概要", "content": "", "hints": []}],
-        )
-        # docs MD without top-level hints block
-        self._write_docs_md_with_top_hints(
-            dd, "file1", [],
-            {"概要": []},
-        )
-        self._write_hints_file(hf, {
-            "file1": [
-                {"title": "file1", "hints": ["fk1"]},
-            ],
-        })
-        issues = self._check(kd, dd, hf)
-        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
-
-    def test_fail_json_missing_top_hints_field(self, tmp_path):
-        """JSON output lacks `hints` field altogether → FAIL."""
-        import json as _json
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        # Legacy JSON with no `hints` field
-        (kd / "file1.json").write_text(_json.dumps({
-            "id": "file1",
-            "title": "file1",
-            "content": "",
-            "no_knowledge_content": False,
-            "sections": [],
-        }), encoding="utf-8")
-        # hints file expects file-level hints
-        self._write_hints_file(hf, {
-            "file1": [{"title": "file1", "hints": ["fk1"]}],
-        })
-        issues = self._check(kd, dd, hf)
-        assert any("top-level" in i.lower() or "hints" in i.lower() for i in issues), issues
-
-    def test_pass_when_hints_file_uses_file_sentinel_for_xlsx(self, tmp_path):
-        """xlsx: hints file head entry title is "__file__" sentinel; JSON title is "".
-
-        Verify must treat "__file__" as the file-level entry regardless of JSON
-        top-level title value (Phase 21-D session 37 / schema design §3-4).
-        """
-        import json as _json
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        # xlsx-style JSON: title is ""
-        (kd / "xls.json").write_text(_json.dumps({
-            "id": "xls",
-            "title": "",
-            "content": "rows",
-            "hints": ["セキュリティ", "CVE"],
-            "no_knowledge_content": False,
-            "sections": [],
-        }), encoding="utf-8")
-        # docs MD: top-level keywords block (no ## sections)
-        (dd / "xls.md").write_text(
-            "# \n\n<details>\n<summary>keywords</summary>\n\nセキュリティ, CVE\n\n</details>\n\nrows\n",
-            encoding="utf-8",
-        )
-        self._write_hints_file(hf, {
-            "xls": [{"title": "__file__", "hints": ["セキュリティ", "CVE"]}],
-        })
-        assert self._check(kd, dd, hf) == []
-
-    def test_fail_xlsx_json_top_hints_differ_when_sentinel_used(self, tmp_path):
-        """xlsx: JSON top-level hints ≠ __file__ sentinel entry's hints → FAIL."""
-        import json as _json
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        (kd / "xls.json").write_text(_json.dumps({
-            "id": "xls",
-            "title": "",
-            "content": "rows",
-            "hints": ["wrong"],
-            "no_knowledge_content": False,
-            "sections": [],
-        }), encoding="utf-8")
-        (dd / "xls.md").write_text(
-            "# \n\n<details>\n<summary>keywords</summary>\n\nwrong\n\n</details>\n\nrows\n",
-            encoding="utf-8",
-        )
-        self._write_hints_file(hf, {
-            "xls": [{"title": "__file__", "hints": ["セキュリティ"]}],
-        })
-        issues = self._check(kd, dd, hf)
-        assert any("top-level" in i.lower() or "__file__" in i for i in issues), issues
-
-    def test_pass_when_hints_file_has_no_file_level_entry(self, tmp_path):
-        """hints file head entry title != top-level title → no top-level hints expected."""
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        self._write_json_with_top_hints(
-            kd, "file1", [],
-            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
-        )
-        self._write_docs_md_with_top_hints(
-            dd, "file1", [],
-            {"概要": ["s1k"]},
-        )
-        # hints file head entry is a section title, not the file-level title
-        self._write_hints_file(hf, {
-            "file1": [
-                {"title": "概要", "hints": ["s1k"]},
-            ],
-        })
-        assert self._check(kd, dd, hf) == []
-
-    def test_fail_stray_docs_md_top_hints_without_hints_file_expectation(self, tmp_path):
-        """docs MD has a top-level keywords block, but hints file has no file-level entry → FAIL.
-
-        Three-way consistency must catch drift in either direction.  A stray
-        top-level block in docs MD — without a corresponding hints file entry
-        or JSON top-level hints — is a correctness bug that must surface.
-        """
-        kd = tmp_path / "knowledge"
-        kd.mkdir()
-        dd = tmp_path / "docs"
-        dd.mkdir()
-        hf = tmp_path / "v6.json"
-        # JSON has no top-level hints (empty)
-        self._write_json_with_top_hints(
-            kd, "file1", [],
-            [{"id": "s1", "title": "概要", "content": "", "hints": ["s1k"]}],
-        )
-        # docs MD has a stray top-level keywords block
-        self._write_docs_md_with_top_hints(
-            dd, "file1", ["stray1", "stray2"],
-            {"概要": ["s1k"]},
-        )
-        # hints file has no file-level entry — head is a section entry
-        self._write_hints_file(hf, {
-            "file1": [
-                {"title": "概要", "hints": ["s1k"]},
-            ],
-        })
-        issues = self._check(kd, dd, hf)
-        assert any("top-level" in i.lower() or "stray" in i.lower() or "__file__" in i for i in issues), issues
-
-
-# ---------------------------------------------------------------------------
 # Phase 21-D: top-level content coverage in verify checks
 # ---------------------------------------------------------------------------
 
@@ -2340,7 +1807,7 @@ class TestCheckContentCompletenessTopLevel:
             "content": "前書きの段落です。",
             "no_knowledge_content": False,
             "sections": [
-                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。"},
             ],
         }
         assert self._check(source, data, "rst") == []
@@ -2366,7 +1833,7 @@ class TestCheckContentCompletenessTopLevel:
             "content": "",  # preamble not captured
             "no_knowledge_content": False,
             "sections": [
-                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。"},
             ],
         }
         issues = self._check(source, data, "rst")
@@ -2394,7 +1861,7 @@ class TestCheckContentCompletenessTopLevel:
             "content": "前書きの段落です。",
             "no_knowledge_content": False,
             "sections": [
-                {"id": "s1", "title": "詳細", "content": "詳細の内容。", "hints": []},
+                {"id": "s1", "title": "詳細", "content": "詳細の内容。"},
             ],
         }
         assert self._check(source, data, "md") == []
@@ -2484,7 +1951,7 @@ class TestCheckJsonDocsMdConsistencyTopLevel:
             "content": "",
             "no_knowledge_content": False,
             "sections": [
-                {"id": "s1", "title": "A", "content": "A本文。", "hints": []},
+                {"id": "s1", "title": "A", "content": "A本文。"},
             ],
         }
         docs_md = "# T\n\n## A\n\nA本文。\n"

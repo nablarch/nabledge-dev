@@ -11,13 +11,6 @@
 
 ## 機能概要
 
-<details>
-<summary>keywords</summary>
-
-ServiceAvailabilityCheckHandler, サービス提供可否チェック, リクエスト単位, ウェブ, 常駐バッチ, 503, 空回り
-
-</details>
-
 ## リクエスト単位でサービス提供可否をチェックできる
 
 ServiceAvailabilityCheckHandler をハンドラキューに設定することで、
@@ -43,21 +36,7 @@ ServiceAvailabilityCheckHandler をハンドラキューに設定することで
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-common-auth, nablarch-common-auth-jdbc, モジュール, 依存関係
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-BasicServiceAvailability, BasicApplicationInitializer, ServiceAvailabilityUtil, tableName, requestTableRequestIdColumnName, requestTableServiceAvailableColumnName, requestTableServiceAvailableOkStatus, dbManager, コンポーネント設定, 初期化, 画面表示制御
-
-</details>
 
 ## サービス提供可否チェックを使うための設定
 
@@ -111,10 +90,3 @@ tag-submit_display_control を参照。
 ## 拡張例
 
 なし。
-
-<details>
-<summary>keywords</summary>
-
-拡張例, なし
-
-</details>

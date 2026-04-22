@@ -18,13 +18,6 @@ ResponseFinisherを実装した `CorsResponseFinisher` で処理する。
 
 * `nablarch.fw.jaxrs.CorsPreflightRequestHandler`
 
-<details>
-<summary>keywords</summary>
-
-CorsPreflightRequestHandler, nablarch.fw.jaxrs.CorsPreflightRequestHandler, CorsResponseFinisher, CORSプリフライトリクエストハンドラ, RESTfulウェブサービス
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -34,25 +27,11 @@ CorsPreflightRequestHandler, nablarch.fw.jaxrs.CorsPreflightRequestHandler, Cors
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-jaxrs, com.nablarch.framework, Maven依存関係, モジュール依存関係
-
-</details>
-
 ## 制約
 
 Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置すること
 本ハンドラで生成した `HttpResponse` を Jakarta RESTful Web Servicesレスポンスハンドラ が処理するため、
 本ハンドラは Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置する必要がある。
-
-<details>
-<summary>keywords</summary>
-
-jaxrs_response_handler, JaxRsResponseHandler, ハンドラ配置順序, HttpResponse, 制約
-
-</details>
 
 ## CORSを実現する
 
@@ -136,10 +115,3 @@ CORSの処理は `Cors` インタフェースが行う。
 
 デフォルトの処理のうち、レスポンスヘッダの内容を設定で変更できる。
 設定で変更できる内容は `BasicCors` のJavadocを参照。
-
-<details>
-<summary>keywords</summary>
-
-BasicCors, nablarch.fw.jaxrs.cors.BasicCors, CorsResponseFinisher, nablarch.fw.jaxrs.cors.CorsResponseFinisher, Cors, nablarch.fw.jaxrs.cors.Cors, allowOrigins, CORS設定, プリフライトリクエスト処理, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Max-Age, JaxRsResponseHandler, WebFrontController, nablarch.fw.web.servlet.WebFrontController
-
-</details>

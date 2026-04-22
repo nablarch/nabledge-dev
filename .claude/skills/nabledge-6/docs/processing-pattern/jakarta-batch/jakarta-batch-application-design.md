@@ -12,13 +12,6 @@ Batchletステップの場合の実装すべきクラスとその責務につい
 
 例えば、インターネット上のファイルをダウンロードしたり、SQL1つだけで完結するような処理 [#insert_select]_ を行う。
 
-<details>
-<summary>keywords</summary>
-
-Batchlet, バッチレット, ステップ処理結果, 業務ロジック実行, バッチレットクラス, 終了ステータス, Jakarta Batch Specification
-
-</details>
-
 ## Chunkステップの場合
 
 Chunkステップの場合の実装すべきクラスとその責務について説明する。
@@ -59,10 +52,3 @@ Chunkステップの場合の実装すべきクラスとその責務について
 
 バッチレットが返却する文字列(バッチレットの終了ステータス)の詳細は、 `Jakarta Batch Specification(外部サイト、英語) <https://jakarta.ee/specifications/batch/>`_ を参照。
 例えば、 ``insert～select`` のみで処理が完結するSQLの実行などを指す。
-
-<details>
-<summary>keywords</summary>
-
-ItemReader, ItemProcessor, ItemWriter, Form, Entity, チャンク処理, フォームクラス, エンティティクラス, 入力値チェック, Bean Validation, Jakarta Batch Specification
-
-</details>

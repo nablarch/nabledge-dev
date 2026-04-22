@@ -130,10 +130,3 @@ public class ProjectAction {
 ```
 この実装のポイント
 * `@Path` アノテーションと `@PUT` アノテーションを使用して、PUTリクエスト時にマッピングする業務アクションメソッドを定義する。
-
-<details>
-<summary>keywords</summary>
-
-ProjectUpdateForm, ProjectAction, Project, @Required, @Domain, @Consumes, @Valid, @PUT, @Path, BeanUtil, UniversalDao, HttpResponse, ErrorResponseBuilder, NoDataException, OptimisticLockException, PUTリクエスト, REST更新処理, JSONリクエストボディ受信, フォームバリデーション
-
-</details>

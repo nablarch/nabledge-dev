@@ -2,171 +2,32 @@
   "id": "handlers-csrf-token-verification-handler",
   "title": "CSRFトークン検証ハンドラ",
   "content": "本ハンドラは、トークンを使った一般的なCSRF(クロスサイトリクエストフォージェリ)対策を行うための機能を提供する。\n本ハンドラを使用して、 Webアプリケーション と RESTfulウェブサービス\nのCSRF対策を実現できる。\n\n本ハンドラをハンドラ構成に含めると、リクエスト処理でCSRFトークンの生成と検証が行われ、 tag を使用している場合は\nCSRFトークンが画面に自動で出力される。\nそのため、アプリケーションプログラマが実装することなく、 Webアプリケーション\nのCSRF対策を漏れなく行うことができる。\n\nRESTfulウェブサービス においてCSRF対策を実現できるように、\n本ハンドラはリクエストヘッダまたはリクエストパラメータからCSRFトークンを取得する。\n生成されたCSRFトークンを取得するためのユーティリティクラス(\n`CsrfTokenUtil` )を提供しているので、\nプロジェクトのアーキテクチャに合わせてクライアントにCSRFトークンを送る仕組みを実装できる。\n\n本ハンドラはCSRFトークンをセッションストアに格納するため、本ハンドラを使用する場合は session_store の使用が必須となる。\n\n本ハンドラでは、以下の処理を行う。\n\n* セッションストアからCSRFトークンを取得する。\n* 取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する。\n* HTTPリクエストが検証対象か否かを判定する。\n* 検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する。\n* 検証に失敗した場合はBadRequest(400)のレスポンスを返す。\n* 検証に成功した場合は次のハンドラへ処理を移す。\n\n処理の流れは以下のとおり。\n\n![](assets/handlers-csrf-token-verification-handler/flow.png)",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "ハンドラクラス名",
-      "content": "* `nablarch.fw.web.handler.CsrfTokenVerificationHandler`",
-      "hints": [
-        "CsrfTokenVerificationHandler",
-        "nablarch.fw.web.handler.CsrfTokenVerificationHandler",
-        "CSRFトークン検証ハンドラ",
-        "ハンドラクラス名"
-      ]
+      "content": "* `nablarch.fw.web.handler.CsrfTokenVerificationHandler`"
     },
     {
       "id": "s2",
       "title": "モジュール一覧",
-      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```",
-      "hints": [
-        "nablarch-fw-web",
-        "com.nablarch.framework",
-        "モジュール",
-        "Maven依存関係"
-      ]
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n```"
     },
     {
       "id": "s3",
       "title": "制約",
-      "content": "セッション変数保存ハンドラ より後ろに配置すること\nCSRFトークンをセッションストアに格納するため、\n本ハンドラは セッション変数保存ハンドラ より後ろに配置する必要がある。\n\n> **Tip:** マルチパートリクエストハンドラ を使ったファイルアップロード時に、 ファイルの保存前にCSRFトークンの検証を行いたい場合は マルチパートリクエストハンドラ の前に本ハンドラおよび セッション変数保存ハンドラ を配置すること。\ntag を使用する場合は Nablarchカスタムタグ制御ハンドラ より後ろに配置すること\ntag を使用する場合は tag-hidden_encryption を使用して画面にCSRFトークンを出力しているため、\n本ハンドラは Nablarchカスタムタグ制御ハンドラ より後ろに配置する必要がある。",
-      "hints": [
-        "session_store_handler",
-        "nablarch_tag_handler",
-        "multipart_handler",
-        "tag-hidden_encryption",
-        "session_store",
-        "セッションストア必須",
-        "ハンドラ配置順",
-        "CSRFトークン制約"
-      ]
+      "content": "セッション変数保存ハンドラ より後ろに配置すること\nCSRFトークンをセッションストアに格納するため、\n本ハンドラは セッション変数保存ハンドラ より後ろに配置する必要がある。\n\n> **Tip:** マルチパートリクエストハンドラ を使ったファイルアップロード時に、 ファイルの保存前にCSRFトークンの検証を行いたい場合は マルチパートリクエストハンドラ の前に本ハンドラおよび セッション変数保存ハンドラ を配置すること。\ntag を使用する場合は Nablarchカスタムタグ制御ハンドラ より後ろに配置すること\ntag を使用する場合は tag-hidden_encryption を使用して画面にCSRFトークンを出力しているため、\n本ハンドラは Nablarchカスタムタグ制御ハンドラ より後ろに配置する必要がある。"
     },
     {
       "id": "s4",
       "title": "CSRFトークンの生成と検証",
-      "content": "本ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う。\ntag を使用する場合の設定例を以下に示す。\n\n```xml\n<!-- ハンドラ構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- 他のハンドラは省略 -->\n\n      <!-- セッションストアハンドラ -->\n      <component-ref name=\"sessionStoreHandler\" />\n\n      <!-- Nablarchカスタムタグ制御ハンドラ -->\n      <component-ref name=\"nablarchTagHandler\"/>\n\n      <!-- CSRFトークン検証ハンドラ -->\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\nデフォルトでは以下の処理を行う。\n\nセッションストアからCSRFトークンを取得する\n* CSRFトークンをセッションストアに格納する際に使用する名前は `nablarch_csrf-token` となる。\n\n取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する\n* CSRFトークンの生成は `CsrfTokenGenerator` が行う。\nデフォルトではバージョン4のUUIDを使用してCSRFトークンを生成する `UUIDv4CsrfTokenGenerator` を使用する。\n* CSRFトークンの格納先となるセッションストアはデフォルトのセッションストアとなる。（セッションストアの名前を指定しないでCSRFトークンを格納する）\n\nHTTPリクエストが検証対象か否かを判定する\n* 検証対象か否かの判定は `VerificationTargetMatcher` が行う。\nデフォルトではHTTPメソッドからHTTPリクエストが検証対象か否かを判定する `HttpMethodVerificationTargetMatcher` を使用する。\n*  `HttpMethodVerificationTargetMatcher` は、HTTPメソッドの `GET` `HEAD` `TRACE` `OPTIONS` をCSRFトークンの検証対象 **外** と判定する（つまりPOSTやPUT等は検査対象となる）。\n\n検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する\n* CSRFトークンをHTTPリクエストに格納する際に使用する名前は以下となる。\n\n| HTTPリクエストヘッダ `X-CSRF-TOKEN`\n| HTTPリクエストパラメータ `csrf-token`\n\n検証に成功した場合は次のハンドラへ処理を移し、検証に失敗した場合はBadRequest(400)のレスポンスを返す\n* 検証失敗時の処理は `VerificationFailureHandler` が行う。\nデフォルトではBadRequest(400)のレスポンスを生成する `BadRequestVerificationFailureHandler` を使用する。\n\n設定を変えることでデフォルトの動作を変更できる。設定例を以下に示す。\n\n```xml\n<component class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\">\n  <!-- CSRFトークンの生成を行うインターフェース -->\n  <property name=\"csrfTokenGenerator\">\n    <component class=\"com.sample.CustomCsrfTokenGenerator\" />\n  </property>\n  <!-- HTTPリクエストがCSRFトークンの検証対象か否かの判定を行うインターフェース -->\n  <property name=\"verificationTargetMatcher\">\n    <component class=\"com.sample.CustomVerificationTargetMatcher\" />\n  </property>\n  <!-- CSRFトークンの検証失敗時の処理を行うインタフェース -->\n  <property name=\"verificationFailureHandler\" />\n    <component class=\"com.sample.CustomVerificationFailureHandler\" />\n  </property>\n</component>\n\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <!-- CSRFトークンをHTTPリクエストヘッダから取得する際に使用する名前 -->\n  <property name=\"csrfTokenHeaderName\" value=\"X-CUSTOM-CSRF-TOKEN\" />\n  <!-- CSRFトークンをHTTPリクエストパラメータから取得する際に使用する名前 -->\n  <property name=\"csrfTokenParameterName\" value=\"custom-csrf-token\" />\n  <!-- CSRFトークンをセッションスストアに格納する際に使用する名前 -->\n  <property name=\"csrfTokenSessionStoredVarName\" value=\"custom-csrf-token\" />\n  <!-- CSRFトークンを保存するセッションストアの名前 -->\n  <property name=\"csrfTokenSavedStoreName\" value=\"customStore\" />\n</component>\n```\n> **Important:** 本ハンドラを使用したアプリケーションに対して、テスティングフレームワークを使用してリクエスト単体テストを実施すると、 正しい画面遷移を経由したリクエストとならないためCSRFトークンの検証に失敗する。 CSRF対策はアプリケーションプログラマが実装して作り込む部分ではないため、 リクエスト単体テストではCSRF対策を無効化してテストを行えばよい。 テスト実行時の設定において本ハンドラを何も処理しないハンドラに差し替えることでCSRF対策を無効化できる。 以下に設定例を示す。以下ではテスティングフレームワークが提供する何も処理しないハンドラである `NopHandler` を使用している。 .. code-block:: xml <!-- テストの設定で本ハンドラのコンポーネント定義を上書く。 コンポーネント名を合わせることで上書きを行う。 --> <!-- CSRF対策の無効化 --> <component name=\"csrfTokenVerificationHandler\" class=\"nablarch.test.NopHandler\" />",
-      "hints": [
-        "CsrfTokenGenerator",
-        "UUIDv4CsrfTokenGenerator",
-        "VerificationTargetMatcher",
-        "HttpMethodVerificationTargetMatcher",
-        "VerificationFailureHandler",
-        "BadRequestVerificationFailureHandler",
-        "NopHandler",
-        "csrfTokenGenerator",
-        "verificationTargetMatcher",
-        "verificationFailureHandler",
-        "csrfTokenHeaderName",
-        "csrfTokenParameterName",
-        "csrfTokenSessionStoredVarName",
-        "csrfTokenSavedStoreName",
-        "X-CSRF-TOKEN",
-        "csrf-token",
-        "nablarch_csrf-token",
-        "WebConfig",
-        "nablarch.common.web.WebConfig",
-        "CsrfTokenUtil",
-        "RESTfulウェブサービス",
-        "CSRFトークン生成",
-        "CSRFトークン検証",
-        "テスト無効化",
-        "BadRequest 400"
-      ]
+      "content": "本ハンドラをハンドラ構成に追加するとCSRFトークンの生成と検証を行う。\ntag を使用する場合の設定例を以下に示す。\n\n```xml\n<!-- ハンドラ構成 -->\n<component name=\"webFrontController\" class=\"nablarch.fw.web.servlet.WebFrontController\">\n  <property name=\"handlerQueue\">\n    <list>\n      <!-- 他のハンドラは省略 -->\n\n      <!-- セッションストアハンドラ -->\n      <component-ref name=\"sessionStoreHandler\" />\n\n      <!-- Nablarchカスタムタグ制御ハンドラ -->\n      <component-ref name=\"nablarchTagHandler\"/>\n\n      <!-- CSRFトークン検証ハンドラ -->\n      <component-ref name=\"csrfTokenVerificationHandler\"/>\n    </list>\n  </property>\n</component>\n\n<component name=\"csrfTokenVerificationHandler\"\n           class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\" />\n```\nデフォルトでは以下の処理を行う。\n\nセッションストアからCSRFトークンを取得する\n* CSRFトークンをセッションストアに格納する際に使用する名前は `nablarch_csrf-token` となる。\n\n取得できなかった場合はCSRFトークンを生成してセッションストアへ保存する\n* CSRFトークンの生成は `CsrfTokenGenerator` が行う。\nデフォルトではバージョン4のUUIDを使用してCSRFトークンを生成する `UUIDv4CsrfTokenGenerator` を使用する。\n* CSRFトークンの格納先となるセッションストアはデフォルトのセッションストアとなる。（セッションストアの名前を指定しないでCSRFトークンを格納する）\n\nHTTPリクエストが検証対象か否かを判定する\n* 検証対象か否かの判定は `VerificationTargetMatcher` が行う。\nデフォルトではHTTPメソッドからHTTPリクエストが検証対象か否かを判定する `HttpMethodVerificationTargetMatcher` を使用する。\n*  `HttpMethodVerificationTargetMatcher` は、HTTPメソッドの `GET` `HEAD` `TRACE` `OPTIONS` をCSRFトークンの検証対象 **外** と判定する（つまりPOSTやPUT等は検査対象となる）。\n\n検証対象の場合はHTTPリクエストからCSRFトークンを取得して検証する\n* CSRFトークンをHTTPリクエストに格納する際に使用する名前は以下となる。\n\n| HTTPリクエストヘッダ `X-CSRF-TOKEN`\n| HTTPリクエストパラメータ `csrf-token`\n\n検証に成功した場合は次のハンドラへ処理を移し、検証に失敗した場合はBadRequest(400)のレスポンスを返す\n* 検証失敗時の処理は `VerificationFailureHandler` が行う。\nデフォルトではBadRequest(400)のレスポンスを生成する `BadRequestVerificationFailureHandler` を使用する。\n\n設定を変えることでデフォルトの動作を変更できる。設定例を以下に示す。\n\n```xml\n<component class=\"nablarch.fw.web.handler.CsrfTokenVerificationHandler\">\n  <!-- CSRFトークンの生成を行うインターフェース -->\n  <property name=\"csrfTokenGenerator\">\n    <component class=\"com.sample.CustomCsrfTokenGenerator\" />\n  </property>\n  <!-- HTTPリクエストがCSRFトークンの検証対象か否かの判定を行うインターフェース -->\n  <property name=\"verificationTargetMatcher\">\n    <component class=\"com.sample.CustomVerificationTargetMatcher\" />\n  </property>\n  <!-- CSRFトークンの検証失敗時の処理を行うインタフェース -->\n  <property name=\"verificationFailureHandler\" />\n    <component class=\"com.sample.CustomVerificationFailureHandler\" />\n  </property>\n</component>\n\n<component name=\"webConfig\" class=\"nablarch.common.web.WebConfig\">\n  <!-- CSRFトークンをHTTPリクエストヘッダから取得する際に使用する名前 -->\n  <property name=\"csrfTokenHeaderName\" value=\"X-CUSTOM-CSRF-TOKEN\" />\n  <!-- CSRFトークンをHTTPリクエストパラメータから取得する際に使用する名前 -->\n  <property name=\"csrfTokenParameterName\" value=\"custom-csrf-token\" />\n  <!-- CSRFトークンをセッションスストアに格納する際に使用する名前 -->\n  <property name=\"csrfTokenSessionStoredVarName\" value=\"custom-csrf-token\" />\n  <!-- CSRFトークンを保存するセッションストアの名前 -->\n  <property name=\"csrfTokenSavedStoreName\" value=\"customStore\" />\n</component>\n```\n> **Important:** 本ハンドラを使用したアプリケーションに対して、テスティングフレームワークを使用してリクエスト単体テストを実施すると、 正しい画面遷移を経由したリクエストとならないためCSRFトークンの検証に失敗する。 CSRF対策はアプリケーションプログラマが実装して作り込む部分ではないため、 リクエスト単体テストではCSRF対策を無効化してテストを行えばよい。 テスト実行時の設定において本ハンドラを何も処理しないハンドラに差し替えることでCSRF対策を無効化できる。 以下に設定例を示す。以下ではテスティングフレームワークが提供する何も処理しないハンドラである `NopHandler` を使用している。 .. code-block:: xml <!-- テストの設定で本ハンドラのコンポーネント定義を上書く。 コンポーネント名を合わせることで上書きを行う。 --> <!-- CSRF対策の無効化 --> <component name=\"csrfTokenVerificationHandler\" class=\"nablarch.test.NopHandler\" />"
     },
     {
       "id": "s5",
       "title": "CSRFトークンを再生成する",
-      "content": "悪意のある人がCSRFトークンとそれを保持しているセッションストアのセッションIDを何らかの方法で利用者に送り込み、\n利用者がこれに気づかずにログインをしたとする。\nこのときCSRFトークンが再生成されていないと、悪意のあるウェブサイトにCSRFトークンを仕込んだ罠ページを用意し、\n利用者にリンクのクリックなどの操作をさせることで利用者の意図しない攻撃リクエストを送信させることができてしまう。\nこれを防ぐためにはログイン時にCSRFトークンを再生成しなくてはならない。\n\nCSRFトークンの再生成は、アクション等のリクエスト処理の中で\n`CsrfTokenUtil.regenerateCsrfToken`\nメソッドを呼び出すと、本ハンドラの戻りの処理でCSRFトークンの再生成が行われる。\n\nログイン時にセッションストアを破棄して再生成する実装であればこのメソッドを使用する必要はない。\nセッションストアの破棄と共にCSRFトークンも破棄され、その後のページ表示時に新しいCSRFトークンが生成されるためである。\nログイン時にセッションストアそのものの破棄ではなくセッションIDの再生成にとどめる実装の場合は、\nこのメソッドを使用してCSRFトークンも再生成すること。",
-      "hints": [
-        "CsrfTokenUtil",
-        "regenerateCsrfToken",
-        "nablarch.common.web.csrf.CsrfTokenUtil",
-        "CSRFトークン再生成",
-        "ログイン",
-        "セッションID再生成",
-        "セッションストア破棄"
-      ]
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "ハンドラクラス名",
-      "hints": [
-        "CsrfTokenVerificationHandler",
-        "nablarch.fw.web.handler.CsrfTokenVerificationHandler",
-        "CSRFトークン検証ハンドラ",
-        "ハンドラクラス名"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "モジュール一覧",
-      "hints": [
-        "nablarch-fw-web",
-        "com.nablarch.framework",
-        "モジュール",
-        "Maven依存関係"
-      ]
-    },
-    {
-      "id": "s3",
-      "title": "制約",
-      "hints": [
-        "session_store_handler",
-        "nablarch_tag_handler",
-        "multipart_handler",
-        "tag-hidden_encryption",
-        "session_store",
-        "セッションストア必須",
-        "ハンドラ配置順",
-        "CSRFトークン制約"
-      ]
-    },
-    {
-      "id": "s4",
-      "title": "CSRFトークンの生成と検証",
-      "hints": [
-        "CsrfTokenGenerator",
-        "UUIDv4CsrfTokenGenerator",
-        "VerificationTargetMatcher",
-        "HttpMethodVerificationTargetMatcher",
-        "VerificationFailureHandler",
-        "BadRequestVerificationFailureHandler",
-        "NopHandler",
-        "csrfTokenGenerator",
-        "verificationTargetMatcher",
-        "verificationFailureHandler",
-        "csrfTokenHeaderName",
-        "csrfTokenParameterName",
-        "csrfTokenSessionStoredVarName",
-        "csrfTokenSavedStoreName",
-        "X-CSRF-TOKEN",
-        "csrf-token",
-        "nablarch_csrf-token",
-        "WebConfig",
-        "nablarch.common.web.WebConfig",
-        "CsrfTokenUtil",
-        "RESTfulウェブサービス",
-        "CSRFトークン生成",
-        "CSRFトークン検証",
-        "テスト無効化",
-        "BadRequest 400"
-      ]
-    },
-    {
-      "id": "s5",
-      "title": "CSRFトークンを再生成する",
-      "hints": [
-        "CsrfTokenUtil",
-        "regenerateCsrfToken",
-        "nablarch.common.web.csrf.CsrfTokenUtil",
-        "CSRFトークン再生成",
-        "ログイン",
-        "セッションID再生成",
-        "セッションストア破棄"
-      ]
+      "content": "悪意のある人がCSRFトークンとそれを保持しているセッションストアのセッションIDを何らかの方法で利用者に送り込み、\n利用者がこれに気づかずにログインをしたとする。\nこのときCSRFトークンが再生成されていないと、悪意のあるウェブサイトにCSRFトークンを仕込んだ罠ページを用意し、\n利用者にリンクのクリックなどの操作をさせることで利用者の意図しない攻撃リクエストを送信させることができてしまう。\nこれを防ぐためにはログイン時にCSRFトークンを再生成しなくてはならない。\n\nCSRFトークンの再生成は、アクション等のリクエスト処理の中で\n`CsrfTokenUtil.regenerateCsrfToken`\nメソッドを呼び出すと、本ハンドラの戻りの処理でCSRFトークンの再生成が行われる。\n\nログイン時にセッションストアを破棄して再生成する実装であればこのメソッドを使用する必要はない。\nセッションストアの破棄と共にCSRFトークンも破棄され、その後のページ表示時に新しいCSRFトークンが生成されるためである。\nログイン時にセッションストアそのものの破棄ではなくセッションIDの再生成にとどめる実装の場合は、\nこのメソッドを使用してCSRFトークンも再生成すること。"
     }
   ]
 }

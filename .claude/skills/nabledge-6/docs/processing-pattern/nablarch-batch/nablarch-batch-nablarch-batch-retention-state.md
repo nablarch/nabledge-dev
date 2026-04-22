@@ -1,12 +1,5 @@
 # バッチアプリケーションで実行中の状態を保持する
 
-<details>
-<summary>keywords</summary>
-
-AtomicInteger, ExecutionContext, BatchAction, BatchActionSample, Result, Result.Success, スレッドセーフ, 状態保持, バッチアクション, マルチスレッド, リクエストスコープ, セッションスコープ
-
-</details>
-
 バッチアプリケーションの実行中の状態を保持したい場合がある。
 例えば、バッチアクションで行った登録件数や更新件数を保持したい場合などが該当する。
 このような場合は、バッチアクション内で状態を保持しすることで対応する。

@@ -2,44 +2,6 @@
   "id": "restful-web-service-functional-comparison",
   "title": "Jakarta RESTful Web Servicesサポート/Jakarta RESTful Web Services/HTTPメッセージングの機能比較",
   "content": "ここでは、以下の機能比較を示す。\n\n- NablarchのJakarta RESTful Web Servicesサポート\n- HTTPメッセージング\n- [Jakarta RESTful Web Services(外部サイト、英語)](https://jakarta.ee/specifications/restful-ws/)\n\n> **Tip:** NablarchのJakarta RESTful Web ServicesサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。\n.. |br| raw:: html\n\n<br />\n\n| 機能 | Jakarta RESTful \\|br\\| Web Services \\|br\\| サポート | HTTP \\|br\\| メッセージング | Jakarta RESTful \\|br\\| Web Services |\n|---|---|---|---|\n| リクエストとリソースメソッドのマッピング | △ | ○ | ○ |\n| リクエストとパラメータのマッピング | △ | × [1]_ | ○ |\n| HTTPメソッドのマッチング | △ | × [1]_ | ○ |\n| メディアタイプに応じた \\|br\\| リクエスト/レスポンスの変換 | △ | × [1]_ | ○ |\n| エンティティのバリデーション | ○ | ○ | ○ |\n| リソースクラスへのインジェクション \\|br\\| (Jakarta Contexts and Dependency Injection) | × [2]_ | × [2]_ | ○ |\n| リクエスト/レスポンスに対するフィルタ | × [3]_ | × [3]_ | ○ |\n| ボディの読み書きに対するインターセプタ | × [4]_ | × [5]_ | ○ |\n| クライアントAPI | × [6]_ | ○ | ○ |\n| 非同期処理 | × [7]_ | × [7]_ | ○ |\n| エラー時ログ出力 | ○ | ○ | － |\n| リクエストボディの最大容量チェック | × [8]_ | ○ | － |\n| 証跡ログの出力 | × [9]_ | ○ | － |\n| 再送制御 | × [9]_ | ○ | － |\n| サービス提供の可否チェック | × [10]_ | × [10]_ | － |\n| トランザクション制御 | × [11]_ | × [11]_ | － |\n| 業務処理エラー時のコールバック | × [12]_ | `○` | － |\nHTTPメッセージングはRESTを考慮した作りになっていない。RESTfulウェブサービスには、Jakarta RESTful Web Servicesサポートを使用する。\nJakarta RESTful Web ServicesサポートとHTTPメッセージングは、Nablarchのウェブアプリケーションとして動作するため、Jakarta Contexts and Dependency Injectionは使用できない。\nリクエスト/レスポンスに対するフィルタを作りたい場合は、ハンドラを作成する。\nボディの読み書きに対するインターセプタを作りたい場合は、Jakarta RESTful Web ServicesサポートのBodyConverterを作成する。\nボディの読み書きにはNablarchのデータフォーマットを使用している。変更したい場合は、データフォーマットのDataRecordFormatterを作成する。\nJakarta RESTful Web Servicesクライアントが必要な場合は、Jakarta RESTful Web Servicesの実装(JerseyやRESTEasyなど)を使用する。\nサーバサイドで非同期処理が必要になる要件がないと想定している。要望があれば対応を検討する。\nウェブサーバやアプリケーションサーバにあるリクエストサイズをチェックする機能を使用する。\nアプリケーションごとに要件が異なると想定している。アプリケーションで設計/実装する。\nNablarchにあるサービス提供可否チェックがアプリケーションの要件にマッチする場合はそれを使用する。マッチしない場合は、アプリケーションで設計/実装する。\nNablarchにあるトランザクション管理を使用する。\nエラー処理は共通化し、JaxRsResponseHandlerをカスタマイズすることを想定している。業務処理で個別にエラー処理をしたい場合は、リソースメソッドにてtry/catchを使用する。",
-  "hints": [
-    "機能比較",
-    "Jakarta RESTful Web Servicesサポート",
-    "HTTPメッセージング",
-    "Jakarta RESTful Web Services",
-    "リクエストマッピング",
-    "バリデーション",
-    "クライアントAPI",
-    "MessagingAction",
-    "BodyConverter",
-    "DataRecordFormatter",
-    "JaxRsResponseHandler",
-    "RESTfulウェブサービス選択",
-    "非同期処理",
-    "トランザクション制御"
-  ],
   "no_knowledge_content": false,
-  "sections": [],
-  "index": [
-    {
-      "id": "__file__",
-      "title": "Jakarta RESTful Web Servicesサポート/Jakarta RESTful Web Services/HTTPメッセージングの機能比較",
-      "hints": [
-        "機能比較",
-        "Jakarta RESTful Web Servicesサポート",
-        "HTTPメッセージング",
-        "Jakarta RESTful Web Services",
-        "リクエストマッピング",
-        "バリデーション",
-        "クライアントAPI",
-        "MessagingAction",
-        "BodyConverter",
-        "DataRecordFormatter",
-        "JaxRsResponseHandler",
-        "RESTfulウェブサービス選択",
-        "非同期処理",
-        "トランザクション制御"
-      ]
-    }
-  ]
+  "sections": []
 }

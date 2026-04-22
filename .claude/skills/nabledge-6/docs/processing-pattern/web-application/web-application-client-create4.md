@@ -1,12 +1,5 @@
 # データベースへの登録
 
-<details>
-<summary>keywords</summary>
-
-UniversalDao, SessionUtil, HttpRequest, ExecutionContext, HttpResponse, @OnDoubleSubmission, OnDoubleSubmission, allowDoubleSubmission, forConfirmationPage, Client, データベース登録, 二重サブミット防止, セッションストア, 303リダイレクト, 登録完了画面
-
-</details>
-
 本章では、顧客情報をデータベースへ登録する処理について解説する。
 
 前へ

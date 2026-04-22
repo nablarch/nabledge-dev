@@ -21,13 +21,6 @@
 
 * `nablarch.fw.handler.RetryHandler`
 
-<details>
-<summary>keywords</summary>
-
-RetryHandler, nablarch.fw.handler.RetryHandler, Retryable, nablarch.fw.handler.retry.Retryable, RetryContext, nablarch.fw.handler.RetryHandler.RetryContext, CountingRetryContext, TimeRetryContext, リトライ制御, デッドロックリカバリ, デッドロック, 単純リトライ, リカバリ可能なエラー
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -37,24 +30,10 @@ RetryHandler, nablarch.fw.handler.RetryHandler, Retryable, nablarch.fw.handler.r
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-standalone, スタンドアロンモジュール, モジュール依存
-
-</details>
-
 ## 制約
 
 リトライ対象例外を送出するハンドラは、本ハンドラより後ろに設定すること。
 本ハンドラより手前でリトライ対象の例外を送出しても、単に例外として処理されるので注意すること。
-
-<details>
-<summary>keywords</summary>
-
-ハンドラ配置順序, リトライ対象例外, 設定順序制約, 後続ハンドラ
-
-</details>
 
 ## リトライの上限を設定する
 
@@ -80,10 +59,3 @@ nablarch-fw-standalone, スタンドアロンモジュール, モジュール依
 </component>
 ```
 > **Tip:** 上限に設定する値は、想定する最大の復旧時間プラスアルファの値を設定すること。 例えば、アクティブ/スタンバイ構成のデータベースの切り替えに最大5分かかるのであれば、 5分プラスアルファの時間(例えば7分等)を上限値として設定する。 なお、複数の例外に対するリトライを実現する場合には、最も復旧まで時間をようするものをベースに上限値を設定すること。
-
-<details>
-<summary>keywords</summary>
-
-CountingRetryContext, nablarch.fw.handler.retry.CountingRetryContext, TimeRetryContext, nablarch.fw.handler.retry.TimeRetryContext, CountingRetryContextFactory, nablarch.fw.handler.retry.CountingRetryContextFactory, retryContextFactory, retryCount, retryIntervals, リトライ上限設定, リトライ回数, 経過時間, 復旧時間
-
-</details>

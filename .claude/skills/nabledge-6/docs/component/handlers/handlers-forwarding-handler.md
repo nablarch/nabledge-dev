@@ -17,13 +17,6 @@
 
 * `nablarch.fw.web.handler.ForwardingHandler`
 
-<details>
-<summary>keywords</summary>
-
-ForwardingHandler, nablarch.fw.web.handler.ForwardingHandler, 内部フォーワードハンドラ, 後続ハンドラ再実行, 選択肢サーバサイド取得
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -33,25 +26,11 @@ ForwardingHandler, nablarch.fw.web.handler.ForwardingHandler, 内部フォーワ
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-web, com.nablarch.framework, モジュール依存関係
-
-</details>
-
 ## 制約
 
 セッション変数保存ハンドラ より後ろに配置すること
 セッション変数保存ハンドラ より後ろに配置すべき理由は、
 改竄エラー時の遷移先を設定する を参照
-
-<details>
-<summary>keywords</summary>
-
-配置順序制約, session_store_handler, セッションストアハンドラ, ハンドラ配置順
-
-</details>
 
 ## 内部フォーワードを示すレスポンスを返却する
 
@@ -69,13 +48,6 @@ public HttpResponse sample(HttpRequest request, ExecutionContext context) {
 }
 ```
 > **Tip:** ステータスコードはフォーワード時とフォーワード後を比較し、大きい値をレスポンス時のステータスコードとする。 以下に例を示す。 * フォーワード時が **200** で、フォーワード後が **500** の場合は、クライアントには **500** を返却する。 * フォーワード時が **400** で、フォーワード後が **200** の場合は、クライアントには **400** を返却する。
-
-<details>
-<summary>keywords</summary>
-
-forward://, HttpResponse, 内部フォーワードレスポンス, ステータスコード比較, コンテンツパス
-
-</details>
 
 ## 内部フォーワードに指定するパスのルール
 
@@ -102,20 +74,6 @@ new HttpResponse("forward://initialize");
 new HttpResponse("forward:///action/users/initialize");
 ```
 
-<details>
-<summary>keywords</summary>
-
-相対パス, 絶対パス, フォーワードパス指定, サーブレットコンテキスト, パス指定ルール
-
-</details>
-
 ## 内部リクエストIDについて
 
 内部フォーワード時、フォーワード先のリクエストIDを内部リクエストIDとしてスレッドコンテキストに保持する。
-
-<details>
-<summary>keywords</summary>
-
-内部リクエストID, スレッドコンテキスト, フォーワード先リクエストID, internal_request_id
-
-</details>

@@ -20,13 +20,6 @@ Redis のヘルスチェックを提供している。
 
 * `nablarch.fw.web.handler.HealthCheckEndpointHandler`
 
-<details>
-<summary>keywords</summary>
-
-HealthCheckEndpointHandler, nablarch.fw.web.handler.HealthCheckEndpointHandler, ヘルスチェックエンドポイントハンドラ, 後続ハンドラ呼び出しなし, DbHealthChecker, Redisヘルスチェック
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -42,26 +35,12 @@ HealthCheckEndpointHandler, nablarch.fw.web.handler.HealthCheckEndpointHandler, 
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-web, nablarch-core-jdbc, Maven依存関係, モジュール設定
-
-</details>
-
 ## 制約
 
 HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置すること
 本ハンドラで生成した `HttpResponse` を
 HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ が処理するため、
 本ハンドラは HTTPレスポンスハンドラ または Jakarta RESTful Web Servicesレスポンスハンドラ より後ろに配置する必要がある。
-
-<details>
-<summary>keywords</summary>
-
-http_response_handler, jaxrs_response_handler, ハンドラ配置順序, HttpResponse, 配置制約
-
-</details>
 
 ## ヘルスチェックのエンドポイントを作る
 
@@ -145,13 +124,6 @@ DB等のリソースのヘルスチェックは、 `HealthChecker`
 ```
 デフォルトではルート直下のstatusにヘルスチェック全体の結果、targetsに対象ごとのヘルスチェック結果を出力する。
 
-<details>
-<summary>keywords</summary>
-
-HealthCheckEndpointHandler, DbHealthChecker, HealthChecker, healthCheckers, dataSource, dialect, ヘルスチェックエンドポイント設定, DBヘルスチェック, JSONレスポンス, RequestHandlerEntry, requestPattern
-
-</details>
-
 ## ヘルスチェックを追加する
 
 ヘルスチェックのエンドポイントを作る で説明したように、
@@ -196,13 +168,6 @@ public class CustomHealthChecker extends HealthChecker {
   </property>
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-HealthChecker, CustomHealthChecker, tryOut, HttpRequest, ExecutionContext, healthCheckers, カスタムヘルスチェック実装, ヘルスチェック追加
-
-</details>
 
 ## ヘルスチェック結果のレスポンスを変更する
 
@@ -307,10 +272,3 @@ public class CustomHealthCheckResponseBuilder extends HealthCheckResponseBuilder
   </property>
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-HealthCheckResponseBuilder, CustomHealthCheckResponseBuilder, healthyStatusCode, healthyStatus, unhealthyStatusCode, unhealthyStatus, writeBody, getContentType, buildResponseBody, HealthCheckResult, HealthCheckResult.Target, レスポンスカスタマイズ, ステータスコード変更
-
-</details>

@@ -1,12 +1,5 @@
 # リクエスト単体テスト（HTTP同期応答メッセージ送信処理）
 
-<details>
-<summary>keywords</summary>
-
-MockMessagingClient, MockMessagingContext, RequestTestingMessagingClient, RequestTestingMessagingProvider, HTTP同期応答メッセージ送信, リクエスト単体テスト, クラス名読み替え
-
-</details>
-
 リクエスト単体テストのテスト方法は、\ RequestUnitTest_send_sync\ を参照すること。
 
 本項では、\ RequestUnitTest_send_sync\ と異なる箇所を解説する。

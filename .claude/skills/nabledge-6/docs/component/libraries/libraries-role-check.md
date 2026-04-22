@@ -4,13 +4,6 @@
 
 ## 機能概要
 
-<details>
-<summary>keywords</summary>
-
-@CheckRole, CheckRole, 認可チェック, ロールベースアクセス制御, ロール割り当て, permission_check, 認可判定, BasicRoleEvaluator, 使い分け
-
-</details>
-
 ## 煩雑なデータ管理をせずに認可チェックができる
 
 ![](../../../knowledge/assets/libraries-role-check/conceptual_model.jpg)
@@ -63,21 +56,7 @@ public HttpResponse index(HttpRequest request, ExecutionContext context) {
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-common-auth, nablarch-common-auth-session, nablarch-main-default-configuration, モジュール, 依存関係
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-@CheckRole, CheckRole, BasicRoleEvaluator, SessionStoreUserRoleResolver, CheckRoleUtil, checkRole, checkRoleAllOf, checkRoleAnyOf, CheckRoleLogger, SessionStoreUserRoleUtil, SessionUtil, Forbidden, BasicApplicationInitializer, userRoleResolver, targetPackage, targetClassPattern, interceptorsOrder, anyOf, ロール割り当て, セッションストア, JSP表示制御, アノテーション設定確認, プログラム判定
-
-</details>
 
 ## 事前準備
 
@@ -311,13 +290,6 @@ SessionUtil.put(executionContext, "userContext", userContext);
 `UserRoleResolver` のデフォルト実装としては、　`SessionStoreUserRoleResolver` を提供している。
 このクラスは、セッションストアに保存された情報でユーザのロールを解決する仕組みとなっている。
 
-<details>
-<summary>keywords</summary>
-
-RoleEvaluator, BasicRoleEvaluator, UserRoleResolver, SessionStoreUserRoleResolver, CheckRole, CheckRoleUtil, SystemRepository, ThreadContext, Interceptor, 認可チェックの仕組み, インターセプタ, ロール解決, roleEvaluator
-
-</details>
-
 ## 拡張方法
 
 前述の仕組みの説明から、 `RoleEvaluator` または `UserRoleResolver` の実体を差し替えることで任意の処理に拡張できることがわかる。
@@ -333,10 +305,3 @@ RoleEvaluator, BasicRoleEvaluator, UserRoleResolver, SessionStoreUserRoleResolve
 ```xml
 <component name="userRoleResolver" class="com.example.CustomUserRoleResolver" />
 ```
-
-<details>
-<summary>keywords</summary>
-
-RoleEvaluator, UserRoleResolver, BasicRoleEvaluator, SessionStoreUserRoleResolver, roleEvaluator, userRoleResolver, カスタマイズ, 拡張, 差し替え
-
-</details>

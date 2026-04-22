@@ -221,13 +221,6 @@ WHERE
 * 二重サブミットを防ぐJavaScriptを追加するために、 submitタグ の `allowDoubleSubmission` 属性にfalseを指定する。
 詳細は tag-double_submission を参照。
 
-<details>
-<summary>keywords</summary>
-
-ProjectTargetForm, ProjectUpdateForm, ProjectAction, ProjectDto, ProjectProfit, Project, LoginUserPrincipal, Client, @InjectForm, @OnError, @Required, @Domain, NoDataException, ApplicationException, MessageUtil, MessageLevel, UniversalDao, SessionUtil, BeanUtil, フォーム作成, 更新画面表示, バリデーション, 楽観的ロック, セッションストア, 二重サブミット防止
-
-</details>
-
 ## データベースの更新
 
 更新機能の実装方法のうち、更新内容の確認について以下の順に解説する。
@@ -328,10 +321,3 @@ public HttpResponse completeOfUpdate(HttpRequest request, ExecutionContext conte
 更新機能の解説は以上。
 
 Getting Started TOPページへ
-
-<details>
-<summary>keywords</summary>
-
-ProjectAction, Project, @OnDoubleSubmission, @Version, @Column, UniversalDao, SessionUtil, ResourceLocator, 楽観的ロック, データベース更新, 二重サブミット防止, リダイレクト, バージョン番号
-
-</details>

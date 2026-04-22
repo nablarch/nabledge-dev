@@ -1,12 +1,5 @@
 # バリデーションエラーのメッセージを画面表示する
 
-<details>
-<summary>keywords</summary>
-
-ErrorMessages, nablarch.fw.web.message.ErrorMessages, hasError, getMessage, getGlobalMessages, getAllMessages, バリデーションエラーメッセージ表示, Thymeleaf, リクエストスコープ, グローバルメッセージ, プロパティエラーメッセージ
-
-</details>
-
 サーバサイドで行ったバリデーションのエラーメッセージは、 HTTPエラー制御ハンドラ でリクエストスコープに格納される。
 テンプレートエンジンでは、リクエストスコープに格納された `ErrorMessages` にアクセスすることでエラーメッセージを表示できる。
 リクエストスコープの変数名は、エラーメッセージのリクエストスコープへの設定 を参照。

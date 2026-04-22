@@ -9,13 +9,6 @@
 
 これらの内容が出力されていないと、運用担当者が発生した事象に対しどう対処すればよいか判断できない恐れがある。
 
-<details>
-<summary>keywords</summary>
-
-運用担当者向けログ, ログ出力内容, 何が発生したか, 対処方法, ログ必須項目
-
-</details>
-
 ## 運用担当者向けのログを専用のログファイルに出力するための設定を追加する
 
 運用担当者向けのログは、ログカテゴリ名を `operator` として出力する。
@@ -40,13 +33,6 @@ loggers.OPERATOR.nameRegex=operator
 loggers.OPERATOR.level=INFO
 loggers.OPERATOR.writerNames=operationLog
 ```
-
-<details>
-<summary>keywords</summary>
-
-operator, log.properties, FileLogWriter, BasicLogFormatter, ログカテゴリ設定, 運用担当者向けログ設定, operationLog
-
-</details>
 
 ## 運用担当者向けのログを出力する
 
@@ -85,10 +71,3 @@ public class SampleBatchlet extends AbstractBatchlet {
 ```bash
 ERROR operator ファイルが存在しません。正しく受信できているか確認してください。
 ```
-
-<details>
-<summary>keywords</summary>
-
-OperationLogger, LogLevel, AbstractBatchlet, 運用担当者向けログ出力, バッチ異常終了, 例外送出, OperationLogger.write, @Named, @Dependent, FileNotFoundException
-
-</details>

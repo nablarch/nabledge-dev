@@ -1,12 +1,5 @@
 # リクエスト単体テスト（RESTfulウェブサービス）
 
-<details>
-<summary>keywords</summary>
-
-SimpleRestTestSupport, RestTestSupport, RestMockHttpRequest, DbAccessTestSupport, HttpServer, HttpRequest, nablarch-testing-rest, nablarch-testing-jetty12, nablarch-testing-default-configuration, リクエスト単体テスト, 内蔵サーバ, RESTfulウェブサービステスト, sendRequest
-
-</details>
-
 ## 概要
 
 リクエスト単体テスト(REST)では、 リクエスト単体テスト(ウェブアプリケーション) 同様、内蔵サーバを使用してテストを行う。

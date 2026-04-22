@@ -18,13 +18,6 @@
 
 * `nablarch.common.handler.DbConnectionManagementHandler`
 
-<details>
-<summary>keywords</summary>
-
-DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHandler, データベース接続管理, スレッド管理, transaction_management_handler, トランザクション制御必須
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -38,23 +31,9 @@ DbConnectionManagementHandler, nablarch.common.handler.DbConnectionManagementHan
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-core-jdbc, nablarch-common-jdbc, Mavenモジュール, 依存設定
-
-</details>
-
 ## 制約
 
 なし。
-
-<details>
-<summary>keywords</summary>
-
-connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFactoryForDataSource, データベース接続設定, 接続ファクトリ設定
-
-</details>
 
 ## データベースの接続先を設定する
 
@@ -77,13 +56,6 @@ connectionFactory, setConnectionFactory, ConnectionFactory, BasicDbConnectionFac
 </component>
 ```
 > **Important:** データベース接続オブジェクトを取得するためのファクトリクラスの詳細は、 データベースに対する接続設定 を参照。
-
-<details>
-<summary>keywords</summary>
-
-connectionName, setConnectionName, DbConnectionContext, AppDbConnection, 複数データベース接続, デフォルト接続, DbConnectionContext.getConnection
-
-</details>
 
 ## アプリケーションで複数のデータベース接続（トランザクション）を使用する
 

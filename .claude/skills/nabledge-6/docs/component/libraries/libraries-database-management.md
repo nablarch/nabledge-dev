@@ -1,12 +1,5 @@
 # データベースアクセス
 
-<details>
-<summary>keywords</summary>
-
-データベースアクセス, ユニバーサルDAO, JDBCラッパー, SQL実行, データベース接続, universal_dao, database, functional_comparison
-
-</details>
-
 データベースへの接続や、SQLを実行する機能を提供する。
 
 Nablarchでは、以下の2種類のデータベースアクセス機能を提供している。

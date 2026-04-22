@@ -1,12 +1,5 @@
 # マスタデータ復旧機能
 
-<details>
-<summary>keywords</summary>
-
-バックアップスキーマ作成, マスタデータ復旧, データ投入, 復旧対象テーブル, 外部キー, slow test, テーブル削除挿入順序, 親子関係, nablarch.suppress-table-sort, MasterDataRestorer, nablarch.test.core.db.MasterDataRestorer, backupSchema, tablesTobeWatched, testEventListeners, 監視対象テーブル, コンポーネント設定, MasterDataRestorer$SqlLogWatchingFormatter, nablarch.test.core.db.MasterDataRestorer$SqlLogWatchingFormatter, NopLogWriter, nablarch.test.core.log.NopLogWriter, BasicLoggerFactory, nablarch.core.log.basic.BasicLoggerFactory, StandardOutputLogWriter, nablarch.core.log.basic.StandardOutputLogWriter, SQLログ, app-log.properties, log.properties
-
-</details>
-
 ## 概要
 
 通常の場合、テスト行う際にマスタデータを書き換えることはない。
@@ -62,13 +55,6 @@
 
 > **Tip:** マスタデータ復旧用スキーマには全てのテーブルを作成する必要はない。 マスタデータ復旧対象とするテーブルのみ存在すればよい（復旧対象以外のテーブルがあっても問題ない）。
 
-<details>
-<summary>keywords</summary>
-
-マスタデータ復旧, マスタデータ変更, テスト失敗防止, テストメソッド終了, 異常系テスト
-
-</details>
-
 ## 外部キーが設定されたテーブルを使用する場合について
 
 外部キーが設定されたテーブルに対してデータを復旧する場合には、親子関係を意識して復旧処理を行う必要がある。
@@ -83,13 +69,6 @@
 ```jproperties
 nablarch.suppress-table-sort=true
 ```
-
-<details>
-<summary>keywords</summary>
-
-テスト実行順序, 自動復旧, 高速復旧, バックアップスキーマ, 一括復旧
-
-</details>
 
 ## コンポーネント設定ファイルに監視対象テーブルを記載
 
@@ -125,13 +104,6 @@ nablarch.suppress-table-sort=true
   </property>
 </component>
 ```
-
-<details>
-<summary>keywords</summary>
-
-自動テスト用スキーマ, バックアップ用スキーマ, 必要スキーマ, 2つのスキーマ
-
-</details>
 
 ## ログ出力設定
 
@@ -176,10 +148,3 @@ loggers.sql.nameRegex=SQL
 loggers.sql.level=DEBUG      # 【説明】DEBUGレベル以上に設定すること			 
 loggers.sql.writerNames=nop                                                              
 ```
-
-<details>
-<summary>keywords</summary>
-
-監視対象テーブル, SQLログ監視, 全件削除, 全件挿入, 復旧メカニズム, コンポーネント設定ファイル
-
-</details>

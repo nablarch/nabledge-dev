@@ -1,22 +1,8 @@
 # 日付管理
 
-<details>
-<summary>keywords</summary>
-
-SystemTimeProvider, BusinessDateProvider, システム日時切り替え, 業務日付切り替え, ユニットテスト
-
-</details>
-
 アプリケーションで使用するシステム日時(OS日時)と業務日付を一元的に管理する機能を提供する。
 
 ## 機能概要
-
-<details>
-<summary>keywords</summary>
-
-システム日時切り替え, 業務日付切り替え, テスト用日時変更, コンポーネント差し替え
-
-</details>
 
 ## システム日時(OS日時)と業務日付の切り替えができる
 
@@ -43,21 +29,7 @@ SystemTimeProvider, BusinessDateProvider, システム日時切り替え, 業務
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-core, nablarch-common-jdbc, 日付管理モジュール, Maven依存関係
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-BasicSystemTimeProvider, systemTimeProvider, システム日時設定, コンポーネント定義
-
-</details>
 
 ## システム日時の管理機能を使うための設定
 
@@ -113,23 +85,9 @@ BasicSystemTimeProvider, systemTimeProvider, システム日時設定, コンポ
 </component>
 ```
 
-<details>
-<summary>keywords</summary>
-
-BasicBusinessDateProvider, businessDateProvider, tableName, segmentColumnName, dateColumnName, defaultSegment, transactionManager, BasicApplicationInitializer, initializeList, 業務日付設定, 業務日付テーブル
-
-</details>
-
 ## 業務日付を取得する
 
 業務日付の取得は、 `BusinessDateUtil` を使用する。
-
-<details>
-<summary>keywords</summary>
-
-BusinessDateUtil, 業務日付取得
-
-</details>
 
 ## 業務日付を任意の日付に上書く
 
@@ -150,13 +108,6 @@ BasicBusinessDateProvider.<区分>=日付
 
 -DBasicBusinessDateProvider.batch=20160317
 
-<details>
-<summary>keywords</summary>
-
-BasicBusinessDateProvider, 業務日付上書き, repository-overwrite_environment_configuration, システムプロパティ, バッチ再実行
-
-</details>
-
 ## 業務日付を更新する
 
 業務日付の更新は、 `BasicBusinessDateProvider` を使用して行う。
@@ -169,21 +120,7 @@ BusinessDateProvider provider = SystemRepository.get("businessDateProvider");
 provider.setDate(segment, date);
 ```
 
-<details>
-<summary>keywords</summary>
-
-BasicBusinessDateProvider, SystemRepository, setDate, 業務日付更新
-
-</details>
-
 ## 拡張例
-
-<details>
-<summary>keywords</summary>
-
-SystemTimeUtil, システム日時取得
-
-</details>
 
 ## システム日時を切り替える
 

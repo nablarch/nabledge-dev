@@ -1,12 +1,5 @@
 # データベースを使用するクラスのテスト
 
-<details>
-<summary>keywords</summary>
-
-setUpDb, assertSqlResultSetEquals, commitTransactions, assertTableEquals, 参照系テスト, 更新系テスト, デフォルト値, 数値型, 文字列型, 日付型, 省略カラム, 1970-01-01, 半角スペース, SAMPLE_TABLE, 有効期限, 削除フラグ, カラム省略例, 更新系テスト具体例
-
-</details>
-
 ## 概要
 
 データベースアクセスクラスなど、データベースを使用するクラスをテストする方法を記載する。

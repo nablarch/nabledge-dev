@@ -14,13 +14,6 @@
 
 * `nablarch.fw.web.handler.NormalizationHandler`
 
-<details>
-<summary>keywords</summary>
-
-NormalizationHandler, nablarch.fw.web.handler.NormalizationHandler, ノーマライズハンドラ, リクエストパラメータ正規化
-
-</details>
-
 ## モジュール一覧
 
 ```xml
@@ -30,38 +23,17 @@ NormalizationHandler, nablarch.fw.web.handler.NormalizationHandler, ノーマラ
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-fw-web, com.nablarch.framework, モジュール依存関係
-
-</details>
-
 ## 制約
 
 マルチパートリクエストハンドラ より後ろに配置すること
 このハンドラはリクエストパラータにアクセスする。
 このため、 マルチパートリクエストハンドラ よりも後ろに設定する必要がある。
 
-<details>
-<summary>keywords</summary>
-
-multipart_handler, ハンドラ配置順序, 制約, リクエストパラメータアクセス
-
-</details>
-
 ## 標準で提供しているノーマライズ処理
 
 標準では、以下のノーマライズ処理を提供している。
 
 * リクエストパラメータの前後のホワイトスペースを除去するノーマライザ( `TrimNormalizer` ) [#whitespace]_
-
-<details>
-<summary>keywords</summary>
-
-TrimNormalizer, nablarch.fw.web.handler.normalizer.TrimNormalizer, ホワイトスペース除去, デフォルトノーマライザ, Character#isWhitespace, ホワイトスペース定義
-
-</details>
 
 ## ノーマライズ処理を追加する
 
@@ -109,10 +81,3 @@ public class SampleNormalizer implements Normalizer {
 ```
 > **Tip:** ノーマライザを設定せずに、以下のようにハンドラを設定した場合、デフォルトで提供される前後のホワイトスペースを除去するノーマライザが自動的に適用される。 .. code-block:: xml <component class="nablarch.fw.web.handler.NormalizationHandler" />
 ホワイトスペースの定義は :java:extdoc:`Character#isWhitespace <java.lang.Character.isWhitespace(int)>` を参照
-
-<details>
-<summary>keywords</summary>
-
-Normalizer, nablarch.fw.web.handler.normalizer.Normalizer, normalizers, カスタムノーマライザ, ノーマライズ処理追加, 複数ノーマライザ設定順序
-
-</details>

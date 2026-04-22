@@ -1,12 +1,5 @@
 # Lettuceアダプタ
 
-<details>
-<summary>keywords</summary>
-
-nablarch-lettuce-adaptor, nablarch-main-default-configuration, Maven依存関係, Redisバージョン, Lettuceバージョン
-
-</details>
-
 Nablarchが提供する下記の機能で [Redis(外部サイト、英語)](https://redis.io/) を使用できるようにするアダプタを提供する。
 
 - session_store
@@ -31,10 +24,3 @@ Nablarchが提供する下記の機能で [Redis(外部サイト、英語)](http
 ```
 > **Tip:** Redisは5.0.9、Lettuceは5.3.0.RELEASEのバージョンを使用してテストを行っている。 バージョンを変更する場合は、プロジェクト側でテストを行い問題ないことを確認すること。
 各機能に対応したアダプタの説明は下記を参照。
-
-<details>
-<summary>keywords</summary>
-
-Redisアダプタ, Lettuce, Redis, セッションストア, ヘルスチェック, session_store, health_check_endpoint_handler
-
-</details>

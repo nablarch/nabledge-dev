@@ -1,12 +1,5 @@
 # 排他制御
 
-<details>
-<summary>keywords</summary>
-
-排他制御拡張, 拡張なし
-
-</details>
-
 この機能では、データベースのデータ更新に対する排他制御を行う。
 この機能により、データベースの同一データに対して、
 複数のトランザクション（ウェブやバッチ）から同時に更新した場合でも、
@@ -16,13 +9,6 @@
 > **Important:** この機能は、以下の理由により **非推奨** である。 排他制御には、 ユニバーサルDAO を使用すること。 * ユニバーサルDAO の排他制御は、本機能より簡単に使用できる。 universal_dao_jpa_optimistic_lock 、 universal_dao_jpa_pessimistic_lock を参照。 * 主キーを非文字列型で定義した場合、データベースによってはこの機能を使用することができない。 この機能は、主キーの値を全て文字列型( `java.lang.String` )で保持している。 主キーのカラム定義が非文字列型(charやvarchar以外)の場合に、 データベースによっては型の不一致でSQL文の実行時例外が発生する。 例えば、PostgreSQLのように暗黙の型変換が行われないデータベースの場合、この問題が発生する。
 
 ## 機能概要
-
-<details>
-<summary>keywords</summary>
-
-排他制御, 楽観的ロック, 悲観的ロック, 排他制御用テーブル, 非推奨機能, exclusive_control-optimistic_lock, exclusive_control-pessimistic_lock, バージョン番号カラム, デッドロック防止, 更新順序, BasicExclusiveControlManager, ExclusiveControlContext, optimisticLockErrorMessageId, 排他制御セットアップ, exclusiveControlManager, setTableName, setVersionColumnName, setPrimaryKeyColumnNames, appendCondition
-
-</details>
 
 ## 楽観的ロック/悲観的ロックができる
 
@@ -68,21 +54,7 @@
 </dependency>
 ```
 
-<details>
-<summary>keywords</summary>
-
-nablarch-common-exclusivecontrol, nablarch-common-exclusivecontrol-jdbc, nablarch-fw-web-tag, モジュール設定, Maven依存関係, HttpExclusiveControlUtil, OptimisticLockException, ApplicationException, 楽観的ロック, prepareVersion, checkVersions, updateVersionsWithCheck, @OnError, @OnErrors
-
-</details>
-
 ## 使用方法
-
-<details>
-<summary>keywords</summary>
-
-HttpExclusiveControlUtil, CompositeKey, 一括更新排他制御, 複合主キー, prepareVersions, checkVersion, updateVersionWithCheck, checkVersions, updateVersionsWithCheck
-
-</details>
 
 ## 排他制御を使うために準備する
 
@@ -364,10 +336,3 @@ ExclusiveControlUtil.updateVersion(new UsersExclusiveControl("U00001"));
 ## 拡張例
 
 なし。
-
-<details>
-<summary>keywords</summary>
-
-ExclusiveControlUtil, 悲観的ロック, updateVersion, バージョン番号管理
-
-</details>

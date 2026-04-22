@@ -1,12 +1,5 @@
 # その他のテンプレートエンジンを使用した画面開発
 
-<details>
-<summary>keywords</summary>
-
-CustomResponseWriter, nablarch.fw.web.handler.responsewriter.CustomResponseWriter, テンプレートエンジン, web.xml, Servlet forward, カスタムレスポンスライター
-
-</details>
-
 ウェブアプリケーション Thymeleafアダプタ 以外のテンプレートエンジンを使用したい場合の対応方法を説明する。
 
 使用するテンプレートエンジンが、Servlet forwardを使用してクライアントにレスポンスを返すためのServletを提供している場合には、

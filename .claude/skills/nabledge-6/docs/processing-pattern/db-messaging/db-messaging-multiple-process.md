@@ -1,12 +1,5 @@
 # マルチプロセス化
 
-<details>
-<summary>keywords</summary>
-
-DatabaseRecordReader, DatabaseRecordListener, SimpleDbTransactionManager, SimpleDbTransactionExecutor, DatabaseTableQueueReader, SystemRepository, beforeReadRecords, AppDbConnection, DataReader, SqlRow, ExecutionContext, マルチプロセス化, 悲観ロック, DBキューメッセージング複数起動, 2重取り込み防止, PROCESS_ID, 冗長化構成
-
-</details>
-
 データベースをキューとしたメッセージングを複数プロセス化 [#multi_process]_ したい場合、アプリケーション側で複数起動できるように対応する必要がある。
 もし、何も対応せずに同一のデータベースをキューとしたメッセージングを複数起動した場合、同一のデータを処理し2重取り込みの障害などが発生するため注意すること。
 

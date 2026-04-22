@@ -1,20 +1,6 @@
 # 初期セットアップの前に
 
-<details>
-<summary>keywords</summary>
-
-ブランクプロジェクト, プロジェクトひな形, blank project, 初期セットアップ, Mavenリポジトリ, settings.xml, mvnSetting, mvnFrequentlyTrouble, Maven設定, マルチバイト文字, mvn archetype:generate, eclipse, Plugin execution not covered by lifecycle configuration, 注意事項, Mavenライフサイクル
-
-</details>
-
 ## ブランクプロジェクト（プロジェクトのひな形）について
-
-<details>
-<summary>keywords</summary>
-
-ウェブプロジェクト, RESTfulウェブサービスプロジェクト, Jakarta Batchバッチプロジェクト, Nablarchバッチプロジェクト, コンテナ用プロジェクト, ブランクプロジェクト種類一覧
-
-</details>
 
 ## ブランクプロジェクトの種類
 
@@ -27,13 +13,6 @@
 * コンテナ用ウェブプロジェクト
 * コンテナ用RESTfulウェブサービスプロジェクト
 * コンテナ用Nablarchバッチプロジェクト
-
-<details>
-<summary>keywords</summary>
-
-プロジェクト構成, 共通部品, Entityクラス, mavenModuleStructuresModuleDivisionPolicy, 最小ハンドラ構成, マルチプロジェクト
-
-</details>
 
 ## ブランクプロジェクトの設計思想と留意事項
 
@@ -48,13 +27,6 @@
 
 
 プロジェクト構成を検討する際には、 【参考】プロジェクト分割方針 を参照してからプロジェクト構成を検討すること。
-
-<details>
-<summary>keywords</summary>
-
-Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-ee10-maven-plugin, 前提ソフトウェア
-
-</details>
 
 ## 初期セットアップの前提
 
@@ -76,13 +48,6 @@ Maven 3.9.9, JDK17, Docker Desktop 2.2.0.0, Jetty12, H2 Database Engine, jetty-e
 |---|---|
 | APサーバ | ウェブプロジェクト及び RESTfulウェブサービスプロジェクトの疎通確認時にJetty12を使用する。手順中で、mvnコマンドからjetty-ee10-maven-pluginを実行し、jetty-ee10-maven-pluginに組み込まれているJetty12へアプリケーションをデプロイ、起動するため、事前準備は不要である。 |
 | DBサーバ | アーキタイプには疎通確認用にH2 Database Engine(以下H2)を組み込んであるため、別途インストールの必要はない。 |
-
-<details>
-<summary>keywords</summary>
-
-nablarch-bom, バージョン指定, dependencyManagement, com.nablarch.profile, com.nablarch.framework, nablarch-core
-
-</details>
 
 ## Mavenの設定
 

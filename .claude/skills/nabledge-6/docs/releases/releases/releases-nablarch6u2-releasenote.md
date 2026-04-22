@@ -1,12 +1,5 @@
 # 
 
-<details>
-<summary>keywords</summary>
-
-5u25からの変更点, Jakarta EE 10対応, Java 17必須, BeanUtil, SystemTimeUtil, LocalDateTime, LocalDate, ユニバーサルDAO, JSR310アダプタ, SLF4Jアダプタ, Domaアダプタ, ETL基盤削除, 帳票ライブラリ削除, ワークフローライブラリ削除, UI開発基盤削除, nablarch-fw-web, nablarch-core-beans, nablarch.httpTestConfiguration.tempDirectory, 6u1からの変更点, CSP nonce対応, Bean Validation, Micrometerアダプタ, OTLP, マイグレーションガイド, テスト環境データベース, Oracle 23ai, JBoss Logging, nablarch-micrometer-adaptor, nablarch-testing-jetty12, バージョンアップ手順, nablarch-bom, pom.xml, micrometer-registry-datadog, micrometer-registry-cloudwatch2, micrometer-registry-statsd, 5系からの移行, 6u1からの移行, モジュールバージョン, 6u2, com.nablarch.framework, com.nablarch.integration, com.nablarch.example, nablarch-biz-sample-all, アーティファクトID, 依存関係バージョン
-
-</details>
-
 ■Nablarch 6u2 リリースノート
 5u25からの変更点を記載しています。
 6・6u1は先行リリースの位置づけであったため、本シートでは6・6u1で案内済みの変更点も含め、5u25と比較した6系固有の変更点について改めて記載しています。

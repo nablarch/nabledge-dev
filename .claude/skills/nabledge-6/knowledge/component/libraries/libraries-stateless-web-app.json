@@ -2,188 +2,57 @@
   "id": "libraries-stateless-web-app",
   "title": "Webアプリケーションをステートレスにする",
   "content": "",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "基本的な考え方",
-      "content": "サーブレットAPIが提供するHTTPセッションはAPサーバで状態を持ってしまうため、そのままではスケールアウトができない。\n通常、APサーバのスケールアウトを行うには以下のような対処が必要となる。\n\n1. ロードバランサーでスティッキーセッションを有効にする\n2. APサーバのセッションレプリケーション機能を使用する\n3. APサーバのHTTPセッション保存先をNoSQLにする\n\n1, 2は [Twelve-Factor App](https://12factor.net/ja/) で言うところの廃棄容易性の点で劣り、2, 3はAPサーバ依存となる。\n\nNablarchが使用する機能では、HTTPセッションに依存しているものがあるが、\nこれらの機能をHTTPセッション非依存のものに切り替えることで、\nAPサーバをステートレスにできる。",
-      "hints": [
-        "ステートレス",
-        "スケールアウト",
-        "HTTPセッション",
-        "廃棄容易性",
-        "Twelve-Factor App"
-      ]
+      "content": "サーブレットAPIが提供するHTTPセッションはAPサーバで状態を持ってしまうため、そのままではスケールアウトができない。\n通常、APサーバのスケールアウトを行うには以下のような対処が必要となる。\n\n1. ロードバランサーでスティッキーセッションを有効にする\n2. APサーバのセッションレプリケーション機能を使用する\n3. APサーバのHTTPセッション保存先をNoSQLにする\n\n1, 2は [Twelve-Factor App](https://12factor.net/ja/) で言うところの廃棄容易性の点で劣り、2, 3はAPサーバ依存となる。\n\nNablarchが使用する機能では、HTTPセッションに依存しているものがあるが、\nこれらの機能をHTTPセッション非依存のものに切り替えることで、\nAPサーバをステートレスにできる。"
     },
     {
       "id": "s2",
       "title": "HTTPセッションに依存している機能",
-      "content": "以下の機能は、デフォルトではHTTPセッションに依存している。\n\n* session_store\n* 2重サブミット防止\n* スレッドコンテキスト変数管理ハンドラ\n* HTTPリライトハンドラ\n* hidden暗号化",
-      "hints": [
-        "セッションストア",
-        "2重サブミット防止",
-        "スレッドコンテキスト変数管理ハンドラ",
-        "HTTPリライトハンドラ",
-        "hidden暗号化",
-        "HTTPセッション依存機能一覧"
-      ]
+      "content": "以下の機能は、デフォルトではHTTPセッションに依存している。\n\n* session_store\n* 2重サブミット防止\n* スレッドコンテキスト変数管理ハンドラ\n* HTTPリライトハンドラ\n* hidden暗号化"
     },
     {
       "id": "s3",
       "title": "HTTPセッション非依存機能の導入方法",
-      "content": "HTTPセッションに依存している機能 の各機能について以下の通り設定することでHTTPセッションへの依存をなくすことができる。",
-      "hints": [
-        "LanguageAttributeInHttpSession",
-        "TimeZoneAttributeInHttpSession",
-        "UserIdAttribute",
-        "LanguageAttributeInHttpCookie",
-        "TimeZoneAttributeInHttpCookie",
-        "UserIdAttributeInSessionStore",
-        "db_managed_expiration",
-        "db_double_submit",
-        "HTTPセッション非依存への切り替え",
-        "useHiddenEncryption"
-      ]
+      "content": "HTTPセッションに依存している機能 の各機能について以下の通り設定することでHTTPセッションへの依存をなくすことができる。"
     },
     {
       "id": "s4",
       "title": "セッションストア",
-      "content": "* db_managed_expiration",
-      "hints": []
+      "content": "* db_managed_expiration"
     },
     {
       "id": "s5",
       "title": "2重サブミット防止",
-      "content": "* db_double_submit",
-      "hints": []
+      "content": "* db_double_submit"
     },
     {
       "id": "s6",
       "title": "スレッドコンテキスト変数管理ハンドラ",
-      "content": "スレッドコンテキストの初期化 に以下の部品を使用しない。\n\n* `LanguageAttributeInHttpSession`\n* `TimeZoneAttributeInHttpSession`\n* `UserIdAttribute`\n\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* `LanguageAttributeInHttpCookie`\n* `TimeZoneAttributeInHttpCookie`\n* `UserIdAttributeInSessionStore`",
-      "hints": []
+      "content": "スレッドコンテキストの初期化 に以下の部品を使用しない。\n\n* `LanguageAttributeInHttpSession`\n* `TimeZoneAttributeInHttpSession`\n* `UserIdAttribute`\n\n\nそれぞれ、HTTPセッションを使用しない実装として以下の部品で代替できる。\n\n* `LanguageAttributeInHttpCookie`\n* `TimeZoneAttributeInHttpCookie`\n* `UserIdAttributeInSessionStore`"
     },
     {
       "id": "s7",
       "title": "HTTPリライトハンドラ",
-      "content": "HTTPリライトハンドラ を使用しない。\n使用する場合にはセッションスコープにアクセスしないよう設定する。",
-      "hints": []
+      "content": "HTTPリライトハンドラ を使用しない。\n使用する場合にはセッションスコープにアクセスしないよう設定する。"
     },
     {
       "id": "s8",
       "title": "hidden暗号化",
-      "content": "Nablarchでは hidden暗号化 の機能を提供している。\nこの機能はHTTPセッションに依存しているため、使用しないよう useHiddenEncryption に `false` を設定する。",
-      "hints": []
+      "content": "Nablarchでは hidden暗号化 の機能を提供している。\nこの機能はHTTPセッションに依存しているため、使用しないよう useHiddenEncryption に `false` を設定する。"
     },
     {
       "id": "s9",
       "title": "ローカルファイルシステムの使用",
-      "content": "アップロードしたファイルなどをAPサーバのローカルに保存してしまうと、ステートを持つことになってしまう。\nこのような場合は、共有のストレージを用意するなどして、APサーバがローカルにファイルを持たないようにする必要がある。",
-      "hints": [
-        "ローカルファイルシステム",
-        "ファイルアップロード",
-        "共有ストレージ",
-        "ステートレス"
-      ]
+      "content": "アップロードしたファイルなどをAPサーバのローカルに保存してしまうと、ステートを持つことになってしまう。\nこのような場合は、共有のストレージを用意するなどして、APサーバがローカルにファイルを持たないようにする必要がある。"
     },
     {
       "id": "s10",
       "title": "HTTPセッションの誤生成を検知する",
-      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 `WebFrontController` の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 `WebFrontController` のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```",
-      "hints": [
-        "WebFrontController",
-        "preventSessionCreation",
-        "HTTPセッション生成検知",
-        "例外送出"
-      ]
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "基本的な考え方",
-      "hints": [
-        "ステートレス",
-        "スケールアウト",
-        "HTTPセッション",
-        "廃棄容易性",
-        "Twelve-Factor App"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "HTTPセッションに依存している機能",
-      "hints": [
-        "セッションストア",
-        "2重サブミット防止",
-        "スレッドコンテキスト変数管理ハンドラ",
-        "HTTPリライトハンドラ",
-        "hidden暗号化",
-        "HTTPセッション依存機能一覧"
-      ]
-    },
-    {
-      "id": "s3",
-      "title": "HTTPセッション非依存機能の導入方法",
-      "hints": [
-        "LanguageAttributeInHttpSession",
-        "TimeZoneAttributeInHttpSession",
-        "UserIdAttribute",
-        "LanguageAttributeInHttpCookie",
-        "TimeZoneAttributeInHttpCookie",
-        "UserIdAttributeInSessionStore",
-        "db_managed_expiration",
-        "db_double_submit",
-        "HTTPセッション非依存への切り替え",
-        "useHiddenEncryption"
-      ]
-    },
-    {
-      "id": "s4",
-      "title": "セッションストア",
-      "hints": []
-    },
-    {
-      "id": "s5",
-      "title": "2重サブミット防止",
-      "hints": []
-    },
-    {
-      "id": "s6",
-      "title": "スレッドコンテキスト変数管理ハンドラ",
-      "hints": []
-    },
-    {
-      "id": "s7",
-      "title": "HTTPリライトハンドラ",
-      "hints": []
-    },
-    {
-      "id": "s8",
-      "title": "hidden暗号化",
-      "hints": []
-    },
-    {
-      "id": "s9",
-      "title": "ローカルファイルシステムの使用",
-      "hints": [
-        "ローカルファイルシステム",
-        "ファイルアップロード",
-        "共有ストレージ",
-        "ステートレス"
-      ]
-    },
-    {
-      "id": "s10",
-      "title": "HTTPセッションの誤生成を検知する",
-      "hints": [
-        "WebFrontController",
-        "preventSessionCreation",
-        "HTTPセッション生成検知",
-        "例外送出"
-      ]
+      "content": "設定漏れや実装ミスによって誤ってHTTPセッションを生成してしまうことを防ぐために、HTTPセッションの生成を検知する機能を提供している。\nこの機能を有効にすると、HTTPセッションを生成しようとしたときに例外が送出されるようになる。\n\nこの機能は、 `WebFrontController` の `preventSessionCreation` プロパティに `true` を設定することで有効にできる（デフォルトは `false` で無効になっている）。\n\n具体的には、 `WebFrontController` のコンポーネントを定義した設定ファイルで、次のように記述することで検知機能を有効にできる。\n\n```xml\n<!-- ハンドラキュー構成 -->\n<component name=\"webFrontController\"\n           class=\"nablarch.fw.web.servlet.WebFrontController\">\n\n  <!-- HTTPセッションの誤生成を検知する -->\n  <property name=\"preventSessionCreation\" value=\"true\" />\n```"
     }
   ]
 }

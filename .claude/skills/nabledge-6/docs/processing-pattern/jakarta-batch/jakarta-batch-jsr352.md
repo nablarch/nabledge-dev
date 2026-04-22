@@ -1,12 +1,5 @@
 # Jakarta Batchに準拠したバッチアプリケーション
 
-<details>
-<summary>keywords</summary>
-
-Jakarta Batch, JSR352, バッチアプリケーション, 名称変更, Nablarch5, Nablarch6移行, renamed_features_in_nablarch_6
-
-</details>
-
 本章ではJakarta Batchに準拠したバッチアプリケーションフレームワークを使用して
 バッチアプリケーションを開発するために必要となる情報を提供する。
 

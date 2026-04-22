@@ -11,23 +11,9 @@
 ページのアクセス数等からサイトの利用状況を把握し、サイトの改善に利用します。
 アクセス情報は匿名で収集され、個人を特定することはできません。
 
-<details>
-<summary>keywords</summary>
-
-アクセス解析, 情報収集, 匿名収集, サイト改善
-
-</details>
-
 ## 情報の送信先
 
 取得した情報は [Plausible Analytics](https://plausible.io) に送信されます。
-
-<details>
-<summary>keywords</summary>
-
-Plausible Analytics, アクセス情報送信先, 外部送信
-
-</details>
 
 ## 情報の種類・用途
 
@@ -54,10 +40,3 @@ Plausible Analytics, アクセス情報送信先, 外部送信
 
 .. [4]
 IPアドレスを使用して位置情報を取得しますが、都市レベルより詳細な追跡は行いません。IPアドレスは破棄されるため、データベース等に保存されることはありません。
-
-<details>
-<summary>keywords</summary>
-
-ページのURL, リファラー, ブラウザ, OS, デバイス種別, 位置情報, ユーザーエージェント, IPアドレス
-
-</details>

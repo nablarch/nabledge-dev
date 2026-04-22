@@ -1,12 +1,5 @@
 # 登録画面初期表示の作成
 
-<details>
-<summary>keywords</summary>
-
-HttpRequest, HttpResponse, ExecutionContext, UniversalDao, EntityList, Industry, ClientAction, 登録画面初期表示, リクエストスコープ, URLマッピング, 業務アクションメソッド, プルダウン初期データ取得
-
-</details>
-
 本章では、登録画面の初期表示について解説する。
 
 登録画面のJSPを作成する

@@ -1,12 +1,5 @@
 # Nablarch Validationに対応したForm/Entityのクラス単体テスト
 
-<details>
-<summary>keywords</summary>
-
-nablarch.test.core.db.EntityTestSupport, EntityTestSupport, SystemAccountEntityTest, テストデータExcel作成, Formクラス単体テスト, Entityクラス単体テスト, testShots, params, expectedMessageId, propertyName, テストケース表作成, バリデーションテストデータ, 入力パラメータ表
-
-</details>
-
 本項では、入力値チェックを Nablarch Validation で実施しているFormおよびEntityクラス単体テスト(以下Form単体テストまたはEntity単体テスト)について説明する。
 両者はほぼ同じように単体テストを行えるため、共通する内容についてはEntity単体テストをベースに説明し、特有の処理については個別に説明する。
 
@@ -19,13 +12,6 @@ nablarch.test.core.db.EntityTestSupport, EntityTestSupport, SystemAccountEntityT
 * [テストクラス(SystemAccountEntityTest.java)](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/SystemAccountEntityTest.java)
 * [テストデータ(SystemAccountEntityTest.xlsx)](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/SystemAccountEntityTest.xlsx)
 * [テスト対象クラス(SystemAccountEntity.java)](../../../knowledge/assets/testing-framework-02-entityUnitTestWithNablarchValidation/SystemAccountEntity.java)
-
-<details>
-<summary>keywords</summary>
-
-EntityTestSupport, 文字種単項目精査テスト, 文字列長単項目精査テスト, 別のFormを保持するForm, testValidateCharsetAndLength, 単項目精査テスト方法, 精査対象確認, 項目間精査, nablarch_validation, バリデーション対象プロパティ, 単項目精査, ネストFormプロパティ指定
-
-</details>
 
 ## テストデータの作成
 

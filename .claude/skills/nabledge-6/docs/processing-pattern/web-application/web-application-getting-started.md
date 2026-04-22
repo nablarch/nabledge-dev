@@ -1,12 +1,5 @@
 # Getting Started
 
-<details>
-<summary>keywords</summary>
-
-ウェブアプリケーション開発, Exampleアプリケーション, blank_project, client_create, project_search, project_update, project_delete, project_upload, project_download, popup, project_bulk_update, 前提条件, example_application, 環境構築, 動作環境, スコープ外
-
-</details>
-
 本章を通読することで、Nablarchを用いたウェブアプリケーション開発のイメージを掴むことができる。
 
 本章では詳細な機能説明を行わないため、実装する際には、適宜 ../feature_details

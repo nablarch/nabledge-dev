@@ -2,145 +2,22 @@
   "id": "nablarch-batch-getting-started-nablarch-batch",
   "title": "ファイルをDBに登録するバッチの作成",
   "content": "Exampleアプリケーションを元に、ファイルをDBに登録するバッチを解説する。\n\n作成する機能の概要\n![](assets/nablarch-batch-getting-started-nablarch-batch/overview.png)\n住所ファイル登録バッチ実行手順\n1. 登録対象テーブルのデータを削除する\n\nH2のコンソールから下記SQLを実行し、データ登録対象テーブルのデータを削除する。\n\n```sql\nTRUNCATE TABLE ZIP_CODE_DATA;\n```\n2. 住所ファイル登録バッチを実行する\n\nコマンドプロンプトから下記コマンドを実行する。\n\n```bash\n$cd {nablarch-example-batchリポジトリ}\n$mvn exec:java -Dexec.mainClass=nablarch.fw.launcher.Main ^\n    -Dexec.args=\"'-requestPath' 'ImportZipCodeFileAction/ImportZipCodeFile' '-diConfig' 'classpath:import-zip-code-file.xml' '-userId' '105'\"\n```\n3. ファイルの内容がDBに登録されたことを確認する\n\nH2のコンソールから下記SQLを実行し、住所情報が登録されていることを確認する。\n\n```sql\nSELECT * FROM ZIP_CODE_DATA;\n```",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "ファイルをDBに登録する",
-      "content": "ファイルをDBに登録するバッチの作成方法について、\n入力データソースからのデータ読み込み\nと 業務ロジックの実行 に分けて解説する。\n\n処理フローについては、 Nablarchバッチの処理フロー を参照。\n責務配置については Nablarchバッチの責務配置 を参照。\n\n住所ファイル登録バッチのハンドラ構成については `import-zip-code-file.xml` を参照。",
-      "hints": [
-        "ZIP_CODE_DATA",
-        "TRUNCATE",
-        "ImportZipCodeFileAction",
-        "ImportZipCodeFile",
-        "import-zip-code-file.xml",
-        "mvn exec:java",
-        "nablarch.fw.launcher.Main",
-        "requestPath",
-        "diConfig",
-        "userId",
-        "バッチ実行",
-        "テーブル削除",
-        "登録確認"
-      ]
+      "content": "ファイルをDBに登録するバッチの作成方法について、\n入力データソースからのデータ読み込み\nと 業務ロジックの実行 に分けて解説する。\n\n処理フローについては、 Nablarchバッチの処理フロー を参照。\n責務配置については Nablarchバッチの責務配置 を参照。\n\n住所ファイル登録バッチのハンドラ構成については `import-zip-code-file.xml` を参照。"
     },
     {
       "id": "s2",
       "title": "入力データソースからデータを読み込む",
-      "content": "入力データソースからデータを読み込む処理について解説する。\n\n#. 入力ファイルを受け付けるフォームの作成\n#. データリーダの作成\n\n\n入力ファイルを受け付けるフォームを作成\nデータバインド を用いてCSV(住所ファイル)をバインドするフォームを作成する。\n\nZipCodeForm.java\n```java\n@Csv(properties = {/** プロパティ定義は省略 **/}, type = CsvType.CUSTOM)\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class ZipCodeForm {\n\n    // 一部項目のみ抜粋\n\n    /** 全国地方公共団体コード */\n    @Domain(\"localGovernmentCode\")\n    @Required\n    private String localGovernmentCode;\n\n    /**\n     * 郵便番号（5桁）を返します。\n     *\n     * @return 郵便番号（5桁）\n     */\n    public String getZipCode5digit() {\n        return zipCode5digit;\n    }\n\n    /**\n     * 行数を保持するカラム\n     */\n    private Long lineNumber;\n\n    /**\n     * 行数を取得する。\n     *\n     * @return 行数\n     */\n    @LineNumber\n    public Long getLineNumber() {\n        return lineNumber;\n    }\n\n    // その他のセッタ及びゲッタは省略\n\n}\n```\nこの実装のポイント\n* データバインド を用いてフォームにCSVをバインドするため、`Csv`\n及び `CsvFormat` を付与する。\n* Bean Validation を実施するために、バリデーション用のアノテーションを付与する。\n* 行数プロパティを定義し、ゲッタに `LineNumber` を付与することで、\n対象データが何行目のデータであるかを自動的に設定できる。\n\n\nデータリーダの作成\nファイルを読み込んで一行ずつ業務アクションメソッドへ引き渡す、 `DataReader` の実装クラスを作成する。\n\nZipCodeFileReader.java\n```java\npublic class ZipCodeFileReader implements DataReader<ZipCodeForm> {\n\n    /**\n     * 読み込むファイルの名称\n     */\n    private static final String FILE_NAME = \"importZipCode\";\n\n    /**\n     * 処理対象のデータを返すイテレータ\n     */\n    private ObjectMapperIterator<ZipCodeForm> iterator;\n\n    /**\n     * 業務ハンドラが処理する一行分のデータを返却する。\n     *\n     * @param ctx 実行コンテキスト\n     * @return 一行分のデータ\n     */\n    @Override\n    public ZipCodeForm read(ExecutionContext ctx) {\n        if (iterator == null) {\n            initialize();\n        }\n        return iterator.next();\n    }\n\n    /**\n     * 次行があるかどうかを返す。\n     *\n     * @param ctx 実行コンテキスト\n     * @return 次行がある場合は {@code true} 、ない場合は {@code false}\n     */\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) {\n            initialize();\n        }\n        return iterator.hasNext();\n    }\n\n    /**\n     * 終了処理。\n     * <p/>\n     * {@link ObjectMapperIterator#close()} を呼び出す。\n     * @param ctx 実行コンテキスト\n     */\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    /**\n     * 初期化処理。\n     * <p/>\n     * イテレータを生成する。\n     * @throws RuntimeException ファイルの読み込みに失敗した場合\n     */\n    private void initialize() {\n        FilePathSetting filePathSetting = FilePathSetting.getInstance();\n        File zipCodeFile = filePathSetting.getFileWithoutCreate(\"csv-input\", FILE_NAME);\n\n        // ファイルの読み出しに使用するイテレータを生成\n        try {\n            iterator\n                = new ObjectMapperIterator<>(ObjectMapperFactory.create(ZipCodeForm.class,\n                    new FileInputStream(zipCodeFile)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\nこの実装のポイント\n* `read` メソッドに一行分のデータを返却する処理を実装する。`read` メソッドで読み込んだデータが業務アクションハンドラへ引き渡される。\n* `hasNext` メソッドに次行の有無を判定する処理を実装する。このメソッドが `false` を返却するとファイルの読み込み処理は終了となる。\n* `close` メソッドにファイルの読み込み終了後のストリームのclose処理を実装する。\n\n> **Tip:** extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。",
-      "hints": [
-        "ZipCodeForm",
-        "ZipCodeFileReader",
-        "ObjectMapperIterator",
-        "ObjectMapperFactory",
-        "FilePathSetting",
-        "DataReader",
-        "ObjectMapper",
-        "@Csv",
-        "@CsvFormat",
-        "@LineNumber",
-        "@Domain",
-        "@Required",
-        "CsvType",
-        "QuoteMode",
-        "CSVファイル読み込み",
-        "データリーダ",
-        "csv-input",
-        "importZipCode",
-        "バリデーション",
-        "行番号"
-      ]
+      "content": "入力データソースからデータを読み込む処理について解説する。\n\n#. 入力ファイルを受け付けるフォームの作成\n#. データリーダの作成\n\n\n入力ファイルを受け付けるフォームを作成\nデータバインド を用いてCSV(住所ファイル)をバインドするフォームを作成する。\n\nZipCodeForm.java\n```java\n@Csv(properties = {/** プロパティ定義は省略 **/}, type = CsvType.CUSTOM)\n@CsvFormat(charset = \"UTF-8\", fieldSeparator = ',',\n        ignoreEmptyLine = true, lineSeparator = \"\\r\\n\", quote = '\"',\n        quoteMode = QuoteMode.NORMAL, requiredHeader = false, emptyToNull = true)\npublic class ZipCodeForm {\n\n    // 一部項目のみ抜粋\n\n    /** 全国地方公共団体コード */\n    @Domain(\"localGovernmentCode\")\n    @Required\n    private String localGovernmentCode;\n\n    /**\n     * 郵便番号（5桁）を返します。\n     *\n     * @return 郵便番号（5桁）\n     */\n    public String getZipCode5digit() {\n        return zipCode5digit;\n    }\n\n    /**\n     * 行数を保持するカラム\n     */\n    private Long lineNumber;\n\n    /**\n     * 行数を取得する。\n     *\n     * @return 行数\n     */\n    @LineNumber\n    public Long getLineNumber() {\n        return lineNumber;\n    }\n\n    // その他のセッタ及びゲッタは省略\n\n}\n```\nこの実装のポイント\n* データバインド を用いてフォームにCSVをバインドするため、`Csv`\n及び `CsvFormat` を付与する。\n* Bean Validation を実施するために、バリデーション用のアノテーションを付与する。\n* 行数プロパティを定義し、ゲッタに `LineNumber` を付与することで、\n対象データが何行目のデータであるかを自動的に設定できる。\n\n\nデータリーダの作成\nファイルを読み込んで一行ずつ業務アクションメソッドへ引き渡す、 `DataReader` の実装クラスを作成する。\n\nZipCodeFileReader.java\n```java\npublic class ZipCodeFileReader implements DataReader<ZipCodeForm> {\n\n    /**\n     * 読み込むファイルの名称\n     */\n    private static final String FILE_NAME = \"importZipCode\";\n\n    /**\n     * 処理対象のデータを返すイテレータ\n     */\n    private ObjectMapperIterator<ZipCodeForm> iterator;\n\n    /**\n     * 業務ハンドラが処理する一行分のデータを返却する。\n     *\n     * @param ctx 実行コンテキスト\n     * @return 一行分のデータ\n     */\n    @Override\n    public ZipCodeForm read(ExecutionContext ctx) {\n        if (iterator == null) {\n            initialize();\n        }\n        return iterator.next();\n    }\n\n    /**\n     * 次行があるかどうかを返す。\n     *\n     * @param ctx 実行コンテキスト\n     * @return 次行がある場合は {@code true} 、ない場合は {@code false}\n     */\n    @Override\n    public boolean hasNext(ExecutionContext ctx) {\n        if (iterator == null) {\n            initialize();\n        }\n        return iterator.hasNext();\n    }\n\n    /**\n     * 終了処理。\n     * <p/>\n     * {@link ObjectMapperIterator#close()} を呼び出す。\n     * @param ctx 実行コンテキスト\n     */\n    @Override\n    public void close(ExecutionContext ctx) {\n        iterator.close();\n    }\n\n    /**\n     * 初期化処理。\n     * <p/>\n     * イテレータを生成する。\n     * @throws RuntimeException ファイルの読み込みに失敗した場合\n     */\n    private void initialize() {\n        FilePathSetting filePathSetting = FilePathSetting.getInstance();\n        File zipCodeFile = filePathSetting.getFileWithoutCreate(\"csv-input\", FILE_NAME);\n\n        // ファイルの読み出しに使用するイテレータを生成\n        try {\n            iterator\n                = new ObjectMapperIterator<>(ObjectMapperFactory.create(ZipCodeForm.class,\n                    new FileInputStream(zipCodeFile)));\n        } catch (FileNotFoundException e) {\n            throw new IllegalStateException(e);\n        }\n    }\n}\n```\nこの実装のポイント\n* `read` メソッドに一行分のデータを返却する処理を実装する。`read` メソッドで読み込んだデータが業務アクションハンドラへ引き渡される。\n* `hasNext` メソッドに次行の有無を判定する処理を実装する。このメソッドが `false` を返却するとファイルの読み込み処理は終了となる。\n* `close` メソッドにファイルの読み込み終了後のストリームのclose処理を実装する。\n\n> **Tip:** extdoc:`ObjectMapper <nablarch.common.databind.ObjectMapper>` のように `hasNext` メソッドを持たないクラスからデータを読み込む場合、イテレータを作成することでデータリーダの実装をシンプルにできる上、 データ読み込み処理をバッチごとに実装する手間を省くことができる。 イテレータの実装に関してはExampleアプリケーションの `ObjectMapperIterator.java` の実装を参照。"
     },
     {
       "id": "s3",
       "title": "業務ロジックを実行する",
-      "content": "業務ロジックを実行する部分について解説する。\n\n#. 業務アクションの作成\n\n\n業務アクションの作成\n`BatchAction` を継承し、業務アクションクラスを作成する。\n\nImportZipCodeFileAction.java\n```java\npublic class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {\n\n    /**\n     * {@link com.nablarch.example.app.batch.reader.ZipCodeFileReader}\n     * から渡された一行分の情報をDBに登録する。\n     * <p/>\n     * メソッド実行時に{@link com.nablarch.example.app.batch.interceptor.ValidateData}\n     * がインターセプトされるため、このメソッドには常にバリデーション済みの\n     * {@param inputData} が引き渡される。\n     *\n     * @param inputData 一行分の住所情報\n     * @param ctx       実行コンテキスト\n     * @return 結果オブジェクト\n     */\n    @Override\n    @ValidateData\n    public Result handle(ZipCodeForm inputData, ExecutionContext ctx) {\n\n        ZipCodeData data = BeanUtil.createAndCopy(ZipCodeData.class, inputData);\n        UniversalDao.insert(data);\n\n        return new Result.Success();\n    }\n\n    /**\n     * リーダを作成する。\n     *\n     * @param ctx 実行コンテキスト\n     * @return リーダーオブジェクト\n     */\n    @Override\n    public DataReader<ZipCodeForm> createReader(ExecutionContext ctx) {\n        return new ZipCodeFileReader();\n    }\n}\n```\nこの実装のポイント\n* `handle` メソッドに、データリーダから渡された一行分のデータに対する処理を実装する。\n* `UniversalDao#insert` を使用して住所エンティティをデータベースに登録する。\n* `createReader` メソッドでは使用するデータリーダクラスのインスタンスを返却する。\n\n> **Tip:** Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。 インターセプタの実装に関しては、Exampleアプリケーションの `ValidateData.java` の実装を参照。",
-      "hints": [
-        "ImportZipCodeFileAction",
-        "BatchAction",
-        "ZipCodeData",
-        "BeanUtil",
-        "UniversalDao",
-        "ZipCodeFileReader",
-        "@ValidateData",
-        "handle",
-        "createReader",
-        "Result",
-        "Result.Success",
-        "業務アクション",
-        "DBへのデータ登録",
-        "インターセプタ",
-        "バリデーション共通化"
-      ]
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "ファイルをDBに登録する",
-      "hints": [
-        "ZIP_CODE_DATA",
-        "TRUNCATE",
-        "ImportZipCodeFileAction",
-        "ImportZipCodeFile",
-        "import-zip-code-file.xml",
-        "mvn exec:java",
-        "nablarch.fw.launcher.Main",
-        "requestPath",
-        "diConfig",
-        "userId",
-        "バッチ実行",
-        "テーブル削除",
-        "登録確認"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "入力データソースからデータを読み込む",
-      "hints": [
-        "ZipCodeForm",
-        "ZipCodeFileReader",
-        "ObjectMapperIterator",
-        "ObjectMapperFactory",
-        "FilePathSetting",
-        "DataReader",
-        "ObjectMapper",
-        "@Csv",
-        "@CsvFormat",
-        "@LineNumber",
-        "@Domain",
-        "@Required",
-        "CsvType",
-        "QuoteMode",
-        "CSVファイル読み込み",
-        "データリーダ",
-        "csv-input",
-        "importZipCode",
-        "バリデーション",
-        "行番号"
-      ]
-    },
-    {
-      "id": "s3",
-      "title": "業務ロジックを実行する",
-      "hints": [
-        "ImportZipCodeFileAction",
-        "BatchAction",
-        "ZipCodeData",
-        "BeanUtil",
-        "UniversalDao",
-        "ZipCodeFileReader",
-        "@ValidateData",
-        "handle",
-        "createReader",
-        "Result",
-        "Result.Success",
-        "業務アクション",
-        "DBへのデータ登録",
-        "インターセプタ",
-        "バリデーション共通化"
-      ]
+      "content": "業務ロジックを実行する部分について解説する。\n\n#. 業務アクションの作成\n\n\n業務アクションの作成\n`BatchAction` を継承し、業務アクションクラスを作成する。\n\nImportZipCodeFileAction.java\n```java\npublic class ImportZipCodeFileAction extends BatchAction<ZipCodeForm> {\n\n    /**\n     * {@link com.nablarch.example.app.batch.reader.ZipCodeFileReader}\n     * から渡された一行分の情報をDBに登録する。\n     * <p/>\n     * メソッド実行時に{@link com.nablarch.example.app.batch.interceptor.ValidateData}\n     * がインターセプトされるため、このメソッドには常にバリデーション済みの\n     * {@param inputData} が引き渡される。\n     *\n     * @param inputData 一行分の住所情報\n     * @param ctx       実行コンテキスト\n     * @return 結果オブジェクト\n     */\n    @Override\n    @ValidateData\n    public Result handle(ZipCodeForm inputData, ExecutionContext ctx) {\n\n        ZipCodeData data = BeanUtil.createAndCopy(ZipCodeData.class, inputData);\n        UniversalDao.insert(data);\n\n        return new Result.Success();\n    }\n\n    /**\n     * リーダを作成する。\n     *\n     * @param ctx 実行コンテキスト\n     * @return リーダーオブジェクト\n     */\n    @Override\n    public DataReader<ZipCodeForm> createReader(ExecutionContext ctx) {\n        return new ZipCodeFileReader();\n    }\n}\n```\nこの実装のポイント\n* `handle` メソッドに、データリーダから渡された一行分のデータに対する処理を実装する。\n* `UniversalDao#insert` を使用して住所エンティティをデータベースに登録する。\n* `createReader` メソッドでは使用するデータリーダクラスのインスタンスを返却する。\n\n> **Tip:** Bean Validation を実行するロジックにバッチごとの差はないため、Exampleアプリケーションではインターセプタを作成してバリデーション処理を共通化している。 インターセプタの実装に関しては、Exampleアプリケーションの `ValidateData.java` の実装を参照。"
     }
   ]
 }

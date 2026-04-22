@@ -15,13 +15,6 @@ protected void transactionFailure(SqlRow inputData, ExecutionContext context) {
 }
 ```
 
-<details>
-<summary>keywords</summary>
-
-BatchActionBase, transactionFailure, SqlRow, ExecutionContext, エラーデータ除外, トランザクション失敗コールバック, 処理継続, データベースメッセージング
-
-</details>
-
 ## プロセスを異常終了させる
 
 プロセスを異常終了させたい場合は、 `ProcessAbnormalEnd` を送出する。
@@ -41,10 +34,3 @@ public Result handle(SqlRow inputData, ExecutionContext ctx) {
   return new Result.Success();
 }
 ```
-
-<details>
-<summary>keywords</summary>
-
-ProcessAbnormalEnd, SqlRow, ExecutionContext, Result, プロセス異常終了, テーブルキュー監視, 処理停止, データ滞留
-
-</details>

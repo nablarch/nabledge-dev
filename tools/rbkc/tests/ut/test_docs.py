@@ -23,7 +23,7 @@ class TestTopLevelContent:
             "title": "Title",
             "content": "これは前書きの段落。",
             "no_knowledge_content": False,
-            "sections": [{"id": "s1", "title": "A", "content": "A本文。", "hints": []}],
+            "sections": [{"id": "s1", "title": "A", "content": "A本文。"}],
         })
         generate_docs(kn, docs, "6")
         md = (docs / "other" / "sample.md").read_text(encoding="utf-8")
@@ -59,7 +59,7 @@ class TestTopLevelContent:
             "title": "T",
             "content": "",
             "no_knowledge_content": False,
-            "sections": [{"id": "s1", "title": "A", "content": "A本文。", "hints": []}],
+            "sections": [{"id": "s1", "title": "A", "content": "A本文。"}],
         })
         generate_docs(kn, docs, "6")
         md = (docs / "other" / "nopre.md").read_text(encoding="utf-8")
@@ -72,63 +72,57 @@ class TestTopLevelContent:
             i += 1
         assert lines[i] == "## A"
 
-    def test_top_level_hints_rendered_between_h1_and_content(self, tmp_path):
-        """Phase 21-D session 37: top-level hints emit a keywords block before preamble."""
-        kn = tmp_path / "knowledge"
-        docs = tmp_path / "docs"
-        _write_json(kn / "other/fh.json", {
-            "id": "fh",
-            "title": "Title",
-            "content": "前書き。",
-            "hints": ["file-kw-1", "file-kw-2"],
-            "no_knowledge_content": False,
-            "sections": [{"id": "s1", "title": "A", "content": "A本文。", "hints": []}],
-        })
-        generate_docs(kn, docs, "6")
-        md = (docs / "other" / "fh.md").read_text(encoding="utf-8")
-        # Keywords block must appear before preamble, after h1
-        h1_line = md.index("# Title")
-        details_line = md.index("<details>")
-        summary_line = md.index("<summary>keywords</summary>")
-        preamble_line = md.index("前書き。")
-        assert h1_line < details_line < summary_line < preamble_line
-        # Block contains the file-level keywords
-        assert "file-kw-1, file-kw-2" in md
-        # Section-level keywords block is not emitted (hints is empty)
-        assert md.count("<summary>keywords</summary>") == 1
+    def test_top_level_hints_field_must_not_render_keywords_block(self, tmp_path):
+        """RBKC is content-only (Phase 21-K): even if JSON carries a stray top-level
+        `hints` field, docs.py must NOT render a keywords block.
 
-    def test_top_level_hints_omitted_when_empty(self, tmp_path):
-        """No keywords block is emitted when top-level hints is empty."""
+        Regression guard: the pre-Phase-21-K implementation wrapped top_hints in a
+        `<details><summary>keywords</summary>...</details>` block. This test
+        injects such input and asserts the block is absent in output.
+        """
         kn = tmp_path / "knowledge"
         docs = tmp_path / "docs"
-        _write_json(kn / "other/nofh.json", {
-            "id": "nofh",
+        _write_json(kn / "other/top.json", {
+            "id": "top",
             "title": "Title",
             "content": "前書き。",
-            "hints": [],
+            "hints": ["stray-top-kw-1", "stray-top-kw-2"],
             "no_knowledge_content": False,
-            "sections": [{"id": "s1", "title": "A", "content": "A本文。", "hints": []}],
+            "sections": [{"id": "s1", "title": "A", "content": "A本文。"}],
         })
         generate_docs(kn, docs, "6")
-        md = (docs / "other" / "nofh.md").read_text(encoding="utf-8")
+        md = (docs / "other" / "top.md").read_text(encoding="utf-8")
+        assert "<details>" not in md
         assert "<summary>keywords</summary>" not in md
+        assert "stray-top-kw-1" not in md
+        assert "stray-top-kw-2" not in md
 
-    def test_top_level_hints_rendered_even_when_content_empty(self, tmp_path):
-        """File-level hints attach to top-level content; they render even if content is empty."""
+    def test_section_hints_field_must_not_render_keywords_block(self, tmp_path):
+        """RBKC is content-only (Phase 21-K): even if JSON sections carry a stray
+        `hints` field, docs.py must NOT render a per-section keywords block.
+
+        Regression guard: the pre-Phase-21-K implementation wrapped section hints
+        in a per-section `<details>` block. This test injects such input and
+        asserts no block renders.
+        """
         kn = tmp_path / "knowledge"
         docs = tmp_path / "docs"
-        _write_json(kn / "other/emptycontent.json", {
-            "id": "emptycontent",
+        _write_json(kn / "other/sec.json", {
+            "id": "sec",
             "title": "Title",
             "content": "",
-            "hints": ["kw"],
             "no_knowledge_content": False,
-            "sections": [{"id": "s1", "title": "A", "content": "A.", "hints": []}],
+            "sections": [
+                {"id": "s1", "title": "A", "content": "A本文。",
+                 "hints": ["stray-sec-kw-1", "stray-sec-kw-2"]},
+            ],
         })
         generate_docs(kn, docs, "6")
-        md = (docs / "other" / "emptycontent.md").read_text(encoding="utf-8")
-        assert "<summary>keywords</summary>" in md
-        assert "kw" in md
+        md = (docs / "other" / "sec.md").read_text(encoding="utf-8")
+        assert "<details>" not in md
+        assert "<summary>keywords</summary>" not in md
+        assert "stray-sec-kw-1" not in md
+        assert "stray-sec-kw-2" not in md
 
     def test_no_knowledge_content_only_h1(self, tmp_path):
         kn = tmp_path / "knowledge"

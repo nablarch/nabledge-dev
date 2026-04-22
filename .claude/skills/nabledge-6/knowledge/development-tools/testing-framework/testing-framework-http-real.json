@@ -2,103 +2,27 @@
   "id": "testing-framework-http-real",
   "title": "リクエスト単体テストの実施方法（HTTP同期応答メッセージ受信処理）",
   "content": "リクエスト単体テストの実施方法は、\\ real_request_test\\ を参照すること。\n\n本項では、\\ real_request_test\\ と記述方法が異なる箇所を解説する。",
-  "hints": [
-    "HTTP同期応答メッセージ受信処理",
-    "リクエスト単体テスト",
-    "real_request_test",
-    "記述方法の差異",
-    "準備データ",
-    "データベース",
-    "リクエストメッセージ",
-    "テストデータ準備",
-    "期待値",
-    "レスポンスメッセージ",
-    "expectedMessages",
-    "応答電文"
-  ],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "テストデータの書き方",
-      "content": "",
-      "hints": [
-        "testShots",
-        "diConfig",
-        "expectedStatusCode",
-        "requestPath",
-        "userId",
-        "テストショット一覧",
-        "LIST_MAP",
-        "テストデータ"
-      ]
+      "content": ""
     },
     {
       "id": "s2",
       "title": "テストショット一覧",
-      "content": "LIST_MAPのデータタイプで１テストメソッド分のテストショット表を記載する。IDは、\\ **testShots**\\ とする。\n\nHTTP同期応答メッセージ受信処理特有の内容について以下に示す。\n\n| カラム名           説明 | 必須 |  |\n|---|---|---|\n| diConfig | HTTP同期応答メッセージ受信リクエスト単体テスト用のコンポーネント設定ファイルへのパスを記載する 必須 \\|br\\| (例：http-messaging-test-component-configuration.xml)。 |  |\n| expectedStatusCode | JSON及びXMLデータ形式使用時は空欄にする。                                                      必須 |  |\n| requestPath | アクションを実行するためのURLから、ホスト名を抜いた部分。                                      必須 \\|br\\| 例えばアクション実行のURLが「http://127.0.0.1/msgaction/ss11AC/RM11AC0102」であれば、 \\|br\\| 「/msgaction/ss11AC/RM11AC0102」となる。 |  |\n| userId | 認証認可チェックに使用するユーザID                                                                     必須 |  |\n\n> **Tip:** JSON及びXMLデータ形式使用時は、ステータスコードの比較も、Excelファイルのメッセージボディとの比較で行う。フレームワーク制御ヘッダもメッセージボディに含まれるためである。",
-      "hints": []
+      "content": "LIST_MAPのデータタイプで１テストメソッド分のテストショット表を記載する。IDは、\\ **testShots**\\ とする。\n\nHTTP同期応答メッセージ受信処理特有の内容について以下に示す。\n\n| カラム名           説明 | 必須 |  |\n|---|---|---|\n| diConfig | HTTP同期応答メッセージ受信リクエスト単体テスト用のコンポーネント設定ファイルへのパスを記載する 必須 \\|br\\| (例：http-messaging-test-component-configuration.xml)。 |  |\n| expectedStatusCode | JSON及びXMLデータ形式使用時は空欄にする。                                                      必須 |  |\n| requestPath | アクションを実行するためのURLから、ホスト名を抜いた部分。                                      必須 \\|br\\| 例えばアクション実行のURLが「http://127.0.0.1/msgaction/ss11AC/RM11AC0102」であれば、 \\|br\\| 「/msgaction/ss11AC/RM11AC0102」となる。 |  |\n| userId | 認証認可チェックに使用するユーザID                                                                     必須 |  |\n\n> **Tip:** JSON及びXMLデータ形式使用時は、ステータスコードの比較も、Excelファイルのメッセージボディとの比較で行う。フレームワーク制御ヘッダもメッセージボディに含まれるためである。"
     },
     {
       "id": "s3",
       "title": "各種準備データ",
-      "content": "テスト実施に際して必要となる各種準備データの記述方法を説明する。\nバッチでは、データベース、リクエストメッセージを準備する。\n\n\n#### リクエストメッセージ\n\nテストの入力データとなる要求電文を記載する。以下に例を示す。\n\n-----\n\nMESSAGE=setUpMessages\n\n// 共通情報（ディレクティブ、フレームワーク制御ヘッダ）\n\n<table>\n<tbody>\n<tr>\n  <td>text-encoding</td>\n  <td>Windows-31J</td>\n  <td></td>\n</tr>\n<tr>\n  <td>requestId</td>\n  <td>RM11AC0102</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n// メッセージボディ\n\n【XML】\n\n<table>\n<tbody>\n<tr>\n  <td>no</td>\n  <td>XML1</td>\n  <td>XML2</td>\n  <td>XML3</td>\n</tr>\n<tr>\n  <td></td>\n  <td>全半角</td>\n  <td>全半角</td>\n  <td>全半角</td>\n</tr>\n</tbody>\n<thead>\n<tr>\n  <th></th>\n  <th>32767</th>\n  <th>32767</th>\n  <th>32767</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1</td>\n  <td><?xml version=\"1.0\" encoding=\"UTF-8\"?></td>\n  <td>br</td>\n  <td></td>\n  <td><userId>0000000101</userId></td>\n  <td>br</td>\n  <td></td>\n  <td></request></td>\n</tr>\n<tr>\n  <td></td>\n  <td><request></td>\n  <td><resendFlag>0</resendFlag></td>\n  <td>br</td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td><dataKbn>0</dataKbn></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n【JSON】\n\n<table>\n<tbody>\n<tr>\n  <td>no</td>\n  <td>JSON</td>\n</tr>\n<tr>\n  <td></td>\n  <td>全半角</td>\n</tr>\n</tbody>\n<thead>\n<tr>\n  <th></th>\n  <th>32767</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1</td>\n  <td>{</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"userId\" : \"0000000101\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"resendFlag\" : \"0\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"dataKbn\" : \"0\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>}</td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n------\n\n1. 先頭行\n\nテスト対象リクエストに対する要求電文を準備する。名前は、\\ `MESSAGE=setUpMessages`\\ 固定とする。\n\n2. 共通情報\n\n名前の次行以降には以下の情報を記載する。これらの値は、リクエストメッセージの全メッセージで共通の値となる。\n\n* ディレクティブ\n* フレームワーク制御ヘッダ\n\n書式は、key-value形式である。\n\n<table>\n<tbody>\n<tr>\n  <td>キー</td>\n  <td>値</td>\n</tr>\n</tbody>\n</table>\n\n> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。 .. code-block:: properties # フレームワーク制御ヘッダ名をカンマ区切りで指定する。 reader.fwHeaderfields=requestId,addHeader\n3. メッセージボディ\n\nフレームワーク制御ヘッダ以降のメッセージを記載する。\n\n\n<table>\n<thead>\n<tr>\n  <th>行</th>\n  <th>記述内容</th>\n  <th>備考</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1行目</td>\n  <td>フィールド名称</td>\n  <td>先頭セルは\"no\"とする。</td>\n</tr>\n<tr>\n  <td>2行目</td>\n  <td>データタイプ</td>\n  <td>先頭セルは空白</td>\n</tr>\n<tr>\n  <td>3行目</td>\n  <td>フィールド長</td>\n  <td>先頭セルは空白</td>\n</tr>\n<tr>\n  <td>4行目以降</td>\n  <td>XMLデータ</td>\n  <td>br</td>\n  <td></td>\n  <td>先頭セルは1からの通番</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>および</td>\n  <td>br</td>\n  <td></td>\n  <td>フィールドを跨いで記載することも可能</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>JSONデータ</td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n> **Tip:** JSON及びXMLデータ形式使用時は、1Excelシートに1テストケースのみ記述すること。 これはメッセージボディについて、Excelの各行の文字列長が同一であることを期待しているというNTFの制約によるものである。JSON及びXMLデータ形式は、要求電文の長さがリクエスト毎に異なるのが一般的なので、事実上1テストケースしか記述できない。\n> **Important:** フィールド名称に\\ **重複した名称は許容されない**\\ 。 例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）",
-      "hints": []
+      "content": "テスト実施に際して必要となる各種準備データの記述方法を説明する。\nバッチでは、データベース、リクエストメッセージを準備する。\n\n\n#### リクエストメッセージ\n\nテストの入力データとなる要求電文を記載する。以下に例を示す。\n\n-----\n\nMESSAGE=setUpMessages\n\n// 共通情報（ディレクティブ、フレームワーク制御ヘッダ）\n\n<table>\n<tbody>\n<tr>\n  <td>text-encoding</td>\n  <td>Windows-31J</td>\n  <td></td>\n</tr>\n<tr>\n  <td>requestId</td>\n  <td>RM11AC0102</td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n// メッセージボディ\n\n【XML】\n\n<table>\n<tbody>\n<tr>\n  <td>no</td>\n  <td>XML1</td>\n  <td>XML2</td>\n  <td>XML3</td>\n</tr>\n<tr>\n  <td></td>\n  <td>全半角</td>\n  <td>全半角</td>\n  <td>全半角</td>\n</tr>\n</tbody>\n<thead>\n<tr>\n  <th></th>\n  <th>32767</th>\n  <th>32767</th>\n  <th>32767</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1</td>\n  <td><?xml version=\"1.0\" encoding=\"UTF-8\"?></td>\n  <td>br</td>\n  <td></td>\n  <td><userId>0000000101</userId></td>\n  <td>br</td>\n  <td></td>\n  <td></request></td>\n</tr>\n<tr>\n  <td></td>\n  <td><request></td>\n  <td><resendFlag>0</resendFlag></td>\n  <td>br</td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td></td>\n  <td><dataKbn>0</dataKbn></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n【JSON】\n\n<table>\n<tbody>\n<tr>\n  <td>no</td>\n  <td>JSON</td>\n</tr>\n<tr>\n  <td></td>\n  <td>全半角</td>\n</tr>\n</tbody>\n<thead>\n<tr>\n  <th></th>\n  <th>32767</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1</td>\n  <td>{</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"userId\" : \"0000000101\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"resendFlag\" : \"0\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>\"dataKbn\" : \"0\",</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>}</td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n------\n\n1. 先頭行\n\nテスト対象リクエストに対する要求電文を準備する。名前は、\\ `MESSAGE=setUpMessages`\\ 固定とする。\n\n2. 共通情報\n\n名前の次行以降には以下の情報を記載する。これらの値は、リクエストメッセージの全メッセージで共通の値となる。\n\n* ディレクティブ\n* フレームワーク制御ヘッダ\n\n書式は、key-value形式である。\n\n<table>\n<tbody>\n<tr>\n  <td>キー</td>\n  <td>値</td>\n</tr>\n</tbody>\n</table>\n\n> **Important:** フレームワーク制御ヘッダの項目をPJで変更している場合、 以下のようにpropertiesファイルに `reader.fwHeaderfields` というキーでフレームワーク制御ヘッダ名を指定する必要がある。 .. code-block:: properties # フレームワーク制御ヘッダ名をカンマ区切りで指定する。 reader.fwHeaderfields=requestId,addHeader\n3. メッセージボディ\n\nフレームワーク制御ヘッダ以降のメッセージを記載する。\n\n\n<table>\n<thead>\n<tr>\n  <th>行</th>\n  <th>記述内容</th>\n  <th>備考</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n  <td>1行目</td>\n  <td>フィールド名称</td>\n  <td>先頭セルは\"no\"とする。</td>\n</tr>\n<tr>\n  <td>2行目</td>\n  <td>データタイプ</td>\n  <td>先頭セルは空白</td>\n</tr>\n<tr>\n  <td>3行目</td>\n  <td>フィールド長</td>\n  <td>先頭セルは空白</td>\n</tr>\n<tr>\n  <td>4行目以降</td>\n  <td>XMLデータ</td>\n  <td>br</td>\n  <td></td>\n  <td>先頭セルは1からの通番</td>\n  <td>br</td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>および</td>\n  <td>br</td>\n  <td></td>\n  <td>フィールドを跨いで記載することも可能</td>\n  <td></td>\n  <td></td>\n</tr>\n<tr>\n  <td></td>\n  <td>JSONデータ</td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n  <td></td>\n</tr>\n</tbody>\n</table>\n\n> **Tip:** JSON及びXMLデータ形式使用時は、1Excelシートに1テストケースのみ記述すること。 これはメッセージボディについて、Excelの各行の文字列長が同一であることを期待しているというNTFの制約によるものである。JSON及びXMLデータ形式は、要求電文の長さがリクエスト毎に異なるのが一般的なので、事実上1テストケースしか記述できない。\n> **Important:** フィールド名称に\\ **重複した名称は許容されない**\\ 。 例えば、「氏名」というフィールドが2つ以上存在してはならない。 （通常、このような場合は「本会員氏名」と「家族会員氏名」のようにユニークなフィールド名称が付与される）"
     },
     {
       "id": "s4",
       "title": "各種期待値",
-      "content": "#### レスポンスメッセージ\n\n\\ リクエストメッセージ\\ と同じ。\n\nただし、名前が\\ `MESSAGE=expectedMessages`\\ となる。\n\n応答電文のフィールド長は\"-\"(ハイフン)を設定する。\n\n![](assets/testing-framework-http-real/http_real_test_data.png)\n.. |br| raw:: html\n\n<br />",
-      "hints": []
-    }
-  ],
-  "index": [
-    {
-      "id": "__file__",
-      "title": "リクエスト単体テストの実施方法（HTTP同期応答メッセージ受信処理）",
-      "hints": [
-        "HTTP同期応答メッセージ受信処理",
-        "リクエスト単体テスト",
-        "real_request_test",
-        "記述方法の差異",
-        "準備データ",
-        "データベース",
-        "リクエストメッセージ",
-        "テストデータ準備",
-        "期待値",
-        "レスポンスメッセージ",
-        "expectedMessages",
-        "応答電文"
-      ]
-    },
-    {
-      "id": "s1",
-      "title": "テストデータの書き方",
-      "hints": [
-        "testShots",
-        "diConfig",
-        "expectedStatusCode",
-        "requestPath",
-        "userId",
-        "テストショット一覧",
-        "LIST_MAP",
-        "テストデータ"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "テストショット一覧",
-      "hints": []
-    },
-    {
-      "id": "s3",
-      "title": "各種準備データ",
-      "hints": []
-    },
-    {
-      "id": "s4",
-      "title": "各種期待値",
-      "hints": []
+      "content": "#### レスポンスメッセージ\n\n\\ リクエストメッセージ\\ と同じ。\n\nただし、名前が\\ `MESSAGE=expectedMessages`\\ となる。\n\n応答電文のフィールド長は\"-\"(ハイフン)を設定する。\n\n![](assets/testing-framework-http-real/http_real_test_data.png)\n.. |br| raw:: html\n\n<br />"
     }
   ]
 }

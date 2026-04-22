@@ -17,13 +17,6 @@ Nablarchアプリケーションフレームワークの基本方針について
 
 この方針に従い、アプリケーションでは未入力値を `null` として開発すること。
 
-<details>
-<summary>keywords</summary>
-
-normalize_handler, 未入力値, null変換, 入力値正規化, ハンドラキュー
-
-</details>
-
 ## コレクションや配列を返すAPIは原則nullを戻さない
 
 Nablarchが提供するコレクションや配列を返すAPIは、対象データが存在しない場合には基本的に `null` ではなく空のコレクションや配列を返す。
@@ -33,13 +26,6 @@ Nablarchが提供するコレクションや配列を返すAPIは、対象デー
 もし、 `null` を考慮する必要がある場合、JSPで分岐を書いたり、サーバサイドで `null` のコレクションをリクエストスコープに詰めるなど無駄なコードが多くなる。またこれにより実装ミスが起こりやすくなる。
 
 なお、HTTPのリクエストパラメータのように識別子を指定して取得するようなAPIの場合には、空の配列ではなく `null` を返す。
-
-<details>
-<summary>keywords</summary>
-
-コレクション, 配列, null戻り値, 空コレクション, 空配列
-
-</details>
 
 ## Nablarchは検査例外を送出しない
 
@@ -54,24 +40,10 @@ Nablarch内の全てのAPIは、非検査例外のみを送出する。またNab
 * 送出される例外が増えるたびにアプリケーション側のコードに影響が出る。
 また、例外を捕捉するメソッドまで全てのメソッドで `throws` を追加するなど影響が広範囲に及ぶ。
 
-<details>
-<summary>keywords</summary>
-
-検査例外, 非検査例外, 例外処理, RuntimeException, ハンドラ
-
-</details>
-
 ## ログや例外のメッセージは英語で統一する
 
 Nablarchは、日本以外での使用も想定しているため、ログや例外のメッセージは全て英語としている。
 なお、Nablarch内で出力しているログや例外のメッセージを英語以外に変更する機能は提供していない。
-
-<details>
-<summary>keywords</summary>
-
-ログ, 例外メッセージ, 英語, 国際化, メッセージ言語
-
-</details>
 
 ## コンポーネントを差し替えることでNablarchが発行するSQLを変更できる
 
@@ -82,38 +54,17 @@ Nablarchでは、データベースにアクセスするコンポーネントに
 
 なお、テーブル名やカラム名をデフォルトから変更したい場合であれば、新しくクラスを作成する必要はなく、設定ファイルの修正のみでよい。
 
-<details>
-<summary>keywords</summary>
-
-SQL変更, コンポーネント差し替え, データベースアクセス, テーブル名変更, 設定ファイル
-
-</details>
-
 ## OSSは使用しない
 
 Nablarchのプロダクションコードは、致命的な不具合や脆弱性が見つかった際に、迅速に対応かつリリースすることを目的としてOSSを使用していない。
 
 なお、OSSを使用することでメリットがあるものは、 アダプタ としてOSSを使用できるコンポーネントを提供しているため、プロジェクト要件などに応じて採用すると良い。
 
-<details>
-<summary>keywords</summary>
-
-OSS, 依存関係, アダプタ, adaptor, プロダクションコード
-
-</details>
-
 ## 複数の例外が発生した場合は起因例外をスローする
 
 処理中に例外が発生し、その後の処理中に別の例外が発生すると複数の例外が発生することになる。
 その場合、問題を解決するために重要になるのは起因例外であるため、Nablarchは起因例外をスローする。
 また、他の例外の情報も問題の調査に使用できるように、起因例外以外の情報はWARNINGログに出力する。
-
-<details>
-<summary>keywords</summary>
-
-起因例外, 例外スロー, WARNINGログ, 複数例外, 例外チェーン
-
-</details>
 
 ## スレッドセーフである
 
@@ -125,13 +76,6 @@ Nablarchが提供する機能は、基本的にスレッドセーフである。
 
 > **Tip:** スレッドアンセーフな機能(例えばデータベース接続等)は、Javadoc上にスレッドアンセーフであることを明記している。
 
-<details>
-<summary>keywords</summary>
-
-スレッドセーフ, シングルトン, ハンドラキュー, repository, スレッドアンセーフ
-
-</details>
-
 ## Java17に準拠している
 
 Nablarch6のプロダクションコードはJava17に準拠しており、Java18以降で提供されているAPIは使用していない。
@@ -141,13 +85,6 @@ Nablarch6のプロダクションコードはJava17に準拠しており、Java1
 なお、Nablarch6を使用したアプリケーションを開発する際はJava17以降のバージョンであればよく、
 Java18以降で提供されているAPIも問題なく使用できる。
 
-<details>
-<summary>keywords</summary>
-
-Java17, 後方互換, Nablarch6, Java対応バージョン, Java18
-
-</details>
-
 ## アプリケーションで使用してもよいAPIについて
 
 Nablarchでは、アプリケーション開発で必要になると想定したAPIを公開APIとして定義している。
@@ -155,13 +92,6 @@ Nablarchでは、アプリケーション開発で必要になると想定した
 
 公開APIは、アプリケーションで使用されるAPIであるため、バージョンアップ時に後方互換を維持し、アプリケーションに修正が発生しないようにしている。
 ただし、致命的な不具合と脆弱性の対応時には後方互換を維持できない場合もある。
-
-<details>
-<summary>keywords</summary>
-
-Published, 公開API, 後方互換, nablarch.core.util.annotation.Published, アノテーション
-
-</details>
 
 ## 文字列からBigDecimal変換時に発生する可能性のあるヒープ不足について
 
@@ -184,13 +114,6 @@ Published, 公開API, 後方互換, nablarch.core.util.annotation.Published, ア
 nablarch.max_scale=10
 ```
 
-<details>
-<summary>keywords</summary>
-
-BigDecimal, 指数表現, ヒープ不足, nablarch.max_scale, scale, DecimalFormat
-
-</details>
-
 ## 非推奨(Deprecated)APIについて
 
 Nablarchでは以下に該当するAPIは `@Deprecated` アノテーションを付与し非推奨とする。
@@ -212,10 +135,3 @@ Javadocを参照し不具合やセキュリティ面での問題を解消したA
 
 > **Important:** 不具合や脆弱性については基本的に問題を解消するよう修正する。 しかし、クラス構造的な制約や後方互換の維持を目的として問題のあるAPIを非推奨として残す場合がある。 非推奨APIとして残した場合は、新たな不具合などが見つかっても対応は行わない。 このため、問題が解消された新しいAPIを使用するようアプリケーション側は必ず対応する必要がある。
 > **Tip:** 本ドキュメントで代替機能の使用を推奨しているものについては、非推奨API( `@Deprecated` の付与)とはしていない。 なぜなら、これらのAPI(機能)は、使用すること自体は問題なく、不具合などがあった場合もバージョンアップ時に対応するためである。
-
-<details>
-<summary>keywords</summary>
-
-Deprecated, 非推奨API, @Deprecated, 廃止予定, java.lang.Deprecated
-
-</details>

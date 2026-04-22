@@ -2,739 +2,132 @@
   "id": "libraries-log",
   "title": "ログ出力",
   "content": "ログ出力を行う機能を提供する。",
-  "hints": [],
   "no_knowledge_content": false,
   "sections": [
     {
       "id": "s1",
       "title": "機能概要",
-      "content": "",
-      "hints": [
-        "SynchronousFileLogWriter",
-        "nablarch.core.log.basic.SynchronousFileLogWriter",
-        "failureCodeCreateLockFile",
-        "failureCodeReleaseLockFile",
-        "failureCodeForceDeleteLockFile",
-        "failureCodeInterruptLockWait",
-        "lockFilePath",
-        "lockRetryInterval",
-        "lockWaitTime",
-        "outputBufferSize",
-        "複数プロセス書き込み",
-        "ロックファイル排他制御",
-        "障害通知ログ",
-        "ログ競合",
-        "BasicLogFormatter",
-        "maxFileSize",
-        "filePath",
-        "encoding",
-        "level",
-        "writerNames",
-        "BasicLogger",
-        "BasicLoggerFactory",
-        "FileLogWriter",
-        "StandardOutputLogWriter",
-        "LogPublisher",
-        "DateRotatePolicy",
-        "FileSizeRotatePolicy",
-        "LogWriter",
-        "LogFormatter",
-        "Logger",
-        "LoggerFactory",
-        "ログ出力機能",
-        "LogWriter差し替え",
-        "LogFormatter差し替え",
-        "Logger差し替え",
-        "ログの種類",
-        "failure_log",
-        "sql_log",
-        "performance_log",
-        "http_access_log",
-        "jaxrs_access_log",
-        "messaging_log",
-        "障害ログ",
-        "ブランクプロジェクト",
-        "アーキタイプ",
-        "システムプロパティ",
-        "ログ設定上書き",
-        "プロセス毎設定変更",
-        "loggers.root.level",
-        "JsonLogFormatter",
-        "LoggerManager",
-        "targets",
-        "datePattern",
-        "ignoreNullValueMember",
-        "payload",
-        "JSON形式ログ出力",
-        "構造化ログ",
-        "JsonLogFormatter設定",
-        "payload追加",
-        "writer.appLog.formatter.className",
-        "writer.appLog.formatter.targets",
-        "writer.appLog.formatter.datePattern"
-      ]
+      "content": ""
     },
     {
       "id": "s2",
       "title": "ログ出力機能の実装を差し替えることができる",
-      "content": "ログ出力は、３つの処理から構成されており、それぞれの実装を差し替えることができる。\n\n![](assets/libraries-log/log-structure.png)\nアプリケーションの要件に応じて、\n`LogWriter` や\n`LogFormatter`\nの単位で差し替えることもできるし、\nこれらだけでは要件を満たせなければ\n`Logger` /\n`LoggerFactory`\nを実装してほぼ全ての処理を差し替えることもできる。\n\n例えば、オープンソースのログ出力ライブラリを使用したい場合などは\n`Logger` /\n`LoggerFactory` を差し替えればよい。\n\nなお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している。\n\n詳細は、logアダプタ を参照。\n\n本機能と使用実績の多いlog4jとの機能比較は、 log4jとの機能比較 を参照。\n\nログ出力機能がデフォルトで提供しているクラスを示す。\n\nLogger/LoggerFactory\n* `BasicLogger`\n* `BasicLoggerFactory`\n\n\nLogWriter\n* `FileLogWriter (ファイルへ出力。ログのローテーション。)`\n* `SynchronousFileLogWriter (複数プロセスから1ファイルへの出力)`\n* `StandardOutputLogWriter (標準出力へ出力)`\n* `LogPublisher (任意のリスナーへ出力)`\n\n\nLogFormatter\n* `BasicLogFormatter (パターン文字列によるフォーマット)`\n\n\nRotatePolicy\n* `DateRotatePolicy (日時によるログのローテーション)`\n* `FileSizeRotatePolicy (ファイルサイズによるログのローテーション)`\n\n> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。\n> **Tip:** ログ出力機能で使用するログレベルについては、 ログレベルの定義 を参照。",
-      "hints": []
+      "content": "ログ出力は、３つの処理から構成されており、それぞれの実装を差し替えることができる。\n\n![](assets/libraries-log/log-structure.png)\nアプリケーションの要件に応じて、\n`LogWriter` や\n`LogFormatter`\nの単位で差し替えることもできるし、\nこれらだけでは要件を満たせなければ\n`Logger` /\n`LoggerFactory`\nを実装してほぼ全ての処理を差し替えることもできる。\n\n例えば、オープンソースのログ出力ライブラリを使用したい場合などは\n`Logger` /\n`LoggerFactory` を差し替えればよい。\n\nなお、オープンソースで使用実績の多いロギングフレームワークは、専用のLogger/LoggerFactoryを既に用意している。\n\n詳細は、logアダプタ を参照。\n\n本機能と使用実績の多いlog4jとの機能比較は、 log4jとの機能比較 を参照。\n\nログ出力機能がデフォルトで提供しているクラスを示す。\n\nLogger/LoggerFactory\n* `BasicLogger`\n* `BasicLoggerFactory`\n\n\nLogWriter\n* `FileLogWriter (ファイルへ出力。ログのローテーション。)`\n* `SynchronousFileLogWriter (複数プロセスから1ファイルへの出力)`\n* `StandardOutputLogWriter (標準出力へ出力)`\n* `LogPublisher (任意のリスナーへ出力)`\n\n\nLogFormatter\n* `BasicLogFormatter (パターン文字列によるフォーマット)`\n\n\nRotatePolicy\n* `DateRotatePolicy (日時によるログのローテーション)`\n* `FileSizeRotatePolicy (ファイルサイズによるログのローテーション)`\n\n> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使う場合は、 SynchronousFileLogWriterを使用するにあたっての注意事項 を参照すること。\n> **Tip:** ログ出力機能で使用するログレベルについては、 ログレベルの定義 を参照。"
     },
     {
       "id": "s3",
       "title": "各種ログの出力機能を予め提供している",
-      "content": "本フレームワークでは、アプリケーションに共通で必要とされる各種ログの出力機能を予め提供している。\nアプリケーションの要件に応じて、ログのフォーマットを設定で変更して使用できる。\nなお、各種ログの設定 にも記載の通り、各種ログの出力機能はフォーマット処理のみを行っており、\nログの出力処理自体は本機能を使用している。\nNablarchの提供するアーキタイプから生成したブランクプロジェクトでは各種ログのフォーマットが設定してある。\n各設定値は [デフォルト設定一覧](assets/libraries-log/デフォルト設定一覧.xlsx) を参照。\n\n| ログの種類 | 説明 |\n|---|---|\n| 障害通知ログ | 障害発生時に1次切り分け担当者を特定するのに必要な情報を出力する。 |\n| 障害解析ログ | 障害原因の特定に必要な情報を出力する。 |\n| SQLログ | 深刻なパフォーマンス劣化の要因となりやすいSQL文の実行について、 パフォーマンスチューニングに使用するために、SQL文の実行時間とSQL文を出力する。 |\n| パフォーマンスログ | 任意の処理について、パフォーマンスチューニングに使用するために実行時間とメモリ使用量を出力する。 |\n| HTTPアクセスログ | ウェブアプリケーションで、アプリケーションの実行状況を把握するための情報を出力する。 アプリケーションの性能測定に必要な情報、アプリケーションの負荷測定に必要な情報の出力も含む。 さらに、アプリケーションの不正使用を検知するために、 全てのリクエスト及びレスポンス情報を出力する証跡ログとしても使用する。 |\n| HTTPアクセスログ（RESTfulウェブサービス用） | RESTfulウェブサービスアプリケーションで、アプリケーションの実行状況を把握するための情報を出力する。 アプリケーションの性能測定に必要な情報、アプリケーションの負荷測定に必要な情報の出力も含む。 さらに、アプリケーションの不正使用を検知するために、 全てのリクエスト及びレスポンス情報を出力する証跡ログとしても使用する。 |\n| メッセージングログ | メッセージング処理において、メッセージ送受信の状況を把握するための情報を出力する。 |\n> **Tip:** 本フレームワークでは、 障害通知ログ と 障害解析ログ を合わせて障害ログと呼ぶ。",
-      "hints": []
+      "content": "本フレームワークでは、アプリケーションに共通で必要とされる各種ログの出力機能を予め提供している。\nアプリケーションの要件に応じて、ログのフォーマットを設定で変更して使用できる。\nなお、各種ログの設定 にも記載の通り、各種ログの出力機能はフォーマット処理のみを行っており、\nログの出力処理自体は本機能を使用している。\nNablarchの提供するアーキタイプから生成したブランクプロジェクトでは各種ログのフォーマットが設定してある。\n各設定値は [デフォルト設定一覧](assets/libraries-log/デフォルト設定一覧.xlsx) を参照。\n\n| ログの種類 | 説明 |\n|---|---|\n| 障害通知ログ | 障害発生時に1次切り分け担当者を特定するのに必要な情報を出力する。 |\n| 障害解析ログ | 障害原因の特定に必要な情報を出力する。 |\n| SQLログ | 深刻なパフォーマンス劣化の要因となりやすいSQL文の実行について、 パフォーマンスチューニングに使用するために、SQL文の実行時間とSQL文を出力する。 |\n| パフォーマンスログ | 任意の処理について、パフォーマンスチューニングに使用するために実行時間とメモリ使用量を出力する。 |\n| HTTPアクセスログ | ウェブアプリケーションで、アプリケーションの実行状況を把握するための情報を出力する。 アプリケーションの性能測定に必要な情報、アプリケーションの負荷測定に必要な情報の出力も含む。 さらに、アプリケーションの不正使用を検知するために、 全てのリクエスト及びレスポンス情報を出力する証跡ログとしても使用する。 |\n| HTTPアクセスログ（RESTfulウェブサービス用） | RESTfulウェブサービスアプリケーションで、アプリケーションの実行状況を把握するための情報を出力する。 アプリケーションの性能測定に必要な情報、アプリケーションの負荷測定に必要な情報の出力も含む。 さらに、アプリケーションの不正使用を検知するために、 全てのリクエスト及びレスポンス情報を出力する証跡ログとしても使用する。 |\n| メッセージングログ | メッセージング処理において、メッセージ送受信の状況を把握するための情報を出力する。 |\n> **Tip:** 本フレームワークでは、 障害通知ログ と 障害解析ログ を合わせて障害ログと呼ぶ。"
     },
     {
       "id": "s4",
       "title": "モジュール一覧",
-      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-applog</artifactId>\n</dependency>\n\n<!-- SQLログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n\n<!-- HTTPアクセスログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n\n<!-- HTTPアクセスログ（RESTfulウェブサービス用）を使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n\n<!-- メッセージングログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```",
-      "hints": [
-        "LogPublisher",
-        "LogListener",
-        "LogContext",
-        "nablarch.core.log.basic.LogPublisher",
-        "nablarch.core.log.basic.LogListener",
-        "nablarch.core.log.basic.LogContext",
-        "addListener",
-        "removeListener",
-        "removeAllListeners",
-        "ログイベント連携",
-        "ログリスナー登録",
-        "onWritten",
-        "nablarch-core",
-        "nablarch-core-applog",
-        "nablarch-core-jdbc",
-        "nablarch-fw-web",
-        "nablarch-fw-jaxrs",
-        "nablarch-fw-messaging",
-        "Maven依存関係",
-        "モジュール設定",
-        "BasicLogFormatter",
-        "LogFormatter",
-        "ThreadContext",
-        "起動プロセス",
-        "処理方式",
-        "実行時ID",
-        "thread_context_handler",
-        "nablarch.bootProcess",
-        "nablarch.processingSystem",
-        "プレースホルダ",
-        "datePattern",
-        "ログフォーマット",
-        "FailureJsonLogFormatter",
-        "SqlJsonLogFormatter",
-        "PerformanceJsonLogFormatter",
-        "HttpAccessJsonLogFormatter",
-        "JaxRsAccessJsonLogFormatter",
-        "MessagingJsonLogFormatter",
-        "各種ログJSON",
-        "フォーマッタ差し替え",
-        "障害ログ",
-        "SQLログ",
-        "パフォーマンスログ",
-        "HTTPアクセスログ",
-        "メッセージングログ"
-      ]
+      "content": "```xml\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core</artifactId>\n</dependency>\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-applog</artifactId>\n</dependency>\n\n<!-- SQLログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-core-jdbc</artifactId>\n</dependency>\n\n<!-- HTTPアクセスログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-web</artifactId>\n</dependency>\n\n<!-- HTTPアクセスログ（RESTfulウェブサービス用）を使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-jaxrs</artifactId>\n</dependency>\n\n<!-- メッセージングログを使用する場合のみ -->\n<dependency>\n  <groupId>com.nablarch.framework</groupId>\n  <artifactId>nablarch-fw-messaging</artifactId>\n</dependency>\n```"
     },
     {
       "id": "s5",
       "title": "使用方法",
-      "content": "",
-      "hints": []
+      "content": ""
     },
     {
       "id": "s6",
       "title": "ログを出力する",
-      "content": "ログの出力には `Logger` を使用する。\n`Logger` は\n`LoggerManager` から取得する。\n\n```java\n// クラスを指定してLoggerを取得する。\n// Loggerはクラス変数に保持する。\nprivate static final Logger LOGGER = LoggerManager.get(UserManager.class);\n```\n```java\n// ログの出力有無を事前にチェックし、ログ出力を行う。\nif (LOGGER.isDebugEnabled()) {\n    String message = \"userId[\" + user.getId() + \"],name[\" + user.getName() + \"]\";\n    LOGGER.logDebug(message);\n}\n```\n`Logger` の取得ではロガー名を指定する。\nロガー名には文字列またはクラスが指定できる。\nクラスが指定された場合は、指定されたクラスのFQCNがロガー名となる。\n\n> **Important:** アプリケーションにおいて、常にログを出力することになっているレベルは、 ソースコードの可読性が落ちるため、事前チェックをしなくてよい。 例えば、本番運用時に出力するログレベルをINFOレベルにするのであれば、 FATALレベルからINFOレベルまでは事前チェックしなくてよい。\n> **Tip:** ロガー名には、SQLログや監視ログなど、特定の用途向けのログ出力を行う場合は、 その用途を表す名前(SQLやMONITOR等)を指定し、それ以外はクラスのFQCNを指定する。",
-      "hints": [
-        "FATAL",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE",
-        "ログレベル定義",
-        "ログ出力制御",
-        "Logger",
-        "LoggerManager",
-        "LoggerManager.get",
-        "isDebugEnabled",
-        "logDebug",
-        "ログ出力",
-        "ロガー取得",
-        "ログレベル事前チェック",
-        "app-log.properties",
-        "nablarch.appLog.filePath",
-        "FileUtil",
-        "各種ログ設定",
-        "failure_log",
-        "sql_log",
-        "performance_log",
-        "http_access_log",
-        "jaxrs_access_log",
-        "messaging_log",
-        "ApplicationSettingJsonLogFormatter",
-        "ApplicationSettingLogFormatter",
-        "LauncherJsonLogFormatter",
-        "LauncherLogFormatter",
-        "CommitLogger",
-        "BasicCommitLogger",
-        "JsonCommitLogger",
-        "structuredMessagePrefix",
-        "applicationSettingLogFormatter.className",
-        "applicationSettingLogFormatter.appSettingTargets",
-        "applicationSettingLogFormatter.appSettingWithDateTargets",
-        "applicationSettingLogFormatter.systemSettingItems",
-        "launcherLogFormatter.className",
-        "launcherLogFormatter.startTargets",
-        "launcherLogFormatter.endTargets",
-        "launcherLogFormatter.startLogMsgLabel",
-        "launcherLogFormatter.endLogMsgLabel",
-        "バッチJSON設定",
-        "commitLogger"
-      ]
+      "content": "ログの出力には `Logger` を使用する。\n`Logger` は\n`LoggerManager` から取得する。\n\n```java\n// クラスを指定してLoggerを取得する。\n// Loggerはクラス変数に保持する。\nprivate static final Logger LOGGER = LoggerManager.get(UserManager.class);\n```\n```java\n// ログの出力有無を事前にチェックし、ログ出力を行う。\nif (LOGGER.isDebugEnabled()) {\n    String message = \"userId[\" + user.getId() + \"],name[\" + user.getName() + \"]\";\n    LOGGER.logDebug(message);\n}\n```\n`Logger` の取得ではロガー名を指定する。\nロガー名には文字列またはクラスが指定できる。\nクラスが指定された場合は、指定されたクラスのFQCNがロガー名となる。\n\n> **Important:** アプリケーションにおいて、常にログを出力することになっているレベルは、 ソースコードの可読性が落ちるため、事前チェックをしなくてよい。 例えば、本番運用時に出力するログレベルをINFOレベルにするのであれば、 FATALレベルからINFOレベルまでは事前チェックしなくてよい。\n> **Tip:** ロガー名には、SQLログや監視ログなど、特定の用途向けのログ出力を行う場合は、 その用途を表す名前(SQLやMONITOR等)を指定し、それ以外はクラスのFQCNを指定する。"
     },
     {
       "id": "s7",
       "title": "ログ出力の設定",
-      "content": "ログ出力の設定は、プロパティファイルに行う。\n\nプロパティファイルの場所\nクラスパス直下の **log.properties** を使用する。\n場所を変更したい場合は、システムプロパティで **nablarch.log.filePath** をキーにファイルパスを指定する。\nファイルパスの指定方法は\n`FileUtil#getResource` を参照。\n\n```bash\n>java -Dnablarch.log.filePath=classpath:nablarch/example/log.properties ...\n```\nプロパティファイルの記述ルール\nプロパティファイルの記述ルールを以下に示す。\n\nLoggerFactory\n\\\n\n記述ルール\n\\\n\nloggerFactory.className\nLoggerFactoryを実装したクラスのFQCNを指定する。\n本機能を使う場合は、 `BasicLoggerFactory` を指定する。\n\n記述例\n```properties\n# LoggerFactoryにより、ログ出力に使用する実装(本機能やLog4Jなど)が決まる。\nloggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory\n```\nLogWriter\n\\\n\n記述ルール\n\\\n\nwriterNames\n使用する全てのLogWriterの名前を指定する。複数指定する場合はカンマ区切り。\n\nwriter.<名前>.className\nLogWriterを実装したクラスのFQCNを指定する。\n\nwriter.<名前>.<プロパティ名>\nLogWriter毎のプロパティに設定する値を指定する。\n指定できるプロパティについては使用するLogWriterのJavadocを参照。\n\n記述例\n```properties\n# 2つの名前を定義する。\nwriterNames=appLog,stdout\n\n# appLogの設定を行う。\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\n\n# stdoutの設定を行う。\nwriter.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter\n```\nロガー設定\n\\\n\n記述ルール\n\\\n\navailableLoggersNamesOrder\n使用する全てのロガー設定の名前を指定する。複数指定する場合はカンマ区切り。\n\n> **Important:** availableLoggersNamesOrderプロパティは、記述順に意味があるので注意すること。 extdoc:`Logger <nablarch.core.log.Logger>` の取得では、ログ出力を行うクラスが指定したロガー名に対して、 ここに記述した順番で `Logger` のマッチングを行い、 最初にマッチした `Logger` を返す。 例えば、以下の記述例にあるavailableLoggersNamesOrderの記述順をavailableLoggersNamesOrder=root,sqlと記述した場合、 全てのロガー取得がロガー設定 `root` にマッチしてしまう。 その結果、ロガー名 `SQL` でログ出力しても `sqlLog` に出力されず、ロガー設定 `root` に指定された `appLog` に出力される。 したがって、availableLoggersNamesOrderプロパティは、より限定的な正規表現を指定したロガー設定から順に記述すること。\n> **Important:** availableLoggersNamesOrderとloggers.*で指定するロガー設定の名称は、必ず一致させる必要がある。 extdoc:`BasicLoggerFactory <nablarch.core.log.basic.BasicLoggerFactory>` の初期処理で一致しているかチェックを行い、 一致しない場合は例外をスローする。 例えば、上記の設定にあるavailableLoggersNamesOrderから `access` を取り除くと、例外がスローされる。 このチェックは、設定漏れの発生を防ぐために行っている。 上記の設定にあるavailableLoggersNamesOrderから `access` を取り除いた場合は、明示的にloggers.access.*の設定も取り除く必要がある。\nloggers.<名前>.nameRegex\nロガー名とのマッチングに使用する正規表現を指定する。\n正規表現は、ロガー設定の対象となるロガーを絞り込むために使用する。\nロガーの取得時に指定されたロガー名(つまり `LoggerManager#get`\nの引数に指定されたロガー名)に対してマッチングを行う。\n\nloggers.<名前>.level\n`LogLevel` の名前を指定する。\nここで指定したレベル以上のログを全て出力する。\n\nloggers.<名前>.writerNames\n出力先とするLogWriterの名前を指定する。\n複数指定する場合はカンマ区切り。\nここで指定した全てのLogWriterに対してログの書き込みを行う。\n\n記述例\n```properties\n# 2つのロガー設定の名前を定義する。\navailableLoggersNamesOrder=sql,root\n\n# rootの設定を行う。\nloggers.root.nameRegex=.*\nloggers.root.level=WARN\nloggers.root.writerNames=appLog\n\n# sqlの設定を行う。\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=sqlLog\n```\nプロパティファイルの記述例\nプロパティファイル全体の記述例を以下に示す。\n\n```properties\nloggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory\n\nwriterNames=appLog,sqlLog,monitorLog,stdout\n\n# アプリケーション用のログファイルの設定例\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\n\n# SQL出力用のログファイルの設定例\nwriter.sqlLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.sqlLog.filePath=/var/log/app/sql.log\n\n# 監視用のログファイルの設定例\nwriter.monitorLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.monitorLog.filePath=/var/log/app/monitoring.log\n\n# 標準出力の設定例\nwriter.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter\n\navailableLoggersNamesOrder=sql,monitoring,access,validation,root\n\n# 全てのロガー名をログ出力の対象にする設定例\n# 全てのロガー取得を対象に、WARNレベル以上をappLogに出力する。\nloggers.root.nameRegex=.*\nloggers.root.level=WARN\nloggers.root.writerNames=appLog\n\n# 特定のロガー名をログ出力の対象にする設定例。\n# ロガー名に\"MONITOR\"を指定したロガー取得を対象に、\n# ERRORレベル以上をappLog,monitorLogに出力する。\nloggers.monitoring.nameRegex=MONITOR\nloggers.monitoring.level=ERROR\nloggers.monitoring.writerNames=appLog,monitorLog\n\n# 特定のロガー名をログ出力の対象にする設定例。\n# ロガー名に\"SQL\"を指定したロガー取得を対象に、\n# DEBUGレベル以上をsqlLogに出力する。\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=sqlLog\n\n# 特定のクラスをログ出力の対象にする設定例。\n# ロガー名に\"app.user.UserManager\"を指定したロガー取得を対象に、\n# INFOレベル以上をappLogとstdoutに出力する。\nloggers.access.nameRegex=app\\\\.user\\\\.UserManager\nloggers.access.level=INFO\nloggers.access.writerNames=appLog,stdout\n\n# 特定のパッケージ以下をログ出力の対象にする設定例。\n# ロガー名に\"nablarch.core.validation\"から始まる名前を指定したロガー取得を対象に、\n# DEBUGレベル以上をstdoutに出力する。\nloggers.validation.nameRegex=nablarch\\\\.core\\\\.validation\\\\..*\nloggers.validation.level=DEBUG\nloggers.validation.writerNames=stdout\n```\n> **Tip:** ロガー設定では、全てのログ出力にマッチするロガー設定を1つ用意し、availableLoggersNamesOrderの最後に指定することを推奨する。 万が一設定が漏れた場合でも、重要なログの出力を逃してしまう事態を防ぐことができる。 設定例としては、上記の記述例にあるロガー設定 `root` を参照。",
-      "hints": [
-        "フレームワークログ出力方針",
-        "障害ログ",
-        "FATAL",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE",
-        "log.properties",
-        "nablarch.log.filePath",
-        "loggerFactory.className",
-        "writerNames",
-        "availableLoggersNamesOrder",
-        "nameRegex",
-        "loggers",
-        "BasicLoggerFactory",
-        "LogLevel",
-        "FileUtil",
-        "ログ設定",
-        "プロパティファイル",
-        "LogWriter設定",
-        "ロガー設定",
-        "FileLogWriter",
-        "StandardOutputLogWriter",
-        "FileSizeRotatePolicy",
-        "DateRotatePolicy",
-        "RotatePolicy",
-        "ログローテーション",
-        "rotatePolicy",
-        "rotateTime"
-      ]
+      "content": "ログ出力の設定は、プロパティファイルに行う。\n\nプロパティファイルの場所\nクラスパス直下の **log.properties** を使用する。\n場所を変更したい場合は、システムプロパティで **nablarch.log.filePath** をキーにファイルパスを指定する。\nファイルパスの指定方法は\n`FileUtil#getResource` を参照。\n\n```bash\n>java -Dnablarch.log.filePath=classpath:nablarch/example/log.properties ...\n```\nプロパティファイルの記述ルール\nプロパティファイルの記述ルールを以下に示す。\n\nLoggerFactory\n\\\n\n記述ルール\n\\\n\nloggerFactory.className\nLoggerFactoryを実装したクラスのFQCNを指定する。\n本機能を使う場合は、 `BasicLoggerFactory` を指定する。\n\n記述例\n```properties\n# LoggerFactoryにより、ログ出力に使用する実装(本機能やLog4Jなど)が決まる。\nloggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory\n```\nLogWriter\n\\\n\n記述ルール\n\\\n\nwriterNames\n使用する全てのLogWriterの名前を指定する。複数指定する場合はカンマ区切り。\n\nwriter.<名前>.className\nLogWriterを実装したクラスのFQCNを指定する。\n\nwriter.<名前>.<プロパティ名>\nLogWriter毎のプロパティに設定する値を指定する。\n指定できるプロパティについては使用するLogWriterのJavadocを参照。\n\n記述例\n```properties\n# 2つの名前を定義する。\nwriterNames=appLog,stdout\n\n# appLogの設定を行う。\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\n\n# stdoutの設定を行う。\nwriter.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter\n```\nロガー設定\n\\\n\n記述ルール\n\\\n\navailableLoggersNamesOrder\n使用する全てのロガー設定の名前を指定する。複数指定する場合はカンマ区切り。\n\n> **Important:** availableLoggersNamesOrderプロパティは、記述順に意味があるので注意すること。 extdoc:`Logger <nablarch.core.log.Logger>` の取得では、ログ出力を行うクラスが指定したロガー名に対して、 ここに記述した順番で `Logger` のマッチングを行い、 最初にマッチした `Logger` を返す。 例えば、以下の記述例にあるavailableLoggersNamesOrderの記述順をavailableLoggersNamesOrder=root,sqlと記述した場合、 全てのロガー取得がロガー設定 `root` にマッチしてしまう。 その結果、ロガー名 `SQL` でログ出力しても `sqlLog` に出力されず、ロガー設定 `root` に指定された `appLog` に出力される。 したがって、availableLoggersNamesOrderプロパティは、より限定的な正規表現を指定したロガー設定から順に記述すること。\n> **Important:** availableLoggersNamesOrderとloggers.*で指定するロガー設定の名称は、必ず一致させる必要がある。 extdoc:`BasicLoggerFactory <nablarch.core.log.basic.BasicLoggerFactory>` の初期処理で一致しているかチェックを行い、 一致しない場合は例外をスローする。 例えば、上記の設定にあるavailableLoggersNamesOrderから `access` を取り除くと、例外がスローされる。 このチェックは、設定漏れの発生を防ぐために行っている。 上記の設定にあるavailableLoggersNamesOrderから `access` を取り除いた場合は、明示的にloggers.access.*の設定も取り除く必要がある。\nloggers.<名前>.nameRegex\nロガー名とのマッチングに使用する正規表現を指定する。\n正規表現は、ロガー設定の対象となるロガーを絞り込むために使用する。\nロガーの取得時に指定されたロガー名(つまり `LoggerManager#get`\nの引数に指定されたロガー名)に対してマッチングを行う。\n\nloggers.<名前>.level\n`LogLevel` の名前を指定する。\nここで指定したレベル以上のログを全て出力する。\n\nloggers.<名前>.writerNames\n出力先とするLogWriterの名前を指定する。\n複数指定する場合はカンマ区切り。\nここで指定した全てのLogWriterに対してログの書き込みを行う。\n\n記述例\n```properties\n# 2つのロガー設定の名前を定義する。\navailableLoggersNamesOrder=sql,root\n\n# rootの設定を行う。\nloggers.root.nameRegex=.*\nloggers.root.level=WARN\nloggers.root.writerNames=appLog\n\n# sqlの設定を行う。\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=sqlLog\n```\nプロパティファイルの記述例\nプロパティファイル全体の記述例を以下に示す。\n\n```properties\nloggerFactory.className=nablarch.core.log.basic.BasicLoggerFactory\n\nwriterNames=appLog,sqlLog,monitorLog,stdout\n\n# アプリケーション用のログファイルの設定例\nwriter.appLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.appLog.filePath=/var/log/app/app.log\n\n# SQL出力用のログファイルの設定例\nwriter.sqlLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.sqlLog.filePath=/var/log/app/sql.log\n\n# 監視用のログファイルの設定例\nwriter.monitorLog.className=nablarch.core.log.basic.FileLogWriter\nwriter.monitorLog.filePath=/var/log/app/monitoring.log\n\n# 標準出力の設定例\nwriter.stdout.className=nablarch.core.log.basic.StandardOutputLogWriter\n\navailableLoggersNamesOrder=sql,monitoring,access,validation,root\n\n# 全てのロガー名をログ出力の対象にする設定例\n# 全てのロガー取得を対象に、WARNレベル以上をappLogに出力する。\nloggers.root.nameRegex=.*\nloggers.root.level=WARN\nloggers.root.writerNames=appLog\n\n# 特定のロガー名をログ出力の対象にする設定例。\n# ロガー名に\"MONITOR\"を指定したロガー取得を対象に、\n# ERRORレベル以上をappLog,monitorLogに出力する。\nloggers.monitoring.nameRegex=MONITOR\nloggers.monitoring.level=ERROR\nloggers.monitoring.writerNames=appLog,monitorLog\n\n# 特定のロガー名をログ出力の対象にする設定例。\n# ロガー名に\"SQL\"を指定したロガー取得を対象に、\n# DEBUGレベル以上をsqlLogに出力する。\nloggers.sql.nameRegex=SQL\nloggers.sql.level=DEBUG\nloggers.sql.writerNames=sqlLog\n\n# 特定のクラスをログ出力の対象にする設定例。\n# ロガー名に\"app.user.UserManager\"を指定したロガー取得を対象に、\n# INFOレベル以上をappLogとstdoutに出力する。\nloggers.access.nameRegex=app\\\\.user\\\\.UserManager\nloggers.access.level=INFO\nloggers.access.writerNames=appLog,stdout\n\n# 特定のパッケージ以下をログ出力の対象にする設定例。\n# ロガー名に\"nablarch.core.validation\"から始まる名前を指定したロガー取得を対象に、\n# DEBUGレベル以上をstdoutに出力する。\nloggers.validation.nameRegex=nablarch\\\\.core\\\\.validation\\\\..*\nloggers.validation.level=DEBUG\nloggers.validation.writerNames=stdout\n```\n> **Tip:** ロガー設定では、全てのログ出力にマッチするロガー設定を1つ用意し、availableLoggersNamesOrderの最後に指定することを推奨する。 万が一設定が漏れた場合でも、重要なログの出力を逃してしまう事態を防ぐことができる。 設定例としては、上記の記述例にあるロガー設定 `root` を参照。"
     },
     {
       "id": "s8",
       "title": "ログ出力の設定を上書く",
-      "content": "ログ出力の設定は、システムプロパティを使用して、\nプロパティファイルと同じキー名で値を指定することにより上書きできる。\nこれにより、共通のプロパティファイルを用意しておき、プロセス毎にログ出力設定を変更するといったことができる。\n\nロガー設定 `root` のログレベルをINFOに変更したい場合の例を以下に示す。\n\n```bash\n>java -Dloggers.root.level=INFO ...\n```",
-      "hints": [
-        "log4j",
-        "機能比較",
-        "ログローテーション",
-        "log_adaptor",
-        "log-add_log_writer",
-        "ファイルサイズローテーション",
-        "非同期ログ出力",
-        "LogWriter",
-        "LogWriterSupport",
-        "LogFormatter",
-        "LogWriter拡張",
-        "LogWriter追加"
-      ]
+      "content": "ログ出力の設定は、システムプロパティを使用して、\nプロパティファイルと同じキー名で値を指定することにより上書きできる。\nこれにより、共通のプロパティファイルを用意しておき、プロセス毎にログ出力設定を変更するといったことができる。\n\nロガー設定 `root` のログレベルをINFOに変更したい場合の例を以下に示す。\n\n```bash\n>java -Dloggers.root.level=INFO ...\n```"
     },
     {
       "id": "s9",
       "title": "ログのフォーマットを指定する",
-      "content": "本機能では、汎用的に使用できる `LogFormatter` として、\n`BasicLogFormatter` を提供している。\n\n`BasicLogFormatter` では、\nプレースホルダを使用してフォーマットを指定する。\n使用できるプレースホルダについては、\n`BasicLogFormatter`\nのJavadocを参照。\n\nフォーマットの設定例を以下に示す。\nフォーマットはLogWriterのプロパティに指定する。\n\n```properties\n# フォーマットを指定する場合はBasicLogFormatterを明示的に指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n\n# プレースホルダを使ってフォーマットを指定する。\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ $message$\n\n# 日時のフォーマットに使用するパターンを指定する。\n# 指定しなければ\"yyyy-MM-dd HH:mm:ss.SSS\"となる。\nwriter.appLog.formatter.datePattern=yyyy/MM/dd HH:mm:ss[SSS]\n\n# ログレベルの文言を指定する。\n# 指定しなければLogLevel列挙型の名前(FATAL、INFOなど)となる。\nwriter.appLog.formatter.label.fatal=F\nwriter.appLog.formatter.label.error=E\nwriter.appLog.formatter.label.warn=W\nwriter.appLog.formatter.label.info=I\nwriter.appLog.formatter.label.debug=D\nwriter.appLog.formatter.label.trace=T\n```\n`BasicLogFormatter`\nでは、出力されたログの状況を特定するために、以下の項目を出力できる。\nこれらの出力項目について説明しておく。\n\n* 起動プロセス\n* 処理方式\n* 実行時ID\n\n\n起動プロセス\n起動プロセスとは、アプリケーションを起動した実行環境を特定するために使用する名前である。\n起動プロセスにサーバ名とJOBIDなどの識別文字列を組み合わせた名前を使用することで、\n同一サーバの複数プロセスから出力されたログの実行環境を特定できる。\n起動プロセスは、プロジェクト毎にID体系などで体系を規定することを想定している。\n\n起動プロセスは、システムプロパティに `nablarch.bootProcess` というキーで指定する。\nシステムプロパティの指定がない場合、起動プロセスはブランクとなる。\n\n\n処理方式\n処理方式とは、ウェブ、バッチなどを意味する。\nアプリケーションの処理方式を識別したい場合に、プロジェクト毎に規定して使用する。\n\n処理方式は、 ログ出力の設定 で説明したプロパティファイルに\n`nablarch.processingSystem` というキーで指定する。\nプロパティの指定がない場合はブランクとなる。\n\n\n実行時ID\n実行時IDとは、リクエストIDに対するアプリケーションの個々の実行を識別するためにつけるIDである。\n1つのリクエストIDに対して実行された数だけ実行時IDが発行されるため、\nリクエストIDと実行時IDの関係は1対多となる。\n\n実行時IDは、複数のログを出力している場合に、出力された複数のログを紐付けるために使用する。\n\n実行時IDは、各処理方式の `ThreadContext`\nを初期化するタイミングで発行し、 `ThreadContext` に設定される。\n\n実行時IDのID体系\n```none\n# 起動プロセスは指定された場合のみ付加する。\n起動プロセス＋システム日時(yyyyMMddHHmmssSSS)＋連番(4桁)\n```\n> **Important:** リクエストID、実行時ID、ユーザIDを出力する場合は、 これらの取得元が `ThreadContext` なので、 ハンドラ構成に スレッドコンテキスト変数管理ハンドラ が含まれている必要がある。 特にユーザIDについては、 ユーザIDを設定する を参照して アプリケーションでセッションに値を設定する必要がある。\n改行コードとタブ文字を含めたい場合\nフォーマットに改行コードとタブ文字を含めたい場合は、以下に示すように、Javaと同様の記述を使用する。\n\n```none\n改行コード \\n\nタブ文字   \\t\n```\n改行コードは、Java標準のシステムプロパティに含まれる `line.separator` から取得する。\nこのため、システムプロパティの `line.separator` を変更しなければOSの改行コードが使用される。\n\n> **Tip:** extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` では `\\n` と `\\t` という文字列は出力できない。",
-      "hints": [
-        "LogFormatter",
-        "LogLevelLabelProvider",
-        "Logger",
-        "LogFormatter拡張",
-        "LogFormatter追加",
-        "options引数",
-        "可変長引数",
-        "logInfo"
-      ]
+      "content": "本機能では、汎用的に使用できる `LogFormatter` として、\n`BasicLogFormatter` を提供している。\n\n`BasicLogFormatter` では、\nプレースホルダを使用してフォーマットを指定する。\n使用できるプレースホルダについては、\n`BasicLogFormatter`\nのJavadocを参照。\n\nフォーマットの設定例を以下に示す。\nフォーマットはLogWriterのプロパティに指定する。\n\n```properties\n# フォーマットを指定する場合はBasicLogFormatterを明示的に指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n\n# プレースホルダを使ってフォーマットを指定する。\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ $message$\n\n# 日時のフォーマットに使用するパターンを指定する。\n# 指定しなければ\"yyyy-MM-dd HH:mm:ss.SSS\"となる。\nwriter.appLog.formatter.datePattern=yyyy/MM/dd HH:mm:ss[SSS]\n\n# ログレベルの文言を指定する。\n# 指定しなければLogLevel列挙型の名前(FATAL、INFOなど)となる。\nwriter.appLog.formatter.label.fatal=F\nwriter.appLog.formatter.label.error=E\nwriter.appLog.formatter.label.warn=W\nwriter.appLog.formatter.label.info=I\nwriter.appLog.formatter.label.debug=D\nwriter.appLog.formatter.label.trace=T\n```\n`BasicLogFormatter`\nでは、出力されたログの状況を特定するために、以下の項目を出力できる。\nこれらの出力項目について説明しておく。\n\n* 起動プロセス\n* 処理方式\n* 実行時ID\n\n\n起動プロセス\n起動プロセスとは、アプリケーションを起動した実行環境を特定するために使用する名前である。\n起動プロセスにサーバ名とJOBIDなどの識別文字列を組み合わせた名前を使用することで、\n同一サーバの複数プロセスから出力されたログの実行環境を特定できる。\n起動プロセスは、プロジェクト毎にID体系などで体系を規定することを想定している。\n\n起動プロセスは、システムプロパティに `nablarch.bootProcess` というキーで指定する。\nシステムプロパティの指定がない場合、起動プロセスはブランクとなる。\n\n\n処理方式\n処理方式とは、ウェブ、バッチなどを意味する。\nアプリケーションの処理方式を識別したい場合に、プロジェクト毎に規定して使用する。\n\n処理方式は、 ログ出力の設定 で説明したプロパティファイルに\n`nablarch.processingSystem` というキーで指定する。\nプロパティの指定がない場合はブランクとなる。\n\n\n実行時ID\n実行時IDとは、リクエストIDに対するアプリケーションの個々の実行を識別するためにつけるIDである。\n1つのリクエストIDに対して実行された数だけ実行時IDが発行されるため、\nリクエストIDと実行時IDの関係は1対多となる。\n\n実行時IDは、複数のログを出力している場合に、出力された複数のログを紐付けるために使用する。\n\n実行時IDは、各処理方式の `ThreadContext`\nを初期化するタイミングで発行し、 `ThreadContext` に設定される。\n\n実行時IDのID体系\n```none\n# 起動プロセスは指定された場合のみ付加する。\n起動プロセス＋システム日時(yyyyMMddHHmmssSSS)＋連番(4桁)\n```\n> **Important:** リクエストID、実行時ID、ユーザIDを出力する場合は、 これらの取得元が `ThreadContext` なので、 ハンドラ構成に スレッドコンテキスト変数管理ハンドラ が含まれている必要がある。 特にユーザIDについては、 ユーザIDを設定する を参照して アプリケーションでセッションに値を設定する必要がある。\n改行コードとタブ文字を含めたい場合\nフォーマットに改行コードとタブ文字を含めたい場合は、以下に示すように、Javaと同様の記述を使用する。\n\n```none\n改行コード \\n\nタブ文字   \\t\n```\n改行コードは、Java標準のシステムプロパティに含まれる `line.separator` から取得する。\nこのため、システムプロパティの `line.separator` を変更しなければOSの改行コードが使用される。\n\n> **Tip:** extdoc:`BasicLogFormatter <nablarch.core.log.basic.BasicLogFormatter>` では `\\n` と `\\t` という文字列は出力できない。"
     },
     {
       "id": "s10",
       "title": "各種ログの設定",
-      "content": "各種ログの出力機能は、各種ログの用途に合わせたフォーマット処理のみを行っており、\nログの出力処理自体は本機能を使用している。\nつまり、各種ログの出力機能では、 `Logger`\nに指定するメッセージを作成する。\n\nこのため、各種ログの出力機能を使うには、 ログ出力の設定 に加えて、各種ログの設定が必要となる。\n各種ログの設定は、プロパティファイルに行う。\n\nプロパティファイルの場所\nクラスパス直下の **app-log.properties** を使用する。\n場所を変更したい場合は、システムプロパティで **nablarch.appLog.filePath** をキーにファイルパスを指定する。\nファイルパスの指定方法は\n`FileUtil#getResource` を参照。\n\n```bash\n>java -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...\n```\nプロパティファイルの記述ルール\n各種ログごとに異なるので、以下を参照。\n\n* 障害ログの設定\n* SQLログの設定\n* パフォーマンスログの設定\n* HTTPアクセスログの設定\n* HTTPアクセスログ（RESTfulウェブサービス用）の設定\n* メッセージングログの設定",
-      "hints": [
-        "BasicLogFormatter",
-        "LogItem",
-        "ObjectSettings",
-        "LogContext",
-        "プレースホルダ追加",
-        "getLogItems",
-        "CustomBootProcessItem",
-        "CustomLogFormatter"
-      ]
+      "content": "各種ログの出力機能は、各種ログの用途に合わせたフォーマット処理のみを行っており、\nログの出力処理自体は本機能を使用している。\nつまり、各種ログの出力機能では、 `Logger`\nに指定するメッセージを作成する。\n\nこのため、各種ログの出力機能を使うには、 ログ出力の設定 に加えて、各種ログの設定が必要となる。\n各種ログの設定は、プロパティファイルに行う。\n\nプロパティファイルの場所\nクラスパス直下の **app-log.properties** を使用する。\n場所を変更したい場合は、システムプロパティで **nablarch.appLog.filePath** をキーにファイルパスを指定する。\nファイルパスの指定方法は\n`FileUtil#getResource` を参照。\n\n```bash\n>java -Dnablarch.appLog.filePath=file:/var/log/app/app-log.properties ...\n```\nプロパティファイルの記述ルール\n各種ログごとに異なるので、以下を参照。\n\n* 障害ログの設定\n* SQLログの設定\n* パフォーマンスログの設定\n* HTTPアクセスログの設定\n* HTTPアクセスログ（RESTfulウェブサービス用）の設定\n* メッセージングログの設定"
     },
     {
       "id": "s11",
       "title": "ログファイルのローテーションを行う",
-      "content": "本機能で提供するFileLogWiterは、設定したポリシーに従ってログファイルのローテーションを行う。\n\nローテーションポリシーはデフォルトではファイルサイズによるローテーションを行う `FileSizeRotatePolicy`\nが使用される。 `RotatePolicy` の実装クラスを作成することで、ローテーションポリシーを変更することができる。\n\n本機能が提供している `RotatePolicy` の実装クラスは以下。\n各 `RotatePolicy` の設定はそれぞれのJavadocを参照。\n\n* `FileSizeRotatePolicy`\n* `DateRotatePolicy`\n\nローテーションポリシーの設定例を以下に示す。ローテーションポリシーはLogWriterのプロパティに指定する。\n\n```properties\nwriterNames=sample\n\n# writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する\nwriter.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy\n# 更新時刻。オプション。\nwriter.sample.rotateTime=12:00\n```",
-      "hints": [
-        "FileLogWriter",
-        "LogWriterSupport",
-        "needsToWrite",
-        "初期化メッセージ抑制",
-        "suppressionWriting",
-        "log_adaptor",
-        "初期化メッセージ",
-        "StringUtil",
-        "initializeWriter"
-      ]
+      "content": "本機能で提供するFileLogWiterは、設定したポリシーに従ってログファイルのローテーションを行う。\n\nローテーションポリシーはデフォルトではファイルサイズによるローテーションを行う `FileSizeRotatePolicy`\nが使用される。 `RotatePolicy` の実装クラスを作成することで、ローテーションポリシーを変更することができる。\n\n本機能が提供している `RotatePolicy` の実装クラスは以下。\n各 `RotatePolicy` の設定はそれぞれのJavadocを参照。\n\n* `FileSizeRotatePolicy`\n* `DateRotatePolicy`\n\nローテーションポリシーの設定例を以下に示す。ローテーションポリシーはLogWriterのプロパティに指定する。\n\n```properties\nwriterNames=sample\n\n# writerのrotatePolicyにRotatePolicyが実装されたクラスのFQCNを指定する\nwriter.sample.rotatePolicy=nablarch.core.log.basic.DateRotatePolicy\n# 更新時刻。オプション。\nwriter.sample.rotateTime=12:00\n```"
     },
     {
       "id": "s12",
       "title": "拡張例",
-      "content": "",
-      "hints": []
+      "content": ""
     },
     {
       "id": "s13",
       "title": "LogWriterを追加する",
-      "content": "新しいLogWriterを追加する場合は、 `LogWriter`\nインタフェースを実装したクラスを作成する。\nまた、 `LogFormatter` を使用するLogWriterを作成する場合は、\n共通処理を提供する `LogWriterSupport` を継承して作成する。",
-      "hints": []
+      "content": "新しいLogWriterを追加する場合は、 `LogWriter`\nインタフェースを実装したクラスを作成する。\nまた、 `LogFormatter` を使用するLogWriterを作成する場合は、\n共通処理を提供する `LogWriterSupport` を継承して作成する。"
     },
     {
       "id": "s14",
       "title": "LogFormatterを追加する",
-      "content": "新しいLogFormatterを追加する場合は、 `LogFormatter`\nインタフェースを実装したクラスを作成する。\nまた、ログレベルを表す文言を設定で変更可能にしたい場合は、\n`LogLevelLabelProvider` を使用する。\n\n新しいLogFormatterの追加に伴い、ログ出力時に指定するパラメータを増やし、\nLogFormatterで増やしたパラメータを受け取りたいことがある。\n本機能では、ログ出力時に指定するパラメータを増やす目的で、\n`Logger` インタフェースのログ出力メソッドに\nObject型の可変長引数optionsを設けている。\n\n```java\n// Logger#logInfoメソッドのシグネチャ\npublic void logInfo(String message, Object... options)\npublic void logInfo(String message, Throwable cause, Object... options)\n```\nログ出力時のパラメータを増やしたい場合は、options引数を規定して使用すること。",
-      "hints": []
+      "content": "新しいLogFormatterを追加する場合は、 `LogFormatter`\nインタフェースを実装したクラスを作成する。\nまた、ログレベルを表す文言を設定で変更可能にしたい場合は、\n`LogLevelLabelProvider` を使用する。\n\n新しいLogFormatterの追加に伴い、ログ出力時に指定するパラメータを増やし、\nLogFormatterで増やしたパラメータを受け取りたいことがある。\n本機能では、ログ出力時に指定するパラメータを増やす目的で、\n`Logger` インタフェースのログ出力メソッドに\nObject型の可変長引数optionsを設けている。\n\n```java\n// Logger#logInfoメソッドのシグネチャ\npublic void logInfo(String message, Object... options)\npublic void logInfo(String message, Throwable cause, Object... options)\n```\nログ出力時のパラメータを増やしたい場合は、options引数を規定して使用すること。"
     },
     {
       "id": "s15",
       "title": "ログの出力項目(プレースホルダ)を追加する",
-      "content": "`BasicLogFormatter` は、\n`LogItem` インタフェースを使用して、\n各プレースホルダに対応する出力項目を取得する。\nそのため、新規にプレースホルダを追加したい場合は、以下のとおり対応する。\n\n* `LogItem` を実装したクラスを作る\n* `BasicLogFormatter` を継承したクラスを作り、プレースホルダを追加する\n\nLogFormatterの設定から起動プロセスを取得するように変更する場合の例を示す。\nLogFormatterの設定は、下記を想定する。\n\n```properties\n# カスタムのLogFormatterを指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.CustomLogFormatter\n\n# フォーマットを指定する。\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ [$bootProcess$] $message$\n\n# LogFormatterの設定で起動プロセスを指定する。\n# ここで指定した起動プロセスを$bootProcess$に出力する。\nwriter.appLog.formatter.bootProcess=CUSTOM_PROCESS\n```\n`LogItem` を実装したクラスを作る\n```java\n// カスタムの起動プロセスを取得するクラス。\npublic class CustomBootProcessItem implements LogItem<LogContext> {\n\n    private String bootProcess;\n\n    public CustomBootProcessItem(ObjectSettings settings) {\n        // LogFormatterの設定から起動プロセスを取得する。\n        bootProcess = settings.getProp(\"bootProcess\");\n    }\n\n    @Override\n    public String get(LogContext context) {\n        // 設定から取得した起動プロセスを返す。\n        return bootProcess;\n    }\n}\n```\n`BasicLogFormatter` を継承したクラスを作り、プレースホルダを追加する\n```java\npublic class CustomLogFormatter extends BasicLogFormatter {\n\n    // フォーマット対象のログ出力項目を取得するメソッドをオーバーライドする。\n    @Override\n    protected Map<String, LogItem<LogContext>> getLogItems(ObjectSettings settings) {\n\n        // 起動プロセスのプレースホルダを上書きで設定する。\n        Map<String, LogItem<LogContext>> logItems = super.getLogItems(settings);\n        logItems.put(\"$bootProcess$\", new CustomBootProcessItem(settings));\n        return logItems;\n    }\n}\n```",
-      "hints": []
+      "content": "`BasicLogFormatter` は、\n`LogItem` インタフェースを使用して、\n各プレースホルダに対応する出力項目を取得する。\nそのため、新規にプレースホルダを追加したい場合は、以下のとおり対応する。\n\n* `LogItem` を実装したクラスを作る\n* `BasicLogFormatter` を継承したクラスを作り、プレースホルダを追加する\n\nLogFormatterの設定から起動プロセスを取得するように変更する場合の例を示す。\nLogFormatterの設定は、下記を想定する。\n\n```properties\n# カスタムのLogFormatterを指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.CustomLogFormatter\n\n# フォーマットを指定する。\nwriter.appLog.formatter.format=$date$ -$logLevel$- $loggerName$ [$bootProcess$] $message$\n\n# LogFormatterの設定で起動プロセスを指定する。\n# ここで指定した起動プロセスを$bootProcess$に出力する。\nwriter.appLog.formatter.bootProcess=CUSTOM_PROCESS\n```\n`LogItem` を実装したクラスを作る\n```java\n// カスタムの起動プロセスを取得するクラス。\npublic class CustomBootProcessItem implements LogItem<LogContext> {\n\n    private String bootProcess;\n\n    public CustomBootProcessItem(ObjectSettings settings) {\n        // LogFormatterの設定から起動プロセスを取得する。\n        bootProcess = settings.getProp(\"bootProcess\");\n    }\n\n    @Override\n    public String get(LogContext context) {\n        // 設定から取得した起動プロセスを返す。\n        return bootProcess;\n    }\n}\n```\n`BasicLogFormatter` を継承したクラスを作り、プレースホルダを追加する\n```java\npublic class CustomLogFormatter extends BasicLogFormatter {\n\n    // フォーマット対象のログ出力項目を取得するメソッドをオーバーライドする。\n    @Override\n    protected Map<String, LogItem<LogContext>> getLogItems(ObjectSettings settings) {\n\n        // 起動プロセスのプレースホルダを上書きで設定する。\n        Map<String, LogItem<LogContext>> logItems = super.getLogItems(settings);\n        logItems.put(\"$bootProcess$\", new CustomBootProcessItem(settings));\n        return logItems;\n    }\n}\n```"
     },
     {
       "id": "s16",
       "title": "ログの初期化メッセージを出力しないようにする",
-      "content": "本機能では、各ロガーの初期化時に初期化メッセージをログに出力している。\n監視対象のログなどで、初期化メッセージが不要な場合には本機能が提供するWriterを元に、\n初期化メッセージを出力しないWriterを作成し対応する必要がある。\n\nなお、WebアプリケーションサーバなどやOSS製品とロガーを統一する目的などで logアダプタ を使用した場合は初期化メッセージは出力されないため、本対応は必要無い。\n\n対応例を以下に示す。\n\n1. ベースとなるWriterクラスのソースコードをプロジェクト側に取り込む(コピーする)。\n例えば、ファイルに出力するログの場合には、 `FileLogWriter` をコピーする。\n\n2. 初期化ログを出力している箇所を削除する。\n\n`FileLogWriter` の場合は、\n以下の修正例のように初期化メッセージを出力している箇所を削除する。\n\n```java\nprivate void initializeWriter() {\n  try {\n    out = new BufferedOutputStream(new FileOutputStream(filePath, true), outputBufferSize);\n    currentFileSize = new File(filePath).length();\n\n    // ここで行っていた初期化メッセージの出力処理を削除する\n\n  } catch (IOException e) {\n    throw new IllegalArgumentException(String.format(\"failed to create %s. file name = [%s], encoding = [%s], buffer size =[%s]\",\n        Writer.class.getName(), filePath, charset.displayName(), outputBufferSize), e);\n  }\n}\n```\n3. ログ機能初期化後の初期化メッセージを出力しないよう変更する。\n\n`needsToWrite` をオーバライドし、\n初回に呼び出される初期化メッセージの出力を行わないよう変更する。\n\n```java\n/** 初回判定を行う為のフラグを定義する */\nprivate boolean suppressionWriting = true;\n\n@Override\npublic boolean needsToWrite(final LogContext context) {\n  final String message = context.getMessage();\n  if (suppressionWriting) {\n    // 出力対象のログが「initialized.」から始まっていた場合は、\n    // 初期化メッセージであるため出力対象外であることを示す「false」を戻す。\n    if (StringUtil.hasValue(message) && message.startsWith(\"initialized.\")) {\n      suppressionWriting = false;\n      return false;\n    }\n  }\n  return super.needsToWrite(context);\n}\n```\n4. 作成したクラスをlog.propertiesに設定する。\n\nプロジェクト側で作成したWriterのクラス名を、log.propertiesに設定する。\n\n設定例を以下に示す。\n\n```properties\nwriterNames=sample\n\n# writerのクラス名に作成したクラスを指定する\n# クラスの完全修飾名が「sample.CustomFileLogWriter」の場合の設定例\nwriter.sample.className = sample.CustomFileLogWriter\n```",
-      "hints": []
+      "content": "本機能では、各ロガーの初期化時に初期化メッセージをログに出力している。\n監視対象のログなどで、初期化メッセージが不要な場合には本機能が提供するWriterを元に、\n初期化メッセージを出力しないWriterを作成し対応する必要がある。\n\nなお、WebアプリケーションサーバなどやOSS製品とロガーを統一する目的などで logアダプタ を使用した場合は初期化メッセージは出力されないため、本対応は必要無い。\n\n対応例を以下に示す。\n\n1. ベースとなるWriterクラスのソースコードをプロジェクト側に取り込む(コピーする)。\n例えば、ファイルに出力するログの場合には、 `FileLogWriter` をコピーする。\n\n2. 初期化ログを出力している箇所を削除する。\n\n`FileLogWriter` の場合は、\n以下の修正例のように初期化メッセージを出力している箇所を削除する。\n\n```java\nprivate void initializeWriter() {\n  try {\n    out = new BufferedOutputStream(new FileOutputStream(filePath, true), outputBufferSize);\n    currentFileSize = new File(filePath).length();\n\n    // ここで行っていた初期化メッセージの出力処理を削除する\n\n  } catch (IOException e) {\n    throw new IllegalArgumentException(String.format(\"failed to create %s. file name = [%s], encoding = [%s], buffer size =[%s]\",\n        Writer.class.getName(), filePath, charset.displayName(), outputBufferSize), e);\n  }\n}\n```\n3. ログ機能初期化後の初期化メッセージを出力しないよう変更する。\n\n`needsToWrite` をオーバライドし、\n初回に呼び出される初期化メッセージの出力を行わないよう変更する。\n\n```java\n/** 初回判定を行う為のフラグを定義する */\nprivate boolean suppressionWriting = true;\n\n@Override\npublic boolean needsToWrite(final LogContext context) {\n  final String message = context.getMessage();\n  if (suppressionWriting) {\n    // 出力対象のログが「initialized.」から始まっていた場合は、\n    // 初期化メッセージであるため出力対象外であることを示す「false」を戻す。\n    if (StringUtil.hasValue(message) && message.startsWith(\"initialized.\")) {\n      suppressionWriting = false;\n      return false;\n    }\n  }\n  return super.needsToWrite(context);\n}\n```\n4. 作成したクラスをlog.propertiesに設定する。\n\nプロジェクト側で作成したWriterのクラス名を、log.propertiesに設定する。\n\n設定例を以下に示す。\n\n```properties\nwriterNames=sample\n\n# writerのクラス名に作成したクラスを指定する\n# クラスの完全修飾名が「sample.CustomFileLogWriter」の場合の設定例\nwriter.sample.className = sample.CustomFileLogWriter\n```"
     },
     {
       "id": "s17",
       "title": "JSON形式の構造化ログとして出力する",
-      "content": "LogWriterや各種ログで使用するフォーマッタをJSON出力用のクラスに差し替えることで、ログの出力をJSON形式にできる。\n\n具体的には、以下のとおり修正することで、ログをJSON形式にできる。\n\n* LogWriterで使用するフォーマッタをJsonLogFormatterに変更する\n* 各種ログで使用するフォーマッタをJSONログ用に差し替える\n* NablarchバッチのログをJSON形式にする",
-      "hints": []
+      "content": "LogWriterや各種ログで使用するフォーマッタをJSON出力用のクラスに差し替えることで、ログの出力をJSON形式にできる。\n\n具体的には、以下のとおり修正することで、ログをJSON形式にできる。\n\n* LogWriterで使用するフォーマッタをJsonLogFormatterに変更する\n* 各種ログで使用するフォーマッタをJSONログ用に差し替える\n* NablarchバッチのログをJSON形式にする"
     },
     {
       "id": "s18",
       "title": "LogWriterで使用するフォーマッタをJsonLogFormatterに変更する",
-      "content": "LogWriterで使用するフォーマッタを `JsonLogFormatter` に変更することで、\nログの出力をJSON形式にできる。\n\n使用方法\n`JsonLogFormatter` の設定例を以下に示す。\n\n```properties\n# JSON形式でログを出力する場合はJsonLogFormatterを指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.JsonLogFormatter\n\n# 出力項目を指定する。\nwriter.appLog.formatter.targets=date,logLevel,message,stackTrace\n\n# 日時のフォーマットに使用するパターンを指定する。\n# 指定しなければ\"yyyy-MM-dd HH:mm:ss.SSS\"となる。\nwriter.appLog.formatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\n```\n`JsonLogFormatter` では、\n`targets` プロパティにカンマ区切りで出力項目を指定する。\n使用できる出力項目については、下記の通り。\nなお、デフォルトでは全ての項目が出力される。\n\n| 出力項目 | 説明 |\n|---|---|\n| date | このログ出力を要求した時点の日時。 |\n| logLevel | このログ出力のログレベル。 |\n| loggerName | このログ出力が対応するロガー設定の名称。 |\n| runtimeLoggerName | 実行時に、 `LoggerManager` からロガー取得に指定した名称。 |\n| bootProcess | 起動プロセスを識別する名前。 |\n| processingSystem | 処理方式を識別する名前。 |\n| requestId | このログ出力を要求した時点のリクエストID。 |\n| executionId | このログ出力を要求した時点の実行時ID。 |\n| userId | このログ出力を要求した時点のログインユーザのユーザID。 |\n| message | このログ出力のメッセージ。 |\n| stackTrace | エラー情報に指定された例外オブジェクトのスタックトレース。 |\n| payload | オプション情報に指定されたオブジェクト。 |\n> **Tip:** `datePattern` および `label` (ログレベルの文言指定)は、 `BasicLogFormatter` と同様に機能する。\n記述例\n```java\n// クラスを指定してLoggerを取得する。\n// Loggerはクラス変数に保持する。\nprivate static final Logger LOGGER = LoggerManager.get(UserManager.class);\n```\n```java\nLOGGER.logInfo(\"hello\");\n```\n(出力結果)\n\n```none\n{\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"hello\"}\n```\n項目を独自に追加する\n出力対象に `payload` を含む場合、オプション情報に指定されたMap<String, Object>オブジェクトをJSONオブジェクトとして出力する。\nオブジェクトの変換ルールは下記の通り。\n\n| 出力可能なJavaのクラス | JSONによる出力 |\n|---|---|\n| `String` | JSONの文字列として出力する。 |\n| `Number` 及びそのサブクラス \\|br\\| （ `Integer` , `Long` , `Short` , `Byte` , `Float` , `Double` , `BigDecimal` , `BigInteger` , `AtomicInteger` , `AtomicLong` ） | `toString()` メソッドの戻り値をJSONの数値として出力する。 NaN及び無限大はJSONの文字列として出力する。 |\n| `Boolean` | JSONの真理値（ `true` / `false` ）として出力する。 |\n| `Date` \\|br\\| `Calendar`  及びそのサブクラス \\|br\\| `LocalDateTime` | JSONの文字列として出力する。デフォルトの書式は、 `\"yyyy-MM-dd HH:mm:ss.SSS\"` 。 書式を変更する場合は、 `datePattern` プロパティにて指定する。 |\n| `Map`  の実装クラス | JSONのオブジェクトとして出力する。 キーが `String` ではない場合や値が `null` となる場合は、キーも含め出力されない。 値として `null` を出力する場合は、プロパティ `ignoreNullValueMember` に `false` をセットする。 |\n| `List` の実装クラス、及び配列 | JSONの配列として出力する。 |\n| `null` | JSONの `null` として出力する。 `Map` の値が `null` のとき、デフォルトでは出力対象外となる。 |\n| その他のオブジェクト | `toString()` メソッドの戻り値をJSONの文字列として出力する。 |\n記述例\n```java\nMap<String, Object> structuredArgs = new HashTable<String, Object>();\nstructuredArgs.put(\"key1\", \"value1\");\nstructuredArgs.put(\"key2\", 123);\nstructuredArgs.put(\"key3\", true);\nstructuredArgs.put(\"key4\", null);\nstructuredArgs.put(\"key5\", new Date());\nLOGGER.logInfo(\"addition fields\", structuredArgs);\n```\n(出力結果)\n\n```none\n{\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"addition fields\",\"key1\":\"value1\",\"key2\":123,\"key3\":true,\"key5\":\"2021-02-04 12:34:56.789\"}\n```\n> **Tip:** extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` を使用する場合、 オプション情報に `Map` < `String` , `Object` >以外のオプション情報をセットしないこと。 extdoc:`Map <java.util.Map>` オブジェクトは複数指定することが出来るが、 キーが重複した場合はいずれかの値は無視され、出力されない。",
-      "hints": []
+      "content": "LogWriterで使用するフォーマッタを `JsonLogFormatter` に変更することで、\nログの出力をJSON形式にできる。\n\n使用方法\n`JsonLogFormatter` の設定例を以下に示す。\n\n```properties\n# JSON形式でログを出力する場合はJsonLogFormatterを指定する。\nwriter.appLog.formatter.className=nablarch.core.log.basic.JsonLogFormatter\n\n# 出力項目を指定する。\nwriter.appLog.formatter.targets=date,logLevel,message,stackTrace\n\n# 日時のフォーマットに使用するパターンを指定する。\n# 指定しなければ\"yyyy-MM-dd HH:mm:ss.SSS\"となる。\nwriter.appLog.formatter.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\n```\n`JsonLogFormatter` では、\n`targets` プロパティにカンマ区切りで出力項目を指定する。\n使用できる出力項目については、下記の通り。\nなお、デフォルトでは全ての項目が出力される。\n\n| 出力項目 | 説明 |\n|---|---|\n| date | このログ出力を要求した時点の日時。 |\n| logLevel | このログ出力のログレベル。 |\n| loggerName | このログ出力が対応するロガー設定の名称。 |\n| runtimeLoggerName | 実行時に、 `LoggerManager` からロガー取得に指定した名称。 |\n| bootProcess | 起動プロセスを識別する名前。 |\n| processingSystem | 処理方式を識別する名前。 |\n| requestId | このログ出力を要求した時点のリクエストID。 |\n| executionId | このログ出力を要求した時点の実行時ID。 |\n| userId | このログ出力を要求した時点のログインユーザのユーザID。 |\n| message | このログ出力のメッセージ。 |\n| stackTrace | エラー情報に指定された例外オブジェクトのスタックトレース。 |\n| payload | オプション情報に指定されたオブジェクト。 |\n> **Tip:** `datePattern` および `label` (ログレベルの文言指定)は、 `BasicLogFormatter` と同様に機能する。\n記述例\n```java\n// クラスを指定してLoggerを取得する。\n// Loggerはクラス変数に保持する。\nprivate static final Logger LOGGER = LoggerManager.get(UserManager.class);\n```\n```java\nLOGGER.logInfo(\"hello\");\n```\n(出力結果)\n\n```none\n{\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"hello\"}\n```\n項目を独自に追加する\n出力対象に `payload` を含む場合、オプション情報に指定されたMap<String, Object>オブジェクトをJSONオブジェクトとして出力する。\nオブジェクトの変換ルールは下記の通り。\n\n| 出力可能なJavaのクラス | JSONによる出力 |\n|---|---|\n| `String` | JSONの文字列として出力する。 |\n| `Number` 及びそのサブクラス \\|br\\| （ `Integer` , `Long` , `Short` , `Byte` , `Float` , `Double` , `BigDecimal` , `BigInteger` , `AtomicInteger` , `AtomicLong` ） | `toString()` メソッドの戻り値をJSONの数値として出力する。 NaN及び無限大はJSONの文字列として出力する。 |\n| `Boolean` | JSONの真理値（ `true` / `false` ）として出力する。 |\n| `Date` \\|br\\| `Calendar`  及びそのサブクラス \\|br\\| `LocalDateTime` | JSONの文字列として出力する。デフォルトの書式は、 `\"yyyy-MM-dd HH:mm:ss.SSS\"` 。 書式を変更する場合は、 `datePattern` プロパティにて指定する。 |\n| `Map`  の実装クラス | JSONのオブジェクトとして出力する。 キーが `String` ではない場合や値が `null` となる場合は、キーも含め出力されない。 値として `null` を出力する場合は、プロパティ `ignoreNullValueMember` に `false` をセットする。 |\n| `List` の実装クラス、及び配列 | JSONの配列として出力する。 |\n| `null` | JSONの `null` として出力する。 `Map` の値が `null` のとき、デフォルトでは出力対象外となる。 |\n| その他のオブジェクト | `toString()` メソッドの戻り値をJSONの文字列として出力する。 |\n記述例\n```java\nMap<String, Object> structuredArgs = new HashTable<String, Object>();\nstructuredArgs.put(\"key1\", \"value1\");\nstructuredArgs.put(\"key2\", 123);\nstructuredArgs.put(\"key3\", true);\nstructuredArgs.put(\"key4\", null);\nstructuredArgs.put(\"key5\", new Date());\nLOGGER.logInfo(\"addition fields\", structuredArgs);\n```\n(出力結果)\n\n```none\n{\"date\":\"2021-02-04 12:34:56.789\",\"logLevel\":\"INFO\",\"message\":\"addition fields\",\"key1\":\"value1\",\"key2\":123,\"key3\":true,\"key5\":\"2021-02-04 12:34:56.789\"}\n```\n> **Tip:** extdoc:`JsonLogFormatter <nablarch.core.log.basic.JsonLogFormatter>` を使用する場合、 オプション情報に `Map` < `String` , `Object` >以外のオプション情報をセットしないこと。 extdoc:`Map <java.util.Map>` オブジェクトは複数指定することが出来るが、 キーが重複した場合はいずれかの値は無視され、出力されない。"
     },
     {
       "id": "s19",
       "title": "各種ログで使用するフォーマッタをJSONログ用に差し替える",
-      "content": "各種ログは、メッセージ部分を個別の方法でフォーマットしている。\nそれぞれのフォーマットで使用しているフォーマッタをJSON用のフォーマッタに差し替えることで、各種ログが出力する内容もJSONログとして出力できるようになる。\n\n各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。\n\n| ログの種類 | 対応するフォーマッタ |\n|---|---|\n| 障害ログ | `FailureJsonLogFormatter` |\n| SQLログ | `SqlJsonLogFormatter` |\n| パフォーマンスログ | `PerformanceJsonLogFormatter` |\n| HTTPアクセスログ | `HttpAccessJsonLogFormatter` |\n| HTTPアクセスログ（RESTfulウェブサービス用） | `JaxRsAccessJsonLogFormatter` |\n| メッセージングログ | `MessagingJsonLogFormatter` |",
-      "hints": []
+      "content": "各種ログは、メッセージ部分を個別の方法でフォーマットしている。\nそれぞれのフォーマットで使用しているフォーマッタをJSON用のフォーマッタに差し替えることで、各種ログが出力する内容もJSONログとして出力できるようになる。\n\n各フォーマッタの具体的な設定方法については、下記表のそれぞれのリンク先を参照のこと。\n\n| ログの種類 | 対応するフォーマッタ |\n|---|---|\n| 障害ログ | `FailureJsonLogFormatter` |\n| SQLログ | `SqlJsonLogFormatter` |\n| パフォーマンスログ | `PerformanceJsonLogFormatter` |\n| HTTPアクセスログ | `HttpAccessJsonLogFormatter` |\n| HTTPアクセスログ（RESTfulウェブサービス用） | `JaxRsAccessJsonLogFormatter` |\n| メッセージングログ | `MessagingJsonLogFormatter` |"
     },
     {
       "id": "s20",
       "title": "NablarchバッチのログをJSON形式にする",
-      "content": "Nablarchバッチで出力するログをJSON形式にするには、上述のフォーマッタの設定に加えて下記のとおり修正する必要がある。\n\n* ApplicationSettingLogFormatterをJSON用に切り替える\n* LauncherLogFormatterをJSON用に切り替える\n* CommitLoggerをJSON用に切り替える\n\n以下で、それぞれの設定方法について説明する。\n\n\n#### ApplicationSettingLogFormatterをJSON用に切り替える\n\n`ApplicationSettingLogFormatter` は、システム設定値をログに出力するときに用いられる。\nこれをJSON形式で出力するには、フォーマッタを `ApplicationSettingJsonLogFormatter` に切り替える。\n設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n`ApplicationSettingJsonLogFormatter` を用いる際に\n指定するプロパティは以下の通り。\n\napplicationSettingLogFormatter.className `必須`\nJSON形式でログを出力する場合、\n`ApplicationSettingJsonLogFormatter` を指定する。\n\napplicationSettingLogFormatter.appSettingTargets\nアプリケーション設定ログで出力する項目（業務日付なし）。カンマ区切りで指定する。\n\n指定可能な出力項目およびデフォルトの出力項目\n:システム設定値: systemSettings `デフォルト`\n:業務日付: businessDate\n\napplicationSettingLogFormatter.appSettingWithDateTargets\nアプリケーション設定ログで出力する項目（業務日付あり）。カンマ区切りで指定する。\n\n指定可能な出力項目\n:システム設定: systemSettings\n:業務日付: businessDate\n\nデフォルトは全ての出力項目が対象となる。\n\napplicationSettingLogFormatter.systemSettingItems\n出力するシステム設定値の名前の一覧。カンマ区切りで指定する。\nデフォルトは空なので、何も出力しない。\n\napplicationSettingLogFormatter.structuredMessagePrefix\nフォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。\nメッセージの先頭にこのマーカーがある場合、 `JsonLogFormatter` はメッセージを JSON データとして処理する。\nデフォルトは `\"$JSON$\"` となる。\n\n記述例\n```properties\napplicationSettingLogFormatter.className=nablarch.core.log.app.ApplicationSettingJsonLogFormatter\napplicationSettingLogFormatter.structuredMessagePrefix=$JSON$\napplicationSettingLogFormatter.appSettingTargets=systemSettings\napplicationSettingLogFormatter.appSettingWithDateTargets=systemSettings,businessDate\napplicationSettingLogFormatter.systemSettingItems=dbUser,dbUrl,threadCount\n```\n\n#### LauncherLogFormatterをJSON用に切り替える\n\n`LauncherLogFormatter` は、バッチの開始・終了ログを出力するときに用いられる。\nこれをJSON形式で出力するには、フォーマッタを `LauncherJsonLogFormatter` に切り替える。\n設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n`LauncherJsonLogFormatter` を用いる際に\n指定するプロパティは以下の通り。\n\nlauncherLogFormatter.className `必須`\nJSON形式でログを出力する場合、\n`LauncherJsonLogFormatter` を指定する。\n\nlauncherLogFormatter.startTargets\nバッチの開始ログに出力する項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:開始または終了のラベル: label\n:コマンドラインオプション: commandLineOptions\n:コマンドライン引数: commandLineArguments\n\nデフォルトは全ての出力項目が対象となる。\n\nlauncherLogFormatter.endTargets\nバッチの終了ログに出力する項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:開始または終了のラベル: label\n:終了コード: exitCode\n:処理時間: executeTime\n\nデフォルトは全ての出力項目が対象となる。\n\nlauncherLogFormatter.startLogMsgLabel\n開始ログのlabelで出力する値。デフォルトは `\"BATCH BEGIN\"`。\n\nlauncherLogFormatter.endLogMsgLabel\n終了ログのlabelで出力する値。デフォルトは `\"BATCH END\"`。\n\nlauncherLogFormatter.structuredMessagePrefix\nフォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。\nメッセージの先頭にこのマーカーがある場合、 `JsonLogFormatter` はメッセージを JSON データとして処理する。\nデフォルトは `\"$JSON$\"` となる。\n\n記述例\n```properties\nlauncherLogFormatter.className=nablarch.fw.launcher.logging.LauncherJsonLogFormatter\nlauncherLogFormatter.structuredMessagePrefix=$JSON$\nlauncherLogFormatter.startTargets=label,commandLineOptions,commandLineArguments\nlauncherLogFormatter.endTargets=label,exitCode,executionTime\nlauncherLogFormatter.startLogMsgLabel=BATCH BEGIN\nlauncherLogFormatter.endLogMsgLabel=BATCH END\n```\n\n#### CommitLoggerをJSON用に切り替える\n\n`CommitLogger` は、コミット件数をログに出力するために用いられる。\nデフォルトでは、 `BasicCommitLogger` というクラスが使用される。\n\nこれをJSON形式で出力するには、 `JsonCommitLogger` をコンポーネントとして定義する。\n以下に、コンポーネント定義の例を示す。\n\nコンポーネント定義の例\n```xml\n<component name=\"commitLogger\" class=\"nablarch.core.log.app.JsonCommitLogger\">\n  <property name=\"interval\" value=\"${nablarch.commitLogger.interval}\" />\n</component>\n```\nコンポーネント名は `commitLogger` で定義する必要がある。",
-      "hints": []
+      "content": "Nablarchバッチで出力するログをJSON形式にするには、上述のフォーマッタの設定に加えて下記のとおり修正する必要がある。\n\n* ApplicationSettingLogFormatterをJSON用に切り替える\n* LauncherLogFormatterをJSON用に切り替える\n* CommitLoggerをJSON用に切り替える\n\n以下で、それぞれの設定方法について説明する。\n\n\n#### ApplicationSettingLogFormatterをJSON用に切り替える\n\n`ApplicationSettingLogFormatter` は、システム設定値をログに出力するときに用いられる。\nこれをJSON形式で出力するには、フォーマッタを `ApplicationSettingJsonLogFormatter` に切り替える。\n設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n`ApplicationSettingJsonLogFormatter` を用いる際に\n指定するプロパティは以下の通り。\n\napplicationSettingLogFormatter.className `必須`\nJSON形式でログを出力する場合、\n`ApplicationSettingJsonLogFormatter` を指定する。\n\napplicationSettingLogFormatter.appSettingTargets\nアプリケーション設定ログで出力する項目（業務日付なし）。カンマ区切りで指定する。\n\n指定可能な出力項目およびデフォルトの出力項目\n:システム設定値: systemSettings `デフォルト`\n:業務日付: businessDate\n\napplicationSettingLogFormatter.appSettingWithDateTargets\nアプリケーション設定ログで出力する項目（業務日付あり）。カンマ区切りで指定する。\n\n指定可能な出力項目\n:システム設定: systemSettings\n:業務日付: businessDate\n\nデフォルトは全ての出力項目が対象となる。\n\napplicationSettingLogFormatter.systemSettingItems\n出力するシステム設定値の名前の一覧。カンマ区切りで指定する。\nデフォルトは空なので、何も出力しない。\n\napplicationSettingLogFormatter.structuredMessagePrefix\nフォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。\nメッセージの先頭にこのマーカーがある場合、 `JsonLogFormatter` はメッセージを JSON データとして処理する。\nデフォルトは `\"$JSON$\"` となる。\n\n記述例\n```properties\napplicationSettingLogFormatter.className=nablarch.core.log.app.ApplicationSettingJsonLogFormatter\napplicationSettingLogFormatter.structuredMessagePrefix=$JSON$\napplicationSettingLogFormatter.appSettingTargets=systemSettings\napplicationSettingLogFormatter.appSettingWithDateTargets=systemSettings,businessDate\napplicationSettingLogFormatter.systemSettingItems=dbUser,dbUrl,threadCount\n```\n\n#### LauncherLogFormatterをJSON用に切り替える\n\n`LauncherLogFormatter` は、バッチの開始・終了ログを出力するときに用いられる。\nこれをJSON形式で出力するには、フォーマッタを `LauncherJsonLogFormatter` に切り替える。\n設定は、 各種ログの設定 で説明したプロパティファイルに行う。\n\n記述ルール\n`LauncherJsonLogFormatter` を用いる際に\n指定するプロパティは以下の通り。\n\nlauncherLogFormatter.className `必須`\nJSON形式でログを出力する場合、\n`LauncherJsonLogFormatter` を指定する。\n\nlauncherLogFormatter.startTargets\nバッチの開始ログに出力する項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:開始または終了のラベル: label\n:コマンドラインオプション: commandLineOptions\n:コマンドライン引数: commandLineArguments\n\nデフォルトは全ての出力項目が対象となる。\n\nlauncherLogFormatter.endTargets\nバッチの終了ログに出力する項目。カンマ区切りで指定する。\n\n指定可能な出力項目\n:開始または終了のラベル: label\n:終了コード: exitCode\n:処理時間: executeTime\n\nデフォルトは全ての出力項目が対象となる。\n\nlauncherLogFormatter.startLogMsgLabel\n開始ログのlabelで出力する値。デフォルトは `\"BATCH BEGIN\"`。\n\nlauncherLogFormatter.endLogMsgLabel\n終了ログのlabelで出力する値。デフォルトは `\"BATCH END\"`。\n\nlauncherLogFormatter.structuredMessagePrefix\nフォーマット後のメッセージ文字列が JSON 形式に整形されていることを識別できるようにするために、メッセージの先頭に付与するマーカー文字列。\nメッセージの先頭にこのマーカーがある場合、 `JsonLogFormatter` はメッセージを JSON データとして処理する。\nデフォルトは `\"$JSON$\"` となる。\n\n記述例\n```properties\nlauncherLogFormatter.className=nablarch.fw.launcher.logging.LauncherJsonLogFormatter\nlauncherLogFormatter.structuredMessagePrefix=$JSON$\nlauncherLogFormatter.startTargets=label,commandLineOptions,commandLineArguments\nlauncherLogFormatter.endTargets=label,exitCode,executionTime\nlauncherLogFormatter.startLogMsgLabel=BATCH BEGIN\nlauncherLogFormatter.endLogMsgLabel=BATCH END\n```\n\n#### CommitLoggerをJSON用に切り替える\n\n`CommitLogger` は、コミット件数をログに出力するために用いられる。\nデフォルトでは、 `BasicCommitLogger` というクラスが使用される。\n\nこれをJSON形式で出力するには、 `JsonCommitLogger` をコンポーネントとして定義する。\n以下に、コンポーネント定義の例を示す。\n\nコンポーネント定義の例\n```xml\n<component name=\"commitLogger\" class=\"nablarch.core.log.app.JsonCommitLogger\">\n  <property name=\"interval\" value=\"${nablarch.commitLogger.interval}\" />\n</component>\n```\nコンポーネント名は `commitLogger` で定義する必要がある。"
     },
     {
       "id": "s21",
       "title": "SynchronousFileLogWriterを使用するにあたっての注意事項",
-      "content": "> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` は複数プロセスからの書き込み用に作成したものであるが、 障害通知ログ のように出力頻度が低いログ出力にのみ使用することを想定している。 頻繁にログの出力が行われる場面で `SynchronousFileLogWriter` を使用すると ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性があるので、アプリケーションログやアクセスログのように出力頻度の高いログの出力に extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用してはいけない。 また、`SynchronousFileLogWriter` には以下の制約があるため、使用にあたっては十分検討すること。 * ログのローテーションができない。 * 出力されるログの内容が正常でない場合がある。\n`SynchronousFileLogWriter` は、\nロックファイルを用いて排他制御を行いながらファイルにログを書き込む。\nそして、ロック取得の待機時間を超えてもロックを取得できない場合、強制的にロックファイルを削除し、\n自身のスレッド用のロックファイルを生成してからログを出力する。\n\nもし強制的にロックファイルを削除できない場合は、ロックを取得していない状態で強制的にログを出力する。\nまた、ロックファイルの生成に失敗した場合および、ロック取得待ちの際に割り込みが発生した場合も、\nロックを取得していない状態で強制的にログを出力する。\n\n**ロックを取得しない状態で強制的にログを出力する場合に、複数プロセスからのログ出力が競合するとログが正常に出力されない場合がある点に注意すること。**\n\nこのような障害が発生した場合には、強制出力したログに加えて、同一のログファイルに障害のログを出力する。\nデフォルトでは本フレームワークが用意したログが出力されるが、\n`SynchronousFileLogWriter`\nのプロパティに障害コードを設定することで、障害通知ログのフォーマット(障害コードを含む)でログを出力できる。\n障害通知ログのフォーマットで出力することで通常の障害通知ログと同様の方法でログの監視が可能となるので、\n障害コードを設定することを推奨する。\n\n障害コードを設定するプロパティ名を以下に示す。\n\nfailureCodeCreateLockFile\n:障害の内容: ロックファイルが生成できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].\n\nfailureCodeReleaseLockFile\n:障害の内容: 生成したロックファイルを解放(削除)できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの削除に失敗しました。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file. lock file path=[{0}].\n\nfailureCodeForceDeleteLockFile\n:障害の内容: 解放されないロックファイルを強制削除できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの強制削除に失敗しました。ロックファイルが不正に開かれています。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].\n\nfailureCodeInterruptLockWait\n:障害の内容: ロック取得待ちでスレッドをスリープしている際に、割り込みが発生\n:ログレベル: FATAL\n:メッセージの設定例: ロック取得中に割り込みが発生しました。\n:デフォルトで出力するログ(障害コードなどは出力されない): interrupted while waiting for lock retry.\n\n> **Important:** 障害コードを設定した場合、障害通知ログのフォーマットで同一のログファイルにログが出力されるが、 障害解析ログは出力されない点に注意すること。\n`SynchronousFileLogWriter`\nの設定例を以下に示す。\n\n```properties\nwriterNames=monitorLog\n\n# SynchronousFileLogWriterクラスを指定する。\nwriter.monitorLog.className=nablarch.core.log.basic.SynchronousFileLogWriter\n# 書き込み先のファイルパスを指定する。\nwriter.monitorLog.filePath=/var/log/app/monitor.log\n# 書き込み時に使用する文字エンコーディングを指定する。\nwriter.monitorLog.encoding=UTF-8\n# 出力バッファのサイズを指定する。(単位はキロバイト。1000バイトを1キロバイトと換算する。指定しなければ8KB)\nwriter.monitorLog.outputBufferSize=8\n# ログフォーマッタのクラス名を指定する。\nwriter.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n# LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。\nwriter.monitorLog.level=ERROR\n# ロックファイルのファイル名を指定する。\nwriter.monitorLog.lockFilePath=/var/log/lock/monitor.lock\n# ロック取得の再試行間隔(ミリ秒)を指定する。\nwriter.monitorLog.lockRetryInterval=10\n# ロック取得の待機時間(ミリ秒)を指定する。\nwriter.monitorLog.lockWaitTime=3000\n# ロックファイルが生成できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeCreateLockFile=MSG00101\n# 生成したロックファイルを解放(削除)できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeReleaseLockFile=MSG00102\n# 解放されないロックファイルを強制削除できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeForceDeleteLockFile=MSG00103\n# ロック待ちでスレッドをスリープしている際に、割り込みが発生した場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeInterruptLockWait=MSG00104\n```\n> **Important:** maxFileSizeプロパティを指定するとログのローテーションが発生し、 ログの出力が出来なくなることがあるので指定しないこと。",
-      "hints": []
+      "content": "> **Important:** extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` は複数プロセスからの書き込み用に作成したものであるが、 障害通知ログ のように出力頻度が低いログ出力にのみ使用することを想定している。 頻繁にログの出力が行われる場面で `SynchronousFileLogWriter` を使用すると ロック取得待ちによる性能劣化や競合によるログの消失が発生する可能性があるので、アプリケーションログやアクセスログのように出力頻度の高いログの出力に extdoc:`SynchronousFileLogWriter <nablarch.core.log.basic.SynchronousFileLogWriter>` を使用してはいけない。 また、`SynchronousFileLogWriter` には以下の制約があるため、使用にあたっては十分検討すること。 * ログのローテーションができない。 * 出力されるログの内容が正常でない場合がある。\n`SynchronousFileLogWriter` は、\nロックファイルを用いて排他制御を行いながらファイルにログを書き込む。\nそして、ロック取得の待機時間を超えてもロックを取得できない場合、強制的にロックファイルを削除し、\n自身のスレッド用のロックファイルを生成してからログを出力する。\n\nもし強制的にロックファイルを削除できない場合は、ロックを取得していない状態で強制的にログを出力する。\nまた、ロックファイルの生成に失敗した場合および、ロック取得待ちの際に割り込みが発生した場合も、\nロックを取得していない状態で強制的にログを出力する。\n\n**ロックを取得しない状態で強制的にログを出力する場合に、複数プロセスからのログ出力が競合するとログが正常に出力されない場合がある点に注意すること。**\n\nこのような障害が発生した場合には、強制出力したログに加えて、同一のログファイルに障害のログを出力する。\nデフォルトでは本フレームワークが用意したログが出力されるが、\n`SynchronousFileLogWriter`\nのプロパティに障害コードを設定することで、障害通知ログのフォーマット(障害コードを含む)でログを出力できる。\n障害通知ログのフォーマットで出力することで通常の障害通知ログと同様の方法でログの監視が可能となるので、\n障害コードを設定することを推奨する。\n\n障害コードを設定するプロパティ名を以下に示す。\n\nfailureCodeCreateLockFile\n:障害の内容: ロックファイルが生成できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの生成に失敗しました。おそらくロックファイルのパスが間違っています。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to create lock file. perhaps lock file path was invalid. lock file path=[{0}].\n\nfailureCodeReleaseLockFile\n:障害の内容: 生成したロックファイルを解放(削除)できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの削除に失敗しました。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file. lock file path=[{0}].\n\nfailureCodeForceDeleteLockFile\n:障害の内容: 解放されないロックファイルを強制削除できない\n:ログレベル: FATAL\n:メッセージの設定例({0}にはロックファイルのパスが設定される): ロックファイルの強制削除に失敗しました。ロックファイルが不正に開かれています。ロックファイルパス=[{0}]。\n:デフォルトで出力するログ(障害コードなどは出力されない): failed to delete lock file forcedly. lock file was opened illegally. lock file path=[{0}].\n\nfailureCodeInterruptLockWait\n:障害の内容: ロック取得待ちでスレッドをスリープしている際に、割り込みが発生\n:ログレベル: FATAL\n:メッセージの設定例: ロック取得中に割り込みが発生しました。\n:デフォルトで出力するログ(障害コードなどは出力されない): interrupted while waiting for lock retry.\n\n> **Important:** 障害コードを設定した場合、障害通知ログのフォーマットで同一のログファイルにログが出力されるが、 障害解析ログは出力されない点に注意すること。\n`SynchronousFileLogWriter`\nの設定例を以下に示す。\n\n```properties\nwriterNames=monitorLog\n\n# SynchronousFileLogWriterクラスを指定する。\nwriter.monitorLog.className=nablarch.core.log.basic.SynchronousFileLogWriter\n# 書き込み先のファイルパスを指定する。\nwriter.monitorLog.filePath=/var/log/app/monitor.log\n# 書き込み時に使用する文字エンコーディングを指定する。\nwriter.monitorLog.encoding=UTF-8\n# 出力バッファのサイズを指定する。(単位はキロバイト。1000バイトを1キロバイトと換算する。指定しなければ8KB)\nwriter.monitorLog.outputBufferSize=8\n# ログフォーマッタのクラス名を指定する。\nwriter.monitorLog.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n# LogLevel列挙型の名称を指定する。ここで指定したレベル以上のログを全て出力する。\nwriter.monitorLog.level=ERROR\n# ロックファイルのファイル名を指定する。\nwriter.monitorLog.lockFilePath=/var/log/lock/monitor.lock\n# ロック取得の再試行間隔(ミリ秒)を指定する。\nwriter.monitorLog.lockRetryInterval=10\n# ロック取得の待機時間(ミリ秒)を指定する。\nwriter.monitorLog.lockWaitTime=3000\n# ロックファイルが生成できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeCreateLockFile=MSG00101\n# 生成したロックファイルを解放(削除)できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeReleaseLockFile=MSG00102\n# 解放されないロックファイルを強制削除できない場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeForceDeleteLockFile=MSG00103\n# ロック待ちでスレッドをスリープしている際に、割り込みが発生した場合の障害通知コードを指定する。\nwriter.monitorLog.failureCodeInterruptLockWait=MSG00104\n```\n> **Important:** maxFileSizeプロパティを指定するとログのローテーションが発生し、 ログの出力が出来なくなることがあるので指定しないこと。"
     },
     {
       "id": "s22",
       "title": "LogPublisherの使い方",
-      "content": "`LogPublisher` は、出力されたログの情報(`LogContext`)を登録された `LogListener` に連携する機能を提供する。\n出力されたログ情報に対して何らかの処理をプログラム的に行いたい場合に、この機能が使用できる。\n\n`LogPublisher` を使用するには、まず `LogPublisher` を `LogWriter` として設定する。\n\n```properties\n# ...省略\n\n# writerNames に LogPublisher の writer を追加する\nwriterNames=monitorFile,appFile,stdout,logPublisher\n\n# logPublisher を定義する\nwriter.logPublisher.className=nablarch.core.log.basic.LogPublisher\nwriter.logPublisher.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n# ...省略\n\n# ログ情報を処理したい logger の writerNames に、 LogPublisher の writer を追加する\n# ROO\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appFile,stdout,logPublisher\n\n# MON\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorFile,logPublisher\n\n# ...省略\n```\n次に、 `LogWriter` に登録する `LogListener` の実装クラスを作成する。\n\n```java\npackage example.micrometer.log;\n\nimport nablarch.core.log.basic.LogContext;\nimport nablarch.core.log.basic.LogListener;\n\npublic class CustomLogListener implements LogListener {\n\n    @Override\n    public void onWritten(LogContext context) {\n        // LogContext を使った処理を実装する\n    }\n}\n```\n最後に、作成した `LogListener` のインスタンスを `LogPublisher` に登録する。\n`LogListener` の登録は、 `LogPublisher` の `static` メソッドを介して行う。\n\n```java\nLogListener listener = new CustomLogListener();\nLogPublisher.addListener(listener);\n```\n以上で、 `LogPublisher` に対して出力されたログ情報が `CustomLogListener` に連携されるようになる。\n\n登録した `LogListener` は、 `removeListener(LogListener)` または `removeAllListeners()` で削除できる。",
-      "hints": []
+      "content": "`LogPublisher` は、出力されたログの情報(`LogContext`)を登録された `LogListener` に連携する機能を提供する。\n出力されたログ情報に対して何らかの処理をプログラム的に行いたい場合に、この機能が使用できる。\n\n`LogPublisher` を使用するには、まず `LogPublisher` を `LogWriter` として設定する。\n\n```properties\n# ...省略\n\n# writerNames に LogPublisher の writer を追加する\nwriterNames=monitorFile,appFile,stdout,logPublisher\n\n# logPublisher を定義する\nwriter.logPublisher.className=nablarch.core.log.basic.LogPublisher\nwriter.logPublisher.formatter.className=nablarch.core.log.basic.BasicLogFormatter\n# ...省略\n\n# ログ情報を処理したい logger の writerNames に、 LogPublisher の writer を追加する\n# ROO\nloggers.ROO.nameRegex=.*\nloggers.ROO.level=INFO\nloggers.ROO.writerNames=appFile,stdout,logPublisher\n\n# MON\nloggers.MON.nameRegex=MONITOR\nloggers.MON.level=ERROR\nloggers.MON.writerNames=monitorFile,logPublisher\n\n# ...省略\n```\n次に、 `LogWriter` に登録する `LogListener` の実装クラスを作成する。\n\n```java\npackage example.micrometer.log;\n\nimport nablarch.core.log.basic.LogContext;\nimport nablarch.core.log.basic.LogListener;\n\npublic class CustomLogListener implements LogListener {\n\n    @Override\n    public void onWritten(LogContext context) {\n        // LogContext を使った処理を実装する\n    }\n}\n```\n最後に、作成した `LogListener` のインスタンスを `LogPublisher` に登録する。\n`LogListener` の登録は、 `LogPublisher` の `static` メソッドを介して行う。\n\n```java\nLogListener listener = new CustomLogListener();\nLogPublisher.addListener(listener);\n```\n以上で、 `LogPublisher` に対して出力されたログ情報が `CustomLogListener` に連携されるようになる。\n\n登録した `LogListener` は、 `removeListener(LogListener)` または `removeAllListeners()` で削除できる。"
     },
     {
       "id": "s23",
       "title": "ログレベルの定義",
-      "content": "本機能では、以下のログレベルを使用する。\n\n| ログレベル | 説明 |\n|---|---|\n| FATAL | アプリケーションの継続が不可能になる深刻な問題が発生したことを示す。 監視が必須で即通報および即対応が必要となる。 |\n| ERROR | アプリケーションの継続に支障をきたす問題が発生したことを示す。 監視が必須であるが、通報および対応にFATALレベルほどの緊急性がない。 |\n| WARN | すぐには影響を与えないが、放置しておくとアプリケーションの継続に支障をきたす問題になる恐れがある事象が発生したことを示す。 できれば監視した方がよいが、ERRORレベルほどの緊急性がない。 |\n| INFO | 本番運用時にアプリケーションの情報を出力するログレベル。アクセスログや統計ログが該当する。 |\n| DEBUG | 開発時にデバッグ情報を出力するログレベル。SQLログや性能ログが該当する。 |\n| TRACE | 開発時にデバッグ情報より、さらに細かい情報を出力したい場合に使用するログレベル。 |\nログレベルは、6段階とし、FATALからTRACEに向かって順にレベルが低くなる。\nそして、ログ出力機能では、設定で指定されたレベル以上のログを全て出力する。\n例えば、WARNレベルが設定で指定された場合は、FATALレベル,ERRORレベル,WARNレベルが指定されたログのみ出力する。\n\n> **Tip:** 本番運用時は、INFOレベルでログを出力することを想定している。 ログファイルのサイズが肥大化しないように、プロジェクト毎にログの出力内容を規定すること。\n> **Tip:** 本フレームワークでも、ログ出力機能を使ってログを出力している。 フレームワークが出力するログについては、 フレームワークのログ出力方針 を参照すること。",
-      "hints": []
+      "content": "本機能では、以下のログレベルを使用する。\n\n| ログレベル | 説明 |\n|---|---|\n| FATAL | アプリケーションの継続が不可能になる深刻な問題が発生したことを示す。 監視が必須で即通報および即対応が必要となる。 |\n| ERROR | アプリケーションの継続に支障をきたす問題が発生したことを示す。 監視が必須であるが、通報および対応にFATALレベルほどの緊急性がない。 |\n| WARN | すぐには影響を与えないが、放置しておくとアプリケーションの継続に支障をきたす問題になる恐れがある事象が発生したことを示す。 できれば監視した方がよいが、ERRORレベルほどの緊急性がない。 |\n| INFO | 本番運用時にアプリケーションの情報を出力するログレベル。アクセスログや統計ログが該当する。 |\n| DEBUG | 開発時にデバッグ情報を出力するログレベル。SQLログや性能ログが該当する。 |\n| TRACE | 開発時にデバッグ情報より、さらに細かい情報を出力したい場合に使用するログレベル。 |\nログレベルは、6段階とし、FATALからTRACEに向かって順にレベルが低くなる。\nそして、ログ出力機能では、設定で指定されたレベル以上のログを全て出力する。\n例えば、WARNレベルが設定で指定された場合は、FATALレベル,ERRORレベル,WARNレベルが指定されたログのみ出力する。\n\n> **Tip:** 本番運用時は、INFOレベルでログを出力することを想定している。 ログファイルのサイズが肥大化しないように、プロジェクト毎にログの出力内容を規定すること。\n> **Tip:** 本フレームワークでも、ログ出力機能を使ってログを出力している。 フレームワークが出力するログについては、 フレームワークのログ出力方針 を参照すること。"
     },
     {
       "id": "s24",
       "title": "フレームワークのログ出力方針",
-      "content": "本フレームワークでは、下記の出力方針に基づきログ出力を行う。\n\n| ログレベル | 出力方針 |\n|---|---|\n| FATAL/ERROR | 障害ログの出力時にFATAL/ERRORレベルで出力する。 障害ログは、障害監視の対象であり、障害発生時の1次切り分けの起点ともなる為、 原則として1件の障害に対して、1件の障害ログを出力する方針としている。 このため、実行制御基盤では単一のハンドラ(例外を処理するハンドラ)により、 障害通知ログを出力する方針としている。 |\n| WARN | 障害発生時に連鎖して例外が発生した場合など、 障害ログとして出力できない例外をWARNレベルで出力する。 例えば、業務処理とトランザクションの終了処理の2つで例外が発生した場合は、 業務処理の例外を障害ログに出力し、トランザクションの終了処理の例外をWARNレベルで出力する。 |\n| INFO | アプリケーションの実行状況に関連するエラーを検知した場合にINFOレベルで出力する。 例えば、URLパラメータの改竄エラーや認可チェックエラーが発生した場合にINFOレベルで出力する。 |\n| DEBUG | アプリケーション開発時に使用するデバッグ情報を出力する。 アプリケーション開発時は、DEBUGレベルを設定することで開発に必要な情報が出力されるよう考慮している。 |\n| TRACE | フレームワーク開発時に使用するデバッグ情報を出力する。アプリケーション開発での使用は想定していない。 |",
-      "hints": []
+      "content": "本フレームワークでは、下記の出力方針に基づきログ出力を行う。\n\n| ログレベル | 出力方針 |\n|---|---|\n| FATAL/ERROR | 障害ログの出力時にFATAL/ERRORレベルで出力する。 障害ログは、障害監視の対象であり、障害発生時の1次切り分けの起点ともなる為、 原則として1件の障害に対して、1件の障害ログを出力する方針としている。 このため、実行制御基盤では単一のハンドラ(例外を処理するハンドラ)により、 障害通知ログを出力する方針としている。 |\n| WARN | 障害発生時に連鎖して例外が発生した場合など、 障害ログとして出力できない例外をWARNレベルで出力する。 例えば、業務処理とトランザクションの終了処理の2つで例外が発生した場合は、 業務処理の例外を障害ログに出力し、トランザクションの終了処理の例外をWARNレベルで出力する。 |\n| INFO | アプリケーションの実行状況に関連するエラーを検知した場合にINFOレベルで出力する。 例えば、URLパラメータの改竄エラーや認可チェックエラーが発生した場合にINFOレベルで出力する。 |\n| DEBUG | アプリケーション開発時に使用するデバッグ情報を出力する。 アプリケーション開発時は、DEBUGレベルを設定することで開発に必要な情報が出力されるよう考慮している。 |\n| TRACE | フレームワーク開発時に使用するデバッグ情報を出力する。アプリケーション開発での使用は想定していない。 |"
     },
     {
       "id": "s25",
       "title": "log4jとの機能比較",
-      "content": "ここでは、本機能と [log4j(外部サイト、英語)](https://logging.apache.org/log4j/1.x/) との機能比較を示す。\n\n| 機能 | Nablarch | log4j |\n|---|---|---|\n| ログの出力有無をログレベルで制御できる | ○ \\|br\\| 解説書へ | ○ |\n| ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる | ○ \\|br\\| 解説書へ | ○ |\n| 1つのログを複数の出力先に出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ログを標準出力に出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ログをファイルに出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ファイルサイズによるログファイルのローテーションができる | △ [#logrolate]_ \\|br\\| 解説書へ | ○ |\n| 日時によるログファイルのローテーションができる | △ [#logrolate]_ \\|br\\| 解説書へ | ○ |\n| ログをメールで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをTelnetで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをSyslogで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをWindows NTのイベントログに追加できる | × [#extends_or_log4j]_ | ○ |\n| データベースにログを出力できる | × [#extends_or_log4j]_ | ○ |\n| ログを非同期で出力できる | × [#extends_or_log4j]_ | ○ |\n| ログのフォーマットをパターン文字列で指定できる | ○ \\|br\\| 解説書へ | ○ |\n| 障害ログを出力できる | ○ \\|br\\| 解説書へ | － |\n| HTTPアクセスログを出力できる | ○ \\|br\\| 解説書へ | － |\n| SQLログを出力できる | ○ \\|br\\| 解説書へ | － |\n| パフォーマンスログを出力できる | ○ \\|br\\| 解説書へ | － |\n| メッセージングログを出力できる | ○ \\|br\\| 解説書へ | － |\nNablarchのログ出力は、ファイルの世代管理を提供していないので、一部提供ありとしている。\n.. [#extends_or_log4j] logアダプタ を使用する。\nまたは、プロジェクトで作成する。作成方法は、 LogWriterを追加する を参照。\n\n.. |br| raw:: html\n\n<br />",
-      "hints": []
-    }
-  ],
-  "index": [
-    {
-      "id": "s1",
-      "title": "機能概要",
-      "hints": [
-        "SynchronousFileLogWriter",
-        "nablarch.core.log.basic.SynchronousFileLogWriter",
-        "failureCodeCreateLockFile",
-        "failureCodeReleaseLockFile",
-        "failureCodeForceDeleteLockFile",
-        "failureCodeInterruptLockWait",
-        "lockFilePath",
-        "lockRetryInterval",
-        "lockWaitTime",
-        "outputBufferSize",
-        "複数プロセス書き込み",
-        "ロックファイル排他制御",
-        "障害通知ログ",
-        "ログ競合",
-        "BasicLogFormatter",
-        "maxFileSize",
-        "filePath",
-        "encoding",
-        "level",
-        "writerNames",
-        "BasicLogger",
-        "BasicLoggerFactory",
-        "FileLogWriter",
-        "StandardOutputLogWriter",
-        "LogPublisher",
-        "DateRotatePolicy",
-        "FileSizeRotatePolicy",
-        "LogWriter",
-        "LogFormatter",
-        "Logger",
-        "LoggerFactory",
-        "ログ出力機能",
-        "LogWriter差し替え",
-        "LogFormatter差し替え",
-        "Logger差し替え",
-        "ログの種類",
-        "failure_log",
-        "sql_log",
-        "performance_log",
-        "http_access_log",
-        "jaxrs_access_log",
-        "messaging_log",
-        "障害ログ",
-        "ブランクプロジェクト",
-        "アーキタイプ",
-        "システムプロパティ",
-        "ログ設定上書き",
-        "プロセス毎設定変更",
-        "loggers.root.level",
-        "JsonLogFormatter",
-        "LoggerManager",
-        "targets",
-        "datePattern",
-        "ignoreNullValueMember",
-        "payload",
-        "JSON形式ログ出力",
-        "構造化ログ",
-        "JsonLogFormatter設定",
-        "payload追加",
-        "writer.appLog.formatter.className",
-        "writer.appLog.formatter.targets",
-        "writer.appLog.formatter.datePattern"
-      ]
-    },
-    {
-      "id": "s2",
-      "title": "ログ出力機能の実装を差し替えることができる",
-      "hints": []
-    },
-    {
-      "id": "s3",
-      "title": "各種ログの出力機能を予め提供している",
-      "hints": []
-    },
-    {
-      "id": "s4",
-      "title": "モジュール一覧",
-      "hints": [
-        "LogPublisher",
-        "LogListener",
-        "LogContext",
-        "nablarch.core.log.basic.LogPublisher",
-        "nablarch.core.log.basic.LogListener",
-        "nablarch.core.log.basic.LogContext",
-        "addListener",
-        "removeListener",
-        "removeAllListeners",
-        "ログイベント連携",
-        "ログリスナー登録",
-        "onWritten",
-        "nablarch-core",
-        "nablarch-core-applog",
-        "nablarch-core-jdbc",
-        "nablarch-fw-web",
-        "nablarch-fw-jaxrs",
-        "nablarch-fw-messaging",
-        "Maven依存関係",
-        "モジュール設定",
-        "BasicLogFormatter",
-        "LogFormatter",
-        "ThreadContext",
-        "起動プロセス",
-        "処理方式",
-        "実行時ID",
-        "thread_context_handler",
-        "nablarch.bootProcess",
-        "nablarch.processingSystem",
-        "プレースホルダ",
-        "datePattern",
-        "ログフォーマット",
-        "FailureJsonLogFormatter",
-        "SqlJsonLogFormatter",
-        "PerformanceJsonLogFormatter",
-        "HttpAccessJsonLogFormatter",
-        "JaxRsAccessJsonLogFormatter",
-        "MessagingJsonLogFormatter",
-        "各種ログJSON",
-        "フォーマッタ差し替え",
-        "障害ログ",
-        "SQLログ",
-        "パフォーマンスログ",
-        "HTTPアクセスログ",
-        "メッセージングログ"
-      ]
-    },
-    {
-      "id": "s5",
-      "title": "使用方法",
-      "hints": []
-    },
-    {
-      "id": "s6",
-      "title": "ログを出力する",
-      "hints": [
-        "FATAL",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE",
-        "ログレベル定義",
-        "ログ出力制御",
-        "Logger",
-        "LoggerManager",
-        "LoggerManager.get",
-        "isDebugEnabled",
-        "logDebug",
-        "ログ出力",
-        "ロガー取得",
-        "ログレベル事前チェック",
-        "app-log.properties",
-        "nablarch.appLog.filePath",
-        "FileUtil",
-        "各種ログ設定",
-        "failure_log",
-        "sql_log",
-        "performance_log",
-        "http_access_log",
-        "jaxrs_access_log",
-        "messaging_log",
-        "ApplicationSettingJsonLogFormatter",
-        "ApplicationSettingLogFormatter",
-        "LauncherJsonLogFormatter",
-        "LauncherLogFormatter",
-        "CommitLogger",
-        "BasicCommitLogger",
-        "JsonCommitLogger",
-        "structuredMessagePrefix",
-        "applicationSettingLogFormatter.className",
-        "applicationSettingLogFormatter.appSettingTargets",
-        "applicationSettingLogFormatter.appSettingWithDateTargets",
-        "applicationSettingLogFormatter.systemSettingItems",
-        "launcherLogFormatter.className",
-        "launcherLogFormatter.startTargets",
-        "launcherLogFormatter.endTargets",
-        "launcherLogFormatter.startLogMsgLabel",
-        "launcherLogFormatter.endLogMsgLabel",
-        "バッチJSON設定",
-        "commitLogger"
-      ]
-    },
-    {
-      "id": "s7",
-      "title": "ログ出力の設定",
-      "hints": [
-        "フレームワークログ出力方針",
-        "障害ログ",
-        "FATAL",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE",
-        "log.properties",
-        "nablarch.log.filePath",
-        "loggerFactory.className",
-        "writerNames",
-        "availableLoggersNamesOrder",
-        "nameRegex",
-        "loggers",
-        "BasicLoggerFactory",
-        "LogLevel",
-        "FileUtil",
-        "ログ設定",
-        "プロパティファイル",
-        "LogWriter設定",
-        "ロガー設定",
-        "FileLogWriter",
-        "StandardOutputLogWriter",
-        "FileSizeRotatePolicy",
-        "DateRotatePolicy",
-        "RotatePolicy",
-        "ログローテーション",
-        "rotatePolicy",
-        "rotateTime"
-      ]
-    },
-    {
-      "id": "s8",
-      "title": "ログ出力の設定を上書く",
-      "hints": [
-        "log4j",
-        "機能比較",
-        "ログローテーション",
-        "log_adaptor",
-        "log-add_log_writer",
-        "ファイルサイズローテーション",
-        "非同期ログ出力",
-        "LogWriter",
-        "LogWriterSupport",
-        "LogFormatter",
-        "LogWriter拡張",
-        "LogWriter追加"
-      ]
-    },
-    {
-      "id": "s9",
-      "title": "ログのフォーマットを指定する",
-      "hints": [
-        "LogFormatter",
-        "LogLevelLabelProvider",
-        "Logger",
-        "LogFormatter拡張",
-        "LogFormatter追加",
-        "options引数",
-        "可変長引数",
-        "logInfo"
-      ]
-    },
-    {
-      "id": "s10",
-      "title": "各種ログの設定",
-      "hints": [
-        "BasicLogFormatter",
-        "LogItem",
-        "ObjectSettings",
-        "LogContext",
-        "プレースホルダ追加",
-        "getLogItems",
-        "CustomBootProcessItem",
-        "CustomLogFormatter"
-      ]
-    },
-    {
-      "id": "s11",
-      "title": "ログファイルのローテーションを行う",
-      "hints": [
-        "FileLogWriter",
-        "LogWriterSupport",
-        "needsToWrite",
-        "初期化メッセージ抑制",
-        "suppressionWriting",
-        "log_adaptor",
-        "初期化メッセージ",
-        "StringUtil",
-        "initializeWriter"
-      ]
-    },
-    {
-      "id": "s12",
-      "title": "拡張例",
-      "hints": []
-    },
-    {
-      "id": "s13",
-      "title": "LogWriterを追加する",
-      "hints": []
-    },
-    {
-      "id": "s14",
-      "title": "LogFormatterを追加する",
-      "hints": []
-    },
-    {
-      "id": "s15",
-      "title": "ログの出力項目(プレースホルダ)を追加する",
-      "hints": []
-    },
-    {
-      "id": "s16",
-      "title": "ログの初期化メッセージを出力しないようにする",
-      "hints": []
-    },
-    {
-      "id": "s17",
-      "title": "JSON形式の構造化ログとして出力する",
-      "hints": []
-    },
-    {
-      "id": "s18",
-      "title": "LogWriterで使用するフォーマッタをJsonLogFormatterに変更する",
-      "hints": []
-    },
-    {
-      "id": "s19",
-      "title": "各種ログで使用するフォーマッタをJSONログ用に差し替える",
-      "hints": []
-    },
-    {
-      "id": "s20",
-      "title": "NablarchバッチのログをJSON形式にする",
-      "hints": []
-    },
-    {
-      "id": "s21",
-      "title": "SynchronousFileLogWriterを使用するにあたっての注意事項",
-      "hints": []
-    },
-    {
-      "id": "s22",
-      "title": "LogPublisherの使い方",
-      "hints": []
-    },
-    {
-      "id": "s23",
-      "title": "ログレベルの定義",
-      "hints": []
-    },
-    {
-      "id": "s24",
-      "title": "フレームワークのログ出力方針",
-      "hints": []
-    },
-    {
-      "id": "s25",
-      "title": "log4jとの機能比較",
-      "hints": []
+      "content": "ここでは、本機能と [log4j(外部サイト、英語)](https://logging.apache.org/log4j/1.x/) との機能比較を示す。\n\n| 機能 | Nablarch | log4j |\n|---|---|---|\n| ログの出力有無をログレベルで制御できる | ○ \\|br\\| 解説書へ | ○ |\n| ログの出力有無をカテゴリ(パッケージ単位や名前など)で制御できる | ○ \\|br\\| 解説書へ | ○ |\n| 1つのログを複数の出力先に出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ログを標準出力に出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ログをファイルに出力できる | ○ \\|br\\| 解説書へ | ○ |\n| ファイルサイズによるログファイルのローテーションができる | △ [#logrolate]_ \\|br\\| 解説書へ | ○ |\n| 日時によるログファイルのローテーションができる | △ [#logrolate]_ \\|br\\| 解説書へ | ○ |\n| ログをメールで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをTelnetで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをSyslogで送信できる | × [#extends_or_log4j]_ | ○ |\n| ログをWindows NTのイベントログに追加できる | × [#extends_or_log4j]_ | ○ |\n| データベースにログを出力できる | × [#extends_or_log4j]_ | ○ |\n| ログを非同期で出力できる | × [#extends_or_log4j]_ | ○ |\n| ログのフォーマットをパターン文字列で指定できる | ○ \\|br\\| 解説書へ | ○ |\n| 障害ログを出力できる | ○ \\|br\\| 解説書へ | － |\n| HTTPアクセスログを出力できる | ○ \\|br\\| 解説書へ | － |\n| SQLログを出力できる | ○ \\|br\\| 解説書へ | － |\n| パフォーマンスログを出力できる | ○ \\|br\\| 解説書へ | － |\n| メッセージングログを出力できる | ○ \\|br\\| 解説書へ | － |\nNablarchのログ出力は、ファイルの世代管理を提供していないので、一部提供ありとしている。\n.. [#extends_or_log4j] logアダプタ を使用する。\nまたは、プロジェクトで作成する。作成方法は、 LogWriterを追加する を参照。\n\n.. |br| raw:: html\n\n<br />"
     }
   ]
 }

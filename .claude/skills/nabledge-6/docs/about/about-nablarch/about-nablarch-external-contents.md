@@ -1,12 +1,5 @@
 # Nablarchでの開発に役立つコンテンツ
 
-<details>
-<summary>keywords</summary>
-
-Fintan, 開発標準, 開発ツール, ガイド, コンテンツ一覧
-
-</details>
-
 Nablarchはアプリケーションフレームワークだけではなく、生産性を高め、品質の向上に役立つ開発標準、開発ツール、ガイド類も提供している。
 これらのコンテンツの多くは [Fintan(外部サイト)](https://fintan.jp/) 上で公開されており、Nablarchと組み合わせて活用することを推奨する。
 ここでは、その中でも特に有用なコンテンツを紹介する。
@@ -25,13 +18,6 @@ Nablarchを使ったシステム開発に必要と考えているアクティビ
 
 | [Nablarchシステム開発ガイド(外部サイト)](https://fintan.jp/page/252/)
 
-<details>
-<summary>keywords</summary>
-
-Nablarchシステム開発ガイド, 開発開始前, 開発の進め方, プロジェクト開始, 開発中にすべきこと
-
-</details>
-
 ## 開発標準
 
 開発標準は、システム開発における成果物作成時に従うべきガイドラインをまとめたものである。
@@ -42,10 +28,3 @@ Nablarchシステム開発ガイド, 開発開始前, 開発の進め方, プロ
 開発標準として提供されているコンテンツの一覧は、以下のリンクから確認できる。
 
 | [開発標準(外部サイト)](https://fintan.jp/page/1868/#development-standards)
-
-<details>
-<summary>keywords</summary>
-
-開発標準, 設計標準, 設計書フォーマット, 品質向上, 成果物作成
-
-</details>
