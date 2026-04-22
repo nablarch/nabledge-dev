@@ -29,11 +29,21 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from tools.benchmark.filter.facet_filter import (  # noqa: E402
+    IndexRow,
+    filter_with_fallback,
+    load_index,
+)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 BENCH_DIR = Path(__file__).resolve().parent
 SCENARIOS_PATH_DEFAULT = BENCH_DIR / "scenarios" / "qa-v6-sample5.json"
 
 PROMPT_STAGE1_FACET = BENCH_DIR / "prompts" / "stage1_facet.md"
+PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
+
+INDEX_TOON_PATH = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge" / "index.toon"
 
 TYPE_ENUM = [
     "about", "check", "component", "development-tools",
@@ -49,6 +59,16 @@ CATEGORY_ENUM = [
     "testing-framework", "toolbox", "web-application",
 ]
 COVERAGE_ENUM = ["in_scope", "uncertain", "out_of_scope"]
+
+SCHEMA_JUDGE_STAGE2 = {
+    "type": "object",
+    "required": ["level", "reason"],
+    "additionalProperties": False,
+    "properties": {
+        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
+        "reason": {"type": "string", "maxLength": 300},
+    },
+}
 
 SCHEMA_STAGE1_FACET = {
     "type": "object",
@@ -226,6 +246,113 @@ def run_stage1_facet(scenario: dict, model: str, scen_dir: Path) -> dict:
     return result
 
 
+def format_candidate_list(rows: list[IndexRow], max_rows: int = 200) -> str:
+    """Format filter result as a markdown-friendly `title — path` list."""
+    head = rows[:max_rows]
+    return "\n".join(f"- {r.title} — {r.path}" for r in head)
+
+
+def run_stage2(
+    scenario: dict, model: str, scen_dir: Path, index_rows: list[IndexRow]
+) -> dict:
+    """Stage 1 facet + mechanical filter + Stage 2 LLM judge."""
+    # 1. Run Stage 1 (facet extraction) — reuse run_stage1_facet output.
+    stage1 = run_stage1_facet(scenario, model, scen_dir)
+    if stage1.get("error"):
+        return {**stage1, "stage": 2, "filter": None, "judge": None}
+
+    facets = stage1.get("extracted_facets") or {}
+    want_type = facets.get("type", []) or []
+    want_cat = facets.get("category", []) or []
+    coverage = facets.get("coverage")
+
+    # 2. Mechanical filter.
+    if coverage == "out_of_scope" and not want_type and not want_cat:
+        outcome_rows: list[IndexRow] = []
+        fallback_used = "out_of_scope-shortcircuit"
+    else:
+        outcome = filter_with_fallback(index_rows, want_type, want_cat)
+        outcome_rows = outcome.rows
+        fallback_used = outcome.fallback_used
+
+    filter_record = {
+        "want_type": want_type,
+        "want_category": want_cat,
+        "coverage": coverage,
+        "fallback_used": fallback_used,
+        "candidate_count": len(outcome_rows),
+        "candidates": [
+            {"title": r.title, "type": r.type, "category": r.category, "path": r.path}
+            for r in outcome_rows
+        ],
+    }
+    (scen_dir / "filter_result.json").write_text(
+        json.dumps(filter_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # 3. Judge.
+    if not outcome_rows:
+        judge = {"level": 0, "reason": "filter returned no candidates"}
+        judge_envelope: dict = {}
+        judge_wall = 0.0
+        judge_err = ""
+    else:
+        candidate_list = format_candidate_list(outcome_rows)
+        judge_prompt = (
+            PROMPT_JUDGE_STAGE2.read_text(encoding="utf-8")
+            .replace("{{question}}", scenario["expected_question"])
+            .replace("{{candidate_list}}", candidate_list)
+        )
+        (scen_dir / "judge_stage2_prompt.md").write_text(
+            judge_prompt, encoding="utf-8"
+        )
+        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
+            prompt=judge_prompt,
+            schema=SCHEMA_JUDGE_STAGE2,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=180,
+            log_path=scen_dir / "judge_stage2.stream-json",
+        )
+
+    judge_record = {
+        "level": (judge or {}).get("level") if judge else None,
+        "reason": (judge or {}).get("reason") if judge else None,
+        "wall_s": judge_wall,
+        "total_cost_usd": judge_envelope.get("total_cost_usd"),
+        "error": judge_err or None,
+    }
+    (scen_dir / "judge_stage2_result.json").write_text(
+        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    total_cost = (stage1.get("total_cost_usd") or 0.0) + (
+        judge_envelope.get("total_cost_usd") or 0.0
+    )
+    total_wall = (stage1.get("wall_s") or 0.0) + judge_wall
+
+    return {
+        "id": scenario["id"],
+        "stage": 2,
+        "model": model,
+        "question": scenario["expected_question"],
+        "stage1": {
+            "extracted_facets": stage1.get("extracted_facets"),
+            "score": stage1.get("score"),
+            "cost_usd": stage1.get("total_cost_usd"),
+            "wall_s": stage1.get("wall_s"),
+        },
+        "filter": {
+            "fallback_used": fallback_used,
+            "candidate_count": len(outcome_rows),
+        },
+        "judge": judge_record,
+        "total_cost_usd": total_cost,
+        "wall_s": total_wall,
+    }
+
+
 def summarize(results: list[dict]) -> dict:
     def stat(values: list) -> dict:
         vs = [v for v in values if v is not None]
@@ -266,21 +393,75 @@ def summarize(results: list[dict]) -> dict:
             1 for r in with_score if r["score"]["coverage_match"]
         ) / len(with_score)
         summary["overall"] = stat([r["score"]["overall"] for r in with_score])
+    with_judge = [r for r in ok if r.get("judge", {}).get("level") is not None]
+    if with_judge:
+        levels = [r["judge"]["level"] for r in with_judge]
+        summary["judge_level"] = stat(levels)
+        summary["judge_level_distribution"] = {
+            str(lv): levels.count(lv) for lv in [0, 1, 2, 3]
+        }
+        summary["candidate_count"] = stat(
+            [r["filter"]["candidate_count"] for r in with_judge if r.get("filter")]
+        )
     return summary
 
 
-def write_markdown_summary(summary: dict, results: list[dict], out_path: Path) -> None:
-    lines = [f"# Stage 1 Facet — {summary.get('total')} scenarios", ""]
+def write_markdown_summary(
+    stage: int, summary: dict, results: list[dict], out_path: Path
+) -> None:
+    lines = [f"# Stage {stage} — {summary.get('total')} scenarios", ""]
     if "overall" in summary:
         lines += [
             f"- mean Jaccard(type):     {summary['jaccard_type']['mean']:.3f}",
             f"- mean Jaccard(category): {summary['jaccard_category']['mean']:.3f}",
             f"- coverage match rate:    {summary['coverage_match_rate']:.2%}",
             f"- mean overall score:     {summary['overall']['mean']:.3f}",
-            f"- mean cost (USD):        {summary['cost_usd'].get('mean', 0):.4f}",
-            f"- mean wall (s):          {summary['wall_s'].get('mean', 0):.1f}",
-            "",
         ]
+    if "judge_level" in summary:
+        lines += [
+            f"- mean judge level:       {summary['judge_level']['mean']:.2f}",
+            f"- judge distribution:     {summary['judge_level_distribution']}",
+            f"- mean candidate count:   {summary['candidate_count']['mean']:.1f}",
+        ]
+    lines += [
+        f"- mean cost (USD):        {summary['cost_usd'].get('mean', 0):.4f}",
+        f"- mean wall (s):          {summary['wall_s'].get('mean', 0):.1f}",
+        "",
+    ]
+    if stage == 2:
+        lines += [
+            "| id | facets (type / cat) | filter | judge | reason | cost | wall |",
+            "|----|----------------------|--------|-------|--------|------|------|",
+        ]
+        for r in results:
+            if r.get("error"):
+                lines.append(
+                    f"| {r['id']} | ERROR | - | - | {r['error']} | - | "
+                    f"{r.get('wall_s', 0):.1f} |"
+                )
+                continue
+            s1 = r.get("stage1", {})
+            f_ = r.get("filter", {}) or {}
+            j_ = r.get("judge", {}) or {}
+            facets = s1.get("extracted_facets") or {}
+            reason = (j_.get("reason") or "").replace("|", "\\|").replace("\n", " ")
+            if len(reason) > 80:
+                reason = reason[:77] + "..."
+            lines.append(
+                "| {id} | {t} / {c} | {n} ({fb}) | {lv} | {rs} | {cost:.4f} | {w:.1f} |".format(
+                    id=r["id"],
+                    t=",".join(facets.get("type", []) or ["∅"]),
+                    c=",".join(facets.get("category", []) or ["∅"]),
+                    n=f_.get("candidate_count", 0),
+                    fb=f_.get("fallback_used", "?"),
+                    lv=j_.get("level"),
+                    rs=reason,
+                    cost=r.get("total_cost_usd") or 0.0,
+                    w=r.get("wall_s") or 0.0,
+                )
+            )
+        out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return
     lines += [
         "| id | type (got → want) | cat (got → want) | cov | J(t) | J(c) | cost | wall |",
         "|----|-------------------|------------------|-----|------|------|------|------|",
@@ -353,6 +534,8 @@ def main() -> int:
         file=sys.stderr,
     )
 
+    index_rows = load_index(INDEX_TOON_PATH) if args.stage >= 2 else []
+
     results: list[dict] = []
     with results_path.open("w", encoding="utf-8") as f:
         for i, sc in enumerate(scenarios, 1):
@@ -361,6 +544,8 @@ def main() -> int:
             scen_dir.mkdir(parents=True, exist_ok=True)
             if args.stage == 1:
                 r = run_stage1_facet(sc, args.model, scen_dir)
+            elif args.stage == 2:
+                r = run_stage2(sc, args.model, scen_dir, index_rows)
             else:
                 print(
                     f"stage {args.stage} not implemented yet",
@@ -372,7 +557,7 @@ def main() -> int:
             f.flush()
             if r.get("error"):
                 print(f"  -> ERROR: {r['error']}", file=sys.stderr)
-            else:
+            elif args.stage == 1:
                 s = r.get("score", {})
                 print(
                     f"  -> turns={r.get('num_turns')} cost=${r.get('total_cost_usd')} "
@@ -382,12 +567,23 @@ def main() -> int:
                     f"cov={'✓' if s.get('coverage_match') else '✗'}",
                     file=sys.stderr,
                 )
+            else:
+                f_ = r.get("filter", {}) or {}
+                j_ = r.get("judge", {}) or {}
+                print(
+                    f"  -> candidates={f_.get('candidate_count')} "
+                    f"fallback={f_.get('fallback_used')} "
+                    f"judge={j_.get('level')} "
+                    f"cost=${r.get('total_cost_usd'):.4f} "
+                    f"wall={r.get('wall_s'):.1f}s",
+                    file=sys.stderr,
+                )
 
     summary = summarize(results)
     summary_path.write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    write_markdown_summary(summary, results, summary_md_path)
+    write_markdown_summary(args.stage, summary, results, summary_md_path)
     print(f"done. results: {results_path}", file=sys.stderr)
     print(f"       summary: {summary_path}", file=sys.stderr)
     print(f"       summary: {summary_md_path}", file=sys.stderr)
