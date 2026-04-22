@@ -455,6 +455,58 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
 
     text = _strip_directive_blocks(text)
 
+    # Drop RST comment blocks. Per RST spec, a line that begins with ``..``
+    # followed by text that does NOT form a directive/label/footnote/
+    # substitution reference is a comment; indented content underneath is the
+    # comment body. Comments are not rendered and their content must not
+    # appear in JSON.
+    def _strip_comment_blocks(src: str) -> str:
+        lines = src.split('\n')
+        out_lines: list[str] = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            s = line.lstrip()
+            # Identify a comment marker: `..` or `.. <text without "::">`
+            # that is NOT a directive/label/footnote/substitution.
+            is_comment = False
+            if s.startswith('..'):
+                rest = s[2:]
+                # Bare `..` on its own line is a comment.
+                if not rest.strip():
+                    is_comment = True
+                elif rest.startswith(' ') or rest.startswith('\t'):
+                    body = rest.lstrip()
+                    # Exclusions: directive (`name::`), label (`_name:`),
+                    # footnote/citation (`[tag]`), substitution (`|name|`).
+                    if (
+                        '::' not in body.split('\n', 1)[0]
+                        and not body.startswith('_')
+                        and not body.startswith('[')
+                        and not body.startswith('|')
+                    ):
+                        is_comment = True
+            if is_comment:
+                header_indent = len(line) - len(line.lstrip())
+                i += 1
+                # Consume indented body (deeper than header).
+                while i < len(lines):
+                    bl = lines[i]
+                    if not bl.strip():
+                        i += 1
+                        continue
+                    cur_indent = len(bl) - len(bl.lstrip())
+                    if cur_indent > header_indent:
+                        i += 1
+                        continue
+                    break
+                continue
+            out_lines.append(line)
+            i += 1
+        return '\n'.join(out_lines)
+
+    text = _strip_comment_blocks(text)
+
     # Expand substitution references using definitions supplied or collected.
     # Only substitute when the name between `|...|` is actually in the map —
     # other bars in prose (e.g. ``Prometheus | HTTP API | OTLP Receiver``)
@@ -534,7 +586,9 @@ def _normalize_rst_source(text: str, label_map: dict | None = None, substitution
     text = re.sub(r'\|', ' ', text)
     # Trailing hyperlink-reference underscore: "text_" or "text__". Allow
     # a closing backtick to terminate too, so ``code_``-style spans also match.
-    text = re.sub(r'(\S)_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
+    # Preceding char must be word-ending (alnum/]/)) — never a backtick, which
+    # would wrongly strip the ``_`` inside ``` `_` ``` inline code literals.
+    text = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
     # Remove leading indentation from directive bodies (1-8 non-newline spaces)
     text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
     # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
@@ -567,14 +621,16 @@ def _normalize_md_unit(text: str) -> str:
     # text aligns with source-side rst normalisation.
     text = re.sub(r'</?(?:table|thead|tbody|tr|td|th|br)(?:\s[^>]*)?/?>', ' ', text, flags=re.IGNORECASE)
     # Unresolved RST field-list entries the converter passes through as-is
-    # (``:name: value``). Drop the ``:name:`` marker so the value aligns
+    # (``:name: value`` or ``:name:`` on its own line with the value
+    # continued below). Drop the ``:name:`` marker so the value aligns
     # with the source-normalised form (which collapses these away).
-    text = re.sub(r'(?m)^\s*:([^:`\n]+):\s+', '', text)
+    text = re.sub(r'(?m)^\s*:([^:`\n]+):(?:\s+|$)', '', text)
     # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
-    # (and ``name_`` → ``name``). Use MULTILINE so the anchor fires at every
-    # line end. Allow a closing backtick to count as end-of-token so
-    # ``` `name_` ``` also normalises.
-    text = re.sub(r'(\S)_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
+    # (and ``name_`` → ``name``). Preceding char must be a word-ending marker
+    # (alnum, closing bracket/paren) — a backtick must NOT be allowed because
+    # that would incorrectly strip the ``_`` inside ``` `_` ``` inline code.
+    # Use MULTILINE so the anchor fires at every line end.
+    text = re.sub(r'([\w\]\)])_+(?=[\s`]|$)', r'\1', text, flags=re.MULTILINE)
 
     # Split into fenced-code and non-code regions so MD syntax strips only
     # apply to non-code text (otherwise a `# comment` inside ``` leaks into
@@ -686,9 +742,19 @@ def _is_rst_syntax_line(line: str) -> bool:
     # Anonymous hyperlink target: `__ https://...`
     if re.match(r'^__\s+https?://', s):
         return True
+    # RST comment: `.. <arbitrary text without "::">`. Per spec, any `..`
+    # line that is not a directive / label / footnote / substitution is a
+    # comment. This must come AFTER the directive/label/footnote/substitution
+    # matchers above so those structural lines aren't mis-classified.
+    if re.match(r'^\.\.(?:\s|$)', s):
+        return True
     if re.match(r'^:[a-zA-Z][a-zA-Z0-9_.-]*:`', s):
         return True
     if re.match(r'^\s+:[a-zA-Z]', line):
+        return True
+    # Bare field-list marker line ``:name:`` (no inline value). The value is
+    # on subsequent indented lines and will be captured as content there.
+    if re.match(r'^:[^:`\n]+:$', s):
         return True
     return False
 
@@ -830,6 +896,8 @@ def _check_rst_content_completeness(
     in_structural = False
     in_subst = False
     subst_indent = 0
+    in_comment = False
+    comment_indent = 0
     for line in source_text.split('\n'):
         s = line.strip()
         # Track substitution definitions and their indented bodies separately
@@ -847,6 +915,36 @@ def _check_rst_content_completeness(
             if cur_indent > subst_indent:
                 continue
             in_subst = False
+        # Track RST comment blocks. ``.. <text>`` lines that aren't
+        # directives / labels / footnotes / substitutions are comments per
+        # RST spec; indented content beneath is the comment body and must be
+        # skipped from QC1 residual checking.
+        if in_comment:
+            if not s:
+                continue
+            cur_indent = len(line) - len(line.lstrip())
+            if cur_indent > comment_indent:
+                continue
+            in_comment = False
+        if s.startswith('..'):
+            rest = s[2:]
+            is_comment_marker = False
+            if not rest.strip():
+                is_comment_marker = True
+            elif rest.startswith(' ') or rest.startswith('\t'):
+                body = rest.lstrip()
+                first_line = body.split('\n', 1)[0]
+                if (
+                    '::' not in first_line
+                    and not body.startswith('_')
+                    and not body.startswith('[')
+                    and not body.startswith('|')
+                ):
+                    is_comment_marker = True
+            if is_comment_marker:
+                in_comment = True
+                comment_indent = len(line) - len(line.lstrip())
+                continue
         if s and re.match(r'\.\.\s+\S', s):
             in_structural = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
         if not s:

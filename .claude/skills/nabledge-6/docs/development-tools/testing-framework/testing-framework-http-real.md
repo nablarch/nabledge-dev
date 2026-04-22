@@ -82,32 +82,20 @@ MESSAGE=setUpMessages
 <tbody>
 <tr>
   <td>1</td>
-  <td><?xml version="1.0" encoding="UTF-8"?></td>
-  <td>br</td>
-  <td></td>
-  <td><userId>0000000101</userId></td>
-  <td>br</td>
-  <td></td>
+  <td><?xml version="1.0" encoding="UTF-8"?> </td>
+  <td><userId>0000000101</userId> </td>
   <td></request></td>
 </tr>
 <tr>
   <td></td>
   <td><request></td>
-  <td><resendFlag>0</resendFlag></td>
-  <td>br</td>
-  <td></td>
-  <td></td>
-  <td></td>
+  <td><resendFlag>0</resendFlag> </td>
   <td></td>
 </tr>
 <tr>
   <td></td>
   <td></td>
   <td><dataKbn>0</dataKbn></td>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
   <td></td>
 </tr>
 </tbody>
@@ -136,32 +124,22 @@ MESSAGE=setUpMessages
 <tr>
   <td>1</td>
   <td>{</td>
-  <td></td>
-  <td></td>
 </tr>
 <tr>
   <td></td>
-  <td>"userId" : "0000000101",</td>
-  <td>br</td>
-  <td></td>
+  <td>"userId" : "0000000101", </td>
 </tr>
 <tr>
   <td></td>
-  <td>"resendFlag" : "0",</td>
-  <td>br</td>
-  <td></td>
+  <td>"resendFlag" : "0", </td>
 </tr>
 <tr>
   <td></td>
-  <td>"dataKbn" : "0",</td>
-  <td>br</td>
-  <td></td>
+  <td>"dataKbn" : "0", </td>
 </tr>
 <tr>
   <td></td>
   <td>}</td>
-  <td></td>
-  <td></td>
 </tr>
 </tbody>
 </table>
@@ -227,29 +205,17 @@ reader.fwHeaderfields=requestId,addHeader
 </tr>
 <tr>
   <td>4行目以降</td>
-  <td>XMLデータ</td>
-  <td>br</td>
-  <td></td>
-  <td>先頭セルは1からの通番</td>
-  <td>br</td>
-  <td></td>
+  <td>XMLデータ </td>
+  <td>先頭セルは1からの通番 </td>
 </tr>
 <tr>
   <td></td>
-  <td>および</td>
-  <td>br</td>
-  <td></td>
+  <td>および </td>
   <td>フィールドを跨いで記載することも可能</td>
-  <td></td>
-  <td></td>
 </tr>
 <tr>
   <td></td>
   <td>JSONデータ</td>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
   <td></td>
 </tr>
 </tbody>

@@ -76,9 +76,7 @@
   <td></td>
 </tr>
 <tr>
-  <td>AbstractHttpReqestTestSupport</td>
-  <td>br</td>
-  <td></td>
+  <td>AbstractHttpReqestTestSupport </td>
   <td>リクエスト単体テストをテンプレート化するクラス。リ</td>
   <td>\－</td>
 </tr>
@@ -86,14 +84,10 @@
   <td>BasicHttpReqestTestSupport</td>
   <td>クエスト単体テストのテストソース、テストデータを定</td>
   <td></td>
-  <td></td>
-  <td></td>
 </tr>
 <tr>
   <td></td>
   <td>型化する</td>
-  <td></td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
@@ -391,43 +385,31 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
 <tr>
   <td>htmlChecker</td>
   <td>HTMLチェックを行うオブジェクトを指定する。</td>
-  <td>br</td>
-  <td></td>
   <td>nablarch.test.tool.htmlcheck.Html4HtmlChecker</td>
 </tr>
 <tr>
   <td></td>
   <td>オブジェクトは nablarch.test.tool.htmlcheck.HtmlChecker</td>
-  <td>クラスのインスタンス。</td>
-  <td>br</td>
-  <td></td>
+  <td>クラスのインスタンス。 </td>
 </tr>
 <tr>
   <td></td>
   <td>インタフェースを実装している必要がある。</td>
-  <td>br</td>
-  <td></td>
   <td>クラスには htmlCheckerConfig で設定した設定</td>
 </tr>
 <tr>
   <td></td>
-  <td>詳細は customize_html_check を参照。</td>
-  <td>ファイルが適用される。</td>
-  <td></td>
-  <td></td>
+  <td>詳細は customize_html_check を参照。                             | ファイ</td>
+  <td>が適用される。                                |</td>
 </tr>
 <tr>
   <td>htmlCheckerConfig</td>
   <td>HTMLチェックツールの設定ファイルパス。</td>
-  <td>br</td>
-  <td></td>
   <td>test/resources/httprequesttest/html-check-config.csv</td>
 </tr>
 <tr>
   <td></td>
   <td>htmlChecker を設定しなかった場合のみ有効。</td>
-  <td></td>
-  <td></td>
   <td></td>
 </tr>
 <tr>

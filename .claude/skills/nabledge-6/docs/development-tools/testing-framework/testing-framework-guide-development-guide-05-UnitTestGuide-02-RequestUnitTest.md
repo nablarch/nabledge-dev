@@ -44,24 +44,23 @@ public class UserSearchActionRequestTest extends BasicHttpRequestTestTemplate {
   <th>リクエストID</th>
   <th>Actionメソッド名</th>
   <th>テストデータシート名</th>
-  <th></th>
-  <th></th>
 </tr>
 <tr>
   <th></th>
   <th></th>
-  <th>正常系</th>
-  <th>異常系</th>
-  <th>画面表示検証用</th>
+  <th>---------------------+-----------------------+-------------------</th>
+</tr>
+<tr>
+  <th></th>
+  <th></th>
+  <th>正常系               |異常系                 |画面表示検証用</th>
 </tr>
 </thead>
 <tbody>
 <tr>
   <td>USERS00101</td>
   <td>doUsers00101</td>
-  <td>testUsers00101Normal</td>
-  <td>testUsers00101Abnormal</td>
-  <td>testUsers00101View</td>
+  <td>testUsers00101Normal |testUsers00101Abnormal |testUsers00101View</td>
 </tr>
 </tbody>
 </table>
@@ -131,7 +130,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_user_info\ を参照。</td>
+  <td>詳細は、\ request_test_user_info\ を参照。                                       |     |</td>
   <td></td>
 </tr>
 <tr>
@@ -141,7 +140,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_cookie_info\ を参照。</td>
+  <td>詳細は、\ request_test_cookie_info\ を参照。                                     |     |</td>
   <td></td>
 </tr>
 <tr>
@@ -151,7 +150,7 @@ LIST_MAPのデータタイプで１テストメソッド分のケース表を記
 </tr>
 <tr>
   <td></td>
-  <td>詳細は、\ request_test_queryparams_info\ を参照。</td>
+  <td>詳細は、\ request_test_queryparams_info\ を参照。                                |     |</td>
   <td></td>
 </tr>
 <tr>

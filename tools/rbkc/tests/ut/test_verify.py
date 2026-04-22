@@ -551,6 +551,56 @@ class TestCheckContentCompleteness:
         data = self._data(content="詳細は Doma設定 を参照。")
         assert self._check(src, data) == []
 
+    def test_pass_rst_backtick_underscore_literal_in_code(self):
+        """RST ``_`` literal underscore inside inline code must not be stripped as
+        named-reference marker. Converter emits `_` in MD; both sides must align."""
+        src = "区切り文字に ``_`` を使用する。\n"
+        data = self._data(content="区切り文字に `_` を使用する。")
+        assert self._check(src, data) == []
+
+    def test_pass_rst_comment_line_is_syntax(self):
+        """``.. text-without-colons`` lines are RST comments per spec and must be
+        treated as allowed syntax residue for QC1."""
+        src = "概要\n====\n\n本文。\n\n.. textlint-disable ja/foo\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "本文。"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_comment_block_with_indented_body(self):
+        """``..`` comment with indented body: entire block is RST syntax per spec."""
+        src = (
+            "概要\n====\n\n本文。\n\n"
+            ".. 実装済み\n"
+            ".. * 項目1\n"
+            "..   * サブ項目\n"
+            ".. * 項目2\n"
+        )
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": "本文。"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_field_list_with_inline_value(self):
+        """RST field list ``:name: value`` — converter preserves as MD; both sides align."""
+        src = "概要\n====\n\n:エスケープ対象文字: ``%`` 、 ``_``\n"
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": ":エスケープ対象文字: `%` 、 `_`"}
+        ])
+        assert self._check(src, data) == []
+
+    def test_pass_rst_field_list_with_separate_value(self):
+        """RST field list ``:name:\\n  value`` — value on indented next line."""
+        src = (
+            "概要\n====\n\n"
+            ":Status-Code:\n"
+            "  応答電文のステータスコード。\n"
+        )
+        data = self._data(sections=[
+            {"id": "s1", "title": "概要", "content": ":Status-Code:\n応答電文のステータスコード。"}
+        ])
+        assert self._check(src, data) == []
+
 
 # ---------------------------------------------------------------------------
 # Excel QC1/QC2/QC3: verify_file(fmt="xlsx")

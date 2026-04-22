@@ -331,103 +331,86 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 <tr>
   <td>文字種</td>
   <td>半角英字</td>
-  <td></td>
-  <td>max(最大文字列長)欄に記載した長さの文字列で</td>
+  <td>| max(最大文字列長)欄に記載した長さの文字列で</td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角数字</td>
-  <td></td>
-  <td>max欄が省略された場合は、min（最小文字列長）欄に</td>
+  <td>| max欄が省略された場合は、min（最小文字列長）欄に</td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角数字</td>
-  <td></td>
-  <td>max欄、min欄ともに省略された場合は、</td>
+  <td>| max欄、min欄ともに省略された場合は、</td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角記号</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角カナ</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角英字</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角数字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角ひらがな</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角カタカナ</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角漢字</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角記号その他</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>外字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>未入力</td>
   <td>空文字</td>
-  <td></td>
-  <td>長さ0の文字列</td>
+  <td>| 長さ0の文字列</td>
 </tr>
 <tr>
   <td>最小文字列</td>
   <td>最小文字列長の文字列</td>
-  <td></td>
-  <td>入力値は、o印を付けた文字種で構成される。</td>
+  <td>| 入力値は、o印を付けた文字種で構成される。</td>
 </tr>
 <tr>
   <td>最長文字列</td>
   <td>最長文字列長の文字列</td>
-  <td></td>
-  <td>最長文字列・文字列長超過のテストは実行されない。</td>
+  <td>| 最長文字列・文字列長超過のテストは実行されない。</td>
 </tr>
 <tr>
   <td>文字列長不足</td>
   <td>最小文字列長－１の文字列</td>
-  <td></td>
-  <td>文字列長不足のテストは実行されない。</td>
+  <td>| 文字列長不足のテストは実行されない。</td>
 </tr>
 <tr>
   <td>文字列長超過</td>
   <td>最大文字列長＋１の文字列</td>
-  <td></td>
   <td></td>
 </tr>
 </tbody>
@@ -464,53 +447,43 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 <tbody>
 <tr>
   <td>propertyName</td>
-  <td></td>
-  <td>テスト対象のプロパティ名</td>
+  <td>| テスト対象のプロパティ名</td>
 </tr>
 <tr>
   <td>case</td>
-  <td></td>
-  <td>テストケースの簡単な説明</td>
+  <td>| テストケースの簡単な説明</td>
 </tr>
 <tr>
   <td>group \ [#]_</td>
-  <td></td>
-  <td>Bean Validationのグループ（省略可）</td>
+  <td>| Bean Validationのグループ（省略可）</td>
 </tr>
 <tr>
   <td>input1\ [#]_</td>
-  <td></td>
-  <td>入力値 [#]_</td>
+  <td>| 入力値 [#]_</td>
 </tr>
 <tr>
   <td>messageId\ [#]_</td>
-  <td></td>
-  <td>上記入力値で単項目精査した場合に、発生すると期待す</td>
+  <td>| 上記入力値で単項目精査した場合に、発生すると期待す</td>
 </tr>
 <tr>
   <td></td>
   <td>るメッセージ</td>
-  <td></td>
 </tr>
 <tr>
   <td></td>
-  <td></td>
-  <td>（精査エラーにならないことを期待する場合は空欄）</td>
+  <td>| （精査エラーにならないことを期待する場合は空欄）</td>
 </tr>
 <tr>
   <td>interpolateKey\_\ *n*</td>
-  <td></td>
-  <td>埋め込み文字のキー名（\ *n*\ は1からの連番、省略可</td>
+  <td>| 埋め込み文字のキー名（\ *n*\ は1からの連番、省略可</td>
 </tr>
 <tr>
   <td></td>
   <td>）</td>
-  <td></td>
 </tr>
 <tr>
   <td>interpolateValue\_\ *n*</td>
-  <td></td>
-  <td>埋め込み文字の値（\ *n*\ は1からの連番、省略可）</td>
+  <td>| 埋め込み文字の値（\ *n*\ は1からの連番、省略可）</td>
 </tr>
 </tbody>
 </table>
@@ -586,48 +559,39 @@ public class UserRegistrationFormTest extends EntityTestSupport {
 <tbody>
 <tr>
   <td>title</td>
-  <td></td>
-  <td>テストケースのタイトル</td>
+  <td>| テストケースのタイトル</td>
 </tr>
 <tr>
   <td>description</td>
-  <td></td>
-  <td>テストケースの簡単な説明</td>
+  <td>| テストケースの簡単な説明</td>
 </tr>
 <tr>
   <td>group \ [#]_</td>
-  <td></td>
-  <td>Bean Validationのグループ（省略可）</td>
+  <td>| Bean Validationのグループ（省略可）</td>
 </tr>
 <tr>
   <td>expectedMessageId\ *n* \ [#]_</td>
-  <td></td>
-  <td>期待するメッセージ（\ *n*\ は1からの連番 ）</td>
+  <td>| 期待するメッセージ（\ *n*\ は1からの連番 ）</td>
 </tr>
 <tr>
   <td>propertyName\ *n*</td>
-  <td></td>
-  <td>期待するプロパティ（\ *n*\ は1からの連番 ）</td>
+  <td>| 期待するプロパティ（\ *n*\ は1からの連番 ）</td>
 </tr>
 <tr>
   <td>interpolateKey\ *n*\_\ *k* \ [#]_</td>
-  <td></td>
-  <td>埋め込み文字のキー名（\ *n*\ はexpectedMessageId</td>
+  <td>| 埋め込み文字のキー名（\ *n*\ はexpectedMessageId</td>
 </tr>
 <tr>
   <td></td>
-  <td></td>
-  <td>の *n* に対応、\ *k*\ は1からの連番。省略可）</td>
+  <td>| の *n* に対応、\ *k*\ は1からの連番。省略可）</td>
 </tr>
 <tr>
   <td>interpolateValue\ *n*\_\ *k*</td>
-  <td></td>
-  <td>埋め込み文字の値（\ *n*\ はexpectedMessageId</td>
+  <td>| 埋め込み文字の値（\ *n*\ はexpectedMessageId</td>
 </tr>
 <tr>
   <td></td>
-  <td></td>
-  <td>の *n* に対応、\ *k*\ は1からの連番。省略可）</td>
+  <td>| の *n* に対応、\ *k*\ は1からの連番。省略可）</td>
 </tr>
 </tbody>
 </table>

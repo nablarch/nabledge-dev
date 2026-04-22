@@ -288,103 +288,86 @@ testValidateCharsetAndLength(ENTITY_CLASS, sheetName, id);
 <tr>
   <td>文字種</td>
   <td>半角英字</td>
-  <td></td>
-  <td>max(最大文字列長)欄に記載した長さの文字列で</td>
+  <td>| max(最大文字列長)欄に記載した長さの文字列で</td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角数字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角数字</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角記号</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>半角カナ</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角英字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角数字</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角ひらがな</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角カタカナ</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角漢字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>全角記号その他</td>
-  <td></td>
   <td></td>
 </tr>
 <tr>
   <td>文字種</td>
   <td>外字</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>未入力</td>
   <td>空文字</td>
-  <td></td>
-  <td>長さ0の文字列</td>
+  <td>| 長さ0の文字列</td>
 </tr>
 <tr>
   <td>最小文字列</td>
   <td>最小文字列長の文字列</td>
-  <td></td>
-  <td>入力値は、o印を付けた文字種で構成される。</td>
+  <td>| 入力値は、o印を付けた文字種で構成される。</td>
 </tr>
 <tr>
   <td>最長文字列</td>
   <td>最長文字列長の文字列</td>
-  <td></td>
-  <td>文字列長不足のテストは実行されない。</td>
+  <td>| 文字列長不足のテストは実行されない。</td>
 </tr>
 <tr>
   <td>文字列長不足</td>
   <td>最小文字列長－１の文字列</td>
   <td></td>
-  <td></td>
 </tr>
 <tr>
   <td>文字列長超過</td>
   <td>最大文字列長＋１の文字列</td>
-  <td></td>
   <td></td>
 </tr>
 </tbody>

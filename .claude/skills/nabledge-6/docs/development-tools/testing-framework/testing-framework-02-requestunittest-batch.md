@@ -151,9 +151,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------------</td>
+  <td>------------------</td>
+  <td>--------------</td>
+</tr>
+<tr>
+  <td></td>
   <td>データ型(1)</td>
   <td>データ型(2)</td>
   <td>...</td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------------</td>
+  <td>------------------</td>
+  <td>--------------</td>
 </tr>
 <tr>
   <td></td>
@@ -163,15 +175,33 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------------</td>
+  <td>------------------</td>
+  <td>--------------</td>
+</tr>
+<tr>
+  <td></td>
   <td>データ(1-1)</td>
   <td>データ(2-1)</td>
   <td>...</td>
 </tr>
 <tr>
   <td></td>
+  <td>------------------</td>
+  <td>------------------</td>
+  <td>--------------</td>
+</tr>
+<tr>
+  <td></td>
   <td>データ(1-2)</td>
   <td>データ(2-2)</td>
   <td>...</td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------------</td>
+  <td>------------------</td>
+  <td>--------------</td>
 </tr>
 <tr>
   <td></td>
@@ -280,10 +310,14 @@ SETUP_FIXED[グループID]=ファイルパス
 <tr>
   <td>text-encoding</td>
   <td>Windows-31J</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>record-separator</td>
   <td>CRLF</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>ヘッダ</td>
@@ -293,15 +327,33 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>半角</td>
   <td></td>
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>1</td>
   <td>10</td>
   <td></td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -317,9 +369,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>半角数字</td>
   <td>半角数字</td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -329,9 +393,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>1</td>
   <td>0000000001</td>
   <td>20100101</td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -347,15 +423,33 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>数値</td>
   <td>半角</td>
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>1</td>
   <td>5</td>
   <td>4</td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -371,15 +465,33 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>半角</td>
   <td></td>
 </tr>
 <tr>
   <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>1</td>
   <td>10</td>
   <td></td>
+</tr>
+<tr>
+  <td></td>
+  <td>------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -405,10 +517,14 @@ SETUP_FIXED[グループID]=ファイルパス
 <tr>
   <td>text-encoding</td>
   <td>Windows-31J</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>record-separator</td>
   <td>CRLF</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>ヘッダ</td>
@@ -418,9 +534,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td></td>
   <td></td>
+</tr>
+<tr>
+  <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -436,15 +564,33 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>半角数字</td>
   <td>半角数字</td>
 </tr>
 <tr>
   <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>1</td>
   <td>0000000001</td>
   <td>20100101</td>
+</tr>
+<tr>
+  <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -460,9 +606,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td>数値</td>
   <td></td>
+</tr>
+<tr>
+  <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -478,9 +636,21 @@ SETUP_FIXED[グループID]=ファイルパス
 </tr>
 <tr>
   <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
+</tr>
+<tr>
+  <td></td>
   <td>半角数字</td>
   <td></td>
   <td></td>
+</tr>
+<tr>
+  <td></td>
+  <td>-------------</td>
+  <td>-------------</td>
+  <td>-----------</td>
 </tr>
 <tr>
   <td></td>
@@ -506,13 +676,20 @@ SETUP_FIXED[グループID]=ファイルパス
 <tr>
   <td>text-encoding</td>
   <td>Windows-31J</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>record-separator</td>
   <td>CRLF</td>
+  <td></td>
+  <td></td>
 </tr>
 <tr>
   <td>//空ファイル</td>
+  <td></td>
+  <td></td>
+  <td></td>
 </tr>
 </tbody>
 </table>

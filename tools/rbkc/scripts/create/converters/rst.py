@@ -810,7 +810,7 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
 # Grid table parser (custom — CJK-safe)
 # ---------------------------------------------------------------------------
 
-def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
+def _parse_grid_table(block: list[str], file_id: str = "", targets=None, substitutions=None) -> list[str]:
     """Convert RST grid table to HTML table.
 
     Uses ``|`` splitting to extract cell text — works correctly with CJK
@@ -831,11 +831,64 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
     def _is_header_sep(line: str) -> bool:
         return _is_sep(line) and "=" in line
 
+    # Column boundaries (in display width, not code points) from the first
+    # separator line. Only ``|`` whose display-width position matches a ``+``
+    # in the separator is a cell border; pipes at other positions are inline
+    # text (e.g. ``|br|`` substitution references).
+    import unicodedata
+
+    def _dw(c: str) -> int:
+        return 2 if unicodedata.east_asian_width(c) in ("F", "W") else 1
+
+    def _display_positions(line: str) -> list[int]:
+        """Return display-width position of each character's start."""
+        pos = [0] * (len(line) + 1)
+        for i, c in enumerate(line):
+            pos[i + 1] = pos[i] + _dw(c)
+        return pos
+
+    boundaries_w: list[int] = []
+    for line in block:
+        if _is_sep(line):
+            pos = _display_positions(line)
+            boundaries_w = [pos[i] for i, c in enumerate(line) if c == "+"]
+            break
+
     def _split_cells(line: str) -> list[str]:
-        """Split a table content line on '|', discarding first/last empty."""
-        parts = line.split("|")
-        # parts[0] is before first |, parts[-1] is after last |
-        return [p.strip() for p in parts[1:-1]] if len(parts) >= 3 else []
+        """Split a content row at display-width column boundaries. Pipes
+        inside a cell (e.g. ``|br|`` substitutions) are preserved as inline
+        text because they sit at positions that aren't cell borders."""
+        if not boundaries_w or len(boundaries_w) < 2:
+            parts = line.split("|")
+            return [p.strip() for p in parts[1:-1]] if len(parts) >= 3 else []
+        # Map each character's display-width start position.
+        pos = _display_positions(line)
+        # For each boundary width, find the code-point index at that width
+        # (or just past the line end). A trailing row can be shorter than the
+        # separator — in that case the remaining cells are empty.
+        def _idx_at_width(w: int) -> int:
+            # position array: pos[i] = width before char i. We want smallest
+            # i such that pos[i] >= w. Characters wider than 1 can straddle a
+            # boundary; treat the straddling char as belonging to the cell on
+            # the left (i.e. pick i where pos[i] >= w is first true).
+            for i, p in enumerate(pos):
+                if p >= w:
+                    return i
+            return len(line)
+        cells: list[str] = []
+        for i in range(len(boundaries_w) - 1):
+            left_w = boundaries_w[i]
+            right_w = boundaries_w[i + 1]
+            # Cell content sits between the two boundaries. Use code-point
+            # indices inferred from display positions.
+            left_idx = _idx_at_width(left_w) + 1  # skip the pipe itself
+            right_idx = _idx_at_width(right_w)
+            if left_idx > len(line):
+                cells.append("")
+                continue
+            chunk = line[left_idx:right_idx]
+            cells.append(chunk.strip())
+        return cells
 
     # Collect row groups between separator lines.
     # A group is a HEADER group if it is terminated by the header separator (+=====+).
@@ -915,7 +968,12 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
                 continue
             html.append("<tr>")
             for ci in range(ncols):
-                text = _convert_inline(row[ci] if ci < len(row) else "", file_id)
+                text = _convert_inline(
+                    row[ci] if ci < len(row) else "",
+                    file_id,
+                    targets=targets,
+                    substitutions=substitutions,
+                )
                 html.append(f"  <{tag}>{text}</{tag}>")
             html.append("</tr>")
 
@@ -1236,7 +1294,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
                 while content and not content[0].strip():
                     content.pop(0)
                 if content and content[0].rstrip().startswith("+"):
-                    md_lines = _parse_grid_table(content, file_id)
+                    md_lines = _parse_grid_table(content, file_id, targets=targets, substitutions=substitutions)
                 else:
                     md_lines = _parse_simple_table(content, file_id)
                 output.extend(md_lines)
@@ -1322,7 +1380,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             i = j
             min_indent = min((len(l) - len(l.lstrip()) for l in table_block if l.strip()), default=0)
             stripped_block = [l[min_indent:] for l in table_block]
-            output.extend(_parse_grid_table(stripped_block, file_id))
+            output.extend(_parse_grid_table(stripped_block, file_id, targets=targets, substitutions=substitutions))
             continue
 
         # Regular paragraph / list item / other content
