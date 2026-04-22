@@ -792,6 +792,9 @@ def _check_md_content_completeness(
     source_text: str, data: dict, issues: list[str]
 ) -> list[str]:
     """QC1-QC4 for MD sources (verbatim comparison)."""
+    # Strip HTML comments: converter elides these; verify should too.
+    source_text = re.sub(r"<!--.*?-->", "", source_text, flags=re.DOTALL)
+
     top_title = data.get("title", "")
     top_content = data.get("content", "")
 

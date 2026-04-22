@@ -1136,7 +1136,7 @@ def _convert_content(raw_lines: list[str], file_id: str = "", targets: dict[str,
             continue
 
         # RST footnote / citation target — extract inline text + block body
-        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-z_]*)\]\s+(.*)", stripped)
+        m_fn = re.match(r"\.\.\s+\[(?:[0-9]+|\*|#[a-zA-Z0-9_]*)\]\s+(.*)", stripped)
         if m_fn:
             inline_text = m_fn.group(1).strip()
             block, i = _read_block(lines, i + 1)

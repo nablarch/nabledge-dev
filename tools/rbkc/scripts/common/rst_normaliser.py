@@ -941,17 +941,21 @@ def _render_table_directive(name: str, body: list[str]) -> str:
             if not line.strip():
                 continue
             stripped = line.lstrip()
-            leading_spaces = len(line) - len(stripped)
-            # "* - cell" starts a new row
-            if stripped.startswith("* -") or stripped.startswith("*-"):
+            # "* - cell" or "* -" (empty first cell) starts a new row
+            if stripped.startswith("* -") or stripped == "*" or stripped.startswith("* "):
                 current_row = []
                 rows.append(current_row)
-                cell = stripped[2:].lstrip()
-                if cell.startswith("-"):
-                    cell = cell[1:].lstrip()
-                current_row.append(cell)
+                # strip the bullet marker
+                after = stripped[1:].lstrip()
+                # after is now "- cell" or "-" or "- " or "" (bullet only)
+                if after.startswith("- "):
+                    current_row.append(after[2:])
+                elif after == "-" or after == "":
+                    current_row.append("")
+                else:
+                    current_row.append(after)
                 current_cell_idx = len(current_row) - 1
-            # "- cell" is a subsequent cell in the current row
+            # "- cell" or bare "-" is a subsequent cell in the current row
             elif stripped.startswith("- "):
                 cell = stripped[2:]
                 if current_row is None:
@@ -959,10 +963,17 @@ def _render_table_directive(name: str, body: list[str]) -> str:
                     rows.append(current_row)
                 current_row.append(cell)
                 current_cell_idx = len(current_row) - 1
+            elif stripped == "-":
+                # empty cell
+                if current_row is None:
+                    current_row = []
+                    rows.append(current_row)
+                current_row.append("")
+                current_cell_idx = len(current_row) - 1
             else:
                 # Continuation of the current cell
                 if current_row is not None and current_cell_idx >= 0:
-                    current_row[current_cell_idx] += " " + stripped
+                    current_row[current_cell_idx] = (current_row[current_cell_idx] + " " + stripped).strip() if current_row[current_cell_idx] else stripped
         if not rows:
             return ""
         ncols = max(len(r) for r in rows)
