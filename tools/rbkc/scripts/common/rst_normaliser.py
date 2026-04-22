@@ -630,12 +630,18 @@ def _collect_directive_body(lines: list[str], start: int, header_indent: int) ->
     # Drop trailing blank lines
     while body and not body[-1].strip():
         body.pop()
-    # Dedent
+    # Dedent — only strip leading whitespace, not content. A line whose
+    # leading whitespace is shorter than body_indent is a substitution-
+    # expansion artefact (e.g. `|br|` expanded inside a cell to `\n `)
+    # that should keep its visible text; strip only the whitespace that
+    # is actually whitespace.
     if body_indent is not None and body_indent > 0:
         dedented = []
         for line in body:
             if line.strip():
-                dedented.append(line[body_indent:] if len(line) >= body_indent else line.lstrip())
+                leading = len(line) - len(line.lstrip())
+                strip_n = min(leading, body_indent)
+                dedented.append(line[strip_n:])
             else:
                 dedented.append("")
         body = dedented
@@ -993,6 +999,9 @@ def _render_table_directive(name: str, body: list[str]) -> str:
         ncols = max(len(r) for r in rows)
         # Pad short rows
         rows = [r + [""] * (ncols - len(r)) for r in rows]
+        # Escape pipes inside cells (converter does this) so embedded
+        # line-block content like `| "Nablarch"` doesn't break MD table.
+        rows = [[c.replace("|", "\\|") for c in r] for r in rows]
         # Render MD table: first row as header
         header = "| " + " | ".join(rows[0]) + " |"
         sep = "|" + "|".join(["---"] * ncols) + "|"
