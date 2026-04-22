@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (30件ベースライン完了。LLM judge を正解ベース採点に切り替えるタスク追加)
+**Updated**: 2026-04-22 (正解データ方針確定: 模範回答文 + Stage 2 スクリプト判定。Stage 2 合格分だけ Stage 3 judge)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -116,31 +116,42 @@ tools/benchmark/.results/{timestamp}-stage{N}-{model}/
 
 ## In Progress
 
-### 正解データ作成 + LLM judge を正解ベースに切り替え
+### 正解データ作成 + 採点方式の切り替え
 
 **背景**:
 Stage 2 / Stage 3 の LLM judge は正解データなしで Sonnet が自己推定採点していた。
 Nablarch の知識を持っているかどうか不明な LLM の推測判断であり、信頼できない。
-正解データ（各質問に対して「何が答えられれば合格か」）を作り、それと照合する採点に切り替える。
+正解データ（模範回答文）を作り、それとの照合に切り替える。
+
+**方針（ユーザー合意済み 2026-04-22）**:
+- 正解データ = **模範回答文（自然文）を1シナリオ1ファイル**。key_facts のリスト化はしない
+- 回答文の citation から「正解パス集合」が機械抽出できる
+- **Stage 2 はスクリプト判定**（正解パスが filter 候補に含まれるかを `in` で判定）→ `judge_stage2.md` は廃止
+- **Stage 3 のみ LLM judge**（模範回答と生成回答を並べて 4段階判定）
+- **順序**: Stage 2 を先に全 30件チェック → 落ちた件数が多ければ Stage 3 judge には進まず、フロー改善（filter / facet / AI-2）に戻る
+- 既存の `20260422-143411-stage3-sonnet/` の `final_answer.md` / `filter_result.json` を流用、再計測不要
 
 **実行結果の保存場所**:
 - 30件ベースライン: `tools/benchmark/.results/20260422-143411-stage3-sonnet/`
 - 30件ベースライン保存: `tools/benchmark/baseline/20260422-stage3-sonnet/`
 - 各シナリオの回答テキスト: `{result_dir}/{scenario_id}/final_answer.md`
+- 各シナリオの filter 候補: `{result_dir}/{scenario_id}/filter_result.json`
 - 各シナリオの cited: `{result_dir}/{scenario_id}/ai3_result.json`
 
 **Steps:**
-- [ ] 30件の正解データを作成する
-  - メインエージェントが各質問に対して知識ファイルを grep して「正解となる key facts」をリストアップ
-  - サブエージェントにレビューしてもらい確定
-  - `tools/benchmark/scenarios/qa-v6-answers.json` に保存（format 設計が必要）
-- [ ] Stage 2 judge を正解ベースに切り替え
-  - judge prompt に「正解 key facts」を渡し、候補ファイルリストにそれらが含まれるか採点
-  - `prompts/judge_stage2.md` 改訂
-- [ ] Stage 3 judge を正解ベースに切り替え
-  - judge prompt に「正解 key facts」を渡し、回答テキストにそれらが含まれるか採点
-  - `prompts/judge_stage3.md` 改訂
-- [ ] 30件を正解ベース judge で再計測（既存の回答テキストを使い judge のみ再実行でも可）
+- [ ] review-01 の模範回答を1本書いて format / 粒度 / 長さ感を確定
+  - 知識ファイル grep → 回答文作成
+  - sub-agent (Prompt Engineer) にレビュー依頼
+  - 保存先: `tools/benchmark/scenarios/qa-v6-answers/review-01.md`
+- [ ] 残り 29 件の模範回答を作成
+- [ ] Stage 2 スクリプト判定を実装
+  - 模範回答の citation から正解パス集合を抽出
+  - `filter_result.json` の candidate paths と突合（正解パスが候補に含まれるか）
+  - `judge_stage2.md` は廃止、`run.py` に judge-only モード追加
+- [ ] Stage 2 を全 30件で実行 → 合否サマリ
+- [DECISION: Stage 2 合格率を見てユーザーと合意 → 合格分だけ Stage 3 judge に進むか、フロー改善に戻るか判断]
+- [ ] (Stage 2 OK なら) `judge_stage3.md` を「模範回答との比較」方式に改訂
+- [ ] (Stage 2 OK なら) Stage 3 judge を合格分で再実行
 - [ ] 結果を `.work/00307/rounds/` に記録
 
 ### Stage 3 section 選択 + 最終回答 + Round 制
