@@ -330,7 +330,57 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 # QC1-QC4: sequential-delete algorithm (RST/MD)
 # ---------------------------------------------------------------------------
 
-def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
+def _collect_rst_substitutions(text: str) -> dict[str, str]:
+    """Extract visible-text resolutions for RST substitution definitions.
+
+    For ``.. |name| raw:: html`` with an ``<a ...>text</a>`` body we emit the
+    anchor text so the normalised source matches the converter's output.
+    """
+    subs: dict[str, str] = {}
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = re.match(r"^\s*\.\.\s+\|([^|]+)\|\s+([a-z_-]+)::(.*)", lines[i])
+        if not m:
+            i += 1
+            continue
+        name = m.group(1).strip()
+        directive = m.group(2).lower()
+        arg = m.group(3).strip()
+        # Read indented body
+        body_lines: list[str] = []
+        j = i + 1
+        while j < len(lines):
+            bl = lines[j]
+            if not bl.strip():
+                body_lines.append("")
+                j += 1
+                continue
+            if bl.startswith(" ") or bl.startswith("\t"):
+                body_lines.append(bl.strip())
+                j += 1
+                continue
+            break
+        i = j
+        # For ``raw::`` the directive arg is the output format, not body text.
+        if directive == "raw":
+            body = " ".join(b for b in body_lines if b).strip()
+        else:
+            body = " ".join([arg] + [b for b in body_lines if b]).strip()
+        if directive == "replace":
+            subs[name] = body
+        elif directive == "raw":
+            m_a = re.search(r"<a[^>]*>([^<]+)</a>", body)
+            if m_a:
+                subs[name] = m_a.group(1).strip()
+            else:
+                subs[name] = ""
+        else:
+            subs[name] = body
+    return subs
+
+
+def _normalize_rst_source(text: str, label_map: dict | None = None, substitutions: dict | None = None) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
     Applies the inverse of common RST-to-Markdown conversions so that
@@ -338,10 +388,15 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     Uses ``[^\\S\\n]`` (non-newline whitespace) to avoid swallowing newlines before
     the final whitespace collapse step.
     """
-    # RST substitution reference |name| -> "" (the converter expands it into a
-    # different token, so stripping it from the source keeps normalise lossy
-    # but non-mismatching; substitution-body URLs are handled by QL2).
-    text = re.sub(r'\|[^|\n]+\|_?', '', text)
+    # Expand substitution references using definitions supplied or collected.
+    subs = substitutions if substitutions is not None else _collect_rst_substitutions(text)
+    if subs:
+        def _resolve_sub(m: re.Match) -> str:
+            name = m.group(1).strip()
+            return subs.get(name, "")
+        text = re.sub(r'\|([^|\n]+)\|_?', _resolve_sub, text)
+    else:
+        text = re.sub(r'\|[^|\n]+\|_?', '', text)
     # ``inline code`` -> inline code
     text = re.sub(r'``([^`]+)``', r'\1', text)
     # :ref:`display text <label>` -> display text
@@ -356,8 +411,17 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
         text = re.sub(r':ref:`([^`]+)`', r'\1', text)
     # :java:extdoc:`ClassName <fqcn>` -> ClassName (converter drops the fqcn)
     text = re.sub(r':java:extdoc:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
-    # `link text <url>`_ -> link text  (RST external hyperlink, inline form)
-    text = re.sub(r'`([^`<]+?)[^\S\n]*<https?://[^>]+>`_?', r'\1', text)
+    # :doc:`display text <path>` -> display text  (converter drops the path)
+    text = re.sub(r':doc:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
+    # :doc:`path` -> path
+    text = re.sub(r':doc:`([^`]+)`', r'\1', text)
+    # Generic domain role with target: :role:`text <target>` -> text
+    # (must run before the `text <url>`_ external-hyperlink pattern below, so
+    # roles like :javadoc_url: don't leak their leading ``:role:`` marker).
+    text = re.sub(r':[a-zA-Z][a-zA-Z0-9_.:-]*:`([^<`]+?)[^\S\n]*<[^>]+>`', r'\1', text)
+    # `link text <url>`_ -> link text  (RST external hyperlink, inline form).
+    # Accept both absolute URLs and relative refs (e.g. ``<./file.zip>``).
+    text = re.sub(r'`([^`<]+?)[^\S\n]*<[^>]+>`_?', r'\1', text)
     # `text`_  -> text (named-reference form; resolved URL is separate target def)
     text = re.sub(r'`([^`<]+?)`_+', r'\1', text)
     # General RST role :role:`text` -> text
@@ -373,6 +437,18 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     text = re.sub(r'^[^\S\n]*:[a-zA-Z][a-zA-Z0-9_-]*:[^\n]*\n', '', text, flags=re.MULTILINE)
     # RST list-table item markers: "* - " or "  - " -> just content (use [^\S\n]* not \s*)
     text = re.sub(r'^[^\S\n]{0,6}\*?[^\S\n]*-[^\S\n]*', '', text, flags=re.MULTILINE)
+    # Bullet markers: "* ", "- ", "+ " at line start (plain bulleted lists
+    # that the MD converter renders as "* " as well — we strip on both sides
+    # by dropping the marker here and on the JSON side by `_normalize_md_unit`
+    # treating the marker as whitespace).
+    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+', '', text, flags=re.MULTILINE)
+    # Grid-table content prefix "| " at start of line -> drop the pipe.
+    text = re.sub(r'^[^\S\n]*\|[^\S\n]*', '', text, flags=re.MULTILINE)
+    # Any remaining bare pipe within a line is also stripped so source and
+    # JSON (where ``_normalize_md_unit`` turns `|` into a space) stay aligned.
+    text = re.sub(r'\|', ' ', text)
+    # Trailing hyperlink-reference underscore: "text_" or "text__"
+    text = re.sub(r'(\S)_+(?=\s|$)', r'\1', text)
     # Remove leading indentation from directive bodies (1-8 non-newline spaces)
     text = re.sub(r'^[^\S\n]{1,8}', '', text, flags=re.MULTILINE)
     # RST heading underlines: ====, ----, ~~~~, etc. (4+ same chars on own line)
@@ -389,13 +465,23 @@ def _normalize_md_unit(text: str) -> str:
     blockquote/admonition prefixes, then collapses whitespace so multi-line content
     can be found in the normalized RST source.
     """
+    # Strip RST footnote/citation/label remnants that converter passes through.
+    # (Source-side normalisation drops them, so we strip here for symmetry.)
+    text = re.sub(r'(?m)^\s*\.\.\s+\[[^\]]+\][^\n]*', '', text)
+    text = re.sub(r'(?m)^\s*\.\.\s+_[^:]+:[^\n]*', '', text)
+    # Footnote/citation reference trailing underscore: "[1]_" -> "[1]"
+    text = re.sub(r'(\S)_+(?=\s|$)', r'\1', text)
     # Code fences: ```lang\n...\n``` -> content only
     text = re.sub(r'```[a-zA-Z0-9]*\n', '', text)
     text = re.sub(r'```', '', text)
     # MD headings: #### Heading -> Heading
     text = re.sub(r'^#{1,6}[^\S\n]+', '', text, flags=re.MULTILINE)
+    # Bullet list markers (MD): "* " / "- " / "+ " at line start
+    text = re.sub(r'^[^\S\n]*[*+\-][^\S\n]+', '', text, flags=re.MULTILINE)
     # `inline code` -> inline code
     text = re.sub(r'`([^`]+)`', r'\1', text)
+    # Image: ![alt](path) -> "" (image is covered by QL1)
+    text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', text)
     # [link text](url) -> link text
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
     # Admonition header line: > **Type:** ... -> content only
@@ -566,7 +652,10 @@ def _check_rst_content_completeness(
     on both sides before comparison, eliminating false positives from
     RST-to-Markdown conversion differences.
     """
-    norm_source = _normalize_rst_source(source_text, label_map)
+    # Collect substitutions once from the full source so per-line normalisation
+    # can resolve `|name|` references defined elsewhere in the file.
+    rst_substitutions = _collect_rst_substitutions(source_text)
+    norm_source = _normalize_rst_source(source_text, label_map, rst_substitutions)
     search_units = _build_rst_search_units(data)
 
     if not search_units:
@@ -603,8 +692,25 @@ def _check_rst_content_completeness(
     # QC1: each non-syntax RST source line must appear (normalized) in some JSON field
     all_norm_units = [nu for _, nu, _, _ in search_units if nu]
     in_structural = False
+    in_subst = False
+    subst_indent = 0
     for line in source_text.split('\n'):
         s = line.strip()
+        # Track substitution definitions and their indented bodies separately
+        # from ``_RST_STRUCTURAL_DIRECTIVES``: substitution bodies are not
+        # content we expect to see in JSON (the converter expands references,
+        # not bodies).
+        if re.match(r'^\s*\.\.\s+\|[^|]+\|\s+[a-z_-]+::', line):
+            in_subst = True
+            subst_indent = len(line) - len(line.lstrip())
+            continue
+        if in_subst:
+            if not s:
+                continue
+            cur_indent = len(line) - len(line.lstrip())
+            if cur_indent > subst_indent:
+                continue
+            in_subst = False
         if s and re.match(r'\.\.\s+\S', s):
             in_structural = bool(_RST_STRUCTURAL_DIRECTIVES.match(s))
         if not s:
@@ -613,7 +719,7 @@ def _check_rst_content_completeness(
             continue
         if _is_rst_syntax_line(line):
             continue
-        norm_line = re.sub(r'\s+', ' ', _normalize_rst_source(line, label_map)).strip()
+        norm_line = re.sub(r'\s+', ' ', _normalize_rst_source(line, label_map, rst_substitutions)).strip()
         if not norm_line:
             continue
         found = any(norm_line in nu for nu in all_norm_units)

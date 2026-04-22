@@ -21,7 +21,7 @@ http://localhost:9080/ProjectSaveAction
 HTTPメソッド
 POST
 HTTPヘッダ
-Content-Type: application/json html <br />
+Content-Type: application/json 
 X-Message-Id: 1
 リクエストボディ
 ```json

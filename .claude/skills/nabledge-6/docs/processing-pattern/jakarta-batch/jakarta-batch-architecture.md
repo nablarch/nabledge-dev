@@ -52,19 +52,19 @@ Chunkタイプのバッチアプリケーションの処理の流れを以下に
 
 2. Chunkステップ実行前のリスナーを順次実行する。
 
-3. Jakarta BatchのBatch RuntimeからChunkステップの `ItemReader` が実行される。 html <br />
+3. Jakarta BatchのBatch RuntimeからChunkステップの `ItemReader` が実行される。 
 `ItemReader` では、入力データソースからデータを読み込む。
 
-4. Jakarta BatchのBatch RuntimeからChunkステップの `ItemProcessor` が実行される。 html <br />
+4. Jakarta BatchのBatch RuntimeからChunkステップの `ItemProcessor` が実行される。 
 
-5. `ItemProcessor` は、 `Form` や `Entity` を使って業務ロジックを実行する。 html <br />
+5. `ItemProcessor` は、 `Form` や `Entity` を使って業務ロジックを実行する。 
 ※データーベースに対するデータの書き込みや更新はここでは実施しない。
 
 6. Jakarta BatchのBatch Runtimeから `ItemWriter` 実行前のコールバック処理として `NablarchItemWriteListenerExecutor` が呼び出される。
 
 7. `ItemWriter` 実行前のリスナーを順次実行する。
 
-8. Jakarta BatchのBatch RuntimeからChunkステップの `ItemWriter` が実行される。 html <br />
+8. Jakarta BatchのBatch RuntimeからChunkステップの `ItemWriter` が実行される。 
 `ItemWriter` では、テーブルへの登録(更新、削除)やファイル出力処理などの結果反映処理を行う。
 
 9. Jakarta BatchのBatch Runtimeから `ItemWriter` 実行後のコールバック処理として `NablarchItemWriteListenerExecutor` が呼び出される。
@@ -226,8 +226,8 @@ ItemWriterレベルのリスナー
 * デフォルトのジョブレベルのリスナーリストのコンポーネント名は、 `jobListeners` とする。
 * デフォルトのステップレベルのリスナーリストのコンポーネント名は、 `stepListeners` とする。
 * デフォルトのItemWriterレベルのリスナーリストのコンポーネント名は、 `itemWriteListeners` とする。
-* デフォルトのリスナーリスト定義を上書きする場合は、コンポーネント名を「ジョブ名称 + "." + 上書き対象のコンポーネント名」とする。 html <br />
+* デフォルトのリスナーリスト定義を上書きする場合は、コンポーネント名を「ジョブ名称 + "." + 上書き対象のコンポーネント名」とする。 
 例えば、「sample-job」でジョブレベルの定義を上書きする場合は、コンポーネント名を `sample-job.jobListeners` としてリスナーリストを定義する。
-* 特定のステップでデフォルトのリスナーリスト定義を上書きする場合は、コンポーネント名を「ジョブ名称 + "." + ステップ名称 + "." + 上書き対象のコンポーネント名」とする。 html <br />
+* 特定のステップでデフォルトのリスナーリスト定義を上書きする場合は、コンポーネント名を「ジョブ名称 + "." + ステップ名称 + "." + 上書き対象のコンポーネント名」とする。 
 例えば、「sample-job」で定義されている「sample-step」で、デフォルトのステップレベルのリスナーリスト定義を上書きする場合は、コンポーネント名を `sample-job.sample-step.stepListeners` としてリスナーリストを定義する。
 * 特定のステップで上書き出来るリスナーリストは、ステップレベルとItemWriterレベルのリスナーリストのみである。

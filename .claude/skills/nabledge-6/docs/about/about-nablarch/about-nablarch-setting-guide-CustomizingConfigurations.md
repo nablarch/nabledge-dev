@@ -10,8 +10,8 @@ Nablarchの設定は、デフォルトコンフィグレーション内の設定
 ![](../../../knowledge/assets/about-nablarch-setting-guide-CustomizingConfigurations/abstract.png)
 | モジュール | 説明 |
 |---|---|
-| デフォルトコンフィギュレーション(jar) | nablarch-main-default-configuration-XXXX.jarやnablarch-testing-default-configuration-XXXX.jarなどjar形式でパッケージされ、Mavenのアーティファクトとして配布される。html <br /> プレースホルダーに対する設定値が設定されている項目と、プレースホルダーのみが定義されている項目が存在する。html <br /> また、変更頻度の極めて低い項目については、プレースホルダー化されておらず直接値が設定されている。 |
-| PJ成果物 | Nablarchが提供するアーキタイプを使用した場合、デフォルトコンフィギュレーション(jar)への依存関係があらかじめ設定される。html <br /> PJ成果物のコンポーネント設定ファイルには、アーキタイプから生成した直後の状態で、初期値が設定された状態で提供されている。 |
+| デフォルトコンフィギュレーション(jar) | nablarch-main-default-configuration-XXXX.jarやnablarch-testing-default-configuration-XXXX.jarなどjar形式でパッケージされ、Mavenのアーティファクトとして配布される。 プレースホルダーに対する設定値が設定されている項目と、プレースホルダーのみが定義されている項目が存在する。 また、変更頻度の極めて低い項目については、プレースホルダー化されておらず直接値が設定されている。 |
+| PJ成果物 | Nablarchが提供するアーキタイプを使用した場合、デフォルトコンフィギュレーション(jar)への依存関係があらかじめ設定される。 PJ成果物のコンポーネント設定ファイルには、アーキタイプから生成した直後の状態で、初期値が設定された状態で提供されている。 |
 
 ## カスタマイズ方法
 

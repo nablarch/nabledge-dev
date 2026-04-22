@@ -275,18 +275,6 @@ public class ProjectSearchForm {
 |  | デフォルトは"row"。\|br\| |
 | varStatusName | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。\|br\| |
 |  | デフォルトは"status"。 |
-|  |  |
-|  | n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\ |
-|  | エラーが発生し値を取得できない。\ |
-|  | n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\ |
-|  | 下記に使用例を示す。 |
-|  |  |
-|  | <n:set var="rowCount" value="${status.count}" /> |
-|  | <n:write name="rowCount" /> |
-| varCountName | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。\|br\| |
-|  | デフォルトは"count"。\|br\| |
-| varRowCountName | 検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。\|br\| |
-|  | デフォルトは"rowCount"。 |
 
 さらに、ボディ行では、1行おきに背景色を変えたい場合に対応するために、ボディ行のclass属性を指定する下記の属性を設けている。
 
@@ -488,22 +476,3 @@ listSearchResultタグは、検索結果の一覧表示を行う。
 |  | デフォルトは"row"。 |
 | varStatusName | ボディ行のフラグメントでステータス(c:forEachタグのstatus属性)を参照する際に使用する変数名。\|br\| |
 |  | デフォルトは"status"。 |
-|  |  |
-|  | n:writeタグを使用してステータスにアクセスすると、n:writeタグとEL式でアクセス方法が異なるために\ |
-|  | エラーが発生し値を取得できない。\ |
-|  | n:setタグを使用してステータスにアクセスすることで、このエラーを回避できる。\ |
-|  | 下記に使用例を示す。 |
-|  |  |
-|  | <n:set var="rowCount" value="${status.count}" /> |
-|  | <n:write name="rowCount" /> |
-| varCountName | ステータス(c:forEachタグのstatus属性)のcountプロパティを参照する際に使用する変数名。\|br\| |
-|  | デフォルトは"count"。 |
-| varRowCountName | 検索結果のカウント(検索結果の取得開始位置＋ステータスのカウント)を参照する際に使用する変数名。\|br\| |
-|  | デフォルトは"rowCount"。 |
-| varOddEvenName | ボディ行のclass属性を参照する際に使用する変数名。\|br\| |
-|  | この変数名は、1行おきにclass属性の値を変更したい場合に使用する。\|br\| |
-|  | デフォルトは"oddEvenCss"。 |
-| oddValue | ボディ行の奇数行に使用するclass属性。\|br\| |
-|  | デフォルトは"nablarch_odd"。 |
-| evenValue | ボディ行の偶数行に使用するclass属性。\|br\| |
-|  | デフォルトは"nablarch_even"。 |

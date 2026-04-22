@@ -93,9 +93,9 @@ public class TruncateTableBatchlet extends AbstractBatchlet {
 * `AbstractBatchlet` を継承し、 `process` メソッドで業務処理を行う。
 
 
-* `Named` と `Dependent` をクラスに付与する。 html <br />
+* `Named` と `Dependent` をクラスに付与する。 
 Named及びDependentアノテーションを設定することで、Batchlet実装クラスをCDIの管理Beanにできる。
-これにより、ジョブ定義に指定するBatchletクラス名をCDIの管理名で記述出来るようになる。 html <br />
+これにより、ジョブ定義に指定するBatchletクラス名をCDIの管理名で記述出来るようになる。 
 (CDI管理Beanとしなかった場合は、完全修飾名(FQCN)で記述する)
 
 * データベースアクセス を使用してTRUNCATE文を実行する。

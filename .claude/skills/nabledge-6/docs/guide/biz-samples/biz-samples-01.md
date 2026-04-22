@@ -152,11 +152,6 @@ SystemAccountAuthenticatorの使用方法について解説する。
 |  | 0101_PBKDF2PasswordEncryptor を参考に設定したコンポーネント名を、refに指定すること。 |
 | dbManager(必須) | データベースへのトランザクションを制御するSimpleDbTransactionManager。 |
 |  | nablarch.core.db.transaction.SimpleDbTransactionManagerクラスのインスタンスを指定する。 |
-|  |  |
-|  | SystemAccountAuthenticatorのトランザクション制御が個別アプリケーションの処理に影響を与えないように、個別アプリケーションとは別のトランザクションを使用するように設定すること。 |
-|  | 設定例では、dbTransactionNameに"authenticator"という名前を指定しているので、個別アプリケーションでは同じ名前を使用しないように設定する。 |
-| failedCountToLock | ユーザIDをロックする認証失敗回数。 |
-|  | 指定しない場合は0となり、ユーザIDのロック機能を使用しないことになる。 |
 
 ## AuthenticaionUtilの使用方法
 

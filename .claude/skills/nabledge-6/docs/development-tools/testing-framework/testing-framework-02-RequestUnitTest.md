@@ -437,11 +437,6 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
 </tr>
 <tr>
   <td></td>
-  <td>.. tip::</td>
-  <td></td>
-</tr>
-<tr>
-  <td></td>
   <td>バージョン管理用のディレクトリ(.svnや.git)を対象外と設定すると</td>
   <td></td>
 </tr>
@@ -454,11 +449,6 @@ void assertApplicationMessageId(String expectedCommaSeparated, ExecutionContext 
   <td>tempDirectory</td>
   <td>JSPのコンパイル先ディレクトリ</td>
   <td>jettyのデフォルト動作に依存</td>
-</tr>
-<tr>
-  <td></td>
-  <td></td>
-  <td>.. tip ::</td>
 </tr>
 <tr>
   <td></td>

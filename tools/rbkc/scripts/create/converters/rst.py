@@ -360,8 +360,11 @@ def _collect_substitutions(lines: list[str]) -> dict[str, str]:
         # Body (indented block)
         block, i = _read_block(lines, i + 1)
 
+        # For ``raw::`` the inline_arg is the output format (e.g. "html") — not
+        # body content. For all other directives treat both inline_arg and
+        # block as body.
         parts: list[str] = []
-        if inline_arg:
+        if directive != "raw" and inline_arg:
             parts.append(inline_arg)
         for b in block:
             s = b.strip()
@@ -372,7 +375,8 @@ def _collect_substitutions(lines: list[str]) -> dict[str, str]:
         if directive == "replace":
             subs[name] = body
         elif directive == "raw":
-            # Extract URL from <a href="..."> if present; else leave empty
+            # Extract URL from <a href="..."> if present; else drop the body
+            # (``<br />`` etc. have no useful text equivalent).
             m_url = re.search(r'href="([^"]+)"', body)
             if m_url:
                 # Prefer link text if present
@@ -380,7 +384,7 @@ def _collect_substitutions(lines: list[str]) -> dict[str, str]:
                 text = m_text.group(1).strip() if m_text else m_url.group(1)
                 subs[name] = f"[{text}]({m_url.group(1)})"
             else:
-                subs[name] = body
+                subs[name] = ""
         else:
             subs[name] = body
     return subs
@@ -439,8 +443,12 @@ def _convert_inline(
 
     text = re.sub(r":download:`([^<`]+?)\s*<([^>]+)>`", _download, text)
 
+    # :role:`text <target>` → text  (catch-all for roles with a target, e.g.
+    # ``:javadoc_url:`Name <path>``` → ``Name``). Must run before the simpler
+    # ``:role:`text``` pattern so the target segment is discarded.
+    text = re.sub(r":[a-zA-Z][a-zA-Z0-9_.:-]*:`([^<`]+?)\s*<[^>]+>`", lambda m: m.group(1).strip(), text)
     # :任意ロール:`text`  →  text (catch-all for other roles)
-    text = re.sub(r":[a-z_-]+:`([^`]+)`", r"\1", text)
+    text = re.sub(r":[a-zA-Z][a-zA-Z0-9_.:-]*:`([^`]+)`", r"\1", text)
 
     # ``code``  →  `code`
     text = re.sub(r"``(.+?)``", r"`\1`", text)
@@ -710,9 +718,16 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
             d += _dw(ch)
         return ["".join(cell).strip() for cell in cells]
 
+    # Directive inside a simple-table cell (e.g. ``.. code-block::``) drops
+    # the rest of that cell's body — rendering a multi-line directive body
+    # inside a single Markdown table cell is not well-defined and would leak
+    # RST syntax into the output.
+    _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
+
     rows: list[list[str]] = []
     sep_count = 0
     head_count: int | None = None
+    skip_until_sep = False
 
     for line in block:
         s = line.rstrip()
@@ -723,11 +738,19 @@ def _parse_simple_table_cjk(block: list[str], file_id: str = "") -> list[str]:
             sep_count += 1
             if sep_count == 2 and head_count is None:
                 head_count = len(rows)
-        else:
-            cells = split_row(s)
-            # Skip rows that are entirely empty (e.g., option-only cells like :ref: refs)
-            if any(c for c in cells):
-                rows.append(cells)
+            skip_until_sep = False
+            continue
+        if skip_until_sep:
+            continue
+        # If any cell on this line starts a nested directive, stop absorbing
+        # rows for the current table row until the next separator.
+        if _CELL_DIRECTIVE_RE.search(s):
+            skip_until_sep = True
+            continue
+        cells = split_row(s)
+        # Skip rows that are entirely empty (e.g., option-only cells like :ref: refs)
+        if any(c for c in cells):
+            rows.append(cells)
 
     if head_count is None:
         head_count = 0
@@ -749,6 +772,8 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
 
     colspecs, headrows, bodyrows = tabledata
 
+    _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
+
     def _to_rows(rows_raw) -> list[list[str]]:
         out = []
         for row in rows_raw:
@@ -756,7 +781,15 @@ def _parse_simple_table(block: list[str], file_id: str = "") -> list[str]:
             for cell in row:
                 # cell format: [morerows, morecols, offset, StringList]
                 content = cell[3] if len(cell) >= 4 else []
-                text_parts = [line.strip() for line in content if line.strip()]
+                # Drop any nested directive body (e.g. .. code-block::) from the
+                # cell: flattening it into one cell loses structure and leaks
+                # RST syntax.
+                kept = []
+                for line in content:
+                    if _CELL_DIRECTIVE_RE.match(line):
+                        break
+                    kept.append(line)
+                text_parts = [line.strip() for line in kept if line.strip()]
                 cells.append(" ".join(text_parts))
             out.append(cells)
         return out
@@ -866,8 +899,14 @@ def _parse_grid_table(block: list[str], file_id: str = "") -> list[str]:
 
         tag = "th" if is_header else "td"
         ncols = max(len(r) for r in rows)
+        _CELL_DIRECTIVE_RE = re.compile(r'^\s*\.\.\s+[a-z][a-z_:-]*\s*::')
 
         for row in rows:
+            # A row whose non-empty cell starts a directive (e.g. ``.. tip::``)
+            # is a continuation-style cell that shouldn't be rendered as a
+            # table row — drop the row to avoid leaking RST syntax.
+            if any(_CELL_DIRECTIVE_RE.match(c) for c in row if c):
+                continue
             html.append("<tr>")
             for ci in range(ncols):
                 text = _convert_inline(row[ci] if ci < len(row) else "", file_id)

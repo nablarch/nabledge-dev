@@ -7,14 +7,14 @@
 - [Jakarta RESTful Web Services(外部サイト、英語)](https://jakarta.ee/specifications/restful-ws/)
 
 > **Tip:** NablarchのJakarta RESTful Web ServicesサポートとHTTPメッセージングのみ、表内のマークをクリックすると、解説書の説明ページに遷移する。
-| 機能 | Jakarta RESTful html <br /> Web Services html <br /> サポート | HTTP html <br /> メッセージング | Jakarta RESTful html <br /> Web Services |
+| 機能 | Jakarta RESTful  Web Services  サポート | HTTP  メッセージング | Jakarta RESTful  Web Services |
 |---|---|---|---|
 | リクエストとリソースメソッドのマッピング | △ | ○ | ○ |
 | リクエストとパラメータのマッピング | △ | × [1]_ | ○ |
 | HTTPメソッドのマッチング | △ | × [1]_ | ○ |
-| メディアタイプに応じた html <br /> リクエスト/レスポンスの変換 | △ | × [1]_ | ○ |
+| メディアタイプに応じた  リクエスト/レスポンスの変換 | △ | × [1]_ | ○ |
 | エンティティのバリデーション | ○ | ○ | ○ |
-| リソースクラスへのインジェクション html <br /> (Jakarta Contexts and Dependency Injection) | × [2]_ | × [2]_ | ○ |
+| リソースクラスへのインジェクション  (Jakarta Contexts and Dependency Injection) | × [2]_ | × [2]_ | ○ |
 | リクエスト/レスポンスに対するフィルタ | × [3]_ | × [3]_ | ○ |
 | ボディの読み書きに対するインターセプタ | × [4]_ | × [5]_ | ○ |
 | クライアントAPI | × [6]_ | ○ | ○ |
