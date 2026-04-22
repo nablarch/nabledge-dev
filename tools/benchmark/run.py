@@ -41,6 +41,7 @@ BENCH_DIR = Path(__file__).resolve().parent
 SCENARIOS_PATH_DEFAULT = BENCH_DIR / "scenarios" / "qa-v6-sample5.json"
 
 PROMPT_STAGE1_FACET = BENCH_DIR / "prompts" / "stage1_facet.md"
+PROMPT_STAGE1_IDS = BENCH_DIR / "prompts" / "stage1_ids.md"
 PROMPT_JUDGE_STAGE2 = BENCH_DIR / "prompts" / "judge_stage2.md"
 PROMPT_STAGE3_SELECT = BENCH_DIR / "prompts" / "stage3_section_select.md"
 PROMPT_STAGE3_ANSWER = BENCH_DIR / "prompts" / "stage3_answer.md"
@@ -48,6 +49,8 @@ PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
 
 KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
 INDEX_TOON_PATH = KNOWLEDGE_ROOT / "index.toon"
+INDEX_LLM_PATH = KNOWLEDGE_ROOT / "index-llm.md"
+INDEX_SCRIPT_PATH = KNOWLEDGE_ROOT / "index-script.json"
 
 TYPE_ENUM = [
     "about", "check", "component", "development-tools",
@@ -83,6 +86,23 @@ SCHEMA_STAGE3_SELECT = {
             "type": "array",
             "maxItems": 10,
             "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
+        },
+    },
+}
+
+SCHEMA_STAGE1_IDS = {
+    "type": "object",
+    "required": ["selections"],
+    "additionalProperties": False,
+    "properties": {
+        "selections": {
+            "type": "array",
+            "maxItems": 10,
+            "uniqueItems": True,
+            "items": {
+                "type": "string",
+                "pattern": r"^[a-zA-Z0-9_-]+\|[a-zA-Z0-9_-]+$",
+            },
         },
     },
 }
@@ -476,6 +496,209 @@ def run_stage2(
         "filter": {
             "fallback_used": fallback_used,
             "candidate_count": len(outcome_rows),
+        },
+        "judge": judge_record,
+        "total_cost_usd": total_cost,
+        "wall_s": total_wall,
+    }
+
+
+def run_stage3_ids(
+    scenario: dict, model: str, scen_dir: Path, id_to_path: dict[str, str]
+) -> dict:
+    """Direct-ID flow: AI-1 picks `file_id|sid`, script resolves to
+    `path:section_id`, read-sections, AI-3 answers, judge scores.
+
+    Replaces the facet + filter + AI-2 path for the new AI-1 redesign.
+    """
+    question = scenario["expected_question"]
+    index_text = INDEX_LLM_PATH.read_text(encoding="utf-8")
+    prompt = (
+        PROMPT_STAGE1_IDS.read_text(encoding="utf-8")
+        .replace("{{index}}", index_text)
+        .replace("{{question}}", question)
+    )
+    (scen_dir / "ai1_prompt.md").write_text(prompt, encoding="utf-8")
+
+    ai1_out, ai1_envelope, ai1_wall, ai1_err = invoke_claude_stream(
+        prompt=prompt,
+        schema=SCHEMA_STAGE1_IDS,
+        max_turns=2,
+        model=model,
+        allowed_tools=[],
+        timeout_s=300,
+        log_path=scen_dir / "ai1_ids_select.stream-json",
+    )
+    ai1_raw_selections: list[str] = list(
+        (ai1_out or {}).get("selections") or []
+    )
+
+    # Resolve file_id|sid → path:section_id using the script index.
+    resolved: list[str] = []
+    unresolved: list[dict] = []
+    for sel in ai1_raw_selections:
+        if "|" not in sel:
+            unresolved.append({"selector": sel, "reason": "malformed"})
+            continue
+        fid, sid = sel.split("|", 1)
+        info = id_to_path.get(fid)
+        if not info:
+            unresolved.append({"selector": sel, "reason": "unknown file_id"})
+            continue
+        if sid not in info.get("sections", []):
+            unresolved.append({"selector": sel, "reason": "unknown sid"})
+            continue
+        resolved.append(f"{info['path']}:{sid}")
+
+    (scen_dir / "ai1_result.json").write_text(
+        json.dumps(
+            {
+                "raw_selections": ai1_raw_selections,
+                "resolved_selectors": resolved,
+                "unresolved": unresolved,
+                "wall_s": ai1_wall,
+                "total_cost_usd": ai1_envelope.get("total_cost_usd"),
+                "error": ai1_err or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # Read sections using the existing path:section_id machinery.
+    sections_text, section_records = read_selected_sections(resolved)
+    (scen_dir / "sections_read.json").write_text(
+        json.dumps(section_records, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # AI-3 answer.
+    if not sections_text:
+        answer_struct: dict = {
+            "answer": "（参照可能なセクションがありません。）",
+            "cited": [],
+        }
+        answer_envelope: dict = {}
+        answer_wall = 0.0
+        answer_err = "no sections"
+    else:
+        answer_prompt = (
+            PROMPT_STAGE3_ANSWER.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{sections_text}}", sections_text)
+        )
+        (scen_dir / "ai3_answer_prompt.md").write_text(answer_prompt, encoding="utf-8")
+        answer_struct, answer_envelope, answer_wall, answer_err = invoke_claude_stream(
+            prompt=answer_prompt,
+            schema=SCHEMA_STAGE3_ANSWER,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=300,
+            log_path=scen_dir / "ai3_answer.stream-json",
+        )
+        answer_struct = answer_struct or {"answer": "", "cited": []}
+    (scen_dir / "final_answer.md").write_text(
+        answer_struct.get("answer") or "", encoding="utf-8"
+    )
+    (scen_dir / "ai3_result.json").write_text(
+        json.dumps(
+            {
+                "answer": answer_struct.get("answer"),
+                "cited": answer_struct.get("cited"),
+                "wall_s": answer_wall,
+                "total_cost_usd": answer_envelope.get("total_cost_usd"),
+                "error": answer_err or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # Judge.
+    if not answer_struct.get("answer"):
+        judge: dict | None = {"level": 0, "reason": "no answer produced"}
+        judge_envelope: dict = {}
+        judge_wall = 0.0
+        judge_err = ""
+    else:
+        judge_prompt = (
+            PROMPT_JUDGE_STAGE3.read_text(encoding="utf-8")
+            .replace("{{question}}", question)
+            .replace("{{answer}}", answer_struct.get("answer") or "")
+            .replace(
+                "{{cited}}",
+                "\n".join(f"- {c}" for c in (answer_struct.get("cited") or [])),
+            )
+        )
+        (scen_dir / "judge_stage3_prompt.md").write_text(
+            judge_prompt, encoding="utf-8"
+        )
+        judge, judge_envelope, judge_wall, judge_err = invoke_claude_stream(
+            prompt=judge_prompt,
+            schema=SCHEMA_JUDGE_STAGE3,
+            max_turns=2,
+            model=model,
+            allowed_tools=[],
+            timeout_s=180,
+            log_path=scen_dir / "judge_stage3.stream-json",
+        )
+
+    judge_record = {
+        "level": (judge or {}).get("level") if judge else None,
+        "reason": (judge or {}).get("reason") if judge else None,
+        "wall_s": judge_wall,
+        "total_cost_usd": judge_envelope.get("total_cost_usd"),
+        "error": judge_err or None,
+    }
+    (scen_dir / "judge_stage3_result.json").write_text(
+        json.dumps(judge_record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    total_cost = sum(
+        v or 0.0
+        for v in [
+            ai1_envelope.get("total_cost_usd"),
+            answer_envelope.get("total_cost_usd"),
+            judge_envelope.get("total_cost_usd"),
+        ]
+    )
+    total_wall = ai1_wall + answer_wall + judge_wall
+
+    return {
+        "id": scenario["id"],
+        "stage": 3,
+        "variant": "ids",
+        "model": model,
+        "question": question,
+        "ai1": {
+            "raw_selections": ai1_raw_selections,
+            "resolved_count": len(resolved),
+            "unresolved_count": len(unresolved),
+            "cost_usd": ai1_envelope.get("total_cost_usd"),
+            "wall_s": ai1_wall,
+            "error": ai1_err or None,
+        },
+        "select": {  # kept for summary compatibility
+            "selections": resolved,
+            "cost_usd": 0.0,
+            "wall_s": 0.0,
+            "error": None,
+        },
+        "filter": {  # kept for summary compatibility
+            "fallback_used": "ids-direct",
+            "candidate_count": len(resolved),
+        },
+        "sections_read": {
+            "ok": sum(1 for r in section_records if r.get("status") == "ok"),
+            "total": len(section_records),
+        },
+        "answer": {
+            "cited": answer_struct.get("cited"),
+            "cost_usd": answer_envelope.get("total_cost_usd"),
+            "wall_s": answer_wall,
+            "error": answer_err or None,
         },
         "judge": judge_record,
         "total_cost_usd": total_cost,
@@ -885,6 +1108,13 @@ def main() -> int:
     )
     ap.add_argument("--model", default="sonnet",
                     help="claude model id or alias (sonnet, haiku, opus, or exact id)")
+    ap.add_argument(
+        "--variant",
+        choices=["facet", "ids"],
+        default="facet",
+        help="stage-3 flow variant: facet (type/category + AI-2 select) or "
+             "ids (direct file_id|sid selection from LLM index)",
+    )
     ap.add_argument("--out", help="output directory (default: .results/{ts}-stage{N}-{model})")
     args = ap.parse_args()
 
@@ -899,7 +1129,8 @@ def main() -> int:
 
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     model_slug = args.model.replace("/", "_").replace(":", "_")
-    default_out = BENCH_DIR / ".results" / f"{ts}-stage{args.stage}-{model_slug}"
+    variant_slug = f"-{args.variant}" if args.stage == 3 else ""
+    default_out = BENCH_DIR / ".results" / f"{ts}-stage{args.stage}{variant_slug}-{model_slug}"
     out_dir = Path(args.out) if args.out else default_out
     out_dir.mkdir(parents=True, exist_ok=True)
     results_path = out_dir / "results.jsonl"
@@ -911,7 +1142,12 @@ def main() -> int:
         file=sys.stderr,
     )
 
-    index_rows = load_index(INDEX_TOON_PATH) if args.stage >= 2 else []
+    index_rows: list[IndexRow] = []
+    id_to_path: dict[str, dict] = {}
+    if args.stage >= 2 and not (args.stage == 3 and args.variant == "ids"):
+        index_rows = load_index(INDEX_TOON_PATH)
+    if args.stage == 3 and args.variant == "ids":
+        id_to_path = json.loads(INDEX_SCRIPT_PATH.read_text(encoding="utf-8"))
 
     results: list[dict] = []
     with results_path.open("w", encoding="utf-8") as f:
@@ -923,6 +1159,8 @@ def main() -> int:
                 r = run_stage1_facet(sc, args.model, scen_dir)
             elif args.stage == 2:
                 r = run_stage2(sc, args.model, scen_dir, index_rows)
+            elif args.variant == "ids":
+                r = run_stage3_ids(sc, args.model, scen_dir, id_to_path)
             else:
                 r = run_stage3(sc, args.model, scen_dir, index_rows)
             results.append(r)
