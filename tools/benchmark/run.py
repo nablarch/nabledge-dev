@@ -149,12 +149,13 @@ def invoke_claude_stream(
             proc.stderr, encoding="utf-8"
         )
 
-    if proc.returncode != 0:
-        return None, {}, wall_s, f"claude exited {proc.returncode}: {proc.stderr[-500:]}"
-
     # Stream-json NDJSON: last "result" event carries usage/cost/structured_output.
+    # As a fallback, also pick up StructuredOutput tool_use inputs that the
+    # assistant emitted during the run — useful when max-turns is hit after
+    # the structured output was already provided.
     final_envelope: dict = {}
     structured: dict | None = None
+    tool_use_structured: dict | None = None
     for line in (proc.stdout or "").splitlines():
         line = line.strip()
         if not line:
@@ -166,8 +167,28 @@ def invoke_claude_stream(
         if evt.get("type") == "result":
             final_envelope = evt
             structured = evt.get("structured_output") or structured
+        elif evt.get("type") == "assistant":
+            msg = evt.get("message", {})
+            for block in msg.get("content", []) or []:
+                if (
+                    block.get("type") == "tool_use"
+                    and block.get("name") == "StructuredOutput"
+                ):
+                    inp = block.get("input")
+                    if isinstance(inp, dict) and inp:
+                        tool_use_structured = inp
+    if structured is None and tool_use_structured is not None:
+        structured = tool_use_structured
+
+    # Recover from error_max_turns when structured output was already captured.
+    if proc.returncode != 0 and structured is None:
+        return None, final_envelope, wall_s, (
+            f"claude exited {proc.returncode}: {(proc.stderr or '')[-500:]}"
+        )
+
     if not final_envelope:
-        return None, {}, wall_s, "no result event in stream"
+        return structured, {}, wall_s, "no result event in stream"
+
     return structured, final_envelope, wall_s, ""
 
 
