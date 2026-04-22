@@ -513,15 +513,18 @@ def _strip_md_syntax(text: str) -> str:
 
 
 def verify_file(source_path, json_path, fmt, knowledge_dir=None):
-    """QC1/QC2/QC3 for Excel sources via sequential-delete algorithm.
+    """Run all per-file JSON checks for a source/JSON pair.
 
-    Direction: each source cell value is deleted from the JSON text in order.
-    - QC1: cell value not found in JSON text → missing
-    - QC2: text remaining in JSON after all deletions → fabricated
-    - QC3: cell value found only in already-consumed region → duplicate
+    For RST/MD sources:
+      - QC1/QC2/QC3/QC4: sequential-delete content completeness (check_content_completeness)
+      - QC5: format-specific syntax purity (check_format_purity)
+      - QL2: external URL one-to-one (check_external_urls)
+
+    For Excel sources:
+      - QC1/QC2/QC3: sequential-delete algorithm on cell values vs JSON text
 
     Args:
-        source_path: Path to the source file (xlsx or xls).
+        source_path: Path to the source file.
         json_path: Path to the generated knowledge JSON file.
         fmt: Source format ('rst', 'md', or 'xlsx').
         knowledge_dir: Unused.
@@ -529,9 +532,6 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None):
     Returns:
         List of FAIL messages. Empty if all checks pass.
     """
-    if fmt != "xlsx":
-        return []
-
     if not Path(json_path).exists():
         return []
 
@@ -539,6 +539,17 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None):
     data = _json.loads(Path(json_path).read_text(encoding="utf-8"))
 
     if data.get("no_knowledge_content"):
+        return []
+
+    if fmt in ("rst", "md"):
+        source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
+        issues: list[str] = []
+        issues.extend(check_content_completeness(source_text, data, fmt))
+        issues.extend(check_format_purity(data, fmt))
+        issues.extend(check_external_urls(source_text, data, fmt))
+        return issues
+
+    if fmt != "xlsx":
         return []
 
     source_tokens = _build_xlsx_source_tokens(source_path)

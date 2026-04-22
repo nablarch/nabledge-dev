@@ -1711,14 +1711,40 @@ class TestVerifyFileExcelQC:
         ], title="タイトル")
         assert self._check(xlsx_path, data) == []
 
-    def test_pass_fmt_not_xlsx_returns_empty(self, tmp_path):
-        """verify_file with fmt != 'xlsx' returns empty list without reading files."""
+    def test_rst_md_dispatch_runs_content_completeness_and_format_purity(self, tmp_path):
+        """verify_file for RST/MD runs check_content_completeness + format_purity + external_urls.
+
+        Regression guard (Phase 21-G): prior to wiring, verify_file(fmt='rst'|'md')
+        returned [] unconditionally, so RST/MD output was never checked.
+        """
         import json
         from scripts.verify.verify import verify_file
+        # RST source with a role syntax remnant present in JSON content → QC5 FAIL
+        rst_src = tmp_path / "test.rst"
+        rst_src.write_text("Title\n=====\n\nSection body text.\n", encoding="utf-8")
         json_path = tmp_path / "test.json"
-        json_path.write_text(json.dumps({"id": "x", "title": "T", "no_knowledge_content": False, "sections": []}))
-        assert verify_file(tmp_path / "test.rst", json_path, "rst") == []
-        assert verify_file(tmp_path / "test.md", json_path, "md") == []
+        json_path.write_text(json.dumps({
+            "id": "x", "title": "Title", "content": "Section body text.",
+            "no_knowledge_content": False,
+            "sections": [
+                {"id": "s1", "title": "Bad", "content": ":java:class:`Foo` は使うな"},
+            ],
+        }), encoding="utf-8")
+        issues = verify_file(rst_src, json_path, "rst")
+        # At minimum the QC5 role syntax must be flagged — proves the check is wired.
+        assert any("QC5" in i for i in issues), issues
+
+    def test_no_knowledge_content_short_circuits_for_rst_md(self, tmp_path):
+        """verify_file on RST/MD still returns [] for no_knowledge_content JSON."""
+        import json
+        from scripts.verify.verify import verify_file
+        rst_src = tmp_path / "nkc.rst"
+        rst_src.write_text(":orphan:\n\n.. toctree::\n   :hidden:\n\n", encoding="utf-8")
+        json_path = tmp_path / "nkc.json"
+        json_path.write_text(json.dumps({
+            "id": "nkc", "title": "Nav", "no_knowledge_content": True, "sections": [],
+        }), encoding="utf-8")
+        assert verify_file(rst_src, json_path, "rst") == []
 
 
 # ---------------------------------------------------------------------------
