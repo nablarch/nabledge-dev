@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 49 — 方針転換: Phase 21-Y を create 単独の書き直しから、`scripts/common/rst_ast.py` 経由で create / verify の両方が docutils AST を consume する構成に変更。設計書 `rbkc-verify-quality-design.md` §2-2 の独立性原則を「向きベース」に緩め、共通ロジック (scripts/common/ + docutils) は両方から利用可能と明記。§3-1 手順 0 を tokenizer 列挙方式から docutils AST + node → MD 対応表方式に刷新済。footnote body 再帰問題は docutils 側が `<footnote>` node の children として block elements を保持するため自動的に解決。Y-1 完了、Y-2 から再開。)
+**Updated**: 2026-04-23 (session 50 — モグラ叩き終結の横並びチェック実施。verify.py に AST を通らない regex 経路 (QL1/QL2・URL 抽出・figure caption 比較) が残っており、これが false positive の温床と判明。Visitor にも silent fallback (未知 node / 未登録 role / 未解決 substitution) が残り、設計書は「廃棄 (drop)」を多用。これらを**例外全廃原則**で書き直し: ①AST 経由原則を QL1/QL2 にも適用、②Visitor に zero-exception 原則を適用、③ 情報保持原則 (image alt / figure caption / table title / admonition custom title / field_list value 保持)、④ 許容残存リスト撤廃 (Visitor と JSON の MD 記法を共有ヘルパーで揃える構造にし、残存は一律 QC1 FAIL)、⑤ 旧モジュール削除。Y-3 前半は完了 (53→7 FAIL)、後半は本横並び修正。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -114,19 +114,65 @@
   - verify Visitor: フラットな正規化 MD 文字列を返す
 - [ ] 設計書レビューをユーザーに依頼 (レビューなしでは実装着手しない)
 
-#### Y-3: 共通モジュール + create/verify 実装
+#### Y-3: 共通モジュール + create/verify 実装 (基礎実装完了分)
 
-- [ ] `scripts/common/rst_ast.py` 実装 (Y-2 API 通り)
-- [ ] 旧 `scripts/create/converters/rst.py` を `rst_legacy.py` にリネーム (すぐ戻せる状態を維持)
-- [ ] 旧 `scripts/common/rst_normaliser.py` を `rst_normaliser_legacy.py` にリネーム
-- [ ] 新 `rst.py` を `common/rst_ast.py` + create Visitor で書き直し
-  - [ ] `RSTConverter.convert(source, file_id, targets, source_dir, substitutions) -> RSTResult`
-  - [ ] `scripts/common/rst_admonition.py` / `rst_substitutions.py` / `rst_include.py` は docutils の transform と統合 / または deprecate 判断
-- [ ] 新 `rst_normaliser.py` (verify 側 tokenizer) を `common/rst_ast.py` + verify Visitor で書き直し
-- [ ] `verify.py` から新 normaliser を呼ぶよう配線変更
-- [ ] `bash rbkc.sh create 6` が完走することを確認
-- [ ] 旧 `rst_legacy.py` / `rst_normaliser_legacy.py` 削除
-- [ ] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py`) 削除 (rbkc.md 方針通り)
+- [x] `scripts/common/rst_ast.py` 実装 (Y-2 API 通り)
+- [x] 旧 `scripts/create/converters/rst.py` を `rst_legacy.py` にリネーム (すぐ戻せる状態を維持)
+- [x] 旧 `scripts/common/rst_normaliser.py` を `rst_normaliser_legacy.py` にリネーム
+- [x] 新 `rst.py` を `common/rst_ast.py` + create Visitor で書き直し
+- [x] 新 `rst_normaliser.py` (verify 側 tokenizer) を `common/rst_ast.py` + verify Visitor で書き直し
+- [x] `verify.py` から新 normaliser を呼ぶよう配線変更
+- [x] `bash rbkc.sh create 6` が完走することを確認
+- [x] Sphinx role (`:ref:` / `:doc:` / `:java:extdoc:` 等) の label_map 経由解決
+- [x] v6 verify FAIL 53 → 7 まで削減 (committed `cf57a1718`)
+
+#### Y-3b: 例外全廃の横並び修正 (モグラ叩き終結)
+
+残 7 FAIL と横並び確認で判明した構造的な例外経路を一括撤去する。
+
+**Y-3b-1: 設計書 (横並びチェックの反映) ✅ 完了 (session 50)**
+- [x] `rbkc-verify-quality-design.md` §3-1 に「例外禁止原則 (zero-exception)」追加
+- [x] `rbkc-verify-quality-design.md` §3-1 「許容構文要素リスト」を撤廃 (Visitor と JSON 側 MD を共通ヘルパーで揃える前提)
+- [x] `rbkc-verify-quality-design.md` §3-2 に「AST 経由原則」追加、QL1 / QL2 の抽出経路を node 属性ベースに書き換え
+- [x] `rbkc-converter-design.md` §3-1a「情報保持原則 (no-drop principle)」追加 (image alt / figure caption / table title / admonition custom title / field_list value は保持)
+- [x] `rbkc-converter-design.md` §3-1b「例外禁止原則 (zero-exception)」追加
+- [x] `rbkc-converter-design.md` §4 の対応表を新方針 (field_list context-aware / image alt 保持 / admonition custom title 保持) に更新
+- [x] `rbkc-converter-design.md` §5 を zero-exception に合わせて書き換え
+
+**Y-3b-2: Visitor の例外経路撤去**
+- [ ] `render()` 最終 fallback の silent children 再帰を撤去 → 未登録 node で `UnknownNodeError` raise
+- [ ] `_inline()` / `inline_inline()` の未登録 role fallback を撤去 → Sphinx role ホワイトリスト外は `UnknownRoleError` raise
+- [ ] `inline_substitution_reference()` / `inline_reference()` の silent fallback を撤去 → 未解決は `UnresolvedReferenceError` raise
+- [ ] docutils parse error (level>=3) を `UnknownSyntaxError` として raise
+
+**Y-3b-3: 情報保持 (Visitor の drop 規則見直し)**
+- [ ] `visit_field_list`: context-aware に変更。directive option block は全 drop、それ以外は field_name を drop し field_body を再帰 Visit
+- [ ] `visit_image`: alt が非空なら `![<alt>](<uri>)` を必ず出力
+- [ ] `visit_figure`: child の `:alt:` / caption / legend をすべて保持
+- [ ] `visit_table`: child `title` (list-table 等の argument) を table 直前の paragraph として必ず出力
+- [ ] `visit_admonition`: custom title を Label として保持
+- [ ] `visit_literal_block`: `caption` 属性があれば fence の直前に paragraph として出す
+
+**Y-3b-4: verify.py の regex 経路を AST 経路に置換**
+- [ ] `check_source_links` (QL1) をリファクタ: ソース解析を AST へ
+  - `_RST_REF_DISPLAY_RE` / `_RST_REF_PLAIN_RE` / `_RST_FIGURE_RE` / `_RST_IMAGE_RE` / `_RST_IMAGE_ALT_RE` / `_RST_LITERALINCLUDE_RE` / `_MD_INTERNAL_LINK_RE` / `_read_rst_block` を撤去
+  - 代わりに doctree を walk して `reference` / `figure` / `image` / `literal_block` / MD 側 `reference` から候補を収集
+  - caption / alt が RST inline 構文のみの場合はファイル名 fallback
+- [ ] `check_external_urls` (QL2) をリファクタ: ソース解析を AST へ
+  - `_URL_RE` / `_URL_TRAILING_PUNCT_RE` / `_RST_TARGET_LINE_RE` / `_RST_SUBSTITUTION_RE` / `_source_urls` を撤去
+  - 代わりに doctree を walk して `reference.refuri` が `http(s)://` のもののみ列挙
+
+**Y-3b-5: 旧モジュールと未使用資産の削除**
+- [ ] `scripts/create/converters/rst_legacy.py` 削除
+- [ ] `scripts/common/rst_normaliser_legacy.py` 削除
+- [ ] `scripts/common/rst_substitutions.py` 削除 (新 normaliser は docutils 経由で不要)
+- [ ] `scripts/common/rst_include.py` 削除 (同上)
+- [ ] 旧テスト (`tests/ut/test_rst_converter.py` / `test_rst_normaliser.py`) 削除
+
+**Y-3b-6: 収束確認**
+- [ ] `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → FAIL 0
+- [ ] サブエージェント品質チェック (SE + QA)
+- [ ] コミット・プッシュ
 
 #### Y-4: v6 verify FAIL 0 まで収束
 
