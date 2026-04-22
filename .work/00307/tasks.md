@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-22 (LLM用index / スクリプト用index 分離方針決定、実装着手)
+**Updated**: 2026-04-22 (LLM/script index + stage3 ids variant 実装完了、実測待ち)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -170,12 +170,15 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
 - AI-1 は LLM 用 index を見て「質問に関連しそうな ID（または ID|SID）」を直接返す → スクリプトがパスに解決
 
 **Steps:**
-- [ ] `phase_f_finalize.py` に LLM用index / スクリプト用index 生成を追加
-- [ ] v6 で index 生成を実行（知識ファイル読まずに直接生成する one-off スクリプトでも可）
-- [ ] **脱落5件＋任意5件で紙上シミュレーション**（LLM用index を見てどの ID が返りそうか目視）
-- [ ] Stage 1 プロンプト書き直し（ID を直接返すフローに切替）
-- [ ] 5件で実測 → 30件で実測
-- [ ] OK なら v1.2 / v1.3 / v1.4 / v5 にも index 生成を適用（cross-version consistency）
+- [x] `tools/benchmark/build_index.py` 作成（v6 knowledge dir から index-llm.md / index-script.json を生成）
+- [x] v6 で index 生成実行（295 files / 1411 sections / 約42KB）commit `aa1114a8f`
+- [x] 脱落5件＋既合格5件で紙上シミュレーション → 10件全てで期待 ID が候補集合に出現
+- [x] Stage 1 プロンプト書き直し（`stage1_ids.md` 作成、Prompt Engineer レビュー反映済み）commit `c47d764a1`
+- [x] `run.py` に `--variant ids` 追加（`run_stage3_ids`: AI-1 index → 直接 `file_id|sid` → script が path 解決 → AI-3 → judge）
+- [x] `test_build_index.py` 6 tests GREEN、全 40 tests パス
+- [ ] **脱落5件で実測**（haiku、`--stage 3 --variant ids`）
+- [ ] 5件で OK なら 30件実測 → 採用可否判断
+- [ ] 採用後: **他バージョン (v1.2 / v1.3 / v1.4 / v5) への適用は別 PR のロールベース KC 側で実施**（本 PR では v6 のみ。phase_f_finalize への組み込みもロールベース KC 側）
 - [ ] 模範回答の citation 粒度を再検討（必須 fact / 補助 fact 分け or 粒度見直し）
 
 ### 新旧フロー比較ベンチマーク（更新可否の判定）
