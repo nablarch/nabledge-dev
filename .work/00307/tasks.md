@@ -3,13 +3,13 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: #310 (draft)
-**Updated**: 2026-04-22 (30件比較完了: ids 97%/$15/63s vs current 100%/$13/87s、ユーザー採用判断待ち)
+**Updated**: 2026-04-22 (judge v2 実装完了、3件パイロット OK。30件再採点は ids 11/30・current 10/30 で中断、再開待ち)
 
 ## 現在地（一言）
 
-30件比較完了 (Sonnet): **ids 29/30 level=3 vs current 30/30 level=3**。
-差は req-09 (out-of-scope) のみ。詳細: [comparison-30scenarios.md](rounds/comparison-30scenarios.md)。
-ユーザー採用判断待ち (精度 ≈ 同等 / コスト +19% / 時間 -27%)。
+**旧 judge が模範回答を見ずに採点していた重大欠陥を発見。v2 judge（模範回答＋参照本文ベース）を実装**。
+3件パイロットは妥当な判定が出た。30件再採点を途中で中断（ids 11/30, current 10/30 完了）。
+再採点完了後に真の比較結果が出る。旧比較 (ids 97% vs current 100%) は無効。
 
 ## 検索フローは 2 つだけ
 
@@ -33,22 +33,32 @@
 1. [x] Haiku 5件 (mean level 2.20)
 2. [x] Sonnet 5件 (mean level 3.00)
 3. [x] モデル固定 → Sonnet
-4. [x] 新フロー (ids) 30件実測 — 29/30 level=3 (req-09 のみ level=0)
-5. [x] 現行フロー 30件実測 — 30/30 level=3
-6. [x] 比較表作成 → [comparison-30scenarios.md](rounds/comparison-30scenarios.md)
+4. [x] 新フロー (ids) 30件実測 (`20260422-185308-stage3-ids-sonnet`)
+5. [x] 現行フロー 30件実測 (`20260422-185953-stage3-current-sonnet`)
+6. [x] 旧 judge 設計欠陥を発見（模範回答未参照、自己推定採点）
+7. [x] v2 judge 実装（模範回答＋参照本文ベース、OVER-REACH/HALLUCINATION検出、Prompt Engineer 提案をそのまま採用）
+8. [x] 3件パイロット — req-09/impact-06/review-01 で妥当な判定確認
+9. [ ] **30件再採点（残作業）**: ids 11/30, current 10/30 完了、残り 19-20件 × 2フロー
+   - 再開コマンド:
+     ```
+     python3 tools/benchmark/run.py --judge-only \
+       --results-dir tools/benchmark/.results/20260422-185308-stage3-ids-sonnet \
+       --scenarios-file tools/benchmark/scenarios/qa-v6.json --model sonnet
+     python3 tools/benchmark/run.py --judge-only \
+       --results-dir tools/benchmark/.results/20260422-185953-stage3-current-sonnet \
+       --scenarios-file tools/benchmark/scenarios/qa-v6.json --model sonnet
+     ```
+   - 既存 `judge_v2_result.json` は上書きされるが結果は同じなので実害なし
+   - 将来改善: skip-existing モードを追加すれば純粋な resume 可能
+- [ ] 30件再採点完了後、比較表を新規作成 → ユーザーに採用可否判断を仰ぐ
 
-## 📢 ユーザー採用判断待ち
+## 📢 ユーザー判断待ち（再採点後に再提示）
 
-**結果サマリ**:
-- 精度: ほぼ同等 (ids 97% vs current 100%)
-- コスト: 現行が 19% 安い ($12.81 vs $15.32 / 30件)
-- 時間: 新が 27% 速い (63s vs 87s / 件)
-- req-09 (out-of-scope) のみ差あり。AI-1 プロンプト改修で解消可能な見込み
-
-**判断選択肢**:
-- **A**: ids 採用、req-09 issue を AI-1 修正で潰してから本番反映
-- **B**: 現行維持、本 PR は index 2本のインフラ追加だけに縮退
-- **C**: 保留、追加の実験 (モデル比較拡大、別観点 benchmark 等) を先に実施
+旧 judge の比較（ids 97% vs current 100%）は**無効**と判明。v2 judge 再採点完了後、
+真の比較結果を出してから以下を改めて判断:
+- 採用可否（ids / current）
+- req-09 (out-of-scope) の扱い — v2 では ids=0 current=2 と差が出る想定
+- 本番反映タイミング
 
 ## ユーザー判断が必要
 
@@ -73,10 +83,35 @@
 ### 新旧フロー比較ベンチマーク (30件)
 
 **Steps:**
-- [ ] 新フロー (ids) 30件実測 — モデル固定後
-- [ ] 現行フロー 30件実測 — `search_current.md` ベース
-- [ ] 比較: 精度 (judge level 分布) / 時間 / コスト
+- [x] 新フロー (ids) 30件実測 (`20260422-185308-stage3-ids-sonnet`)
+- [x] 現行フロー 30件実測 (`20260422-185953-stage3-current-sonnet`)
+- [x] 旧 judge 比較 → **無効**（旧 judge は模範回答を見ていなかった）
+- [ ] **v2 judge で 30件再採点（ids 11/30, current 10/30 完了、残り中断）**
+- [ ] 再採点後、新比較表を作成
 - [ ] ユーザーに採用可否判断を提示
+
+### Stage 3 Judge v2 (fact-coverage grading)
+
+**背景**: 旧 judge は {question, generated_answer, cited} のみで採点し、模範回答を参照しなかった。
+結果として Sonnet の Nablarch 知識の曖昧な推定で「Expected core」を作り、自己採点していた。
+これにより req-09 の current フロー回答が `ServiceAvailabilityCheckHandler` を誤って代替提示しても level=3 評価された。
+
+**v2 設計** (Prompt Engineer 提案をそのまま採用):
+- 入力: {question, reference_answer, reference_sources (模範回答 citation の本文), generated_answer, generated_cited}
+- 4ステップ採点: required_facts 抽出 → COVERED/PARTIAL/MISSING/CONTRADICTED 判定 → OVER-REACH/HALLUCINATION 検出 → レベル決定
+- CRITICAL RULE: 「ビルトインなし、最近傍は Y」の質問で Z を提示したら level≤1
+
+**Steps:**
+- [x] Prompt Engineer 相談 → Option B (全4入力を渡す) 採用
+- [x] `prompts/judge_stage3_v2.md` 作成
+- [x] `run.py` に `--judge-only` mode + `run_judge_v2_for_scenario` 追加（新 SCHEMA_JUDGE_STAGE3_V2）
+- [x] 3件パイロット (req-09 / impact-06 / review-01, ids/current 両方)
+  - req-09: ids=0 current=2 (OVER-REACH 検出)
+  - impact-06: ids=3 current=2
+  - review-01: ids=2 current=1
+  - 旧 judge の level=3 量産と異なり、実態を反映
+- [ ] 30件再採点（未完了、次セッションで再開）
+- [ ] 採点結果から真の比較表作成
 
 ### 採用後の作業（ユーザー決定後）
 

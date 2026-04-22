@@ -47,6 +47,8 @@ PROMPT_STAGE3_SELECT = BENCH_DIR / "prompts" / "stage3_section_select.md"
 PROMPT_STAGE3_ANSWER = BENCH_DIR / "prompts" / "stage3_answer.md"
 PROMPT_JUDGE_STAGE3 = BENCH_DIR / "prompts" / "judge_stage3.md"
 PROMPT_SEARCH_CURRENT = BENCH_DIR / "prompts" / "search_current.md"
+PROMPT_JUDGE_STAGE3_V2 = BENCH_DIR / "prompts" / "judge_stage3_v2.md"
+REFERENCE_ANSWERS_DIR = BENCH_DIR / "scenarios" / "qa-v6-answers"
 
 KNOWLEDGE_ROOT = REPO_ROOT / ".claude" / "skills" / "nabledge-6" / "knowledge"
 INDEX_TOON_PATH = KNOWLEDGE_ROOT / "index.toon"
@@ -118,6 +120,45 @@ SCHEMA_STAGE3_ANSWER = {
             "type": "array",
             "items": {"type": "string", "pattern": r"^[^:]+\.json:[a-zA-Z0-9_-]+$"},
         },
+    },
+}
+
+SCHEMA_JUDGE_STAGE3_V2 = {
+    "type": "object",
+    "required": ["required_facts", "over_reach", "level", "reasoning"],
+    "additionalProperties": False,
+    "properties": {
+        "required_facts": {
+            "type": "array",
+            "maxItems": 15,
+            "items": {
+                "type": "object",
+                "required": ["fact", "status"],
+                "additionalProperties": False,
+                "properties": {
+                    "fact": {"type": "string", "maxLength": 200},
+                    "status": {
+                        "enum": ["COVERED", "PARTIAL", "MISSING", "CONTRADICTED"]
+                    },
+                },
+            },
+        },
+        "over_reach": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+                "type": "object",
+                "required": ["claim", "type", "why"],
+                "additionalProperties": False,
+                "properties": {
+                    "claim": {"type": "string", "maxLength": 200},
+                    "type": {"enum": ["OVER-REACH", "HALLUCINATION"]},
+                    "why": {"type": "string", "maxLength": 200},
+                },
+            },
+        },
+        "level": {"type": "integer", "enum": [0, 1, 2, 3]},
+        "reasoning": {"type": "string", "maxLength": 600},
     },
 }
 
@@ -332,6 +373,136 @@ def format_candidate_list(rows: list[IndexRow], max_rows: int = 200) -> str:
     """Format filter result as a markdown-friendly `title — path` list."""
     head = rows[:max_rows]
     return "\n".join(f"- {r.title} — {r.path}" for r in head)
+
+
+def load_reference_sources(reference_md: str) -> tuple[str, list[dict]]:
+    """Given the reference answer markdown, extract `path#sid` citations
+    and load the matching section bodies from the knowledge base.
+
+    Returns (formatted_text, records) analogous to `read_selected_sections`
+    but keyed on `path#sid` (reference-answer style) rather than
+    `path:section_id`.
+    """
+    from tools.benchmark.grading.reference_answer import extract_citations
+
+    citations = sorted(extract_citations(reference_md))
+    chunks: list[str] = []
+    records: list[dict] = []
+    for path, sid in citations:
+        kf = KNOWLEDGE_ROOT / path
+        try:
+            data = json.loads(kf.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            records.append({"path": path, "sid": sid, "status": "file-missing"})
+            continue
+        sections = data.get("sections") or {}
+        text = sections.get(sid)
+        title = next(
+            (s["title"] for s in data.get("index", []) or [] if s.get("id") == sid),
+            None,
+        )
+        if text is None:
+            records.append(
+                {"path": path, "sid": sid, "status": "section-missing", "title": title}
+            )
+            continue
+        chunks.append(
+            f"=== {path}:{sid} — {title or ''} ===\n{text}\n=== END ==="
+        )
+        records.append(
+            {
+                "path": path,
+                "sid": sid,
+                "status": "ok",
+                "title": title,
+                "chars": len(text),
+            }
+        )
+    return "\n\n".join(chunks), records
+
+
+def run_judge_v2_for_scenario(
+    scenario: dict, scen_dir: Path, model: str
+) -> dict:
+    """Re-score an already-run scenario using the v2 fact-coverage judge.
+
+    Reads:
+      - scenarios (for question)
+      - qa-v6-answers/{id}.md          (reference answer + citations)
+      - scen_dir/final_answer.md       (generated answer)
+      - scen_dir/ai3_result.json OR
+        scen_dir/search_current_result.json  (generated cited list)
+
+    Writes:
+      - scen_dir/judge_v2_prompt.md
+      - scen_dir/judge_v2.stream-json  (raw model log)
+      - scen_dir/judge_v2_result.json  (parsed verdict)
+    """
+    sid = scenario["id"]
+    question = scenario["expected_question"]
+    ref_path = REFERENCE_ANSWERS_DIR / f"{sid}.md"
+    if not ref_path.exists():
+        return {
+            "id": sid,
+            "error": f"reference answer missing: {ref_path}",
+        }
+    reference_md = ref_path.read_text(encoding="utf-8")
+
+    answer_path = scen_dir / "final_answer.md"
+    if not answer_path.exists():
+        return {"id": sid, "error": f"final_answer.md missing in {scen_dir}"}
+    generated_answer = answer_path.read_text(encoding="utf-8")
+
+    # Generated cited list may live in either ai3_result.json (ids/facet)
+    # or search_current_result.json (current flow).
+    cited: list[str] = []
+    for candidate in ("ai3_result.json", "search_current_result.json"):
+        cp = scen_dir / candidate
+        if cp.exists():
+            cj = json.loads(cp.read_text(encoding="utf-8"))
+            cited = cj.get("cited") or []
+            break
+
+    ref_sources_text, ref_source_records = load_reference_sources(reference_md)
+
+    prompt = (
+        PROMPT_JUDGE_STAGE3_V2.read_text(encoding="utf-8")
+        .replace("{{question}}", question)
+        .replace("{{reference_answer}}", reference_md)
+        .replace("{{reference_sources}}", ref_sources_text or "(none)")
+        .replace("{{generated_answer}}", generated_answer or "(empty)")
+        .replace(
+            "{{generated_cited}}",
+            "\n".join(f"- {c}" for c in cited) if cited else "(none)",
+        )
+    )
+    (scen_dir / "judge_v2_prompt.md").write_text(prompt, encoding="utf-8")
+
+    verdict, envelope, wall_s, err = invoke_claude_stream(
+        prompt=prompt,
+        schema=SCHEMA_JUDGE_STAGE3_V2,
+        max_turns=2,
+        model=model,
+        allowed_tools=[],
+        timeout_s=240,
+        log_path=scen_dir / "judge_v2.stream-json",
+    )
+
+    record = {
+        "id": sid,
+        "verdict": verdict,
+        "ref_sources_loaded": sum(
+            1 for r in ref_source_records if r.get("status") == "ok"
+        ),
+        "ref_sources_total": len(ref_source_records),
+        "wall_s": wall_s,
+        "total_cost_usd": envelope.get("total_cost_usd"),
+        "error": err or None,
+    }
+    (scen_dir / "judge_v2_result.json").write_text(
+        json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return record
 
 
 def format_candidate_list_with_sections(
@@ -1214,9 +1385,113 @@ def write_markdown_summary(
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def run_judge_only(args) -> int:
+    """Re-score an existing results directory using the v2 fact-coverage judge.
+
+    Expects:
+      args.results_dir — path like tools/benchmark/.results/{ts}-stage3-.../
+      args.scenarios_file — the original scenarios JSON used for that run
+    """
+    results_dir = Path(args.results_dir)
+    if not results_dir.is_dir():
+        print(f"results dir not found: {results_dir}", file=sys.stderr)
+        return 2
+
+    scenarios = load_scenarios(Path(args.scenarios_file))
+    by_id = {s["id"]: s for s in scenarios}
+
+    if args.scenario:
+        ids = [args.scenario]
+    elif args.limit:
+        ids = [s["id"] for s in scenarios[: args.limit]]
+    else:
+        ids = [s["id"] for s in scenarios]
+
+    records: list[dict] = []
+    for i, sid in enumerate(ids, 1):
+        sc = by_id.get(sid)
+        if not sc:
+            print(f"  [{i}/{len(ids)}] {sid} — SKIP (not in scenarios file)", file=sys.stderr)
+            continue
+        scen_dir = results_dir / sid
+        if not scen_dir.is_dir():
+            print(f"  [{i}/{len(ids)}] {sid} — SKIP (no dir in results)", file=sys.stderr)
+            continue
+        print(f"  [{i}/{len(ids)}] {sid} ...", file=sys.stderr, flush=True)
+        rec = run_judge_v2_for_scenario(sc, scen_dir, args.model)
+        if rec.get("error"):
+            print(f"    -> ERROR: {rec['error']}", file=sys.stderr)
+        else:
+            v = rec.get("verdict") or {}
+            print(
+                f"    -> level={v.get('level')} cost=${rec.get('total_cost_usd') or 0:.4f} "
+                f"wall={rec.get('wall_s') or 0:.1f}s "
+                f"ref_sources={rec['ref_sources_loaded']}/{rec['ref_sources_total']}",
+                file=sys.stderr,
+            )
+        records.append(rec)
+
+    # Aggregate.
+    ok = [r for r in records if not r.get("error") and r.get("verdict")]
+    levels = [r["verdict"].get("level") for r in ok]
+    summary = {
+        "total": len(records),
+        "errors": len(records) - len(ok),
+        "mean_level": (sum(l for l in levels if l is not None) / len(levels))
+        if levels else None,
+        "level_distribution": {str(lv): levels.count(lv) for lv in [0, 1, 2, 3]},
+        "total_cost_usd": sum(r.get("total_cost_usd") or 0 for r in records),
+        "mean_wall_s": (sum(r.get("wall_s") or 0 for r in records) / len(records))
+        if records else None,
+    }
+    summary_path = results_dir / "judge_v2_summary.json"
+    summary_path.write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    lines = [
+        "# Judge v2 Re-scoring",
+        "",
+        f"- scenarios scored: {summary['total']}",
+        f"- mean level: {summary['mean_level']:.2f}"
+        if summary["mean_level"] is not None else "- mean level: n/a",
+        f"- distribution: {summary['level_distribution']}",
+        f"- total cost (USD): {summary['total_cost_usd']:.4f}",
+        "",
+        "| id | level | over_reach | facts covered / total | reasoning (excerpt) |",
+        "|----|-------|------------|-----------------------|---------------------|",
+    ]
+    for r in records:
+        v = r.get("verdict") or {}
+        facts = v.get("required_facts") or []
+        covered = sum(1 for f in facts if f.get("status") == "COVERED")
+        reasoning = (v.get("reasoning") or "").replace("|", "\\|").replace("\n", " ")
+        if len(reasoning) > 100:
+            reasoning = reasoning[:97] + "..."
+        lines.append(
+            f"| {r['id']} | {v.get('level')} | {len(v.get('over_reach') or [])} | "
+            f"{covered}/{len(facts)} | {reasoning} |"
+        )
+    (results_dir / "judge_v2_summary.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+    print(f"done. summary: {summary_path}", file=sys.stderr)
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", type=int, choices=[1, 2, 3], required=True)
+    ap.add_argument("--stage", type=int, choices=[1, 2, 3], required=False)
+    ap.add_argument(
+        "--judge-only",
+        action="store_true",
+        help="Re-score an existing results dir using judge_stage3_v2",
+    )
+    ap.add_argument(
+        "--results-dir",
+        help="(judge-only) path to the .results/{ts}-... dir to re-score",
+    )
+    ap_stage_old = ap  # noqa
     ap.add_argument("--scenario", help="single scenario id")
     ap.add_argument("--limit", type=int, help="run only first N scenarios")
     ap.add_argument(
@@ -1236,6 +1511,16 @@ def main() -> int:
     )
     ap.add_argument("--out", help="output directory (default: .results/{ts}-stage{N}-{model})")
     args = ap.parse_args()
+
+    if args.judge_only:
+        if not args.results_dir:
+            print("--results-dir is required with --judge-only", file=sys.stderr)
+            return 2
+        return run_judge_only(args)
+
+    if args.stage is None:
+        print("--stage is required (unless --judge-only)", file=sys.stderr)
+        return 2
 
     scenarios = load_scenarios(Path(args.scenarios_file))
     if args.scenario:
