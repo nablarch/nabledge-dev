@@ -22,8 +22,13 @@
 — `component/libraries/libraries-session_store.json#s4`
 
 **② HiddenStore のデフォルト暗号化設定**
-- 暗号化アルゴリズム: AES
-- 暗号化キー: **アプリケーションサーバ内で自動生成された共通キー** — `component/libraries/libraries-session_store.json#s8`
+
+| 設定項目 | 設定内容 |
+|---|---|
+| 暗号化アルゴリズム | AES |
+| 暗号化キー | アプリケーションサーバ内で共通の自動生成されたキーを使用 |
+
+— `component/libraries/libraries-session_store.json#s8`
 
 **③ 複数 AP サーバ時のハマりどころと対策**
 AP サーバが冗長化されている場合、**サーバごとに異なるキーが生成されるため復号に失敗するケース** がある。この場合、明示的に暗号化/復号キーを設定する:

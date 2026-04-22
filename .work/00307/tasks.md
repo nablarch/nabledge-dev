@@ -3,7 +3,7 @@
 **Issue**: #307
 **Branch**: 307-benchmark-search-flow
 **PR**: 未作成
-**Updated**: 2026-04-22 (正解データ方針確定: 模範回答文 + Stage 2 スクリプト判定。Stage 2 合格分だけ Stage 3 judge)
+**Updated**: 2026-04-22 (30件の模範回答作成完了。次は Stage 2 スクリプト判定の実装)
 
 ## 計測設計（ユーザー合意済み）
 
@@ -139,13 +139,12 @@ Nablarch の知識を持っているかどうか不明な LLM の推測判断で
 - 各シナリオの cited: `{result_dir}/{scenario_id}/ai3_result.json`
 
 **Steps:**
-- [ ] review-01 の模範回答を1本書いて format / 粒度 / 長さ感を確定
-  - 知識ファイル grep → 回答文作成
-  - sub-agent (Prompt Engineer) にレビュー依頼
-  - 保存先: `tools/benchmark/scenarios/qa-v6-answers/review-01.md`
-- [ ] 残り 29 件の模範回答を作成
+- [x] review-01 の模範回答を1本書いて format / 粒度 / 長さ感を確定
+- [x] `qa-v6-answers/README.md` に format spec を明文化（in-scope / out-of-scope / citation regex / ドリフト対策ルール）
+- [x] 残り 29 件の模範回答を作成（review-02..10 / impact-01..10 / req-01..10）
+- [x] Prompt Engineer スポットレビュー 3回実施（review-02..05 / impact-01..10 / req-01..10）、指摘は全て反映
 - [ ] Stage 2 スクリプト判定を実装
-  - 模範回答の citation から正解パス集合を抽出
+  - 模範回答の citation から正解パス集合を抽出（regex: `` `([^`]+\.json)#(s\d+)` ``）
   - `filter_result.json` の candidate paths と突合（正解パスが候補に含まれるか）
   - `judge_stage2.md` は廃止、`run.py` に judge-only モード追加
 - [ ] Stage 2 を全 30件で実行 → 合否サマリ
