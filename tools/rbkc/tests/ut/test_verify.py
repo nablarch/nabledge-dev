@@ -82,19 +82,15 @@ class TestCheckJsonDocsMdConsistency_QO1:
         issues = self._check(data, docs)
         assert any("QO1" in i for i in issues)
 
-    def test_empty_title_is_not_checked(self):
-        """Pin current behaviour: when JSON title is empty string, title
-        comparison is skipped (title-less JSON is only produced by the
-        no_knowledge_content flag in real flow). If this behaviour ever
-        changes, update the spec §3-3 QO1 definition at the same time."""
+    def test_fail_empty_title_vs_nonempty_docs_h1(self):
+        """Spec §3-3: JSON title must equal docs MD H1. An empty JSON title
+        against a non-empty H1 does not match → FAIL."""
         data = {"id": "f", "title": "", "content": "", "sections": [
             {"id": "s1", "title": "概要", "content": ""}
         ]}
         docs = "# 何か\n\n## 概要\n"
         issues = self._check(data, docs)
-        # Current implementation: empty title does not trigger a title check,
-        # so we should not see a "title mismatch" QO1 for the H1.
-        assert not any("QO1" in i and "title" in i for i in issues)
+        assert any("QO1" in i and "title mismatch" in i for i in issues)
 
     def test_title_with_markdown_special_chars_exact_match(self):
         data = {"id": "f", "title": "A `code` & B", "content": "", "sections": []}
@@ -150,15 +146,48 @@ class TestCheckJsonDocsMdConsistency_QO2:
         issues = self._check(data, docs)
         assert any("QO2" in i and "概要" in i for i in issues)
 
-    def test_pass_assets_section_skipped(self):
-        """Sections containing assets/ are skipped (docs.py rewrites paths)."""
+    def test_pass_assets_link_rewrite_symmetric(self, tmp_path):
+        """JSON `assets/...` links are rewritten to `<rel>/assets/...` by
+        docs.py. QO2's verbatim check applies the SAME transformation
+        and then asserts the rewritten string appears in docs MD.
+        No implicit skip — pure verbatim match after symmetric rewrite."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        docs_dir = tmp_path / "docs" / "guide"
+        docs_dir.mkdir(parents=True)
+        docs_md_path = docs_dir / "x.md"
         data = {
             "id": "f", "title": "T", "content": "", "sections": [
                 {"id": "s1", "title": "図", "content": "![図](assets/img.png)"},
             ]
         }
-        docs = "# T\n\n## 図\n\n![図](../assets/img.png)\n"
-        assert self._check(data, docs) == []
+        # docs MD uses the rewritten path (relative from docs_dir to kdir/assets)
+        docs = "# T\n\n## 図\n\n![図](../../knowledge/assets/img.png)\n"
+        from scripts.verify.verify import check_json_docs_md_consistency
+        issues = check_json_docs_md_consistency(
+            data, docs, docs_md_path=docs_md_path, knowledge_dir=kdir,
+        )
+        assert issues == []
+
+    def test_fail_assets_link_rewrite_missing_from_docs(self, tmp_path):
+        """If docs MD lacks the rewritten asset link, QO2 must FAIL
+        (no silent skip for assets/ content)."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        docs_dir = tmp_path / "docs" / "guide"
+        docs_dir.mkdir(parents=True)
+        docs_md_path = docs_dir / "x.md"
+        data = {
+            "id": "f", "title": "T", "content": "", "sections": [
+                {"id": "s1", "title": "図", "content": "![図](assets/img.png)"},
+            ]
+        }
+        docs = "# T\n\n## 図\n\n画像なし\n"
+        from scripts.verify.verify import check_json_docs_md_consistency
+        issues = check_json_docs_md_consistency(
+            data, docs, docs_md_path=docs_md_path, knowledge_dir=kdir,
+        )
+        assert any("QO2" in i and "図" in i for i in issues)
 
     # --- QO2 Z-1 gap fill -------------------------------------------------
 
@@ -304,17 +333,17 @@ class TestCheckIndexCoverage:
         self._write_toon(idx, [["日本語", "", "", "", "sub/日本語.json"]])
         assert self._check(kdir, idx) == []
 
-    def test_broken_json_silently_skipped(self, tmp_path):
-        """A JSON file that fails to parse is currently ignored by the
-        walk; pin that behaviour here so a future strict-parse policy is
-        a conscious spec change, not a silent regression."""
+    def test_fail_broken_json_surfaces_qo4(self, tmp_path):
+        """Spec §3-3 point 4: a JSON that cannot be parsed is QO4 FAIL
+        (no silent skip — zero-tolerance)."""
         kdir = tmp_path / "knowledge"
         kdir.mkdir()
         (kdir / "valid.json").write_text(json.dumps({"id": "v", "title": "V"}))
         (kdir / "broken.json").write_text("{ not json")
         idx = tmp_path / "index.toon"
         self._write_toon(idx, [["V", "", "", "", "valid.json"]])
-        assert self._check(kdir, idx) == []
+        issues = self._check(kdir, idx)
+        assert any("QO4" in i and "broken.json" in i and "parse failed" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -508,9 +537,11 @@ class TestVerifyFileQC5:
                 "sections": [{"id": "s1", "title": "詳細", "content": content_with_code}]}
         assert [i for i in self._check(data, "rst") if "QC5" in i and "underline" in i] == []
 
-    def test_pass_rst_role_marker_without_backtick_arg(self):
-        """`:role:` without the `\\`text\\`` argument is not the role syntax
-        per spec §3-1 QC5 ("`:role:\\`text\\`` パターン"); must not FAIL."""
+    def test_pass_rst_field_list_syntax_is_not_qc5_role(self):
+        """Spec §3-1 QC5 defines the RST role pattern as `:role:\\`text\\``.
+        An RST field list marker `:name:` (no backtick-delimited argument)
+        is legitimate inline syntax that survives verbatim into the normalised
+        MD; it is not an unprocessed role, so QC5 must not FAIL."""
         data = {"id": "f", "title": "T", "content": "", "sections": [
             {"id": "s1", "title": "概要", "content": "フィールド :name: 値 のような行は許容"}
         ]}
@@ -552,6 +583,24 @@ class TestVerifyFileQC5:
             {"id": "s1", "title": "概要", "content": r"\[not a link\]"}
         ]}
         assert any("QC5" in i and "backslash" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_br(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "line<br/>break"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_hr(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "sep<hr/>done"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
+
+    def test_fail_md_self_closing_img(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "see <img/>"}
+        ]}
+        assert any("QC5" in i and "HTML" in i for i in self._check(data, "md"))
 
 
 # ---------------------------------------------------------------------------
@@ -903,23 +952,28 @@ class TestCheckContentCompleteness:
 
     # --- QC1 Z-1 gap fill: parse / Visitor error paths -------------------
 
-    def test_fail_qc1_md_parse_visitor_error(self):
-        """MD markdown-it parse error surfaces as [QC1] markdown parse/visitor error."""
-        # A synthetic token type that md_ast_visitor will reject with
-        # UnknownTokenError is hard to produce at parse time; instead,
-        # stub md_ast.parse to raise.
-        import scripts.common.md_normaliser as md_norm
-        from scripts.common.md_ast_visitor import UnknownTokenError
+    def test_fail_qc1_md_unknown_token_surfaces(self):
+        """Spec §3-1b zero-exception: an unknown markdown-it token type
+        must surface as a QC1 FAIL. We inject a token stream with an
+        unregistered block token and route it through verify's MD path."""
+        import scripts.common.md_ast as md_ast_mod
+        from markdown_it.token import Token
 
-        def _bad_extract(tokens):
-            raise UnknownTokenError("synthetic: unknown token 'xxx'")
+        def _inject_unknown(source):
+            # Minimal normal block + one unknown block token
+            heading_open = Token("heading_open", "h1", 1); heading_open.tag = "h1"; heading_open.markup = "#"
+            inline = Token("inline", "", 0); inline.content = "T"
+            inline.children = [Token("text", "", 0)]; inline.children[0].content = "T"
+            heading_close = Token("heading_close", "h1", -1); heading_close.tag = "h1"; heading_close.markup = "#"
+            unknown = Token("custom_block_xyz", "", 0)
+            return [heading_open, inline, heading_close, unknown]
 
-        orig = md_norm.md_ast_visitor.extract_document
-        md_norm.md_ast_visitor.extract_document = _bad_extract
+        orig = md_ast_mod.parse
+        md_ast_mod.parse = _inject_unknown
         try:
-            issues = self._check("# T\n\n本文。\n", self._data(title="T"), fmt="md")
+            issues = self._check("# T\n", self._data(title="T"), fmt="md")
         finally:
-            md_norm.md_ast_visitor.extract_document = orig
+            md_ast_mod.parse = orig
         assert any("[QC1]" in i and "markdown parse/visitor error" in i for i in issues)
 
     def test_fail_qc1_rst_unknown_role_surfaces(self):
@@ -1081,6 +1135,23 @@ class TestVerifyFileExcel:
                 "sections": [{"id": "s1", "title": "セル値B", "content": ""}]}
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i for i in issues)
+
+    def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
+        """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
+        1-char residue used to be silently dropped — must FAIL now."""
+        try:
+            import openpyxl
+        except ImportError:
+            pytest.skip("openpyxl not available")
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "ABC"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        # JSON contains ABC (consumed) plus an extra single-char fabrication.
+        data = {"id": "f", "title": "ABC X", "content": "", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert any("QC2" in i and "X" in i for i in issues)
 
     def test_fail_qc3_duplicate_cell_in_json(self, tmp_path):
         """Excel QC3: two source cells with the same value but JSON only
@@ -1244,3 +1315,43 @@ class TestCheckSourceLinks:
         src = "# T\n\n![会社ロゴ](./logo.png)\n"
         data = self._data(content="会社ロゴ が載っています。")
         assert self._check(src, "md", data) == []
+
+    # --- QL1 RST native named reference (r2 critical fix 3) ---------------
+
+    def test_fail_rst_named_reference_target_title_missing(self):
+        """A cross-document named reference (`refname` set, no local target)
+        must resolve via label_map; the resolved target title must appear
+        in JSON (spec §3-2 row 1). We synthesise the AST shape docutils
+        produces for this case and call the public QL1 API."""
+        from docutils import nodes
+        doctree = nodes.document(None, None)
+        ref = nodes.reference("", "Usage Section", refname="usage-section")
+        doctree.append(ref)
+        # Drive check_source_links through its AST-walking branch directly.
+        # (The fmt="rst" path starts with rst_ast.parse on source_text.)
+        import scripts.common.rst_ast as rst_ast_mod
+        orig = rst_ast_mod.parse
+        rst_ast_mod.parse = lambda s, source_path=None: (doctree, "")
+        try:
+            data = self._data(content="全然違う内容。")
+            issues = self._check("dummy", "rst", data, {"usage-section": "利用ガイド"})
+        finally:
+            rst_ast_mod.parse = orig
+        assert any("QL1" in i and "利用ガイド" in i for i in issues)
+
+    def test_pass_rst_named_reference_unknown_label_skipped(self):
+        """refname not in label_map — skipped (same policy as :ref:`foo`
+        bare-label form). No FAIL emitted."""
+        from docutils import nodes
+        doctree = nodes.document(None, None)
+        ref = nodes.reference("", "Unknown", refname="unknown-label")
+        doctree.append(ref)
+        import scripts.common.rst_ast as rst_ast_mod
+        orig = rst_ast_mod.parse
+        rst_ast_mod.parse = lambda s, source_path=None: (doctree, "")
+        try:
+            data = self._data(content="別の内容。")
+            issues = self._check("dummy", "rst", data, {})
+        finally:
+            rst_ast_mod.parse = orig
+        assert not any("QL1" in i and "named reference" in i for i in issues)

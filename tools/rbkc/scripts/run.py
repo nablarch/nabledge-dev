@@ -357,7 +357,10 @@ def verify(
 
                 # Check E: JSON ↔ docs MD consistency
                 docs_md_text = docs_md_path.read_text(encoding="utf-8")
-                for issue in check_json_docs_md_consistency(json_data, docs_md_text):
+                for issue in check_json_docs_md_consistency(
+                    json_data, docs_md_text,
+                    docs_md_path=docs_md_path, knowledge_dir=output_dir,
+                ):
                     print(f"FAIL {source_rel}: [JSON↔MD] {issue}", file=sys.stderr)
                     all_ok = False
 

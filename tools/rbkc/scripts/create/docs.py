@@ -71,13 +71,20 @@ def _rewrite_asset_links(text: str, docs_md_path: Path, knowledge_dir: Path) -> 
 
 def _render_no_knowledge(data: dict) -> str:
     """Minimal MD for no_knowledge_content files (title only)."""
-    lines = [f"# {data.get('title', '')}", ""]
+    title = data.get("title", "")
+    lines = [f"# {title}" if title else "", ""]
     return "\n".join(lines)
 
 
 def _render_full(data: dict, docs_md_path: Path, knowledge_dir: Path) -> str:
-    """Full MD for normal knowledge files."""
-    lines = [f"# {data.get('title', '')}", ""]
+    """Full MD for normal knowledge files.
+
+    When the JSON title is empty we omit the `#` heading entirely so QO1
+    (title must match H1) does not flag a spurious mismatch. A missing
+    title is itself a converter bug, but emitting `# ` would paper over it.
+    """
+    title = data.get("title", "")
+    lines = [f"# {title}" if title else "", ""]
 
     top_content = data.get("content", "")
     if top_content:

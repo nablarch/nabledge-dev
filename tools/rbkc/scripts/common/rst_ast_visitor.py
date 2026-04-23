@@ -748,6 +748,37 @@ def extract_document(
     top_content = _join_blocks([visitor.render(c) for c in top_children])
     parts.top_content = top_content.strip()
 
+    # Promote the first section to top-level when the document has no
+    # explicit top-level title AND no document-level prose before any
+    # section (i.e. the source is effectively "one top section with
+    # optional subsections"). docutils does not distinguish this shape
+    # from a document-level title; without promotion JSON would end up
+    # with title="" which violates QO1 (docs MD H1 ↔ JSON title).
+    if not parts.top_title and section_children and not top_children:
+        first = section_children[0]
+        promoted_title = ""
+        promoted_body: list[nodes.Node] = []
+        promoted_subsecs: list[nodes.section] = []
+        for ch in first.children:
+            if isinstance(ch, nodes.title) and not promoted_title:
+                promoted_title = visitor.render_inline(ch)
+            elif isinstance(ch, nodes.section):
+                promoted_subsecs.append(ch)
+            else:
+                promoted_body.append(ch)
+        if promoted_title:
+            parts.top_title = promoted_title
+            body_md = _join_blocks([visitor.render(c) for c in promoted_body]).strip()
+            if body_md:
+                parts.top_content = (
+                    f"{parts.top_content}\n\n{body_md}".strip()
+                    if parts.top_content
+                    else body_md
+                )
+            # Replace section list: promoted section's subsections come first,
+            # then the remaining document-level sections.
+            section_children = promoted_subsecs + section_children[1:]
+
     for sec in section_children:
         _walk_section(sec, visitor, parts)
 

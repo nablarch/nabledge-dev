@@ -47,8 +47,50 @@ _H1_RE = re.compile(r'^#\s+(.+)$', re.MULTILINE)
 _H2_RE = re.compile(r'^#{2,}\s+(.+)$', re.MULTILINE)
 
 
-def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
-    """QO1: structure (title/section titles/order) and QO2: content verbatim."""
+_MD_LINK_RE = re.compile(r'(!?\[[^\]]*\])\(([^)]+)\)')
+
+
+def _apply_asset_link_rewrite(text: str, docs_md_path, knowledge_dir) -> str:
+    """Mirror docs.py's asset-link rewrite so QO2 compares like-for-like.
+
+    docs.py rewrites ``assets/...`` links in the JSON content to paths
+    relative to ``docs_md_path.parent`` when it emits docs MD. QO2's
+    verbatim check therefore must apply the same transformation to the
+    JSON side before comparing. This is NOT a tolerance: the verify
+    pipeline independently computes the same transform and asserts
+    that the result literally appears in docs MD.
+    """
+    import os
+    from pathlib import Path as _Path
+    if docs_md_path is None or knowledge_dir is None:
+        return text
+    assets_dir = _Path(knowledge_dir) / "assets"
+    rel_prefix = os.path.relpath(assets_dir, _Path(docs_md_path).parent)
+
+    def _replace(m: re.Match) -> str:
+        bracket = m.group(1)
+        url = m.group(2)
+        if url.startswith("assets/"):
+            rest = url[len("assets/"):]
+            url = f"{rel_prefix}/{rest}"
+        return f"{bracket}({url})"
+
+    return _MD_LINK_RE.sub(_replace, text)
+
+
+def check_json_docs_md_consistency(
+    data: dict,
+    docs_md_text: str,
+    docs_md_path=None,
+    knowledge_dir=None,
+) -> list[str]:
+    """QO1: structure (title/section titles/order) and QO2: content verbatim.
+
+    ``docs_md_path`` / ``knowledge_dir`` are used only to mirror the
+    asset-link rewrite docs.py applies on write. When they are omitted
+    (legacy callers / unit tests without real paths), the rewrite is a
+    no-op and QO2 is a strict verbatim check.
+    """
     if _no_knowledge(data):
         return []
 
@@ -58,10 +100,12 @@ def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
     sections = data.get("sections", [])
     top_content = data.get("content", "")
 
-    # QO1: title check
+    # QO1: title check. Spec §3-3 requires JSON top-level title == docs MD
+    # `#` heading. Both sides must exist and match; an empty JSON title is
+    # only valid when no_knowledge_content is set (handled earlier).
     m = _H1_RE.search(docs_md_text)
     docs_title = m.group(1).strip() if m else ""
-    if json_title and docs_title != json_title:
+    if docs_title != json_title:
         issues.append(f"[QO1] {file_id}: title mismatch: JSON={json_title!r} docs={docs_title!r}")
 
     # QO1: section title order and presence
@@ -83,18 +127,20 @@ def check_json_docs_md_consistency(data: dict, docs_md_text: str) -> list[str]:
             if not found:
                 issues.append(f"[QO1] {file_id}: section title missing or out of order in docs MD: {title!r}")
 
-    # QO2: top-level content verbatim
-    if top_content and "assets/" not in top_content:
-        if top_content not in docs_md_text:
+    # QO2: top-level content verbatim (with same asset-link rewrite docs.py applies)
+    if top_content:
+        expected = _apply_asset_link_rewrite(top_content, docs_md_path, knowledge_dir)
+        if expected not in docs_md_text:
             issues.append(f"[QO2] {file_id}: top-level content not found verbatim in docs MD")
 
     # QO2: section content verbatim
     for s in sections:
         content = s.get("content", "")
         title = s.get("title", "")
-        if not content or "assets/" in content:
+        if not content:
             continue
-        if content not in docs_md_text:
+        expected = _apply_asset_link_rewrite(content, docs_md_path, knowledge_dir)
+        if expected not in docs_md_text:
             issues.append(f"[QO2] {file_id}: section '{title}' content not found verbatim in docs MD")
 
     return issues
@@ -164,16 +210,18 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
     kdir = Path(knowledge_dir)
     idx = Path(index_path)
 
-    # Collect content JSON paths (relative) on disk.
+    # Collect content JSON paths (relative) on disk. Per spec §3-3 point 4,
+    # JSON parse failures are themselves QO4 FAIL (no silent skip).
     content_jsons: dict[str, Path] = {}
     for jf in sorted(kdir.rglob("*.json")):
+        rel = str(jf.relative_to(kdir)).replace("\\", "/")
         try:
             d = json.loads(jf.read_text(encoding="utf-8"))
-        except Exception:
+        except Exception as exc:
+            issues.append(f"[QO4] {rel}: JSON parse failed: {exc}")
             continue
         if d.get("no_knowledge_content"):
             continue
-        rel = str(jf.relative_to(kdir)).replace("\\", "/")
         content_jsons[rel] = jf
 
     if not idx.exists():
@@ -226,7 +274,7 @@ _RST_ROLE_RE = re.compile(r':[a-zA-Z][a-zA-Z0-9_.-]*:`')
 _RST_DIRECTIVE_RE = re.compile(r'\.\.\s+\S+.*::')
 _RST_HEADING_UNDERLINE_RE = re.compile(r'^[=\-~^"\'`#*+<>]{4,}\s*$', re.MULTILINE)
 _RST_LABEL_RE = re.compile(r'\.\.\s+_[a-zA-Z0-9_-]+:')
-_MD_RAW_HTML_RE = re.compile(r'(?<![a-zA-Z])<[a-zA-Z][a-zA-Z0-9]*[\s>]')
+_MD_RAW_HTML_RE = re.compile(r'<[a-zA-Z][a-zA-Z0-9]*(?:\s[^>]*)?/?>')
 _MD_BACKSLASH_ESCAPE_RE = re.compile(r'\\[*_`\[\](){}#+\-.!|]')
 
 
@@ -920,10 +968,13 @@ def _verify_xlsx(source_path, data: dict) -> list[str]:
     else:
         residual = json_text
 
+    # Per spec §3-1 Excel 節 手順 3: anything other than whitespace/empty
+    # remaining after deleting source cells is QC2 (捏造). No length
+    # tolerance — a 1-char residue is still a fabrication.
     residual_plain = _MD_SYNTAX_RE.sub(" ", residual)
     for token in residual_plain.split():
         t = token.strip()
-        if t and len(t) >= 2:
+        if t:
             issues.append(f"[QC2] JSON token not found in Excel source: {token!r}")
 
     return issues
@@ -1000,7 +1051,35 @@ def check_source_links(
             # normaliser; avoid a redundant QL1 FAIL.
             return issues
 
-        # :ref: / named references
+        # Native RST named references: `.. _label:` + `\`Label\`_` produce a
+        # reference node. Per spec §3-2 row 1 we require the reader-visible
+        # text to appear in JSON.
+        #
+        # Scope: restricted to references whose target is a user-defined
+        # label present in label_map. docutils also produces reference nodes
+        # for auto-generated anchors (section-N / contents TOC entries)
+        # whose target has no user-facing label; those are navigation
+        # artefacts, not links a human writer asked the reader to follow,
+        # and JSON captures their resolved titles via the section title
+        # path (covered by QC1).
+        for ref in doctree.findall(nodes.reference):
+            refuri = ref.get("refuri", "")
+            if refuri:  # external link — handled by QL2
+                continue
+            refname = (ref.get("refname", "") or "").strip()
+            if not refname:
+                continue
+            resolved = label_map.get(refname)
+            if resolved is None:
+                # Unknown cross-document label — cannot verify, skip (same
+                # policy as :ref: bare-label form).
+                continue
+            if resolved and resolved not in json_full:
+                issues.append(
+                    f"[QL1] RST named reference '{refname}' target title missing from JSON: {resolved!r}"
+                )
+
+        # :ref: role references (Sphinx shim produces inline with class role-ref)
         seen_labels: set[str] = set()
         for n in doctree.findall(nodes.inline):
             cls = n.get("classes") or []
