@@ -840,18 +840,24 @@ class TestVerifyFileQL2:
         assert self._check_ql2(src, data, "md") == []
 
     def test_pass_md_url_with_parentheses_in_path(self):
-        """URL containing encoded/escaped parens must be kept intact."""
+        """URL containing parentheses in the path — spec requires the
+        source-literal URL to appear verbatim in JSON. The expected URL
+        is pinned to the source literal (NOT derived from AST output),
+        so the test catches extractor regressions that truncate the URL
+        at the `)`. (Z-1 r7 QL2 F1 — previously circular.)"""
         src = "# T\n\n[api](https://example.com/foo(bar))\n"
-        # markdown-it parses the unencoded `)` as link close — the URL should
-        # still be exactly what AST returns. Put the AST output in JSON.
-        import sys
-        sys.path.insert(0, ".")
-        from scripts.common import md_ast, md_ast_visitor
-        parts = md_ast_visitor.extract_document(md_ast.parse(src))
-        assert parts.external_urls, "sanity: AST must expose the URL"
-        expected = parts.external_urls[0]
-        data = {"id": "f", "title": "T", "content": f"link {expected}", "sections": []}
+        data = {"id": "f", "title": "T",
+                "content": "api https://example.com/foo(bar)", "sections": []}
         assert self._check_ql2(src, data, "md") == []
+
+    def test_fail_md_url_with_parentheses_truncated_in_json(self):
+        """Complement to above: if JSON has the URL truncated at `)`
+        (what a buggy extractor might produce), QL2 must FAIL."""
+        src = "# T\n\n[api](https://example.com/foo(bar))\n"
+        data = {"id": "f", "title": "T",
+                "content": "api https://example.com/foo(bar", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i for i in issues)
 
     def test_pass_md_url_followed_by_japanese_punct_not_absorbed(self):
         """Trailing 」 / 。 must not be absorbed into the URL (AST-only
@@ -869,6 +875,52 @@ class TestVerifyFileQL2:
                 "content": "[link](https://example.com/a)", "sections": []}
         issues = self._check_ql2(src, data, "md")
         assert any("QL2" in i and "http://example.com/a" in i for i in issues)
+
+    def test_pass_md_autolink_url_present(self):
+        """Z-1 r7 QL2 F3: PASS counterpart for autolink. When the
+        autolinked URL is present in JSON content, QL2 must not FAIL.
+        (Proves the check is bidirectional — the FAIL case is vacuous
+        without a matching PASS.)"""
+        src = "# T\n\nvisit <https://auto.example.com/path>\n"
+        data = {"id": "f", "title": "T",
+                "content": "visit https://auto.example.com/path", "sections": []}
+        assert self._check_ql2(src, data, "md") == []
+
+    def test_pass_rst_url_with_parens_javadoc_anchor(self):
+        """Z-1 r7 QL2 F4: RST coverage for URL containing balanced parens
+        (Javadoc anchors are the most common case in the v6 corpus)."""
+        src = (
+            "概要\n====\n\n"
+            "`Javadoc <https://example.com/Class.html#m(java.lang.String)>`_ を参照\n"
+        )
+        data = {"id": "f", "title": "T",
+                "content": "Javadoc https://example.com/Class.html#m(java.lang.String)",
+                "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
+
+    def test_fail_md_trailing_slash_distinguished(self):
+        """Z-1 r7 QL2 F5: source URL WITH trailing slash, JSON without
+        → source URL is not a substring of JSON → QL2 FAIL. Guards
+        against extractor trailing-slash-stripping regressions."""
+        src = "# T\n\n[link](https://example.com/a/)\n"
+        data = {"id": "f", "title": "T",
+                "content": "link https://example.com/a here", "sections": []}
+        issues = self._check_ql2(src, data, "md")
+        assert any("QL2" in i and "https://example.com/a/" in i for i in issues)
+
+    def test_pass_rst_substitution_replace_with_embedded_url_skipped(self):
+        """Z-1 r7 QL2 F2: spec §3-2 line 268 requires substitution-body
+        URL exclusion. A `.. |x| replace:: ... \\`text <url>\\`_` body
+        produces a reference node under substitution_definition. When
+        the substitution is never used in the rendered content, the URL
+        must NOT trigger a QL2 FAIL — spec forbids counting substitution
+        definition bodies as source URLs."""
+        src = (
+            "通常テキスト。\n\n"
+            ".. |subst| replace:: see `sample <https://only-in-replace.example>`_\n"
+        )
+        data = {"id": "f", "title": "T", "content": "通常テキスト。", "sections": []}
+        assert self._check_ql2(src, data, "rst") == []
 
 
 # ---------------------------------------------------------------------------

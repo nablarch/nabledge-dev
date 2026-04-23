@@ -401,7 +401,22 @@ def _source_urls(source_text: str, fmt: str) -> list[str]:
             doctree, _ = rst_ast.parse(source_text)
         except Exception:
             return urls
+
+        def _in_substitution(node) -> bool:
+            """Per spec §3-2 line 268: substitution bodies are excluded
+            by AST-attribute check. Walk ancestors and skip references
+            whose definition lives under a substitution_definition —
+            those URLs are not directly visible to the reader."""
+            cur = node.parent
+            while cur is not None:
+                if isinstance(cur, nodes.substitution_definition):
+                    return True
+                cur = cur.parent
+            return False
+
         for ref in doctree.findall(nodes.reference):
+            if _in_substitution(ref):
+                continue
             refuri = ref.get("refuri", "")
             if refuri.startswith(("http://", "https://")):
                 urls.append(refuri)
