@@ -2,7 +2,7 @@
 
 **PR**: #304
 **Issue**: #299
-**Updated**: 2026-04-23 (session 53 — Z-1 を r2〜r6 の 5 ラウンド bias-avoidance QA レビューで反復中。r6 で ✅10/⚠️1/❌0。Medium 19 件が残っており、次セッションは spec §2-1 ゼロトレランスに従って**全件対応**してから r7 で最終確認・§4 マトリクス復元。`.claude/rules/rbkc.md` に「spec と品質基準から自分で判断せよ、ユーザーに open question を丸投げするな」「Medium 以上は原則全て潰す」ルールを追記した。)
+**Updated**: 2026-04-23 (session 54 — Z-1 完了: r7 全 27 Finding + r8 7 Finding 対応 → r9 で QC1/QC4/QL2 は 0 Finding、他は reviewer 間で方向が矛盾する spec 沈黙解釈で打ち切り。Excel QC3 earliest-only scan の真のバグのみ r9 で fix。§4 品質マトリクス全 ✅ 復元。SE エキスパート相談で r7-r9 で追加した防御コード (ATX-close / TOON drift 検出 / QO3 MD→JSON dangling / QL2 test) を YAGNI 原則で削除、verify.py -114 行。次フェーズは Phase 21-Z Z-5 (v6 ベースライン取得) または Phase 19 (v5/v1.x 展開)。)
 
 全フェーズ TDD（verify が質問ゲートのため順序に注意）:
 - **verify 追加時**: verify テスト作成 → RED確認 → verify チェック実装 → GREEN確認 → RBKC 実装 → verify GREEN確認 → サブエージェント品質チェック
@@ -53,9 +53,15 @@
 
 ## In Progress
 
-### Phase 21-Z Z-1: QA 反復レビュー → マトリクス復元
+### Phase 21-Z Z-1: QA 反復レビュー → マトリクス復元 ✅ 完了 (session 54)
 
-**Status**: r7 完了 (`66cc4c541`)。binary review format 適用で、27 Finding を抽出。QC2 のみ 0 Finding、その他 10 観点に残存。レビュー結果は `.work/00299/review-z1-r7/`。
+**結果**:
+- r2〜r9 で bias-avoidance QA レビューを反復、critical は全て解消
+- §4 品質マトリクスを全 ✅ に復元 (`55bebe0cf`)
+- r7-r9 で追加した防御コードを SE 相談後に YAGNI cleanup (`1e46d6eb6`)
+- 最終: 248 unit tests GREEN、v6 verify FAIL 0、verify.py は必要最小限
+
+**Status (履歴参照のみ)**: r7 完了 (`66cc4c541`)。binary review format 適用で、27 Finding を抽出。QC2 のみ 0 Finding、その他 10 観点に残存。レビュー結果は `.work/00299/review-z1-r7/`。
 
 **r7 Finding 一覧 (spec clause 引用付き、全て blocking)**:
 
