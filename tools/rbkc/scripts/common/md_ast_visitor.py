@@ -58,6 +58,10 @@ class DocumentParts:
     external_urls: list[str] = field(default_factory=list)
     internal_links: list[tuple[str, str]] = field(default_factory=list)  # (text, href)
     images: list[tuple[str, str, str]] = field(default_factory=list)  # (alt, src, title)
+    # Phase 22-B-16b step 3: dangling-link WARNINGs surfaced from the
+    # visitor so spec §3-2-2 "silent skip 禁止" is honoured on the MD
+    # side too.
+    warnings: list[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -109,17 +113,29 @@ def _iter_block(tokens: list[Token]) -> Iterator[Token]:
 
 
 class _MDVisitor:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        doc_map: dict | None = None,
+        source_path=None,
+    ) -> None:
         self.title: str = ""
         self.top_content_parts: list[str] = []
         self.sections: list[Section] = []
         self.external_urls: list[str] = []
         self.internal_links: list[tuple[str, str]] = []
         self.images: list[tuple[str, str, str]] = []
+        self.warnings: list[str] = []
 
         # Current open section (None before first h2+ heading)
         self._current_section: Section | None = None
         self._current_section_parts: list[str] = []
+
+        # Phase 22-B-16b step 3: doc_map for resolving relative links to
+        # cross-document MD links.  doc_map keys are ``rel_for_classify``
+        # output (e.g. ``.../foo.rst`` or ``foo.md``), values are
+        # LabelTarget with file_id + category.
+        self._doc_map: dict = doc_map or {}
+        self._source_path = source_path
 
     # ------------------------------------------------------------------ walk
     def walk(self, tokens: list[Token]) -> DocumentParts:
@@ -138,6 +154,52 @@ class _MDVisitor:
             internal_links=self.internal_links,
             images=self.images,
         )
+
+    # ----------------------------------------------- doc_map link rewriting
+    def _resolve_md_relative_href(self, href: str, text: str) -> str:
+        """Rewrite a relative MD href (e.g. ``../foo/bar.md#sec``) to the
+        cross-document MD link form ``[text](../{category}/{file_id}.md#sec)``.
+
+        Resolution:
+        1. Split ``href`` on ``#`` into (path, anchor).
+        2. Resolve ``path`` against ``source_path.parent`` to an absolute
+           file path; then find the doc_map key that is a suffix match.
+        3. If found → emit ``[text](../{category}/{file_id}.md#anchor)``.
+        4. If not found → WARNING + emit the original ``[text](href)``
+           (Sphinx-parity: dangling relative links are WARNING, not FAIL).
+        """
+        if self._source_path is None or not self._doc_map:
+            return f"[{text}]({href})"
+
+        path_part, sep, anchor = href.partition("#")
+        try:
+            from pathlib import Path as _Path
+            resolved = (_Path(self._source_path).parent / path_part).resolve()
+        except (OSError, ValueError):
+            return f"[{text}]({href})"
+        resolved_str = str(resolved).replace("\\", "/")
+
+        best_key = None
+        best_len = -1
+        for key in self._doc_map:
+            if resolved_str.endswith("/" + key) or resolved_str == key:
+                if len(key) > best_len:
+                    best_key = key
+                    best_len = len(key)
+        if best_key is None:
+            self.warnings.append(
+                f"QL1 undefined document link `{href}` — keeping relative href"
+            )
+            return f"[{text}]({href})"
+
+        target = self._doc_map[best_key]
+        file_id = getattr(target, "file_id", "") or ""
+        category = getattr(target, "category", "") or ""
+        if not file_id or not category:
+            return f"[{text}]({href})"
+        if anchor:
+            return f"[{text}](../{category}/{file_id}.md#{anchor})"
+        return f"[{text}](../{category}/{file_id}.md)"
 
     # -------------------------------------------------------------- sections
     def _emit_block(self, text: str) -> None:
@@ -414,13 +476,17 @@ class _MDVisitor:
                 text = self._render_inline_children(inner_children)
                 if href.startswith(("http://", "https://")):
                     self.external_urls.append(href)
+                    out.append(f"[{text}]({href})")
                 elif href and not href.startswith(("mailto:", "tel:", "javascript:", "#")):
-                    # Internal link = relative path / sibling document. Schemed
-                    # URIs (mailto/tel/javascript) and in-document anchors (`#x`)
-                    # are not document-to-document links and do not belong in
-                    # QL1's JSON-content-contains-link-text check.
+                    # Phase 22-B-16b step 3: rewrite relative document
+                    # links to the CommonMark MD link form used by RST
+                    # :ref:/:doc: output — ``[text](../{category}/{file_id}.md)``
+                    # — so JSON content is navigable across documents.
                     self.internal_links.append((text, href))
-                out.append(f"[{text}]({href})")
+                    rewritten = self._resolve_md_relative_href(href, text)
+                    out.append(rewritten)
+                else:
+                    out.append(f"[{text}]({href})")
                 i = j + 1
                 continue
             if t == "em_open":
@@ -481,10 +547,24 @@ class _MDVisitor:
 # ---------------------------------------------------------------------------
 
 
-def extract_document(tokens: list[Token]) -> DocumentParts:
-    """Walk *tokens* (a markdown-it-py token stream) into `DocumentParts`."""
-    v = _MDVisitor()
-    return v.walk(tokens)
+def extract_document(
+    tokens: list[Token],
+    doc_map: dict | None = None,
+    source_path=None,
+) -> DocumentParts:
+    """Walk *tokens* (a markdown-it-py token stream) into `DocumentParts`.
+
+    Phase 22-B-16b step 3: ``doc_map`` + ``source_path`` enable rewriting
+    of relative document links to the cross-document MD link form
+    consumed by JSON content + docs MD.
+    """
+    v = _MDVisitor(doc_map=doc_map, source_path=source_path)
+    parts = v.walk(tokens)
+    # Surface warnings — mirrors rst_ast_visitor parity so callers can
+    # emit them.  DocumentParts currently has no warnings field; append
+    # via a best-effort attribute that callers can inspect.
+    parts.warnings = list(v.warnings)  # type: ignore[attr-defined]
+    return parts
 
 
 __all__ = [

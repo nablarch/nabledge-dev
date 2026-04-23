@@ -705,7 +705,9 @@ def check_content_completeness(
             source_text, data, issues, label_map, doc_map, source_path
         )
     elif fmt == "md":
-        return _check_md_content_completeness(source_text, data, issues)
+        return _check_md_content_completeness(
+            source_text, data, issues, doc_map=doc_map, source_path=source_path
+        )
     return issues
 
 
@@ -840,7 +842,11 @@ def _check_rst_content_completeness(
 
 
 def _check_md_content_completeness(
-    source_text: str, data: dict, issues: list[str]
+    source_text: str,
+    data: dict,
+    issues: list[str],
+    doc_map: dict | None = None,
+    source_path=None,
 ) -> list[str]:
     """QC1-QC4 for MD sources using AST-normalised comparison.
 
@@ -851,11 +857,23 @@ def _check_md_content_completeness(
     """
     from scripts.common.md_normaliser import UnknownSyntaxError, normalise_md
 
+    warnings: list[str] = []
     try:
-        norm_source = normalise_md(source_text, strict_unknown=True)
+        norm_source = normalise_md(
+            source_text,
+            strict_unknown=True,
+            doc_map=doc_map,
+            source_path=source_path,
+            warnings_out=warnings,
+        )
     except UnknownSyntaxError as exc:
         issues.append(f"[QC1] markdown parse/visitor error: {exc}")
         return issues
+    if warnings:
+        import sys
+        tag = f"{source_path}: " if source_path else ""
+        for w in warnings:
+            print(f"WARN {tag}{w}", file=sys.stderr)
 
     # Collapse whitespace to match the same normalisation applied to
     # JSON units; sequential-delete then operates on a single-line view.

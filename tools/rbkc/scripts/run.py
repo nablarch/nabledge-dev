@@ -99,7 +99,12 @@ def _convert_and_write(
             doc_map=doc_map,
         )
     elif fi.format == "md":
-        result = convert(fi.source_path.read_text(encoding="utf-8", errors="replace"), fi.file_id)
+        result = convert(
+            fi.source_path.read_text(encoding="utf-8", errors="replace"),
+            fi.file_id,
+            source_path=fi.source_path,
+            doc_map=doc_map,
+        )
     else:
         # xlsx: sheet_name is set by classify; pass it through.
         result = convert(fi.source_path, fi.file_id, sheet_name=fi.sheet_name)

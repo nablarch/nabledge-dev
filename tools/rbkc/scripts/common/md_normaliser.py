@@ -43,23 +43,35 @@ def _build_flat_md(parts: md_ast_visitor.DocumentParts) -> str:
     return "\n".join(out).strip() + "\n"
 
 
-def normalise_md(text: str, *, strict_unknown: bool = True) -> str:
+def normalise_md(
+    text: str,
+    *,
+    strict_unknown: bool = True,
+    doc_map: dict | None = None,
+    source_path=None,
+    warnings_out: list | None = None,
+) -> str:
     """Normalise MD *text* to a flat normalised-MD string via AST.
 
     HTML comments are stripped beforehand (they are elided by the
     converter; verify must match that behaviour).
 
-    ``strict_unknown=True``: re-raise Visitor errors as
-    :class:`UnknownSyntaxError` so verify can report them as QC1 FAIL.
+    Phase 22-B-16b step 3: ``doc_map`` + ``source_path`` enable the
+    same relative-link rewriting as the create side so the normalised
+    source matches the JSON content byte-for-byte.
     """
     cleaned = _HTML_COMMENT_RE.sub("", text)
     tokens = md_ast.parse(cleaned)
     try:
-        parts = md_ast_visitor.extract_document(tokens)
+        parts = md_ast_visitor.extract_document(
+            tokens, doc_map=doc_map, source_path=source_path
+        )
     except VisitorError as exc:
         if strict_unknown:
             raise UnknownSyntaxError(str(exc)) from exc
         return ""
+    if warnings_out is not None:
+        warnings_out.extend(getattr(parts, "warnings", []) or [])
     return _build_flat_md(parts)
 
 

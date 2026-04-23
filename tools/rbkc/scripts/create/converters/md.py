@@ -49,22 +49,20 @@ def _is_no_knowledge(file_id: str) -> bool:
     return stem in _NO_KNOWLEDGE_STEMS
 
 
-def convert(source: str, file_id: str = "") -> RSTResult:
+def convert(
+    source: str,
+    file_id: str = "",
+    source_path=None,
+    doc_map: dict | None = None,
+) -> RSTResult:
     """Convert Markdown *source* to :class:`RSTResult`.
 
-    Args:
-        source: Full Markdown file content.
-        file_id: Knowledge file id (used for no_knowledge_content detection).
-                 Asset copying is **not** performed here; call
-                 ``resolver.collect_asset_refs`` / ``resolver.copy_assets``
-                 separately in the pipeline (Phase 8).
-
-    Returns:
-        :class:`RSTResult` with title, no_knowledge_content flag, and sections.
+    Phase 22-B-16b step 3: ``doc_map`` + ``source_path`` enable rewriting
+    of relative MD links to cross-document MD link form.
     """
     cleaned = _strip_html_comments(source)
     tokens = md_ast.parse(cleaned)
-    parts = extract_document(tokens)
+    parts = extract_document(tokens, doc_map=doc_map, source_path=source_path)
 
     sections = [
         Section(title=s.title, content=s.content, level=s.level)
@@ -76,4 +74,5 @@ def convert(source: str, file_id: str = "") -> RSTResult:
         no_knowledge_content=_is_no_knowledge(file_id),
         content=parts.content,
         sections=sections,
+        warnings=list(getattr(parts, "warnings", []) or []),
     )
