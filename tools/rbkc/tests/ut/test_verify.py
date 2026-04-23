@@ -3398,16 +3398,17 @@ class TestLabelMapStrict:
 
     def test_orphan_sentinel_does_not_leak_into_rst_inline_reference(self):
         """Horizontal-class regression: rst_ast_visitor.inline_reference must
-        not return the UNRESOLVED sentinel string when label_map holds it.
+        not render the UNRESOLVED sentinel's empty fields as visible text.
 
-        Spec §3-2-2 zero-exception: silent fallback to sentinel text forbidden.
+        Phase 22-B-16b step 2b (spec §3-2-2 Sphinx-parity): dangling named
+        references emit display text with a WARNING log entry — they do
+        NOT raise.  The invariant preserved from 22-B-16a is that the
+        sentinel's empty ``.title`` must never appear as rendered text;
+        the display name must be used instead.
         """
         from docutils import nodes
         from scripts.common import rst_ast_visitor
         from scripts.common.labels import UNRESOLVED
-        # Build a reference node directly with refname but no refuri/refid,
-        # matching the post-docutils shape when a named reference cannot be
-        # resolved within the doctree (cross-document case).
         ref = nodes.reference(text="Dangling")
         ref["refname"] = "dangling"
         text_node = nodes.Text("Dangling")
@@ -3415,13 +3416,12 @@ class TestLabelMapStrict:
         visitor = rst_ast_visitor._MDVisitor(
             label_map={"dangling": UNRESOLVED}
         )
-        try:
-            visitor.inline_reference(ref)
-        except rst_ast_visitor.UnresolvedReferenceError:
-            return  # Expected
-        raise AssertionError(
-            "inline_reference leaked UNRESOLVED sentinel without raising"
-        )
+        out = visitor.inline_reference(ref)
+        # Must contain the display text; must NOT be empty (the sentinel's
+        # empty ``.title`` would render as "" if leaked).
+        assert "Dangling" in out and out != "", out
+        # Must have emitted a WARNING log entry (silent skip forbidden).
+        assert any("dangling" in w for w in visitor.warnings), visitor.warnings
 
     def test_orphan_sentinel_does_not_leak_into_verify_resolve_title_inline(self):
         """Horizontal-class regression: verify._resolve_title_inline must not

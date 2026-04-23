@@ -326,10 +326,10 @@ def verify(
     docs_dir = output_dir.parent / "docs"
     all_ok = True
 
-    # Phase 22-B-16b: single call for QL1 link verification.  doc_map
-    # is currently read via the label_map (LabelTarget per-file; QL1
-    # consumers resolve file_id through it).
-    label_map, _doc_map = build_label_doc_map(version, repo_root)
+    # Phase 22-B-16b: single call for QL1 link verification.  Both maps
+    # are threaded through to verify_file so the source-side AST
+    # normalisation emits the same MD-link strings as the create side.
+    label_map, doc_map = build_label_doc_map(version, repo_root)
 
     for fi in file_infos:
         # B3: use repo-relative source path in FAIL lines
@@ -342,7 +342,7 @@ def verify(
             all_ok = False
             continue
 
-        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir, label_map=label_map, sheet_name=fi.sheet_name):
+        for issue in verify_file(fi.source_path, json_path, fi.format, knowledge_dir=output_dir, label_map=label_map, sheet_name=fi.sheet_name, doc_map=doc_map):
             print(f"FAIL {source_rel}: {issue}", file=sys.stderr)
             all_ok = False
 

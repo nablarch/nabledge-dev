@@ -603,7 +603,12 @@ def check_external_urls(source_text: str, data: dict, fmt: str) -> list[str]:
 # QC1-QC4: sequential-delete algorithm (RST/MD)
 # ---------------------------------------------------------------------------
 
-def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
+def _normalize_rst_source(
+    text: str,
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
+    source_path=None,
+) -> str:
     """Normalize RST markup to plain text for comparison with JSON content.
 
     Delegates to :func:`scripts.common.rst_normaliser.normalise_rst`, which
@@ -611,7 +616,13 @@ def _normalize_rst_source(text: str, label_map: dict | None = None) -> str:
     `rbkc-verify-quality-design.md` §3-1 手順 0.
     """
     from scripts.common.rst_normaliser import normalise_rst
-    return normalise_rst(text, label_map=label_map or {}, strict_unknown=True)
+    return normalise_rst(
+        text,
+        label_map=label_map or {},
+        doc_map=doc_map,
+        source_path=source_path,
+        strict_unknown=True,
+    )
 
 
 def _build_rst_search_units(
@@ -657,7 +668,14 @@ def _build_rst_search_units(
     return units
 
 
-def check_content_completeness(source_text: str, data: dict, fmt: str, label_map: dict | None = None) -> list[str]:
+def check_content_completeness(
+    source_text: str,
+    data: dict,
+    fmt: str,
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
+    source_path=None,
+) -> list[str]:
     """QC1/QC2/QC3/QC4: sequential-delete algorithm."""
     if _no_knowledge(data):
         return []
@@ -672,7 +690,9 @@ def check_content_completeness(source_text: str, data: dict, fmt: str, label_map
     issues: list[str] = []
 
     if fmt == "rst":
-        return _check_rst_content_completeness(source_text, data, issues, label_map)
+        return _check_rst_content_completeness(
+            source_text, data, issues, label_map, doc_map, source_path
+        )
     elif fmt == "md":
         return _check_md_content_completeness(source_text, data, issues)
     return issues
@@ -721,7 +741,12 @@ def _classify_missed_unit(
 
 
 def _check_rst_content_completeness(
-    source_text: str, data: dict, issues: list[str], label_map: dict | None = None
+    source_text: str,
+    data: dict,
+    issues: list[str],
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
+    source_path=None,
 ) -> list[str]:
     """QC1-QC4 for RST sources using normalized comparison.
 
@@ -736,7 +761,9 @@ def _check_rst_content_completeness(
     # not silent fallbacks.
     from scripts.common.rst_normaliser import UnknownSyntaxError
     try:
-        norm_source_raw = _normalize_rst_source(source_text, label_map)
+        norm_source_raw = _normalize_rst_source(
+            source_text, label_map, doc_map=doc_map, source_path=source_path
+        )
     except UnknownSyntaxError as exc:
         issues.append(f"[QC1] RST parse/visitor error: {exc}")
         return issues
@@ -1446,7 +1473,15 @@ def _verify_xlsx(source_path, data: dict, sheet_name: str | None = None) -> list
 # verify_file: dispatch per format
 # ---------------------------------------------------------------------------
 
-def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None, sheet_name=None) -> list[str]:
+def verify_file(
+    source_path,
+    json_path,
+    fmt,
+    knowledge_dir=None,
+    label_map=None,
+    sheet_name=None,
+    doc_map=None,
+) -> list[str]:
     """Per-file JSON checks (QC1-QC5, QL2).
 
     ``sheet_name`` is used only when ``fmt == 'xlsx'`` to scope the source
@@ -1471,7 +1506,9 @@ def verify_file(source_path, json_path, fmt, knowledge_dir=None, label_map=None,
     if fmt in ("rst", "md"):
         source_text = Path(source_path).read_text(encoding="utf-8", errors="replace")
         issues: list[str] = []
-        issues.extend(check_content_completeness(source_text, data, fmt, label_map))
+        issues.extend(check_content_completeness(
+            source_text, data, fmt, label_map, doc_map=doc_map, source_path=source_path
+        ))
         issues.extend(_check_format_purity(data, fmt))
         issues.extend(check_external_urls(source_text, data, fmt))
         return issues
@@ -1506,19 +1543,26 @@ def _resolve_title_inline(title_node, label_map: dict) -> str:
     from docutils import nodes
     from scripts.common.labels import UNRESOLVED
 
-    def _resolved_text(target, fallback: str) -> str:
-        """Convert a label_map value (str / LabelTarget / UNRESOLVED / None)
-        to its text form, or ``fallback`` when unresolved.
+    def _resolved_text(target, fallback: str, display: str = "") -> str:
+        """Convert a label_map value to its rendered form (MD link or plain).
 
-        Phase 22-B-16a horizontal-class fix: UNRESOLVED sentinel must not
-        bleed through as visible text (it otherwise appeared as
-        ``"__RBKC_UNRESOLVED_LABEL__"`` in the rendered title).
+        Mirrors the create-side ``_MDVisitor._render_label_target`` so the
+        string we compare against JSON matches byte-for-byte.
         """
         if target is None or target is UNRESOLVED:
             return fallback
         if isinstance(target, str):
-            return target
-        return getattr(target, "title", str(target))
+            return display or target
+        file_id = getattr(target, "file_id", "") or ""
+        category = getattr(target, "category", "") or ""
+        title = getattr(target, "title", "") or ""
+        anchor = getattr(target, "anchor", "") or ""
+        disp = display or title
+        if not file_id or not category:
+            return disp
+        if anchor:
+            return f"[{disp}](../{category}/{file_id}.md#{anchor})"
+        return f"[{disp}](../{category}/{file_id}.md)"
 
     parts: list[str] = []
     for child in title_node.children:

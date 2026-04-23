@@ -27,11 +27,15 @@ class TestLabelTargetDataclass:
         t = LabelTarget(
             title="A", file_id="libraries-foo",
             section_title="Usage", category="libraries",
+            anchor="my-label",
         )
         assert t.title == "A"
         assert t.file_id == "libraries-foo"
         assert t.section_title == "Usage"
         assert t.category == "libraries"
+        # Phase 22-B-16b step 2b: anchor is the label-name slug used in the
+        # MD link's ``#anchor`` portion (Sphinx parity).
+        assert t.anchor == "my-label"
 
         # frozen: assignment must raise
         import dataclasses
@@ -55,7 +59,9 @@ class TestUnresolvedSingleton:
     def test_unresolved_identity_distinguishes_from_real_target(self):
         from scripts.common.labels import LabelTarget, UNRESOLVED
 
-        real = LabelTarget(title="", file_id="", section_title="", category="")
+        real = LabelTarget(
+            title="", file_id="", section_title="", category="", anchor="",
+        )
         # Even a value-equal LabelTarget is NOT the sentinel
         assert real is not UNRESOLVED
 
@@ -103,6 +109,9 @@ class TestBuildLabelDocMap:
         assert lt.section_title == "Usage"
         assert lt.category == "libraries"
         assert lt.file_id == "libraries-foo"
+        # Phase 22-B-16b step 2b: anchor is the label name slug, not the
+        # heading slug — Sphinx parity.
+        assert lt.anchor == "my-label"
 
     def test_orphan_label_stamped_with_unresolved_sentinel(self, tmp_path):
         """Label declared but not followed by a heading must map to
@@ -169,6 +178,55 @@ class TestBuildLabelDocMap:
         assert lt.file_id == "libraries-foo"
         assert lt.category == "libraries"
         assert lt.section_title == ""
+
+
+class TestSphinxAnchorParity:
+    """Sphinx uses the label name itself as the HTML anchor
+    (`.. _my-label:` → `<p id="my-label">`).  LabelTarget.anchor must
+    hold the label-name slug, not the enclosing heading's slug.
+    """
+
+    def test_anchor_is_label_name_slug_for_heading_label(self, tmp_path):
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "x.rst"
+        rst.write_text(
+            ".. _my_usage_label:\n\n"
+            "Usage\n"
+            "=====\n\n"
+            "Body.\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("my_usage_label")
+        assert lt is not None
+        # anchor is the label slug ("my-usage-label"), not the heading slug
+        # ("usage").  Sphinx parity: HTML id is set on the label, not the
+        # heading.
+        assert lt.anchor == "my-usage-label"
+
+    def test_anchor_for_block_quote_nested_label(self, tmp_path):
+        """v6 big_picture.rst:20 pattern — label inside block_quote."""
+        from scripts.common.labels import build_label_map
+
+        rst = tmp_path / "big_picture.rst"
+        rst.write_text(
+            "様々な処理方式に対応できる\n"
+            "============================\n\n"
+            "本文。\n\n"
+            " .. _runtime_platform:\n\n"
+            " 実行制御基盤\n"
+            "  * item\n",
+            encoding="utf-8",
+        )
+
+        m = build_label_map(tmp_path)
+        lt = m.get("runtime_platform")
+        assert lt is not None
+        # label name is already lower-case + underscore; Sphinx turns
+        # underscores into hyphens in HTML id (verified empirically).
+        assert lt.anchor == "runtime-platform"
 
 
 class TestEnclosingSectionResolution:

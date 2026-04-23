@@ -627,36 +627,47 @@ class _MDVisitor:
         if role not in _KNOWN_ROLES:
             raise UnknownRoleError(f"unknown role: {role}")
         raw = node.astext()
-        if role == "ref":
-            # `:ref:` は label を必ず解決する (未解決は FAIL)。
-            # `text <label>` → text (表示名) を使う。bare label は label_map で解決。
-            # Phase 22-B-16a: labels.py の UNRESOLVED sentinel (orphan label
-            # を silent drop せず sentinel で残したもの) も未解決として FAIL。
+        if role in {"ref", "numref"}:
+            # Phase 22-B-16b step 2b: emit CommonMark MD link via label_map
+            # (Sphinx-parity per spec §3-2-2).  Dangling labels follow
+            # Sphinx: WARNING + display text fallback, not FAIL.
+            if "<" in raw and raw.rstrip().endswith(">"):
+                display, _, target_label = raw.rpartition("<")
+                display = display.strip()
+                target_label = target_label.rstrip(">").strip()
+            else:
+                display = ""
+                target_label = raw.strip()
             from scripts.common.labels import UNRESOLVED
-            def _resolve_or_fail(target: str) -> str:
-                r = self._label_map.get(target)
-                if r is None or r is UNRESOLVED:
-                    raise UnresolvedReferenceError(f"unresolved :ref: {target}")
-                return r if isinstance(r, str) else getattr(r, "title", str(r))
+            target = self._label_map.get(target_label)
+            if target is None or target is UNRESOLVED:
+                self.warnings.append(
+                    f"QL1 undefined label :ref:`{target_label}` — emitting display text only"
+                )
+                return display or target_label
+            return self._render_label_target(target, display)
+        if role == "doc":
+            # `:doc:` は document path を参照する。doc_map で解決、
+            # dangling は Sphinx 同様 WARNING + display text fallback。
             if "<" in raw and raw.rstrip().endswith(">"):
-                text, _, target = raw.rpartition("<")
-                text = text.strip()
-                target = target.rstrip(">").strip()
-                if text:
-                    return text
-                return _resolve_or_fail(target)
-            return _resolve_or_fail(raw.strip())
-        if role in {"doc", "numref"}:
-            # `:doc:` / `:numref:` は document path を参照する。
-            # `text <path>` があれば表示名を優先、無ければ path の basename を残す。
-            # path のタイトル解決は本 Visitor のスコープ外 (cross-doc resolver 不在)。
-            if "<" in raw and raw.rstrip().endswith(">"):
-                text, _, target = raw.rpartition("<")
-                text = text.strip()
-                if text:
-                    return text
-                return target.rstrip(">").strip().split("/")[-1]
-            return raw.strip().split("/")[-1]
+                display, _, target_path = raw.rpartition("<")
+                display = display.strip()
+                target_path = target_path.rstrip(">").strip()
+            else:
+                display = ""
+                target_path = raw.strip()
+            target = self._resolve_doc_target(target_path)
+            if target is None:
+                # Legacy single-dir mode (no doc_map / no source_path):
+                # preserve existing display-text behaviour so old tests
+                # keep passing.
+                if not self._doc_map or self._source_path is None:
+                    return display or target_path.split("/")[-1]
+                self.warnings.append(
+                    f"QL1 undefined document :doc:`{target_path}` — emitting display text only"
+                )
+                return display or target_path.split("/")[-1]
+            return self._render_label_target(target, display)
         if role == "download":
             return raw
         if role in {"java:extdoc", "javadoc_url"}:
@@ -680,8 +691,11 @@ class _MDVisitor:
         """Render a label_map value as a CommonMark MD link or plain text.
 
         - :class:`LabelTarget` with non-empty ``file_id`` + ``category``
-          → ``[display](../{category}/{file_id}.md#{github_slug(section_title)})``
-          (no ``#anchor`` when ``section_title`` is empty).
+          → ``[display](../{category}/{file_id}.md#{anchor})`` where
+          ``anchor`` is the label-name slug stored on the LabelTarget
+          (Sphinx parity per spec §3-2-2).  When ``anchor`` is empty
+          (``:doc:`` targets the document root) the ``#`` fragment is
+          omitted: ``[display](../{category}/{file_id}.md)``.
         - Bare ``str`` value (legacy single-dir mode): plain text fallback.
         - ``LabelTarget`` with empty ``file_id`` (single-dir build): plain
           text fallback, using the resolved ``title``.
@@ -691,13 +705,12 @@ class _MDVisitor:
         file_id = getattr(target, "file_id", "") or ""
         category = getattr(target, "category", "") or ""
         title = getattr(target, "title", "") or ""
-        section_title = getattr(target, "section_title", "") or ""
+        anchor = getattr(target, "anchor", "") or ""
         display = display_text or title
         if not file_id or not category:
             return display
-        from scripts.common.github_slug import github_slug
-        if section_title:
-            return f"[{display}](../{category}/{file_id}.md#{github_slug(section_title)})"
+        if anchor:
+            return f"[{display}](../{category}/{file_id}.md#{anchor})"
         return f"[{display}](../{category}/{file_id}.md)"
 
     def _resolve_doc_target(self, target_path: str):
@@ -753,18 +766,28 @@ class _MDVisitor:
         if refuri:
             return f"[{text}]({refuri})"
         if refid:
+            # docutils resolved this reference within the same doctree.
+            # Phase 22-B-16b: if the label_map carries a LabelTarget with
+            # a file_id, emit a proper MD link; otherwise fall back to
+            # in-doc display text.
+            target = self._label_map.get(refid)
+            if target is not None:
+                from scripts.common.labels import UNRESOLVED
+                if target is UNRESOLVED:
+                    return text
+                return self._render_label_target(target, text)
             return text
         if refname:
-            # docutils could not resolve the ref within this doctree. Use the
-            # cross-document label_map; fail if still unresolved.
-            # Phase 22-B-16a horizontal-class fix: UNRESOLVED sentinel (orphan
-            # label in labels.py) must be treated as unresolved — its truthy
-            # string value otherwise leaked into knowledge output.
+            # Cross-document resolution via label_map.  Dangling →
+            # Sphinx-parity WARNING + display text fallback (spec §3-2-2).
             from scripts.common.labels import UNRESOLVED
             resolved = self._label_map.get(refname)
             if resolved is not None and resolved is not UNRESOLVED:
-                return resolved if isinstance(resolved, str) else getattr(resolved, "title", str(resolved))
-            raise UnresolvedReferenceError(f"unresolved reference: {refname}")
+                return self._render_label_target(resolved, text)
+            self.warnings.append(
+                f"QL1 undefined named reference `{refname}` — emitting display text only"
+            )
+            return text
         return text
 
     def inline_target(self, node: nodes.target) -> str:

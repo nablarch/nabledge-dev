@@ -32,19 +32,27 @@ _RST_HEADING_CHARS = set('=-~^"\'`#*+<>')
 class LabelTarget:
     """Resolved target for a ``:ref:`` / ``:doc:`` / ``:numref:``.
 
-    - ``title``: target section's title (for ``:ref:``) or document title
-      (for ``:doc:``).
-    - ``file_id``: knowledge file_id of the target (empty when resolved in
-      single-directory mode without version context).
-    - ``section_title``: section title used for anchor slug generation.
-      Empty for document-level (``:doc:``) targets.
+    - ``title``: display fallback — the short text used when the reference
+      itself has no explicit display text.  For ``:ref:`` this is the
+      label's direct neighbour (heading text, definition-list term, or
+      the enclosing section's title).  For ``:doc:`` this is the document
+      title.
+    - ``file_id``: knowledge file_id of the target (empty in single-dir
+      mode without version context).
+    - ``section_title``: section title of the label's *enclosing* section
+      (empty for document-level ``:doc:`` targets).  Retained for legacy
+      consumers.
     - ``category``: knowledge category of the target (empty in single-dir
       mode).
+    - ``anchor``: HTML anchor slug.  For ``:ref:``/``:numref:``, this is
+      the label name slug (Sphinx parity — see spec §3-2-2).  For
+      ``:doc:`` it is empty (document-level link, no ``#`` fragment).
     """
     title: str
     file_id: str
     section_title: str
     category: str
+    anchor: str = ""
 
 
 #: Singleton sentinel for labels declared in RST but not followed by a heading
@@ -54,7 +62,9 @@ class LabelTarget:
 #: ``rbkc-verify-quality-design.md §3-2-2`` —
 #: 「labels.py が heading 検出に失敗して label を map から drop →
 #:  drop せず、代わりに「解決不能ラベル」として QC1 FAIL」
-UNRESOLVED = LabelTarget(title="", file_id="", section_title="", category="")
+UNRESOLVED = LabelTarget(
+    title="", file_id="", section_title="", category="", anchor=""
+)
 
 
 def _is_heading_underline(line: str) -> bool:
@@ -174,13 +184,29 @@ def _scan_rst_labels(rst_path: Path) -> tuple[list[tuple[list[str], str]], str]:
     return found, doc_title
 
 
+def _anchor_for_label(label: str) -> str:
+    """Slug the label name the same way Sphinx does for HTML `id` anchors.
+
+    Spec §3-2-2: Sphinx uses the label name itself as the anchor target,
+    lower-casing and replacing underscores with hyphens.  We delegate to
+    :func:`scripts.common.github_slug.github_slug` so the output matches
+    GitHub's auto-anchor rules for slug consistency across create/verify.
+    """
+    from scripts.common.github_slug import github_slug
+    # Sphinx replaces underscores with hyphens in anchors; github_slug also
+    # does so for consistency with GitHub's MD auto-anchor rule.
+    return github_slug(label.replace("_", "-"))
+
+
 def build_label_map(source_dir) -> dict[str, LabelTarget]:
     """Build ``{rst_label: LabelTarget}`` for all .rst under ``source_dir``.
 
     Single-directory mode: ``file_id`` / ``category`` are empty because no
     version context is available.  ``title`` / ``section_title`` are still
-    filled from the heading that follows the label.  Orphan labels are
-    mapped to :data:`UNRESOLVED` (singleton), not silently dropped.
+    filled from the heading that follows the label; ``anchor`` is the
+    slug of the label name (Sphinx parity).  Orphan labels (file has no
+    heading at all at that position) are mapped to :data:`UNRESOLVED`
+    (singleton), not silently dropped.
     """
     label_map: dict[str, LabelTarget] = {}
     for rst_file in Path(source_dir).rglob("*.rst"):
@@ -198,6 +224,7 @@ def build_label_map(source_dir) -> dict[str, LabelTarget]:
                             file_id="",
                             section_title=title,
                             category="",
+                            anchor=_anchor_for_label(lbl),
                         ),
                     )
     return label_map
@@ -241,28 +268,36 @@ def build_label_doc_map(
 
             found, doc_title = _scan_rst_labels(rst_file)
 
-            # label_map entries
+            # label_map entries — one LabelTarget per label (anchor is
+            # per-label, so we can't share one LabelTarget across stacked
+            # labels).
             for labels, title in found:
                 if not title:
                     for lbl in labels:
                         label_map.setdefault(lbl, UNRESOLVED)
                 else:
-                    lt = LabelTarget(
-                        title=title,
-                        file_id=fc.file_id,
-                        section_title=title,
-                        category=fc.category,
-                    )
                     for lbl in labels:
-                        label_map.setdefault(lbl, lt)
+                        label_map.setdefault(
+                            lbl,
+                            LabelTarget(
+                                title=title,
+                                file_id=fc.file_id,
+                                section_title=title,
+                                category=fc.category,
+                                anchor=_anchor_for_label(lbl),
+                            ),
+                        )
 
-            # doc_map entry (keyed by relpath the mapping patterns use)
+            # doc_map entry (keyed by relpath the mapping patterns use).
+            # :doc: links target the document as a whole, so anchor=""
+            # (no ``#`` fragment in the emitted MD link).
             relpath = rel_for_classify(rst_file, version)
             doc_map[relpath] = LabelTarget(
                 title=doc_title or fc.file_id,
                 file_id=fc.file_id,
                 section_title="",
                 category=fc.category,
+                anchor="",
             )
 
     return label_map, doc_map

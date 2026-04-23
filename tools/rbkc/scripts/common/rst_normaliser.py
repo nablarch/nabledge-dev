@@ -32,7 +32,8 @@ class UnknownSyntaxError(Exception):
 def normalise_rst(
     text: str,
     *,
-    label_map: dict[str, str] | None = None,
+    label_map: dict | None = None,
+    doc_map: dict | None = None,
     source_path: Path | str | None = None,
     strict_unknown: bool = True,
 ) -> str:
@@ -61,7 +62,12 @@ def normalise_rst(
                 raise UnknownSyntaxError(f"docutils parse error: {line.strip()}")
 
     try:
-        parts = rst_ast_visitor.extract_document(doctree, label_map=label_map)
+        parts = rst_ast_visitor.extract_document(
+            doctree,
+            label_map=label_map,
+            doc_map=doc_map,
+            source_path=path,
+        )
     except VisitorError as exc:
         if strict_unknown:
             raise UnknownSyntaxError(str(exc)) from exc
