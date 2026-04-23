@@ -316,10 +316,15 @@ def check_index_coverage(knowledge_dir, index_path) -> list[str]:
 # QC5: 形式純粋性
 # ---------------------------------------------------------------------------
 
-_RST_ROLE_RE = re.compile(r':[a-zA-Z][a-zA-Z0-9_.-]*:`')
+# Spec §3-1 QC5: `:role:`text`` — both opening AND closing backticks are
+# part of the named pattern (see rbkc.md "Decide from the spec" entry).
+_RST_ROLE_RE = re.compile(r':[a-zA-Z][a-zA-Z0-9_.-]*:`[^`\n]+`')
 _RST_DIRECTIVE_RE = re.compile(r'^\.\.\s+[A-Za-z][\w:-]*::', re.MULTILINE)
 _RST_HEADING_UNDERLINE_RE = re.compile(r'^[=\-~^"\'`#*+<>]{4,}\s*$', re.MULTILINE)
-_RST_LABEL_RE = re.compile(r'\.\.\s+_[a-zA-Z0-9_-]+:')
+# Spec §3-1 QC5: `.. _label:` is an RST explicit-markup construct; the RST
+# spec requires it to start at line begin. Mid-sentence occurrences are not
+# label definitions.
+_RST_LABEL_RE = re.compile(r'^\.\.\s+_[a-zA-Z0-9_-]+:\s*$', re.MULTILINE)
 _MD_RAW_HTML_RE = re.compile(r'<[a-zA-Z][a-zA-Z0-9]*(?:\s[^>]*)?/?>')
 _MD_BACKSLASH_ESCAPE_RE = re.compile(r'\\[*_`\[\](){}#+\-.!|]')
 

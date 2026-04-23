@@ -633,6 +633,44 @@ class TestVerifyFileQC5:
         ]}
         assert [i for i in self._check(data, "rst") if "QC5" in i] == []
 
+    # --- Z-1 r7 Findings: QC5 regex strictness ---------------------------
+
+    def test_pass_rst_role_name_without_closing_backtick_not_flagged(self):
+        """Spec §3-1 QC5 writes the RST role pattern as `:role:\\`text\\``
+        — BOTH backticks required. rbkc.md: 'Yes. Spec §3-1 QC5 writes
+        `:role:\\`text\\`` (both backticks).' An opening-backtick-only
+        sequence is malformed and not the named pattern; QC5 must not FAIL
+        on it. (Z-1 r7 QC5 F1)"""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "文中に :foo:` のような破片"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "role" in i] == []
+
+    def test_fail_rst_role_with_both_backticks_flagged(self):
+        """Complement to the pass test: a real role `:ref:\\`x\\`` must
+        still FAIL QC5 (the converter should have resolved it)."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "未処理 :ref:`label` 残"}
+        ]}
+        assert any("QC5" in i and "role" in i for i in self._check(data, "rst"))
+
+    def test_pass_rst_label_tokens_in_prose_not_flagged(self):
+        """Spec §3-1 QC5 defines the label pattern as `.. _label:` — by
+        the RST explicit-markup spec this construct must begin at line
+        start. A mid-sentence occurrence is not a label definition and
+        must not FAIL QC5. (Z-1 r7 QC5 F2)"""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "see .. _foo: below in text"}
+        ]}
+        assert [i for i in self._check(data, "rst") if "QC5" in i and "label" in i] == []
+
+    def test_fail_rst_label_on_its_own_line_flagged(self):
+        """A label definition on its own line must still FAIL QC5."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "前文\n.. _my-label:\n後文"}
+        ]}
+        assert any("QC5" in i and "label" in i for i in self._check(data, "rst"))
+
     def test_fail_md_summary_tag(self):
         data = {"id": "f", "title": "T", "content": "", "sections": [
             {"id": "s1", "title": "概要", "content": "<summary>タイトル</summary>"}
