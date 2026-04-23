@@ -3171,3 +3171,48 @@ class TestVerifyFileExcelP1TitleRowPresent:
         #   → QC2.
         assert any("■本物のタイトル" in i for i in issues), issues
         assert any("Sheet1" in i and "QC2" in i for i in issues), issues
+
+
+class TestVerifyQC5NullByte:
+    """QC5: NULL byte (\\x00) anywhere in content is a format-purity
+    violation — it makes docs MD binary and unrenderable by GitHub Web.
+    """
+
+    def test_fail_null_in_content(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "T", "content": "normal\x00text",
+            "sections": [],
+        }
+        issues = _check_format_purity(data, "rst")
+        assert any("[QC5]" in i and "NULL" in i for i in issues), issues
+
+    def test_fail_null_in_section_content(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "T", "content": "",
+            "sections": [{"id": "s1", "title": "ST",
+                          "content": "body\x00after"}],
+        }
+        issues = _check_format_purity(data, "md")
+        assert any("[QC5]" in i and "NULL" in i for i in issues), issues
+
+    def test_fail_null_in_title(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "good\x00title", "content": "",
+            "sections": [],
+        }
+        issues = _check_format_purity(data, "rst")
+        assert any("[QC5]" in i and "title" in i and "NULL" in i for i in issues), issues
+
+    def test_pass_no_null(self):
+        from scripts.verify.verify import _check_format_purity
+        data = {
+            "id": "x", "title": "clean title",
+            "content": "clean body",
+            "sections": [{"id": "s1", "title": "section", "content": "clean"}],
+        }
+        # No NULLs → no QC5-NULL issue (other QC5 checks still run).
+        issues = _check_format_purity(data, "rst")
+        assert not any("NULL" in i for i in issues), issues

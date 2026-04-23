@@ -142,7 +142,8 @@ class _MDVisitor:
         if handler is not None:
             return handler(node)
         if isinstance(node, nodes.Text):
-            return str(node)
+            # Same NULL stripping as ``_inline``.
+            return str(node).replace("\x00", "")
         # Zero-exception (§3-1b): unknown node kinds must FAIL.
         raise UnknownNodeError(f"unmapped node: {name}")
 
@@ -566,7 +567,13 @@ class _MDVisitor:
 
     def _inline(self, node: nodes.Node) -> str:
         if isinstance(node, nodes.Text):
-            return str(node)
+            # docutils uses the NULL byte (\x00) internally to mark RST
+            # "backslash-space" inline escapes (``\ ``).  These markers
+            # are invariant of the surrounding MD rendering and must be
+            # stripped before emission — a NULL byte in the output makes
+            # the whole file binary, which prevents GitHub Web (and other
+            # Markdown renderers) from rendering it as Markdown.
+            return str(node).replace("\x00", "")
         name = type(node).__name__
         handler = getattr(self, f"inline_{name}", None)
         if handler is not None:

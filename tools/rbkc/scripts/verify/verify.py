@@ -445,6 +445,21 @@ def _check_format_purity(data: dict, fmt: str) -> list[str]:
     title = data.get("title", "")
     top_content = data.get("content", "")
 
+    # NULL bytes (\x00) are never valid in any Markdown output.  A NULL
+    # in JSON content makes docs MD binary and unrenderable on GitHub
+    # Web / other viewers.  Flag any occurrence as QC5 regardless of fmt.
+    def _scan_null(text: str, where: str) -> None:
+        if text and "\x00" in text:
+            issues.append(
+                f"[QC5] {file_id}/{where}: NULL byte (\\x00) in content"
+            )
+
+    _scan_null(title, "title")
+    _scan_null(top_content, "content")
+    for s in data.get("sections", []):
+        _scan_null(s.get("title", ""), f"section '{s.get('title', '')}'/title")
+        _scan_null(s.get("content", ""), f"section '{s.get('title', '')}'/content")
+
     if fmt == "rst":
         issues.extend(_rst_syntax_issues(title, f"{file_id}/title", is_title=True))
         if top_content:
