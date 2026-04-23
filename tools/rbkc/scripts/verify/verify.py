@@ -167,20 +167,30 @@ def check_json_docs_md_consistency(
     if not sections and docs_h2_only_titles:
         issues.append(f"[QO1] {file_id}: docs MD has section headings but JSON has no sections")
     else:
-        if docs_h2_only_titles != json_sec_titles:
-            missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
-            extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
-            if missing:
-                for t in missing:
-                    issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
-            if extra:
-                for t in extra:
-                    issues.append(f"[QO1] {file_id}: docs MD has extra section title not in JSON: {t!r}")
-            if not missing and not extra:
-                # Same entries, different order
-                issues.append(
-                    f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={docs_h2_only_titles!r}"
-                )
+        # Spec §3-3 QO1 permits JSON section titles to appear at `##` or
+        # `###`. The ordering oracle must use the ##/### merged list
+        # filtered to entries that match a JSON title; otherwise a
+        # section legitimately rendered at `###` is absent from the
+        # ##-only list and produces a spurious "order differs". (Z-1 r8
+        # QO1 F1.)
+        #
+        # - missing: titles in JSON with no presence at either level
+        # - extra:   `##` entries (section-title level) with no JSON match
+        # - ordered comparison: H2∪H3 list filtered to JSON titles,
+        #   compared against the JSON order
+        missing = [t for t in json_sec_titles if t not in docs_h2_or_h3_titles]
+        extra = [t for t in docs_h2_only_titles if t not in json_sec_titles]
+        filtered = [t for t in docs_h2_or_h3_titles if t in json_sec_titles]
+        if missing:
+            for t in missing:
+                issues.append(f"[QO1] {file_id}: section title missing in docs MD: {t!r}")
+        if extra:
+            for t in extra:
+                issues.append(f"[QO1] {file_id}: docs MD has extra section title not in JSON: {t!r}")
+        if not missing and not extra and filtered != json_sec_titles:
+            issues.append(
+                f"[QO1] {file_id}: section title order differs: JSON={json_sec_titles!r} docs={filtered!r}"
+            )
 
     # QO2: top-level content must appear verbatim *between the `#` heading
     # and the first `##` heading* (spec §3-3 "JSON top-level content が
@@ -336,9 +346,19 @@ def _parse_toon_index(text: str) -> tuple[list[str], list[str]]:
                 )
                 continue
             if header_seen:
+                # Z-1 r8 QO4 F3: after flagging a second header, re-enter
+                # the table so its rows are parsed into `paths` (or
+                # flagged per-row). The structural error is the header
+                # duplication itself; we must not also silently drop
+                # every row under it and produce cascading "not
+                # registered" false positives downstream.
                 errors.append(
                     f"[QO4] index.toon has a second files[] header at line {line_no}: {raw!r}"
                 )
+                # Reuse the existing column schema — a second block with
+                # a different schema would have been flagged above by
+                # the schema check on the first header.
+                in_table = True
                 continue
             header_seen = True
             expected_rows = int(m.group(1))
@@ -350,6 +370,12 @@ def _parse_toon_index(text: str) -> tuple[list[str], list[str]]:
                 return paths, errors
             in_table = True
             continue
+        # Every line that reaches here is a physical row under the table.
+        # Count it regardless of parse outcome so the declared-vs-actual
+        # row-count check reflects physical row presence — otherwise a
+        # single row with a column-count error produces a spurious second
+        # FAIL for row-count mismatch. (Z-1 r8 QO4 F1.)
+        row_count += 1
         # A path field containing a comma or quote is ambiguous under
         # the last-comma-split rule and must not be silently truncated.
         if '"' in stripped:
@@ -364,12 +390,20 @@ def _parse_toon_index(text: str) -> tuple[list[str], list[str]]:
             )
             continue
         path = fields[-1].strip()
-        # Normalise path separator — Z-1 r7 QO4 F5.
         path = path.replace("\\", "/")
         paths.append(path)
-        row_count += 1
 
-    if header_seen and expected_rows != row_count:
+    # Only check declared-vs-actual row count when no structural drift
+    # already fired (second-header or per-row error). Otherwise the
+    # count is an artifact of upstream structural defects, not an
+    # independent fault.
+    had_structural_error = any(
+        "second files[] header" in e
+        or "column count mismatch" in e
+        or "quoted field" in e
+        for e in errors
+    )
+    if header_seen and not had_structural_error and expected_rows != row_count:
         errors.append(
             f"[QO4] index.toon row count mismatch: header declares {expected_rows}, found {row_count}"
         )
@@ -903,6 +937,10 @@ def _check_md_content_completeness(
 _MD_SYNTAX_RE = re.compile(
     r'\|[-:]+\|(?:[-:]+\|)*'
     r'|\|'
+    # Spec §3-1 Excel 節 explicitly names `---` as an allowed residue.
+    # Match 3+ hyphens as a standalone token (GFM table separator or
+    # horizontal rule residue that lost its flanking pipes).
+    r'|-{3,}'
     r'|\*\*|\*|__(?![\w])|(?<![\w])__'
     r'|^#+\s*'
     r'|^>\s*'

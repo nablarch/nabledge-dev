@@ -205,6 +205,28 @@ class TestCheckJsonDocsMdConsistency_QO1:
         docs = "# T\n\n前文。\n\n### 注記\n\n注記本文。\n"
         assert self._check(data, docs) == []
 
+    def test_pass_section_title_rendered_at_h3(self):
+        """Z-1 r8 QO1 F1: spec §3-3 "JSON 各セクションのタイトルが docs MD
+        の `##`/`###` に存在し、かつ JSON と同じ順序で並んでいる" permits
+        a section title at `###`. When docs.py (or a future emitter)
+        renders a section at `###`, QO1 must accept it. The previous
+        `##`-only equality emitted a spurious 'order differs' FAIL."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "セクション A", "content": "a"},
+            {"id": "s2", "title": "セクション B", "content": "b"},
+        ]}
+        # Second section rendered at ### (spec-sanctioned); docs.py's
+        # current emitter uses ## only, but the verify check must accept
+        # either level per the spec wording.
+        docs = (
+            "# T\n\n"
+            "## セクション A\n\n"
+            "a\n\n"
+            "### セクション B\n\n"
+            "b\n"
+        )
+        assert self._check(data, docs) == []
+
     def test_pass_atx_closed_heading_title(self):
         """Z-1 r7 QO1 F4: CommonMark §4.2 allows optional trailing `#`
         sequence on ATX headings. '# Title #' means title 'Title'."""
@@ -637,6 +659,53 @@ class TestCheckIndexCoverage:
             encoding="utf-8",
         )
         assert self._check(kdir, idx) == []
+
+    def test_fail_toon_column_count_mismatch_no_spurious_row_count_double_fail(self, tmp_path):
+        """Z-1 r8 QO4 F1: a row with a column-count error must not also
+        trigger the declared-vs-actual row-count mismatch — that second
+        FAIL is a side-effect of the first error, not an independent
+        defect. Operator should see exactly one structural FAIL for
+        one defect."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , a.json\n",  # 4 fields instead of 5 → column-count FAIL
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        cc = [i for i in issues if "column count mismatch" in i]
+        rc = [i for i in issues if "row count mismatch" in i]
+        assert len(cc) == 1, cc
+        assert rc == [], rc
+
+    def test_fail_toon_second_header_does_not_silently_drop_rows(self, tmp_path):
+        """Z-1 r8 QO4 F3: after flagging a second files[] header, rows
+        under the second block must still be parsed (into paths) rather
+        than silently dropped — otherwise JSONs listed only in the
+        second block re-report as 'not registered' downstream,
+        masquerading the defect."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        idx = tmp_path / "index.toon"
+        idx.write_text(
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  A, , , , a.json\n"
+            "\n"
+            "files[1,]{title,type,category,processing_patterns,path}:\n"
+            "  B, , , , b.json\n",
+            encoding="utf-8",
+        )
+        issues = self._check(kdir, idx)
+        # The second-header structural error fires.
+        assert any("second files[] header" in i for i in issues), issues
+        # b.json must not re-appear as 'not registered' — it was listed,
+        # just under the erroneous second block. The structural FAIL is
+        # enough; we do not pile on cascading false positives.
+        assert not any("not registered" in i and "b.json" in i for i in issues), issues
 
     def test_fail_missing_index_lists_every_content_json_strict(self, tmp_path):
         """Z-1 r7 QO4 F7: pin the spec requirement that when index.toon
@@ -1212,7 +1281,8 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "概要", "content": "詳細内容。"},  # duplicate title
         ])
         issues = self._check(src, data)
-        assert any("QC3" in i for i in issues)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
 
     # --- QC4: misplaced content ---
 
@@ -1491,7 +1561,8 @@ class TestCheckContentCompleteness:
             {"id": "s2", "title": "概要", "content": "本文 B。"},  # duplicate title in JSON
         ])
         issues = self._check(src, data, fmt="md")
-        assert any("QC3" in i for i in issues)
+        assert any("[QC3]" in i for i in issues)
+        assert not any("[QC2]" in i or "[QC4]" in i for i in issues)
 
     def test_pass_qc3_short_cjk_repeated_in_source_and_json(self):
         """Two sections legitimately using the same short CJK title; both
@@ -1504,7 +1575,7 @@ class TestCheckContentCompleteness:
         issues = self._check(src, data, fmt="md")
         # Source has "概要" twice → each JSON title consumes a distinct
         # occurrence. No QC3/QC4 for the title pair.
-        assert not any("QC3" in i and "概要" in i for i in issues)
+        assert not any("[QC3]" in i and "概要" in i for i in issues)
 
     def test_fail_qc3_top_level_and_section_content_duplicated(self):
         """Top-level content and a section content both declare the same
@@ -1730,6 +1801,21 @@ class TestVerifyFileExcel:
         issues = self._check(str(xlsx_path), data)
         assert any("QC2" in i for i in issues)
 
+    def test_pass_qc2_standalone_triple_dash_is_tolerance_allowed(self, tmp_path):
+        """Z-1 r8 QC2 F-QC2-1: spec §3-1 Excel 節 lists `---` explicitly
+        as an allowed residue. A JSON field containing `---` (e.g. from
+        a GFM table separator that lost its flanking pipes, or a
+        horizontal rule fragment) must NOT trigger QC2."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws["A1"] = "Hello"
+        xlsx_path = tmp_path / "test.xlsx"
+        wb.save(xlsx_path)
+        data = {"id": "f", "title": "Hello", "content": "---", "sections": []}
+        issues = self._check(str(xlsx_path), data)
+        assert not any("QC2" in i for i in issues), issues
+
     def test_fail_qc2_one_char_fabrication_detected(self, tmp_path):
         """Spec §3-1 Excel 節 手順 3: 空白・空行以外の残存は QC2.
         1-char residue used to be silently dropped — must FAIL now."""
@@ -1910,19 +1996,45 @@ class TestCheckSourceLinks:
         """Spec §3-2 line 268: substitution-body content (e.g. `.. |x|
         image::` body) must be excluded from QL1 by AST-attribute /
         parent-ancestry. The substituted occurrence is the reader-visible
-        one and is covered by the paragraph it appears in. (Z-1 r7 QL1 F1)"""
+        one.
+
+        Z-1 r8 QL1 F1: this fixture pins the skip without relying on
+        coincidental JSON containment. The substitution is NEVER
+        referenced in the body, so the only `image` node docutils emits
+        lives under the `substitution_definition` subtree. JSON has no
+        mention of the alt text or filename. Without `_under_substitution`,
+        QL1 would emit a FAIL naming 'アイコン' (or 'icon.png'); with
+        the skip, zero QL1 issues fire.
+        """
         src = (
             "概要\n====\n\n"
-            "ここに |icon| を挿入します。\n\n"
-            ".. |icon| image:: images/icon.png\n"
+            "本文のみ。\n\n"
+            ".. |unused| image:: images/icon.png\n"
             "   :alt: アイコン\n"
         )
-        data = self._data(content="ここに ![アイコン](images/icon.png) を挿入します。")
+        data = self._data(content="本文のみ。")
         issues = self._check(src, "rst", data)
-        # No duplicate QL1 fire on 'アイコン' — the substitution-body
-        # image is skipped; only the paragraph-rendered occurrence
-        # counts, and the JSON contains its alt text.
-        assert not any("QL1" in i and "アイコン" in i for i in issues), issues
+        qc = [i for i in issues if "QL1" in i and ("アイコン" in i or "icon.png" in i)]
+        assert qc == [], qc
+
+    def test_pass_rst_figure_dedup_same_caption_not_reported_twice(self):
+        """Z-1 r8 QL1 F2: RST figure dedup (mirror of image dedup).
+        Two `.. figure::` blocks sharing the same caption text; JSON
+        omits the caption — QL1 fires once, not once per figure."""
+        src = (
+            "概要\n====\n\n"
+            ".. figure:: images/a.png\n"
+            "\n"
+            "   共通キャプション\n"
+            "\n"
+            ".. figure:: images/b.png\n"
+            "\n"
+            "   共通キャプション\n"
+        )
+        data = self._data(content="別の内容")
+        issues = self._check(src, "rst", data)
+        qc = [i for i in issues if "QL1" in i and "共通キャプション" in i]
+        assert len(qc) == 1, qc
 
     def test_pass_rst_image_dedup_same_alt_not_reported_twice(self):
         """Z-1 r7 QL1 F2: RST image dedup (mirror of MD's seen_images).
