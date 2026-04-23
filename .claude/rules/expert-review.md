@@ -57,45 +57,64 @@ Example: 'verify must catch all content gaps — skipping unresolvable reference
 {Expert-specific review guidelines from this document}
 
 ## Your Task
-1. Review the changes thoroughly
-2. Provide ratings (1-5 scale) for key aspects
-3. List specific issues found (High/Medium/Low priority)
-4. Suggest concrete improvements for High/Medium issues
-5. Highlight positive aspects
-Note: Your suggestions must respect the non-negotiable constraints above.
+
+Under ゼロトレランス, quality is binary. Do not emit a 3-tier severity (High/Medium/Low) —
+that invites triage and deferral. Emit only two categories:
+
+- **Finding** — violates the spec, a project rule, or the ゼロトレランス standard.
+  Every Finding MUST quote the specific spec clause / rule line / standard clause it violates.
+  If you cannot quote one, it is not a Finding — downgrade it to an Observation.
+  Findings are non-negotiable fix items.
+- **Observation** — a note that does NOT violate any spec / rule / standard clause
+  (e.g. cosmetic wording, optional diagnostic enrichment, future refactor idea).
+  Observations are recorded for context only; the developer is not required to act.
+
+Steps:
+1. Review the changes thoroughly against the spec, project rules, and ゼロトレランス standard.
+2. List every Finding with the quoted clause it violates and a concrete fix.
+3. List Observations separately (no fix required).
+4. Highlight positive aspects.
+5. Do not use High/Medium/Low. Do not emit a numeric rating — under binary quality,
+   the only meaningful result is "zero Findings" or "N Findings remaining".
 
 ## Output Format
 Use markdown with sections:
-- Overall Assessment (1-5 rating + summary)
-- Key Issues (priority, description, suggestion)
+- Summary (one line: "0 Findings" or "N Findings — not shippable")
+- Findings (each: violated clause quoted, description, fix)
+- Observations (non-blocking notes)
 - Positive Aspects
-- Recommendations
 "
 ```
 
-### 3. Developer Agent Evaluates Improvements
+### 3. Developer Agent Evaluates Findings
 
-Launch another Task agent as developer to evaluate improvement suggestions:
+Findings are non-negotiable — all must be fixed before proceeding.
+The developer agent's role is to plan the fix, not to triage severity.
 
 ```
 Task
   subagent_type: "general-purpose"
-  description: "Evaluate improvement suggestions"
-  prompt: "You are the developer who implemented these changes. Review the expert's improvement suggestions and decide which to implement.
+  description: "Plan fixes for review Findings"
+  prompt: "You are the developer who implemented these changes. The expert review produced Findings (all must be fixed under ゼロトレランス) and Observations (non-blocking).
 
 ## Expert Review
 {Expert review output}
 
 ## Your Task
-For each High/Medium priority issue:
-1. Evaluate if the suggestion is valid and beneficial
-2. Decide: Implement Now / Defer to Future / Reject
-3. Provide reasoning for your decision
+For each Finding, describe the fix you will apply. You cannot defer or reject a Finding —
+if you believe a Finding is invalid, you must quote the spec clause that sanctions the
+current behaviour, which would prove the reviewer's quoted clause was misapplied.
+
+For Observations, note whether you will address them (optional) or skip them (default).
 
 ## Output Format
-| Issue | Priority | Decision | Reasoning |
-|-------|----------|----------|-----------|
-| ... | ... | ... | ... |
+### Findings (all must be fixed)
+| # | Violated clause | Fix plan |
+|---|-----------------|----------|
+
+### Observations (optional)
+| # | Note | Action |
+|---|------|--------|
 "
 ```
 
@@ -117,34 +136,30 @@ Save to `.work/{issue_number_5digit}/review-by-{expert_role}.md`:
 **Reviewer**: AI Agent as {Expert Role}
 **Files Reviewed**: {count} files
 
-## Overall Assessment
+## Summary
 
-**Rating**: {1-5}/5
-**Summary**: {1-2 sentence overall impression}
+{one line: "0 Findings" or "N Findings — not shippable"}
 
-## Key Issues
+## Findings
 
-### High Priority
-1. **{Issue title}**
-   - Description: {What's wrong}
-   - Suggestion: {How to fix}
-   - Decision: {Implement Now / Defer / Reject}
-   - Reasoning: {Why this decision}
+Each Finding MUST quote the specific spec / rule / standard clause it violates.
+All Findings are non-negotiable fix items under ゼロトレランス.
 
-### Medium Priority
-{Same format}
+1. **{Finding title}**
+   - Violated clause: {quoted clause from spec / rule / standard}
+   - Description: {what is wrong}
+   - Fix: {how to address it}
 
-### Low Priority
-{Same format}
+## Observations
+
+Non-blocking notes that do not violate any clause.
+
+- {note} — {optional context}
 
 ## Positive Aspects
 
 - {Strength 1}
 - {Strength 2}
-
-## Recommendations
-
-{Future improvements or considerations}
 
 ## Files Reviewed
 
@@ -172,10 +187,14 @@ Example:
 ## Expert Review
 
 {For each expert}
-- [{Expert Role}](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-{expert-role}.md) - Rating: {X}/5
+- [{Expert Role}](https://github.com/nablarch/nabledge-dev/blob/42-add-auth/.work/00042/review-by-{expert-role}.md) - {N Findings / 0 Findings}
 ```
 
 ## Expert-Specific Guidelines
+
+Under ゼロトレランス, quality is binary. Each expert reviews against a spec / rule
+set and emits Findings (clause-violating, non-negotiable) and Observations
+(non-violating notes). No numeric ratings, no severity tiers.
 
 ### Software Engineer
 
@@ -185,13 +204,6 @@ Example:
 - Best Practices: Language idioms, framework conventions, error handling
 - Maintainability: Documentation, testability, extensibility
 
-**Rating Criteria:**
-- 5: Excellent - Best practices followed, well-structured, maintainable
-- 4: Good - Minor improvements possible, generally solid
-- 3: Acceptable - Works but has issues to address
-- 2: Needs Work - Significant issues affecting quality
-- 1: Poor - Major architectural or quality problems
-
 ### Prompt Engineer
 
 **Review Focus:**
@@ -199,13 +211,6 @@ Example:
 - Completeness: All necessary context and steps provided
 - Agent Behavior: Prompts guide agent to correct actions
 - Examples: High-quality examples that illustrate concepts
-
-**Rating Criteria:**
-- 5: Excellent - Clear, complete, well-structured prompts
-- 4: Good - Minor clarity improvements possible
-- 3: Acceptable - Works but could be clearer
-- 2: Needs Work - Ambiguous or incomplete instructions
-- 1: Poor - Confusing or missing critical information
 
 ### Technical Writer
 
@@ -215,13 +220,6 @@ Example:
 - Accuracy: Information is correct and up-to-date
 - Consistency: Terminology, formatting, style consistent
 
-**Rating Criteria:**
-- 5: Excellent - Clear, accurate, well-organized documentation
-- 4: Good - Minor clarifications needed
-- 3: Acceptable - Understandable but could be improved
-- 2: Needs Work - Confusing or inconsistent
-- 1: Poor - Inaccurate or poorly structured
-
 ### QA Engineer
 
 **Review Focus:**
@@ -230,13 +228,6 @@ Example:
 - Test Design: Well-structured, maintainable tests
 - Assertions: Clear, specific, meaningful assertions
 
-**Rating Criteria:**
-- 5: Excellent - Comprehensive coverage, well-designed tests
-- 4: Good - Good coverage, minor gaps
-- 3: Acceptable - Basic coverage, some edge cases missing
-- 2: Needs Work - Significant gaps in coverage
-- 1: Poor - Minimal or ineffective tests
-
 ### DevOps Engineer
 
 **Review Focus:**
@@ -244,13 +235,6 @@ Example:
 - Validation: Input validation, error handling
 - Environment: Works across different environments
 - Dependencies: Version compatibility, security updates
-
-**Rating Criteria:**
-- 5: Excellent - Secure, validated, environment-aware
-- 4: Good - Minor security/validation improvements
-- 3: Acceptable - Works but has potential issues
-- 2: Needs Work - Security or compatibility concerns
-- 1: Poor - Critical security or compatibility issues
 
 ## Integration with /hi Command
 

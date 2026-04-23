@@ -83,18 +83,20 @@ it. Do not ask the user to pick between options the standard has ruled out.
 In that case, state the spec gap, propose the stricter direction (default
 under ゼロトレランス), and ask for confirmation — not an open-ended menu.
 
-## Review findings — default is fix, not triage
+## Review findings — binary, non-negotiable
 
-All Medium and higher findings from a bias-avoidance QA review are
-blocking unless the spec / standard says otherwise. "Low impact in v6"
-is not a valid defer reason — ゼロトレランス forbids accepting risk
-just because the corpus happens not to exercise it right now.
+Reviews emit two categories only (see `.claude/rules/expert-review.md`):
 
-Acceptable defer reasons:
-- The finding names behaviour the spec explicitly sanctions (with the
-  clause quoted), and the reviewer missed that sanction.
-- The finding is Low-severity cosmetic drift that cannot cause a spec
-  violation (e.g. message formatting, docstring wording).
+- **Finding** — violates a specific spec / rule / standard clause. The
+  reviewer MUST quote the violated clause. All Findings are blocking fix
+  items under ゼロトレランス. There is no High/Medium/Low, because triage
+  invites drift.
+- **Observation** — a note that does not violate any clause (e.g. message
+  wording, optional diagnostic enrichment). Not a fix item.
 
-Any other deferral needs the user's explicit approval with the spec
-clause that permits the deferral quoted inline.
+The only way to not fix a Finding is to prove the reviewer misread the
+spec — i.e. quote a different clause that sanctions the current behaviour.
+Any other deferral is a ゼロトレランス violation.
+
+If a reviewer emits a "severity" or "priority" field, treat the output as
+malformed and re-run the review with the correct binary format.
