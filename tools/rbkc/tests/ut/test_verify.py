@@ -74,6 +74,40 @@ class TestCheckJsonDocsMdConsistency_QO1:
         issues = self._check(data, docs)
         assert any("QO1" in i for i in issues)
 
+    # --- QO1 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_h1_missing(self):
+        data = {"id": "f", "title": "タイトル", "content": "", "sections": []}
+        docs = "本文だけで h1 が無い。\n"
+        issues = self._check(data, docs)
+        assert any("QO1" in i for i in issues)
+
+    def test_empty_title_is_not_checked(self):
+        """Pin current behaviour: when JSON title is empty string, title
+        comparison is skipped (title-less JSON is only produced by the
+        no_knowledge_content flag in real flow). If this behaviour ever
+        changes, update the spec §3-3 QO1 definition at the same time."""
+        data = {"id": "f", "title": "", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": ""}
+        ]}
+        docs = "# 何か\n\n## 概要\n"
+        issues = self._check(data, docs)
+        # Current implementation: empty title does not trigger a title check,
+        # so we should not see a "title mismatch" QO1 for the H1.
+        assert not any("QO1" in i and "title" in i for i in issues)
+
+    def test_title_with_markdown_special_chars_exact_match(self):
+        data = {"id": "f", "title": "A `code` & B", "content": "", "sections": []}
+        docs = "# A `code` & B\n"
+        assert self._check(data, docs) == []
+
+    def test_multiple_h1_in_docs_md_first_wins(self):
+        """Multiple `#` lines in docs MD: matcher should use the first one."""
+        data = {"id": "f", "title": "一番目", "content": "", "sections": []}
+        docs = "# 一番目\n\n追加段落\n\n# 二番目\n"
+        # First `#` matches the JSON title — this is the spec's happy path.
+        assert self._check(data, docs) == []
+
 
 # ---------------------------------------------------------------------------
 # QO2: docs MD 本文整合性
@@ -125,6 +159,43 @@ class TestCheckJsonDocsMdConsistency_QO2:
         }
         docs = "# T\n\n## 図\n\n![図](../assets/img.png)\n"
         assert self._check(data, docs) == []
+
+    # --- QO2 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_whitespace_only_diff(self):
+        """Whitespace-only deviation between JSON and docs MD is still a
+        FAIL: spec §3-3 requires verbatim match."""
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "概要", "content": "本文\n\n続き"},
+        ]}
+        docs = "# T\n\n## 概要\n\n本文 続き\n"  # newline replaced by space
+        issues = self._check(data, docs)
+        assert any("QO2" in i for i in issues)
+
+    def test_pass_section_content_with_fenced_code(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "コード例", "content": "```java\nint x;\n```"},
+        ]}
+        docs = "# T\n\n## コード例\n\n```java\nint x;\n```\n"
+        assert self._check(data, docs) == []
+
+    def test_pass_section_content_with_md_special_chars(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "式", "content": "評価式は `a | b` と記述。"},
+        ]}
+        docs = "# T\n\n## 式\n\n評価式は `a | b` と記述。\n"
+        assert self._check(data, docs) == []
+
+    def test_fail_multiple_sections_one_content_wrong(self):
+        data = {"id": "f", "title": "T", "content": "", "sections": [
+            {"id": "s1", "title": "A", "content": "A content"},
+            {"id": "s2", "title": "B", "content": "B content"},
+            {"id": "s3", "title": "C", "content": "C content"},
+        ]}
+        # middle section content differs
+        docs = "# T\n\n## A\n\nA content\n\n## B\n\nWRONG\n\n## C\n\nC content\n"
+        issues = self._check(data, docs)
+        assert any("QO2" in i and "B" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +261,61 @@ class TestCheckIndexCoverage:
         issues = self._check(kdir, tmp_path / "nonexistent.toon")
         assert any("QO4" in i for i in issues)
 
+    # --- QO4 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_missing_index_lists_every_content_json(self, tmp_path):
+        """Spec §3-3: when index.toon is absent, every content JSON is FAIL."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "a.json").write_text(json.dumps({"id": "a", "title": "A"}))
+        (kdir / "b.json").write_text(json.dumps({"id": "b", "title": "B"}))
+        (kdir / "no.json").write_text(json.dumps({"id": "no", "title": "N", "no_knowledge_content": True}))
+        issues = self._check(kdir, tmp_path / "missing.toon")
+        # Two content JSONs must both be reported
+        assert any("a.json" in i for i in issues)
+        assert any("b.json" in i for i in issues)
+        # no_knowledge file is not reported
+        assert not any("no.json" in i for i in issues)
+
+    def test_fail_dangling_entry_in_index(self, tmp_path):
+        """Spec §3-3: an index entry without a matching JSON on disk FAILs."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "real.json").write_text(json.dumps({"id": "r", "title": "R"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [
+            ["R", "", "", "", "real.json"],
+            ["Phantom", "", "", "", "ghost.json"],  # no file on disk
+        ])
+        issues = self._check(kdir, idx)
+        assert any("ghost.json" in i and "missing JSON" in i for i in issues)
+
+    def test_empty_knowledge_dir_without_index_passes(self, tmp_path):
+        """No content JSONs and no index.toon — nothing to verify."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        assert self._check(kdir, tmp_path / "missing.toon") == []
+
+    def test_cjk_filename_indexed(self, tmp_path):
+        kdir = tmp_path / "knowledge"
+        (kdir / "sub").mkdir(parents=True)
+        (kdir / "sub" / "日本語.json").write_text(json.dumps({"id": "j", "title": "日本語"}))
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["日本語", "", "", "", "sub/日本語.json"]])
+        assert self._check(kdir, idx) == []
+
+    def test_broken_json_silently_skipped(self, tmp_path):
+        """A JSON file that fails to parse is currently ignored by the
+        walk; pin that behaviour here so a future strict-parse policy is
+        a conscious spec change, not a silent regression."""
+        kdir = tmp_path / "knowledge"
+        kdir.mkdir()
+        (kdir / "valid.json").write_text(json.dumps({"id": "v", "title": "V"}))
+        (kdir / "broken.json").write_text("{ not json")
+        idx = tmp_path / "index.toon"
+        self._write_toon(idx, [["V", "", "", "", "valid.json"]])
+        assert self._check(kdir, idx) == []
+
 
 # ---------------------------------------------------------------------------
 # QO3: docs MD 存在確認 (via check_docs_coverage)
@@ -246,6 +372,43 @@ class TestCheckDocsCoverage:
         ddir = tmp_path / "docs"; ddir.mkdir()
         issues = self._check(kdir, ddir)
         assert any("README" in i for i in issues)
+
+    # --- QO3 Z-1 gap fill -------------------------------------------------
+
+    def test_fail_docs_md_at_wrong_nested_path(self, tmp_path):
+        """JSON at knowledge/a/b/c.json requires docs MD at docs/a/b/c.md.
+        A docs MD at a different path (e.g. top level) must still FAIL."""
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "a/b/c.json")
+        self._write_md(ddir, "c.md")  # wrong location
+        (ddir / "README.md").write_text("1ページ\n")
+        issues = self._check(kdir, ddir)
+        assert any("QO3" in i and "a/b/c.md" in i for i in issues)
+
+    def test_pass_cjk_filename(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "about/日本語.json")
+        self._write_md(ddir, "about/日本語.md")
+        (ddir / "README.md").write_text("1ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_pass_empty_knowledge_dir(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        (ddir / "README.md").write_text("0ページ\n")
+        assert self._check(kdir, ddir) == []
+
+    def test_fail_readme_page_count_mismatch(self, tmp_path):
+        kdir = tmp_path / "knowledge"; kdir.mkdir()
+        ddir = tmp_path / "docs"; ddir.mkdir()
+        self._write_json(kdir, "a.json")
+        self._write_md(ddir, "a.md")
+        self._write_md(ddir, "b.md")
+        (ddir / "README.md").write_text("99ページ\n")  # wrong
+        issues = self._check(kdir, ddir)
+        assert any("count mismatch" in i for i in issues)
 
 
 # ---------------------------------------------------------------------------
