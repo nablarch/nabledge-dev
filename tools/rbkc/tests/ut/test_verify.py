@@ -2627,3 +2627,352 @@ class TestCheckXlsxP1Pairing:
         }
         issues = self._call(str(xlsx_path), data, "Sheet1")
         assert any("[QP]" in i for i in issues), issues
+
+
+# ---------------------------------------------------------------------------
+# Phase 22-B-5a-r3 QA review Findings (7 blockers)
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyP1HeaderBoundary:
+    """QA F1: P2 boundary cases (run-length=2, useful_width=2).
+
+    §8-2 is explicit: header requires contiguous non-empty ≥ 3 AND useful
+    width > 2.  Boundaries below must be classified P2 (tokens raw 1:1,
+    no expansion).
+    """
+
+    def _tokens(self, source_path, sheet_name, sheet_type):
+        from scripts.verify.verify import _xlsx_source_tokens
+        return _xlsx_source_tokens(source_path, sheet_name=sheet_name, sheet_type=sheet_type)
+
+    def test_run_length_2_classified_p2(self, tmp_path):
+        """Header-row with contiguous non-empty = 2 (≠ P1 since < 3).
+        Sheet has ≥ 3 useful columns overall (so it is not the width cap)."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Row 1: 2 contiguous non-empty + gap + 1 more → run length = 2
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        # C1 empty
+        ws["D1"] = "備考"
+        # Data rows (3 useful columns overall)
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["D2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["D3"] = "r2"
+        xlsx_path = tmp_path / "rl2.xlsx"
+        wb.save(xlsx_path)
+        raw = self._tokens(str(xlsx_path), "Sheet1", None)
+        as_p1 = self._tokens(str(xlsx_path), "Sheet1", "P1")
+        # run_length < 3 → P2 fall-through even with sheet_type=P1.
+        assert raw == as_p1, (
+            "run_length=2 sheet must not be expanded; tokens should equal raw 1:1"
+        )
+
+    def test_useful_width_2_classified_p2(self, tmp_path):
+        """≤ 2 useful columns: spec §8-2 forces P2 even if header detection
+        would otherwise succeed."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Only 2 cols used, 3 contiguous in header row would fail anyway.
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        xlsx_path = tmp_path / "w2.xlsx"
+        wb.save(xlsx_path)
+        raw = self._tokens(str(xlsx_path), "Sheet1", None)
+        as_p1 = self._tokens(str(xlsx_path), "Sheet1", "P1")
+        assert raw == as_p1, (
+            "useful_width=2 sheet must not be P1-expanded"
+        )
+
+
+class TestVerifyP1InvalidSubHeader:
+    """QA F2: Row 2 wider than or equal to row 1 is NOT a sub-header.
+    §8-3 specifies only "副列がある列のみ" — a row equal/wider than the
+    main header is a second header candidate or data, not a sub-header.
+    """
+
+    def test_sub_header_wider_than_parent_rejected(self, tmp_path):
+        """Row 2 has MORE non-empty cells than row 1 → must NOT merge."""
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        # Row 1: 3 contiguous non-empty (qualifies as main header)
+        ws["A1"] = "No."
+        ws["B1"] = "バージョン"
+        ws["C1"] = "備考"
+        # Row 2: wider/equal — 4 non-empty cells; NOT a sub-header
+        ws["A2"] = "1"
+        ws["B2"] = "1.0"
+        ws["C2"] = "初回"
+        ws["D2"] = "追加"
+        # Row 3: 2nd data row
+        ws["A3"] = "2"
+        ws["B3"] = "2.0"
+        ws["C3"] = "二回目"
+        ws["D3"] = "追加2"
+        xlsx_path = tmp_path / "invsub.xlsx"
+        wb.save(xlsx_path)
+        from scripts.verify.verify import _detect_header_row, _read_sheet_matrix
+        rows = _read_sheet_matrix(str(xlsx_path), "Sheet1")[0]
+        detected = _detect_header_row(rows)
+        assert detected is not None, "Row 1 should still qualify as single-row header"
+        header_start, data_start, columns = detected
+        # data_start must be header_start + 1 (single-row header),
+        # NOT header_start + 2 (would indicate wrongly merged sub-header).
+        assert data_start == header_start + 1, (
+            f"Row 2 was erroneously merged as sub-header: data_start={data_start}"
+        )
+        # Column names must be the row-1 values, not `メイン/副` forms.
+        assert "/" not in " ".join(columns), f"columns contain / suggesting merge: {columns}"
+
+
+class TestVerifyP1ColumnNameSubstringSwap:
+    """QA F3: A cell value that contains its column name as substring must
+    still allow QC3 / QP to catch a swap bug.  Without this test, a
+    converter that swaps two sections that happen to contain the column
+    name as substring could silently PASS."""
+
+    def test_swap_with_substring_cell_value_detected(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "概要"
+        # Row 1: 概要 column value literally contains "概要"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "概要をAで記述する"
+        # Row 2: different 概要 value also contains "概要"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "概要をBで記述する"
+        xlsx_path = tmp_path / "subswap.xlsx"
+        wb.save(xlsx_path)
+        # JSON with values for 概要 column swapped between sections.
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n概要: 概要をBで記述する"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n概要: 概要をAで記述する"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # QP must FAIL for the swap regardless of substring overlap.
+        assert any("[QP]" in i for i in issues), issues
+
+
+class TestVerifyP1DuplicateColumnNames:
+    """QA F4: Duplicate Excel column names must not silently pass QP.
+
+    Under zero-tolerance the spec gap ("what if two columns have the same
+    name?") must be resolved to FAIL, not to the permissive "last wins"
+    behaviour hidden by a dict overwrite.
+    """
+
+    def test_duplicate_header_columns_fail(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "備考"
+        ws["C1"] = "備考"   # duplicate header name
+        ws["A2"] = "1"
+        ws["B2"] = "x1"
+        ws["C2"] = "y1"
+        ws["A3"] = "2"
+        ws["B3"] = "x2"
+        ws["C3"] = "y2"
+        xlsx_path = tmp_path / "dupcol.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "x1",
+                 "content": "No.: 1\n備考: x1\n備考: y1"},
+                {"id": "s2", "title": "x2",
+                 "content": "No.: 2\n備考: x2\n備考: y2"},
+            ],
+        }
+        from scripts.verify.verify import check_xlsx_p1_pairing
+        issues = check_xlsx_p1_pairing(str(xlsx_path), data, "Sheet1")
+        # Under zero-tolerance, duplicate header names must be flagged
+        # explicitly — silent "last wins" hides ambiguity.
+        assert any("[QP]" in i and ("duplicate" in i.lower() or "重複" in i)
+                   for i in issues), issues
+
+
+class TestVerifyP1EmptyHeaderSpacer:
+    """QA F5: Empty header cell (spacer column) with data underneath must
+    not silently drop the data-cell value.  Either the value must be
+    checked, or the behaviour must be locked with a test that pins the
+    chosen spec interpretation.
+    """
+
+    def test_spacer_column_with_data_flagged(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = ""           # spacer: empty header
+        ws["C1"] = "タイトル"
+        ws["D1"] = "備考"
+        # Data row has value under the spacer column (column B).
+        ws["A2"] = "1"
+        ws["B2"] = "こぼれ値1"   # must not be silently dropped
+        ws["C2"] = "値A"
+        ws["D2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "こぼれ値2"
+        ws["C3"] = "値B"
+        ws["D3"] = "r2"
+        xlsx_path = tmp_path / "spacer.xlsx"
+        wb.save(xlsx_path)
+        # JSON omits the spacer-column values entirely (converter decided
+        # the header is empty so no line is emitted).
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n備考: r1"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n備考: r2"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # The spacer-column cell values ("こぼれ値1", "こぼれ値2") are
+        # genuine source cells.  Whether through QC1 (missing from JSON)
+        # or an explicit spacer message, verify must FAIL — silent
+        # acceptance is a zero-tolerance violation.
+        assert issues, (
+            "spacer-column data values must not be silently dropped; expected FAIL"
+        )
+        assert any("こぼれ値" in i for i in issues), issues
+
+
+class TestVerifyP1ValueContainsColonPass:
+    """QA F6: Positive regression guard for `_MD_SYNTAX_RE` `:` addition.
+    Correctly-aligned sheet with URL and time-string values must PASS.
+    """
+
+    def test_pass_aligned_url_and_time_values(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "URL"
+        ws["C1"] = "時刻"
+        ws["A2"] = "1"
+        ws["B2"] = "https://example.com/a"
+        ws["C2"] = "12:00"
+        ws["A3"] = "2"
+        ws["B3"] = "https://example.com/b"
+        ws["C3"] = "13:30"
+        xlsx_path = tmp_path / "colon.xlsx"
+        wb.save(xlsx_path)
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "https://example.com/a",
+                 "content": "No.: 1\nURL: https://example.com/a\n時刻: 12:00"},
+                {"id": "s2", "title": "https://example.com/b",
+                 "content": "No.: 2\nURL: https://example.com/b\n時刻: 13:30"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        assert issues == [], issues
+
+
+class TestVerifyP1FabricatedColonLine:
+    """QA F7: Fabricated `列: 値` fragment must still trigger QC1/QC2.
+    The `:` scrubbing must not mask colon-separated fabrications whose
+    key/value are not in the source.
+    """
+
+    def test_fabricated_colon_pair_detected(self, tmp_path):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws["A1"] = "No."
+        ws["B1"] = "タイトル"
+        ws["C1"] = "備考"
+        ws["A2"] = "1"
+        ws["B2"] = "値A"
+        ws["C2"] = "r1"
+        ws["A3"] = "2"
+        ws["B3"] = "値B"
+        ws["C3"] = "r2"
+        xlsx_path = tmp_path / "fab.xlsx"
+        wb.save(xlsx_path)
+        # JSON injects an extra 偽列: 偽値 line in section s1 —
+        # neither token is in the source sheet.
+        data = {
+            "id": "x", "title": "", "content": "",
+            "sheet_type": "P1",
+            "sections": [
+                {"id": "s1", "title": "値A",
+                 "content": "No.: 1\nタイトル: 値A\n備考: r1\n偽列: 偽値"},
+                {"id": "s2", "title": "値B",
+                 "content": "No.: 2\nタイトル: 値B\n備考: r2"},
+            ],
+        }
+        from scripts.verify.verify import verify_file
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as jf:
+            json.dump(data, jf, ensure_ascii=False)
+            jpath = jf.name
+        try:
+            issues = verify_file(str(xlsx_path), jpath, "xlsx", sheet_name="Sheet1")
+        finally:
+            os.unlink(jpath)
+        # 偽列 / 偽値 must surface as QC2 or QP (unexpected column).
+        assert issues, "fabricated colon pair must FAIL"
+        assert any("偽" in i for i in issues), issues
