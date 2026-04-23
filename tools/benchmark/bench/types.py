@@ -18,6 +18,7 @@ class Scenario:
     review_perspective: str
     context: str
     reference_answer: str  # markdown body of qa-v6-answers/{id}.md
+    a_facts: list[str] = field(default_factory=list)  # pre-authored required facts
 
 
 @dataclass(frozen=True)

@@ -72,12 +72,23 @@ def run(*, scenario: Scenario, search: SearchResult, model: str, scen_dir: Path)
             duration_s=0.0,
             error="reference answer missing",
         )
+    if not scenario.a_facts:
+        return JudgeResult(
+            verdict=None,
+            ref_sources_loaded=0,
+            ref_sources_total=0,
+            cost_usd=0.0,
+            duration_s=0.0,
+            error="a_facts missing in scenario",
+        )
 
     ref_text, ref_records = io.load_reference_sources(scenario.reference_answer)
     retrieved_text = io.load_retrieved_sections(search.cited)
+    a_facts_text = "\n".join(f"- {f}" for f in scenario.a_facts)
     prompt = (
         (io.PROMPTS_DIR / "judge.md").read_text(encoding="utf-8")
         .replace("{{question}}", scenario.question)
+        .replace("{{a_facts}}", a_facts_text)
         .replace("{{reference_answer}}", scenario.reference_answer)
         .replace("{{reference_sources}}", ref_text or "(none)")
         .replace("{{retrieved_sections}}", retrieved_text or "(none)")

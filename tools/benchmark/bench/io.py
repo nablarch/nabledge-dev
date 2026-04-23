@@ -39,6 +39,7 @@ def load_scenarios(path: Path = SCENARIOS_PATH) -> list[Scenario]:
             review_perspective=item.get("review_perspective", ""),
             context=item.get("context", ""),
             reference_answer=reference,
+            a_facts=list(item.get("a_facts") or []),
         ))
     return out
 

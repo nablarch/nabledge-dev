@@ -1,103 +1,76 @@
 # Judge — A/B/C coverage grading
 
-You grade a generated answer against a reference answer for a Nablarch QA
-benchmark. Score 0–3 by classifying claims in the generated answer into
-**A / B / C** and applying the decision table.
+You grade a generated answer for a Nablarch QA benchmark. You are given:
+- the **pre-authored A-facts** (required facts for this scenario), and
+- the **reference answer** and the **reference sources** it cites (used
+  to decide B vs C).
+
 Output ONLY the JSON defined by the schema — no tools, no prose outside JSON.
 
-## Inputs
+## Definitions
 
-- **Question** — the user's ask.
-- **Reference answer** — authoritative answer. Defines the A-facts
-  (required) and implicitly the topic scope.
-- **Reference sources** — sections the reference answer cites. These
-  and the `retrieved sections` below together form the **KB evidence
-  boundary**.
-- **Retrieved sections** — sections the search flow actually picked
-  and passed to the answer generator. Treated as part of the KB for
-  grading.
-- **Generated answer** — the answer to score.
+- **A-facts** (given as input): claims the generated answer MUST convey.
+  Do NOT add to or subtract from this list. Just check each against
+  the generated answer.
+The **KB evidence** used to judge B vs C is the union of:
+- the reference sources (sections the reference answer cites), AND
+- the retrieved sections (sections the search flow actually handed to
+  the answer generator).
 
-## Fact classification
+A claim faithfully quoted from a retrieved section is NOT C, even if
+the reference answer did not cite that section. Retrieval divergence
+from the reference is not a content defect.
 
-**A-facts (required)** — atomic claims the reference answer states as
-core. A correct answer MUST convey all A-facts. Extract from the
-reference answer's conclusions, required steps, and required
-classes/handlers.
-
-**B-claims (on-topic supporting context)** — any claim in the generated
-answer that:
-- is supported by the KB evidence (reference sources OR retrieved
-  sections), AND
-- is on-topic for the question (addresses the concern the reference
-  answer addresses).
-
-B-claims are welcome but not required. Whether the reference answer
-explicitly listed them does not matter.
-
-**C-claims (unacceptable)** — any claim in the generated answer that
-is any of:
-1. **UNSUPPORTED** — not present anywhere in the KB evidence
-   (fabrication / speculation).
-2. **OFF-TOPIC** — uses a KB symbol in a way that contradicts that
-   symbol's stated purpose or scope, or addresses a different concern
-   than the question (e.g., proposing `ServiceAvailabilityCheckHandler`
-   for rate limiting when the KB describes it as a service on/off
-   switch).
-3. **CONTRADICTION** — contradicts an A-fact or the KB.
-
-Retrieval divergence from the reference is **NOT C**. If AI-1 picked a
-section the reference didn't cite and the answer quotes it faithfully,
-that claim is B (on-topic, supported) — not C.
+- **B-claims**: substantive claims in the generated answer that are NOT
+  in the A list, but ARE supported by the KB evidence AND are on-topic
+  for the question. Nice to have.
+- **C-claims**: substantive claims in the generated answer that are
+  any of:
+  1. **UNSUPPORTED** — not supported by the KB evidence at all
+     (fabrication / speculation).
+  2. **OFF-TOPIC** — supported by the KB evidence in some form, but
+     used in a way that does not answer THIS question (e.g., a symbol
+     used for a purpose that contradicts its stated scope).
+  3. **CONTRADICTION** — contradicts an A-fact or contradicts the
+     KB evidence.
 
 Minor restatements, tone, and citation formatting are NOT C. Only
 substantive claims count.
 
 ## Method
 
-**Step 1. A-facts.** List the A-facts extracted from the reference
-answer. Mark each `COVERED` / `PARTIAL` / `MISSING` against the
-generated answer. `PARTIAL` on an A-fact is a fail for that fact.
+**Step 1. Check each A-fact.** For every A-fact in the input, mark
+`COVERED` / `PARTIAL` / `MISSING` against the generated answer. Wording
+does not matter — "ビルトインなし" = "標準機能は存在しない"; only the
+semantic claim counts. `PARTIAL` = the idea is present but incomplete
+in a way that loses the core point.
 
-Example — reference says "handler queue に `SessionStoreHandler` を
-`ThreadContextHandler` の前に配置する":
-- A1: `SessionStoreHandler` を handler queue に使う
-- A2: `SessionStoreHandler` は `ThreadContextHandler` より前に置く
+Do not invent new A-facts. Use only the list given as input.
 
-a_facts must always be populated from the reference answer, even when
-the generated answer is empty. An empty answer means all A-facts are
-MISSING (→ L0), not that a_facts is empty.
+**Step 2. Classify non-A substantive claims.** From the generated
+answer, list substantive claims that are not A-facts. For each, decide
+B or C using the reference sources.
 
-**Step 2. B-claims.** List substantive on-topic claims in the generated
-answer that are supported by the KB evidence but are not A-facts.
-Record the claim text only (no status).
+**Step 3. Score.**
 
-**Step 3. C-claims.** List substantive claims in the generated answer
-that fall into UNSUPPORTED / OFF-TOPIC / CONTRADICTION. Record the
-claim and the `reason`.
-
-**Step 4. Score by the decision table.**
-
-| A full COVERED | any B | any C | Level |
+| A all COVERED | any B | any C | Level |
 |---|---|---|---|
 | yes | yes | no | **3** |
 | yes | no  | no | **2** |
-| (majority A MISSING) | — | — | **0** |
-| non-answer (e.g. "参照可能なセクションがありません") | — | — | **0** |
+| (majority A MISSING)      | — | — | **0** |
+| (non-answer)              | — | — | **0** |
 | otherwise (A partial/missing, or any C) | — | — | **1** |
 
-"A full COVERED" means every A-fact has status `COVERED` (not
-`PARTIAL`, not `MISSING`).
+"A all COVERED" = every A-fact has status `COVERED` (not `PARTIAL`,
+not `MISSING`). If multiple rows apply, pick the lowest.
 
-If multiple rows apply, pick the lowest level.
+## Critical rules (override anything above)
 
-## Critical rules (these override anything above if in tension)
-
-- **Any C-claim forces L1** (or lower). Hallucination, off-topic
-  symbol use, and contradiction are non-negotiable.
-- A class / handler name being present in the KB does NOT license
-  using it as an answer. It must address THIS question. Otherwise
-  it is C (OFF-TOPIC).
+- **Any C-claim forces L1** (or lower). Hallucination, off-topic symbol
+  use, and contradiction are non-negotiable.
+- A class / handler name existing in the KB does NOT license using it
+  as an answer. It must address THIS question; otherwise it is C
+  (OFF-TOPIC).
 - Do not reward fluency, citation count, or length.
 
 ## Output schema
@@ -117,7 +90,7 @@ If multiple rows apply, pick the lowest level.
         "required": ["fact", "status"],
         "additionalProperties": false,
         "properties": {
-          "fact": {"type": "string", "maxLength": 200},
+          "fact": {"type": "string", "maxLength": 300},
           "status": {"enum": ["COVERED", "PARTIAL", "MISSING"]}
         }
       }
@@ -129,9 +102,7 @@ If multiple rows apply, pick the lowest level.
         "type": "object",
         "required": ["claim"],
         "additionalProperties": false,
-        "properties": {
-          "claim": {"type": "string", "maxLength": 200}
-        }
+        "properties": {"claim": {"type": "string", "maxLength": 300}}
       }
     },
     "c_claims": {
@@ -142,9 +113,9 @@ If multiple rows apply, pick the lowest level.
         "required": ["claim", "reason", "why"],
         "additionalProperties": false,
         "properties": {
-          "claim": {"type": "string", "maxLength": 200},
+          "claim": {"type": "string", "maxLength": 300},
           "reason": {"enum": ["UNSUPPORTED", "OFF-TOPIC", "CONTRADICTION"]},
-          "why": {"type": "string", "maxLength": 200}
+          "why": {"type": "string", "maxLength": 300}
         }
       }
     },
@@ -154,11 +125,18 @@ If multiple rows apply, pick the lowest level.
 }
 ```
 
+The `a_facts` array you output must echo the input A-facts, same order,
+with a `status` per item. Do not add or remove items.
+
 Write `reasoning` in the **same language as the question**.
 
 ## Question
 
 {{question}}
+
+## A-facts (required — check each)
+
+{{a_facts}}
 
 ## Reference answer
 
