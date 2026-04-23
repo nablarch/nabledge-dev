@@ -739,49 +739,68 @@ Phase 19 (他バージョン展開) 完了後に実施。rbkc 本体の出力が
 
 **背景**: ユーザーが GitHub Web 上で実際に docs/ を閲覧した結果、以下の問題を報告。
 
-verify は JSON↔docs MD の content 完全一致を保証するため、JSON 側の表現がそのまま docs MD にも反映されている。JSON は検索索引としては content=title+body テキストでよいが、**docs MD は人間が読むための閲覧用**なので別途レンダリング整形が必要。
+verify は現在 JSON↔docs MD の content 完全一致を保証しているため、JSON 側に `>` で blockquote 化された table や、不要な blockquote に取り込まれた段落がそのまま docs MD にも反映されている。結果として GitHub Web 上でテーブルに見えない / 段落が引用ブロックに押し込まれて読みにくい。
 
-**問題 22-A: docs MD が整形されずテキストのまま表示される**
+Excel 系 (リリースノート / セキュリティ対応チェックリスト) は別問題。1 Excel ファイル = 1 JSON (全シート / 全行を空白連結したテキスト) になっており、ユーザーが期待する「1 sheet = 1 JSON = 1 MD、1 行 = 1 section、MD はテーブル」に全く従っていない。
 
-- 報告: 「閲覧用 MD がテキストのまま表示されてる、人間が読めない、全ファイルを調査して」
-- 仮説: converter が MD 化する過程で blockquote `>` や `\n` エスケープが崩れているケース、table 罫線が見出しと混ざっているケース等
-- 現状例 (`docs/guide/biz-samples/biz-samples-0402-ExtendedFieldType.md`):
-  - L41-44: テーブル全体が `> | ... |` の blockquote に入ってしまい GitHub 上で見出し崩れ
-  - L31: 段落が `> *text*` の blockquote に入っている
-  - L48-49: 説明文が `>` でインデントされている
-- 調査: 全 docs MD (v6 約 300 ファイル) を GitHub Markdown としてパースして、(a) GitHub でテーブルとして認識されないテーブル、(b) 意図せず blockquote に取り込まれた段落、(c) 生の RST 残渣、を検出
+---
 
-**問題 22-B: Excel (リリースノート / セキュリティ対応チェックリスト) が spec ルールに従っていない**
+#### 設計合意 (session 55)
 
-- 報告したユーザー期待のルール:
-  1. **1 シート = 1 JSON ファイル = 1 MD ファイル** (現状は 1 Excel ファイル = 1 JSON ファイルで全シート連結)
-  2. **シート内の表の 1 レコード = 1 セクション**
-  3. **閲覧用 MD ではテーブルに戻す** (現状は全セル空白連結のテキスト)
-- 現状例 (`releases-nablarch6-releasenote.json`):
-  - title 空、sections 空、content に全シート全行を空白連結した一本のテキストが入っている
-  - docs MD も同じテキストがそのまま
-- これは `create/converters/xlsx_releasenote.py` / `xlsx_security.py` の構造。1 sheet = 1 file 分割 + 行 = section の実装に書き直し、docs MD 側はテーブル形式でレンダリング
+| | JSON | docs MD | verify の一致ルール |
+|---|---|---|---|
+| **22-A (RST / MD)** | きれいな MD (不要な `>` blockquote を剥がす、RST `list-table` は table のまま) | JSON と同じ | QO2 完全一致を維持 |
+| **22-B (Excel)** | 1 sheet = 1 JSON、1 行 = 1 section、section.content は `列名: 値\n...` の列挙 | 先頭に `# タイトル` + 全行 MD テーブル (全列網羅) | QO2 は「JSON section.content の全列値が MD テーブル内に含まれる」方向のみ (JSON ⊂ MD)。MD → JSON 方向 (MD に含まれるテキストが JSON にあるか) は Excel については緩和。spec §3-3 更新が必要。 |
 
-**Steps:**
+**RST/MD 側ポリシー** (依頼 1 対応):
 
-- [ ] 22-A-1: 全 docs MD を GitHub Markdown renderer 観点で走査する調査スクリプトを作成 (`.work/00299/phase22/scan_docs_md.py`)
-  - テーブル判定: `| ... |` 行連続が 2 行以上 + separator 行、かつ blockquote 内でない
-  - blockquote 取り込み検出: `>` prefix が段落全体に付いてる行群
-  - 生 RST 残渣: `.. directive::`, `:ref:`, `|substitution|` 等が docs MD に残っている
-- [ ] 22-A-2: 調査結果レビュー (ユーザー承認)
-- [ ] 22-A-3: converter 修正方針決定 (JSON 側の content をどう変えるか / docs.py 側のレンダリングだけ変えるか)
-  - **論点**: JSON content は検索索引なのでテキストでよいが、docs MD は表示用。両者を完全一致させるなら JSON 側も見やすい形式にせざるを得ない。spec §3-3 QO2「verbatim 含有」との整合を再設計 (あるいは asset link rewrite と同種の symmetric rewrite に拡張)。
-- [ ] 22-A-4: converter (RST: `rst_ast_visitor.py`、MD: `md_ast_visitor.py` / `converters/md.py`) の修正、verify は QO2 containment を維持
-- [ ] 22-A-5: v6 全 docs MD 再生成 → GitHub Web で実地確認 → verify FAIL 0
+- converter `rst_ast_visitor.py` の `visit_block_quote` を修正
+  - 子が table / admonition / figure のみのとき → `>` を付けずに中身だけ出力
+  - 本当の引用 (paragraph を含む block_quote) → 従来通り `>` 付与
+- RST `list-table` / grid-table / simple-table は blockquote に入れず、MD table として出力 (既存処理の見直し)
+- 段落 (`paragraph`) が block_quote 直下にあっても、RST 仕様上の「引用」と解釈すべき場面のみ `>` を付ける。現 converter が付けすぎているケースは仕様に従って剥がす
+- その他 spurious `>` の検出とルール化は調査結果に基づき決定
 
-- [ ] 22-B-1: v6 Excel ソース (リリースノート / セキュリティ対応チェックリスト) のシート構造とレコード構造を調査、出力ファイル分割案を確定
-- [ ] 22-B-2: ユーザー承認
-- [ ] 22-B-3: `xlsx_releasenote.py` / `xlsx_security.py` を `1 sheet → 1 JSON (+1 docs MD)`、`1 レコード → 1 section` に書き直し
-- [ ] 22-B-4: docs MD 側のレンダリング: section の content を MD table として整形 (人間可読)
-- [ ] 22-B-5: verify (QC1-5 / QO1-4) が新粒度・新 docs MD 形式でも通るよう整合確認・必要なら spec 更新
-- [ ] 22-B-6: v6 再生成 → 実地確認 → verify FAIL 0 → コミット
+**Excel 側ポリシー** (依頼 2 対応):
 
-**備考**: Phase 21-C (旧番) は 22-B に統合。xlsx converter 書き直しを 22-B でまとめて対応する。
+- 1 `.xlsx` → 複数 `.json` + 複数 `docs/.../*.md` (1 sheet per file)
+- JSON: `title` = シートのタイトル行、`sections` は 1 行 = 1 section、section.title はヘッダ列の "タイトル" 列値、section.content は全列を `列名: 値` の縦列挙 (検索索引として全ての値がヒットする形)
+- docs MD: 先頭に `# {シートタイトル}` + 全列 / 全行の MD table 1 個 (人間閲覧用、元 Excel を復元)
+- Excel の全列をそのまま table 列に含める (No., 分類, リリース区分, タイトル, 概要, 修正後のバージョン, 不具合の起因バージョン, システムへの影響の可能性, システムへの影響の可能性の内容と対処, 参照先, JIRA issue, モジュール等)
+- verify: Excel 系ファイルに対しては QO2 を「JSON section.content の全テキストトークンが docs MD 内に含まれる」に緩和 (MD 側の「# タイトル」「table 罫線 `|---|`」「列ヘッダ」は JSON に無いため完全一致不能)。QC1-QC4 / QO1 / QO3 / QO4 は維持、QC5 はテーブル許容パターン追加
+
+---
+
+#### Steps
+
+##### 22-A: RST/MD 側の docs MD 可読性修正
+
+- [ ] 22-A-1: 全 docs MD (v6 ~300 ファイル) を走査する調査スクリプトを作成 (`.work/00299/phase22/scan_docs_md.py`)
+  - 検出対象: (a) blockquote 内 table (`>` 内に `|...|`)、(b) 段落 1 個だけの block_quote 化、(c) 生 RST 残渣 (`.. directive::`, `:ref:`, `|substitution|`) が docs MD に漏れているケース
+  - 出力: 件数 + 代表ファイル/行番号
+- [ ] 22-A-2: 調査結果をユーザーに提示 → ルール確定
+- [ ] 22-A-3: `scripts/common/rst_ast_visitor.py` の `visit_block_quote` を修正 (table / admonition / figure だけの child なら `>` 剥がす、他は維持)。必要に応じて `visit_admonition` / `visit_figure` の内側 table 処理も調整
+- [ ] 22-A-4: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → verify FAIL 0 維持
+- [ ] 22-A-5: 代表ファイルを GitHub Web で実地確認 (ユーザー)
+- [ ] 22-A-6: コミット
+
+##### 22-B: Excel converter 書き直し + spec 更新
+
+- [ ] 22-B-1: v6 Excel ソース 2 種 (リリースノート / セキュリティ対応チェックリスト) のシート構造・列構成・ヘッダ行位置・タイトル行位置を調査。`.work/00299/phase22/excel-structure.md` に構造表を出力
+- [ ] 22-B-2: 調査結果 + 新 JSON/MD 仕様案 (上記ポリシー具体化) をユーザーに提示 → 承認
+- [ ] 22-B-3: `rbkc-verify-quality-design.md` §3-3 QO2 に Excel 例外 (JSON ⊂ MD の一方向) を追記、§3-1 QC5 にテーブル罫線許容を追記
+- [ ] 22-B-4: `scripts/create/converters/xlsx_releasenote.py` / `xlsx_security.py` を新仕様で書き直し
+  - 1 sheet = 1 JSON 分割
+  - 1 行 = 1 section、content は列名:値の列挙
+  - sheet タイトル取得ロジック (タイトル行位置の判定)
+- [ ] 22-B-5: `scripts/create/docs.py` の Excel 用レンダリング分岐を追加 (JSON の sections を MD table に再構成)
+- [ ] 22-B-6: `scripts/create/index.py` (sheet 分割で index 項目増加) 対応確認
+- [ ] 22-B-7: `scripts/verify/verify.py` の QO2 (Excel 分岐) 実装 + テスト追加
+- [ ] 22-B-8: `bash rbkc.sh create 6 && bash rbkc.sh verify 6` → verify FAIL 0
+- [ ] 22-B-9: 生成された docs MD を GitHub Web で実地確認 (ユーザー)
+- [ ] 22-B-10: コミット
+
+**備考**: Phase 21-C (旧番 — リリースノート行粒度) は 22-B に統合済。xlsx converter 書き直しで包括する。
 
 ---
 
