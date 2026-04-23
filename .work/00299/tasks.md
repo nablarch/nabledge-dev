@@ -735,6 +735,56 @@ Phase 19 (他バージョン展開) 完了後に実施。rbkc 本体の出力が
 
 ---
 
+### Phase 22: 閲覧用 docs MD の可読性改善 (ユーザー実地確認から発覚)
+
+**背景**: ユーザーが GitHub Web 上で実際に docs/ を閲覧した結果、以下の問題を報告。
+
+verify は JSON↔docs MD の content 完全一致を保証するため、JSON 側の表現がそのまま docs MD にも反映されている。JSON は検索索引としては content=title+body テキストでよいが、**docs MD は人間が読むための閲覧用**なので別途レンダリング整形が必要。
+
+**問題 22-A: docs MD が整形されずテキストのまま表示される**
+
+- 報告: 「閲覧用 MD がテキストのまま表示されてる、人間が読めない、全ファイルを調査して」
+- 仮説: converter が MD 化する過程で blockquote `>` や `\n` エスケープが崩れているケース、table 罫線が見出しと混ざっているケース等
+- 現状例 (`docs/guide/biz-samples/biz-samples-0402-ExtendedFieldType.md`):
+  - L41-44: テーブル全体が `> | ... |` の blockquote に入ってしまい GitHub 上で見出し崩れ
+  - L31: 段落が `> *text*` の blockquote に入っている
+  - L48-49: 説明文が `>` でインデントされている
+- 調査: 全 docs MD (v6 約 300 ファイル) を GitHub Markdown としてパースして、(a) GitHub でテーブルとして認識されないテーブル、(b) 意図せず blockquote に取り込まれた段落、(c) 生の RST 残渣、を検出
+
+**問題 22-B: Excel (リリースノート / セキュリティ対応チェックリスト) が spec ルールに従っていない**
+
+- 報告したユーザー期待のルール:
+  1. **1 シート = 1 JSON ファイル = 1 MD ファイル** (現状は 1 Excel ファイル = 1 JSON ファイルで全シート連結)
+  2. **シート内の表の 1 レコード = 1 セクション**
+  3. **閲覧用 MD ではテーブルに戻す** (現状は全セル空白連結のテキスト)
+- 現状例 (`releases-nablarch6-releasenote.json`):
+  - title 空、sections 空、content に全シート全行を空白連結した一本のテキストが入っている
+  - docs MD も同じテキストがそのまま
+- これは `create/converters/xlsx_releasenote.py` / `xlsx_security.py` の構造。1 sheet = 1 file 分割 + 行 = section の実装に書き直し、docs MD 側はテーブル形式でレンダリング
+
+**Steps:**
+
+- [ ] 22-A-1: 全 docs MD を GitHub Markdown renderer 観点で走査する調査スクリプトを作成 (`.work/00299/phase22/scan_docs_md.py`)
+  - テーブル判定: `| ... |` 行連続が 2 行以上 + separator 行、かつ blockquote 内でない
+  - blockquote 取り込み検出: `>` prefix が段落全体に付いてる行群
+  - 生 RST 残渣: `.. directive::`, `:ref:`, `|substitution|` 等が docs MD に残っている
+- [ ] 22-A-2: 調査結果レビュー (ユーザー承認)
+- [ ] 22-A-3: converter 修正方針決定 (JSON 側の content をどう変えるか / docs.py 側のレンダリングだけ変えるか)
+  - **論点**: JSON content は検索索引なのでテキストでよいが、docs MD は表示用。両者を完全一致させるなら JSON 側も見やすい形式にせざるを得ない。spec §3-3 QO2「verbatim 含有」との整合を再設計 (あるいは asset link rewrite と同種の symmetric rewrite に拡張)。
+- [ ] 22-A-4: converter (RST: `rst_ast_visitor.py`、MD: `md_ast_visitor.py` / `converters/md.py`) の修正、verify は QO2 containment を維持
+- [ ] 22-A-5: v6 全 docs MD 再生成 → GitHub Web で実地確認 → verify FAIL 0
+
+- [ ] 22-B-1: v6 Excel ソース (リリースノート / セキュリティ対応チェックリスト) のシート構造とレコード構造を調査、出力ファイル分割案を確定
+- [ ] 22-B-2: ユーザー承認
+- [ ] 22-B-3: `xlsx_releasenote.py` / `xlsx_security.py` を `1 sheet → 1 JSON (+1 docs MD)`、`1 レコード → 1 section` に書き直し
+- [ ] 22-B-4: docs MD 側のレンダリング: section の content を MD table として整形 (人間可読)
+- [ ] 22-B-5: verify (QC1-5 / QO1-4) が新粒度・新 docs MD 形式でも通るよう整合確認・必要なら spec 更新
+- [ ] 22-B-6: v6 再生成 → 実地確認 → verify FAIL 0 → コミット
+
+**備考**: Phase 21-C (旧番) は 22-B に統合。xlsx converter 書き直しを 22-B でまとめて対応する。
+
+---
+
 ## Done
 
 - [x] Phase 21-Y: RST 処理を docutils AST + 共通 Visitor に全面書き直し — v6 verify FAIL 53→0、unit test 120 PASS。zero-exception / no-drop / AST-only 原則を設計書と実装に適用 — commits `cf57a1718` (Y-3 初期実装 53→7) / `4ae3ada3b` (Y-3b 本体 7→0) / `6ee04b9c4` (SE review 反映) / `cf53c5752` (tasks.md 整理) / `bf6b2d355` (Phase 21-Z 計画追加)
