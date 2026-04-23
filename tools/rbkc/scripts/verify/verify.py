@@ -670,10 +670,11 @@ def _check_rst_content_completeness(
             else:
                 issues.append(f"[QC4] section '{sid}': misplaced content: {orig_unit[:50]!r}")
 
-    # QC1: delete JSON units from normalised source in JSON order, then
-    # check the residue. Per design spec §3-1 手順 3, residue must match the
-    # allowed-syntax list (post-tokenizer MD residue: fences, table pipes,
-    # blockquote markers, etc.).
+    # QC1: delete JSON units from the normalised source in JSON order, then
+    # check the residue. Per rbkc-verify-quality-design.md §3-1 (no tolerance
+    # list): any non-whitespace residue is a FAIL. The normalised source
+    # and JSON content are both produced through the shared Visitor, so
+    # they agree on MD syntax — residue means content actually went missing.
     residue = norm_source
     for _orig, norm_unit, _sid, _is_c in search_units:
         if not norm_unit:
@@ -683,67 +684,11 @@ def _check_rst_content_completeness(
             continue
         residue = residue[:idx] + residue[idx + len(norm_unit):]
 
-    # Check residue against allowed-syntax list. Allowed residue is pure
-    # whitespace and converter-emitted MD markup tokens.
-    cleaned = _strip_allowed_residue(residue)
-    if cleaned.strip():
-        # Trim long residue for readability in the issue message.
-        snippet = cleaned.strip()[:80]
+    if residue.strip():
+        snippet = residue.strip()[:80]
         issues.append(f"[QC1] residue not captured in JSON: {snippet!r}")
 
     return issues
-
-
-# Allowed residue tokens in the normalised RST source after JSON unit
-# deletion. Per rbkc-verify-quality-design.md §3-1 "許容構文要素リスト".
-# These are the MD markup tokens the converter emits but that appear in the
-# normalised source with slightly different surrounding whitespace than the
-# JSON content has.
-_ADMONITION_RESIDUE_LABELS = (
-    "Note", "Tip", "Warning", "Important", "Attention", "Hint",
-    "Caution", "Danger", "Error", "See Also",
-    "Deprecated", "Version Added", "Version Changed",
-)
-_ALLOWED_RESIDUE_PATTERNS = [
-    # Admonition header residues (e.g. "Note" left after ">" and "**" were stripped)
-    re.compile(r"\b(?:" + "|".join(re.escape(l) for l in _ADMONITION_RESIDUE_LABELS) + r")\b"),
-    # MD fence markers (code-block output)
-    re.compile(r"```[A-Za-z0-9_+-]*"),
-    # MD table separator rows
-    re.compile(r"\|\s*-+\s*(?:\|\s*-+\s*)+\|"),
-    # Bare MD list markers (bullets, enumerators)
-    re.compile(r"(?m)^\s*[*+\-]\s*$"),
-    re.compile(r"(?m)^\s*\d+\.\s*$"),
-    # MD blockquote markers
-    re.compile(r"(?m)^\s*>\s*"),
-    # Bold/italic leftovers
-    re.compile(r"\*\*"),
-    # Inline code tick leftovers
-    re.compile(r"`"),
-    # Table pipe residue
-    re.compile(r"\|"),
-    # Bracket residue from removed [text](url)
-    re.compile(r"[\[\]()]"),
-    # Punctuation / whitespace (ASCII + common Japanese punctuation)
-    re.compile(r"[\s、。,\.:!?;()（）【】「」『』\-—#*+~\^]+"),
-    # Stray directive/comment markers
-    re.compile(r"\.\.+"),
-    # Stray heading marker hashes (if MD heading got partially consumed)
-    re.compile(r"#+"),
-]
-
-
-def _strip_allowed_residue(text: str) -> str:
-    """Remove all allowed syntax residue tokens; return what's left."""
-    out = text
-    # Apply each pattern iteratively until stable.
-    prev = None
-    while prev != out:
-        prev = out
-        for pat in _ALLOWED_RESIDUE_PATTERNS:
-            out = pat.sub(" ", out)
-        out = re.sub(r"\s+", " ", out)
-    return out
 
 
 def _check_md_content_completeness(
